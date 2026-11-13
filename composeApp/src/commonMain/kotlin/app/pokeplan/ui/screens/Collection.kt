@@ -98,14 +98,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 ScreenHeader("Pokémon", icon = "poke-ball")
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M)) {
                     val ready = store.activeQuests.count { store.questReady(it) }
-                    // A new player has one Pokémon: say where the next ones come from.
-                    MenuGrid(
+                    MenuList(
                         listOfNotNull(
-                            MenuEntry("PARTY", "premier-ball", "Party", "${player.party.size} of 6", tint = Pixel.InkSoft),
-                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { inPc(store, it) }} stored", tint = Pixel.InkSoft),
-                            MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.InkSoft),
-                            if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.InkSoft) else null,
-                            if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.InkSoft),
+                            MenuEntry("PARTY", "premier-ball", "Party", count = "${player.party.size} of 6"),
+                            MenuEntry("PC", "storage-key", "PC boxes", count = "${player.pokemon.count { inPc(store, it) }}"),
+                            MenuEntry("DEX", "great-ball", "Pokédex", count = "${player.caught.size} caught"),
+                            if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", count = "${player.inventory.counts.count { it.value > 0 }}") else null,
+                            if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", count = if (store.activeQuests.isEmpty()) "" else "${store.activeQuests.size}", badge = ready),
                         ),
                     ) { key -> section = Section.valueOf(key) }
                 }
@@ -228,12 +227,9 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
                 }
             }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                (if (view.filtering) "$shown of $total" else "$total stored") + " · by ${view.sort.label}",
-                Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft,
-            )
-            if (view.filtering) PixelButton("Clear", { change(view.copy(type = null, shinyOnly = false, starredOnly = false, search = "")) }, color = Pixel.InkSoft, compact = true)
+        if (view.filtering) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("$shown of $total", Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            PixelButton("Clear", { change(view.copy(type = null, shinyOnly = false, starredOnly = false, search = "")) }, color = Pixel.InkSoft, compact = true)
         }
     }
 }

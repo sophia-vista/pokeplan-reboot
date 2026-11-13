@@ -55,7 +55,7 @@ import kotlin.time.TimeSource
 @Composable
 internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.location
-    if (feed == null) return Missing("Waypoints", "This device has no location to read (the desktop and web apps have none).")
+    if (feed == null) return Missing("No location on this device")
     val store = model.store
     val gear = model.data.gear
     val clipboard = LocalClipboardManager.current
@@ -102,8 +102,8 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
                 here?.let { h ->
                     val d = Geo.distanceMeters(h.latitude, h.longitude, w.latitude, w.longitude)
                     val b = Geo.bearingDegrees(h.latitude, h.longitude, w.latitude, w.longitude).toFloat()
-                    Text("From you: ${Geo.distanceText(d)}, ${SensorMath.cardinal(b)} (${b.toInt()}°). Use the Compass to face it.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
-                } ?: Text("Press Where am I to see how far it is.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    Text("From you: ${Geo.distanceText(d)}, ${SensorMath.cardinal(b)} (${b.toInt()}°)", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("pencil", "Rename ${w.name}", { editing = w.id; editText = w.name })
                     PixelIconButton("copy", "Copy the map link for ${w.name}", { clipboard.setText(AnnotatedString(Geo.mapLink(w.latitude, w.longitude))) })
@@ -118,7 +118,7 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
 @Composable
 internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.sound
-    if (feed == null) return Missing("The sound meter", "This device has no microphone for Gear to read.")
+    if (feed == null) return Missing("No microphone on this device")
     val store = model.store
     val offset = model.data.gear.soundOffsetDb
     var dbFs by remember { mutableStateOf<Float?>(null) }
@@ -150,7 +150,7 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
         onUse()
         onDispose { stop?.invoke() }
     }
-    if (problem.isNotEmpty()) return Missing("The sound meter", problem)
+    if (problem.isNotEmpty()) return Missing(problem)
     val est = dbFs?.let { SoundMath.estimate(it, offset) }
     TextBox {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -235,7 +235,7 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
             val i = info
             if (i != null) {
                 Text("Connection: ${i.kind}", style = MaterialTheme.typography.titleSmall)
-                if (i.online) Text((if (i.metered) "Metered (data may cost money). " else "Not metered. ") + if (i.validated) "The phone has reached the internet." else "The phone could not confirm the internet.", style = MaterialTheme.typography.bodyMedium)
+                if (i.online) Text((if (i.metered) "Metered" else "Not metered") + if (i.validated) ", online" else ", not confirmed", style = MaterialTheme.typography.bodyMedium)
                 PixelIconButton("reload", "Look again", { info = feed?.info() })
             }
             PixelButton(if (busy) "Checking..." else "Check the connection", {
@@ -254,7 +254,6 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
             result?.let { r ->
                 Text(NetworkCheck.verdict(r), style = MaterialTheme.typography.bodyLarge)
                 r.median?.let { Text("Answers in about $it ms" + (r.jitter?.let { j -> ", varying by up to $j ms" } ?: "") + ".", style = MaterialTheme.typography.bodyMedium) }
-                Text("Three small requests to cloudflare.com, timed. This shows whether the internet answers and how quickly, not how fast it downloads.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
     }

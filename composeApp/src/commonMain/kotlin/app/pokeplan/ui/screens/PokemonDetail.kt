@@ -5,6 +5,7 @@ import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -78,14 +79,6 @@ private fun natureText(p: OwnedPokemon): String {
     val down = p.nature.lowered
     val effect = if (up == null || down == null) "no stat changes" else "+${up.label}, −${down.label}"
     return "${p.nature.name.titleCase()} ($effect)"
-}
-
-/** What a bond style likes, for the friendship line (docs/design.md, "Bond styles"). */
-private fun bondText(style: BondStyle) = when (style) {
-    BondStyle.PRESENCE -> "Bonds fastest through focus sessions as your buddy"
-    BondStyle.COMFORT -> "Bonds fastest through petting and Care routines"
-    BondStyle.GIFTS -> "Bonds fastest through berries"
-    BondStyle.BALANCED -> "Bonds a little faster through everything"
 }
 
 /** Its best IVs, the way the games' judge names them ("Speed", "Attack and Speed"). */
@@ -170,22 +163,23 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
-                // Its face, the way a Mystery Dungeon team menu shows each member.
+                // Its face, the way a Mystery Dungeon team menu shows each member. The name and the types are in the bar and on the stage.
                 Portrait(p.form.id, p.isShiny, "${p.nickname}'s portrait", size = Sizes.SpriteM)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text("No. ${p.speciesId.toString().padStart(4, '0')}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    Text(p.form.name, style = MaterialTheme.typography.titleMedium)
-                    Text("Lv. ${p.level} · ${p.form.types.joinToString(" / ") { it.name.titleCase() }}", style = MaterialTheme.typography.bodyMedium)
+                    Text("Lv. ${p.level}", style = MaterialTheme.typography.titleMedium)
                 }
+                if (!renaming) PixelButton("Rename", { renaming = true }, color = Pixel.InkSoft, compact = true)
             }
-            // Under the name, not beside it, so a long name or large text never squeezes it.
-            if (!renaming) PixelButton("Rename", { renaming = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            if (renaming) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                val save = { store.rename(p.id, nickname); renaming = false }
                 PixelField(
                     nickname, { nickname = it.take(20) }, Modifier.weight(1f), singleLine = true,
                     placeholder = p.species.name,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { save() }),
                 )
-                PixelIconButton("check", "Save", { store.rename(p.id, nickname); renaming = false }, Pixel.Green)
+                PixelIconButton("check", "Save", { save() }, Pixel.Tone)
             }
         }
     }
@@ -276,7 +270,6 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
         val friendship = "Friendship ${p.friendship * 100 / 255}%"
         Text(friendship, style = soft, color = Pixel.InkSoft)
         PixelBar(p.friendship / 255f, color = Pixel.Pink, label = friendship)
-        if (stats) Text(bondText(p.bondStyle), style = soft, color = Pixel.InkSoft)
     }
     if (stats) {
         val values = p.stats.values
@@ -328,36 +321,20 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
 private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = DetailBox(if (isGuardian) "Guardian" else "Role") {
     val store = model.store
     val player = model.data.player
-    val care = model.data.settings.careModule
-    val soft = MaterialTheme.typography.bodyMedium
-    val inPlan = p.inParty && p.partyId == PartyIds.PLAN
-    val inCare = p.inParty && p.partyId == PartyIds.CARE
-    val inHeal = p.inParty && p.partyId == PartyIds.HEAL
-    val inMint = p.inParty && p.partyId == PartyIds.MINT
-    val isMintLead = p.id == player.mintLead?.id
-    val inHome = p.inParty && p.partyId == PartyIds.HOME
-    val isHomeLead = p.id == player.homeLead?.id
-    val inLink = p.inParty && p.partyId == PartyIds.LINK
-    val isLinkLead = p.id == player.linkLead?.id
-    val isHealLead = p.id == player.healLead?.id
     val isBuddy = p.id == player.buddyId
-    val isLead = p.id == player.careLead?.id
-    val isPlanLead = p.id == player.planLead?.id
     // A legendary or mythical Pokémon is a normal Pokémon (a party, a team, the PC); it can also be one module's Guardian.
     Text(app.pokeplan.app.Places.label(model.data, p.id), style = MaterialTheme.typography.bodyLarge)
     if (isGuardian) GuardianChoice(model, p)
-    val regions = Region.entries.filter { it.isModule && it.released && (care || it != Region.CARE) }
-        .filter { r -> Dex.regionDex(r).any { it.id == p.speciesId } }
-    Text(
-        if (regions.isEmpty()) "Not in a module region's Pokédex" else "Counts for the " + regions.joinToString(" and ") { it.label } + " Pokédex",
-        style = soft, color = Pixel.InkSoft,
-    )
-    PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p) }, Modifier.fillMaxWidth(), Pixel.Red, enabled = !isBuddy && !isGuardian, compact = true)
-    PlacePicker(model, p)
-    if (!p.species.isSpecial) {
-        val starred = store.isFavorite(p.id)
-        PixelButton(if (starred) "Starred" else "Star", { store.toggleFavorite(p.id) }, Modifier.fillMaxWidth(), if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
+    var moving by remember(p.id) { mutableStateOf(false) }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p) }, color = Pixel.InkSoft, enabled = !isBuddy && !isGuardian, compact = true)
+        PixelButton(if (moving) "Close" else "Move to...", { moving = !moving }, color = Pixel.InkSoft, compact = true)
+        if (!p.species.isSpecial) {
+            val starred = store.isFavorite(p.id)
+            PixelButton(if (starred) "Starred" else "Star", { store.toggleFavorite(p.id) }, color = if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
+        }
     }
+    if (moving) PlacePicker(model, p)
 }
 
 /** Where it came from: how it joined and the day. Pokémon from before origins were kept show the day only. */
@@ -408,7 +385,6 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
 private fun PlacePicker(model: AppModel, p: OwnedPokemon) {
     val store = model.store
     val player = model.data.player
-    var open by remember(p.id) { mutableStateOf(false) }
     val here = if (p.inParty) p.partyId else null
     class Slot(val label: String, val partyId: String, val accent: androidx.compose.ui.graphics.Color, val lead: String?, val makeLead: () -> Unit)
     val slots = listOfNotNull(
@@ -419,8 +395,6 @@ private fun PlacePicker(model: AppModel, p: OwnedPokemon) {
         Slot("Home party", PartyIds.HOME, app.pokeplan.ui.theme.ModuleAccent.HOME.accent, player.homeLead?.id) { store.setHomeLead(p.id) },
         Slot("Link party", PartyIds.LINK, app.pokeplan.ui.theme.ModuleAccent.LINK.accent, player.linkLead?.id) { store.setLinkLead(p.id) },
     )
-    PixelButton(if (open) "Close" else "Move to...", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-    if (!open) return
     fun moved(ok: Boolean, toPc: Boolean) { if (ok) model.effect(if (toPc) Sfx.MOVE_DROP else Sfx.RECRUIT) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {

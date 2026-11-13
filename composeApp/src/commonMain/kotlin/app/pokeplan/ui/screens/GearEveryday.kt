@@ -40,8 +40,8 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
     // Text that is not a number is said so under its field and gives no answer; it is never read as 0 or as the field's default.
     fun bad(i: Int): Boolean = values[i].isNotBlank() && num(i) == null
     @Composable
-    fun field(i: Int, label: String) {
-        PixelField(values[i], { v -> values = values.toMutableList().also { it[i] = v.take(14) }; onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = label, error = if (bad(i)) NOT_A_NUMBER else null)
+    fun field(i: Int, label: String, hint: String? = null) {
+        PixelField(values[i], { v -> values = values.toMutableList().also { it[i] = v.take(14) }; onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = label, placeholder = hint, error = if (bad(i)) NOT_A_NUMBER else null)
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -50,7 +50,7 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
             }
             val answer: List<String>? = if (values.indices.any(::bad)) null else when (sum) {
                 Sum.TIP -> {
-                    field(0, "Bill"); field(1, "Tip percent (15)"); field(2, "People (1)")
+                    field(0, "Bill"); field(1, "Tip percent", "15"); field(2, "People", "1")
                     val people = num(2)?.toInt() ?: 1
                     num(0)?.let { b -> Everyday.tipSplit(b, num(1) ?: 15.0, people)?.let { listOf("Tip ${Everyday.money(it.tip)}", "Total ${Everyday.money(it.total)}", "Each pays ${Everyday.money(it.each)}") } }
                 }
@@ -64,7 +64,7 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
                     )
                 }
                 Sum.SALE -> {
-                    field(0, "Price"); field(1, "Percent off"); field(2, "Tax percent (0)")
+                    field(0, "Price"); field(1, "Percent off"); field(2, "Tax percent", "0")
                     num(0)?.let { p -> Everyday.sale(p, num(1) ?: 0.0, num(2) ?: 0.0)?.let { listOf("You save ${Everyday.money(it.saved)}", "After the discount ${Everyday.money(it.afterDiscount)}", "Tax ${Everyday.money(it.tax)}", "Total ${Everyday.money(it.total)}") } }
                 }
                 Sum.LOAN -> {
@@ -73,7 +73,7 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
                     if (p == null || i == null || y == null) null else Everyday.loan(p, i, y)?.let { listOf("Each month ${Everyday.money(it.monthly)}", "Paid in all ${Everyday.money(it.totalPaid)}", "Of which interest ${Everyday.money(it.interest)}") }
                 }
                 Sum.SAVINGS -> {
-                    field(0, "Start with"); field(1, "Yearly interest percent"); field(2, "Years"); field(3, "Add each month (0)")
+                    field(0, "Start with"); field(1, "Yearly interest percent"); field(2, "Years"); field(3, "Add each month", "0")
                     val s = num(0); val i = num(1); val y = num(2)
                     if (s == null || i == null || y == null) null else Everyday.savings(s, i, y, 12, num(3) ?: 0.0)?.let { listOf("After ${trim(y)} years ${Everyday.money(it)}") }
                 }
@@ -83,9 +83,7 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
                     if (d == null || e == null || p == null) null else Everyday.tripCost(d, e, p)?.let { listOf("The trip costs ${Everyday.money(it)}") }
                 }
             }
-            FieldLabel("Answer")
-            if (answer.isNullOrEmpty()) Text("Fill in the numbers above.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else answer.forEach { Text(it, style = MaterialTheme.typography.titleSmall) }
+            answer?.forEach { Text(it, style = MaterialTheme.typography.titleSmall) }
         }
     }
 }

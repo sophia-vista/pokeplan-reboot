@@ -128,7 +128,7 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelField(
                 name, { name = it.take(TaskList.MAX_NAME) }, Modifier.fillMaxWidth(), singleLine = true,
-                label = "List name",
+                placeholder = "List name",
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
             )
             FieldLabel("Colour")
@@ -163,7 +163,7 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
                 PixelButton(if (list == null) "Make list" else "Save", {
                     if (list == null) done(store.addList(name, color, icon)?.id)
                     else { store.updateList(list.copy(name = name, color = color, icon = icon)); done(list.id) }
-                }, Modifier.weight(1f), Pixel.Green, enabled = name.isNotBlank(), compact = true)
+                }, Modifier.weight(1f), enabled = name.isNotBlank(), compact = true)
                 PixelIconButton("close", "Cancel", { done(list?.id) }, Pixel.InkSoft)
             }
             if (list != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {

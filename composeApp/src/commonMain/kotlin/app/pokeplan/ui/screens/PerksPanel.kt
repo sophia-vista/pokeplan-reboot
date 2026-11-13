@@ -136,10 +136,7 @@ fun PartyPerksCard(model: AppModel) {
                         Text("  ${pct(s.percent)} ${s.from} (${s.kind.label()}$whenText)", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     }
                 }
-                Text(
-                    "The buddy, its held item and the party add up to at most +${Perks.BUCKET_CAP.roundToInt()}% a bucket; Guardians add up to +${Guardians.BUCKET_CAP.roundToInt()}% on top. Level, friendship, nature and the stat behind each bucket make a perk stronger; the rest of the party gives a quarter of its type perk.",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
+                // Help: perks are capped per bucket (buddy, held item and party; Guardians on top) and only change what the module pays.
             }
         }
     }
@@ -180,11 +177,6 @@ fun CarePerksCard(model: AppModel) {
                     Text("${bucket.label}: ${bucket.effect}", style = MaterialTheme.typography.bodyLarge)
                     parts.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
                 }
-                Text(
-                    "Normal, Fairy and Water add Friendship gain; Grass, Bug and Fighting Berry finder; Flying, Psychic and Ghost Visitor luck. " +
-                        "The lead gives its full perk and the rest of the party a quarter, up to +${Perks.BUCKET_CAP.roundToInt()}%. They only change what Care pays, never what you write.",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
             }
         }
     }
@@ -209,10 +201,6 @@ fun HealPerksCard(model: AppModel) {
             }
             val shown = HealBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
-            Text(
-                "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Field Research pays. They never change a record, a total or a goal.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
         }
     }
 }
@@ -236,10 +224,6 @@ fun MintPerksCard(model: AppModel) {
             }
             val shown = MintBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
-            Text(
-                "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Ledger Research pays. They never change a record, a total or a goal.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
         }
     }
 }
@@ -263,10 +247,6 @@ fun HomePerksCard(model: AppModel) {
             }
             val shown = HomeBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
-            Text(
-                "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Habitat Discovery pays. They never change a record or a schedule.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
         }
     }
 }
@@ -290,10 +270,6 @@ fun LinkPerksCard(model: AppModel) {
             }
             val shown = LinkBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
-            Text(
-                "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Postcard Trail pays. They never change a record or a schedule.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
         }
     }
 }
@@ -309,14 +285,19 @@ fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Perks")
-            val asBuddy = buildList {
-                type.forEach { (b, v) -> add("${pct(v)} ${b.label()}") }
-                ability?.bucket?.let { add("${pct(ability.percent)} ${it.label()} (${p.ability}${ability.condition.label()?.let { c -> ", on $c" } ?: ""})") }
-                if (ability?.keepsFailedEgg == true) add("Magic Guard: a failed session keeps its egg once a week")
-                p.heldItem?.let { HeldItems.perks[it] }?.let { add("${pct(it.percent)} ${it.bucket.label()} (${Items.name(p.heldItem!!)})") }
+            val rows = buildList {
+                type.forEach { (b, v) -> if (v > 0) add(b.label() to pct(v)) }
+                ability?.bucket?.let { if (ability.percent > 0) add("${it.label()}, ${p.ability}${ability.condition.label()?.let { c -> ", on $c" } ?: ""}" to pct(ability.percent)) }
+                if (ability?.keepsFailedEgg == true) add("Magic Guard" to "Keeps a failed egg once a week")
+                p.heldItem?.let { HeldItems.perks[it] }?.let { if (it.percent > 0) add("${it.bucket.label()}, ${Items.name(p.heldItem!!)}" to pct(it.percent)) }
+                type.forEach { (b, v) -> if (v * Perks.ASSIST_SHARE > 0) add("${b.label()}, in a party" to pct(v * Perks.ASSIST_SHARE)) }
             }
-            Text("As your buddy: " + asBuddy.ifEmpty { listOf("none yet") }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
-            Text("In the party: " + type.entries.joinToString(", ") { (b, v) -> "${pct(v * Perks.ASSIST_SHARE)} ${b.label()}" }.ifEmpty { "none" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            rows.forEach { (name, value) ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text(name, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    Text(value, style = MaterialTheme.typography.bodyLarge)
+                }
+            }
 
             val held = p.heldItem
             ListRow(lead = { if (held != null) ItemIcon(held, size = Sizes.Icon) else ItemIcon("seal-bag", size = Sizes.Icon, description = null) }, trail = {

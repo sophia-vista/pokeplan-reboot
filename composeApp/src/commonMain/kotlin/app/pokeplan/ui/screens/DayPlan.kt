@@ -15,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -267,8 +268,12 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     val month = monthGrid(store.today, monthOffset, model.data.settings.weekStartsOnMonday)
     // A week is the calendar week (it starts on the day set in Settings), and the arrows page freely, back and forward.
     val firstDow = model.data.settings.weekStart
-    val weekFirst = app.pokeplan.plan.Streaks.weekStartOf(store.today, firstDow).plus(DatePeriod(days = weekOffset * 7))
-    val days = if (week) (0 until 7).map { weekFirst.plus(DatePeriod(days = it)) }
+    // On a phone the "week" shows three days at a time (from today, paging by three), so each column has room for a title.
+    val narrow = LocalWindowInfo.current.containerSize.width < 600 * LocalDensity.current.density
+    val span = if (narrow) 3 else 7
+    val weekFirst = if (narrow) store.today.plus(DatePeriod(days = weekOffset * span))
+    else app.pokeplan.plan.Streaks.weekStartOf(store.today, firstDow).plus(DatePeriod(days = weekOffset * 7))
+    val days = if (week) (0 until span).map { weekFirst.plus(DatePeriod(days = it)) }
     else listOf(store.today.plus(DatePeriod(days = offset)))
     // The days whose phone events are read: the grid's in a month.
     val range = if (mode == 2) month.days else days
@@ -290,7 +295,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     val firstHour: Int
     val endHour: Int
     if (week) {
-        val w = DayTimeline.week(tasks, days.first(), store.now, events = shownEvents)
+        val w = DayTimeline.week(tasks, days.first(), store.now, days = span, events = shownEvents)
         plans = w.days; tray = w.tray; undated = w.undated; firstHour = w.firstHour; endHour = w.endHour
     } else {
         val p = DayTimeline.build(tasks, days.first(), store.now, events = shownEvents)
@@ -337,13 +342,9 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                         else when (offset) { -1 -> "Yesterday"; 0 -> "Today"; 1 -> "Tomorrow"; else -> dayNames[days.first().dayOfWeek.ordinal] },
                         style = MaterialTheme.typography.titleSmall,
                     )
-                    Text(
-                        if (week) (when (weekOffset) { -1 -> "Last week"; 0 -> "This week"; 1 -> "Next week"; else -> "" }) else days.first().short(),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
                 }
-                ArrowButton("‹", if (week) "Earlier week" else "Day before", enabled = true) { if (week) weekOffset -= 1 else offset -= 1 }
-                ArrowButton("›", if (week) "Later week" else "Next day", enabled = true) { if (week) weekOffset += 1 else offset += 1 }
+                ArrowButton("‹", if (week) (if (narrow) "Earlier days" else "Earlier week") else "Day before", enabled = true) { if (week) weekOffset -= 1 else offset -= 1 }
+                ArrowButton("›", if (week) (if (narrow) "Later days" else "Later week") else "Next day", enabled = true) { if (week) weekOffset += 1 else offset += 1 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 Segmented(listOf("Day", "Week", "Month"), mode) { mode = it }
@@ -359,20 +360,13 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
 
             if (!week) {
                 DayStrip(store.today, offset, firstDow, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.isOn(day) } }) { offset = it }
-                val plan = plans.single()
-                val load = DayLoad.compute(plan.blocks.map { it.task }.filter { it.isOpen } + plan.tray, busyMinutes = plan.busyMinutes)
-                Text(
-                    "${duration(load.plannedMinutes)} planned · ${duration(load.freeMinutes)} awake" +
-                        if (load.level == DayLoad.Level.OVER) ". That's a lot, move something?" else "",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
             }
 
-            draft?.let { d -> NewEventPanel(d, days.size > 1, { draft = it }, { d.addTo(store); draft = null }, today = store.today) { draft = null } }
+            draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store); draft = null }, today = store.today) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
-            if (chosenEvent != null) EventPanel(model, chosenEvent, days.size > 1, { picked = it }) { picked = null }
+            if (chosenEvent != null) EventPanel(model, chosenEvent, { picked = it }) { picked = null }
 
-            Tray(tray, undated, picked, hint = chosen == null && chosenEvent == null && draft == null, pick, grid, ::drop)
+            Tray(tray + undated, picked, pick, grid, ::drop)
 
             // The calendar itself, on one panel: the days (in a week), the all-day row, then the hours.
             Column(
@@ -386,7 +380,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 if (week) WeekHeader(days, store.today) { day -> offset = store.today.daysUntil(day); mode = 0 }
                 AllDayRow(plans, picked, pick)
                 val drafted = draft?.let { Target(it.day, it.start, it.minutes) }
-                Hours(model, plans, firstHour, endHour, compact = week, picked, pick, ownShown.associateBy { it.id }, drafted, grid, ::drop) { day, hour ->
+                Hours(model, plans, firstHour, endHour, compact = week && !narrow, picked, pick, ownShown.associateBy { it.id }, drafted, grid, ::drop) { day, hour ->
                     val d = draft
                     if (d != null) draft = if (d.allDay) d.movedTo(day) else d.copy(day = day, start = hour * 60, minutes = PlanEvent.fit(hour * 60, d.minutes))
                     else {
@@ -599,50 +593,34 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
 }
 
 /**
- * The tasks still waiting for an hour, on one panel like Structured's inbox and Sunsama's backlog: those planned for the
- * day without a time, then those with no date at all, each a chip with its category's colour. [hint] says how to plan one.
+ * The tasks still waiting for an hour, on one panel like Structured's inbox and Sunsama's backlog: a wrapping run of chips,
+ * each with its category's colour.
  */
+// Help: hold a chip and drag it to an hour, or tap it, then an hour.
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Tray(tray: List<Task>, undated: List<Task>, picked: String?, hint: Boolean, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
-    if (tray.isEmpty() && undated.isEmpty()) return
+private fun Tray(tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
+    if (tasks.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text("To plan", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
-                Text("${tray.size + undated.size}", style = MaterialTheme.typography.bodyMedium)
+            Text("To plan", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                tasks.forEach { t -> key(t.id) {
+                    val anchor = remember { Anchor() }
+                    TrayChip(
+                        t, picked == t.id, { pick(t.id) },
+                        Modifier
+                            .alpha(if (grid.drag?.item?.id == t.id) 0.4f else 1f)
+                            .dragToPlan(
+                                t, anchor,
+                                onStart = { _, _ -> grid.drag = Drag(t.item(), resize = false, grabMinutes = 0, anchor.root(Offset.Zero)) },
+                                onMove = { grid.drag?.pointer = it },
+                                onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
+                            ),
+                    )
+                } }
             }
-            TrayGroup(if (undated.isEmpty()) null else "No time yet", tray, picked, pick, grid, drop)
-            TrayGroup("No date", undated, picked, pick, grid, drop)
-            if (hint) Text("Hold one and drag it to an hour, or tap it, then an hour.", style = MaterialTheme.typography.bodyMedium)
         }
-    }
-}
-
-@Composable
-private fun TrayGroup(label: String?, tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
-    if (tasks.isEmpty()) return
-    if (label != null) Text(label, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-    // One row that scrolls sideways, so a long tray never pushes the hours off the screen.
-    val scroll = rememberScrollState()
-    Box {
-    Row(Modifier.horizontalScroll(scroll), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        tasks.forEach { t -> key(t.id) {
-            val anchor = remember { Anchor() }
-            TrayChip(
-                t, picked == t.id, { pick(t.id) },
-                Modifier
-                    .alpha(if (grid.drag?.item?.id == t.id) 0.4f else 1f)
-                    .dragToPlan(
-                        t, anchor,
-                        onStart = { _, _ -> grid.drag = Drag(t.item(), resize = false, grabMinutes = 0, anchor.root(Offset.Zero)) },
-                        onMove = { grid.drag?.pointer = it },
-                        onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
-                    ),
-            )
-        } }
-    }
-    // More chips past the edge: the last one fades out, so a clipped chip reads as "scroll for more", not as a mistake.
-    if (scroll.canScrollForward) Box(Modifier.align(Alignment.CenterEnd).width(32.dp).height(Spacing.Target).background(Brush.horizontalGradient(listOf(Color.Transparent, Pixel.Panel))))
     }
 }
 

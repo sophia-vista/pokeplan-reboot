@@ -13,13 +13,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import app.pokeplan.app.Integrations
 import app.pokeplan.mint.AccountStatus
 import app.pokeplan.mint.Money
 import app.pokeplan.mint.StatementImport
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
-import app.pokeplan.ui.theme.ListRow
+import androidx.compose.material3.HorizontalDivider
+import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
@@ -32,7 +32,7 @@ import app.pokeplan.ui.theme.ModuleAccent
 
 /**
  * Mint → Import (INTEGRATIONS_AND_PRIVACY.md sections 7 and 14, MINT.md section 10): a statement file the player chooses, a preview with the columns they can correct,
- * rows kept or left out, and each import removable on its own. Below it, the honest status of every provider: none is connected.
+ * rows kept or left out, and each import removable on its own. Where no file can be chosen the page shows nothing (Mint hides its entry).
  */
 @Composable
 internal fun MintImportView(model: AppModel) {
@@ -50,26 +50,26 @@ internal fun MintImportView(model: AppModel) {
     var asking by remember { mutableStateOf<String?>(null) }
     val chosen = accounts.firstOrNull { it.id == accountId } ?: accounts.singleOrNull()
 
+    if (chooser == null) return
+    if (accounts.isEmpty()) {
+        EmptyState("Add an account first", null, icon = "member-card", action = "Add account" to { model.mintSection = MintSection.ACCOUNTS })
+        return
+    }
+    // Help: pick the account, then a CSV from your bank or e-wallet app; it is read on this phone, once, and not kept. Mint never asks for a password, PIN or code.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Import a statement")
-            if (chooser == null) Text("Choosing a file is not available on this device.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else if (accounts.isEmpty()) Text("Add an open account first. Imported rows go into one account.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else {
-                Text("Pick the account, then a CSV file from your bank or e-wallet app. The file is read on this phone, once, and not kept. Mint never asks for a password, PIN or code.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                accounts.chunked(2).forEach { pair ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        pair.forEach { a -> TabButton(a.name, chosen?.id == a.id, { accountId = a.id }, Modifier.weight(1f), key = ModuleAccent.MINT.accent) }
-                        if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-                    }
+            if (accounts.size > 1) accounts.chunked(2).forEach { pair ->
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    pair.forEach { a -> TabButton(a.name, chosen?.id == a.id, { accountId = a.id }, Modifier.weight(1f), key = ModuleAccent.MINT.accent) }
+                    if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
                 }
-                PixelButton(if (text == null) "Choose a file" else "Choose another file", {
-                    chooser.choose { name, body, problem ->
-                        if (body == null) note = problem ?: "That file could not be read."
-                        else { text = body; fileName = name.orEmpty(); columns = null; order = null; flipped = emptySet(); note = null }
-                    }
-                }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = chosen != null, compact = true)
             }
+            PixelButton(if (text == null) "Import a CSV" else "Choose another file", {
+                chooser.choose { name, body, problem ->
+                    if (body == null) note = problem ?: "That file could not be read."
+                    else { text = body; fileName = name.orEmpty(); columns = null; order = null; flipped = emptySet(); note = null }
+                }
+            }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = chosen != null)
             note?.let { Report(model, it) }
         }
     }
@@ -89,15 +89,15 @@ internal fun MintImportView(model: AppModel) {
                     Picker("What it was", header, cols.description) { columns = cols.copy(description = it) }
                     if (cols.debit == null && cols.credit == null) {
                         Picker("Amount", header, cols.amount) { columns = cols.copy(amount = it) }
-                        ToggleRow("Charges are shown as plus", cols.flip, detail = "Turn on for a card statement that lists purchases as positive amounts.") { columns = cols.copy(flip = it) }
+                        ToggleRow("Charges are shown as plus", cols.flip) { columns = cols.copy(flip = it) }
                         PixelButton("It has separate money out and money in columns", { columns = cols.copy(amount = null, debit = 0.coerceAtMost(header.lastIndex), credit = 1.coerceAtMost(header.lastIndex)) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     } else {
                         Picker("Money out", header, cols.debit) { columns = cols.copy(debit = it) }
                         Picker("Money in", header, cols.credit) { columns = cols.copy(credit = it) }
                         PixelButton("It has one amount column", { columns = cols.copy(debit = null, credit = null, amount = StatementImport.guess(header).amount ?: 0.coerceAtMost(header.lastIndex)) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     }
-                    Picker("Bank's reference (optional)", header, cols.reference) { columns = cols.copy(reference = it) }
-                    Text("Dates are written:", style = MaterialTheme.typography.bodyLarge)
+                    Picker("Bank's reference", header, cols.reference) { columns = cols.copy(reference = it) }
+                    SectionLabel("Dates are written")
                     StatementImport.DateOrder.entries.forEach { o ->
                         TabButton("${o.label}, like ${o.example}", read.order == o, { order = o }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
                     }
@@ -116,8 +116,9 @@ internal fun MintImportView(model: AppModel) {
                                 (if (preview.firstDay != null) " ${preview.firstDay} to ${preview.lastDay}." else ""),
                             style = MaterialTheme.typography.bodyLarge,
                         )
-                        if (preview.possible > 0) Text("A row that may match one of yours is left out unless you tap it. Mint never merges or deletes your own records.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        preview.rows.take(60).forEach { r ->
+                        // Help: a row that may match one of yours is left out unless you tapped it; Mint never merges or deletes your own records.
+                        preview.rows.take(60).forEachIndexed { i, r ->
+                            if (i > 0) HorizontalDivider(color = Pixel.Border)
                             val included = r.line in keep
                             val tag = when (r.state) {
                                 StatementImport.RowState.NEW -> if (included) "Add" else "Left out"
@@ -126,7 +127,7 @@ internal fun MintImportView(model: AppModel) {
                                 StatementImport.RowState.PROBLEM -> "Line ${r.line}"
                             }
                             val togglable = r.state == StatementImport.RowState.NEW || r.state == StatementImport.RowState.POSSIBLE
-                            ListRow(onClick = if (togglable) ({ flipped = if (r.line in flipped) flipped - r.line else flipped + r.line }) else null) {
+                            MintLine(onClick = if (togglable) ({ flipped = if (r.line in flipped) flipped - r.line else flipped + r.line }) else null) {
                                 if (r.state == StatementImport.RowState.PROBLEM) Text(r.problem, style = MaterialTheme.typography.bodyLarge)
                                 else {
                                     Text(r.description.ifBlank { "No description" }, style = MaterialTheme.typography.bodyLarge)
@@ -134,8 +135,8 @@ internal fun MintImportView(model: AppModel) {
                                 }
                             }
                         }
-                        if (preview.rows.size > 60) Text("…and ${preview.rows.size - 60} more rows, handled the same way.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        Text("Imported records are marked as imported, start unreviewed, and never earn a find. Reconciling still uses the records you wrote.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        if (preview.rows.size > 60) Text("+${preview.rows.size - 60} more", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        // Help: imported records are marked as imported, start unreviewed and never earn a find; reconciling still uses the records you wrote.
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             PixelButton(if (keep.isEmpty()) "Nothing to add" else "Add ${keep.size}", {
                                 note = mint.importStatement(preview, keep, fileName.ifBlank { "statement.csv" }).note
@@ -156,7 +157,7 @@ internal fun MintImportView(model: AppModel) {
                 PixelTitle("Earlier imports")
                 batches.forEach { b ->
                     val account = data.accounts.firstOrNull { it.id == b.accountId }?.name.orEmpty()
-                    ListRow {
+                    MintLine {
                         Text(b.label.ifBlank { "Statement" }, style = MaterialTheme.typography.bodyLarge)
                         Text("${b.importedMillis.shortDate()}  ·  $account  ·  ${b.count} records" + (if (b.unreviewed > 0) ", ${b.unreviewed} unreviewed" else ""), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     }
@@ -175,7 +176,6 @@ internal fun MintImportView(model: AppModel) {
         }
     }
 
-    Integrations.mint().forEach { IntegrationCard(it) }
 }
 
 /** Cycles through the file's columns, then "none". */

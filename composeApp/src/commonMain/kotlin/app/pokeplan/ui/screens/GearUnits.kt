@@ -65,7 +65,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search a unit or kind (lb, oven, feet, Mbps)")
+            PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search")
             if (query.isNotBlank()) {
                 val hits = UnitCatalog.search(query)
                 if (hits.isEmpty()) Text("Nothing by that name.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -88,7 +88,6 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
                 val starred = pairId in gear.unitFavorites
                 PixelButton(if (starred) "Starred" else "Star this pair", { store.changeGear { g -> g.copy(unitFavorites = if (starred) g.unitFavorites - pairId else (g.unitFavorites + pairId).takeLast(20)) } }, Modifier.weight(1f), if (starred) Pixel.Green else Pixel.InkSoft, compact = true)
             }
-            Text("${from.name} to ${to.name}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             val shown = result?.let { UnitCatalog.show(it, gear.unitDecimals) }
             Text(
                 if (shown == null) "Type a number" else "${UnitCatalog.show(parsed!!, gear.unitDecimals)} ${from.symbol} = $shown ${to.symbol}",

@@ -71,9 +71,8 @@ internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             if (torch != null) {
-                Text(if (on) "The flashlight is on." else "The phone's flashlight is off.", style = MaterialTheme.typography.bodyLarge)
                 PixelButton(if (on) "Turn off" else "Turn on", { sos = false; on = torch.set(!on); onUse() }, Modifier.fillMaxWidth(), if (on) Pixel.InkSoft else Pixel.Tone)
-            } else Text("This device has no flashlight, so the screen is the light.", style = MaterialTheme.typography.bodyLarge)
+            }
             PixelButton("Screen light", { screen = true; onUse() }, Modifier.fillMaxWidth(), Pixel.InkSoft)
             if (torch != null) {
                 if (!sos) {

@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,7 +31,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.pokeplan.app.Tutorials
-import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.mint.AccountStatus
 import app.pokeplan.mint.AccountType
 import app.pokeplan.mint.Budget
@@ -52,7 +55,6 @@ import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.DeviceGate
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
@@ -84,6 +86,29 @@ private val accent: androidx.compose.ui.graphics.Color @Composable get() = Modul
 
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
+
+/** A flat row for a list inside one box (rows are divided by [HorizontalDivider], never boxed): content at the left, [trail] at the right, one centre line. */
+@Composable
+internal fun MintLine(onClick: (() -> Unit)? = null, onClickLabel: String? = null, trail: @Composable () -> Unit = {}, content: @Composable () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target)
+            .let { if (onClick != null) it.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick) else it }
+            .padding(vertical = Spacing.S),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+    ) {
+        Column(Modifier.weight(1f)) { content() }
+        trail()
+    }
+}
+
+/** A label at the left and its value at the right. */
+@Composable
+internal fun MintValueRow(label: String, value: String, soft: Boolean = false) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        Text(label, Modifier.weight(1f), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge, color = if (soft) Pixel.InkSoft else Pixel.Ink)
+        Text(value, style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleSmall)
+    }
+}
 
 /** The line under Mint's card in Modules: how many accounts, or what it is for. Never an amount, so the Modules list shows no figure. */
 internal fun mintSubtitle(model: AppModel): String {
@@ -138,11 +163,11 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(MintSection.BUDGETS.name, MintSection.BUDGETS.icon, "Budgets", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) "optional" else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} active", tint = ModuleAccent.MINT.accent),
                     MenuEntry(MintSection.BILLS.name, MintSection.BILLS.icon, "Bills", billsDetail(model), tint = ModuleAccent.MINT.accent),
                     MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
-                    MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent),
+                ) + listOfNotNull(
+                    MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },
                     MenuEntry(MintSection.SETTINGS.name, MintSection.SETTINGS.icon, "Settings", "Ledger Research, privacy, your data", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.mintStartType = null; model.mintSection = MintSection.valueOf(key) }
-            LedgerLine(model)
             MintPartyPanel(model, openPokemon)
         }
     }
@@ -152,15 +177,6 @@ private fun billsDetail(model: AppModel): String {
     val today = model.store.today
     val open = MintRules.upcoming(model.mintData, today, 7)
     return if (model.mintData.bills.isEmpty()) "optional" else if (open.isEmpty()) "none due soon" else "${open.size} to settle"
-}
-
-@Composable
-private fun LedgerLine(model: AppModel) {
-    val on = model.mintData.settings.progression
-    Text(
-        if (on) "Ledger Research is on · Ledger Egg ${model.store.mintEggMeter()} of ${RewardEngine.MINT_EGG_METER_SIZE}" else "Ledger Research is off",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
 }
 
 // ----- Overview ---------------------------------------------------------------------------------------------------------
@@ -186,19 +202,19 @@ private fun OverviewCard(model: AppModel) {
     val position = MintRules.netPosition(data)
     val currency = data.settings.currency
     val available = MintRules.available(data, currency, today)
-    val upcoming = MintRules.upcoming(data, today, 14).take(3)
+    // One bill's next date is enough here.
+    val upcoming = MintRules.upcoming(data, today, 14).distinctBy { it.bill.id }.take(3)
+    val leadsWithAvailable = available.liquidMinor != 0L || available.billsCount > 0
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Overview")
-            position.forEach { (cur, minor) -> Text("Net position: ${mint.show(minor, cur)}", style = MaterialTheme.typography.titleSmall) }
-            if (available.liquidMinor != 0L || available.billsCount > 0) {
-                Text("Available: ${mint.show(available.availableMinor, currency)}", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    "Cash, banks and wallets ${mint.show(available.liquidMinor, currency)}" + if (available.billsCount > 0) ", less ${available.billsCount} bill${if (available.billsCount == 1) "" else "s"} in 14 days ${mint.show(available.billsMinor, currency)}" else "",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
+            if (leadsWithAvailable) {
+                Text(mint.show(available.availableMinor, currency), style = MaterialTheme.typography.titleLarge)
+                position.forEach { (cur, minor) -> MintValueRow("Net position", mint.show(minor, cur), soft = true) }
+            } else position.forEach { (cur, minor) -> Text(mint.show(minor, cur), style = MaterialTheme.typography.titleLarge) }
+            upcoming.forEach { o ->
+                MintValueRow(o.bill.name, if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(), soft = true)
             }
-            upcoming.forEach { o -> Text("${o.bill.name}: ${o.state.label.lowercase()}, ${o.dueDay.short()}", style = MaterialTheme.typography.bodyMedium) }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Expense", { model.mintStartType = TxType.EXPENSE; model.mintSection = MintSection.ACTIVITY }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
                 PixelButton("Income", { model.mintStartType = TxType.INCOME; model.mintSection = MintSection.ACTIVITY }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -224,35 +240,40 @@ private fun AccountsView(model: AppModel) {
     var group by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
     var open by remember { mutableStateOf<String?>(null) }
+    var adding by remember { mutableStateOf(data.accounts.isEmpty()) }
     fun save() {
         val minor = if (opening.isBlank()) 0L else Money.parse(opening, currency)
         if (minor == null) { message = "Check the opening balance." to NoticeTone.WARNING; return }
         val out = mint.addAccount(name, type, currency, minor, suffix = suffix, group = group)
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; name = ""; opening = ""; suffix = ""; group = ""; more = false; model.haptic() }
+        else { message = null; name = ""; opening = ""; suffix = ""; group = ""; more = false; adding = false; model.haptic() }
     }
     val balances = MintRules.balances(data)
     val shown = balances.filter { it.account.status == AccountStatus.ACTIVE } + balances.filter { it.account.status != AccountStatus.ACTIVE }
     if (shown.isNotEmpty()) TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            shown.forEach { b ->
+        Column {
+            shown.forEachIndexed { i, b ->
                 val a = b.account
-                ListRow(
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                MintLine(
                     trail = { Text(mint.show(b.postedMinor, a.currency), style = MaterialTheme.typography.titleSmall) },
                     onClick = { open = if (open == a.id) null else a.id }, onClickLabel = "Show options",
                 ) {
-                    Column {
-                        Text(a.name + if (a.suffix.isNotEmpty()) " ···${a.suffix}" else "", style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            listOf(a.type.label, a.group.takeIf { it.isNotEmpty() }, a.status.name.lowercase().takeIf { a.status != AccountStatus.ACTIVE }).filterNotNull().joinToString(" · ") +
-                                if (b.pendingMinor != 0L) " · pending ${mint.show(b.pendingMinor, a.currency)}" else "",
-                            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                        )
-                    }
+                    Text(a.name, style = MaterialTheme.typography.bodyLarge)
+                    val meta = listOfNotNull(
+                        if (a.suffix.isNotEmpty()) "···${a.suffix}" else a.type.label,
+                        a.status.name.lowercase().takeIf { a.status != AccountStatus.ACTIVE },
+                        "pending ${mint.show(b.pendingMinor, a.currency)}".takeIf { b.pendingMinor != 0L },
+                    ).joinToString(" · ")
+                    Text(meta, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
                 if (open == a.id) AccountOptions(model, a) { open = null }
             }
         }
+    }
+    if (!adding) {
+        PixelButton("Add account", { adding = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
+        return
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -266,14 +287,18 @@ private fun AccountsView(model: AppModel) {
             }
             PixelField(
                 opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
-                label = if (type.liability) "Amount owed now, optional" else "Balance now, optional", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                label = if (type.liability) "Amount owed now" else "Balance now", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
             PixelButton(if (more) "Fewer options" else "Group and last digits", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
-                PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group, optional", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
-                PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits, optional", singleLine = true, helper = "Never a full number, a PIN or a code.")
+                PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+                // Help: the last digits are never a full number, a PIN or a code.
+                PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits", singleLine = true)
             }
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = name.isNotBlank())
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Save", ::save, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank())
+                if (data.accounts.isNotEmpty()) PixelButton("Cancel", { adding = false; message = null }, Modifier.weight(1f), Pixel.InkSoft)
+            }
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -301,18 +326,18 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 AccountType.entries.filter { it.liability == a.type.liability }.forEach { t -> Chip(t.label, t == type, { type = t }) }
             }
-            if (locked) Text("${a.currency} stays, because this account has records. Everything else can change.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            // Help: the currency stays once the account has records.
+            if (!locked) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Money.common.take(6).forEach { c -> Chip(c, c == currency, { if (c != currency) { opening = Money.parse(opening.ifBlank { "0" }, currency)?.let { m -> Money.plain(m, c) } ?: opening; currency = c } }) }
             }
             PixelField(
                 opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
                 label = if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), helper = "Records stay as they are; the balance is worked out from this and them.",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
-            PixelField(institution, { institution = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Bank or provider, optional", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-            PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group, optional", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
-            PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits, optional", singleLine = true, helper = "Never a full number, a PIN or a code.")
+            PixelField(institution, { institution = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Bank or provider", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+            PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+            PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     if (minor == null) refused = "Check the balance."
@@ -361,6 +386,8 @@ private fun ActivityView(model: AppModel) {
     var payAt by remember { mutableStateOf<Long?>(null) }
     var more by remember { mutableStateOf(false) }
     var addingCategory by remember { mutableStateOf(false) }
+    var allCategories by remember { mutableStateOf(false) }
+    var showFilter by remember { mutableStateOf(false) }
     var payee by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
@@ -390,13 +417,13 @@ private fun ActivityView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                quickTypes.forEach { t -> Chip(t.label, t == type, { type = t; categoryId = null }) }
-            }
             PixelField(
-                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount ($currency)", singleLine = true,
+                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                quickTypes.forEach { t -> Chip(t.label, t == type, { type = t; categoryId = null; allCategories = false }) }
+            }
             SectionLabel(if (type == TxType.TRANSFER) "From" else "Account")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 open.forEach { a -> Chip(a.name, a.id == from?.id, { accountId = a.id; if (toId == a.id) toId = null }) }
@@ -413,18 +440,23 @@ private fun ActivityView(model: AppModel) {
                 }
             } else {
                 val kind = if (type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
+                val usable = data.categories.filter { it.kind == kind && !it.archived }
+                // The few used last come first; "More" opens the whole list.
+                val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
+                val top = (recent + usable).distinct().take(4).let { t -> usable.firstOrNull { it.id == categoryId }?.let { c -> if (c in t) t else t + c } ?: t }
+                val shownCategories = if (allCategories) usable else top
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Chip("None", categoryId == null, { categoryId = null })
-                    data.categories.filter { it.kind == kind && !it.archived }.forEach { c -> Chip(c.name, c.id == categoryId, { categoryId = c.id }) }
-                    Chip(if (addingCategory) "Cancel" else "New", addingCategory, { addingCategory = !addingCategory })
+                    shownCategories.forEach { c -> Chip(c.name, c.id == categoryId, { categoryId = if (categoryId == c.id) null else c.id }) }
+                    if (usable.size > top.size || allCategories) Chip(if (allCategories) "Fewer" else "More", false, { allCategories = !allCategories })
+                    if (allCategories) Chip(if (addingCategory) "Cancel" else "New", addingCategory, { addingCategory = !addingCategory })
                 }
                 if (addingCategory) NewCategoryRow(mint, kind) { categoryId = it.id; addingCategory = false }
             }
             PixelMomentField(payAt ?: model.store.nowMillis, { payAt = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
             PixelButton(if (more) "Fewer options" else "Payee and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
-                PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source, optional", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-                PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+                PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+                PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             }
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = amount.isNotBlank())
             message?.let { (text, tone) -> Report(model, text, tone) }
@@ -434,15 +466,21 @@ private fun ActivityView(model: AppModel) {
     if (data.transactions.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(query, { query = it.take(40); limit = PAGE }, Modifier.fillMaxWidth(), placeholder = "Search payee, note, category or amount", singleLine = true)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(query, { query = it.take(40); limit = PAGE }, Modifier.weight(1f), placeholder = "Search", singleLine = true)
+                PixelButton(filter?.label ?: "Filter", { showFilter = !showFilter }, color = Pixel.InkSoft, compact = true)
+            }
+            if (showFilter) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Chip("All", filter == null, { filter = null })
                 quickTypes.forEach { t -> Chip(t.label, filter == t, { filter = if (filter == t) null else t }) }
             }
             if (found.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            found.take(limit).forEach { t ->
-                TransactionRow(model, t, openId == t.id) { openId = if (openId == t.id) null else t.id }
-                if (openId == t.id) TransactionOptions(model, t) { openId = null }
+            Column {
+                found.take(limit).forEachIndexed { i, t ->
+                    if (i > 0) HorizontalDivider(color = Pixel.Border)
+                    TransactionRow(model, t, openId == t.id) { openId = if (openId == t.id) null else t.id }
+                    if (openId == t.id) TransactionOptions(model, t) { openId = null }
+                }
             }
             if (found.size > limit) PixelButton("Show ${minOf(PAGE, found.size - limit)} more", { limit += PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
@@ -464,14 +502,12 @@ private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onCli
     val to = data.accounts.firstOrNull { it.id == t.toAccountId }?.name
     val title = t.payee.ifBlank { category ?: t.type.label }
     val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
-    ListRow(
+    MintLine(
         trail = { Text(t.signed() + model.mint.show(t.amountMinor, t.currency), style = MaterialTheme.typography.titleSmall) },
         onClick = onClick, onClickLabel = if (open) "Hide options" else "Show options",
     ) {
-        Column {
-            Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-            Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 3)
-        }
+        Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+        Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 3)
     }
 }
 
@@ -489,7 +525,7 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
     var accountId by remember(t.id) { mutableStateOf(t.accountId) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (editing) {
-            PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount (${t.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true)
             PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
             PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When", nowKey = false)
@@ -555,30 +591,28 @@ private fun BudgetsView(model: AppModel) {
     var newAmount by remember { mutableStateOf("") }
     var newPeriod by remember { mutableStateOf(BudgetPeriod.MONTHLY) }
     var editMessage by remember { mutableStateOf<String?>(null) }
+    var adding by remember { mutableStateOf(false) }
     val currency = data.settings.currency
     val budgets = data.budgets.filter { it.status != PlanStatus.ARCHIVED }
     if (budgets.isNotEmpty()) TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            budgets.forEach { b ->
+        Column {
+            budgets.forEachIndexed { i, b ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
                 val p = MintRules.progress(data, b, today, model.data.settings.weekStart)
-                val label = data.categories.firstOrNull { it.id == b.categoryId }?.name ?: "Everything"
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                    ListRow(
-                        trail = { Text(if (b.status == PlanStatus.PAUSED) "paused" else "${p.percent ?: 0}%", style = MaterialTheme.typography.titleSmall) },
+                val label = (data.categories.firstOrNull { it.id == b.categoryId }?.name ?: "Everything") + if (b.period != BudgetPeriod.MONTHLY) " · ${b.period.label.lowercase()}" else ""
+                Column(Modifier.padding(vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    MintLine(
+                        trail = {
+                            Text(
+                                if (b.status == PlanStatus.PAUSED) "paused" else if (p.remainingMinor >= 0) "${mint.show(p.remainingMinor, b.currency)} left" else "${mint.show(-p.remainingMinor, b.currency)} over",
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                        },
                         onClick = { openId = if (openId == b.id) null else b.id; newAmount = Money.plain(b.plannedMinor, b.currency); newPeriod = b.period; editMessage = null }, onClickLabel = "Show options",
-                    ) {
-                        Column {
-                            Text("$label · ${b.period.label.lowercase()}", style = MaterialTheme.typography.bodyLarge)
-                            Text("${mint.show(p.spentMinor, b.currency)} of ${mint.show(b.plannedMinor, b.currency)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        }
-                    }
+                    ) { Text(label, style = MaterialTheme.typography.bodyLarge) }
                     PixelBar((p.percent ?: 0) / 100f, color = ModuleAccent.MINT.accent, label = "$label: ${p.percent ?: 0} percent used")
-                    Text(
-                        if (p.remainingMinor >= 0) "${mint.show(p.remainingMinor, b.currency)} left until ${p.endExclusive.short()}" else "${mint.show(-p.remainingMinor, b.currency)} over the plan",
-                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                    )
                     if (openId == b.id) {
-                        PixelField(newAmount, { newAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Planned amount (${b.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                        PixelField(newAmount, { newAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Planned amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             BudgetPeriod.entries.forEach { per -> Chip(per.label, per == newPeriod, { newPeriod = per }, Modifier.weight(1f)) }
                         }
@@ -598,6 +632,10 @@ private fun BudgetsView(model: AppModel) {
             }
         }
     }
+    if (!adding) {
+        PixelButton("New budget", { adding = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
+        return
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("New budget")
@@ -608,12 +646,12 @@ private fun BudgetsView(model: AppModel) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 BudgetPeriod.entries.forEach { p -> Chip(p.label, p == period, { period = p }, Modifier.weight(1f)) }
             }
-            PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Planned amount ($currency)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Planned amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             PixelButton("Save", {
                 val minor = Money.parse(amount, currency)
                 val out = minor?.let { mint.addBudget(it, currency, period, categoryId) }
                 message = if (minor == null) "Check the amount." else out?.refused
-                if (out?.record != null) { amount = ""; model.haptic() }
+                if (out?.record != null) { amount = ""; adding = false; model.haptic() }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = amount.isNotBlank())
             message?.let { Report(model, it, NoticeTone.WARNING) }
         }
@@ -643,24 +681,26 @@ private fun BillsView(model: AppModel) {
     var paidOn by remember { mutableStateOf<LocalDate?>(null) }
     var manage by remember { mutableStateOf(false) }
     var showSettled by remember { mutableStateOf(false) }
+    var adding by remember { mutableStateOf(false) }
     // Settling takes the occurrence off the list, so every settlement offers an undo.
     fun settle(o: Occurrence, status: SettleStatus, paid: Long, label: String) {
         val before = model.mintData
         if (mint.settle(o.bill.id, o.dueDay, status, paid, paidDay = paidOn ?: today)) { paidOn = null; openKey = null; model.offerUndo("$label: ${o.bill.name}") { mint.restore(before) } }
     }
     val currency = data.settings.currency
-    val upcoming = MintRules.upcoming(data, today, 45)
+    // Only the next unsettled date of each bill.
+    val upcoming = MintRules.upcoming(data, today, 45).distinctBy { it.bill.id }
     if (upcoming.isNotEmpty()) TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("To settle")
-            upcoming.forEach { o ->
+        Column {
+            upcoming.forEachIndexed { i, o ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
                 val key = o.bill.id + o.dueDay
                 OccurrenceRow(model, o, openKey == key) { openKey = if (openKey == key) null else key; partial = o.payment?.paidMinor?.let { Money.plain(it, o.bill.currency) }.orEmpty(); paidOn = null }
                 if (openKey == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
                     val full = o.remainingMinor ?: o.bill.expectedMinor
-                    Text("Marking a bill paid does not add a transaction; add one in Activity if you want the money to leave an account.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    if (full == null) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount paid (${o.bill.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                    else PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Paid so far, if only part (${o.bill.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    // Help: marking a bill paid does not add a transaction; add one in Activity if the money should leave an account.
+                    if (full == null) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount paid", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    else PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Paid so far", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     SectionLabel("Settled on")
                     PixelDateField(paidOn ?: today, today, ModuleAccent.MINT.accent, { paidOn = it }, presets = listOf("Today" to 0, "Yesterday" to -1), max = today)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -681,7 +721,8 @@ private fun BillsView(model: AppModel) {
     if (settled.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelButton(if (showSettled) "Hide settled" else "Settled lately (${settled.size})", { showSettled = !showSettled; openKey = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            if (showSettled) settled.forEach { o ->
+            if (showSettled) settled.forEachIndexed { i, o ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
                 val key = "settled" + o.bill.id + o.dueDay
                 val p = o.payment
                 OccurrenceRow(model, o, openKey == key, paid = true) {
@@ -691,7 +732,7 @@ private fun BillsView(model: AppModel) {
                 }
                 if (openKey == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
                     val minor = Money.parse(partial, o.bill.currency)
-                    PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount paid (${o.bill.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount paid", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     SectionLabel("Settled on")
                     PixelDateField(paidOn ?: today, today, ModuleAccent.MINT.accent, { paidOn = it }, presets = listOf("Today" to 0, "Yesterday" to -1), max = today)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -704,11 +745,13 @@ private fun BillsView(model: AppModel) {
             }
         }
     }
-    TextBox {
+    if (!adding) {
+        PixelButton("New bill", { adding = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
+    } else TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("New bill")
             PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-            PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount ($currency), blank if it changes", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", placeholder = "Varies", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Frequency.entries.forEach { f -> Chip(f.label, f == frequency, { frequency = f }) }
             }
@@ -720,7 +763,7 @@ private fun BillsView(model: AppModel) {
                 else {
                     val out = mint.addBill(name, currency, frequency, firstDue ?: today, minor)
                     message = out.refused
-                    if (out.record != null) { name = ""; amount = ""; firstDue = null; model.haptic() }
+                    if (out.record != null) { name = ""; amount = ""; firstDue = null; adding = false; model.haptic() }
                 }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = name.isNotBlank())
             message?.let { Report(model, it, NoticeTone.WARNING) }
@@ -728,16 +771,15 @@ private fun BillsView(model: AppModel) {
     }
     if (data.bills.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton(if (manage) "Hide your bills" else "Your bills (${data.bills.size})", { manage = !manage }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            if (manage) data.bills.forEach { b ->
-                ListRow(
+            PixelButton(if (manage) "Hide bills" else "All bills", { manage = !manage }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            if (manage) data.bills.forEachIndexed { i, b ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                MintLine(
                     trail = { Text(b.expectedMinor?.let { mint.show(it, b.currency) } ?: "varies", style = MaterialTheme.typography.titleSmall) },
                     onClick = { editId = if (editId == b.id) null else b.id; editName = b.name; editAmount = b.expectedMinor?.let { Money.plain(it, b.currency) }.orEmpty(); editFirst = b.firstDue; editFrequency = b.frequency }, onClickLabel = "Edit",
                 ) {
-                    Column {
-                        Text(b.name, style = MaterialTheme.typography.bodyLarge)
-                        Text("${b.frequency.label.lowercase()}${if (b.status != PlanStatus.ACTIVE) " · ${b.status.name.lowercase()}" else ""}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    }
+                    Text(b.name, style = MaterialTheme.typography.bodyLarge)
+                    Text("${b.frequency.label.lowercase()}${if (b.status != PlanStatus.ACTIVE) " · ${b.status.name.lowercase()}" else ""}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
                 if (editId == b.id) {
                     // The name and the amount can change (rent goes up). The first due day and how often can change until a payment is
@@ -745,14 +787,15 @@ private fun BillsView(model: AppModel) {
                     val scheduleOpen = data.billPayments.none { it.billId == b.id }
                     val minor = if (editAmount.isBlank()) null else Money.parse(editAmount, b.currency)
                     PixelField(editName, { editName = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-                    PixelField(editAmount, { editAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount (${b.currency}), blank if it changes", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    PixelField(editAmount, { editAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", placeholder = "Varies", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     if (scheduleOpen) {
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             Frequency.entries.forEach { f -> Chip(f.label, f == editFrequency, { editFrequency = f }) }
                         }
                         SectionLabel("First due")
                         PixelDateField(editFirst ?: b.firstDue, today, ModuleAccent.MINT.accent, { editFirst = it }, presets = listOf("Today" to 0, "In a week" to 7, "In a month" to 30))
-                    } else Text("Its schedule is fixed because payments are recorded. To change it, pause this bill and add a new one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
+                    // Help: the schedule is fixed once payments are recorded; to change it, pause this bill and add a new one.
                     PixelButton("Save", { if (mint.updateBill(b.copy(name = editName, expectedMinor = minor, firstDue = editFirst ?: b.firstDue, frequency = editFrequency)).let { r -> message = r.refused; r.record != null }) editId = null }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = editName.isNotBlank() && (editAmount.isBlank() || minor != null), compact = true)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -769,14 +812,20 @@ private fun BillsView(model: AppModel) {
 private fun OccurrenceRow(model: AppModel, o: Occurrence, open: Boolean, paid: Boolean = false, onClick: () -> Unit) {
     // A settled occurrence shows what was paid; one still to settle shows what is left.
     val amount = if (paid) o.payment?.paidMinor?.takeIf { o.state != OccurrenceState.SKIPPED } else o.remainingMinor ?: o.bill.expectedMinor
-    ListRow(
-        trail = { Text(amount?.let { model.mint.show(it, o.bill.currency) } ?: if (paid) "" else "varies", style = MaterialTheme.typography.titleSmall) },
+    val today = model.store.today
+    MintLine(
+        trail = {
+            // A bill still to settle shows when it is due at the right; a settled one shows what was paid.
+            Text(
+                if (paid) amount?.let { model.mint.show(it, o.bill.currency) }.orEmpty() else if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(),
+                style = MaterialTheme.typography.titleSmall,
+            )
+        },
         onClick = onClick, onClickLabel = if (open) "Hide options" else "Show options",
     ) {
-        Column {
-            Text(o.bill.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-            Text("${o.state.label} · ${o.dueDay.short()}", style = MaterialTheme.typography.bodyMedium, color = if (o.state == OccurrenceState.OVERDUE) Pixel.Warning else Pixel.InkSoft)
-        }
+        Text(o.bill.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+        val line = if (paid) "${o.state.label} · ${o.dueDay.short()}" else amount?.let { model.mint.show(it, o.bill.currency) } ?: "varies"
+        Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
 }
 
@@ -797,13 +846,13 @@ private fun MintReviewView(model: AppModel) {
             PixelTitle("This month")
             if (data.transactions.none { it.day >= from && it.day < end && it.currency == currency }) Text("Nothing recorded in $currency yet.", style = MaterialTheme.typography.bodyLarge)
             else {
-                Text("Money in: ${mint.show(earned, currency)}", style = MaterialTheme.typography.bodyLarge)
-                Text("Spent: ${mint.show(spent.coerceAtLeast(0), currency)}", style = MaterialTheme.typography.bodyLarge)
-                Text("Difference: ${mint.show(earned - spent, currency)}", style = MaterialTheme.typography.bodyLarge)
+                MintValueRow("Money in", mint.show(earned, currency))
+                MintValueRow("Spent", mint.show(spent.coerceAtLeast(0), currency))
+                MintValueRow("Difference", mint.show(earned - spent, currency))
+                // Help: transfers between your accounts are left out; pending and excluded records are too.
                 MintRules.spendingByCategory(data, from, end, currency).take(6).forEach { (id, minor) ->
-                    Text("${data.categories.firstOrNull { it.id == id }?.name ?: "No category"}: ${mint.show(minor, currency)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    MintValueRow(data.categories.firstOrNull { it.id == id }?.name ?: "No category", mint.show(minor, currency), soft = true)
                 }
-                Text("Calculated from the records on this phone. Transfers between your accounts are left out; pending and excluded records are too.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
     }
@@ -813,11 +862,6 @@ private fun MintReviewView(model: AppModel) {
             PixelTitle("Weekly review")
             val first = model.data.settings.weekStart
             val weekDone = data.reviews.any { MintRules.weekStartOf(it.day, first) == MintRules.weekStartOf(today, first) }
-            val soon = MintRules.upcoming(data, today, 7)
-            Text(
-                "${data.accounts.count { it.status == AccountStatus.ACTIVE }} open accounts · ${soon.size} bill${if (soon.size == 1) "" else "s"} to settle this week · ${data.budgets.count { it.status == PlanStatus.ACTIVE }} budgets",
-                style = MaterialTheme.typography.bodyLarge,
-            )
             PixelButton(if (weekDone) "Reviewed this week" else "Finish this week's review", { mint.finishReview(); model.effect(Sfx.ITEM_GET); model.say("Saved.") }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = !weekDone && data.accounts.isNotEmpty())
         }
     }
@@ -842,10 +886,10 @@ private fun ReconcileCard(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 open.forEach { a -> Chip(a.name, a.id == account.id, { accountId = a.id; difference = null; message = null }) }
             }
-            Text("Mint has ${mint.show(book, account.currency)}", style = MaterialTheme.typography.bodyLarge)
+            MintValueRow("In Mint", mint.show(book, account.currency))
             PixelField(
                 statement, { statement = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); difference = null }, Modifier.fillMaxWidth(),
-                label = "Your statement says (${account.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                label = "Your statement says", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
             val parsed = Money.parse(statement, account.currency)
             PixelButton("Compare", {
@@ -855,7 +899,8 @@ private fun ReconcileCard(model: AppModel) {
                 else { difference = diff; message = null }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = parsed != null)
             difference?.let { diff ->
-                Text("The statement is ${mint.show(kotlin.math.abs(diff), account.currency)} ${if (diff > 0) "higher" else "lower"} than Mint. Accepting records the difference as a balance adjustment; nothing else changes.", style = MaterialTheme.typography.bodyLarge)
+                Text("The statement is ${mint.show(kotlin.math.abs(diff), account.currency)} ${if (diff > 0) "higher" else "lower"} than Mint.", style = MaterialTheme.typography.bodyLarge)
+                // Help: accepting records the difference as a balance adjustment; nothing else changes.
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton("Accept the difference", {
                         parsed?.let { mint.reconcile(account.id, it, acceptAdjustment = true); model.effect(Sfx.ITEM_GET) }
@@ -879,22 +924,16 @@ private fun MintSettingsView(model: AppModel) {
     var note by remember { mutableStateOf<String?>(null) }
     var asking by remember { mutableStateOf<MintKinds?>(null) }
     var askingAll by remember { mutableStateOf(false) }
+    // Help: Ledger Research can find a Ledger Egg from reconciling an account or finishing the weekly review; spending, income and balances never earn anything.
+    // Help: bill reminders are off by default, one per due bill, never show an amount and never mark a bill paid; quiet hours and focus sessions hold them back.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Ledger Research")
-            ToggleRow(
-                "Find Pokémon from reviews", settings.progression,
-                detail = "On by default. Reconciling an account and finishing the weekly review can find a Ledger Egg. Spending, income, balances and every amount never earn anything, and nothing about your money leaves Mint.",
-            ) { mint.setProgression(it) }
+            ToggleRow("Ledger Research", settings.progression) { mint.setProgression(it) }
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Bill reminders")
-            ToggleRow(
-                "Remind me about bills", settings.billReminders,
-                detail = "Off by default. One reminder for each bill that is due, never a daily nag for one that is late. It never shows an amount, and it never marks a bill paid; you do that in Mint.",
-            ) { mint.setBillReminders(it) }
+            ToggleRow("Bill reminders", settings.billReminders) { mint.setBillReminders(it) }
             if (settings.billReminders) {
                 SectionLabel("How early")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -904,8 +943,8 @@ private fun MintSettingsView(model: AppModel) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     listOf(8, 9, 12, 18, 20).forEach { h -> Chip("${h.toString().padStart(2, '0')}:00", h == settings.billReminderHour, { mint.setBillReminderHour(h) }) }
                 }
-                Text("Your quiet hours and focus sessions still hold a reminder back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                ToggleRow("Name the bill", settings.billReminderNames, detail = "After you unlock your phone it says which bill. The lock screen always says only that a bill is coming up.") { mint.setBillReminderNames(it) }
+                // Help: with "Name the bill" on, the notification names the bill after the phone is unlocked; the lock screen only says a bill is coming up.
+                ToggleRow("Name the bill", settings.billReminderNames) { mint.setBillReminderNames(it) }
             }
         }
     }
@@ -913,15 +952,12 @@ private fun MintSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Privacy")
-            ToggleRow("Hide amounts", settings.hideValues, detail = "Every amount in Mint shows as dots.") { mint.setHideValues(it) }
+            ToggleRow("Hide amounts", settings.hideValues) { mint.setHideValues(it) }
             model.gate?.let { gate ->
-                if (gate.available() || settings.gate) ToggleRow(
-                    "Ask for my screen lock", settings.gate,
-                    detail = "Mint stays closed until your phone's own lock (PIN, pattern, password or fingerprint) opens it, and closes again after you leave. It does not change how your records are kept, and it cannot lock you out of them.",
-                ) { on ->
+                if (gate.available() || settings.gate) ToggleRow("Ask for my screen lock", settings.gate) { on ->
                     if (!on) mint.setGate(false)
                     else gate.authenticate { ok -> if (ok) { mint.setGate(true); model.moduleUnlockedAt[Module.MINT.name] = model.store.nowMillis } }
-                } else Text("Set a screen lock on this phone first, and Mint can ask for it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
             }
             PixelTitle("Currency")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -932,17 +968,14 @@ private fun MintSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Your data")
-            Text(
-                "Your records stay on this phone. Export what you choose as a file you can read (amounts are whole minor units, like centavos, with their currency), or erase one kind at a time. Erasing Mint never touches your Pokémon, your Poké, your Bag or the other modules.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
+            // Help: exports are files you can read (amounts are whole minor units, like centavos, with their currency); erasing Mint never touches Pokémon, Poké, the Bag or other modules.
             val files = model.files
             if (files != null) {
                 PixelButton("Export everything", { note = files.save("pokelife-mint.json", mint.export()) }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     MintKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-mint-${k.name.lowercase()}.json", mint.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }
-            } else Text("Exporting is not available on this device.", style = MaterialTheme.typography.bodyMedium)
+            }
             note?.let { Report(model, it) }
             MintKinds.entries.forEach { k ->
                 if (asking == k) Confirm(
@@ -954,7 +987,6 @@ private fun MintSettingsView(model: AppModel) {
             else PixelButton("Erase all Mint records", { askingAll = true; asking = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
         }
     }
-    Text("Statement files are under Import. No bank or e-wallet is connected, and Mint is complete without one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
 /** A name field and an Add key for a new category of [kind]; [onAdded] gets it (the entry form selects it). */
@@ -978,6 +1010,7 @@ private fun CategoriesBox(model: AppModel) {
     var editing by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf("") }
     var deleting by remember { mutableStateOf<String?>(null) }
+    var openId by remember { mutableStateOf<String?>(null) }
     var note by remember { mutableStateOf<String?>(null) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -986,24 +1019,29 @@ private fun CategoriesBox(model: AppModel) {
                 Chip("Spending", kind == CategoryKind.EXPENSE, { kind = CategoryKind.EXPENSE }, Modifier.weight(1f))
                 Chip("Income", kind == CategoryKind.INCOME, { kind = CategoryKind.INCOME }, Modifier.weight(1f))
             }
-            data.categories.filter { it.kind == kind }.sortedBy { it.archived }.forEach { c ->
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    if (editing == c.id) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelField(draft, { draft = it.take(MintRules.NAME_MAX) }, Modifier.weight(1f), singleLine = true)
-                            PixelButton("Save", { mint.renameCategory(c.id, draft); editing = null }, color = ModuleAccent.MINT.accent, enabled = draft.isNotBlank())
-                        }
-                    } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (c.archived) "${c.name} (put away)" else c.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (c.archived) Pixel.InkSoft else Pixel.Ink)
-                        PixelButton("Rename", { editing = c.id; draft = c.name; deleting = null }, color = Pixel.InkSoft, compact = true)
-                        PixelButton(if (c.archived) "Bring back" else "Put away", { mint.setCategoryArchived(c.id, !c.archived) }, color = Pixel.InkSoft, compact = true)
-                        PixelButton("Delete", { deleting = c.id; note = null }, color = Pixel.Danger, compact = true)
+            Column {
+                data.categories.filter { it.kind == kind }.sortedBy { it.archived }.forEachIndexed { i, c ->
+                    if (i > 0) HorizontalDivider(color = Pixel.Border)
+                    // A category is a row; a tap opens its actions below it.
+                    MintLine(onClick = { openId = if (openId == c.id) null else c.id; editing = null; deleting = null }, onClickLabel = "Show options") {
+                        Text(if (c.archived) "${c.name} (put away)" else c.name, style = MaterialTheme.typography.bodyLarge, color = if (c.archived) Pixel.InkSoft else Pixel.Ink)
                     }
-                    if (deleting == c.id) {
-                        Text("Delete ${c.name}?", style = MaterialTheme.typography.bodyLarge)
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            PixelButton("Delete", { note = mint.deleteCategory(c.id); deleting = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
-                            PixelButton("Keep it", { deleting = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    if (openId == c.id) Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        if (editing == c.id) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                                PixelField(draft, { draft = it.take(MintRules.NAME_MAX) }, Modifier.weight(1f), singleLine = true)
+                                PixelButton("Save", { mint.renameCategory(c.id, draft); editing = null; openId = null }, color = ModuleAccent.MINT.accent, enabled = draft.isNotBlank())
+                            }
+                        } else if (deleting == c.id) {
+                            Text("Delete ${c.name}?", style = MaterialTheme.typography.bodyLarge)
+                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                                PixelButton("Delete", { note = mint.deleteCategory(c.id); deleting = null; openId = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                                PixelButton("Keep it", { deleting = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            }
+                        } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelButton("Rename", { editing = c.id; draft = c.name; deleting = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            PixelButton(if (c.archived) "Bring back" else "Put away", { mint.setCategoryArchived(c.id, !c.archived); openId = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            PixelButton("Delete", { deleting = c.id; note = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
                         }
                     }
                 }

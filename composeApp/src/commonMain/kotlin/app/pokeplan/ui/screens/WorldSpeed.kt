@@ -83,20 +83,17 @@ internal fun ExpeditionOverview(model: AppModel) {
                         val floor = (trip.floorsClimbed % (dungeon?.floors ?: 1)) + 1
                         "Exploring ${dungeon?.name ?: "somewhere"}, floor $floor of ${dungeon?.floors ?: "?"} ($names)"
                     }
-                    team.members.isEmpty() -> "Empty. Choose a team below."
+                    team.members.isEmpty() -> "Empty"
                     else -> "Ready at home ($names)"
                 }
                 Text("Team ${team.id}: $line", style = MaterialTheme.typography.bodyMedium)
             }
             if (Missions.boardOpen(world)) {
                 val ready = world.missions.count { it.done }
-                Text("Jobs: ${world.missions.size} of ${Missions.MAX_ACTIVE} taken" + if (ready > 0) ", $ready ready to report." else ".", style = MaterialTheme.typography.bodyMedium, color = if (ready > 0) Pixel.Green else Pixel.InkSoft)
+                if (ready > 0) Text("Jobs: $ready ready to report", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             }
             val waiting = world.finds.size
-            Text(
-                if (waiting == 0) "No Pokémon are waiting to be recruited." else "$waiting ${if (waiting == 1) "Pokémon is" else "Pokémon are"} waiting to be recruited: open Finds and Bag.",
-                style = MaterialTheme.typography.bodyMedium, color = if (waiting == 0) Pixel.InkSoft else Pixel.Green,
-            )
+            if (waiting > 0) Text("$waiting waiting to be recruited", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
         }
     }
 }
@@ -113,10 +110,7 @@ internal fun WorldReportCard(model: AppModel) {
     if (gone) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Since you last looked", style = MaterialTheme.typography.titleSmall)
-            val where = report.byDungeon.entries.joinToString(", ") { (id, n) -> "${Dungeons.byId(id)?.name ?: id} $n" }
-            Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed", style = MaterialTheme.typography.bodyLarge)
-            Text("$where. ${report.xp} Exploration XP${if (report.memberXp > 0) ", ${report.memberXp} XP for each Pokémon on a team" else ""}.", style = MaterialTheme.typography.bodyMedium)
+            Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed", style = MaterialTheme.typography.titleSmall)
             // The haul at a glance, with the games' own art: the coin for Poké, a berry, and a box for each treasure tier.
             if (report.poke > 0 || report.berries > 0 || report.treasure.isNotEmpty()) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (report.poke > 0) {
@@ -132,28 +126,9 @@ internal fun WorldReportCard(model: AppModel) {
                     Text("x$n", style = MaterialTheme.typography.bodyLarge)
                 }
             }
-            if (report.milestones.isNotEmpty()) Text(
-                "First time on a floor: " + report.milestones.joinToString("; ") { (id, r) ->
-                    "${Dungeons.byId(id)?.name ?: id}: " + listOfNotNull(r.itemId?.let { "${app.pokeplan.core.pokemon.Items.name(it)} x${r.count}" }, r.poke.takeIf { it > 0 }?.let { "$it Poké" }).joinToString(", ")
-                },
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            if (report.treasure.isNotEmpty()) Text("Open treasure boxes in Finds.", style = MaterialTheme.typography.bodyMedium)
-            if (report.setbacks > 0) Text("${report.setbacks} ${if (report.setbacks == 1) "floor was" else "floors were"} a setback: half the Poké and Exploration XP, no treasure or finds. A stronger team clears them in full.", style = MaterialTheme.typography.bodyMedium)
-            report.retreats.distinct().forEach { id -> Text("A team turned back in ${Dungeons.byId(id)?.name ?: id} and came home safely. Nothing was lost; send it again, or a stronger team.", style = MaterialTheme.typography.bodyMedium) }
-            if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}.", style = MaterialTheme.typography.bodyMedium)
-            if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}. Claim them on the board.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-            if (report.eventsOpened > 0 || report.eventsPassed > 0) Text(
-                buildString {
-                    if (report.eventsOpened > 0) append("${report.eventsOpened} side paths opened with field moves")
-                    if (report.eventsOpened > 0 && report.eventsPassed > 0) append("; ")
-                    if (report.eventsPassed > 0) append("${report.eventsPassed} passed by (no one who could open them)")
-                    append(".")
-                },
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            if (report.guardianFaced) Text("A Guardian was faced. Its story is complete.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-            if (report.finds.isNotEmpty()) Text("Waiting to be recruited: ${report.finds.joinToString(", ") { app.pokeplan.core.dex.Dex.species(it).name }}. They stay in Finds until you decide.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}", style = MaterialTheme.typography.bodyMedium)
+            if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (report.finds.isNotEmpty()) Text("Waiting to be recruited: ${report.finds.joinToString(", ") { app.pokeplan.core.dex.Dex.species(it).name }}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             PixelButton("OK", { model.store.worldReportDismiss(); gone = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }

@@ -3,6 +3,7 @@ package app.pokeplan.ui.screens
 import app.pokeplan.ui.theme.Sizes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,8 +45,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-private const val NOT_SECURE = "Everyday randomness for choosing a dinner or who goes first. It is not secure and not for gambling or anything that has to be provably fair."
-
 /**
  * The Picker: a list you keep on this phone, each option with a weight (1 to 10), edited in place and moved up or down; pick one or several without
  * repeats, skip the last pick, shuffle the order, and (only if you turn it on) keep the last picks. The result is announced to a screen reader.
@@ -61,6 +60,7 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
     var picking by remember { mutableStateOf(false) }
     var skipLast by remember { mutableStateOf(true) }
     var editing by remember { mutableStateOf<Int?>(null) }
+    var selected by remember { mutableStateOf<Int?>(null) }
     var editText by remember { mutableStateOf("") }
     var count by remember { mutableStateOf(1) }
     val reduce = model.data.settings.reduceMotion
@@ -101,17 +101,17 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
                     }
                 } else {
                     val weight = Randomizer.weightOf(option, gear.pickerWeights)
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Column(Modifier.fillMaxWidth().clickable { selected = if (selected == i) null else i }, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                         Text(option + if (weight > 1) "  (x$weight)" else "", Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyLarge)
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            PixelIconButton("pencil", "Edit", { editing = i; editText = option }, Pixel.InkSoft)
-                            PixelIconButton("arrow-up", "Up", { if (i > 0) store.setPickerOptions(options.toMutableList().also { it.add(i - 1, it.removeAt(i)) }) }, Pixel.InkSoft, enabled = i > 0)
-                            PixelIconButton("arrow-down", "Down", { if (i < options.lastIndex) store.setPickerOptions(options.toMutableList().also { it.add(i + 1, it.removeAt(i)) }) }, Pixel.InkSoft, enabled = i < options.lastIndex)
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            PixelIconButton("minus", "Less likely", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight - 1).coerceAtLeast(1))) } }, Pixel.InkSoft, enabled = weight > 1)
-                            PixelIconButton("plus", "More", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight + 1).coerceAtMost(Randomizer.MAX_WEIGHT))) } }, Pixel.InkSoft, enabled = weight < Randomizer.MAX_WEIGHT)
-                            PixelIconButton("trash", "Remove", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights - option) }; store.setPickerOptions(options - option) }, Pixel.InkSoft)
+                        if (selected == i) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                PixelIconButton("pencil", "Edit", { editing = i; editText = option }, Pixel.InkSoft)
+                                PixelIconButton("arrow-up", "Up", { if (i > 0) { store.setPickerOptions(options.toMutableList().also { it.add(i - 1, it.removeAt(i)) }); selected = i - 1 } }, Pixel.InkSoft, enabled = i > 0)
+                                PixelIconButton("arrow-down", "Down", { if (i < options.lastIndex) { store.setPickerOptions(options.toMutableList().also { it.add(i + 1, it.removeAt(i)) }); selected = i + 1 } }, Pixel.InkSoft, enabled = i < options.lastIndex)
+                                PixelIconButton("minus", "Less likely", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight - 1).coerceAtLeast(1))) } }, Pixel.InkSoft, enabled = weight > 1)
+                                PixelIconButton("plus", "More", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight + 1).coerceAtMost(Randomizer.MAX_WEIGHT))) } }, Pixel.InkSoft, enabled = weight < Randomizer.MAX_WEIGHT)
+                                PixelIconButton("trash", "Remove", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights - option) }; store.setPickerOptions(options - option); selected = null }, Pixel.InkSoft)
+                            }
                         }
                     }
                 }
@@ -131,7 +131,6 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
             PixelButton("Shuffle the order", { store.setPickerOptions(Randomizer.shuffle(options, Random)) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true, enabled = options.size >= 2)
             PixelButton(if (gear.pickerHistoryOn) "Keeping the last picks" else "Not keeping the last picks", { store.changeGear { it.copy(pickerHistoryOn = !it.pickerHistoryOn, pickerHistory = if (it.pickerHistoryOn) emptyList() else it.pickerHistory) } }, Modifier.fillMaxWidth(), if (gear.pickerHistoryOn) Pixel.Green else Pixel.InkSoft, compact = true)
             if (gear.pickerHistoryOn && gear.pickerHistory.isNotEmpty()) Text("Lately: " + gear.pickerHistory.take(8).joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            Text(NOT_SECURE, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -162,7 +161,7 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
             Box(Modifier.height(120.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 ItemIcon("bottle-cap", Modifier.size(Sizes.SpriteL).graphicsLayer { rotationX = spin.value }, size = Sizes.SpriteL, description = "Coin")
             }
-            Text(side ?: "Flip it", Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.headlineSmall)
+            side?.let { Text(it, Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.headlineSmall) }
             PixelButton(if (flipping) "Flipping" else "Toss the coin", {
                 if (!flipping) scope.launch {
                     flipping = true
@@ -195,7 +194,6 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
             rolled?.let { Text(it, Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.titleMedium) }
             PixelButton(if (historyOn) "Keeping the last rolls" else "Not keeping the last rolls", { historyOn = !historyOn; if (!historyOn) store.changeGear { it.copy(diceHistory = emptyList()) } }, Modifier.fillMaxWidth(), if (historyOn) Pixel.Green else Pixel.InkSoft, compact = true)
             if (historyOn) gear.diceHistory.take(8).forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-            Text(NOT_SECURE, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }

@@ -58,7 +58,6 @@ internal fun GrowthView(model: AppModel) {
     var days by remember { mutableStateOf(7) }
     val wheel = model.store.wheel(days)
     val trend = model.store.trend(6)
-    val weekStart = if (model.data.settings.weekStartsOnMonday) "Monday" else "Sunday"
 
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         growthRanges.forEach { d -> TabButton("$d days", d == days, { days = d }, Modifier.weight(1f)) }
@@ -76,20 +75,15 @@ internal fun GrowthView(model: AppModel) {
                     },
                     style = MaterialTheme.typography.bodyLarge,
                 )
-                Text("From ${acc.samples} finished tasks with an estimate and focus time, all time.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Where your effort went")
-            Text(
-                "The last $days days, today included: tasks finished and minutes focused in each area. The share counts " +
-                    "${Insights.MINUTES_PER_TASK_POINT} minutes of focus as one task; focus without a task counts as Personal.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
-            // Only the areas with something in them get a row; the quiet ones are named on one line.
-            val (busy, quiet) = Category.entries.partition { wheel.score(it) > 0 }
+            // Help: the share counts ${"$"}{Insights.MINUTES_PER_TASK_POINT} minutes of focus as one task; focus without a task counts as Personal.
+            // Only the areas with something in them get a row.
+            val busy = Category.entries.filter { wheel.score(it) > 0 }
             if (busy.isEmpty()) Text("Nothing finished in the last $days days yet.", style = MaterialTheme.typography.bodyLarge)
             busy.forEach { c ->
                 val tasks = wheel.tasksDone[c] ?: 0
@@ -106,18 +100,15 @@ internal fun GrowthView(model: AppModel) {
                     Text("${plural(tasks, "task")}, $minutes min", Modifier.padding(start = 92.dp), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
                 }
             }
-            if (busy.isNotEmpty() && quiet.isNotEmpty()) {
-                Text("Nothing yet in ${quiet.joinToString { it.label }}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            }
         }
     }
     WeekBars(
-        "Tasks finished per week", "Tasks ticked off in each of the last 6 weeks (weeks start on $weekStart).",
+        "Tasks finished per week",
         trend, { it.tasksDone }, { it.toString() }, Pixel.Tone,
     )
     WeekBars(
-        "Focus per week", "Minutes from finished sessions only; a session that went cold doesn't count.",
-        trend, { it.focusMinutes }, { if (it >= 60) "${it / 60}h ${it % 60}m" else "${it}m" }, Pixel.Green,
+        "Focus per week",
+        trend, { it.focusMinutes }, { if (it >= 60) "${it / 60}h ${it % 60}m" else "${it}m" }, Pixel.Tone,
     )
     GoalsSummary(model)
 }
@@ -125,12 +116,11 @@ internal fun GrowthView(model: AppModel) {
 /** A small bar chart of the last weeks, with the number above each bar and the week's first day below it. */
 @Composable
 private fun WeekBars(
-    title: String, note: String, weeks: List<Insights.WeekPoint>, value: (Insights.WeekPoint) -> Int, label: (Int) -> String, color: Color,
+    title: String, weeks: List<Insights.WeekPoint>, value: (Insights.WeekPoint) -> Int, label: (Int) -> String, color: Color,
 ) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             val max = (weeks.maxOfOrNull(value) ?: 0).coerceAtLeast(1)
             Row(Modifier.fillMaxWidth().height(130.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
                 weeks.forEachIndexed { i, w ->
@@ -154,22 +144,15 @@ private fun WeekBars(
 @Composable
 private fun GoalsSummary(model: AppModel) {
     val goals = model.data.goals
+    if (goals.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Goal progress")
-            if (goals.isEmpty()) {
-                Text("No goals yet. Add one under Plan, Goals.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                return@Column
-            }
-            Text(
-                "${goals.count { it.completedAtMillis != null }} of ${plural(goals.size, "goal")} reached. Progress is milestones done (or linked tasks, for a goal without milestones).",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
             goals.filter { it.completedAtMillis == null }.take(5).forEach { g ->
                 val pct = (GoalRules.progress(g, model.data.tasks) * 100).roundToInt()
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text(g.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
-                    Box(Modifier.width(96.dp)) { PixelBar(pct / 100f, color = Pixel.Warning) }
+                    Box(Modifier.width(96.dp)) { PixelBar(pct / 100f, color = Pixel.Tone) }
                     Text("$pct%", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium)
                 }
             }
@@ -215,9 +198,7 @@ internal fun GoalsView(model: AppModel) {
             }
         }
     }
-    if (model.data.goals.isEmpty()) {
-        TextBox { Text("Goals are bigger aims. Break one into small milestones and each finished one earns a Super Candy.", style = MaterialTheme.typography.bodyLarge) }
-    }
+    // Help: goals are bigger aims; break one into small milestones and each finished one earns a Super Candy.
     model.data.goals.forEach { g ->
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -237,8 +218,7 @@ internal fun GoalsView(model: AppModel) {
                 // The words beside the bar say how close the goal is; the nearer it looks, the likelier it gets finished.
                 val done = g.milestones.count { it.isDone }
                 val progress = "$done of ${g.milestones.size} milestones"
-                PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Green, label = progress)
-                if (g.milestones.isNotEmpty()) Text(progress, style = MaterialTheme.typography.bodyMedium)
+                PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Tone, label = progress)
                 g.milestones.forEach { m ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
@@ -271,7 +251,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
     var target by remember(g.id) { mutableStateOf(g.targetDate) }
     val names = remember(g.id) { mutableStateMapOf<String, String>().apply { g.milestones.forEach { put(it.id, it.title) } } }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
+        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Title")
         FieldLabel("Category")
         CategoryChips(category) { category = it ?: category }
         FieldLabel("Target date")
@@ -281,7 +261,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
         )
         g.milestones.forEach { m ->
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(names[m.id].orEmpty(), { names[m.id] = it }, Modifier.weight(1f), singleLine = true, label = "Milestone")
+                PixelField(names[m.id].orEmpty(), { names[m.id] = it }, Modifier.weight(1f), singleLine = true, placeholder = "Milestone")
                 PixelIconButton("trash", "Delete milestone", { store.deleteMilestone(g.id, m.id); names.remove(m.id) }, Pixel.InkSoft)
             }
         }
@@ -290,7 +270,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
             g.milestones.forEach { m -> names[m.id]?.let { n -> if (n.trim() != m.title) store.renameMilestone(g.id, m.id, n) } }
             model.say("Saved.")
             onClose()
-        }, Modifier.fillMaxWidth(), Pixel.Green)
+        }, Modifier.fillMaxWidth())
         PixelButton("Delete this goal", { val before = model.data.goals; store.deleteGoal(g.id); model.offerUndo("Deleted: ${g.title}") { store.restoreGoals(before) } }, color = Pixel.InkSoft, compact = true)
     }
 }
@@ -301,7 +281,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
 internal fun ReviewView(model: AppModel) {
     val store = model.store
     if (!store.canReview()) {
-        TextBox { Text("This week's review is done. See you next week!", style = MaterialTheme.typography.bodyLarge) }
+        TextBox { Text("This week's review is done", style = MaterialTheme.typography.bodyLarge) }
         return
     }
     val summary = store.reviewSummary()
@@ -339,14 +319,14 @@ internal fun ReviewView(model: AppModel) {
             Text(Reviews.promptFor(store.weekStart), style = MaterialTheme.typography.bodyLarge)
             PixelField(
                 note, { note = it }, Modifier.fillMaxWidth(),
-                placeholder = "Optional. Only you see this.",
+                placeholder = "Note",
             )
             if (summary.unfinished.isNotEmpty()) {
                 ToggleRow("Carry unfinished to tomorrow", carry) { carry = it }
             }
             PixelButton("Finish the review", {
                 store.completeReview(note, if (carry) store.today.plus(DatePeriod(days = 1)) else null)
-            }, Modifier.fillMaxWidth(), Pixel.Green)
+            }, Modifier.fillMaxWidth())
         }
     }
 }

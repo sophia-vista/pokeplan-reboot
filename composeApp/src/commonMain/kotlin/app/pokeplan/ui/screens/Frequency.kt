@@ -128,7 +128,7 @@ internal fun FrequencyView(model: AppModel) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(
                     title, { title = it }, Modifier.weight(1f), singleLine = true,
-                    placeholder = "New target, like read every day",
+                    placeholder = "New target",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
@@ -148,16 +148,13 @@ internal fun FrequencyView(model: AppModel) {
         val doneToday = store.today in h.completions
         val progress = store.frequencyProgress(h)
         ListRow(
-            lead = { RankBadge(h.template.rank) },
-            trail = {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelIconButton("pencil", "Edit ${h.template.title}", { editing = if (editing == h.template.id) null else h.template.id }, Pixel.Tone)
-                    if (doneToday) PixelIconButton("undo", "Undo", { store.undoFrequencyTask(h.template.id) }, Pixel.InkSoft)
-                    else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
-                }
+            lead = {
+                if (doneToday) PixelIconButton("undo", "Undo", { store.undoFrequencyTask(h.template.id) }, Pixel.InkSoft)
+                else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
             },
+            trail = { PixelIconButton("pencil", "Edit ${h.template.title}", { editing = if (editing == h.template.id) null else h.template.id }, Pixel.Tone) },
         ) {
-            Text(h.template.title, style = MaterialTheme.typography.bodyLarge)
+            TaskTitleLine(h.template, MaterialTheme.typography.bodyLarge)
             // Progress in the period comes first; the streak is secondary and only shown once there is one (PLAN.md section 5.4).
             val streak = store.frequencyStreak(h)
             Text(
@@ -179,7 +176,7 @@ internal fun FrequencyView(model: AppModel) {
             PixelButton(
                 if (done) "Take back ${day.short()}" else "Mark ${day.short()} done",
                 { if (done) store.undoFrequencyTask(h.template.id, day) else store.completeFrequencyTask(h.template.id, day) },
-                Modifier.fillMaxWidth(), if (done) Pixel.InkSoft else Pixel.Green, compact = true,
+                Modifier.fillMaxWidth(), if (done) Pixel.InkSoft else Pixel.Tone, compact = true,
             )
         }
     }
@@ -198,14 +195,14 @@ private fun TargetEditor(model: AppModel, h: app.pokeplan.app.TaskSeries, onClos
     var category by remember(id) { mutableStateOf(h.template.category) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
+            PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Title")
             DifficultyPicker(rank) { rank = it }
             TargetOptions(kind, { kind = it }, days, { days = it }, times, { times = it }, category, { category = it })
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     store.editFrequencyTask(id, title, targetOf(kind, days, times), rank, category)
                     onClose()
-                }, Modifier.weight(1f), Pixel.Green, enabled = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty()))
+                }, Modifier.weight(1f), enabled = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty()))
                 PixelIconButton("trash", "Delete ${h.template.title}", {
                     val before = model.data.series
                     store.deleteFrequencyTask(id)

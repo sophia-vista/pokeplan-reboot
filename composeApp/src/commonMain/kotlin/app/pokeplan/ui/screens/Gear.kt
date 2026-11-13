@@ -38,6 +38,7 @@ import app.pokeplan.ui.theme.ChoiceRow
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
@@ -64,7 +65,7 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
         var category by remember { mutableStateOf<ToolCategory?>(null) }
         SectionScaffold("Gear", null, onClose, icon = "explorer-kit", color = ModuleAccent.GEAR.header) {
             // The home: search first, then what you starred and used lately, then every tool by group. Search works offline.
-            PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search the tools (lbs, yen, torch, laps)")
+            PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search")
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
             if (query.isNotBlank()) {
                 val found = ToolCatalog.search(query, gear.favorites, gear.recents)
@@ -79,12 +80,6 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
                     FieldLabel("Favourites")
                     MenuGrid(starred.map { entry(ToolCatalog.info(it)) }) { key -> open = GearTool.valueOf(key) }
                 }
-                val lately = gear.recents.mapNotNull { n -> GearTool.entries.firstOrNull { it.name == n } }.filter { it !in starred }.take(4)
-                if (lately.isNotEmpty()) {
-                    FieldLabel("Used lately")
-                    MenuGrid(lately.map { entry(ToolCatalog.info(it)) }) { key -> open = GearTool.valueOf(key) }
-                }
-                FieldLabel("All tools")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     TabButton("All", category == null, { category = null })
                     ToolCategory.entries.forEach { c -> TabButton(c.label, category == c, { category = c }) }
@@ -144,7 +139,7 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
             Text(helper.nickname, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
         } else Spacer(Modifier.weight(1f))
         if (candidates.isNotEmpty()) PixelButton(if (choosing) "Done" else "Helper", { choosing = !choosing }, color = Pixel.InkSoft, compact = true)
-        PixelButton(if (starred) "Starred" else "Star", { store.gearFavorite(tool, !starred) }, color = if (starred) Pixel.Green else Pixel.InkSoft, compact = true)
+        PixelIconButton("star", if (starred) "Starred" else "Star", { store.gearFavorite(tool, !starred) }, if (starred) Pixel.Tone else Pixel.InkSoft)
     }
     if (choosing) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

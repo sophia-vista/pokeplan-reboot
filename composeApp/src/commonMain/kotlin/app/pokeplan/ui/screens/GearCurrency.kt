@@ -25,7 +25,6 @@ import app.pokeplan.ui.gear.CalcResult
 import app.pokeplan.ui.gear.Currencies
 import app.pokeplan.ui.gear.RatesClient
 import app.pokeplan.ui.gear.Travel
-import app.pokeplan.ui.gear.ratesFreshness
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
@@ -88,7 +87,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
         fun saveBoard(next: List<String>) { store.changeGear { it.copy(currencyBoard = next.filter { c -> c != it.homeCurrency }.distinct().take(12)) } }
 
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text(status.ifEmpty { ratesFreshness(rates, store.nowMillis) }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text(status.ifEmpty { "ECB rate, " + (runCatching { LocalDate.parse(rates.date).let { d -> "${d.dayOfMonth} ${d.month.name.take(3).lowercase().replaceFirstChar { c -> c.uppercase() }}" } }.getOrNull() ?: rates.date) }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (age != null && age > 5) Text("These rates are $age days old. Refresh when you are online before you rely on them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
 
             rows.forEachIndexed { i, code ->
@@ -108,14 +107,14 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 }
             }
             if (foreign != home) Currencies.rate(home, foreign, rates, home, gear.manualRates)?.let { r ->
-                Text("1 $home = ${CalcEngine.formatSignificant(r, 6)} $foreign${if (gear.manualRates[foreign] != null) " (your rate)" else " (reference rate)"}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text("1 $home = ${CalcEngine.formatSignificant(r, 6)} $foreign${if (gear.manualRates[foreign] != null) " (your rate)" else ""}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (adding) "Cancel" else "Add a currency", { adding = !adding; query = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton(if (active == home) "$active is home" else "Make $active home", { store.changeGear { it.copy(homeCurrency = active) } }, Modifier.weight(1f), if (active == home) Pixel.Green else Pixel.InkSoft, compact = true, enabled = active != home)
             }
             if (adding) {
-                PixelField(query, { query = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search a currency (yen, rmb, peso, usd)")
+                PixelField(query, { query = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search")
                 Currencies.search(query, codes).filter { it.code !in rows }.take(8).forEach { c ->
                     PixelButton(Currencies.label(c.code), { saveBoard(gear.currencyBoard + c.code); active = c.code; adding = false; onUse() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 }

@@ -1,6 +1,8 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -88,23 +90,30 @@ internal val helpTopics = listOf(
 internal fun HelpView() {
     helpTopics.forEach { topic ->
         SectionLabel(topic.title)
-        topic.items.forEach { HelpRow(it) }
+        TextBox {
+            Column {
+                topic.items.forEachIndexed { i, item ->
+                    if (i > 0) HorizontalDivider(color = Pixel.Border)
+                    HelpRow(item)
+                }
+            }
+        }
     }
 }
 
 @Composable
 private fun HelpRow(item: HelpItem) {
     var open by remember(item.question) { mutableStateOf(false) }
-    TextBox(
-        Modifier.clickable(role = Role.Button) { open = !open }
-            .semantics { stateDescription = if (open) "Expanded" else "Collapsed" },
+    Column(
+        Modifier.fillMaxWidth().clickable(role = Role.Button) { open = !open }
+            .semantics { stateDescription = if (open) "Expanded" else "Collapsed" }
+            .padding(vertical = Spacing.M),
+        verticalArrangement = Arrangement.spacedBy(Spacing.S),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(item.question, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                Text(if (open) "−" else "+", style = MaterialTheme.typography.titleMedium, color = Pixel.InkSoft, modifier = Modifier.padding(start = Spacing.S))
-            }
-            if (open) Text(item.answer, style = MaterialTheme.typography.bodyMedium)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(item.question, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            Text(if (open) "−" else "+", style = MaterialTheme.typography.titleMedium, color = Pixel.InkSoft, modifier = Modifier.padding(start = Spacing.S))
         }
+        if (open) Text(item.answer, style = MaterialTheme.typography.bodyMedium)
     }
 }

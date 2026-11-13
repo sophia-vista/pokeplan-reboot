@@ -77,8 +77,8 @@ private fun ConvertCard(ids: List<String>, today: LocalDate, onUse: () -> Unit) 
     val h = parts.getOrNull(0)?.toIntOrNull(); val m = parts.getOrNull(1)?.toIntOrNull() ?: 0
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FieldLabel("A time at home, elsewhere")
-            PixelField(text, { text = it.take(5); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Time at home, like 21:30")
+            FieldLabel("Convert a time")
+            PixelField(text, { text = it.take(5); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Time at home", placeholder = "21:30")
             if (h != null && h in 0..23 && m in 0..59) {
                 // Today's date, so the answer follows the summer time in force now.
                 val base = LocalDateTime(today.year, today.monthNumber, today.dayOfMonth, h, m)
@@ -99,8 +99,8 @@ private fun DateCard(today: LocalDate, onUse: () -> Unit) {
     val date = runCatching { LocalDate.parse(a.trim()) }.getOrNull()
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FieldLabel("Dates (year-month-day, like 2027-02-14)")
-            PixelField(a, { a = it.take(10); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "A date")
+            FieldLabel("Date sums")
+            PixelField(a, { a = it.take(10); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "A date", placeholder = "2027-02-14")
             if (date != null) {
                 val d = WorldClock.daysBetween(today, date)
                 Text(

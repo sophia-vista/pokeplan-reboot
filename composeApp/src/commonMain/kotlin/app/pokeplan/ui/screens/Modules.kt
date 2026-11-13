@@ -153,7 +153,6 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
         ) {
             ModuleLeadStage(model, Module.PLAN, data.player.planLead, store.moduleEvent(null), resting = session != null, openPokemon = openPokemon)
             TutorialCard(model, app.pokeplan.app.Tutorials.PLAN_FOCUS)
-            PlanPartyPanel(model, openPokemon)
             SectionLabel("Today", icon = PlanSection.PLANNER.icon)
             if (open.isEmpty()) {
                 val doneToday = data.tasks.any { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
@@ -188,6 +187,7 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
                     MenuEntry(PlanSection.SETTINGS.name, PlanSection.SETTINGS.icon, "Settings", "focus, week, calendars", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.planSection = PlanSection.valueOf(key) }
+            PlanPartyPanel(model, openPokemon)
         }
     }
 }

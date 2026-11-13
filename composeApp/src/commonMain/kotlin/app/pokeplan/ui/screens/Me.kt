@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.core.reward.TrainerRank
@@ -42,16 +43,16 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
     ScreenSwitch(section, depth = { if (it == null) 0 else 1 }) { current ->
         if (current == null) {
             Column(Modifier.fillMaxSize()) {
-                ScreenHeader("Me", subtitle = "Trainer rank: ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
+                ScreenHeader("Me", icon = "member-card")
                 Column(
                     Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
                     verticalArrangement = Arrangement.spacedBy(Spacing.M),
                 ) {
                     TrainerCard(model)
-                    MenuGrid(
-                        listOfNotNull(
-                            MenuEntry("SETTINGS", "gb-sounds", "Settings", tint = Pixel.InkSoft),
-                            MenuEntry("HELP", "town-map", "Help", tint = Pixel.Tone),
+                    MenuList(
+                        listOf(
+                            MenuEntry("SETTINGS", "gb-sounds", "Settings"),
+                            MenuEntry("HELP", "town-map", "Help"),
                         ),
                     ) { key -> section = MeSection.valueOf(key) }
                 }
@@ -77,16 +78,25 @@ private fun TrainerCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 if (buddy != null) Sprite(buddy.form.id, buddy.isShiny, buddy.nickname, size = Sizes.SpriteL)
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(data.trainerName, style = MaterialTheme.typography.titleMedium)
-                    Text("${TrainerRank.names[rank.coerceIn(0, TrainerRank.names.lastIndex)]}, ${data.player.trainerPoints} trainer points", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    if (buddy != null) Text("Buddy: ${buddy.nickname}, Lv. ${buddy.level}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                }
+                Text(data.trainerName, style = MaterialTheme.typography.titleMedium)
             }
-            // Each number says what it counts and over what time, so none is mistaken for another.
-            Text("All time: ${plural(data.tasks.count { it.state == TaskState.DONE }, "task")} finished, ${data.focusHistory.filter { it.completed }.sumOf { it.minutes }} min focused", style = MaterialTheme.typography.bodyMedium)
-            Text("Streak: ${plural(streak.current, "day")} in a row (best ${streak.longest})", style = MaterialTheme.typography.bodyMedium)
+            StatLine("Rank", TrainerRank.names[rank.coerceIn(0, TrainerRank.names.lastIndex)])
+            StatLine("Trainer points", "${data.player.trainerPoints}")
+            if (buddy != null) StatLine("Buddy", "${buddy.nickname}, Lv. ${buddy.level}")
+            StatLine("Tasks finished", "${data.tasks.count { it.state == TaskState.DONE }}")
+            StatLine("Minutes focused", "${data.focusHistory.filter { it.completed }.sumOf { it.minutes }}")
+            StatLine("Streak", plural(streak.current, "day"))
+            StatLine("Best streak", plural(streak.longest, "day"))
         }
+    }
+}
+
+/** A label at the start and its value at the end of one line. */
+@Composable
+private fun StatLine(label: String, value: String) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        Text(value, style = MaterialTheme.typography.bodyLarge)
     }
 }
 
