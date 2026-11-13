@@ -20,6 +20,15 @@ object AndroidDatabase {
                 super.onConfigure(db)
                 db.setForeignKeyConstraintsEnabled(true)
             }
+
+            /**
+             * androidx's default deletes a database SQLite reports as damaged and opens an empty one in its place, so the app's own recovery (the damaged
+             * file moved aside whole, the newest backup put back: `LiveStore`) would never run and the player would find an empty app. Found by the
+             * Android tests (REP-033). The file is left exactly as it is and the open fails, which the caller reads as corruption.
+             */
+            override fun onCorruption(db: SupportSQLiteDatabase) {
+                throw android.database.sqlite.SQLiteDatabaseCorruptException("the database is damaged; it is left for the app to move aside")
+            }
         }
         return DataStore.open(AndroidSqliteDriver(DataDb.Schema, context.applicationContext, name, callback = callback))
     }

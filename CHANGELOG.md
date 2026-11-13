@@ -12,6 +12,12 @@ Where a Pokémon is, shown where it matters (REP-009, the last open part). No re
 - **The Gear helper list says where each Pokémon is now** ("In Mint's party", "Your buddy"), since choosing one takes it from there, and leaves out a team on an expedition (choosing one was refused without a word).
 - **"Move to..." on a Pokémon reads its real place.** The PC row said "Here" for the buddy, a Guardian, a World team member or a Gear helper, and its button did nothing for them; it now sends a Guardian, a team member or a helper back to the PC (`GameStore.sendToPc`), and stays off for the buddy (choose another buddy instead). On an expedition under way, Make buddy and Move to... are off.
 - A Gear helper's place names its tool ("Helping the Flashlight").
+## 0.175.1
+
+Automated Android tests, first slice (REP-033; owner: automated tests over manual phone checks).
+
+- **Fixed: a damaged database was wiped instead of recovered.** androidx's SQLite helper deletes a database it finds corrupt and opens an empty one, so the app's own recovery (the damaged file kept aside, the newest daily backup put back) never ran and the app would have opened empty. `AndroidDatabase` now leaves the file alone and reports the damage, and `LiveStore` recovers as designed.
+- **`androidApp` has tests**, on the JVM with Robolectric (`./gradlew :androidApp:testDebugUnitTest`, run by CI's Android step): the database cutover on the five 0.123.0 save fixtures, a process death, a corrupt and a newer-schema database, Heal, Mint and the daily backups sealed (checked in the raw database bytes) and failing closed without the Keystore key, the shared reminders (exact alarms with no title in them, Done and 10 min on the notification, quiet hours, a reminder missed while the phone was off, the boot, alarm and time-zone receivers), the Today widget's tick against the app's store, and a focus session across a process death.
 
 ## 0.175.0
 
