@@ -316,7 +316,7 @@ class AppModel(
     fun open(place: Place, focusTab: Boolean) {
         when (place) {
             Place.PLAN -> { module = Module.PLAN; planSection = null }
-            Place.PLANNER -> { module = Module.PLAN; planSection = PlanSection.PLANNER }
+            Place.PLANNER -> { module = Module.PLAN; planSection = null }
             Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
             Place.CARE -> { module = Module.CARE; careSection = null }
             Place.HEAL -> { module = Module.HEAL; healSection = null }

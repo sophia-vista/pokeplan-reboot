@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.176.0
+
+Plan's structure (REP-030, PLAN.md section 3): Modules → Plan is Today, with one menu. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone changes.
+
+- **Plan opens on Today.** Quick add, the day's progress, the task to do next (Focus on this, Pick for me; a daytime task before an overdue or evening one), From before with Move to today, Today, **today's unmet targets** as a group ticked with the same check key, This evening, and Done today folded. The Planner menu is gone.
+- **One menu below:** Inbox, Upcoming, Lists, Calendar, Focus and More, as rows with counts. More holds Progress, Goals, Targets and All tasks.
+- **Inbox** is an open task with no list and no date; **Upcoming** has no 7-day cap and a Calendar key in its header.
+- **The weekly review is a card in Progress** when one is ready: each unfinished task has Move (tomorrow), Later (next week's first day) and Won't do (with Undo); past reviews and their notes are listed under Progress.
+- **Done is a preset of All tasks** (the Done key beside Search), and shows won't-do tasks too (`TaskFilter.Status`).
+- **Plan's settings page is retired:** the length and Deep Focus a session starts with become the usual ones; the week start and the phone's calendars sit at the foot of the Calendar.
 ## 0.175.1
 
 Automated Android tests, first slice (REP-033; owner: automated tests over manual phone checks).

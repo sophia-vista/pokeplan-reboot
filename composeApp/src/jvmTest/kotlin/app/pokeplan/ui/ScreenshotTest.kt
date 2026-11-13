@@ -21,7 +21,6 @@ import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.MemoryStorage
 import app.pokeplan.plan.Rank
-import app.pokeplan.ui.screens.PlannerScreen
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
 import io.ktor.client.engine.mock.respond
@@ -350,7 +349,7 @@ class ScreenshotTest {
         render("large-text-home", fontScale = 1.8f) { App(storage, focusTab = true) }
         val model = AppModel(store)
         render("large-text-planner", fontScale = 1.8f) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 0) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { run { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
         }
     }
 
@@ -382,33 +381,34 @@ class ScreenshotTest {
         store.addTask("Oat milk", Rank.E, listId = groceries.id)
         store.moveToList(store.data.tasks.first { it.title == "Buy stamps" }.id, groceries.id)
         store.addTask("Call the bank", Rank.C)
+        store.addFrequencyTask("Stretch")
         store.completeTask(store.data.tasks.first().id)
         clock.millis += 11_000
         store.tick()
         store.markRewardsSeen()
         val model = AppModel(store)
-        render("planner", height = 1500) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model) } }
+        render("planner", height = 3000) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { run { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
         }
         render("planner-today") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 0) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { run { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
         }
         render("planner-soon") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 3) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.UPCOMING, {}, {}, {}) } }
         }
         render("planner-inbox") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 2) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.INBOX, {}, {}, {}) } }
         }
         render("planner-done") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 5) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.ALL, {}, {}, {}) } }
         }
         // A repeating task shows "repeats weekly"; All tasks lists the open ones with the search and filter chips above.
         store.makeRepeating(store.data.tasks.first { it.title == "Pay the rent" }.id, app.pokeplan.plan.Repeat.Weekly())
         render("planner-all", height = 1700) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 6) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.ALL, {}, {}, {}) } }
         }
         render("planner-habits") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 4) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.TARGETS, {}, {}, {}) } }
         }
     }
 
@@ -416,7 +416,7 @@ class ScreenshotTest {
     fun plannerDay() {
         val model = plannerDayModel()
         render("planner-day", height = 2400) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.CALENDAR, {}, {}, {}) } }
         }
     }
 
@@ -432,7 +432,7 @@ class ScreenshotTest {
         store.addAllDayEvent("Condo", store.today.plus(kotlinx.datetime.DatePeriod(days = 1)), store.today.plus(kotlinx.datetime.DatePeriod(days = 5)), colors[0])
         store.addAllDayEvent("RTO", store.today.plus(kotlinx.datetime.DatePeriod(days = 2)), color = colors[3])
         render("planner-week", height = 2400) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1, startWeek = true) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.CALENDAR, {}, {}, {}, startWeek = true) } }
         }
     }
 
@@ -836,7 +836,7 @@ class ScreenshotTest {
             shot("plan") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("care") { model.module = app.pokeplan.ui.screens.Module.CARE; model.careSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("world") { app.pokeplan.ui.screens.WorldScreen(model) }
-            shot("planner") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = app.pokeplan.ui.screens.PlanSection.PLANNER; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("planner") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = app.pokeplan.ui.screens.PlanSection.INBOX; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("heal") { model.module = app.pokeplan.ui.screens.Module.HEAL; model.healSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("gear") { app.pokeplan.ui.screens.GearScreen(model) {} }
         }
@@ -929,13 +929,13 @@ class ScreenshotTest {
     }
 
     @Test
-    fun planGrowth() = modules("plan-growth", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.GROWTH)
+    fun planGrowth() = modules("plan-growth", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.PROGRESS)
 
     @Test
     fun planGoals() = modules("plan-goals", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.GOALS)
 
     @Test
-    fun planReview() = modules("plan-review", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.REVIEW)
+    fun planMore() = modules("plan-more", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.MORE)
 
     /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
     private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f) {
@@ -1230,7 +1230,7 @@ class ScreenshotTest {
     /** Every Plan section, every Care section and the Pokémon tab at the system's text at 130%: nothing clipped or pushed out of its box. */
     @Test
     fun largeTextModules() {
-        app.pokeplan.ui.screens.PlanSection.entries.filter { it != app.pokeplan.ui.screens.PlanSection.PLANNER && it != app.pokeplan.ui.screens.PlanSection.FOCUS }.forEach { sec ->
+        app.pokeplan.ui.screens.PlanSection.entries.filter { it != app.pokeplan.ui.screens.PlanSection.FOCUS }.forEach { sec ->
             meStore("plan-xl-${sec.name.lowercase()}", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.planSection = sec }, height = 1500, fontScale = 1.3f) { m -> app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }
         }
         meStore("plan-xl-menu", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3600, fontScale = 1.3f) { m -> app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }
@@ -1302,10 +1302,9 @@ class ScreenshotTest {
         page("home") { app.pokeplan.ui.screens.HomeScreen(it) {} }
         page("modules") { app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
         page("plan") { it.module = app.pokeplan.ui.screens.Module.PLAN; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
-        app.pokeplan.ui.screens.PlanSection.entries.filter { it != app.pokeplan.ui.screens.PlanSection.PLANNER && it != app.pokeplan.ui.screens.PlanSection.SETTINGS }.forEach { sec ->
+        app.pokeplan.ui.screens.PlanSection.entries.forEach { sec ->
             page("plan-${sec.name.lowercase()}") { it.module = app.pokeplan.ui.screens.Module.PLAN; it.planSection = sec; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
         }
-        for (v in 0..5) page("planner-$v") { app.pokeplan.ui.screens.PlannerScreen(it, startView = v) }
         page("care") { it.module = app.pokeplan.ui.screens.Module.CARE; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
         app.pokeplan.ui.screens.CareSection.entries.forEach { sec ->
             page("care-${sec.name.lowercase()}") { it.module = app.pokeplan.ui.screens.Module.CARE; it.careSection = sec; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }

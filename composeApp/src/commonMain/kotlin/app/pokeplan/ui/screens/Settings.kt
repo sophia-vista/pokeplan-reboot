@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.DeviceCalendar
-import app.pokeplan.plan.FocusRules
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.display
@@ -363,16 +362,11 @@ private fun hourText(hour: Int) = "${hour.toString().padStart(2, '0')}:00"
 
 /** Plan's own settings (Modules, Plan, Settings): the focus defaults, the first day of the week and the phone's calendars. */
 @Composable
-internal fun PlanSettings(model: AppModel) {
+internal fun CalendarSettings(model: AppModel) {
     val store = model.store
     val settings = model.data.settings
-    SettingsGroup("Focus", "clock") {
-        ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
-        PixelDurationField(
-            settings.defaultFocusMinutes, { m -> m?.let { store.changeSettings { s -> s.copy(defaultFocusMinutes = it) } } }, Pixel.Tone,
-            label = "Usual focus length", presets = listOf(15, 25, 45, 60), min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
-        )
-    }
+    // Plan's settings page is retired (PLAN.md section 3): the week start and the phone's calendars sit at the foot of the Calendar,
+    // and the usual focus length and Deep Focus are what the last session was started with.
     SettingsGroup("Week", "calendar") {
         ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
     }

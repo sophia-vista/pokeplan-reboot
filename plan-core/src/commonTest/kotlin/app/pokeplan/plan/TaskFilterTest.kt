@@ -18,6 +18,7 @@ class TaskFilterTest {
         t("c", "Run", category = Category.HEALTH, state = TaskState.DONE, completedAt = 5),
         t("d", "Old run", category = Category.HEALTH, state = TaskState.DONE, completedAt = 9),
         t("e", "Gone", state = TaskState.DELETED),
+        t("f", "Skipped", state = TaskState.WONT_DO, completedAt = 7),
     )
 
     private fun ids(f: TaskFilter) = f.apply(tasks).map { it.id }
@@ -25,7 +26,7 @@ class TaskFilterTest {
     @Test
     fun showsOpenTasksByDefaultAndNeverDeletedOnes() {
         assertEquals(listOf("a", "b"), ids(TaskFilter()))
-        assertEquals(listOf("a", "b", "d", "c"), ids(TaskFilter(state = null)))
+        assertEquals(listOf("a", "b", "d", "f", "c"), ids(TaskFilter(status = TaskFilter.Status.ANY)))
     }
 
     @Test
@@ -41,8 +42,8 @@ class TaskFilterTest {
         assertEquals(listOf("a"), ids(TaskFilter(listId = "groceries")))
         assertEquals(listOf("b"), ids(TaskFilter(listId = TaskFilter.INBOX)))
         assertEquals(listOf("b"), ids(TaskFilter(rank = Rank.A)))
-        assertEquals(listOf("d", "c"), ids(TaskFilter(state = TaskState.DONE)))
-        assertEquals(listOf("d", "c"), ids(TaskFilter(state = TaskState.DONE, category = Category.HEALTH)))
+        assertEquals(listOf("d", "f", "c"), ids(TaskFilter(status = TaskFilter.Status.FINISHED)))
+        assertEquals(listOf("d", "c"), ids(TaskFilter(status = TaskFilter.Status.FINISHED, category = Category.HEALTH)))
     }
 
     @Test
@@ -55,6 +56,6 @@ class TaskFilterTest {
     fun isNarrowedOnlyWhenSomethingBeyondTheDefaultIsChosen() {
         assertFalse(TaskFilter().isNarrowed)
         assertTrue(TaskFilter(query = "x").isNarrowed)
-        assertTrue(TaskFilter(state = null).isNarrowed)
+        assertTrue(TaskFilter(status = TaskFilter.Status.ANY).isNarrowed)
     }
 }

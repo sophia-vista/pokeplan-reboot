@@ -20,7 +20,7 @@ class NavigationTest {
     fun everyPlaceHasATabAndLandsWhereItSays() {
         Place.entries.forEach { place -> assertTrue(Tab.entries.contains(place.tab), "$place has a tab") }
         model().apply { open(Place.PLAN, true); assertEquals(Module.PLAN, module); assertNull(planSection) }
-        model().apply { open(Place.PLANNER, true); assertEquals(Module.PLAN, module); assertEquals(PlanSection.PLANNER, planSection) }
+        model().apply { open(Place.PLANNER, true); assertEquals(Module.PLAN, module); assertNull(planSection) }
         model().apply { open(Place.FOCUS, true); assertEquals(Module.PLAN, module); assertEquals(PlanSection.FOCUS, planSection) }
         model().apply { open(Place.FOCUS, false); assertEquals(Module.PLAN, module); assertNull(planSection) }
         model().apply { open(Place.CARE, true); assertEquals(Module.CARE, module); assertNull(careSection) }

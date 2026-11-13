@@ -141,7 +141,7 @@ internal fun FrequencyView(model: AppModel) {
         }
     }
     val targets = model.data.series.filter { it.isFrequency }
-    if (targets.isEmpty()) EmptyState(emptyTitle(View.TARGETS), icon = View.TARGETS.icon, addAbove = "Add a target")
+    if (targets.isEmpty()) EmptyState("No targets yet", icon = PlanSection.TARGETS.icon, addAbove = "Add a target")
     var editing by remember { mutableStateOf<String?>(null) }
     targets.forEach { h ->
         val target = h.target ?: return@forEach

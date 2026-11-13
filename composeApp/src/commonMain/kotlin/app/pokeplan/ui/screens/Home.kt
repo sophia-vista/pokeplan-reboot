@@ -408,7 +408,7 @@ fun HomeBuddyStage(model: AppModel, onOpen: () -> Unit) {
 
 /** The one recommended task (on Plan's page), with its actions. Completing is its own button; the rest of the card is just information. */
 @Composable
-internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onChoose: (() -> Unit)?, picked: Boolean = false) {
+internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onChoose: (() -> Unit)?, picked: Boolean = false, day: kotlinx.datetime.LocalDate? = null) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             if (picked) Text("Picked for you: +10% candies", style = MaterialTheme.typography.labelMedium, color = Pixel.Green)
@@ -416,7 +416,7 @@ internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onCh
                 PixelIconButton("check", "Done", onDone, Pixel.Green)
                 Column(Modifier.weight(1f)) {
                     TaskTitleLine(task, MaterialTheme.typography.titleSmall)
-                    val meta = taskMeta(task)
+                    val meta = taskMeta(task, day)
                     if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.bodyMedium)
                 }
             }

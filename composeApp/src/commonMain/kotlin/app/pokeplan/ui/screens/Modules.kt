@@ -14,7 +14,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import app.pokeplan.core.reward.Feature
-import app.pokeplan.plan.TaskState
+import app.pokeplan.plan.TaskViews
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.LocalFrameTone
@@ -33,9 +33,22 @@ enum class Module(val label: String, val icon: String, val look: RegionLook) {
     PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), HOME("Base", "chipped-pot", RegionLook.BASE), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
 }
 
-/** Plan's screens: tasks and focus, and the trends, goals and weekly review that read them. */
+/**
+ * Plan's sections behind its Today page (PLAN.md section 3): the menu's Inbox, Upcoming, Lists, Calendar, Focus and More, and
+ * the places More holds (Progress with the weekly review, Goals, Targets, All tasks). Today itself is the module's page (null).
+ */
 enum class PlanSection(val label: String, val icon: String) {
-    PLANNER("Planner", "journal"), FOCUS("Focus", "mystery-egg"), GROWTH("Progress", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "oaks-letter"), SETTINGS("Settings", "storage-key"),
+    INBOX("Inbox", "seal-bag"), UPCOMING("Upcoming", "timer-ball"), LISTS("Lists", "journal"), CALENDAR("Calendar", "town-map"), FOCUS("Focus", "mystery-egg"), MORE("More", "storage-key"),
+    PROGRESS("Progress", "exp-share"), GOALS("Goals", "star-piece"), TARGETS("Targets", "heart-scale"), ALL("All tasks", "scope-lens");
+
+    /** The section Back returns to: More for the places it holds, Today (null) for the rest. */
+    val parent: PlanSection? get() = if (this in MORE_HOLDS) MORE else null
+
+    companion object {
+        val MORE_HOLDS = setOf(PROGRESS, GOALS, TARGETS, ALL)
+        /** Today's icon, for its empty state. */
+        const val TODAY_ICON = "oaks-parcel"
+    }
 }
 
 /**
@@ -98,53 +111,43 @@ private fun ModulesMenu(model: AppModel) {
 
 @Composable
 private fun PlanScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
-    val toMenu = { model.planSection = null }
-    ScreenSwitch(model.planSection, depth = { if (it == null) 0 else 1 }) { section -> PlanPage(model, section, focusTab, toMenu, openPokemon) }
+    ScreenSwitch(model.planSection, depth = { if (it == null) 0 else if (it.parent == null) 1 else 2 }) { section -> PlanPage(model, section, focusTab, openPokemon) }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, toMenu: () -> Unit, openPokemon: (String) -> Unit) {
+private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, openPokemon: (String) -> Unit) {
+    val back = { model.planSection = section?.parent }
+    val toToday = { model.planSection = null }
     when (section) {
         null -> {
             val toModules = { model.module = null }
             BackHandler(enabled = true, onBack = toModules)
-            PlanMenu(model, focusTab, toModules, openPokemon)
+            PlanToday(model, focusTab, toModules, openPokemon)
         }
-        // Planner and Focus have their own headers; the screens they open inside handle Back before this does.
-        PlanSection.PLANNER -> {
-            BackHandler(enabled = true, onBack = toMenu)
-            PlannerScreen(model, startView = if (model.addTaskRequested) 0 else -1, onBack = toMenu)
-        }
+        // Focus has its own header; the screens it opens inside handle Back before this does.
         PlanSection.FOCUS -> {
-            BackHandler(enabled = true, onBack = toMenu)
-            FocusScreen(model, openPokemon, onBack = toMenu)
+            BackHandler(enabled = true, onBack = back)
+            FocusScreen(model, openPokemon, onBack = back)
         }
-        else -> SectionScaffold(section.label, null, onBack = toMenu, icon = section.icon, color = Module.PLAN.look.header) {
-            when (section) {
-                PlanSection.GROWTH -> GrowthView(model)
-                PlanSection.GOALS -> GoalsView(model)
-                PlanSection.SETTINGS -> PlanSettings(model)
-                else -> ReviewView(model)
-            }
+        PlanSection.MORE -> SectionScaffold(section.label, null, onBack = back, icon = section.icon, color = Module.PLAN.look.header) { PlanMoreMenu(model) }
+        PlanSection.PROGRESS, PlanSection.GOALS -> SectionScaffold(section.label, null, onBack = back, icon = section.icon, color = Module.PLAN.look.header) {
+            if (section == PlanSection.GOALS) GoalsView(model) else ProgressView(model)
         }
+        else -> PlanView(model, section, onBack = back, open = { model.planSection = it }, toToday = toToday)
     }
 }
 
-/** How many of today's tasks Plan's page lists; the Planner has the rest. */
-private const val TODAY_SHOWN = 3
-
 /**
- * Plan's own page, laid out like Care's so the two modules read alike: its buddy in Plan's town, new rewards, the whole party
- * with its perks, today's tasks, then the sections.
+ * Plan's own page is its Today (PLAN.md section 3.1): its lead in Plan's town, quick add, the day's tasks and targets, then one
+ * menu of rows with counts (Inbox, Upcoming, Lists, Calendar, Focus, More) and the party as one row.
  */
 @Composable
-private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, openPokemon: (String) -> Unit) {
+private fun PlanToday(model: AppModel, focusTab: Boolean, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.data
     val store = model.store
-    val today = store.todayTasks().size
     val session = data.focus
-    val open = store.openTodayTasks()
+    val live = planTasks(model)
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.PLAN.label, onBack = onBack, color = Module.PLAN.look.header)
         Column(
@@ -153,40 +156,36 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
         ) {
             ModuleLeadStage(model, Module.PLAN, data.player.planLead, store.moduleEvent(null), resting = session != null, openPokemon = openPokemon)
             FirstRecordEgg(model, app.pokeplan.app.Tutorials.PLAN_FOCUS, model.data.tasks.count { it.completedAtMillis != null })
-            SectionLabel("Today", icon = PlanSection.PLANNER.icon)
-            if (open.isEmpty()) {
-                val doneToday = data.tasks.any { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
-                EmptyState(
-                    if (doneToday) "All done for today" else "Nothing planned for today",
-                    action = "Add a task" to { model.addTaskRequested = true; model.planSection = PlanSection.PLANNER },
-                )
-            } else {
-                // The one to do next first, with Focus on this and Pick for me (+10% candies); then a few more.
-                val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.first()
-                NextUp(
-                    task = next,
-                    onDone = { model.completeTask(next.id) },
-                    onFocus = if (!focusTab) null else ({ model.focusTaskId = next.id; model.planSection = PlanSection.FOCUS }),
-                    onChoose = if (open.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
-                    picked = next.id == data.pickedTaskId,
-                )
-                open.filter { it.id != next.id }.take(TODAY_SHOWN - 1).forEach { t -> TaskRow(t, onDone = { model.completeTask(t.id) }) }
-                if (open.size > TODAY_SHOWN) Text("${open.size - TODAY_SHOWN} more in the Planner", style = MaterialTheme.typography.bodyMedium)
-            }
-            MenuGrid(
+            QuickAddBox(model, AddTo.TODAY)
+            TodayList(model, onFocus = if (!focusTab) null else ({ t -> model.focusTaskId = t.id; model.planSection = PlanSection.FOCUS }))
+            fun count(n: Int) = if (n > 0) "$n" else ""
+            MenuList(
                 listOfNotNull(
-                    MenuEntry(PlanSection.PLANNER.name, PlanSection.PLANNER.icon, "Planner", if (today == 0) "nothing left today" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
-                    if (!focusTab) null else MenuEntry(
-                        PlanSection.FOCUS.name, PlanSection.FOCUS.icon, "Focus",
-                        if (session == null) "hatch an egg" else "egg incubating", badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent,
-                    ),
-                    if (store.sees(Feature.GROWTH_SCREEN)) MenuEntry(PlanSection.GROWTH.name, PlanSection.GROWTH.icon, "Progress", "effort and trends", tint = ModuleAccent.PLAN.accent) else null,
-                    if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = ModuleAccent.PLAN.accent),
-                    MenuEntry(PlanSection.REVIEW.name, PlanSection.REVIEW.icon, "Review", if (store.canReview()) "ready this week" else "done this week", badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent),
-                    MenuEntry(PlanSection.SETTINGS.name, PlanSection.SETTINGS.icon, "Settings", "focus, week, calendars", tint = Pixel.InkSoft),
+                    MenuEntry(PlanSection.INBOX.name, PlanSection.INBOX.icon, PlanSection.INBOX.label, tint = ModuleAccent.PLAN.accent, count = count(TaskViews.inbox(live).size)),
+                    MenuEntry(PlanSection.UPCOMING.name, PlanSection.UPCOMING.icon, PlanSection.UPCOMING.label, tint = ModuleAccent.PLAN.accent, count = count(TaskViews.upcoming(live, store.now).size)),
+                    MenuEntry(PlanSection.LISTS.name, PlanSection.LISTS.icon, PlanSection.LISTS.label, tint = ModuleAccent.PLAN.accent, count = count(store.activeLists.size)),
+                    MenuEntry(PlanSection.CALENDAR.name, PlanSection.CALENDAR.icon, PlanSection.CALENDAR.label, tint = ModuleAccent.PLAN.accent),
+                    if (!focusTab) null else MenuEntry(PlanSection.FOCUS.name, PlanSection.FOCUS.icon, PlanSection.FOCUS.label, badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent, count = if (session != null) "on" else ""),
+                    MenuEntry(PlanSection.MORE.name, PlanSection.MORE.icon, PlanSection.MORE.label, badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent),
                 ),
             ) { key -> model.planSection = PlanSection.valueOf(key) }
             PlanPartyPanel(model, openPokemon)
         }
     }
+}
+
+/** More: the Plan places visited less often, as rows with counts; the weekly review waits in Progress. */
+@Composable
+private fun PlanMoreMenu(model: AppModel) {
+    val store = model.store
+    val data = model.data
+    val targets = store.frequencyTasks()
+    MenuList(
+        listOfNotNull(
+            MenuEntry(PlanSection.PROGRESS.name, PlanSection.PROGRESS.icon, PlanSection.PROGRESS.label, badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent, count = if (store.canReview()) "review" else ""),
+            if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, PlanSection.GOALS.label, tint = ModuleAccent.PLAN.accent, count = if (data.goals.isEmpty()) "" else "${data.goals.size}"),
+            MenuEntry(PlanSection.TARGETS.name, PlanSection.TARGETS.icon, PlanSection.TARGETS.label, tint = ModuleAccent.PLAN.accent, count = if (targets.isEmpty()) "" else "${targets.count { store.today in it.completions }}/${targets.size}"),
+            MenuEntry(PlanSection.ALL.name, PlanSection.ALL.icon, PlanSection.ALL.label, tint = ModuleAccent.PLAN.accent, count = planTasks(model).count { it.isOpen }.let { if (it > 0) "$it" else "" }),
+        ),
+    ) { key -> model.planSection = PlanSection.valueOf(key) }
 }
