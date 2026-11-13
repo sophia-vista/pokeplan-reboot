@@ -87,7 +87,7 @@ import kotlinx.datetime.LocalTime
 import kotlin.math.roundToInt
 
 /**
- * Care's screens (docs/ecosystem.md, section 6), after journalling and DBT: routines, calm breaks, a daily diary card, a
+ * Care's screens (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md), after journalling and DBT: routines, calm breaks, a daily diary card, a
  * skills library and a journal, and trends. Doing earns (a routine, a calm break, a practised skill, a week with a rhythm);
  * a diary card, a note or a journal entry never does, and the buddy never comments on them.
  */

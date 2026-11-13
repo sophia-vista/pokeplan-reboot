@@ -1,6 +1,6 @@
 // The local database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md): SQLDelight on SQLite, Android and JVM targets only.
-// The Android driver is the product's; the JVM target is for tests and tools. The app does not use this module yet:
-// the JSON save stays the live store until the migration gate (docs/pokelife/evidence/REP-007-gate-a-review.md).
+// The Android driver is the product's (live since 0.129.0); the JVM target is for tests and tools. Ownership, settlement,
+// cutover and rollback: DATA_AND_MIGRATIONS.md sections 4.5, 8.7 and 12.6.
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)

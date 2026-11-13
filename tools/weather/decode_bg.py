@@ -13,7 +13,7 @@ import sys
 
 from PIL import Image
 
-# gMapFilesTable entries the weather kinds of src/ground_weather.c use (kind -> bpa files by slot), see docs/pokelife/evidence/WEATHER-original.md.
+# gMapFilesTable entries the weather kinds of src/ground_weather.c use (kind -> bpa files by slot), see docs/pokelife/FEATURES/LAUNCHER.md section 4.4.
 WEATHER_BGS = {
     'W01': [], 'W03P01': ['W03P011'], 'W03P02': ['W03P021'], 'W03P03': ['W03P031'], 'W04': ['W041'], 'W05': [], 'W06': [],
 }

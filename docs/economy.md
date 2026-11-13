@@ -5,7 +5,7 @@
 > **Describes what the code pays today (rules version 17).** The source of truth for the economy's shape is `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` (reward ledger, one Bag, one currency: Poké). Coins and World Poké are one balance, Poké, since rules version 15 (the tables below still say "coins" for what Plan pays and "Poké" for what World pays; both are the same Poké); this file stays accurate for the code**
 
 Every reward source, every use and every cap, as the code has them under **rules version 19** (`RewardRules.VERSION` in
-`pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
+`pokemon-core`). This is principle 6 of `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
 **Keep it true.** A change to anything below that changes what an event pays bumps `RewardRules.VERSION` and updates this
@@ -62,7 +62,7 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Link: a follow-up finished** (Postcard Trail on; at most 3 paid a day; one follow-up pays once however often it is reopened and finished again) | Link's lead 1 friendship step (Follow-up) · 2 Rare Candies (a third with Candy finder) · 1 point on Postcard Trail's track · 1 trainer point | `LINK_CANDIES`, `LINK_EGG_POINTS`, `LINK_POINTS`, `LinkRules.FOLLOW_UPS_PAID_PER_DAY` |
 | **Postcard Trail's track full** (3 points: one a finished follow-up) | A Postcard Egg from the Link Region, rolled as a 15 minute session (species not caught yet × 6), hatched at once into Link's party (else the PC); it leads Link if there is no lead; the rest carries over. Kept by the app (counter `link-egg-meter`) | `RewardEngine.linkEgg`, `LINK_EGG_METER_SIZE` |
 | **Link: adding or importing people, notes, dates, tags, favourites; editing, rescheduling, cancelling or reopening a follow-up; a reminder** | Nothing, ever: LINK.md section 9.2 | |
-| **Care: diary card, journal entry, note** | Nothing, ever: entering sensitive information never earns (ecosystem.md, section 6) | |
+| **Care: diary card, journal entry, note** | Nothing, ever: entering sensitive information never earns (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md) | |
 | **A bag stack is full** | 1 coin per candy or item that did not fit | `Inventory.addCapped` |
 
 Task perks: candies × 1.10 when finished on time (by its due date), × 1.10 when it had focus minutes and × 1.10 when it was the task "Pick for me" chose (`PICKED_BONUS`, once per pick), then the buddy's
@@ -220,7 +220,7 @@ design.md's "daily reward limit per app" *(tune)* is not built. It matters once 
 
 ## 4. What can be lost
 
-- **A failed focus session** (left the app for over 10 seconds, moved the phone in Deep Focus, gave up) pays nothing (except once a week with Magic Guard, section 1); its egg ticket is spent so the egg can't be rerolled, and a Lure is kept. This is the one deliberate exception (ecosystem.md, principle 4).
+- **A failed focus session** (left the app for over 10 seconds, moved the phone in Deep Focus, gave up) pays nothing (except once a week with Magic Guard, section 1); its egg ticket is spent so the egg can't be rerolled, and a Lure is kept. This is the one deliberate exception (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, principle 4).
 - **A transferred Pokémon** is gone; its species, shiny and forms stay in the Pokédex.
 - **Evolution** uses its Super Candy, stone or Link Cord.
 - **A task reward** can be undone for 10 seconds (`UNDO_WINDOW_MILLIS`).

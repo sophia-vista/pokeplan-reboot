@@ -103,7 +103,7 @@ private fun DetailBox(title: String, content: @Composable () -> Unit) = TextBox 
 }
 
 /**
- * One Pokémon, read top to bottom (docs/ecosystem.md, section 11): who it is, what kind of specimen it is, how it is
+ * One Pokémon, read top to bottom (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): who it is, what kind of specimen it is, how it is
  * growing, how it evolves, its role in your world, and where it came from. Transfer, the one step that cannot be undone,
  * comes last.
  */

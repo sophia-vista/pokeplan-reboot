@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-// The World module (docs/world.md): a Pokémon Mystery Dungeon style exploration game with idle and incremental
+// The World module (docs/pokelife/MODULES/WORLD.md section 14): a Pokémon Mystery Dungeon style exploration game with idle and incremental
 // mechanics. Dungeons, expedition teams, offline progress, Exploration Finds, rank and the story. Rules only, no UI; it
 // knows nothing about Plan or Care and meets the shared collection through the Pokémon it is given and the finds it returns.
 kotlin {

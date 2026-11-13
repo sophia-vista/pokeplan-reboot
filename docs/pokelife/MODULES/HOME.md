@@ -5,7 +5,6 @@
 **Module:** HOME  
 **Scope:** Personal household management  
 **Shown as:** **Nest** (owner, 13 November 2026): the app shows this module as "Nest" (its menu card, header, party, perks and region, "Nest Region") so "Home" is only the first tab; code ids, saves and the docs keep HOME  
-**Baseline audit:** PokéLife source `0.123.0`, as documented in `IMPLEMENTATION_GUIDE.md`  
 **Last updated:** 5 November 2026
 
 > This document is the single source of truth for HOME-specific product behavior, data ownership, workflows, progression, privacy adaptations, implementation direction and acceptance criteria. Product-wide rules remain in the Product Bible; shared reminder behavior, visual components, data lifecycle and Pokémon/economy services remain in their respective shared specifications. Do not duplicate those systems here.
@@ -484,95 +483,31 @@ HOME follows `../FEATURES/DESIGN_SYSTEM.md` and its **compact utility presentati
 - Use shared light/dark tokens, scalable system typography, TalkBack semantics, minimum 48 dp targets, reduced-motion behavior and responsive layouts.
 - Keep pixel art crisp and subordinate to utility content. Do not invent a separate HOME design language or independent component variants where shared components suffice.
 
-## 12. Existing implementation audit and reuse policy
+## 12. Reuse policy
 
-The Implementation Guide's audit of source version `0.123.0` identifies HOME as absent as a first-class life module. The inspected architecture has useful foundations, but the current data/store boundaries are not the target modular local-first architecture. No HOME end-to-end workflow is established by the baseline audit.
+HOME reuses the shared foundations (local data layer, migrations, backup/restore, Pokémon collection and reward services, reminder scheduler through a HOME source adapter, PMD design-system components, GEAR calculators where useful) and owns its domain: models, repositories, occurrence/schedule rules, quantity semantics, maintenance/warranty relationships, search, attachment references, the Habitat Discovery policy adapter and tests. Domain logic stays independent of Compose and Android APIs; document/photo/camera/notification integrations belong in platform adapters.
 
-### 12.1 Reuse after explicit review
+### 12.3 Avoid
 
-- Kotlin Multiplatform and Compose foundations.
-- Android application shell, navigation and module registry where compatible with the target architecture.
-- Shared local data layer, repository conventions, migrations, backup/restore and attachment management once finalized.
-- Shared Pokémon collection, regional dex, reward ledger, Bag, currency and acquisition interfaces.
-- Shared reminder scheduler and delivery through a HOME source adapter.
-- Shared PMD design-system components.
-- Generic GEAR calculators/converters where useful.
-
-### 12.2 Build as HOME-owned domain behavior
-
-Create HOME models, repositories, occurrence/schedule rules, quantity semantics, maintenance/warranty relationships, search, local attachment references, Habitat Discovery policy adapter and tests. Keep domain logic independent of Compose and Android APIs. Android document/photo/camera/notification integrations belong in platform adapters.
-
-### 12.3 Improve or replace rather than extend blindly
-
-- Define clean domain ownership before adding HOME to legacy global save structures.
 - Do not repurpose PLAN's task table as the canonical chore database.
 - Do not represent inventory quantities as PLAN tasks or MINT transactions.
 - Do not create a HOME-specific reminder scheduler.
 - Do not create a parallel HOME Pokémon collection or reward ledger.
-- Do not assume code presence proves end-to-end readiness; verify tests, persistence, migration, lifecycle and device UI before reuse.
-- Preserve user data and proven business rules, not structurally misaligned legacy implementation details.
 
 ### 12.4 Migration
 
 Shared database ownership, transaction boundaries, backup/restore, schema migration and recovery follow `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`. HOME owns household records and must not create a separate persistence or reward authority.
 
-HOME is new in the audited baseline, so there is no legacy HOME dataset to migrate from `0.123.0`. However, cross-module links, shared scheduler metadata and shared reward events must use stable IDs and versioned contracts. Migration must never replay historical HOME activity as reward events. If later source inventory finds household data stored in a legacy generic notes/task area, inventory it and define an explicit, opt-in mapping before import; do not silently reinterpret unrelated records as HOME data.
+Cross-module links, shared scheduler metadata and shared reward events use stable IDs and versioned contracts. Migration never replays historical HOME activity as reward events. If household data is ever found in a legacy generic notes/task area, define an explicit, opt-in mapping before import; never silently reinterpret unrelated records as HOME data.
 
-## 13. Implementation phases and exit gates
+## 13. Remaining work
 
-HOME follows the dependency-first roadmap in `IMPLEMENTATION_GUIDE.md`. Do not start feature expansion while architecture, local data lifecycle, reminder contracts or shared Pokémon/economy foundations are failing their exit gates.
+Phases 0 and 1 (domain and data foundation, core household experience) and most of phase 2 are built; section 16 lists what exists and what is not. Still to do, in order:
 
-### Phase 0 — Domain and data foundation
+- **Phase 2 rest:** attachments and document/photo handling, explicit PLAN shopping task for a supply, LINK service-provider reference, backup/export/restore validation of attachments. **Exit gate:** household records are searchable, linked appropriately, exportable and recoverable without exposing private details across modules.
+- **Phase 3 (refinement):** barcode-assisted inventory entry if justified and technically safe, import/export quality, attachment previews and quick actions, additional HOME regional discovery content, widgets and shortcuts only after core flows are stable. **Exit gate:** refinements do not increase maintenance burden, create permission creep or compromise offline-first behavior.
 
-- Establish HOME domain boundary and repository interfaces.
-- Define stable IDs, relationships and schema/migration strategy.
-- Define recurrence and occurrence-generation semantics.
-- Define quantity/unit semantics and low-stock derivation.
-- Define asset, maintenance, schedule and warranty relationships.
-- Define attachment storage/deletion behavior.
-- Define optional PLAN linking and source-aware reminder contracts.
-- Define privacy-safe Habitat Discovery event schema and idempotency.
-
-**Exit gate:** no duplicated canonical records, no competing sources of truth, no household content in shared reminder/reward payloads, and all core domain rules have unit tests.
-
-### Phase 1 — Core household experience
-
-- HOME navigation and Overview.
-- Quick-add chore, chore schedule and occurrence handling.
-- Completion, undo, skip/defer, pause/archive and history.
-- Optional household areas.
-- Consumable inventory, units and quantity adjustment.
-- Low-stock state and simple restocking list.
-- Basic asset registration and maintenance records/schedules.
-- Optional HOME reminders through the shared feature.
-- Habitat Discovery event integration through shared Pokémon/economy services.
-- PMD utility presentation and accessibility.
-
-**Exit gate:** user can manage ordinary chores, household supplies and essential maintenance fully offline; no duplicate rewards or scheduler implementation.
-
-### Phase 2 — Household records depth
-
-- Durable inventory and asset relationships.
-- Warranty management and expiry reminders.
-- Household reference library and local search.
-- Attachments and document/photo handling.
-- Cross-HOME search and filters.
-- Richer maintenance schedules/history.
-- Explicit optional PLAN task links.
-- Backup/export/restore validation for HOME records and attachments.
-
-**Exit gate:** household records are searchable, linked appropriately, exportable and recoverable without exposing private details across modules.
-
-### Phase 3 — Refinement
-
-- Barcode-assisted inventory entry if justified and technically safe.
-- Optional import/export quality improvements.
-- Attachment previews and quick actions.
-- Additional HOME regional discovery content.
-- Optional widgets/shortcuts only after core flows are stable.
-- Further accessibility, performance and interaction refinements.
-
-**Exit gate:** refinements do not increase maintenance burden, create permission creep or compromise offline-first behavior.
+Do not start feature expansion while architecture, local data lifecycle, reminder contracts or shared Pokémon/economy foundations are failing.
 
 ## 14. Acceptance criteria
 
@@ -663,26 +598,26 @@ HOME follows the dependency-first roadmap in `IMPLEMENTATION_GUIDE.md`. Do not s
 
 This module document owns HOME-specific rules only. Shared feature documents remain authoritative for shared behavior.
 
-## 16. As built (0.143.0, REP-014): the manual slice
+## 16. As built: the manual slice
 
-*Built and tested on the JVM, compiled for Android; **not run on a device**. No reminder, attachment, camera, PLAN link or import was started.*
+*Compiled for Android; not yet run on a device. No attachment, camera or import exists.*
 
-**What exists.** A menu with the Overview on top and five destinations. **Overview** (3.1): only what needs attention (chores due or overdue with a tick, maintenance due or soon, low supplies, warranties ending in 30 days), quick-add, and a search over every kind; sections can be folded away in Settings. **Chores** (4.2, 3.2): Due, Upcoming and History; title-only quick add; one time, daily, weekly (chosen weekdays), monthly and yearly, every N; complete, skip, put off, undo; pause, resume, archive; a repeating chore shows only its **latest** occurrence up to today, so a month away leaves one overdue chore, never a backlog; an occurrence done early counts; editing a chore never touches its entries (history). Not offered: "this and future occurrences" scopes (only the schedule definition changes, from a first date, and past entries stay). **Supplies** (4.3): quantity in thousandths of a unit (exact, no floating point), unknown is not zero and never low, optional threshold, +1/-1, set directly, a negative result is refused rather than clamped, bounded adjustment history (300), dismiss the low notice (cleared by the next change), and the restocking list (low supplies plus entries written by hand; not a purchase, task or transaction). **Belongings** (4.4): durable things are assets, with brand, model, serial, purchase date and area; one identity for inventory and maintenance. **Maintenance** (4.5): schedules (one time or repeating, on the calendar or counted from when it was done), done records with notes and a cost that is plain text, never a transaction, history per item, one-off work logged without a schedule. **Warranties** (4.6): typed dates and reference, ending-soon and expired states, never deleted silently. **Notes** (4.7): title, text, category, area, item. **Settings:** Habitat Discovery on or off, areas (add, rename, reorder, archive, delete), units, folded sections, export and erase by kind.
+**What exists.** A menu with the Overview on top and five destinations. **Overview** (3.1): only what needs attention (chores due or overdue with a tick, maintenance due or soon, low supplies, warranties ending in 30 days), quick-add, and a search over every kind; sections can be folded away in Settings. Search leaves out what no list shows (archived chores, supplies and items, finished one-time schedules, warranties of an archived item). **Chores** (4.2, 3.2): Due, Upcoming and History; title-only quick add; one time, daily, weekly (chosen weekdays), monthly and yearly, every N; complete, skip, put off, undo (a tick offers Undo); pause, resume, archive; a repeating chore shows only its **latest** occurrence up to today, so a month away leaves one overdue chore, never a backlog; an occurrence done early counts; editing a chore never touches its entries (history). Not offered: "this and future occurrences" scopes (only the schedule definition changes, from a first date, and past entries stay). **Supplies** (4.3): quantity in thousandths of a unit (exact, no floating point), unknown is not zero and never low, optional threshold, +1/-1, set directly, a negative result is refused rather than clamped, bounded adjustment history (300), dismiss the low notice (cleared by the next change), and the restocking list (low supplies plus entries written by hand; not a purchase, task or transaction); a supply on the list because it is low leaves it only with a new quantity. **Belongings** (4.4): durable things are assets, with brand, model, serial, purchase date and area; one identity for inventory and maintenance. **Maintenance** (4.5): schedules (one time or repeating, on the calendar or counted from when it was done; the start date moves only when its next date or kind of repeat is edited, never on a rename), done records with notes and a cost that is plain text, never a transaction, history per item, one-off work logged without a schedule; undoing a tick removes the record and returns the schedule to its date (same event id, nothing pays twice). **Warranties** (4.6): typed dates and reference, ending-soon and expired states, never deleted silently, edited by tapping. **Notes** (4.7): title, text, category, area, item. **Settings:** Habitat Discovery on or off, areas (add, rename, reorder, archive, delete), units, folded sections, export and erase by kind.
 
-**Habitat Discovery (section 9), as built** *(numbers are *(tune)* starting values; `RewardRules.VERSION` 19, `docs/economy.md`)*:
+**Habitat Discovery (section 9), as built** *(numbers are *(tune)* starting values; `docs/economy.md`)*:
 - **On by default** (every acquisition method is), off in Settings without touching a record. Only two things pay: a **chore done** (2 Rare Candies; at most 5 paid a day) and **maintenance done** (4; at most 2 a day). Creating, editing, archiving, quantities, the restocking list, warranties, notes, schedules, skipping and putting off never pay.
 - **Idempotent by occurrence.** The event id names the occurrence (`home:chore:<chore id>:<due day>`, `home:maintenance:<schedule id>:<due date>`), the game remembers it (`AppData.homePaid`, newest 1000), so undo then done again, a restore or a replay pays once. Nothing is clawed back by an undo. A migration never pays.
-- **What leaves HOME** is exactly `HomeEvent`: id, module ("home"), an opaque `ref`, the broad kind (`chore_completed`, `maintenance_completed`) and the time. `HomeStoreTest` and `HomeTablesTest` check that no title, area, supply, asset, serial, cost or note reaches the event, the shared save, the reward log or the shared tables.
+- **What leaves HOME** is exactly `HomeEvent`: id, module ("home"), an opaque `ref`, the broad kind (`chore_completed`, `maintenance_completed`) and the time. No title, area, supply, asset, serial, cost or note may reach the event, the shared save, the reward log or the shared tables.
 - A payment is candies, a little friendship for Home's lead, a trainer point and points towards a **Habitat Egg** (chore 1, maintenance 2; 5 fill the meter), hatched into Home's party from the **Home Region** (`tools/species/regions/household.txt`). Home's party perks (Candy finder: Grass, Normal, Bug, Ground, Fire, Water; Friendship gain: Fairy, Flying, Ice, Electric, Psychic, Ghost; capped at +25% a bucket) change only what Habitat Discovery pays. A new Pokémon settles into the habitat from above (`Acquisition.HABITAT`, the town scene).
 - **First-run tutorial** (POKEMON_ECOSYSTEM.md 10.2.1): a 5-second tidy gives one Home Region Pokémon into Home's party, leading it, once per save.
 
-**Data (section 5).** `home_*` tables from the start (schema 9): `home_area`, `home_chore`, `home_entry`, `home_supply`, `home_adjustment`, `home_restock`, `home_asset`, `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference` (each row `key, position, day, json`) and `home_state` (settings); `HomeTables` reads, exports or erases one family alone. Home is in the daily backup and the backup bundle. Not sealed: no encryption decision exists for Home (Mint's was the owner's); household content follows the shared data-security policy and can be sealed the same way later.
+**Data (section 5).** `home_*` tables: `home_area`, `home_chore`, `home_entry`, `home_supply`, `home_adjustment`, `home_restock`, `home_asset`, `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference` (each row `key, position, day, json`) and `home_state` (settings); `HomeTables` reads, exports or erases one family alone. Home is in the daily backup and the backup bundle. Not sealed: no encryption decision exists for Home (Mint's was the owner's); household content follows the shared data-security policy and can be sealed the same way later.
 
-**Linked PLAN tasks (2.1), as built (0.144.0, REP-014).** Chore → "Show in Plan" makes one PLAN task per chore, a projection of its current occurrence (`TaskLink(HOME_CHORE, chore id, occurrence)`): the title and day follow the chore, a repeating chore's task moves on to the next occurrence, and a deleted chore takes its projection with it (restorable). Completing, reopening or "won't do" in PLAN run `HomeStore.complete`, `undo` and `skip` (`HomeLinkOwner`), so HOME records the one completion and pays Habitat Discovery once; PLAN pays nothing for a task another module owns (no task reward, no steps reward), and a linked task cannot repeat by itself. "Remove from Plan" deletes only the projection. A store that does not know Home (a widget) leaves a linked task untouched. There is no "convert to a PLAN-owned task" action.
+**Linked PLAN tasks (2.1), as built.** Chore → "Show in Plan" makes one PLAN task per chore, a projection of its current occurrence (`TaskLink(HOME_CHORE, chore id, occurrence)`): the title and day follow the chore, a repeating chore's task moves on to the next occurrence, and a deleted chore takes its projection with it (restorable). Completing, reopening or "won't do" in PLAN run `HomeStore.complete`, `undo` and `skip` (`HomeLinkOwner`), so HOME records the one completion and pays Habitat Discovery once; PLAN pays nothing for a task another module owns (no task reward, no steps reward), and a linked task cannot repeat by itself. "Remove from Plan" deletes only the projection. A store that does not know Home (a widget) leaves a linked task untouched. There is no "convert to a PLAN-owned task" action.
 
-**Reminders (6), as built (0.144.0, REP-014).** Home → Settings → Reminders is **off**; with it on, each chore, maintenance schedule, supply (with a threshold) and warranty (with an end date) is turned on by itself (`remind`), so nothing asks by default. One reminder each, never repeated: a chore on the day of its next unsettled occurrence at the chosen hour (nothing for an overdue one, none for a once-only chore that is done), maintenance 0, 1, 3 or 7 days before its next date, a warranty a week to two months before its end date, a low supply once (at the first reminder hour after it became low; quieting it or restocking stops it). The request holds the record's opaque id, the kind and the day; the lock screen says only the kind, and the name shows after unlocking only if the player allowed it. A chore's notification offers "Done" (the chore's own completion), every kind offers "Tomorrow"; a reminder never records maintenance, restocks or edits a warranty, and delivering, snoozing or dismissing pays nothing. Delivery follows the shared quiet hours and focus deferral (`HomeReminders`, `HomeReminderAdapter`, `UpkeepReminders`).
+**Reminders (6), as built.** Home → Settings → Reminders is **off**; with it on, each chore, maintenance schedule, supply (with a threshold) and warranty (with an end date) is turned on by itself (`remind`), so nothing asks by default. One reminder each, never repeated: a chore on the day of its next unsettled occurrence at the chosen hour (nothing for an overdue one, none for a once-only chore that is done), maintenance 0, 1, 3 or 7 days before its next date, a warranty a week to two months before its end date, a low supply once (at the first reminder hour after it became low; quieting it or restocking stops it). The request holds the record's opaque id, the kind and the day; the lock screen says only the kind, and the name shows after unlocking only if the player allowed it. A chore's notification offers "Done" (the chore's own completion), every kind offers "Tomorrow"; a reminder never records maintenance, restocks or edits a warranty, and delivering, snoozing or dismissing pays nothing. Delivery follows the shared quiet hours and focus deferral.
 
-**Audit (0.171.4).** A schedule's start date (`firstDue`) moves only when its next date or the kind of repeat is edited, never on a rename. A tick on a chore or on maintenance offers Undo (maintenance: the record goes and the schedule returns to its date; the event id is the same, so nothing pays twice). Search leaves out what no list shows: archived chores, supplies and items, finished one-time schedules, the warranties of an archived item. A warranty is edited by tapping it. A supply that is on the restocking list because it is low leaves it only with a new quantity. Open questions are REP-029.
+Open questions are REP-029 in `../IMPLEMENTATION_BACKLOG.md`.
 
 **Not built, not offered:** attachments, photos and the camera (7.1), a PLAN shopping task for a supply (4.3), LINK service-provider references, widgets and shortcuts, barcode capture, imports, the "upkeep milestone" event, recurrence scopes other than the schedule definition, and a durable item that is not also an asset.
 

@@ -75,11 +75,8 @@ Done once, deterministically and without removing any Pokémon, by this priority
 
 Each applicable module owns an independent party. This is not a single global active party.
 
-- PLAN, CARE, HEAL, MINT, HOME, and LINK each maintain their own party membership and ordering.
-- GEAR has no Pokémon party and no acquisition or progression. Helper Pokémon are visual-only.
-- WORLD retains its own expedition team assignments and existing team-size rules. Expedition teams are not a module party and do not replace one.
-- The launcher may prioritize the selected global buddy and display other collection members according to its presentation settings; it does not own a party.
-- The shared collection and PC/storage remain global.
+- PLAN, CARE, HEAL, MINT, HOME, and LINK each maintain their own party membership and ordering. GEAR has no party, acquisition or progression (helpers are visual-only). WORLD keeps its own expedition teams, which are not a module party.
+- The launcher may prioritize the selected global buddy; it does not own a party. The shared collection and PC stay global.
 
 A party stores an ordered list of canonical `ownedPokemonId` references. It never stores a copied Pokémon object. **A given owned Pokémon is in at most one party, and then in no other place** (section 2.2); adding it to a party moves it out of its previous place. A change to one party must not mutate another party or WORLD team assignment, except that the Pokémon being moved leaves its old place.
 
@@ -100,9 +97,7 @@ There is one global buddy. It is a place of its own, not a membership of any par
 
 ### 2.4 Pokémon availability and references
 
-A module can use an owned Pokémon in its party even if that Pokémon was acquired elsewhere. A party is a presentation/selection roster, not ownership. Exclusivity is the rule (section 2.2): a Pokémon in the PC is in no party, and one in a party is not in the PC.
-
-WORLD expedition assignment is validated against WORLD rules and expedition capacity. A Pokémon on a team is in no party and is not the buddy; putting it on a team takes it out of its party (and the reverse). Removing a Pokémon from a place sends it to the PC; it does not release it.
+A module can use an owned Pokémon in its party even if it was acquired elsewhere; a party is a selection roster, not ownership. Placement is exclusive (section 2.2). WORLD expedition assignment is validated against WORLD's rules and capacity. Removing a Pokémon from a place sends it to the PC; it never releases it.
 
 ## 3. Canonical species and form catalog
 
@@ -196,6 +191,8 @@ Each life module has a distinct regional identity and regional dex view. WORLD h
 
 **Species lists (owner, 7 November 2026; built in 0.139.0).** The six module regions (`plan`, `care`, `heal`, `mint`, `home`, `link`; in code `PLAN`, `CARE`, `HEAL`, `MINT`, `HOUSEHOLD`, `LINK`) divide the whole National Dex: every species is in exactly one module region and no evolution line is split. Each has about 65 to 75 hatchable lines, at least one of every rarity (two of the 12 Super Rare lines each), its starters first, its lines in regional-dex order, and its patrons (legendary-class and mythical Guardians) as the last entries. The lists are content in `tools/species/regions/`, summarised in `docs/design.md`; GEAR and WORLD have no module region. `mint`, `home` and `link` stay unreleased until their modules ship.
 
+Legendary-class and mythical species count towards regional dex completion, so a region is complete only with its quest-earned patrons; the Dex shows them as "earned by quest" so they never read as missing eggs, and economy simulations report both "hatchable done" and "fully complete".
+
 All regions are accessible from day one. Progression can unlock deeper chapters, dungeons, bosses, and special encounters, but not basic access to an entire life module/region.
 
 A Pokémon can count toward multiple regional dexes only when the acquisition/encounter rules explicitly record it. Do not infer regional dex completion merely because a species exists in the global collection. Regional dexes are views over shared discovery/ownership events, not separate collections.
@@ -221,11 +218,11 @@ Each applicable module persists an independent `ModuleParty` or equivalent:
 
 Capacity is six: slot 1 is the lead, slots 2 to 6 are members. Enforce unique IDs within one party and across all parties (one Pokémon, one place). A party can contain fewer than six. Do not auto-fill or auto-replace a party when a Pokémon evolves, changes buddy status, or is added to another module.
 
-**As built (0.135.0, REP-014):** the collection is `owned_pokemon` and a Pokémon's place is at most one row of `pokemon_place` (the Pokémon is its primary key, so two places cannot be stored; no row is the PC). A party's rows are its module's party id and slots 1 to n with the lead in slot 1; the buddy is the one row of its kind; a Guardian has its slot. WORLD teams and GEAR helpers remain in their modules' records, and the live write refuses a save that names a Pokémon there and in the table (`DATA_AND_MIGRATIONS.md` section 7.3). A Pokémon obtained from WORLD (a Guardian included) arrives with no place, that is in the PC, until the player assigns it.
+**Storage:** a Pokémon's place is at most one row of `pokemon_place` (the Pokémon is its primary key, so two places cannot be stored; no row is the PC), with the lead in party slot 1 (`DATA_AND_MIGRATIONS.md` section 7.3). WORLD teams and GEAR helpers stay in their modules' records, and the live write refuses a save that names a Pokémon there and in the table. A Pokémon obtained from WORLD (a Guardian included) arrives in the PC until the player assigns it.
 
 ### 6.3 WORLD teams
 
-WORLD owns named or contextual expedition teams, assignments, active expedition membership and team-size limits. They reference canonical owned IDs. An owned Pokémon on a WORLD team is in no module party and is not the buddy or a helper (section 2.2). A Pokémon on an expedition under way cannot be moved. WORLD's expedition concurrency/assignment policy remains authoritative for the team itself.
+WORLD owns named or contextual expedition teams, assignments, active expedition membership and team-size limits, referencing canonical owned IDs. A Pokémon on a team is in no other place (section 2.2) and cannot be moved while its expedition is under way.
 
 ### 6.4 Favorites and protection
 
@@ -242,6 +239,8 @@ The global Pokémon area provides:
 - PC/storage and safe duplicate management.
 - Shared Bag and Poké balance access.
 - Buddy selection independent of parties.
+
+The Pokémon detail reads in this order *(owner, October 2026)*: identity (sprite, number, name, types, level), the specimen (nature, ability, gender, shiny, IVs), growth (EXP, friendship, stats), evolution, its role (buddy, party, helper, team, favourite) and where it came from.
 
 Keep module-party selection quick and contextual. Do not force the user into the full global collection for every simple party adjustment.
 
@@ -340,6 +339,7 @@ Hatching creates one owned Pokémon atomically and updates the relevant Pokédex
 - User can view egg origin and any already-disclosed information.
 - Outcome resolution must be deterministic for a committed egg, including offline use and restore.
 - No network/server-issued ticket is required for ordinary local hatching.
+- **Shiny odds** are fixed at 1 in 128 per egg, with a small bonus for longer focus sessions (`Rules.BASE_ODDS`, `RewardRules.VERSION` 13; owner decision). There is no Shiny Charm, no step-based eggs and no Oval Charm. A granted legendary gets one ordinary shiny roll when created and is never rerolled; legendaries are not tradable.
 - Preserve the existing PLAN immediate-hatch behavior unless PLAN's approved spec explicitly changes it; do not introduce artificial incubation friction there.
 - CARE visitor eggs persist in the shared Egg collection and are hatched under user control.
 - Other module eggs follow their own approved progression/hatch rules while using the same shared lifecycle.
@@ -429,29 +429,27 @@ The ecosystem must preserve the approved module mechanics; it does not redefine 
 - Only user-completed eligible activities/sessions and approved capped participation events may qualify.
 - Manual and imported representations of the same activity must deduplicate to one canonical event.
 - Historical backfill, passive samples and repeated import must not pay.
-- Exclude weight, body fat, measurements, calories, nutrient totals, heart rate, sleep, recovery, diagnoses, symptoms, medication, medical records, health notes, and other biometrics from reward inputs.
 
 **MINT — Ledger Research**
 - Qualifying actions may include an intentional financial review, account reconciliation, meaningful transaction categorization batch, budget review milestone, bill review, or financial organization event as defined by `MODULES/MINT.md`.
 - Creating/viewing empty records or repeatedly toggling/reviewing the same data must not pay.
-- Exclude transaction/account/bank/e-wallet/card/provider identifiers, merchant, amount, income, spending, savings, debt, balance, payment details and connection status from reward inputs.
 
 **HOME — Habitat Discovery**
 - Qualifying events are completed chore occurrences, meaningful maintenance and approved household upkeep milestones.
 - Creating/editing/viewing a chore, changing inventory quantities, purchase/restocking, undo/re-complete, or schedule edits do not pay.
 - If a HOME chore is linked to a PLAN task, HOME owns the canonical completion event and reward.
-- Exclude room names, household inventory, notes, serial numbers, attachments and property details.
 
 **LINK — Postcard Trail**
 - Qualifying events are distinct eligible follow-up completions under `MODULES/LINK.md`; the balancing target begins around three distinct follow-ups per encounter opportunity.
 - Adding/importing/editing/viewing contacts, notes, dates, call/message frequency, social media activity or responsiveness do not pay.
 - A PLAN-converted follow-up task remains one canonical event with a single reward owner.
-- Exclude contact names, IDs, phone/address, relationship, message text and follow-up notes.
 
 **GEAR — no acquisition**
 - Helper Pokémon may be icons, tool headers or restrained reactions.
 - They do not gain XP/friendship, grant items/Poké, alter utility results, or join a GEAR party.
 - Ranger-style capture gameplay is a standalone minigame only; it cannot recruit Pokémon or pay shared rewards.
+
+*Reward-input exclusions for each module are in section 13.2.*
 
 **WORLD — exploration and recruitment**
 - WORLD owns dungeon/floor progression, Exploration Rank, expedition rewards and recruitment resolution.
@@ -471,6 +469,8 @@ Measure:
 - effort/time and action count
 - progress retained after interruption or missed days
 
+**Easy to fill, hard to perfect** *(owner, October 2026)*: completing a Pokédex is easy, with plenty of Pokémon and Rare Candies a day; what stays hard is a good specimen (a shiny, high IVs, the right nature). Loosen pacing and caps that slow collecting, and never make shinies or IVs easier to compensate.
+
 Favor generous progression. Avoid attendance streaks, decay, expiring meters, login rewards, daily hard gates, arbitrary cooldowns and FOMO. Limits may prevent obvious automation/farming but should not punish ordinary repeated use. Balance changes require simulation and documentation, not casual nerfs.
 
 ## 11. Shared Bag, items, and Poké economy
@@ -480,7 +480,7 @@ Favor generous progression. Avoid attendance streaks, decay, expiring meters, lo
 There is one global Bag/inventory. Every item stack has a canonical item ID, quantity, and any required instance/stack metadata. Modules and WORLD facilities request validated inventory operations; they do not directly mutate local item quantities.
 
 - Item definitions are catalog data; owned quantities are inventory state.
-- Held items are persistent, non-consumable equipment; consumables are a separate item class with explicit, atomic consumption semantics. A held-item trigger never decrements inventory or destroys the equipment.
+- Held items are persistent equipment (section 11.1.1); consumables are a separate item class with explicit, atomic consumption.
 - Item grants, consumption, transfers and held-item changes are atomic and idempotent.
 - `WorldData.items` staging inventory must be reconciled into the shared Bag; do not preserve it as a second active inventory.
 - Module-specific unlocks or rewards may grant shared items but cannot create duplicate inventory systems.
@@ -507,7 +507,7 @@ Conversion is 1:1, summing both legacy balances into the new shared Poké balanc
 
 `PlayerState.coins` and `WorldData.poke` are legacy sources only; after migration all reads/writes use the shared economy repository. UI labels use Poké consistently.
 
-**As built (0.135.0, REP-014):** the balance and the Bag are `currency_balance` and `bag_stack`, written only by `EconomyRepository.settle` together with their `reward_ledger_entry` rows in one transaction (the live save turns the change of one action into one event; the migration's opening balance carries the Poké merge's two source values in its metadata and pays nothing). `PlayerState.coins` is the balance as the app reads it; `WorldData.poke` is **no longer stored**: it is the in-memory input of World's pure rules, set from the balance on load and folded back after each action, and an old save's stored World balance is read once into `legacyPoke` for the merge and never written. Dropping the in-memory field needs World's rules to take the balance as an input (`DATA_AND_MIGRATIONS.md` section 7.3.0).
+**Storage:** the balance and the Bag (`currency_balance`, `bag_stack`) are written only by `EconomyRepository.settle` together with their `reward_ledger_entry` rows in one transaction; the migration's opening balance records the merge's two source values and pays nothing. `PlayerState.coins` is the balance as the app reads it. `WorldData.poke` is not stored: it is World's in-memory rule input, set from the balance on load and folded back after each action, and an old save's World balance is read once into `legacyPoke` for the merge (`DATA_AND_MIGRATIONS.md` section 7.3.0).
 
 ### 11.3 Economy operations
 
@@ -556,7 +556,7 @@ If the transaction fails, none of its reward side effects may remain. If the sam
 
 ### 12.4 Durable local identity and sync
 
-The current Supabase unique constraint `(user_id, app, idempotency_key)` and server-side reward function are useful implementation references, not the product's authority. Product target is local-first without mandatory Supabase/cloud sync. Implement equivalent durable local uniqueness and transaction guarantees. If optional export/import or future sync is used, event IDs remain stable across devices and imports.
+Supabase and the server reward function are retired (0.130.0); rewards are decided on the phone. Durable local uniqueness and transaction guarantees replace the old `(user_id, app, idempotency_key)` constraint. If export/import or any future sync is used, event IDs remain stable across devices and imports.
 
 Current `RewardEngine` is a pure deterministic calculator; caller-side idempotency alone is insufficient. `RewardRules.VERSION` and golden-vector tests should be retained and expanded. Current local `RewardEntry` needs durable event identity/settlement semantics equivalent to the shared ledger.
 
@@ -606,6 +606,15 @@ A Find is a durable WORLD discovery entity with its own stable ID, species/form 
 ### 14.3 Guardians and story recruits
 
 Guardian/Legendary/Mythical recruitment is authored and distinct from ordinary random encounter recruitment. Story state and reward settlement must be idempotent. Do not auto-add the recruited Pokémon to the current expedition team, a module party, or global buddy selection.
+
+**Where a legendary guards** *(owner, 1 November 2026; WORLD layers for Kanto to Sinnoh are built, the rest is direction)*:
+- Guardians are legendary and mythical only. **Main legendaries guard their home region**: every box legendary of a region's games is one of its quests (both version legendaries are in the story) and each becomes a Guardian of that region, giving the region's permanent boost (as Primal Dialga does for the home layer). How several boosts in one region combine is open (assumed: they add up inside the cap on Guardian effects).
+- **Side legendaries guard in modules** (the lake trio for PLAN, others as each module is designed), not in a region.
+- **Primal Dialga is not Dialga**: the home layer's Temporal Tower Guardian is the separate form `dialga-primal` (id 20001, `tools/species/custom_forms.txt`, Dialga's base stats, SpriteCollab's "Primal" sprites); Sinnoh's Dialga quest pays the real Dialga, and Sinnoh's Guardians are Dialga, Palkia and Giratina.
+- **Hisui is its own layer** after Paldea (a historical era, *proposed*): it awards the Origin-form items (Adamant Crystal, Lustrous Globe, Griseous Core) and Arceus is its main quest and Guardian.
+- Proposed main legendaries, to correct before each region is built: Kanto Mewtwo and the three birds; Johto Ho-Oh and Lugia; Hoenn Groudon, Kyogre, Rayquaza; Sinnoh Dialga, Palkia, Giratina; Unova Reshiram, Zekrom, Kyurem; Kalos Xerneas, Yveltal, Zygarde; Alola Solgaleo, Lunala, Necrozma; Galar Zacian, Zamazenta, Eternatus; Paldea Koraidon, Miraidon, Terapagos.
+
+**Region layers** *(owner, 1 November 2026)*: each mainline region is its own layer behind the Map switch, open from the first day, beside the Mystery Dungeon layers; nothing existing is replaced. A region has eight to nine dungeons, its wild tables follow its regional dex (its Pokémon are found only there), and its extra areas (Sevii Islands, Isle of Armor, Crown Tundra, Kitakami, Blueberry Academy) are late dungeons of it. Special spaces (Hyperspace Lumiose, Ultra Space, Ultra Megalopolis, Battle Zone, Terarium, Area Zero) are Guardian-tier places inside their region, opened by its story. Regions release one at a time in order (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea, then Hisui), each after its own `:world-core:simulateWorldEconomy` run. The spin-off layer starts with the Ranger regions (Fiore, Almia, Oblivia) and Orre, after the mainline regions are under way; other settings stay on the owner's atlas list and are assumed one layer each.
 
 ## 15. Local-first persistence, offline, and recovery
 
@@ -701,8 +710,6 @@ Baseline source archive: `0.123.0` (3 November 2026). Audit current branch befor
 | `careLeadId` | Legacy CARE buddy-like reference | Reconcile to global buddy preference only where semantically equivalent |
 | `PlayerState.coins`, `WorldData.poke` | Two legacy currency balances | Sum 1:1 into shared Poké once; retain migration audit values |
 | `WorldData.xp` | WORLD Exploration Rank XP | Keep distinct from individual Pokémon XP |
-| Supabase reward unique key `(user_id, app, idempotency_key)` | Existing duplicate protection | Preserve principle in local-first design; do not make Supabase mandatory |
-| Server-issued egg tickets | Legacy hatching dependency | Remove as requirement; use deterministic local Egg records |
 
 ### 17.2 Existing behaviors to preserve unless explicitly superseded
 
@@ -716,13 +723,7 @@ Baseline source archive: `0.123.0` (3 November 2026). Audit current branch befor
 
 ### 17.3 Known architecture corrections
 
-- Replace a single global active party assumption with independent module parties and independent WORLD expedition teams.
-- Replace `PlayerState.coins` plus `WorldData.poke` with one shared Poké balance after 1:1 migration.
-- Replace local `WorldData.items` staging as an active inventory with the shared Bag.
-- Add durable local reward event identity; a deterministic reward calculator alone is not idempotency.
-- Add individual Pokémon XP without conflating WORLD Exploration Rank XP.
-- Make Egg state durable and locally resolvable.
-- Resolve legacy region aliases using record provenance/type.
+The corrections (independent module parties and WORLD teams, one Poké balance, the shared Bag in place of `WorldData.items`, durable reward event identity, individual Pokémon XP apart from Exploration Rank XP, durable local eggs, provenance-based region aliases) are the migrations of section 15.4 and the rules of sections 2, 8, 9, 11 and 12.
 
 ## 18. Testing and acceptance criteria
 
@@ -730,7 +731,7 @@ Baseline source archive: `0.123.0` (3 November 2026). Audit current branch befor
 - A Pokémon acquired from any module appears exactly once in the shared collection.
 - Evolution changes the same owned instance and preserves history/party references.
 - Each module party is independent; changing one party never mutates another.
-- The same owned Pokémon can appear in multiple module parties.
+- No Pokémon is in two places (section 2.2): assigning one takes it from its old place.
 - WORLD teams are independent of module parties and preserve their own capacity/assignment rules.
 - Buddy selection is independent of every party and team.
 - No module can create a duplicate local collection or inventory.
@@ -765,32 +766,7 @@ Baseline source archive: `0.123.0` (3 November 2026). Audit current branch befor
 
 ## 19. Implementation priorities
 
-**P0 — shared domain and migration foundation**
-1. Define stable species/form/owned-instance IDs and repositories.
-2. Consolidate collection and regional dex state.
-3. Implement independent module party references and separate WORLD team assignments.
-4. Implement global buddy preference.
-5. Implement one Bag and one Poké economy with audited 1:1 legacy conversion.
-6. Implement durable local reward ledger and atomic settlement.
-7. Make eggs/hatching durable and offline.
-8. Add individual XP and central evolution/progression services.
-9. Migrate legacy data with recovery and verification.
-
-**P1 — module acquisition integration**
-1. Connect PLAN Focus/Task Eggs.
-2. Connect CARE visitor/Care Egg/direct recruit outcomes.
-3. Connect HEAL Field Research with privacy-safe event envelopes.
-4. Connect MINT Ledger Research with privacy-safe event envelopes.
-5. Connect HOME Habitat Discovery with single-owner chore events.
-6. Connect LINK Postcard Trail with privacy-safe distinct follow-up events.
-7. Preserve WORLD Finds, recruitment, expedition XP and Exploration Rank separation.
-8. Verify GEAR has no acquisition/reward implementation.
-
-**P2 — refinement**
-1. Complete collection filters, regional dex browsing and safe duplicate management.
-2. Improve authored hatch/recruit/evolution scenes and history views.
-3. Simulate long-run generosity and economy sinks.
-4. Refine launcher and module buddy presentation without clutter.
+Order and status live in `IMPLEMENTATION_GUIDE.md` and `IMPLEMENTATION_BACKLOG.md`. The dependency order is: **P0** shared foundation (stable IDs and repositories, one collection and dex, independent module parties and WORLD teams, global buddy, one Bag and Poké with audited 1:1 conversion, durable ledger with atomic settlement, durable offline eggs, individual XP and central evolution, recoverable migration); **P1** module acquisition (PLAN, CARE, HEAL, MINT, HOME, LINK through privacy-safe single-owner events, WORLD Finds and XP separation kept, GEAR verified free of acquisition); **P2** refinement (collection filters, regional dex browsing, safe duplicate management, hatch/recruit/evolution scenes, long-run generosity simulation, launcher and buddy presentation).
 
 ## 20. Expanded Pokémon gameplay systems
 
@@ -1059,8 +1035,7 @@ Do not start Tier 2/3 before Tier 0 inventory, transaction, persistence and migr
 
 ### 20.10 Acceptance criteria
 
-- Held items remain owned and equipped after every activation, trigger, expedition, battle, process death and app restart, and are reusable in later eligible encounters. No held item has lifetime single-use semantics.
-- No held-item API or UI action silently consumes, destroys, charges, breaks or loses equipment.
+- Held items stay owned and equipped after every trigger, expedition, battle, process death and restart (section 11.1.1); no held-item API or UI action consumes, destroys, charges, breaks or loses equipment.
 - A held item can be equipped to at most one Pokémon and one Pokémon has at most one held item under the initial slot model.
 - Swapping/equipping is atomic, validated, reversible and correctly reflected in Bag quantity/assignment views.
 - Effect triggers are scoped and reset without altering item ownership or quantity.

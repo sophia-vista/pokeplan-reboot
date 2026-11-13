@@ -698,44 +698,11 @@ Define concise empty, loading, stale, offline, import error, connection error, r
 
 ## 18. Implementation phases
 
-### P0 — Financial foundation
-- Confirm independent MINT domain and repository boundaries.
-- Define money/currency types and exact arithmetic.
-- Implement local persistence, schema versioning, migrations and integrity checks.
-- Define sensitive-data handling, backup and export integration.
-- Define provider interfaces without promising live coverage.
+Status is tracked in `../IMPLEMENTATION_BACKLOG.md`. Order:
 
-### P0 — Accounts and transactions
-- Account lifecycle, account groups, opening balances and snapshots.
-- Income, expense, transfer, refund, fee and adjustment records.
-- Category management, fast entry, search and filters.
-- Atomic transfer and credit-card accounting invariants.
-
-### P0 — Budgets and bills
-- Budget periods, calculations, rollover and optional savings targets.
-- Bill recurrence, occurrences, partial payments and payment linking.
-- Shared reminder contract integration.
-
-### P1 — Overview and reports
-- Overview summaries, available-money calculation and privacy mode.
-- Cash-flow, category and account reports.
-- Stale/incomplete data disclosure and financial review.
-
-### P1 — Import, reconciliation and export
-- CSV/statement import, source provenance and duplicate review.
-- Reconciliation sessions and explicit adjustments.
-- Complete local export and recovery tests.
-
-### P1 — Progression
-- Ledger Research event contract.
-- Shared reward ledger integration and privacy tests.
-- Disable-progression behavior.
-
-### P2 — Provider integrations
-- Provider-by-provider feasibility research.
-- Official API/aggregation adapter only after documented access, consent, security and coverage validation.
-- Notification parsing only after platform/provider policy and technical review.
-- Connection diagnostics, revocation and recovery.
+- **P0, foundation:** independent MINT domain and repositories; exact money and currency types; local persistence, schema versioning, migrations and integrity checks; sensitive-data handling, backup and export; provider interfaces that promise no live coverage. Accounts and transactions (lifecycle, groups, opening balances, snapshots, all transaction types, categories, fast entry, search, filters, atomic transfers and credit-card invariants). Budgets and bills (periods, rollover, optional savings targets, recurrence, occurrences, partial payments, payment linking, shared reminder contract).
+- **P1:** Overview (available money, privacy mode), cash-flow, category and account reports, stale-data disclosure, financial review; CSV/statement import with provenance and duplicate review, reconciliation sessions with explicit adjustments, complete local export and recovery tests; Ledger Research event contract, shared reward ledger integration and privacy tests, disable-progression behaviour.
+- **P2, provider integrations:** provider-by-provider feasibility; an official API or aggregation adapter only after documented access, consent, security and coverage validation; notification parsing only after policy and technical review; connection diagnostics, revocation and recovery.
 
 Provider integrations must not block complete manual finance functionality.
 
@@ -802,51 +769,19 @@ Provider integrations must not block complete manual finance functionality.
 - [ ] Empty, loading, offline, stale and error states are clear.
 - [ ] No redundant cards, captions or decorative Pokémon compete with finance tasks.
 
-## 20. Audit baseline and reuse policy
+## 20. Reuse policy
 
-The supplied repository archive `pokeplan-reboot-main (5).zip`, version `0.123.0`, was inspected for financial-domain implementation. No first-class MINT module or financial account, transaction, budget, bill or provider-connection domain was found. The incidental `nature-mint.png` asset is unrelated.
+Reuse the shared Pokémon collection, reward ledger and economy interfaces, navigation and module registration, database, backup and migration foundations, design-system components and tokens, and the shared reminder scheduler. GEAR's generic currency formatting or conversion primitives only if they preserve MINT's source/rate provenance and do not take ownership of financial records.
 
-This is a static archive audit, not a claim that a build or runtime test was performed. Reinspect the current working branch before implementation because source may have changed after the baseline archive.
-
-### Reuse
-- Shared Pokémon collection, reward ledger and economy interfaces.
-- Shared app navigation/module registration patterns where they meet current architecture.
-- Shared database, repository, backup and migration foundations after review.
-- Shared design-system components and semantic tokens.
-- Shared reminder scheduler and notification contracts.
-- Generic currency formatting/conversion primitives from GEAR only if they preserve MINT's source/rate provenance and do not transfer ownership of financial records.
-
-### Refactor
-- Isolate progression event delivery from financial repositories.
-- Ensure exact monetary arithmetic and atomic transactions.
-- Add provenance-aware import and reconciliation pipelines.
-- Ensure backup/export and erase cover financial data safely.
-- Make provider adapters explicit, permission-scoped and independently revocable.
-
-### Replace or avoid
-- Do not add a large set of financial fields to a legacy global save object.
-- Do not store MINT records in PLAN, WORLD or GEAR repositories.
-- Do not reuse legacy cloud synchronization as a financial-data dependency.
-- Do not create another Pokémon inventory or currency.
-- Do not implement bank scraping through accessibility automation or credential capture.
+Avoid: adding financial fields to a legacy global save object; storing MINT records in PLAN, WORLD or GEAR repositories; legacy cloud sync as a financial-data dependency; another Pokémon inventory or currency; bank scraping through accessibility automation or credential capture. Keep progression event delivery isolated from financial repositories, imports provenance-aware, backup/export/erase covering financial data, and provider adapters explicit, permission-scoped and independently revocable.
 
 ## 21. Documentation ownership
 
-| Document | Owns |
-|---|---|
-| Product Bible | Product-wide MINT purpose, module map and non-negotiable constraints |
-| This `MODULES/MINT.md` | MINT workflows, domain, integrations, privacy adaptation, progression and acceptance |
-| `FEATURES/DESIGN_SYSTEM.md` | Shared PMD dialogue-box visual language and components |
-| `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture` | Shared scheduling, delivery, quiet hours, focus deferral and notification routing |
-| `ARCHITECTURE/DATA_AND_MIGRATIONS.md` | Shared persistence, migration, backup, restore and erase foundations |
-| `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` | Shared provider, permission, secure storage and privacy architecture |
-| Implementation Guide | Audit status, implementation order and exit gates |
+Product-wide MINT purpose and constraints: `../PRODUCT_BIBLE.md`. Visual language: `../FEATURES/DESIGN_SYSTEM.md`. Shared reminders, providers, permissions, secure storage and privacy: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md`. Persistence, migration, backup, restore and erase: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`. Delivery status: `../IMPLEMENTATION_BACKLOG.md`. This file owns MINT workflows, domain, integrations, privacy adaptation, progression and acceptance; do not duplicate the shared contracts.
 
-MINT-specific documents may link to shared specifications but must not duplicate their global contracts.
+## 22. As built: the manual slice
 
-## 22. As built (0.142.0, REP-014): the manual slice
-
-*Built and tested on the JVM, compiled for Android; **not run on a device**. Statement-file import came in 0.162.0 (section 22A); no bank or e-wallet is connected, and the pages say so.*
+*Not run on a device. No bank or e-wallet is connected, and the pages say so; statement-file import is in 22A.*
 
 **What exists.** Section 3's destinations as a menu with Overview on top: **Accounts** (4: bank, e-wallet, digital bank, cash, card, loan, other asset and liability; a short optional suffix and group; archive, close, reopen; deletion refused when history exists), **Activity** (5: expense, income, transfer, refund, fee, balance adjustment; fast entry of amount, account, category; pending, posted, excluded, voided; search and type filters; edit, exclude, void, delete), **Budgets** (7: monthly or weekly, overall or one category, planned, spent, left or over, percent), **Bills** (8: one time, weekly, monthly, yearly; the month-end and leap-day rules; paid, part paid, skipped, undo; paying creates no transaction), **Review** (9: this month's money in and out, spending by category, the reconcile flow of 5.8 and the weekly review), and **Settings** (Ledger Research, hide amounts, default currency, export and erase by kind). Overview shows net position per currency, available money with its basis (liquid accounts less known bills due in 14 days; a card's balance is never cash) and the next bills.
 
@@ -858,21 +793,21 @@ MINT-specific documents may link to shared specifications but must not duplicate
 - A payment is 3 Rare Candies (reconciled) or 5 (review), a little friendship for Mint's lead, a trainer point and points towards a **Ledger Egg** (2 and 3; 4 fill the meter), hatched into Mint's party from the **Mint Region** (`tools/species/regions/mint.txt`). Mint's party perks (Candy finder, Friendship gain, capped at +25% a bucket) change only what Ledger Research pays.
 - **First-run tutorial** (POKEMON_ECOSYSTEM.md 10.2.1): a 5-second tally gives one Mint Region Pokémon into Mint's party, leading it, once per save; it creates no record, event, meter point or cap use.
 
-**Data (section 15).** `mint_*` tables from the start (schema 8): `mint_account`, `mint_category`, `mint_transaction`, `mint_budget`, `mint_bill`, `mint_bill_payment`, `mint_reconciliation`, `mint_review` (each row `key, position, day, json`) and `mint_state` (settings); `MintTables` reads, exports or erases one family alone. Mint is in the daily backup and the backup bundle (`BackupBundle.KNOWN`); restoring a backup made before Mint existed leaves Mint alone. **Encryption (owner delegated the choice, 8 November 2026; built in 0.141.0).** Every Mint row (each record's JSON and each setting) is sealed with **AES-256-GCM** under a key made inside the **Android Keystore** (non-exportable, in hardware where the phone has it; `KeystoreMintKey`, `AesGcmCipher`, `RowCipher`), a fresh random IV per row; the stored `day` column is left empty so a row shows no amount, name or date (only its random key and its position). Every copy of Mint that leaves its tables is sealed the same way: the daily backup and a backup file carry Mint as one sealed text, and what a restore or a failed read keeps aside is sealed. So the database, its backups and Android's own cloud backup of the app's files hold Mint only as text that opens on this phone. The cost, stated plainly: **a backup of Mint opens only on a phone that has the key**; a backup restored on another phone keeps Mint sealed in a `aside:mint:locked:*` document (nothing is deleted or overwritten) and Mint starts empty there. Mint's own **Export** (Settings) is the way to move records: it is a readable file and says so. If the Keystore cannot give the key, Mint does not start that run, is kept in memory only and is never written in clear. **Portable backup (0.142.0).** A backup *file* can instead carry Mint sealed under a **passphrase** the player chose (`p1.`: PBKDF2-HMAC-SHA256, 600,000 rounds, random salt and stored count, into AES-256-GCM; `PassphraseSealer`, `Pbkdf2Sealer`, `BackupBundle.portable` and `unlock`; at least 10 characters), so it opens on any phone given the passphrase. Only a file the player asks to be portable is made this way; the tables and the daily backups stay sealed to the phone's key. Restoring asks for the passphrase, a wrong one changes nothing, and the restored Mint is sealed to the new phone's key as it is written. The passphrase is never stored and a lost one cannot be recovered; a Mint backup sealed by another phone's key cannot be re-sealed here. **Access gate (0.142.0, 13.2).** Optional (Settings → Privacy): the phone's own screen lock (`KeyguardManager` confirm-credential, `DeviceGate`, `AndroidDeviceGate`) before the Mint screens, again after the app or Mint was left for 30 seconds; a door only, no key or password of its own, so it cannot lock anyone out; unavailable without a screen lock and on desktop and web. It does not guard the files (the sealing does) or Settings → Backups. **Not done:** attachments, a gate on the Pokémon side of Mint's party, and a device check of either.
+**Data (section 15).** `mint_*` tables from the start (schema 8): `mint_account`, `mint_category`, `mint_transaction`, `mint_budget`, `mint_bill`, `mint_bill_payment`, `mint_reconciliation`, `mint_review` (each row `key, position, day, json`) and `mint_state` (settings); `MintTables` reads, exports or erases one family alone. Mint is in the daily backup and the backup bundle (`BackupBundle.KNOWN`); restoring a backup made before Mint existed leaves Mint alone. **Encryption (owner delegated the choice, 8 November 2026).** Every Mint row (each record's JSON and each setting) is sealed with **AES-256-GCM** under a key made inside the **Android Keystore** (non-exportable, in hardware where the phone has it; `KeystoreMintKey`, `AesGcmCipher`, `RowCipher`), a fresh random IV per row; the stored `day` column is left empty so a row shows no amount, name or date (only its random key and its position). Every copy of Mint that leaves its tables is sealed the same way: the daily backup and a backup file carry Mint as one sealed text, and what a restore or a failed read keeps aside is sealed. So the database, its backups and Android's own cloud backup of the app's files hold Mint only as text that opens on this phone. The cost, stated plainly: **a backup of Mint opens only on a phone that has the key**; a backup restored on another phone keeps Mint sealed in a `aside:mint:locked:*` document (nothing is deleted or overwritten) and Mint starts empty there. Mint's own **Export** (Settings) is the way to move records: it is a readable file and says so. If the Keystore cannot give the key, Mint does not start that run, is kept in memory only and is never written in clear. **Portable backup.** A backup *file* can instead carry Mint sealed under a **passphrase** the player chose (`p1.`: PBKDF2-HMAC-SHA256, 600,000 rounds, random salt and stored count, into AES-256-GCM; `PassphraseSealer`, `Pbkdf2Sealer`, `BackupBundle.portable` and `unlock`; at least 10 characters), so it opens on any phone given the passphrase. Only a file the player asks to be portable is made this way; the tables and the daily backups stay sealed to the phone's key. Restoring asks for the passphrase, a wrong one changes nothing, and the restored Mint is sealed to the new phone's key as it is written. The passphrase is never stored and a lost one cannot be recovered; a Mint backup sealed by another phone's key cannot be re-sealed here. **Access gate (13.2).** Optional (Settings → Privacy): the phone's own screen lock (`KeyguardManager` confirm-credential, `DeviceGate`, `AndroidDeviceGate`) before the Mint screens, again after the app or Mint was left for 30 seconds; a door only, no key or password of its own, so it cannot lock anyone out; unavailable without a screen lock and on desktop and web. It does not guard the files (the sealing does) or Settings → Backups. **Not done:** attachments, a gate on the Pokémon side of Mint's party, and a device check of either.
 
-**Bill reminders (0.142.0, section 12).** Off until turned on (Settings), then one reminder per occurrence, `0` to `7` days before the due day at a chosen hour, through the shared scheduler (`MintReminders`, `MintReminderAdapter`, `BillReminders`): the quiet hours and focus sessions hold it, an overdue bill is not repeated, a settled, paused, deleted or switched-off bill stops asking, the only button is "Tomorrow" (never "Paid"), and the request holds only the bill's opaque id and its due day. The lock screen always says "A bill is coming up"; the bill's name shows only after unlocking and only if the user allowed it; never an amount. Custom timing beyond the chips and a per-bill timing are not built. **Account edit (0.142.0).** An account's name, type (within its side), provider, group, last digits and opening balance can be edited, and its currency while it has no records.
+**Bill reminders (section 12).** Off until turned on (Settings), then one reminder per occurrence, `0` to `7` days before the due day at a chosen hour, through the shared scheduler (`MintReminders`, `MintReminderAdapter`, `BillReminders`): the quiet hours and focus sessions hold it, an overdue bill is not repeated, a settled, paused, deleted or switched-off bill stops asking, the only button is "Tomorrow" (never "Paid"), and the request holds only the bill's opaque id and its due day. The lock screen always says "A bill is coming up"; the bill's name shows only after unlocking and only if the user allowed it; never an amount. Custom timing beyond the chips and a per-bill timing are not built. **Account edit.** An account's name, type (within its side), provider, group, last digits and opening balance can be edited, and its currency while it has no records.
 
 **Not built, not offered:** splits and bulk categorisation (5.7), reconciliation sessions with imported statements (5.8), rollover and savings targets (7.3, 7.4), account groups as their own records (a group is a label), foreign currency, exchange rates, CSV and statement import, provider connections and notification parsing (10), the budget and bill review events (`budget_review_completed`, `bill_review_completed`), charts, and the Android widget for Mint.
 
-**Audit fixes (0.171.1).** A transfer's default destination is the one shown (same currency only). Activity pages its list ("Show more", 50 at a time). A bill's first due day is picked with the shared date picker; its name and amount can be edited (the schedule stays, 8.3); every settlement offers an undo, and a part payment covering the expected amount is saved as paid. `MintRules.balances` is one pass over the records. **Open for the owner** (not changed): Exclude and Void do the same thing today (neither counts in a balance, a budget or a report; 5.4 reads as if an excluded record should still move the balance); Archive and Close do the same thing (4.6 gives closing an effective date, which is not kept); `Transaction.billId`, `billDueDay` and `refundOf` and a bill's account and category are stored but nothing sets them; marking a bill paid and recording its expense are two separate entries (8.2 allows one explicit action that does both).
+**Audit fixes.** A transfer's default destination is the one shown (same currency only). Activity pages its list ("Show more", 50 at a time). A bill's first due day is picked with the shared date picker; its name and amount can be edited (the schedule stays, 8.3); every settlement offers an undo, and a part payment covering the expected amount is saved as paid. `MintRules.balances` is one pass over the records. **Open for the owner** (not changed): Exclude and Void do the same thing today (neither counts in a balance, a budget or a report; 5.4 reads as if an excluded record should still move the balance); Archive and Close do the same thing (4.6 gives closing an effective date, which is not kept); `Transaction.billId`, `billDueDay` and `refundOf` and a bill's account and category are stored but nothing sets them; marking a bill paid and recording its expense are two separate entries (8.2 allows one explicit action that does both).
 
-## 22A. As built (0.162.0, REP-014): statement import and provider status
+## 22A. As built: statement import and provider status
 
-*Built and tested on the JVM, compiled for Android; **not run on a device**.*
+*Not run on a device.*
 
 **Classification** (`INTEGRATIONS_AND_PRIVACY.md` section 2): the statement file is a *user-assisted import*. GCash, Maya, MariBank, GoTyme and UnionBank are *unsupported or unverified*: the due diligence of section 7.1 (a documented personal-account API, independent developer access in the Philippines, production approval for an individual app, scopes and terms) **has not been done**, so none is offered, and the page says "no verified way to read a personal account". Reading payment notifications is not built (section 7.3: separate privacy review first). Nothing logs in, scrapes, uses Accessibility, or asks for a password, PIN, CVV or code.
 
-**Desk research (`evidence/REP-014-integration-research.md`):** no documented route for an individual developer's app to read a user's own transactions was found for GCash, Maya, GoTyme or MariBank; UnionBank has a business-oriented developer portal whose personal-account access is unconfirmed; the BSP Open Finance framework (Circular 1122) has no confirmed live participant an individual can use. The owner can unblock the next step by trying UnionBank's portal and by sharing one exported statement per provider (values removed).
+**Desk research:** no documented route for an individual developer's app to read a user's own transactions was found for GCash, Maya, GoTyme or MariBank; UnionBank has a business-oriented developer portal whose personal-account access is unconfirmed; the BSP Open Finance framework (Circular 1122) has no confirmed live participant an individual can use. The owner can unblock the next step by trying UnionBank's portal and by sharing one exported statement per provider (values removed).
 
 **Import** (Mint → Import; `StatementImport`, `MintStore.previewStatement` and `importStatement`): the player chooses an account and one CSV file through Android's document picker (no storage permission; strict UTF-8; at most 2 million characters and 5,000 rows, refused whole rather than cut). The reader handles quotes, doubled quotes, line breaks inside a field, comma, semicolon and tab, and a byte-order mark. Columns are guessed from the header and can be changed: date, description, one signed amount **or** money out and money in, an optional reference, and "charges are plus" for card statements. Dates: year first, day first or month first; detected when a day over 12 settles it, otherwise the player is told the file is ambiguous and checks the preview. Amounts are read exactly in the account's currency (`Money`): more decimals than the currency has, a different currency code, zero and absurd values are unreadable rows, never rounded or converted.
 

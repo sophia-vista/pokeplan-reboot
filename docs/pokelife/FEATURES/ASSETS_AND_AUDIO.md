@@ -151,6 +151,14 @@ Expression mapping is semantic, not random. Example mappings may map a low-inten
 - Use the PMD bitmap dialogue font only in contexts where its glyph coverage and license permit. Unsupported glyphs fall back to a readable system font (the current launcher uses Nunito fallback). Do not render long utility content in bitmap type.
 - UI chrome may be drawn in code; Pokémon, item and world art must be sourced media with recorded provenance. No hand-drawn, generated or procedural replacement Pokémon pixel art.
 
+### 5.6 Weather sheets
+
+`assets/weather/` is cut from the owner's rips `source/misc.png` (736 x 648: cloud shadows, three 16-frame tile animations, two sandstorm textures) and `source/rain.png` (1248 x 2192, 61 frames of 240 x 160) by `tools/sprites/cut_weather.py` (transparent where the sheet's panel colour was); `tools/weather/inspect_sheets.py` reports every sheet and frame. Sheet colours are the game's 5-bit colours at `v * 255 / 31`. Frames: snow 64 x 32 and snow-dungeon 32 x 32 (16 frames, 5 colours), blizzard 32 x 32 (16 frames, 4 colours), clouds 720 x 408 (one colour, the game's blue), sand-1 and sand-2 120 x 32 (opaque, 6 colours), rain 240 x 160 (61 frames, 6 colours, no repeats).
+
+- The sandstorm textures sit at y 608 to 639 of `misc.png`; cutting from higher rows brings in the sheet's caption and background. Keep the cut at those rows.
+- Which sheet is which game layer (`tools/weather/match_sheets.py` compares frame by frame): snow is ground layer W03P01 (rip frame f = animation frame f + 2), snow-dungeon a 32 x 32 window of it (f), blizzard W03P03 (f + 9), clouds W01. Rain and the sandstorm textures are not ground layers but the dungeon's effects 16 and 239. How the town plays them is in `LAUNCHER.md` section 4.4.
+- `assets/weather/ramps.tsv` (from `tools/weather/extract_ramps.py`) holds the dungeon's per-weather colour tables, 256 entries per channel.
+
 ## 6. Audio content and playback policy
 
 ### 6.1 Audio categories

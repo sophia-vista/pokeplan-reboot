@@ -10,7 +10,7 @@ import app.pokeplan.core.reward.Reward
 
 /**
  * The shared world as a module sees it: a module sends its effort events and gets the rewards back, and never touches
- * the Pokémon, the bag or the rank itself (docs/ecosystem.md, section 2). [GameStore] is the world on this device.
+ * the Pokémon, the bag or the rank itself (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md). [GameStore] is the world on this device.
  */
 interface World {
     /** Pays a Care moment; null when nothing was paid (not started yet, or today's share is used up). */

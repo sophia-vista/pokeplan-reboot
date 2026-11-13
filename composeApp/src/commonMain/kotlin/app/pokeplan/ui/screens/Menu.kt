@@ -184,12 +184,12 @@ val LocalReduceMotion = staticCompositionLocalOf { false }
 /** The global buddy, for screens that show it without being handed the model (an empty state's sleeping buddy); `App` provides it. */
 val LocalBuddy = staticCompositionLocalOf<app.pokeplan.core.pokemon.OwnedPokemon?> { null }
 
-/** Ordinary navigation, inside the 160 to 240 ms of docs/ecosystem.md, section 11; game moments take longer on their own. */
+/** Ordinary navigation, inside the 160 to 240 ms of docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md; game moments take longer on their own. */
 private const val FADE_MS = 180
 private const val SLIDE_MS = 220
 
 /**
- * Switches between screens with the transitions of docs/ecosystem.md, section 11: going deeper ([depth] grows: into a
+ * Switches between screens with the transitions of docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md: going deeper ([depth] grows: into a
  * module, a section or a detail) slides a short way in from the end, and coming back slides out the other way; screens
  * at the same depth (the bottom tabs, the sections of a collection) crossfade. With Reduce motion the switch is instant.
  * Each screen keeps its saved state, such as its scroll position, while another is shown, so coming back finds it where

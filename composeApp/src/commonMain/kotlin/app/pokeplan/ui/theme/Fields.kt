@@ -28,7 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.VisualTransformation
 
 /*
- * The text field of the control system (the sibling of [PixelKey]; states in docs/ui-ux-brief.md, section 5.1), drawn like a key: a
+ * The text field of the control system (the sibling of [PixelKey]; states in docs/pokelife/FEATURES/DESIGN_SYSTEM.md section 5.6), drawn like a key: a
  * stair-cornered 2 dp outline round a panel face, no rounding and no floating label.
  *
  *   state     face       outline        text                  notes

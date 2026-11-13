@@ -1,9 +1,7 @@
 # PokéLife Product Bible
 
-**Version:** 1.9  
 **Status:** Authoritative product-wide specification  
-**Last reconciled:** 6 November 2026 (owner decisions on Pokémon roles, module map, local-only, Android priority and the single Poké currency incorporated; imported into the repository)  
-**Implementation baseline:** Repository `main` at `0.123.0` (commit `2b22975d`); see `IMPLEMENTATION_GUIDE.md`
+**Last reconciled:** 11 November 2026
 
 > This document records product-wide decisions and boundaries. It is not an implementation-status report. Detailed behavior belongs in the canonical module, feature, and architecture specifications listed below.
 
@@ -31,10 +29,19 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 ## 3. Product boundaries
 
 - Android is the primary and only supported product platform (owner decision, 6 November 2026). The repository's desktop and web targets are development conveniences (screenshot tests, fast iteration): they may stay as long as keeping them compiling is cheap, they are not release targets, they gate nothing, and no Android design, storage or UX choice may bend to keep them working.
-- PokéLife is local-first and offline-capable. Optional provider access does not become a core dependency. Local-only has priority (owner decision, 6 November 2026): the repository's Supabase backend, accounts, cloud sync, friends and weekly board, and the server-side reward function are legacy paths to be retired after the migration and rollback gates in `ARCHITECTURE/DATA_AND_MIGRATIONS.md` pass. Until then they are not extended.
+- PokéLife is local-first and offline-capable. Optional provider access does not become a core dependency. Local-only has priority (owner decision, 6 November 2026): the Supabase backend, accounts, cloud sync, friends and weekly board, and the server-side reward function were retired in 0.130.0 after the migration gates; none is to be rebuilt.
 - No financial transfers, messages, or other consequential external actions occur without explicit user confirmation.
 - Health, finance, relationship, journal, and household content remain within their owning domains. Shared progression receives only explicitly approved minimal, non-sensitive event metadata.
 - No game mechanic may make real-life utility conditional on game participation or currency.
+
+### Owner decisions of 13 November 2026 (answering the product review)
+
+- **Personal use only.** PokéLife is built for the owner's own phone and is never published (no Play Store, no public release). Work that exists only for a public release is dropped: a protected release key (REP-005; the committed key may stay), store and Play-policy justifications such as `QUERY_ALL_PACKAGES`, store listings. Licence duties still apply (CC BY-NC credits, REP-015), and so does everything that protects the owner's data.
+- **Automated tests over manual checks.** Section 9's "actual-device verification" is met by automated tests that exercise the Android code (Robolectric on the JVM where it can, instrumented tests only where it cannot), real screenshot comparison in both palettes and at large text, and simulated process death, kill and corruption. No session hands the owner a manual checklist; the owner reports defects and possible optimisations as they come up in daily use.
+- **Module priorities.** PLAN, CARE and WORLD are used daily and get depth first. MINT, HEAL, HOME and GEAR are to reach the level of a specialist app in their category. LINK is set up once and then left alone: it should need no regular attention (import, reminders that just work, nothing to tend).
+- **HOME is single-user.** No household sharing or shared lists between people.
+- **English only.** No localisation.
+- **A watch is wanted** if one can be supported: a feasibility check first, against the owner's actual watch (the Huawei Watch Fit 4 Pro, which is not Wear OS; `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` section 5.2), with the phone's notification actions on the watch as the baseline.
 
 ## 4. Canonical module map and ownership
 
@@ -51,7 +58,7 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 
 There is no separate Explore module. WORLD is the Pokémon adventure; HEAL owns physical health; HOME owns household management; LINK owns relationships.
 
-These docs replace the module plans in the repository's older `docs/ecosystem.md` (owner decision, 6 November 2026): Health is HEAL, Finance is MINT, Connect is LINK, Pokégear is GEAR, Explore is folded into WORLD, and **Grow is not a module** (goals, projects and milestones belong to PLAN; reflection belongs to CARE). The eight modules above are the complete set.
+These docs replace the older module plans (owner decision, 6 November 2026): Health is HEAL, Finance is MINT, Connect is LINK, Pokégear is GEAR, Explore is folded into WORLD, and **Grow is not a module** (goals, projects and milestones belong to PLAN; reflection belongs to CARE). The eight modules above are the complete set.
 
 ### Cross-module ownership rules
 
@@ -79,6 +86,13 @@ Product-wide invariants:
 - Pokémon progression and acquisition should be generous and permanent. No breeding, required trading, paid Pokémon, seasonal exclusives, or punitive attendance loops.
 - The initial World buddy can be selected from all official starters, including regional starter variants. Any owned Pokémon can later become the buddy without resetting story progress.
 
+### Owner decisions of 11 November 2026 (answering the design review)
+
+- **Parties:** six per module stay; the role section of a Pokémon is simplified instead (one "Move to..." place picker rather than a button per role).
+- **Candies:** Exp. Candy (XS to XL) is the everyday wage and Rare Candy the occasional prize; Super Candy stays as the evolution item (level evolutions keep their Super Candy cost for now). Re-balancing changes payouts, so bump `RewardRules.VERSION` and update `docs/economy.md`.
+- **Shiny odds** stay 1 in 128, and the module-named Pokédexes stay as they are.
+- **Growth rates, base friendship** (everything starts at 70) and evolution at the level itself remain open (REP-048).
+
 ### Expanded Pokémon ecosystem scope
 
 The approved staged expansion includes persistent held-item loadouts and effects, item acquisition/shop/crafting sources, abilities and Hidden Abilities, natures/Mints, moves and mastery, evolution items, training, Poké Ball identity, Ribbons/Marks/research, Mega/Z/Dynamax/Tera systems, Pokémon Jobs, contests, Pokéathlon, berries/cooking/camps, fossils, raids/outbreaks and Ranger-style field interactions. Shared ownership and detailed mechanics are specified in `FEATURES/POKEMON_ECOSYSTEM.md`; WORLD owns their player-facing gameplay where appropriate. These are staged features, not a claim of current implementation.
@@ -96,6 +110,11 @@ WORLD is a PMD-inspired idle/adventure game spanning PMD worlds, mainline region
 - Do not let pixel art, animation, sound, or dialogue obstruct practical actions.
 - Preserve crisp pixel rendering and authored, character-consistent dialogue.
 - Accessibility, scalable typography, TalkBack, reduced motion, contrast, and large touch targets apply across the product.
+
+Owner decisions of 11 November 2026:
+- **Identity: both.** The player is a **trainer** in every life module (name, trainer rank, the Oak-style welcome stay, and the missing Oak portrait is still needed). **WORLD uses teams** (the expedition team, Rescue/Explorers framing, no humans staged) with its own Normal to Diamond ladder. The two ladders need clearly different names and places so one screen never shows both as "Rank".
+- **Numbers font:** try the PMD dialogue font (`pmd-dialogue`; Latin letters, digits and a few marks, Nunito fallback) for numbers (focus minutes, money, quantities, the calculator) and check that the zero reads as a zero, then decide how far it spreads. Per `FEATURES/DESIGN_SYSTEM.md` 5.3 it stays out of long reading, dense data tables and user-entered text, so money tables and notes keep a plain face. Try it before patching the DP font's zero.
+- **Focus follows Forest:** strict failure and the 10 s grace stay (Deep Focus); add an allow list of apps usable without penalty (Usage Access, or a simpler "calls and these apps" list, decided against the permission policy in `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md`), an ongoing notification and a break cycle; a stopwatch mode stays optional. The 10 s grace with a notification shade or a call needs a device check.
 
 `FEATURES/DESIGN_SYSTEM.md` owns tokens, reusable components, geometry, typography, interaction states, accessibility, and shared presentation rules. `FEATURES/ASSETS_AND_AUDIO.md` owns asset resolution, manifests, provenance, licensing, rendering metadata, audio selection, and validation. Module documents define only their contextual use and justified adaptations.
 
@@ -126,7 +145,7 @@ A capability is not complete because it is specified, has a screen, or has code 
 - successful end-to-end workflow verification and, where relevant, actual-device verification;
 - updated authoritative documentation and changelog.
 
-The Implementation Guide records evidence and status. Do not maintain a separate global decision register; approved decisions are recorded in their authoritative document.
+Do not maintain a separate global decision register; approved decisions are recorded in their authoritative document.
 
 ## 10. Decision precedence
 
@@ -141,33 +160,32 @@ A genuine conflict with an approved decision must be surfaced for approval; do n
 
 ## 11. Canonical documentation inventory
 
-The authoritative documentation root is `docs/pokelife/` in the repository (the path below is relative to it; the original library root was `/PokéLife/`). `README.md` there explains how it relates to the repository's older documents.
+The authoritative documentation root is `docs/pokelife/` (paths below are relative to it). `README.md` there explains how it relates to the repository's older documents.
 
 ```text
-/PokéLife/
-  docs/pokelife/
-    README.md  # orientation only; not a specification
-    PRODUCT_BIBLE.md
-    IMPLEMENTATION_GUIDE.md
-    MODULES/
-      PLAN.md
-      CARE.md
-      HEAL.md
-      MINT.md
-      HOME.md
-      LINK.md
-      GEAR.md
-      WORLD.md
-    FEATURES/
-      LAUNCHER.md
-      POKEMON_ECOSYSTEM.md
-      ASSETS_AND_AUDIO.md
-      DESIGN_SYSTEM.md
-    ARCHITECTURE/
-      DATA_AND_MIGRATIONS.md
-      INTEGRATIONS_AND_PRIVACY.md
-      TEST_STRATEGY.md
-  IMPLEMENTATION_BACKLOG.md  # active delivery plan; separate from product specifications (also in docs/pokelife/)
+docs/pokelife/
+  README.md  # orientation only; not a specification
+  PRODUCT_BIBLE.md
+  IMPLEMENTATION_GUIDE.md
+  IMPLEMENTATION_BACKLOG.md  # active delivery plan; not product rules
+  MODULES/
+    PLAN.md
+    CARE.md
+    HEAL.md
+    MINT.md
+    HOME.md
+    LINK.md
+    GEAR.md
+    WORLD.md
+  FEATURES/
+    LAUNCHER.md
+    POKEMON_ECOSYSTEM.md
+    ASSETS_AND_AUDIO.md
+    DESIGN_SYSTEM.md
+  ARCHITECTURE/
+    DATA_AND_MIGRATIONS.md
+    INTEGRATIONS_AND_PRIVACY.md
+    TEST_STRATEGY.md
 ```
 
 Each document under this directory is a canonical authority for its stated domain. The Pokémon ecosystem specification now includes the formerly separate expansion catalogue and mechanics. Shared reminder policy is consolidated into Section 9 of `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md`. The implementation backlog remains a separate, traceable delivery artifact and does not define product behavior. `TEST_STRATEGY.md` is the authoritative cross-layer testing strategy.

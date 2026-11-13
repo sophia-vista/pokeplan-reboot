@@ -22,7 +22,7 @@ data class PendingChoice(val id: String, val kind: String, val dungeonId: String
 }
 
 /**
- * Floor choices (docs/world-audit.md, Phase 3): now and then a floor offers two ways on. The team does not wait: the choice is kept for
+ * Floor choices (docs/pokelife/MODULES/WORLD.md section 14): now and then a floor offers two ways on. The team does not wait: the choice is kept for
  * [WAIT_MILLIS] and, unanswered, the first option is taken, so nothing is lost and the app never has to be open. Whether a floor offers one
  * is worked out from the floor alone; what a choice gives is worked out from its own id, so the answer is the same whenever it is given.
  */

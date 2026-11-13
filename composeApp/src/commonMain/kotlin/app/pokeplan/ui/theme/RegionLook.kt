@@ -26,7 +26,7 @@ enum class ModuleAccent(val header: Color, private val bright: Color) {
 }
 
 /**
- * A region's own look, the first of the three visual layers (docs/ecosystem.md section 11): the real scene its lead stands
+ * A region's own look, the first of the three visual layers (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): the real scene its lead stands
  * in, and its colour. A region's page, its sections' headers and its card on Home and in Modules wear it; the lists, forms
  * and settings inside stay in the plain look, and game moments (hatch, evolution) keep theirs.
  */
@@ -37,7 +37,7 @@ enum class RegionLook(val scene: String, private val module: ModuleAccent) {
     /** A meadow: grass and Care's green. */
     CARE(BuddyScene.CARE, ModuleAccent.CARE),
 
-    /** The World game (docs/world.md): a forest to begin in, and violet at the end of the rainbow. */
+    /** The World game (docs/pokelife/MODULES/WORLD.md section 14): a forest to begin in, and violet at the end of the rainbow. */
     WORLD("forest", ModuleAccent.WORLD),
 
     /** The Heal module (docs/pokelife MODULES/HEAL.md): an open route, and teal. A utility surface: the scene is only a quiet backdrop. */

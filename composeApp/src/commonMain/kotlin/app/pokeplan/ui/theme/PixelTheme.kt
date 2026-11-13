@@ -58,7 +58,7 @@ import pokeplan.composeapp.generated.resources.pokemon_dp
 import pokeplan.composeapp.generated.resources.pokemon_dp_bold
 
 /**
- * The colour tokens (version 0.1 of docs/ui-ux-brief.md). Pokémon types keep their own colours elsewhere (the type plates);
+ * The colour tokens (docs/pokelife/FEATURES/DESIGN_SYSTEM.md section 5.5). Pokémon types keep their own colours elsewhere (the type plates);
  * these colours are for the app's own controls. The names are kept from the first version of the theme so screens read the same.
  */
 object Pixel {

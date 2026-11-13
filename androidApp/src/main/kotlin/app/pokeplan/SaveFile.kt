@@ -18,7 +18,7 @@ import app.pokeplan.app.Storage
  */
 fun saveStorage(context: Context): Storage = LiveStore.storage(context, "save", "save.json")
 
-/** The Care module's own save, apart from Plan's (docs/ecosystem.md, section 6): its own document, `care.json` before the database. */
+/** The Care module's own save, apart from Plan's (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): its own document, `care.json` before the database. */
 fun careStorage(context: Context): Storage = LiveStore.storage(context, "care", "care.json")
 
 /** Care's store outside the app (widgets, reminders): its own save, paying into [world] (the shared save) like the app does. */

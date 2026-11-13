@@ -34,7 +34,7 @@ data class Expedition(val dungeonId: String, val startedAt: Long, val settledTo:
 
 /**
  * An expedition team: up to [MAX_MEMBERS] Pokémon of the shared collection by id, and what it is doing. A Pokémon belongs to
- * one team at a time (docs/world.md, section 6): assigned, it cannot join another until recalled.
+ * one team at a time (docs/pokelife/MODULES/WORLD.md section 14): assigned, it cannot join another until recalled.
  */
 @Serializable
 data class WorldTeam(
@@ -111,6 +111,11 @@ data class WorldData(
     val missionsDone: Set<String> = emptySet(),
     /** When the team list was last settled, for the "while you were away" line. */
     val lastSeenAt: Long = 0,
+    /**
+     * The latest moment already settled before the phone's clock was set back, 0 when it was not (WORLD.md 3.1). Teams keep climbing on the earlier clock,
+     * but when the clock reaches this moment again the time up to it was counted once already, so a clock set back and forward does not pay those floors twice.
+     */
+    val rewoundFrom: Long = 0,
     /** The layers other than the home one whose Guardian has been faced, by [WorldLayer.id]. */
     val layersDone: Set<String> = emptySet(),
     /** The legendary quests whose Pokémon has been given, by [LegendQuest.id]. */
