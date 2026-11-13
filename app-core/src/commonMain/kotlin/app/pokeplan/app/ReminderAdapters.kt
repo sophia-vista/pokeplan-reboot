@@ -222,6 +222,27 @@ class ReminderCoordinator(adapters: List<ReminderSourceAdapter>) {
         return ReminderPolicy.plan(router.rebuild(nowMillis, zone) + kept, nowMillis, quiet, zone, focus, horizonMillis)
     }
 
+    /**
+     * The reminders that came due after [sinceMillis] (when the scheduler last planned) and up to [nowMillis] without going off, because the phone was off
+     * or an alarm came too late and a newer plan had replaced it (section 9.8). Each is rebuilt as it was planned at [sinceMillis], with its delivery rules
+     * applied; a reminder whose [deliveredKey] is in [delivered] went off already, and one whose source no longer wants it is left out. Only the latest of
+     * each source and kind is kept (a daily routine missed three times is one reminder), and one the modules plan again with the same id is theirs.
+     * The caller holds each one to go off at once, so [onFire] checks it once more.
+     */
+    fun missed(
+        sinceMillis: Long, nowMillis: Long, zone: TimeZone, quiet: app.pokeplan.plan.QuietHours, focus: FocusWindow?, delivered: Set<String>,
+    ): List<ReminderRequest> {
+        if (sinceMillis >= nowMillis) return emptyList()
+        val upcoming = router.rebuild(nowMillis, zone).map { it.id }.toSet()
+        return ReminderPolicy.plan(router.rebuild(sinceMillis, zone), sinceMillis, quiet, zone, focus, horizonMillis = nowMillis)
+            .map { it.first }
+            .filter { deliveredKey(it) !in delivered && it.id !in upcoming && byModule[it.module]?.isStillWanted(it) == true }
+            .groupBy { Triple(it.module, it.sourceRef, it.kind) }.values.map { it.last() }
+    }
+
+    /** What marks one reminder as gone off: its id and the time it was asked for, so the next occurrence of a source with one id is still owed. */
+    fun deliveredKey(request: ReminderRequest): String = "${request.id}@${request.atMillis}"
+
     /** Re-checks the source and the delivery rules at the moment of delivery (before the notification, section 9.3). */
     fun onFire(request: ReminderRequest, nowMillis: Long, zone: TimeZone, quiet: app.pokeplan.plan.QuietHours, focus: FocusWindow?): FireDecision {
         val adapter = byModule[request.module] ?: return FireDecision.Drop

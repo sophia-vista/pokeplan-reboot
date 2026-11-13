@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.173.1
+
+Reminder and World clock fixes left by the 0.167.2 follow-up (REP-026 a, b, d). No reward number changes; `RewardRules.VERSION` is unchanged.
+
+- **A reminder due while the phone was off now shows when it comes back** (REP-026 a). The scheduler remembers when it last planned; at the next plan (boot, opening the app, any alarm) the reminders the modules had planned for the time in between, and that did not go off, are held to go off at once, checked again by their module first (a task still open, a routine not yet ticked, a streak still for today). Only the latest of each source counts (a daily routine missed three days is one notice), only the last 24 hours are looked at, and one that went off already is never repeated (`ReminderCoordinator.missed`, tested). The same covers an alarm the phone delivered so late that a newer plan had dropped it.
+- **Two reminders can no longer share one alarm** (REP-026 b). An alarm and a notification button are now told apart by the reminder's id in the intent itself, not only by `id.hashCode()`, so two ids with the same hash no longer replace each other's alarm (or make one notification's Done act on the other). The alarms an older version set are cancelled once.
+- **World: a clock set back and forward again no longer pays the same hours twice** (REP-026 d). Teams still climb on the earlier clock (no freeze), but the moment the clock was set back from is kept (`WorldData.rewoundFrom`), and when the clock reaches it again each team's settle point moves up to it (WORLD.md 3.1). The most a back-and-forward change can add is the time really spent on the earlier clock.
+- Still open: REP-026 (c), asking before a damaged database with no backup falls back to the old files.
 ## 0.173.0
 
 The rest of REP-025: corrections in Mint, and one copy of the parts Home, Link and Mint shared. No reward number changes; `RewardRules.VERSION` is unchanged.
