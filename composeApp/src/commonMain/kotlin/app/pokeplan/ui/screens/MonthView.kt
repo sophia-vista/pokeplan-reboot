@@ -130,8 +130,8 @@ internal fun MonthView(
             Spacer(Modifier.weight(1f))
             PixelButton("New event", { draft = Draft("", chosen, 9 * 60, 60, allDay = true); picked = null }, color = OwnEventColor, compact = true)
         }
-        draft?.let { d -> NewEventPanel(d, week = false, { draft = it }, { d.addTo(store); draft = null; chosen = d.day }, hours = false) { draft = null } }
-        if (pickedEvent != null) EventPanel(model, pickedEvent, week = true, { picked = it }) { picked = null }
+        draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store); draft = null; chosen = d.day }) { draft = null } }
+        if (pickedEvent != null) EventPanel(model, pickedEvent, { picked = it }) { picked = null }
 
         val shape = PixelShape
         Column(

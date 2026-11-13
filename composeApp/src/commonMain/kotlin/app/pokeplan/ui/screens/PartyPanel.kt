@@ -71,8 +71,8 @@ private const val PARTY_SIZE = 6
 /** One perk line of a party panel: its name and its total now. */
 private class PerkLine(val label: String, val percent: Double)
 
-/** What a party's perks say before the rank that shows them: every party's perks open together, and they already count. */
-internal val PERKS_LOCKED = "Open at rank ${TrainerRank.names[Feature.PERKS.step]}. Your party is already growing them."
+/** What the perks screen says before the rank that shows them. */
+internal val PERKS_LOCKED = "Opens at rank ${TrainerRank.names[Feature.PERKS.step]}"
 
 /** Plan's party in its module: its lead first, and its perks once the rank has opened them. */
 @Composable
@@ -84,12 +84,6 @@ fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     PartyPanel(
         model, player.party, player.planLead?.id, lead = "Lead", perksTitle = "Party perks",
         perks = if (opened) PerkBucket.entries.filter { totals[it] > 0 }.map { PerkLine(it.label(), totals[it]) } else emptyList(),
-        perksNote = when {
-            !opened -> PERKS_LOCKED
-            player.planLead == null -> "Put a Pokémon in Plan's party to get its perks."
-            else -> null
-        },
-        empty = "Hatch an egg with a focus session. It joins your party here.",
         onOpen = onOpen,
     )
 }
@@ -104,12 +98,6 @@ fun CarePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     PartyPanel(
         model, party, player.careLead?.id, lead = "Lead", perksTitle = "Care perks",
         perks = if (opened) CareBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
-        perksNote = when {
-            !opened -> PERKS_LOCKED
-            party.isEmpty() || totals.values.any { it > 0 } -> null
-            else -> "None yet: Normal, Fairy, Water, Grass, Bug, Fighting, Flying, Psychic and Ghost types bring them."
-        },
-        empty = "Open a Pokémon and choose \"To Care party\". Until then Care has no lead to warm.",
         onOpen = onOpen,
     )
 }
@@ -124,12 +112,6 @@ fun HealPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     PartyPanel(
         model, party, player.healLead?.id, lead = "Lead", perksTitle = "Heal perks",
         perks = if (opened) HealBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
-        perksNote = when {
-            !opened -> PERKS_LOCKED
-            party.isEmpty() || totals.values.any { it > 0 } -> null
-            else -> "None yet: Fighting, Normal, Fire, Electric, Flying, Dragon, Water, Grass, Ground, Ice, Bug and Fairy types bring them."
-        },
-        empty = "Open a Pokémon and choose \"To Heal party\", or try Field Research above. Heal works fully with an empty party.",
         onOpen = onOpen,
     )
 }
@@ -144,25 +126,18 @@ fun MintPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     PartyPanel(
         model, party, player.mintLead?.id, lead = "Lead", perksTitle = "Mint perks",
         perks = if (opened) MintBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
-        perksNote = when {
-            !opened -> PERKS_LOCKED
-            party.isEmpty() || totals.values.any { it > 0 } -> null
-            else -> "None yet: Steel, Rock, Ground, Normal, Electric, Psychic, Ghost, Dark, Poison, Fire, Fairy and Dragon types bring them."
-        },
-        empty = "Open a Pokémon and choose \"To Mint party\", or try the tally above. Mint works fully with an empty party.",
         onOpen = onOpen,
     )
 }
 
 /**
- * A module's whole party, out and evenly spaced like the party screen of the games: two rows of three equal slots, the
- * lead first, outlined and named by its role, the free ones a faint Poké Ball. Tapping one plays its cry and a hop; holding it opens its page.
- * Below, the party's perks, laid out the same in every module so the two read alike.
+ * A module's party in one row of six sprites, the lead first and outlined, the free places a faint Poké Ball. Tapping one plays its
+ * cry and a hop; holding it opens its page (the Pokémon tab shows names and levels). Below, the party's perks once the rank opens them.
  */
 @Composable
 private fun PartyPanel(
     model: AppModel, members: List<OwnedPokemon>, leadId: String?, lead: String,
-    perksTitle: String, perks: List<PerkLine>, perksNote: String?, empty: String, onOpen: (String) -> Unit,
+    perksTitle: String, perks: List<PerkLine>, onOpen: (String) -> Unit,
 ) {
     val ordered = members.sortedByDescending { it.id == leadId }.take(PARTY_SIZE)
     TextBox {
@@ -171,9 +146,14 @@ private fun PartyPanel(
                 Text("Party", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 Text("${ordered.size} of $PARTY_SIZE", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
             }
-            PartyGrid(model, ordered, leadId, lead, onOpen)
-            if (ordered.isEmpty()) Text(empty, style = MaterialTheme.typography.bodyMedium)
-            else {
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                (0 until PARTY_SIZE).forEach { i ->
+                    val p = ordered.getOrNull(i)
+                    val slot = Modifier.weight(1f).fillMaxHeight()
+                    if (p == null) EmptySlot(slot, compact = true) else PartySlot(model, p, if (p.id == leadId) lead else null, slot, onOpen, compact = true)
+                }
+            }
+            if (perks.isNotEmpty()) {
                 HorizontalDivider(color = Pixel.Border)
                 Text(perksTitle, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                 perks.forEach { line ->
@@ -182,7 +162,6 @@ private fun PartyPanel(
                         Text(pct(line.percent), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.Green)
                     }
                 }
-                if (perksNote != null) Text(perksNote, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
@@ -213,7 +192,7 @@ private val slotShape = PixelShape
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier: Modifier, onOpen: (String) -> Unit, tapOpens: Boolean = false) {
+private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier: Modifier, onOpen: (String) -> Unit, tapOpens: Boolean = false, compact: Boolean = false) {
     val calm = model.data.settings.reduceMotion
     var hops by remember(p.id) { mutableIntStateOf(0) }
     var action by remember(p.id) { mutableStateOf(SpriteAction.IDLE) }
@@ -249,12 +228,13 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
                 size = Sizes.SpriteS, animate = !calm, ground = 4.dp,
                 action = action, actionKey = hops, onActionDone = { action = SpriteAction.IDLE },
             )
-            Text(
+            if (!compact) Text(
                 p.nickname, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                 maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
             )
+            if (compact) Unit
             // The lead's level is on the stage just above, so its slot names its role there instead.
-            if (role != null) Text(role, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = leadColor)
+            else if (role != null) Text(role, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = leadColor)
             else Text(
                 "Lv. ${p.level}" + if (p.isShiny) " · Shiny" else "", style = MaterialTheme.typography.labelMedium,
                 color = if (p.isShiny) Pixel.Warning else Pixel.InkSoft,
@@ -274,15 +254,17 @@ private inline fun hear(model: AppModel, p: OwnedPokemon, calm: Boolean, hop: ()
  * (a sprite's room and two lines), so a row of free places is as tall as a full one at any font size.
  */
 @Composable
-private fun EmptySlot(modifier: Modifier) {
+private fun EmptySlot(modifier: Modifier, compact: Boolean = false) {
     Box(
         modifier.background(Pixel.Shade.copy(alpha = 0.3f), slotShape).semantics(mergeDescendants = true) { contentDescription = "Free place" },
         contentAlignment = Alignment.Center,
     ) {
         Column(Modifier.padding(vertical = Spacing.S).alpha(0f)) {
             Box(Modifier.size(Sizes.SpriteS))
-            Text(" ", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-            Text(" ", style = MaterialTheme.typography.labelMedium)
+            if (!compact) {
+                Text(" ", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                Text(" ", style = MaterialTheme.typography.labelMedium)
+            }
         }
         ItemIcon("poke-ball", Modifier.alpha(0.22f), size = Sizes.Icon, description = null)
     }
@@ -298,12 +280,6 @@ fun BasePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     PartyPanel(
         model, party, player.baseLead?.id, lead = "Lead", perksTitle = "Base perks",
         perks = if (opened) BaseBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
-        perksNote = when {
-            !opened -> PERKS_LOCKED
-            party.isEmpty() || totals.values.any { it > 0 } -> null
-            else -> "None yet: Grass, Normal, Bug, Ground, Fire, Water, Fairy, Flying, Ice, Electric, Psychic and Ghost types bring them."
-        },
-        empty = "Open a Pokémon and choose \"To Base party\", or try the tidy above. Home works fully with an empty party.",
         onOpen = onOpen,
     )
 }
@@ -318,12 +294,6 @@ fun LinkPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     PartyPanel(
         model, party, player.linkLead?.id, lead = "Lead", perksTitle = "Link perks",
         perks = if (opened) LinkBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
-        perksNote = when {
-            !opened -> PERKS_LOCKED
-            party.isEmpty() || totals.values.any { it > 0 } -> null
-            else -> "None yet: Normal, Flying, Water, Grass, Bug, Ground, Fairy, Fighting, Electric, Psychic, Fire and Dragon types bring them."
-        },
-        empty = "Open a Pokémon and choose \"To Link party\", or try the postcard above. Link works fully with an empty party.",
         onOpen = onOpen,
     )
 }

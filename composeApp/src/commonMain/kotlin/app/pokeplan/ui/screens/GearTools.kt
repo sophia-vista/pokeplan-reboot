@@ -48,7 +48,7 @@ internal fun OptionPicker(label: String, options: List<String>, selected: Int, m
                             Modifier.fillMaxWidth().heightIn(min = Spacing.Target)
                                 .clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = "Choose $option") { onSelect(i); open = false },
                             contentAlignment = Alignment.CenterStart,
-                        ) { Text(option, style = MaterialTheme.typography.bodyLarge, color = if (i == selected) Pixel.Blue else Pixel.Ink) }
+                        ) { Text(option, style = MaterialTheme.typography.bodyLarge, color = if (i == selected) Pixel.Tone else Pixel.Ink) }
                     }
                 }
             }

@@ -53,7 +53,7 @@ fun RewardBox(model: AppModel) {
     GameBox(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             fresh.forEach { entry ->
-                Text(entry.source, style = MaterialTheme.typography.titleMedium)
+                Text(entry.source.removePrefix("Task: "), style = MaterialTheme.typography.titleMedium)
                 // A new Pokémon keeps its own row; everything else runs together as small icon-and-words pieces, so a payout is two lines, not a list.
                 entry.rewards.filterIsInstance<Reward.Hatched>().forEach { r ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -140,11 +140,11 @@ fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
         rows.forEach { (label, undo, fraction) ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
                 Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = Pixel.OnInk, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                PixelIconButton("undo", "Undo", undo, Pixel.Blue)
+                PixelIconButton("undo", "Undo", undo, Pixel.Tone)
             }
             // The time left to undo, draining to the right; it carries no words, the row already says what can be undone.
             Box(Modifier.fillMaxWidth().height(Spacing.XS).background(Pixel.InkSoft.copy(alpha = 0.4f))) {
-                Box(Modifier.fillMaxWidth(fraction).height(Spacing.XS).background(Pixel.Blue))
+                Box(Modifier.fillMaxWidth(fraction).height(Spacing.XS).background(Pixel.Tone))
             }
         }
     }

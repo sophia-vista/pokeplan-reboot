@@ -390,21 +390,22 @@ Each module specification defines its own exact eligibility, pacing, caps and pr
 
 ### 10.2 Module-specific acquisition rules
 
-#### 10.2.1 First-run module tutorials *(owner, 7 November 2026)*
+#### 10.2.1 A module's first Pokémon *(owner, 7 November 2026; changed 13 November 2026)*
 
-The starter is the buddy and starts in no party, so each module that has a Pokémon acquisition method teaches that method once, in the module, with a short demo that **gives one Pokémon through that method** and puts it in the module's own party:
+The starter is the buddy and starts in no party, so each module that has a Pokémon acquisition method gives one Pokémon, once, **with the module's first real record** (owner, 13 November 2026: the 5-second demo cards were pretend actions and are gone). It hatches into the module's own party and leads it:
 
-| Module | Tutorial | What it gives |
+| Module | First real record | What it gives |
 |---|---|---|
-| PLAN | A 5-second focus demo (Planner → Focus): the ring fills, then an egg hatches | A Common egg of the open region, into Plan's party, leading it |
-| CARE | A 5-second breath (Care): the breathing circle runs once, then a Care Egg hatches | A Common egg of the Care Region, into Care's party, leading it |
+| PLAN | The first finished task | A Common egg of the open region, into Plan's party, leading it |
+| CARE | The first routine, calm break, skill, diary card or journal entry | A Common egg of the Care Region, into Care's party, leading it |
+| HEAL | The first activity, drink or night logged | A Common egg of the Heal Region, into Heal's party, leading it |
+| MINT | The first account or money record | A Common egg of the Mint Region, into Mint's party, leading it |
+| HOME | The first chore, supply or item | A Common egg of the Household Region, into its party, leading it |
+| LINK | The first person, date or follow-up | A Common egg of the Link Region, into Link's party, leading it |
 | WORLD | Its authored opening (`MODULES/WORLD.md`) | Unchanged |
 | GEAR | None: GEAR has no acquisition (`MODULES/GEAR.md` section 6) | Nothing |
-| HEAL | A 5-second walk (Heal): "Walking…" counts down, then Field Research finds an egg | A Common egg of the Heal Region, into Heal's party, leading it |
-| MINT | A 5-second tally (Mint): "Counting…" counts down, then Ledger Research catalogues a find | A Common egg of the Mint Region, into Mint's party, leading it |
-| HOME, LINK | Each module's own first-run demo when it is built | Through its acquisition method |
 
-Rules: it is offered on the module's first screen until done and is never required (every module works without it); it is done once per save (`AppData.tutorials`), so replaying or reloading cannot pay twice; it counts as no focus session, no calm break, no logged activity or drink (HEAL) and no history (no streak, caps, meter, friendship or trainer points); the first of its species pays the usual new-species candies; a player who has already done the real thing (a finished focus session, a calm break, a logged activity) never sees it and is given nothing; and it needs no permission. A new module adds its own row here.
+Rules: nothing is shown before it (the module's empty state is its one add action); it is given once per save (`AppData.tutorials`, `GameStore.firstRecordEgg`), so reloading cannot pay twice; the egg is no focus session, calm break or logged record in itself and adds no history, streak, cap, meter, friendship or trainer points beyond what the record itself pays; the first of its species pays the usual new-species candies; a save that already has records receives it once, the next time the module opens; and it needs no permission. A new module adds its own row here.
 
 **How a new Pokémon arrives (owner, 8 November 2026: "all are egg, that was created mainly for Plan focus eggs; reuse it, but not too much").** The egg-hatching scene belongs to Plan's focus and task eggs and to the egg a Care visitor leaves (CARE.md section 6 says an egg). Every other acquisition has a scene in its own module's scenery, and its words, in `Acquisition` (`RewardText.kt`) and `Cutscenes.kt`: **Care** (a routine or break, the tutorial): a new friend wanders in over the meadow and settles ("A new friend wandered over"); **Heal** (Field Research): the Pokémon runs in along the route ("Field Research found"); **Mint** (Ledger Research): a Star Piece glints in the cave and the Pokémon rises from the floor ("Ledger Research catalogued"). **HOME** and **LINK** choose theirs when they are built (suggested: a habitat found and a postcard delivered); World keeps no scene. The origin line, the reward box and Home's Recently list use the same words, and Reduce motion goes straight to the Pokémon. The mechanics underneath are unchanged: it is still a shared record in one place, and the Origin keeps the egg kind (`Origin.How`) so history is not rewritten.
 

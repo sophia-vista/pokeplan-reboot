@@ -35,13 +35,8 @@ import app.pokeplan.ui.theme.TextBox
 
 /** What a sensor tool says when this phone cannot do it: never a made-up reading. */
 @Composable
-internal fun Missing(what: String, why: String) {
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("$what is not available here.", style = MaterialTheme.typography.titleSmall)
-            Text(why, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-    }
+internal fun Missing(why: String) {
+    TextBox { Text(why, style = MaterialTheme.typography.titleSmall) }
 }
 
 private fun needs(model: AppModel, vararg caps: Capability): Capability? = caps.firstOrNull { !model.capabilities.status(it).available }
@@ -51,7 +46,7 @@ private fun needs(model: AppModel, vararg caps: Capability): Capability? = caps.
 internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.sensors
     val lack = needs(model, Capability.ACCELEROMETER, Capability.MAGNETOMETER)
-    if (feed == null || lack != null) return Missing("The compass", if (feed == null) "This device has no motion sensors for Gear to read (the desktop and web apps have none)." else "This phone has no ${lack?.label?.lowercase()}.")
+    if (feed == null || lack != null) return Missing(if (feed == null) "No compass on this device" else "No ${lack?.label?.lowercase()} on this device")
     var heading by remember { mutableStateOf<Float?>(null) }
     DisposableEffect(feed) {
         var smooth: Float? = null
@@ -87,7 +82,7 @@ internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
 @Composable
 internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.sensors
-    if (feed == null || !model.capabilities.status(Capability.ACCELEROMETER).available) return Missing("The level", "This device has no accelerometer for Gear to read.")
+    if (feed == null || !model.capabilities.status(Capability.ACCELEROMETER).available) return Missing("No level on this device")
     var tilt by remember { mutableStateOf<SensorMath.Tilt?>(null) }
     var zero by remember { mutableStateOf(SensorMath.Tilt(0f, 0f)) }
     DisposableEffect(feed) {
@@ -112,7 +107,7 @@ internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
                 }
             }
             Text(if (t == null) "Reading the sensor" else if (level) "Level" else SensorMath.degreesText(t.fromFlat) + " off", style = MaterialTheme.typography.headlineMedium)
-            if (t != null) Text("Forward and back ${SensorMath.degreesText(t.pitch)}, left and right ${SensorMath.degreesText(t.roll)}", style = MaterialTheme.typography.bodyLarge)
+            if (t != null) Text("Forward and back ${SensorMath.degreesText(t.pitch)}, left and right ${SensorMath.degreesText(t.roll)}", style = MaterialTheme.typography.bodyLarge) // copy-ok: result
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("check", "Call this flat", { tilt?.let { zero = it } })
                 PixelIconButton("reload", "Back to true flat", { zero = SensorMath.Tilt(0f, 0f) })
@@ -126,7 +121,7 @@ internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
 internal fun BarometerTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.sensors
     val store = model.store
-    if (feed == null || !model.capabilities.status(Capability.BAROMETER).available) return Missing("The barometer", "This phone has no pressure sensor (many do not), or this device has none to read.")
+    if (feed == null || !model.capabilities.status(Capability.BAROMETER).available) return Missing("No barometer on this device")
     var hpa by remember { mutableStateOf<Float?>(null) }
     DisposableEffect(feed) {
         var avg: Float? = null
@@ -138,7 +133,7 @@ internal fun BarometerTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(hpa?.let { SensorMath.pressureText(it) } ?: "Reading the sensor", style = MaterialTheme.typography.headlineMedium)
-            hpa?.let { p -> SensorMath.altitudeMeters(p, sea)?.let { Text("About ${it.toInt()} m above the level where the pressure is ${SensorMath.pressureText(sea)}", style = MaterialTheme.typography.bodyLarge) } }
+            hpa?.let { p -> SensorMath.altitudeMeters(p, sea)?.let { Text("About ${it.toInt()} m above the level where the pressure is ${SensorMath.pressureText(sea)}", style = MaterialTheme.typography.bodyLarge) } } // copy-ok: result
             FieldLabel("Pressure at sea level today")
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelIconButton("minus", "One hPa lower", { store.changeGear { it.copy(seaLevelHpa = (it.seaLevelHpa - 1f).coerceAtLeast(950f)) } })
@@ -156,8 +151,7 @@ internal fun DeviceTool(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             val all = model.capabilities.all()
-            if (all.none { it.available }) Text("This device reports no hardware tools (the desktop and web apps have none). The calculators, converters, clock and timers all work.", style = MaterialTheme.typography.bodyMedium)
-            all.forEach { s -> Text(s.describe(), style = MaterialTheme.typography.bodyMedium, color = if (s.available) Pixel.Ink else Pixel.InkSoft) }
+                        all.forEach { s -> Text(s.describe(), style = MaterialTheme.typography.bodyMedium, color = if (s.available) Pixel.Ink else Pixel.InkSoft) }
         }
     }
 }

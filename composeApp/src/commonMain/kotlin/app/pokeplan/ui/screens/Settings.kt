@@ -31,7 +31,9 @@ import kotlin.math.roundToInt
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import kotlinx.coroutines.launch
@@ -63,19 +65,18 @@ internal fun SettingsView(model: AppModel) {
     val store = model.store
     val settings = model.data.settings
     var name by remember { mutableStateOf(model.data.trainerName) }
+    val saveName by rememberUpdatedState { if (name.isNotBlank() && name.trim() != model.data.trainerName) store.rename(name) }
+    DisposableEffect(Unit) { onDispose { saveName() } }
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Trainer name", "user")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                val changed = name.isNotBlank() && name.trim() != model.data.trainerName
-                PixelField(
-                    name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { if (changed) store.rename(name) }),
-                )
-                PixelIconButton("check", "Save", { store.rename(name) }, Pixel.Green, enabled = name.isNotBlank() && name.trim() != model.data.trainerName)
-            }
+            // Saved when the keyboard says Done and when the page is left; no separate key.
+            PixelField(
+                name, { name = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { saveName() }),
+            )
         }
     }
     // Settings come in small groups, one card each, so a setting is found by its group rather than by reading a long list.
@@ -103,8 +104,8 @@ internal fun SettingsView(model: AppModel) {
             var exact by remember { mutableStateOf(phone.exactAlarms) }
             androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { exact = phone.exactAlarms }
             if (!exact) {
-                Text("Android is not letting PokéLife set exact alarms, so reminders and timers can arrive minutes late.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-                PixelButton("Allow exact alarms", { phone.allowExactAlarms() }, Modifier.fillMaxWidth(), Pixel.Blue)
+                Text("Android is not letting PokéLife set exact alarms, so reminders and timers can arrive minutes late.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) // copy-ok: warning or legal
+                PixelButton("Allow exact alarms", { phone.allowExactAlarms() }, Modifier.fillMaxWidth(), Pixel.Tone)
             }
         }
         ToggleRow(
@@ -114,11 +115,11 @@ internal fun SettingsView(model: AppModel) {
         if (settings.reminders) {
             PixelTimeField(
                 settings.quietHours.start, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = it)) } } },
-                Pixel.Blue, label = "Quiet from", steps = listOf(15, 60), wrap = true,
+                Pixel.Tone, label = "Quiet from",
             )
             PixelTimeField(
                 settings.quietHours.end, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = it)) } } },
-                Pixel.Blue, label = "Quiet until", steps = listOf(15, 60), wrap = true,
+                Pixel.Tone, label = "Quiet until",
             )
             ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
         }
@@ -147,7 +148,7 @@ private fun PrivacyCard(model: AppModel) {
     SettingsGroup("Private modules", "storage-key") {
         gateableModules.forEach { m ->
             val on = m.name in model.data.settings.lockedModules
-            ToggleRow("Lock ${m.label}", on, detail = if (m == gateableModules.first()) "Opens with your phone's own lock (PIN, pattern, password, fingerprint or face), and closes again after you leave. It does not change how anything is kept." else null) { want ->
+            ToggleRow("Lock ${m.label}", on) { want ->
                 fun set(value: Boolean) = model.store.changeSettings { s -> s.copy(lockedModules = if (value) s.lockedModules + m.name else s.lockedModules - m.name) }
                 if (!want) set(false)
                 else gate.authenticate { ok -> if (ok) { set(true); model.moduleUnlockedAt[m.name] = model.store.nowMillis } }
@@ -168,13 +169,10 @@ private fun CalendarsCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Calendars", "calendar")
-            Text(
-                "Show events from this phone's calendars, Google Calendar included, on Planner → Calendar. They're read-only and never pay.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
+            // Help: phone calendars show on Planner, Calendar; they are read-only and never pay.
             val list = calendars
             when {
-                !permitted -> PixelButton("Choose calendars", { source.requestPermission { permitted = it } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                !permitted -> PixelButton("Choose calendars", { source.requestPermission { permitted = it } }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 list == null -> Unit
                 list.isEmpty() -> Text("No calendars on this phone yet.", style = MaterialTheme.typography.bodyMedium)
                 else -> list.forEach { c ->
@@ -207,19 +205,16 @@ private fun BackupsCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Backups", "download")
-            if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-            Text(
-                (entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}. " } ?: "No backup yet. ") +
-                    "A copy is made every day, sealed to this phone: the last seven days, then one a week for four weeks. You can also save a copy anywhere, and put one back.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
+            if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
+            // Help: a copy is made every day, sealed to this phone (the last seven days, then one a week for four weeks).
+            Text(entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}" } ?: "No backup yet", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Tone, compact = true)
                 PixelButton("Save a copy", { backups.saveCopy(null) { note = it } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
-            PixelButton(if (portable) "Not now" else "Save a copy that opens on any phone", { portable = !portable; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            PixelButton(if (portable) "Not now" else "Export a backup", { portable = !portable; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             if (portable) {
-                Text("Mint's and Heal's records are sealed to this phone, so an ordinary copy shows them only here. A passphrase seals them in this copy so any phone can open it with the passphrase. It is not stored anywhere, and if you forget it Mint and Heal in that copy cannot be opened, by anyone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                // Help: a passphrase seals Mint's and Heal's records in the copy so any phone can open it; it is stored nowhere, and if it is forgotten they cannot be opened.
                 PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase (at least ${backups.minPassphrase} characters)", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
                 PixelField(again, { again = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase again", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     error = if (again.isNotEmpty() && again != pass) "The two do not match." else null)
@@ -227,7 +222,7 @@ private fun BackupsCard(model: AppModel) {
                     PixelButton("Save the copy", {
                         busy = true
                         backups.saveCopy(null, pass) { busy = false; note = it; if (it == "Saved.") { portable = false; pass = ""; again = "" } }
-                    }, Modifier.weight(1f), Pixel.Blue, enabled = !busy && pass.length >= backups.minPassphrase && pass == again, compact = true)
+                    }, Modifier.weight(1f), Pixel.Tone, enabled = !busy && pass.length >= backups.minPassphrase && pass == again, compact = true)
                     PixelButton(if (shown) "Hide" else "Show", { shown = !shown }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
@@ -239,7 +234,7 @@ private fun BackupsCard(model: AppModel) {
                 }
             }
             asking?.let { millis ->
-                Text("Put the backup from ${backupLabel(millis)} back? What is on this phone now is kept aside, so this can be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                Text("Put the backup from ${backupLabel(millis)} back? What is on this phone now is kept aside, so this can be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Restore", { restored(backups.restoreAutomatic(millis)); asking = null }, Modifier.weight(1f), Pixel.Warning, compact = true)
                     PixelButton("Keep what I have", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -247,8 +242,8 @@ private fun BackupsCard(model: AppModel) {
             }
             PixelButton("Restore from a file", { asking = null; chosen = null; pass = ""; backups.chooseFile { staged, why -> chosen = staged; note = why } }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             chosen?.let { c ->
-                Text("This file is a backup from ${backupLabel(c.createdAtMillis)} (${c.documents.joinToString(", ")}). Replace what is on this phone with it? What is here now is kept aside.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                if (c.needsPassphrase) PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase for Mint and Heal in this backup", singleLine = true, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
+                Text("This file is a backup from ${backupLabel(c.createdAtMillis)} (${c.documents.joinToString(", ")}). Replace what is on this phone with it? What is here now is kept aside.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
+                if (c.needsPassphrase) PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Backup passphrase", singleLine = true, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Restore", { busy = true; backups.applyChosen(pass.takeIf { c.needsPassphrase }) { busy = false; restored(it); if (it.startsWith("Restored")) { chosen = null; pass = "" } } }, Modifier.weight(1f), Pixel.Warning, enabled = !busy && (!c.needsPassphrase || pass.isNotEmpty()), compact = true)
                     PixelButton("Cancel", { chosen = null; pass = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -274,7 +269,7 @@ private fun DataCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Your data", "download")
             model.files?.let { files ->
-                PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 PixelButton("Export Care data", { note = files.save("pokeplan-care-${store.today}.json", model.care.exportJson()) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
             when (asking) {
@@ -329,7 +324,7 @@ private fun AboutCard() {
             GlyphTitle("About", "info-box")
             Text("PokéLife ${AppVersion.display}", style = MaterialTheme.typography.bodyLarge)
             Text(
-                "A private fan project. Pokémon names, sprites and sounds belong to Nintendo, Game Freak and The Pokémon Company.",
+                "A private fan project. Pokémon names, sprites and sounds belong to Nintendo, Game Freak and The Pokémon Company.", // copy-ok: warning or legal
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
         }
@@ -374,8 +369,8 @@ internal fun PlanSettings(model: AppModel) {
     SettingsGroup("Focus", "clock") {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
         PixelDurationField(
-            settings.defaultFocusMinutes, { m -> m?.let { store.changeSettings { s -> s.copy(defaultFocusMinutes = it) } } }, Pixel.Blue,
-            label = "Usual focus length", presets = listOf(15, 25, 45, 60), step = 5, min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
+            settings.defaultFocusMinutes, { m -> m?.let { store.changeSettings { s -> s.copy(defaultFocusMinutes = it) } } }, Pixel.Tone,
+            label = "Usual focus length", presets = listOf(15, 25, 45, 60), min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
         )
     }
     SettingsGroup("Week", "calendar") {

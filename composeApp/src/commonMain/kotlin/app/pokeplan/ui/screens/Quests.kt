@@ -43,18 +43,18 @@ internal fun QuestsView(model: AppModel) {
     val world = data.world
     if (app.pokeplan.world.Missions.boardOpen(world)) TextBox {
         Text(
-            "World jobs: ${world.missions.size} taken, ${world.missions.count { it.done }} done and ready to report. They are on the mission board, in Modules, World, Missions.",
+            "World jobs: ${world.missions.size} taken, ${world.missions.count { it.done }} ready to report", // copy-ok: result
             style = MaterialTheme.typography.bodyLarge,
         )
     }
     if (active.isEmpty() && available.isEmpty()) {
-        EmptyState("No quests yet", "Quests open as your trainer rank grows.", icon = "oaks-letter", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+        EmptyState("No quests yet", icon = "oaks-letter", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
     }
     if (active.isNotEmpty()) SectionLabel("In progress")
     active.forEach { q -> QuestCard(model, q) }
     if (available.isNotEmpty()) SectionLabel("Available")
     available.take(12).forEach { q -> QuestCard(model, q) }
-    if (available.size > 12) TextBox { Text("${available.size - 12} more are open. Finish one to see the next.", style = MaterialTheme.typography.bodyMedium) }
+    if (available.size > 12) TextBox { Text("${available.size - 12} more open", style = MaterialTheme.typography.bodyMedium) }
     if (locked.isNotEmpty()) {
         SectionLabel("Coming up")
         locked.forEach { q ->
@@ -86,10 +86,10 @@ private fun QuestCard(model: AppModel, quest: Quest) {
             store.questProgress(quest).forEach { (req, now) ->
                 val shown = now.coerceAtMost(req.target)
                 Text("${req.text}: $shown of ${req.target}", style = MaterialTheme.typography.bodyMedium)
-                PixelBar(shown.toFloat() / req.target, color = if (shown >= req.target) Pixel.Green else Pixel.Blue, label = "${req.text}: $shown of ${req.target}")
+                PixelBar(shown.toFloat() / req.target, color = if (shown >= req.target) Pixel.Green else Pixel.Tone, label = "${req.text}: $shown of ${req.target}")
             }
             when {
-                state == null -> PixelButton("Take on this quest", { store.acceptQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = store.activeQuests.size < Quests.MAX_ACTIVE, compact = true)
+                state == null -> PixelButton("Take on this quest", { store.acceptQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = store.activeQuests.size < Quests.MAX_ACTIVE, compact = true)
                 ready -> PixelButton("Welcome ${Dex.species(quest.speciesId).name}", { store.claimQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Green)
             }
         }

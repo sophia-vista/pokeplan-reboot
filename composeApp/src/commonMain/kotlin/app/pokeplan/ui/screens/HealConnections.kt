@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,8 +25,6 @@ import app.pokeplan.heal.ProviderRead
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.theme.ListRow
-import app.pokeplan.ui.theme.Notice
-import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelTitle
@@ -53,24 +52,32 @@ internal fun HealConnectionsView(model: AppModel) {
     // Android is asked again on every visit and every read: a permission is never assumed to still be there.
     LaunchedEffect(health, settings.healthKinds) { health?.granted { granted = it } }
 
-    Integrations.heal(availability, settings.healthKinds, granted).forEach { IntegrationCard(it) }
+    // Help: Health Connect is read only, only on Read now, the 30 days before first access at most; imported records never earn a Field Research find.
+    // Help: Not read: steps, heart rate, blood oxygen, calories, sleep stages, nutrition. Huawei Health is read only if it writes into Health Connect.
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Integrations.heal(availability, settings.healthKinds, granted).forEachIndexed { i, info ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    Text(info.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                    Text(if (info.cls == app.pokeplan.app.IntegrationClass.UNSUPPORTED) "Not supported" else info.status.label, style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+    }
 
     if (health != null && availability == ProviderAvailability.AVAILABLE) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("Health Connect")
-                Text(
-                    "Choose what Heal may read. Android then asks you about each one. Heal only reads, only when you tap Read now, and nothing earns a Field Research find.",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
                 HealthKind.entries.forEach { k ->
-                    ToggleRow(k.label, k in draft, detail = "Reads ${k.reads}.") { on -> draft = if (on) draft + k else draft - k }
+                    ToggleRow(k.label, k in draft) { on -> draft = if (on) draft + k else draft - k }
                 }
                 val connected = settings.healthKinds.isNotEmpty()
                 PixelButton(if (connected) "Change what Heal may read" else "Allow in Health Connect", {
                     heal.setHealthKinds(draft)
-                    if (draft.isNotEmpty()) health.request(draft) { granted = it; note = if (it.isEmpty()) "Nothing was allowed. Heal reads nothing, and everything you logged is still here." else null }
-                }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = draft.isNotEmpty(), compact = true)
+                    if (draft.isNotEmpty()) health.request(draft) { granted = it; note = if (it.isEmpty()) "Nothing was allowed. Heal reads nothing, and everything you logged is still here." else null } // copy-ok: result
+                }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = draft.isNotEmpty(), compact = true)
                 if (connected) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         TabButton("Last 7 days", days == 7, { days = 7 }, Modifier.weight(1f))
@@ -78,20 +85,17 @@ internal fun HealConnectionsView(model: AppModel) {
                     }
                     PixelButton("Read now", {
                         val kinds = settings.healthKinds.intersect(granted)
-                        if (kinds.isEmpty()) note = "Android has not allowed any of these. Choose \"Change what Heal may read\" to ask again, or open Health Connect."
+                        if (kinds.isEmpty()) note = "Nothing allowed yet"
                         else {
                             busy = true; note = null
                             health.read(kinds, days) { read, problem ->
                                 busy = false
-                                if (read == null) note = problem ?: "Health Connect could not be read. Nothing was changed."
-                                else { pending = read; if (read.failed) note = "Only part of it could be read. You can add what came and try again later." }
+                                if (read == null) note = problem ?: "Health Connect could not be read. Nothing was changed." // copy-ok: result
+                                else { pending = read; if (read.failed) note = "Only part of it could be read. You can add what came and try again later." } // copy-ok: result
                             }
                         }
-                    }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = !busy, compact = true, loading = busy)
-                    Text(
-                        if (settings.healthLastSyncMillis > 0) "Last read: ${settings.healthLastSyncMillis.shortDate()}. Records change only when you read again." else "Nothing has been read yet.",
-                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                    )
+                    }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = !busy, compact = true, loading = busy)
+                    if (settings.healthLastSyncMillis > 0) Text("Last read ${settings.healthLastSyncMillis.shortDate()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
                 val read = pending
                 if (read != null) ImportPreview(heal.previewImport(read),
@@ -102,7 +106,7 @@ internal fun HealConnectionsView(model: AppModel) {
                     PixelButton("Open Health Connect", { health.openSettings() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     if (connected) PixelButton("Disconnect", {
                         heal.setHealthKinds(emptySet()); pending = null
-                        health.revoke { ok -> granted = emptySet(); note = if (ok) "Disconnected. Heal reads nothing now. The records already added stay until you delete them." else "Heal stopped reading. Android did not take the permissions back: open Health Connect to do that." }
+                        health.revoke { ok -> granted = emptySet(); note = if (ok) "Disconnected. Heal reads nothing now. The records already added stay until you delete them." else "Heal stopped reading. Android did not take the permissions back: open Health Connect to do that." } // copy-ok: result
                     }, Modifier.weight(1f), Pixel.Danger, compact = true)
                 }
             }
@@ -114,7 +118,6 @@ internal fun HealConnectionsView(model: AppModel) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("Imported records")
-                Text("Each record keeps the app that wrote it. Deleting imported records never touches anything you logged yourself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 sources.forEach { s ->
                     val parts = listOf("activities" to s.activities, "nights" to s.sleep, "measurements" to s.measurements, "drinks" to s.hydration).filter { it.second > 0 }.joinToString(", ") { "${it.second} ${it.first}" }
                     ListRow {
@@ -138,7 +141,6 @@ internal fun HealConnectionsView(model: AppModel) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("Might be the same")
-                Text("These imported records look like ones already here. Heal kept both. Decide for each, or leave them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 flagged.forEach { (id, family) ->
                     ListRow {
                         Text(duplicateLine(model, id, family), style = MaterialTheme.typography.bodyLarge)
@@ -160,29 +162,20 @@ internal fun HealConnectionsView(model: AppModel) {
             }
         }
     }
-
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Not read")
-            HealthKind.unsupported.forEach { (what, why) -> Text("$what: $why", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-        }
-    }
 }
 
 @Composable
 private fun ImportPreview(plan: ImportPlan, onAdd: () -> Unit, onCancel: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelTitle("Ready to add")
-        if (plan.isEmpty) Text("Nothing new: every record was added before${if (plan.rejected > 0) ", and ${plan.rejected} could not be used" else ""}.", style = MaterialTheme.typography.bodyLarge)
+        if (plan.isEmpty) Text("Nothing new", style = MaterialTheme.typography.bodyLarge)
         else {
             HealthKind.entries.filter { plan.count(it) > 0 }.forEach { Text("${it.label}: ${plan.count(it)}", style = MaterialTheme.typography.bodyLarge) }
-            if (plan.alreadyHere > 0) Text("${plan.alreadyHere} already here, skipped.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (plan.rejected > 0) Text("${plan.rejected} could not be used (impossible or in the future), left out.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (plan.flagged > 0) Notice("${plan.flagged} look like records you already have. They are added beside them, never in place of them.", tone = NoticeTone.WARNING)
-            Text("Added records are marked as imported and never earn a find.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (plan.alreadyHere > 0) Text("${plan.alreadyHere} already here, skipped", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (plan.rejected > 0) Text("${plan.rejected} left out", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            if (!plan.isEmpty) PixelButton("Add them", onAdd, Modifier.weight(1f), Pixel.Blue, compact = true)
+            if (!plan.isEmpty) PixelButton("Add them", onAdd, Modifier.weight(1f), Pixel.Tone, compact = true)
             PixelButton(if (plan.isEmpty) "Close" else "Not now", onCancel, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
     }

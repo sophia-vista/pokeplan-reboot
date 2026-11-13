@@ -276,6 +276,13 @@ class GameStore(
         return outcome.rewards
     }
 
+    /**
+     * A module's first Pokémon comes with its first real record (owner, 13 November 2026): once [records] (what the module holds: finished tasks,
+     * routines and calm breaks, activities, accounts and money records, chores and supplies, people and follow-ups) is above zero, the module's
+     * first egg ([completeTutorial]) hatches, once per save. Returns the rewards, or null when there is nothing to give.
+     */
+    fun firstRecordEgg(id: String, records: Int): List<Reward>? = if (records > 0) completeTutorial(id) else null
+
     // --- onboarding ---------------------------------------------------------------------------------------------------
 
     /** Starts as a guest: creates the trainer, the starter (which becomes the buddy, and is in no party: one place only) and a first task that pays at once. */

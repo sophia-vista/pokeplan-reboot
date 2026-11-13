@@ -74,4 +74,14 @@ class TutorialTest {
         assertEquals(a.data.player.pokemon.size, b.data.player.pokemon.size)
         assertNull(b.completeTutorial(Tutorials.PLAN_FOCUS))
     }
+
+    @Test
+    fun aModulesFirstRealRecordHatchesItsFirstEggOnceAndAnEmptyModuleNone() {
+        val s = store()
+        assertNull(s.firstRecordEgg(Tutorials.HEAL_WALK, 0), "no record yet: no egg")
+        val egg = assertNotNull(s.firstRecordEgg(Tutorials.HEAL_WALK, 1)).filterIsInstance<Reward.Hatched>().single().pokemon
+        assertEquals(Place.Party(PartyIds.HEAL), s.placeOf(egg.id))
+        assertNull(s.firstRecordEgg(Tutorials.HEAL_WALK, 2), "once per save")
+        assertNotNull(s.firstRecordEgg(Tutorials.MINT_TALLY, 3), "each module has its own first egg")
+    }
 }

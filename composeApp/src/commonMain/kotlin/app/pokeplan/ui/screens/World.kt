@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -97,7 +98,10 @@ private const val NAP_MILLIS = 30_000L
 private const val MIN_WAIT_MILLIS = 250L
 
 @Composable
-internal fun WorldScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
+internal fun WorldScreen(model: AppModel, openPokemon: (String) -> Unit = {}) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.WORLD) { WorldBody(model, openPokemon) }
+
+@Composable
+private fun WorldBody(model: AppModel, openPokemon: (String) -> Unit) {
     // Settlement is by timestamp (WORLD.md 3.1): once on opening, which counts the time away, then at the moment the next floor of a team that is out
     // is done (the screen waits for that instant; it does not poll). The wait is cut into short naps so a clock that jumped or a phone that slept is noticed.
     LaunchedEffect(Unit) { model.store.worldSettle(); model.worldNow = model.store.nowMillis }
@@ -140,7 +144,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
     val world = model.data.world
     val out = world.teams.count { it.expedition != null }
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.WORLD.label, subtitle = "Exploration rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
+        ScreenHeader(Module.WORLD.label, onBack = onBack, color = Module.WORLD.look.header)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             // The order of the page: where you are and the one thing worth doing (the region, its chapter, the next step), what the teams
             // are doing and brought back, then the places to go. Rank sits in one quiet strip. The first time, one card says what World is.
@@ -205,7 +209,7 @@ private fun RegionCard(model: AppModel) {
             if (Story.complete(world, layer)) Text("The ${layer.label} story is complete. ${Story.guardianBonus(layer)}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             Story.next(world, layer)?.let {
                 val cleared = Story.dungeonsCleared(world, layer)
-                Text("Next chapter: ${it.title} (${it.needsRank.label} rank, ${it.needsDungeons} ${layer.label} dungeons cleared: $cleared)", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text("Next chapter: ${it.title} (${it.needsRank.label} rank, ${it.needsDungeons} ${layer.label} dungeons cleared: $cleared)", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: game
             }
         }
     }
@@ -254,8 +258,7 @@ private fun WorldMapView(model: AppModel) {
         selected = selected, onSelect = { selected = it },
         mapName = layer.mapName, pictureW = layer.mapWidth.toFloat(), pictureH = layer.mapHeight.toFloat(),
     )
-    Text(selected?.let { id -> Dungeons.byId(id)?.let { "${it.name}, ${it.region.label}" } } ?: "$clearedCount of ${dungeons.size} dungeons cleared. Tap a marker.", style = MaterialTheme.typography.bodyLarge)
-    Text("Diamond: open. Circle with a tick: cleared. Square: not open yet. Circle with an arrow: a team is there. Red ring: a Guardian.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    Text(selected?.let { id -> Dungeons.byId(id)?.let { "${it.name}, ${it.region.label}" } } ?: "$clearedCount of ${dungeons.size} dungeons cleared", style = MaterialTheme.typography.bodyLarge)
     LegendsCard(model, layer)
     dungeons.sortedByDescending { it.id == selected }.forEach { d ->
         val open = app.pokeplan.world.WorldGuide.lockReasons(world, d).isEmpty()
@@ -271,7 +274,7 @@ private fun WorldMapView(model: AppModel) {
                     d.favored.forEach { TypePlate(it, width = 56.dp) }
                 }
                 PixelBar(deepest.toFloat() / d.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "deepest floor $deepest of ${d.floors}")
-                Text("Deepest floor $deepest of ${d.floors}, cleared ${world.clears[d.id] ?: 0} times", style = MaterialTheme.typography.bodyMedium)
+                (world.clears[d.id] ?: 0).takeIf { it > 0 }?.let { Text("Cleared $it ${if (it == 1) "time" else "times"}", style = MaterialTheme.typography.bodyMedium) }
                 val warn = Color(0xFFFFB4A8)
                 // Every requirement not met yet, each on its own line with how far along it is.
                 val reasons = app.pokeplan.world.WorldGuide.lockReasons(world, d)
@@ -279,13 +282,13 @@ private fun WorldMapView(model: AppModel) {
                     reasons.isNotEmpty() -> reasons.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = warn) }
                     ready.isEmpty() && world.slots().any { it.expedition == null } ->
                         PixelButton("Send my strongest", { model.store.worldQuickSend(d.id); model.effect(Sfx.STAIRS_DOWN) }, color = Module.WORLD.look.accent, compact = true)
-                    ready.isEmpty() -> Text("Every team is out. Recall one in Expeditions.", style = MaterialTheme.typography.bodyMedium)
+                    ready.isEmpty() -> Text("Every team is out. Recall one in Expeditions.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
                     else -> {
                         // Why a team suits the place: how long a floor takes it, and how many of its members are of a favoured type.
                         ready.forEach { team ->
                             val members = team.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
                             val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d))
-                            Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyMedium)
+                            Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
                         }
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             ready.forEach { team -> PixelButton("Send team ${team.id}", { if (model.store.worldStart(team.id, d.id)) model.effect(Sfx.STAIRS_DOWN) }, color = Module.WORLD.look.accent, compact = true) }
@@ -311,7 +314,7 @@ private val mapSpots = mapOf(
 private fun WorldLayerSwitch(model: AppModel, onChange: () -> Unit = {}) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         WorldLayer.entries.forEach { l ->
-            PixelButton(l.label, { model.worldLayer = l; onChange() }, color = if (l == model.worldLayer) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
+            TabButton(l.label, l == model.worldLayer, { model.worldLayer = l; onChange() })
         }
     }
 }
@@ -361,25 +364,28 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
                         Text(q.name, style = MaterialTheme.typography.bodyLarge)
                         Text(
                             when {
-                                done -> {
-                                    val mon = model.data.player.pokemon.firstOrNull { it.speciesId == q.speciesId }
-                                    when {
-                                        mon == null -> "Joined your Guardians (no longer in your collection)."
-                                        model.data.player.moduleGuardians.containsValue(mon.id) -> "Joined you, and is a module's Guardian too."
-                                        mon.id in model.data.world.assigned -> "Joined you and is out exploring with a team."
-                                        else -> "Joined you. Make it a module's Guardian in Pokémon to add its Guardian perks."
-                                    }
-                                }
-                                q.afterGuardian && !world.layerDone(layer) -> if (q.clears == 1) q.blurb else "Face the Guardian of ${layer.label} first. ${q.blurb}"
-                                else -> "${q.blurb} (${Legends.progress(world, q)} of ${q.clears})"
+                                done -> "Joined you"
+                                q.afterGuardian && !world.layerDone(layer) -> "Face the Guardian of ${layer.label} first"
+                                else -> "${Legends.progress(world, q)} of ${q.clears}"
                             },
                             style = MaterialTheme.typography.bodyMedium,
                         )
-                        Text("Gives: ${q.bonusText()}${if (done) "" else " (once it joins you)"}", style = MaterialTheme.typography.bodyMedium, color = if (done) Pixel.Green else Pixel.InkSoft)
+                        if (done) Text("Gives: ${q.bonusText()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
                     }
                 }
             }
         }
+    }
+}
+
+/** A job's reward as icons: the Poké coin and amount, the XP, and the item if there is one. */
+@Composable
+private fun MissionReward(m: app.pokeplan.world.MissionDef) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = Sizes.IconS, description = "Poké")
+        Text("${m.poke}", style = MaterialTheme.typography.bodyMedium)
+        Text("${m.xp} XP", style = MaterialTheme.typography.bodyMedium)
+        m.itemId?.let { ItemIcon(it, size = Sizes.IconS, description = Items.name(it)); Text("x${m.itemCount}", style = MaterialTheme.typography.bodyMedium) }
     }
 }
 
@@ -403,18 +409,11 @@ private fun WorldMissionsView(model: AppModel) {
     val store = model.store
     val world = model.data.world
     if (!Missions.boardOpen(world)) {
-        WorldBanner("guild-room", "The mission board", "Opens with story chapter 2", sky = Color(0xFF101038), top = true)
-        TextBox { Text("The mission board opens with the story's second chapter, Requests and Rescues (Bronze rank and one dungeon clear).", style = MaterialTheme.typography.bodyMedium) }
+        WorldBanner("guild-room", "The mission board", "Opens at Bronze rank", sky = Color(0xFF101038), top = true)
         return
     }
-    fun reward(m: app.pokeplan.world.MissionDef) = buildString {
-        append("${m.poke} Poké, ${m.xp} XP")
-        m.itemId?.let { append(", ${Items.name(it)} x${m.itemCount}") }
-    }
-    WorldBanner("guild-room", "The mission board", "${world.missions.count { it.done }} ready to report, ${world.missions.size} of ${Missions.MAX_ACTIVE} taken", sky = Color(0xFF101038), top = true)
-    FieldLabel("Taken (${world.missions.size} of ${Missions.MAX_ACTIVE})")
-    if (world.missions.isEmpty()) Text("No jobs taken.", style = MaterialTheme.typography.bodyMedium)
-    world.missions.forEach { p ->
+    WorldBanner("guild-room", "The mission board", "${world.missions.count { it.done }} ready to report, ${world.missions.size} of ${Missions.MAX_ACTIVE} taken", sky = Color(0xFF101038), top = true) // copy-ok: game
+        world.missions.forEach { p ->
         val m = Missions.byId(p.id) ?: return@forEach
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -427,22 +426,22 @@ private fun WorldMissionsView(model: AppModel) {
                 Text(
                     when (m.kind) {
                         MissionKind.COLLECT -> "Find ${m.count} berries: ${minOf(p.progress, m.count)} so far."
-                        MissionKind.RESCUE -> "Reach $where to bring the lost Pokémon home."
+                        MissionKind.RESCUE -> "Reach $where to bring the lost Pokémon home." // copy-ok: game
                         MissionKind.EXPLORE -> "Reach $where."
-                        MissionKind.ESCORT -> "Reach $where with a team of at least ${m.count} Pokémon."
+                        MissionKind.ESCORT -> "Reach $where with a team of at least ${m.count} Pokémon." // copy-ok: game
                         MissionKind.DEFEAT -> {
                             val here = m.dungeonId?.let { Dungeons.byId(it) }
                             val best = here?.let { d -> world.teams.maxOfOrNull { t -> WorldSim.power(t.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }, d) } } ?: 0.0
-                            "Reach $where with a team of power ${m.count} or more (your best team: ${best.toInt()})."
+                            "Reach $where with a team of power ${m.count} or more (your best team: ${best.toInt()})." // copy-ok: game
                         }
-                        MissionKind.INVESTIGATION -> "Open ${m.count} side paths in ${m.dungeonId?.let { Dungeons.byId(it)?.name }}: ${minOf(p.progress, m.count)} so far."
-                        MissionKind.CHALLENGE -> "Reach $where with a team of at most ${m.count} ${if (m.count == 1) "Pokémon" else "Pokémon"}."
+                        MissionKind.INVESTIGATION -> "Open ${m.count} side paths in ${m.dungeonId?.let { Dungeons.byId(it)?.name }}: ${minOf(p.progress, m.count)} so far." // copy-ok: game
+                        MissionKind.CHALLENGE -> "Reach $where with a team of at most ${m.count} ${if (m.count == 1) "Pokémon" else "Pokémon"}." // copy-ok: game
                         MissionKind.STORY -> "Open chapter ${m.count} of the ${Missions.layerOf(m).label} story."
-                        MissionKind.DELIVER -> "Reach $where, then hand over ${m.giveCount} x ${Items.name(m.give ?: "")} from your Bag."
+                        MissionKind.DELIVER -> "Reach $where, then hand over ${m.giveCount} x ${Items.name(m.give ?: "")} from your Bag." // copy-ok: game
                     },
                     style = MaterialTheme.typography.bodyLarge,
                 )
-                Text("Reward: ${reward(m)}", style = MaterialTheme.typography.bodyMedium)
+                MissionReward(m)
                 val needed = m.give?.let { it to m.giveCount }
                 val haveIt = needed == null || model.data.player.inventory.has(needed.first, needed.second)
                 if (p.done && !haveIt) Text("Needs ${needed!!.second} x ${Items.name(needed.first)} in your Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
@@ -473,9 +472,9 @@ private fun WorldMissionsView(model: AppModel) {
                 }
                 Text(m.story, style = MaterialTheme.typography.bodyMedium)
                 val place = m.dungeonId?.let { id -> Dungeons.byId(id)?.let { "${it.name}, ${it.layer.label}, floor ${m.floor}" } } ?: "Any dungeon"
-                Text("Where: $place. ${entry.repeats}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Text("Reward: ${reward(m)}", style = MaterialTheme.typography.bodyMedium)
-                if (world.missions.size >= Missions.MAX_ACTIVE) Text("You hold ${Missions.MAX_ACTIVE} jobs: finish or give one up first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                Text("$place, ${entry.repeats}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                MissionReward(m)
+                if (world.missions.size >= Missions.MAX_ACTIVE) Text("You hold ${Missions.MAX_ACTIVE} jobs: finish or give one up first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) // copy-ok: game
                 PixelButton("Take the job", { store.worldAcceptMission(m.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true, enabled = world.missions.size < Missions.MAX_ACTIVE)
             }
         }
@@ -494,22 +493,22 @@ private fun WorldMissionsView(model: AppModel) {
 @Composable
 private fun WorldSkillsView(model: AppModel) {
     val world = model.data.world
-    WorldSkill.entries.forEach { skill ->
-        val xp = world.skillXp[skill.name] ?: 0
-        val level = world.skillLevel(skill)
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            WorldSkill.entries.forEachIndexed { i, skill ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                val xp = world.skillXp[skill.name] ?: 0
+                val level = world.skillLevel(skill)
                 Text("${skill.label}, level $level", style = MaterialTheme.typography.titleSmall)
                 Text("${skill.blurb}: ${skill.bonus}.", style = MaterialTheme.typography.bodyMedium)
                 val helpers = world.teams.flatMap { t -> t.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } } }
                     .filter { it.ability in AbilityPerks.bySkill.getValue(skill) }
                 if (helpers.isNotEmpty()) Text("Helped by ${helpers.joinToString { "${it.nickname} (${it.ability})" }}: +${minOf(helpers.size, AbilityPerks.MAX_BONUS)} levels while they explore.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-                else Text("Abilities that help: ${AbilityPerks.bySkill.getValue(skill).sorted().joinToString()}.", style = MaterialTheme.typography.bodyMedium)
                 if (level < WorldSkill.MAX_LEVEL) {
                     val from = WorldSkill.xpFor(level)
                     val to = WorldSkill.xpFor(level + 1)
                     PixelBar(((xp - from).toFloat() / (to - from)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "$xp of $to")
-                } else Text("Top level.", style = MaterialTheme.typography.bodyMedium)
+                }
             }
         }
     }
@@ -530,7 +529,6 @@ private fun WorldTownView(model: AppModel) {
     if (open == null) {
         // The headquarters: the team base of your first partner as big as the screen allows, growing with the Camp, then rank and the places in it.
         WorldMapHero(baseMap(starterSpecies(model.data), world.facilityLevel(Facility.CAMP)), "Exploration base", "Camp level ${world.facilityLevel(Facility.CAMP)} of ${Facility.MAX_LEVEL}")
-        RankStrip(model)
         MenuGrid(
             TownPage.entries.map { p ->
                 val detail = when (p) {
@@ -547,7 +545,6 @@ private fun WorldTownView(model: AppModel) {
                 MenuEntry(WorldSection.SKILLS.name, WorldSection.SKILLS.icon, WorldSection.SKILLS.label, "${app.pokeplan.world.WorldSkill.entries.size} skills", tint = Module.WORLD.look.accent),
             ),
         ) { key -> WorldSection.entries.firstOrNull { it.name == key && (it == WorldSection.BAG || it == WorldSection.SKILLS) }?.let { model.worldSection = it } ?: run { page = TownPage.valueOf(key) } }
-        Text("Storage is the shared Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         return
     }
     BackHandler(enabled = true) { page = null }
@@ -556,7 +553,6 @@ private fun WorldTownView(model: AppModel) {
     PixelButton("Back to the town", { page = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     when (open) {
         TownPage.FACILITIES -> {
-    FieldLabel("Town")
     Facility.entries.forEach { f ->
         val level = world.facilityLevel(f)
         // The Camp: the Pokémon recruited from your finds live in its yard (they are in your collection too, with the rest).
@@ -585,8 +581,8 @@ private fun WorldTownView(model: AppModel) {
                 Text("A brew for the road", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 FxBurst("steam", steam, 56.dp, play = play)
             }
-            Text("${app.pokeplan.world.Cafe.BERRIES} berries from your Bag make a brew for ${app.pokeplan.world.Cafe.HOURS} hours: 30% more Exploration XP, 5% more treasure chance and 1% more find chance on every floor.", style = MaterialTheme.typography.bodyMedium)
-            if (brewing) Text("A brew is working for ${(world.brewUntil - clock) / 60_000} more minutes.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
+            Text("${app.pokeplan.world.Cafe.BERRIES} berries from your Bag make a brew for ${app.pokeplan.world.Cafe.HOURS} hours: 30% more Exploration XP, 5% more treasure chance and 1% more find chance on every floor.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
+            if (brewing) Text("A brew is working for ${(world.brewUntil - clock) / 60_000} more minutes.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green) // copy-ok: game
             var cafeMessage by remember { mutableStateOf("") }
             PixelButton("Brew", { cafeMessage = if (brewing) "A brew is still working." else if (store.worldBrew()) { steam++; model.effect(Sfx.EATING); "Brewed." } else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
             if (cafeMessage.isNotEmpty()) Text(cafeMessage, style = MaterialTheme.typography.bodyMedium)
@@ -595,25 +591,21 @@ private fun WorldTownView(model: AppModel) {
         }
         TownPage.KECLEON -> {
             WorldBanner("pokemon-square", "Kecleon Shop", "Exp. Candy, for Poké", height = 150.dp)
-    FieldLabel("Kecleon Shop")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Exp. Candy", style = MaterialTheme.typography.titleSmall)
-            Text("${world.shopCandies} bought so far. Each costs a little more.", style = MaterialTheme.typography.bodyMedium)
             PixelButton("Buy one: ${world.candyPrice} Poké", { if (store.worldBuyCandy()) model.effect(Sfx.CANDY) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = store.data.player.coins >= world.candyPrice, compact = true)
         }
     }
         }
         TownPage.SWAP -> {
             WorldBanner("square", "Croagunk Swap Shop", "Berry for berry", height = 150.dp)
-    FieldLabel("Croagunk Swap Shop")
     var swapFrom by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[0]) }
     var swapTo by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[1]) }
     var swapMessage by remember { mutableStateOf("") }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Berry swap", style = MaterialTheme.typography.titleSmall)
-            Text("${app.pokeplan.world.SwapShop.GIVE} berries of one flavour from your Bag for 1 of another.", style = MaterialTheme.typography.bodyMedium)
             FieldLabel("Give")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton("$f x${model.data.player.inventory[Items.berry(f)]}", { swapFrom = f }, color = if (swapFrom == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
@@ -622,14 +614,13 @@ private fun WorldTownView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton(f, { swapTo = f }, color = if (swapTo == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
             }
-            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) { model.effect(Sfx.CONFIRM); "Swapped." } else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Module.WORLD.look.accent)
+            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) { model.effect(Sfx.CONFIRM); "Swapped." } else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Module.WORLD.look.accent) // copy-ok: game
             if (swapMessage.isNotEmpty()) Text(swapMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }
         }
         TownPage.DOJO -> {
             WorldBanner("makuhita-dojo", "Makuhita's Dojo", "${model.data.player.coins} Poké to spend", height = 150.dp)
-    FieldLabel("Dojo")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             var hit by remember { mutableStateOf(0) }
@@ -637,7 +628,6 @@ private fun WorldTownView(model: AppModel) {
                 Text("Training", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 FxBurst("hit", hit, 64.dp, play = play)
             }
-            Text("${app.pokeplan.world.Dojo.COST} Poké buys ${app.pokeplan.world.Dojo.SKILL_XP} skill XP in a skill you choose.", style = MaterialTheme.typography.bodyMedium)
             WorldSkill.entries.forEach { skill ->
                 PixelButton("Train ${skill.label}", { if (store.worldTrain(skill)) { hit++; model.effect(Sfx.LEARN) } }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = store.data.player.coins >= app.pokeplan.world.Dojo.COST && world.skillLevel(skill) < WorldSkill.MAX_LEVEL, compact = true)
             }
@@ -655,7 +645,6 @@ private fun WorldTeamsView(model: AppModel) {
     val store = model.store
     val world = model.data.world
     val roster = model.data.player.pokemon
-    WorldReportCard(model)
     ChoicesCard(model)
     ExpeditionOverview(model)
     world.slots().forEach { team ->
@@ -685,14 +674,14 @@ private fun WorldTeamsView(model: AppModel) {
                             Text("Today here: ${m.title}, ${m.text}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
                         }
                         PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
-                        Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s. It keeps going while you are away, up to 12 hours.", style = MaterialTheme.typography.bodyMedium)
+                        Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
                     }
                     if (outAt != null) SpeedExplainer(members, outAt, world)
                     PixelButton("Recall", { store.worldRecall(team.id); model.effect(Sfx.STAIRS_UP) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 } else {
                     PixelButton(if (editing) "Close" else "Choose the team", { editing = !editing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     if (editing) {
-                        FieldLabel("Up to ${WorldTeam.MAX_MEMBERS} Pokémon: this team and the 20 strongest idle ones (not on a team, not slotted as a Guardian)")
+                        FieldLabel("Up to ${WorldTeam.MAX_MEMBERS} Pokémon")
                         // This team's own members and what is picked stay on the list so they can be taken off; the rest is the 20 strongest idle Pokémon.
                         val shown = (roster.filter { it.id in team.members || it.id in picked } + store.worldIdle().take(20)).distinctBy { it.id }
                         shown.forEach { p ->
@@ -732,10 +721,7 @@ private fun WorldTeamsView(model: AppModel) {
         }
         if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
     }
-    Text(
-        "Side paths: about one floor in ten has something a field move can open (Cut, Surf, Rock Smash, Strength, Flash, Dig, Fly), found by a Pokémon of level ${FloorEvents.MIN_LEVEL} or more that can learn the move. It adds a small bonus; a team that cannot open one goes around and loses nothing. A hazard (fumes, a heat vent, ice, static) is weathered by a member of the right type. Now and then the team also comes to a fork and waits for you to pick a way (the first is taken after 12 hours). Some days a dungeon is also bountiful, in berry season, lucky or curious: a small bonus on its rewards, never a penalty.",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
+    // Help: side paths (field moves, hazards), forks that wait 12 hours for an answer, and bountiful days are explained in Help.
 }
 
 // ----- Camp -----------------------------------------------------------------------------------------------------------
@@ -752,7 +738,7 @@ internal fun RecruitCard(find: app.pokeplan.world.Find?, newcomer: app.pokeplan.
                 }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text("${newcomer.nickname} joined your team!", style = MaterialTheme.typography.titleSmall)
-                    Text("Level ${newcomer.level}. It lives at the camp and can join any expedition.", style = MaterialTheme.typography.bodyMedium)
+                    Text("Level ${newcomer.level}", style = MaterialTheme.typography.bodyMedium)
                     PixelButton("OK", onOk, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
                 }
             }
@@ -764,7 +750,7 @@ internal fun RecruitCard(find: app.pokeplan.world.Find?, newcomer: app.pokeplan.
                 Portrait(Dex.defaultForm(find.speciesId).id, false, name, emotion = Emotion.NORMAL, size = 88.dp)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text(name, style = MaterialTheme.typography.titleSmall)
-                    Text("A wild $name, met on floor ${find.floor} of ${Dungeons.byId(find.dungeonId)?.name}, wants to join your team. Recruit it?", style = MaterialTheme.typography.bodyLarge)
+                    Text("A wild $name, met on floor ${find.floor} of ${Dungeons.byId(find.dungeonId)?.name}, wants to join your team. Recruit it?", style = MaterialTheme.typography.bodyLarge) // copy-ok: game
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelButton("Recruit", onRecruit, Modifier.weight(1f), Module.WORLD.look.accent, compact = true)
                         PixelButton("Not now", onLater, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -798,10 +784,10 @@ private fun WorldBagView(model: AppModel) {
             onLater = { meeting = null }, onOk = { joined = null },
         )
     }
-    TextBox {
+    val worldLog = model.data.rewardLog.filter { it.source.startsWith("World") }.takeLast(4).reversed()
+    if (world.finds.isEmpty() && world.treasure.isEmpty() && worldLog.isEmpty()) Text("Nothing waiting", style = MaterialTheme.typography.titleSmall)
+    if (world.finds.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Exploration Finds", style = MaterialTheme.typography.titleSmall)
-            if (world.finds.isEmpty()) Text("Nothing waiting.", style = MaterialTheme.typography.bodyMedium)
             world.finds.forEachIndexed { i, f ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Sprite(Dex.defaultForm(f.speciesId).id, false, Dex.species(f.speciesId).name, size = Spacing.Target)
@@ -814,14 +800,13 @@ private fun WorldBagView(model: AppModel) {
             }
         }
     }
-    TextBox {
+    if (world.treasure.isNotEmpty() || worldLog.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Treasure and rewards", style = MaterialTheme.typography.titleSmall)
             // The latest World entries of the reward history, so what a trip brought is still there after it.
-            model.data.rewardLog.filter { it.source.startsWith("World") }.takeLast(4).reversed().forEach { entry ->
-                Text("${entry.source.removePrefix("World: ")}: ${entry.rewards.joinToString { it.describe(entry.source) }}", style = MaterialTheme.typography.bodyMedium)
+            worldLog.forEach { entry ->
+                val tag = entry.source.removePrefix("World").removePrefix(":").trim().replaceFirstChar { it.uppercase() }
+                Text((if (tag.isEmpty()) "" else "$tag: ") + entry.rewards.joinToString { it.describe(entry.source) }, style = MaterialTheme.typography.bodyMedium)
             }
-            if (world.treasure.isEmpty()) Text("No treasure boxes waiting.", style = MaterialTheme.typography.bodyMedium)
             world.treasure.entries.sortedBy { it.key }.forEach { (tier, n) ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     ItemIcon(app.pokeplan.world.PmdArt.treasureBox(tier.coerceIn(1, 3)), size = Sizes.Icon, description = null)
@@ -886,7 +871,6 @@ private fun NotebookCard(model: AppModel) {
                     }
                 }
             }
-            Text("Met: species your teams have found or rescued here. A tick: you have one in your collection.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -906,7 +890,7 @@ private fun ChoicesCard(model: AppModel) {
                 val left = ((p.expiresAt - now) / 60_000).coerceAtLeast(0)
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     Text("${kind.title}, floor ${p.floor} of $place", style = MaterialTheme.typography.bodyLarge)
-                    Text("${kind.story} Without an answer, in ${left / 60} h ${left % 60} min the team takes the first way. Either way it gives a reward.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    Text("${kind.story} The first way is taken in ${left / 60} h ${left % 60} min.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: game
                     PixelButton("${kind.first.label}: ${rewardText(kind.first.reward)}", { model.store.worldChoose(p.id, 0) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     PixelButton("${kind.second.label}: ${rewardText(kind.second.reward)}", { model.store.worldChoose(p.id, 1) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
                 }
@@ -994,7 +978,7 @@ private fun RecordsPage(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("Recruited")
-            if (recruited.isEmpty()) Text("No one has joined from a find yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (recruited.isEmpty()) Text("No one has joined from a find yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: game
             else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 recruited.forEach { p ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1020,15 +1004,15 @@ private fun WorldJournalView(model: AppModel) {
     val world = model.data.world
     val open = page
     if (open == null) {
-        MenuGrid(
+        MenuList(
             JournalPage.entries.map { p ->
-                val detail = when (p) {
-                    JournalPage.LOG -> "${world.journal.size} lines"
-                    JournalPage.RESEARCH -> "${world.discovered.size} species"
-                    JournalPage.STORY -> "${app.pokeplan.world.WorldMoments.reached(world).size} moments"
-                    JournalPage.RECORDS -> "${world.clears.values.sum()} clears"
+                val count = when (p) {
+                    JournalPage.LOG -> "${world.journal.size}"
+                    JournalPage.RESEARCH -> "${world.discovered.size}"
+                    JournalPage.STORY -> "${app.pokeplan.world.WorldMoments.reached(world).size}"
+                    JournalPage.RECORDS -> "${world.clears.values.sum()}"
                 }
-                MenuEntry(p.name, p.icon, p.label, detail, badge = if (p == JournalPage.RESEARCH) world.researchReady().size else 0, tint = Module.WORLD.look.accent)
+                MenuEntry(p.name, p.icon, p.label, badge = if (p == JournalPage.RESEARCH) world.researchReady().size else 0, tint = Module.WORLD.look.accent, count = count)
             },
         ) { key -> page = JournalPage.valueOf(key) }
         return

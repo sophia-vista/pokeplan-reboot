@@ -71,18 +71,18 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(expr, { edit(it) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Sum")
+            PixelField(expr, { edit(it) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), placeholder = "0")
             Text(
                 when {
                     live is CalcResult.Error && showError -> live.message
                     liveValue != null && !answered -> "= ${liveValue.text}"
                     answered -> "Answer"
-                    else -> "Type a sum, for example 2 + 3 × 4"
+                    else -> ""
                 },
                 style = MaterialTheme.typography.titleMedium, color = if (live is CalcResult.Error && showError) Pixel.Red else Pixel.Ink,
             )
             @Composable fun keys(vararg labels: Pair<String, () -> Unit>, accent: Set<String> = emptySet()) = Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                labels.forEach { (label, action) -> PixelButton(label, action, Modifier.weight(1f), if (label in accent) Pixel.Blue else Pixel.InkSoft, compact = true) }
+                labels.forEach { (label, action) -> PixelButton(label, action, Modifier.weight(1f), if (label in accent) Pixel.Tone else Pixel.InkSoft, compact = true) }
             }
             val ops = setOf("÷", "×", "−", "+", "=")
             keys("C" to { expr = ""; answered = false; showError = false }, "Del" to { edit(expr.dropLast(1)) }, "(" to { key("(", true) }, ")" to { key(")") }, accent = ops)
@@ -102,9 +102,8 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
                 PixelIconButton("copy", "Copy", { clipboard.setText(AnnotatedString(liveValue?.text ?: expr)) }, Pixel.InkSoft, enabled = expr.isNotBlank())
                 PixelButton(if (gear.calcHistoryOn) "History on" else "History off", { store.changeGear { it.copy(calcHistoryOn = !it.calcHistoryOn) } }, Modifier.weight(1f), if (gear.calcHistoryOn) Pixel.Green else Pixel.InkSoft, compact = true)
             }
-            Text(if (gear.calcHistoryOn) "The last sums are kept on this phone only." else "Nothing is kept unless you turn the history on.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (gear.calcHistoryOn && gear.calcHistory.isNotEmpty()) {
-                FieldLabel("History (tap one to use it)")
+                FieldLabel("History")
                 gear.calcHistory.take(8).forEach { line ->
                     PixelButton(line, { expr = line.substringBefore(" = "); answered = false; showError = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 }

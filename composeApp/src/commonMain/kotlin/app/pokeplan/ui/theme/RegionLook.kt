@@ -59,3 +59,8 @@ enum class RegionLook(val scene: String, private val module: ModuleAccent) {
     /** The region's accent: its menu card tint and the edge of its card on Home. */
     val accent: Color get() = module.accent
 }
+
+/** Gives everything inside [content] the module's tone: dialogue frames, keys and chips read it, so a screen never names its own colour. */
+@androidx.compose.runtime.Composable
+fun ModuleTone(accent: ModuleAccent, content: @androidx.compose.runtime.Composable () -> Unit) =
+    androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(accent.accent), content = content)

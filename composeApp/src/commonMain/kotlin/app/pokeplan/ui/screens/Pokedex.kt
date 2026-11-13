@@ -102,12 +102,6 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
     val rows = remember(view.region, view.national, view.generation) { view.rows() }
     val states = rows.associate { (_, s) -> s.id to DexState.of(model.data, s.id) }
     val caught = states.values.count { it.caught }
-    val seen = states.values.count { it == DexState.SEEN }
-    val shiny = rows.count { (_, sp) -> sp.id in model.data.shinySpecies }
-    val (formsHad, formsAll) = remember(model.data, rows) {
-        val forms = rows.flatMap { (_, sp) -> Dex.formsOf(sp.id).filter { FormDex.counts(it) } }
-        forms.count { FormDex.caught(model.data, it) } to forms.size
-    }
 
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         regions.forEach { r -> TabButton(r.label, !view.national && r == view.region, { change(view.copy(national = false, region = r)) }, Modifier.padding(0.dp)) }
@@ -120,11 +114,6 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             Text("${view.title}: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)
             PixelBar(caught.toFloat() / rows.size.coerceAtLeast(1), color = if (caught == rows.size) Pixel.Warning else Pixel.Red)
-            // One quiet line for the rest, so the card stays a number and a bar.
-            val more = listOfNotNull(
-                "$shiny shiny".takeIf { shiny > 0 }, "Forms $formsHad of $formsAll", "$seen more seen".takeIf { seen > 0 },
-            )
-            Text(more.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     PixelField(
@@ -147,9 +136,9 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
     }
     if (shown.isEmpty()) {
         when {
-            text.isNotEmpty() -> EmptyState("Nothing matches", "Try another name or number, or clear the search.", action = "Clear the search" to { change(view.copy(search = "")) })
-            view.filter == DexFilter.CAUGHT -> EmptyState("None caught here yet", "Hatch eggs in this region to fill it in.", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
-            else -> EmptyState("All caught!", "Every Pokémon in this list is yours.", action = "Show them all" to { change(view.copy(filter = DexFilter.entries.first())) })
+            text.isNotEmpty() -> EmptyState("Nothing matches", action = "Clear the search" to { change(view.copy(search = "")) })
+            view.filter == DexFilter.CAUGHT -> EmptyState("None caught here yet", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+            else -> EmptyState("All caught!", action = "Show them all" to { change(view.copy(filter = DexFilter.entries.first())) })
         }
     } else {
         // An index, not a wall of cards: number, sprite, name and one quiet line per row, with a hairline between rows.
@@ -210,9 +199,7 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
     val at = found.indexOf(id)
 
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("${dexNumber(number)} ${s.name}", subtitle = if (state.caught) s.genus else state.label, icon = "great-ball") {
-            PixelButton("Back", back, color = Pixel.InkSoft, compact = true)
-        }
+        ScreenHeader("${dexNumber(number)} ${s.name}", subtitle = if (state.caught) s.genus else state.label, icon = "great-ball", onBack = back)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -241,7 +228,6 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
                 FormsBox(model, id, form.id, shinyView, { shinyView = it }) { picked = it }
                 CaughtEntry(model, s, form, open)
             }
-            else TextBox { Text("Seen, not caught yet. Its entry opens when one is yours.", style = MaterialTheme.typography.bodyLarge) }
         }
     }
 }
@@ -258,11 +244,7 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(if (forms.size == 1) "Form" else "Forms", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "${counted.count { FormDex.caught(model.data, it) }} of ${counted.size} caught, " +
-                    "${counted.count { FormDex.shiny(model.data, it) }} of ${counted.size} shiny",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
+            if (counted.size > 1) Text("${counted.count { FormDex.caught(model.data, it) }} of ${counted.size} caught", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 TabButton("Regular", !shiny, { setShiny(false) }, Modifier.padding(0.dp))
                 TabButton("Shiny", shiny, { setShiny(true) }, Modifier.padding(0.dp))
@@ -295,10 +277,7 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
                     }
                 }
             }
-            if (counted.size < forms.size) Text(
-                "Faded forms (Gigantamax and other special forms) can't be found in PokéLife yet and don't count.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
+            // Help: faded forms (Gigantamax and other special forms) can't be found yet and don't count.
         }
     }
 }
@@ -312,12 +291,6 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
             Text(s.genus, style = MaterialTheme.typography.titleMedium)
             Text("Height ${tenths(s.heightDm, "m")}, weight ${tenths(s.weightHg, "kg")}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text(Dex.entry(id), style = MaterialTheme.typography.bodyLarge)
-            val owned = model.data.player.pokemon.count { it.speciesId == id }
-            Text(
-                if (owned > 0) "You have $owned in your party and PC." else "Caught before; none in your party or PC now.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
-            if (id in model.data.shinySpecies) Text("You have found a shiny one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning)
         }
     }
     TextBox {
@@ -332,7 +305,7 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
             listOf(base.hp, base.attack, base.defense, base.spAttack, base.spDefense, base.speed).forEachIndexed { i, v ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text(statNames[i], Modifier.size(width = 84.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium)
-                    Box(Modifier.weight(1f)) { PixelBar(v / 200f, color = if (i == 0) Pixel.Green else Pixel.Blue) }
+                    Box(Modifier.weight(1f)) { PixelBar(v / 200f, color = if (i == 0) Pixel.Green else Pixel.Tone) }
                     Text("$v", Modifier.size(width = 44.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.End)
                 }
             }

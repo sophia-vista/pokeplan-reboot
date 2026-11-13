@@ -85,6 +85,8 @@ object Pixel {
     val Red: Color get() = if (dark) Color(0xFFF2665A) else Color(0xFFD23B2E)
     /** `info` */
     val Blue: Color get() = if (dark) Color(0xFF5B96EE) else Color(0xFF2C6CCC)
+    /** The tone of the module on screen (its accent), or Blue outside a module: the colour for a key, chip or bar that belongs to the page. */
+    val Tone: Color @androidx.compose.runtime.Composable get() = LocalFrameTone.current?.band ?: Blue
     /** `success` */
     val Green: Color get() = if (dark) Color(0xFF34B07A) else Color(0xFF1E7F52)
     /** `warning` */
@@ -318,7 +320,7 @@ fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: S
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
-        Text(tag, style = MaterialTheme.typography.bodyLarge.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = tagColor)
+        if (tag.isNotEmpty()) Text(tag, style = MaterialTheme.typography.bodyLarge.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = tagColor)
         Box(
             Modifier.weight(1f).height(14.dp).drawBehind {
                 val p = 2.dp.toPx()

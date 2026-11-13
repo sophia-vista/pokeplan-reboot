@@ -38,6 +38,7 @@ import app.pokeplan.ui.theme.ChoiceRow
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
@@ -49,7 +50,10 @@ import kotlinx.coroutines.delay
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
+fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.GEAR) { GearBody(model, start, onClose) }
+
+@Composable
+private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
     var open by remember { mutableStateOf(start) }
     // Each use of a tool pings its helper, which answers with its one reaction.
     var used by remember { mutableIntStateOf(0) }
@@ -61,13 +65,13 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
         var category by remember { mutableStateOf<ToolCategory?>(null) }
         SectionScaffold("Gear", null, onClose, icon = "explorer-kit", color = ModuleAccent.GEAR.header) {
             // The home: search first, then what you starred and used lately, then every tool by group. Search works offline.
-            PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search the tools (lbs, yen, torch, laps)")
+            PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search")
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
             if (query.isNotBlank()) {
                 val found = ToolCatalog.search(query, gear.favorites, gear.recents)
                 if (found.isEmpty()) {
                     Text("No tool by that name", style = MaterialTheme.typography.titleSmall)
-                    PixelButton("Show every tool", { query = "" }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                    PixelButton("Show every tool", { query = "" }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 }
                 found.forEach { t -> PixelButton("${t.tool.label}: ${t.description}", { query = ""; open = t.tool }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true) }
             } else {
@@ -76,12 +80,6 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
                     FieldLabel("Favourites")
                     MenuGrid(starred.map { entry(ToolCatalog.info(it)) }) { key -> open = GearTool.valueOf(key) }
                 }
-                val lately = gear.recents.mapNotNull { n -> GearTool.entries.firstOrNull { it.name == n } }.filter { it !in starred }.take(4)
-                if (lately.isNotEmpty()) {
-                    FieldLabel("Used lately")
-                    MenuGrid(lately.map { entry(ToolCatalog.info(it)) }) { key -> open = GearTool.valueOf(key) }
-                }
-                FieldLabel("All tools")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     TabButton("All", category == null, { category = null })
                     ToolCategory.entries.forEach { c -> TabButton(c.label, category == c, { category = c }) }
@@ -136,12 +134,12 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
         if (helper != null) {
             Box(Modifier.size(Sizes.IconL)) {
                 AnimatedSprite(helper.form.id, helper.isShiny, helper.nickname, size = Sizes.IconL, animate = false)
-                if (reaction) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon, description = null) else Glyph(name, Pixel.Blue, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon) }
+                if (reaction) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon, description = null) else Glyph(name, Pixel.Tone, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon) }
             }
             Text(helper.nickname, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
         } else Spacer(Modifier.weight(1f))
         if (candidates.isNotEmpty()) PixelButton(if (choosing) "Done" else "Helper", { choosing = !choosing }, color = Pixel.InkSoft, compact = true)
-        PixelButton(if (starred) "Starred" else "Star", { store.gearFavorite(tool, !starred) }, color = if (starred) Pixel.Green else Pixel.InkSoft, compact = true)
+        PixelIconButton("star", if (starred) "Starred" else "Star", { store.gearFavorite(tool, !starred) }, if (starred) Pixel.Tone else Pixel.InkSoft)
     }
     if (choosing) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

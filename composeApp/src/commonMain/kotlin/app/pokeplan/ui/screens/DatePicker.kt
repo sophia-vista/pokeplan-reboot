@@ -60,9 +60,9 @@ fun PixelDateField(
             val custom = value != null && presets.none { today.plus(DatePeriod(days = it.second)) == value }
             TabButton(if (custom) value!!.short() else "Pick a date", custom || open, { open = !open }, key = accent)
         }
-        if (typed) {
+        if (typed && open) {
             TypedValueField(
-                value, onChange, { ExactInput.parseDate(it, today) }, { ExactInput.formatDate(it) }, { it.long() },
+                value, onChange, { ExactInput.parseDate(it, today) }, { ExactInput.formatDate(it) },
                 placeholder = "2026-11-07 or 7 Nov 2026", takes = "Type a date such as 2026-11-07, 7/11/2026 or 7 Nov 2026",
                 allowEmpty = noneLabel != null,
                 reject = { d ->

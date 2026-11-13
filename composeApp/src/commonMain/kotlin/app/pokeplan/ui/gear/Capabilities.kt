@@ -41,6 +41,6 @@ object NoCapabilities : DeviceCapabilities {
 /** One line for a capability's status, for a list that tells the player what their device can do. */
 fun CapabilityStatus.describe(): String = when {
     !available -> "${capability.label}: not available. $note".trim()
-    needsAsking -> "${capability.label}: available; ${permission.label} permission is asked for when you use it."
+    needsAsking -> "${capability.label}: available, asks first"
     else -> "${capability.label}: available." + if (note.isNotEmpty()) " $note" else ""
 }

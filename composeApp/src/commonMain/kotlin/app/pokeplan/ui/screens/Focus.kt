@@ -42,7 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.LifecycleEventEffect
-import app.pokeplan.core.dex.Region
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import app.pokeplan.plan.FailReason
 import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.FocusRules
@@ -61,7 +62,10 @@ import app.pokeplan.ui.theme.TextBox
 
 /** [openPokemon] shows a Pokémon on the Pokémon tab: the one that just hatched. */
 @Composable
-fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack: (() -> Unit)? = null) {
+fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack: (() -> Unit)? = null) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.PLAN) { FocusBody(model, openPokemon, onBack) }
+
+@Composable
+private fun FocusBody(model: AppModel, openPokemon: ((String) -> Unit)?, onBack: (() -> Unit)?) {
     val session = model.data.focus
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Focus", subtitle = if (session?.deepFocus == true) "Deep Focus" else null, icon = "mystery-egg", onBack = onBack, color = ModuleAccent.PLAN.header)
@@ -88,14 +92,14 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
         // The hatch is the peak of the loop, so its end leads straight to the new Pokémon rather than to a bare OK.
         val hatched = model.data.rewardLog.asReversed().firstNotNullOfOrNull { e -> e.rewards.filterIsInstance<Reward.Hatched>().lastOrNull() }?.pokemon
         val owned = hatched?.takeIf { h -> model.data.player.pokemon.any { it.id == h.id } }
-        val line = if (end.guarded) "The session ended early, but Magic Guard kept your egg safe, and it hatched! (Once a week.)" else "Your egg hatched! Have a look at your Pokémon."
+        val line = if (end.guarded) "The session ended early, but Magic Guard kept your egg safe, and it hatched! (Once a week.)" else "Your egg hatched! Have a look at your Pokémon." // copy-ok: result
         SpeakerBox(model, Emotion.JOYOUS) { Text(line, style = MaterialTheme.typography.bodyLarge) }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             if (owned != null && openPokemon != null) {
-                PixelButton("Meet ${owned.nickname}", { model.store.dismissFocusEnd(); openPokemon(owned.id) }, Modifier.weight(1f), Pixel.Green)
+                PixelButton("Meet ${owned.nickname}", { model.store.dismissFocusEnd(); openPokemon(owned.id) }, Modifier.weight(1f))
                 PixelButton("OK", { model.store.dismissFocusEnd() }, Modifier.weight(1f), Pixel.InkSoft)
             } else {
-                PixelButton("OK", { model.store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Green)
+                PixelButton("OK", { model.store.dismissFocusEnd() }, Modifier.fillMaxWidth())
             }
         }
     }
@@ -109,7 +113,7 @@ private fun FailedBox(model: AppModel, reason: FailReason?) {
             Text(FocusRules.FAILED_MESSAGE, style = MaterialTheme.typography.titleMedium)
             Text(
                 when (reason) {
-                    FailReason.LEFT_APP -> "You left the app for more than 10 seconds."
+                    FailReason.LEFT_APP -> "You left the app for more than 10 seconds." // copy-ok: result
                     FailReason.MOVED_PHONE -> "The phone moved during Deep Focus."
                     else -> "You stopped early."
                 },
@@ -120,7 +124,7 @@ private fun FailedBox(model: AppModel, reason: FailReason?) {
                     model.effect(Sfx.FOCUS_START)
                     model.store.dismissFocusEnd()
                     model.store.startFocus(FocusRules.RETRY_MINUTES, deepFocus = false)
-                }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                }, Modifier.weight(1f), Pixel.Tone, compact = true)
                 PixelButton("Not now", { model.store.dismissFocusEnd() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
@@ -157,24 +161,17 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("How long?")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    listOf(15, 25, 45, 60).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }, Modifier.weight(1f)) }
+                    listOf(FocusRules.RETRY_MINUTES, 15, 25, 45, 60).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }, Modifier.weight(1f)) }
                 }
-                // The four lengths cover most sessions; any other length is one tap away.
-                var custom by remember { mutableStateOf(minutes !in listOf(15, 25, 45, 60)) }
-                if (!custom) TabButton("Another length", false, { custom = true }, Modifier.fillMaxWidth())
-                else PixelDurationField(
-                    minutes, { if (it != null) minutes = it }, Pixel.Blue, presets = emptyList(), step = 5,
+                PixelDurationField(
+                    minutes, { if (it != null) minutes = it }, Pixel.Tone, presets = emptyList(),
                     min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
                 )
             }
         }
 
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                ToggleRow("Deep Focus", deep, detail = if (deep) "Better eggs. Moving the phone ends the session." else null) { deep = it }
-                Text("Hatching in: ${regionName(settings.region)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            }
-        }
+        // Help: Deep Focus gives better eggs, and moving the phone ends the session.
+        TextBox { ToggleRow("Deep Focus", deep) { deep = it } }
 
         if (tasks.isNotEmpty()) {
             TextBox {
@@ -186,25 +183,11 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
             }
         }
 
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                PixelTitle("How it works")
-                val grace = FocusRules.GRACE_MILLIS / 1000
-                val pause = FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000
-                listOf(
-                    "The egg hatches when the timer reaches zero.",
-                    "Leaving PokéLife for more than $grace seconds makes the egg go cold.",
-                    "A phone call pauses the timer until you come back.",
-                    "${FocusRules.EMERGENCY_PAUSES_PER_DAY} pauses of up to $pause minutes a day; paused time doesn't count. Give up stops at any time.",
-                ).forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
-            }
-        }
+        // Help: the egg hatches when the timer reaches zero; leaving PokéLife for more than FocusRules.GRACE_MILLIS makes it go cold; a call pauses the timer;
+        // FocusRules.EMERGENCY_PAUSES_PER_DAY pauses of up to FocusRules.EMERGENCY_PAUSE_MILLIS a day, paused time doesn't count; Give up stops at any time.
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelButton("Start $minutes min", { model.effect(Sfx.FOCUS_START); store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), ModuleAccent.PLAN.accent)
-        // For when starting is the hard part: the shortest session there is, with no choices to make.
-        val five = FocusRules.justFiveMinutes().minutesRoundedUp
-        if (minutes != five) PixelButton("Just $five minutes", { model.effect(Sfx.FOCUS_START); store.startFocus(five, deepFocus = false, taskId = taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     }
 }
 
@@ -215,8 +198,6 @@ private fun TaskChoice(title: String, rank: app.pokeplan.plan.Rank?, selected: B
         Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
-
-private fun regionName(region: Region) = region.label
 
 /**
  * Watches a running session wherever the player is in the app, not only on the Focus tab: leaving the app, a call, a
@@ -281,24 +262,14 @@ private fun RunningView(model: AppModel) {
                 modifier = Modifier.fillMaxWidth(),
             )
             val elapsed = 1f - remaining.toFloat() / total
-            PixelBar(elapsed, color = Pixel.Green, label = "${(elapsed * 100).toInt()} percent of the session done")
-            // Focused time is what counts; pauses stop the clock and are shown apart so the two are never mixed up.
-            val pausedNow = session.pausedMillis + ((session.phase as? Phase.Paused)?.let { now - it.since } ?: 0)
-            Text(
-                "Focused ${minutes(session.focusedMillis(now))} of ${minutes(total)} min" +
-                    if (pausedNow >= 60_000) ", paused ${minutes(pausedNow)} min" else "",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
-            Text(
-                when {
-                    paused && (session.phase as Phase.Paused).reason == app.pokeplan.plan.PauseReason.CALL -> "Paused for a call"
-                    paused -> "Paused. Resume within ${FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000} minutes."
-                    away -> "Come back! The egg is getting cold."
-                    session.deepFocus -> "Stay with it, and keep the phone still."
-                    else -> "Stay with it."
-                },
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            PixelBar(elapsed, color = Pixel.Tone, label = "${(elapsed * 100).toInt()} percent of the session done")
+            val status = when {
+                paused && (session.phase as Phase.Paused).reason == app.pokeplan.plan.PauseReason.CALL -> "Paused for a call"
+                paused -> "Paused. Resume within ${FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000} minutes."
+                away -> "Come back! The egg is getting cold."
+                else -> null
+            }
+            if (status != null) Text(status, style = MaterialTheme.typography.bodyLarge)
         }
     }
 
@@ -306,9 +277,9 @@ private fun RunningView(model: AppModel) {
     val emergency = (session.phase as? Phase.Paused)?.reason == app.pokeplan.plan.PauseReason.EMERGENCY
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         if (emergency) {
-            PixelButton("Resume", { store.focusEvent(FocusEvent.EmergencyPauseEnded) }, Modifier.weight(1f), Pixel.Green)
+            PixelButton("Resume", { store.focusEvent(FocusEvent.EmergencyPauseEnded) }, Modifier.weight(1f), Pixel.Tone)
         } else {
-            PixelButton("Pause ($pausesLeft)", { store.focusEvent(FocusEvent.EmergencyPauseStarted) }, Modifier.weight(1f), Pixel.Blue, enabled = pausesLeft > 0 && !paused)
+            PixelButton("Pause", { store.focusEvent(FocusEvent.EmergencyPauseStarted) }, Modifier.weight(1f).semantics { contentDescription = "Pause, $pausesLeft left today" }, Pixel.Tone, enabled = pausesLeft > 0 && !paused)
         }
         // Giving up is the way out, not the thing to do, so it stays the quiet button; a first tap asks, a second within four seconds gives up.
         var sure by remember { mutableStateOf(false) }
@@ -316,8 +287,6 @@ private fun RunningView(model: AppModel) {
         PixelButton(if (sure) "Really give up?" else "Give up", { if (sure) store.focusEvent(FocusEvent.GaveUp) else sure = true }, Modifier.weight(1f), if (sure) Pixel.Danger else Pixel.InkSoft)
     }
 }
-
-private fun minutes(millis: Long): Long = millis / 60_000
 
 private fun clock(millis: Long): String {
     val total = (millis + 999) / 1000

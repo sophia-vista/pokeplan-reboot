@@ -57,16 +57,17 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.plus
 
+// Help: events never pay; with a repeating event, changes are made to every one, and moving it on the calendar moves just that one.
 /** Setting up a new event: its title, all day or at a time, its colour, then when (its days, or tap an hour and nudge it), then Add. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit, add: () -> Unit, hours: Boolean = true, today: LocalDate = draft.day, cancel: () -> Unit) {
+internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Unit, today: LocalDate = draft.day, cancel: () -> Unit) {
     val at = LocalTime(draft.start / 60, draft.start % 60)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("New event")
             PixelField(
-                draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), singleLine = true, label = "What",
+                draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "What",
             )
             Segmented(listOf("At a time", "All day"), if (draft.allDay) 1 else 0) { change(draft.copy(allDay = it == 1, lastDay = draft.day)) }
             EventColors(draft.color) { change(draft.copy(color = it)) }
@@ -74,28 +75,23 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
             if (draft.allDay) {
                 DaySpanPicker(draft.day, draft.lastDay, today, { change(draft.movedTo(it)) }) { change(draft.copy(lastDay = it)) }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelIconButton("plus", "Add", add, Pixel.Green, enabled = draft.title.isNotBlank())
+                    PixelIconButton("plus", "Add", add, Pixel.Tone, enabled = draft.title.isNotBlank())
                     PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
                 }
                 return@Column
             }
-            Text(
-                "${draft.day.short()}, ${clock(at)} for ${duration(draft.minutes)}." +
-                    (if (hours) " Tap ${if (week) "a day's hour" else "an hour"} to change it." else "") + " Events never pay.",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            PixelDateField(draft.day, today, Pixel.Blue, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+            PixelDateField(draft.day, today, Pixel.Tone, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
             PixelTimeField(
                 at, { t -> t?.let { change(draft.copy(start = it.hour * 60 + it.minute).let { d -> d.copy(minutes = PlanEvent.fit(d.start, d.minutes)) }) } },
-                Pixel.Blue, label = "Starts", steps = listOf(15, 60),
+                Pixel.Tone, label = "Starts",
             )
             PixelDurationField(
-                draft.minutes, { m -> m?.let { change(draft.copy(minutes = PlanEvent.fit(draft.start, it))) } }, Pixel.Blue, label = "Length",
-                presets = listOf(30, 60, 90, 120), step = DayTimeline.SNAP_MINUTES,
+                draft.minutes, { m -> m?.let { change(draft.copy(minutes = PlanEvent.fit(draft.start, it))) } }, Pixel.Tone, label = "Length",
+                presets = listOf(30, 60, 90, 120),
                 max = 24 * 60 - draft.start, min = 1,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelIconButton("plus", "Add", add, Pixel.Green, enabled = draft.title.isNotBlank())
+                PixelIconButton("plus", "Add", add, Pixel.Tone, enabled = draft.title.isNotBlank())
                 PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
             }
         }
@@ -110,7 +106,7 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow: (String) -> Unit, close: () -> Unit) {
+internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> Unit, close: () -> Unit) {
     val store = model.store
     var title by remember(PlanEvent.seriesOf(event.id)) { mutableStateOf(event.title) }
     val series = model.data.events.firstOrNull { it.id == PlanEvent.seriesOf(event.id) } ?: event
@@ -118,7 +114,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelField(
-                title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Event",
+                title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Event",
             )
             EventColors(event.color) { store.updateEvent(event.id, color = it) }
             RepeatPicker(event.repeat) { store.updateEvent(event.id, title = title); follow(store.repeatEvent(event.id, it)) }
@@ -131,33 +127,26 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
             }
             if (event.allDay) {
                 DaySpanPicker(event.day, event.endDay, store.today, { follow(store.updateEvent(event.id, day = it)) }) { store.updateEvent(event.id, lastDay = it) }
-                if (repeats) Text("Changes here are made to every one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelButton("At a time", { store.updateEvent(event.id, allDay = false); close() }, color = Pixel.InkSoft, compact = true)
                     deletes()
-                    PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Green)
+                    PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Tone)
                 }
                 return@Column
             }
-            Text(
-                "${if (week) event.day.short() + ", " else "At "}${clock(event.start)} for ${duration(event.minutes)}. " +
-                    if (repeats) "Changes here are made to every one; tap another hour or drag it to move just this one."
-                    else "Tap another hour to move it.",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            PixelDateField(event.day, store.today, Pixel.Blue, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+            PixelDateField(event.day, store.today, Pixel.Tone, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
             PixelTimeField(
-                event.start, { t -> t?.let { store.updateEvent(event.id, start = it) } }, Pixel.Blue, label = "Starts", steps = listOf(15, 60),
+                event.start, { t -> t?.let { store.updateEvent(event.id, start = it) } }, Pixel.Tone, label = "Starts",
             )
             PixelDurationField(
-                event.minutes, { m -> m?.let { store.updateEvent(event.id, minutes = it) } }, Pixel.Blue, label = "Length",
-                presets = listOf(30, 60, 90, 120), step = DayTimeline.SNAP_MINUTES,
+                event.minutes, { m -> m?.let { store.updateEvent(event.id, minutes = it) } }, Pixel.Tone, label = "Length",
+                presets = listOf(30, 60, 90, 120),
                 max = 24 * 60 - (event.start.hour * 60 + event.start.minute), min = 1,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelButton("All day", { store.updateEvent(event.id, allDay = true) }, color = Pixel.InkSoft, compact = true)
                 deletes()
-                PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Green)
+                PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Tone)
             }
         }
     }
@@ -177,8 +166,8 @@ private fun RepeatPicker(selected: EventRepeat?, pick: (EventRepeat?) -> Unit) {
                     Modifier
                         .defaultMinSize(minHeight = Spacing.Target)
                         .clip(shape)
-                        .background(if (on) Pixel.Blue.copy(alpha = 0.10f) else Pixel.Panel, shape)
-                        .border(if (on) 2.dp else 1.dp, if (on) Pixel.Blue else Pixel.Border, shape)
+                        .background(if (on) Pixel.Tone.copy(alpha = 0.10f) else Pixel.Panel, shape)
+                        .border(if (on) 2.dp else 1.dp, if (on) Pixel.Tone else Pixel.Border, shape)
                         .selectable(on, role = Role.RadioButton) { pick(r) }
                         .padding(horizontal = Spacing.M),
                     contentAlignment = Alignment.Center,
@@ -246,10 +235,8 @@ private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
 /** The first and last day of an all-day event, each typed or picked; the last never comes before the first. */
 @Composable
 private fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, setFirst: (LocalDate) -> Unit, setLast: (LocalDate) -> Unit) {
-    val days = first.daysUntil(last) + 1
-    Text("${first.short()}${if (days > 1) " to ${last.short()}, $days days" else ", one day"}. Events never pay.", style = MaterialTheme.typography.bodyMedium)
     FieldLabel("Starts")
-    PixelDateField(first, today, Pixel.Blue, { it?.let(setFirst) }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+    PixelDateField(first, today, Pixel.Tone, { it?.let(setFirst) }, presets = listOf("Today" to 0, "Tomorrow" to 1))
     FieldLabel("Ends")
-    PixelDateField(last, today, Pixel.Blue, { it?.let(setLast) }, presets = emptyList(), min = first)
+    PixelDateField(last, today, Pixel.Tone, { it?.let(setLast) }, presets = emptyList(), min = first)
 }

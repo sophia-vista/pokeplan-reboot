@@ -98,14 +98,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 ScreenHeader("Pokémon", icon = "poke-ball")
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M)) {
                     val ready = store.activeQuests.count { store.questReady(it) }
-                    // A new player has one Pokémon: say where the next ones come from.
-                    MenuGrid(
+                    MenuList(
                         listOfNotNull(
-                            MenuEntry("PARTY", "premier-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
-                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { inPc(store, it) }} stored", tint = Pixel.Warning),
-                            MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
-                            if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
-                            if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
+                            MenuEntry("PARTY", "premier-ball", "Party", count = "${player.party.size} of 6"),
+                            MenuEntry("PC", "storage-key", "PC boxes", count = "${player.pokemon.count { inPc(store, it) }}"),
+                            MenuEntry("DEX", "great-ball", "Pokédex", count = "${player.caught.size} caught"),
+                            if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", count = "${player.inventory.counts.count { it.value > 0 }}") else null,
+                            if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", count = if (store.activeQuests.isEmpty()) "" else "${store.activeQuests.size}", badge = ready),
                         ),
                     ) { key -> section = Section.valueOf(key) }
                 }
@@ -132,13 +131,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 Section.PC -> {
                     // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
                     val box = player.pokemon.filter { inPc(store, it) }
-                    if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to their region's party first, then here once it is full. One PC serves every region.", icon = "storage-key", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+                    if (box.isEmpty()) EmptyState("The PC is empty", icon = "storage-key", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
                     else {
                         val shown = pcView.apply(box) { store.isFavorite(it) }
                         val boxes = pcView.boxCount(shown.size)
                         val at = pcView.box.coerceIn(0, boxes - 1)
                         PcControls(pcView, { pcView = it }, shown.size, box.size)
-                        if (shown.isEmpty()) EmptyState("Nothing matches", "Try another type or clear the filters.", action = "Clear filters" to { pcView = pcView.copy(type = null, shinyOnly = false, starredOnly = false, search = "") })
+                        if (shown.isEmpty()) EmptyState("Nothing matches", action = "Clear filters" to { pcView = pcView.copy(type = null, shinyOnly = false, starredOnly = false, search = "") })
                         else {
                             if (boxes > 1) PcBoxBar(at, boxes) { pcView = pcView.copy(box = it) }
                             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -179,14 +178,7 @@ private fun PartyGroup(
 ) {
     var showPerks by remember(region) { mutableStateOf(false) }
     if (party.isEmpty()) {
-        val how = if (region == Region.CARE) "Open a Pokémon and choose \"To Care party\", or befriend a visitor. Until then Care warms your Plan buddy. Its first member leads."
-        else if (region == Region.HEAL) "Open a Pokémon and choose \"To Heal party\", or try Field Research in Heal. Its first member leads."
-        else if (region == Region.MINT) "Open a Pokémon and choose \"To Mint party\", or try the tally in Mint. Its first member leads."
-        else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Base party\", or try the tidy in Home. Its first member leads."
-        else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Base party\", or try the tidy in Home. Its first member leads."
-        else if (region == Region.LINK) "Open a Pokémon and choose \"To Link party\", or try the postcard in Link. Its first member leads."
-        else "Hatch an egg with a focus session, or move a Pokémon here from the PC."
-        EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true, action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+        EmptyState("No one here yet", icon = "poke-ball", sleeper = true, action = "Start a focus session" to { model.open(Place.FOCUS, true) })
         return
     }
     PartyGrid(model, party, leadId, leadLabel, open, tapOpens = true)
@@ -228,12 +220,9 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
                 }
             }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                (if (view.filtering) "$shown of $total" else "$total stored") + " · by ${view.sort.label}",
-                Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft,
-            )
-            if (view.filtering) PixelButton("Clear", { change(view.copy(type = null, shinyOnly = false, starredOnly = false, search = "")) }, color = Pixel.InkSoft, compact = true)
+        if (view.filtering) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("$shown of $total", Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            PixelButton("Clear", { change(view.copy(type = null, shinyOnly = false, starredOnly = false, search = "")) }, color = Pixel.InkSoft, compact = true)
         }
     }
 }
