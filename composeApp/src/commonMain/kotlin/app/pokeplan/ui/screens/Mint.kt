@@ -154,7 +154,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.MINT, model.data.player.mintLead, model.store.moduleEvent(app.pokeplan.app.GameStore.MINT_LOG_PREFIX), openPokemon = openPokemon)
-            TutorialCard(model, Tutorials.MINT_TALLY, mintRecords = data.accounts.size + data.transactions.size)
+            FirstRecordEgg(model, Tutorials.MINT_TALLY, data.accounts.size + data.transactions.size)
             OverviewCard(model)
             MenuGrid(
                 listOf(

@@ -177,7 +177,7 @@ private fun HouseholdMenu(model: AppModel, onBack: () -> Unit, openPokemon: (Str
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.HOME, model.data.player.homeLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HOME_LOG_PREFIX), openPokemon = openPokemon)
-            TutorialCard(model, Tutorials.HOME_TIDY, homeRecords = data.chores.size + data.supplies.size + data.assets.size)
+            FirstRecordEgg(model, Tutorials.HOME_TIDY, data.chores.size + data.supplies.size + data.assets.size)
             HouseholdSearch(model)
             HouseholdOverview(model, overview)
             MenuGrid(

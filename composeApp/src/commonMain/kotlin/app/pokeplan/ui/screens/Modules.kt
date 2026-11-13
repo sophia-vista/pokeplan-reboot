@@ -152,7 +152,7 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.PLAN, data.player.planLead, store.moduleEvent(null), resting = session != null, openPokemon = openPokemon)
-            TutorialCard(model, app.pokeplan.app.Tutorials.PLAN_FOCUS)
+            FirstRecordEgg(model, app.pokeplan.app.Tutorials.PLAN_FOCUS, model.data.tasks.count { it.completedAtMillis != null })
             SectionLabel("Today", icon = PlanSection.PLANNER.icon)
             if (open.isEmpty()) {
                 val doneToday = data.tasks.any { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }

@@ -16,7 +16,3 @@ internal fun FirstRecordEgg(model: AppModel, id: String, records: Int) {
     }
 }
 
-/** Transitional: the old demo card's call, now the first-record egg. */
-@Composable
-internal fun TutorialCard(model: AppModel, id: String, careBreaks: Int = 0, healActivities: Int = 0, mintRecords: Int = 0, homeRecords: Int = 0, linkRecords: Int = 0) =
-    FirstRecordEgg(model, id, careBreaks + healActivities + mintRecords + homeRecords + linkRecords)

@@ -397,8 +397,8 @@ The starter is the buddy and starts in no party, so each module that has a Poké
 | Module | First real record | What it gives |
 |---|---|---|
 | PLAN | The first finished task | A Common egg of the open region, into Plan's party, leading it |
-| CARE | The first calm break or routine done | A Common egg of the Care Region, into Care's party, leading it |
-| HEAL | The first logged activity | A Common egg of the Heal Region, into Heal's party, leading it |
+| CARE | The first routine, calm break, skill, diary card or journal entry | A Common egg of the Care Region, into Care's party, leading it |
+| HEAL | The first activity, drink or night logged | A Common egg of the Heal Region, into Heal's party, leading it |
 | MINT | The first account or money record | A Common egg of the Mint Region, into Mint's party, leading it |
 | HOME | The first chore, supply or item | A Common egg of the Household Region, into its party, leading it |
 | LINK | The first person, date or follow-up | A Common egg of the Link Region, into Link's party, leading it |

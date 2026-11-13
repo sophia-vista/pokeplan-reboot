@@ -140,7 +140,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         ) {
             // What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
             CareBuddy(model, openPokemon)
-            TutorialCard(model, app.pokeplan.app.Tutorials.CARE_BREATH, careBreaks = care.breaks.size)
+            FirstRecordEgg(model, app.pokeplan.app.Tutorials.CARE_BREATH, care.routines.size + care.breaks.size + care.practices.size + care.diary.size + care.journal.size)
             if (today.isEmpty()) {
                 EmptyState(
                     if (care.routines.none { !it.archived }) "No routines yet" else "Nothing planned for today",

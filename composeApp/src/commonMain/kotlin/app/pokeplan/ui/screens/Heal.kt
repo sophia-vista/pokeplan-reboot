@@ -120,7 +120,7 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.HEAL, model.data.player.healLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HEAL_LOG_PREFIX), openPokemon = openPokemon)
-            TutorialCard(model, Tutorials.HEAL_WALK, healActivities = data.activities.size)
+            FirstRecordEgg(model, Tutorials.HEAL_WALK, data.activities.size + data.hydration.size + data.sleep.size)
             TodayCard(model)
             MenuGrid(
                 listOf(

@@ -148,7 +148,7 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
-            TutorialCard(model, Tutorials.LINK_POSTCARD, linkRecords = data.people.size + data.dates.size + data.followUps.size)
+            FirstRecordEgg(model, Tutorials.LINK_POSTCARD, data.people.size + data.dates.size + data.followUps.size)
             LinkSearch(model)
             LinkOverview(model)
             MenuGrid(

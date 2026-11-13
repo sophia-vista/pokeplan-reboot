@@ -78,7 +78,6 @@ internal fun ScreenLockGate(model: AppModel, module: Module, on: Boolean, conten
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("${module.label} is locked")
-            Text("Use your phone's screen lock to open it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (failed) Report(model, "That did not open it.", tone = NoticeTone.WARNING)
             PixelButton("Unlock", ::ask, Modifier.fillMaxWidth(), module.look.accent)
             PixelButton("Back", toModules, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
