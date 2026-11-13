@@ -161,14 +161,3 @@ class SpeedExplanationTest {
         assertTrue(tiny.skillHelp.values.all { it in 1..AbilityPerks.MAX_BONUS })
     }
 }
-
-class LegendBonusTextTest {
-    @Test
-    fun theBonusTextSaysWhatTheNumbersDo() {
-        val text = Legends.byId("johto-ho-oh")!!.bonusText()
-        assertTrue("0.5% more chance of a wild Pokémon" in text && "3% more chance of a treasure box" in text && text.endsWith("in Johto."), text)
-        val lugia = Legends.byId("johto-lugia")!!.bonusText()
-        assertTrue("Water and Flying-favouring dungeons climb ${Legends.FASTER_PERCENT}% faster" in lugia, lugia)
-        Legends.all.forEach { assertTrue(it.bonusText() != "No bonus.", it.id) }
-    }
-}

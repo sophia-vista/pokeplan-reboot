@@ -17,8 +17,8 @@ import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.CarePerks
 import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
-import app.pokeplan.core.pokemon.HomeBucket
-import app.pokeplan.core.pokemon.HomePerks
+import app.pokeplan.core.pokemon.BaseBucket
+import app.pokeplan.core.pokemon.BasePerks
 import app.pokeplan.core.pokemon.LinkBucket
 import app.pokeplan.core.pokemon.LinkPerks
 import app.pokeplan.core.pokemon.MintBucket
@@ -58,7 +58,7 @@ data class PlayerState(
     /** The lead of Mint's party (slot 1); null means its first member. */
     val mintLeadId: String? = null,
     /** The lead of Home's party (slot 1); null means its first member. */
-    val homeLeadId: String? = null,
+    @SerialName("homeLeadId") val baseLeadId: String? = null,
     /** The lead of Link's party (slot 1); null means its first member. */
     val linkLeadId: String? = null,
     /** The lead of Plan's party (slot 1); null means its first member. Before roles were split (0) this was the buddy; see [rolesVersion]. */
@@ -78,7 +78,7 @@ data class PlayerState(
     /** A module party's lead (its slot 1): the one chosen if it is still in the party, else the party's first member, else none. */
     fun lead(partyId: String): OwnedPokemon? {
         val members = partyOf(partyId)
-        val chosen = when (partyId) { PartyIds.PLAN -> planLeadId; PartyIds.CARE -> careLeadId; PartyIds.HEAL -> healLeadId; PartyIds.MINT -> mintLeadId; PartyIds.HOME -> homeLeadId; PartyIds.LINK -> linkLeadId; else -> null }
+        val chosen = when (partyId) { PartyIds.PLAN -> planLeadId; PartyIds.CARE -> careLeadId; PartyIds.HEAL -> healLeadId; PartyIds.MINT -> mintLeadId; PartyIds.BASE -> baseLeadId; PartyIds.LINK -> linkLeadId; else -> null }
         return members.firstOrNull { it.id == chosen } ?: members.firstOrNull()
     }
 
@@ -91,7 +91,7 @@ data class PlayerState(
 
     val mintLead: OwnedPokemon? get() = lead(PartyIds.MINT)
 
-    val homeLead: OwnedPokemon? get() = lead(PartyIds.HOME)
+    val baseLead: OwnedPokemon? get() = lead(PartyIds.BASE)
 
     val linkLead: OwnedPokemon? get() = lead(PartyIds.LINK)
 
@@ -270,7 +270,7 @@ data class MintEvent(
  * Creating or editing a record, a quantity, a warranty, a note, a restocking entry or a reminder is never an event (section 9.2).
  */
 @Serializable
-enum class HomeKind {
+enum class BaseKind {
     @SerialName("chore_completed") CHORE,
     @SerialName("maintenance_completed") MAINTENANCE,
 }
@@ -282,9 +282,9 @@ enum class HomeKind {
  */
 @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 @Serializable
-data class HomeEvent(
+data class BaseEvent(
     val id: String,
-    val kind: HomeKind,
+    val kind: BaseKind,
     val nowMillis: Long,
     val ref: String,
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.ALWAYS)
@@ -442,10 +442,10 @@ object RewardEngine {
     const val MINT_POINTS = 1
 
     /** Rare Candies for each HOME moment (Habitat Discovery). *(tune)* */
-    val HOME_CANDIES: Map<HomeKind, Int> = mapOf(HomeKind.CHORE to 2, HomeKind.MAINTENANCE to 4)
+    val HOME_CANDIES: Map<BaseKind, Int> = mapOf(BaseKind.CHORE to 2, BaseKind.MAINTENANCE to 4)
 
     /** Habitat Discovery's meter, kept by the app: each moment adds its points and a full meter discovers a Habitat Egg ([homeEgg]). *(tune)* */
-    val HOME_EGG_POINTS: Map<HomeKind, Int> = mapOf(HomeKind.CHORE to 1, HomeKind.MAINTENANCE to 2)
+    val HOME_EGG_POINTS: Map<BaseKind, Int> = mapOf(BaseKind.CHORE to 1, BaseKind.MAINTENANCE to 2)
     const val HOME_EGG_METER_SIZE = 5
     const val HOME_POINTS = 1
 
@@ -643,7 +643,7 @@ object RewardEngine {
                 PartyIds.PLAN -> if (state.planLead == null) next.copy(planLeadId = p.id) else next
                 PartyIds.HEAL -> if (state.healLead == null) next.copy(healLeadId = p.id) else next
                 PartyIds.MINT -> if (state.mintLead == null) next.copy(mintLeadId = p.id) else next
-                PartyIds.HOME -> if (state.homeLead == null) next.copy(homeLeadId = p.id) else next
+                PartyIds.BASE -> if (state.baseLead == null) next.copy(baseLeadId = p.id) else next
                 PartyIds.LINK -> if (state.linkLead == null) next.copy(linkLeadId = p.id) else next
                 else -> next
             }
@@ -821,12 +821,12 @@ object RewardEngine {
         var rarity = Egg.rates(TASK_EGG_MINUTES, false).roll(rng)
         while (rarity.ordinal > 0 && HatchRules.pool(Region.HOUSEHOLD, rarity).isEmpty()) rarity = Rarity.entries[rarity.ordinal - 1]
         val option = HatchRules.rollWeighted(Region.HOUSEHOLD, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
-        val size = state.partyOf(PartyIds.HOME).size
-        val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.HOME)
-        val lead = state.homeLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has (chosen or implicit: its first member) keeps leading; a newcomer only leads an empty party
+        val size = state.partyOf(PartyIds.BASE).size
+        val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.BASE)
+        val lead = state.baseLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has (chosen or implicit: its first member) keeps leading; a newcomer only leads an empty party
         val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
         return Outcome(
-            state.copy(pokemon = state.pokemon + p, homeLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
+            state.copy(pokemon = state.pokemon + p, baseLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
             listOf(Reward.Hatched(p, fromTask = true)) + newRewards,
         )
     }
@@ -835,19 +835,19 @@ object RewardEngine {
      * A HOME moment (Habitat Discovery): Home's lead gets a little friendship and the player [HOME_CANDIES] Rare Candies, a trainer point, and
      * Home's own perks may add a second candy or more friendship. Nothing about the records is read: the event has no such field.
      */
-    fun home(state: PlayerState, e: HomeEvent, rng: Random): Outcome {
+    fun base(state: PlayerState, e: BaseEvent, rng: Random): Outcome {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
-        val lead = state.homeLead
-        val perks = HomePerks.total(lead, state.partyOf(PartyIds.HOME), state.guardianOf(PartyIds.HOME))
+        val lead = state.baseLead
+        val perks = BasePerks.total(lead, state.partyOf(PartyIds.BASE), state.guardianOf(PartyIds.BASE))
         if (lead != null) {
             var grown = lead.gainFriendship(FriendshipRules.Source.HABITAT)
-            val extra = perks[HomeBucket.FRIENDSHIP_GAIN] ?: 0.0
+            val extra = perks[BaseBucket.FRIENDSHIP_GAIN] ?: 0.0
             if (extra > 0 && rng.nextDouble() * 100 < extra) grown = grown.gainFriendship(FriendshipRules.Source.HABITAT)
             pokemon = pokemon.map { if (it.id == lead.id) grown else it }
             if (grown.friendship > lead.friendship) rewards += Reward.Friendship(grown.friendship - lead.friendship)
         }
-        val second = perks[HomeBucket.CANDY_FINDER] ?: 0.0
+        val second = perks[BaseBucket.CANDY_FINDER] ?: 0.0
         val candies = HOME_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)

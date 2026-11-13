@@ -10,11 +10,11 @@ import app.pokeplan.LiveStore
 import app.pokeplan.app.ActionResult
 import app.pokeplan.app.CareReminderAdapter
 import app.pokeplan.app.HealReminderAdapter
-import app.pokeplan.app.HomeReminderAdapter
+import app.pokeplan.app.BaseReminderAdapter
 import app.pokeplan.app.LinkReminderAdapter
 import app.pokeplan.linkStore
 import app.pokeplan.app.MintReminderAdapter
-import app.pokeplan.homeStore
+import app.pokeplan.baseStore
 import app.pokeplan.mintStore
 import app.pokeplan.healStore
 import app.pokeplan.app.FireDecision
@@ -76,7 +76,7 @@ object SharedReminders {
         val care = careStore(context, game)
         val heal = healStore(context, game)
         val mint = mintStore(context, game)
-        val home = homeStore(context, game)
+        val home = baseStore(context, game)
         val link = linkStore(context, game)
         val coordinator = ReminderCoordinator(
             listOf(
@@ -84,7 +84,7 @@ object SharedReminders {
                 HealReminderAdapter({ heal.data }, { game.data }, { heal.today }),
                 MintReminderAdapter({ mint.data }, { game.data }, { mint.today }),
                 // A chore's "Done" is Home's own completion, the one that pays Habitat Discovery once; nothing else of Home is ever done from a notification.
-                HomeReminderAdapter({ home.data }, { game.data }, { home.today }) { id -> home.complete(id).record != null },
+                BaseReminderAdapter({ home.data }, { game.data }, { home.today }) { id -> home.complete(id).record != null },
                 // A follow-up's "Done" is Link's own completion, the one that pays Postcard Trail once; a date's reminder offers no action but "Tomorrow".
                 LinkReminderAdapter({ link.data }, { game.data }, { link.today }) { id -> link.complete(id).record != null },
                 CareReminderAdapter({ care.data }, { game.data }) { id, day ->

@@ -1,4 +1,4 @@
-package app.pokeplan.home
+package app.pokeplan.base
 
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -11,7 +11,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class HomeRulesTest {
+class BaseRulesTest {
     /** A Saturday. */
     private val today = d("2026-11-07")
 
@@ -33,7 +33,7 @@ class HomeRulesTest {
     private fun schedule(id: String, next: String, r: Recurrence = rec(RepeatKind.MONTHLY), first: String = next, policy: SchedulePolicy = SchedulePolicy.FIXED, status: RecordStatus = RecordStatus.ACTIVE) =
         MaintenanceSchedule(id, id, recurrence = r, policy = policy, firstDue = d(first), nextDue = d(next), status = status)
 
-    private fun view(c: Chore, vararg entries: ChoreEntry, on: LocalDate = today) = HomeRules.view(HomeData(chores = listOf(c), entries = entries.toList()), c, on)
+    private fun view(c: Chore, vararg entries: ChoreEntry, on: LocalDate = today) = BaseRules.view(BaseData(chores = listOf(c), entries = entries.toList()), c, on)
 
     // --- schedules: daily ----------------------------------------------------------------------------------------------
 
@@ -308,15 +308,15 @@ class HomeRulesTest {
     @Test
     fun aRecurringChoreAMonthBehindShowsOneOverdueOccurrenceNotABacklog() {
         val weekly = chore("w", "2026-10-01", rec(RepeatKind.WEEKLY)) // Thursdays; the latest one before Saturday 7 Nov is 5 Nov
-        val data = HomeData(chores = listOf(weekly, chore("m", "2026-08-15", rec(RepeatKind.MONTHLY))), entries = listOf(entry("e", "m", "2026-08-15")))
-        val views = HomeRules.views(data, today)
+        val data = BaseData(chores = listOf(weekly, chore("m", "2026-08-15", rec(RepeatKind.MONTHLY))), entries = listOf(entry("e", "m", "2026-08-15")))
+        val views = BaseRules.views(data, today)
         assertEquals(2, views.size)
         val w = views.single { it.chore.id == "w" }
         assertEquals(ChoreView(weekly, ChoreState.OVERDUE, d("2026-11-05"), d("2026-11-05"), null), w)
         val m = views.single { it.chore.id == "m" }
         assertEquals(ChoreState.OVERDUE, m.state)
         assertEquals(d("2026-10-15"), m.occurrence)
-        assertEquals(2, HomeRules.attention(views).size)
+        assertEquals(2, BaseRules.attention(views).size)
     }
 
     @Test
@@ -369,9 +369,9 @@ class HomeRulesTest {
         val archived = chore("a", "2026-11-01", status = RecordStatus.ARCHIVED)
         assertEquals(ChoreView(paused, ChoreState.PAUSED, null, null, null), view(paused))
         assertEquals(ChoreView(archived, ChoreState.ARCHIVED, null, null, null), view(archived))
-        val data = HomeData(chores = listOf(paused, archived))
-        assertEquals(listOf("p"), HomeRules.views(data, today).map { it.chore.id })
-        assertTrue(HomeRules.attention(HomeRules.views(data, today)).isEmpty())
+        val data = BaseData(chores = listOf(paused, archived))
+        assertEquals(listOf("p"), BaseRules.views(data, today).map { it.chore.id })
+        assertTrue(BaseRules.attention(BaseRules.views(data, today)).isEmpty())
     }
 
     @Test
@@ -386,64 +386,64 @@ class HomeRulesTest {
             chore("old", "2026-10-01"),
             chore("older", "2026-09-01"),
         )
-        val data = HomeData(chores = chores, entries = listOf(entry("e", "done", "2026-11-01")))
-        assertEquals(listOf("older", "old", "today", "soon", "later", "whenever", "done", "paused"), HomeRules.views(data, today).map { it.chore.id })
+        val data = BaseData(chores = chores, entries = listOf(entry("e", "done", "2026-11-01")))
+        assertEquals(listOf("older", "old", "today", "soon", "later", "whenever", "done", "paused"), BaseRules.views(data, today).map { it.chore.id })
     }
 
     @Test
     fun editingAChoreNeverChangesWhatWasRecorded() {
         val c = chore("w", "2026-10-01", rec(RepeatKind.WEEKLY), title = "Water the plants")
         val entries = listOf(entry("e1", "w", "2026-10-29", at = 1), entry("e2", "w", "2026-11-05", EntryStatus.SKIPPED, at = 2))
-        val before = HomeData(chores = listOf(c), entries = entries)
+        val before = BaseData(chores = listOf(c), entries = entries)
         val edited = before.copy(chores = listOf(c.copy(title = "Water the ferns", recurrence = rec(RepeatKind.DAILY), instructions = "Less water")))
         assertEquals(before.entries, edited.entries)
-        assertEquals(HomeRules.history(before, "w"), HomeRules.history(edited, "w"))
-        assertEquals(listOf("e2", "e1"), HomeRules.history(edited).map { it.id }, "newest first")
-        assertEquals(listOf("e2"), HomeRules.history(edited, "w").take(1).map { it.id })
-        assertTrue(HomeRules.history(edited, "nope").isEmpty())
+        assertEquals(BaseRules.history(before, "w"), BaseRules.history(edited, "w"))
+        assertEquals(listOf("e2", "e1"), BaseRules.history(edited).map { it.id }, "newest first")
+        assertEquals(listOf("e2"), BaseRules.history(edited, "w").take(1).map { it.id })
+        assertTrue(BaseRules.history(edited, "nope").isEmpty())
     }
 
     // --- supplies ------------------------------------------------------------------------------------------------------
 
     @Test
     fun aSupplyIsLowOnlyWhenTheQuantityAndTheThresholdAreKnownAndTheQuantityIsAtOrUnderIt() {
-        assertFalse(HomeRules.isLow(supply("a", qty = null, low = 2000)), "unknown is not zero")
-        assertFalse(HomeRules.isLow(supply("b", qty = 0, low = null)), "no threshold is never inferred")
-        assertFalse(HomeRules.isLow(supply("c", qty = null, low = null)))
-        assertTrue(HomeRules.isLow(supply("d", qty = 2000, low = 2000)), "equal to the threshold is low")
-        assertTrue(HomeRules.isLow(supply("e", qty = 0, low = 0)))
-        assertTrue(HomeRules.isLow(supply("f", qty = 1999, low = 2000)))
-        assertFalse(HomeRules.isLow(supply("g", qty = 2001, low = 2000)))
-        assertFalse(HomeRules.isLow(supply("h", qty = 0, low = 2000, archived = true)))
+        assertFalse(BaseRules.isLow(supply("a", qty = null, low = 2000)), "unknown is not zero")
+        assertFalse(BaseRules.isLow(supply("b", qty = 0, low = null)), "no threshold is never inferred")
+        assertFalse(BaseRules.isLow(supply("c", qty = null, low = null)))
+        assertTrue(BaseRules.isLow(supply("d", qty = 2000, low = 2000)), "equal to the threshold is low")
+        assertTrue(BaseRules.isLow(supply("e", qty = 0, low = 0)))
+        assertTrue(BaseRules.isLow(supply("f", qty = 1999, low = 2000)))
+        assertFalse(BaseRules.isLow(supply("g", qty = 2001, low = 2000)))
+        assertFalse(BaseRules.isLow(supply("h", qty = 0, low = 2000, archived = true)))
     }
 
     @Test
     fun quietedLowSuppliesLeaveTheOverviewButNotTheList() {
-        val data = HomeData(supplies = listOf(
+        val data = BaseData(supplies = listOf(
             supply("rice", qty = 100, low = 500, name = "Rice"),
             supply("Soap", qty = 100, low = 500, quieted = true, name = "soap"),
             supply("tea", qty = 900, low = 500, name = "Tea"),
             supply("salt", qty = null, low = 500, name = "Salt"),
             supply("old", qty = 0, low = 500, archived = true, name = "Old"),
         ))
-        assertEquals(listOf("rice"), HomeRules.lowSupplies(data).map { it.id })
-        assertEquals(listOf("rice", "Soap"), HomeRules.lowSupplies(data, includeQuieted = true).map { it.id })
+        assertEquals(listOf("rice"), BaseRules.lowSupplies(data).map { it.id })
+        assertEquals(listOf("rice", "Soap"), BaseRules.lowSupplies(data, includeQuieted = true).map { it.id })
     }
 
     @Test
     fun theRestockListIsEveryLowSupplyThenWhatWasWrittenByHand() {
         val bread = supply("bread", qty = 5000, low = 1000, name = "Bread")
-        val data = HomeData(
+        val data = BaseData(
             supplies = listOf(supply("soap", qty = 0, low = 1000, quieted = true, name = "Soap"), supply("rice", qty = 100, low = 500, name = "Rice"), bread),
             restock = listOf(RestockEntry("r1", "Light bulbs"), RestockEntry("r2", "Bread", supplyId = "bread"), RestockEntry("r3", "Gone", supplyId = "missing")),
         )
-        val list = HomeRules.restockList(data)
+        val list = BaseRules.restockList(data)
         assertEquals(5, list.size)
         assertEquals(listOf("rice", "soap"), list.take(2).map { assertIs<RestockLine.Low>(it).supply.id })
         assertEquals(RestockLine.Manual(data.restock[0], null), list[2])
         assertEquals(RestockLine.Manual(data.restock[1], bread), list[3])
         assertEquals(RestockLine.Manual(data.restock[2], null), list[4])
-        assertTrue(HomeRules.restockList(HomeData()).isEmpty())
+        assertTrue(BaseRules.restockList(BaseData()).isEmpty())
     }
 
     // --- quantity ------------------------------------------------------------------------------------------------------
@@ -483,46 +483,46 @@ class HomeRulesTest {
     @Test
     fun aCalendarScheduleDoneOnTimeMovesToTheNextDate() {
         val s = schedule("boiler", next = "2026-11-15", first = "2026-01-15")
-        assertEquals(d("2026-12-15"), HomeRules.advance(s, d("2026-11-15")).nextDue)
-        assertEquals(s.copy(nextDue = d("2026-12-15")), HomeRules.advance(s, d("2026-11-15")))
+        assertEquals(d("2026-12-15"), BaseRules.advance(s, d("2026-11-15")).nextDue)
+        assertEquals(s.copy(nextDue = d("2026-12-15")), BaseRules.advance(s, d("2026-11-15")))
     }
 
     @Test
     fun aCalendarScheduleDoneEarlyStillMovesToTheDateAfterTheDueOne() {
         val s = schedule("boiler", next = "2026-11-15", first = "2026-01-15")
-        assertEquals(d("2026-12-15"), HomeRules.advance(s, d("2026-11-01")).nextDue)
+        assertEquals(d("2026-12-15"), BaseRules.advance(s, d("2026-11-01")).nextDue)
     }
 
     @Test
     fun aCalendarScheduleDoneLateLeavesNoBacklogAndKeepsItsDay() {
         val s = schedule("boiler", next = "2026-11-15", first = "2026-01-15")
-        assertEquals(d("2027-01-15"), HomeRules.advance(s, d("2026-12-20")).nextDue, "done after the 15 Dec date: the next is 15 Jan, nothing is owed for December")
-        assertEquals(d("2026-12-15"), HomeRules.advance(s, d("2026-11-20")).nextDue)
+        assertEquals(d("2027-01-15"), BaseRules.advance(s, d("2026-12-20")).nextDue, "done after the 15 Dec date: the next is 15 Jan, nothing is owed for December")
+        assertEquals(d("2026-12-15"), BaseRules.advance(s, d("2026-11-20")).nextDue)
         // a month-end schedule does not drift after being done on the clamped day
         val end = schedule("gutters", next = "2026-02-28", first = "2026-01-31")
-        assertEquals(d("2026-03-31"), HomeRules.advance(end, d("2026-02-28")).nextDue)
-        val twice = HomeRules.advance(HomeRules.advance(end, d("2026-02-28")), d("2026-03-31"))
+        assertEquals(d("2026-03-31"), BaseRules.advance(end, d("2026-02-28")).nextDue)
+        val twice = BaseRules.advance(BaseRules.advance(end, d("2026-02-28")), d("2026-03-31"))
         assertEquals(d("2026-04-30"), twice.nextDue)
     }
 
     @Test
     fun anAfterDoneScheduleStartsAgainFromTheDayItWasDone() {
         val s = schedule("filter", next = "2026-11-15", first = "2026-01-15", policy = SchedulePolicy.AFTER_DONE)
-        assertEquals(d("2026-12-20"), HomeRules.advance(s, d("2026-11-20")).nextDue)
-        assertEquals(d("2026-12-01"), HomeRules.advance(s, d("2026-11-01")).nextDue, "done early: counted from the day it was done")
-        assertEquals(d("2027-01-10"), HomeRules.advance(schedule("w", next = "2026-12-13", r = rec(RepeatKind.WEEKLY, 4), policy = SchedulePolicy.AFTER_DONE), d("2026-12-13")).nextDue)
+        assertEquals(d("2026-12-20"), BaseRules.advance(s, d("2026-11-20")).nextDue)
+        assertEquals(d("2026-12-01"), BaseRules.advance(s, d("2026-11-01")).nextDue, "done early: counted from the day it was done")
+        assertEquals(d("2027-01-10"), BaseRules.advance(schedule("w", next = "2026-12-13", r = rec(RepeatKind.WEEKLY, 4), policy = SchedulePolicy.AFTER_DONE), d("2026-12-13")).nextDue)
     }
 
     @Test
     fun aOneTimeScheduleIsArchivedWhenDone() {
         val s = schedule("sweep", next = "2026-11-15", r = rec(RepeatKind.ONCE))
-        assertEquals(s.copy(status = RecordStatus.ARCHIVED), HomeRules.advance(s, d("2026-11-15")))
-        assertEquals(d("2026-11-15"), HomeRules.advance(s, d("2026-12-01")).nextDue)
+        assertEquals(s.copy(status = RecordStatus.ARCHIVED), BaseRules.advance(s, d("2026-11-15")))
+        assertEquals(d("2026-11-15"), BaseRules.advance(s, d("2026-12-01")).nextDue)
     }
 
     @Test
     fun aScheduleIsOverdueDueSoonOrLater() {
-        fun state(next: String, status: RecordStatus = RecordStatus.ACTIVE) = HomeRules.scheduleView(schedule("s", next = next, status = status), today)
+        fun state(next: String, status: RecordStatus = RecordStatus.ACTIVE) = BaseRules.scheduleView(schedule("s", next = next, status = status), today)
         assertEquals(DueState.OVERDUE, state("2026-11-06").state)
         assertEquals(-1, state("2026-11-06").daysUntil)
         assertEquals(DueState.DUE, state("2026-11-07").state)
@@ -537,16 +537,16 @@ class HomeRulesTest {
 
     @Test
     fun schedulesAreListedMostPressingFirstWithPausedLastAndArchivedHidden() {
-        val data = HomeData(schedules = listOf(
+        val data = BaseData(schedules = listOf(
             schedule("later", "2027-01-01"), schedule("paused", "2026-10-01", status = RecordStatus.PAUSED), schedule("archived", "2026-10-01", status = RecordStatus.ARCHIVED),
             schedule("overdue", "2026-10-15"), schedule("soon", "2026-11-10"),
         ))
-        assertEquals(listOf("overdue", "soon", "later", "paused"), HomeRules.schedules(data, today).map { it.schedule.id })
+        assertEquals(listOf("overdue", "soon", "later", "paused"), BaseRules.schedules(data, today).map { it.schedule.id })
     }
 
     @Test
     fun aWarrantyIsUndatedCoveredEndingOrExpired() {
-        fun state(end: String?) = HomeRules.warrantyState(Warranty("w", "a", expiryDay = end?.let(::d)), today)
+        fun state(end: String?) = BaseRules.warrantyState(Warranty("w", "a", expiryDay = end?.let(::d)), today)
         assertEquals(WarrantyState.UNDATED, state(null))
         assertEquals(WarrantyState.ACTIVE, state("2026-12-08")) // 31 days
         assertEquals(WarrantyState.ENDING, state("2026-12-07")) // 30 days
@@ -557,9 +557,9 @@ class HomeRulesTest {
     @Test
     fun maintenanceHistoryIsNewestFirstForOneAssetOrAll() {
         fun rec(id: String, asset: String?, day: String, at: Long = 0) = MaintenanceRecord(id, id, assetId = asset, day = d(day), atMillis = at)
-        val data = HomeData(maintenance = listOf(rec("a", "x", "2026-10-01"), rec("b", "y", "2026-11-01"), rec("c", "x", "2026-11-01", at = 5), rec("d", null, "2026-09-01")))
-        assertEquals(listOf("c", "b", "a", "d"), HomeRules.maintenanceHistory(data).map { it.id })
-        assertEquals(listOf("c", "a"), HomeRules.maintenanceHistory(data, "x").map { it.id })
+        val data = BaseData(maintenance = listOf(rec("a", "x", "2026-10-01"), rec("b", "y", "2026-11-01"), rec("c", "x", "2026-11-01", at = 5), rec("d", null, "2026-09-01")))
+        assertEquals(listOf("c", "b", "a", "d"), BaseRules.maintenanceHistory(data).map { it.id })
+        assertEquals(listOf("c", "a"), BaseRules.maintenanceHistory(data, "x").map { it.id })
     }
 
     // --- what the app accepts ------------------------------------------------------------------------------------------
@@ -568,54 +568,54 @@ class HomeRulesTest {
 
     @Test
     fun aChoreNeedsAFairTitleAndSaneNumbers() {
-        assertEquals(Check.Ok, HomeRules.checkChore(Chore("a", "Sweep")))
-        assertEquals("Give the chore a name.", refused(HomeRules.checkChore(Chore("a", "   "))))
-        assertEquals(Check.Ok, HomeRules.checkChore(Chore("a", "x".repeat(80))))
-        assertIs<Check.Refused>(HomeRules.checkChore(Chore("a", "x".repeat(81))))
-        assertIs<Check.Refused>(HomeRules.checkChore(Chore("a", "Sweep", instructions = "x".repeat(HomeRules.TEXT_MAX + 1))))
-        assertEquals(Check.Ok, HomeRules.checkChore(Chore("a", "Sweep", instructions = "x".repeat(HomeRules.TEXT_MAX))))
-        assertIs<Check.Refused>(HomeRules.checkChore(Chore("a", "Sweep", minutes = 0)))
-        assertIs<Check.Refused>(HomeRules.checkChore(Chore("a", "Sweep", minutes = 1441)))
-        assertEquals(Check.Ok, HomeRules.checkChore(Chore("a", "Sweep", minutes = 1440)))
-        assertEquals(Check.Ok, HomeRules.checkChore(Chore("a", "Sweep", minutes = 1)))
-        assertIs<Check.Refused>(HomeRules.checkChore(Chore("a", "Sweep", recurrence = rec(RepeatKind.DAILY))), "repeating needs a first date")
-        assertEquals(Check.Ok, HomeRules.checkChore(Chore("a", "Sweep", recurrence = rec(RepeatKind.DAILY), firstDue = today)))
+        assertEquals(Check.Ok, BaseRules.checkChore(Chore("a", "Sweep")))
+        assertEquals("Give the chore a name.", refused(BaseRules.checkChore(Chore("a", "   "))))
+        assertEquals(Check.Ok, BaseRules.checkChore(Chore("a", "x".repeat(80))))
+        assertIs<Check.Refused>(BaseRules.checkChore(Chore("a", "x".repeat(81))))
+        assertIs<Check.Refused>(BaseRules.checkChore(Chore("a", "Sweep", instructions = "x".repeat(BaseRules.TEXT_MAX + 1))))
+        assertEquals(Check.Ok, BaseRules.checkChore(Chore("a", "Sweep", instructions = "x".repeat(BaseRules.TEXT_MAX))))
+        assertIs<Check.Refused>(BaseRules.checkChore(Chore("a", "Sweep", minutes = 0)))
+        assertIs<Check.Refused>(BaseRules.checkChore(Chore("a", "Sweep", minutes = 1441)))
+        assertEquals(Check.Ok, BaseRules.checkChore(Chore("a", "Sweep", minutes = 1440)))
+        assertEquals(Check.Ok, BaseRules.checkChore(Chore("a", "Sweep", minutes = 1)))
+        assertIs<Check.Refused>(BaseRules.checkChore(Chore("a", "Sweep", recurrence = rec(RepeatKind.DAILY))), "repeating needs a first date")
+        assertEquals(Check.Ok, BaseRules.checkChore(Chore("a", "Sweep", recurrence = rec(RepeatKind.DAILY), firstDue = today)))
     }
 
     @Test
     fun aRecurrenceIsRefusedWhenItsNumbersMakeNoSense() {
-        assertEquals(Check.Ok, HomeRules.checkRecurrence(Recurrence(), null), "a one-time chore needs no date to be valid")
-        assertEquals(Check.Ok, HomeRules.checkRecurrence(rec(RepeatKind.WEEKLY, 99, 1, 7), today))
-        assertEquals("Repeat every 1 to 99.", refused(HomeRules.checkRecurrence(rec(RepeatKind.DAILY, 0), today)))
-        assertIs<Check.Refused>(HomeRules.checkRecurrence(rec(RepeatKind.DAILY, 100), today))
-        assertIs<Check.Refused>(HomeRules.checkRecurrence(rec(RepeatKind.DAILY, -1), today))
-        assertEquals("A weekday is Monday to Sunday.", refused(HomeRules.checkRecurrence(rec(RepeatKind.WEEKLY, 1, 0), today)))
-        assertIs<Check.Refused>(HomeRules.checkRecurrence(rec(RepeatKind.WEEKLY, 1, 1, 8), today))
-        assertEquals("Choose the first date.", refused(HomeRules.checkRecurrence(rec(RepeatKind.MONTHLY), null)))
-        assertEquals("Choose the first date.", refused(HomeRules.checkRecurrence(rec(RepeatKind.YEARLY), null)))
+        assertEquals(Check.Ok, BaseRules.checkRecurrence(Recurrence(), null), "a one-time chore needs no date to be valid")
+        assertEquals(Check.Ok, BaseRules.checkRecurrence(rec(RepeatKind.WEEKLY, 99, 1, 7), today))
+        assertEquals("Repeat every 1 to 99.", refused(BaseRules.checkRecurrence(rec(RepeatKind.DAILY, 0), today)))
+        assertIs<Check.Refused>(BaseRules.checkRecurrence(rec(RepeatKind.DAILY, 100), today))
+        assertIs<Check.Refused>(BaseRules.checkRecurrence(rec(RepeatKind.DAILY, -1), today))
+        assertEquals("A weekday is Monday to Sunday.", refused(BaseRules.checkRecurrence(rec(RepeatKind.WEEKLY, 1, 0), today)))
+        assertIs<Check.Refused>(BaseRules.checkRecurrence(rec(RepeatKind.WEEKLY, 1, 1, 8), today))
+        assertEquals("Choose the first date.", refused(BaseRules.checkRecurrence(rec(RepeatKind.MONTHLY), null)))
+        assertEquals("Choose the first date.", refused(BaseRules.checkRecurrence(rec(RepeatKind.YEARLY), null)))
     }
 
     @Test
     fun aSupplyNeedsANameAndAnHonestQuantity() {
-        assertEquals(Check.Ok, HomeRules.checkSupply(Supply("s", "Rice")))
-        assertEquals(Check.Ok, HomeRules.checkSupply(Supply("s", "Rice", quantityMilli = 0, lowMilli = 500, unit = "kg")))
-        assertEquals("Give the supply a name.", refused(HomeRules.checkSupply(Supply("s", " "))))
-        assertIs<Check.Refused>(HomeRules.checkSupply(Supply("s", "Rice", quantityMilli = -1)))
-        assertIs<Check.Refused>(HomeRules.checkSupply(Supply("s", "Rice", lowMilli = -1)))
-        assertIs<Check.Refused>(HomeRules.checkSupply(Supply("s", "Rice", quantityMilli = Quantity.MAX_MILLI + 1)))
-        assertEquals(Check.Ok, HomeRules.checkSupply(Supply("s", "Rice", quantityMilli = Quantity.MAX_MILLI)))
-        assertIs<Check.Refused>(HomeRules.checkSupply(Supply("s", "Rice", unit = "x".repeat(17))))
-        assertEquals(Check.Ok, HomeRules.checkSupply(Supply("s", "Rice", unit = "x".repeat(16))))
-        assertIs<Check.Refused>(HomeRules.checkSupply(Supply("s", "Rice", notes = "x".repeat(HomeRules.NOTE_MAX + 1))))
-        assertEquals(Check.Ok, HomeRules.checkQuantity(null))
-        assertIs<Check.Refused>(HomeRules.checkQuantity(-5))
+        assertEquals(Check.Ok, BaseRules.checkSupply(Supply("s", "Rice")))
+        assertEquals(Check.Ok, BaseRules.checkSupply(Supply("s", "Rice", quantityMilli = 0, lowMilli = 500, unit = "kg")))
+        assertEquals("Give the supply a name.", refused(BaseRules.checkSupply(Supply("s", " "))))
+        assertIs<Check.Refused>(BaseRules.checkSupply(Supply("s", "Rice", quantityMilli = -1)))
+        assertIs<Check.Refused>(BaseRules.checkSupply(Supply("s", "Rice", lowMilli = -1)))
+        assertIs<Check.Refused>(BaseRules.checkSupply(Supply("s", "Rice", quantityMilli = Quantity.MAX_MILLI + 1)))
+        assertEquals(Check.Ok, BaseRules.checkSupply(Supply("s", "Rice", quantityMilli = Quantity.MAX_MILLI)))
+        assertIs<Check.Refused>(BaseRules.checkSupply(Supply("s", "Rice", unit = "x".repeat(17))))
+        assertEquals(Check.Ok, BaseRules.checkSupply(Supply("s", "Rice", unit = "x".repeat(16))))
+        assertIs<Check.Refused>(BaseRules.checkSupply(Supply("s", "Rice", notes = "x".repeat(BaseRules.NOTE_MAX + 1))))
+        assertEquals(Check.Ok, BaseRules.checkQuantity(null))
+        assertIs<Check.Refused>(BaseRules.checkQuantity(-5))
     }
 
     // --- the overview --------------------------------------------------------------------------------------------------
 
     @Test
     fun theOverviewListsOnlyWhatNeedsAttention() {
-        val data = HomeData(
+        val data = BaseData(
             chores = listOf(
                 chore("overdue", "2026-11-01"), chore("due", "2026-11-07"), chore("upcoming", "2026-11-20"), chore("whenever"), chore("done", "2026-11-01"),
                 chore("paused", "2026-11-01", status = RecordStatus.PAUSED),
@@ -633,7 +633,7 @@ class HomeRulesTest {
                 Warranty("expired", "a", expiryDay = d("2026-01-01")), Warranty("undated", "a"),
             ),
         )
-        val o = HomeRules.overview(data, today)
+        val o = BaseRules.overview(data, today)
         assertEquals(listOf("overdue", "due"), o.chores.map { it.chore.id })
         assertEquals(listOf("m-overdue", "m-due", "m-soon"), o.maintenance.map { it.schedule.id })
         assertEquals(listOf("low"), o.low.map { it.id })
@@ -643,20 +643,20 @@ class HomeRulesTest {
 
     @Test
     fun anOverviewWithNothingToLookAtSaysSo() {
-        assertFalse(HomeRules.overview(HomeData(), today).needsAttention)
-        val calm = HomeData(
+        assertFalse(BaseRules.overview(BaseData(), today).needsAttention)
+        val calm = BaseData(
             chores = listOf(chore("later", "2026-12-01"), chore("whenever")),
             schedules = listOf(schedule("later", "2027-01-01")),
             supplies = listOf(supply("ok", qty = 5000, low = 1000)),
             warranties = listOf(Warranty("w", "a", expiryDay = d("2030-01-01"))),
         )
-        assertFalse(HomeRules.overview(calm, today).needsAttention)
+        assertFalse(BaseRules.overview(calm, today).needsAttention)
     }
 
     // --- search --------------------------------------------------------------------------------------------------------
 
-    private val searchData = HomeData(
-        areas = listOf(HomeArea("kit", "Kitchen")),
+    private val searchData = BaseData(
+        areas = listOf(BaseArea("kit", "Kitchen")),
         chores = listOf(
             Chore("c1", "Clean fridge", areaId = "kit"), Chore("c2", "air fridge vent"), Chore("c3", "Sweep", instructions = "Use the FRIDGE brush"), Chore("c4", "Mop", category = "floors"),
         ),
@@ -673,7 +673,7 @@ class HomeRulesTest {
 
     @Test
     fun searchFindsRecordsOfEveryKindIgnoringCase() {
-        val hits = HomeRules.search(searchData, "FrIdGe")
+        val hits = BaseRules.search(searchData, "FrIdGe")
         assertEquals(
             listOf(
                 Hit(HitKind.CHORE, "c2", "air fridge vent", ""),
@@ -687,42 +687,42 @@ class HomeRulesTest {
             ),
             hits,
         )
-        assertEquals(hits, HomeRules.search(searchData, "  fridge  "))
+        assertEquals(hits, BaseRules.search(searchData, "  fridge  "))
     }
 
     @Test
     fun searchLooksAtAreasCategoriesAndSerials() {
-        assertEquals(listOf(HitKind.CHORE, HitKind.SUPPLY, HitKind.ASSET, HitKind.REFERENCE), HomeRules.search(searchData, "kitchen").map { it.kind })
-        assertEquals(listOf("c4"), HomeRules.search(searchData, "FLOORS").map { it.id })
-        assertEquals(listOf("a1"), HomeRules.search(searchData, "sn-123").map { it.id })
-        assertEquals(listOf("w1"), HomeRules.search(searchData, "coolcare").map { it.id })
-        assertTrue(HomeRules.search(searchData, "zzz").isEmpty())
+        assertEquals(listOf(HitKind.CHORE, HitKind.SUPPLY, HitKind.ASSET, HitKind.REFERENCE), BaseRules.search(searchData, "kitchen").map { it.kind })
+        assertEquals(listOf("c4"), BaseRules.search(searchData, "FLOORS").map { it.id })
+        assertEquals(listOf("a1"), BaseRules.search(searchData, "sn-123").map { it.id })
+        assertEquals(listOf("w1"), BaseRules.search(searchData, "coolcare").map { it.id })
+        assertTrue(BaseRules.search(searchData, "zzz").isEmpty())
     }
 
     @Test
     fun searchWithNoWordsFindsNothing() {
-        assertTrue(HomeRules.search(searchData, "").isEmpty())
-        assertTrue(HomeRules.search(searchData, "   ").isEmpty())
+        assertTrue(BaseRules.search(searchData, "").isEmpty())
+        assertTrue(BaseRules.search(searchData, "   ").isEmpty())
     }
 
     @Test
     fun searchSkipsArchivedSuppliesAndAssetsAndNamesAWarrantyAfterItsAsset() {
-        val ids = HomeRules.search(searchData, "fridge").map { it.id }
+        val ids = BaseRules.search(searchData, "fridge").map { it.id }
         assertFalse("s2" in ids)
         assertFalse("a2" in ids)
-        val orphan = HomeData(warranties = listOf(Warranty("w", "gone", provider = "Acme")))
-        assertEquals(listOf(Hit(HitKind.WARRANTY, "w", "Warranty", "Acme")), HomeRules.search(orphan, "acme"))
+        val orphan = BaseData(warranties = listOf(Warranty("w", "gone", provider = "Acme")))
+        assertEquals(listOf(Hit(HitKind.WARRANTY, "w", "Warranty", "Acme")), BaseRules.search(orphan, "acme"))
     }
 
     @Test
     fun searchLeavesOutWhatNoListShows() {
-        val data = HomeData(
+        val data = BaseData(
             chores = listOf(chore("live", title = "Dust shelf"), chore("old", status = RecordStatus.ARCHIVED, title = "Dust attic"), chore("held", status = RecordStatus.PAUSED, title = "Dust lamp")),
             assets = listOf(Asset("gone", "Dusty fan", archived = true)),
             schedules = listOf(schedule("Dust filter", "2026-12-01"), schedule("Dust vent", "2026-10-01", status = RecordStatus.ARCHIVED)),
             warranties = listOf(Warranty("w", "gone", provider = "Dustco")),
         )
-        assertEquals(listOf("held", "live", "Dust filter"), HomeRules.search(data, "dust").map { it.id })
+        assertEquals(listOf("held", "live", "Dust filter"), BaseRules.search(data, "dust").map { it.id })
     }
 
     // --- Habitat Discovery: what may pay -------------------------------------------------------------------------------
@@ -730,38 +730,38 @@ class HomeRulesTest {
     @Test
     fun choresPayUntilTheDaysShareIsUsed() {
         fun paid(n: Int, day: String = "2026-11-07") = (1..n).map { entry("p$it$day", "c", "2026-11-01", day = day, paid = true) }
-        assertTrue(HomeRules.chorePays(HomeData(), today))
-        assertTrue(HomeRules.chorePays(HomeData(entries = paid(HomeRules.CHORES_PAID_PER_DAY - 1)), today))
-        assertFalse(HomeRules.chorePays(HomeData(entries = paid(HomeRules.CHORES_PAID_PER_DAY)), today))
-        assertFalse(HomeRules.chorePays(HomeData(entries = paid(HomeRules.CHORES_PAID_PER_DAY + 2)), today))
+        assertTrue(BaseRules.chorePays(BaseData(), today))
+        assertTrue(BaseRules.chorePays(BaseData(entries = paid(BaseRules.CHORES_PAID_PER_DAY - 1)), today))
+        assertFalse(BaseRules.chorePays(BaseData(entries = paid(BaseRules.CHORES_PAID_PER_DAY)), today))
+        assertFalse(BaseRules.chorePays(BaseData(entries = paid(BaseRules.CHORES_PAID_PER_DAY + 2)), today))
         // another day's payouts, and entries that were not paid, do not count
-        val other = paid(HomeRules.CHORES_PAID_PER_DAY, "2026-11-06") + (1..9).map { entry("u$it", "c", "2026-11-01", day = "2026-11-07", paid = false) }
-        assertTrue(HomeRules.chorePays(HomeData(entries = other), today))
-        assertFalse(HomeRules.chorePays(HomeData(entries = other), d("2026-11-06")))
+        val other = paid(BaseRules.CHORES_PAID_PER_DAY, "2026-11-06") + (1..9).map { entry("u$it", "c", "2026-11-01", day = "2026-11-07", paid = false) }
+        assertTrue(BaseRules.chorePays(BaseData(entries = other), today))
+        assertFalse(BaseRules.chorePays(BaseData(entries = other), d("2026-11-06")))
     }
 
     @Test
     fun maintenancePaysUntilTheDaysShareIsUsed() {
         fun paid(n: Int, day: String = "2026-11-07") = (1..n).map { MaintenanceRecord("m$it$day", "t", day = d(day), paid = true) }
-        assertTrue(HomeRules.maintenancePays(HomeData(), today))
-        assertTrue(HomeRules.maintenancePays(HomeData(maintenance = paid(HomeRules.MAINTENANCE_PAID_PER_DAY - 1)), today))
-        assertFalse(HomeRules.maintenancePays(HomeData(maintenance = paid(HomeRules.MAINTENANCE_PAID_PER_DAY)), today))
-        assertTrue(HomeRules.maintenancePays(HomeData(maintenance = paid(HomeRules.MAINTENANCE_PAID_PER_DAY, "2026-11-06") + MaintenanceRecord("u", "t", day = today)), today))
+        assertTrue(BaseRules.maintenancePays(BaseData(), today))
+        assertTrue(BaseRules.maintenancePays(BaseData(maintenance = paid(BaseRules.MAINTENANCE_PAID_PER_DAY - 1)), today))
+        assertFalse(BaseRules.maintenancePays(BaseData(maintenance = paid(BaseRules.MAINTENANCE_PAID_PER_DAY)), today))
+        assertTrue(BaseRules.maintenancePays(BaseData(maintenance = paid(BaseRules.MAINTENANCE_PAID_PER_DAY, "2026-11-06") + MaintenanceRecord("u", "t", day = today)), today))
     }
 
     @Test
     fun nothingPaysWhenProgressionIsOff() {
-        val off = HomeData(settings = HomeSettings(progression = false))
-        assertFalse(HomeRules.chorePays(off, today))
-        assertFalse(HomeRules.maintenancePays(off, today))
+        val off = BaseData(settings = BaseSettings(progression = false))
+        assertFalse(BaseRules.chorePays(off, today))
+        assertFalse(BaseRules.maintenancePays(off, today))
     }
 
     // --- the saved document --------------------------------------------------------------------------------------------
 
     private val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
-    private fun fullData() = HomeData(
-        areas = listOf(HomeArea("kit", "Kitchen"), HomeArea("old", "Garage", archived = true)),
+    private fun fullData() = BaseData(
+        areas = listOf(BaseArea("kit", "Kitchen"), BaseArea("old", "Garage", archived = true)),
         chores = listOf(
             Chore("c1", "Water plants", "Twice a week", "kit", "plants", rec(RepeatKind.WEEKLY, 1, 1, 4), d("2026-11-02"), 15, RecordStatus.ACTIVE, 10, 20),
             Chore("c2", "Descale kettle", recurrence = rec(RepeatKind.MONTHLY, 2), firstDue = d("2026-01-31"), status = RecordStatus.PAUSED),
@@ -779,22 +779,22 @@ class HomeRulesTest {
         maintenance = listOf(MaintenanceRecord("h1", "Defrosted", "a1", "m1", d("2026-07-31"), "ok", "PHP 500", 8, true)),
         warranties = listOf(Warranty("w1", "a1", "CoolCare", "parts", d("2024-03-01"), d("2027-03-01"), "REF-9", "keep receipt", 9)),
         references = listOf(Reference("r1", "Wifi", "password on the router", "tech", "kit", "a1", 11, 12)),
-        settings = HomeSettings(progression = false, tutorialSeen = true, units = listOf("pieces", "jars"), hidden = listOf("supplies")),
+        settings = BaseSettings(progression = false, tutorialSeen = true, units = listOf("pieces", "jars"), hidden = listOf("supplies")),
     )
 
     @Test
     fun aFullyPopulatedDocumentSurvivesAJsonRoundTrip() {
         val data = fullData()
-        val text = json.encodeToString(HomeData.serializer(), data)
-        assertEquals(data, json.decodeFromString(HomeData.serializer(), text))
-        assertEquals(text, json.encodeToString(HomeData.serializer(), json.decodeFromString(HomeData.serializer(), text)), "writing it again gives the same document")
+        val text = json.encodeToString(BaseData.serializer(), data)
+        assertEquals(data, json.decodeFromString(BaseData.serializer(), text))
+        assertEquals(text, json.encodeToString(BaseData.serializer(), json.decodeFromString(BaseData.serializer(), text)), "writing it again gives the same document")
     }
 
     @Test
     fun anEmptyDocumentRoundTripsToo() {
-        val text = json.encodeToString(HomeData.serializer(), HomeData())
-        assertEquals(HomeData(), json.decodeFromString(HomeData.serializer(), text))
-        assertEquals(HomeData(), json.decodeFromString(HomeData.serializer(), "{}"))
+        val text = json.encodeToString(BaseData.serializer(), BaseData())
+        assertEquals(BaseData(), json.decodeFromString(BaseData.serializer(), text))
+        assertEquals(BaseData(), json.decodeFromString(BaseData.serializer(), "{}"))
     }
 
     @Test
@@ -806,7 +806,7 @@ class HomeRulesTest {
              "settings":{"progression":false},
              "aFieldFromTheFuture":{"x":1}}
         """.trimIndent()
-        val data = json.decodeFromString(HomeData.serializer(), old)
+        val data = json.decodeFromString(BaseData.serializer(), old)
         val chore = data.chores.single()
         assertEquals(Chore("c", "Old chore", firstDue = d("2026-11-01")), chore)
         assertEquals(Recurrence(), chore.recurrence)
@@ -816,8 +816,8 @@ class HomeRulesTest {
         assertEquals(2000L, supply.quantityMilli)
         assertNull(supply.lowMilli)
         assertFalse(supply.lowDismissed)
-        assertEquals(HomeSettings(progression = false), data.settings)
-        assertEquals(HomeRules.STARTING_UNITS, data.settings.units)
+        assertEquals(BaseSettings(progression = false), data.settings)
+        assertEquals(BaseRules.STARTING_UNITS, data.settings.units)
         assertTrue(data.assets.isEmpty() && data.references.isEmpty() && data.schedules.isEmpty() && data.warranties.isEmpty() && data.restock.isEmpty())
     }
 }

@@ -5,13 +5,21 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.174.1
+## 0.175.1
 
 Automated Android tests, first slice (REP-033; owner: automated tests over manual phone checks).
 
 - **Fixed: a damaged database was wiped instead of recovered.** androidx's SQLite helper deletes a database it finds corrupt and opens an empty one, so the app's own recovery (the damaged file kept aside, the newest daily backup put back) never ran and the app would have opened empty. `AndroidDatabase` now leaves the file alone and reports the damage, and `LiveStore` recovers as designed.
 - **`androidApp` has tests**, on the JVM with Robolectric (`./gradlew :androidApp:testDebugUnitTest`, run by CI's Android step): the database cutover on the five 0.123.0 save fixtures, a process death, a corrupt and a newer-schema database, Heal, Mint and the daily backups sealed (checked in the raw database bytes) and failing closed without the Keystore key, the shared reminders (exact alarms with no title in them, Done and 10 min on the notification, quiet hours, a reminder missed while the phone was off, the boot, alarm and time-zone receivers), the Today widget's tick against the app's store, and a focus session across a process death.
 
+## 0.175.0
+
+The HOME module is now **Base**, after Hoenn's Secret Bases (owner, 13 November 2026), and World's Base is now **Town**; a leaner test suite. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone changes.
+
+- **Base.** Replaces the "Nest" label 0.174.0 gave the module (the owner's final choice is Base). Modules → Base, its party, perks, region ("Base Region"), tutorial ("a 5 second tidy of your secret base"), reminders channel, the launcher's search and every place that named the module say Base; its scene is a secret base under the trees (`forest`). "Home" now means only the Home tab. In code: `base-core` (package `app.pokeplan.base`), `BaseStore`, `BaseData`, `BaseRules`, `BaseEvent`, `BaseTables`, `screens/Base.kt` and the rest. Stored names stay so no migration is needed: the `home_*` tables, save keys (`homeLeadId` and `homePaid` through `@SerialName`), ledger and reminder ids, and the constants stored by name (`Region.HOUSEHOLD`, `Module.HOME`, `Place.HOUSEHOLD`, `ReminderModule.HOME`). New reward-log entries start "Base: "; old "Home: " entries are still read.
+- **Town.** World's headquarters destination (facilities, Skills, Finds) is called Town, so one screen never shows two Bases (`WorldSection.TOWN`, WORLD.md section 2).
+- **Fewer, more important tests** (Bible section 3, REP-050): `LegacyJsonImporter`, used only by its 9 tests, is deleted with them (REP-025 d), and 11 tests of constants, copy, a test fixture or a removed feature are gone; a Gear test loses its retired-loan half.
+- Docs: the owner's decisions of 13 November 2026 (lean tests, BASE, Town) in the Product Bible; REP-049 (Secret Base decorations) and REP-050 in the backlog.
 ## 0.174.0
 
 The UI/UX review of every screen (REP-031) and its fixes, against Laws of UX, Laws of UI and the owner's bar: "as simple as Linear or Apple Notes; cut taglines, helper text and secondary labels; if a screen needs them, fix the layout." `RewardRules.VERSION` is 22 (one rule change, below).

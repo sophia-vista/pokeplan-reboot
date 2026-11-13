@@ -102,9 +102,9 @@ object LiveStore {
                 .onFailure { Log.w(TAG, "Heal rows not sealed this run: ${it.javaClass.simpleName}") }.getOrDefault(false)
             // HOME lives in its own tables from the start (schema 9), like HEAL and unsealed. A home.json written while the database could not be opened is taken in once.
             runCatching {
-                read(app, "home.json")?.let { legacy -> if (!s.homeTables.isActive() && s.live.read("home") == null) s.live.write("home", legacy, now) }
-                s.live.moveHomeToTables(now)
-            }.onFailure { Log.w(TAG, "Home tables not active this run: ${it.javaClass.simpleName}") }
+                read(app, "home.json")?.let { legacy -> if (!s.baseTables.isActive() && s.live.read("home") == null) s.live.write("home", legacy, now) }
+                s.live.moveBaseToTables(now)
+            }.onFailure { Log.w(TAG, "Base tables not active this run: ${it.javaClass.simpleName}") }
             // LINK lives in its own tables from the start (schema 10), like HOME and unsealed. A link.json written while the database could not be opened is taken in once.
             runCatching {
                 read(app, "link.json")?.let { legacy -> if (!s.linkTables.isActive() && s.live.read("link") == null) s.live.write("link", legacy, now) }

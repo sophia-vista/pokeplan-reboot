@@ -43,8 +43,8 @@ import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.HealKind
-import app.pokeplan.core.reward.HomeEvent
-import app.pokeplan.core.reward.HomeKind
+import app.pokeplan.core.reward.BaseEvent
+import app.pokeplan.core.reward.BaseKind
 import app.pokeplan.core.reward.LinkEvent
 import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.MintEvent
@@ -250,7 +250,7 @@ class GameStore(
         Tutorials.CARE_BREATH -> careBreaks == 0
         Tutorials.HEAL_WALK -> healActivities == 0
         Tutorials.MINT_TALLY -> mintRecords == 0
-        Tutorials.HOME_TIDY -> homeRecords == 0
+        Tutorials.BASE_TIDY -> homeRecords == 0
         Tutorials.LINK_POSTCARD -> linkRecords == 0
         else -> false
     }
@@ -267,12 +267,12 @@ class GameStore(
             Tutorials.CARE_BREATH -> Triple(Region.CARE, PartyIds.CARE, Origin.How.CARE_EGG)
             Tutorials.HEAL_WALK -> Triple(Region.HEAL, PartyIds.HEAL, Origin.How.FIELD_EGG)
             Tutorials.MINT_TALLY -> Triple(Region.MINT, PartyIds.MINT, Origin.How.LEDGER_EGG)
-            Tutorials.HOME_TIDY -> Triple(Region.HOUSEHOLD, PartyIds.HOME, Origin.How.HABITAT_EGG)
+            Tutorials.BASE_TIDY -> Triple(Region.HOUSEHOLD, PartyIds.BASE, Origin.How.HABITAT_EGG)
             Tutorials.LINK_POSTCARD -> Triple(Region.LINK, PartyIds.LINK, Origin.How.POSTCARD_EGG)
             else -> return null
         }
         val outcome = RewardEngine.tutorialEgg(data.player, region, party, newId(), nowMillis, rng)
-        update { d -> log((if (id == Tutorials.CARE_BREATH) CARE_LOG_PREFIX else if (id == Tutorials.HEAL_WALK) HEAL_LOG_PREFIX else if (id == Tutorials.MINT_TALLY) MINT_LOG_PREFIX else if (id == Tutorials.HOME_TIDY) HOME_LOG_PREFIX else if (id == Tutorials.LINK_POSTCARD) LINK_LOG_PREFIX else "") + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
+        update { d -> log((if (id == Tutorials.CARE_BREATH) CARE_LOG_PREFIX else if (id == Tutorials.HEAL_WALK) HEAL_LOG_PREFIX else if (id == Tutorials.MINT_TALLY) MINT_LOG_PREFIX else if (id == Tutorials.BASE_TIDY) BASE_LOG_PREFIX else if (id == Tutorials.LINK_POSTCARD) LINK_LOG_PREFIX else "") + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
         return outcome.rewards
     }
 
@@ -416,21 +416,21 @@ class GameStore(
 
     /**
      * Pays a HOME moment into the shared world (Habitat Discovery, HOME.md section 9): once per event id whatever HOME does with its records (so an undo
-     * and a second completion of the same chore pay once), at most [HOME_CAPS] of each kind a day, and a full Habitat Discovery meter finds a Habitat
+     * and a second completion of the same chore pay once), at most [BASE_CAPS] of each kind a day, and a full Habitat Discovery meter finds a Habitat
      * Egg on top. The log says only "Home" and the kind of moment. Nothing about a chore, an area, a supply or an asset exists in the event to be read here.
      */
-    override fun home(event: HomeEvent): List<Reward>? {
-        if (!data.onboarded || event.id in data.homePaid) return null
-        val tally = Counters.home(event.kind)
+    override fun base(event: BaseEvent): List<Reward>? {
+        if (!data.onboarded || event.id in data.basePaid) return null
+        val tally = Counters.base(event.kind)
         val paidToday = tally.get(data.counters, today)
-        if (paidToday >= HOME_CAPS.getValue(event.kind)) return null
-        val outcome = RewardEngine.home(data.player, event, rng)
+        if (paidToday >= BASE_CAPS.getValue(event.kind)) return null
+        val outcome = RewardEngine.base(data.player, event, rng)
         val meter = homeEggMeter() + RewardEngine.HOME_EGG_POINTS.getValue(event.kind)
         val egg = if (meter >= RewardEngine.HOME_EGG_METER_SIZE) RewardEngine.homeEgg(outcome.state, newId(), nowMillis, rng) else null
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.HOME_EGG_METER to meter % RewardEngine.HOME_EGG_METER_SIZE)
-            noted(d, log(HOME_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, homePaid = (d.homePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.HOUSEHOLD)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
+            noted(d, log(BASE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, basePaid = (d.basePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.HOUSEHOLD)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
     }
@@ -472,10 +472,10 @@ class GameStore(
     fun homeEggMeter(): Int = data.counters[Counters.HOME_EGG_METER] ?: 0
 
     /** Makes [id], who must be in Home's party, its lead: the Pokémon that takes Habitat Discovery's friendship and gives its perks. */
-    fun setHomeLead(id: String): Boolean {
+    fun setBaseLead(id: String): Boolean {
         val p = pokemon(id)
-        if (!p.inParty || p.partyId != PartyIds.HOME) return false
-        update { d -> d.copy(player = d.player.copy(homeLeadId = id)) }
+        if (!p.inParty || p.partyId != PartyIds.BASE) return false
+        update { d -> d.copy(player = d.player.copy(baseLeadId = id)) }
         return true
     }
 
@@ -1514,7 +1514,7 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         pokemon(id).let { p ->
             // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
-            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id || id == data.player.mintLead?.id || id == data.player.homeLead?.id || id == data.player.linkLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
+            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id || id == data.player.mintLead?.id || id == data.player.baseLead?.id || id == data.player.linkLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
     /**
@@ -1974,7 +1974,7 @@ class GameStore(
 
     /**
      * The moment a module's lead celebrates on that module's page: only what that module paid. [prefix] is the module's log prefix
-     * ([HEAL_LOG_PREFIX], [MINT_LOG_PREFIX], [HOME_LOG_PREFIX], [CARE_LOG_PREFIX]); null is Plan, whose rewards carry no prefix (a finished
+     * ([HEAL_LOG_PREFIX], [MINT_LOG_PREFIX], [BASE_LOG_PREFIX], [CARE_LOG_PREFIX]); null is Plan, whose rewards carry no prefix (a finished
      * task, a hatched egg), so nothing another module, World or a mini-quest paid counts.
      */
     fun moduleEvent(prefix: String?): BuddyEventNow? = eventWhere { source ->
@@ -2140,7 +2140,7 @@ class GameStore(
 
         /** Every HEAL entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val HEAL_LOG_PREFIX = "Heal: "
-        private val MODULE_LOG_PREFIXES by lazy { listOf(CARE_LOG_PREFIX, HEAL_LOG_PREFIX, MINT_LOG_PREFIX, HOME_LOG_PREFIX, LINK_LOG_PREFIX) }
+        private val MODULE_LOG_PREFIXES by lazy { listOf(CARE_LOG_PREFIX, HEAL_LOG_PREFIX, MINT_LOG_PREFIX, BASE_LOG_PREFIX, OLD_BASE_LOG_PREFIX, LINK_LOG_PREFIX) }
         private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research").mapValues { HEAL_LOG_PREFIX + it.value }
 
         /** The most of each MINT kind the world pays in its period *(tune)*, a backstop to the same limits in `MintRules`: reconciled accounts a day, reviews a week. */
@@ -2150,12 +2150,15 @@ class GameStore(
         const val MINT_LOG_PREFIX = "Mint: "
         private val MINT_SOURCES = mapOf(MintKind.RECONCILED to "Ledger Research", MintKind.REVIEW to "Ledger Research").mapValues { MINT_LOG_PREFIX + it.value }
 
-        /** The most of each HOME kind the world pays in a day *(tune)*, a backstop to the same limits in `HomeRules`. */
-        val HOME_CAPS: Map<HomeKind, Int> = mapOf(HomeKind.CHORE to app.pokeplan.home.HomeRules.CHORES_PAID_PER_DAY, HomeKind.MAINTENANCE to app.pokeplan.home.HomeRules.MAINTENANCE_PAID_PER_DAY)
+        /** The most of each HOME kind the world pays in a day *(tune)*, a backstop to the same limits in `BaseRules`. */
+        val BASE_CAPS: Map<BaseKind, Int> = mapOf(BaseKind.CHORE to app.pokeplan.base.BaseRules.CHORES_PAID_PER_DAY, BaseKind.MAINTENANCE to app.pokeplan.base.BaseRules.MAINTENANCE_PAID_PER_DAY)
 
-        /** Every HOME entry in the reward log starts with this (the kind of moment only, never what it was). */
-        const val HOME_LOG_PREFIX = "Home: "
-        private val HOME_SOURCES = mapOf(HomeKind.CHORE to "Habitat Discovery", HomeKind.MAINTENANCE to "Habitat Discovery").mapValues { HOME_LOG_PREFIX + it.value }
+        /** Every BASE entry in the reward log starts with this (the kind of moment only, never what it was). */
+        const val BASE_LOG_PREFIX = "Base: "
+
+        /** What BASE entries started with before the module was renamed from Home (0.174.0); still read, never written. */
+        const val OLD_BASE_LOG_PREFIX = "Home: "
+        private val BASE_SOURCES = mapOf(BaseKind.CHORE to "Habitat Discovery", BaseKind.MAINTENANCE to "Habitat Discovery").mapValues { BASE_LOG_PREFIX + it.value }
 
         /** The most of each LINK kind the world pays in a day *(tune)*, a backstop to the same limit in `LinkRules`. */
         val LINK_CAPS: Map<LinkMoment, Int> = mapOf(LinkMoment.FOLLOW_UP to app.pokeplan.link.LinkRules.FOLLOW_UPS_PAID_PER_DAY)

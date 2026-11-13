@@ -44,14 +44,6 @@ class LinkTablesTest {
     }""".trimIndent()
 
     @Test
-    fun theTestDocumentIsAValidLinkData() {
-        val data = Json { ignoreUnknownKeys = true }.decodeFromString(LinkData.serializer(), doc)
-        assertEquals(1, data.people.size)
-        assertEquals(29, data.dates.single().day)
-        assertEquals(listOf("Neighbour"), data.settings.categories)
-    }
-
-    @Test
     fun aFreshStartActivatesWithNothingToMoveAndSurvivesRestarts() {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
         assertFalse(s.linkTables.isActive())

@@ -17,9 +17,9 @@ import app.pokeplan.app.CareReminders
 import app.pokeplan.app.HealReminders
 import app.pokeplan.heal.HealData
 import app.pokeplan.mint.MintData
-import app.pokeplan.app.HomeReminders
+import app.pokeplan.app.BaseReminders
 import app.pokeplan.app.MintReminders
-import app.pokeplan.home.HomeData
+import app.pokeplan.base.BaseData
 import app.pokeplan.link.LinkData
 import app.pokeplan.app.LinkReminders
 import app.pokeplan.app.upcomingReminders
@@ -87,8 +87,8 @@ class MainActivity : ComponentActivity() {
         val place = first.place ?: Place.HOME
         setContent {
             App(
-                storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), homeStorage = homeStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onHomeChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
+                storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), baseStorage = baseStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
             )
         }
     }
@@ -211,9 +211,9 @@ class MainActivity : ComponentActivity() {
     private var homeRefresh: Job? = null
 
     /** Sets Home's reminders again when a chore, a schedule, a supply, a warranty or a reminder setting changes, a moment after the last change. Nothing of Home leaves the module but a reminder's own id, kind and day. */
-    private fun homeChanged(data: HomeData) {
+    private fun homeChanged(data: BaseData) {
         val app = appData ?: return
-        val upcoming = HomeReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        val upcoming = BaseReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
         if (upcoming.isNotEmpty()) askForNotifications()
         val signature = upcoming.map { Triple(it.recordId, it.kind, it.atMillis) }.hashCode()
         if (homeSignature == null) { homeSignature = signature; if (upcoming.isEmpty()) return }

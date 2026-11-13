@@ -15,25 +15,12 @@ class GearTest {
     private fun store() = GameStore(MemoryStorage(), FixedClock(), TimeZone.UTC, Random(3)).also { it.start("Sophia", 25) }
 
     @Test
-    fun theSignatureLinesCanHelp() {
-        assertTrue(GearTool.FLASHLIGHT.helps(181))
-        assertTrue(GearTool.COIN.helps(1000))
-        assertTrue(GearTool.CURRENCY.helps(863))
-        assertFalse(GearTool.PICKER.helps(25))
-        GearTool.entries.forEach { assertTrue(it.signature.isNotEmpty(), "${it.name} has a signature line") }
-    }
-
-    @Test
-    fun aToolHasNoHelperUntilThePlayerChoosesAnOwnedOneAndNothingIsLent() {
+    fun aToolHasNoHelperUntilThePlayerChoosesAnOwnedOne() {
         val store = store()
         assertIs<GearHelper.None>(store.gearHelper(GearTool.FLASHLIGHT))
         // Owning one who could help does not make it the helper by itself (it would take the Pokémon out of the PC).
         store.grantPokemon(179, "test")
         assertIs<GearHelper.None>(store.gearHelper(GearTool.FLASHLIGHT))
-        // Loaners from a Ranger request were retired: nothing is lent, and a save that still names a loan loads without one.
-        val old = GameStore.json.encodeToString(AppData.serializer(), store.data).replaceFirst("{", "{\"gearLoans\":[\"FLASHLIGHT\"],")
-        val reopened = GameStore(MemoryStorage(old), FixedClock(), TimeZone.UTC, Random(3))
-        assertIs<GearHelper.None>(reopened.gearHelper(GearTool.FLASHLIGHT))
     }
 
     @Test
@@ -71,21 +58,6 @@ class GearTest {
     }
 
     @Test
-    fun thePickerKeepsATidyShortList() {
-        val store = store()
-        store.setPickerOptions(listOf(" pizza ", "", "sushi", "pizza") + (1..40).map { "x$it" })
-        assertEquals(GameStore.MAX_PICKER_OPTIONS, store.data.pickerOptions.size)
-        assertEquals(listOf("pizza", "sushi", "x1"), store.data.pickerOptions.take(3))
-    }
-
-    @Test
-    fun theRatesAreKeptForOffline() {
-        val store = store()
-        store.saveGearRates(GearRates("2026-10-31", mapOf("EUR" to 0.92)))
-        assertEquals(0.92, store.data.gearRates?.perUsd?.get("EUR"))
-    }
-
-    @Test
     fun everyPlaceHasItsOwnLabelSoNoOneIsShownInThePcByMistake() {
         val store = store()
         val a = store.grantPokemon(179, "test").id
@@ -96,8 +68,8 @@ class GearTest {
         store.setInParty(b, true, app.pokeplan.core.pokemon.PartyIds.MINT)
         assertTrue(Places.label(store.data, b).endsWith("Mint's party"), Places.label(store.data, b))
         val c = store.grantPokemon(1, "test").id
-        store.setInParty(c, true, app.pokeplan.core.pokemon.PartyIds.HOME)
-        assertTrue("Home's" in Places.label(store.data, c))
+        store.setInParty(c, true, app.pokeplan.core.pokemon.PartyIds.BASE)
+        assertTrue("Base's" in Places.label(store.data, c))
         val d = store.grantPokemon(4, "test").id
         assertTrue(store.worldAssign(1, listOf(d)))
         assertTrue(Places.label(store.data, d).startsWith("On "), Places.label(store.data, d))

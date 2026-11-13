@@ -29,7 +29,7 @@ fun acquisitionOf(how: app.pokeplan.app.Origin.How?): Acquisition = when (how) {
 fun acquisitionOfSource(source: String): Acquisition = when {
     source.startsWith(app.pokeplan.app.GameStore.HEAL_LOG_PREFIX) -> Acquisition.FIELD
     source.startsWith(app.pokeplan.app.GameStore.MINT_LOG_PREFIX) -> Acquisition.LEDGER
-    source.startsWith(app.pokeplan.app.GameStore.HOME_LOG_PREFIX) -> Acquisition.HABITAT
+    source.startsWith(app.pokeplan.app.GameStore.BASE_LOG_PREFIX) || source.startsWith(app.pokeplan.app.GameStore.OLD_BASE_LOG_PREFIX) -> Acquisition.HABITAT
     source.startsWith(app.pokeplan.app.GameStore.LINK_LOG_PREFIX) -> Acquisition.POSTCARD
     source.startsWith(app.pokeplan.app.GameStore.CARE_LOG_PREFIX) && source != app.pokeplan.app.GameStore.CARE_FRIEND_SOURCE -> Acquisition.ARRIVAL
     else -> Acquisition.EGG

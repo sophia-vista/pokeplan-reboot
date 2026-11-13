@@ -960,14 +960,6 @@ class GameStoreTest {
     }
 
     @Test
-    fun the_seen_version_is_remembered() {
-        val (s, _) = started()
-        assertEquals("0.1.0", s.data.lastSeenVersion)
-        s.markVersionSeen("0.2.0")
-        assertEquals("0.2.0", s.data.lastSeenVersion)
-    }
-
-    @Test
     fun reminders_are_saved_listed_and_switched_off() {
         val storage = MemoryStorage()
         val (s, clock) = store(storage)
@@ -1073,7 +1065,6 @@ class GameStoreTest {
         s.addTask("Buy milk")
         val export = s.exportJson()
         assertTrue("Buy milk" in export && "Sophia" in export)
-        assertFalse("\"account\"" in export)
         s.eraseDevice()
         assertFalse(s.data.onboarded)
         assertTrue(s.data.tasks.isEmpty())

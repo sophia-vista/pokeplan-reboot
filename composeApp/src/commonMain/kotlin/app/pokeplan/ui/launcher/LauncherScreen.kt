@@ -135,7 +135,7 @@ interface LauncherHost {
     fun appInfo(key: String)
     fun uninstall(key: String)
     /** Opens Android's own settings page for choosing the home app. */
-    fun openHomeSettings()
+    fun openBaseSettings()
     /** Opens a Pokémon's page in PokéLife. */
     fun openPokemon(id: String)
     /** The battery now, or null when the phone cannot say. */
@@ -391,7 +391,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     Box(Modifier.fillMaxSize().graphicsLayer { translationX = -page.value * widthPx0 }) {
                         if (prefs.gridMode) GridHomePage(env, when {
                             !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { host.openApp(Place.HOME) }
-                            !isDefault -> "Make PokéLife your home app" to host::openHomeSettings
+                            !isDefault -> "Make PokéLife your home app" to host::openBaseSettings
                             else -> null
                         }) else HomePage(env, isDefault)
                     }
@@ -495,7 +495,7 @@ private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
             Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 val note = when {
                     !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { env.host.openApp(Place.HOME) }
-                    !isDefault -> "Make PokéLife your home app" to env.host::openHomeSettings
+                    !isDefault -> "Make PokéLife your home app" to env.host::openBaseSettings
                     else -> null
                 }
                 if (note != null) PmdBox(env.pixel, Modifier.fillMaxWidth().padding(horizontal = Spacing.Page), inset = 1) { PmdMenuLine(note.first, env.pixel, onClick = note.second) }
@@ -895,7 +895,7 @@ internal fun LauncherSettings(
             Section("Apps", "layout") {
                 if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, icon = "pa-eye-off", onClick = onHidden)
                 PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty(), icon = "pa-trash") { onPrefs(prefs.withoutPins()) }
-                PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel, icon = "pa-settings-cog") { host.openHomeSettings() }
+                PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel, icon = "pa-settings-cog") { host.openBaseSettings() }
             }
         }
     }

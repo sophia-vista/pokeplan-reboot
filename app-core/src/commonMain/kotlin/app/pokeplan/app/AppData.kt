@@ -26,6 +26,7 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /** Everything the app saves on the device. The whole object is stored as one JSON document. */
@@ -116,9 +117,9 @@ data class AppData(
     val healPaid: List<String> = emptyList(),
     /** The ids of MINT events already paid (`MintEvent.id`, opaque, no figure in them), kept like [healPaid]. The newest [GameStore.MINT_PAID_KEPT] are kept. */
     val mintPaid: List<String> = emptyList(),
-    /** The ids of HOME events already paid (`HomeEvent.id`, opaque, no household word in them), kept like [mintPaid]. The newest [GameStore.HOME_PAID_KEPT] are kept. */
-    val homePaid: List<String> = emptyList(),
-    /** The ids of LINK events already paid (`LinkEvent.id`, opaque, no word of a person or a follow-up in them), kept like [homePaid]. The newest [GameStore.LINK_PAID_KEPT] are kept. */
+    /** The ids of HOME events already paid (`BaseEvent.id`, opaque, no household word in them), kept like [mintPaid]. The newest [GameStore.HOME_PAID_KEPT] are kept. */
+    @SerialName("homePaid") val basePaid: List<String> = emptyList(),
+    /** The ids of LINK events already paid (`LinkEvent.id`, opaque, no word of a person or a follow-up in them), kept like [basePaid]. The newest [GameStore.LINK_PAID_KEPT] are kept. */
     val linkPaid: List<String> = emptyList(),
     /**
      * What each module reward really was, for the ledger (DATA_AND_MIGRATIONS.md section 7.3.0): one [LedgerNote] per paid module event (HEAL, MINT, HOME, LINK, and since 0.148.0 PLAN and CARE), with the event's own id,
@@ -167,7 +168,7 @@ object Tutorials {
     const val MINT_TALLY = "mint-tally"
 
     /** Home: a 5-second tidy that finds a Habitat Egg for Home's party. */
-    const val HOME_TIDY = "home-tidy"
+    const val BASE_TIDY = "home-tidy"
 
     /** Link: a 5-second postcard that finds a Postcard Egg for Link's party. */
     const val LINK_POSTCARD = "link-postcard"

@@ -4,7 +4,7 @@
 **Status:** Approved product specification  
 **Module:** HOME  
 **Scope:** Personal household management  
-**Shown as:** **Nest** (owner, 13 November 2026): the app shows this module as "Nest" (its menu card, header, party, perks and region, "Nest Region") so "Home" is only the first tab; code ids, saves and the docs keep HOME  
+**Shown as:** **Base** (owner's final choice, 13 November 2026, replacing "Nest"; after Hoenn's Secret Bases): the app shows this module as "Base" (its menu card, header, party, perks and region, "Base Region") so "Home" is only the first tab. Code uses `Base*` names (`base-core`, `app.pokeplan.base`); stored ids, tables and saves keep HOME (Product Bible section 3).
 **Last updated:** 5 November 2026
 
 > This document is the single source of truth for HOME-specific product behavior, data ownership, workflows, progression, privacy adaptations, implementation direction and acceptance criteria. Product-wide rules remain in the Product Bible; shared reminder behavior, visual components, data lifecycle and Pokémon/economy services remain in their respective shared specifications. Do not duplicate those systems here.
@@ -126,7 +126,7 @@ Provide a searchable list of household-specific notes and documents, with option
 
 ### 4.1 Household areas
 
-`HomeArea` is an optional organizational label, not a required hierarchy. Suggested initial examples: Bedroom, Kitchen, Bathroom, Living area, Balcony, Storage and General household.
+`BaseArea` is an optional organizational label, not a required hierarchy. Suggested initial examples: Bedroom, Kitchen, Bathroom, Living area, Balcony, Storage and General household.
 
 Users can create, rename, reorder and archive areas. Archiving an area must not delete its records; records become unassigned or retain a clearly marked archived-area reference according to the data model. Avoid enforcing a room tree or floor plan. Records can exist without an area.
 
@@ -140,7 +140,7 @@ A chore is a household responsibility with an optional schedule. The user should
 |---|---|
 | Title | Required |
 | Description / instructions | Optional |
-| Area | Optional `HomeArea` reference |
+| Area | Optional `BaseArea` reference |
 | Category | Optional; e.g. cleaning, laundry, kitchen, general, outdoor |
 | Schedule | One-time or recurring; optional for unscheduled chores |
 | Frequency | Supported recurrence described below |
@@ -279,7 +279,7 @@ The following are logical domain concepts. They do not require one physical data
 
 | Entity | Responsibility |
 |---|---|
-| `HomeArea` | Optional household zone/room |
+| `BaseArea` | Optional household zone/room |
 | `Chore` | Canonical chore definition and schedule |
 | `ChoreOccurrence` | Generated one-time/recurring occurrence and state |
 | `ChoreCompletion` | Immutable completion fact/event, linked to occurrence |
@@ -290,13 +290,13 @@ The following are logical domain concepts. They do not require one physical data
 | `MaintenanceSchedule` | Recurrence definition for future maintenance |
 | `WarrantyRecord` | Warranty dates and reference/attachment metadata |
 | `HomeReference` | Household note or reference record |
-| `HomeSettings` | HOME-specific preferences |
+| `BaseSettings` | HOME-specific preferences |
 | `HomeResearchState` | HOME-owned Habitat Discovery progress/configuration state |
 | `HomeRewardEvent` | Minimal idempotent eligibility event and shared reward payment reference |
 
 Relationships:
 
-- `HomeArea` may organize chores, inventory items, assets and references.
+- `BaseArea` may organize chores, inventory items, assets and references.
 - `Chore` generates `ChoreOccurrence` records; an occurrence may have one completion event.
 - `InventoryItem` may have zero or more stock adjustments.
 - `MaintenanceAsset` may have maintenance records, schedules and warranties.
@@ -607,13 +607,13 @@ This module document owns HOME-specific rules only. Shared feature documents rem
 **Habitat Discovery (section 9), as built** *(numbers are *(tune)* starting values; `docs/economy.md`)*:
 - **On by default** (every acquisition method is), off in Settings without touching a record. Only two things pay: a **chore done** (2 Rare Candies; at most 5 paid a day) and **maintenance done** (4; at most 2 a day). Creating, editing, archiving, quantities, the restocking list, warranties, notes, schedules, skipping and putting off never pay.
 - **Idempotent by occurrence.** The event id names the occurrence (`home:chore:<chore id>:<due day>`, `home:maintenance:<schedule id>:<due date>`), the game remembers it (`AppData.homePaid`, newest 1000), so undo then done again, a restore or a replay pays once. Nothing is clawed back by an undo. A migration never pays.
-- **What leaves HOME** is exactly `HomeEvent`: id, module ("home"), an opaque `ref`, the broad kind (`chore_completed`, `maintenance_completed`) and the time. No title, area, supply, asset, serial, cost or note may reach the event, the shared save, the reward log or the shared tables.
+- **What leaves HOME** is exactly `BaseEvent`: id, module ("home"), an opaque `ref`, the broad kind (`chore_completed`, `maintenance_completed`) and the time. No title, area, supply, asset, serial, cost or note may reach the event, the shared save, the reward log or the shared tables.
 - A payment is candies, a little friendship for Home's lead, a trainer point and points towards a **Habitat Egg** (chore 1, maintenance 2; 5 fill the meter), hatched into Home's party from the **Home Region** (`tools/species/regions/household.txt`). Home's party perks (Candy finder: Grass, Normal, Bug, Ground, Fire, Water; Friendship gain: Fairy, Flying, Ice, Electric, Psychic, Ghost; capped at +25% a bucket) change only what Habitat Discovery pays. A new Pokémon settles into the habitat from above (`Acquisition.HABITAT`, the town scene).
 - **First-run tutorial** (POKEMON_ECOSYSTEM.md 10.2.1): a 5-second tidy gives one Home Region Pokémon into Home's party, leading it, once per save.
 
-**Data (section 5).** `home_*` tables: `home_area`, `home_chore`, `home_entry`, `home_supply`, `home_adjustment`, `home_restock`, `home_asset`, `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference` (each row `key, position, day, json`) and `home_state` (settings); `HomeTables` reads, exports or erases one family alone. Home is in the daily backup and the backup bundle. Not sealed: no encryption decision exists for Home (Mint's was the owner's); household content follows the shared data-security policy and can be sealed the same way later.
+**Data (section 5).** `home_*` tables: `home_area`, `home_chore`, `home_entry`, `home_supply`, `home_adjustment`, `home_restock`, `home_asset`, `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference` (each row `key, position, day, json`) and `home_state` (settings); `BaseTables` reads, exports or erases one family alone. Home is in the daily backup and the backup bundle. Not sealed: no encryption decision exists for Home (Mint's was the owner's); household content follows the shared data-security policy and can be sealed the same way later.
 
-**Linked PLAN tasks (2.1), as built.** Chore → "Show in Plan" makes one PLAN task per chore, a projection of its current occurrence (`TaskLink(HOME_CHORE, chore id, occurrence)`): the title and day follow the chore, a repeating chore's task moves on to the next occurrence, and a deleted chore takes its projection with it (restorable). Completing, reopening or "won't do" in PLAN run `HomeStore.complete`, `undo` and `skip` (`HomeLinkOwner`), so HOME records the one completion and pays Habitat Discovery once; PLAN pays nothing for a task another module owns (no task reward, no steps reward), and a linked task cannot repeat by itself. "Remove from Plan" deletes only the projection. A store that does not know Home (a widget) leaves a linked task untouched. There is no "convert to a PLAN-owned task" action.
+**Linked PLAN tasks (2.1), as built.** Chore → "Show in Plan" makes one PLAN task per chore, a projection of its current occurrence (`TaskLink(HOME_CHORE, chore id, occurrence)`): the title and day follow the chore, a repeating chore's task moves on to the next occurrence, and a deleted chore takes its projection with it (restorable). Completing, reopening or "won't do" in PLAN run `BaseStore.complete`, `undo` and `skip` (`BaseLinkOwner`), so HOME records the one completion and pays Habitat Discovery once; PLAN pays nothing for a task another module owns (no task reward, no steps reward), and a linked task cannot repeat by itself. "Remove from Plan" deletes only the projection. A store that does not know Home (a widget) leaves a linked task untouched. There is no "convert to a PLAN-owned task" action.
 
 **Reminders (6), as built.** Home → Settings → Reminders is **off**; with it on, each chore, maintenance schedule, supply (with a threshold) and warranty (with an end date) is turned on by itself (`remind`), so nothing asks by default. One reminder each, never repeated: a chore on the day of its next unsettled occurrence at the chosen hour (nothing for an overdue one, none for a once-only chore that is done), maintenance 0, 1, 3 or 7 days before its next date, a warranty a week to two months before its end date, a low supply once (at the first reminder hour after it became low; quieting it or restocking stops it). The request holds the record's opaque id, the kind and the day; the lock screen says only the kind, and the name shows after unlocking only if the player allowed it. A chore's notification offers "Done" (the chore's own completion), every kind offers "Tomorrow"; a reminder never records maintenance, restocks or edits a warranty, and delivering, snoozing or dismissing pays nothing. Delivery follows the shared quiet hours and focus deferral.
 
