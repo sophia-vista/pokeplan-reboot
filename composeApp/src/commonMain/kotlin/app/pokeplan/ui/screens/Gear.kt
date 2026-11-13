@@ -49,7 +49,10 @@ import kotlinx.coroutines.delay
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
+fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.GEAR) { GearBody(model, start, onClose) }
+
+@Composable
+private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
     var open by remember { mutableStateOf(start) }
     // Each use of a tool pings its helper, which answers with its one reaction.
     var used by remember { mutableIntStateOf(0) }
@@ -67,7 +70,7 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
                 val found = ToolCatalog.search(query, gear.favorites, gear.recents)
                 if (found.isEmpty()) {
                     Text("No tool by that name", style = MaterialTheme.typography.titleSmall)
-                    PixelButton("Show every tool", { query = "" }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                    PixelButton("Show every tool", { query = "" }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 }
                 found.forEach { t -> PixelButton("${t.tool.label}: ${t.description}", { query = ""; open = t.tool }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true) }
             } else {
@@ -136,7 +139,7 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
         if (helper != null) {
             Box(Modifier.size(Sizes.IconL)) {
                 AnimatedSprite(helper.form.id, helper.isShiny, helper.nickname, size = Sizes.IconL, animate = false)
-                if (reaction) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon, description = null) else Glyph(name, Pixel.Blue, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon) }
+                if (reaction) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon, description = null) else Glyph(name, Pixel.Tone, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon) }
             }
             Text(helper.nickname, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
         } else Spacer(Modifier.weight(1f))

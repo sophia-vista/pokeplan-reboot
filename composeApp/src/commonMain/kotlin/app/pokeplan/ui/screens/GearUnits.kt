@@ -104,7 +104,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
             }
             FieldLabel("Decimals")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                listOf(0, 2, 4, 6, 8).forEach { d -> PixelButton(d.toString(), { store.changeGear { it.copy(unitDecimals = d) } }, Modifier.weight(1f), if (gear.unitDecimals == d) Pixel.Blue else Pixel.InkSoft, compact = true) }
+                listOf(0, 2, 4, 6, 8).forEach { d -> PixelButton(d.toString(), { store.changeGear { it.copy(unitDecimals = d) } }, Modifier.weight(1f), if (gear.unitDecimals == d) Pixel.Tone else Pixel.InkSoft, compact = true) }
             }
             if (gear.unitFavorites.isNotEmpty()) {
                 FieldLabel("Starred pairs")

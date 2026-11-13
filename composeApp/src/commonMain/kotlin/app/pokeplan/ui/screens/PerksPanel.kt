@@ -321,7 +321,7 @@ fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
             val held = p.heldItem
             ListRow(lead = { if (held != null) ItemIcon(held, size = Sizes.Icon) else ItemIcon("seal-bag", size = Sizes.Icon, description = null) }, trail = {
                 if (held != null) PixelButton("Take", { store.takeItem(p.id) }, color = Pixel.InkSoft, compact = true)
-                else PixelButton(if (choosing) "Close" else "Give", { choosing = !choosing }, color = Pixel.Blue, compact = true)
+                else PixelButton(if (choosing) "Close" else "Give", { choosing = !choosing }, color = Pixel.Tone, compact = true)
             }) {
                 Text(if (held != null) "Holding ${Items.name(held)}" else "Holds nothing", style = MaterialTheme.typography.bodyLarge)
             }

@@ -84,13 +84,13 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
                     (if (hours) " Tap ${if (week) "a day's hour" else "an hour"} to change it." else "") + " Events never pay.",
                 style = MaterialTheme.typography.bodyMedium,
             )
-            PixelDateField(draft.day, today, Pixel.Blue, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+            PixelDateField(draft.day, today, Pixel.Tone, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
             PixelTimeField(
                 at, { t -> t?.let { change(draft.copy(start = it.hour * 60 + it.minute).let { d -> d.copy(minutes = PlanEvent.fit(d.start, d.minutes)) }) } },
-                Pixel.Blue, label = "Starts",
+                Pixel.Tone, label = "Starts",
             )
             PixelDurationField(
-                draft.minutes, { m -> m?.let { change(draft.copy(minutes = PlanEvent.fit(draft.start, it))) } }, Pixel.Blue, label = "Length",
+                draft.minutes, { m -> m?.let { change(draft.copy(minutes = PlanEvent.fit(draft.start, it))) } }, Pixel.Tone, label = "Length",
                 presets = listOf(30, 60, 90, 120),
                 max = 24 * 60 - draft.start, min = 1,
             )
@@ -145,12 +145,12 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
                     else "Tap another hour to move it.",
                 style = MaterialTheme.typography.bodyMedium,
             )
-            PixelDateField(event.day, store.today, Pixel.Blue, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+            PixelDateField(event.day, store.today, Pixel.Tone, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
             PixelTimeField(
-                event.start, { t -> t?.let { store.updateEvent(event.id, start = it) } }, Pixel.Blue, label = "Starts",
+                event.start, { t -> t?.let { store.updateEvent(event.id, start = it) } }, Pixel.Tone, label = "Starts",
             )
             PixelDurationField(
-                event.minutes, { m -> m?.let { store.updateEvent(event.id, minutes = it) } }, Pixel.Blue, label = "Length",
+                event.minutes, { m -> m?.let { store.updateEvent(event.id, minutes = it) } }, Pixel.Tone, label = "Length",
                 presets = listOf(30, 60, 90, 120),
                 max = 24 * 60 - (event.start.hour * 60 + event.start.minute), min = 1,
             )
@@ -177,8 +177,8 @@ private fun RepeatPicker(selected: EventRepeat?, pick: (EventRepeat?) -> Unit) {
                     Modifier
                         .defaultMinSize(minHeight = Spacing.Target)
                         .clip(shape)
-                        .background(if (on) Pixel.Blue.copy(alpha = 0.10f) else Pixel.Panel, shape)
-                        .border(if (on) 2.dp else 1.dp, if (on) Pixel.Blue else Pixel.Border, shape)
+                        .background(if (on) Pixel.Tone.copy(alpha = 0.10f) else Pixel.Panel, shape)
+                        .border(if (on) 2.dp else 1.dp, if (on) Pixel.Tone else Pixel.Border, shape)
                         .selectable(on, role = Role.RadioButton) { pick(r) }
                         .padding(horizontal = Spacing.M),
                     contentAlignment = Alignment.Center,
@@ -249,7 +249,7 @@ private fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, s
     val days = first.daysUntil(last) + 1
     Text("${first.short()}${if (days > 1) " to ${last.short()}, $days days" else ", one day"}. Events never pay.", style = MaterialTheme.typography.bodyMedium)
     FieldLabel("Starts")
-    PixelDateField(first, today, Pixel.Blue, { it?.let(setFirst) }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+    PixelDateField(first, today, Pixel.Tone, { it?.let(setFirst) }, presets = listOf("Today" to 0, "Tomorrow" to 1))
     FieldLabel("Ends")
-    PixelDateField(last, today, Pixel.Blue, { it?.let(setLast) }, presets = emptyList(), min = first)
+    PixelDateField(last, today, Pixel.Tone, { it?.let(setLast) }, presets = emptyList(), min = first)
 }

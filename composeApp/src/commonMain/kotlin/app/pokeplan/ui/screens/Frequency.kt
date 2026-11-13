@@ -151,7 +151,7 @@ internal fun FrequencyView(model: AppModel) {
             lead = { RankBadge(h.template.rank) },
             trail = {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelIconButton("pencil", "Edit ${h.template.title}", { editing = if (editing == h.template.id) null else h.template.id }, Pixel.Blue)
+                    PixelIconButton("pencil", "Edit ${h.template.title}", { editing = if (editing == h.template.id) null else h.template.id }, Pixel.Tone)
                     if (doneToday) PixelIconButton("undo", "Undo", { store.undoFrequencyTask(h.template.id) }, Pixel.InkSoft)
                     else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
                 }
@@ -174,7 +174,7 @@ internal fun FrequencyView(model: AppModel) {
         var day by remember(h.template.id) { mutableStateOf(store.today.minus(DatePeriod(days = 1))) }
         PixelButton(if (other) "Close" else "Another day", { other = !other }, color = Pixel.InkSoft, compact = true)
         if (other) {
-            PixelDateField(day, store.today, Pixel.Blue, { it?.let { d -> day = d } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = store.today)
+            PixelDateField(day, store.today, Pixel.Tone, { it?.let { d -> day = d } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = store.today)
             val done = day in h.completions
             PixelButton(
                 if (done) "Take back ${day.short()}" else "Mark ${day.short()} done",

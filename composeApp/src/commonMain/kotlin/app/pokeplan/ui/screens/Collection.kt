@@ -101,11 +101,11 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                     // A new player has one Pokémon: say where the next ones come from.
                     MenuGrid(
                         listOfNotNull(
-                            MenuEntry("PARTY", "premier-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
-                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { inPc(store, it) }} stored", tint = Pixel.Warning),
-                            MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
-                            if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
-                            if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
+                            MenuEntry("PARTY", "premier-ball", "Party", "${player.party.size} of 6", tint = Pixel.InkSoft),
+                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { inPc(store, it) }} stored", tint = Pixel.InkSoft),
+                            MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.InkSoft),
+                            if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.InkSoft) else null,
+                            if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.InkSoft),
                         ),
                     ) { key -> section = Section.valueOf(key) }
                 }

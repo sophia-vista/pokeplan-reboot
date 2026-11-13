@@ -82,7 +82,7 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
                 style = MaterialTheme.typography.titleMedium, color = if (live is CalcResult.Error && showError) Pixel.Red else Pixel.Ink,
             )
             @Composable fun keys(vararg labels: Pair<String, () -> Unit>, accent: Set<String> = emptySet()) = Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                labels.forEach { (label, action) -> PixelButton(label, action, Modifier.weight(1f), if (label in accent) Pixel.Blue else Pixel.InkSoft, compact = true) }
+                labels.forEach { (label, action) -> PixelButton(label, action, Modifier.weight(1f), if (label in accent) Pixel.Tone else Pixel.InkSoft, compact = true) }
             }
             val ops = setOf("÷", "×", "−", "+", "=")
             keys("C" to { expr = ""; answered = false; showError = false }, "Del" to { edit(expr.dropLast(1)) }, "(" to { key("(", true) }, ")" to { key(")") }, accent = ops)

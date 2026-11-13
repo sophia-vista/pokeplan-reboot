@@ -81,7 +81,7 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton(if (busy) "Looking..." else "Mark this place", { if (!busy) locate(true) }, Modifier.weight(1f), Pixel.Blue, compact = true, enabled = !busy)
+                PixelButton(if (busy) "Looking..." else "Mark this place", { if (!busy) locate(true) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = !busy)
                 PixelButton("Where am I", { if (!busy) locate(false) }, Modifier.weight(1f), Pixel.InkSoft, compact = true, enabled = !busy)
             }
             if (message.isNotEmpty()) Text(message, style = MaterialTheme.typography.bodyMedium)
@@ -204,7 +204,7 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
     }
     if (scanner != null) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton("Scan a code", { scanNote = ""; scanner.scan { r -> scanned = r; scanNote = if (r == null) "Nothing was scanned." else ""; onUse() } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+            PixelButton("Scan a code", { scanNote = ""; scanner.scan { r -> scanned = r; scanNote = if (r == null) "Nothing was scanned." else ""; onUse() } }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
             if (scanNote.isNotEmpty()) Text(scanNote, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             scanned?.let { r ->
                 val reading = app.pokeplan.ui.gear.QrPayload.read(r)
@@ -250,7 +250,7 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
                     http.close()
                     result = NetworkCheck.Result(times); busy = false
                 }
-            }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true, enabled = !busy)
+            }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true, enabled = !busy)
             result?.let { r ->
                 Text(NetworkCheck.verdict(r), style = MaterialTheme.typography.bodyLarge)
                 r.median?.let { Text("Answers in about $it ms" + (r.jitter?.let { j -> ", varying by up to $j ms" } ?: "") + ".", style = MaterialTheme.typography.bodyMedium) }

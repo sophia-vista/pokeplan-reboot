@@ -108,7 +108,7 @@ private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: ()
                     Text("Which stat should ${who.nickname} max out?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         Stat.entries.filter { who.ivs[it] < StatCalculator.MAX_IV }.forEach { st ->
-                            PixelButton(st.label, { done(store.useItem(ItemUse.BottleCap(st), who.id)) }, color = Pixel.Blue, compact = true)
+                            PixelButton(st.label, { done(store.useItem(ItemUse.BottleCap(st), who.id)) }, color = Pixel.Tone, compact = true)
                         }
                     }
                 }
@@ -117,7 +117,7 @@ private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: ()
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         Nature.entries.filter { it != who.nature }.forEach { n ->
                             val detail = if (n.raised == null) "" else " (+${n.raised!!.label} -${n.lowered!!.label})"
-                            PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(ItemUse.NatureMint(n), who.id)) }, color = Pixel.Blue, compact = true)
+                            PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(ItemUse.NatureMint(n), who.id)) }, color = Pixel.Tone, compact = true)
                         }
                     }
                 }
@@ -131,7 +131,7 @@ private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: ()
                                 id == Items.BOTTLE_CAP || id == Items.NATURE_MINT -> target = p
                                 else -> done(store.useItem(id, p.id))
                             }
-                        }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                        }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                     }
                 }
             }

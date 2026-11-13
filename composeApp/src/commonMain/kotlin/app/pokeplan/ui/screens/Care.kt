@@ -156,7 +156,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = ModuleAccent.CARE.accent),
                     MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = ModuleAccent.CARE.accent),
                     MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = ModuleAccent.CARE.accent),
-                    MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = Pixel.InkSoft),
+                    MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = ModuleAccent.CARE.accent),
                     MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = ModuleAccent.CARE.accent),
                     MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = ModuleAccent.CARE.accent),
                 ),
@@ -271,7 +271,7 @@ private fun VisitorsCard(model: AppModel) {
                     Text("Send ${Dex.species(open.speciesId).name} away? It keeps what it has earned, and you can ask it back.", style = MaterialTheme.typography.bodyMedium)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelButton("Send away", { care.dismiss(open.speciesId); sendAway = null; playing = null; note = null }, color = Pixel.InkSoft, compact = true)
-                        PixelButton("Keep", { sendAway = null }, color = Pixel.Green, compact = true)
+                        PixelButton("Keep", { sendAway = null }, color = Pixel.Tone, compact = true)
                     }
                 } else PixelButton("Send away", { sendAway = open.speciesId }, color = Pixel.InkSoft, compact = true)
             }
@@ -282,7 +282,7 @@ private fun VisitorsCard(model: AppModel) {
                     val species = Dex.species(v.speciesId)
                     ListRow(
                         lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = Sizes.IconL) },
-                        trail = { PixelButton("Ask back", { note = if (care.restore(v.id)) "${species.name} is back, waiting for a place." else "No room just now." }, color = Pixel.Green, compact = true) },
+                        trail = { PixelButton("Ask back", { note = if (care.restore(v.id)) "${species.name} is back, waiting for a place." else "No room just now." }, color = Pixel.Tone, compact = true) },
                         highlight = false,
                     ) { Text(species.name, style = MaterialTheme.typography.bodyLarge) }
                 }
@@ -434,7 +434,7 @@ internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boo
             PixelIconButton("trash", "Delete", { model.care.deleteRoutine(routine.id); onDone() }, Pixel.Danger)
             PixelButton("Keep", { asking = false }, color = Pixel.InkSoft, compact = true)
         } else {
-            PixelIconButton("pencil", "Edit", { editing = true }, Pixel.Blue)
+            PixelIconButton("pencil", "Edit", { editing = true }, Pixel.Tone)
             PixelButton(if (routine.archived) "Bring back" else "Put away", { model.care.archiveRoutine(routine.id, !routine.archived); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelIconButton("trash", "Delete", { asking = true }, Pixel.InkSoft)
         }
@@ -510,7 +510,7 @@ private fun CalmBreakView(model: AppModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     listOf(60, 120).forEach { s -> TabButton(if (s == 60) "1 minute" else "2 minutes", seconds == s, { seconds = s }, Modifier.weight(1f)) }
                 }
-                PixelButton("Start", { result = null; waking = false; model.haptic(); model.effect(Sfx.CALM_BREAK_START); startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Blue)
+                PixelButton("Start", { result = null; waking = false; model.haptic(); model.effect(Sfx.CALM_BREAK_START); startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Tone)
                 Text(
                     "Up to ${CareRules.BREAKS_PAID_PER_DAY} calm breaks a day earn friendship and a berry.",
                     style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
@@ -536,8 +536,8 @@ private fun CalmBreakView(model: AppModel) {
 private fun BreathCircle(inhale: Boolean, still: Boolean) {
     val target = if (still || inhale) 1f else 0.55f
     val scale by animateFloatAsState(target, tween(if (still) 0 else if (inhale) BREATHE_IN_MILLIS else BREATH_MILLIS - BREATHE_IN_MILLIS))
-    val fill = Pixel.Blue.copy(alpha = 0.18f)
-    val edge = Pixel.Blue
+    val fill = Pixel.Tone.copy(alpha = 0.18f)
+    val edge = Pixel.Tone
     Canvas(Modifier.size(160.dp).semantics { contentDescription = if (inhale) "Breathe in" else "Breathe out" }) {
         val radius = size.minDimension / 2 * (if (still) 0.8f else scale)
         val center = Offset(size.width / 2, size.height / 2)
@@ -674,8 +674,8 @@ private fun SkillsView(model: AppModel) {
                 Text(skill.use, style = MaterialTheme.typography.bodyLarge)
                 skill.steps.forEachIndexed { i, step -> Text("${i + 1}. $step", style = MaterialTheme.typography.bodyLarge) }
                 when {
-                    skill.calmBreak -> PixelButton("Start a calm break", { model.careSection = CareSection.CALM }, Modifier.fillMaxWidth(), Pixel.Blue)
-                    else -> PixelButton(if (skill.id in practised) "Practised again" else "I practised this", { model.effect(Sfx.LEARN); model.haptic(); care.practiseSkill(skill.id) }, Modifier.fillMaxWidth(), Pixel.Green)
+                    skill.calmBreak -> PixelButton("Start a calm break", { model.careSection = CareSection.CALM }, Modifier.fillMaxWidth(), Pixel.Tone)
+                    else -> PixelButton(if (skill.id in practised) "Practised again" else "I practised this", { model.effect(Sfx.LEARN); model.haptic(); care.practiseSkill(skill.id) }, Modifier.fillMaxWidth(), Pixel.Tone)
                 }
                 if (skill.id in practised) Text("Practised today.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 PixelButton("All skills", { open = null }, color = Pixel.InkSoft, compact = true)
@@ -755,7 +755,7 @@ private fun JournalView(model: AppModel) {
                 JOURNAL_TAGS.forEach { t -> TabButton(t, t in tags, { tags = if (t in tags) tags - t else tags + t }) }
             }
             PixelMomentField(writtenAt ?: model.store.nowMillis, { writtenAt = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written")
-            PixelButton("Save entry", ::save, Modifier.fillMaxWidth(), Pixel.Warning, enabled = text.isNotBlank())
+            PixelButton("Save entry", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = text.isNotBlank())
         }
     }
     if (data.journal.size > 3) PixelField(
@@ -798,7 +798,7 @@ private fun JournalEditor(model: AppModel, e: JournalEntry, onDone: () -> Unit) 
             }
             PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written", nowKey = false)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Save", { model.care.editEntry(e.id, text, at, tags); model.say("Saved."); onDone() }, Modifier.weight(1f), Pixel.Green, enabled = text.isNotBlank(), compact = true)
+                PixelButton("Save", { model.care.editEntry(e.id, text, at, tags); model.say("Saved."); onDone() }, Modifier.weight(1f), Pixel.Tone, enabled = text.isNotBlank(), compact = true)
                 PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
@@ -851,7 +851,7 @@ private fun TrendsView(model: AppModel) {
                 val label = if (avg == null) "not rated" else "${emotion.label} ${(avg * 10).roundToInt() / 10.0} of 5, ${w.cards} card${if (w.cards == 1) "" else "s"}"
                 Column(Modifier.semantics(mergeDescendants = true) {}) {
                     Text("Week of ${w.weekStart.dayMonth()}: $label", style = MaterialTheme.typography.bodyMedium)
-                    if (avg != null) PixelBar((avg / 5).toFloat(), Modifier.fillMaxWidth(), Pixel.Blue, label = label)
+                    if (avg != null) PixelBar((avg / 5).toFloat(), Modifier.fillMaxWidth(), Pixel.Tone, label = label)
                 }
             }
         }

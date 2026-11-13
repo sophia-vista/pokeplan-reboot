@@ -94,7 +94,10 @@ internal enum class View(val label: String, val icon: String) {
 }
 
 @Composable
-fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = false, onBack: (() -> Unit)? = null) {
+fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = false, onBack: (() -> Unit)? = null) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.PLAN) { PlannerBody(model, startView, startWeek, onBack) }
+
+@Composable
+private fun PlannerBody(model: AppModel, startView: Int, startWeek: Boolean, onBack: (() -> Unit)?) {
     var view by remember { mutableStateOf(View.entries.getOrNull(startView)) }
     var expanded by remember { mutableStateOf<String?>(null) }
     // A list opened from the menu's Lists section (TickTick's lists); null shows the menu or the smart list in [view].
@@ -320,7 +323,7 @@ fun EmptyState(
             else if (icon != null) ItemIcon(icon, size = Sizes.IconL, description = null)
             Column(Modifier.weight(1f).semantics(mergeDescendants = true) { if (line != null) contentDescription = "$title. $line" }, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
-                if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.Blue, compact = true)
+                if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.Tone, compact = true)
             }
         }
     }
@@ -559,7 +562,7 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
         FieldLabel("Move to")
         // Only the planned day goes with "No date"; a deadline is on the Edit tab and stays.
         PixelDateField(
-            task.planned, store.today, Pixel.Blue,
+            task.planned, store.today, Pixel.Tone,
             { day -> store.updateTask(task.copy(planned = day, plannedTime = if (day == null) null else task.plannedTime)) },
             presets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No date",
         )
@@ -598,9 +601,9 @@ private fun TaskStepsTab(model: AppModel, task: Task) {
             } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 Text(sub.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (sub.done) Pixel.InkSoft else Pixel.Ink)
                 if (task.state == TaskState.OPEN) {
-                    PixelIconButton("pencil", "Edit step", { editing = sub.id }, Pixel.Blue)
+                    PixelIconButton("pencil", "Edit step", { editing = sub.id }, Pixel.Tone)
                     if (sub.done) PixelIconButton("undo", "Untick step", { store.reopenSubtask(task.id, sub.id) }, Pixel.InkSoft)
-                    else PixelButton("Step done", { store.completeSubtask(task.id, sub.id) }, color = Pixel.Green, compact = true)
+                    else PixelButton("Step done", { store.completeSubtask(task.id, sub.id) }, color = Pixel.Tone, compact = true)
                 }
             }
         }
@@ -642,11 +645,11 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
         CategoryChips(category) { category = it ?: category }
         // A deadline is not the day you plan to do it (that is "Move to"); with no time it is the end of that day, 23:59.
         PixelDateTimeField(
-            dueDay, dueTime, store.today, Pixel.Blue, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
+            dueDay, dueTime, store.today, Pixel.Tone, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
             noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
             dayPresets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7),
         )
-        PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Blue, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
+        PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Tone, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
         // Edits are saved as they are made (a short pause after typing, and when the tab closes), so nothing is lost by switching tabs.
         val commit by rememberUpdatedState {
             val live = store.data.tasks.firstOrNull { it.id == task.id }
@@ -692,7 +695,7 @@ private fun RepeatRow(model: AppModel, task: Task) {
 @Composable
 private fun PlannedTime(model: AppModel, task: Task) {
     PixelTimeField(
-        task.plannedTime, { model.store.setPlannedTime(task.id, it) }, Pixel.Blue, label = "At",
+        task.plannedTime, { model.store.setPlannedTime(task.id, it) }, Pixel.Tone, label = "At",
         presets = TIME_PRESETS, noneLabel = "Any time",
     )
 }

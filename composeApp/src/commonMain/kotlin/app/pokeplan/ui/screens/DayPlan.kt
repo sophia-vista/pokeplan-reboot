@@ -753,7 +753,7 @@ private fun Hours(
                                 .offset(x = x, y = HourHeight * i)
                                 .width(columnWidth)
                                 .height(HourHeight)
-                                .background(Pixel.Blue.copy(alpha = 0.06f))
+                                .background(Pixel.Tone.copy(alpha = 0.06f))
                                 .clickable(role = Role.Button, onClickLabel = "Plan at $label") { onHour(plan.day, h) }
                                 .semantics { contentDescription = label },
                         )

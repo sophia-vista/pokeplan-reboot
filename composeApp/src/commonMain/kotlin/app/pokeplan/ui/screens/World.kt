@@ -97,7 +97,10 @@ private const val NAP_MILLIS = 30_000L
 private const val MIN_WAIT_MILLIS = 250L
 
 @Composable
-internal fun WorldScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
+internal fun WorldScreen(model: AppModel, openPokemon: (String) -> Unit = {}) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.WORLD) { WorldBody(model, openPokemon) }
+
+@Composable
+private fun WorldBody(model: AppModel, openPokemon: (String) -> Unit) {
     // Settlement is by timestamp (WORLD.md 3.1): once on opening, which counts the time away, then at the moment the next floor of a team that is out
     // is done (the screen waits for that instant; it does not poll). The wait is cut into short naps so a clock that jumped or a phone that slept is noticed.
     LaunchedEffect(Unit) { model.store.worldSettle(); model.worldNow = model.store.nowMillis }

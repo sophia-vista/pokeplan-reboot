@@ -207,7 +207,7 @@ private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
         still = data.settings.reduceMotion, onOpen = { go(Place.PLAN) },
     ) {
         when {
-            data.focus != null -> StepRow("An egg is incubating", "Open", Pixel.Blue) { go(Place.FOCUS) }
+            data.focus != null -> StepRow("An egg is incubating", "Open", Pixel.Tone) { go(Place.FOCUS) }
             next != null -> StepRow(next.title, "Done", lead = { RankBadge(next.rank) }) { model.completeTask(next.id) }
             doneToday > 0 -> StepRow("All done for today", null)
             else -> StepRow("Nothing planned for today", "Add a task", ModuleAccent.PLAN.accent) { model.addTaskRequested = true; go(Place.PLANNER) }
@@ -235,9 +235,9 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
         val open = { section: CareSection -> go(Place.CARE); model.careSection = section }
         when {
             next != null -> StepRow(next.title, "Done") { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(next.id) }
-            today.isNotEmpty() -> StepRow("Routines done for today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
+            today.isNotEmpty() -> StepRow("Routines done for today. A calm break is always there.", "Calm break", Pixel.Tone) { open(CareSection.CALM) }
             model.careData.routines.none { !it.archived } -> StepRow("Small things you do for yourself, like a glass of water.", "Add a routine", Pixel.Green) { open(CareSection.ROUTINES) }
-            else -> StepRow("No routines today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
+            else -> StepRow("No routines today. A calm break is always there.", "Calm break", Pixel.Tone) { open(CareSection.CALM) }
         }
     }
 }
@@ -502,7 +502,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
                             store.completeMiniQuest(q.id)
                             model.effect(Sfx.FOCUS_START); store.startFocus(FocusRules.justFiveMinutes().minutesRoundedUp, deepFocus = false, taskId = oldest.id)
                             go(Place.FOCUS)
-                        }, color = Pixel.Blue, compact = true)
+                        }, color = Pixel.Tone, compact = true)
                         else -> PixelIconButton("check", "Done", { if (store.completeMiniQuest(q.id)) model.effect(Sfx.HEAL) }, Pixel.Green)
                     }
                 }

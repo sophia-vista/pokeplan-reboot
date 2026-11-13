@@ -67,7 +67,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
         if (rates == null) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(status.ifEmpty { "No rates yet. Connect to the internet once to fetch them; they are kept for when you are offline." }, style = MaterialTheme.typography.bodyLarge)
-                PixelButton("Fetch rates", { refresh() }, Modifier.fillMaxWidth(), Pixel.Blue)
+                PixelButton("Fetch rates", { refresh() }, Modifier.fillMaxWidth(), Pixel.Tone)
             }
             return@TextBox
         }
@@ -126,12 +126,12 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 FieldLabel("A rate you were offered ($foreign per 1 $home)")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), placeholder = "Your rate", error = if (manualText.isNotBlank() && manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() } == null) "Enter a rate above 0, like 56.2." else null)
-                    PixelButton("Use", { manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() }?.let { v -> store.changeGear { g -> g.copy(manualRates = g.manualRates + (foreign to v)) } } }, Modifier.weight(0.5f), Pixel.Blue, compact = true)
+                    PixelButton("Use", { manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() }?.let { v -> store.changeGear { g -> g.copy(manualRates = g.manualRates + (foreign to v)) } } }, Modifier.weight(0.5f), Pixel.Tone, compact = true)
                     PixelIconButton("close", "Clear", { manualText = ""; store.changeGear { g -> g.copy(manualRates = g.manualRates - foreign) } }, Pixel.InkSoft)
                 }
             }
 
-            PixelButton(if (showCost) "Hide what it really costs" else "What it really costs", { showCost = !showCost }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+            PixelButton(if (showCost) "Hide what it really costs" else "What it really costs", { showCost = !showCost }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
             if (showCost) {
                 var priceText by remember { mutableStateOf("") }
                 var percentText by remember { mutableStateOf(if (gear.feePercent > 0) CalcEngine.format(gear.feePercent) else "") }

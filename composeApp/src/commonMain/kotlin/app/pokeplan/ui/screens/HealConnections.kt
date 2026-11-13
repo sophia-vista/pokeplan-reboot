@@ -70,7 +70,7 @@ internal fun HealConnectionsView(model: AppModel) {
                 PixelButton(if (connected) "Change what Heal may read" else "Allow in Health Connect", {
                     heal.setHealthKinds(draft)
                     if (draft.isNotEmpty()) health.request(draft) { granted = it; note = if (it.isEmpty()) "Nothing was allowed. Heal reads nothing, and everything you logged is still here." else null }
-                }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = draft.isNotEmpty(), compact = true)
+                }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = draft.isNotEmpty(), compact = true)
                 if (connected) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         TabButton("Last 7 days", days == 7, { days = 7 }, Modifier.weight(1f))
@@ -87,7 +87,7 @@ internal fun HealConnectionsView(model: AppModel) {
                                 else { pending = read; if (read.failed) note = "Only part of it could be read. You can add what came and try again later." }
                             }
                         }
-                    }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = !busy, compact = true, loading = busy)
+                    }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = !busy, compact = true, loading = busy)
                     Text(
                         if (settings.healthLastSyncMillis > 0) "Last read: ${settings.healthLastSyncMillis.shortDate()}. Records change only when you read again." else "Nothing has been read yet.",
                         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
@@ -182,7 +182,7 @@ private fun ImportPreview(plan: ImportPlan, onAdd: () -> Unit, onCancel: () -> U
             Text("Added records are marked as imported and never earn a find.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            if (!plan.isEmpty) PixelButton("Add them", onAdd, Modifier.weight(1f), Pixel.Blue, compact = true)
+            if (!plan.isEmpty) PixelButton("Add them", onAdd, Modifier.weight(1f), Pixel.Tone, compact = true)
             PixelButton(if (plan.isEmpty) "Close" else "Not now", onCancel, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
     }

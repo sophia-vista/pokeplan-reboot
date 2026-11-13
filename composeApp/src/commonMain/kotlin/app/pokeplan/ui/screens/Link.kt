@@ -382,10 +382,10 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     val contact = model.phone?.takeIf { it.canContact }
     if (contact != null && (p.phone.isNotBlank() || p.email.isNotBlank())) Actions {
         if (p.phone.isNotBlank()) {
-            PixelButton("Call", { contact.call(p.phone) }, Modifier.weight(1f), Pixel.Blue, compact = true)
-            PixelButton("Message", { contact.message(p.phone) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+            PixelButton("Call", { contact.call(p.phone) }, Modifier.weight(1f), Pixel.Tone, compact = true)
+            PixelButton("Message", { contact.message(p.phone) }, Modifier.weight(1f), Pixel.Tone, compact = true)
         }
-        if (p.email.isNotBlank()) PixelButton("Email", { contact.email(p.email) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+        if (p.email.isNotBlank()) PixelButton("Email", { contact.email(p.email) }, Modifier.weight(1f), Pixel.Tone, compact = true)
     }
     Actions {
         PixelButton("Edit", onEdit, Modifier.weight(1f), accent, compact = true)

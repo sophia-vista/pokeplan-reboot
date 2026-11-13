@@ -61,7 +61,10 @@ import app.pokeplan.ui.theme.TextBox
 
 /** [openPokemon] shows a Pokémon on the Pokémon tab: the one that just hatched. */
 @Composable
-fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack: (() -> Unit)? = null) {
+fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack: (() -> Unit)? = null) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.PLAN) { FocusBody(model, openPokemon, onBack) }
+
+@Composable
+private fun FocusBody(model: AppModel, openPokemon: ((String) -> Unit)?, onBack: (() -> Unit)?) {
     val session = model.data.focus
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Focus", subtitle = if (session?.deepFocus == true) "Deep Focus" else null, icon = "mystery-egg", onBack = onBack, color = ModuleAccent.PLAN.header)
@@ -120,7 +123,7 @@ private fun FailedBox(model: AppModel, reason: FailReason?) {
                     model.effect(Sfx.FOCUS_START)
                     model.store.dismissFocusEnd()
                     model.store.startFocus(FocusRules.RETRY_MINUTES, deepFocus = false)
-                }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                }, Modifier.weight(1f), Pixel.Tone, compact = true)
                 PixelButton("Not now", { model.store.dismissFocusEnd() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
@@ -163,7 +166,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
                 var custom by remember { mutableStateOf(minutes !in listOf(15, 25, 45, 60)) }
                 if (!custom) TabButton("Another length", false, { custom = true }, Modifier.fillMaxWidth())
                 else PixelDurationField(
-                    minutes, { if (it != null) minutes = it }, Pixel.Blue, presets = emptyList(),
+                    minutes, { if (it != null) minutes = it }, Pixel.Tone, presets = emptyList(),
                     min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
                 )
             }
@@ -306,9 +309,9 @@ private fun RunningView(model: AppModel) {
     val emergency = (session.phase as? Phase.Paused)?.reason == app.pokeplan.plan.PauseReason.EMERGENCY
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         if (emergency) {
-            PixelButton("Resume", { store.focusEvent(FocusEvent.EmergencyPauseEnded) }, Modifier.weight(1f), Pixel.Green)
+            PixelButton("Resume", { store.focusEvent(FocusEvent.EmergencyPauseEnded) }, Modifier.weight(1f), Pixel.Tone)
         } else {
-            PixelButton("Pause ($pausesLeft)", { store.focusEvent(FocusEvent.EmergencyPauseStarted) }, Modifier.weight(1f), Pixel.Blue, enabled = pausesLeft > 0 && !paused)
+            PixelButton("Pause ($pausesLeft)", { store.focusEvent(FocusEvent.EmergencyPauseStarted) }, Modifier.weight(1f), Pixel.Tone, enabled = pausesLeft > 0 && !paused)
         }
         // Giving up is the way out, not the thing to do, so it stays the quiet button; a first tap asks, a second within four seconds gives up.
         var sure by remember { mutableStateOf(false) }

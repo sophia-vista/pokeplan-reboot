@@ -211,7 +211,7 @@ private fun MovesBox(model: AppModel, p: OwnedPokemon) = DetailBox("Moves") {
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        PixelButton(if (choosing) "Close" else "Choose", { choosing = !choosing }, Modifier.weight(1f), Pixel.Blue, compact = true)
+        PixelButton(if (choosing) "Close" else "Choose", { choosing = !choosing }, Modifier.weight(1f), Pixel.Tone, compact = true)
         if (p.moves.isNotEmpty()) PixelButton("Natural", { store.setMoves(p.id, emptyList()) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
     }
     if (choosing) {
@@ -287,7 +287,7 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     // Minimum widths, not fixed sizes, so large text grows the labels instead of clipping them.
                     Text(statNames[i] + mark, Modifier.widthIn(min = 92.dp), style = soft)
-                    Box(Modifier.weight(1f)) { PixelBar(values[i] / 300f, color = if (i == 0) Pixel.Green else Pixel.Blue) }
+                    Box(Modifier.weight(1f)) { PixelBar(values[i] / 300f, color = if (i == 0) Pixel.Green else Pixel.Tone) }
                     Text("${values[i]}", Modifier.widthIn(min = 44.dp), style = soft, textAlign = TextAlign.End)
                 }
             }

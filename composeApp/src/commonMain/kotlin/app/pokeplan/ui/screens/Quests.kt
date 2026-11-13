@@ -86,10 +86,10 @@ private fun QuestCard(model: AppModel, quest: Quest) {
             store.questProgress(quest).forEach { (req, now) ->
                 val shown = now.coerceAtMost(req.target)
                 Text("${req.text}: $shown of ${req.target}", style = MaterialTheme.typography.bodyMedium)
-                PixelBar(shown.toFloat() / req.target, color = if (shown >= req.target) Pixel.Green else Pixel.Blue, label = "${req.text}: $shown of ${req.target}")
+                PixelBar(shown.toFloat() / req.target, color = if (shown >= req.target) Pixel.Green else Pixel.Tone, label = "${req.text}: $shown of ${req.target}")
             }
             when {
-                state == null -> PixelButton("Take on this quest", { store.acceptQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = store.activeQuests.size < Quests.MAX_ACTIVE, compact = true)
+                state == null -> PixelButton("Take on this quest", { store.acceptQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = store.activeQuests.size < Quests.MAX_ACTIVE, compact = true)
                 ready -> PixelButton("Welcome ${Dex.species(quest.speciesId).name}", { store.claimQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Green)
             }
         }

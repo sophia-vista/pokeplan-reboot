@@ -125,7 +125,7 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(HealSection.HYDRATION.name, HealSection.HYDRATION.icon, "Hydration", hydrationDetail(model), tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.SLEEP.name, HealSection.SLEEP.icon, "Sleep", if (data.sleep.isEmpty()) "log a night" else "${data.sleep.size} nights", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.BODY.name, HealSection.BODY.icon, "Body", if (data.measurements.isEmpty()) "optional" else "${data.measurements.size} entries", tint = ModuleAccent.HEAL.accent),
-                    MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", if (data.goals.none { it.status == GoalStatus.ACTIVE }) "optional" else "${data.goals.count { it.status == GoalStatus.ACTIVE }} active", tint = Pixel.Warning),
+                    MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", if (data.goals.none { it.status == GoalStatus.ACTIVE }) "optional" else "${data.goals.count { it.status == GoalStatus.ACTIVE }} active", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.CONNECTIONS.name, HealSection.CONNECTIONS.icon, "Connections", if (data.settings.healthKinds.isEmpty()) "optional" else "Health Connect", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", "Field Research, reminders, your data", tint = Pixel.InkSoft),
                 ),
@@ -168,7 +168,7 @@ private fun TodayCard(model: AppModel) {
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Log activity", { model.healSection = HealSection.ACTIVITY }, Modifier.weight(1f), ModuleAccent.HEAL.accent, compact = true)
-                PixelButton("Add a drink", { model.healSection = HealSection.HYDRATION }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                PixelButton("Add a drink", { model.healSection = HealSection.HYDRATION }, Modifier.weight(1f), Pixel.Tone, compact = true)
             }
         }
     }
@@ -222,7 +222,7 @@ private fun ActivityView(model: AppModel) {
                 )
                 PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             }
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = (minutes ?: 0) > 0)
+            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = (minutes ?: 0) > 0)
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -280,7 +280,7 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
                     PixelButton("Cancel", { editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.Tone, compact = true)
                 PixelButton("Delete", { val before = model.healData; model.heal.deleteActivity(a.id); model.offerUndo("Deleted: activity") { model.heal.restore(before) }; onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
@@ -319,18 +319,18 @@ private fun HydrationView(model: AppModel) {
             )
             Text(if (total == null) "Nothing logged yet" else ml(total), style = MaterialTheme.typography.titleSmall)
             data.settings.hydrationTargetMl?.let { target ->
-                PixelBar(((total ?: 0).toFloat() / target).coerceIn(0f, 1f), color = Pixel.Blue, label = "Your own target: ${ml(target)}")
+                PixelBar(((total ?: 0).toFloat() / target).coerceIn(0f, 1f), color = Pixel.Tone, label = "Your own target: ${ml(target)}")
                 Text(if ((total ?: 0) >= target) "You reached the target you set." else "Your target is ${ml(target)}. No rush.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf(150, 250, 330, 500).forEach { v -> PixelButton("+$v ml", { add(v) }, color = Pixel.Blue, compact = true) }
+                listOf(150, 250, 330, 500).forEach { v -> PixelButton("+$v ml", { add(v) }, color = Pixel.Tone, compact = true) }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(
                     custom, { custom = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), singleLine = true, placeholder = "Another amount (ml)",
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
-                PixelButton("Add", { custom.toIntOrNull()?.let(::add) }, color = Pixel.Green, enabled = custom.toIntOrNull() != null, compact = true)
+                PixelButton("Add", { custom.toIntOrNull()?.let(::add) }, color = Pixel.Tone, enabled = custom.toIntOrNull() != null, compact = true)
             }
             message?.let { Report(model, it, NoticeTone.WARNING) }
         }
@@ -359,7 +359,7 @@ private fun DrinkRow(model: AppModel, d: HydrationEntry) {
     var error by remember(d.id) { mutableStateOf<String?>(null) }
     ListRow(
         trail = {
-            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Blue, compact = true)
+            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Tone, compact = true)
             PixelButton("Delete", { val before = model.healData; heal.deleteDrink(d.id); model.offerUndo("Deleted: drink") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
         },
     ) {
@@ -409,7 +409,7 @@ private fun SleepView(model: AppModel) {
                 if (woke > asleep) "Slept for ${HealRules.duration(((woke - asleep) / 60_000L).toInt())}." else "Waking up has to be after falling asleep.",
                 style = MaterialTheme.typography.bodyLarge, color = if (woke > asleep) Pixel.Ink else Pixel.Danger,
             )
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = woke > asleep)
+            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = woke > asleep)
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -419,7 +419,7 @@ private fun SleepView(model: AppModel) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("Wake-up alarm")
                 PixelTimeField(alarm, { it?.let { t -> alarm = t } }, ModuleAccent.HEAL.accent, label = "Ring at")
-                PixelButton("Set the alarm", { phone.setAlarm(alarm.hour, alarm.minute, "PokéLife") }, Modifier.fillMaxWidth(), Pixel.Blue)
+                PixelButton("Set the alarm", { phone.setAlarm(alarm.hour, alarm.minute, "PokéLife") }, Modifier.fillMaxWidth(), Pixel.Tone)
             }
         }
     }
@@ -444,7 +444,7 @@ private fun NightRow(model: AppModel, s: SleepRecord) {
     var error by remember(s.id) { mutableStateOf<String?>(null) }
     ListRow(
         trail = {
-            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Blue, compact = true)
+            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Tone, compact = true)
             PixelButton("Delete", { val before = model.healData; heal.deleteSleep(s.id); model.offerUndo("Deleted: sleep") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
         },
     ) {
@@ -519,7 +519,7 @@ private fun BodyView(model: AppModel) {
                 else if (type.units.first().isNotEmpty()) Text(type.units.first(), style = MaterialTheme.typography.bodyLarge)
             }
             PixelMomentField(at ?: model.store.nowMillis, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When")
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = value.isNotBlank())
+            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = value.isNotBlank())
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -551,7 +551,7 @@ private fun MeasurementRow(model: AppModel, m: Measurement) {
     var error by remember(m.id) { mutableStateOf<String?>(null) }
     ListRow(
         trail = {
-            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Blue, compact = true)
+            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Tone, compact = true)
             PixelButton("Delete", { val before = model.healData; heal.deleteMeasurement(m.id); model.offerUndo("Deleted: measurement") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
         },
     ) {
@@ -591,7 +591,7 @@ private fun GoalsHealView(model: AppModel) {
                 GoalKind.entries.forEach { k -> TabButton(k.label, k == kind, { kind = k }) }
             }
             PixelField(target, { target = it.filter(Char::isDigit).take(5) }, Modifier.fillMaxWidth(), label = "Target (${kind.unit})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-            PixelButton("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = "" } }, Modifier.fillMaxWidth(), Pixel.Green, enabled = HealRules.goalTargetOk(kind, target.toIntOrNull() ?: 0))
+            PixelButton("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = "" } }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = HealRules.goalTargetOk(kind, target.toIntOrNull() ?: 0))
         }
     }
     if (data.goals.isEmpty()) EmptyState("No goals", "Heal works fine without one.", icon = HealSection.GOALS.icon, addAbove = "Add a goal")
@@ -602,11 +602,11 @@ private fun GoalsHealView(model: AppModel) {
                 Text("${g.kind.label}: ${g.target}", style = MaterialTheme.typography.bodyLarge)
                 if (g.status == GoalStatus.PAUSED) Text("Paused", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 else {
-                    PixelBar(p.fraction, color = if (p.met) Pixel.Green else Pixel.Blue, label = if (p.done == null) "Nothing logged yet" else "${p.done} of ${g.target} ${g.kind.unit} so far")
+                    PixelBar(p.fraction, color = if (p.met) Pixel.Green else Pixel.Tone, label = if (p.done == null) "Nothing logged yet" else "${p.done} of ${g.target} ${g.kind.unit} so far")
                     Text(if (p.done == null) "Nothing logged yet" else if (p.met) "Reached" else "${p.done} of ${g.target} ${g.kind.unit} so far", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelButton(if (g.status == GoalStatus.PAUSED) "Resume" else "Pause", { heal.setGoalStatus(g.id, if (g.status == GoalStatus.PAUSED) GoalStatus.ACTIVE else GoalStatus.PAUSED) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                    PixelButton(if (g.status == GoalStatus.PAUSED) "Resume" else "Pause", { heal.setGoalStatus(g.id, if (g.status == GoalStatus.PAUSED) GoalStatus.ACTIVE else GoalStatus.PAUSED) }, Modifier.weight(1f), Pixel.Tone, compact = true)
                     PixelButton("Put away", { heal.setGoalStatus(g.id, GoalStatus.ARCHIVED) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     PixelButton("Delete", { val before = model.healData; heal.deleteGoal(g.id); model.offerUndo("Deleted: goal") { heal.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
@@ -644,7 +644,7 @@ private fun HealSettingsView(model: AppModel) {
                 helper = "Heal never sets one for you.",
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Save target", { heal.setHydrationTarget(target.toIntOrNull()) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                PixelButton("Save target", { heal.setHydrationTarget(target.toIntOrNull()) }, Modifier.weight(1f), Pixel.Tone, compact = true)
                 PixelButton("No target", { target = ""; heal.setHydrationTarget(null) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
             PixelTitle("Reminders")
@@ -658,7 +658,7 @@ private fun HealSettingsView(model: AppModel) {
             if (settings.hydrationReminders.size < HealSettings.MAX_REMINDERS) {
                 var next by remember(settings.hydrationReminders) { mutableStateOf(if (settings.hydrationReminders.isEmpty()) LocalTime(10, 0) else shift(settings.hydrationReminders.last(), 120)) }
                 PixelTimeField(next, { it?.let { t -> next = t } }, ModuleAccent.HEAL.accent, label = "New reminder")
-                PixelButton("Add a reminder at ${clockText(next)}", { heal.setHydrationReminders(settings.hydrationReminders + next) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                PixelButton("Add a reminder at ${clockText(next)}", { heal.setHydrationReminders(settings.hydrationReminders + next) }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
             }
         }
     }
@@ -680,7 +680,7 @@ private fun HealSettingsView(model: AppModel) {
             )
             val files = model.files
             if (files != null) {
-                PixelButton("Export everything", { note = files.save("pokelife-heal.json", heal.export()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                PixelButton("Export everything", { note = files.save("pokelife-heal.json", heal.export()) }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     HealKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-heal-${k.name.lowercase()}.json", heal.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }

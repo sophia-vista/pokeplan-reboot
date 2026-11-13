@@ -396,7 +396,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
     )
     if (doing == CareAction.WORDS) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        kindWords.forEach { words -> PixelButton(words, { act(CareAction.WORDS) }, color = Pixel.Green, compact = true) }
+        kindWords.forEach { words -> PixelButton(words, { act(CareAction.WORDS) }, color = Pixel.Tone, compact = true) }
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         if (visit != null) {
@@ -404,13 +404,13 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
                 val chosen = doing == given
                 PixelButton(
                     given.label(), { doing = if (chosen) null else given; swept = 0f },
-                    color = if (chosen) Pixel.Blue else Pixel.Green, enabled = given !in visit.actions, compact = true,
+                    color = if (chosen) Pixel.Tone else Pixel.Green, enabled = given !in visit.actions, compact = true,
                 )
             }
             PixelIconButton("check", "Leave the visit", { leave() }, Pixel.InkSoft)
         } else {
             Play.entries.forEach { kind ->
-                PixelButton(kind.label, { play = if (play == kind) null else kind }, color = if (play == kind) Pixel.Blue else Pixel.Green, compact = true)
+                PixelButton(kind.label, { play = if (play == kind) null else kind }, color = if (play == kind) Pixel.Tone else Pixel.Tone, compact = true)
             }
             PixelIconButton("check", "Done", { say(null); onClose() }, Pixel.InkSoft)
         }

@@ -332,7 +332,7 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
             listOf(base.hp, base.attack, base.defense, base.spAttack, base.spDefense, base.speed).forEachIndexed { i, v ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text(statNames[i], Modifier.size(width = 84.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium)
-                    Box(Modifier.weight(1f)) { PixelBar(v / 200f, color = if (i == 0) Pixel.Green else Pixel.Blue) }
+                    Box(Modifier.weight(1f)) { PixelBar(v / 200f, color = if (i == 0) Pixel.Green else Pixel.Tone) }
                     Text("$v", Modifier.size(width = 44.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.End)
                 }
             }

@@ -104,7 +104,7 @@ internal fun SettingsView(model: AppModel) {
             androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { exact = phone.exactAlarms }
             if (!exact) {
                 Text("Android is not letting PokéLife set exact alarms, so reminders and timers can arrive minutes late.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-                PixelButton("Allow exact alarms", { phone.allowExactAlarms() }, Modifier.fillMaxWidth(), Pixel.Blue)
+                PixelButton("Allow exact alarms", { phone.allowExactAlarms() }, Modifier.fillMaxWidth(), Pixel.Tone)
             }
         }
         ToggleRow(
@@ -114,11 +114,11 @@ internal fun SettingsView(model: AppModel) {
         if (settings.reminders) {
             PixelTimeField(
                 settings.quietHours.start, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = it)) } } },
-                Pixel.Blue, label = "Quiet from",
+                Pixel.Tone, label = "Quiet from",
             )
             PixelTimeField(
                 settings.quietHours.end, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = it)) } } },
-                Pixel.Blue, label = "Quiet until",
+                Pixel.Tone, label = "Quiet until",
             )
             ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
         }
@@ -174,7 +174,7 @@ private fun CalendarsCard(model: AppModel) {
             )
             val list = calendars
             when {
-                !permitted -> PixelButton("Choose calendars", { source.requestPermission { permitted = it } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                !permitted -> PixelButton("Choose calendars", { source.requestPermission { permitted = it } }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 list == null -> Unit
                 list.isEmpty() -> Text("No calendars on this phone yet.", style = MaterialTheme.typography.bodyMedium)
                 else -> list.forEach { c ->
@@ -214,7 +214,7 @@ private fun BackupsCard(model: AppModel) {
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Tone, compact = true)
                 PixelButton("Save a copy", { backups.saveCopy(null) { note = it } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
             PixelButton(if (portable) "Not now" else "Save a copy that opens on any phone", { portable = !portable; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -227,7 +227,7 @@ private fun BackupsCard(model: AppModel) {
                     PixelButton("Save the copy", {
                         busy = true
                         backups.saveCopy(null, pass) { busy = false; note = it; if (it == "Saved.") { portable = false; pass = ""; again = "" } }
-                    }, Modifier.weight(1f), Pixel.Blue, enabled = !busy && pass.length >= backups.minPassphrase && pass == again, compact = true)
+                    }, Modifier.weight(1f), Pixel.Tone, enabled = !busy && pass.length >= backups.minPassphrase && pass == again, compact = true)
                     PixelButton(if (shown) "Hide" else "Show", { shown = !shown }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
@@ -274,7 +274,7 @@ private fun DataCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Your data", "download")
             model.files?.let { files ->
-                PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 PixelButton("Export Care data", { note = files.save("pokeplan-care-${store.today}.json", model.care.exportJson()) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
             when (asking) {
@@ -374,7 +374,7 @@ internal fun PlanSettings(model: AppModel) {
     SettingsGroup("Focus", "clock") {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
         PixelDurationField(
-            settings.defaultFocusMinutes, { m -> m?.let { store.changeSettings { s -> s.copy(defaultFocusMinutes = it) } } }, Pixel.Blue,
+            settings.defaultFocusMinutes, { m -> m?.let { store.changeSettings { s -> s.copy(defaultFocusMinutes = it) } } }, Pixel.Tone,
             label = "Usual focus length", presets = listOf(15, 25, 45, 60), min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
         )
     }

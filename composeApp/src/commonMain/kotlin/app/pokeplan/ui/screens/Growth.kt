@@ -113,7 +113,7 @@ internal fun GrowthView(model: AppModel) {
     }
     WeekBars(
         "Tasks finished per week", "Tasks ticked off in each of the last 6 weeks (weeks start on $weekStart).",
-        trend, { it.tasksDone }, { it.toString() }, Pixel.Blue,
+        trend, { it.tasksDone }, { it.toString() }, Pixel.Tone,
     )
     WeekBars(
         "Focus per week", "Minutes from finished sessions only; a session that went cold doesn't count.",
@@ -209,7 +209,7 @@ internal fun GoalsView(model: AppModel) {
                 // Optional, and only a date to aim for: nothing happens when it passes.
                 FieldLabel("Target date")
                 PixelDateField(
-                    targetDate, store.today, Pixel.Blue, { targetDate = it },
+                    targetDate, store.today, Pixel.Tone, { targetDate = it },
                     presets = listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date",
                 )
             }
@@ -276,7 +276,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
         CategoryChips(category) { category = it ?: category }
         FieldLabel("Target date")
         PixelDateField(
-            target, store.today, Pixel.Blue, { target = it },
+            target, store.today, Pixel.Tone, { target = it },
             presets = listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date",
         )
         g.milestones.forEach { m ->

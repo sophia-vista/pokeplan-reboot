@@ -51,7 +51,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
                     MenuGrid(
                         listOfNotNull(
                             MenuEntry("SETTINGS", "gb-sounds", "Settings", tint = Pixel.InkSoft),
-                            MenuEntry("HELP", "town-map", "Help", tint = Pixel.Blue),
+                            MenuEntry("HELP", "town-map", "Help", tint = Pixel.Tone),
                         ),
                     ) { key -> section = MeSection.valueOf(key) }
                 }
