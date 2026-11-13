@@ -166,11 +166,14 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SectionScaffold(
-    title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, color: Color = Pixel.Chrome, content: @Composable () -> Unit,
+    title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, color: Color = Pixel.Chrome,
+    /** A key at the end of the header (Upcoming's Calendar) in place of the section's icon. */
+    trailing: (@Composable () -> Unit)? = null,
+    content: @Composable () -> Unit,
 ) {
     BackHandler(enabled = true, onBack = onBack)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = onBack, color = color, trailing = { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
+        ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = onBack, color = color, trailing = trailing ?: { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),

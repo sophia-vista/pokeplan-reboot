@@ -15,8 +15,8 @@ object TaskViews {
     /** Open tasks with neither a planned date nor a due date (the Calendar's "No date" chips). */
     fun undated(tasks: List<Task>): List<Task> = open(tasks).filter { it.planned == null && it.due == null }
 
-    /** The Inbox, as in TickTick: open tasks not filed in a list, whatever their date. */
-    fun inbox(tasks: List<Task>): List<Task> = open(tasks).filter { it.listId == null }
+    /** The Inbox (PLAN.md section 3.2): open tasks in no list and with no date; a date or a list takes a task out of it. */
+    fun inbox(tasks: List<Task>): List<Task> = open(tasks).filter { it.listId == null && it.planned == null && it.due == null }
 
     /** Open tasks filed in the list [listId]. */
     fun inList(tasks: List<Task>, listId: String): List<Task> = open(tasks).filter { it.listId == listId }
@@ -68,10 +68,10 @@ object TaskViews {
     fun todaySplit(tasks: List<Task>, now: LocalDateTime): Pair<List<Task>, List<Task>> =
         today(tasks, now).partition { !isEvening(it) }
 
-    /** Open tasks planned or due in the next [days] days (not today), soonest first. */
-    fun upcoming(tasks: List<Task>, now: LocalDateTime, days: Int = 7): List<Task> {
+    /** Open tasks planned or due after today (within [days] days when given; Upcoming has no cap), soonest first. */
+    fun upcoming(tasks: List<Task>, now: LocalDateTime, days: Int? = null): List<Task> {
         val start = now.date
-        val end = start.plus(DatePeriod(days = days))
+        val end = days?.let { start.plus(DatePeriod(days = it)) } ?: LocalDate(9999, 12, 31)
         val todays = today(tasks, now).toSet()
         return open(tasks).filter { t ->
             val day = t.planned ?: t.due?.date

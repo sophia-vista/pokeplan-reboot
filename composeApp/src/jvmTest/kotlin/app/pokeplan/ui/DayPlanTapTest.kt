@@ -30,7 +30,7 @@ class DayPlanTapTest {
         store.addTask("Reply to mail", app.pokeplan.plan.Rank.E, planned = store.today)
         val model = AppModel(store)
         val scene = ImageComposeScene(width = 540, height = 2400, density = Density(1.5f, 1f)) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlannerScreen(model, startView = 1) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.CALENDAR, {}, {}, {}) } }
         }
         var nanos = 0L
         fun settle(n: Int = 30) = repeat(n) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(8) }

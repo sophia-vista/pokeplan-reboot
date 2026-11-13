@@ -36,11 +36,11 @@ class TaskViewsTest {
     }
 
     @Test
-    fun theInboxHoldsOpenTasksInNoListWhateverTheirDate() {
-        val filed = tasks.map { if (it.id == "today" || it.id == "inbox") it.copy(listId = "l1") else it }
-        val inbox = TaskViews.inbox(filed).map { it.id }
-        assertTrue("today" !in inbox && "inbox" !in inbox && "done" !in inbox && "farAway" in inbox)
-        assertEquals(setOf("today", "inbox"), TaskViews.inList(filed, "l1").map { it.id }.toSet())
+    fun theInboxHoldsOpenTasksWithNoListAndNoDate() {
+        val filed = tasks.map { if (it.id == "today") it.copy(listId = "l1") else it }
+        assertEquals(listOf("inbox"), TaskViews.inbox(filed).map { it.id })
+        assertTrue(TaskViews.inbox(filed.map { if (it.id == "inbox") it.copy(listId = "l1") else it }).isEmpty())
+        assertEquals(setOf("today"), TaskViews.inList(filed, "l1").map { it.id }.toSet())
     }
 
     @Test
@@ -80,7 +80,7 @@ class TaskViewsTest {
     @Test
     fun upcomingLooksAWeekAheadExcludingToday() {
         assertEquals(listOf("tomorrow", "nextWeek"), TaskViews.upcoming(tasks, now, 7).map { it.id })
-        assertEquals(listOf("tomorrow", "nextWeek", "farAway"), TaskViews.upcoming(tasks, now, 31).map { it.id })
+        assertEquals(listOf("tomorrow", "nextWeek", "farAway"), TaskViews.upcoming(tasks, now).map { it.id })
     }
 
     @Test

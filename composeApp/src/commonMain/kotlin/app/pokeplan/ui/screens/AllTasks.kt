@@ -20,7 +20,6 @@ import androidx.compose.ui.text.input.ImeAction
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskFilter
-import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
@@ -52,14 +51,14 @@ internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable 
                     placeholder = "Search",
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 )
+                // The Done preset (finished and won't-do tasks, latest first), as Things' Logbook; tap again for open tasks.
+                TabButton("Done", filter.status == TaskFilter.Status.FINISHED, { filter = filter.copy(status = if (filter.status == TaskFilter.Status.FINISHED) TaskFilter.Status.OPEN else TaskFilter.Status.FINISHED) })
                 PixelButton("Filter", { filtering = !filtering }, compact = true)
             }
             if (filtering) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("Status")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf("Open" to TaskState.OPEN, "Done" to TaskState.DONE, "Any" to null).forEach { (label, state) ->
-                    TabButton(label, filter.state == state, { filter = filter.copy(state = state) })
-                }
+                TaskFilter.Status.entries.forEach { st -> TabButton(st.label, filter.status == st, { filter = filter.copy(status = st) }) }
             }
             FieldLabel("Category")
             CategoryChips(filter.category, allowNone = true) { filter = filter.copy(category = it) }
@@ -81,7 +80,7 @@ internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable 
     val found = filter.apply(tasks)
     if (found.size > SHOWN) Text("Showing the first $SHOWN of ${found.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     if (found.isEmpty()) EmptyState(
-        if (filter.isNarrowed) "Nothing matches" else "No open tasks",
+        if (filter.status == TaskFilter.Status.FINISHED && filter.copy(status = TaskFilter.Status.OPEN) == TaskFilter()) "Nothing finished yet" else if (filter.isNarrowed) "Nothing matches" else "No open tasks",
         icon = "scope-lens",
         action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to onAdd,
     ) else TaskGroup(null, found.take(SHOWN), card = card)

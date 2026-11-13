@@ -18,7 +18,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import app.pokeplan.ui.theme.ToggleRow
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import kotlin.math.roundToInt
@@ -49,6 +48,8 @@ import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.semantics.heading
 
 /** The ranges the balance wheel can show (design.md, Growth). */
 private val growthRanges = listOf(7, 30, 90)
@@ -277,16 +278,26 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
 
 // ----- Weekly review --------------------------------------------------------------------------------------------------
 
+/** Progress: the weekly review as a card when one is ready, the trends, then past reviews (PLAN.md section 3). */
 @Composable
-internal fun ReviewView(model: AppModel) {
+internal fun ProgressView(model: AppModel) {
+    if (model.store.canReview()) ReviewCard(model)
+    GrowthView(model)
+    PastReviews(model)
+}
+
+/**
+ * This week's review: what the week held, each unfinished task with Move (to tomorrow), Later (to next week's first day) and
+ * Won't do, then the week's question and Finish, which pays a berry once a week.
+ */
+@Composable
+private fun ReviewCard(model: AppModel) {
     val store = model.store
-    if (!store.canReview()) {
-        TextBox { Text("This week's review is done", style = MaterialTheme.typography.bodyLarge) }
-        return
-    }
     val summary = store.reviewSummary()
     var note by remember { mutableStateOf("") }
-    var carry by remember { mutableStateOf(true) }
+    // The tasks this review already dealt with, so a task moved to a day still in this week leaves the list too.
+    var handled by remember(summary.weekStart) { mutableStateOf(setOf<String>()) }
+    var moved by remember(summary.weekStart) { mutableStateOf(setOf<String>()) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Your week")
@@ -309,26 +320,59 @@ internal fun ReviewView(model: AppModel) {
                     }
                 }
             }
-            if (summary.unfinished.isNotEmpty()) {
-                Text("${summary.unfinished.size} not finished yet", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
+        }
+    }
+    val unfinished = summary.unfinished.filter { it.id !in handled }
+    if (unfinished.isNotEmpty()) {
+        val tomorrow = store.today.plus(DatePeriod(days = 1))
+        val nextWeek = store.weekStart.plus(DatePeriod(days = 7))
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                PixelTitle("Not finished yet (${unfinished.size})")
+                unfinished.forEach { t ->
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        TaskTitleLine(t, MaterialTheme.typography.bodyLarge)
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            PixelButton("Move", { store.updateTask(t.copy(planned = tomorrow)); handled = handled + t.id; moved = moved + t.id }, Modifier.weight(1f), Pixel.Tone, compact = true)
+                            PixelButton("Later", { store.updateTask(t.copy(planned = nextWeek)); handled = handled + t.id; moved = moved + t.id }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            PixelButton("Won't do", {
+                                store.wontDo(t.id); handled = handled + t.id
+                                model.offerUndo("Won't do: ${t.title}") { store.reopen(t.id); handled = handled - t.id }
+                            }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        }
+                    }
+                }
             }
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(Reviews.promptFor(store.weekStart), style = MaterialTheme.typography.bodyLarge)
-            PixelField(
-                note, { note = it }, Modifier.fillMaxWidth(),
-                placeholder = "Note",
-            )
-            if (summary.unfinished.isNotEmpty()) {
-                ToggleRow("Carry unfinished to tomorrow", carry) { carry = it }
-            }
-            PixelButton("Finish the review", {
-                store.completeReview(note, if (carry) store.today.plus(DatePeriod(days = 1)) else null)
-            }, Modifier.fillMaxWidth())
+            PixelField(note, { note = it }, Modifier.fillMaxWidth(), placeholder = "Note")
+            PixelButton("Finish the review", { store.completeReview(note, movedIds = moved) }, Modifier.fillMaxWidth())
         }
     }
 }
+
+/** The weeks already reviewed, newest first, with the note written then. */
+@Composable
+private fun PastReviews(model: AppModel) {
+    val reviews = model.data.reviews.sortedByDescending { it.weekStart }.take(PAST_REVIEWS_SHOWN)
+    if (reviews.isEmpty()) return
+    Text("Past reviews", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Spacing.S).semantics { heading() })
+    TextBox {
+        Column {
+            reviews.forEachIndexed { i, r ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                Column(Modifier.fillMaxWidth().padding(vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Text("Week of ${r.weekStart.short()}", style = MaterialTheme.typography.bodyLarge)
+                    r.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+                }
+            }
+        }
+    }
+}
+
+private const val PAST_REVIEWS_SHOWN = 12
 
 // ----- Settings -------------------------------------------------------------------------------------------------------
