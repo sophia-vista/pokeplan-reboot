@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.174.1
+
+Automated Android tests, first slice (REP-033; owner: automated tests over manual phone checks).
+
+- **Fixed: a damaged database was wiped instead of recovered.** androidx's SQLite helper deletes a database it finds corrupt and opens an empty one, so the app's own recovery (the damaged file kept aside, the newest daily backup put back) never ran and the app would have opened empty. `AndroidDatabase` now leaves the file alone and reports the damage, and `LiveStore` recovers as designed.
+- **`androidApp` has tests**, on the JVM with Robolectric (`./gradlew :androidApp:testDebugUnitTest`, run by CI's Android step): the database cutover on the five 0.123.0 save fixtures, a process death, a corrupt and a newer-schema database, Heal, Mint and the daily backups sealed (checked in the raw database bytes) and failing closed without the Keystore key, the shared reminders (exact alarms with no title in them, Done and 10 min on the notification, quiet hours, a reminder missed while the phone was off, the boot, alarm and time-zone receivers), the Today widget's tick against the app's store, and a focus session across a process death.
+
 ## 0.174.0
 
 The UI/UX review of every screen (REP-031) and its fixes, against Laws of UX, Laws of UI and the owner's bar: "as simple as Linear or Apple Notes; cut taglines, helper text and secondary labels; if a screen needs them, fix the layout." `RewardRules.VERSION` is 22 (one rule change, below).
