@@ -33,3 +33,31 @@ interface HealthSource {
 interface TextFileChooser {
     fun choose(done: (name: String?, text: String?, problem: String?) -> Unit)
 }
+
+/** What the phone lets the Huawei Health reader do right now, rechecked on every look (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
+data class HuaweiReaderState(val installed: Boolean, val screenReading: Boolean, val notificationReading: Boolean, val walking: Boolean)
+
+/**
+ * Reading Huawei Health on the phone, probe stage (INTEGRATIONS_AND_PRIVACY.md 5.2.2): an accessibility service for `com.huawei.health` only and a notification
+ * listener that drops every other app's notifications. What it sees is held in memory and never saved. Only the Android app provides one.
+ */
+interface HuaweiReader {
+    fun state(): HuaweiReaderState
+
+    /** Everything captured since the last [clear]. */
+    fun seen(): app.pokeplan.app.HuaweiSeen
+
+    fun clear()
+
+    /** Opens Huawei Health, scrolls its first page to the end capturing each step, and comes back. [done] gets null, or what stopped it in words, on the main thread. */
+    fun walk(done: (String?) -> Unit)
+
+    /** Android's Accessibility settings, where the player turns screen reading on. */
+    fun openScreenReadingSettings()
+
+    /** Android's Notification access settings. */
+    fun openNotificationSettings()
+
+    /** This app's App info page, where Android 13 and later hide "Allow restricted settings" for a sideloaded app. */
+    fun openAppInfo()
+}

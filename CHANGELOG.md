@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.183.0
+
+Reading Huawei Health on the phone, probe stage (REP-046, owner decision 14 November 2026, `INTEGRATIONS_AND_PRIVACY.md` 5.2.2). Nothing is saved or paid yet, so nothing stored on the phone changes.
+
+- **Heal → Connections → Huawei Health.** Two readers you turn on in Android's settings: screen reading (an accessibility service declared for Huawei Health only) and notification reading (drops every other app's notifications before reading them). On Android 13 and later, a sideloaded app needs App info → ⋮ → Allow restricted settings first; the page links there.
+- **Read Huawei Health** opens it, scrolls its first page to the end, capturing each step, and comes back (at most 12 scrolls or 30 seconds; it never taps or types). Pages you open in Huawei Health yourself are captured too.
+- **What it saw** is shown on the page, with the step count from Huawei Health's notification, held in memory only. **Copy, numbers hidden** puts the capture on the clipboard with every digit replaced by `#`, to share as the sample the parsers will be written against.
+- Decided for the next step: workouts, sleep and weight read this way go into Heal's existing records and pay like manual ones (with a `RewardRules.VERSION` bump then); English labels only.
+
 ## 0.182.0
 
 Evolution methods, items and the shop (owner, 14 November 2026). `RewardRules.VERSION` 23: the life modules drop items. Nothing stored on the phone needs a migration (new optional fields).

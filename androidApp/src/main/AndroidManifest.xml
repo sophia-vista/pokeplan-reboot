@@ -143,5 +143,13 @@
         <service android:name=".FocusTile" android:exported="true" android:label="Focus" android:icon="@drawable/ic_tile_timer" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
         </service>
+        <!-- Heal's Huawei Health probe (INTEGRATIONS_AND_PRIVACY.md 5.2.2): both off until turned on in Android's settings; Huawei Health only. -->
+        <service android:name=".huawei.HuaweiScreenService" android:exported="true" android:label="@string/huawei_reader_label" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter><action android:name="android.accessibilityservice.AccessibilityService" /></intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/huawei_reader" />
+        </service>
+        <service android:name=".huawei.HuaweiNotificationService" android:exported="false" android:label="@string/huawei_reader_label" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter><action android:name="android.service.notification.NotificationListenerService" /></intent-filter>
+        </service>
     </application>
 </manifest>

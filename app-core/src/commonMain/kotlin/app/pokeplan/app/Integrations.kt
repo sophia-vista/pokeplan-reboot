@@ -65,8 +65,8 @@ object Integrations {
         ),
         IntegrationInfo(
             "huawei", "Huawei Watch Fit 4 Pro", IntegrationClass.UNSUPPORTED, IntegrationStatus.UNSUPPORTED,
-            "Not verified, and there is no direct link to the watch. Huawei Health is reported not to write into Health Connect itself, so nothing may arrive from it.",
-            "Whatever Huawei Health or another app writes into Health Connect is read like any other app's, and each record shows the app it came from.",
+            "Not verified, and there is no direct link to the watch. Huawei Health is reported not to write into Health Connect itself. A test on this phone reads Huawei Health's own pages and notification when you allow it, and saves nothing yet.",
+            "Whatever Huawei Health or another app writes into Health Connect is read like any other app's, and each record shows the app it came from. The test shows the text of Huawei Health's pages and its step count, in memory only.",
             "Huawei's own Health Kit needs a developer registration and Huawei's approval before any app can use it, and the watch's steps, workouts, sleep and weight have not been tested here. A separate app you install yourself may copy Huawei data into Health Connect; Heal does not depend on one and has not checked any.",
         ),
     )

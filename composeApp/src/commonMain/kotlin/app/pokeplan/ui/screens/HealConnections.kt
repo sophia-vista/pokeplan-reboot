@@ -54,6 +54,7 @@ internal fun HealConnectionsView(model: AppModel) {
 
     // Help: Health Connect is read only, only on Read now, the 30 days before first access at most; imported records never earn a Field Research find.
     // Help: Not read: steps, heart rate, blood oxygen, calories, sleep stages, nutrition. Huawei Health is read only if it writes into Health Connect.
+    // Help: Huawei Health (test): with screen and notification reading on, Read Huawei Health opens it, scrolls its first page and shows what it saw, held in memory only and never saved; Copy hides every number.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Integrations.heal(availability, settings.healthKinds, granted).forEachIndexed { i, info ->
@@ -65,6 +66,8 @@ internal fun HealConnectionsView(model: AppModel) {
             }
         }
     }
+
+    model.huawei?.let { HuaweiProbeBox(model, it) }
 
     if (health != null && availability == ProviderAvailability.AVAILABLE) {
         TextBox {
