@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_AAMARUDO	Talk	Let's try again.
+NPC_AAMARUDO	Talk	We'll get there this time.
+NPC_AAMARUDO	Talk	We're almost there.

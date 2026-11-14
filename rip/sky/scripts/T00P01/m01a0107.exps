@@ -1,0 +1,20 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEINW);
+    message_Talk({
+        english="""
+            I've given up on trying to turn back into
+            [c_kind:NPC_TEST006].
+        """,
+    });
+    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english="""
+            From now on, I'm living as [c_kind:NPC_TEST007].
+            Pleased to meet you.
+        """,
+    });
+    JumpCommon(CORO_END_TALK);
+}

@@ -1,0 +1,28 @@
+
+def 0 {
+    back2_SetMode(5);
+    back_SetGround(LEVEL_S13P05A);
+    supervision_Acting(0);
+    WaitBgmSignal();
+    SetOutputAttribute<object OBJECT_S13P05A1_351>(8);
+    SetAnimation<object OBJECT_S13P05A1_351>(9);
+    camera_SetMyself<performer 0>();
+    SetPositionOffset<performer 0>(0, -100);
+    MovePositionMark<performer 0>(1, Position<'m0', 19.5, 47.5>);
+    back_SetBackScrollOffset(0, -70);
+    back_SetBackScrollSpeed(0.6992, 0);
+    SetPositionOffset<object OBJECT_S13P05A1_351>(0, -50);
+    MovePositionMark<object OBJECT_S13P05A1_351>(0.5, Position<'m1', 19.5, 47.5>);
+    SetAnimation<object OBJECT_S05P04A1_171>(17);
+    screen2_FadeIn(0, 30);
+    screen_FadeIn(1, 30);
+    Wait(20);
+    SetAnimation<object OBJECT_S13P05A1_351>(17);
+    back_SetBackEffect(3);
+    WaitExecutePerformer(0);
+    Wait(25);
+    screen2_WhiteOut(0, 60);
+    screen_WhiteOut(1, 30);
+    back2_SetMode(0);
+    end;
+}

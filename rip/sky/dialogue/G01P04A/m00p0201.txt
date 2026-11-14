@@ -1,0 +1,4 @@
+speaker	kind	line
+ATTENDANT1	Talk	Oh, it's Croagunk!
+ATTENDANT1	Talk	Croagunk...Swap Shop?
+NPC_GUREGGURU	Talk	Meh-heh-heh! You heard right.

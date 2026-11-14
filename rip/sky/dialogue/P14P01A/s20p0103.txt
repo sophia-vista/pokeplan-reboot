@@ -1,0 +1,6 @@
+speaker	kind	line
+ATTENDANT1	Talk	Why can you not evolve...?
+ATTENDANT1	Talk	Distortion? The fabric of space?
+ATTENDANT1	Talk	Why that should be, I do not know...
+ATTENDANT1	Talk	Huh?!  too?!
+ATTENDANT1	Talk	What?!  too?!

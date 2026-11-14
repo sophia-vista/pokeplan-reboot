@@ -1,0 +1,320 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oooh, I must have it! The [CS:I]Lost
+                Loot[CR] calls to me!
+            """,
+        });
+        message_Talk({
+            english=" The [CS:I]Lost Loot[CR] is rightfully mine!",
+        });
+        message_Close();
+        @label_131;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] || scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] || scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] || scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] || scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I discovered there's something
+                I find more desirable than the [CS:I]Golden Apple[CR]!
+            """,
+        });
+        message_Talk({
+            english=" And that is...[K]the [CS:I]Lost Loot[CR]!",
+        });
+        message_Talk({
+            english="""
+                 We've heard rumors that the
+                incredibly valuable [CS:I]Lost Loot[CR] is buried
+                somewhere!
+            """,
+        });
+        message_Talk({
+            english=" Do you know anything of it?",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] || scn($SCENARIO_MAIN) >= [29, 56] || scn($SCENARIO_MAIN) >= [29, 55] || scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] || scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" I want a [CS:I]Golden Apple[CR]!",
+        });
+        message_Talk({
+            english=" Oooh, I must have it!",
+        });
+        message_Talk({
+            english="""
+                 ...[K]But there's been precious
+                little information about it.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We were looking for hidden
+                treasure buried on [CS:P]Sky Peak[CR] but didn't
+                find any.
+            """,
+        });
+        message_Talk({
+            english="""
+                 But we found some very shiny,
+                sparkly treasure, so I'm satisfied!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The 6th Station Clearing seems
+                kind of empty...
+            """,
+        });
+        message_Talk({
+            english="""
+                 The 2nd Station Clearing was
+                very busy and just gorgeous...
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We're more interested in
+                treasure than in climbing the mountain!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I was about to seize a glittery,
+                sparkly treasure, but the wind blew me away!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Kyaaaah!
+                Frustrating!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 What do you think is the
+                greatest secret treasure of all, darlings?
+            """,
+        });
+        message_Talk({
+            english="""
+                 I bet it is...a sparkly, golden...
+                something!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] || scn($SCENARIO_MAIN) >= [29, 9] || scn($SCENARIO_MAIN) >= [29, 8] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 One day, I will find a sparkly,
+                glittery treasure!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] || scn($SCENARIO_MAIN) >= [29, 4] || scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] || scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] || scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" The [CS:P]Hidden Land[CR]?",
+        });
+        message_Talk({
+            english="""
+                 I don't think so...?[K] No, I've never
+                heard of such a place.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] || scn($SCENARIO_MAIN) >= [17, 1] || scn($SCENARIO_MAIN) >= [16, 2] || scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The treasure must be seriously
+                sparkly! My heart tells me so!
+            """,
+        });
+        message_Talk({
+            english=" There's no mistake!",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I keep an eye out for
+                sparkly things!
+            """,
+        });
+        message_Talk({
+            english="""
+                 What I find most intriguing
+                right now is the [CS:I]Golden Mask[CR]. Imagine its
+                glittery gleam!
+            """,
+        });
+        message_Talk({
+            english="""
+                 But my partner [CS:N]Shuppet[CR] isn't
+                keen on the idea at all...
+            """,
+        });
+        message_Talk({
+            english="""
+                 She refuses, with silly reasons
+                like, "It sounds so garish and tacky!"
+            """,
+        });
+        message_Talk({
+            english=" Arrgh, it is just so frustrating!",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] || scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] || scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] || scn($SCENARIO_MAIN) >= [12, 1] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_YAMIKARASU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 This must be the Juice Bar
+                everyone's been talking about...
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] || scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] || scn($SCENARIO_MAIN) >= [8, 3] || scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] || scn($SCENARIO_MAIN) >= [7, 6] || scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] || scn($SCENARIO_MAIN) >= [7, 1] || scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] || scn($SCENARIO_MAIN) >= [5, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I'm not content with our rank.
+                We should be so much better.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I would like to raise our
+                Explorer Rank much higher.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I deserve a rank that sparkles
+                and shines![K] I am worthy!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 7] || scn($SCENARIO_MAIN) >= [4, 5] || scn($SCENARIO_MAIN) >= [4, 3] || scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YAMIKARASU);
+        message_SetFace(ACTOR_NPC_YAMIKARASU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 My favorite things, darlings?
+                Well, do I ever have an eye for sparklies!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I keep telling my partner that
+                we should seek out flashy baubles and
+                glamorous glitz...
+            """,
+        });
+        message_Talk({
+            english="""
+                 But [CS:N]Shuppet[CR] always reacts
+                coolly to my suggestions.
+            """,
+        });
+        message_Talk({
+            english="""
+                 But she seems not to hear! Or
+                she just won't listen![K] Arrgh, it's aggravating!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        jump @label_131;
+    } else {
+        jump @label_131;
+    }
+}

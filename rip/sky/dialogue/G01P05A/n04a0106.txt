@@ -1,0 +1,22 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	Huh? Officer Magnezone!
+NPC_JIBAKOIRU	Talk	ZZZT! Hello, Sunflora. ZZZT!
+PLAYER_KIMAWARI	Talk	A favor?
+NPC_JIBAKOIRU	Talk	ZZZT! That's right. ZZZT!
+PLAYER_KIMAWARI	Talk	.........
+PLAYER_KIMAWARI	Talk	I-invincible?
+NPC_JIBAKOIRU	Talk	ZZZT! That's right. ZZZT!
+PLAYER_KIMAWARI	Talk	Whaaat!? M-me?!
+NPC_PUKURIN	Talk	I have faith in you too. ♪
+PLAYER_KIMAWARI	Talk	It's all right, Chatot!
+PLAYER_KIMAWARI	Talk	I'll head out on my own!
+PLAYER_KIMAWARI	Talk	Spring Cave, huh? Got it!
+PLAYER_KIMAWARI	Talk	OK. I'm on my way, Guildmaster!
+NPC_PUKURIN	Talk	Just a moment!
+PLAYER_KIMAWARI	Talk	Yes?
+PLAYER_KIMAWARI	Talk	.........
+NPC_PUKURIN	Talk	One more thing.
+PLAYER_KIMAWARI	Talk	.........
+NPC_PUKURIN	Talk	Yes.
+NPC_PUKURIN	Talk	Yep. ♪ Do your best! ♪
+PLAYER_KIMAWARI	Talk	Yep!

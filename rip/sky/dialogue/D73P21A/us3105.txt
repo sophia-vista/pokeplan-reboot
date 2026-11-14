@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_BARIYAADO	Talk	It's kind of romantic...
+NPC_BARIYAADO	Talk	Well... That wasn't really funny.
+NPC_BARIYAADO	Talk	I wonder where everyone went.
+NPC_BARIYAADO	Talk	Ugh... So cold!
+NPC_BARIYAADO	Talk	Sky Gifts...
+NPC_BARIYAADO	Talk	Thank you so much!
+NPC_BARIYAADO	Talk	Are you going on the expedition?
+NPC_BARIYAADO	Talk	Go find lots of treasure!

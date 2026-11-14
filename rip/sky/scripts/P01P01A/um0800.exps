@@ -1,0 +1,25 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [9, 2] ) {
+        @label_0;
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [9, 1] ) {
+        supervision_Station(2);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [9, 0] ) {
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_DIGUDA {
+    switch ( sector() ) {
+        case 2:
+            SetMoveRange(Position<'m0', 30, 22>, 8, 5);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            end;
+    }
+}

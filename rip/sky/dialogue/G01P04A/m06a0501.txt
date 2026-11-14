@@ -1,0 +1,23 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Hey! Over here, please. ♪
+NPC_DOGOOMU	Talk	Ugh! What stinks?!
+ATTENDANT1	FacePositionOffset	It-it's them!
+NPC_DOGAASU	Talk	Whoa-ho-ho! I'm Koffing.
+NPC_SUKATANKU	Talk	And I'm Team Skull's leader.
+NPC_SUKATANKU	Talk	I'm Skuntank. Remember it.
+NPC_PERAPPU	Talk	What, you're already acquainted?
+NPC_PERAPPU	Talk	That simplifies things. ♪
+ATTENDANT1	FacePositionOffset	Whaaaat?!
+ATTENDANT1	FacePositionOffset	Pardon?!
+NPC_PERAPPU	Talk	Why are you so shocked?
+NPC_PERAPPU	Talk	Hm. Very well, then.
+NPC_PERAPPU	Talk	Everyone: ...Hooray.
+NPC_DOGOOMU	Talk	You gotta be KIDDING!
+NPC_DOGOOMU	Talk	WH-WHAT?
+NPC_PUKURIN	Talk	YOOM...
+NPC_PUKURIN	Talk	YOOOOOOM...
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_DOGAASU	Talk	Whoa-ho-ho!
+NPC_ZUBATTO	Talk	Heh-heh-heh!
+NPC_PERAPPU	Talk	Ah, you two.
+NPC_PERAPPU	Talk	We're counting on you. ♪

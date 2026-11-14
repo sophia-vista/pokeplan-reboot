@@ -1,0 +1,18 @@
+speaker	kind	line
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!
+NPC_YAMIRAMI	Talk	R-runnnn! Wheh-heh-heh!
+NPC_YONOWAARU	Talk	...Nevertheless... Why...
+PLAYER_FUTURE	Talk	Why are you still surprised?
+NPC_YONOWAARU	Talk	Even so!
+NPC_YONOWAARU	Talk	Wh... What are you implying?!
+PLAYER_FUTURE	Talk	Sure, sure. But I wonder...
+NPC_YONOWAARU	Talk	Humph...
+NPC_YONOWAARU	Talk	.........
+NPC_YONOWAARU	Talk	...Wait!
+PLAYER_FUTURE	Talk	Excuse me?!
+NPC_YONOWAARU	Talk	It's not a joke. I'm serious.
+PLAYER_FUTURE	Talk	.........
+NPC_YONOWAARU	Talk	Additionally...I want to know.
+NPC_YONOWAARU	Talk	Why did the Sableye attack me?
+PLAYER_FUTURE	Talk	...Understood. Let's go.
+NPC_YONOWAARU	Talk	Humph. As you like. Let's go.

@@ -1,0 +1,131 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+            The shop-related menus will be opened.
+            Which one would you like?
+        """,
+    });
+    switch ( message_SwitchMenu(1, 1) ) {
+        case menu({
+            english="Duskull Bank",
+        }):
+            @label_0;
+            message_Close();
+            switch ( message_Menu(MENU_DUSKULL_BANK) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Kangaskhan Storage",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_KANGASKHAN_STORAGE) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Kecleon Shop",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_KECLEON_SHOP) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Kecleon Wares",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_KECLEON_WARES) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Name",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_PLAYER_NAME) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Croagunk Swap Shop",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_SWAP_SHOP) ) { }
+            @label_12;
+            forever {
+                switch ( message_Menu(MENU_SWAP_SHOP2) ) {
+                    case 1:
+                        Turn2Direction<actor ACTOR_NPC_HERO>(4, 10, DIR_DOWN);
+                        WaitExecuteLives(ACTOR_NPC_HERO);
+                        Wait(30);
+                        Turn2Direction<actor ACTOR_NPC_HERO>(4, 10, DIR_UP);
+                        continue;  // may be redundant
+                    default:
+                        break_loop;
+                        break;
+                }
+            }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Evolution",
+        }):
+            message_Close();
+            screen_FadeOut(1, 30);
+            supervision_ExecuteActing(LEVEL_P14P01A, 'EVOLVE', 0);
+            hold;
+        case menu({
+            english="Egg (Day Care)",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_DAY_CARE) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Drink",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_JUICE_BAR) ) { }
+            @label_14;
+            forever {
+                switch ( message_Menu(MENU_JUICE_BAR_PICK_ITEM) ) {
+                    case 0:
+                        break_loop;
+                        break;
+                    default:
+                        continue;  // may be redundant
+                }
+            }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Recycle",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_RECYCLE_SHOP) ) { }
+            @label_16;
+            forever {
+                switch ( message_Menu(MENU_RECYCLE_SHOP2) ) {
+                    case 0:
+                        break_loop;
+                        break;
+                    default:
+                        continue;  // may be redundant
+                }
+            }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Prize Drawing",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_LOTTERY) ) { }
+            @label_18;
+            forever {
+                switch ( message_Menu(MENU_LOTTERY2) ) {
+                    case 0:
+                        break_loop;
+                        break;
+                    default:
+                        continue;  // may be redundant
+                }
+            }
+            JumpCommon(CORO_END_TALK);
+        default:
+            message_Talk({
+                english="I see...",
+            });
+            JumpCommon(CORO_END_TALK);
+    }
+}

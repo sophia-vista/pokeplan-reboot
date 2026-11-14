@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Well, come with me.

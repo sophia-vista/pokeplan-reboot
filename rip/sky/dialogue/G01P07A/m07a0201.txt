@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_SUKATANKU	Talk	Let's go find it now.
+NPC_ZUBATTO	Talk	Huh? Find what?
+NPC_DOGAASU	Talk	I like that thinking, Chief!
+NPC_ZUBATTO	Talk	Okay, let's get to it!

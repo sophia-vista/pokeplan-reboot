@@ -1,0 +1,11 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	All right! Time to roll!
+ATTENDANT1	SwitchMenu	OK! Let's move out!
+ATTENDANT1	SwitchMenu	OK! Let's go!
+NPC_PERAPPU	Talk	We'll make it through this time!
+NPC_PERAPPU	Menu	Not yet
+ATTENDANT1	Menu	Oh. All right.
+ATTENDANT1	Menu	Oh. OK.
+ATTENDANT1	Menu	Let's go as soon as you're ready.
+ATTENDANT1	Menu	Let's leave when you're ready.

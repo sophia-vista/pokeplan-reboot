@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_HEIGANI	Talk	Hey, hey! There's the way in!
+NPC_KIMAWARI	Talk	We can go up through here!
+NPC_DOGOOMU	Talk	Let's HURRY!
+NPC_HEIGANI	Talk	H...h...hey...
+NPC_HEIGANI	Talk	A legendary Pokémon?
+NPC_PERAPPU	Talk	Correct.

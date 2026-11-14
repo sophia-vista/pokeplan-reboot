@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Mail	Would you like to go to the Beach Cave?
+-	SwitchMenu	Yes
+-	Mail	No

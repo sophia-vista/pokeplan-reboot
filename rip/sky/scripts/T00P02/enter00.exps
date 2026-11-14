@@ -1,0 +1,50 @@
+
+def 0 {
+    debug_Print('ENTER_T00P02');
+    if ( debug ) {
+        @label_0;
+        back_SetGround(LEVEL_T00P02);
+        switch ( $GROUND_GETOUT ) {
+            case 1:
+                supervision_StationCommon(3);
+                @label_3;
+                supervision_StationCommon(0);
+                screen_FadeOutAll(1, 0);
+                JumpCommon(CORO_COMMON_ENTER);
+            case 3:
+                supervision_StationCommon(4);
+                jump @label_3;
+            default:
+                supervision_StationCommon(1);
+                jump @label_3;
+        }
+    } else {
+        hold;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    SetAnimation(2);
+    WaitFadeIn();
+    end;
+}
+
+def 2 for actor ACTOR_ATTENDANT1 {
+    SetAnimation(2);
+    WaitFadeIn();
+    end;
+}
+
+def 3 for actor ACTOR_NPC_TEST008 {
+    ResetFunctionAttribute(16);
+    JumpCommon(CORO_LIVES_MOVE_NORMAL);
+}
+
+def 4 for object 65535 {
+    SetAnimation(1);
+    @label_4;
+    forever {
+        Wait(240);
+        continue;  // may be redundant
+    }
+}

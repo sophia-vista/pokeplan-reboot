@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_MANAFI	Talk	Wow...I remember this place.
+NPC_MANAFI	Talk	I hatched here, didn't I?
+NPC_MANAFI	Talk	Mr. Walrein taught me that.
+ATTENDANT1	Talk	That's impressive!
+ATTENDANT1	Talk	How impressive!
+NPC_MANAFI	Talk	This is where I was hatched...
+ATTENDANT1	Talk	.....................
+NPC_MANAFI	Talk	...You don't...want me?
+ATTENDANT1	SwitchMenu	Of course!
+ATTENDANT1	SwitchMenu	No!
+NPC_MANAFI	Talk	Really? Really, I can?
+NPC_MANAFI	Talk	Yay! I did it!
+NPC_MANAFI	Talk	I'll come running!
+NPC_MANAFI	Mail	joined the team!

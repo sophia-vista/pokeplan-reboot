@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Even I had given up.
+NPC_JUPUTORU	Talk	What compelled you?

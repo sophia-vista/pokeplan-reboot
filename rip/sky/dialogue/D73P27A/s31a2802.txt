@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DENRYUU	Talk	Hey! I'm here to help!
+NPC_KUCHIITO	Talk	Oh! Over here!

@@ -1,0 +1,2 @@
+speaker	kind	line
+ATTENDANT1	Talk	Let's head up these stairs.

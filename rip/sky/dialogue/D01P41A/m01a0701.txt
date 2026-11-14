@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_DOGAASU	Talk	Owowow...
+NPC_ZUBATTO	Talk	Ugh... We got roughed up...
+NPC_ZUBATTO	Talk	Bah! Here you go. Take it, then!
+NPC_ZUBATTO	Talk	Yeah, you just remember that!
+ATTENDANT1	Talk	Oh! It's my Relic Fragment!
+ATTENDANT1	Talk	Thanks, !
+ATTENDANT1	Talk	Thank you, !

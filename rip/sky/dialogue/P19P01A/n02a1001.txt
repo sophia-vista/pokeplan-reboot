@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_AAMARUDO	Talk	We're going in.

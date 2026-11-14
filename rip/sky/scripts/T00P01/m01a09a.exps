@@ -1,0 +1,50 @@
+
+def 0 {
+    debug_Print('acting_M01A09A');
+    message_ResetActor();
+    message_Talk({
+        english="The Color Effect Test will be conducted.",
+    });
+    message_Close();
+    supervision_Acting(0);
+    with (actor ACTOR_PLAYER) {
+        hold;
+    }
+    with (actor ACTOR_ATTENDANT1) {
+        hold;
+    }
+    screen_FlushOut(1, 0, 10, 0, 0, 0);
+    Wait(320);
+    screen_FlushOut(1, 30, 1, 255, 0, 0);
+    screen_FlushIn(1, 30, 1, 255, 0, 0);
+    screen2_FlushOut(0, 30, 2, 255, 0, 0);
+    screen_FlushOut(1, 30, 2, 255, 0, 0);
+    screen2_FlushIn(0, 30, 2, 255, 0, 0);
+    screen_FlushIn(1, 30, 2, 255, 0, 0);
+    screen2_FlushOut(0, 30, 4, 0, 255, 0);
+    screen_FlushOut(1, 30, 4, 0, 255, 0);
+    screen2_FlushIn(0, 30, 4, 0, 255, 0);
+    screen_FlushIn(1, 30, 4, 0, 255, 0);
+    screen_FlushOut(1, 30, 2, 255, 0, 0);
+    screen_FlushOut(1, 30, 3, 255, 0, 0);
+    screen_FlushIn(1, 30, 3, 255, 0, 0);
+    screen_FlushIn(1, 30, 2, 255, 0, 0);
+    screen_FlushOut(1, 30, 4, 0, 255, 0);
+    screen_FlushOut(1, 30, 5, 0, 255, 0);
+    screen_FlushIn(1, 30, 5, 0, 255, 0);
+    screen_FlushIn(1, 30, 4, 0, 255, 0);
+    screen_FlushOut(1, 0, 6, 0, 0, 0);
+    Wait(60);
+    screen_FlushOut(1, 0, 8, 0, 0, 0);
+    Wait(60);
+    screen_FlushOut(1, 0, 10, 0, 0, 0);
+    Wait(60);
+    screen_FlushIn(1, 0, 1, 0, 0, 0);
+    message_Talk({
+        english="The Test has completed.",
+    });
+    message_Close();
+    supervision_Suspend(-2);
+    supervision_RemoveActing(-2);
+    end;
+}

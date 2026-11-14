@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_KAKUREON2	Talk	...Hmmm...
+NPC_KAKUREON2	Talk	Ah, it has been a long time! ♪

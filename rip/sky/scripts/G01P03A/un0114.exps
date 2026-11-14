@@ -1,0 +1,22 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] || scn($SCENARIO_SIDE) >= [40, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_SANDOPAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 As I hear, ever since time
+                became weird, there have been more
+                bad Pokémon...
+            """,
+        });
+        message_Close();
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        jump @label_3;
+    } else {
+        jump @label_3;
+    }
+}

@@ -1,0 +1,23 @@
+speaker	kind	line
+-	Narration	the destruction of time was stopped...
+-	Narration	As for  and ...
+-	Narration	They returned to Wigglytuff's Guild...
+-	Narration	One morning, several months later...
+ATTENDANT1	FacePositionOffset	Huh?! G-graduation?!
+ATTENDANT1	FacePositionOffset	What?! Graduation?!
+ATTENDANT1	FacePositionOffset	Pardon?! Graduation?!
+NPC_HEIGANI	Talk	Hey, hey, hey! Chatot!
+NPC_HEIGANI	Talk	And promptly failed! Hey, hey!
+NPC_DOGOOMU	Talk	G-g-get LOST!
+ATTENDANT1	FacePositionOffset	Luminous Spring?
+NPC_PUKURIN	Talk	Now nothing can evolve there.
+ATTENDANT1	FacePositionOffset	Let's do this right, !
+ATTENDANT1	FacePositionOffset	Let's do this, !
+NPC_PUKURIN	Talk	Yup.
+NPC_PUKURIN	Talk	So... Good luck with that! ♪
+ATTENDANT1	FacePositionOffset	What... Huh?!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+ATTENDANT1	Talk	Hey, Loudred!
+ATTENDANT1	Talk	Oh, Loudred!
+NPC_DOGOOMU	Talk	But...I will tell you this.
+NPC_DOGOOMU	Talk	WAAAAH!

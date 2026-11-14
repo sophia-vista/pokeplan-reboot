@@ -1,0 +1,21 @@
+speaker	kind	line
+-	Talk	Hey! You guys!
+-	Talk	You guys! What are you doing there?
+NPC_UPAA	Talk	Th-them?!
+NPC_JUPETTA	Talk	Oh!
+NPC_SUKORUPI	Talk	Give us some Gummis too.
+NPC_JUPETTA	Talk	Hey, gimme another Gummi!
+NPC_SUKORUPI	Talk	Me too!
+PLAYER_PUPURIN	Talk	Yep! ♪
+PLAYER_PUPURIN	Talk	...Huh?
+PLAYER_PUPURIN	Talk	I'm all out of Gummis.
+PLAYER_PUPURIN	Talk	Sorry. Hee-hee-hee. ♪
+NPC_JUPETTA	Talk	It's all right... We'll forgive you.
+PLAYER_PUPURIN	Talk	Yep. ♪ Friendly friends. ♪
+NPC_MUCHUURU	Talk	I hate that! I won't forgive this!
+NPC_UPAA	Talk	Y-you shouldn't get involved!
+NPC_UPAA	Talk	They're really big and scary!
+NPC_MUCHUURU	Talk	Sniff...
+NPC_SUBOMII	Talk	Hey, everyone.
+NPC_MUCHUURU	Talk	Yep.
+NPC_UPAA	Talk	Yeah.

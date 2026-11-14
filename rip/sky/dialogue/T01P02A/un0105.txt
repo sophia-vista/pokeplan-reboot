@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_YARUKIMONO	Talk	Yo! Bidoof!
+NPC_YARUKIMONO	Talk	So, I'm a little worried...
+NPC_YARUKIMONO	Talk	He always looks so happy...
+NPC_YARUKIMONO	Talk	Hah-hahahaha!
+NPC_YARUKIMONO	Talk	Work hard and do your best!

@@ -1,0 +1,12 @@
+speaker	kind	line
+ATTENDANT1	Mail	Who would you like to speak to?
+ATTENDANT1	SwitchMenu	Manaphy
+NPC_MANAFI	Talk	Walk-walk! ♪
+ATTENDANT1	Talk	We should go too, !
+ATTENDANT1	Talk	To the Surrounded Sea!
+ATTENDANT1	Talk	I wonder what it's all about...
+ATTENDANT1	Talk	I wonder what it's about...
+ATTENDANT1	Talk	I wonder what it's all about...
+ATTENDANT1	Talk	To the Shaymin Village!
+ATTENDANT1	Talk	Let's do good, !
+ATTENDANT1	Talk	Let's do our best and graduate!

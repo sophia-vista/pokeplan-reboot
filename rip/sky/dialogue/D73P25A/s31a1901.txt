@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_NYUURA	Talk	Ow...!
+NPC_SHEIMI	Talk	Aha! I knew it!
+NPC_MASUKIPPA	Talk	What do you think you're doing?!
+NPC_KUCHIITO	Talk	We're Team Frontier!
+NPC_KUCHIITO	Talk	This time we're your opponents!
+NPC_MASUKIPPA	Talk	Oh! That sounds good!
+NPC_SHEIMI	Talk	Hey! Wait a minute...

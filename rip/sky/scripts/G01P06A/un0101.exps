@@ -1,0 +1,78 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_CHIRIIN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" I know you can do it, [CS:Y]Bidoof[CR]!",
+        });
+        message_Talk({
+            english=" Good luck, [CS:Y]Bidoof[CR]!",
+        });
+        message_Close();
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_CHIRIIN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" I know how you feel, [CS:Y]Bidoof[CR].",
+        });
+        message_Talk({
+            english="""
+                 Even though you just ate, for
+                some reason, you suddenly feel hungry again...
+            """,
+        });
+        message_Talk({
+            english=" I think that happens to everyone.",
+        });
+        message_Talk({
+            english="""
+                 But it's not time for dinner yet,
+                so please, be patient!
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_CHIRIIN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hey! [CS:Y]Bidoof[CR]![K]
+                I heard you're taking the day off! Excellent!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Since you're taking a day off,
+                you should make sure to have all kinds of fun!
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_CHIRIIN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hm?[K]
+                Are you hungry already, [CS:Y]Bidoof[CR]?
+            """,
+        });
+        message_Talk({
+            english=" But it's not time to eat yet...",
+        });
+        message_Talk({
+            english=" Keep at your chores until then!",
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

@@ -1,0 +1,2 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	Yup yup. Good night.

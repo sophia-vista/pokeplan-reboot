@@ -1,0 +1,45 @@
+
+def 0 {
+    debug_Print('ENTER');
+    switch ( sector() ) {
+        case 1:
+            @label_0;
+            debug_Print('CHARA_SET');
+            supervision_StationCommon(0);
+            switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+                case 1:
+                default:
+                    break;
+            }
+            @label_1;
+            supervision_ExecuteStationSub(LEVEL_P16P01A, 'UN02', 0);
+            @label_2;
+            switch ( sector() ) {
+                case 1:
+                    @label_3;
+                    debug_Print('LABEL_END');
+                    JumpCommon(CORO_COMMON_ENTER);
+                default:
+                    debug_Print('LABEL_PLAYER_SET');
+                    supervision_StationCommon(31);
+                    @label_4;
+                    debug_Print('SET_BGM');
+                    bgm_PlayFadeIn(BGM_HEARTWARMING, 0, 256);
+                    debug_Print('LABEL_ENTER_END');
+                    jump @label_3;
+            }
+            break;
+        default:
+            screen_FadeOutAll(1, 0);
+            debug_Print('LABEL_BACK_SET');
+            back_SetGround(LEVEL_P16P01A);
+            jump @label_0;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER_PUPURIN {
+    SetAnimation(2);
+    WaitScreenFade();
+    WaitScreenFadeAll();
+    end;
+}

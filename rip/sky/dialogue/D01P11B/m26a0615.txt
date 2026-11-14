@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_BIPPA	Talk	Wah! !
+NPC_BIPPA	Talk	Wh-what's the matter?
+ATTENDANT1	Talk	B-Bidoof! Bidoof!
+ATTENDANT1	Talk	Waaaah!

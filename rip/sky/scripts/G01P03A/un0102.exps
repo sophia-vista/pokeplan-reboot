@@ -1,0 +1,41 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] || scn($SCENARIO_SIDE) >= [40, 3] || scn($SCENARIO_SIDE) >= [40, 2] ) {
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_POPPO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Even though we may be small,
+                we've got big dreams!
+            """,
+        });
+        message_Talk({
+            english="""
+                 We have big dreams as an
+                exploration team!
+            """,
+        });
+        message_Talk({
+            english=" By becoming more well known...",
+        });
+        message_Talk({
+            english="""
+                 We want the whole world to
+                know the name Team [CS:X]Seedgey[CR]!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Accomplishing jobs off the
+                Bulletin Board is just one step![K]
+                We'll accomplish lots of them!
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

@@ -1,0 +1,109 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_GUREGGURU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Meh-heh-heh! [K]I sit here and
+                stare at my Swap Cauldron and...
+            """,
+        });
+        message_Talk({
+            english=" I wait for good news!",
+        });
+        message_Talk({
+            english="""
+                 Good luck! Do your best!
+                Meh-heh-heh!
+            """,
+        });
+        message_Close();
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_GUREGGURU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 My Swap Cauldron is the best!
+                Meh-heh-heh!
+            """,
+        });
+        message_Talk({
+            english="""
+                 But it's being repaired right now,
+                so it's unusable... Meh-heh-heh...
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_GUREGGURU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Meh-heh-heh. Vacation, huh?",
+        });
+        message_Talk({
+            english=" I'm not jealous at all.",
+        });
+        message_Talk({
+            english=" Because...",
+        });
+        message_Close();
+        Turn2Direction<actor ACTOR_NPC_GUREGGURU>(4, 1, DIR_UP);
+        WaitExecuteLives(ACTOR_NPC_GUREGGURU);
+        Wait(8);
+        message_SetFace(ACTOR_NPC_GUREGGURU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Because I've got this
+                Swap Cauldron.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I just love my Swap Cauldron
+                so much. It's good! Meh-heh-heh!
+            """,
+        });
+        SetEffect<actor ACTOR_NPC_GUREGGURU>(EFFECT_LAUGHING, 3);
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Wait(10);
+        SetEffect<actor ACTOR_NPC_GUREGGURU>(EFFECT_NONE, 3);
+        Wait(15);
+        Turn2DirectionLives<actor ACTOR_NPC_GUREGGURU>(4, 2, ACTOR_PLAYER_BIPPA);
+        WaitExecuteLives(ACTOR_NPC_GUREGGURU);
+        message_SetFace(ACTOR_NPC_GUREGGURU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 But...[K]it's being repaired right
+                now, so I can't use it. Meh-heh-heh.
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_GUREGGURU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Meh-heh-heh. Today seems to be
+                another long day.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Well, don't just loaf around.
+                Take care of your chores. Meh-heh-heh!
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

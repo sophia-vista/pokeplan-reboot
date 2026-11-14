@@ -1,0 +1,30 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [7, 6] ) {
+        @label_0;
+        supervision_Station(35);
+        supervision_Station(5);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 3] ) {
+        supervision_Station(35);
+        supervision_Station(36);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 2] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 1] ) {
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_JIGUZAGUMA {
+    switch ( sector() ) {
+        case 36:
+            SetMoveRange(Position<'m0', 57, 29>, 4, 7);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

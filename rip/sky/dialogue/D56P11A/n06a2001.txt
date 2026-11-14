@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Mail	Enter the entrance on the right?
+-	SwitchMenu	Yes
+-	Menu	No

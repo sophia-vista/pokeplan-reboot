@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	That's got to be the exit!
+NPC_CHAAREMU	Talk	What? Th-this is...
+NPC_SAANAITO	Talk	The place...where we started...
+NPC_CHAAREMU	Talk	Whaaaat?! Why?!
+NPC_CHAAREMU	Talk	What in the world is going on?!

@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_SEREBII	Talk	Let's hurry, Grovyle!
+NPC_SEREBII	Talk	To protect the future!
+NPC_SEREBII	Talk	(But...I got to see you again!)
+NPC_SEREBII	Talk	(I'm so happy!)
+NPC_SEREBII	Talk	I'm fine, Grovyle.

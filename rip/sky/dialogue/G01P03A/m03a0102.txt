@@ -1,0 +1,20 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Correct! ♪
+NPC_PERAPPU	Talk	Take a closer look! ♪
+ATTENDANT1	Talk	Hey! Check it out, !
+ATTENDANT1	Talk	Oh, look, !
+ATTENDANT1	Talk	Oh! Look at this, !
+ATTENDANT1	Talk	Who are these Pokémon, Chatot?
+ATTENDANT1	Talk	Oh no! They're outlaws?!
+ATTENDANT1	Talk	No way! That's not possible!
+NPC_PERAPPU	Talk	Hee-heeee! ♪ Just joking! ♪
+NPC_PERAPPU	Talk	Hee-heeeee! ♪
+ATTENDANT1	Talk	Um... You say some are weak...
+NPC_PERAPPU	Talk	Hey! Bidoof! Bidoof?!
+NPC_BIPPA	Talk	Yup yup!
+NPC_BIPPA	Talk	Huff-puff-huff... You called?
+NPC_PERAPPU	Talk	Ah, Bidoof! ♪
+NPC_PERAPPU	Talk	Off you go! ♪
+NPC_BIPPA	Talk	Aw, shucks, I'm overjoyed!
+ATTENDANT1	Talk	Why's that?
+NPC_BIPPA	Talk	Sniffle...

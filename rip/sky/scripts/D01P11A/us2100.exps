@@ -1,0 +1,28 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [29, 85] ) {
+        @label_0;
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 84] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 83] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 82] ) {
+        debug_Print('LABEL_SET_S21_04');
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 81] ) {
+        debug_Print('LABEL_SET_S21_03');
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 80] ) {
+        debug_Print('LABEL_SET_S21_02');
+        supervision_Station(10);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 78] ) {
+        debug_Print('LABEL_SET_S21_01');
+        supervision_Station(10);
+        end;
+    } else {
+        end;
+    }
+}

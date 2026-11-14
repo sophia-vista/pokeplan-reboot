@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_BARIYAADO	Talk	Whoa! This is genius!
+NPC_PACHIRISU	Talk	It seems so economical!
+NPC_PATCHIIRU	Talk	Everyone: HOORAY!
+ATTENDANT1	FacePositionOffset	Wow! So cool!
+ATTENDANT1	FacePositionOffset	Wow! So amazing!
+ATTENDANT1	FacePositionOffset	Amazing! So cool!
+ATTENDANT1	FacePositionOffset	Yowza! I'm so excited!
+ATTENDANT1	FacePositionOffset	Wahoo! I'm so excited!
+ATTENDANT1	FacePositionOffset	Ooh! I'm so excited!
+ATTENDANT1	FacePositionOffset	Let's recycle a bunch, OK?
+ATTENDANT1	FacePositionOffset	We should recycle more!

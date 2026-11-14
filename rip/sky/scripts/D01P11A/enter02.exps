@@ -1,0 +1,356 @@
+
+def 0 {
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 0:
+            @label_0;
+            SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+            supervision_ExecuteCommon(CORO_EVENT_N01_08);
+            @label_8;
+            message_Close();
+            supervision_Suspend(-2);
+            end;
+        case 2:
+            SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+            supervision_ExecuteCommon(CORO_EVENT_N04_04);
+            jump @label_8;
+        default:
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            if ( scn($SCENARIO_MAIN) == [23, 2] ) {
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                WaitExecuteLives(ACTOR_ATTENDANT1);
+                Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 We shouldn't go exploring now.
+                                We have to get ready for tomorrow.
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 We shouldn't go exploring now.
+                                We have to get ready for tomorrow.
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 We shouldn't go exploring now.
+                                We have to get ready for tomorrow.
+                            """,
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english=" Let's go to Treasure Town.",
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 We have to go to Treasure
+                                Town.
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 We have to go to Treasure
+                                Town.
+                            """,
+                        }
+                }
+                message_Close();
+                jump @label_8;
+            } elseif ( scn($SCENARIO_MAIN) == [14, 1] ) {
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                WaitExecuteLives(ACTOR_ATTENDANT1);
+                Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english=" No, we can't, [hero].",
+                        }
+                    case 2:
+                        {
+                            english=" No, we can't, [hero].",
+                        }
+                    default:
+                        {
+                            english=" No, we can't, [hero].",
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 We have to get ready for
+                                capturing [CS:N]Grovyle[CR], right?
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 We're supposed to get ready for
+                                capturing [CS:N]Grovyle[CR] first, right?
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 Aren't we supposed to get ready
+                                for capturing [CS:N]Grovyle[CR] first?
+                            """,
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 Let's get back to the guild as
+                                soon as we're ready.
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 Let's go back to the guild as
+                                soon as we're ready.
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 We'll go back to the guild as
+                                soon as we're ready.
+                            """,
+                        }
+                }
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                jump @label_8;
+            } elseif ( scn($SCENARIO_MAIN) == [9, 1] ) {
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                WaitExecuteLives(ACTOR_ATTENDANT1);
+                Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 If we dawdle now, they'll go
+                                without us on the expedition!
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 If we dawdle now, they'll leave
+                                us behind on the expedition!
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 If we're late now, they'll leave
+                                us behind on the expedition!
+                            """,
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 When we're ready to leave on
+                                the expedition, we have to go back to
+                                the guild.
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 When we're ready for the
+                                expedition, we have to go back to the guild.
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 When we're ready for the
+                                expedition, we have to go back to the guild.
+                            """,
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 We have to let [CS:N]Chatot[CR] know
+                                we're ready!
+                            """,
+                        }
+                    case 2:
+                        {
+                            english=" We have to report in to [CS:N]Chatot[CR]!",
+                        }
+                    default:
+                        {
+                            english="""
+                                 We have to let [CS:N]Chatot[CR] know
+                                we're ready!
+                            """,
+                        }
+                }
+                jump @label_8;
+            } elseif ( scn($SCENARIO_MAIN) < [4, 5] ) {
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 We don't have the time to
+                                wander off.
+                            """,
+                        }
+                    case 2:
+                        {
+                            english=" This is no time to be dawdling.",
+                        }
+                    default:
+                        {
+                            english=" We can't take any detours.",
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 We have to do the guild's
+                                work now.
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 We have to do the guild's
+                                work now.
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 We have the guild's work to
+                                do now.
+                            """,
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 [CS:N]Bidoof[CR]'s waiting at the guild.
+                                Let's move it!
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 [CS:N]Bidoof[CR]'s waiting at the guild.
+                                Let's get going!
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 [CS:N]Bidoof[CR]'s waiting at the guild.
+                                We have to hurry!
+                            """,
+                        }
+                }
+                jump @label_8;
+            } else {
+                message_ResetActor();
+                message_Mail({
+                    english="[CN]Would you like to go to the [CS:P]Beach Cave[CR]?",
+                });
+                switch ( message_SwitchMenu(1, 1) ) {
+                    case menu({
+                        english="Yes",
+                    }):
+                        message_Close();
+                        Wait(10);
+                        switch ( main_EnterAdventure(1, 30) ) {
+                            case 0:
+                            default:
+                                debug_Print('BGM_FADEOUT');
+                                message_Close();
+                                bgm_FadeOut(60);
+                                switch ( message_Menu(MENU_DUNGEON_INITIALIZE_TEAM) ) { }
+                                main_EnterDungeon(1, 30);
+                                main_EnterDungeon(-1, 30);
+                                hold;
+                            case 1:
+                                jump @label_8;
+                            case 7:
+                                message_Mail({
+                                    english="""
+                                        
+                                        [CN]Caution!
+                                    """,
+                                });
+                                message_Mail({
+                                    english="""
+                                        [CN]This rescue cannot be undertaken unless
+                                        [CN]the team includes certain Pokémon.
+                                    """,
+                                });
+                                message_Mail({
+                                    english="""
+                                        [CN]Please put together your team
+                                        [CN]with the Pokémon specified by
+                                        [CN]the job, or "Suspend" the job.
+                                    """,
+                                });
+                                jump @label_8;
+                            case 8:
+                                message_Mail({
+                                    english="""
+                                        
+                                        [CN]Caution!
+                                    """,
+                                });
+                                message_Mail({
+                                    english="""
+                                        [CN]This rescue cannot be undertaken unless
+                                        [CN]the team includes certain Pokémon.
+                                    """,
+                                });
+                                message_Mail({
+                                    english="""
+                                        [CN]Please put together your team
+                                        [CN]with the Pokémon specified by
+                                        [CN]the job, or "Suspend" the job.
+                                    """,
+                                });
+                                jump @label_8;
+                        }
+                        break;
+                    case menu({
+                        english="No",
+                    }):
+                        jump @label_8;
+                    default:
+                        jump @label_8;
+                }
+            }
+            break;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

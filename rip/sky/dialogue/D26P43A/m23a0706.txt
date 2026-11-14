@@ -1,0 +1,22 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	They're above us!
+ATTENDANT1	Talk	What?!
+ATTENDANT1	Talk	Wah...
+-	Talk	I am Kabutops!
+-	Talk	And the Omastar brothers!
+ATTENDANT1	Talk	Waaaaah!
+NPC_PERAPPU	Talk	Urrgghh...
+ATTENDANT1	Talk	Ch-Chatot!
+NPC_KABUTOPUSU	Talk	Wh-what?!
+NPC_KABUTOPUSU	Talk	That's not what I'd call smart.
+NPC_OMUSUTAA	Talk	Hey! I remember!
+NPC_KABUTOPUSU	Talk	Ha ha ha!
+NPC_PERAPPU	Talk	Urrgghh... Say what you will...
+NPC_PERAPPU	Talk	They're...our prized recruits!
+NPC_PERAPPU	Talk	I won't let you harm them!
+ATTENDANT1	Talk	Ch-Chatot...
+NPC_PERAPPU	Talk	Urrgghh...
+ATTENDANT1	Talk	Chatot!
+NPC_KABUTOPUSU	Talk	Ha ha ha!
+NPC_KABUTOPUSU	Talk	It's your turn next!
+NPC_KABUTOPUSU	Talk	Take THIS!

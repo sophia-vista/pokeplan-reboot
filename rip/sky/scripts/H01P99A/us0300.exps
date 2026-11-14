@@ -1,0 +1,34 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [29, 53] ) {
+        @label_0;
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 52] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 50] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 49] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 48] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 47] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 46] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 45] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 44] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 43] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 42] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 41] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 40] ) {
+        end;
+    } else {
+        end;
+    }
+}

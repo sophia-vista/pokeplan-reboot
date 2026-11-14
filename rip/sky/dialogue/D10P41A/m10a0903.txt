@@ -1,0 +1,12 @@
+speaker	kind	line
+-	ImitationSound	GRROOOOOOH...GRROOOOOOH...!
+ATTENDANT1	ImitationSound	Wh-what is that?!
+ATTENDANT1	ImitationSound	Waaah! Wh-what is that?!
+ATTENDANT1	ImitationSound	It looks like the statue!
+ATTENDANT1	ImitationSound	Th-that Pokémon...really exists?
+-	Talk	GRROOOOOOH...GRROOOOOOH...!
+ATTENDANT1	Talk	Eep!
+NPC_GURAADON	Talk	GRROOOOOOH...!
+NPC_GURAADON	Talk	DEPART NOW!
+NPC_GURAADON	Talk	WHAT?! FOGBOUND LAKE?!
+ATTENDANT1	Talk	Whaaat?!

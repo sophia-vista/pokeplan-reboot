@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_YUKUSHII	Talk	..................
+NPC_YUKUSHII	Mail	Uxie wants to join the team.
+NPC_NEW_FRIEND	Talk	We'll go together from now on!
+NPC_NEW_FRIEND	Talk	My future is with you!
+-	Mail	joined the team!
+-	SwitchMenu	Reconsider
+-	SwitchMenu	Refuse
+-	Mail	Uxie sadly went away...

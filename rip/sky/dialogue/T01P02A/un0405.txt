@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_KAKUREON2	Talk	Ah! Hello, Sunflora! ♪
+NPC_KAKUREON2	Talk	Oh? Is it a new job?

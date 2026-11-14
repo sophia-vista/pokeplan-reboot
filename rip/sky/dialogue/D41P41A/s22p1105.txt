@@ -1,0 +1,7 @@
+speaker	kind	line
+PLAYER	Talk	(How...odd...?)
+NPC_DAAKURAI	Talk	That fails to strike you as odd?
+PLAYER	Talk	(..................)
+NPC_DAAKURAI	Talk	Naturally.
+PLAYER	Talk	(What...?)
+ATTENDANT1	Talk	What did you say?!

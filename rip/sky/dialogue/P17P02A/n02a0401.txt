@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	OK, I'm off! ♪
+NPC_PUKURIN_PAPA	Talk	See you later!
+NPC_PUKURIN_MAMA	Talk	Take care!

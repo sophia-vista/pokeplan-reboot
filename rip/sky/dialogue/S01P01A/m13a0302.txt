@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	See? This area.
+ATTENDANT1	Talk	Yep! Gotcha!
+ATTENDANT1	Talk	OK! We understand!

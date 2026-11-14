@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_RAKKII	Talk	Thank you!
+NPC_RAKKII	Talk	Honestly, thank you! ♪
+NPC_RAKKII	Talk	...But, anyways...

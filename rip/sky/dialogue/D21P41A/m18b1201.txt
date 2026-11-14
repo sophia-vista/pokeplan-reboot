@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_MIKARUGE	Talk	HEE-hee...HEE-hee...! Back again?

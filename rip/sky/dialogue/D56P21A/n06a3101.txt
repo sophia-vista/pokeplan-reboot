@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	Maybe farther ahead?
+NPC_SAANAITO	Talk	Yeah. Maybe...

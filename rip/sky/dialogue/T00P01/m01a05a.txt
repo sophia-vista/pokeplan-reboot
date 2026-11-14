@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Narration	Where am I?
+-	Narration	Am I dreaming this?
+-	Narration	I feel a pleasant breeze.
+-	Talk	But when I evolve... I become a Ludicolo...

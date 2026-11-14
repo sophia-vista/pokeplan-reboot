@@ -1,0 +1,263 @@
+speaker	kind	line
+-	Notice	Memo: Start from which Scenario?
+-	SwitchMenu	Debug
+-	Notice	Memo: Which debug will you do today?
+-	SwitchMenu	Program Debug
+-	SwitchMenu	H Debug
+-	SwitchMenu	M Debug
+-	SwitchMenu	Unlock Special Episodes
+-	Menu	Others
+-	Notice	Memo: Where would you like to start from?
+-	SwitchMenu	Dialogue Check
+-	Notice	Memo: Where would you like to start from?
+-	SwitchMenu	TALK-M02-01
+-	SwitchMenu	TALK-M03-01B
+-	SwitchMenu	TALK-M03-02
+-	SwitchMenu	TALK-M03-03
+-	SwitchMenu	TALK-M03-04
+-	SwitchMenu	TALK-M03-06
+-	SwitchMenu	TALK-M03-08
+-	SwitchMenu	TALK-M04-03
+-	SwitchMenu	TALK-M05-02
+-	SwitchMenu	TALK-M05-04
+-	SwitchMenu	TALK-M06-02
+-	SwitchMenu	TALK-M06-03
+-	SwitchMenu	TALK-M06-035
+-	SwitchMenu	TALK-M06-05
+-	SwitchMenu	TALK-M07-02
+-	SwitchMenu	TALK-M07-04
+-	SwitchMenu	TALK-M07-06
+-	SwitchMenu	TALK-M07-065
+-	SwitchMenu	TALK-M07-067
+-	SwitchMenu	TALK-M07-08
+-	SwitchMenu	TALK-M08-02
+-	SwitchMenu	TALK-M11-02
+-	SwitchMenu	TALK-M11-04
+-	SwitchMenu	TALK-M11-05
+-	SwitchMenu	TALK-M12-02
+-	SwitchMenu	TALK-M12-04
+-	SwitchMenu	TALK-M13-01
+-	SwitchMenu	TALK-M13-02
+-	SwitchMenu	TALK-M13-04
+-	SwitchMenu	TALK-M13-06
+-	SwitchMenu	TALK-M14-02
+-	SwitchMenu	TALK-M14-05
+-	SwitchMenu	TALK-M15-01
+-	SwitchMenu	TALK-M15-02
+-	SwitchMenu	TALK-M16-01
+-	SwitchMenu	TALK-M16-03
+-	SwitchMenu	TALK-M17-01
+-	SwitchMenu	TALK-M17-02
+-	SwitchMenu	TALK-M19-01
+-	SwitchMenu	TALK-M20-01
+-	SwitchMenu	TALK-M21-02
+-	SwitchMenu	TALK-M21-04
+-	SwitchMenu	TALK-M22-02
+-	SwitchMenu	TALK-M22-03
+-	SwitchMenu	TALK-M22-04
+-	SwitchMenu	TALK-M23-02
+-	SwitchMenu	TALK-M24-01
+-	Notice	Memo: Where would you like to start from?
+-	SwitchMenu	TALK-S01-01
+-	SwitchMenu	TALK-S01-02
+-	SwitchMenu	TALK-S01-03
+-	SwitchMenu	TALK-S01-04
+-	SwitchMenu	TALK-S01-05
+-	SwitchMenu	TALK-S01-06
+-	SwitchMenu	TALK-S31-01
+-	SwitchMenu	TALK-S31-015
+-	SwitchMenu	TALK-S31-02
+-	Menu	TALK-S31-03
+-	Menu	TALK-S31-04
+-	Menu	TALK-S31-05
+-	Menu	TALK-S31-06
+-	Menu	TALK-S31-07
+-	Menu	TALK-S31-08
+-	Menu	TALK-S31-09
+-	Menu	TALK-S31-10
+-	Menu	TALK-S31-11
+-	Menu	TALK-S31-12
+-	Menu	TALK-S31-13
+-	Menu	TALK-S31-14
+-	Menu	TALK-S31-15
+-	Menu	TALK-S31-16
+-	Menu	TALK-S31-17
+-	Menu	TALK-S31-18
+-	Menu	TALK-S31-19
+-	Menu	TALK-S31-20
+-	Menu	TALK-S31-21
+-	Menu	TALK-S31-22
+-	Menu	TALK-S31-23
+-	Menu	TALK-S02-01
+-	Menu	TALK-S02-02
+-	Menu	TALK-S02-03
+-	Menu	TALK-S03-01
+-	Menu	TALK-S03-02
+-	Menu	TALK-S03-03
+-	Menu	TALK-S03-04
+-	Menu	TALK-S03-05
+-	Menu	TALK-S03-06
+-	Menu	TALK-S03-07
+-	Menu	TALK-S03-08
+-	Menu	TALK-S03-09
+-	Menu	TALK-S03-10
+-	Menu	TALK-S03-11
+-	Menu	TALK-S03-12
+-	Menu	TALK-S03-13
+-	Menu	TALK-S04-01
+-	Menu	TALK-S04-02
+-	Menu	TALK-S04-03
+-	Menu	TALK-S04-04
+-	Menu	TALK-S20-01
+-	Menu	TALK-S20-02
+-	Menu	TALK-S20-03
+-	Menu	TALK-S20-04
+-	Menu	TALK-S20-05
+-	Menu	TALK-S20-06
+-	Menu	TALK-S20-07
+-	Menu	TALK-S21-01
+-	Menu	TALK-S21-02
+-	Menu	TALK-S21-03
+-	Menu	TALK-S21-04
+-	Menu	TALK-S21-05
+-	Menu	TALK-S21-06
+-	Menu	TALK-S21-07
+-	Menu	TALK-S22-01
+-	Menu	TALK-S22-02
+-	Menu	TALK-S22-03
+-	Menu	TALK-S22-04
+-	Menu	TALK-S22-05
+-	Menu	TALK-S22-06
+-	Menu	TALK-S23-01
+-	Menu	TALK-S23-02
+-	Menu	Dialogue Check (Sub)
+-	Menu	Hot Spring Check
+-	Menu	Sky Peak Check
+-	SwitchMenu	Entrance
+-	SwitchMenu	1st Station
+-	Menu	2nd Station
+-	Menu	3rd Station
+-	Menu	4th Station
+-	Menu	5th Station
+-	Menu	6th Station
+-	Menu	7th Station
+-	Menu	8th Station
+-	Menu	9th Station
+-	Menu	Top
+-	Menu	Awaiting Rescue Check
+-	Notice	Memo: Where would you like to start from?
+-	SwitchMenu	From Scenario
+-	SwitchMenu	Rescue Check
+-	SwitchMenu	Awaiting Rescue Check
+-	SwitchMenu	M2 The First Job
+-	SwitchMenu	M3 Outlaw Notice Board
+-	SwitchMenu	Not That Way
+-	SwitchMenu	M3 Drowzee
+-	SwitchMenu	M3 Truth
+-	SwitchMenu	M8 Ready for the Expedition?
+-	SwitchMenu	M8 First Time to Craggy Coast
+-	SwitchMenu	M8 Craggy Coast Exploration
+-	SwitchMenu	M8 First Time to Mt. Horn
+-	SwitchMenu	M8 Mt. Horn Exploration
+-	SwitchMenu	M9 First Time to Foggy Forest
+-	SwitchMenu	M9 Foggy Forest Exploration
+-	SwitchMenu	M10 First Time to Steam Cave
+-	SwitchMenu	M10 Steam Cave Exploration
+-	SwitchMenu	M10 First Time to Steam Cave-2
+-	SwitchMenu	M10 Steam Cave-2 Exploration
+-	SwitchMenu	M11 Marill Bros. Lost Item
+-	SwitchMenu	M12 First Time to Amp Clearing-2
+-	SwitchMenu	M12 Amp Clearing-2 Exploration
+-	SwitchMenu	M13 Capturing Grovyle is First
+-	SwitchMenu	M13 First Time to Northern Desert
+-	SwitchMenu	M14 Quicksand Cave-2 Retry
+-	SwitchMenu	M15 Solve This!
+-	SwitchMenu	M16 Restrain Ourselves and Go Back
+-	SwitchMenu	M17 Check the Doors
+-	SwitchMenu	M17 To the Stockade
+-	SwitchMenu	M17 First Time to Chasm Cave
+-	SwitchMenu	M17 Chasm Cave Exploration
+-	SwitchMenu	M18 First Time to Dark Hill
+-	SwitchMenu	M18 Dark Hill Exploration
+-	SwitchMenu	M18 First Time to Sealed Ruin
+-	SwitchMenu	M18 Sealed Ruin Exploration
+-	SwitchMenu	M18 First Time to Sealed Ruin-2
+-	SwitchMenu	M18 Sealed Ruin-2 Exploration
+-	SwitchMenu	M19 First Time to Dusk Forest
+-	SwitchMenu	M19 Dusk Forest Exploration
+-	SwitchMenu	M19 First Time to Deep Dusk Forest
+-	SwitchMenu	M19 Deep Dusk Forest Exploration
+-	SwitchMenu	M20 First Time to Treeshroud Forest
+-	SwitchMenu	M20 Treeshroud Forest Exploration
+-	SwitchMenu	M21 The Wise, Old Torkoal
+-	SwitchMenu	M22 Dungeon Stop
+-	SwitchMenu	M22 Let's Stop by Sharpedo Bluff
+-	SwitchMenu	M22 Re-read Letter
+-	SwitchMenu	M22 Let's Swing by the Beach
+-	SwitchMenu	M23 First Time to Brine Cave
+-	SwitchMenu	M23 Brine Cave Exploration
+-	SwitchMenu	M23 First Time to the Brine Cave-2
+-	SwitchMenu	M23 Brine Cave-2 Exploration
+-	SwitchMenu	M24 First Time to the Hidden Land
+-	SwitchMenu	M24 The Hidden Land Exploration
+-	SwitchMenu	M24 First Time to the Hidden Land-2
+-	SwitchMenu	M24 The Hidden Land-2 Exploration
+-	SwitchMenu	M25 First Time to Temporal Tower
+-	SwitchMenu	M25 Temporal Tower Exploration
+-	SwitchMenu	S1 Mystifying Forest Exploration
+-	SwitchMenu	S2 Tale of Scizor the Explorer
+-	SwitchMenu	S2 Crevice Cave Exploration & Return
+-	SwitchMenu	S3 Surrounded Sea Rumor
+-	SwitchMenu	S3 Give Gummi
+-	SwitchMenu	S3 Babysitting Manaphy
+-	SwitchMenu	S3 Guiding Manaphy
+-	SwitchMenu	S3 Search Stopper
+-	SwitchMenu	S4 Stone Marker 1
+-	SwitchMenu	S4 Stone Marker 2
+-	SwitchMenu	S4 Stone Marker 3
+-	SwitchMenu	S20 First Time to The Nightmare
+-	SwitchMenu	S20 The Nightmare Exploration
+-	SwitchMenu	S21 Spacial Rift Exploration
+-	SwitchMenu	S21 Spacial Rift-2 Exploration
+-	SwitchMenu	S22 Departure
+-	SwitchMenu	S22 Dark Crater-2 Exploration
+-	SwitchMenu	All Complete
+-	SwitchMenu	Scenario Complete
+-	SwitchMenu	Main 1
+-	SwitchMenu	Main 2
+-	SwitchMenu	Main 3
+-	SwitchMenu	Main 4
+-	SwitchMenu	Main 5
+-	SwitchMenu	Main 6
+-	SwitchMenu	Main 7
+-	SwitchMenu	Main 8
+-	SwitchMenu	Main 9
+-	SwitchMenu	Main 10
+-	SwitchMenu	Main 11
+-	SwitchMenu	Main 12
+-	SwitchMenu	Main 13
+-	SwitchMenu	Main 14
+-	SwitchMenu	Main 15
+-	SwitchMenu	Main 16
+-	SwitchMenu	Main 17
+-	SwitchMenu	Main 18
+-	SwitchMenu	Main 19
+-	SwitchMenu	Main 20
+-	SwitchMenu	Main 21
+-	SwitchMenu	Main 22
+-	SwitchMenu	Main 23
+-	SwitchMenu	Main 24
+-	SwitchMenu	Main 25
+-	Menu	Main 26
+-	Menu	Sub 01
+-	Menu	Sub 02
+-	Menu	Sub 03
+-	Menu	Sub 04
+-	Menu	Sub 20
+-	Menu	Sub 21
+-	Menu	Sub 22
+-	Menu	Sub 23
+-	Notice	Memo: Conduct the Personality Test?
+-	SwitchMenu	Yes
+-	SwitchMenu	No
+-	SwitchMenu	Start from Main 1

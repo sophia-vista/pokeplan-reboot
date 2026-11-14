@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_DIGUDA	Talk	Umm... The footprint is...
+-	Talk	What?! MAYBE?!
+-	Talk	UGH! That's pretty crummy!
+-	Talk	That's your job, ISN'T it, Diglett?

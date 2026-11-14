@@ -1,0 +1,18 @@
+speaker	kind	line
+NPC_KIMAWARI	Talk	Please, please be careful!
+NPC_KIMAWARI	Talk	Good luck!
+NPC_KIMAWARI	Talk	Yippee! I mean, yip-yip-yippee!
+NPC_KIMAWARI	Talk	Let's make it another super day!
+NPC_KIMAWARI	Talk	Let's try to be cheerful! ♪
+NPC_KIMAWARI	Talk	Oh my gosh! How mysterious!
+NPC_KIMAWARI	Talk	Time passes so quickly!
+NPC_KIMAWARI	Talk	..................
+NPC_KIMAWARI	Talk	Where has he gotten to...?
+NPC_KIMAWARI	Talk	He's so very inspiring!
+NPC_KIMAWARI	Talk	It's such an honor! Yippee!
+NPC_KIMAWARI	Talk	We must never give up! ♪
+NPC_KIMAWARI	Talk	It's a mystery! Eek!
+NPC_KIMAWARI	Talk	See that signboard on the left?
+NPC_KIMAWARI	SwitchMenu	Yes
+NPC_KIMAWARI	Talk	No
+NPC_KIMAWARI	Talk	Eek!

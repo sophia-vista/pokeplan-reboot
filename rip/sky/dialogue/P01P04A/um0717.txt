@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_NYOROTONO	Talk	Exploring is always fun! ♪
+NPC_NYOROTONO	Talk	Go for it!
+NPC_NYOROTONO	Talk	Oh, wow! How nice! ♪
+NPC_NYOROTONO	Talk	This place is so relaxing. ♪
+NPC_NYOROTONO	Talk	Let's find some treasure... ♪
+NPC_NYOROTONO	Talk	You two are great! ♪
+NPC_NYOROTONO	Talk	An Egg is...sort of happy! ♪
+NPC_NYOROTONO	Talk	I want to win big...
+NPC_NYOROTONO	Talk	An expedition! ♪ I envy you! ♪
+NPC_NYOROTONO	Talk	Ha ha ha!
+NPC_NYOROTONO	Talk	I wish I could go to a pond.
+NPC_NYOROTONO	Talk	Worrying isn't for us!

@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Narration	The next morning...
+NPC_PUKURIN_PAPA	Talk	Good morning! ♪
+NPC_PUKURIN_MAMA	Talk	Good morning! ♪ Igglybuff. ♪

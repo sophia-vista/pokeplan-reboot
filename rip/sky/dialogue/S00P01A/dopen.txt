@@ -1,0 +1,15 @@
+speaker	kind	line
+-	Mail	an Icy Flute.
+-	Mail	The best of luck to you!
+-	Mail	a Fiery Drum.
+-	Mail	The best of luck to you!
+-	Mail	a Terra Cymbal.
+-	Mail	The best of luck to you!
+-	Mail	an Aqua-Monica.
+-	Mail	The best of luck to you!
+-	Mail	a Rock Horn.
+-	Mail	The best of luck to you!
+-	Mail	a Grass Cornet.
+-	Mail	The best of luck to you!
+-	Mail	a Sky Melodica.
+-	Mail	The best of luck to you!

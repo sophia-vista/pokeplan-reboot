@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	Hiya!
+NPC_PUKURIN	Talk	Job not going well? That stinks!
+NPC_PUKURIN	Talk	That's why I'm giving you these!
+NPC_PUKURIN	Mail	In addition, he also gave you an Oran Berry!
+NPC_PUKURIN	Mail	Incredibly, he also gave you a Max Elixir!

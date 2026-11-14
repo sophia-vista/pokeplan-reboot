@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_KIMAWARI	Talk	Do your best! Fight, fight!
+NPC_KIMAWARI	Talk	Take care!

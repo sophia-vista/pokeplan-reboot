@@ -1,0 +1,20 @@
+speaker	kind	line
+NPC_KURESERIA	Talk	Will you have me?
+NPC_NEW_FRIEND	Talk	Thank you so much!
+-	Mail	joined the team!
+NPC_KURESERIA	Talk	...I see. That's disappointing.
+NPC_KURESERIA	Talk	Please tell me.
+NPC_KURESERIA	Talk	My job here is done.
+NPC_KURESERIA	Talk	Sincerely... Thank you.
+NPC_KURESERIA	Talk	I've pondered many possibilities.
+NPC_KURESERIA	Talk	May I...join Team ?
+NPC_KURESERIA	Talk	Will you have me?
+ATTENDANT1	Talk	Not at all! You're no burden!
+ATTENDANT1	Talk	It's great you want to join us!
+ATTENDANT1	Talk	We're honored to have you!
+ATTENDANT1	Talk	We'd love to have you!
+ATTENDANT1	Talk	Right, ?
+NPC_NEW_FRIEND	Talk	Thank you so much!
+-	Mail	joined the team!
+NPC_KURESERIA	Talk	...I see. That's disappointing.
+NPC_KURESERIA	Talk	Please tell me.

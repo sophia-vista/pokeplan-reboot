@@ -1,0 +1,6 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER_PUPURIN>(2);
+    supervision_ExecuteCommon(CORO_EVENT_N03_13);
+    end;
+}

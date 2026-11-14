@@ -1,0 +1,7 @@
+speaker	kind	line
+-	Talk	Whoa! Wh-wh-whoa...!
+-	Talk	Are... Are you OK?!
+-	Talk	No! Don't let go!
+-	Talk	Just a little longer... Come on! Hang on!
+-	Talk	N-n-no! I can't...hold on...!
+-	Talk	Waaaaaah!

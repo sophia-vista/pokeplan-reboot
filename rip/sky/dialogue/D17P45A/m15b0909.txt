@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Th-this...
+NPC_AGUNOMU	Talk	Grovyle...
+NPC_JUPUTORU	Talk	Y-you!
+ATTENDANT1	Talk	Hold it!
+ATTENDANT1	Talk	Stop!
+ATTENDANT1	Talk	Never! You can't make me!
+ATTENDANT1	Talk	No! I won't move!
+ATTENDANT1	Talk	No way! You can't make me!
+NPC_JUPUTORU	Talk	Are you serious?!
+NPC_JUPUTORU	Talk	Then if you won't stand aside...
+NPC_JUPUTORU	Talk	You leave me with no choice!
+NPC_JUPUTORU	Talk	I'll knock you out first!
+NPC_JUPUTORU	Talk	Just try to stop me!

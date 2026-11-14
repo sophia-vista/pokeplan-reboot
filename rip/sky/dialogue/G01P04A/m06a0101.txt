@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Precisely! ♪
+NPC_PERAPPU	Talk	We will depart in several days.
+NPC_KIMAWARI	Talk	Oh my gosh! This is so exciting!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Talk	Ah, you two.
+NPC_PERAPPU	Talk	That will do for now. ♪

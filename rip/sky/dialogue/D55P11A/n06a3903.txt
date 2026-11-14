@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_METAMON_OTACHI	Talk	I have a request.
+PLAYER_CHARMS	Talk	A request?
+NPC_METAMON_OTACHI	Talk	Yes. Team AWD...
+NPC_METAMON_OTACHI	Talk	Team AWD needs to be punished.
+NPC_METAMON_OTACHI	Mail	That Sentret too...
+NPC_METAMON_OTACHI	Mail	They were really...you?

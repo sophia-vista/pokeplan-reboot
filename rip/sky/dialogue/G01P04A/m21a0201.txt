@@ -1,0 +1,44 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	...What?! What was that again?
+NPC_PERAPPU	Talk	Just...just hold on for a moment.
+NPC_PERAPPU	Talk	Let me get this story straight!
+ATTENDANT1	Talk	OK...
+ATTENDANT1	Talk	Right.
+ATTENDANT1	Talk	Yes.
+ATTENDANT1	Talk	Yep!
+ATTENDANT1	Talk	Yup.
+ATTENDANT1	Talk	Yes.
+ATTENDANT1	Talk	Yep.
+NPC_PERAPPU	Talk	So he took them to the future?
+ATTENDANT1	Talk	Yup. And me too.
+ATTENDANT1	Talk	Yes. And me too.
+ATTENDANT1	Talk	Yep. And me too.
+ATTENDANT1	Talk	Yup.
+ATTENDANT1	Talk	Yes.
+ATTENDANT1	Talk	Yep.
+ATTENDANT1	Talk	Yup. That's all of it!
+ATTENDANT1	Talk	Yes. That's all of it!
+ATTENDANT1	Talk	Yep! That's all of it!
+NPC_PERAPPU	Talk	........................
+NPC_PERAPPU	Talk	Hee! Hee-heeee! Hee-heeee!
+NPC_PERAPPU	Talk	and ...
+ATTENDANT1	Talk	What?!
+ATTENDANT1	Talk	Now, wait a second!
+ATTENDANT1	Talk	What? Wait a second!
+ATTENDANT1	Talk	Now, hold on a second!
+ATTENDANT1	Talk	You're saying we're lying?
+ATTENDANT1	Talk	You think we're lying?
+ATTENDANT1	Talk	Are you accusing us of lying?
+NPC_PERAPPU	Talk	I'm sure...I'm sure... ♪
+NPC_PERAPPU	Talk	A good nap will fix that! ♪
+NPC_PERAPPU	Talk	That's quite enough!
+NPC_PERAPPU	Talk	A place called the Hidden Land?!
+ATTENDANT1	Talk	But...!
+NPC_PERAPPU	Talk	I'll hear no more of this!
+NPC_PERAPPU	Talk	That's simply unbelievable!
+NPC_DAGUTORIO	Talk	We hold Dusknoir in high esteem.
+NPC_DAGUTORIO	Talk	We cannot believe it.
+NPC_PERAPPU	Talk	See?! See?!
+NPC_KIMAWARI	Talk	But...
+NPC_PERAPPU	Talk	Hm? What is it, Sunflora?
+NPC_KIMAWARI	Talk	That time...

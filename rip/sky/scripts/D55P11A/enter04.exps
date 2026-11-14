@@ -1,0 +1,294 @@
+
+def 0 {
+    switch ( $GROUND_ENTER ) {
+        case 135:
+        default:
+            @label_0;
+            if ( scn($SCENARIO_SIDE) >= [45, 2] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         On the other side of this jungle
+                        is [CS:P]Boulder Quarry[CR].
+                    """,
+                });
+                message_Talk({
+                    english=" Get ready so we can go.",
+                });
+                message_Close();
+                @label_6;
+                JumpCommon(CORO_END_TALK);
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         On the other side of this jungle
+                        is [CS:P]Boulder Quarry[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Let's hurry up and get ready so
+                        we can go.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+        case 138:
+            if ( scn($SCENARIO_SIDE) >= [45, 7] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We can't take our time.
+                        We've got things to do.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         I'm curious how far ahead of us
+                        Team [CS:X]AWD[CR] is...
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 4] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Let's take our time and not rush
+                        through things.
+                    """,
+                });
+                message_Talk({
+                    english=" Let's get ready, [CS:Y]Lopunny[CR].",
+                });
+                message_Close();
+                jump @label_6;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Team [CS:X]AWD[CR] is already on its
+                        way there.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         We should hurry up and get
+                        ready so we can catch up.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+        case 139:
+            if ( scn($SCENARIO_SIDE) >= [45, 7] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         It's too bad that we'll have to 
+                        pass through [CS:N]Aggron[CR]'s territory again, but...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         In order to get ahead...[K] We just
+                        have to get over there.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 6] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Let's proceed with caution,
+                        [CS:Y]Lopunny[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         We might run into Team [CS:X]AWD[CR]
+                        somewhere out here.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Let's proceed with caution,
+                        [CS:Y]Lopunny[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         We might run into Team [CS:X]AWD[CR]
+                        somewhere out here.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+        case 141:
+            if ( scn($SCENARIO_SIDE) >= [45, 13] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         It looks like we can get to the
+                        cavern by going through the wall between the
+                        two entrances.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Once you're ready, let's get
+                        going.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 10] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Let's try again![K]
+                        Into that wall!
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 9] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         It couldn't be that the wall
+                        between the two entrances is...
+                    """,
+                });
+                message_Talk({
+                    english=" Maybe it's a hidden doorway!",
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( $SIDE06_ROOM[2] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         No more telling jokes to
+                        [CS:N]Medicham[CR].
+                    """,
+                });
+                message_Talk({
+                    english=" Let's really do it this time.",
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( $SIDE06_ROOM[0] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Let's try the one on the left
+                        this time.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( $SIDE06_ROOM[1] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Let's try the one on the right
+                        this time.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 8] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Let's try again.",
+                });
+                message_Close();
+                jump @label_6;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I guess we'll have to pick
+                        an entrance and see.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+        case 143:
+            if ( scn($SCENARIO_SIDE) >= [45, 13] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Let's try and head deeper again.",
+                });
+                message_Talk({
+                    english="""
+                         We need to locate where the
+                        treasure is.
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SAANAITO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We should be more cautious
+                        from here on, [CS:Y]Lopunny[CR].
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+    }
+}

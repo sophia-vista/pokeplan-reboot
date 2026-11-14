@@ -1,0 +1,14 @@
+speaker	kind	line
+TALK_SUB	SwitchMenu	ACTING_TEST
+TALK_SUB	SwitchMenu	M01A01A
+TALK_SUB	SwitchMenu	M01A02A
+TALK_SUB	SwitchMenu	M01A03A
+TALK_SUB	SwitchMenu	ITEM_TEST
+TALK_SUB	SwitchMenu	CHECK_ITEM_CARRY
+TALK_SUB	Notice	CHECK_ITEM_WAREHOUSE
+TALK_SUB	Notice	ADD_ITEM
+TALK_SUB	Notice	DEL_ITEM
+TALK_SUB	Notice	MAP_TEST
+TALK_SUB	Notice	The Map will be switched.
+TALK_SUB	Notice	The Map was switched.
+TALK_SUB	Talk	I see...

@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_BANEBUU	Talk	Th-thank you!
+NPC_BANEBUU	Talk	You have my sincere thanks!
+NPC_BANEBUU	Mail	You also received a Calcium!
+NPC_BANEBUU	Mail	You also received an Iron!
+NPC_BANEBUU	Talk	Farewell!
+NPC_PERAPPU	Talk	Well done, team! ♪
+ATTENDANT1	Talk	Huh?!
+ATTENDANT1	Talk	Excuse me?!
+ATTENDANT1	Talk	Huh?! We keep only 200?
+ATTENDANT1	Talk	That's terrible!
+ATTENDANT1	Talk	That's awful!
+ATTENDANT1	Talk	That's not fair!
+ATTENDANT1	Talk	Hmph...

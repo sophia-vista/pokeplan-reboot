@@ -1,0 +1,50 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [22, 3] ) {
+        @label_0;
+        supervision_Station(4);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [22, 2] ) {
+        supervision_Station(2);
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_YARUKIMONO {
+    switch ( sector() ) {
+        case 2:
+            SetMoveRange(Position<'m0', 34, 27>, 7, 6);
+            JumpCommon(CORO_MOVE_TYPE1);
+        case 4:
+            SetMoveRange(Position<'m1', 34, 27>, 7, 6);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}
+
+def 2 for actor ACTOR_NPC_BANEBUU {
+    switch ( sector() ) {
+        case 2:
+            SetMoveRange(Position<'m2', 41, 28>, 7, 8);
+            JumpCommon(CORO_MOVE_TYPE1);
+        case 4:
+            SetMoveRange(Position<'m3', 41, 28>, 7, 8);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}
+
+def 3 for actor ACTOR_NPC_DIGUDA {
+    switch ( sector() ) {
+        case 2:
+            SetMoveRange(Position<'m4', 24, 27>, 10, 3);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

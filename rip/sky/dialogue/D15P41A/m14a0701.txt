@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_EMURITTO	Talk	You're back?!
+NPC_EMURITTO	Talk	Get ready!

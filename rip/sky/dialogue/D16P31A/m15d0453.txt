@@ -1,0 +1,25 @@
+speaker	kind	line
+PLAYER	FacePositionOffset	(That was...)
+PLAYER	FacePositionOffset	(Unlike my earlier experiences!)
+PLAYER	FacePositionOffset	(All I heard was a voice.)
+PLAYER	FacePositionOffset	(No. That's wrong.)
+PLAYER	FacePositionOffset	(This...this happened once before.)
+PLAYER	FacePositionOffset	(It was... It was at Groudon's statue!)
+PLAYER	FacePositionOffset	(I heard only a voice that time too.)
+PLAYER	FacePositionOffset	(But why does that happen?)
+PLAYER	FacePositionOffset	(Why did I hear only a voice then...and now?)
+ATTENDANT1	FacePositionOffset	Huh? What's up, ?
+ATTENDANT1	FacePositionOffset	Oh! Did you have another vision?
+ATTENDANT1	FacePositionOffset	I knew it!
+ATTENDANT1	FacePositionOffset	S-so what did you see?!
+PLAYER	FacePositionOffset	(According to that voice...)
+PLAYER	FacePositionOffset	(Azelf is the Being of Willpower.)
+PLAYER	FacePositionOffset	(Make the crystals one color...)
+PLAYER	FacePositionOffset	(That's it! I need to match the color!)
+PLAYER	FacePositionOffset	(Now, what's the color supposed to be?)
+PLAYER	FacePositionOffset	(The color of willpower...)
+PLAYER	FacePositionOffset	(That must mean the color of Azelf's spirit...)
+PLAYER	FacePositionOffset	(Azelf lives at Crystal Lake.)
+PLAYER	FacePositionOffset	(Crystal Cave...and Crystal Lake...)
+PLAYER	FacePositionOffset	(Is Azelf's spirit...as clear as crystal...?)
+PLAYER	FacePositionOffset	(Or, no...could it be the color of cold water?)

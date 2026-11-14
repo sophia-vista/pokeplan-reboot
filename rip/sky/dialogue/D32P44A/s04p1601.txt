@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Talk	........................
+-	Talk	SHOW ALL OF YOUR POWER!
+NPC_CHAAREMU	Talk	The stone statues! They're alive!
+NPC_MIMIROPPU	Talk	We'll team up for this battle!

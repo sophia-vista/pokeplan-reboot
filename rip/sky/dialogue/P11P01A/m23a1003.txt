@@ -1,0 +1,8 @@
+speaker	kind	line
+PLAYER	Talk	(Oh! That's...)
+ATTENDANT1	Talk	Huh? , what's up?
+ATTENDANT1	Talk	Hey! Look at this!
+ATTENDANT1	Talk	I'll bring out the Relic Fragment.
+ATTENDANT1	Talk	Hey! The Relic Fragment!
+ATTENDANT1	Talk	Oh! The Relic Fragment!
+ATTENDANT1	Talk	Waaah!

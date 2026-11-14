@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Talk	The Color Effect Test will be conducted.
+-	Talk	The Test has completed.

@@ -1,0 +1,17 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    message_Notice({
+        english="""
+            [CN]Move Linking and
+            [CN]Banking Services This Way →
+            [CN][CS:K]Electivire[CR] Link Shop    [CS:K]Duskull[CR] Bank
+        """,
+    });
+    JumpCommon(CORO_END_TALK);
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

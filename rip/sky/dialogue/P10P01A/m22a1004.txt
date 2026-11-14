@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	Lapras! Long time no see! ♪
+NPC_RAPURASU	Talk	Is Chatot doing well too?
+NPC_PUKURIN	Talk	Yes! Very well! ♪
+NPC_RAPURASU	Talk	I'm glad to hear that!
+NPC_RAPURASU	Talk	I've always meant to thank you.
+NPC_PUKURIN	Talk	No problem! ♪ No big deal! ♪
+NPC_PUKURIN	Talk	So please tell me...

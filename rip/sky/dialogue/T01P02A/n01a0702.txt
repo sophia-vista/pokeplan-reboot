@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_YUKIKABURI	Talk	Excuse me! H-hold this!
+PLAYER_BIPPA	Talk	Huh... Golly, what is this?
+PLAYER_BIPPA	Talk	Hey! You...wait!

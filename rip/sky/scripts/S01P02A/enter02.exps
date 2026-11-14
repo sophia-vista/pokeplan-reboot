@@ -1,0 +1,509 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERIPPAA1);
+    if ( $SCENARIO_TALK_BIT_FLAG[119] ) {
+        @label_0;
+        message_SetFace(ACTOR_NPC_PERIPPAA1, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hello! Would you like to go on a
+                rescue?
+            """,
+        });
+        switch ( message_SwitchMenu(0, 1) ) {
+            case menu({
+                english="Yes",
+            }):
+                @label_1;
+                switch ( ProcessSpecial(PROCESS_SPECIAL_GET_S_O_S_MAIL_COUNT, 0, 0) ) {
+                    case <= 0:
+                        @label_3;
+                        WaitSubScreen();
+                        message_Talk({
+                            english="""
+                                 Hmm...[K] You haven't got an
+                                [CS:E]SOS Mail[CR].
+                            """,
+                        });
+                        message_Talk({
+                            english="""
+                                 You may accept [CS:E]SOS Mail[CR] on the
+                                Top Menu.
+                            """,
+                        });
+                        JumpCommon(CORO_END_TALK);
+                    default:
+                        message_Talk({
+                            english="""
+                                 Please choose an [CS:E]SOS Mail[CR].
+                                That will be the rescue you will undertake.
+                            """,
+                        });
+                        message_Close();
+                        switch ( message_Menu(MENU_S_O_S_MAIL_PICKER) ) {
+                            case 0:
+                                @switch4_134;
+                                @label_4;
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         Very good! I'll show you to the
+                                        rescue site right away!
+                                    """,
+                                });
+                                message_Close();
+                                bgm_FadeOut(60);
+                                bgm2_FadeOut(60);
+                                switch ( message_Menu(MENU_DUNGEON_INITIALIZE_TEAM) ) { }
+                                $SCENARIO_MAIN_BIT_FLAG[40] = 1;
+                                switch ( main_EnterRescueUser(30) ) {
+                                    case 0:
+                                        @label_2;
+                                        WaitSubScreen();
+                                        message_Talk({
+                                            english="""
+                                                 I see...[K] If you would like to go
+                                                on a rescue, please do tell me.
+                                            """,
+                                        });
+                                        JumpCommon(CORO_END_TALK);
+                                    default:
+                                        bgm_FadeOut(30);
+                                        hold;
+                                }
+                                break;
+                            case 1:
+                                jump @label_2;
+                            case 2:
+                                jump @label_3;
+                            case 3:
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         Hmm...[K] Where is this dungeon
+                                        that's described on this [CS:E]SOS Mail[CR]?
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         I can't send you to a dungeon if
+                                        you don't know its location.
+                                    """,
+                                });
+                                @label_19;
+                                message_SetFace(ACTOR_NPC_PERIPPAA1, FACE_NORMAL, FACE_POS_STANDARD);
+                                message_Talk({
+                                    english="""
+                                         Would you like to go on a
+                                        different rescue?
+                                    """,
+                                });
+                                switch ( message_SwitchMenu(0, 1) ) {
+                                    case menu({
+                                        english="Yes",
+                                    }):
+                                    default:
+                                        jump @label_1;
+                                    case menu({
+                                        english="No",
+                                    }):
+                                        jump @label_2;
+                                }
+                                break;
+                            case 5:
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         Hmm...[K] I'm sorry, but you're not
+                                        qualified to respond to this [CS:E]SOS Mail[CR].
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         You may not go on this rescue
+                                        until you have completed your own exploration
+                                        of this dungeon.
+                                    """,
+                                });
+                                jump @label_19;
+                            case 4:
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         Hmm...[K] I'm sorry, but you're not
+                                        qualified to respond to this [CS:E]SOS Mail[CR].
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         You may only go on a rescue
+                                        here up to the floor you have reached before.
+                                    """,
+                                });
+                                jump @label_19;
+                            case 20:
+                                WaitSubScreen();
+                                switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_HERO_AND_PARTNER_ONLY, 0, 0) ) {
+                                    case 1:
+                                        jump @label_4;
+                                    default:
+                                        switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_PARTNER_AND_HERO_ONLY, 0, 0) ) {
+                                            case 1:
+                                                message_Talk({
+                                                    english="""
+                                                         For going to the [CS:P]Hidden Land[CR],
+                                                        [hero] will be made the team leader.
+                                                        Is that OK?
+                                                    """,
+                                                });
+                                                @label_23;
+                                                switch ( message_SwitchMenu(0, 2) ) {
+                                                    case menu({
+                                                        english="Yes",
+                                                    }):
+                                                    default:
+                                                        switch ( ProcessSpecial(PROCESS_SPECIAL_SET_TEAM_SETUP_HERO_AND_PARTNER_ONLY, 0, 0) ) { }
+                                                        jump @label_4;
+                                                    case menu({
+                                                        english="No",
+                                                    }):
+                                                        jump @label_2;
+                                                }
+                                                break;
+                                            default:
+                                                @label_22;
+                                                message_Talk({
+                                                    english="""
+                                                         For going to the [CS:P]Hidden Land[CR],
+                                                        your team must consist of only [hero]
+                                                        and [partner]. Is that OK?
+                                                    """,
+                                                });
+                                                jump @label_23;
+                                        }
+                                        break;
+                                }
+                                break;
+                            case 21:
+                                WaitSubScreen();
+                                switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_HERO_AND_PARTNER_ONLY, 0, 0) ) {
+                                    case 1:
+                                        jump @label_4;
+                                    default:
+                                        switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_PARTNER_AND_HERO_ONLY, 0, 0) ) {
+                                            case 1:
+                                                message_Talk({
+                                                    english="""
+                                                         For going to [CS:P]Temporal Tower[CR],
+                                                        [hero] will be made the team leader.
+                                                        Is that OK?
+                                                    """,
+                                                });
+                                                jump @label_23;
+                                            default:
+                                                @label_25;
+                                                message_Talk({
+                                                    english="""
+                                                         For going to [CS:P]Temporal Tower[CR],
+                                                        your team must consist of only [hero]
+                                                        and [partner]. Is that OK?
+                                                    """,
+                                                });
+                                                jump @label_23;
+                                        }
+                                        break;
+                                }
+                                break;
+                            case 22:
+                                jump @switch4_134;
+                            case 23:
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         There is a restriction placed on
+                                        [CS:P]Zero Isle North[CR].
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         In [CS:P]Zero Isle North[CR], you will not
+                                        earn Experience Points from the Pokémon you
+                                        defeat. Is that OK?
+                                    """,
+                                });
+                                @label_26;
+                                switch ( message_SwitchMenu(0, 2) ) {
+                                    case menu({
+                                        english="Yes",
+                                    }):
+                                        jump @label_4;
+                                    case menu({
+                                        english="No",
+                                    }):
+                                        jump @label_2;
+                                    default:
+                                        jump @label_23;
+                                }
+                                break;
+                            case 24:
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         There are certain restrictions
+                                        on going to [CS:P]Zero Isle East[CR].
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         Items in your Treasure Bag
+                                        from the 17th slot and beyond will be lost.[K]
+                                        And all team members will be put at Level 1.
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         Oh, about the level reduction to
+                                        Level 1... It's only temporary.
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         When you exit the dungeon, all
+                                        team members will be returned to their
+                                        original levels. No need for worry!
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         Those are the restrictions for
+                                        this dungeon.[K] Would you like to go there for
+                                        a rescue?
+                                    """,
+                                });
+                                jump @label_26;
+                            case 25:
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         There are certain restrictions
+                                        on going to [CS:P]Zero Isle West[CR].
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         All items in your Treasure Bag
+                                        will be lost.[K] All team members will also be
+                                        dropped to Level 1.
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         Oh, about the level reduction to
+                                        Level 1... It's only temporary.
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         When you exit the dungeon, all
+                                        team members will be returned to their
+                                        original levels. No need for worry!
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         Those are the restrictions for
+                                        this dungeon.[K] Would you like to go there for
+                                        a rescue?
+                                    """,
+                                });
+                                jump @label_26;
+                            case 26:
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         There are certain restrictions
+                                        on going to [CS:P]Zero Isle South[CR].
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         All your money and the items in
+                                        your Treasure Bag will be lost.
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         Only the leader may enter the
+                                        dungeon. Furthermore, the leader's level will
+                                        be dropped to Level 1. Is that OK?
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         Oh, about the level reduction to
+                                        Level 1... It's only temporary.
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         When you exit the dungeon, your
+                                        level will be returned to the original level.
+                                        No need for worry!
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         Those are the restrictions for
+                                        this dungeon.[K] Would you like to go there for
+                                        a rescue?
+                                    """,
+                                });
+                                jump @label_26;
+                            case 27:
+                            case 28:
+                            case 29:
+                            case 30:
+                            case 31:
+                            case 32:
+                            case 33:
+                                WaitSubScreen();
+                                @label_16;
+                                WaitSubScreen();
+                                if ( not debug ) {
+                                    @label_20;
+                                    WaitSubScreen();
+                                    message_Talk({
+                                        english="""
+                                             Hmm...[K] You may not go to this
+                                            dungeon.
+                                        """,
+                                    });
+                                    jump @label_19;
+                                } else {
+                                    message_Notice({
+                                        english="""
+                                            [CS:W]Dungeon Settings Error 1
+                                            Restrictions have been applied to dungeons
+                                            other than Zero Isle.[CR]
+                                        """,
+                                    });
+                                    jump @label_19;
+                                }
+                                break;
+                            case 18:
+                                jump @label_16;
+                            case 19:
+                                WaitSubScreen();
+                                if ( not debug ) {
+                                    jump @label_20;
+                                } else {
+                                    message_Notice({
+                                        english="""
+                                            [CS:W]Dungeon Settings Error 2
+                                            Restrictions have been applied to dungeons
+                                            other than Zero Isle.[CR]
+                                        """,
+                                    });
+                                    jump @label_19;
+                                }
+                                break;
+                            case 6:
+                                WaitSubScreen();
+                                message_Talk({
+                                    english="""
+                                         Hmm...[K] I'm sorry, but you've
+                                        failed too often on this rescue. You may no
+                                        longer respond to this [CS:E]SOS Mail[CR].
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         I'm sorry to say it, but please
+                                        inform your friend that you failed the rescue.
+                                    """,
+                                });
+                                jump @label_19;
+                            default:
+                                jump @label_2;
+                        }
+                        break;
+                }
+                break;
+            case menu({
+                english="No",
+            }):
+                jump @label_2;
+            default:
+                jump @label_19;
+        }
+    } else {
+        $SCENARIO_TALK_BIT_FLAG[119] = 1;
+        $SCENARIO_MAIN_BIT_FLAG[40] = 1;
+        message_SetFace(ACTOR_NPC_PERIPPAA1, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Greetings![K] Welcome to [CS:P]Pelipper
+                Island[CR].
+            """,
+        });
+        message_Talk({
+            english="""
+                 We [CS:K]Pelipper[CR] will help all your
+                rescue efforts.
+            """,
+        });
+        message_Talk({
+            english="""
+                 If you would like to rescue a
+                friend, please return with his or her [CS:E]SOS Mail[CR].
+            """,
+        });
+        message_Talk({
+            english="""
+                 If you succeed with a rescue,
+                we can provide you with a reward. We hope
+                you do your best.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Oh, yes...[K] You can't recruit new
+                members to your team while on a rescue.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Also, if your team is defeated on
+                a rescue, you can't call for your own rescue.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Items and money you obtain
+                during a rescue must be put in storage if you
+                want to take them out in Treasure Town.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Would you like to go on a rescue
+                right away?
+            """,
+        });
+        switch ( message_SwitchMenu(0, 1) ) {
+            case menu({
+                english="Yes",
+            }):
+                jump @label_1;
+            case menu({
+                english="No",
+            }):
+                jump @label_2;
+            default:
+                jump @label_0;
+        }
+    }
+}

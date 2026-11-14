@@ -1,0 +1,23 @@
+speaker	kind	line
+ATTENDANT1	Talk	Huh? It's you little guys...
+ATTENDANT1	Talk	Oh! It's you little guys...
+ATTENDANT1	Talk	Hey! It's you little guys...
+ATTENDANT1	Talk	Help?
+NPC_MARIRU	Talk	Yep!
+ATTENDANT1	Talk	A Water Float?
+ATTENDANT1	Talk	This scrap of paper?
+ATTENDANT1	Talk	There's writing on it.
+ATTENDANT1	Mail	\"...is now in our possession.\"
+ATTENDANT1	Mail	It's a ransom note! Isn't it?!
+ATTENDANT1	Mail	It could be a trap.
+ATTENDANT1	Mail	I suspect a trap.
+ATTENDANT1	Mail	It's probably a trap!
+NPC_MARIRU	Talk	We really want to get it back.
+NPC_RURIRI	Talk	I said I would go too!
+NPC_MARIRU	Talk	I went to Amp Plains by myself.
+NPC_MARIRU	Talk	I'm no match for them.
+ATTENDANT1	Talk	No problem! I know what to do!
+NPC_RURIRI	Talk	Really?!
+NPC_MARIRU	Talk	You will?!
+ATTENDANT1	Talk	Yup! So no more crying!
+ATTENDANT1	Talk	Yep! So no more tears!

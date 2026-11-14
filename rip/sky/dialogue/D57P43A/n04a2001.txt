@@ -1,0 +1,18 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	There! Right there!
+PLAYER_KIMAWARI	Talk	Haunter is RIGHT THERE!
+PLAYER_KIMAWARI	Talk	I've found you!
+PLAYER_KIMAWARI	Talk	Haunter! I'm going to arrest you!
+PLAYER_KIMAWARI	Talk	You might as well give up!
+NPC_GOOSUTO	Talk	Don't you get it?! I'm invincible!
+PLAYER_KIMAWARI	Talk	.........
+NPC_GOOSUTO	Talk	What?!
+NPC_GOOSUTO	Talk	G-guys... What do you mean?!
+NPC_GOOSUTO	Talk	You found this out?!
+PLAYER_KIMAWARI	Talk	Yes.
+PLAYER_KIMAWARI	Talk	Come on out! The rest of you!
+NPC_GOOSUTO	Talk	Uwah!
+PLAYER_KIMAWARI	Talk	I knew it!
+NPC_GOOSUTO	Talk	Y... You!
+PLAYER_KIMAWARI	Talk	I knew it!
+PLAYER_KIMAWARI	Talk	That time...

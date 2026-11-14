@@ -1,0 +1,36 @@
+speaker	kind	line
+NPC_AABOKKU	Talk	Next time, we'll beat you up!
+NPC_DORAPION	Talk	Remember that!
+NPC_CHAAREMU	Talk	No way...
+NPC_SAANAITO	Talk	It has to be this way.
+NPC_CHAAREMU	Talk	Oh! That's right!
+NPC_CHAAREMU	Talk	Oh yeah! That's right!
+PLAYER_CHARMS	Talk	Yep. ♪ That's right! ♪
+NPC_CHAAREMU	Talk	Uwahahahahaha!
+NPC_SAANAITO	Talk	Uhuhuhuhuhuhu!
+PLAYER_CHARMS	Talk	Hah-hah-hah! Hah-hah-hah!
+NPC_PUKURIN	Talk	Um... That's great everyone. ♪
+NPC_PUKURIN	Talk	Well, I'm headed home now.
+PLAYER_CHARMS	Talk	Gardevoir, Medicham.
+NPC_SAANAITO	Talk	Yes.
+NPC_CHAAREMU	Talk	Got it.
+NPC_PUKURIN	Talk	Huh? What's with everyone?
+NPC_CHAAREMU	Talk	Wigglytuff. You're not half bad!
+NPC_PUKURIN	Talk	Huh?
+NPC_SAANAITO	Talk	You're really cool!
+NPC_PUKURIN	Talk	I-is that so...? I see...
+NPC_PUKURIN	Talk	Hee-hee-hee-hee...
+NPC_PUKURIN	Talk	Huh? Next?
+PLAYER_CHARMS	Talk	Yes, next. ♪
+NPC_PUKURIN	Talk	With you?
+NPC_SAANAITO	Talk	Yes, with us. What do you think?
+NPC_PUKURIN	Talk	Hmmm... What should I do...?
+NPC_SAANAITO	Talk	Lopunny. That thing...
+PLAYER_CHARMS	Talk	I'm on it, Gardevoir.
+NPC_PUKURIN	Talk	Oooh!
+NPC_PUKURIN	Talk	I-it's a...Perfect Apple! ♪
+PLAYER_CHARMS	Talk	But...
+PLAYER_CHARMS	Talk	3... 2... 1... GO!
+NPC_PUKURIN	Talk	Yay! GO! GO!
+NPC_PUKURIN	Explanation	I'll go everywhere! ♪
+NPC_PUKURIN	Explanation	YOOM...TAH!

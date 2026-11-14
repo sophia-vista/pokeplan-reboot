@@ -1,0 +1,49 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [14, 6] ) {
+        @label_0;
+        supervision_Station(6);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [14, 3] ) {
+        supervision_Station(4);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [14, 2] ) {
+        supervision_Station(2);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [14, 1] ) {
+        supervision_Station(1);
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_YARUKIMONO {
+    switch ( sector() ) {
+        case 6:
+            SetMoveRange(Position<'m0', 26, 23>, 10, 7);
+            JumpCommon(CORO_MOVE_TYPE1);
+        case 4:
+            SetMoveRange(Position<'m1', 26, 23>, 10, 7);
+            JumpCommon(CORO_MOVE_TYPE1);
+        case 2:
+            SetMoveRange(Position<'m2', 26, 23>, 10, 7);
+            JumpCommon(CORO_MOVE_TYPE1);
+        case 1:
+            SetMoveRange(Position<'m3', 26, 23>, 10, 7);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}
+
+def 2 for actor ACTOR_NPC_KIMAWARI {
+    switch ( sector() ) {
+        case 1:
+            SetMoveRange(Position<'m4', 38, 25>, 12, 5);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

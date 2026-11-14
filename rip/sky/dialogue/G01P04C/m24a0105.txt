@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	That was when Lapras appeared.
+NPC_KIMAWARI	Talk	Lapras?
+NPC_PUKURIN	Talk	Yep. Lapras.
+NPC_PUKURIN	Talk	Lapras saved Chatot.

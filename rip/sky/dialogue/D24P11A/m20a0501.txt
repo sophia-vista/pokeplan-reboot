@@ -1,0 +1,13 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	All right. We're good to go!
+ATTENDANT1	SwitchMenu	OK. We're good to go!
+ATTENDANT1	SwitchMenu	OK. We're all set to go!
+ATTENDANT1	SwitchMenu	Let's get moving!
+ATTENDANT1	SwitchMenu	Let's set off!
+ATTENDANT1	SwitchMenu	Let's get moving!
+ATTENDANT1	Menu	No
+ATTENDANT1	Menu	All right.
+ATTENDANT1	Menu	OK.
+ATTENDANT1	Menu	Let's go as soon as you're ready.
+ATTENDANT1	Menu	Let's leave when you're ready.

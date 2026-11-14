@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_MARIRU	Talk	Thank you... Thank you so much!
+NPC_MARIRU	Talk	Azurill...?
+NPC_MARIRU	Talk	He's still asleep...
+NPC_MARIRU	Talk	Congratulations!
+NPC_MARIRU	Talk	You're all right! Am I ever glad!
+NPC_MARIRU	Talk	Thank you so very much!

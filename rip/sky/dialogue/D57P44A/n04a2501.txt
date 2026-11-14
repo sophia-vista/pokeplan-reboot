@@ -1,0 +1,7 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	Loudred! Are you all right?!
+PLAYER_KIMAWARI	Talk	...Ow! Hot hot hot hot hot!
+NPC_DOGOOMU	Talk	Y-you're LATE, SUNFLORA!
+NPC_GOOSUTO	Talk	All right!
+NPC_GOOSUTO	Talk	We'll defeat you so thoroughly...
+NPC_DOGOOMU	Talk	Here they COME, SUNFLORA!

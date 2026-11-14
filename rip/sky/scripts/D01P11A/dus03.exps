@@ -1,0 +1,1691 @@
+
+def 0 {
+    @label_11;
+    message_SetFace(ACTOR_NPC_ZUBATTO, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Notice({
+        english="""
+             I'm [CS:N]Zubat[CR]. What do you want
+            to do?
+        """,
+    });
+    switch ( message_SwitchMenu(1, 1) ) {
+        case menu({
+            english="[M:D0]",
+        }):
+            @label_0;
+            SetAnimation<object OBJECT_D30P33A5_554>(9);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<object OBJECT_D30P33A5_554>(18);
+            WaitAnimation<object OBJECT_D30P33A5_554>();
+            WaitExecuteObject(OBJECT_D30P33A5_554);
+            SetAnimation<object OBJECT_D30P33A5_554>(19);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<object OBJECT_D30P33A5_554>(9);
+            SetAnimation<object OBJECT_D30P33A5_554>(18);
+            Wait(140);
+            WaitAnimation<object OBJECT_D30P33A5_554>();
+            WaitExecuteObject(OBJECT_D30P33A5_554);
+            SetAnimation<object OBJECT_D30P33A5_554>(19);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<object OBJECT_D30P33A5_554>(9);
+            jump @label_11;
+        case menu({
+            english="[M:D0]",
+        }):
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(2);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(24);
+            StopAnimation<actor ACTOR_NPC_PUKURIN>();
+            WaitExecuteLives(ACTOR_NPC_PUKURIN);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(768);
+            WaitAnimation<actor ACTOR_NPC_PUKURIN>();
+            WaitExecuteLives(ACTOR_NPC_PUKURIN);
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(2);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(24);
+            Wait(5);
+            StopAnimation<actor ACTOR_NPC_PUKURIN>();
+            WaitExecuteLives(ACTOR_NPC_PUKURIN);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(768);
+            WaitAnimation<actor ACTOR_NPC_PUKURIN>();
+            WaitExecuteLives(ACTOR_NPC_PUKURIN);
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(2);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(4);
+            jump @label_11;
+        case menu({
+            english="[M:D0]",
+        }):
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(2);
+            message_Talk({
+                english=" ",
+            });
+            message_Close();
+            Wait(10);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(24);
+            WaitAnimation<actor ACTOR_NPC_PUKURIN>();
+            WaitExecuteLives(ACTOR_NPC_PUKURIN);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetEffect<actor ACTOR_NPC_PUKURIN>(EFFECT_EXCLAMATION_MARK, 3);
+            WaitEffect<actor ACTOR_NPC_PUKURIN>();
+            WaitExecuteLives(ACTOR_NPC_PUKURIN);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(2);
+            jump @label_11;
+        case menu({
+            english="[M:D0]",
+        }):
+            message_Talk({
+                english=" ",
+            });
+            SetPositionLives<performer 0>(0);
+            camera_SetMyself<performer 0>();
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(1.0, 88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.8984, -88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.7969, 88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.6992, -88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.5977, 88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.5, -88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.3984, 88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.2969, -88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.25, 88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.1992, -88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.1172, 88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.0977, -88, 0);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            jump @label_11;
+        case menu({
+            english="[M:D0]",
+        }):
+            message_Talk({
+                english=" ",
+            });
+            SetPositionLives<performer 0>(0);
+            camera_SetMyself<performer 0>();
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(1.0, 88, -88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.8984, -88, 88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.7969, 88, -88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.6992, -88, 88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.5977, 88, -88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.5, -88, 88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.3984, 88, -88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.2969, -88, 88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.25, 88, -88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.1992, -88, 88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.1172, 88, -88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            MovePositionOffset<performer 0>(0.0977, -88, 88);
+            WaitExecutePerformer(0);
+            message_Mail({
+                english="[M:D0]",
+            });
+            message_Close();
+            jump @label_11;
+        case menu({
+            english="Message Wait Test",
+        }):
+            screen_FadeOut(1, 15);
+            message_Notice({
+                english="[CS:W]Narration[CR]",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetWaitMode(100, 30);
+            message_Narration(15, {
+                english="""
+                    [CN]Exploration Team Federation
+                    [CN]has sent a message...
+                """,
+            });
+            message_Close();
+            message_SetWaitMode(-1, -1);
+            message_Notice({
+                english="[CS:W]EXPLANATION[CR]",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            me_Play(1);
+            message_SetWaitMode(120, 60);
+            message_Explanation({
+                english="""
+                    [CN][hero]'s team was rewarded
+                    [CN]with an enlarged Treasure Bag![W:100]
+                """,
+            });
+            message_KeyWait();
+            message_SetWaitMode(-1, -1);
+            message_Explanation({
+                english="""
+                    [CN]You can now carry more
+                    [CN]items than you could before!
+                """,
+            });
+            message_Close();
+            screen_FadeIn(1, 15);
+            jump @label_11;
+        case menu({
+            english="Emoticon Test",
+        }):
+            @label_6;
+            message_Notice({
+                english="""
+                     Emoticon Test, huh? Which one?
+                    
+                    [CS:E]B Button Cancel: Go back one menu step[CR]
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="Charmander",
+                }):
+                    supervision_Remove(1);
+                    SetAnimation<actor ACTOR_PLAYER>(2);
+                    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UP);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_Notice({
+                        english="[CS:W]![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_EXCLAMATION_MARK, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]?[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_QUESTION_MARK, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Celebrate![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_JOYOUS, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Shocked![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SHOCKED, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Cold sweat[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROP, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Laughter[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_LAUGHING, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Anger[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_ANGRY, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Flustered[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Noticed[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_RIGHT);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_Notice({
+                        english="[CS:W]![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_EXCLAMATION_MARK, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]?[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_QUESTION_MARK, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Celebrate![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_JOYOUS, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Shocked![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SHOCKED, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Cold sweat[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROP, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Laughter[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_LAUGHING, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Anger[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_ANGRY, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Flustered[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Noticed[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_DOWN);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_Notice({
+                        english="[CS:W]![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_EXCLAMATION_MARK, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]?[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_QUESTION_MARK, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Celebrate![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_JOYOUS, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Shocked![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SHOCKED, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Cold sweat[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROP, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Laughter[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_LAUGHING, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Anger[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_ANGRY, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Flustered[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Noticed[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_LEFT);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_Notice({
+                        english="[CS:W]![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_EXCLAMATION_MARK, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]?[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_QUESTION_MARK, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Celebrate![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_JOYOUS, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Shocked![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SHOCKED, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Cold sweat[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROP, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Laughter[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_LAUGHING, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Anger[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_ANGRY, 3);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Flustered[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Noticed[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_PLAYER>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+                    WaitEffect<actor ACTOR_PLAYER>();
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_KeyWait();
+                    message_Notice({
+                        english="Exit",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UP);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    SetAnimation<actor ACTOR_PLAYER>(4);
+                    supervision_Station(1);
+                    jump @label_6;
+                case menu({
+                    english="[CS:N]Ursaring[CR]",
+                }):
+                    supervision_Remove(1);
+                    supervision_Acting(2);
+                    SetAnimation<actor ACTOR_NPC_RINGUMA>(2);
+                    Turn2Direction<actor ACTOR_NPC_RINGUMA>(4, 10, DIR_UP);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_Notice({
+                        english="[CS:W]![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_EXCLAMATION_MARK, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]?[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_QUESTION_MARK, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Celebrate![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_JOYOUS, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Shocked![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SHOCKED, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Cold sweat[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SWEAT_DROP, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Laughter[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_LAUGHING, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Anger[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_ANGRY, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Flustered[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Noticed[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    Turn2Direction<actor ACTOR_NPC_RINGUMA>(4, 10, DIR_RIGHT);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_Notice({
+                        english="[CS:W]![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_EXCLAMATION_MARK, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]?[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_QUESTION_MARK, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Celebrate![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_JOYOUS, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Shocked![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SHOCKED, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Cold sweat[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SWEAT_DROP, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Laughter[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_LAUGHING, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Anger[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_ANGRY, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Flustered[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Noticed[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    Turn2Direction<actor ACTOR_NPC_RINGUMA>(4, 10, DIR_DOWN);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_Notice({
+                        english="[CS:W]![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_EXCLAMATION_MARK, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]?[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_QUESTION_MARK, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Celebrate![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_JOYOUS, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Shocked![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SHOCKED, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Cold sweat[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SWEAT_DROP, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Laughter[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_LAUGHING, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Anger[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_ANGRY, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Flustered[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Noticed[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    Turn2Direction<actor ACTOR_NPC_RINGUMA>(4, 10, DIR_LEFT);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_Notice({
+                        english="[CS:W]![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_EXCLAMATION_MARK, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]?[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_QUESTION_MARK, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Celebrate![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_JOYOUS, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Shocked![CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SHOCKED, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Cold sweat[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SWEAT_DROP, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Laughter[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_LAUGHING, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Anger[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_ANGRY, 3);
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Flustered[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_NONE, 3);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="[CS:W]Noticed[CR]",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    SetEffect<actor ACTOR_NPC_RINGUMA>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+                    WaitEffect<actor ACTOR_NPC_RINGUMA>();
+                    WaitExecuteLives(ACTOR_NPC_RINGUMA);
+                    message_KeyWait();
+                    message_Notice({
+                        english="Exit",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    supervision_RemoveActing(2);
+                    supervision_Station(1);
+                    jump @label_6;
+                case menu({
+                    english="Cancel",
+                }):
+                    @label_10;
+                    message_Notice({
+                        english=" See you.",
+                    });
+                    message_Close();
+                    end;
+                default:
+                    jump @label_11;
+            }
+            break;
+        case menu({
+            english="Message Test",
+        }):
+            @label_7;
+            message_Notice({
+                english="""
+                     Message Test, huh? Which one?
+                    
+                    [CS:E]B Button Cancel: Go back one menu step[CR]
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="Message Control",
+                }):
+                    @label_15;
+                    message_Notice({
+                        english="""
+                             Message Control, huh? Choose.
+                            
+                            [CS:E]B Button Cancel: Go back one menu step[CR]
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="Close",
+                        }):
+                            message_Talk({
+                                english="""
+                                     It's good-bye if you press
+                                    a button.
+                                """,
+                            });
+                            message_Close();
+                            jump @label_10;
+                        case menu({
+                            english="Close Enforce",
+                        }):
+                            message_Talk({
+                                english=" There's nothing set yet.",
+                            });
+                            jump @label_15;
+                        case menu({
+                            english="SetActor",
+                        }):
+                            message_SetFace(ACTOR_NPC_ZUBATTO, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     First, you set the
+                                    portrait window.
+                                """,
+                            });
+                            message_SetActor(ACTOR_NPC_ZUBATTO);
+                            message_Talk({
+                                english=" There's no portrait window.",
+                            });
+                            message_Talk({
+                                english=" Is this OK?",
+                            });
+                            jump @label_15;
+                        case menu({
+                            english="SetFace",
+                        }):
+                            @label_22;
+                            message_Notice({
+                                english="""
+                                     This is your partner Totodile's
+                                    Portrait. What expression do you want?
+                                    [CS:E]B Button Cancel: Go back one menu step[CR]
+                                """,
+                            });
+                            switch ( message_SwitchMenu(1, 1) ) {
+                                case menu({
+                                    english="Standard",
+                                }):
+                                    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Expression 0
+                                            Standard
+                                        """,
+                                    });
+                                    jump @label_22;
+                                case menu({
+                                    english="Grin",
+                                }):
+                                    message_SetFace(ACTOR_ATTENDANT1, FACE_HAPPY, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Expression 1
+                                            Grin
+                                        """,
+                                    });
+                                    jump @label_22;
+                                case menu({
+                                    english="Pained",
+                                }):
+                                    message_SetFace(ACTOR_ATTENDANT1, FACE_PAIN, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Expression 2
+                                            Pained
+                                        """,
+                                    });
+                                    jump @label_22;
+                                case menu({
+                                    english="Angry",
+                                }):
+                                    message_SetFace(ACTOR_ATTENDANT1, FACE_ANGRY, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Expression 3
+                                            Angry
+                                        """,
+                                    });
+                                    jump @label_22;
+                                case menu({
+                                    english="Others",
+                                }):
+                                    @label_28;
+                                    message_Notice({
+                                        english="""
+                                             This is your partner Totodile's
+                                            Portrait. What expression do you want?
+                                            [CS:E]B Button Cancel: Go back one menu step[CR]
+                                        """,
+                                    });
+                                    switch ( message_SwitchMenu(1, 1) ) {
+                                        case menu({
+                                            english="Worried",
+                                        }):
+                                            message_SetFace(ACTOR_ATTENDANT1, FACE_WORRIED, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     Expression 4
+                                                    Worried
+                                                """,
+                                            });
+                                            jump @label_28;
+                                        case menu({
+                                            english="Sad",
+                                        }):
+                                            message_SetFace(ACTOR_ATTENDANT1, FACE_SAD, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     Expression 5
+                                                    Sad
+                                                """,
+                                            });
+                                            jump @label_28;
+                                        case menu({
+                                            english="Crying",
+                                        }):
+                                            message_SetFace(ACTOR_ATTENDANT1, FACE_CRYING, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     Expression 6
+                                                    Crying
+                                                """,
+                                            });
+                                            jump @label_28;
+                                        case menu({
+                                            english="Shouting",
+                                        }):
+                                            message_SetFace(ACTOR_ATTENDANT1, FACE_SHOUTING, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     Expression 7
+                                                    Shouting
+                                                """,
+                                            });
+                                            jump @label_28;
+                                        case menu({
+                                            english="Others",
+                                        }):
+                                            @label_33;
+                                            message_Notice({
+                                                english="""
+                                                     This is your partner Totodile's
+                                                    Portrait. What expression do you want?
+                                                    [CS:E]B Button Cancel: Go back one menu step[CR]
+                                                """,
+                                            });
+                                            switch ( message_SwitchMenu(1, 1) ) {
+                                                case menu({
+                                                    english="Teary-eyed",
+                                                }):
+                                                    message_SetFace(ACTOR_ATTENDANT1, FACE_TEARY_EYED, FACE_POS_STANDARD);
+                                                    message_Talk({
+                                                        english="""
+                                                             Expression 8
+                                                            Teary-eyed
+                                                        """,
+                                                    });
+                                                    jump @label_33;
+                                                case menu({
+                                                    english="Determined",
+                                                }):
+                                                    message_SetFace(ACTOR_ATTENDANT1, FACE_DETERMINED, FACE_POS_STANDARD);
+                                                    message_Talk({
+                                                        english="""
+                                                             Expression 9
+                                                            Determined
+                                                        """,
+                                                    });
+                                                    jump @label_33;
+                                                case menu({
+                                                    english="Joyous",
+                                                }):
+                                                    message_SetFace(ACTOR_ATTENDANT1, FACE_JOYOUS, FACE_POS_STANDARD);
+                                                    message_Talk({
+                                                        english="""
+                                                             Expression 10
+                                                            Joyous
+                                                        """,
+                                                    });
+                                                    jump @label_33;
+                                                case menu({
+                                                    english="Inspired",
+                                                }):
+                                                    message_SetFace(ACTOR_ATTENDANT1, FACE_INSPIRED, FACE_POS_STANDARD);
+                                                    message_Talk({
+                                                        english="""
+                                                             Expression 11
+                                                            Inspired
+                                                        """,
+                                                    });
+                                                    jump @label_33;
+                                                case menu({
+                                                    english="Others",
+                                                }):
+                                                    @label_38;
+                                                    message_Notice({
+                                                        english="""
+                                                             This is your partner Totodile's
+                                                            Portrait. What expression do you want?
+                                                            [CS:E]B Button Cancel: Go back one menu step[CR]
+                                                        """,
+                                                    });
+                                                    switch ( message_SwitchMenu(1, 1) ) {
+                                                        case menu({
+                                                            english="Surprised",
+                                                        }):
+                                                            message_SetFace(ACTOR_ATTENDANT1, FACE_SURPRISED, FACE_POS_STANDARD);
+                                                            message_Talk({
+                                                                english="""
+                                                                     Expression 12
+                                                                    Surprised
+                                                                """,
+                                                            });
+                                                            jump @label_38;
+                                                        case menu({
+                                                            english="Dizzy",
+                                                        }):
+                                                            message_SetFace(ACTOR_ATTENDANT1, FACE_DIZZY, FACE_POS_STANDARD);
+                                                            message_Talk({
+                                                                english="""
+                                                                     Expression 13
+                                                                    Dizzy
+                                                                """,
+                                                            });
+                                                            jump @label_38;
+                                                        case menu({
+                                                            english="Back",
+                                                        }):
+                                                            jump @label_15;
+                                                        default:
+                                                            jump @label_33;
+                                                    }
+                                                    break;
+                                                default:
+                                                    jump @label_28;
+                                            }
+                                            break;
+                                        default:
+                                            jump @label_22;
+                                    }
+                                    break;
+                                default:
+                                    jump @label_15;
+                            }
+                            break;
+                        case menu({
+                            english="Next",
+                        }):
+                            @label_23;
+                            message_Notice({
+                                english="""
+                                     This is Message Control.
+                                    What do you want to do? Choose.
+                                    [CS:E]B Button Cancel: Go back one menu step[CR]
+                                """,
+                            });
+                            switch ( message_SwitchMenu(1, 1) ) {
+                                case menu({
+                                    english="ResetActor",
+                                }):
+                                    message_SetFaceOnly(ACTOR_NPC_ZUBATTO, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english=" Set just the Portrait Window.",
+                                    });
+                                    message_ResetActor();
+                                    message_Talk({
+                                        english=" Delete!",
+                                    });
+                                    message_SetFace(ACTOR_NPC_ZUBATTO, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Set the Portrait Window and
+                                            speaking character.
+                                        """,
+                                    });
+                                    message_ResetActor();
+                                    message_Talk({
+                                        english=" Delete!",
+                                    });
+                                    message_SetActor(ACTOR_NPC_ZUBATTO);
+                                    message_Talk({
+                                        english=" There's no character portrait.",
+                                    });
+                                    message_ResetActor();
+                                    message_Talk({
+                                        english=" Delete!",
+                                    });
+                                    jump @label_23;
+                                case menu({
+                                    english="SetFacePosition",
+                                }):
+                                    @label_43;
+                                    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Notice({
+                                        english=" Choose the placement position.",
+                                    });
+                                    switch ( message_SwitchMenu(1, 1) ) {
+                                        case menu({
+                                            english="Standard",
+                                        }):
+                                            message_SetFacePosition(FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english=" Standard",
+                                            });
+                                            message_SetFacePosition(FACE_POS_ABSCOORD);
+                                            message_Talk({
+                                                english=" Absolute Coordinates Standard",
+                                            });
+                                            message_SetFacePosition(FACE_POS_ABSCOORDFACEL);
+                                            message_Talk({
+                                                english=" Absolute Coordinates Left",
+                                            });
+                                            message_SetFacePosition(FACE_POS_ABSCOORDFACER);
+                                            message_Talk({
+                                                english=" Absolute Coordinates Right",
+                                            });
+                                            jump @label_43;
+                                        case menu({
+                                            english="Bottom",
+                                        }):
+                                            message_SetFacePosition(FACE_POS_BOTTOM_C_FACER);
+                                            message_Talk({
+                                                english=" Bottom Center Right-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_L_FACEINW);
+                                            message_Talk({
+                                                english=" Bottom Left Inner-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_R_FACEINW);
+                                            message_Talk({
+                                                english=" Bottom Right Inner-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_L_CENTER);
+                                            message_Talk({
+                                                english=" Bottom Left Center",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_R_CENTER);
+                                            message_Talk({
+                                                english=" Bottom Right Center",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_C_FACEL);
+                                            message_Talk({
+                                                english=" Bottom Center Left-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_L_FACEOUTW);
+                                            message_Talk({
+                                                english=" Bottom Left Outer-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_R_FACEOUTW);
+                                            message_Talk({
+                                                english=" Bottom Right Outer-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_LC_FACEOUTW);
+                                            message_Talk({
+                                                english=" Bottom Left-Center Outer-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_BOTTOM_RC_FACEOUTW);
+                                            message_Talk({
+                                                english=" Bottom Right-Center Outer-Facing",
+                                            });
+                                            jump @label_43;
+                                        case menu({
+                                            english="Top",
+                                        }):
+                                            message_SetFacePosition(FACE_POS_TOP_C_FACER);
+                                            message_Talk({
+                                                english=" Top Center (Right-Facing)",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_L_FACEINW);
+                                            message_Talk({
+                                                english=" Top Left Inner-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_R_FACEINW);
+                                            message_Talk({
+                                                english=" Top Right Inner-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_L_CENTER);
+                                            message_Talk({
+                                                english=" Top Left Center",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_R_CENTER);
+                                            message_Talk({
+                                                english=" Top Right Center",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_C_FACEL);
+                                            message_Talk({
+                                                english=" Top Center (Left-Facing)",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_L_FACEOUTW);
+                                            message_Talk({
+                                                english=" Top Left-Center Right-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_RC_FACER);
+                                            message_Talk({
+                                                english=" Top Right-Center Right-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_LC_FACEOUTW);
+                                            message_Talk({
+                                                english=" Top Left-Center Outer-Facing",
+                                            });
+                                            message_SetFacePosition(FACE_POS_TOP_RC_FACEOUTW);
+                                            message_Talk({
+                                                english=" Top Right-Center Outer-Facing",
+                                            });
+                                            jump @label_43;
+                                        case menu({
+                                            english="Cancel",
+                                        }):
+                                            jump @label_23;
+                                        default:
+                                            jump @label_15;
+                                    }
+                                    break;
+                                case menu({
+                                    english="FacePositionOffset",
+                                }):
+                                    message_SetFace(ACTOR_NPC_ZUBATTO, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english=" Set the Portrait Window.",
+                                    });
+                                    message_FacePositionOffset(10, 0);
+                                    message_Talk({
+                                        english="""
+                                             The Portrait was moved
+                                            (X: 10). Moving it on the Y-axis will make it
+                                            cover the Message Window.
+                                        """,
+                                    });
+                                    message_FacePositionOffset(0, 0);
+                                    message_Talk({
+                                        english=" The Portrait was moved back.",
+                                    });
+                                    message_SetFace(ACTOR_NPC_ZUBATTO, FACE_NORMAL, FACE_POS_ABSCOORD);
+                                    message_Talk({
+                                        english="""
+                                             Right-Facing and on the corner
+                                            is the default position.
+                                        """,
+                                    });
+                                    message_FacePositionOffset(20, 10);
+                                    message_Talk({
+                                        english="""
+                                             Moved the Portrait.
+                                            (X: 20, Y: 10)
+                                        """,
+                                    });
+                                    message_FacePositionOffset(0, 0);
+                                    message_Talk({
+                                        english="""
+                                             The Portrait was returned to
+                                            the corner.
+                                        """,
+                                    });
+                                    message_SetFace(ACTOR_NPC_ZUBATTO, FACE_NORMAL, FACE_POS_STANDARD);
+                                    jump @label_23;
+                                case menu({
+                                    english="Cancel",
+                                }):
+                                    jump @label_10;
+                                default:
+                                    jump @label_15;
+                            }
+                            break;
+                        default:
+                            jump @label_7;
+                    }
+                    break;
+                case menu({
+                    english="Message Output",
+                }):
+                    @label_16;
+                    message_Notice({
+                        english="""
+                             This is Message Output.
+                            What do you want to do? Choose.
+                            [CS:E]B Button Cancel: Go back one menu step[CR]
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="Notice",
+                        }):
+                            message_Notice({
+                                english="""
+                                     Text is displayed all at once.
+                                    There is no Portrait Window.
+                                """,
+                            });
+                            jump @label_16;
+                        case menu({
+                            english="Monologue",
+                        }):
+                            message_Monologue({
+                                english=" It's like this.",
+                            });
+                            message_Talk({
+                                english="""
+                                     You don't get the talking
+                                    sound effect.
+                                """,
+                            });
+                            jump @label_16;
+                        case menu({
+                            english="Talk",
+                        }):
+                            message_Talk({
+                                english=" It's like this.",
+                            });
+                            jump @label_16;
+                        case menu({
+                            english="Mail",
+                        }):
+                            message_Mail({
+                                english="""
+                                     It's like this. You don't get a
+                                    Portrait Window.
+                                """,
+                            });
+                            jump @label_16;
+                        case menu({
+                            english="ImitationSound",
+                        }):
+                            message_ImitationSound({
+                                english="Kabooooooom!",
+                            });
+                            Wait(20);
+                            message_Notice({
+                                english="""
+                                     You can use that for
+                                    indicating sounds.
+                                """,
+                            });
+                            message_Notice({
+                                english="""
+                                     Incidentally, it shouldn't be
+                                    set to wait for the A Button, but it is.
+                                """,
+                            });
+                            message_SetFace(ACTOR_NPC_ZUBATTO, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_ImitationSound({
+                                english="""
+                                     The Portrait Window should be
+                                    displayed, but it doesn't appear to be set.
+                                """,
+                            });
+                            jump @label_16;
+                        case menu({
+                            english="Cancel",
+                        }):
+                            jump @label_10;
+                        default:
+                            jump @label_7;
+                    }
+                    break;
+                case menu({
+                    english="Choice Message",
+                }):
+                    message_Notice({
+                        english="""
+                             The speech will change depending
+                            on the hero and partner characters.
+                        """,
+                    });
+                    message_SetFace(ACTOR_PLAYER, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_SwitchMonologue ($HERO_TALK_KIND) {
+                        case 4:
+                            {
+                                english="(I'm disappointed but I'm a boy.)",
+                            }
+                        default:
+                            {
+                                english="(I'm a girl...)",
+                            }
+                    }
+                    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     I'm a Type 1 [partner].[K]
+                                    Nice to meet you!
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     I'm a Type 2 [partner].[K]
+                                    Nice to meet you!
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     I'm a Type 3 [partner].[K]
+                                    Nice to meet you!
+                                """,
+                            }
+                    }
+                    jump @label_7;
+                case menu({
+                    english="Multiple-Choice Tag",
+                }):
+                    message_Notice({
+                        english="To be added",
+                    });
+                    jump @label_7;
+                case menu({
+                    english="Cancel",
+                }):
+                    jump @label_10;
+                default:
+                    jump @label_11;
+            }
+            break;
+        case menu({
+            english="Message Color",
+        }):
+            message_Notice({
+                english="""
+                     [CS:T]Transparent[CR]
+                    [CS:D]Standard Color[CR]
+                    [CS:E]Bold Text[CR]
+                """,
+            });
+            message_Notice({
+                english="""
+                     [CS:C]Caution[CR]
+                    [CS:W]Warning[CR]
+                    [CS:F]Team Pokémon Name[CR]
+                """,
+            });
+            message_Notice({
+                english="""
+                     [CS:N]Pokémon Name[CR]
+                    [CS:K]Poké Species Name[CR]
+                    [CS:M]Move Name[CR]
+                """,
+            });
+            message_Notice({
+                english="""
+                     [CS:P]Place Name[CR]
+                    [CS:I]Item Name[CR]
+                    [CS:V]Number[CR]
+                """,
+            });
+            message_Notice({
+                english="""
+                     [CS:B]Forbidden Choice[CR]
+                    [CS:S]Multiple Items Selected[CR]
+                    [CS:A]Identified Item[CR]
+                """,
+            });
+            message_Notice({
+                english="""
+                     [CS:U]Unidentified Item[CR]
+                    [CS:G]Money[CR]
+                    [CS:R]Selling Price[CR]
+                """,
+            });
+            message_Close();
+            jump @label_10;
+        case menu({
+            english="Cancel",
+        }):
+            message_Notice({
+                english=" All right.",
+            });
+            jump @label_10;
+        default:
+            message_Talk({
+                english="""
+                     Oh, you canceled? Leaving me
+                    lonesome again...
+                """,
+            });
+            jump @label_10;
+    }
+}

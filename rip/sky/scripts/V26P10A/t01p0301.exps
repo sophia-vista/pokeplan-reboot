@@ -1,0 +1,30 @@
+
+def 0 {
+    WaitBgmSignal();
+    screen_FadeIn(1, 5);
+    Wait(70);
+    screen_FadeOut(1, 5);
+    back2_SetMode(4);
+    back2_SetGround(LEVEL_V24P08A);
+    back_SetGround(LEVEL_V26P10A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    camera2_SetPositionMark(Position<'m0', 19, 15.5>);
+    WaitBgmSignal();
+    screen2_FadeIn(0, 5);
+    screen_FadeIn(1, 5);
+    Wait(75);
+    supervision_Acting(1);
+    SetAnimation<object OBJECT_V26P10A1_335>(18);
+    back_SetBackEffect(3);
+    back2_SetBackEffect(3);
+    Wait(180);
+    screen2_FadeOut(0, 5);
+    screen_FadeOut(1, 5);
+    back2_SetMode(0);
+    WaitBgmSignal();
+    screen_FadeIn(1, 5);
+    Wait(90);
+    screen_FadeOut(1, 5);
+    end;
+}

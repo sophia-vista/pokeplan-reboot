@@ -1,0 +1,97 @@
+
+def 0 {
+    debug_Print('DEAD_S01P02A');
+    back_SetGround(LEVEL_S01P02A);
+    switch ( message_Menu(MENU_DUNGEON_EXPLORATION_RESULTS) ) { }
+    switch ( message_Menu(MENU_DUNGEON_TEAM_RETURNS_FROM_MAP) ) { }
+    bgm_PlayFadeIn(BGM_PELIPPER_ISLAND, 0, 256);
+    bgm2_PlayFadeIn(BGM_OCEAN1, 0, 128);
+    supervision_StationCommon(0);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    screen_FadeIn(1, 30);
+    switch ( ProcessSpecial(PROCESS_SPECIAL_GET_S_O_S_MISSION_RETRIES_LEFT, 0, 0) ) {
+        case 0:
+            @label_0;
+            message_SetFace(ACTOR_NPC_PERIPPAA1, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+            message_Talk({
+                english=" Oh! Welcome back!",
+            });
+            message_Talk({
+                english="""
+                     Now, how about that rescue you
+                    attempted?[K] Oh, it went badly...
+                """,
+            });
+            message_Talk({
+                english="""
+                     And now you're out of chances
+                    to go on this rescue mission.
+                """,
+            });
+            message_Talk({
+                english="""
+                     I'm sorry to say it, but please
+                    inform your friend that you failed the rescue.
+                """,
+            });
+            message_Close();
+            @label_1;
+            Unlock(3);
+            WaitExecuteLives(ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_NPC_PERIPPAA1);
+            supervision_ExecuteStationCommon(LEVEL_S01P02A, 1);
+            hold;
+        default:
+            message_SetFace(ACTOR_NPC_PERIPPAA1, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+            message_Talk({
+                english=" Oh! Welcome back!",
+            });
+            message_Talk({
+                english="""
+                     Now, how about that rescue you
+                    attempted?[K] Oh, it went badly...
+                """,
+            });
+            message_Talk({
+                english="""
+                     But you're not out of chances
+                    yet! There's no need to give up!
+                """,
+            });
+            message_Close();
+            jump @label_1;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    SetPositionInitial();
+    SetAnimation(2);
+    Lock(3);
+    SetFunctionAttribute(2);
+    hold;
+}
+
+def 2 for actor ACTOR_ATTENDANT1 {
+    SetPositionInitial();
+    SetAnimation(2);
+    Lock(3);
+    SetFunctionAttribute(2);
+    hold;
+}
+
+def 3 for actor ACTOR_NPC_PERIPPAA1 {
+    SetPositionInitial();
+    SetAnimation(2);
+    Lock(3);
+    hold;
+}
+
+def 4 for actor ACTOR_NPC_CHIRIIN {
+    if ( scn($SCENARIO_MAIN) >= [6, 3] ) {
+        jump @label_1;
+    } else {
+        Destroy();
+    }
+}

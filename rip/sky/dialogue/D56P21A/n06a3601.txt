@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_SAANAITO	Talk	.........
+NPC_CHAAREMU	Talk	Let's hurry up and go!

@@ -1,0 +1,3 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	N-nope...not this way.
+PLAYER_BIPPA	Talk	Kecleon Market is that way.

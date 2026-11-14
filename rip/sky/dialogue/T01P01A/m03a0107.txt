@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_BIPPA	Talk	It's called Treasure Town.
+ATTENDANT1	Talk	That place is Duskull Bank.
+ATTENDANT1	Talk	That over there is Duskull Bank.
+ATTENDANT1	Talk	We can save our money there.

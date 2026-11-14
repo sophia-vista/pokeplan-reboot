@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_METAMON	Talk	We've arrived.
+NPC_MANYUURA	Talk	Huh?!
+NPC_DORAPION	Talk	Waaah!

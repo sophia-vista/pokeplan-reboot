@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_ZUBATTO	Talk	Hey!
+NPC_DOGAASU	Talk	You two?!
+ATTENDANT1	Talk	Huh? That duo...

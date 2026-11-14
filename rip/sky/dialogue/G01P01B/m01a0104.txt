@@ -1,0 +1,16 @@
+speaker	kind	line
+-	Talk	Pokémon detected! Pokémon detected!
+-	Talk	Whose footprint? Whose footprint?
+ATTENDANT1	Talk	Waah!
+ATTENDANT1	Talk	That shocked me!
+ATTENDANT1	Talk	That was too shocking!
+ATTENDANT1	Talk	That shocked me!
+ATTENDANT1	Talk	Whew...
+ATTENDANT1	Talk	But I just can't do it.
+ATTENDANT1	Talk	Sigh...I just can't do it.
+ATTENDANT1	Talk	I'm such a coward...
+ATTENDANT1	Talk	This is so discouraging...
+NPC_DOGAASU	Talk	Hey, Zubat. Did you get a load of that?!
+NPC_ZUBATTO	Talk	You bet I did, Koffing.
+NPC_DOGAASU	Talk	Do we go after it?
+NPC_ZUBATTO	Talk	We do.

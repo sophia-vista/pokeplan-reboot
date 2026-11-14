@@ -1,0 +1,29 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	This is...?
+NPC_YONOWAARU	Talk	Frozen Island.
+NPC_YONOWAARU	Talk	It's become closed off.
+PLAYER_FUTURE	Talk	So...where do we go, then?
+NPC_YUKIWARASHI	Talk	Gii!
+PLAYER_FUTURE	Talk	What was that?
+NPC_YUKIWARASHI	Talk	Gigii...
+PLAYER_FUTURE	Talk	H-hey! Wait up a moment!
+NPC_YUKIWARASHI	Talk	Gigii?
+PLAYER_FUTURE	Talk	I have something I want to ask.
+PLAYER_FUTURE	Talk	Did you see anyone?
+NPC_YUKIWARASHI	Talk	Gigii? Gigigii?
+NPC_YUKIWARASHI	Talk	Gigigii?
+NPC_YUKIWARASHI	Talk	Gii.
+NPC_YUKIWARASHI	Talk	Gigii.
+PLAYER_FUTURE	Talk	It's really important!
+NPC_YUKIWARASHI	Talk	Gii!
+NPC_YUKIWARASHI	Talk	Gii! Gii!
+PLAYER_FUTURE	Talk	Did you understand any of that?
+NPC_YUKIWARASHI	Talk	Giiii...
+NPC_YUKIWARASHI	Talk	Giiii giiii...
+NPC_YUKIWARASHI	Talk	Giiiiii!!
+PLAYER_FUTURE	Talk	GWAH!
+NPC_YUKIWARASHI	Talk	GWAH-HA-HA-HA-HA-HA!
+PLAYER_FUTURE	Talk	Bah... Argh! They're no help!
+PLAYER_FUTURE	Talk	They're just teasing me!
+PLAYER_FUTURE	Talk	Yes, I see. ...However...
+NPC_YONOWAARU	Talk	(No.)

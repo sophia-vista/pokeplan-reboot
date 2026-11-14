@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_KINOGASSA	Talk	Yeah! We're here!
+NPC_KINOGASSA	Talk	Heh-heh. You're welcome.
+NPC_KINOGASSA	Talk	See you along the path!
+NPC_SHEIMI	Talk	Yep! See you there!
+NPC_KINOGASSA	Talk	All right, we're off!

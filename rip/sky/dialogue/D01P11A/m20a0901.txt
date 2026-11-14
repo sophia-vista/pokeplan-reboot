@@ -1,0 +1,33 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	Let's go to Treasure Town!
+ATTENDANT1	SwitchMenu	Wh-why?!
+PLAYER	SwitchMenu	(Th-that's true.)
+PLAYER	SwitchMenu	(What would we possibly do there?)
+PLAYER	SwitchMenu	(I flubbed it. I guess that's not what I meant.)
+ATTENDANT1	SwitchMenu	Huh? That was a mistake?
+ATTENDANT1	SwitchMenu	What? That was a mistake?
+ATTENDANT1	SwitchMenu	Pardon? That was a mistake?
+ATTENDANT1	SwitchMenu	Let's go to Wigglytuff's Guild!
+ATTENDANT1	SwitchMenu	Wh-why?!
+ATTENDANT1	SwitchMenu	And I miss everyone too...
+ATTENDANT1	SwitchMenu	How can they believe us?!
+ATTENDANT1	SwitchMenu	They'll believe!
+ATTENDANT1	SwitchMenu	So you think they'll believe us!
+ATTENDANT1	SwitchMenu	You think they'll believe us!
+PLAYER	SwitchMenu	(..................)
+PLAYER	SwitchMenu	(It's true.)
+PLAYER	SwitchMenu	(What  is saying is true.)
+PLAYER	SwitchMenu	(But...!)
+ATTENDANT1	SwitchMenu	Wh-why?!
+ATTENDANT1	SwitchMenu	But we should tell them anyway?
+ATTENDANT1	SwitchMenu	Yes! Tell them!
+ATTENDANT1	SwitchMenu	Wh-why?!
+ATTENDANT1	SwitchMenu	We need everyone's help!
+ATTENDANT1	SwitchMenu	Everyone's help...
+ATTENDANT1	SwitchMenu	We do need everyone's help.
+ATTENDANT1	SwitchMenu	..................
+ATTENDANT1	SwitchMenu	...
+PLAYER	SwitchMenu	(!)
+ATTENDANT1	SwitchMenu	Let's go home, !
+ATTENDANT1	SwitchMenu	Back to Wigglytuff's Guild!
+ATTENDANT1	SwitchMenu	I don't know...

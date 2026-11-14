@@ -1,0 +1,73 @@
+speaker	kind	line
+NPC_SHEIMI	Talk	Send a Sky Gift to a friend?
+NPC_SHEIMI	SwitchMenu	Send
+NPC_SHEIMI	Talk	Who will you send it to?
+NPC_SHEIMI	SwitchMenu	Guildmaster
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	SwitchMenu	No
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Chatot
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Is it OK to send it to Chatot?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Diglett
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Is it OK to send it to Diglett?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Dugtrio
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Is it OK to send it to Dugtrio?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Sunflora
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Is it OK to send it to Sunflora?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Loudred
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Is it OK to send it to Loudred?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Corphish
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Is it OK to send it to Corphish?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Chimecho
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Send it to Chimecho?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Bidoof
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Is it OK to send it to Bidoof?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Croagunk
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	Talk	Is it OK to send it to Croagunk?
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Please check with Spinda.
+NPC_SHEIMI	SwitchMenu	Yes
+NPC_SHEIMI	Talk	Anything else we can do?
+NPC_SHEIMI	Talk	No
+NPC_SHEIMI	Talk	Cancel
+NPC_SHEIMI	Talk	Info
+NPC_SHEIMI	Talk	Cancel
+NPC_SHEIMI	Talk	Hi there, travelers!

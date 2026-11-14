@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	WHAT? What's going on?!
+NPC_DOGOOMU	Talk	...OK. Got it! Hold on!
+NPC_DOGOOMU	Talk	You two! Team !
+ATTENDANT1	Talk	Huh? What?
+ATTENDANT1	Talk	Huh? Excuse me?
+ATTENDANT1	Talk	Huh? Pardon me?
+ATTENDANT1	Talk	What's up?
+ATTENDANT1	Talk	You called?
+ATTENDANT1	Talk	What's up?
+ATTENDANT1	Talk	Visitors?
+ATTENDANT1	Talk	I wonder who it is...
+ATTENDANT1	Talk	Who could it be?
+ATTENDANT1	Talk	I wonder who it is...

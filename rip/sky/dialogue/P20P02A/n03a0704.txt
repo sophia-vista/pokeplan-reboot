@@ -1,0 +1,7 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Wow! Treasure! Treasure! ♪
+NPC_AAMARUDO	Talk	Uwaaaaaaaaaaahhhhhhhhhhhh!
+PLAYER_PUPURIN	Talk	M-Master! Master!
+PLAYER_PUPURIN	Talk	Master!!!
+PLAYER_PUPURIN	Mail	Just like that, we...
+PLAYER_PUPURIN	Narration	Then... A few months later...

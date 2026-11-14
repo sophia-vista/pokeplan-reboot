@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_SAANAITO	Talk	Get ready so we can go.
+NPC_SAANAITO	Talk	Let's get ready, Lopunny.
+NPC_SAANAITO	Talk	Maybe it's a hidden doorway!
+NPC_SAANAITO	Talk	Let's really do it this time.
+NPC_SAANAITO	Talk	Let's try again.
+NPC_SAANAITO	Talk	Let's try and head deeper again.

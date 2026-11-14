@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!
+ATTENDANT1	Talk	We...did it...
+NPC_DARK_DIARUGA	Talk	GRR... GRRRRRR...
+ATTENDANT1	Talk	OK, ! It's time!
+ATTENDANT1	Talk	Wa-waah!
+ATTENDANT1	Talk	Th-this...
+PLAYER	Talk	(T-Temporal Tower is...)
+PLAYER	Talk	(If... If that were to happen...)

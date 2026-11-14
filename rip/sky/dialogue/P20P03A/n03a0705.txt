@@ -1,0 +1,5 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Wow! Amazing! ♪
+PLAYER_PUPURIN	Talk	All right! ♪
+NPC_AAMARUDO	Talk	... (I'm sure...)
+NPC_AAMARUDO	Talk	Y-yeah... I'm on my way.

@@ -1,0 +1,101 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [42, 4] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN_MAMA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Lately, [CS:N]Smoochum[CR] has come
+                around asking for you when you're not home...
+            """,
+        });
+        message_Talk({
+            english="""
+                 Aren't you playing with
+                [CS:N]Smoochum[CR] and the others?
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Yeah...[K]I'm a bit busy exploring.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_PUKURIN_MAMA, FACE_WORRIED, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Exploring? [K]With [CS:N]Banette[CR]...?",
+        });
+        message_Talk({
+            english="""
+                 It's dangerous out there, so don't
+                go too far...
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Yep! ♪[K] Got it, [CS:N]Mama[CR]. ♪",
+        });
+        message_Close();
+        @label_4;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [41, 6] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN_MAMA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Be careful out there today.",
+        });
+        message_Talk({
+            english=" Don't go anywhere dangerous.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english="""
+                 Yep! ♪[K] I'll be careful,
+                [CS:N]Mama[CR]. ♪
+            """,
+        });
+        message_Close();
+        jump @label_4;
+    } elseif ( scn($SCENARIO_SIDE) >= [41, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN_MAMA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Be careful, OK?",
+        });
+        message_Talk({
+            english=" Come home before it gets dark.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Yep! ♪[K] Got it, [CS:N]Mama[CR]. ♪",
+        });
+        message_Close();
+        jump @label_4;
+    } elseif ( scn($SCENARIO_SIDE) >= [41, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN_MAMA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Have fun playing, but be careful!",
+        });
+        message_Talk({
+            english=" Come back before it gets dark.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Yeah. ♪",
+        });
+        message_Close();
+        jump @label_4;
+    } else {
+        jump @label_4;
+    }
+}

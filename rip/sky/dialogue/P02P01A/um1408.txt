@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_MANKII	Talk	But go do it! Save the world!

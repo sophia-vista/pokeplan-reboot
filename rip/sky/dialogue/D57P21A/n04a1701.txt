@@ -1,0 +1,8 @@
+speaker	kind	line
+-	Mail	Would you like to go on?
+-	SwitchMenu	Yes
+NPC_GOOSUTO	Talk	...She...
+NPC_GOOSUTO	Talk	So persistent... Good grief.
+NPC_GOOSUTO	Talk	...That's right!
+NPC_GOOSUTO	Talk	She's a Grass-type Pokémon.
+NPC_GOOSUTO	Talk	No

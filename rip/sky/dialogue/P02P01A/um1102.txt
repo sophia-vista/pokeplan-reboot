@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_OKORIZARU	Talk	We owe a lot to you.
+NPC_OKORIZARU	Talk	So...we've come but...
+NPC_OKORIZARU	Talk	I'm lucky the Hot Spring exists!

@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_RINGUMA	Talk	Thank you so much!
+NPC_RINGUMA	Talk	Your team is so cool!
+NPC_RINGUMA	Talk	It's a crisis!
+NPC_RINGUMA	Talk	Cheer up.
+NPC_RINGUMA	Talk	Pardon? That cutie's fallen ill?
+NPC_RINGUMA	Talk	Oh! What a cutie!
+NPC_RINGUMA	Talk	I'm Ursaring.

@@ -1,0 +1,22 @@
+speaker	kind	line
+ATTENDANT1	Talk	Groudon? How'd you do that?
+NPC_YUKUSHII	Talk	Like so...
+ATTENDANT1	Talk	Waah!
+NPC_YUKUSHII	Talk	There is no need to be startled.
+NPC_YUKUSHII	Talk	As I've said, it's just an illusion.
+NPC_YUKUSHII	Talk	And, thus, protected the lake.
+ATTENDANT1	Talk	Took away their memories...?
+ATTENDANT1	Talk	Meet my partner, !
+NPC_YUKUSHII	Talk	Oh, really? A human?
+NPC_YUKUSHII	Talk	The cause lies elsewhere.
+ATTENDANT1	Talk	Oh, well...OK.
+ATTENDANT1	Talk	Oh, well...that's OK.
+ATTENDANT1	Talk	Oh, well...thanks anyway.
+NPC_PUKURIN	Talk	We can't take a Time Gear.
+ATTENDANT1	FacePositionOffset	W-Wigglytuff!
+NPC_PUKURIN	Talk	Wow! Fantastic!
+NPC_YUKUSHII	Talk	And who might this be?
+ATTENDANT1	Talk	Our Guildmaster!
+ATTENDANT1	Talk	That's our Guildmaster!
+ATTENDANT1	Talk	Oh, meet our Guildmaster!
+NPC_PUKURIN	Talk	Gaze upon this amazing view!

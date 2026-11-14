@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PARUKIA	Talk	I HAVE FOUND YOU AT LAST!
+ATTENDANT1	Talk	Who are you...?
+PLAYER	Talk	(P-Palkia?!)
+ATTENDANT1	Talk	Y-you're Palkia?!
+NPC_PARUKIA	Talk	GRRR-OOOOOO!
+ATTENDANT1	Talk	Waaaaaah!

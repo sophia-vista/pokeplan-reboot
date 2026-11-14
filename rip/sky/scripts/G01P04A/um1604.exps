@@ -1,0 +1,467 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh, [hero] and
+                [partner]!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I'm happy to see you! Are you
+                visiting us?
+            """,
+        });
+        message_Talk({
+            english="""
+                 By the way...[K] Have you seen my
+                dad anywhere?
+            """,
+        });
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_PAIN, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I haven't seen him for a while.
+                I'm beginning to get worried...
+            """,
+        });
+        message_Close();
+        @label_130;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I'm glad to see your team back
+                safely, [hero]!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I hope your team does well,
+                [hero]!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] || scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] || scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] || scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] || scn($SCENARIO_MAIN) >= [29, 56] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_PAIN, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 It sounds like a challenging
+                dungeon, that [CS:P]Aegis Cave[CR].
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 55] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        se_Play(8972);
+        SetEffect<actor ACTOR_NPC_DIGUDA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Ugh...[K] I would love to go too...",
+        });
+        message_Talk({
+            english="""
+                 But [CS:N]Loudred[CR] is all set and raring
+                to go...[K] He's beaten me to the punch.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I'll have to stay behind at the
+                guild to look after the sentry post.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] || scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] || scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] || scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] || scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] || scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] || scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] || scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] || scn($SCENARIO_MAIN) >= [29, 8] || scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] || scn($SCENARIO_MAIN) >= [29, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" ...........................",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_PAIN, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Excuse me?![K] The grand master of
+                all things bad?!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I...I really can't tell you...[K]
+                Please, I just can't...
+            """,
+        });
+        message_Talk({
+            english=" I'm so sorry...",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh, [partner] and
+                [hero]!
+            """,
+        });
+        message_Talk({
+            english="""
+                 My thoughts go with you![K]
+                Good luck!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_PAIN, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Ugh...[K] Our team was wiped out
+                as well.
+            """,
+        });
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 But we won't give up! We'll do
+                our best!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] || scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I'm helping to get word out
+                about what really happened.
+            """,
+        });
+        message_Talk({
+            english="""
+                 The others are finding it hard to
+                believe right away...
+            """,
+        });
+        message_Talk({
+            english=" But I'll do my best!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Yes, [CS:N]Loudred[CR]!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [17, 1] || scn($SCENARIO_MAIN) >= [16, 2] || scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] || scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] || scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] || scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] || scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] || scn($SCENARIO_MAIN) >= [12, 1] || scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hey![K] [hero]!
+                [partner]!
+            """,
+        });
+        message_Talk({
+            english="""
+                 This is my first time out on an
+                expedition, so I'm a little nervous.
+            """,
+        });
+        message_Talk({
+            english="""
+                 But let's be sure to make this a
+                success!
+            """,
+        });
+        message_Talk({
+            english=" Incidentally...",
+        });
+        message_Talk({
+            english="""
+                 Do you know anything about the
+                Secret Bazaar, [hero]?
+            """,
+        });
+        message_Talk({
+            english="""
+                 I haven't seen it either, but...[K]
+                A rumor tells me that the Secret Bazaar is...
+            """,
+        });
+        message_Talk({
+            english="""
+                 A mysterious facility that
+                appears occasionally in dungeons...
+            """,
+        });
+        message_Talk({
+            english="""
+                 You can heal your wounds and
+                even buy a Grab Bag there, so I hear...
+            """,
+        });
+        message_Talk({
+            english="""
+                 Several kinds of shops
+                are there.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I wonder what other shops can
+                be found there...[K] I'd love to find out
+                for myself...
+            """,
+        });
+        message_Talk({
+            english="""
+                 Maybe there's a chance we can
+                find the Secret Bazaar on our expedition?
+            """,
+        });
+        message_Talk({
+            english=" Ooh, I'm so excited!",
+        });
+        message_Talk({
+            english="""
+                 If you happen to find the
+                Secret Bazaar, [hero], be sure to tell
+                me all about it!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] || scn($SCENARIO_MAIN) >= [8, 3] || scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] ) {
+        $SCENARIO_TALK_BIT_FLAG[26] = 1;
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DAGUTORIO>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_TOP_LC_FACEOUTW);
+        message_Talk({
+            english=" My son.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2DirectionLives<actor ACTOR_NPC_DIGUDA>(4, 10, ACTOR_NPC_DAGUTORIO);
+        WaitExecuteLives(ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEINW);
+        message_Talk({
+            english=" Yes, Dad?",
+        });
+        message_Talk({
+            english=" Why did you call me out here?",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_TOP_LC_FACEOUTW);
+        message_Talk({
+            english=" See?[K] The sea is vast.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8962);
+        SetEffect<actor ACTOR_NPC_DIGUDA>(EFFECT_QUESTION_MARK, 3);
+        WaitEffect<actor ACTOR_NPC_DIGUDA>();
+        WaitExecuteLives(ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEINW);
+        message_Talk({
+            english="""
+                 Um, yes... But why are you
+                telling me this?
+            """,
+        });
+        message_Talk({
+            english=" I'm supposed to be working, Dad.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8972);
+        SetEffect<actor ACTOR_NPC_DIGUDA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+        WaitEffect<actor ACTOR_NPC_DIGUDA>();
+        WaitExecuteLives(ACTOR_NPC_DIGUDA);
+        message_Talk({
+            english="""
+                 If I don't go back soon, I'll get
+                an earful from [CS:N]Loudred[CR].
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_TOP_LC_FACEOUTW);
+        message_Talk({
+            english=" You'll be scolded?",
+        });
+        message_Talk({
+            english="""
+                 Why let such a paltry matter
+                cloud your thoughts?
+            """,
+        });
+        message_Talk({
+            english="""
+                 Broaden your perspective...[K]
+                Like the sea before you.
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8972);
+        SetEffect<actor ACTOR_NPC_DIGUDA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+        WaitEffect<actor ACTOR_NPC_DIGUDA>();
+        WaitExecuteLives(ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEINW);
+        message_Talk({
+            english=" I don't know what that means!",
+        });
+        message_Talk({
+            english="""
+                 I'm going back to the guild.[K]
+                I want to be chosen for the expedition.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Dad, you should quit wasting
+                time here and get back to work.[K] See you.
+            """,
+        });
+        message_Close();
+        SetDirection<actor ACTOR_NPC_DIGUDA>(DIR_UP);
+        se_Play(6422);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(24);
+        WaitAnimation<actor ACTOR_NPC_DIGUDA>();
+        Destroy<actor ACTOR_NPC_DIGUDA>();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 6] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Team [CS:X]Skull[CR] is kind of scary...",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] || scn($SCENARIO_MAIN) >= [7, 1] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+        message_Talk({
+            english="""
+                 Let's do a good job again today,
+                [CS:N]Loudred[CR]!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] || scn($SCENARIO_MAIN) >= [5, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Thank you for covering my
+                sentry shift!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I may have to ask you again.
+                I hope you'll cover for me then!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 7] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Let's do our best, [CS:N]Loudred[CR]!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 5] || scn($SCENARIO_MAIN) >= [4, 3] || scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] || scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DIGUDA);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Yes![K] I'll try my hardest!",
+        });
+        message_Close();
+        jump @label_130;
+    } else {
+        jump @label_130;
+    }
+}

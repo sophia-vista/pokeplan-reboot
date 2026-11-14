@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	Uxie...Mesprit...Azelf...
+NPC_YONOWAARU	Talk	I entrust you with the rest.
+NPC_AGUNOMU	Talk	Yep.
+NPC_EMURITTO	Talk	We know.
+NPC_YUKUSHII	Talk	We got the Time Gears back.
+NPC_YONOWAARU	Talk	The task is yours.

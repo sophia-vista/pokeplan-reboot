@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_SEREBII	Talk	Let's go already!
+NPC_SEREBII	Talk	Ugh! We couldn't get through...
+NPC_SEREBII	Talk	We need to keep moving!

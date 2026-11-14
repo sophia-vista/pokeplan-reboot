@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Talk	A Special Movement Test will be conducted.
+-	Talk	The Test is finished.

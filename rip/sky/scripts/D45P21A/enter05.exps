@@ -1,0 +1,91 @@
+
+def 0 {
+    switch ( $GROUND_ENTER ) {
+        case 254:
+        default:
+            @label_0;
+            if ( scn($SCENARIO_SIDE) >= [42, 5] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_AAMARUDO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         You can make a record of your
+                        adventure and take out items using the
+                        Kangaskhan Rock.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Use the Kangaskhan Rock to 
+                        prepare for the exploration.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Once you're done with that, let's
+                        head out on our exploration.
+                    """,
+                });
+                message_Close();
+                @label_3;
+                JumpCommon(CORO_END_TALK);
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_AAMARUDO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         You can use the Kangaskhan Rock
+                        to take any items you might need.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Anyway, go ahead and make a
+                        record of your adventure and take out items
+                        using the Kangaskhan Rock.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Once you're done with that, let's
+                        head out on our exploration.
+                    """,
+                });
+                message_Close();
+                jump @label_3;
+            }
+            break;
+        case 110:
+            if ( scn($SCENARIO_SIDE) >= [42, 8] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_AAMARUDO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Let's try again.",
+                });
+                message_Talk({
+                    english=" We'll get there this time.",
+                });
+                message_Close();
+                jump @label_3;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_AAMARUDO, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We're almost there.",
+                });
+                message_Talk({
+                    english="""
+                         Let's keep going, but remain
+                        cautious.
+                    """,
+                });
+                message_Close();
+                jump @label_3;
+            }
+            break;
+    }
+}

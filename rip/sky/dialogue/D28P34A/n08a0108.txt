@@ -1,0 +1,90 @@
+speaker	kind	line
+-	Narration	Collected the Time Gears...
+-	Narration	However...
+NPC_HERO_FIRST	Talk	(Waah!)
+PLAYER_FUTURE	Talk	Urrgggghhh!
+NPC_HERO_FIRST	Talk	(Grovyle!)
+NPC_YONOWAARU	Talk	That's taken a heavy toll on you!
+PLAYER_FUTURE	Talk	Uwroh... Wrooooooooh!
+NPC_YONOWAARU	Talk	Wh-what are you doing?!
+PLAYER_FUTURE	Talk	Urrggh... Dusknoir!
+PLAYER_FUTURE	Talk	I'm... I'm taking you with me...
+PLAYER_FUTURE	Talk	We're going back to the future!
+NPC_YONOWAARU	Talk	Wha...
+NPC_HERO_FIRST	Talk	(What?!)
+NPC_YONOWAARU	Talk	Gah! Those are...!
+NPC_HERO_FIRST	Talk	(Time Gears!)
+NPC_PARTNER_FIRST	Talk	Wha...what's going on?!
+NPC_PARTNER_FIRST	Talk	Wha...what's happening?!
+PLAYER_FUTURE	Talk	! This is it for me!
+NPC_PARTNER_FIRST	Talk	Huh?! Wh-what?!
+NPC_PARTNER_FIRST	Talk	B-but...!
+NPC_YONOWAARU	Talk	Gwoh! Unhand me! Release me!
+PLAYER_FUTURE	Talk	We're almost there! Quiet!
+PLAYER_FUTURE	Talk	...!
+PLAYER_FUTURE	Talk	Take care, .
+PLAYER_FUTURE	Talk	I was lucky to have known you.
+NPC_HERO_FIRST	Talk	(Grovyle!)
+PLAYER_FUTURE	Talk	Sorry for the holdup, Dusknoir!
+NPC_YONOWAARU	Talk	Gwaaaaaaah!
+NPC_YONOWAARU	Narration	After entrusting his mission to his friends...
+NPC_PARTNER_FIRST	Narration	Ugh... Grovyle... Why...?
+NPC_HERO_FIRST	Narration	(Grovyle...)
+NPC_HERO_FIRST	Narration	Yet  and  were...
+NPC_HERO_FIRST	Narration	Desperately trying to contain their sorrow...
+NPC_PARTNER_FIRST	Narration	Hey, !
+NPC_PARTNER_FIRST	Narration	Filled with that sentiment...
+NPC_PARTNER_FIRST	Narration	They set off on a final adventure...
+NPC_PARTNER_FIRST	Narration	But then...
+NPC_PARTNER_FIRST	Narration	Grovyle...
+NPC_PARTNER_FIRST	Notice	Start from where?
+NPC_PARTNER_FIRST	SwitchMenu	Beginning
+NPC_PARTNER_FIRST	SwitchMenu	BarrenValley1stTry
+NPC_PARTNER_FIRST	SwitchMenu	BarrenValley2ndTry
+NPC_PARTNER_FIRST	SwitchMenu	BarrenValleyBoss2ndTry
+NPC_PARTNER_FIRST	SwitchMenu	BarrenValleyWaypoint
+NPC_PARTNER_FIRST	SwitchMenu	DarkWasteland1stTry
+NPC_PARTNER_FIRST	SwitchMenu	DarkWasteland2ndTry
+NPC_PARTNER_FIRST	SwitchMenu	TemporalTower1stTry
+NPC_PARTNER_FIRST	SwitchMenu	TemporalTower2ndTry
+NPC_PARTNER_FIRST	SwitchMenu	TemporalTower2-1stTry
+NPC_PARTNER_FIRST	Menu	TemporalTower2-2ndTry
+NPC_PARTNER_FIRST	Menu	DuskForest1stTry
+NPC_PARTNER_FIRST	Menu	DuskForest2ndTry
+NPC_PARTNER_FIRST	Menu	DuskForestBoss2ndTry
+NPC_PARTNER_FIRST	Menu	SpacialCliffs1stTry
+NPC_PARTNER_FIRST	Menu	SpacialCliffs2ndTry
+NPC_PARTNER_FIRST	Menu	DarkIceMountain1stTry
+NPC_PARTNER_FIRST	Menu	DarkIceMountain2ndTry
+NPC_PARTNER_FIRST	Menu	DarkIceMountain2-1stTry
+NPC_PARTNER_FIRST	Menu	DarkIceMountain2-2ndTry
+NPC_PARTNER_FIRST	Menu	DarkIceMountain2-Boss2ndTry
+NPC_PARTNER_FIRST	Menu	IcicleForest1stTry
+NPC_PARTNER_FIRST	Menu	IcicleForest2ndTry
+NPC_PARTNER_FIRST	Menu	VastIceMountain1stTry
+NPC_PARTNER_FIRST	Menu	VastIceMountain2ndTry
+NPC_PARTNER_FIRST	Menu	VastIceMountainBoss2ndTry
+NPC_PARTNER_FIRST	Menu	VastIceMountain2-1stTry
+NPC_PARTNER_FIRST	Menu	VastIceMountain2-2ndTry
+NPC_PARTNER_FIRST	Menu	VastIceMountain2-Boss2ndTry
+NPC_PARTNER_FIRST	Menu	TALK-N08-01
+NPC_PARTNER_FIRST	Menu	TALK-N08-02
+NPC_PARTNER_FIRST	Menu	TALK-N08-03
+NPC_PARTNER_FIRST	Menu	TALK-N08-04
+NPC_PARTNER_FIRST	Menu	TALK-N08-05
+NPC_PARTNER_FIRST	Menu	TALK-N08-06
+NPC_PARTNER_FIRST	Menu	TALK-N08-07
+NPC_PARTNER_FIRST	Menu	TALK-N08-08
+NPC_PARTNER_FIRST	Menu	TALK-N08-09
+NPC_PARTNER_FIRST	Menu	TALK-N08-10
+NPC_PARTNER_FIRST	Menu	TALK-N08-11
+NPC_PARTNER_FIRST	Menu	TALK-N08-12
+NPC_PARTNER_FIRST	Menu	TALK-N08-13
+NPC_PARTNER_FIRST	Menu	TALK-N08-14
+NPC_PARTNER_FIRST	Menu	TALK-N08-15
+NPC_PARTNER_FIRST	Menu	TALK-N08-16
+NPC_PARTNER_FIRST	Menu	TALK-N08-17
+NPC_PARTNER_FIRST	Menu	TALK-N08-18
+NPC_PARTNER_FIRST	Menu	TALK-N08-19
+NPC_PARTNER_FIRST	Menu	TALK-N08-20
+NPC_PARTNER_FIRST	Menu	TALK-N08-21

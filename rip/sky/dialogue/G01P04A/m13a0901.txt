@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	While we develop this strategy...
+NPC_PERAPPU	Talk	That is all.
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+ATTENDANT1	Talk	Well, where should we go?
+ATTENDANT1	Talk	Where should we go?
+ATTENDANT1	Talk	So where should we go?
+PLAYER	Talk	(Hmmm, I wonder...?)
+PLAYER	Talk	(Oh! Wait a second!)
+PLAYER	Talk	(Yesterday...when we were out there...)

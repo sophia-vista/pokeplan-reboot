@@ -1,0 +1,15 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Master, are you OK?
+NPC_AAMARUDO	Talk	Y-yeah. How are you, Junior?
+PLAYER_PUPURIN	Talk	I'm OK. ♪
+PLAYER_PUPURIN	Talk	Hey, Master.
+NPC_AAMARUDO	Talk	What is it?
+NPC_AAMARUDO	Talk	T-trap?
+PLAYER_PUPURIN	ImitationSound	???: GARURURURURURURURURURURU...
+PLAYER_PUPURIN	Talk	Hey! I can hear something. ♪
+PLAYER_PUPURIN	Talk	I'm not calm.
+PLAYER_PUPURIN	Talk	I'm incredibly...excited! ♪
+PLAYER_PUPURIN	ImitationSound	???: GWWWOOOOOOAAAaaaaaAAAAAHHHH!!!
+PLAYER_PUPURIN	Talk	They're here! ♪
+PLAYER_PUPURIN	Talk	Let's do our best, Master! ♪
+NPC_AAMARUDO	Talk	Don't we always?!

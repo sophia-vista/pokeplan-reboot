@@ -1,0 +1,3 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	We'll head on back for now...
+PLAYER_BIPPA	Talk	Let's hurry up!

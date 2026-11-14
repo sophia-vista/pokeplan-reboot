@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	I finished making dinner! ♪
+NPC_CHIRIIN	Talk	Come on! Dinner's on! ♪
+NPC_CHIRIIN	Talk	Everyone: YEAH!

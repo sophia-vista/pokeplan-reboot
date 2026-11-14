@@ -1,0 +1,20 @@
+speaker	kind	line
+ATTENDANT1	Talk	But...
+ATTENDANT1	Talk	Time here seems to be stopped.
+ATTENDANT1	Talk	There's no wind...
+ATTENDANT1	Talk	No wind is blowing...
+ATTENDANT1	Talk	There isn't even a breeze...
+ATTENDANT1	Talk	Time really is stopped here!
+ATTENDANT1	Talk	Time is stopped here!
+ATTENDANT1	Talk	Time has really stopped here!
+NPC_JUPUTORU	Talk	........................
+ATTENDANT1	Mail	Hey! What are you doing?!
+NPC_JUPUTORU	Talk	Time has already stopped here.
+ATTENDANT1	Talk	M-more worrying?
+NPC_JUPUTORU	Talk	Forget it. Let's leave.
+ATTENDANT1	Talk	What is it?
+ATTENDANT1	Talk	In Treasure Town?
+ATTENDANT1	Talk	Gotcha. I'll go find out.
+ATTENDANT1	Talk	OK. I'll go find out.
+ATTENDANT1	Talk	Sure thing. I'll go find out.
+NPC_JUPUTORU	Talk	I'm counting on you.

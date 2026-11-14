@@ -1,0 +1,855 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] || scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] || scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] || scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] || scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] || scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] || scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] || scn($SCENARIO_MAIN) >= [29, 56] || scn($SCENARIO_MAIN) >= [29, 55] || scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] || scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] || scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] || scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] || scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] || scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_SHEIMI1);
+        if ( $SCENARIO_TALK_BIT_FLAG[123] ) {
+            @label_132;
+            message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english=" Send a [CS:I]Sky Gift[CR] to a friend?",
+            });
+            switch ( message_SwitchMenu(0, 1) ) {
+                case menu({
+                    english="Send",
+                }):
+                    @label_133;
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_COUNT_ITEM_TYPE_IN_BAG, 180, 0) ) {
+                        case >= 1:
+                            @label_136;
+                            message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english=" Who will you send it to?",
+                            });
+                            switch ( message_SwitchMenu(0, 1) ) {
+                                case menu({
+                                    english="Guildmaster",
+                                }):
+                                default:
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[50] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to the Guildmaster.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        @label_130;
+                                        JumpCommon(CORO_END_TALK);
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 Is it OK to send it to the
+                                                Guildmaster?
+                                            """,
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[50] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to the Guildmaster! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                @label_152;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_SEND_SKY_GIFT_TO_GUILDMASTER, 0, 0) ) { }
+                                                switch ( message_SwitchMenu(0, 1) ) {
+                                                    case menu({
+                                                        english="Yes",
+                                                    }):
+                                                        jump @label_133;
+                                                    case menu({
+                                                        english="No",
+                                                    }):
+                                                    default:
+                                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                        message_Talk({
+                                                            english="""
+                                                                 Come back anytime you want to
+                                                                send a gift. ♪
+                                                            """,
+                                                        });
+                                                        message_Close();
+                                                        jump @label_130;
+                                                }
+                                                break;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Chatot",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[51] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Chatot[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Is it OK to send it to [CS:N]Chatot[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[51] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Chatot[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Diglett",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[52] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Diglett[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Is it OK to send it to [CS:N]Diglett[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[52] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Diglett[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Dugtrio",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[53] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Dugtrio[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Is it OK to send it to [CS:N]Dugtrio[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[53] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Dugtrio[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Sunflora",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[54] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Sunflora[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Is it OK to send it to [CS:N]Sunflora[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[54] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Sunflora[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Loudred",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[55] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Loudred[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Is it OK to send it to [CS:N]Loudred[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[55] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Loudred[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Corphish",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[56] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Corphish[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Is it OK to send it to [CS:N]Corphish[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[56] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Corphish[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Chimecho",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[57] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Chimecho[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Send it to [CS:N]Chimecho[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[57] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Chimecho[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Bidoof",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[58] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Bidoof[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Is it OK to send it to [CS:N]Bidoof[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[58] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Bidoof[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Croagunk",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[59] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [CS:N]Croagunk[CR].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" Is it OK to send it to [CS:N]Croagunk[CR]?",
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[59] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [CS:N]Croagunk[CR]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="[partner]",
+                                }):
+                                    if ( $SCENARIO_MAIN_BIT_FLAG[60] ) {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 We are currently sending a gift
+                                                to [partner].
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 Maybe there will be a reply, so
+                                                please wait a little while to send another one.
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 If there is any reply for
+                                                Team [team:], we will pass it along to
+                                                [CS:N]Spinda[CR] to deliver to you...
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english=" Please check with [CS:N]Spinda[CR].",
+                                        });
+                                        message_Close();
+                                        jump @label_130;
+                                    } else {
+                                        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english="""
+                                                 Is it OK to send it to
+                                                [partner]?
+                                            """,
+                                        });
+                                        switch ( message_SwitchMenu(0, 1) ) {
+                                            case menu({
+                                                english="Yes",
+                                            }):
+                                            default:
+                                                $SCENARIO_MAIN_BIT_FLAG[60] = 1;
+                                                switch ( ProcessSpecial(PROCESS_SPECIAL_REMOVE_ITEMS_TYPE_IN_BAG, 180, 0) ) { }
+                                                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         OK. That's one [CS:I]Sky Gift[CR], to be
+                                                        sent to [partner]! ♪
+                                                    """,
+                                                });
+                                                message_Talk({
+                                                    english=" Anything else we can do?",
+                                                });
+                                                jump @label_152;
+                                            case menu({
+                                                english="No",
+                                            }):
+                                                jump @label_136;
+                                        }
+                                    }
+                                    break;
+                                case menu({
+                                    english="Cancel",
+                                }):
+                                    message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Come back anytime you want to
+                                            send a gift! ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    jump @label_130;
+                            }
+                            break;
+                        default:
+                            @label_137;
+                            message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Oh? I'm afraid you don't
+                                    have any [CS:I]Sky Gift[CR]s.
+                                """,
+                            });
+                            message_Close();
+                            jump @label_130;
+                    }
+                    break;
+                case menu({
+                    english="Info",
+                }):
+                    message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             [CS:K]Shaymin[CR]'s Delivery Service
+                            will send [CS:I]Sky Gift[CR]s to your friends for you.
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             Handing out gifts in person is so
+                            very exciting...
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             But delivering a gift that is
+                            unexpected is also a wonderful surprise,
+                            don't you think?
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             To a person you like, or to
+                            someone that's helped you...
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             Anytime you want to send a gift,
+                            you can count on [CS:K]Shaymin[CR]'s Delivery Service
+                            to get it there! ♪
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             If the person Team [team:]
+                            sent a gift to sends a reply in return...
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             We'll pass that reply on to
+                            [CS:N]Spinda[CR] to deliver, so please check with
+                            him, OK?
+                        """,
+                    });
+                    jump @label_132;
+                case menu({
+                    english="Cancel",
+                }):
+                default:
+                    message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             Come back anytime you want to
+                            send a gift! ♪
+                        """,
+                    });
+                    message_Close();
+                    jump @label_130;
+            }
+        } else {
+            $SCENARIO_TALK_BIT_FLAG[123] = 1;
+            message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     Sorry to have kept you waiting!
+                    This is [CS:K]Shaymin[CR]'s Delivery Service!
+                """,
+            });
+            message_Talk({
+                english="""
+                     We are a delivery service that
+                    will send [CS:I]Sky Gift[CR]s to your friends for you.
+                """,
+            });
+            message_Talk({
+                english="""
+                     To a person you like, or to
+                    someone that's helped you...
+                """,
+            });
+            message_Talk({
+                english="""
+                     Anytime you want to send a gift,
+                    you can count on [CS:K]Shaymin[CR]'s Delivery Service
+                    to get it there! ♪
+                """,
+            });
+            jump @label_132;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] || scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_SHEIMI1);
+        message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Hi there, travelers!",
+        });
+        message_Talk({
+            english="""
+                 This is [CS:K]Shaymin[CR]'s Delivery
+                Service.
+            """,
+        });
+        message_Talk({
+            english="""
+                 But right now we're in the
+                middle of opening preparations. Please come
+                back later.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 8] || scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] || scn($SCENARIO_MAIN) >= [29, 4] || scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] || scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] || scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] || scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] || scn($SCENARIO_MAIN) >= [17, 1] || scn($SCENARIO_MAIN) >= [16, 2] || scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] || scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] || scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] || scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] || scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] || scn($SCENARIO_MAIN) >= [12, 1] || scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] || scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] || scn($SCENARIO_MAIN) >= [8, 3] || scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] || scn($SCENARIO_MAIN) >= [7, 6] || scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] || scn($SCENARIO_MAIN) >= [7, 1] || scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] || scn($SCENARIO_MAIN) >= [5, 5] || scn($SCENARIO_MAIN) >= [4, 7] || scn($SCENARIO_MAIN) >= [4, 5] || scn($SCENARIO_MAIN) >= [4, 3] || scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] || scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        jump @label_130;
+    } else {
+        jump @label_130;
+    }
+}

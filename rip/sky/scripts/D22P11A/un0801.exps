@@ -1,0 +1,553 @@
+
+def 0 {
+    switch ( $GROUND_ENTER ) {
+        case 113:
+        case 114:
+            @label_12;
+            JumpCommon(CORO_END_TALK);
+        case 117:
+            if ( scn($SCENARIO_SIDE) >= [47, 5] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" .............",
+                });
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_PLAYER_FUTURE, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+                message_Talk({
+                    english="""
+                         ...[K] (I have no idea what's on his
+                        mind, as usual...)
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         (Anyway...[K]if I only knew why
+                        the [CS:N]Sableye[CR] suddenly came to attack...)
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         (It would be clear whether he
+                        remains my ally...)
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         (Or if he were to change sides
+                        again and become my enemy...)
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" ..............",
+                });
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_PLAYER_FUTURE, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+                message_Talk({
+                    english="""
+                         ...[K] (I have no idea what's on his
+                        mind, as usual...)
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         (Anyway...[K]if I only knew why
+                        the [CS:N]Sableye[CR] suddenly came to attack...)
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         (It would be clear whether he
+                        remains my ally...)
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         (Or if he were to change sides
+                        again and become my enemy...)
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 118:
+            if ( scn($SCENARIO_SIDE) >= [47, 6] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Anyway, we must reach the
+                        pinnacle so I can see for myself...
+                    """,
+                });
+                message_Talk({
+                    english=" Master [CS:N]Dialga[CR]'s true intentions...",
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I haven't been here in a
+                        while either.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Anyway, I need to find Master
+                        [CS:N]Dialga[CR] and ask...
+                    """,
+                });
+                message_Talk({
+                    english=" What his true intentions are...",
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 119:
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            if ( scn($SCENARIO_SIDE) >= [47, 8] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         It's just a little farther to the
+                        pinnacle...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Don't even think I'm going to join
+                        you in your fight against Master [CS:N]Dialga[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         You will fight Master [CS:N]Dialga[CR]...[K]
+                        And once you are defeated...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         I will simply ask Master [CS:N]Dialga[CR]
+                        his true intentions.
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I won't fight by your side on
+                        the pinnacle.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         You will fight Master [CS:N]Dialga[CR]...[K]
+                        And once you are defeated...
+                    """,
+                });
+                message_Talk({
+                    english=" I will ask Master [CS:N]Dialga[CR].",
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 50:
+            if ( scn($SCENARIO_SIDE) >= [47, 10] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I wonder if we'll have to fight
+                        the [CS:N]Sableye[CR] up ahead again.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         That would be best.[K]
+                        I need some sort of clue.
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            } elseif ( scn($SCENARIO_SIDE) >= [47, 9] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" It's probably too late.",
+                });
+                message_Talk({
+                    english="""
+                         I've got nothing to do with
+                        whatever happens to [CS:N]Celebi[CR].
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" It's probably too late.",
+                });
+                message_Talk({
+                    english="""
+                         I've got nothing to do with
+                        whatever happens to [CS:N]Celebi[CR].
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 121:
+            if ( scn($SCENARIO_SIDE) >= [47, 11] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         There are some [CS:N]Porygon[CR] ahead
+                        of here.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         I bet that the [CS:N]Porygon[CR] can guide
+                        us to the [CS:P]Frozen Island[CR].
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         There are some [CS:N]Porygon[CR] ahead
+                        of here.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         I bet that the [CS:N]Porygon[CR] can guide
+                        us to the [CS:P]Frozen Island[CR].
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 122:
+            if ( scn($SCENARIO_SIDE) >= [48, 4] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         At any rate, we'll need to pass
+                        this pinnacle.
+                    """,
+                });
+                message_Talk({
+                    english=" Once you're ready, we'll go.",
+                });
+                message_Close();
+                jump @label_12;
+            } elseif ( scn($SCENARIO_SIDE) >= [48, 1] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We should probably follow this
+                        road to see where it leads.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         If we do that, we should be able
+                        to get a new grasp on things.
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We should probably follow this
+                        road to see where it leads.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         I suspect the [CS:N]Sableye[CR] are
+                        still laying traps, so we should proceed with
+                        caution.
+                    """,
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 123:
+            if ( scn($SCENARIO_SIDE) >= [48, 4] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We need to get over there, at
+                        any rate.
+                    """,
+                });
+                message_Talk({
+                    english=" Once you're ready, we'll go.",
+                });
+                message_Close();
+                jump @label_12;
+            } elseif ( scn($SCENARIO_SIDE) >= [48, 3] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We need to get out of here.",
+                });
+                message_Talk({
+                    english=" Once you're ready, we'll go.",
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I don't know what awaits
+                        us ahead.
+                    """,
+                });
+                message_Talk({
+                    english=" Remain cautious.",
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 125:
+            if ( scn($SCENARIO_SIDE) >= [48, 5] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Anyway... [K][CS:N]Celebi[CR] and the [CS:N]Sableye[CR]
+                        are up ahead.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         The chances are high that we
+                        will see Master [CS:N]Dialga[CR] and his new henchman
+                        there too.
+                    """,
+                });
+                message_Talk({
+                    english=" Brace yourself, and let's go!",
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Anyway...[K] [CS:N]Celebi[CR] and the [CS:N]Sableye[CR]
+                        are up ahead.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         The chances are high that we
+                        will see Master [CS:N]Dialga[CR] and his new henchman
+                        there too.
+                    """,
+                });
+                message_Talk({
+                    english=" Ready yourself, and let's go!",
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 129:
+            if ( scn($SCENARIO_SIDE) >= [48, 9] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We only have a little time left...",
+                });
+                message_Talk({
+                    english=" Let's hurry to the pinnacle.",
+                });
+                message_Close();
+                jump @label_12;
+            } elseif ( scn($SCENARIO_SIDE) >= [48, 6] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         There isn't much time left
+                        for us...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Anyway, all we can do is live
+                        life to the fullest within our limited time.
+                    """,
+                });
+                message_Talk({
+                    english=" Once you're ready, let's go.",
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" I saw it, [CS:Y]Grovyle[CR].",
+                });
+                message_Talk({
+                    english="""
+                         The light that emanated from
+                        your body earlier...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Tell me...[K] Was that a sign
+                        that we're about to disappear?
+                    """,
+                });
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_PLAYER_FUTURE, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+                message_Talk({
+                    english=" .........",
+                });
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" I knew...[K] I should've known...",
+                });
+                message_Talk({
+                    english="""
+                         ......[K]I guess there isn't much time
+                        left for us, huh...?
+                    """,
+                });
+                message_Talk({
+                    english=" But the shorter the time is...",
+                });
+                message_Talk({
+                    english="""
+                         The brighter the radiance
+                        becomes...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Anyway, all we can do is live
+                        life to the fullest within our limited time.
+                    """,
+                });
+                message_Talk({
+                    english=" Once you're ready, let's go.",
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 131:
+            if ( scn($SCENARIO_SIDE) >= [48, 9] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We have to hold Master [CS:N]Dialga[CR]
+                        back...before we disappear from this world...
+                    """,
+                });
+                message_Talk({
+                    english=" Let's hurry to the pinnacle.",
+                });
+                message_Close();
+                jump @label_12;
+            } elseif ( scn($SCENARIO_SIDE) >= [48, 8] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         There's a good chance that
+                        Master [CS:N]Dialga[CR] is already at the top.
+                    """,
+                });
+                message_Talk({
+                    english=" Hurry. We have to go.",
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YONOWAARU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         There's a good chance that
+                        Master [CS:N]Dialga[CR] is already at the top.
+                    """,
+                });
+                message_Talk({
+                    english=" Hurry. We have to go.",
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        default:
+            jump @label_12;
+    }
+}

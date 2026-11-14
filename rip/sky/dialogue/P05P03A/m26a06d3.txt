@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Now! Attack!
+ATTENDANT1	Talk	Go!
+NPC_YAMIRAMI	Talk	Gwah!

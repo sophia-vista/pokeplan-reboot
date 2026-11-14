@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_YUKIKABURI	Talk	Bidoof!
+NPC_YUKIKABURI	Talk	Looks like we're ready.
+NPC_YUKIKABURI	Talk	I'm a bit nervous...
+NPC_YUKIKABURI	Talk	Y-yeah!
+PLAYER_BIPPA	Talk	Let's do our best! Yup yup!

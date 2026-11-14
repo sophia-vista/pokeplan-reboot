@@ -1,0 +1,46 @@
+speaker	kind	line
+TALK_SUB	Talk	I'd like you to help .
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Talk	Haaa... What'll I do...
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Talk	WHAAAAT?!
+TALK_SUB	Mail	Would you like to accept this job request?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Talk	Are you Team ?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	Would you like to accept this challenge?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No
+TALK_SUB	Talk	No
+TALK_SUB	Talk	Oh? I must've been mistaken...
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Mail	No

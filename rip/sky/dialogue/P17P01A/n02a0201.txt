@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_UPAA	Talk	Oh! Igglybuff!
+PLAYER_PUPURIN	Talk	Hi, everyone! ♪
+NPC_MUCHUURU	Talk	Yay! ♪ Let's go! Let's go! ♪

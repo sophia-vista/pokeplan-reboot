@@ -1,0 +1,10 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	...What?!
+PLAYER_KIMAWARI	Talk	W-wait a minute!
+PLAYER_KIMAWARI	Talk	Loudred... What Loudred said...
+PLAYER_KIMAWARI	Narration	(You DID just take a LOT of DAMAGE.)
+PLAYER_KIMAWARI	Narration	(On THAT note, I just GOT here...)
+PLAYER_KIMAWARI	Narration	(So I'm doing FINE...)
+PLAYER_KIMAWARI	Talk	...! (Don't tell me...)
+PLAYER_KIMAWARI	Talk	But... But that would mean...
+PLAYER_KIMAWARI	Talk	I think I understand.

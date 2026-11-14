@@ -1,0 +1,2 @@
+speaker	kind	line
+-	Mail	This area's master isn't here.

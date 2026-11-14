@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	That's too bad...
+NPC_PUKURIN	Talk	Oh! That's not entirely true!
+NPC_PUKURIN	Talk	Right? ♪
+NPC_HEIGANI	Talk	Hey, hey! We're searching too...
+NPC_DOGOOMU	Talk	Yeah, but we didn't find anything.
+NPC_DIGUDA	Talk	I'll keep trying too!
+ATTENDANT1	Talk	Oh, well... Thanks, everyone!

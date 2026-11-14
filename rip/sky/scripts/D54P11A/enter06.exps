@@ -1,0 +1,47 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_SetFace(ACTOR_NPC_METAMON_KIREIHANA, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+             Well...[K] If you're set on going,
+            I won't stop you...
+        """,
+    });
+    message_Talk({
+        english="""
+             But don't you think it might be
+            better to leave it alone?
+        """,
+    });
+    message_Talk({
+        english="""
+             It's useless to spend
+            time looking for something that's not there.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_PLAYER_CHARMS, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english=" Thanks, [CS:N]Bellossom[CR].",
+    });
+    message_Talk({
+        english="""
+             But making the impossible
+            possible...
+        """,
+    });
+    message_Talk({
+        english="""
+             That's what Team [CS:X]Charm[CR]
+            does best.
+        """,
+    });
+    message_SetFace(ACTOR_PLAYER_CHARMS, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english=" So don't worry. [M:H8]",
+    });
+    message_Close();
+    JumpCommon(CORO_END_TALK);
+}

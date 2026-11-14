@@ -1,0 +1,18 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	You're just beginners.
+PLAYER	Talk	(The flow of time is getting messed up?)
+PLAYER	Talk	(What's going on here?!)
+PLAYER	Talk	(Mystery dungeons?!)
+ATTENDANT1	Talk	So, !
+NPC_PERAPPU	Talk	Ah, yes. ♪ Maybe this will do?
+ATTENDANT1	Talk	Oh, yeah? Let's read it!
+ATTENDANT1	Talk	Oh, really? Let's read it!
+ATTENDANT1	Mail	\"Hello! My name is Spoink!\"
+ATTENDANT1	Mail	\"That pearl is life itself...to me!\"
+ATTENDANT1	Mail	\"But I've heard my pearl has been sighted!\"
+ATTENDANT1	Mail	\"I could never go somewhere so frightening!\"
+ATTENDANT1	Mail	Hold on a second!
+ATTENDANT1	Mail	Wait a second...
+NPC_PERAPPU	Talk	Hush!
+ATTENDANT1	Talk	Yikes!
+ATTENDANT1	Talk	Hmm...

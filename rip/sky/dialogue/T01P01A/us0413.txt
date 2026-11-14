@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_AABOKKU	Talk	We've finally found it!
+NPC_AABOKKU	Talk	Zero Isle!

@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	There they are!
+NPC_SEREBII	Talk	Dive in now! You can make it!
+NPC_SEREBII	Talk	Now! Into the Passage of Time!
+ATTENDANT1	Talk	Wh-what about you, Celebi?!
+NPC_JUPUTORU	Talk	Thanks!
+ATTENDANT1	Talk	Thanks, Celebi!
+ATTENDANT1	Talk	Thank you, Celebi!
+NPC_YONOWAARU	Talk	You're not getting away!
+NPC_YONOWAARU	Talk	Gah...

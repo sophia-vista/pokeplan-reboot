@@ -1,0 +1,897 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] || scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Yo! You two sure showed them!",
+        });
+        message_Talk({
+            english="""
+                 We can go on like this without
+                being scared again!
+            """,
+        });
+        message_Talk({
+            english=" You get my thanks for that!",
+        });
+        message_Close();
+        @label_130;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 You show that [CS:N]Darkrai[CR] he picked
+                the wrong bunch to mess with!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! I heard from the
+                guild's crew...
+            """,
+        });
+        message_Talk({
+            english="""
+                 Sounds like there's bad trouble
+                brewing again...
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 What's that?![K] Go into a dream?!
+                What is that about?!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Little [CS:N]Azurill[CR]'s asleep and no one
+                can wake him up?
+            """,
+        });
+        message_Talk({
+            english="""
+                 ...What do you suppose happened
+                to that tyke...?
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 ...Oh.[K] So Team [CS:X]Charm[CR]
+                left already...
+            """,
+        });
+        message_Talk({
+            english="""
+                 Hey, did they say anything about
+                coming back to Treasure Town ever?
+            """,
+        });
+        message_Talk({
+            english=" ...Oh.[K] They never mentioned it...",
+        });
+        message_Talk({
+            english=" ...[K]Rrrroar.",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 56] || scn($SCENARIO_MAIN) >= [29, 55] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 What?![K] You say Team [CS:X]Charm[CR]
+                paid a visit to the guild?!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Rrrroar! I should've gone to
+                the guild!
+            """,
+        });
+        message_Talk({
+            english=" I'm a huge fan of Team [CS:X]Charm[CR]!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! Let's face another day with
+                our heads held high!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 52] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Yo! Come on, cheer up!",
+        });
+        message_Talk({
+            english="""
+                 When I see you two down, it
+                brings me down too...
+            """,
+        });
+        message_Talk({
+            english="""
+                 Come on now![K] Do it for me![K]
+                Give me a smile and cheer up!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! Did you end up finding that
+                cute baby?
+            """,
+        });
+        message_Talk({
+            english="""
+                 ...[K]Huh?[K] What?![K] Th-the baby's
+                fallen sick now?!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! Aren't you bringing that cute
+                baby around today?
+            """,
+        });
+        message_Talk({
+            english="""
+                 ...[K]Huh?[K] What?![K] Th-that baby
+                wandered off somewhere?!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 46] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! You taking that cute tyke
+                out on a stroll?
+            """,
+        });
+        message_Talk({
+            english=" Yep, that's a cute little baby!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! I heard your exploring took
+                you out to the sea this time, huh?
+            """,
+        });
+        message_Talk({
+            english="""
+                 That's stupendous![K] There's
+                nowhere that you won't go!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! I heard you two went off
+                exploring somewhere chilly, is that right?
+            """,
+        });
+        message_Talk({
+            english="""
+                 You'll have to tell me all about
+                it later!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] || scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] || scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] || scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] || scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] || scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] || scn($SCENARIO_MAIN) >= [29, 8] || scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! You passed your graduation
+                exam, did you?
+            """,
+        });
+        message_Talk({
+            english=" You did it! Congratulations!",
+        });
+        message_Talk({
+            english="""
+                 I recognized that you two
+                were something else. And I was right!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 4] || scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! I heard what's going on with
+                you two!
+            """,
+        });
+        message_Talk({
+            english="""
+                 You're taking the guild's
+                graduation exam? You give it your all!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! You two![K] Rrrroar!
+                Rrrrooooarrrr!
+            """,
+        });
+        message_Talk({
+            english="""
+                 You two give it everything
+                you've got!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Yo! I've heard!",
+        });
+        message_Talk({
+            english="""
+                 The planet's going to be
+                paralyzed if nothing's done?!
+            """,
+        });
+        message_Talk({
+            english=" That's bad news! Bad, bad, bad!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [23, 1] || scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Yo! You two are safe!",
+        });
+        message_Talk({
+            english="""
+                 And they say you came back
+                from the future...
+            """,
+        });
+        message_Talk({
+            english=" That's amazing stuff, you two!",
+        });
+        message_Talk({
+            english=" Your gutsiness... I like it!",
+        });
+        message_Talk({
+            english="""
+                 I have faith in you!
+                Never give up!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! Have you heard back about
+                [CS:N]Dusknoir[CR], [CS:N]Azelf[CR], and the others?
+            """,
+        });
+        message_Talk({
+            english=" ...[K]OK. Nothing yet.",
+        });
+        message_Talk({
+            english="""
+                 There's been no word from
+                them, I hear...[K] It makes for anxious waiting.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [17, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! I'm out and about spreading
+                that rumor for you!
+            """,
+        });
+        message_Talk({
+            english="""
+                 About how [CS:N]Azelf[CR] and his friends
+                are sealing away the Time Gear!
+            """,
+        });
+        message_Talk({
+            english=" You're getting my best effort!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [16, 2] || scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! This time, you're off to
+                explore [CS:P]Crystal Cave[CR], huh?
+            """,
+        });
+        message_Talk({
+            english="""
+                 That sounds rough.[K] But you do
+                the best you can!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! I heard! You're on the hunt
+                for a Pokémon named [CS:N]Grovyle[CR]?
+            """,
+        });
+        message_Talk({
+            english="""
+                 I can't figure it out, though...[K]
+                What would make that [CS:N]Grovyle[CR] steal Time
+                Gears?
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! You know, everyone seems
+                to be busy and stressed out...
+            """,
+        });
+        message_Talk({
+            english=" Is something the matter?",
+        });
+        message_Talk({
+            english="""
+                 I saw all those [CS:N]Pelipper[CR] in the
+                sky too...
+            """,
+        });
+        message_Talk({
+            english="""
+                 There's no fooling me. Something
+                is happening, and it's bad...
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] || scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] || scn($SCENARIO_MAIN) >= [12, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo![K] Hey, I'm advertising yet
+                another shop today!
+                
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2Direction<actor ACTOR_NPC_YARUKIMONO>(4, 10, DIR_DOWN);
+        WaitExecuteLives(ACTOR_NPC_YARUKIMONO);
+        Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_DOWN);
+        Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_DOWN);
+        WaitExecuteLives(ACTOR_ATTENDANT1);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 It's a shop down from here...[K]
+                [CS:K]Xatu[CR] Appraisal is the place.
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2DirectionLives<actor ACTOR_NPC_YARUKIMONO>(4, 10, ACTOR_PLAYER);
+        WaitExecuteLives(ACTOR_NPC_YARUKIMONO);
+        Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_YARUKIMONO);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        WaitExecuteLives(ACTOR_ATTENDANT1);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Have you two picked up any
+                strange treasure boxes in dungeons?
+                You know, ones you can't open?
+            """,
+        });
+        message_Talk({
+            english="""
+                 [CS:N]Xatu[CR] has the ability to pop open
+                boxes like that and take out whatever's inside.
+            """,
+        });
+        message_Talk({
+            english="""
+                 There's just one thing. He's...[K]
+                a little weird.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Anyway, if you find a treasure
+                box you can't open, [CS:N]Xatu[CR] is the one to visit!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! Congrats for making the
+                expedition party!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Come back with lots of
+                souvenirs!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] || scn($SCENARIO_MAIN) >= [8, 3] || scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo![K] Hey, I'm advertising another
+                shop today!
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2DirectionLives<actor ACTOR_NPC_YARUKIMONO>(4, 10, ACTOR_NPC_EREKIBURU);
+        WaitExecuteLives(ACTOR_NPC_YARUKIMONO);
+        Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_EREKIBURU);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_EREKIBURU);
+        WaitExecuteLives(ACTOR_ATTENDANT1);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" See![K] See that shop there?",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2DirectionLives<actor ACTOR_NPC_YARUKIMONO>(4, 10, ACTOR_PLAYER);
+        WaitExecuteLives(ACTOR_NPC_YARUKIMONO);
+        Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_YARUKIMONO);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        WaitExecuteLives(ACTOR_ATTENDANT1);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 That place's called the [CS:K]Electivire[CR]
+                Link Shop.
+            """,
+        });
+        message_Talk({
+            english="""
+                 That shop can link two moves
+                together for you!
+            """,
+        });
+        message_Talk({
+            english="""
+                 You see, linked moves are used
+                one after the other in the same turn.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Put a smart combo together and
+                you can make awesome strikes!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Why not pay the shop a visit and
+                see what I mean about linking moves?
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 6] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo! I hear explorers are staying
+                away from this place because that stench
+                won't go away.
+            """,
+        });
+        message_Talk({
+            english="""
+                 If you were to ask me...[K]
+                You'd have to be pretty soft to let a little
+                smell put you off!
+            """,
+        });
+        message_Talk({
+            english="""
+                 You two keep up with your
+                training!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 After a day of work, nothing
+                beats the Hot Spring.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Hoooo... It doesn't get better
+                than this! ♪
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 1] || scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] ) {
+        if ( $SCENARIO_TALK_BIT_FLAG[48] ) {
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+            message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     You can sharpen your skills as
+                    explorers at [CS:K]Marowak[CR] Dojo.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_NPC_YARUKIMONO>(4, 10, DIR_DOWN);
+            WaitExecuteLives(ACTOR_NPC_YARUKIMONO);
+            message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english=" It's just down from here.",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2DirectionLives<actor ACTOR_NPC_YARUKIMONO>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_NPC_YARUKIMONO);
+            message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     You two are an exploration
+                    team, right? Why don't you go test yourselves
+                    at the dojo?
+                """,
+            });
+            message_Close();
+            jump @label_130;
+        } else {
+            $SCENARIO_TALK_BIT_FLAG[48] = 1;
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+            message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english=" Yo! Another great day!",
+            });
+            message_Talk({
+                english="""
+                     By the way, you two![K] Do you
+                    know [CS:K]Marowak[CR] Dojo?
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8962);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_QUESTION_MARK, 3);
+            WaitEffect<actor ACTOR_ATTENDANT1>();
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_WORRIED, FACE_POS_BOTTOM_R_FACEINW);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" [CS:K]Marowak[CR] Dojo?",
+                    }
+                case 2:
+                    {
+                        english=" [CS:K]Marowak[CR] Dojo?",
+                    }
+                default:
+                    {
+                        english=" [CS:K]Marowak[CR] Dojo?",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     [CS:K]Marowak[CR] Dojo is a place where
+                    exploration teams go to hone their skills.
+                """,
+            });
+            message_Talk({
+                english="""
+                     Actually, when everything was
+                    peaceful, there wasn't much need for its
+                    services...
+                """,
+            });
+            message_Talk({
+                english="""
+                     The sensei couldn't pay for its
+                    upkeep...[K]and it eventually collapsed.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8968);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SHOCKED, 3);
+            WaitEffect<actor ACTOR_ATTENDANT1>();
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_SURPRISED, FACE_POS_BOTTOM_R_FACEINW);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Huh?!",
+                    }
+                case 2:
+                    {
+                        english=" What?!",
+                    }
+                default:
+                    {
+                        english=" Pardon?!",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     But...[K]let there be rejoicing![K]
+                    That [CS:K]Marowak[CR] Dojo...
+                """,
+            });
+            message_Talk({
+                english="""
+                     It's been resurrected from the
+                    rubble![K] Back and better than ever under new
+                    management!
+                """,
+            });
+            message_Talk({
+                english="""
+                     ...And, uh, I'm going around
+                    advertising the dojo's reopening for my
+                    sponsor, [CS:N]Marowak[CR].
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_NPC_YARUKIMONO>(4, 10, DIR_DOWN);
+            WaitExecuteLives(ACTOR_NPC_YARUKIMONO);
+            message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     [CS:K]Marowak[CR] Dojo is straight down
+                    from here.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2DirectionLives<actor ACTOR_NPC_YARUKIMONO>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_NPC_YARUKIMONO);
+            message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     You two are an exploration
+                    team, right? Why don't you go test yourselves
+                    at the dojo?
+                """,
+            });
+            message_Close();
+            jump @label_130;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [5, 5] || scn($SCENARIO_MAIN) >= [4, 7] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Yo! Another great day!",
+        });
+        message_Talk({
+            english="""
+                 Good luck with your guild
+                training!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 5] || scn($SCENARIO_MAIN) >= [4, 3] || scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_YARUKIMONO);
+        message_SetFace(ACTOR_NPC_YARUKIMONO, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Yo![K] Are you two the new
+                apprentices at the guild?
+            """,
+        });
+        message_Talk({
+            english="""
+                 Then, hello! The name's
+                [CS:N]Vigoroth[CR]!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I'm no good at sitting still.[K]
+                I'm always bursting with energy![K]
+                Great to meet ya!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        jump @label_130;
+    } else {
+        jump @label_130;
+    }
+}

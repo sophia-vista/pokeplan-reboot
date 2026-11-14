@@ -1,0 +1,47 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [23, 3] ) {
+        @label_0;
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [23, 2] ) {
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_HIMEGUMA {
+    ResetOutputAttribute(256);
+    SetAnimation(3);
+    SetEffect(EFFECT_STUCK_IN_YELLOW_WATER, 4);
+    JumpCommon(CORO_LIVES_MOVE_NORMAL);
+}
+
+def 2 for actor ACTOR_NPC_RINGUMA {
+    ResetOutputAttribute(256);
+    SetAnimation(3);
+    SetEffect(EFFECT_STUCK_IN_YELLOW_WATER_DEEP, 4);
+    JumpCommon(CORO_LIVES_MOVE_NORMAL);
+}
+
+def 3 for actor ACTOR_NPC_YARUKIMONO {
+    ResetOutputAttribute(256);
+    SetAnimation(3);
+    SetEffect(EFFECT_STUCK_IN_YELLOW_WATER_MEDIUM, 4);
+    JumpCommon(CORO_LIVES_MOVE_NORMAL);
+}
+
+def 4 for actor ACTOR_NPC_MANKII {
+    ResetOutputAttribute(256);
+    SetAnimation(3);
+    SetEffect(EFFECT_STUCK_IN_YELLOW_WATER_MEDIUM2, 4);
+    JumpCommon(CORO_LIVES_MOVE_NORMAL);
+}
+
+def 5 for actor ACTOR_NPC_OKORIZARU {
+    ResetOutputAttribute(256);
+    SetAnimation(3);
+    SetEffect(EFFECT_STUCK_IN_YELLOW_WATER_DEEP2, 4);
+    JumpCommon(CORO_LIVES_MOVE_NORMAL);
+}

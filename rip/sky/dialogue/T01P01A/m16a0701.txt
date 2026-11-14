@@ -1,0 +1,62 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Everyone's already here!
+NPC_DOGOOMU	Talk	What's THAT?!
+NPC_JIBAKOIRU	Talk	ZZZT! Watch out! ZZZT!
+NPC_JIBAKOIRU	Talk	ZZZT! Stay clear! ZZZT!
+NPC_BIPPA	Talk	Oof!
+NPC_YUKUSHII	Talk	!
+NPC_EMURITTO	Talk	Naturally!
+ATTENDANT1	FacePositionOffset	So did the plan work?
+ATTENDANT1	FacePositionOffset	So was the plan successful?
+ATTENDANT1	FacePositionOffset	So did the plan succeed?
+NPC_AGUNOMU	Talk	Yep.
+NPC_AGUNOMU	Talk	Grovyle's been captured.
+ATTENDANT1	FacePositionOffset	Yes! That's awesome!
+ATTENDANT1	FacePositionOffset	Yes! That's excellent!
+ATTENDANT1	FacePositionOffset	Yes! I'm so glad!
+NPC_YUKUSHII	Talk	Dusknoir should be along shortly.
+NPC_RINGUMA	Talk	Oh! Who's that?!
+NPC_HIMEGUMA	Talk	It's the great Dusknoir!
+NPC_KAKUREON1	Talk	Here comes the great Dusknoir!
+NPC_DOGOOMU	Talk	Everyone! MAKE WAY!
+NPC_BIPPA	Talk	Th-that's...
+NPC_KAKUREON1	Talk	That's Grovyle?
+NPC_YONOWAARU	Talk	Everyone!
+NPC_YONOWAARU	Talk	Finally...Grovyle...
+NPC_YONOWAARU	Talk	Grovyle has been captured!
+NPC_YONOWAARU	Talk	I can't thank you enough!
+NPC_JUPUTORU	Talk	Mmmmmf! Mmmmmf!
+ATTENDANT1	Talk	He can't say a word that way.
+NPC_HEIGANI	Talk	Oh, so that was true? Hey, hey...
+NPC_BIPPA	Talk	I'm feeling the blues...
+NPC_YONOWAARU	Talk	Uxie...Mesprit...Azelf...
+NPC_YONOWAARU	Talk	I entrust you with the rest.
+NPC_AGUNOMU	Talk	Yep.
+NPC_EMURITTO	Talk	We know.
+NPC_YUKUSHII	Talk	We got the Time Gears back.
+NPC_YONOWAARU	Talk	The task is yours.
+NPC_YONOWAARU	Talk	Oh, no, no...
+NPC_YONOWAARU	Talk	Everyone! Though it pains me...
+NPC_KIMAWARI	Talk	Ooogie...I hate sad good-byes!
+NPC_DIGUDA	Talk	I h-h-hope we see you again...
+NPC_PERAPPU	Talk	Waaah!
+NPC_PERAPPU	Talk	Dusknoir...sir...waaah!
+NPC_YONOWAARU	Talk	Oh, yes.
+NPC_YONOWAARU	Talk	! And !
+ATTENDANT1	Talk	It's us. Let's go up there.
+ATTENDANT1	Talk	That's us. Let's go up there.
+ATTENDANT1	Talk	So, this is really good-bye!
+ATTENDANT1	Talk	Dusknoir, sir!
+NPC_YONOWAARU	Talk	Well...this is...good-bye...
+NPC_YONOWAARU	Talk	Or is it?
+ATTENDANT1	Talk	Huh?!
+ATTENDANT1	Talk	What?!
+ATTENDANT1	Talk	Pardon?!
+NPC_YONOWAARU	Talk	It's too soon for farewells!
+ATTENDANT1	Talk	Waah!
+NPC_YONOWAARU	Talk	You two...are coming with me!
+ATTENDANT1	Talk	Waaah!
+NPC_BIPPA	Talk	By gosh!
+NPC_CHIRIIN	Talk	! !
+NPC_KAKUREON1	Talk	Wh-what was...
+NPC_KIMAWARI	Talk	What just happened...?

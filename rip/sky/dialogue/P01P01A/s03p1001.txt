@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ah, Team ! ♪
+NPC_PERAPPU	Talk	I trust Manaphy is doing well?
+ATTENDANT1	Talk	Th-there's trouble!
+ATTENDANT1	Talk	It's Manaphy... Manaphy's gone!
+NPC_PERAPPU	Talk	Wh-what?!
+NPC_PERAPPU	Talk	Squawk! I'll look too!

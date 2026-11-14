@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Explanation	I really enjoy life here at the guild!
+-	Mail	But...

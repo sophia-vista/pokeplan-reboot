@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_OKORIZARU	Talk	Do you know where it is?

@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_KOOTASU	Talk	There. We are here.
+NPC_KOOTASU	Talk	This is the Hot Spring's location.
+ATTENDANT1	Talk	Oh. I get it.
+ATTENDANT1	Talk	Oh. I see.
+ATTENDANT1	Talk	Oh. OK.
+ATTENDANT1	Talk	The waterfall is over here, so...
+ATTENDANT1	Talk	The waterfall is here, so...

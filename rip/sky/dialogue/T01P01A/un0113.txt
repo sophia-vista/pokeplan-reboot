@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_HEIGANI	Talk	Hey, hey! Bidoof!
+NPC_HEIGANI	Talk	Have a successful exploration!
+NPC_HEIGANI	Talk	I'm cheering for you! Hey, hey!
+NPC_HEIGANI	Talk	Hey, hey! Bidoof! I've heard!
+NPC_HEIGANI	Talk	Incidentally...

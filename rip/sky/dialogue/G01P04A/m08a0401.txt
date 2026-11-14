@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PERAPPU	SwitchMenu	Yes
+NPC_PERAPPU	Talk	Incidentally...
+NPC_PERAPPU	SwitchMenu	I know!
+NPC_PERAPPU	Talk	I didn't know...
+NPC_PERAPPU	Talk	Understood. ♪
+NPC_PERAPPU	Talk	No

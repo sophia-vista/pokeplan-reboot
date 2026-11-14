@@ -1,0 +1,83 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    message_Notice({
+        english="""
+            [CN][CS:N]Wigglytuff[CR]'s Guild
+            [CN]Ten Rules for Exploration Teams
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]One![K]
+            [CN]Don't shirk work!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Two![K]
+            [CN]Run away and pay!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Three![K]
+            [CN]Smiles go for miles!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Four![K]
+            [CN]Once you put a job on your team's list,
+            [CN]then use Take Job! That step can't be missed!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Five![K]
+            [CN]Restock your supplies and rations
+            [CN]before heading out on explorations!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Six![K]
+            [CN]Before you explore, try to think
+            [CN]about the moves you should link!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Seven![K]
+            [CN]While exploring, don't you panic!
+            [CN]Stay cool and calm, never manic!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Eight![K]
+            [CN]Helping all Pokémon in need
+            [CN]is an explorer's duty, indeed!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Nine![K]
+            [CN]Do lots of jobs! That's truly the key!
+            [CN]You'll reach Gold Rank. Just wait and see!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Ten![K]
+            [CN]The money you earn is shared with the guild![K]
+            [CN]That's the way our friendship will build!
+        """,
+    });
+    JumpCommon(CORO_END_TALK);
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

@@ -1,0 +1,10 @@
+
+def 0 {
+    $SCENARIO_MAIN = scn[4, 4];
+    main_EnterGround(LEVEL_S00P01A, 30);
+    hold;
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

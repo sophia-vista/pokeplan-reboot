@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_BIPPA	Talk	Th-there's trouble afoot!
+ATTENDANT1	Talk	Huh? Azurill is in trouble?!
+ATTENDANT1	Talk	What? Azurill is in trouble?!
+ATTENDANT1	Talk	Pardon? Azurill is in trouble?!
+ATTENDANT1	Talk	Let's hurry, !

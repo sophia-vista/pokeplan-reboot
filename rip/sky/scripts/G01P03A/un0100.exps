@@ -1,0 +1,43 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_SIDE) >= [40, 7] ) {
+        @label_0;
+        supervision_Station(5);
+        end;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 6] ) {
+        supervision_Station(5);
+        end;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 3] ) {
+        supervision_Station(3);
+        supervision_Station(5);
+        end;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        supervision_Station(2);
+        end;
+    } else {
+        @label_4;
+        supervision_Station(1);
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_KIMAWARI {
+    switch ( sector() ) {
+        case 1:
+            SetMoveRange(Position<'m0', 38, 33>, 12, 6);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}
+
+def 2 for actor ACTOR_NPC_HEIGANI {
+    switch ( sector() ) {
+        case 2:
+            SetMoveRange(Position<'m1', 39, 31>, 10, 8);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

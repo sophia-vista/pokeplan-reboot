@@ -1,0 +1,10 @@
+
+def 0 {
+    $SCENARIO_MAIN_BIT_FLAG[40] = 1;
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_GARUURA);
+    switch ( message_Menu(MENU_KANGASKHAN_STORAGE) ) { }
+    JumpCommon(CORO_END_TALK);
+}

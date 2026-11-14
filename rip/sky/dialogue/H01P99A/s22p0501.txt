@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_KURESERIA	SwitchMenu	Ready
+NPC_KURESERIA	Talk	Very well.
+ATTENDANT1	Talk	Hold on a second, .
+ATTENDANT1	Talk	Hold on, .
+ATTENDANT1	Talk	It's about the team leader...
+ATTENDANT1	SwitchMenu	Accept leadership
+ATTENDANT1	SwitchMenu	Cresselia!
+ATTENDANT1	SwitchMenu	Let's go! Off to the Dark Crater!
+ATTENDANT1	SwitchMenu	Refuse
+NPC_KURESERIA	SwitchMenu	Go as a trio
+NPC_KURESERIA	SwitchMenu	Don't go to the Dark Crater
+NPC_KURESERIA	Talk	Very well.
+NPC_KURESERIA	Talk	Not yet

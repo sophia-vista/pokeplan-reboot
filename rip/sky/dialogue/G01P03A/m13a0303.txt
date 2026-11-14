@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_DIGUDA	Talk	Um... What about me...?
+NPC_PERAPPU	Talk	Diglett will remain at the guild.
+NPC_DIGUDA	Talk	Y-yes!
+NPC_PUKURIN	Talk	YOOM...TAH!
+NPC_PUKURIN	Talk	Everyone: HOORAY!
+NPC_YONOWAARU	Talk	Please, do take care!
+ATTENDANT1	Talk	Yep! Thanks!
+ATTENDANT1	Talk	Will do! Thank you!
+ATTENDANT1	Talk	, let's do our best!
+ATTENDANT1	Talk	, let's try our best!

@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_HEIGANI	Talk	What would happen?
+NPC_GURAADON	Talk	GRROOOOOOH!
+ATTENDANT1	Talk	Urk... Scary stuff!
+ATTENDANT1	Talk	Urk... This is scary...
+ATTENDANT1	Talk	Urk... I'm scared!
+ATTENDANT1	Talk	But we gotta be brave!
+ATTENDANT1	Talk	But we need to be brave!
+ATTENDANT1	Talk	But it's time to be brave!
+ATTENDANT1	Talk	And I gotta face up to this!
+ATTENDANT1	Talk	And I need to face up to this!
+ATTENDANT1	Talk	And I need to stand up to this!
+ATTENDANT1	Talk	No stopping now, !

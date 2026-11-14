@@ -1,0 +1,27 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	.........
+PLAYER_FUTURE	Talk	This is a strange place...
+NPC_YUKIWARASHI	Talk	Gigii. Gigii.
+PLAYER_FUTURE	Talk	I-it's... Who is it?!
+PLAYER_FUTURE	Talk	I want to talk to him.
+NPC_YONOWAARU	Talk	It's useless to talk.
+PLAYER_FUTURE	Talk	Hey! You!
+NPC_YUKIWARASHI	Talk	Gii...?!
+PLAYER_FUTURE	Talk	W-wait! Don't run away!
+PLAYER_FUTURE	Talk	I just want to talk.
+NPC_YUKIWARASHI	Talk	Gigii?
+PLAYER_FUTURE	Talk	If you know, please tell me...
+NPC_YUKIWARASHI	Talk	Oh! Them!
+NPC_YUKIWARASHI	Talk	Yeah, I saw them!
+NPC_YUKIWARASHI	Talk	They were Sableye, I think...
+PLAYER_FUTURE	Talk	I-is that true?
+NPC_YONOWAARU	Talk	Where did they go?
+NPC_YUKIWARASHI	Talk	They went that way!
+NPC_YUKIWARASHI	Talk	They went into Icicle Forest...
+PLAYER_FUTURE	Talk	Did you see only Sableye?
+NPC_YUKIWARASHI	Talk	No. It wasn't just Sableye.
+NPC_YUKIWARASHI	Talk	Now that you mention it.
+PLAYER_FUTURE	Talk	Celebi!
+NPC_YONOWAARU	Talk	Any other Pokémon?
+NPC_YUKIWARASHI	Talk	Umm... Let me see...
+PLAYER_FUTURE	Talk	Wh-what!?

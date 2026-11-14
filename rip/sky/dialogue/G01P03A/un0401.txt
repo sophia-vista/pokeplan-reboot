@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_BIPPA	Talk	Sunflora's such a kind lady...
+NPC_BIPPA	Talk	Whoa...
+NPC_BIPPA	Talk	Oh! Oh, miss!
+NPC_BIPPA	Talk	Whoa...
+NPC_BIPPA	Talk	Ah...n-no!
+NPC_BIPPA	Talk	Anyhow...
+NPC_BIPPA	Talk	I really respect you... Yup!
+PLAYER_KIMAWARI	Talk	R-respect?
+PLAYER_KIMAWARI	Talk	Oh my gosh! I'm so happy!
+PLAYER_KIMAWARI	Talk	I am so glad!
+NPC_BIPPA	Talk	R-really? You mean it?
+PLAYER_KIMAWARI	Talk	Do your best!

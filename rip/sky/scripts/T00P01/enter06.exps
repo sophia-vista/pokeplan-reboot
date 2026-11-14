@@ -1,0 +1,120 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    @label_11;
+    message_Notice({
+        english="Which function will you access?",
+    });
+    switch ( message_SwitchMenu(1, 1) ) {
+        case menu({
+            english="Job Bulletin Board",
+        }):
+            @label_0;
+            message_Close();
+            switch ( message_Menu(MENU_JOB_BOARD) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Outlaw Notice Board",
+        }):
+            message_Close();
+            switch ( message_Menu(MENU_OUTLAW_BOARD) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Exploration Results",
+        }):
+            message_Close();
+            switch ( ProcessSpecial(55, 5, 20) ) { }
+            switch ( message_Menu(MENU_DUNGEON_EXPLORATION_RESULTS) ) { }
+            JumpCommon(CORO_END_TALK);
+        case menu({
+            english="Team Controls",
+        }):
+            message_Notice({
+                english="Which function will you access?",
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="Initialize Team",
+                }):
+                    message_Close();
+                    switch ( message_Menu(MENU_DUNGEON_INITIALIZE_TEAM) ) { }
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="Team Returns from Map",
+                }):
+                    message_Close();
+                    switch ( message_Menu(MENU_DUNGEON_TEAM_RETURNS_FROM_MAP) ) { }
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="Team Defeated in Map",
+                }):
+                    message_Close();
+                    switch ( message_Menu(MENU_DUNGEON_TEAM_DEFEATED_FROM_MAP) ) { }
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="Inspect Team",
+                }):
+                    message_Close();
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_HERO_AND_PARTNER_ONLY, 0, 0) ) {
+                        case 1:
+                            message_Notice({
+                                english="Hero & Partner Only",
+                            });
+                            JumpCommon(CORO_END_TALK);
+                        default:
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_PARTNER_AND_HERO_ONLY, 0, 0) ) {
+                                case 1:
+                                    message_Notice({
+                                        english="Partner & Hero Only",
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                default:
+                                    switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_CONTAINS_PARTNER_AND_HERO, 0, 0) ) {
+                                        case 1:
+                                            message_Notice({
+                                                english="Hero & Partner Present",
+                                            });
+                                            JumpCommon(CORO_END_TALK);
+                                        default:
+                                            switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_SOLO, 0, 0) ) {
+                                                case 1:
+                                                    message_Notice({
+                                                        english="Solo Player Character",
+                                                    });
+                                                    JumpCommon(CORO_END_TALK);
+                                                default:
+                                                    message_Notice({
+                                                        english="Other Teams",
+                                                    });
+                                                    JumpCommon(CORO_END_TALK);
+                                            }
+                                            break;
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+                case menu({
+                    english="Default Team Setup 1",
+                }):
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_SET_TEAM_SETUP_HERO_AND_PARTNER_ONLY, 0, 0) ) { }
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="Default Team Setup 2",
+                }):
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_SET_TEAM_SETUP_HERO_ONLY, 0, 0) ) { }
+                    JumpCommon(CORO_END_TALK);
+                default:
+                    jump @label_11;
+            }
+            break;
+        case menu({
+            english="Status Update",
+        }):
+            switch ( ProcessSpecial(PROCESS_SPECIAL_STATUS_UPDATE, 0, 0) ) { }
+            JumpCommon(CORO_END_TALK);
+        default:
+            JumpCommon(CORO_END_TALK);
+    }
+}

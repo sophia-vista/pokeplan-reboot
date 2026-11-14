@@ -1,0 +1,738 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] || scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 HEY! It's you two![K] Came to visit
+                your old friends at the guild?
+            """,
+        });
+        message_Talk({
+            english="""
+                 WHAT?[K] You want to pull sentry
+                duty and earn some money?
+            """,
+        });
+        switch ( message_SwitchMenu(0, 1) ) {
+            case menu({
+                english="Yes",
+            }):
+            default:
+                message_Close();
+                @label_134;
+                bgm_FadeOut(60);
+                screen2_FadeOut(0, 30);
+                screen_FadeOut(1, 30);
+                supervision_ExecuteCommon(CORO_HA_MIHARIBAN);
+                @label_133;
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                switch ( message_Menu(MENU_GUILD_MINI_GAME_SCOREBOARD) ) { }
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                @label_130;
+                JumpCommon(CORO_END_TALK);
+            case menu({
+                english="No",
+            }):
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Oh, you won't, HUH?",
+                });
+                message_Close();
+                jump @label_130;
+            case menu({
+                english="Check High Score",
+            }):
+                jump @label_133;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" GO for it, you two!",
+        });
+        message_Talk({
+            english="""
+                 WHAT?[K] You'd rather go on
+                sentry duty?
+            """,
+        });
+        message_Talk({
+            english="""
+                 That's fine, I suppose.[K] Do a good
+                job if you're gonna volunteer, you two.
+            """,
+        });
+        message_Talk({
+            english=" Will you go on sentry duty?",
+        });
+        switch ( message_SwitchMenu(0, 1) ) {
+            case menu({
+                english="Yes",
+            }):
+            default:
+                message_Close();
+                jump @label_134;
+            case menu({
+                english="No",
+            }):
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Oh, you won't, HUH?",
+                });
+                message_Close();
+                jump @label_130;
+            case menu({
+                english="Check High Score",
+            }):
+                jump @label_133;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 So did you two learn ANYTHING
+                about the distortion of space?
+            """,
+        });
+        message_Talk({
+            english="""
+                 WHAT?[K] You'd rather not talk
+                about it? You'd rather go on sentry duty?
+            """,
+        });
+        message_Talk({
+            english="""
+                 That's fine, I suppose.[K] Do a good
+                job if you're gonna volunteer, you two.
+            """,
+        });
+        message_Talk({
+            english=" Will you go on sentry duty?",
+        });
+        switch ( message_SwitchMenu(0, 1) ) {
+            case menu({
+                english="Yes",
+            }):
+            default:
+                message_Close();
+                jump @label_134;
+            case menu({
+                english="No",
+            }):
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Oh, you won't, HUH?",
+                });
+                message_Close();
+                jump @label_130;
+            case menu({
+                english="Check High Score",
+            }):
+                jump @label_133;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 76] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I don't know what you're in for.
+                I mean...exploring a dream! Imagine that![K]
+                You dig down deep and TOUGH IT OUT!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 75] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 WELL?[K] Can you go into that
+                kid's dream?
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I'm worried about that little
+                [CS:N]Azurill[CR]...
+            """,
+        });
+        message_Talk({
+            english="""
+                 WHAT?[K] You're volunteering for
+                sentry duty now?
+            """,
+        });
+        message_KeyWait();
+        se_Play(8971);
+        ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_ANGRY, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 This is HARDLY the time for
+                that, you two!
+            """,
+        });
+        WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 HEY, I heard you two solved the
+                mysteries of [CS:P]Aegis Cave[CR].[K] IMPRESSIVE!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Huh?[K] ...Say WHAT?[K] You want to
+                earn some money pulling sentry duty?
+            """,
+        });
+        message_Talk({
+            english="""
+                 Here you are, famous explorers
+                and all, but you want to pull sentry duty?[K]
+                I can't say I understand why.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Whatever.[K] So you want to go on
+                sentry duty?
+            """,
+        });
+        switch ( message_SwitchMenu(0, 1) ) {
+            case menu({
+                english="Yes",
+            }):
+            default:
+                message_Close();
+                jump @label_134;
+            case menu({
+                english="No",
+            }):
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Oh, you won't, HUH?",
+                });
+                message_Close();
+                jump @label_130;
+            case menu({
+                english="Check High Score",
+            }):
+                jump @label_133;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 56] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 WHOOOOAH![K] I'd gone off to that
+                [CS:P]Aegis Cave[CR]...
+            """,
+        });
+        message_Talk({
+            english="""
+                 I'll be honest with you. That
+                place made NO SENSE at all!
+            """,
+        });
+        se_Play(8971);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(18);
+        WaitAnimation<actor ACTOR_NPC_DOGOOMU>();
+        WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        message_KeyWait();
+        message_Talk({
+            english="""
+                 I wandered around in a circle
+                in the same area OVER AND OVER...
+            """,
+        });
+        message_Talk({
+            english="""
+                 No one would come rescue me
+                when I had an accident...
+            """,
+        });
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_ANGRY, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 That place...[K] What WAS that
+                all about?
+            """,
+        });
+        se_Play(8971);
+        ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+        WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8972);
+        SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" ...Huff...puff...",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 55] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_JOYOUS, 3);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_SIGH, FACE_POS_STANDARD);
+        message_Talk({
+            english=" WHOOOOAH!",
+        });
+        message_Talk({
+            english="""
+                 I can...[K]go explore with the
+                AWESOME celebs of Team [CS:X]Charm[CR]...
+            """,
+        });
+        message_KeyWait();
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(18);
+        WaitAnimation<actor ACTOR_NPC_DOGOOMU>();
+        message_Talk({
+            english=" It's like a...[K]DREAM!",
+        });
+        WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+        Wait(5);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" ...What?[K] Sentry duty?",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8971);
+        ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_ANGRY, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Who gives a YIPPEE-KI-YAY?
+                This is WAY more important!
+            """,
+        });
+        WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] || scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] || scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] || scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] || scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] || scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] || scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] || scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] || scn($SCENARIO_MAIN) >= [29, 8] || scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh! HEY, you two![K] Came to visit
+                us, did you?
+            """,
+        });
+        message_Talk({
+            english="""
+                 ...WHAT?[K] You want to earn
+                some money pulling sentry duty?
+            """,
+        });
+        switch ( message_SwitchMenu(0, 1) ) {
+            case menu({
+                english="Yes",
+            }):
+            default:
+                message_Close();
+                jump @label_134;
+            case menu({
+                english="No",
+            }):
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Oh, you won't, HUH?",
+                });
+                message_Close();
+                jump @label_130;
+            case menu({
+                english="Check High Score",
+            }):
+                jump @label_133;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" ..................",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 That...?[K] Thinking about it
+                even now...
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(9);
+        Wait(20);
+        message_Talk({
+            english=" WAAAAH!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" It's all on YOU now!",
+        });
+        message_Talk({
+            english="""
+                 You have to stop the planet's
+                paralysis! GOOD LUCK!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 You two go on ahead to Treasure
+                Town and get ready.
+            """,
+        });
+        message_Talk({
+            english="""
+                 When another apprentice comes
+                back, I'll get them to cover for me while I get
+                geared up.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] || scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 HEY, [CS:N]Diglett[CR]! Let's put in a good
+                day of sentry duty! That'll do for now.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [17, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Well there's nothing we can do
+                but our usual job.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [16, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I can throw a LOT more effort
+                into this!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] || scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] || scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] || scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] || scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] ) {
+        @label_121;
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+        message_Talk({
+            english="""
+                 HEY, [CS:N]Diglett[CR]! It's a new day!
+                Let's buckle down and FOCUS!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [12, 1] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+        message_Talk({
+            english="""
+                 HEY, [CS:N]Diglett[CR]![K] We've been away
+                from this! We'd better FOCUS!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Good for YOU![K] I'm glad you two
+                got picked for the expedition too!
+            """,
+        });
+        message_Talk({
+            english="""
+                 The expedition is no walk in the
+                park![K] So don't GOOF UP and get in my way!
+            """,
+        });
+        message_Talk({
+            english=" GOT THAT?!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] || scn($SCENARIO_MAIN) >= [8, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Pssst... Yeah, I'd say you two
+                lucked out, getting us to share those [CS:I]Apples[CR]...
+            """,
+        });
+        message_Talk({
+            english=" ...I was worried about you two...",
+        });
+        message_Talk({
+            english="""
+                 ...Anyway, here's to all of us!
+                Let's work on being picked for the expedition...
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+        message_Talk({
+            english="""
+                 HEY, [CS:N]Diglett[CR]! We GOTTA work
+                hard at getting picked for the expedition!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 6] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Ugh...[K] Our Guildmaster is really
+                a special guy...
+            """,
+        });
+        message_Talk({
+            english=" Special in all sorts of ways...",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" HEY, you two!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+        WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I thought I smelled something
+                awfully ODD coming from over there...
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2DirectionLives<actor ACTOR_NPC_DOGOOMU>(4, 10, ACTOR_PLAYER);
+        WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Did something happen on the
+                other floor?
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 1] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" All right! Look SHARP, [CS:N]Diglett[CR]!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] ) {
+        jump @label_121;
+    } elseif ( scn($SCENARIO_MAIN) >= [5, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 [CS:N]Diglett[CR] is on sentry duty today.
+                GOOD THING!
+            """,
+        });
+        message_Talk({
+            english="""
+                 You two don't inspire confidence
+                as sentries! HAW HAW!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 7] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 All right, [CS:N]Diglett[CR]![K] Time to buck
+                up and FOCUS!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 5] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+        message_Talk({
+            english=" HEY! [CS:N]Diglett[CR]!",
+        });
+        message_Talk({
+            english="""
+                 Let me know right away if
+                ANYONE sketchy comes along!
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetActor(ACTOR_NPC_DIGUDA);
+        message_Talk({
+            english=" Yes! Will do!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 3] || scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] || scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_DOGOOMU);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 All right![K] Time to buck up and
+                WORK HARD!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } else {
+        jump @label_130;
+    }
+}

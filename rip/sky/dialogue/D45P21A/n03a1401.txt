@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_AAMARUDO	Talk	We should try again.
+PLAYER_PUPURIN	Talk	Yep. ♪
+NPC_AAMARUDO	Talk	This place is a bit difficult...

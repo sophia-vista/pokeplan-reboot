@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	No, no, no! Emphatically, no!
+NPC_PERAPPU	Talk	This is a major discovery!
+ATTENDANT1	Talk	R-really?!
+NPC_PERAPPU	Talk	Undoubtedly! ♪
+ATTENDANT1	Talk	Oh, I see! We made a discovery!
+PLAYER	Talk	(When I had those dizzy spells...)
+PLAYER	Talk	(The shadow of that Pokémon I saw...)

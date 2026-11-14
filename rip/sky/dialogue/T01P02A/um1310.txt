@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_MADATSUBOMI	Talk	Thank you!
+NPC_MADATSUBOMI	Talk	Is there a reason for that?
+NPC_MADATSUBOMI	Talk	I'm sorry.
+NPC_MADATSUBOMI	Talk	But we promise we'll keep at it!
+NPC_MADATSUBOMI	Talk	I'll work up my courage for this!
+NPC_MADATSUBOMI	Talk	Ugh...I feel so pathetic...

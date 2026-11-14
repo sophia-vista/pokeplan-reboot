@@ -1,0 +1,19 @@
+speaker	kind	line
+-	Mail	Q1: What's the Exploration Team Federation?
+-	Mail	...That is all.
+-	Mail	Q2: What's written here?
+-	Mail	...That is all.
+-	Mail	Q3: How do I know what to do?
+-	Mail	So if you're stuck, look up some hints!
+-	Mail	...That is all.
+-	Mail	Q4: How do I start a job?
+-	Mail	Now, go! Quit reading this and explore!
+-	Mail	...That is all.
+-	Mail	Q5: What's the Explorer Rank?
+-	Mail	...That is all.
+-	Mail	Q6: Is eating Gummis a good thing to do?
+-	Mail	...That is all.
+-	Mail	Q7: How do I talk to my partner?
+-	Mail	...That is all.
+-	Mail	Q8: What are types?
+-	Mail	...That is all.

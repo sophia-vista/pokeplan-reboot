@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Talk	........................
+-	Talk	SHOW ALL OF YOUR POWER!
+NPC_MIMIROPPU	Talk	We'll get it done this time!

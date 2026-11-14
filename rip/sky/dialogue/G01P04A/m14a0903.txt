@@ -1,0 +1,12 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	See anything, ?
+NPC_DOGOOMU	Talk	WHAT?!
+NPC_HEIGANI	Talk	Hey, hey, !
+NPC_CHIRIIN	Talk	Or was that in the future?
+PLAYER	Talk	(Come to think of it...)
+PLAYER	Talk	(Visions in the past...visions in the future...)
+PLAYER	Talk	(It's never clear when my visions take place!)
+NPC_DAGUTORIO	Talk	Well then...
+NPC_DAGUTORIO	Talk	In that case...
+NPC_YONOWAARU	Talk	Everyone, please hold on!
+ATTENDANT1	Talk	Hmm...

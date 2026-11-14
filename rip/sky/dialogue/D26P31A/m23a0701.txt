@@ -1,0 +1,37 @@
+speaker	kind	line
+-	Talk	Gggh...
+ATTENDANT1	Talk	Hey! I heard a voice over there!
+ATTENDANT1	Talk	Let's check it out, !
+ATTENDANT1	Talk	Let's go, !
+ATTENDANT1	Talk	Hey! It's Team Skull!
+ATTENDANT1	Talk	Wow! It's Team Skull!
+ATTENDANT1	Talk	Oh! It's Team Skull!
+NPC_SUKATANKU	Talk	Urggghhh...
+ATTENDANT1	Talk	Wh-what happened here?!
+ATTENDANT1	Talk	Wh-what happened to you guys?!
+ATTENDANT1	Talk	Wh-what happened to you?!
+NPC_ZUBATTO	Talk	Not that you'd...tell us...heh-heh.
+ATTENDANT1	Talk	Skuntank! Are you all right?!
+ATTENDANT1	Talk	Huh? Chatot did what?!
+ATTENDANT1	Talk	Pardon?! Chatot did what?!
+NPC_SUKATANKU	Talk	Here's what he did!
+NPC_SUKATANKU	Talk	But...if you think about it...
+ATTENDANT1	Talk	You still look pretty badly hurt.
+NPC_SUKATANKU	Talk	Chaw-haw-haw...haw-haw...
+ATTENDANT1	Talk	Hey! The Relic Fragment!
+NPC_SUKATANKU	Talk	Chaw-haw...and I can't move yet.
+ATTENDANT1	Talk	Skuntank...
+ATTENDANT1	Talk	Skuntank... Thanks.
+NPC_SUKATANKU	Talk	Humph. Why thank me?
+ATTENDANT1	Talk	That's right! Where is Chatot?
+NPC_SUKATANKU	Talk	You two hurry up and go too.
+ATTENDANT1	Talk	Thanks, Skuntank.
+ATTENDANT1	Talk	Let's go, .
+ATTENDANT1	Talk	We have to go, .
+ATTENDANT1	Talk	Let's go, .
+NPC_SUKATANKU	Talk	...You two, can you move?
+NPC_DOGAASU	Talk	Whoa-ho... You can't be serious!
+NPC_SUKATANKU	Talk	So that's it...
+NPC_DOGAASU	Talk	Whoa-ho-ho...but, Chief...
+NPC_SUKATANKU	Talk	Shut it... Chaw-haw-haw...
+NPC_SUKATANKU	Talk	Shut up... Chaw-haw-haw...

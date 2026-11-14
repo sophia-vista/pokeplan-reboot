@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Lapras...!
+NPC_JUPUTORU	Talk	Is that it?!
+NPC_JUPUTORU	Talk	Is that the Hidden Land?!
+NPC_RAPURASU	Talk	Yes! That's the Hidden Land!
+NPC_RAPURASU	Talk	We're going in!

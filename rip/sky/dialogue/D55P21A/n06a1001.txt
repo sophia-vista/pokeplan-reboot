@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	We've come pretty far.
+NPC_SAANAITO	Talk	Let's proceed with caution.

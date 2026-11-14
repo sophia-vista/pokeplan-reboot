@@ -1,0 +1,25 @@
+speaker	kind	line
+-	Talk	Everyone: AND...THREE! SMILES GO FOR MILES!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Talk	Huh? Something wrong, Bidoof?
+PLAYER_BIPPA	Talk	Huh?! Really?!
+NPC_PERAPPU	Talk	Yes. ♪ Of course I have. ♪
+PLAYER_BIPPA	Talk	N-nobody knows? Golly...
+NPC_PERAPPU	Talk	The truth is buried in history.
+PLAYER_BIPPA	Talk	Huh?! He'll grant you a wish?!
+PLAYER_BIPPA	Talk	His name is Jirachi?!
+PLAYER_BIPPA	Talk	Th... (Th-this...)
+PLAYER_BIPPA	Talk	Th... (This is...)
+NPC_PERAPPU	Talk	Hey. ♪
+PLAYER_BIPPA	Talk	...Huh?!
+NPC_PERAPPU	Talk	Something happen?
+PLAYER_BIPPA	Talk	Nope! Nope, nope, nope, nope!
+PLAYER_BIPPA	Talk	N-nothin' at all! No sirree!
+NPC_PERAPPU	Talk	...Is that so?
+PLAYER_BIPPA	Talk	Eeek! (I gave myself away!)
+NPC_DOGOOMU	Talk	HEEEEY! BIDOOF!
+PLAYER_BIPPA	Talk	Yes! What is it?!
+NPC_DOGOOMU	Talk	You've GOT a VISITOR!
+PLAYER_BIPPA	Talk	Huh? A visitor?
+PLAYER_BIPPA	Talk	G-golly, a visitor? For me?
+NPC_DOGOOMU	Talk	Hurry UP and get OUT there!

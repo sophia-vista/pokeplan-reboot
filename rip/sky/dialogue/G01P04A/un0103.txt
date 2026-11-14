@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	Do YOUR best!
+NPC_DOGOOMU	Talk	HAVE a SUCCESSFUL exploration!
+NPC_DOGOOMU	Talk	HEY! Diglett!
+NPC_DIGUDA	Talk	Yes! Will do!
+NPC_DOGOOMU	Talk	I HEARD you got the DAY OFF?

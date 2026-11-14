@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Mail	Continue through the wall?
+-	SwitchMenu	Yes
+PLAYER_CHARMS	Talk	All right, let's go!
+PLAYER_CHARMS	Talk	No

@@ -1,0 +1,25 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	Did he really go this way?
+NPC_YAMIRAMI	Talk	Y-yes. There's no mistaking it.
+NPC_SEREBII	Talk	It's hopeless...
+PLAYER_FUTURE	Talk	What's wrong, Celebi?
+NPC_SEREBII	Talk	You know what's strange!?
+NPC_YONOWAARU	Talk	He's no longer acting rationally.
+PLAYER_FUTURE	Talk	What would happen, Dusknoir?
+NPC_YONOWAARU	Talk	If that occurs...
+NPC_YONOWAARU	Talk	We need to stop him quickly...
+PLAYER_FUTURE	Talk	... (The sun is rising.)
+PLAYER_FUTURE	Talk	(Dawn is near.)
+NPC_YONOWAARU	Talk	It took a long time to recover.
+NPC_YONOWAARU	Talk	From here on, Grovyle and I...
+PLAYER_FUTURE	Talk	Understood.
+NPC_YAMIRAMI	Talk	Master Dusknoir!
+NPC_YAMIRAMI	Talk	Grovyle! Celebi too!
+NPC_YONOWAARU	Talk	What is it?
+NPC_YAMIRAMI	Talk	We're ready too!
+PLAYER_FUTURE	Talk	(Just a little more.)
+PLAYER_FUTURE	Talk	...Huh? What was that?
+NPC_SEREBII	Talk	...Huh?
+NPC_SEREBII	Talk	Grovyle, what's wrong?
+PLAYER_FUTURE	Talk	...No...it's nothing...
+PLAYER_FUTURE	Talk	(!)

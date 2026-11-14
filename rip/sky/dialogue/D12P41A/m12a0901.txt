@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_RAIBORUTO	Talk	You trespass again?!
+NPC_RAIBORUTO	Talk	To claim our territory?!
+ATTENDANT1	Talk	You're wrong! We came to...
+NPC_RAIBORUTO	Talk	Save your lies!
+NPC_RAIBORUTO	Talk	Prepare to fight!

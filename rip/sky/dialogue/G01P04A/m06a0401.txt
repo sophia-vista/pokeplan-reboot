@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	HEY, YOU TWO!
+NPC_DOGOOMU	Talk	All right! Let's DO this!
+NPC_DOGOOMU	SwitchMenu	Yes, no problem!
+NPC_DOGOOMU	Talk	Good! Then, let's get to WORK!
+NPC_DOGOOMU	Talk	Buck up and do a GOOD job!
+NPC_DOGOOMU	Talk	No, please explain...

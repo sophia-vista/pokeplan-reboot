@@ -1,0 +1,27 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Your results were...dreadful!
+NPC_PERAPPU	Talk	You failed so many times!
+NPC_DOGOOMU	Talk	UGH...!
+NPC_DOGOOMU	Talk	You two got SO many wrong...
+NPC_DOGOOMU	Talk	I even got in TROUBLE for it!
+NPC_PERAPPU	Talk	H-hush!
+NPC_DOGOOMU	Talk	WHAAAT?!
+NPC_PERAPPU	Talk	Furthermore!
+NPC_PERAPPU	Talk	You'll go without dinner tonight!
+ATTENDANT1	Talk	B-but...
+NPC_PERAPPU	Talk	Your results were...adequate.
+NPC_DOGOOMU	Talk	Hmm...
+ATTENDANT1	Talk	Oh...
+-	Mail	received 100!
+NPC_PERAPPU	Talk	You've all worked an honest day.
+NPC_PERAPPU	Talk	Good job, team! ♪
+NPC_DOGOOMU	Talk	Good!
+ATTENDANT1	Talk	Yay!
+-	Mail	received 200!
+NPC_PERAPPU	Talk	Keep up the good work! ♪
+NPC_DOGOOMU	Talk	Excellent!
+ATTENDANT1	Talk	We did it!
+-	Mail	received 500!
+-	Mail	But that's not the end of it!
+-	Mail	So many rewards! Can you believe it?
+NPC_PERAPPU	Talk	Keep up the good work! ♪

@@ -1,0 +1,13 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [43, 2] ) {
+        @label_0;
+        supervision_Station(0);
+        end;
+    } else {
+        @label_1;
+        supervision_Station(0);
+        supervision_Station(1);
+        end;
+    }
+}

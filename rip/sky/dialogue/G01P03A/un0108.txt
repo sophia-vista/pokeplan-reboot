@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_POCHIENA_B	Talk	You look strangely happy...
+NPC_POCHIENA_B	Talk	Did something happen?

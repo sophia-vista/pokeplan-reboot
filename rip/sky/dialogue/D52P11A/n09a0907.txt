@@ -1,0 +1,9 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	The pillar's electricity...
+NPC_YONOWAARU	Talk	Has gotten pretty intense...
+NPC_YUKIWARASHI	Talk	Har har... Har ha ha har!
+PLAYER_FUTURE	Talk	Oh! Hey!
+NPC_YONOWAARU	Talk	...It looks like it's calmed down...
+PLAYER_FUTURE	Talk	Yeah. That was our first clue.
+PLAYER_FUTURE	Talk	We won't let them get away!
+NPC_YONOWAARU	Talk	Focus, and let's go!

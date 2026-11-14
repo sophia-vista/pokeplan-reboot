@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_TANEBOO	Talk	You two are something else!
+NPC_TANEBOO	Talk	...Huh? Why's that?
+NPC_TANEBOO	Talk	Well, why would I know that?
+NPC_TANEBOO	Talk	Want to hear what we're up to?

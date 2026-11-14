@@ -1,0 +1,2 @@
+speaker	kind	line
+ATTENDANT1	Menu	Let's do our best, !

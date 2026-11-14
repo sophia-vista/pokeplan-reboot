@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_YUKIKABURI	Talk	Oh!
+PLAYER_BIPPA	Talk	Huh? You are?
+PLAYER_BIPPA	Talk	You're from yesterday!
+PLAYER_BIPPA	Talk	A-are you all right?

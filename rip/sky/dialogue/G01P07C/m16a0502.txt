@@ -1,0 +1,10 @@
+speaker	kind	line
+ATTENDANT1	EmptyActor	(That's true!)
+ATTENDANT1	EmptyActor	(Come to think of it...)
+ATTENDANT1	EmptyActor	(This never crossed my mind before...)
+ATTENDANT1	EmptyActor	(What is it like?)
+ATTENDANT1	EmptyActor	(Is the future like the present day...?)
+ATTENDANT1	EmptyActor	(Is it a world at peace?)
+ATTENDANT1	EmptyActor	Oooooh...
+ATTENDANT1	EmptyActor	Tomorrow...let's do our best...
+ATTENDANT1	EmptyActor	Good night...

@@ -1,0 +1,56 @@
+speaker	kind	line
+ATTENDANT1	Talk	Yep. But about that Time Gear...
+ATTENDANT1	Talk	Yes. But about that Time Gear...
+ATTENDANT1	Talk	Grovyle took off with it...
+ATTENDANT1	Talk	Grovyle stole it...
+ATTENDANT1	Talk	Grovyle took off with it...
+NPC_BIPPA	Talk	That's not true, by golly!
+NPC_BIPPA	Talk	You all did great work!
+NPC_DAGUTORIO	Talk	I must agree.
+NPC_DAGUTORIO	Talk	Where will Grovyle strike next?
+NPC_DAGUTORIO	Talk	We have no way of knowing.
+NPC_KIMAWARI	Talk	We're back to square one!
+NPC_YONOWAARU	Talk	Maybe not. Not necessarily.
+NPC_PERAPPU	Talk	Dusknoir, sir!
+NPC_YONOWAARU	Talk	There are some clues.
+ATTENDANT1	Talk	Uxie told her by using telepathy!
+ATTENDANT1	Talk	Uxie alerted her by telepathy!
+NPC_DAGUTORIO	Talk	Incredible!
+NPC_DOGOOMU	Talk	Now that IS really something!
+NPC_YONOWAARU	Talk	I should have known.
+NPC_YONOWAARU	Talk	There is an ancient legend...
+ATTENDANT1	Talk	Th-three?
+ATTENDANT1	Talk	So besides Uxie and Mesprit...
+ATTENDANT1	Talk	There's one other Pokémon?
+NPC_YONOWAARU	Talk	Yes.
+NPC_CHIRIIN	Talk	Oh, I see!
+NPC_CHIRIIN	Talk	If we could locate Azelf...
+NPC_YONOWAARU	Talk	That's correct.
+NPC_YONOWAARU	Talk	So the lake where Azelf lives...
+NPC_PERAPPU	Talk	My, my, my! ♪
+NPC_YONOWAARU	Talk	Thank you... It's really nothing...
+NPC_DAGUTORIO	Talk	No, no! We, too, revere you!
+NPC_YONOWAARU	Talk	Ah, I have an idea.
+NPC_YONOWAARU	Talk	Bidoof...
+NPC_BIPPA	Talk	Yup yup, you want me?
+NPC_BIPPA	Talk	What can I do for you?
+NPC_YONOWAARU	Talk	I have a request.
+NPC_YONOWAARU	Talk	May I borrow it briefly?
+NPC_BIPPA	Talk	My crystal?!
+NPC_BIPPA	Talk	N-no! No sirree!
+NPC_YONOWAARU	Talk	Now, ...
+NPC_YONOWAARU	Talk	Please touch Bidoof's crystal.
+PLAYER	Talk	(...!)
+PLAYER	Talk	(I should touch the crystal...?)
+PLAYER	Talk	(I see. That's what this is about...)
+NPC_KIMAWARI	Talk	Oh my gosh! Really?
+NPC_YONOWAARU	Talk	Please, may we?
+PLAYER	Mail	(This crystal...)
+PLAYER	Mail	(What will it reveal...?)
+PLAYER	Mail	(Everyone's watching...)
+PLAYER	Mail	(I don't know if I will see anything, but...)
+PLAYER	Mail	(I need to concentrate...)
+PLAYER	Mail	(...............)
+ATTENDANT1	FacePositionOffset	Well, ?
+PLAYER	FacePositionOffset	(Here it comes...)
+PLAYER	FacePositionOffset	(The dizziness is starting...)

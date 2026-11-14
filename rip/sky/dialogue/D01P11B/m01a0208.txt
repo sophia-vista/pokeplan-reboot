@@ -1,0 +1,62 @@
+speaker	kind	line
+PLAYER	Monologue	(..................)
+PLAYER	Monologue	(...Ugh...)
+ATTENDANT1	Monologue	Great! You're awake!
+ATTENDANT1	Monologue	You're awake! That's a relief!
+ATTENDANT1	Monologue	You're awake! Thank goodness!
+PLAYER	Monologue	(Where...where am I...?)
+PLAYER	Monologue	(I... I was unconscious? What happened...?)
+ATTENDANT1	Monologue	So who might you be?
+ATTENDANT1	Monologue	And who are you?
+ATTENDANT1	Monologue	Huh? You say you're a human?
+ATTENDANT1	Monologue	What? You say you're a human?
+PLAYER	Monologue	(It's...it's true!)
+PLAYER	Monologue	(I've turned into an !)
+ATTENDANT1	Monologue	You're...a little odd...
+ATTENDANT1	Monologue	You're telling me the truth?
+PLAYER	Monologue	(My name? That's right, my name is...)
+ATTENDANT1	Menu	Oh,  is your name?
+ATTENDANT1	Menu	So you're named ?
+ATTENDANT1	Menu	Sorry that I doubted you.
+ATTENDANT1	FacePositionOffset	Ow!
+ATTENDANT1	FacePositionOffset	Ouch!
+ATTENDANT1	FacePositionOffset	Yowch!
+NPC_DOGAASU	Talk	Well, I do beg your pardon.
+ATTENDANT1	FacePositionOffset	Hey! Why'd you do that?!
+NPC_ZUBATTO	Talk	Heh-heh-heh! Can't figure it out?
+ATTENDANT1	FacePositionOffset	Wh-what?!
+NPC_ZUBATTO	Talk	That's yours, isn't it?
+ATTENDANT1	FacePositionOffset	Hey! That's...!
+ATTENDANT1	FacePositionOffset	No! That's...!
+ATTENDANT1	FacePositionOffset	Oh! That's...!
+NPC_ZUBATTO	Talk	Sorry, kiddo. We'll take that!
+ATTENDANT1	FacePositionOffset	Aaaah!
+NPC_DOGAASU	Talk	Come on. Let's get out of here.
+ATTENDANT1	Talk	...Ohhh...
+ATTENDANT1	Talk	Wh-what should I do?
+ATTENDANT1	Talk	If I lose that...
+ATTENDANT1	Talk	No! There's no time to waste!
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	Th-thank you! Let's go quickly!
+ATTENDANT1	Menu	No
+ATTENDANT1	Menu	Huh?! You won't help me?
+ATTENDANT1	Menu	What?! You won't help me?
+ATTENDANT1	Menu	Awww! You won't help me?
+ATTENDANT1	Menu	That thing is important to me!
+ATTENDANT1	Menu	If I can't get it back...
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	No
+ATTENDANT1	SwitchMenu	Wh-what should I do?
+ATTENDANT1	SwitchMenu	G-got it!
+ATTENDANT1	SwitchMenu	But you can't just...
+ATTENDANT1	SwitchMenu	That's my precious treasure...
+ATTENDANT1	SwitchMenu	If that disappeared, then I'd...
+ATTENDANT1	SwitchMenu	G-got it!
+ATTENDANT1	SwitchMenu	But I have no memory...
+ATTENDANT1	SwitchMenu	I know it's difficult...but hurry!
+ATTENDANT1	SwitchMenu	G-got it!
+ATTENDANT1	SwitchMenu	But I'm sure I was a human...
+ATTENDANT1	SwitchMenu	G-got it!
+ATTENDANT1	SwitchMenu	O-OK!
+ATTENDANT1	SwitchMenu	Wh-what should I do?
+ATTENDANT1	SwitchMenu	(I've turned into a !)

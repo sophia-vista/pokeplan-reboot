@@ -1,0 +1,46 @@
+
+def 0 {
+    debug_Print('station_M01A01');
+    switch ( sector() ) {
+        case 1:
+            @label_0;
+            supervision_Station(0);
+            end;
+        default:
+            back_SetGround(LEVEL_T00P01);
+            supervision_StationCommon(0);
+            supervision_StationCommon(1);
+            supervision_Station(0);
+            screen_FadeIn(1, 30);
+            end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_TEST001 {
+    JumpCommon(CORO_MOVE_SLEEP);
+}
+
+def 2 for actor ACTOR_NPC_TEST002 {
+    JumpCommon(CORO_MOVE_PAUSE);
+}
+
+def 3 for actor ACTOR_NPC_TEST003 {
+    JumpCommon(CORO_MOVE_STAY);
+}
+
+def 4 for actor ACTOR_NPC_TEST005 {
+    SetMoveRange(Position<'m0', 64, 40>, 10, 10);
+    JumpCommon(CORO_MOVE_TYPE1);
+}
+
+def 5 for actor ACTOR_NPC_TEST007 {
+    ResetFunctionAttribute(8);
+    @label_1;
+    forever {
+        MovePositionOffset(0.5, 32, 0);
+        MovePositionOffset(0.5, 0, 32);
+        MovePositionOffset(0.5, -32, 0);
+        MovePositionOffset(0.5, 0, -32);
+        continue;  // may be redundant
+    }
+}

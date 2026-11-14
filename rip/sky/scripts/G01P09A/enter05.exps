@@ -1,0 +1,1556 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+    Turn2DirectionMark<actor ACTOR_PLAYER_KIMAWARI>(4, 10, Position<'m0', 32.5, 16>, 1, 1);
+    WaitExecuteLives(ACTOR_PLAYER_KIMAWARI);
+    SetAnimation<object OBJECT_G01P09A1_548>(18);
+    WaitAnimation<object OBJECT_G01P09A1_548>();
+    WaitExecuteObject(OBJECT_G01P09A1_548);
+    SetAnimation<object OBJECT_G01P09A1_548>(19);
+    message_ResetActor();
+    message_Notice({
+        english="[CN]Something is written here...",
+    });
+    @label_56;
+    message_Notice({
+        english="""
+            [CN]This is [CS:Y]Sunflora[CR]'s diary.
+            [CN]Should we sneak a peek?
+        """,
+    });
+    switch ( message_SwitchMenu(0, 1) ) {
+        case menu({
+            english="Read",
+        }):
+            @label_0;
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+                case 2:
+                    @label_51;
+                    $EVENT_LOCAL = 4;
+                    @label_55;
+                    switch ( message_Menu(MENU_DIARY_SUNFLORA) ) {
+                        case 26:
+                            @label_2;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 26: Thank You!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! Yippee-yay-yay!
+                                    Our [hero] and [partner] are back!
+                                    Back in Treasure Town!
+                                """,
+                            });
+                            message_Mail({
+                                english="They defeated [CS:N]Darkrai[CR]![K] And they're back safe!",
+                            });
+                            message_Mail({
+                                english="""
+                                    Thank you, [hero] and [partner]!
+                                    Very, very sincerely!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    From the bottom of my heart, I'm filled with a
+                                    deep sense of gratitude.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    You two so bravely saved the world, not once,
+                                    but twice!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    When I think back to when you first joined the
+                                    guild...[K]you two were just the cutest!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    But now you've grown to be so capable and
+                                    confident.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    ...[K]Oh my gosh! This must be what a mother
+                                    feels like watching her children grow!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! I feel horrified about writing
+                                    that![K] Anyway...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh, [hero] and [partner]! Don't ever
+                                    change, my good friends!
+                                """,
+                            });
+                            @label_1;
+                            message_Close();
+                            SetAnimation<object OBJECT_G01P09A1_548>(20);
+                            WaitAnimation<object OBJECT_G01P09A1_548>();
+                            WaitExecuteObject(OBJECT_G01P09A1_548);
+                            SetAnimation<object OBJECT_G01P09A1_548>(17);
+                            JumpCommon(CORO_END_TALK);
+                        case 25:
+                            @label_3;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 25: [CS:N]Darkrai[CR]
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Yippee! Oh my gosh! Little [CS:N]Azurill[CR]...[K]
+                                    Little [CS:N]Azurill[CR] has awoken from his nightmare!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Ooh, this is so wonderful! Yippee![K] [CS:N]Cresselia[CR]
+                                    must be thanked properly for this!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    We also owe [CS:N]Cresselia[CR] for telling us how
+                                    everything bad that happened came to be...
+                                    Even the destruction of time.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    We were shocked to learn that it was all the
+                                    doing of one Pokémon... The one called [CS:N]Darkrai[CR].
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Now [hero] and [partner] are on
+                                    their way to confront [CS:N]Darkrai[CR].
+                                """,
+                            });
+                            message_Mail({
+                                english="Good luck, [hero] and [partner]!",
+                            });
+                            message_Mail({
+                                english="Please win! And please come back safe!",
+                            });
+                            message_Mail({
+                                english="Go for it, Team [team:]!",
+                            });
+                            jump @label_1;
+                        case 24:
+                            @label_4;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 24: Nightmare! Eek!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    It was so peaceful for a while...[K] But now
+                                    there has been a sinister incident.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Little [CS:N]Azurill[CR] seems to be stuck in a nightmare
+                                    that he can't wake from.
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh! How is that possible?!",
+                            });
+                            message_Mail({
+                                english="""
+                                    For the time being, Team [team:] has
+                                    gone off in search of a Pokémon named
+                                    [CS:N]Drowzee[CR].
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Apparently, [CS:N]Drowzee[CR] can go into the dreams of
+                                    others...[K] It would be wonderful if little [CS:N]Azurill[CR]
+                                    can be awoken that way.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    P.S. Oh my gosh, I don't really want to even
+                                    write anything like this, but...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Maybe... Well, lately... Maybe only because it's
+                                    been so peaceful for so long... But...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I can't get over this creepy feeling that
+                                    something dreadful is going to happen...
+                                """,
+                            });
+                            jump @label_1;
+                        case 23:
+                            @label_5;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 23: Thunderstorm! Eek!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="...It's always sunny.",
+                            });
+                            message_Mail({
+                                english="""
+                                    The weather has been nice for a long
+                                    time now.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    It sure keeps me feeling perky![K] I wish the
+                                    weather would stay sunny like this.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    But, oh my gosh, everyone is saying there's a
+                                    storm coming...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I guess that a Pokémon named [CS:N]Swampert[CR]
+                                    sensed a storm coming and told everyone...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    That's all fine and well, but...[K]I...[K]get spooked by
+                                    thunder...
+                                """,
+                            });
+                            message_Mail({
+                                english="The instant it thunders...[K] Eeeeek!",
+                            });
+                            message_Mail({
+                                english="Oooh, just as I wrote that! Eeeeek![K] Thunder!",
+                            });
+                            message_Mail({
+                                english="""
+                                    ...Oh! Actually, it was only [CS:N]Chimecho[CR] ringing
+                                    her bell beside me...
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh! She startled me!",
+                            });
+                            message_Mail({
+                                english="""
+                                    That [CS:N]Chimecho[CR] is more mischievous than she
+                                    looks! Oh my gosh!
+                                """,
+                            });
+                            jump @label_1;
+                        case 22:
+                            @label_6;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 22: Yippee! Team [CS:X]Charm[CR]!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh! What an exciting day it was!",
+                            });
+                            message_Mail({
+                                english="""
+                                    Everyone's favorite celebrities, the women of
+                                    Team [CS:X]Charm[CR], came to our guild! Oh my gosh!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Yippee![K]
+                                    Yippee![K]
+                                    Yip-yip-yippeeeeee...
+                                """,
+                            });
+                            message_Mail({
+                                english="...[K]Oh![K] Where?[K] Oh my gosh! Where am I?!",
+                            });
+                            message_Mail({
+                                english="...[K]Oh, I see now...",
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! I just fainted from being so
+                                    excited!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh...! [CS:N]Chimecho[CR] is looking at me all puzzled![K]
+                                    Oh my gosh! This just won't do!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Um, anyway, the women of Team [CS:X]Charm[CR] came
+                                    calling on our guild for an oh-my-gosh kind of
+                                    reason.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Turns out they're old friends of our
+                                    Guildmaster. Wow![K] Oh my gosh, our
+                                    Guildmaster is special!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I feel lucky that I've stayed with the guild to
+                                    further my training.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh...! [CS:N]Chimecho[CR] is eyeing me curiously. I can't
+                                    write like this, oh my gosh!
+                                """,
+                            });
+                            message_Mail({
+                                english="So that's all for tonight! Good night!",
+                            });
+                            jump @label_1;
+                        case 21:
+                            @label_7;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 21: Bidding Farewell
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="Baby [CS:N]Manaphy[CR] went back to the sea...",
+                            });
+                            message_Mail({
+                                english="""
+                                    Poor [hero] and [partner] must be
+                                    crushed by this...
+                                """,
+                            });
+                            message_Mail({
+                                english="I feel terrible for them...",
+                            });
+                            message_Mail({
+                                english="""
+                                    But... This is exactly the time we must be
+                                    cheerful around them to uplift their spirits!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    When I see [hero] and [partner]
+                                    tomorrow, I'll have to greet them with a big
+                                    smile!
+                                """,
+                            });
+                            jump @label_1;
+                        case 20:
+                            @label_8;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 20: Worries...
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I heard that baby [CS:N]Manaphy[CR] has fallen sick...[K]
+                                    This worries me so much!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    [CS:N]Corphish[CR] blurted out, "Hey, hey! That baby
+                                    [CS:N]Manaphy[CR] is probably a Pokémon that can only
+                                    grow up in the sea, hey, hey!"
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I wanted to ask [CS:N]Corphish[CR], "Then, why aren't
+                                    you in the water all the time?"
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    But, oh my gosh, it wasn't the sort of thing to
+                                    bring up just then!
+                                """,
+                            });
+                            message_Mail({
+                                english="Please get better soon, [CS:N]Manaphy[CR]!",
+                            });
+                            jump @label_1;
+                        case 19:
+                            @label_9;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 19: Beaten to the Punch
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! Team [team:] has already
+                                    explored the [CS:P]Surrounded Sea[CR] through and
+                                    through!
+                                """,
+                            });
+                            message_Mail({
+                                english="Eeeek! They've beaten me to the punch!",
+                            });
+                            message_Mail({
+                                english="""
+                                    Being free associates of the guild gives those
+                                    kids an advantage, though. They're free to
+                                    go wherever and whenever they want.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    As opposed to me with my guild work. I can't
+                                    find time like they can...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Eek! I don't like writing this![K] It's all so whiny
+                                    and self-pitying. Oh my gosh!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I don't remember turning into this loathsome
+                                    character![K] Oh my gosh! What am I to do?
+                                    What am I to do?!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    P.S. That [hero]'s team brought back a
+                                    tiny baby from the [CS:P]Surrounded Sea[CR].
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! He's so mysterious! And so
+                                    adorable! Yippee!
+                                """,
+                            });
+                            jump @label_1;
+                        case 18:
+                            @label_10;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 18: The [CS:P]Surrounded Sea[CR]!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh! I heard a fantastic rumor!",
+                            });
+                            message_Mail({
+                                english="""
+                                    A rumor about a place called the [CS:P]Surrounded
+                                    Sea[CR]! Eek!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    What treasures would one find at a place like
+                                    that...?
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh! Yippee! I want to go there!",
+                            });
+                            message_Mail({
+                                english="""
+                                    I want to go so much, I feel like I'm going to
+                                    faint just from writing about it!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I think I will find time between my guild jobs
+                                    and go! Oh my gosh! Yes, I will!
+                                """,
+                            });
+                            jump @label_1;
+                        case 17:
+                            @label_11;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 17: Yay! Graduation!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="They did it!",
+                            });
+                            message_Mail({
+                                english="""
+                                    Those kids made it through the graduation
+                                    exam!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! The members of Team
+                                    [team:] were so adorable when they
+                                    joined the guild...[K] Now they're authorities!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    It's sad that they're leaving the guild...[K]
+                                    But Sharpedo Bluff is very close by. I can
+                                    visit them anytime.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    So [hero] and [partner]...
+                                    Congratulations!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Do visit us at the guild even after you
+                                    graduate!
+                                """,
+                            });
+                            jump @label_1;
+                        case 16:
+                            @label_12;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 16: Graduation Exam
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Team [team:] has been chosen to take the
+                                    graduation exam.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    But graduation...[K] Oh my gosh! I remember
+                                    when they asked me if I wanted to take it...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    At the time, I refused because I wanted to
+                                    train some more at the guild.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Last year, [CS:N]Loudred[CR] took the exam... Of course,
+                                    he failed in spectacular fashion...
+                                """,
+                            });
+                            message_Mail({
+                                english="But those kids can make it! I'm sure of it! Eek!",
+                            });
+                            message_Mail({
+                                english="I'll be cheering for them!",
+                            });
+                            message_Mail({
+                                english="""
+                                    P.S. It's that time of year again! The season
+                                    of the grand master of all things bad![K] Yippee!
+                                """,
+                            });
+                            jump @label_1;
+                        case 15:
+                            @label_13;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 15: They're Saving Us!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="Our future is in the hands of those two kids.",
+                            });
+                            message_Mail({
+                                english="""
+                                    But I'm convinced that those kids will not fail
+                                    to stop the planet's paralysis.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    That [hero] and [partner]! Oh, but
+                                    don't forget [CS:N]Lapras[CR] and [CS:N]Grovyle[CR] too!
+                                """,
+                            });
+                            message_Mail({
+                                english="You can't fail us!",
+                            });
+                            message_Mail({
+                                english="""
+                                    I hope you all come back safe and sound to
+                                    Treasure Town. Soon!
+                                """,
+                            });
+                            jump @label_1;
+                        case 14:
+                            @label_14;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 14: Welcome Back!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh! Yippee! What a shock!",
+                            });
+                            message_Mail({
+                                english="""
+                                    It's totally amazing! Team [team:] came
+                                    back![K] From the future! Oh my gosh!
+                                """,
+                            });
+                            message_Mail({
+                                english="It was such an amazing thing! Yippee!",
+                            });
+                            message_Mail({
+                                english="""
+                                    We were even more amazed by [partner]'s
+                                    account of it all. Oh my gosh!
+                                """,
+                            });
+                            message_Mail({
+                                english="But if those kids said it, then it must be true.",
+                            });
+                            message_Mail({
+                                english="I choose to believe the kids.",
+                            });
+                            message_Mail({
+                                english="Oh![K] Then does that mean...",
+                            });
+                            message_Mail({
+                                english="""
+                                    That the great [CS:N]Dusknoir[CR], who I revere...[K]is
+                                    actually a bad Pokémon?!
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh...[K] A bad Pokémon?!",
+                            });
+                            message_Mail({
+                                english="What should I do?! What should I do?!",
+                            });
+                            jump @label_1;
+                        case 13:
+                            @label_15;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 13: Those Kids...
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Everyone, including myself, is down in the
+                                    dumps at the guild.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I thought about why the guild is lacking energy
+                                    lately... The answer is easy.
+                                """,
+                            });
+                            message_Mail({
+                                english="It's because...[K]Team [team:] is missing.",
+                            });
+                            message_Mail({
+                                english="""
+                                    I didn't realize how lonely it would be without
+                                    Team [team:]...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    [CS:N]Chatot[CR] has been very ill tempered lately and
+                                    prone to annoying outbursts...[K] But that's also
+                                    because he misses those kids.
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh, I hope they're safe... Those kids...",
+                            });
+                            jump @label_1;
+                        case 12:
+                            @label_16;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 12: Total Shocker!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! It's been one shocking thing after
+                                    another lately!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    It turns out that [CS:N]Grovyle[CR] is a wanted outlaw
+                                    on the run from (oh my gosh!) the future.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    And [CS:N]Dusknoir[CR] also came from the future
+                                    to catch that [CS:N]Grovyle[CR]! Eek!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    There have been so many unbelievable events!
+                                    It's like I'm in a perpetual state of shock!
+                                    Oh...my...gosh!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Anyway, [CS:N]Dusknoir[CR] vowed to catch [CS:N]Grovyle[CR]
+                                    on his own.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I'm sure the great [CS:N]Dusknoir[CR] will honor his
+                                    pledge, so [CS:N]Grovyle[CR] will be caught.
+                                """,
+                            });
+                            message_Mail({
+                                english="We have to leave everything up to [CS:N]Dusknoir[CR].",
+                            });
+                            message_Mail({
+                                english="Good luck, [CS:N]Dusknoir[CR]!",
+                            });
+                            jump @label_1;
+                        case 11:
+                            @label_17;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 11: Where's [CS:N]Grovyle[CR]?
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    The whole guild is now searching for that
+                                    thieving [CS:N]Grovyle[CR].
+                                """,
+                            });
+                            message_Mail({
+                                english="[CS:N]Bidoof[CR], [CS:N]Dugtrio[CR], and I searched [CS:P]Crystal Cave[CR].",
+                            });
+                            message_Mail({
+                                english="But our search turned up nothing.",
+                            });
+                            message_Mail({
+                                english="Where could that [CS:N]Grovyle[CR] be...?",
+                            });
+                            message_Mail({
+                                english="But he must be caught, no matter what!",
+                            });
+                            message_Mail({
+                                english="For [CS:N]Uxie[CR]'s sake too, we'll catch that criminal!",
+                            });
+                            message_Mail({
+                                english="""
+                                    P.S. That silly [CS:N]Bidoof[CR]...[K] Oh my gosh, he was
+                                    no help looking for [CS:N]Grovyle[CR]...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Not only that, he even brought home a crystal
+                                    as a souvenir! Eeek!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    That reminds me...[K] When we were leaving
+                                    [CS:P]Crystal Cave[CR], I caught [CS:N]Bidoof[CR] grinning to
+                                    himself...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Now that I think about it... Oh my gosh, that
+                                    was him grinning about that crystal!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh, I never suspected [CS:N]Bidoof[CR] could
+                                    leer in such an icky way! Eek!
+                                """,
+                            });
+                            message_Mail({
+                                english="It's another new discovery! Eek!",
+                            });
+                            jump @label_1;
+                        case 10:
+                            @label_18;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 10: Oh My Gosh! [CS:N]Dusknoir[CR]!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh oh my gosh oh my gosh!
+                                    The famous [CS:N]Dusknoir[CR] came to our guild!
+                                    Yippee!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    And...and...and...! He plans to stay in Treasure
+                                    Town for a while! Yippee!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I got to talk to him! He's wise! And courteous!
+                                    And handsome! And oh my gosh...[K]yippee!
+                                """,
+                            });
+                            message_Mail({
+                                english="Yip-yip-yippee! That's what it feels like!",
+                            });
+                            jump @label_1;
+                        case 9:
+                            @label_19;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 9: Back Home!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    We just got back from our expedition now!
+                                    Oh my gosh! Am I exhausted!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Ooh! This expedition left a big impression
+                                    on me in every way!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Especially the sight of [CS:P]Fogbound Lake[CR]...[K] Oh my
+                                    gosh, it moved me in ways I can't express!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh! But if I write any more details, [CS:N]Uxie[CR] would
+                                    be so upset. And that wouldn't be good! Eek!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    This was the best of all the expeditions I've
+                                    attended!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Ooh, I hope I can go with everyone again
+                                    sometime!
+                                """,
+                            });
+                            jump @label_1;
+                        case 8:
+                            @label_20;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 8: Inspiration!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! Something happened that was
+                                    totally uplifting!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Tonight, Team [team:] had to go without
+                                    dinner for some silly reason...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    While we were eating (oh my gosh!), [CS:N]Bidoof[CR]
+                                    was leaving a part of his dinner untouched!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    And this is [CS:N]Bidoof[CR], right? The one we call the
+                                    "bottomless barrel" because of his big appetite!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Whatever could have caused that?! Maybe he's
+                                    heartbroken!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Well, I guessed that at first. But then I
+                                    figured out what he was really doing.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    He was leaving some of his dinner for
+                                    [hero]'s team.
+                                """,
+                            });
+                            message_Mail({
+                                english="Then (oh my gosh!) the others noticed too.",
+                            });
+                            message_Mail({
+                                english="""
+                                    So we all did what [CS:N]Bidoof[CR] was doing. We left
+                                    bits and pieces of our dinner.[K] (Though [CS:N]Loudred[CR]
+                                    agonized over the decision to the end.)
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Yippee! Everyone pitched in to help! How sweet
+                                    of them! Oh my gosh, I am getting emotional!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    In the end, we decided to share the smaller
+                                    things ourselves and leave them with one
+                                    whole [CS:I]Apple[CR] each!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    [CS:N]Chimecho[CR], [CS:N]Bidoof[CR], and I will keep those two
+                                    [CS:I]Apples[CR] for the night.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Tomorrow morning, we'll give them to Team
+                                    [team:].
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    They must be hungry now, but they have to
+                                    endure it just a little longer...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    We all have to stick together and try to make
+                                    it into the expedition party!
+                                """,
+                            });
+                            jump @label_1;
+                        case 7:
+                            @label_21;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 7: A Rare Expedition
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    In the morning briefing, [CS:N]Chatot[CR] told us
+                                    something that's worth a good scream. Eek!
+                                """,
+                            });
+                            message_Mail({
+                                english="There's an expedition coming up! Yippee!",
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! It's been simply ages since our
+                                    last one!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    On our last expedition, we brought home simply
+                                    massive amounts of treasures!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    We shared everything with everyone in
+                                    Treasure Town. It was a happy, happy time!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oooh, the upcoming expedition should be fun!
+                                    I wonder where we'll explore this time?
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    My roommate [CS:N]Chimecho[CR] and I got all excited
+                                    guessing about the destination!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Of course, I'm going to do everything I can to
+                                    be picked for the expedition!
+                                """,
+                            });
+                            message_Mail({
+                                english="Oooh, I'm feeling motivated! Yippee!",
+                            });
+                            jump @label_1;
+                        case 6:
+                            @label_22;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 6: Mystery!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Something very mysterious happened at our
+                                    guild the other day!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    We were in the guild when (oh my gosh!) the
+                                    place was stunk up by an atrocious stench!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! I'd never experienced such a foul
+                                    cloud of fumes. It was an eek-worthy moment!
+                                """,
+                            });
+                            message_Mail({
+                                english="But...everyone denied responsibility for it!",
+                            });
+                            message_Mail({
+                                english="""
+                                    But there's no fooling me! Oh my gosh, I know
+                                    what I smelled, and there was no mistaking it!
+                                """,
+                            });
+                            message_Mail({
+                                english="Eek, how mysteriously it crept upon us!",
+                            });
+                            message_Mail({
+                                english="Who is the culprit?! Eek!",
+                            });
+                            jump @label_1;
+                        case 5:
+                            @label_23;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 5: Types and Matchups
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh! I had a nasty scare the other day!",
+                            });
+                            message_Mail({
+                                english="""
+                                    While exploring a dungeon, I was careless and
+                                    took a hit from a Fire-type move! Silly me!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I'm a Grass type! So I ended up taking a lot of
+                                    damage! Eek!
+                                """,
+                            });
+                            message_Mail({
+                                english="I should really explain what all this is about.",
+                            });
+                            message_Mail({
+                                english="""
+                                    As you know, Pokémon come in many types,
+                                    like Fire and Water.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    All moves have types too! The matchup
+                                    between the attacking move's type and the
+                                    defending Pokémon's type affects damage!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    As a Grass type, I should really watch out for
+                                    Fire-type moves! Knowing how types match up
+                                    is so important.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    P.S. When I got into trouble because of all
+                                    this...[K] It was [CS:N]Loudred[CR] who saved me.
+                                """,
+                            });
+                            message_Mail({
+                                english="Thank you, [CS:N]Loudred[CR].",
+                            });
+                            message_Mail({
+                                english="""
+                                    That other time I yelled at him! I said, "Oh my
+                                    gosh, [CS:N]Loudred[CR]! I never want to go exploring
+                                    with you ever again!"
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    But...eek! Am I ever sorry for saying that!
+                                    I take back everything nasty I said!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I wonder if he would go to a dungeon with me
+                                    ever again?
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I think I will go apologize to him sincerely
+                                    tomorrow. Yes, that's what I will do.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I'm sorry, [CS:N]Loudred[CR]. I hope we can keep on
+                                    being teammates.
+                                """,
+                            });
+                            jump @label_1;
+                        case 4:
+                            @label_24;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 4: Exploration Basics
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    I promised, and now I'll deliver! Here's my
+                                    report on exploring with [CS:N]Bidoof[CR]!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! I was amazed at how little [CS:N]Bidoof[CR]
+                                    knew about exploring.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    An example! If an enemy stands beside you,
+                                    pushing [M:B5] will make you face it. Easy, right?
+                                """,
+                            });
+                            message_Mail({
+                                english="He didn't even know that!",
+                            });
+                            message_Mail({
+                                english="""
+                                    But all he needed was a little coaching.[K] When I
+                                    taught him, [CS:N]Bidoof[CR] picked things up quickly.
+                                    He's not so bad after all! Oh my gosh!
+                                """,
+                            });
+                            message_Mail({
+                                english="We got the job done too! ♪[K] Another fun day!",
+                            });
+                            jump @label_1;
+                        case 3:
+                            @label_25;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 3: Lovely Food!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="Tomorrow, I'll be off exploring with [CS:N]Bidoof[CR].",
+                            });
+                            message_Mail({
+                                english="""
+                                    That [CS:N]Bidoof[CR] is sure to wander needlessly, so
+                                    I should stock up on lots of food.
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh? Why do we need lots of food?",
+                            });
+                            message_Mail({
+                                english="""
+                                    Well, as you move around in a dungeon, you'll
+                                    get hungry as your Belly empties of food.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    If your Belly gets empty, you'll get weaker and
+                                    weaker...until you faint! Oh my gosh! Terrible!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    [CS:N]Bidoof[CR] is a little short on experience, so I'll
+                                    back him up.
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    P.S. I plan to write about how my exploration
+                                    went with [CS:N]Bidoof[CR]...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Now that should really be something to look
+                                    forward to! Eek!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    ...Which again makes me think that someone
+                                    may be peeking at my diary?
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh! How horrifying! Eeek!",
+                            });
+                            jump @label_1;
+                        case 2:
+                            @label_26;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 2: That Silly [CS:N]Loudred[CR]!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! That silly [CS:N]Loudred[CR]! Ooooh! He can
+                                    be so absentminded!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Everyone knows that if you get totally wiped
+                                    out in a dungeon...you lose some items...and
+                                    half your money!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    But of course that silly [CS:N]Loudred[CR] forgets all
+                                    that and goes storming off into the dungeon...
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    And that wound up making us both wipe out!
+                                    So I got sent back to the guild too!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Eek! So frustrating! Oh my gosh, I never, ever
+                                    want to go to a dungeon with [CS:N]Loudred[CR] again!
+                                """,
+                            });
+                            message_Mail({
+                                english="P.S. Two new kids joined the guild!",
+                            });
+                            message_Mail({
+                                english="""
+                                    I think they were called [c_name:NPC_PARTNER_FIRST] and
+                                    [c_name:NPC_HERO_FIRST]...
+                                """,
+                            });
+                            message_Mail({
+                                english="Oh my gosh. They're both adorable. Yippee!",
+                            });
+                            jump @label_1;
+                        case 1:
+                            @label_27;
+                            message_Mail({
+                                english="""
+                                    [CN][CS:Y]Sunflora[CR]'s Oh My Gosh Diary
+                                    [CN]Entry 1: What a Scream!
+                                    [CN]OO Month XX Day, Sunny
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Oh my gosh! So glad to meet you! I'm [CS:Y]Sunflora[CR],
+                                    an apprentice at the guild!
+                                """,
+                            });
+                            message_Mail({
+                                english="""
+                                    Eek! But does this mean someone else is
+                                    reading my diary besides me?!
+                                """,
+                            });
+                            message_Mail({
+                                english="Double-eek! Is someone sneaking a peek?",
+                            });
+                            message_Mail({
+                                english="Oh my gosh! How horrifying! Eeek!",
+                            });
+                            jump @label_1;
+                        default:
+                            jump @label_56;
+                    }
+                    break;
+                default:
+                    if ( scn($SCENARIO_MAIN) >= [29, 94] ) {
+                        $EVENT_LOCAL = 26;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 88] ) {
+                        $EVENT_LOCAL = 25;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 73] ) {
+                        $EVENT_LOCAL = 24;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 67] ) {
+                        $EVENT_LOCAL = 23;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 56] ) {
+                        $EVENT_LOCAL = 22;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 53] ) {
+                        $EVENT_LOCAL = 21;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 50] ) {
+                        $EVENT_LOCAL = 20;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 44] ) {
+                        $EVENT_LOCAL = 19;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 40] ) {
+                        $EVENT_LOCAL = 18;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 6] ) {
+                        $EVENT_LOCAL = 17;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [29, 5] ) {
+                        $EVENT_LOCAL = 16;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [25, 1] ) {
+                        $EVENT_LOCAL = 15;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [22, 3] ) {
+                        $EVENT_LOCAL = 14;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [22, 2] ) {
+                        $EVENT_LOCAL = 13;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [17, 3] ) {
+                        $EVENT_LOCAL = 12;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [14, 5] ) {
+                        $EVENT_LOCAL = 11;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [14, 1] ) {
+                        $EVENT_LOCAL = 10;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [12, 1] ) {
+                        $EVENT_LOCAL = 9;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [8, 3] ) {
+                        $EVENT_LOCAL = 8;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [8, 1] ) {
+                        $EVENT_LOCAL = 7;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [7, 6] ) {
+                        $EVENT_LOCAL = 6;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [7, 1] ) {
+                        $EVENT_LOCAL = 5;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [6, 1] ) {
+                        jump @label_51;
+                    } elseif ( scn($SCENARIO_MAIN) >= [5, 5] ) {
+                        $EVENT_LOCAL = 3;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [4, 7] ) {
+                        $EVENT_LOCAL = 2;
+                        jump @label_55;
+                    } elseif ( scn($SCENARIO_MAIN) >= [4, 3] ) {
+                        @label_54;
+                        $EVENT_LOCAL = 1;
+                        jump @label_55;
+                    } else {
+                        jump @label_54;
+                    }
+                    break;
+            }
+            break;
+        case menu({
+            english="Ignore it",
+        }):
+            jump @label_1;
+        default:
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            if ( scn($SCENARIO_MAIN) >= [29, 94] ) {
+                jump @label_2;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 88] ) {
+                jump @label_3;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 73] ) {
+                jump @label_4;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 67] ) {
+                jump @label_5;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 56] ) {
+                jump @label_6;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 53] ) {
+                jump @label_7;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 50] ) {
+                jump @label_8;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 44] ) {
+                jump @label_9;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 40] ) {
+                jump @label_10;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 6] ) {
+                jump @label_11;
+            } elseif ( scn($SCENARIO_MAIN) >= [29, 5] ) {
+                jump @label_12;
+            } elseif ( scn($SCENARIO_MAIN) >= [25, 1] ) {
+                jump @label_13;
+            } elseif ( scn($SCENARIO_MAIN) >= [22, 3] ) {
+                jump @label_14;
+            } elseif ( scn($SCENARIO_MAIN) >= [22, 2] ) {
+                jump @label_15;
+            } elseif ( scn($SCENARIO_MAIN) >= [17, 3] ) {
+                jump @label_16;
+            } elseif ( scn($SCENARIO_MAIN) >= [14, 5] ) {
+                jump @label_17;
+            } elseif ( scn($SCENARIO_MAIN) >= [14, 1] ) {
+                jump @label_18;
+            } elseif ( scn($SCENARIO_MAIN) >= [12, 1] ) {
+                jump @label_19;
+            } elseif ( scn($SCENARIO_MAIN) >= [8, 3] ) {
+                jump @label_20;
+            } elseif ( scn($SCENARIO_MAIN) >= [8, 1] ) {
+                jump @label_21;
+            } elseif ( scn($SCENARIO_MAIN) >= [7, 6] ) {
+                jump @label_22;
+            } elseif ( scn($SCENARIO_MAIN) >= [7, 1] ) {
+                jump @label_23;
+            } elseif ( scn($SCENARIO_MAIN) >= [6, 1] ) {
+                jump @label_24;
+            } elseif ( scn($SCENARIO_MAIN) >= [5, 5] ) {
+                jump @label_25;
+            } elseif ( scn($SCENARIO_MAIN) >= [4, 7] ) {
+                jump @label_26;
+            } elseif ( scn($SCENARIO_MAIN) >= [4, 3] ) {
+                jump @label_27;
+            } else {
+                jump @label_1;
+            }
+            break;
+    }
+}

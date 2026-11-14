@@ -1,0 +1,13 @@
+
+def 0 {
+    with (actor ACTOR_PLAYER) {
+        hold;
+    }
+    message_Notice({
+        english="""
+            This dungeon is closed because of story
+            events.
+        """,
+    });
+    JumpCommon(CORO_END_TALK);
+}

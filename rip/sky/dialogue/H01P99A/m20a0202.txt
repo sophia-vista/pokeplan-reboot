@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Sharpedo Bluff?
+ATTENDANT1	Talk	It's down here.
+ATTENDANT1	Talk	Go on...go in.
+ATTENDANT1	Talk	Go ahead...go in.
+ATTENDANT1	Talk	Go on, after you.

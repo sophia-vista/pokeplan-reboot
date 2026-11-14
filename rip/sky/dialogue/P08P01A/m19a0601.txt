@@ -1,0 +1,44 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Celebi will have fled from here.
+NPC_JUPUTORU	Talk	Then Celebi should still be here.
+NPC_JUPUTORU	Talk	Hello? Celebi?
+NPC_JUPUTORU	Talk	It's me! Grovyle!
+NPC_JUPUTORU	Talk	Reveal yourself...if you're here!
+ATTENDANT1	Talk	She's...not coming out...
+ATTENDANT1	Talk	Did Primal Dialga chase her off?
+ATTENDANT1	Talk	What if...
+-	Talk	Captured?
+ATTENDANT1	Talk	Whoa! Who said that?!
+ATTENDANT1	Talk	Wah! Who said that?!
+ATTENDANT1	Talk	But now...I don't hear anything.
+ATTENDANT1	Talk	That voice... Did I imagine it?
+-	Talk	Tee-hee! You didn't imagine it!
+-	Talk	Me? Captured?
+-	Talk	How insulting! Captured?!
+-	Talk	Impossible, that's for sure! Tee-hee!
+NPC_SEREBII	Talk	It's been too long, my dear Grovyle!
+NPC_JUPUTORU	Talk	Yes. It has been a while, Celebi.
+ATTENDANT1	Talk	Huh?! This tiny thing is Celebi?
+ATTENDANT1	Talk	What?! This tiny thing is Celebi?
+NPC_SEREBII	Talk	Now that is downright rude!
+ATTENDANT1	Talk	Uh...I'm sorry.
+NPC_SEREBII	Talk	But...I forgive you.
+NPC_SEREBII	Talk	After all...
+ATTENDANT1	Talk	Uh, yeah...
+ATTENDANT1	Talk	Um, yes.
+ATTENDANT1	Talk	Well, yes.
+NPC_JUPUTORU	Talk	Celebi. I need your help again.
+NPC_SEREBII	Talk	I know.
+NPC_JUPUTORU	Talk	Urk... Yes, it's true.
+NPC_JUPUTORU	Talk	Sorry, no time to chat...
+NPC_JUPUTORU	Talk	The Sableye are tracking us.
+NPC_SEREBII	Talk	It's ready. It is nearby.
+NPC_JUPUTORU	Talk	That's good. Can you guide us?
+NPC_SEREBII	Talk	Yes!
+NPC_JUPUTORU	Talk	Yeah. That's right.
+NPC_SEREBII	Talk	Oh?! What's...this? Your friend!
+PLAYER	Talk	(What...? What...?)
+NPC_SEREBII	Talk	........................
+NPC_SEREBII	Talk	No... That can't be...
+NPC_JUPUTORU	Talk	Is something the matter, Celebi?
+NPC_SEREBII	Talk	No... It's nothing.

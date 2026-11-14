@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Hey, you two!

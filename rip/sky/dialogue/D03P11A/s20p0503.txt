@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_JIBAKOIRU	Talk	ZZZT! Now come with us! ZZZT!
+NPC_SURIIPU	Talk	Awww...

@@ -1,0 +1,66 @@
+
+def 0 {
+    back_SetGround(LEVEL_S13P03A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    Slide2PositionMark<performer 0>(1, Position<'m0', 13, 64.5>);
+    back_SetBackScrollSpeed(2.0, 1.0);
+    screen_FadeIn(1, 30);
+    Wait(320);
+    back_SetBackScrollSpeed(8.0, 2.0);
+    Wait(320);
+    back_SetBackScrollSpeed(16.0, 4.0);
+    Wait(320);
+    back_SetBackScrollSpeed(32.0, 8.0);
+    Wait(320);
+    back_SetBackScrollSpeed(64, 16);
+    Wait(320);
+    back_SetBackScrollSpeed(128, 32);
+    message_Notice({
+        english="Loop Scroll Test",
+    });
+    message_Close();
+    screen_FadeOut(1, 30);
+    back2_SetMode(5);
+    back_SetGround(LEVEL_S13P05A);
+    supervision_Acting(0);
+    back_SetBackEffect(4);
+    camera_SetMyself<performer 0>();
+    back_SetBackScrollSpeed(2.0, 1.0);
+    screen2_FadeIn(0, 30);
+    screen_FadeIn(1, 30);
+    back_SetBackEffect(5);
+    message_Notice({
+        english="Scroll Test",
+    });
+    message_Close();
+    screen2_FadeOut(0, 30);
+    screen_FadeOut(1, 30);
+    back2_SetMode(0);
+    back_SetGround(LEVEL_V24P03A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    back_SetBackScrollSpeed(-4.0, 0.0);
+    screen_FadeIn(1, 30);
+    message_Notice({
+        english="Loop Scroll Test 2",
+    });
+    message_Close();
+    screen_FadeOut(1, 30);
+    back_SetGround(LEVEL_P13P01A);
+    camera_SetPositionMark(Position<'m1', 30, 27.5>);
+    screen_FadeIn(1, 30);
+    back_SetBackScrollSpeed(4.0, 0.0);
+    message_Notice({
+        english="Loop Scroll Test 3A",
+    });
+    message_Close();
+    back_SetBackScrollSpeed(-4.0, 0.0);
+    message_Notice({
+        english="Loop Scroll Test 3B",
+    });
+    message_Close();
+    screen_FadeOut(1, 30);
+    supervision_ExecuteStation(LEVEL_T00P01, 'M01A01', 0);
+    hold;
+}

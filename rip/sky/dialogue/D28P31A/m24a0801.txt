@@ -1,0 +1,6 @@
+speaker	kind	line
+ATTENDANT1	Talk	Yeah, that's right!
+ATTENDANT1	Talk	Yup, that's right!
+ATTENDANT1	Talk	Let's get in there!
+ATTENDANT1	Talk	Let's go in there!
+ATTENDANT1	Talk	Let's get in there!

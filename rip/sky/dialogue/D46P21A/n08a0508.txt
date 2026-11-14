@@ -1,0 +1,3 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	I've come a long way.
+PLAYER_FUTURE	Talk	Just a little further.

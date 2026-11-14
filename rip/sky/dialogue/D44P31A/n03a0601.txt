@@ -1,0 +1,25 @@
+speaker	kind	line
+NPC_AAMARUDO	Talk	...We've come pretty far...
+NPC_AAMARUDO	Talk	Let's go check it out!
+PLAYER_PUPURIN	Talk	Wooooahhhh! ♪ Amaaaazing! ♪
+NPC_AAMARUDO	Talk	Wh-what's...this?!
+PLAYER_PUPURIN	Talk	Wow! This is so amazing! ♪
+PLAYER_PUPURIN	Talk	There's a door on the front here.
+PLAYER_PUPURIN	Talk	Hurry! Let's go! Let's go! ♪
+NPC_AAMARUDO	Talk	W-wait! Junior!
+PLAYER_PUPURIN	Talk	Whaaat?
+PLAYER_PUPURIN	Talk	Trick?
+NPC_AAMARUDO	Talk	Yes.
+PLAYER_PUPURIN	Talk	What's this crystal here?
+NPC_AAMARUDO	Talk	I think that's how it works.
+NPC_AAMARUDO	Talk	There are traps too!
+PLAYER_PUPURIN	Talk	Is that so? I see...
+PLAYER_PUPURIN	Talk	Yep. Got it! ♪
+PLAYER_PUPURIN	Talk	Yay! ♪
+NPC_AAMARUDO	Talk	Aaah! Huh... WHAT?!
+PLAYER_PUPURIN	Talk	YOOM...TAH!
+PLAYER_PUPURIN	Talk	I did it! ♪ I opened it! ♪
+NPC_AAMARUDO	Talk	Wh-what the...?!
+PLAYER_PUPURIN	Talk	Hurry! Let's go! ♪
+PLAYER_PUPURIN	Talk	Hey, hurry! ♪
+NPC_AAMARUDO	Talk	G-got it.

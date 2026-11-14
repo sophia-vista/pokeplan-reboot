@@ -1,0 +1,6 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER_APPOINT>(2);
+    supervision_ExecuteCommon(CORO_EVENT_S04_08);
+    end;
+}

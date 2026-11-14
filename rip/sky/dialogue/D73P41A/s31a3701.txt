@@ -1,0 +1,19 @@
+speaker	kind	line
+NPC_BETOBETAA	Talk	Uwaaaah!
+NPC_BETOBETAA	Talk	So stroooong!
+NPC_BETOBETAA	Talk	Huh?
+NPC_BETOBETAA	Talk	H-huhhh?
+NPC_BETOBETAA	Talk	Oh! Shaymin!
+NPC_SHEIMI	Talk	Dirty and grimy...
+NPC_SHEIMI	Talk	I see...
+NPC_SHEIMI	Talk	Nobody's come here for so long...
+NPC_BETOBETAA	Talk	It can't be...!
+NPC_SHEIMI	Talk	Please? I'm asking you.
+NPC_BETOBETAA	Talk	Sorry, Shaymin.
+NPC_BETOBETAA	Talk	We'll go home...
+NPC_SHEIMI	Talk	All right. Thank you!
+NPC_BETOBETAA	Talk	OK. Bye-byyyye!
+NPC_SHEIMI	Talk	Where were we...
+NPC_SHEIMI	Talk	Here goes nothing...
+NPC_KINOGASSA	Talk	Wow!!
+NPC_SHEIMI	Talk	Get down, please!

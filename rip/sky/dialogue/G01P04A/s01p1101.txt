@@ -1,0 +1,29 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	You did it! ♪
+NPC_PUKURIN	Talk	...Oh? Not celebrating?
+NPC_PUKURIN	Talk	Are you maybe not happy?
+NPC_PUKURIN	Talk	But even better than that...
+NPC_PUKURIN	Talk	...Um... We heard it somewhere?
+ATTENDANT1	Talk	Besides...
+NPC_PUKURIN	Talk	Huh?
+NPC_PUKURIN	Talk	Uh? I... I don't know?
+NPC_PERAPPU	Talk	Me too!
+NPC_HEIGANI	Talk	Hey, hey! Me too!
+NPC_KIMAWARI	Talk	Eek! I don't know any minions!
+NPC_KIMAWARI	Talk	Everyone: HA HA HA!
+ATTENDANT1	Talk	Everyone... What's going on...?
+ATTENDANT1	Talk	Oh! That's great!
+ATTENDANT1	Talk	Oh! Right!
+ATTENDANT1	Talk	Does that mean from now on...
+ATTENDANT1	Talk	That's awesome, !
+ATTENDANT1	Talk	That's excellent, !
+ATTENDANT1	Talk	That's fantastic, !
+ATTENDANT1	Talk	Huh?! Wh-why...?
+ATTENDANT1	Talk	What?! Wh-why...?
+NPC_DOGOOMU	Talk	That's right!
+NPC_DOGOOMU	Talk	HAW-HAW-HO-HO-HAW!
+ATTENDANT1	Talk	Wigglytuff...
+NPC_KIMAWARI	Talk	Oh my gosh! How wonderful!
+NPC_HEIGANI	Talk	Hey, hey, hey!
+ATTENDANT1	Talk	E-everyone...
+ATTENDANT1	Explanation	One more thing...

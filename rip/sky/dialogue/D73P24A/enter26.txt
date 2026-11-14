@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_FUWARAIDO	SwitchMenu2	Shaymin Village
+NPC_FUWARAIDO	Talk	To the Shaymin Village?
+NPC_FUWARAIDO	SwitchMenu	Yes
+NPC_FUWARAIDO	Talk	Now...here we go!
+NPC_FUWARAIDO	Mail	No
+NPC_FUWARAIDO	Talk	Where would you like to go?
+NPC_FUWARAIDO	Talk	Sky Peak 2nd Station Clearing
+NPC_FUWARAIDO	Talk	Sky Peak 2nd Station Clearing?
+NPC_FUWARAIDO	Talk	Sky Peak 4th Station Clearing
+NPC_FUWARAIDO	Talk	Sky Peak 4th Station Clearing?
+NPC_FUWARAIDO	Talk	Sky Peak 6th Station Clearing
+NPC_FUWARAIDO	Talk	Sky Peak 6th Station Clearing?
+NPC_FUWARAIDO	Talk	Cancel
+NPC_FUWARAIDO	Talk	Thank you for your patronage.

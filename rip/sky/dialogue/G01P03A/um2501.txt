@@ -1,0 +1,16 @@
+speaker	kind	line
+NPC_BIPPA	Talk	Good morning, you all!
+NPC_BIPPA	Talk	Good morning to you all!
+NPC_BIPPA	Talk	That's mighty great of you all!
+NPC_BIPPA	Talk	Good morning to you all!
+NPC_BIPPA	Talk	Cheer up, you all!
+NPC_BIPPA	Talk	That little kid was kinda cute...
+NPC_BIPPA	Talk	Oof... By golly, I envy you.
+NPC_BIPPA	Talk	Good morning to you all!
+NPC_BIPPA	Talk	I'm sorry...
+NPC_BIPPA	Talk	But...you all get it done now!
+NPC_BIPPA	Talk	It's like... Like a dream... Wow...
+NPC_BIPPA	Talk	Let's do it!
+NPC_BIPPA	Talk	We'll get it done next time!
+NPC_BIPPA	Talk	Let's get it done!
+NPC_BIPPA	Talk	What was that all about?

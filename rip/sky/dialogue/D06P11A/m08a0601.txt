@@ -1,0 +1,7 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	And just look at this cliff!
+NPC_BIPPA	Talk	It's a Kangaskhan Rock.
+ATTENDANT1	Talk	Kangaskhan Rock?
+NPC_BIPPA	Talk	It's a real help to travelers.
+ATTENDANT1	Talk	Ha ha ha. That goes for us too.
+ATTENDANT1	Talk	Let's check the Wonder Map.

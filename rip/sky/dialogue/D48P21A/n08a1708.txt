@@ -1,0 +1,9 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	We've climbed pretty far...
+NPC_YONOWAARU	Talk	We're almost to the pinnacle.
+NPC_YONOWAARU	Talk	...Hey, Grovyle.
+PLAYER_FUTURE	Talk	No way! If you talk to Dialga...
+NPC_YONOWAARU	Talk	Humph. I at least...
+NPC_YONOWAARU	Talk	...Fine.
+NPC_YONOWAARU	Talk	I will ask Master Dialga.
+PLAYER_FUTURE	Talk	Humph. Do whatever you want!

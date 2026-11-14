@@ -1,0 +1,337 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" I'm having so much fun! ♪",
+        });
+        message_Close();
+        @label_131;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] || scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Be strong for us![K] And go bring
+                peace to the world!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] || scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] || scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] || scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Do you know about the [CS:I]Wonder
+                Gummi[CR]?
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 56] || scn($SCENARIO_MAIN) >= [29, 55] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I went to meet Team [CS:X]Charm[CR] and
+                got their autographs! ♪
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We ended up coming back home
+                before climbing the whole [CS:P]Sky Peak[CR]!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] || scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I heard from [CS:N]Shaymin[CR] earlier,
+                but this isn't the mountain's summit...
+            """,
+        });
+        message_Talk({
+            english="""
+                 We always thought that this was
+                the top of the mountain. Ha ha ha!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Mountains are so beautiful! ♪",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I wonder where the Secret
+                Room that [CS:N]Shaymin[CR] was talking
+                about is.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] || scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] || scn($SCENARIO_MAIN) >= [29, 11] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 [CS:N]Shaymin[CR] all look so much alike.
+                It's almost impossible to tell them apart...
+            """,
+        });
+        message_KeyWait();
+        SetEffect<actor ACTOR_NPC_TOGEPII>(EFFECT_LAUGHING, 3);
+        message_Talk({
+            english=" Ha ha ha!",
+        });
+        message_Close();
+        SetEffect<actor ACTOR_NPC_TOGEPII>(EFFECT_NONE, 3);
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 10] || scn($SCENARIO_MAIN) >= [29, 9] || scn($SCENARIO_MAIN) >= [29, 8] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_NPC_TOGEPII>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Let's go! Let's go! ♪",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] || scn($SCENARIO_MAIN) >= [29, 4] || scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 You're the team that went to the
+                [CS:P]Hidden Land[CR] and stopped the planet's paralysis?
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] || scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] || scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] || scn($SCENARIO_MAIN) >= [17, 1] || scn($SCENARIO_MAIN) >= [16, 2] || scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_TOGEPII>(2);
+        SetAnimation<actor ACTOR_NPC_NYOROTONO>(2);
+        SetAnimation<actor ACTOR_NPC_REDIBA>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 [CS:K]Chansey[CR] Day Care will look after
+                any Egg for you.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] || scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I hear that when you win big on
+                a [CS:I]Prize Ticket[CR], there's a celebratory dance!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] || scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] || scn($SCENARIO_MAIN) >= [12, 1] || scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Everyone in the guild is going
+                out on an expedition?
+            """,
+        });
+        message_Talk({
+            english=" Ooh, that's so cool! ♪",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_NPC_TOGEPII>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I don't really get it, but it
+                sounds great, I guess! ♪
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 3] || scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] || scn($SCENARIO_MAIN) >= [7, 6] || scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_TOGEPII>(2);
+        SetAnimation<actor ACTOR_NPC_NYOROTONO>(2);
+        SetAnimation<actor ACTOR_NPC_REDIBA>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We're the exploration team that
+                delivers happiness! We're Team [CS:X]Glee[CR]!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Hey, gang! What kind of items
+                should we buy today?
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_NYOROTONO, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" I want a [CS:I]Blue Gummi[CR]!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_REDIBA, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" I want a [CS:I]Green Gummi[CR]!",
+        });
+        message_Talk({
+            english=" But wait...![K] Hold on a second!",
+        });
+        message_Talk({
+            english="""
+                 Let's think about it for a second!
+                We don't have any money, do we?
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Oh! You're so right!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_NYOROTONO, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" That's so silly of us!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        SetEffect<actor ACTOR_NPC_TOGEPII>(EFFECT_LAUGHING, 3);
+        SetEffect<actor ACTOR_NPC_NYOROTONO>(EFFECT_LAUGHING, 3);
+        SetEffect<actor ACTOR_NPC_REDIBA>(EFFECT_LAUGHING, 3);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Ha ha ha!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_NYOROTONO, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Ha ha ha!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_REDIBA, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Ha ha ha! Ha ha ha!",
+        });
+        message_Close();
+        SetEffect<actor ACTOR_NPC_TOGEPII>(EFFECT_NONE, 3);
+        SetEffect<actor ACTOR_NPC_NYOROTONO>(EFFECT_NONE, 3);
+        SetEffect<actor ACTOR_NPC_REDIBA>(EFFECT_NONE, 3);
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 1] || scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] || scn($SCENARIO_MAIN) >= [5, 5] || scn($SCENARIO_MAIN) >= [4, 7] ) {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_NPC_TOGEPII>(2);
+        SetAnimation<actor ACTOR_NPC_NYOROTONO>(2);
+        SetAnimation<actor ACTOR_NPC_REDIBA>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We're the exploration team that
+                delivers happiness! We're Team [CS:X]Glee[CR]!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Hey, gang! Where should we go
+                exploring today?
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 5] || scn($SCENARIO_MAIN) >= [4, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_TOGEPII);
+        message_SetFace(ACTOR_NPC_TOGEPII, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We're Team [CS:X]Glee[CR]![K] We're the
+                exploration team that delivers happiness!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] || scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        jump @label_131;
+    } else {
+        jump @label_131;
+    }
+}

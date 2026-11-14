@@ -1,0 +1,32 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	Huh? Isn't that...?
+ATTENDANT1	FacePositionOffset	Hey! Isn't that...?
+ATTENDANT1	Talk	Yup. We're Team .
+ATTENDANT1	Talk	Yes. We're Team .
+NPC_YONOWAARU	Talk	No, no. Simply enjoying a chat!
+ATTENDANT1	Talk	Sounds like the rumors are true!
+ATTENDANT1	Talk	I guess the rumors are true!
+ATTENDANT1	Talk	You see...
+NPC_KAKUREON1	Talk	Hmm... I see... Perfect Apples?
+ATTENDANT1	Talk	Oh, OK. Too bad.
+ATTENDANT1	Talk	Oh, all right. That's too bad.
+ATTENDANT1	Talk	Oh, OK. Too bad.
+NPC_MARIRU	Talk	Azurill, hurry!
+NPC_RURIRI	Talk	Wait for me!
+NPC_RURIRI	Talk	Oh! Hi, Kecleon brothers!
+NPC_MARIRU	Talk	Oh! And Team  too!
+ATTENDANT1	FacePositionOffset	What's up? What's the big rush?
+ATTENDANT1	FacePositionOffset	What's up? What's the rush?
+ATTENDANT1	FacePositionOffset	What's up? What's the big rush?
+NPC_MARIRU	Talk	Yes! An item called Water Float!
+NPC_MARIRU	Talk	We're rushing to the beach now!
+NPC_ZUBATTO	Talk	Heh-heh-heh! Juicy tidbit!
+NPC_MARIRU	Talk	Yes!
+NPC_RURIRI	Talk	Yep!
+NPC_MARIRU	Talk	Come on, Azurill! Let's go quick!
+NPC_RURIRI	Talk	Yep!
+NPC_KAKUREON1	Talk	What purpose does it serve?
+NPC_KAKUREON1	Talk	Gah! Is that so?
+ATTENDANT1	Talk	Let's race back to the guild!
+ATTENDANT1	Talk	Let's go back to the guild!
+ATTENDANT1	Talk	Hurry! Back to the guild!

@@ -323,6 +323,9 @@ private fun Resident(
     var napping by remember(mon.id) { mutableStateOf(false) }
     var spinning by remember(mon.id) { mutableStateOf<SpriteAction?>(null) }
     var slowUntil by remember(mon.id) { mutableStateOf<TimeMark?>(null) }
+    // The game's own effect for the trap it stepped on, playing at its feet (and which play it is, so the same trap twice plays twice).
+    var trapFx by remember(mon.id) { mutableStateOf<TrapFx?>(null) }
+    var trapFxPlay by remember(mon.id) { mutableIntStateOf(0) }
     val fade = remember(mon.id) { Animatable(1f) }
     var facingLeft by remember(mon.id) { mutableStateOf(false) }
     var hopKey by remember(mon.id) { mutableIntStateOf(0) }
@@ -416,6 +419,7 @@ private fun Resident(
     /** What a trap does when it steps on one: for show only, and found for the day (the Wonder Tile was never hidden). */
     suspend fun spring(g: FloorGeometry, at: Cell, trap: FloorTrap, walked: List<Cell>) {
         if (trap != FloorTrap.WONDER) life.revealed[at] = true
+        TrapFx.of(trap)?.let { trapFx = it; trapFxPlay++ }
         // The game's sound for it, only for one on Home (the page in view), so a far-off trap is not heard.
         if (interactive) model.effect(when (trap) {
             FloorTrap.WARP -> Sfx.QUICK_ESCAPE
@@ -542,6 +546,11 @@ private fun Resident(
                     if (leg < beat.legs - 1) { if (random.nextInt(4) == 0) facingLeft = !facingLeft; delay(400L + random.nextLong(1_000)) }
                 }
             }
+        }
+    }
+    trapFx?.let { fx ->
+        key(trapFxPlay) {
+            TrapEffect(fx, { spot.value.let { at -> Offset(widthPx * at.x, heightPx * groundTop + heightPx * (groundBottom - groundTop) * at.y) } }, pixel) { trapFx = null }
         }
     }
     // Every Pokémon is drawn at the town's pixel scale in a box of three tiles, standing on its feet; the front ones are drawn over those behind.

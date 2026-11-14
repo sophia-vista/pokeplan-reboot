@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Minion: Arrgh! What a farce...
+NPC_PUKURIN	Talk	Grand Master: ...Who's...Wigglytuff?
+ATTENDANT1	Talk	Huh?!
+ATTENDANT1	Talk	What?!
+ATTENDANT1	Talk	Whaaat?!
+NPC_HEIGANI	Talk	Minion: Hey, hey, hey!
+ATTENDANT1	Talk	Wh-what's going on here?!
+NPC_PUKURIN	Talk	Grand Master: YOOM...TAH!

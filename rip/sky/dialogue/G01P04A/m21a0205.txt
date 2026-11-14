@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	Go ask Torkoal for advice! ♪
+ATTENDANT1	Talk	Let's go! Off to the Hot Spring!
+NPC_CHIRIIN	Talk	But first...!
+NPC_CHIRIIN	Talk	It is getting late. And besides...
+NPC_CHIRIIN	Talk	You must be hungry!
+ATTENDANT1	Talk	Huh?
+ATTENDANT1	Talk	My stomach growled!
+ATTENDANT1	Talk	Ha ha! Yours did too!
+NPC_DOGOOMU	Talk	Ho-ho! Did everyone hear THAT?
+NPC_DOGOOMU	Talk	Everyone: HA HA HA!

@@ -1,0 +1,50 @@
+speaker	kind	line
+NPC_RINGUMA	Talk	That's right.
+ATTENDANT1	Talk	R-really?!
+NPC_HIMEGUMA	Talk	Yup!
+NPC_HIMEGUMA	Talk	I've wanted to get stronger.
+NPC_HIMEGUMA	Talk	I'll try it out right away.
+NPC_HIMEGUMA	Talk	Those that seek awakening...
+NPC_HIMEGUMA	Talk	Yup! Please!
+NPC_HIMEGUMA	Talk	Do you need an item to do so?
+NPC_HIMEGUMA	Talk	Nope! I don't need one!
+NPC_HIMEGUMA	Talk	So be it...
+NPC_HIMEGUMA	Mail	Something is happening...to Teddiursa...
+NPC_HIMEGUMA	Mail	Teddiursa's appearance is changing...
+NPC_HIMEGUMA	Mail	Teddiursa evolved into Ursaring!
+NPC_RINGUMA	Talk	Yay!
+NPC_RINGUMA	Talk	Hey, Ursaring! I've evolved!
+NPC_RINGUMA	Talk	Now it's hard to tell us apart...
+NPC_RINGUMA	Talk	But good for you!
+ATTENDANT1	Talk	I'll try first, OK?
+ATTENDANT1	Talk	I'll try first.
+ATTENDANT1	Talk	I'll try it first.
+ATTENDANT1	Talk	Those that seek awakening...
+ATTENDANT1	Talk	Yep! I want to evolve!
+ATTENDANT1	Talk	Yes! I want to evolve!
+ATTENDANT1	Talk	Please! Oh, this is exciting!
+ATTENDANT1	Talk	Do you need an item to do so?
+ATTENDANT1	Talk	An item? ...I don't know...
+ATTENDANT1	Talk	Uh, no. I don't need one.
+ATTENDANT1	Talk	Um, no. No item for me.
+ATTENDANT1	Talk	Um, no. I don't need an item.
+ATTENDANT1	Talk	So be it...
+ATTENDANT1	Talk	....................................
+ATTENDANT1	Talk	Huh? Why not?!
+ATTENDANT1	Talk	What? Why not?!
+ATTENDANT1	Talk	Why can't I evolve?
+ATTENDANT1	Talk	No. That is not it...
+ATTENDANT1	Talk	Then, why?
+ATTENDANT1	Talk	Teddiursa was able to evolve...
+ATTENDANT1	Talk	Why can't I evolve?
+ATTENDANT1	Talk	Why can you not evolve...?
+ATTENDANT1	Talk	Distortion? The fabric of space?
+ATTENDANT1	Talk	Why that should be, I do not know...
+ATTENDANT1	Talk	Huh?!  too?!
+ATTENDANT1	Talk	What?!  too?!
+PLAYER	Talk	(What...me too?)
+PLAYER	Talk	That is all that I can tell...
+ATTENDANT1	Talk	I guess it's not just me...
+ATTENDANT1	Talk	Looks like it's not just me...
+ATTENDANT1	Talk	Let's take it back to the guild.
+ATTENDANT1	Talk	Let's go back to the guild with it.

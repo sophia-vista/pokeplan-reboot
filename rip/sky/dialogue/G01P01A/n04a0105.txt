@@ -1,0 +1,21 @@
+speaker	kind	line
+-	Mail	I enjoy being with them!
+-	Mail	Everyone is such a dear friend to me!
+-	Mail	Anyhow, being able to train at this guild...
+-	Mail	Makes me very happy!
+-	Mail	Recently, something troublesome happened...
+NPC_DOGOOMU	Talk	...HUMPH!
+PLAYER_KIMAWARI	Talk	...!! (L-Loudred!)
+NPC_DOGOOMU	Talk	Hm! HUMPH!
+PLAYER_KIMAWARI	Talk	Humph!
+PLAYER_KIMAWARI	Mail	Here is what's troublesome.
+PLAYER_KIMAWARI	Mail	And we were knocked out, just like that!
+PLAYER_KIMAWARI	Mail	I couldn't believe it!
+PLAYER_KIMAWARI	Talk	It's...a little troublesome...
+PLAYER_KIMAWARI	Talk	...! But--
+PLAYER_KIMAWARI	Talk	It's all Loudred's fault!
+PLAYER_KIMAWARI	Talk	I won't forgive that! Humph!
+NPC_PERAPPU	Talk	Oh! You're here, Sunflora!
+PLAYER_KIMAWARI	Talk	Oh hi, Chatot.
+NPC_PERAPPU	Talk	Please come with me.
+PLAYER_KIMAWARI	Talk	Discuss?

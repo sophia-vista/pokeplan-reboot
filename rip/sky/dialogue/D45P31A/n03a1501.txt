@@ -1,0 +1,9 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	This is...?
+PLAYER_PUPURIN	Talk	Oh! There's a door over there!
+PLAYER_PUPURIN	Talk	Torches are burning all around...
+PLAYER_PUPURIN	Talk	What should we do?
+NPC_AAMARUDO	Talk	It's simple.
+NPC_AAMARUDO	Talk	Here goes! Water Gun!
+NPC_AAMARUDO	Talk	Why... Why not?
+NPC_AAMARUDO	Talk	Uwaaaaaaaahhhhhhhhhhhhhhh!!!!!

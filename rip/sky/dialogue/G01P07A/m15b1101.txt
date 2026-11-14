@@ -1,0 +1,23 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Oh! Are you awake?
+ATTENDANT1	Talk	Wh-where...?
+NPC_CHIRIIN	Talk	You're in your room at the guild.
+ATTENDANT1	Talk	Are you all right, ?
+ATTENDANT1	Talk	Whew! Am I glad!
+ATTENDANT1	Talk	Whew! Am I glad to hear it!
+ATTENDANT1	Talk	It seems like I can speak again...
+ATTENDANT1	Talk	Oh yeah! What about Azelf?!
+ATTENDANT1	Talk	Oh! What about Azelf?!
+ATTENDANT1	Talk	Is Azelf all right?
+ATTENDANT1	Talk	Is Azelf OK?
+NPC_CHIRIIN	Talk	He's fine.
+ATTENDANT1	Talk	Oh, that's great!
+ATTENDANT1	Talk	Oh, excellent!
+ATTENDANT1	Talk	Oh, I'm glad to hear that!
+NPC_CHIRIIN	Talk	Everyone! They're awake!
+NPC_DOGOOMU	Talk	R-really?! AWESOME!
+NPC_BIPPA	Talk	Oof! I'm mighty glad!
+NPC_BIPPA	Talk	I'd... I'd... Oof...
+ATTENDANT1	Talk	Oh! That's right!
+NPC_HEIGANI	Talk	Hey, hey...?
+NPC_KIMAWARI	Talk	And what would that be?

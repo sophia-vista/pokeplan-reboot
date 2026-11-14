@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_MANAFI	Talk	... ...
+ATTENDANT1	Talk	Manaphy!
+NPC_MANAFI	Talk	Yup, yup!
+NPC_MANAFI	Talk	I grew big in the sea!
+ATTENDANT1	Talk	Oh! You remembered us!
+NPC_MANAFI	Talk	Of course! I didn't forget you!
+NPC_MANAFI	Talk	Not once... Not ever...
+NPC_MANAFI	Talk	I missed you!

@@ -1,0 +1,47 @@
+speaker	kind	line
+NPC_PARUKIA	Talk	YOU TWO?!
+NPC_PARUKIA	Talk	NO! I REMEMBER! WE BATTLED!
+NPC_PARUKIA	Talk	SO WHY AM I...DREAMING?
+NPC_PARUKIA	Talk	WHAT... WHAT DID YOU SAY?!
+NPC_PARUKIA	Talk	I'M...IN A NIGHTMARE...?
+NPC_PARUKIA	Talk	GRRR-OOOOOOOO!
+ATTENDANT1	Talk	Whoa!
+ATTENDANT1	Talk	Wa-waah!
+NPC_PARUKIA	Talk	THIS PROVES IT!
+NPC_PARUKIA	Talk	YOU BOTH SHOULD NOT EXIST!
+NPC_PARUKIA	Talk	GRRR-OOOOOOOO!
+ATTENDANT1	Talk	Whoa! Palkia!
+ATTENDANT1	Talk	Waah! Palkia!
+ATTENDANT1	Talk	Urk! But there has to be...
+ATTENDANT1	Talk	Urk! But there must be...
+ATTENDANT1	Talk	There must be some other way!
+NPC_PARUKIA	Talk	THIS IS ALL YOUR DOING!
+ATTENDANT1	Talk	Urk...!
+ATTENDANT1	Talk	Oh, ...
+ATTENDANT1	Talk	Maybe they're right about us...
+ATTENDANT1	Talk	Maybe we do have to disappear.
+PLAYER	Talk	(!)
+NPC_PARUKIA	Talk	I FEEL SORRY FOR YOU.
+ATTENDANT1	Talk	P-Palkia...
+-	Talk	Ah, here you are... I've found you at last.
+ATTENDANT1	Talk	C-Cresselia!
+ATTENDANT1	Talk	Urk... ...
+ATTENDANT1	Talk	Was all our effort...a waste?
+NPC_KURESERIA	Talk	So are you ready for your end?
+ATTENDANT1	Talk	Urk... Cresselia... One moment!
+ATTENDANT1	Talk	Tell us one last thing.
+NPC_KURESERIA	Talk	Yes. It absolutely will.
+NPC_KURESERIA	Talk	Are you finally satisfied?
+ATTENDANT1	Talk	...Yes.
+ATTENDANT1	Talk	If that will save the world...
+PLAYER	Talk	(...After so much...)
+PLAYER	Talk	('s will...is starting to sway.)
+PLAYER	Talk	(And...so is mine...)
+NPC_PARUKIA	Talk	WAIT, CRESSELIA.
+NPC_PARUKIA	Talk	BUT, UPON SEEING THEM NOW...
+NPC_PARUKIA	Talk	BUT ARE THEY TRULY BAD?
+PLAYER	Talk	(All this is based on what Cresselia claims!)
+NPC_KURESERIA	Talk	Enough! I will be rid of you now!
+PLAYER	Talk	(!)
+PLAYER	Talk	(Don't abandon hope!)
+NPC_KURESERIA	Talk	Now take this!

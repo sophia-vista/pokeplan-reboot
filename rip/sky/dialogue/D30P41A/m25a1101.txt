@@ -1,0 +1,24 @@
+speaker	kind	line
+ATTENDANT1	Talk	GRRRRRRRRR...
+-	Talk	SO! IT'S YOU!
+ATTENDANT1	Talk	What?! That's not true!
+ATTENDANT1	Talk	What?! You're wrong!
+ATTENDANT1	Talk	What?! That's not true!
+-	Talk	TIME...STOPPING...
+-	Talk	TIME... GRRR-OOOOOO!
+ATTENDANT1	Talk	D-Dialga!
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO!
+ATTENDANT1	Talk	No! You've got it wrong!
+ATTENDANT1	Talk	No! That's wrong!
+ATTENDANT1	Talk	No! That's not it!
+NPC_DARK_DIARUGA	Talk	SILENCE! GRRR-OOOOOO!
+NPC_DARK_DIARUGA	Talk	I WILL SHOW NO MERCY!
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!
+ATTENDANT1	Talk	It's no use, !
+ATTENDANT1	Talk	He won't listen to us!
+ATTENDANT1	Talk	He's not listening to us at all!
+PLAYER	Talk	(But...)
+PLAYER	Talk	(This isn't like Primal Dialga in the future...)
+PLAYER	Talk	(There's still hope!)
+ATTENDANT1	Talk	H-here he comes, !
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO!

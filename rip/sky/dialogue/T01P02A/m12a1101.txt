@@ -1,0 +1,22 @@
+speaker	kind	line
+NPC_RURIRI	Talk	Yay! Thank you! Really!
+NPC_MARIRU	Talk	But, really...thank you!
+ATTENDANT1	Talk	Hey, that's all right!
+ATTENDANT1	Talk	Oh, please! It's OK.
+NPC_MARIRU	Talk	Thank you very much!
+NPC_RURIRI	Talk	Thank you, Dusknoir, sir!
+ATTENDANT1	Talk	But that's not exactly the truth.
+ATTENDANT1	Talk	But that's not really the truth.
+ATTENDANT1	Talk	But that's not exactly the truth.
+NPC_YONOWAARU	Talk	Excuse me? A dream, you say?
+NPC_YONOWAARU	Talk	By dream, what do you mean?
+ATTENDANT1	Talk	Oh! Right!
+ATTENDANT1	Talk	Oh! That's right!
+NPC_YONOWAARU	Talk	What?! Well, that's...that's...
+NPC_YONOWAARU	Talk	The Dimensional Scream!
+ATTENDANT1	FacePositionOffset	Huh?! What?!
+ATTENDANT1	FacePositionOffset	What?!
+ATTENDANT1	FacePositionOffset	In that case...
+PLAYER	FacePositionOffset	(Ask about what...?)
+PLAYER	FacePositionOffset	(Oh! Right!)
+PLAYER	FacePositionOffset	(About my own forgotten past!)

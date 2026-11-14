@@ -1,0 +1,19 @@
+speaker	kind	line
+NPC_MUCHUURU	Talk	Huh?!
+NPC_UPAA	Talk	You want to play explorers?!
+NPC_JUPETTA	Talk	Yeah, let's play explorers.
+NPC_SUBOMII	Talk	Why do you want to go there?
+NPC_MUCHUURU	Talk	N-no... I'm not scared!
+NPC_MUCHUURU	Talk	I-I don't like it! I'm not going!
+NPC_SUBOMII	Talk	Same here!
+PLAYER_PUPURIN	Talk	Hey, what's an exploration team?
+PLAYER_PUPURIN	Talk	Nope. ♪
+PLAYER_PUPURIN	Talk	Yep. I do. ♪
+PLAYER_PUPURIN	Talk	Yay, thanks! Friends. ♪
+NPC_JUPETTA	Talk	All right! Everyone, line up!
+NPC_SUKORUPI	Talk	Yeah!
+PLAYER_PUPURIN	Talk	Yeah. ♪
+NPC_JUPETTA	Talk	Yay! Yay!
+NPC_JUPETTA	Talk	Oooooh!
+NPC_SUKORUPI	Talk	OOoooohhhh!
+PLAYER_PUPURIN	Talk	OOOhhhhh! ♪

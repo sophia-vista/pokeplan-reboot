@@ -1,0 +1,106 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [43, 2] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_MADATSUBOMI);
+        message_SetFace(ACTOR_NPC_MADATSUBOMI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We're Team [CS:X]Flame[CR].
+                I'm the leader.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I don't like to admit it, but I'm
+                very timid...
+            """,
+        });
+        message_Talk({
+            english="""
+                 When my team members start
+                fighting with fire, I can't do a thing but stand
+                back and hope I don't get hit...
+            """,
+        });
+        message_Talk({
+            english=" Ugh...[K]I feel so pathetic...",
+        });
+        message_Close();
+        @label_2;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( $SCENARIO_TALK_BIT_FLAG[138] ) {
+        message_SetFace(ACTOR_NPC_MADATSUBOMI, FACE_HAPPY, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Hmmm...[K] Not afraid of fire...",
+        });
+        message_Talk({
+            english=" I'm so jealous. Seriously...",
+        });
+        message_Close();
+        jump @label_2;
+    } else {
+        $SCENARIO_TALK_BIT_FLAG[138] = 1;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_MADATSUBOMI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We're Team [CS:X]Flame[CR].
+                I'm the leader.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I don't like to admit it, but I'm
+                very timid...
+            """,
+        });
+        message_Talk({
+            english="""
+                 When my team members start
+                fighting with fire, I can't do a thing but stand
+                back and hope I don't get hit...
+            """,
+        });
+        message_Talk({
+            english=" I'm a Grass type...",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8964);
+        SetEffect<actor ACTOR_NPC_MADATSUBOMI>(EFFECT_EXCLAMATION_MARK, 3);
+        WaitEffect<actor ACTOR_NPC_MADATSUBOMI>();
+        WaitExecuteLives(ACTOR_NPC_MADATSUBOMI);
+        message_SetFace(ACTOR_NPC_MADATSUBOMI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 ...Wait. [K]Looking at you, you're a
+                Grass type too, aren't you...?
+            """,
+        });
+        message_Talk({
+            english=" Aren't you afraid of fire?",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_KIMAWARI, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Not at all.",
+        });
+        message_Talk({
+            english=" I'm fine, as long as I'm careful.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_MADATSUBOMI, FACE_HAPPY, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh...[K]really...[K]
+                I'm jealous.
+            """,
+        });
+        message_Close();
+        jump @label_2;
+    }
+}

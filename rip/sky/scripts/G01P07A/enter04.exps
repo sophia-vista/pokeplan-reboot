@@ -1,0 +1,11 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER_PUPURIN>(2);
+    SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+    SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    $SCENARIO_MAIN_BIT_FLAG[7] = 1;
+    CallCommon(CORO_HANYOU_SAVE_FUNC);
+    JumpCommon(CORO_END_TALK);
+}

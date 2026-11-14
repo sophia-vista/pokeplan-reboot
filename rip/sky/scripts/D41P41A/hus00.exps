@@ -1,0 +1,10 @@
+
+def 0 {
+    debug_Print('USUAL');
+    end;
+}
+
+def 1 for actor ACTOR_NPC_NYOROTONO {
+    SetMoveRange(Position<'m0', 41, 26>, 10, 10);
+    JumpCommon(CORO_MOVE_TYPE1);
+}

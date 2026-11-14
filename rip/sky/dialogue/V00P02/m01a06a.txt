@@ -1,0 +1,13 @@
+speaker	kind	line
+-	Notice	Which function would you like to use?
+-	SwitchMenu	Overall Presentation Check
+-	SwitchMenu	Clear clouds
+-	Notice	Which Level would you like?
+-	SwitchMenu	Level 2
+-	SwitchMenu	Level 3
+-	SwitchMenu	Level 4
+-	SwitchMenu	Level 5
+-	SwitchMenu	Level 6
+-	SwitchMenu	Level 7
+-	SwitchMenu	Level 8
+-	SwitchMenu	Presentation Test

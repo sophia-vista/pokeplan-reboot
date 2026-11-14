@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_REDIBA	Talk	It's superfun! ♪
+NPC_REDIBA	Talk	Good luck!
+NPC_REDIBA	Talk	Oh, wow! How nice! ♪
+NPC_REDIBA	Talk	It's so mysterious! ♪
+NPC_REDIBA	Talk	Wow! ♪ A flower garden! ♪
+NPC_REDIBA	Talk	Thank you for saving the world!
+NPC_REDIBA	Talk	Tee-hee!
+NPC_REDIBA	Talk	We're like a garden of flowers!
+NPC_REDIBA	Talk	We have to help them!

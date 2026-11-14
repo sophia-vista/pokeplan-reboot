@@ -1,0 +1,26 @@
+speaker	kind	line
+NPC_RURIRI	Talk	Uh-oh. It's a dead end.
+NPC_SURIIPU	Talk	Sorry, kiddo.
+NPC_RURIRI	Talk	Huh?
+NPC_RURIRI	Talk	My...big brother...
+NPC_RURIRI	Talk	Huh?!
+NPC_SURIIPU	Talk	See that hole behind you?
+NPC_SURIIPU	Talk	Well...
+NPC_SURIIPU	Talk	And that's where you come in!
+NPC_SURIIPU	Talk	Don't worry. Just do as I say.
+NPC_RURIRI	Talk	B-but...
+NPC_SURIIPU	Talk	Go on, get going!
+NPC_RURIRI	Talk	I want my big brother!
+NPC_SURIIPU	Talk	H-hey! Stop that!
+NPC_RURIRI	Talk	H-h-h...HELP!
+ATTENDANT1	Talk	Stop right there!
+NPC_SURIIPU	Talk	H-how did you find this place?!
+ATTENDANT1	Talk	No criminal can escape us!
+NPC_SURIIPU	Talk	...Huh? Are you...trembling?
+NPC_SURIIPU	Talk	A-ha! I've figured it out!
+ATTENDANT1	Talk	Urk!
+NPC_SURIIPU	Talk	But can you two do the job?
+ATTENDANT1	Talk	Urk!
+ATTENDANT1	Talk	Y-yes. We can! Yes, we can!
+ATTENDANT1	Talk	Urk!
+NPC_SURIIPU	Talk	Show me what you've got!

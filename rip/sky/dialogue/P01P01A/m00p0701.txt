@@ -1,0 +1,4 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	Go as a pair
+ATTENDANT1	SwitchMenu	Let's do our best, !
+ATTENDANT1	SwitchMenu	Don't go to Mystifying Forest

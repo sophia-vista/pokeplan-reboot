@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_SOONANO	Talk	Oh! A customer, is it not?
+NPC_SOONANO	Talk	Good day, is it not?
+ATTENDANT1	Talk	Hopes and dreams?
+NPC_SOONANSU	Talk	That's right!
+NPC_SOONANO	Talk	We have two guests!

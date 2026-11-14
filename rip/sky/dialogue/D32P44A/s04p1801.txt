@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Talk	........................
+-	Talk	SHOW ALL OF YOUR POWER!

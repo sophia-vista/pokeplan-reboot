@@ -1,0 +1,31 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Now listen, everyone.
+NPC_BIPPA	Talk	E-extremely vicious?
+NPC_BIPPA	Talk	Golly, that sounds scary! Gulp!
+NPC_HEIGANI	Talk	Hey, hey! Chatot!
+NPC_PERAPPU	Talk	What is it?
+NPC_PERAPPU	Talk	It was then, however...
+NPC_PERAPPU	Talk	Those tough Pokémon appeared.
+NPC_PERAPPU	Talk	Uh...I don't remember at all.
+NPC_DOGOOMU	Talk	Huh?! You don't REMEMBER?!
+NPC_PERAPPU	Talk	Yes, but I'm loath to admit it.
+NPC_DAGUTORIO	Talk	That gives us nothing to go on.
+ATTENDANT1	FacePositionOffset	Wait a second.
+ATTENDANT1	FacePositionOffset	Wait, please.
+ATTENDANT1	FacePositionOffset	Hey, Chatot.
+ATTENDANT1	FacePositionOffset	Say, Chatot.
+NPC_PERAPPU	Talk	...No, it wasn't just one.
+NPC_DOGOOMU	Talk	Like a tidal wave?
+NPC_PERAPPU	Talk	That's right.
+NPC_BIPPA	Talk	We'll do that, sir! Yup yup!
+NPC_PERAPPU	Talk	You two!
+NPC_PERAPPU	Talk	Understood?
+ATTENDANT1	FacePositionOffset	Urk! Yeah, OK.
+ATTENDANT1	FacePositionOffset	Urk! Understood.
+NPC_PERAPPU	Talk	Let's give it our all!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_SUKATANKU	Talk	Chaw-haw-haw! Naturally!
+NPC_SUKATANKU	Talk	Anyway...
+NPC_ZUBATTO	Talk	Heh-heh-heh!
+NPC_DOGAASU	Talk	Whoa-ho-ho!
+NPC_SUKATANKU	Talk	Chaw-haw!

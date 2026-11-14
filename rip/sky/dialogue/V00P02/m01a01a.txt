@@ -1,0 +1,2 @@
+speaker	kind	line
+-	Notice	Memo: Raging storm at night.

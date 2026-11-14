@@ -1,0 +1,2 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	I've got to do my best!

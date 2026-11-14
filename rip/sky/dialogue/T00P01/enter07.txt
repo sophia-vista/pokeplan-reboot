@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Notice	Would you like to save your adventure?
+-	SwitchMenu	Yes
+-	Menu	No

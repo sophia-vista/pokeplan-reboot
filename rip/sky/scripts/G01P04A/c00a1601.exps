@@ -1,0 +1,36 @@
+
+def 0 {
+    bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD, 0, 256);
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+    Turn2Direction<actor ACTOR_NPC_PERAPPU>(4, 10, DIR_DOWNRIGHT);
+    WaitExecuteLives(ACTOR_NPC_PERAPPU);
+    message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_L_CENTER);
+    message_FacePositionOffset(0, -1);
+    message_Talk({
+        english="""
+             Ah, you two! ♪[K] Let me give you
+            your assignment for today...
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_PERAPPU);
+    WaitExecuteLives(ACTOR_PLAYER);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_UPLEFT);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_Talk({
+        english="""
+             Sentry duty! That's what we'll
+            have you do today.
+        """,
+    });
+    message_Talk({
+        english=" I'll leave you to it! ♪",
+    });
+    message_Close();
+    bgm_FadeOut(60);
+    screen_FadeOut(1, 30);
+    WaitBgm(BGM_WIGGLYTUFFS_GUILD);
+    end;
+}

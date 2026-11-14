@@ -1,0 +1,5 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Argh... We didn't do so well...
+PLAYER_FUTURE	Talk	We should turn back for now.
+NPC_YONOWAARU	Talk	There's no time.
+PLAYER_FUTURE	Talk	Got it. Let's hurry up and go.

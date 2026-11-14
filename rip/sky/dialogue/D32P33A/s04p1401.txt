@@ -1,0 +1,7 @@
+speaker	kind	line
+-	Mail	The guardian's permission was granted!
+NPC_MIMIROPPU	Talk	Urr... Urgh...
+NPC_MIMIROPPU	Talk	Wh-what happened to us...?
+NPC_MIMIROPPU	Talk	Thank you! We were in a bind!
+NPC_SAANAITO	Talk	That is so true.
+NPC_MIMIROPPU	Talk	I know!

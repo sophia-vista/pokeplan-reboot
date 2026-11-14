@@ -1,0 +1,18 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_SetFace(ACTOR_NPC_REJIROKKU, FACE_NORMAL, FACE_POS_TOP_L_CENTER);
+    message_Talk({
+        english=" ",
+    });
+    message_Talk({
+        english=" ",
+    });
+    message_Talk({
+        english=" ",
+    });
+    message_Close();
+    @label_0;
+    JumpCommon(CORO_END_TALK);
+}

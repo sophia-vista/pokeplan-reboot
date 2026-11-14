@@ -1,0 +1,8 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	Are you all right, ?
+ATTENDANT1	FacePositionOffset	Did you see something?
+PLAYER	FacePositionOffset	(What did that voice say? Remember...)
+PLAYER	FacePositionOffset	(That voice said...)
+PLAYER	FacePositionOffset	(\"That lifts the fog!\")
+PLAYER	FacePositionOffset	(Wait a second! Drought Stone?!)
+PLAYER	FacePositionOffset	(Is that maybe...)

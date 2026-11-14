@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Mail	Would you like to look at the scenery?
+-	SwitchMenu	Yes
+-	SwitchMenu	No

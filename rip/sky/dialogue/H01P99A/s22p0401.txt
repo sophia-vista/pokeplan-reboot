@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_KURESERIA	Talk	To the northwest of here...
+NPC_KURESERIA	Talk	The Dark Crater is located there.

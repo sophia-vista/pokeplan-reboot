@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_DAGUTORIO	Notice	Where do you want to go?
+NPC_DAGUTORIO	SwitchMenu	Ground Map
+NPC_DAGUTORIO	Notice	Cancel

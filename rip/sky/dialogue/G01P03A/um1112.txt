@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Good luck!
+NPC_CHIRIIN	Talk	Let's do good!
+NPC_CHIRIIN	Talk	I hope we can work together!
+NPC_CHIRIIN	Talk	You mustn't give up!
+NPC_CHIRIIN	Talk	Wasn't the expedition fun?!
+NPC_CHIRIIN	Talk	I hope everyone does their best!
+NPC_CHIRIIN	Talk	Ewww... It still reeks...
+NPC_CHIRIIN	Talk	But I won't be overcome by it!
+NPC_CHIRIIN	Talk	What was that awful stench...?
+NPC_CHIRIIN	Talk	It's not time for dinner yet.
+NPC_CHIRIIN	Talk	Oh! I almost forgot!
+NPC_CHIRIIN	Talk	I'm getting dinner ready now.
+NPC_CHIRIIN	Talk	Oh? Hungry already?
+NPC_CHIRIIN	Talk	But it's not dinner yet!

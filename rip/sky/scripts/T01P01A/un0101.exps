@@ -1,0 +1,59 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] || scn($SCENARIO_SIDE) >= [40, 3] ) {
+        @label_4;
+        switch ( message_Menu(MENU_DUSKULL_BANK) ) { }
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        if ( $SCENARIO_TALK_BIT_FLAG[128] ) {
+            jump @label_4;
+        } else {
+            $SCENARIO_TALK_BIT_FLAG[128] = 1;
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            message_SetFace(ACTOR_NPC_YOMAWARU, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english=" Oh? [CS:Y]Bidoof[CR]...",
+            });
+            message_Talk({
+                english="""
+                     You sure have a cheerful
+                    expression today.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8978);
+            SetEffect<actor ACTOR_NPC_YOMAWARU>(EFFECT_EXCLAMATION_MARK, 3);
+            WaitEffect<actor ACTOR_NPC_YOMAWARU>();
+            WaitExecuteLives(ACTOR_NPC_YOMAWARU);
+            message_SetFace(ACTOR_NPC_YOMAWARU, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     I know! [K]Something good is
+                    happening! Hee-hee.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            jump @label_4;
+        }
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_YOMAWARU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh! [CS:Y]Bidoof[CR]![K]
+                Greetings! Hee-hee.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Today's such a nice day, isn't it?[K]
+                Good luck with your work!
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

@@ -1,0 +1,38 @@
+speaker	kind	line
+NPC_DOGOOMU	SwitchMenu	Yes
+NPC_DOGOOMU	Menu	No
+NPC_DOGOOMU	Talk	Oh, you won't, HUH?
+NPC_DOGOOMU	Talk	Check High Score
+NPC_DOGOOMU	Talk	GO for it, you two!
+NPC_DOGOOMU	Talk	Will you go on sentry duty?
+NPC_DOGOOMU	SwitchMenu	Yes
+NPC_DOGOOMU	SwitchMenu	No
+NPC_DOGOOMU	Talk	Oh, you won't, HUH?
+NPC_DOGOOMU	Talk	Check High Score
+NPC_DOGOOMU	Talk	Will you go on sentry duty?
+NPC_DOGOOMU	SwitchMenu	Yes
+NPC_DOGOOMU	SwitchMenu	No
+NPC_DOGOOMU	Talk	Oh, you won't, HUH?
+NPC_DOGOOMU	Talk	Check High Score
+NPC_DOGOOMU	SwitchMenu	Yes
+NPC_DOGOOMU	SwitchMenu	No
+NPC_DOGOOMU	Talk	Oh, you won't, HUH?
+NPC_DOGOOMU	Talk	Check High Score
+NPC_DOGOOMU	Talk	...Huff...puff...
+NPC_DOGOOMU	Talk	WHOOOOAH!
+NPC_DOGOOMU	Talk	It's like a...DREAM!
+NPC_DOGOOMU	Talk	...What? Sentry duty?
+NPC_DOGOOMU	SwitchMenu	Yes
+NPC_DOGOOMU	SwitchMenu	No
+NPC_DOGOOMU	Talk	Oh, you won't, HUH?
+NPC_DOGOOMU	Talk	Check High Score
+NPC_DOGOOMU	Talk	..................
+NPC_DOGOOMU	Talk	WAAAAH!
+NPC_DOGOOMU	Talk	It's all on YOU now!
+NPC_DOGOOMU	Talk	GOT THAT?!
+NPC_DOGOOMU	Talk	...I was worried about you two...
+NPC_DOGOOMU	Talk	Special in all sorts of ways...
+NPC_DOGOOMU	Talk	HEY, you two!
+NPC_DOGOOMU	Talk	All right! Look SHARP, Diglett!
+NPC_DOGOOMU	Talk	HEY! Diglett!
+NPC_DIGUDA	Talk	Yes! Will do!

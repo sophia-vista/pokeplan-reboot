@@ -1,0 +1,17 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_Notice({
+        english="""
+            [CN]Welcome!
+            [CN]This is the fun Treasure Town!
+        """,
+    });
+    message_Notice({
+        english="""
+            Whiscash Pond ↑
+            [S:80][CS:N]Pelipper[CR] Post Office →
+        """,
+    });
+    JumpCommon(CORO_END_TALK);
+}

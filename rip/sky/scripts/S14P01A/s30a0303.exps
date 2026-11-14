@@ -1,0 +1,187 @@
+
+def 0 {
+    bgm_PlayFadeIn(BGM_SPINDAS_CAFE, 0, 256);
+    back_SetGround(LEVEL_S14P01A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    screen_FadeIn(1, 30);
+    @label_2;
+    forever {
+        Wait(30);
+        supervision_Acting(1);
+        se_Play(11026);
+        SetAnimation<object OBJECT_S14P01A1_384>(17);
+        WaitAnimation<object OBJECT_S14P01A1_384>();
+        WaitExecuteObject(OBJECT_S14P01A1_384);
+        Wait(15);
+        SetAnimation<object OBJECT_S14P01A1_384>(2);
+        Wait(30);
+        message_SetActor(ACTOR_NPC_PATCHIIRU);
+        message_Talk({
+            english="""
+                 Right now at the Recycle Shop,
+                you trade several items in exchange for one of
+                the shop's items.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Thanks to everyone's continued
+                recycling efforts, we have gathered a lot of
+                items here at the shop.
+            """,
+        });
+        message_Talk({
+            english="""
+                 The service will continue to
+                operate in the same manner...
+            """,
+        });
+        message_Talk({
+            english="""
+                 And now with Project P
+                established...
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        supervision_Acting(2);
+        se_Play(11027);
+        SetAnimation<object OBJECT_S14P01A4_387>(1);
+        Wait(45);
+        supervision_Acting(3);
+        se_Play(11026);
+        SetAnimation<object OBJECT_S14P01A2_385>(17);
+        WaitAnimation<object OBJECT_S14P01A2_385>();
+        WaitExecuteObject(OBJECT_S14P01A2_385);
+        Wait(15);
+        SetAnimation<object OBJECT_S14P01A2_385>(2);
+        message_SetActor(ACTOR_NPC_PATCHIIRU);
+        message_Talk({
+            english="""
+                 You might be wondering how
+                Project P fits into all this...
+            """,
+        });
+        message_Talk({
+            english="""
+                 We'll use the accumulated items
+                to explore unexplored areas!
+            """,
+        });
+        message_Talk({
+            english="""
+                 There are still so many places
+                around the world that are waiting to be
+                found and explored.
+            """,
+        });
+        message_Talk({
+            english="""
+                 So many secret treasures
+                and challenging puzzles waiting to
+                be discovered...
+            """,
+        });
+        message_Talk({
+            english="""
+                 So let's go out and find them!
+                That's what Project P is about!
+            """,
+        });
+        message_Talk({
+            english=" Ah, the pursuit of knowledge...",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_Talk({
+            english=" And continuing exploration...",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        supervision_Acting(4);
+        se_Play(11027);
+        SetAnimation<object OBJECT_S14P01A4_388>(2);
+        Wait(30);
+        supervision_Acting(5);
+        se_Play(11028);
+        SetAnimation<object OBJECT_S14P01A3_386>(17);
+        WaitAnimation<object OBJECT_S14P01A3_386>();
+        WaitExecuteObject(OBJECT_S14P01A3_386);
+        Wait(15);
+        SetAnimation<object OBJECT_S14P01A3_386>(2);
+        message_SetActor(ACTOR_NPC_PATCHIIRU);
+        message_Talk({
+            english="""
+                 We'll find dazzling treasures
+                and new exploration areas! (Probably...)
+            """,
+        });
+        message_Talk({
+            english="""
+                 And if you bring your
+                discoveries back to the café...
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        supervision_Acting(6);
+        se_Play(11027);
+        SetAnimation<object OBJECT_S14P01A4_389>(3);
+        Wait(15);
+        message_SetActor(ACTOR_NPC_PATCHIIRU);
+        message_Talk({
+            english="""
+                 You'll get a special deal at the
+                Recycle Shop!
+            """,
+        });
+        message_Talk({
+            english="""
+                 This should keep items
+                circulating through the Recycle Shop.
+            """,
+        });
+        message_Talk({
+            english="""
+                 The items at the Recycle Shop
+                will become more and more amazing!
+            """,
+        });
+        message_Talk({
+            english="""
+                 What do you think?
+                Do you understand?
+            """,
+        });
+        switch ( message_SwitchMenu(0, 1) ) {
+            case menu({
+                english="Yes",
+            }):
+                break_loop;
+                break;
+            case menu({
+                english="No",
+            }):
+            default:
+                message_SetActor(ACTOR_NPC_PATCHIIRU);
+                message_Talk({
+                    english="""
+                         OK, I'll explain again from the
+                        beginning.
+                    """,
+                });
+                message_Close();
+                screen_FadeOut(1, 30);
+                supervision_RemoveActing(1);
+                supervision_RemoveActing(2);
+                supervision_RemoveActing(3);
+                supervision_RemoveActing(4);
+                supervision_RemoveActing(5);
+                supervision_RemoveActing(6);
+                Wait(10);
+                screen_FadeIn(1, 30);
+                continue;  // may be redundant
+        }
+    }
+    @label_0;
+    message_Close();
+    screen_FadeOut(1, 30);
+    end;
+}

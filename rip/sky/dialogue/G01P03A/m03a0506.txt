@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_DAGUTORIO	Talk	Update completed! Stand clear!
+ATTENDANT1	Talk	Oh, looks like he's done.
+NPC_BIPPA	Talk	Yes sirree! The data is updated.
+ATTENDANT1	Talk	...
+NPC_BIPPA	Talk	It's not cold here, after all.
+ATTENDANT1	Talk	L-l-look at this, !
+ATTENDANT1	Talk	Up top! On the left!
+ATTENDANT1	Talk	At the top! On the left!
+NPC_BIPPA	Talk	Now what's going on?
+NPC_BIPPA	Talk	Where are you all off to?

@@ -1,0 +1,23 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	I... I... I...
+NPC_YONOWAARU	Talk	I...refuse to lose!
+NPC_JUPUTORU	Talk	Gwah!
+ATTENDANT1	Talk	Urf...
+NPC_YONOWAARU	Talk	Humph. So foolhardy.
+NPC_YONOWAARU	Talk	You dared to challenge me?
+NPC_YONOWAARU	Talk	For all the effort in the world...
+ATTENDANT1	Talk	Ugh... Dusknoir is truly tough.
+ATTENDANT1	Talk	That's easy for you to say...
+NPC_YONOWAARU	Talk	But it's all over now.
+NPC_YONOWAARU	Talk	This is...the end!
+NPC_JUPUTORU	Talk	H-he's going to do something!
+PLAYER	Talk	(Is he going to unleash a move on us?!)
+PLAYER	Talk	(From that mouth on his stomach?!)
+PLAYER	Talk	(Wait a second... The mouth on his stomach?!)
+PLAYER	Talk	(Th-that's it! This could work!)
+NPC_JUPUTORU	Talk	What is it, ?!
+ATTENDANT1	Talk	Wh-what?!
+NPC_JUPUTORU	Talk	Is that possible?!
+NPC_YONOWAARU	Talk	TAKE THIS!
+ATTENDANT1	Talk	Now! Go!
+NPC_YONOWAARU	Talk	GWAAAAAAAAAAH!

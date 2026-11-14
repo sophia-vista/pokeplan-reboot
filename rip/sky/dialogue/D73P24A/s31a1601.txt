@@ -1,0 +1,3 @@
+speaker	kind	line
+-	SwitchMenu	Yes
+-	Menu	No

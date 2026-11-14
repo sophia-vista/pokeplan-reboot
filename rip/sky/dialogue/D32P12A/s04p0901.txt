@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Mail	It appears to be a letter.
+-	Mail	read the letter.
+-	Mail	\"To Team :\"

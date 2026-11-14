@@ -1,0 +1,34 @@
+
+def 0 {
+    back_SetGround(LEVEL_V03P07A);
+    supervision_Acting(0);
+    SetAnimation<object OBJECT_V03P06A2_200>(3);
+    SetAnimation<object OBJECT_V03P06A1_196>(3);
+    camera_SetMyself<performer 0>();
+    back2_SetMode(4);
+    back2_SetGround(LEVEL_S13P01B);
+    camera2_SetPositionMark(Position<'m0', 16, 13.5>);
+    if ( variation ) {
+        @label_0;
+        supervision_Acting(10);
+        @label_1;
+        back2_SetBackEffect(3);
+        screen2_FadeIn(0, 0);
+        screen_FadeIn(1, 0);
+        SetAnimation<object OBJECT_S05P02A2_166>(2);
+        Wait(2000);
+        bgm_FadeOut(60);
+        screen2_FadeOut(0, 60);
+        screen_FadeOut(1, 60);
+        back2_SetMode(0);
+        end;
+    } else {
+        jump @label_1;
+    }
+}
+
+def 1 for object OBJECT_S05P02C1_377 {
+    SetOutputAttribute(8);
+    SetOutputAttribute(4);
+    end;
+}

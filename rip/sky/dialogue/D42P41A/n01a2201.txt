@@ -1,0 +1,5 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	All right! It's not over yet!
+NPC_KIMAWARI	Talk	But! We won't lose!
+PLAYER_BIPPA	Talk	Got it! Yup yup!
+NPC_YUKIKABURI	Talk	Let's go!

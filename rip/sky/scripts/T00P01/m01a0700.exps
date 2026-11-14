@@ -1,0 +1,38 @@
+
+def 0 {
+    debug_Print('station_M01A07');
+    supervision_StationCommon(0);
+    supervision_Station(0);
+    supervision_Station(1);
+    supervision_Station(2);
+    supervision_Suspend(-2);
+    supervision_RemoveActing(0);
+    end;
+}
+
+def 1 for actor ACTOR_PLAYER {
+    SetAnimation(2);
+    SetFunctionAttribute(2);
+    WaitScreenFade();
+    end;
+}
+
+def 2 for actor ACTOR_ATTENDANT1 {
+    SetAnimation(2);
+    SetFunctionAttribute(2);
+    WaitScreenFade();
+    end;
+}
+
+def 3 for actor ACTOR_NPC_TEST005 {
+    JumpCommon(CORO_MOVE_TYPE1);
+}
+
+def 4 for actor ACTOR_NPC_TEST007 {
+    @label_0;
+    MovePositionOffset(0.5, 32, 0);
+    MovePositionOffset(0.5, 0, 32);
+    MovePositionOffset(0.5, -32, 0);
+    MovePositionOffset(0.5, 0, -32);
+    jump @label_0;
+}

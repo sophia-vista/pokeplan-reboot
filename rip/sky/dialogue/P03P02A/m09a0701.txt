@@ -1,0 +1,29 @@
+speaker	kind	line
+NPC_HEIGANI	Talk	You two go on ahead!
+ATTENDANT1	Talk	Onward to Fogbound Lake!
+-	Talk	Hold it!
+ATTENDANT1	Talk	Y-you brutes?!
+NPC_SUKATANKU	Talk	Good job! Chaw-haw-haw!
+ATTENDANT1	Talk	You fiends!
+ATTENDANT1	Talk	We'll make you eat those words!
+ATTENDANT1	Talk	Gulp...
+NPC_SUKATANKU	Talk	Enough talking! Take this!
+-	Talk	Waah! Wait! Wait for me!
+NPC_ZUBATTO	Talk	Wh-what?
+-	Talk	Perfect Apple! ♪ Perfect Apple! ♪
+NPC_PUKURIN	Talk	Oh? Oh-oh?
+NPC_PUKURIN	Talk	Oh, you two!
+NPC_PUKURIN	Talk	And my friends too! ♪
+NPC_PUKURIN	Talk	Huh? What am I doing?
+NPC_PUKURIN	Talk	Oh, yes!
+ATTENDANT1	Talk	Huh?
+ATTENDANT1	Talk	But...
+NPC_PUKURIN	Talk	Hurry, get exploring! ♪
+ATTENDANT1	Talk	Um... OK.
+ATTENDANT1	Talk	L-let's go, .
+NPC_PUKURIN	Talk	Good luck. ♪
+NPC_SUKATANKU	Talk	Um. Guildmaster...
+NPC_PUKURIN	Talk	Oh?!
+NPC_PUKURIN	Talk	Let's wait for their report. ♪
+NPC_SUKATANKU	Talk	No hard feelings...
+NPC_SUKATANKU	Talk	Is finished! Chaw-haw!

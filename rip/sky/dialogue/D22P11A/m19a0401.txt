@@ -1,0 +1,26 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	You seem to be finally prepared.
+NPC_JUPUTORU	Talk	Let's go.
+ATTENDANT1	Talk	Wait a sec! Hold on!
+ATTENDANT1	Talk	Oh, wait! Don't go!
+ATTENDANT1	Talk	Oh, wait! Hold on!
+NPC_JUPUTORU	Talk	What is it?
+NPC_JUPUTORU	Talk	Well...yes, I will.
+ATTENDANT1	Talk	But I...
+ATTENDANT1	Talk	Grovyle, I'm not convinced yet.
+ATTENDANT1	Talk	I don't completely trust you yet.
+ATTENDANT1	Talk	I don't completely trust you.
+ATTENDANT1	Talk	If we do get back, Grovyle...
+ATTENDANT1	Talk	If we do return, Grovyle...
+ATTENDANT1	Talk	If we do go back, Grovyle...
+ATTENDANT1	Talk	I'm going to stop you, Grovyle!
+NPC_JUPUTORU	Talk	Let's go.
+PLAYER	Talk	(............)
+PLAYER	Talk	(I feel it...)
+PLAYER	Talk	(I am sensing something strange...)
+ATTENDANT1	FacePositionOffset	Hm? What's up, ?
+ATTENDANT1	FacePositionOffset	Hm? What is it, ?
+PLAYER	FacePositionOffset	(I just know it!)
+PLAYER	FacePositionOffset	(I've felt something like this before...)
+PLAYER	FacePositionOffset	(It was...)
+PLAYER	FacePositionOffset	(That's it! It was when...)

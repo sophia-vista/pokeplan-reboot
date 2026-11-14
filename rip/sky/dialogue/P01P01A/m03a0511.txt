@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_MARIRU	Talk	Yes...about them...!
+ATTENDANT1	Talk	So which way did they go?!
+NPC_MARIRU	Talk	Th-that way!

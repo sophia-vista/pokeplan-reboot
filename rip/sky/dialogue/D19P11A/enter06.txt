@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Mail	What would you like to do?
+-	SwitchMenu	Check Storage
+-	Menu	Save
+-	Menu	Cancel

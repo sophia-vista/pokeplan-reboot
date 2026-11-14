@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_RURIRI	Talk	H-h-h...HELP!

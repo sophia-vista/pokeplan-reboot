@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_DAAKURAI	Talk	You've kept me waiting.
+ATTENDANT1	Talk	Darkrai!
+NPC_DAAKURAI	Talk	I know you all too well.
+NPC_DAAKURAI	Talk	You especially, .
+PLAYER	Talk	(Wh-what?!)
+PLAYER	Talk	(...Accident...?)
+PLAYER	Talk	(Oh, that's right! Grovyle once explained it...)
+PLAYER	Talk	(We had an accident traveling back in time...)

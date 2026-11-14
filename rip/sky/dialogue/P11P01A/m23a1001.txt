@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Wigglytuff brought me.
+ATTENDANT1	Talk	Huh? Wigglytuff did?
+ATTENDANT1	Talk	What? Wigglytuff did?
+ATTENDANT1	Talk	Pardon? Wigglytuff did?
+ATTENDANT1	Talk	Awesome!
+ATTENDANT1	Talk	Yes!
+ATTENDANT1	Talk	Whoa! There's water here!
+ATTENDANT1	Talk	Wow! There's water here!
+ATTENDANT1	Talk	...Wait a second. It's seawater!
+ATTENDANT1	Talk	...Hold on. This is seawater!
+ATTENDANT1	Talk	Look at that, !

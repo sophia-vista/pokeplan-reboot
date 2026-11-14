@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_FURIIZAA	Talk	Seekers of the seven treasures!
+NPC_FURIIZAA	Talk	Conquer the freezing cold...
+NPC_FURIIZAA	Talk	Demonstrate your power to me!
+NPC_FURIIZAA	Talk	Now it begins!

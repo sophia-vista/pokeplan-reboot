@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	What?! What did you say?!
+NPC_DAGUTORIO	Talk	Well, then...
+NPC_DAGUTORIO	Talk	What became of Dusknoir?
+ATTENDANT1	Talk	Well, Grovyle escaped...
+ATTENDANT1	Talk	I think he went off in pursuit.
+ATTENDANT1	Talk	I think he went after the thief.
+NPC_DOGOOMU	Talk	What?! The EMERGENCY siren!
+NPC_DAGUTORIO	Talk	Hey, Diglett! What's the matter?
+NPC_DIGUDA	Talk	It's an alert from Magnemite.
+NPC_DIGUDA	Talk	Please speak clearly!
+NPC_KOIRU	Talk	Zzzt! Can you hear me? Zzzt!
+ATTENDANT1	Talk	I wonder what's going on?
+ATTENDANT1	Talk	What's happening now?
+ATTENDANT1	Talk	I wonder what this is about?

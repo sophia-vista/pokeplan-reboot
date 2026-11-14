@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	Is this really...
+NPC_YONOWAARU	Talk	Is this what you really want?

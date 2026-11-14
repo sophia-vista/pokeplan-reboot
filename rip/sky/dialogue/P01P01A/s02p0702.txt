@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_HASSAMU	Talk	Hmm... However...
+ATTENDANT1	Talk	Uh... Yup.
+ATTENDANT1	Talk	Uh... Yes.
+ATTENDANT1	Talk	Uh... Yep.
+ATTENDANT1	Talk	A what? An honorary member?
+ATTENDANT1	Talk	Pardon? An honorary member?
+NPC_HASSAMU	Talk	Correct!
+ATTENDANT1	Talk	Huh? Secret Rank?
+ATTENDANT1	Talk	What? Secret Rank?
+ATTENDANT1	Talk	Pardon? Secret Rank?
+ATTENDANT1	Mail	.....................
+NPC_HASSAMU	Talk	Ah, it's the least that I could do.
+NPC_HASSAMU	Talk	I must be on my way. Farewell!
+ATTENDANT1	Talk	.....................

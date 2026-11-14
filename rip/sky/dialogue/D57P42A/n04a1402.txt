@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	A-are you ALL RIGHT, Sunflora?
+PLAYER_KIMAWARI	Talk	Y-yeah... (Y-you saved me...)
+NPC_DOGOOMU	Talk	I-is that SO? GOOD.

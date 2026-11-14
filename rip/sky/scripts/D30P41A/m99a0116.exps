@@ -1,0 +1,133 @@
+
+def 0 {
+    sound_Stop();
+    back_SetDungeonBanner(43, 0);
+    screen_FadeIn(1, 16);
+    Wait(60);
+    screen_FadeOut(1, 16);
+    Wait(15);
+    back_SetGround(LEVEL_D30P41A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    screen_FadeIn(1, 30);
+    bgm_PlayFadeIn(BGM_TEMPORAL_PINNACLE, 0, 256);
+    MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m0', 32.5, 37.5>);
+    MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m1', 36.5, 37.5>);
+    WaitExecuteLives(ACTOR_PLAYER);
+    Wait(15);
+    message_SetFace(ACTOR_NPC_DIARUGA, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             I AM [CS:N]DIALGA[CR]![K] THE PROTECTOR
+            OF [CS:P]TEMPORAL TOWER[CR]!
+        """,
+    });
+    message_Talk({
+        english="""
+             AH, YOU TWO! IT'S BEEN A
+            LONG TIME!
+        """,
+    });
+    message_Talk({
+        english="""
+             BUT...[K]THERE CAN BE BUT ONE
+            REASON YOU ARE COMPELLED TO RETURN HERE.
+        """,
+    });
+    message_Talk({
+        english="""
+             AND THAT IS TO...[K] CHALLENGE
+            ME TO A BATTLE!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    SetAnimation<actor ACTOR_NPC_DIARUGA>(19);
+    WaitAnimation<actor ACTOR_NPC_DIARUGA>();
+    camera_SetEffect(2, 1, 1.0);
+    se_Play(6930);
+    message_Talk({
+        english=" GRRR-OOOOOO...OOOOOH!",
+    });
+    WaitExecuteLives(ACTOR_NPC_DARK_DIARUGA);
+    WaitSe(6930);
+    message_CloseEnforce();
+    camera_SetEffect(0, 0, 0);
+    SetAnimation<actor ACTOR_NPC_DIARUGA>(2);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    message_Talk({
+        english=" SO BE IT!",
+    });
+    message_Talk({
+        english=" YOUR CHALLENGE...[K]I ACCEPT!",
+    });
+    message_Talk({
+        english=" HOWEVER!",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    message_SetFace(ACTOR_NPC_DIARUGA, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             IF YOU FAIL TO MUSTER ALL
+            YOUR POWER AND SKILL...
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    message_SetFace(ACTOR_NPC_DIARUGA, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             THERE WILL BE NO VICTORY
+            FOR YOU!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    WaitSe(5143);
+    SetAnimation<actor ACTOR_NPC_DIARUGA>(19);
+    WaitAnimation<actor ACTOR_NPC_DIARUGA>();
+    camera_SetEffect(2, 1, 1.0);
+    se_Play(6930);
+    message_SetFace(ACTOR_NPC_DIARUGA, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english=" GRRR-OOOOOO!",
+    });
+    WaitSe(6930);
+    message_CloseEnforce();
+    camera_SetEffect(0, 0, 0);
+    bgm_Stop();
+    se_Play(5140);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    WaitSe(5140);
+    CallCommon(CORO_BOSS_WIPE_FUNC);
+    end;
+}

@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_KAKUREON1	Talk	Ah, yes, I've heard!
+NPC_KAKUREON1	Talk	You've defeated Darkrai?!
+NPC_KAKUREON1	Talk	Ah, yes, I've heard!
+NPC_KAKUREON1	Talk	Ah, welcome back! ♪
+NPC_KAKUREON1	Talk	Ah, yes, I've heard!

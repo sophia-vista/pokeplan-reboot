@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_YAMIRAMI	Talk	Wheh-heh...heh?
+NPC_YONOWAARU	Talk	They vanished?! No, that isn't it.
+NPC_YONOWAARU	Talk	They just managed to retreat.
+NPC_YONOWAARU	Talk	They will return. They have to.
+ATTENDANT1	Talk	Urk! This isn't easy at all.
+ATTENDANT1	Talk	Urk! This is really challenging.
+ATTENDANT1	Talk	Urk! It's really tough.
+NPC_JUPUTORU	Talk	We will get through this time.

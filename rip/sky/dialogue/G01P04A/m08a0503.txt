@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_KIMAWARI	Talk	You should talk!
+NPC_DAGUTORIO	Talk	We're a solid group!
+NPC_CHIRIIN	Talk	I promise to try my best!
+NPC_HEIGANI	Talk	Hey, hey, likewise!
+NPC_PERAPPU	Talk	Erm... Let's see...
+NPC_PUKURIN	Talk	That's so boooooring!
+NPC_PUKURIN	Talk	...Meanie.
+NPC_SUKATANKU	Talk	Understood. Chaw-haw-haw!
+ATTENDANT1	FacePositionOffset	Hey, same here, Bidoof!
+ATTENDANT1	FacePositionOffset	Ha ha ha! Same here, Bidoof!
+ATTENDANT1	FacePositionOffset	Same here, Bidoof!
+NPC_PERAPPU	Talk	Well then...
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Narration	And thus...

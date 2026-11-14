@@ -1,0 +1,84 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	Wh-where is this?!
+ATTENDANT1	FacePositionOffset	Wh-why is this happening?
+ATTENDANT1	FacePositionOffset	Hey!
+ATTENDANT1	FacePositionOffset	Oh!
+PLAYER	FacePositionOffset	(!)
+-	Talk	Humph!
+ATTENDANT1	FacePositionOffset	Huh?!
+ATTENDANT1	FacePositionOffset	Pardon?!
+PLAYER	FacePositionOffset	(That voice came from over there...)
+ATTENDANT1	FacePositionOffset	Grovyle!
+ATTENDANT1	FacePositionOffset	N-no...
+ATTENDANT1	FacePositionOffset	What?! G-get rid of us?!
+ATTENDANT1	FacePositionOffset	Wait a second.
+ATTENDANT1	FacePositionOffset	But why us?!
+ATTENDANT1	FacePositionOffset	We haven't done anything wrong!
+NPC_JUPUTORU	Talk	Humph! I couldn't care less.
+ATTENDANT1	FacePositionOffset	What?!
+ATTENDANT1	FacePositionOffset	We haven't done anything bad!
+ATTENDANT1	FacePositionOffset	Don't think that we're like you!
+NPC_JUPUTORU	Talk	I don't care.
+NPC_JUPUTORU	Talk	Here they come.
+ATTENDANT1	FacePositionOffset	Waah! Who are they?!
+ATTENDANT1	FacePositionOffset	What?! The great Dusknoir's?!
+ATTENDANT1	FacePositionOffset	Hey! It's Dusknoir!
+NPC_YONOWAARU	Talk	Good.
+NPC_YONOWAARU	Talk	Very well. Sableye.
+ATTENDANT1	FacePositionOffset	What?!
+NPC_YONOWAARU	Talk	Sableye: Wheh-heh-heh!
+ATTENDANT1	Talk	W-wait a minute! Dusknoir, sir!
+ATTENDANT1	Talk	What's wrong with you?!
+ATTENDANT1	Talk	What's happened to you?!
+ATTENDANT1	Talk	Why are you doing this to us?!
+ATTENDANT1	Talk	Urk...! Keep...my voice down?
+NPC_JUPUTORU	Talk	...give me your full cooperation.
+ATTENDANT1	Talk	What...? Help you, Grovyle...?
+NPC_JUPUTORU	Talk	Psst...hey! You there...
+PLAYER	Talk	(...!)
+NPC_JUPUTORU	Talk	...Tell me...
+NPC_JUPUTORU	Talk	...What can you do right now?
+PLAYER	Talk	(What? What can I do?)
+PLAYER	Talk	(You ask me that out of nowhere...! Umm...)
+PLAYER	Talk	(Wh-what to do...?)
+PLAYER	SwitchMenu	Use an item!
+NPC_JUPUTORU	Talk	...No. An item's no good...
+PLAYER	Talk	(Urk...! That's easy for you to say... Ummm...)
+PLAYER	Talk	Use a move!
+NPC_JUPUTORU	Talk	...No! That's no good...
+PLAYER	Talk	(Urk...! You're not helping... Ummm...)
+PLAYER	Talk	Attack!
+NPC_JUPUTORU	Talk	...! That's it... That'll do...
+NPC_JUPUTORU	Talk	...Good.
+NPC_YAMIRAMI	Talk	Then we are ready to begin!
+NPC_YONOWAARU	Talk	Very well.
+NPC_YONOWAARU	Talk	Especially that Grovyle.
+NPC_YONOWAARU	Talk	Sableye: Wheh-heh-heh!
+NPC_YONOWAARU	Talk	Commence...now!
+NPC_YONOWAARU	Talk	Sableye: Wheh-heh-heh!
+ATTENDANT1	Talk	...! They're coming...
+NPC_JUPUTORU	Talk	...Listen carefully...
+NPC_JUPUTORU	Talk	...Sableye use claws to strike...
+ATTENDANT1	Talk	...! Yikes...that sounds scary!
+ATTENDANT1	Talk	...B-b-but...
+ATTENDANT1	Talk	Sableye: Wheh-heh-heh!
+ATTENDANT1	Talk	WAAAAAAH!
+PLAYER	Talk	(Urggh!)
+ATTENDANT1	Talk	But if they keep going...
+ATTENDANT1	Talk	Hey!
+PLAYER	Talk	(There's a break in the rope!)
+NPC_JUPUTORU	Talk	Now! Attack!
+ATTENDANT1	Talk	Go!
+NPC_YAMIRAMI	Talk	Gwah!
+NPC_YONOWAARU	Talk	Wh-what is this?!
+NPC_JUPUTORU	Talk	There!
+NPC_YAMIRAMI	Talk	Gaaaah!
+NPC_YAMIRAMI	Talk	We can't see!
+NPC_YONOWAARU	Talk	Its effect wears off quickly!
+NPC_YONOWAARU	Talk	B-blast it!
+NPC_YONOWAARU	Talk	Sableye: Wheh-heh-heh!
+ATTENDANT1	Talk	Blecch! I got dirt in my mouth...
+PLAYER	Talk	(We're... We're safe...)
+PLAYER	Talk	(So Grovyle can use Dig?)
+PLAYER	Talk	(He sure knows many moves.)
+NPC_JUPUTORU	Talk	Let's get out of here, and fast.

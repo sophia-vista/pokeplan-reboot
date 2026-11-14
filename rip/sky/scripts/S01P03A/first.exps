@@ -1,0 +1,73 @@
+
+def 0 {
+    back_SetGround(LEVEL_S01P03A);
+    back2_SetMode(4);
+    back2_SetGround(LEVEL_S01P04A);
+    $SCENARIO_MAIN_BIT_FLAG[40] = 1;
+    bgm_PlayFadeIn(BGM_PELIPPER_ISLAND, 0, 256);
+    bgm2_PlayFadeIn(BGM_OCEAN1, 0, 128);
+    supervision_StationCommon(0);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    camera2_SetPositionMark(Position<'m0', 21, 15.5>);
+    SetAnimation<object OBJECT_S01P04A1_156>(1);
+    SetAnimation<object OBJECT_S01P04A1_157>(2);
+    SetAnimation<object OBJECT_S01P04A1_158>(3);
+    Wait(20);
+    SetAnimation<object OBJECT_S01P04A1_159>(1);
+    SetAnimation<object OBJECT_S01P04A1_160>(2);
+    SetAnimation<object OBJECT_S01P04A1_161>(3);
+    Wait(20);
+    SetAnimation<object OBJECT_S01P04A1_162>(1);
+    SetAnimation<object OBJECT_S01P04A1_163>(2);
+    SetAnimation<object OBJECT_S01P04A1_164>(3);
+    screen2_FadeIn(0, 30);
+    screen_FadeIn(1, 30);
+    MovePositionMark<performer 0>(1, Position<'m1', 28.5, 15.5>);
+    WaitExecutePerformer(0);
+    Wait(30);
+    camera_Move2Default(1);
+    WaitMoveCamera();
+    Wait(30);
+    screen2_FadeOut(1, 30);
+    Unlock(3);
+    WaitExecuteLives(ACTOR_PLAYER);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    WaitExecuteLives(ACTOR_NPC_PERIPPAA1);
+    CallCommon(CORO_EVENT_END_MAPIN);
+    main_SetGround(LEVEL_S01P03A);
+    supervision_ExecuteStationCommon(LEVEL_S01P03A, 1);
+    hold;
+}
+
+def 1 for actor ACTOR_PLAYER {
+    SetPositionInitial();
+    SetAnimation(2);
+    Lock(3);
+    SetFunctionAttribute(2);
+    hold;
+}
+
+def 2 for actor ACTOR_ATTENDANT1 {
+    SetPositionInitial();
+    SetAnimation(2);
+    Lock(3);
+    SetFunctionAttribute(2);
+    hold;
+}
+
+def 3 for actor ACTOR_NPC_PERIPPAA1 {
+    SetPositionInitial();
+    SetAnimation(2);
+    Lock(3);
+    hold;
+}
+
+def 4 for actor ACTOR_NPC_CHIRIIN {
+    if ( scn($SCENARIO_MAIN) >= [6, 3] ) {
+        @label_0;
+        JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    } else {
+        Destroy();
+    }
+}

@@ -1,0 +1,439 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] || scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 It's terrible! I don't do anything
+                other than trying to win at Big Treasure!
+            """,
+        });
+        message_Talk({
+            english=" I can't go on like this!",
+        });
+        message_Close();
+        @label_131;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Ever since I came back from
+                [CS:P]Sky Peak[CR], the daily routine has been
+                kind of boring.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] || scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] || scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I'm done climbing the mountain
+                for now. I'll just relax here for a bit.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] || scn($SCENARIO_MAIN) >= [29, 56] || scn($SCENARIO_MAIN) >= [29, 55] || scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] || scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] || scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I got caught up in an avalanche
+                near the 7th Station Clearing!
+            """,
+        });
+        message_Talk({
+            english="""
+                 When I was buried in that cold
+                snow, I lost all hope!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Then I saw this glittering light,
+                and someone came and rescued me...
+            """,
+        });
+        message_Talk({
+            english=" Oh, [CS:N]Ampharos[CR]... My hero...",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        Wait(1);
+        se_Play(8972);
+        SetEffect<actor ACTOR_NPC_OKUTAN>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+        WaitEffect<actor ACTOR_NPC_OKUTAN>();
+        WaitExecuteLives(ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I...I climbed up here all on
+                my own!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I...I didn't even use the
+                Gondola once!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        Wait(1);
+        se_Play(8964);
+        SetEffect<actor ACTOR_NPC_OKUTAN>(EFFECT_EXCLAMATION_MARK, 3);
+        WaitEffect<actor ACTOR_NPC_OKUTAN>();
+        WaitExecuteLives(ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Huh? The strange group at the
+                5th Station Clearing weren't bad folks?
+            """,
+        });
+        message_Talk({
+            english="""
+                 Oh, no! I must have
+                misunderstooood!
+            """,
+        });
+        se_Play(8972);
+        SetEffect<actor ACTOR_NPC_OKUTAN>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+        WaitEffect<actor ACTOR_NPC_OKUTAN>();
+        WaitExecuteLives(ACTOR_NPC_OKUTAN);
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Looks like there's a strange
+                group near the 5th Station Clearing,
+                picking fights with other explorers!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I don't think I could handle them
+                on my own. I'd prefer to get someone to
+                come with me.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 17] || scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Hey, did you already find out?",
+        });
+        message_Talk({
+            english="""
+                 There's a rumor that this
+                mountain hides many hidden places.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I wonder what can be found at
+                the summit.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Ooh!
+                I'm so excited!!
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 9] || scn($SCENARIO_MAIN) >= [29, 8] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Just how tall is a mountain that
+                can reach beyond the sky?
+            """,
+        });
+        message_Talk({
+            english=" I can't even imagine!",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] || scn($SCENARIO_MAIN) >= [29, 4] || scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Maybe it's too late to say it,
+                but now I know the rumor about the world
+                being at stake was true...
+            """,
+        });
+        message_Talk({
+            english="""
+                 But your team stopped it, right?
+                I'm truly grateful! ♪
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] || scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hey, you! I heard a rumor
+                that the fate of the world is at stake.
+                Is that true?
+            """,
+        });
+        message_Talk({
+            english="""
+                 It's a lie, right? It has to be.
+                I don't know what I'd do otherwise.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] || scn($SCENARIO_MAIN) >= [17, 1] || scn($SCENARIO_MAIN) >= [16, 2] || scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I love to hear [CS:N]Wobbuffet[CR]
+                blurt out, "That's right!" when someone wins
+                on a [CS:I]Prize Ticket[CR].
+            """,
+        });
+        message_Talk({
+            english="""
+                 Oh... I'd love to hear her yell
+                that again...
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] || scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] || scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I'm really enjoying the "Big
+                Treasure" [CS:I]Prize Tickets[CR] at the Recycle Shop.
+                I can't get enough!
+            """,
+        });
+        message_KeyWait();
+        SetEffect<actor ACTOR_NPC_OKUTAN>(EFFECT_LAUGHING, 3);
+        message_Talk({
+            english="""
+                 I wonder if I'll win on my very
+                first [CS:I]Prize Ticket[CR]. Ho-ho-ho!
+            """,
+        });
+        message_KeyWait();
+        SetEffect<actor ACTOR_NPC_OKUTAN>(EFFECT_NONE, 3);
+        message_Talk({
+            english=" One day, I'll win big!",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] || scn($SCENARIO_MAIN) >= [12, 1] || scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I went out exploring with a
+                friend once, long ago. It was a lot of fun.
+            """,
+        });
+        message_Talk({
+            english=" It's a wonderful memory.",
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 7] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Project P is cool, but what
+                I'm interested in most are the [CS:I]Prize Ticket[CR]
+                drawings going on at the Recycle Shop.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I should try and see what
+                I can win...
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 When you recycle, you can trade
+                up for even more amazing items...
+            """,
+        });
+        message_Talk({
+            english="""
+                 I'm not being deceived, right?
+                This is OK?
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 3] || scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I absolutely love drinks made
+                with [CS:I]Apples[CR]. I can't get enough of them!
+            """,
+        });
+        message_Talk({
+            english="""
+                 They're just delicious drinks, but
+                that's enough for me![K] Or so I thought.
+                I keep drinking them...
+            """,
+        });
+        message_Talk({
+            english="""
+                 But! Spinda said he had "a
+                good feeling" about this one drink, and when
+                I drank it, my attack power increased!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I thought that drinks made using
+                an [CS:I]Apple[CR] or an [CS:I]Oran Berry[CR] wouldn't have any
+                effect, but it looks like I was wrong!
+            """,
+        });
+        message_Talk({
+            english="""
+                 The Juice Bar is really
+                wonderful.
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 6] || scn($SCENARIO_MAIN) >= [7, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_OKUTAN);
+        message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I had collected a bunch of
+                [CS:I]Apples[CR], so I had some drinks made.
+            """,
+        });
+        message_Talk({
+            english="""
+                 The drinks were so fresh and
+                juicy...and delicious...[K]
+                But that was it...
+            """,
+        });
+        message_Talk({
+            english="""
+                 I thought my Belly would be
+                filled and my HP would be restored...
+            """,
+        });
+        message_Talk({
+            english="""
+                 It seems like a drink made from
+                an [CS:I]Apple[CR] or an [CS:I]Oran Berry[CR] has no effect.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Well, at any rate, it was
+                delicious, so I'm not too disappointed.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I wonder if there's an effect
+                when you use a Gummi...
+            """,
+        });
+        message_Close();
+        jump @label_131;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 2] || scn($SCENARIO_MAIN) >= [7, 1] || scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] || scn($SCENARIO_MAIN) >= [5, 5] || scn($SCENARIO_MAIN) >= [4, 7] || scn($SCENARIO_MAIN) >= [4, 5] || scn($SCENARIO_MAIN) >= [4, 3] || scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] || scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        jump @label_131;
+    } else {
+        jump @label_131;
+    }
+}

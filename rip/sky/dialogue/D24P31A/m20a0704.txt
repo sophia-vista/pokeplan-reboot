@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Time...is at a standstill here!
+ATTENDANT1	Talk	But didn't they...?

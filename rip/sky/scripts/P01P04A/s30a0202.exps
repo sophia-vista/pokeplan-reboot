@@ -1,0 +1,469 @@
+
+def 0 {
+    sound_Stop();
+    back_SetGround(LEVEL_P01P04A);
+    supervision_LoadStation(LEVEL_P01P04A, 'UM06');
+    supervision_Station(35);
+    supervision_Station(36);
+    supervision_Acting(0);
+    supervision_Acting(1);
+    SetAnimation<actor ACTOR_NPC_PACHIRISU>(4);
+    SetAnimation<actor ACTOR_NPC_BARIYAADO>(4);
+    SetAnimation<actor ACTOR_NPC_OKUTAN>(4);
+    SetAnimation<actor ACTOR_NPC_HERAKUROSU>(4);
+    camera_SetMyself<performer 0>();
+    screen_FadeIn(1, 30);
+    bgm_PlayFadeIn(BGM_SPINDAS_CAFE, 0, 256);
+    MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m0', 45.5, 36.5>);
+    MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m1', 41.5, 36.5>);
+    MovePositionMark<actor ACTOR_NPC_SOONANO>(1, Position<'m2', 43.5, 41>);
+    MovePositionMark<actor ACTOR_NPC_SOONANSU>(1, Position<'m3', 43.5, 41>);
+    Move2PositionMark<actor ACTOR_NPC_SOONANO>(1, Position<'m4', 50, 37>, Position<'m5', 50, 33.5>);
+    Move2PositionMark<actor ACTOR_NPC_SOONANSU>(1, Position<'m6', 50, 37>, Position<'m7', 50, 36.5>);
+    SetEffect<actor ACTOR_NPC_HERAKUROSU>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+    SetAnimation<actor ACTOR_NPC_HERAKUROSU>(2);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    Turn2Direction<actor ACTOR_NPC_HERAKUROSU>(4, 10, DIR_LEFT);
+    se_Play(8963);
+    ExecuteCommon<actor ACTOR_PLAYER>(CORO_LOOK_AROUND_RIGHT_FUNC_SERIES, 0);
+    Wait(18);
+    ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_LOOK_AROUND_LEFT_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_NPC_SOONANO);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_LEFT);
+    WaitExecuteLives(ACTOR_NPC_SOONANSU);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_LEFT);
+    WaitExecuteLives(ACTOR_PLAYER);
+    Wait(10);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UP);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_UP);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    Wait(10);
+    ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_INSPIRED, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english=" Whoa! This place is pretty big!",
+            }
+        case 2:
+            {
+                english=" Wow! This is a big place!",
+            }
+        default:
+            {
+                english=" Wow! This place is so large!",
+            }
+    }
+    message_Close();
+    MovePositionMark<performer 0>(1, Position<'m8', 43.5, 20.5>);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_LAUGHING, 3);
+    Wait(130);
+    SetAnimation<actor ACTOR_NPC_PATCHIIRU>(2);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_NONE, 3);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_JOYOUS, 3);
+    se_Play(11023);
+    Turn3<actor ACTOR_NPC_PATCHIIRU>(3, 2, 1, 12);
+    WaitExecuteLives(ACTOR_NPC_PATCHIIRU);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_NONE, 3);
+    SetAnimation<actor ACTOR_NPC_PATCHIIRU>(26);
+    WaitAnimation<actor ACTOR_NPC_PATCHIIRU>();
+    WaitExecuteLives(ACTOR_NPC_PATCHIIRU);
+    Wait(30);
+    SetAnimation<actor ACTOR_NPC_PATCHIIRU>(2);
+    MovePositionMark<performer 0>(1, Position<'m9', 43.5, 36.5>);
+    MovePositionMark<actor ACTOR_NPC_PATCHIIRU>(1, Position<'m10', 43.5, 34>);
+    WaitExecutePerformer(0);
+    SetAnimation<actor ACTOR_NPC_PATCHIIRU>(23);
+    WaitAnimation<actor ACTOR_NPC_PATCHIIRU>();
+    SetAnimation<actor ACTOR_NPC_PATCHIIRU>(2);
+    WaitExecuteLives(ACTOR_NPC_PATCHIIRU);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_LAUGHING, 3);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_JOYOUS, FACE_POS_TOP_C_FACER);
+    message_Talk({
+        english="""
+             Hello and welcome to
+            [CS:K]Spinda[CR]'s Café!
+        """,
+    });
+    message_KeyWait();
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_NONE, 3);
+    Wait(10);
+    message_Talk({
+        english="""
+             My name is [CS:N]Spinda[CR]. I am the
+            owner of this café.
+        """,
+    });
+    message_Talk({
+        english="""
+             This is a café for explorers
+            who enjoy finding new things every day and
+            who are constantly challenging themselves.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8962);
+    SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_QUESTION_MARK, 3);
+    WaitEffect<actor ACTOR_ATTENDANT1>();
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english=" A café for explorers?",
+            }
+        case 2:
+            {
+                english=" A café for explorers?",
+            }
+        default:
+            {
+                english=" A café for explorers?",
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_SIGH, FACE_POS_TOP_C_FACER);
+    message_Talk({
+        english="""
+             That's right.[K] It's natural to
+            want to refresh yourself with a hearty,
+            delicious drink after exploring...
+        """,
+    });
+    message_Talk({
+        english="""
+             So we are delighted to provide
+            this service to explorers, and we trust it
+            will bring them happiness.
+        """,
+    });
+    message_Talk({
+        english="""
+             Today is our grand opening!
+            Allow me to show you around the premises.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    MovePositionMark<performer 0>(1, Position<'m11', 37.5, 24.5>);
+    MovePositionMark<actor ACTOR_NPC_PATCHIIRU>(1, Position<'m12', 37.5, 23>);
+    Wait(20);
+    Turn2Direction<actor ACTOR_NPC_HERAKUROSU>(4, 10, DIR_UP);
+    SetAnimation<actor ACTOR_NPC_HERAKUROSU>(4);
+    MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m13', 39.5, 26>);
+    Wait(20);
+    MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m14', 37.5, 30>, Position<'m15', 35.5, 26>);
+    SetEffect<actor ACTOR_NPC_OKUTAN>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+    SetAnimation<actor ACTOR_NPC_OKUTAN>(2);
+    MovePositionMark<actor ACTOR_NPC_SOONANO>(1, Position<'m16', 42.5, 28>);
+    MovePositionMark<actor ACTOR_NPC_SOONANSU>(1, Position<'m17', 39.5, 31>, Position<'m18', 38, 28>);
+    Turn2Direction<actor ACTOR_NPC_PATCHIIRU>(4, 10, DIR_DOWN);
+    Turn2Direction<actor ACTOR_NPC_OKUTAN>(4, 2, DIR_RIGHT);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UP);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_UP);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_UPLEFT);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_UP);
+    WaitExecuteLives(ACTOR_NPC_SOONANSU);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english=" This is the Juice Bar.",
+    });
+    message_Talk({
+        english="""
+             You've undoubtedly collected
+            Gummis and [CS:I]Apples[CR] during your explorations,
+            am I right?
+        """,
+    });
+    message_Talk({
+        english="""
+             Here, those edibles can become
+            delicious drink sensations.
+        """,
+    });
+    message_Talk({
+        english="""
+             I, [CS:N]Spinda[CR], will take your
+            ingredient and use my incredible skills to
+            create a delectable drink for you.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_INSPIRED, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Really? So if we brought you an
+                    [CS:I]Apple[CR], you'd make some Apple Juice, is
+                    that what you're saying?
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     Really? So if we brought you an
+                    [CS:I]Apple[CR], you'd make some Apple Juice, is
+                    that what you're saying?
+                """,
+            }
+        default:
+            {
+                english="""
+                     Really? So if we brought you an
+                    [CS:I]Apple[CR], you'd make some Apple Juice, is
+                    that what you're saying?
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    ExecuteCommon<actor ACTOR_NPC_PATCHIIRU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_NPC_PATCHIIRU);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_LAUGHING, 3);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_JOYOUS, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             That's right! That is exactly
+            right. That's how it works.
+        """,
+    });
+    message_Talk({
+        english="""
+             While you're enjoying a
+            nutritious drink, you can sit back and share
+            exploration stories.
+        """,
+    });
+    message_KeyWait();
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_NONE, 3);
+    Wait(10);
+    message_Talk({
+        english=" Here's the next facility...",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    MovePositionMark<performer 0>(1, Position<'m19', 54.5, 24.5>);
+    MovePositionMark<actor ACTOR_NPC_PATCHIIRU>(1, Position<'m20', 54.5, 23>);
+    Wait(20);
+    Turn2Direction<actor ACTOR_NPC_OKUTAN>(4, 10, DIR_LEFT);
+    SetAnimation<actor ACTOR_NPC_OKUTAN>(4);
+    MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m21', 56.5, 26>);
+    MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m22', 52.5, 26>);
+    Wait(20);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(32, 10, DIR_UPRIGHT);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(32, 10, DIR_UPRIGHT);
+    Wait(60);
+    MovePositionMark<actor ACTOR_NPC_SOONANO>(1, Position<'m23', 51.5, 22.5>);
+    MovePositionMark<actor ACTOR_NPC_SOONANSU>(1, Position<'m24', 48.5, 22.5>);
+    Turn2Direction<actor ACTOR_NPC_PATCHIIRU>(4, 10, DIR_DOWN);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UP);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_UP);
+    Turn2Direction<actor ACTOR_NPC_BARIYAADO>(4, 10, DIR_LEFT);
+    Wait(5);
+    SetAnimation<actor ACTOR_NPC_BARIYAADO>(2);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_DOWN);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_DOWN);
+    WaitExecuteLives(ACTOR_NPC_SOONANSU);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             This is the centerpiece of our
+            place, the Recycle Shop.
+        """,
+    });
+    message_Talk({
+        english="""
+             I'll bet you have a bunch
+            of items in storage that you picked up in your
+            travels and have little use for, am I right?
+        """,
+    });
+    message_Talk({
+        english="""
+             Sometimes you have to
+            throw out your extra items to make room...
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(11024);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_JOYOUS, 3);
+    SetAnimation<actor ACTOR_NPC_PATCHIIRU>(26);
+    WaitAnimation<actor ACTOR_NPC_PATCHIIRU>();
+    SetAnimation<actor ACTOR_NPC_SOONANSU>(11);
+    SetEffect<actor ACTOR_NPC_SOONANO>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_DOWNRIGHT);
+    Wait(4);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_DOWNLEFT);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_DOWNLEFT);
+    Wait(3);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_DOWNRIGHT);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_SHOUTING, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english=" Doesn't that seem wasteful?",
+    });
+    SetEffect<actor ACTOR_NPC_SOONANO>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_DOWNRIGHT);
+    Wait(4);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_DOWNRIGHT);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_DOWNLEFT);
+    Wait(3);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_DOWNLEFT);
+    SetEffect<actor ACTOR_NPC_SOONANO>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_DOWNRIGHT);
+    Wait(4);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_DOWNLEFT);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_DOWNLEFT);
+    Wait(3);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_DOWNRIGHT);
+    message_Talk({
+        english="""
+             There could be explorers in
+            dungeons out there who are desperately in need
+            of the very things you have locked in storage.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_NONE, 3);
+    SetAnimation<actor ACTOR_NPC_PATCHIIRU>(2);
+    Turn2Direction<actor ACTOR_NPC_SOONANO>(4, 10, DIR_DOWN);
+    Turn2Direction<actor ACTOR_NPC_SOONANSU>(4, 10, DIR_DOWN);
+    WaitExecuteLives(ACTOR_NPC_SOONANSU);
+    SetAnimation<actor ACTOR_NPC_SOONANSU>(2);
+    Wait(15);
+    se_Play(8961);
+    SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROP, 3);
+    Wait(3);
+    SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SWEAT_DROP, 3);
+    WaitEffect<actor ACTOR_ATTENDANT1>();
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             That's what we thought too.
+            That's why we established this facility.
+        """,
+    });
+    message_Talk({
+        english="""
+             You can bring your extra items
+            here and trade them for items you want.
+            How does that sound?
+        """,
+    });
+    message_Talk({
+        english="""
+             One Pokémon's trash is another
+            Pokémon's treasure, am I right?
+        """,
+    });
+    message_Talk({
+        english="""
+             I thought it would be fun
+            for explorers to gather and trade items
+            with one another.
+        """,
+    });
+    message_Talk({
+        english="""
+             You'll never have to throw out
+            another item. You'll never have to say,
+            "What a waste!"[K] That's my goal.
+        """,
+    });
+    message_Talk({
+        english="""
+             So if you've got a collection of
+            items you don't need, please make use of our
+            Recycle Shop.
+        """,
+    });
+    message_Talk({
+        english="""
+             You can even get a bonus
+            [CS:I]Prize Ticket[CR] when recycling items.
+            It's a lot of fun.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_Talk({
+        english="""
+             ...I know that was a whirlwind
+            tour, but I hope you've got an idea
+            of what kind of a place this is.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_INSPIRED, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Wow. Seems like a pretty
+                    cool shop.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     Wow. Seems like a really
+                    fun shop.
+                """,
+            }
+        default:
+            {
+                english=" Ooh, sounds like such a fun shop!",
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_LAUGHING, 3);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_SIGH, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english=" Thank you very much!",
+    });
+    message_KeyWait();
+    SetEffect<actor ACTOR_NPC_PATCHIIRU>(EFFECT_NONE, 3);
+    message_SetFace(ACTOR_NPC_PATCHIIRU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             It is my goal to have a café of
+            hopes and dreams, where many explorers
+            can gather.
+        """,
+    });
+    message_Talk({
+        english="""
+             I hope to see you again soon
+            here at [CS:K]Spinda[CR]'s Café.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(11025);
+    SetAnimation<actor ACTOR_NPC_PATCHIIRU>(23);
+    WaitAnimation<actor ACTOR_NPC_PATCHIIRU>();
+    SetAnimation<actor ACTOR_NPC_SOONANO>(22);
+    WaitAnimation<actor ACTOR_NPC_SOONANO>();
+    SetAnimation<actor ACTOR_NPC_SOONANSU>(22);
+    WaitAnimation<actor ACTOR_NPC_SOONANSU>();
+    WaitExecuteLives(ACTOR_NPC_SOONANSU);
+    Wait(40);
+    screen_FadeOut(1, 30);
+    camera_SetDefault();
+    SetPositionMark<actor ACTOR_PLAYER>(Position<'m25', 45.5, 29.5>);
+    SetPositionMark<actor ACTOR_ATTENDANT1>(Position<'m26', 41.5, 29.5>);
+    SetDirection<actor ACTOR_PLAYER>(DIR_DOWN);
+    SetDirection<actor ACTOR_ATTENDANT1>(DIR_DOWN);
+    supervision_RemoveActing(1);
+    supervision_StationCommon(0);
+    supervision_StationCommon(10);
+    supervision_StationCommon(11);
+    supervision_StationCommon(12);
+    supervision_StationCommon(13);
+    supervision_LoadStation(LEVEL_P01P04A, 'UM06');
+    supervision_Station(35);
+    supervision_Station(36);
+    Wait(30);
+    screen_FadeIn(1, 30);
+    end;
+}

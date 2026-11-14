@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PARUKIA	Mail	Palkia wants to join the team.
+NPC_NEW_FRIEND	Talk	...YOU DEFEATED ME.
+NPC_NEW_FRIEND	Mail	joined the team!
+NPC_NEW_FRIEND	SwitchMenu	Reconsider
+NPC_NEW_FRIEND	SwitchMenu	Refuse
+NPC_NEW_FRIEND	Mail	Palkia sadly went away...

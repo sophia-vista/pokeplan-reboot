@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_JIGUZAGUMA	Talk	Sky Peak was so much fun...
+NPC_JIGUZAGUMA	Talk	Sneasel's pretty selfish, huh...?
+NPC_JIGUZAGUMA	Talk	There's treasure everywhere!
+NPC_JIGUZAGUMA	Talk	Browsing is just relaxing!
+NPC_JIGUZAGUMA	Talk	Recycle! Recycle!

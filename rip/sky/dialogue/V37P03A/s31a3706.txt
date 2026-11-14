@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_SHEIMI_FC	Talk	Hold on tight!

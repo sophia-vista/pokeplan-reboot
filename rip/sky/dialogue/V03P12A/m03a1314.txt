@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Talk	I've finally found it! A Time Gear!
+-	Talk	But...this is only the first of many...

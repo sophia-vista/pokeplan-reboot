@@ -1,0 +1,169 @@
+
+def 0 {
+    $SUB30_SPOT_DISCOVER[0] = 0;
+    supervision_Acting(0);
+    SetAnimation<actor ACTOR_NPC_SOONANSU>(2);
+    SetEffect<actor ACTOR_NPC_SOONANO>(EFFECT_JOYOUS, 3);
+    ExecuteCommon<actor ACTOR_NPC_SOONANO>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_NPC_SOONANO);
+    message_SetFace(ACTOR_NPC_SOONANO, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+             Did you hear the happy news,
+            why not?
+        """,
+    });
+    Wait(15);
+    SetEffect<actor ACTOR_NPC_SOONANO>(EFFECT_NONE, 3);
+    WaitExecuteLives(ACTOR_NPC_SOONANO);
+    message_Talk({
+        english="""
+             Thanks to everyone's recycling
+            efforts, Project P recently made a
+            new discovery!
+        """,
+    });
+    message_Close();
+    se_Play(7944);
+    ExecuteCommon<actor ACTOR_NPC_SOONANO>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+    SetEffect<performer 4>(EFFECT_CONFETTI, 3);
+    WaitEffect<performer 4>();
+    Wait(10);
+    ExecuteCommon<actor ACTOR_NPC_SOONANSU>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+    SetEffect<performer 5>(EFFECT_CONFETTI, 3);
+    WaitEffect<performer 5>();
+    Wait(5);
+    ExecuteCommon<actor ACTOR_NPC_SOONANO>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+    SetEffect<performer 6>(EFFECT_CONFETTI, 3);
+    WaitEffect<performer 6>();
+    Wait(15);
+    ExecuteCommon<actor ACTOR_NPC_SOONANSU>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+    SetEffect<performer 7>(EFFECT_CONFETTI, 3);
+    WaitEffect<performer 7>();
+    Wait(60);
+    SetEffect<performer 4>(EFFECT_NONE, 0);
+    SetEffect<performer 5>(EFFECT_NONE, 0);
+    SetEffect<performer 6>(EFFECT_NONE, 0);
+    SetEffect<performer 7>(EFFECT_NONE, 0);
+    se_FadeOut(7944, 30);
+    Wait(30);
+    message_Talk({
+        english="""
+             This time, a new unexplored
+            area was discovered!
+        """,
+    });
+    message_Talk({
+        english=" I'll mark it on your map for you!",
+    });
+    message_Close();
+    screen_FadeOut(0, 15);
+    switch ( $SUB30_SPOT_LEVEL ) {
+        case 1:
+        default:
+            @label_0;
+            worldmap_SetMode(4);
+            back2_SetMode(3);
+            WaitSubScreen();
+            worldmap_SetCamera(89);
+            worldmap_SetArrow(89);
+            worldmap_BlinkMark(89);
+            me_Play(6);
+            message_Close();
+            message_Mail({
+                english="""
+                    [CN]You can now go to
+                    [CN][CS:P]Landslide Cave[CR]!
+                """,
+            });
+            WaitMe(6);
+            message_Close();
+            dungeon_mode(88) = DMODE_OPEN_AND_REQUEST;
+            @label_5;
+            screen2_FadeOut(0, 15);
+            back2_SetMode(0);
+            screen_FadeIn(1, 15);
+            message_SetFace(ACTOR_NPC_SOONANO, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english=" Please keep recycling!",
+            });
+            message_Close();
+            end;
+        case 2:
+            worldmap_SetMode(4);
+            back2_SetMode(3);
+            WaitSubScreen();
+            worldmap_SetCamera(91);
+            worldmap_SetArrow(91);
+            worldmap_BlinkMark(91);
+            me_Play(6);
+            message_Close();
+            message_Mail({
+                english="""
+                    [CN]You can now go to
+                    [CN]the [CS:P]Tiny Meadow[CR]!
+                """,
+            });
+            WaitMe(6);
+            message_Close();
+            dungeon_mode(90) = DMODE_OPEN_AND_REQUEST;
+            jump @label_5;
+        case 3:
+            worldmap_SetMode(4);
+            back2_SetMode(3);
+            WaitSubScreen();
+            worldmap_SetCamera(93);
+            worldmap_SetArrow(93);
+            worldmap_BlinkMark(93);
+            me_Play(6);
+            message_Close();
+            message_Mail({
+                english="""
+                    [CN]You can now go to
+                    [CN][CS:P]Oran Forest[CR]!
+                """,
+            });
+            WaitMe(6);
+            message_Close();
+            dungeon_mode(92) = DMODE_OPEN_AND_REQUEST;
+            jump @label_5;
+        case 4:
+            worldmap_SetMode(4);
+            back2_SetMode(3);
+            WaitSubScreen();
+            worldmap_SetCamera(94);
+            worldmap_SetArrow(94);
+            worldmap_BlinkMark(94);
+            me_Play(6);
+            message_Close();
+            message_Mail({
+                english="""
+                    [CN]You can now go to
+                    [CN][CS:P]Lake Afar[CR]!
+                """,
+            });
+            WaitMe(6);
+            message_Close();
+            dungeon_mode(93) = DMODE_OPEN_AND_REQUEST;
+            jump @label_5;
+        case 5:
+            worldmap_SetMode(4);
+            back2_SetMode(3);
+            WaitSubScreen();
+            worldmap_SetCamera(104);
+            worldmap_SetArrow(104);
+            worldmap_BlinkMark(104);
+            me_Play(6);
+            message_Close();
+            message_Mail({
+                english="""
+                    [CN]You can now go to
+                    [CN][CS:P]Zero Isle Center[CR]!
+                """,
+            });
+            WaitMe(6);
+            message_Close();
+            dungeon_mode(103) = DMODE_OPEN_AND_REQUEST;
+            jump @label_5;
+    }
+}

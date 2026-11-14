@@ -1,0 +1,16 @@
+speaker	kind	line
+NPC_RINGUMA	Talk	Th-this is...
+NPC_HIMEGUMA	Talk	It's a Perfect Apple.
+ATTENDANT1	Talk	Wa-waah! What was that?!
+ATTENDANT1	Talk	What's that...?
+NPC_RINGUMA	Talk	Light... Light is shining down!
+NPC_HIMEGUMA	Talk	Oh, then maybe...!
+NPC_HIMEGUMA	Talk	Those that seek awakening...
+ATTENDANT1	Talk	Waah! Who's saying that?!
+ATTENDANT1	Talk	The resumption of time...
+ATTENDANT1	Talk	has brought light here again.
+ATTENDANT1	Talk	If you seek evolution, step forward.
+NPC_HIMEGUMA	Talk	I knew it!
+NPC_RINGUMA	Talk	Good for you, Teddiursa!
+NPC_HIMEGUMA	Talk	Yup!
+ATTENDANT1	Talk	Evolution?

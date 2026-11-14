@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_KURESERIA	Talk	I've longed to meet both of you!
+NPC_KURESERIA	EmptyActor	(But I realize that was in Azurill's nightmare.)
+NPC_KURESERIA	EmptyActor	(In other words, it was still in a dream.)

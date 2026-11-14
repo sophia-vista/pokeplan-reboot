@@ -1,0 +1,44 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	Waaah!
+PLAYER_BIPPA	Talk	Wh-what's...going on?!
+PLAYER_BIPPA	Talk	Waaaaaah!
+NPC_JIRAACHI	Talk	Hah! All right, I'm fully awake!
+NPC_JIRAACHI	Talk	So, so awake! Ahhh!
+NPC_JIRAACHI	Talk	Your name is Bidoof.
+PLAYER_BIPPA	Talk	Waah! All of a sudden!
+PLAYER_BIPPA	Talk	I-I'm not ready for this yet...!
+NPC_JIRAACHI	Talk	Ahem... All right, I'll listen.
+NPC_JIRAACHI	Talk	What is your wish, Bidoof?
+PLAYER_BIPPA	Talk	M-my wish...
+PLAYER_BIPPA	SwitchMenu	To become rich!
+PLAYER_BIPPA	SwitchMenu	Yes
+PLAYER_BIPPA	Mail	Are you absolutely sure this is what you want?
+PLAYER_BIPPA	SwitchMenu	Yes
+PLAYER_BIPPA	SwitchMenu	No
+PLAYER_BIPPA	SwitchMenu	To be the strongest Pokémon!
+PLAYER_BIPPA	Mail	To be the best explorer!
+PLAYER_BIPPA	Mail	To eat lots of yummy food!
+PLAYER_BIPPA	Mail	To sleep well...
+PLAYER_BIPPA	Mail	To get lots of items!
+PLAYER_BIPPA	Mail	To rule the world!
+PLAYER_BIPPA	Talk	(But...)
+PLAYER_BIPPA	Talk	(But my dream...)
+NPC_JIRAACHI	Talk	Huh? Something wrong?
+NPC_JIRAACHI	Talk	What's your wish, Bidoof?
+PLAYER_BIPPA	Talk	.........
+PLAYER_BIPPA	Talk	M-my dream...
+NPC_JIRAACHI	Talk	OK, here we go! ♪
+NPC_JIRAACHI	Talk	Huh? What is it?
+PLAYER_BIPPA	Talk	B-but I'm giving up on that plan.
+NPC_JIRAACHI	Talk	Truly? Why?
+PLAYER_BIPPA	Talk	Because...
+NPC_JIRAACHI	Talk	...I see...
+NPC_JIRAACHI	Talk	What is it?
+NPC_JIRAACHI	Talk	It's all right. Go ahead.
+PLAYER_BIPPA	Talk	I...I wish...
+PLAYER_BIPPA	Talk	That's why...
+NPC_JIRAACHI	Talk	...Yes. Got it.
+PLAYER_BIPPA	Talk	R-really?!
+PLAYER_BIPPA	Talk	Thank you...Jirachi...
+PLAYER_BIPPA	Talk	... (That's right.)
+PLAYER_BIPPA	Talk	(My dream... It was...)

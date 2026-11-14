@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_POCHIENA_A	Talk	Good luck to you!
+NPC_POCHIENA_A	Talk	It's an option worth considering.
+NPC_POCHIENA_A	Talk	Not in business yet, I guess...

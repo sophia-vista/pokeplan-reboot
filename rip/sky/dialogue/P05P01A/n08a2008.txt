@@ -1,0 +1,11 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Got it! Let's go!
+PLAYER_FUTURE	Talk	...Nobody's...here, huh...
+NPC_YONOWAARU	Talk	That's very strange...
+NPC_YONOWAARU	Talk	...However...
+PLAYER_FUTURE	Talk	I-I...should know what method?
+PLAYER_FUTURE	Talk	N-no... It can't be!
+PLAYER_FUTURE	Talk	The Passage of Time!?
+NPC_YONOWAARU	Talk	Yes. The Passage of Time.
+NPC_YONOWAARU	Talk	I'm sure of it.
+PLAYER_FUTURE	Talk	Dusk Forest!

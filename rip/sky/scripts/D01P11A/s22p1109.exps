@@ -1,0 +1,23 @@
+
+def 0 {
+    bgm_PlayFadeIn(BGM_HIDDEN_HIGHLAND, 0, 256);
+    back_SetGround(LEVEL_D01P11A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    SetDirection<actor ACTOR_PLAYER>(DIR_RIGHT);
+    SetAnimation<actor ACTOR_PLAYER>(76);
+    screen_FlushOut(1, 0, 8, 0, 0, 0);
+    screen_FadeIn(1, 30);
+    Wait(60);
+    message_SetActor(ACTOR_NPC_DAAKURAI);
+    message_Talk({
+        english="""
+             As a result, you were
+            transformed into a Pokémon.
+        """,
+    });
+    message_Close();
+    screen_FadeOut(1, 30);
+    screen_FlushIn(1, 0, 1, 0, 0, 0);
+    end;
+}

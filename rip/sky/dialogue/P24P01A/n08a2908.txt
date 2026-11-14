@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PORIGON	Talk	Waah!
+NPC_PORIGON	Talk	M...Master Dusknoir!
+NPC_YONOWAARU	Talk	It's been a while.
+NPC_YONOWAARU	Talk	The reason I've come here...
+NPC_PORIGON	Talk	Wawawawawa!
+NPC_PORIGON	Talk	Don't move.

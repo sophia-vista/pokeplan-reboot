@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Notice	Which one will you enter?
+-	SwitchMenu	Dojo 1
+-	SwitchMenu	Dojo 2
+-	SwitchMenu	Boss Stage

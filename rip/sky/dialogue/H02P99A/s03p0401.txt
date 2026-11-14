@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Narration	The next morning...
+ATTENDANT1	Narration	Morning, !
+ATTENDANT1	Narration	Good morning, !

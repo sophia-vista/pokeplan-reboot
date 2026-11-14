@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_YONOWAARU	ImitationSound	GRRRRRRRRR...
+NPC_YONOWAARU	Talk	...I understand. As you wish.
+NPC_YONOWAARU	Talk	I take my leave.

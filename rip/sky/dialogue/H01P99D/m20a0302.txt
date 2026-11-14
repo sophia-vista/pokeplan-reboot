@@ -1,0 +1,16 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	What's the matter? Can't sleep?
+ATTENDANT1	Talk	Yeah. Just thinking.
+ATTENDANT1	Talk	Yes. Just thinking.
+ATTENDANT1	Talk	Yep. Just thinking.
+NPC_JUPUTORU	Talk	Thinking about Dusknoir?
+ATTENDANT1	Talk	No, not that.
+ATTENDANT1	Talk	No, that's not it.
+ATTENDANT1	Talk	Hey! Look, Grovyle!
+ATTENDANT1	Talk	Oh! Look, Grovyle!
+ATTENDANT1	Talk	Sunlight! It's sunrise!
+ATTENDANT1	Talk	It's pretty, isn't it!
+NPC_JUPUTORU	Talk	Yes.
+ATTENDANT1	Talk	The sun rises... Then it sets...
+ATTENDANT1	Talk	But things we take for granted...
+NPC_JUPUTORU	Talk	It was staggering.

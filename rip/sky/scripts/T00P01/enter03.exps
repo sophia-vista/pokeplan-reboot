@@ -1,0 +1,54 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_PLAYER>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_Notice({
+        english="Which one will you enter?",
+    });
+    switch ( message_SwitchMenu(1, 1) ) {
+        case menu({
+            english="Dojo 1",
+        }):
+            @label_0;
+            dungeon_mode(180) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(181) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(182) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(183) = DMODE_OPEN_AND_REQUEST;
+            switch ( main_EnterTraining(-1, 30) ) {
+                case 1:
+                    @label_3;
+                    message_Close();
+                    supervision_Suspend(-2);
+                    end;
+                default:
+                    switch ( main_EnterTraining(251, 30) ) { }
+                    hold;
+            }
+            break;
+        case menu({
+            english="Dojo 2",
+        }):
+            dungeon_mode(196) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(197) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(198) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(199) = DMODE_OPEN_AND_REQUEST;
+            switch ( main_EnterTraining2(-1, 30) ) {
+                case 1:
+                    jump @label_3;
+                default:
+                    switch ( main_EnterTraining2(251, 30) ) { }
+                    hold;
+            }
+            break;
+        case menu({
+            english="Boss Stage",
+        }):
+            bgm_PlayFadeIn(BGM_BOSS_BATTLE, 0, 256);
+            screen_WhiteOutAll(1, 30);
+            main_EnterDungeon(2, 30);
+            switch ( message_Menu(MENU_DUNGEON_INITIALIZE_TEAM) ) { }
+            main_EnterDungeon(-1, 30);
+            hold;
+        default:
+            JumpCommon(CORO_END_TALK);
+    }
+}

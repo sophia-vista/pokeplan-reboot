@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_SHEIMI	Talk	Welcome to the Shaymin Village!
+NPC_SHEIMI	Talk	How was the summit?
+NPC_SHEIMI	Talk	I wonder what they're up to...
+NPC_SHEIMI	Talk	Ah! What am I saying? Oops...
+NPC_SHEIMI	Talk	Welcome to the Shaymin Village!

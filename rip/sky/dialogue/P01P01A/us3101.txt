@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_MANYUURA	Talk	The glory is ours next time!
+NPC_MANYUURA	Talk	Then let me ask you...
+NPC_MANYUURA	Talk	Do you know of it?
+ATTENDANT1	Talk	Zero Isle?
+ATTENDANT1	Talk	No. Should I?

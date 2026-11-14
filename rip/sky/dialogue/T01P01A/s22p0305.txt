@@ -1,0 +1,19 @@
+speaker	kind	line
+PLAYER	FacePositionOffset	(Darkrai told us to go to the Dark Crater.)
+PLAYER	FacePositionOffset	(And that he would be waiting for us.)
+NPC_PUKURIN	Talk	Do you believe that it's a trap?
+NPC_KURESERIA	Talk	Yes. It's a trap. Without a doubt.
+ATTENDANT1	FacePositionOffset	We have to do something!
+ATTENDANT1	FacePositionOffset	We're going to the Dark Crater!
+NPC_KURESERIA	Talk	...OK. I respect your decision.
+NPC_KURESERIA	Talk	I will accompany you.
+NPC_SURIIPU	Talk	I'll go too!
+NPC_PERAPPU	Talk	Me too!
+NPC_BIPPA	Talk	Yup yup! I'll go, by golly!
+NPC_BIPPA	Talk	Aww... That's too bad...
+NPC_PERAPPU	Talk	Yes! You do that!
+NPC_SURIIPU	Talk	If anyone can, it's you!
+NPC_BIPPA	Talk	You all take care, by golly!
+ATTENDANT1	FacePositionOffset	Thanks, everyone!
+ATTENDANT1	FacePositionOffset	Everyone, thank you!
+ATTENDANT1	FacePositionOffset	Let's go, !

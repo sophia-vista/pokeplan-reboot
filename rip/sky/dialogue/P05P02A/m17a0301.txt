@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_YAMIRAMI	Talk	They're awake. How convenient.
+NPC_YAMIRAMI	Talk	All right. We'll do this quick.
+ATTENDANT1	Talk	Do this quick? Do what?!
+PLAYER	Talk	(Wh-what?!)
+NPC_YAMIRAMI	Talk	Come with us.
+ATTENDANT1	Talk	Ow! Quit shoving!
+ATTENDANT1	Talk	Ow! Don't shove me!
+ATTENDANT1	Talk	Ow! Don't push!
+ATTENDANT1	Talk	Where are they taking us?
+ATTENDANT1	Talk	But where are they taking us?
+NPC_YAMIRAMI	Talk	We're here.

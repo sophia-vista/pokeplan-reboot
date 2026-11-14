@@ -1,0 +1,11 @@
+speaker	kind	line
+ATTENDANT1	Talk	Manaphy?
+NPC_MANAFI	Talk	Rare-rare! ♪
+ATTENDANT1	Talk	Huh? What should we do?
+ATTENDANT1	Talk	What? What should we do?
+NPC_MANAFI	Talk	Weh... Weh... Waaaah!
+NPC_PERAPPU	Talk	I would imagine he's hungry.
+ATTENDANT1	Talk	Right. What should we give him?
+ATTENDANT1	Talk	Right. What should we feed him?
+ATTENDANT1	Talk	Gotcha. Blue Gummis.
+ATTENDANT1	Talk	OK! Some Blue Gummis.

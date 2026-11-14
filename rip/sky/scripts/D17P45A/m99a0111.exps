@@ -1,0 +1,96 @@
+
+def 0 {
+    sound_Stop();
+    back_SetDungeonBanner(26, 0);
+    screen_FadeIn(1, 16);
+    Wait(60);
+    screen_FadeOut(1, 16);
+    Wait(15);
+    back_SetGround(LEVEL_D17P45A);
+    supervision_Acting(0);
+    if ( $PERFORMANCE_PROGRESS_LIST[7] ) {
+        @label_0;
+        supervision_Acting(2);
+        camera_SetMyself<performer 0>();
+        screen_FadeIn(1, 30);
+        bgm_PlayFadeIn(BGM_IN_THE_DEPTHS_OF_THE_PIT, 0, 256);
+        MovePositionMark<actor ACTOR_PLAYER_APPOINT>(1, Position<'m4', 43.5, 29.5>);
+        MovePositionMark<actor ACTOR_ADVENTURE_NPC1>(1, Position<'m5', 46.5, 31.5>);
+        MovePositionMark<actor ACTOR_ADVENTURE_NPC2>(1, Position<'m6', 40.5, 31.5>);
+        MovePositionMark<actor ACTOR_ADVENTURE_NPC3>(1, Position<'m7', 43.5, 33.5>);
+        WaitExecuteLives(ACTOR_PLAYER_APPOINT);
+        Wait(15);
+        @label_1;
+        message_SetFace(ACTOR_NPC_AGUNOMU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english="""
+                 I'm [CS:N]Azelf[CR].[K] I'm the guardian
+                of [CS:P]Crystal Lake[CR].
+            """,
+        });
+        message_Talk({
+            english=" I know why you're here.",
+        });
+        message_Talk({
+            english="""
+                 You want to challenge me to a
+                battle...
+            """,
+        });
+        message_Talk({
+            english=" Sure thing.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(5143);
+        screen_WhiteOut(1, 2);
+        Wait(2);
+        screen_FadeIn(1, 2);
+        Wait(10);
+        message_SetFace(ACTOR_NPC_AGUNOMU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english=" Your challenge...",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(5143);
+        screen_WhiteOut(1, 2);
+        Wait(2);
+        screen_FadeIn(1, 2);
+        Wait(10);
+        message_SetFace(ACTOR_NPC_AGUNOMU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english=" I'm up for it!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(5143);
+        screen_WhiteOut(1, 2);
+        Wait(2);
+        screen_FadeIn(1, 2);
+        Wait(10);
+        se_Play(5143);
+        screen_WhiteOut(1, 2);
+        Wait(2);
+        screen_FadeIn(1, 2);
+        Wait(10);
+        WaitSe(5143);
+        message_SetFace(ACTOR_NPC_AGUNOMU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english=" Come on!",
+        });
+        message_Close();
+        bgm_Stop();
+        CallCommon(CORO_BOSS_WIPE_FUNC);
+        end;
+    } else {
+        supervision_Acting(1);
+        camera_SetMyself<performer 0>();
+        screen_FadeIn(1, 30);
+        bgm_PlayFadeIn(BGM_IN_THE_DEPTHS_OF_THE_PIT, 0, 256);
+        MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m0', 41.5, 29.5>);
+        MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m1', 45.5, 29.5>);
+        MovePositionMark<actor ACTOR_UNIT_NPC1>(1, Position<'m2', 43.5, 33.5>);
+        MovePositionMark<actor ACTOR_UNIT_NPC2>(1, Position<'m3', 46.5, 32.5>);
+        WaitExecuteLives(ACTOR_PLAYER);
+        Wait(15);
+        jump @label_1;
+    }
+}

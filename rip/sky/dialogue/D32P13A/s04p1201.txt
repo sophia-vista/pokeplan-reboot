@@ -1,0 +1,12 @@
+speaker	kind	line
+-	Mail	There are oddly shaped grooves in it.
+-	Mail	Will you close your eyes?
+-	SwitchMenu	Yes
+-	Mail	did as instructed.
+-	Mail	!!!
+-	Mail	Nothing happened...
+-	Mail	Debug: Unown Rock
+-	SwitchMenu	In possession.
+-	SwitchMenu	Not in possession.
+-	SwitchMenu	Check
+-	SwitchMenu	No

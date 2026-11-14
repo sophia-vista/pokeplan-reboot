@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_AGUNOMU	Talk	..................
+NPC_AGUNOMU	Mail	Azelf wants to join the team.
+NPC_NEW_FRIEND	Talk	I'll go with you!
+NPC_NEW_FRIEND	Talk	We'll all go together!
+NPC_NEW_FRIEND	Mail	joined the team!
+NPC_NEW_FRIEND	SwitchMenu	Reconsider
+NPC_NEW_FRIEND	SwitchMenu	Refuse
+NPC_NEW_FRIEND	Mail	Azelf sadly went away...

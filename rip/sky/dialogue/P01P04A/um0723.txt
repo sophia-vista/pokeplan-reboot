@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_HERAKUROSU	Talk	This makes me haaaappy!!
+NPC_HERAKUROSU	Talk	So curious!
+NPC_HERAKUROSU	Talk	I want a partner, too...
+NPC_HERAKUROSU	Talk	Hey! Long time no see!
+NPC_HERAKUROSU	Talk	But I'm all by myself...
+NPC_HERAKUROSU	Talk	Whoa! Hoooopes and dreams!!

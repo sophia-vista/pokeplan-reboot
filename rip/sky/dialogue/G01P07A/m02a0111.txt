@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	This is your room! ♪
+ATTENDANT1	FacePositionOffset	Wow! We get beds!
+ATTENDANT1	FacePositionOffset	Great! We get beds!
+ATTENDANT1	FacePositionOffset	Yay! We get beds!

@@ -1,0 +1,37 @@
+speaker	kind	line
+TALK_SUB	SwitchMenu	Assembly
+TALK_SUB	Menu	Check Assembly
+TALK_SUB	Talk	Can add Shaymin
+TALK_SUB	Talk	Cannot add Shaymin
+TALK_SUB	Talk	Link Moves
+TALK_SUB	Menu	Mini Game
+TALK_SUB	Menu	Sort Items
+TALK_SUB	Menu	Appraisal
+TALK_SUB	Menu	Add Team Members
+NPC_NEW_FRIEND	Talk	Good morning! I am .
+NPC_NEW_FRIEND	Talk	Add Items
+NPC_NEW_FRIEND	Menu	Add Items2
+NPC_NEW_FRIEND	Notice	Could not receive
+NPC_NEW_FRIEND	Notice	Received
+NPC_NEW_FRIEND	Notice	NPC Job
+RANDOM_REQUEST_NPC01	Talk	Will you take the job?
+RANDOM_REQUEST_NPC01	SwitchMenu	Yes
+RANDOM_REQUEST_NPC01	Talk	Added to list.
+RANDOM_REQUEST_NPC01	Talk	List is full.
+RANDOM_REQUEST_NPC01	Talk	No
+RANDOM_REQUEST_NPC01	Talk	Good-bye.
+RANDOM_REQUEST_NPC01	Talk	Job Distribution Complete
+RANDOM_REQUEST_NPC01	Talk	Bottled Message Job
+RANDOM_REQUEST_NPC01	Notice	There was a Message in the Bottle.
+RANDOM_REQUEST_NPC01	Notice	Receive this Message?
+RANDOM_REQUEST_NPC01	SwitchMenu	Yes
+RANDOM_REQUEST_NPC01	Notice	Added to list.
+RANDOM_REQUEST_NPC01	Notice	List is full.
+RANDOM_REQUEST_NPC01	Notice	No
+RANDOM_REQUEST_NPC01	Notice	Left that spot.
+RANDOM_REQUEST_NPC01	Notice	The Bottle was empty.
+RANDOM_REQUEST_NPC01	Notice	Release Jobs
+RANDOM_REQUEST_NPC01	Notice	Unlocked a dungeon.
+RANDOM_REQUEST_NPC01	Notice	Cleared all Special Episodes
+RANDOM_REQUEST_NPC01	Notice	Cleared all Special Episodes.
+RANDOM_REQUEST_NPC01	Talk	I see.

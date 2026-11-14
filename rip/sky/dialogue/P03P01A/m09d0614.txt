@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Explanation	I see!
+-	Explanation	That lifts the fog!

@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	I thought so.
+NPC_JUPUTORU	Talk	...somewhere in its depths.
+ATTENDANT1	Talk	Ugh! We'd better hurry up then.
+ATTENDANT1	Talk	Ugh! We'd better hurry then.

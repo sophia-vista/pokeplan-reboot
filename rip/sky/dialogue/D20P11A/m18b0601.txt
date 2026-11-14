@@ -1,0 +1,8 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	All set!
+ATTENDANT1	SwitchMenu	All right! Let's roll out!
+ATTENDANT1	SwitchMenu	OK! Let's go!
+ATTENDANT1	Menu	Not yet...
+ATTENDANT1	Menu	We'll go when you're ready.
+ATTENDANT1	Menu	Let's go when you're ready.
+ATTENDANT1	Menu	Let's hurry after Grovyle!

@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	Oh no! Don't tell me we're lost!?
+NPC_SAANAITO	Talk	Sounds about right. ♪
+NPC_SAANAITO	Talk	I think this might be a detour...
+-	Talk	Wait! You!
+-	Talk	You! Where did you come from?!
+PLAYER_CHARMS	Talk	Really? We didn't know.
+NPC_BOSUGODORA	Talk	Come on out! Lairon!
+NPC_BOSUGODORA	Talk	Lairon: Groooaaahh!
+NPC_BOSUGODORA	Talk	That's the law of this land!
+NPC_SAANAITO	Talk	And we don't intend to fight.
+NPC_BOSUGODORA	Talk	However!
+NPC_BOSUGODORA	Talk	Lairon: Groooaaahh!
+NPC_CHAAREMU	Talk	Anytime!

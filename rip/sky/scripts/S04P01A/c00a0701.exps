@@ -1,0 +1,14 @@
+
+def 0 {
+    back_SetGround(LEVEL_S04P01A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    screen_FadeIn(1, 16);
+    se_Play(5132);
+    SetEffect<performer 3>(621, 3);
+    WaitEffect<performer 3>();
+    SetPositionMark<performer 0>(Position<'m0', 17, 44.5>);
+    WaitExecutePerformer(3);
+    screen_WhiteOut(1, 16);
+    end;
+}

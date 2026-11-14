@@ -1,0 +1,29 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [29, 76] ) {
+        @label_0;
+        supervision_Station(4);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 75] ) {
+        supervision_Station(4);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 73] ) {
+        supervision_Station(4);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 72] ) {
+        supervision_Station(4);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 71] ) {
+        supervision_Station(1);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 70] ) {
+        supervision_Station(1);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 69] ) {
+        supervision_Station(1);
+        end;
+    } else {
+        end;
+    }
+}

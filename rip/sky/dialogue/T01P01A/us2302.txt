@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_BANEBUU	Talk	Thank you so much!
+NPC_BANEBUU	Talk	Everything was Darkrai's doing!
+NPC_BANEBUU	Talk	I, for one, am amazed!
+NPC_BANEBUU	Talk	You're entering the nightmare?!
+NPC_BANEBUU	Talk	Where?! Where?!
+NPC_BANEBUU	Talk	What's he doing in there...?
+NPC_BANEBUU	Talk	Oh, but you're up to it, I'm sure!
+NPC_BANEBUU	Talk	Please don't fail!
+NPC_BANEBUU	Talk	Best of luck to you!
+NPC_BANEBUU	Talk	I do hope this plan works...
+NPC_BANEBUU	Talk	My thoughts go with you!
+NPC_BANEBUU	Talk	But...worry no more!
+NPC_BANEBUU	Talk	See that shop in the lower left?
+NPC_BANEBUU	Talk	It's me! Spoink!

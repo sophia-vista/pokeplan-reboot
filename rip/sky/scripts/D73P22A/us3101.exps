@@ -1,0 +1,778 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] || scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] || scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] || scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] || scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] || scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] || scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] || scn($SCENARIO_MAIN) >= [29, 56] || scn($SCENARIO_MAIN) >= [29, 55] || scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] || scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] || scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] ) {
+        switch ( ProcessSpecial(PROCESS_SPECIAL_IS_RECURITABLE_IN_TEAM, 21, 0) ) {
+            case 1:
+                message_SetFace(ACTOR_NPC_NEW_FRIEND, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I knew it was going to be a
+                        bother. That's why I hesitated for so long...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         I'm so glad I blurted out my
+                        request!
+                    """,
+                });
+                message_Close();
+                @label_64;
+                JumpCommon(CORO_END_TALK);
+            default:
+                WaitSubScreen();
+                screen2_FadeOut(1, 30);
+                if ( $SCENARIO_TALK_BIT_FLAG[122] ) {
+                    WaitSubScreen();
+                    screen2_FadeOut(1, 30);
+                    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                    message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             I was deeply moved while
+                            climbing the mountain with you,
+                            Team [team:]. I won't forget it...
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             What do you think...
+                            That is...letting me join Team [team:]?
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_PREPARE_MENU_ACCEPT_TEAM_MEMBER, 21, 0) ) { }
+                    switch ( message_Menu(MENU_ACCEPT_TEAM_MEMBER) ) {
+                        case 1:
+                        default:
+                            message_SetFace(ACTOR_NPC_NEW_FRIEND, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english=" Really?",
+                            });
+                            message_Talk({
+                                english=" Th-thank you so very much!",
+                            });
+                            message_Talk({
+                                english=" I'm so incredibly happy!",
+                            });
+                            message_Talk({
+                                english="""
+                                     I'm so glad I finally brought
+                                    myself to ask!
+                                """,
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            me_Play(5);
+                            message_Mail({
+                                english="[CN][c_name:NPC_NEW_FRIEND] joined the team!",
+                            });
+                            WaitMe(5);
+                            message_Close();
+                            screen_FadeOut(1, 30);
+                            Destroy<actor ACTOR_NPC_SHEIMI>();
+                            Wait(60);
+                            screen_FadeIn(1, 30);
+                            jump @label_64;
+                        case 2:
+                            message_SetFace(ACTOR_NPC_SHEIMI, FACE_WORRIED, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Oh... I see...
+                                    That's too bad.
+                                """,
+                            });
+                            message_Talk({
+                                english="""
+                                     Well, I'll always be here
+                                    waiting.
+                                """,
+                            });
+                            message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     If you ever happen to change
+                                    your mind, just come find me.
+                                """,
+                            });
+                            message_Close();
+                            jump @label_64;
+                    }
+                } else {
+                    $SCENARIO_TALK_BIT_FLAG[122] = 1;
+                    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                    message_SetFace(ACTOR_NPC_SHEIMI, FACE_INSPIRED, FACE_POS_STANDARD);
+                    message_Talk({
+                        english=" Oh, Team [team:]!",
+                    });
+                    message_Talk({
+                        english="""
+                             I'm so glad that you've decided
+                            to climb this mountain again.
+                        """,
+                    });
+                    message_SetFace(ACTOR_NPC_SHEIMI, FACE_HAPPY, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             A mountain is really something
+                            special, isn't it?
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    Turn2Direction<actor ACTOR_NPC_SHEIMI>(4, 10, DIR_UP);
+                    WaitExecuteLives(ACTOR_NPC_SHEIMI);
+                    Wait(10);
+                    message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             You can forget all your
+                            worries and troubles here...
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             I'm not sure why, but everyone
+                            here is honest and openhearted.
+                        """,
+                    });
+                    message_Talk({
+                        english=" It's really strange...",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    Turn2DirectionLives<actor ACTOR_NPC_SHEIMI>(4, 10, ACTOR_PLAYER_APPOINT);
+                    WaitExecuteLives(ACTOR_NPC_SHEIMI);
+                    message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             That reminds me,
+                            Team [team:].
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             I've been thinking about this for
+                            some time now, and...
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             Looking at this mountain's
+                            scenery, I've finally made up my mind.
+                        """,
+                    });
+                    message_Talk({
+                        english=" Um...[K] I...",
+                    });
+                    message_Talk({
+                        english="""
+                             I was deeply moved while
+                            climbing the mountain with you,
+                            Team [team:]. I won't forget it...
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             What do you think...
+                            That is...letting me join Team [team:]?
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_PREPARE_MENU_ACCEPT_TEAM_MEMBER, 21, 0) ) { }
+                    switch ( message_Menu(MENU_ACCEPT_TEAM_MEMBER) ) {
+                        case 1:
+                        default:
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            message_SetFace(ACTOR_NPC_NEW_FRIEND, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english=" Really?",
+                            });
+                            message_Talk({
+                                english=" Th-thank you so very much!",
+                            });
+                            message_Talk({
+                                english=" I'm so incredibly happy!",
+                            });
+                            message_Talk({
+                                english="""
+                                     I'm so glad I finally brought
+                                    myself to ask!
+                                """,
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            me_Play(5);
+                            message_Mail({
+                                english="[CN][c_name:NPC_NEW_FRIEND] joined the team!",
+                            });
+                            WaitMe(5);
+                            message_Close();
+                            screen_FadeOut(1, 30);
+                            Destroy<actor ACTOR_NPC_SHEIMI>();
+                            Wait(60);
+                            screen_FadeIn(1, 30);
+                            jump @label_64;
+                        case 2:
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            message_SetFace(ACTOR_NPC_SHEIMI, FACE_WORRIED, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Oh... I see...
+                                    That's too bad.
+                                """,
+                            });
+                            message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Well, I'll always be here
+                                    waiting.
+                                """,
+                            });
+                            message_Talk({
+                                english="""
+                                     If you ever happen to change
+                                    your mind, just come find me.
+                                """,
+                            });
+                            message_Close();
+                            jump @label_64;
+                    }
+                }
+                break;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 30] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                @label_65;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                SetAnimation<actor ACTOR_ATTENDANT1>(2);
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_SHEIMI);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Once you're ready, let's go!",
+                });
+                message_Close();
+                jump @label_64;
+            case 157:
+            case 158:
+            case 159:
+            case 160:
+            case 161:
+            case 162:
+            case 163:
+            case 164:
+            case 165:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_WORRIED, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Usually, [CS:N]Grimer[CR] and [CS:N]Muk[CR] should
+                        be living farther down the mountain, I think...
+                    """,
+                });
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_DETERMINED, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We need to do something about
+                        the summit, no matter what!
+                    """,
+                });
+                message_Talk({
+                    english=" Let's hurry, [player]!",
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 29] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                @label_70;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         The road ahead is long, so don't
+                        push yourself. Take your time.
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+            case 159:
+                @label_80;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         It's said that if you give a [CS:I]Sky
+                        Gift[CR] as a token of gratitude, it will bring
+                        happiness.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         How about sending some to those
+                        who have always helped you, [player]?
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         You can use the Delivery
+                        Service in the [CS:P]Shaymin Village[CR]
+                        to send them. ♪
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+            case 160:
+                @label_96;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I can finally relax now that I've
+                        reached the base.
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+            case 161:
+                @label_103;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         This is the 5th Station Clearing![K]
+                        We're halfway to the summit!
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+            case 162:
+                @label_110;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" There's snow from here on.",
+                });
+                message_Talk({
+                    english="""
+                         Once you've finished all your
+                        preparations, let's get going.
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+            case 163:
+                @label_135;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         You meet all different kinds of
+                        folks when climbing a mountain. It's so
+                        much fun!
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+            case 164:
+                @label_145;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_WORRIED, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" I wonder if [CS:N]Sneasel[CR]'s all right...",
+                });
+                message_Close();
+                jump @label_64;
+            case 165:
+                @label_155;
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We're almost to the summit!
+                        Let's do our best!
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 28] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                jump @label_96;
+            case 161:
+                jump @label_103;
+            case 162:
+                jump @label_110;
+            case 163:
+                jump @label_135;
+            case 164:
+                jump @label_145;
+            case 165:
+                jump @label_155;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 27] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                jump @label_96;
+            case 161:
+                jump @label_103;
+            case 162:
+                jump @label_110;
+            case 163:
+                jump @label_135;
+            case 164:
+                jump @label_145;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 26] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                jump @label_96;
+            case 161:
+                jump @label_103;
+            case 162:
+                jump @label_110;
+            case 163:
+                jump @label_135;
+            case 164:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         [CS:N]Sneasel[CR]...
+                        I'm so worried...
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 25] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+            case 159:
+            case 160:
+            case 161:
+            case 162:
+            case 163:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" If we don't hurry, [CS:N]Sneasel[CR]...",
+                });
+                message_Talk({
+                    english="""
+                         Let's hurry to the
+                        8th Station Clearing!
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 24] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                jump @label_96;
+            case 161:
+                jump @label_103;
+            case 162:
+                jump @label_110;
+            case 163:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         There's a Rescue Expert at
+                        the 8th Station Clearing.
+                    """,
+                });
+                message_Talk({
+                    english=" Let's hurry, [player]!",
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 23] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                jump @label_96;
+            case 161:
+                jump @label_103;
+            case 162:
+                jump @label_110;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 22] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                jump @label_96;
+            case 161:
+                jump @label_103;
+            case 162:
+                jump @label_110;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 21] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                jump @label_96;
+            case 161:
+                jump @label_103;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 20] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                jump @label_96;
+            case 161:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" All right! Let's regroup and go!",
+                });
+                message_Talk({
+                    english="""
+                         This is the 5th Station Clearing![K]
+                        We're halfway to the summit!
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 19] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+            case 159:
+            case 160:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         [player], let's hurry up and
+                        head for the 5th Station Clearing.
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 18] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+            case 160:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_SURPRISED, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" [player]! We'll hurry too!",
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 17] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 16] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+            case 159:
+                jump @label_80;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 15] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+            case 158:
+                jump @label_70;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 14] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+                jump @label_70;
+            case 158:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Mountain climbing is so great
+                        when everyone cooperates!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         I know. I'm just so
+                        incredibly excited!
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 13] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+                jump @label_70;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 12] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                jump @label_65;
+            case 157:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_SHEIMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         [CS:P]Sky Peak[CR] has resting areas,
+                        labeled 1st Station through 9th Station.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         The 10th Station is, of course,
+                        the summit.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         The road ahead is long, so let's
+                        take it in stages.
+                    """,
+                });
+                message_Close();
+                jump @label_64;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 11] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                break;
+        }
+        jump @label_65;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 10] ) {
+        switch ( $GROUND_ENTER ) {
+            case 156:
+            default:
+                break;
+        }
+        jump @label_65;
+    } else {
+        jump @label_64;
+    }
+}

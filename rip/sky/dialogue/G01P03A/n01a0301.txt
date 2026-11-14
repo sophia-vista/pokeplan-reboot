@@ -1,0 +1,2 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	This is the Outlaw Notice Board.

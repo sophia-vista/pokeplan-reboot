@@ -1,0 +1,12 @@
+speaker	kind	line
+ATTENDANT1	Talk	Let's see. Which should we pick?
+ATTENDANT1	Talk	Don't pick one that looks scary!
+ATTENDANT1	Talk	Don't choose anyone too scary!
+ATTENDANT1	Talk	Please don't pick anyone scary!
+-	Talk	Stand clear! Updating listings!
+ATTENDANT1	Talk	What's that? What's happening?
+NPC_BIPPA	Talk	Oh, the data's getting updated.
+ATTENDANT1	Talk	It's being...updated?
+ATTENDANT1	Talk	What's going on here?
+NPC_BIPPA	Talk	While the panel is flipped over...
+ATTENDANT1	Talk	Dugtrio?

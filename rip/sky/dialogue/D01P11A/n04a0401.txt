@@ -1,0 +1,2 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	Huh? It's not this way.

@@ -1,0 +1,22 @@
+speaker	kind	line
+NPC_RURIRI	Talk	Is something the matter?
+NPC_RURIRI	Talk	Yup! I'm coming! Wait up!
+NPC_MARIRU	Talk	Are you all right?
+NPC_RURIRI	Talk	Yup!
+NPC_MARIRU	Talk	Let's get going.
+NPC_RURIRI	Talk	Yup! I'm coming!
+ATTENDANT1	Talk	Ha! Those little guys are cute.
+ATTENDANT1	Talk	Hey, Kecleon brothers.
+ATTENDANT1	Talk	Say, Kecleon brothers.
+NPC_KAKUREON1	Talk	No, nothing out of the ordinary.
+NPC_KAKUREON2	Talk	I didn't hear anything odd either.
+PLAYER	Talk	(No, I'm positive that I didn't imagine it.)
+PLAYER	Talk	(I definitely heard it!)
+PLAYER	Talk	(That shout that I heard...)
+PLAYER	Explanation	H-h-h...HELP!
+PLAYER	Explanation	(There's no mistaking it...)
+PLAYER	Explanation	(That was Azurill's scream!)
+ATTENDANT1	Explanation	Uh, are you daydreaming?
+ATTENDANT1	Explanation	Let's go already, !
+ATTENDANT1	Explanation	Let's move it, !
+ATTENDANT1	Explanation	Let's hustle, !

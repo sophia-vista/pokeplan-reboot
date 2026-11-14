@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Mail	Climb Sky Peak?
+-	SwitchMenu	Yes
+NPC_SHEIMI	Talk	You're all ready?
+NPC_SHEIMI	Mail	No

@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_EMURITTO	Talk	So time in this whole area...
+ATTENDANT1	Talk	What?!
+ATTENDANT1	Talk	Excuse me?!
+NPC_EMURITTO	Talk	Hurry! Run with all your might!

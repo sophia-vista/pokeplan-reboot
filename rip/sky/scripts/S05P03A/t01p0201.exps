@@ -1,0 +1,96 @@
+
+def 0 {
+    switch ( ProcessSpecial(23, 0, 0) ) { }
+    sound_Stop();
+    back_SetGround(LEVEL_S05P03A);
+    supervision_Acting(0);
+    supervision_Acting(1);
+    if ( $SCENARIO_MAIN_BIT_FLAG[30] ) {
+        @label_0;
+        supervision_Acting(4);
+        @label_1;
+        camera_SetMyself<performer 0>();
+        SetAnimation<object OBJECT_S05P03A1_169>(2);
+        SetAnimation<object OBJECT_S05P03A2_170>(2);
+        bgm_PlayFadeIn(BGM_POKEMON_EXPLORATION_TEAM_THEME, 0, 256);
+        screen_FadeIn(1, 30);
+        Move2PositionMark<actor ACTOR_NPC_DEMO_HERO>(1, Position<'m0', 21, 65.5>);
+        Move2PositionMark<actor ACTOR_NPC_DEMO_PARTNER>(1, Position<'m1', 18, 63.5>);
+        SetEffect<actor ACTOR_NPC_DEMO_PARTNER>(EFFECT_EXCLAMATION_MARK, 3);
+        WaitEffect<actor ACTOR_NPC_DEMO_PARTNER>();
+        WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+        Wait(10);
+        Turn2Direction<actor ACTOR_NPC_DEMO_PARTNER>(1, 10, DIR_DOWNRIGHT);
+        WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+        Wait(10);
+        ExecuteCommon<actor ACTOR_NPC_DEMO_PARTNER>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+        Turn2Direction<actor ACTOR_NPC_DEMO_HERO>(4, 10, DIR_UPLEFT);
+        WaitExecuteLives(ACTOR_NPC_DEMO_HERO);
+        Wait(15);
+        Turn2Direction<actor ACTOR_NPC_DEMO_PARTNER>(1, 10, DIR_UP);
+        Wait(30);
+        Turn2Direction<actor ACTOR_NPC_DEMO_HERO>(4, 10, DIR_UP);
+        Turn2DirectionLives<actor ACTOR_NPC_DEMO_PARTNER>(1, 10, ACTOR_NPC_DEMO_HERO);
+        WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+        Wait(10);
+        ExecuteCommon<actor ACTOR_NPC_DEMO_PARTNER>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+        WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+        Turn2Direction<actor ACTOR_NPC_DEMO_HERO>(4, 10, DIR_UPLEFT);
+        Wait(5);
+        ExecuteCommon<actor ACTOR_NPC_DEMO_PARTNER>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+        WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+        Wait(30);
+        Move2PositionMark<performer 0>(1.5, Position<'m2', 19.5, 20.5>);
+        Move2PositionMark<actor ACTOR_NPC_DEMO_HERO>(1.5, Position<'m3', 21, 24.5>);
+        Wait(2);
+        Move2PositionMark<actor ACTOR_NPC_DEMO_PARTNER>(1.5, Position<'m4', 18, 24.5>);
+        MovePositionMark<actor ACTOR_NPC_DEMO_PARTNER>(1, Position<'m5', 15, 19.5>);
+        MovePositionMark<actor ACTOR_NPC_DEMO_HERO>(0.7969, Position<'m6', 19.5, 23.5>);
+        Turn2Direction<actor ACTOR_NPC_DEMO_HERO>(4, 10, DIR_UP);
+        Turn2Direction<actor ACTOR_NPC_DEMO_PARTNER>(4, 10, DIR_RIGHT);
+        WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+        WaitExecuteLives(ACTOR_NPC_DEMO_HERO);
+        Wait(30);
+        Move2PositionMark<actor ACTOR_NPC_DEMO_HERO>(0.2969, Position<'m7', 19.5, 21.5>);
+        Wait(10);
+        Move2PositionMark<actor ACTOR_NPC_DEMO_PARTNER>(0.2969, Position<'m8', 16, 19.5>);
+        WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+        Wait(30);
+        screen_FadeOut(1, 5);
+        screen_FadeIn(1, 5);
+        Wait(90);
+        screen_FadeOut(1, 5);
+        back_SetGround(LEVEL_S05P03A);
+        supervision_Acting(0);
+        supervision_Acting(2);
+        if ( $SCENARIO_MAIN_BIT_FLAG[30] ) {
+            supervision_Acting(4);
+            @label_3;
+            camera_SetMyself<performer 0>();
+            SetPositionMark<performer 0>(Position<'m9', 19.5, 20.5>);
+            SetAnimation<object OBJECT_S05P03A1_169>(2);
+            SetAnimation<object OBJECT_S05P03A2_170>(2);
+            screen_FadeIn(1, 5);
+            Wait(20);
+            SetEffect<performer 3>(652, 3);
+            SetAnimation<object OBJECT_S05P03A1_169>(17);
+            SetAnimation<object OBJECT_S05P03A2_170>(17);
+            Wait(45);
+            screen_WhiteOutAll(1, 60);
+            back_SetGround(LEVEL_S04P01A);
+            screen_FadeInAll(1, 5);
+            screen_FadeOut(1, 0);
+            WaitBgmSignal();
+            screen_FadeIn(1, 5);
+            Wait(95);
+            screen_FadeOut(1, 5);
+            end;
+        } else {
+            supervision_Acting(3);
+            jump @label_3;
+        }
+    } else {
+        supervision_Acting(3);
+        jump @label_1;
+    }
+}

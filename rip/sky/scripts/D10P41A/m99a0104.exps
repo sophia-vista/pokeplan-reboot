@@ -1,0 +1,99 @@
+
+def 0 {
+    sound_Stop();
+    back_SetDungeonBanner(16, 0);
+    screen_FadeIn(1, 16);
+    Wait(60);
+    screen_FadeOut(1, 16);
+    Wait(15);
+    back_SetGround(LEVEL_D10P41A);
+    supervision_Acting(0);
+    if ( $PERFORMANCE_PROGRESS_LIST[7] ) {
+        @label_0;
+        supervision_Acting(2);
+        camera_SetMyself<performer 0>();
+        screen_FadeIn(1, 30);
+        bgm_PlayFadeIn(BGM_IN_THE_DEPTHS_OF_THE_PIT, 0, 256);
+        MovePositionMark<actor ACTOR_PLAYER_APPOINT>(1, Position<'m4', 40.5, 26.5>);
+        MovePositionMark<actor ACTOR_ADVENTURE_NPC1>(1, Position<'m5', 43.5, 28.5>);
+        MovePositionMark<actor ACTOR_ADVENTURE_NPC2>(1, Position<'m6', 37.5, 28.5>);
+        MovePositionMark<actor ACTOR_ADVENTURE_NPC3>(1, Position<'m7', 40.5, 30.5>);
+        WaitExecuteLives(ACTOR_PLAYER_APPOINT);
+        Wait(15);
+        @label_1;
+        message_SetFace(ACTOR_NPC_YUKUSHII, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english="""
+                 I am [CS:N]Uxie[CR].[K] I am the guardian
+                of [CS:P]Fogbound Lake[CR].
+            """,
+        });
+        message_Talk({
+            english="""
+                 That you knowingly trespass
+                here can mean only one thing.
+            """,
+        });
+        message_Talk({
+            english="""
+                 You've come to challenge me to
+                a battle...
+            """,
+        });
+        message_Talk({
+            english=" Very well.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(5143);
+        screen_WhiteOut(1, 2);
+        Wait(2);
+        screen_FadeIn(1, 2);
+        Wait(10);
+        message_SetFace(ACTOR_NPC_YUKUSHII, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english=" Your challenge...",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(5143);
+        screen_WhiteOut(1, 2);
+        Wait(2);
+        screen_FadeIn(1, 2);
+        Wait(10);
+        message_SetFace(ACTOR_NPC_YUKUSHII, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english=" I accept it!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(5143);
+        screen_WhiteOut(1, 2);
+        Wait(2);
+        screen_FadeIn(1, 2);
+        Wait(10);
+        se_Play(5143);
+        screen_WhiteOut(1, 2);
+        Wait(2);
+        screen_FadeIn(1, 2);
+        Wait(10);
+        WaitSe(5143);
+        message_SetFace(ACTOR_NPC_YUKUSHII, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english=" Come!",
+        });
+        message_Close();
+        bgm_Stop();
+        CallCommon(CORO_BOSS_WIPE_FUNC);
+        end;
+    } else {
+        supervision_Acting(1);
+        camera_SetMyself<performer 0>();
+        screen_FadeIn(1, 30);
+        bgm_PlayFadeIn(BGM_IN_THE_DEPTHS_OF_THE_PIT, 0, 256);
+        MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m0', 38.5, 26.5>);
+        MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m1', 42.5, 26.5>);
+        MovePositionMark<actor ACTOR_UNIT_NPC1>(1, Position<'m2', 40.5, 30.5>);
+        MovePositionMark<actor ACTOR_UNIT_NPC2>(1, Position<'m3', 43.5, 29.5>);
+        WaitExecuteLives(ACTOR_PLAYER);
+        Wait(15);
+        jump @label_1;
+    }
+}

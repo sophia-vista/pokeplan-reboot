@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_MYUU	Talk	Seekers of the seven treasures!
+NPC_MYUU	Talk	Ascertain the truth...
+NPC_MYUU	Talk	Demonstrate your power to me!
+NPC_MYUU	Talk	Now it begins!

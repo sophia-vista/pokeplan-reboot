@@ -1,0 +1,65 @@
+
+def 0 {
+    debug_Print('acting_M01A06A');
+    supervision_Acting(0);
+    with (actor ACTOR_PLAYER) {
+        hold;
+    }
+    with (actor ACTOR_ATTENDANT1) {
+        hold;
+    }
+    debug_Print('SUP1');
+    WaitLockLives(5, ACTOR_NPC_TEST009);
+    debug_Print('SUP2');
+    WaitLockLives(6, ACTOR_NPC_TEST010);
+    debug_Print('SUP3');
+    Unlock(5);
+    Lock(3);
+    debug_Print('SUP4');
+    Wait(30);
+    SetEffect<actor ACTOR_NPC_TEST009>(EFFECT_SHOCKED, 3);
+    SetEffect<actor ACTOR_NPC_TEST010>(EFFECT_LAUGHING, 3);
+    WaitEffect<actor ACTOR_NPC_TEST009>();
+    Wait(20);
+    SetAnimation<actor ACTOR_NPC_TEST009>(12);
+    WaitAnimation<actor ACTOR_NPC_TEST009>();
+    Wait(20);
+    SetAnimation<actor ACTOR_NPC_TEST009>(12);
+    WaitAnimation<actor ACTOR_NPC_TEST009>();
+    SetEffect<actor ACTOR_NPC_TEST009>(EFFECT_ANGRY, 3);
+    Wait(120);
+    SetEffect<actor ACTOR_NPC_TEST009>(EFFECT_NONE, 3);
+    SetEffect<actor ACTOR_NPC_TEST010>(EFFECT_NONE, 3);
+    supervision_Suspend(-2);
+    supervision_RemoveActing(0);
+    end;
+}
+
+def 1 for actor ACTOR_NPC_TEST009 {
+    debug_Print('CHR0_1');
+    Lock(5);
+    WaitLockSupervision(3);
+    debug_Print('CHR0_2');
+    MoveDirection(16, 0.5, DIR_RIGHT);
+    Unlock(6);
+    Lock(5);
+    debug_Print('CHR0_3');
+    MoveDirection(16, 0.5, DIR_RIGHT);
+    Unlock(6);
+    debug_Print('CHR0_4');
+    hold;
+}
+
+def 2 for actor ACTOR_NPC_TEST010 {
+    debug_Print('CHR1_1');
+    Lock(6);
+    debug_Print('CHR1_2');
+    MoveDirection(16, 0.5, DIR_LEFT);
+    Unlock(5);
+    Lock(6);
+    debug_Print('CHR1_3');
+    MoveDirection(16, 0.5, DIR_LEFT);
+    Unlock(3);
+    debug_Print('CHR1_4');
+    hold;
+}

@@ -1,0 +1,38 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Ah! That is--
+PLAYER_FUTURE	Talk	Ce-Celebi!
+NPC_SEREBII	Talk	.........
+PLAYER_FUTURE	Talk	Is someone holding you back?
+PLAYER_FUTURE	Talk	Spiritomb!
+NPC_MIKARUGE	Talk	HEE-hee!
+NPC_MIKARUGE	Talk	HEE-hee HEE-hee HEE-hee!
+PLAYER_FUTURE	Talk	Spiritomb! You!
+PLAYER_FUTURE	Talk	Don't lie!
+PLAYER_FUTURE	Talk	Explain why Celebi is like this...
+PLAYER_FUTURE	Talk	...! (Wh-what?!)
+PLAYER_FUTURE	Talk	(What is this sensation...)
+PLAYER_FUTURE	Talk	(Th-this is a bad sign!)
+NPC_SEREBII	Talk	...! G-Grovyle!
+PLAYER_FUTURE	Talk	Celebi! You're awake!
+NPC_MIKARUGE	Talk	If we'd let you FLEE, we...
+PLAYER_FUTURE	Talk	Let Celebi go, Spiritomb!
+NPC_SEREBII	Talk	D-don't come near!
+PLAYER_FUTURE	Talk	Wh...
+PLAYER_FUTURE	Talk	GWAAAAAAAAaaaaaaaaaaaaahh!
+NPC_MIKARUGE	Talk	Hya! We did it! HYA hya hya!
+PLAYER_FUTURE	Talk	GWAAA! Y-YOU!!
+PLAYER_FUTURE	Talk	... (Th... This is...)
+NPC_MIKARUGE	Talk	Um... We can GO now, right?
+NPC_MIKARUGE	Talk	Dusknoir... We can GO, right?
+PLAYER_FUTURE	Talk	What... What are you saying?!
+NPC_YONOWAARU	Talk	Remain with us a little longer!
+NPC_YONOWAARU	Talk	Sableye: Wheh-heh-heh!
+NPC_MIKARUGE	Talk	HEE-hee! HEE-hee HEE-hee!
+NPC_YONOWAARU	Talk	Listen, Grovyle!
+PLAYER_FUTURE	Talk	What?!
+PLAYER_FUTURE	Talk	Wh-what?!
+NPC_YONOWAARU	Talk	The new agent... In fact--
+NPC_YONOWAARU	Talk	Grovyle! It's you!
+NPC_YONOWAARU	Talk	Uwah ha ha ha ha ha ha!
+PLAYER_FUTURE	Talk	I mean... When did you plan...
+PLAYER_FUTURE	Talk	So how did you...

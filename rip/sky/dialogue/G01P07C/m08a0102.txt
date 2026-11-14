@@ -1,0 +1,2 @@
+speaker	kind	line
+-	Talk	There it is! Another Time Gear!

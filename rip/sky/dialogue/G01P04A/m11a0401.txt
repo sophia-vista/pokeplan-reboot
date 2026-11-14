@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Oh! You two!
+NPC_PERAPPU	Talk	Before you get to work today...
+NPC_PERAPPU	Talk	I'd like you to run an errand.
+ATTENDANT1	Talk	An errand?
+NPC_PERAPPU	Talk	Yes, an errand!
+NPC_PERAPPU	Talk	Correct.
+NPC_PERAPPU	Talk	Precisely!
+NPC_PERAPPU	Talk	Great! Way to take charge! ♪

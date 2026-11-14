@@ -1,0 +1,68 @@
+
+def 0 {
+    back2_SetMode(1);
+    screen2_FadeOut(1, 30);
+    back2_SetMode(4);
+    back2_SetGround(LEVEL_V01P02A);
+    back2_SetWeather(4);
+    back_SetGround(LEVEL_V00P02);
+    back_SetWeather(5);
+    supervision_Acting(0);
+    camera_SetPositionMark(Position<'m0', 20, 14.5>);
+    camera2_SetPositionMark(Position<'m1', 17, 14.5>);
+    screen_FadeIn(0, 30);
+    screen2_FadeIn(1, 30);
+    camera_SetEffect(1, 8, 2.0);
+    camera2_SetEffect(1, 8, 2.0);
+    screen_WhiteOut(0, 60);
+    screen2_WhiteOut(1, 60);
+    back2_SetMode(0);
+    screen_FadeIn(1, 30);
+    screen2_FadeIn(1, 30);
+    screen2_WhiteOut(1, 20);
+    back2_SetMode(4);
+    back2_SetGround(LEVEL_V01P02A);
+    back2_SetWeather(4);
+    camera2_SetPositionMark(Position<'m2', 17, 14.5>);
+    screen2_FadeIn(1, 20);
+    supervision_Acting(1);
+    SetAnimation<object OBJECT_V01P02A1_181>(17);
+    WaitAnimation<object OBJECT_V01P02A1_181>();
+    WaitExecuteObject(OBJECT_V01P02A1_181);
+    Wait(60);
+    SetAnimation<object OBJECT_V01P02A1_181>(17);
+    WaitAnimation<object OBJECT_V01P02A1_181>();
+    WaitExecuteObject(OBJECT_V01P02A1_181);
+    SetAnimation<object OBJECT_V01P02A1_181>(17);
+    WaitAnimation<object OBJECT_V01P02A1_181>();
+    WaitExecuteObject(OBJECT_V01P02A1_181);
+    message_Notice({
+        english="[CS:W]Memo: Raging storm at night[CR].",
+    });
+    camera_SetEffect(0, 0, 0);
+    camera2_SetEffect(0, 0, 0);
+    SetOutputAttribute<object OBJECT_V01P02A1_181>(2048);
+    SetAnimation<object OBJECT_V01P02A1_181>(1);
+    Wait(30);
+    camera2_SetPositionMark(Position<'m3', 53, 14.5>);
+    Wait(20);
+    camera2_SetPositionMark(Position<'m4', 17, 14.5>);
+    Wait(30);
+    camera2_SetPositionMark(Position<'m5', 53, 14.5>);
+    Wait(20);
+    camera2_SetPositionMark(Position<'m6', 17, 14.5>);
+    SetAnimation<object OBJECT_V01P02A1_181>(2048);
+    message_Notice({
+        english="""
+            [CS:W]Memo: Two lightning flashes. They reveal the
+            silhouette of Sharpedo Bluff.[CR]
+        """,
+    });
+    message_Close();
+    @label_0;
+    screen2_FadeOut(0, 30);
+    screen_FadeOut(1, 30);
+    back2_SetMode(-1);
+    supervision_ExecuteStation(LEVEL_T00P01, 'M01A01', 0);
+    hold;
+}

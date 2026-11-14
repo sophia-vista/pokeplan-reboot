@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Oh! Guildmaster!
+NPC_PUKURIN	Talk	Yep! ♪
+NPC_DOGOOMU	Talk	YEAH!
+NPC_DIGUDA	Talk	I'm glad to hear that!
+NPC_KIMAWARI	Talk	Guildmaster...?
+NPC_PUKURIN	Talk	What is it, Sunflora?
+NPC_PUKURIN	Talk	Yep! This is what happened...

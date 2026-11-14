@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_UPAA	Talk	Yay! Gummis!
+PLAYER_PUPURIN	Talk	How are they?
+NPC_UPAA	Talk	Great! Delicious! Thank you! ♪

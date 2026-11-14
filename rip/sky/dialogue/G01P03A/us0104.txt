@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_POPPO	Talk	How was your expedition?
+NPC_POPPO	Talk	So remember it!

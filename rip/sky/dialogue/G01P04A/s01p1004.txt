@@ -1,0 +1,3 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	Luminous Spring?
+NPC_PUKURIN	Talk	Now nothing can evolve there.

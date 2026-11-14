@@ -1,0 +1,20 @@
+speaker	kind	line
+NPC_RURIRI	Talk	Yaaaay!
+NPC_MARIRU	Talk	Thank you!
+NPC_SURIIPU	Talk	Please! It's nothing.
+ATTENDANT1	Talk	What's going on?
+ATTENDANT1	Talk	What's happening?
+NPC_RURIRI	Talk	Oh! Hi!
+NPC_MARIRU	Talk	Then Mr. Drowzee came along...
+NPC_MARIRU	Talk	We're so happy about this!
+ATTENDANT1	Talk	Awesome! That's great for you!
+ATTENDANT1	Talk	Yeah! That's great for you!
+ATTENDANT1	Talk	Is that right? How nice for you!
+NPC_RURIRI	Talk	Thank you, Mr. Drowzee!
+NPC_SURIIPU	Talk	Oh, please...
+NPC_MARIRU	Talk	Yup!
+NPC_RURIRI	Talk	Yup!
+NPC_SURIIPU	Talk	Whoops! Excuse me.
+PLAYER	Talk	(Urk... Wh-what is this...?)
+PLAYER	Talk	(It's happening again...)
+PLAYER	Talk	(Another dizzy spell...)

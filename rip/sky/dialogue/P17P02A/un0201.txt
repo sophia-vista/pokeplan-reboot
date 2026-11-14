@@ -1,0 +1,6 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Yep! ♪
+NPC_PUKURIN_PAPA	Talk	Oh, a new friend!
+NPC_PUKURIN_PAPA	Talk	That's great!
+PLAYER_PUPURIN	Talk	Yep! ♪
+NPC_PUKURIN_PAPA	Talk	Be nice to your friends, OK?

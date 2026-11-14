@@ -1,0 +1,12 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	All set!
+ATTENDANT1	SwitchMenu	Which way should we go?
+ATTENDANT1	SwitchMenu	Mt. Horn
+ATTENDANT1	SwitchMenu	All right. Mt. Horn it is.
+ATTENDANT1	SwitchMenu	OK. Mt. Horn it is.
+ATTENDANT1	SwitchMenu	All right! Let's roll out!
+ATTENDANT1	Menu	Rock Path
+ATTENDANT1	Menu	All right. Rock Path it is.
+ATTENDANT1	Menu	OK. Rock Path it is.
+ATTENDANT1	Menu	All right! Let's roll out!
+ATTENDANT1	Menu	Not yet...

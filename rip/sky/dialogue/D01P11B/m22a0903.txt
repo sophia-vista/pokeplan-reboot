@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_SUKATANKU	Talk	Chaw-haw-haw!
+NPC_DOGAASU	Talk	Whoa-ho-ho! But, Chief!
+NPC_DOGAASU	Talk	Whoa-ho-ho!
+NPC_ZUBATTO	Talk	Heh-heh-heh!

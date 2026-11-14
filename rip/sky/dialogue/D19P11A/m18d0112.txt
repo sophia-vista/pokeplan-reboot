@@ -1,0 +1,9 @@
+speaker	kind	line
+ATTENDANT1	Mail	...How's it going, ?
+ATTENDANT1	Mail	...Well, ?
+ATTENDANT1	Mail	...How's it going, ?
+ATTENDANT1	Mail	Can you see anything?
+PLAYER	Mail	(..................)
+PLAYER	Mail	(..............................)
+PLAYER	Mail	(..........................................)
+PLAYER	Mail	(...No. I'm not sensing anything.)

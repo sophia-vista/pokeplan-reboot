@@ -1,0 +1,20 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Guildmaster...um...Guildmaster?
+NPC_PUKURIN	Talk	Hiya!
+NPC_PUKURIN	Talk	So tell me your team's name?
+ATTENDANT1	Talk	Huh? The team's name?
+ATTENDANT1	Talk	Oh? Our team's name?
+ATTENDANT1	Talk	I never thought of that.
+ATTENDANT1	Talk	We didn't think of that.
+ATTENDANT1	Talk	I didn't think about a team name.
+NPC_PUKURIN	Talk	Registering! ♪ Registering! ♪
+NPC_PUKURIN	Talk	All registered...
+NPC_PUKURIN	Talk	YOOM...TAH!
+NPC_PUKURIN	Talk	Quick, open it up.
+NPC_PUKURIN	Mail	And a Wonder Map...
+NPC_PUKURIN	Mail	And a Treasure Bag!
+NPC_PUKURIN	Talk	It's a very wonderful bag! ♪
+NPC_PUKURIN	Talk	Those two items are special.
+ATTENDANT1	Talk	Th-thank you! We'll do our best!
+ATTENDANT1	Talk	We will!
+ATTENDANT1	Talk	Let's do this right, !

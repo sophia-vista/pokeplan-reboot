@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	You're LATE, rookies!
+NPC_PERAPPU	Talk	Hush!
+NPC_PERAPPU	Talk	Your voice is ridiculously loud!
+NPC_DOGOOMU	Talk	Humph...
+NPC_PERAPPU	Talk	Everyone seems to be present.
+NPC_PUKURIN	Talk	Zzzz... Zzzz... Snorfle... Zzz...
+NPC_PUKURIN	Talk	Apprentice: (Yeah, you got that right!)
+NPC_PUKURIN	Talk	Apprentice: (Yup, looks like he's wide awake.)
+NPC_PERAPPU	Talk	Everyone: A ONE, A TWO...A ONE-TWO-THREE!
+NPC_PERAPPU	Talk	Everyone: ONE! DON'T SHIRK WORK!
+NPC_PERAPPU	Talk	Everyone: TWO! RUN AWAY AND PAY!
+NPC_PERAPPU	Talk	Everyone: THREE! SMILES GO FOR MILES!
+NPC_PERAPPU	Talk	OK, Pokémon! Get to work! ♪
+NPC_PERAPPU	Talk	Everyone: HOORAY!

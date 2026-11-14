@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_METAMON	Talk	...You...? That's right...
+NPC_SAANAITO	Talk	Why'd you do that?
+NPC_METAMON	Talk	It was all to protect this place.
+PLAYER_CHARMS	Talk	Protect this place?
+NPC_METAMON	Talk	...This place... Yes.
+NPC_METAMON	Talk	Here, I'll show you around.
+NPC_METAMON	Talk	Please, come this way.

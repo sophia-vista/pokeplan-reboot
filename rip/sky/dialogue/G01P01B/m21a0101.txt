@@ -1,0 +1,19 @@
+speaker	kind	line
+NPC_DIGUDA	Talk	The footprint belongs to...
+NPC_DIGUDA	Talk	The f-f-footprint belongs to...
+NPC_DOGOOMU	Talk	What...? HEY, Diglett!
+NPC_DIGUDA	Talk	That... That footprint...
+NPC_DIGUDA	Talk	It's !
+NPC_BIPPA	Talk	What...?
+NPC_KIMAWARI	Talk	Wha...?
+NPC_KIMAWARI	Talk	Everyone: WHAT?!
+NPC_DIGUDA	Talk	It is !
+NPC_DIGUDA	Talk	And  too!
+ATTENDANT1	Talk	Diglett! Long time no see!
+ATTENDANT1	Talk	Whoa! What is that?
+ATTENDANT1	Talk	Waah! What is that?!
+NPC_HEIGANI	Talk	Hey, hey! It's true!
+NPC_DOGOOMU	Talk	You're both ALIVE!
+NPC_CHIRIIN	Talk	We worried so much about you!
+NPC_BIPPA	Talk	I...I...I was...by golly!
+ATTENDANT1	Talk	E-everyone... We're home...

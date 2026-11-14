@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_EREKIBURU	Talk	All right! You two are heroes!
+NPC_EREKIBURU	Talk	You set that Darkrai straight!
+NPC_EREKIBURU	Talk	Give it everything you've got!

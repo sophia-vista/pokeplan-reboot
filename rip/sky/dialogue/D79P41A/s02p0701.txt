@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_YUKIMENOKO	Talk	Eeeeek!
+NPC_HASSAMU	Talk	Ur... Urf...
+NPC_HASSAMU	Talk	Wh-where...?
+NPC_HASSAMU	Talk	Oh!
+NPC_HASSAMU	Talk	You're rescuing me, I presume?

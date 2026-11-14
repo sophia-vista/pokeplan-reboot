@@ -1,0 +1,34 @@
+speaker	kind	line
+TALK_SUB	Talk	Did you need something?
+TALK_SUB	Mail	Would you like to save your adventure?
+TALK_SUB	SwitchMenu	Save and Continue
+TALK_SUB	Menu	Save and Return to Top Menu
+TALK_SUB	Menu	Don't Save
+TALK_SUB	Mail	Would you like to save your adventure?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	SwitchMenu	No
+TALK_SUB	Notice	Wonder Egg
+TALK_SUB	SwitchMenu	Held
+TALK_SUB	SwitchMenu	Not held
+TALK_SUB	SwitchMenu	Check
+TALK_SUB	Mail	Would you like to go to Quicksand Cave?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Menu	No
+TALK_SUB	Mail	Would you like to go to Quicksand Desert?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	SwitchMenu	No
+TALK_SUB	Mail	Would you like to go to Crystal Crossing?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Menu	No
+TALK_SUB	Mail	Would you like to go to Temporal Tower?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Menu	No
+TALK_SUB	Mail	Would you like to go to Crevice Cave?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Menu	No
+TALK_SUB	Notice	Client and Bottle
+TALK_SUB	SwitchMenu	Random results
+TALK_SUB	SwitchMenu	Force results
+TALK_SUB	SwitchMenu	Time
+TALK_SUB	SwitchMenu	Darkness
+TALK_SUB	SwitchMenu	Sky

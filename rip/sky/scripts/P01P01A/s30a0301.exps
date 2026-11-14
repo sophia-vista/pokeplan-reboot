@@ -1,0 +1,195 @@
+
+def 0 {
+    $SCENARIO_MAIN = scn[8, 5];
+    $SUB30_PROJECTP[0] = 1;
+    back_SetGround(LEVEL_P01P03A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    supervision_StationCommon(7);
+    screen_FadeIn(1, 30);
+    bgm_PlayFadeIn(BGM_TREASURE_TOWN, 0, 256);
+    Wait(30);
+    MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m0', 25.5, 13.5>);
+    MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m1', 29, 13.5>);
+    WaitExecuteLives(ACTOR_PLAYER);
+    se_Play(8978);
+    SetEffect<actor ACTOR_PLAYER>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+    WaitEffect<actor ACTOR_ATTENDANT1>();
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Hey, there's someone at the
+                    café entrance.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     Huh? There's someone at the
+                    café entrance.
+                """,
+            }
+        default:
+            {
+                english="""
+                     Oh? There's someone at the
+                    café entrance.
+                """,
+            }
+    }
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english=" I wonder what's up.",
+            }
+        case 2:
+            {
+                english=" I wonder what's going on.",
+            }
+        default:
+            {
+                english=" I wonder what's going on.",
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    MovePositionMark<performer 0>(1, Position<'m2', 27, 30>, Position<'m3', 24, 30>);
+    MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m4', 25.5, 26.5>);
+    Wait(15);
+    MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m5', 29, 26.5>);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_DOWNLEFT);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_DOWNLEFT);
+    WaitExecutePerformer(0);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     What's up? Something to do with
+                    the café?
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     Hey, is something going on?
+                    Something at the café?
+                """,
+            }
+        default:
+            {
+                english="""
+                     Hey, is something going on?
+                    Something at the café?
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Turn2Direction<actor ACTOR_NPC_BARIYAADO>(4, 10, DIR_UP);
+    Wait(7);
+    Turn2Direction<actor ACTOR_NPC_OKUTAN>(4, 10, DIR_UPRIGHT);
+    message_SetFace(ACTOR_NPC_BARIYAADO, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english="""
+             Yeah. It seems like there's some
+            wonderful news for all the explorers.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+             I wonder what kind of
+            wonderful news.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Turn2Direction<actor ACTOR_NPC_OKUTAN>(4, 10, DIR_UPLEFT);
+    WaitExecutePerformer(303);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_DOWNLEFT);
+    Wait(7);
+    Turn2Direction<actor ACTOR_NPC_BARIYAADO>(4, 10, DIR_LEFT);
+    Wait(20);
+    message_SetFace(ACTOR_NPC_OKUTAN, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+             Now I'm really interested.[K]
+            I'm going to go find out.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    MovePositionMark<actor ACTOR_NPC_OKUTAN>(1, Position<'m6', 18, 29.5>);
+    WaitExecuteLives(ACTOR_NPC_OKUTAN);
+    Destroy<actor ACTOR_NPC_OKUTAN>();
+    Wait(30);
+    message_SetFace(ACTOR_NPC_BARIYAADO, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english=" I'm going too.",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    MovePositionMark<actor ACTOR_NPC_BARIYAADO>(1, Position<'m7', 18, 29.5>);
+    WaitExecuteLives(ACTOR_NPC_BARIYAADO);
+    Destroy<actor ACTOR_NPC_BARIYAADO>();
+    Wait(20);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english=" Wonderful news, huh?",
+            }
+        case 2:
+            {
+                english=" Wonderful news, huh?",
+            }
+        default:
+            {
+                english=" Wonderful news, huh?",
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english=" Hey, [hero]. Let's go too.",
+            }
+        case 2:
+            {
+                english="""
+                     Hey, [hero], we should
+                    go too.
+                """,
+            }
+        default:
+            {
+                english="""
+                     Hey, [hero], I think we
+                    should go and see too.
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    SetAnimation<actor ACTOR_PLAYER>(71);
+    WaitAnimation<actor ACTOR_PLAYER>();
+    WaitExecuteLives(ACTOR_PLAYER);
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    Wait(30);
+    MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m8', 18, 29.5>);
+    Wait(10);
+    MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m9', 18, 29.5>);
+    WaitExecuteLives(ACTOR_PLAYER);
+    Destroy<actor ACTOR_PLAYER>();
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    Destroy<actor ACTOR_ATTENDANT1>();
+    bgm_FadeOut(60);
+    screen_FadeOut(1, 30);
+    Wait(30);
+    end;
+}

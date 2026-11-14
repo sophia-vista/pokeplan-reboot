@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_KINOGASSA	Talk	Hey! Great job!
+NPC_SHEIMI	Talk	Yes, thank you!
+NPC_OKUTAN	Talk	HELP!!!
+NPC_OKUTAN	Talk	Uhhn...huhhn...
+NPC_KUCHIITO	Talk	What's wrong?!
+NPC_GOORIKII	Talk	Move out!
+NPC_KINOGASSA	Talk	Roger! Let's go!
+NPC_SHEIMI	Talk	The 5th Station Clearing...

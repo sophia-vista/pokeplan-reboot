@@ -1,0 +1,17 @@
+speaker	kind	line
+NPC_DAGUTORIO	Talk	O sea! We call out to you!
+NPC_DAGUTORIO	Talk	We are so... We are very...
+NPC_DAGUTORIO	Talk	We're extremely frustrated!
+NPC_DAGUTORIO	Talk	What are we to do?!
+NPC_DAGUTORIO	ImitationSound	SPLOOOOSH...
+NPC_DAGUTORIO	ImitationSound	SPLAAAASH...
+NPC_DAGUTORIO	ImitationSound	SPLOOSH...SPLASH!
+NPC_DAGUTORIO	Talk	What... What did you say?!
+NPC_DAGUTORIO	Talk	...YOUR...DUTY...
+NPC_DAGUTORIO	Talk	Uh... Yes...?
+NPC_DAGUTORIO	Talk	...DO YOUR DUTY...
+NPC_DAGUTORIO	Talk	But...?!
+NPC_DAGUTORIO	Talk	Waaaah! S-s-sorry!
+NPC_DIGUDA	Talk	Yes. Exactly.
+NPC_DIGUDA	Talk	He needed a jolt like that.
+NPC_DOGOOMU	Talk	Yeah!

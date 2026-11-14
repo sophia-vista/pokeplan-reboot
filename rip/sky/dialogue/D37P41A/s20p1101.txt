@@ -1,0 +1,48 @@
+speaker	kind	line
+-	Talk	......... You...
+-	Talk	How did... How did you get here?
+ATTENDANT1	Talk	Who is it?! Where are you?
+ATTENDANT1	Talk	Show yourself!
+-	Talk	.....................
+-	Talk	I am...
+PLAYER	Talk	(What...?!)
+ATTENDANT1	Talk	You! You're...?!
+NPC_KURESERIA	Talk	I am... Cresselia!
+PLAYER	Talk	(C-Cresselia...!)
+PLAYER	Talk	(It's Cresselia... The one from my dreams...)
+NPC_KURESERIA	Talk	I've longed to meet both of you!
+ATTENDANT1	Talk	C-Cresselia...
+PLAYER	Talk	(What?!)
+NPC_KURESERIA	Talk	Yes.
+PLAYER	Talk	(What? You...two?!)
+ATTENDANT1	Talk	I suspected this...
+ATTENDANT1	Talk	I went to the future...
+ATTENDANT1	Talk	Then I came back to this world...
+ATTENDANT1	Talk	So Cresselia said in my dreams.
+PLAYER	Talk	(So it wasn't just me that had those dreams!)
+PLAYER	Talk	(And  is the same as I am...)
+PLAYER	Talk	(Cresselia said that to  too!)
+ATTENDANT1	Talk	Enveloped within a nightmare...?
+NPC_KURESERIA	Talk	Yes.
+NPC_KURESERIA	Talk	never to awaken again.
+PLAYER	Talk	(A-all Pokémon...)
+ATTENDANT1	Talk	H-hey, Cresselia.
+NPC_KURESERIA	Talk	That is...for you to disappear!
+ATTENDANT1	Talk	What?! Disappear? Us?
+ATTENDANT1	Talk	What...? Wait a second!
+ATTENDANT1	Talk	C-Cresselia. Is this really true?
+ATTENDANT1	Talk	If we disappear...
+ATTENDANT1	Talk	Will the world...really be saved?
+NPC_KURESERIA	Talk	Yes. It will be saved.
+NPC_KURESERIA	Talk	For it is only your existence...
+NPC_KURESERIA	Talk	that is driving the world to ruin!
+ATTENDANT1	Talk	Urk...!
+ATTENDANT1	Talk	Waaaah!
+-	Talk	Heeeeeey!
+NPC_KURESERIA	Talk	Farewell.
+ATTENDANT1	Talk	Whew! Th-that was close...
+-	Talk	Hey! So here you are!
+ATTENDANT1	Talk	D-Drowzee!
+ATTENDANT1	Talk	What are you doing here?
+ATTENDANT1	Talk	Why are you here?
+ATTENDANT1	Talk	Why did you come?

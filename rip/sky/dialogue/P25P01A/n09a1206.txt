@@ -1,0 +1,7 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	While I live, I want to shine.
+PLAYER_FUTURE	Talk	I want to prove that I exist.
+PLAYER_FUTURE	Talk	No... Not just into the future.
+PLAYER_FUTURE	Talk	In them, my spirit is alive.
+PLAYER_FUTURE	Talk	That is...
+NPC_YONOWAARU	Talk	(My spirit is...alive!)

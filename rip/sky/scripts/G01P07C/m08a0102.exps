@@ -1,0 +1,434 @@
+
+def 0 {
+    sound_Stop();
+    back_SetGround(LEVEL_G01P07C);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    screen_FadeIn(1, 30);
+    bgm_PlayFadeIn(BGM_GOODNIGHT, 0, 256);
+    Wait(30);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEINW);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Tomorrow they're finally going
+                    to announce the members of the expedition.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     Tomorrow they're finally going
+                    to announce the members of the expedition.
+                """,
+            }
+        default:
+            {
+                english="""
+                     Tomorrow they're finally going
+                    to announce the members of the expedition.
+                """,
+            }
+    }
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english=" I'm kind of excited.",
+            }
+        case 2:
+            {
+                english=" I'm feeling sort of nervous.",
+            }
+        default:
+            {
+                english=" It's making me sort of nervous.",
+            }
+    }
+    message_SetFace(ACTOR_ATTENDANT1, FACE_SAD, FACE_POS_BOTTOM_L_FACEINW);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Yeah, I know [CS:N]Chatot[CR] said we
+                    don't have much of a chance.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     Yes, I know [CS:N]Chatot[CR] said we
+                    shouldn't get our hopes up.
+                """,
+            }
+        default:
+            {
+                english="""
+                     Oh, I know [CS:N]Chatot[CR] said we
+                    shouldn't be too hopeful.
+                """,
+            }
+    }
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     After all, we didn't bring back
+                    any of those Perfect Apples that [CS:N]Wigglytuff[CR]
+                    loves so much.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     After all, we didn't bring back
+                    any of those Perfect Apples that [CS:N]Wigglytuff[CR]
+                    loves so much.
+                """,
+            }
+        default:
+            {
+                english="""
+                     After all, we didn't bring back
+                    any of those Perfect Apples that [CS:N]Wigglytuff[CR]
+                    loves so much.
+                """,
+            }
+    }
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEINW);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     But... After that, we did work
+                    really hard, didn't we?
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     But... After that, we did work
+                    really hard, didn't we?
+                """,
+            }
+        default:
+            {
+                english="""
+                     But... After that, we did work
+                    really hard, didn't we?
+                """,
+            }
+    }
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     We've done the best we could.
+                    Even if we don't get picked, I don't regret
+                    a thing.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     We've done the best we could.
+                    Even if we don't get picked, I don't regret
+                    a thing.
+                """,
+            }
+        default:
+            {
+                english="""
+                     We've done the best we could.
+                    Even if we don't get picked, I don't regret
+                    a thing.
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    SetDirection<actor ACTOR_ATTENDANT1>(DIR_DOWN);
+    SetAnimation<actor ACTOR_ATTENDANT1>(70);
+    WaitAnimation<actor ACTOR_ATTENDANT1>();
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Yaaaaawn... I'm getting drowsy.
+                    Let's get some sleep.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     Yaaaaawn... I'm getting drowsy.
+                    Let's get some sleep.
+                """,
+            }
+        default:
+            {
+                english="""
+                     Yaaaaawn... I'm getting drowsy.
+                    Let's get some sleep.
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_RIGHT);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     I'm looking forward to
+                    tomorrow's announcement. OK, good night.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     I'm looking forward to
+                    tomorrow's announcement. OK, good night.
+                """,
+            }
+        default:
+            {
+                english="""
+                     I'm looking forward to
+                    tomorrow's announcement. OK, good night.
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Wait(30);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_RIGHT);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    SetAnimation<actor ACTOR_ATTENDANT1>(76);
+    Wait(60);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_DOWNRIGHT);
+    Wait(30);
+    SetDirection<actor ACTOR_PLAYER>(DIR_RIGHT);
+    SetAnimation<actor ACTOR_PLAYER>(76);
+    Wait(50);
+    screen_FadeChange(1, 60, 255, 192);
+    SetAnimation<actor ACTOR_ATTENDANT1>(62);
+    Wait(60);
+    message_SetActor(ACTOR_PLAYER);
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(...)",
+            }
+        default:
+            {
+                english="(...)",
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(No regrets. Right...)",
+            }
+        default:
+            {
+                english="(No regrets. Right...)",
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(But...)",
+            }
+        default:
+            {
+                english="(But...)",
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="""
+                    (If we're not chosen for the exploration
+                    party...)
+                """,
+            }
+        default:
+            {
+                english="""
+                    (If we're not chosen for the exploration
+                    party...)
+                """,
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="([partner] will be crushed.)",
+            }
+        default:
+            {
+                english="([partner] will be crushed.)",
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="""
+                    ([partner] is trying so hard... I hope
+                    [partner] gets to go on the exploration...)
+                """,
+            }
+        default:
+            {
+                english="""
+                    ([partner] is trying so hard... I hope
+                    [partner] gets to go on the exploration...)
+                """,
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(If we both get chosen for the expedition...)",
+            }
+        default:
+            {
+                english="(If we both get chosen for the expedition...)",
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="""
+                    (That special ability I have may be
+                    useful then...)
+                """,
+            }
+        default:
+            {
+                english="""
+                    (That special ability I have may be
+                    useful then...)
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="""
+                    (Come to think of it, I haven't had any of
+                    those dizzy spells recently.)
+                """,
+            }
+        default:
+            {
+                english="""
+                    (Come to think of it, I haven't had any of
+                    those dizzy spells recently.)
+                """,
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(I think it's a useful ability.)",
+            }
+        default:
+            {
+                english="(I think it's a useful ability.)",
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="""
+                    (But not being able to see those visions when
+                    I want to is frustrating.)
+                """,
+            }
+        default:
+            {
+                english="""
+                    (But not being able to see those visions when
+                    I want to is frustrating.)
+                """,
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(...)",
+            }
+        default:
+            {
+                english="(...)",
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="""
+                    (Thinking about everything too much will
+                    keep me from sleeping. I'd better get to sleep
+                    now too.)
+                """,
+            }
+        default:
+            {
+                english="""
+                    (Thinking about everything too much will
+                    keep me from sleeping. I'd better get to sleep
+                    now too.)
+                """,
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="""
+                    (Good night, [partner]. I hope you get
+                    chosen tomorrow...)
+                """,
+            }
+        default:
+            {
+                english="""
+                    (Good night, [partner]. I hope you get
+                    chosen tomorrow...)
+                """,
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(...)",
+            }
+        default:
+            {
+                english="(...)",
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Wait(30);
+    SetAnimation<actor ACTOR_PLAYER>(62);
+    Wait(90);
+    bgm_FadeOut(120);
+    screen_FadeOut(1, 90);
+    Wait(60);
+    back2_SetMode(4);
+    back2_SetGround(LEVEL_V02P06A);
+    camera2_SetPositionMark(Position<'m0', 19.5, 15.5>);
+    screen2_FadeIn(1, 60);
+    Wait(150);
+    screen2_FadeOut(1, 60);
+    back2_SetMode(0);
+    Wait(60);
+    message_ResetActor();
+    message_Talk({
+        english=" There it is! Another Time Gear!",
+    });
+    message_Close();
+    end;
+}

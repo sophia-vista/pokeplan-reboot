@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ah! You obtained a Phione Dew!
+NPC_PERAPPU	Talk	Quick! Give it to Manaphy!
+ATTENDANT1	Talk	OK!
+NPC_MANAFI	Talk	...Urf...
+ATTENDANT1	Talk	Whew, am I glad!
+ATTENDANT1	Talk	Whew, thank goodness!
+NPC_PERAPPU	Talk	It seems to be working.
+ATTENDANT1	Talk	That's great... Am I ever glad...

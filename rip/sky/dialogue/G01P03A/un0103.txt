@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_TANEBOO	Talk	We're Team Seedgey!
+NPC_TANEBOO	Talk	So remember it!

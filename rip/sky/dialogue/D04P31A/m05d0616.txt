@@ -1,0 +1,6 @@
+speaker	kind	line
+PLAYER	Mail	(Aaaack! That's...)
+ATTENDANT1	Mail	Huh? What's going on?
+ATTENDANT1	Mail	Huh? What's happening?
+ATTENDANT1	Mail	Waaah! It's a flood!
+ATTENDANT1	Mail	Waaaaaaah!

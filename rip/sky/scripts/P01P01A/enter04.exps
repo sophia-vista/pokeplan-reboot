@@ -1,0 +1,707 @@
+
+def 0 {
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 0:
+            @label_0;
+            SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+            if ( scn($SCENARIO_SIDE) >= [40, 5] ) {
+                @label_3;
+                message_Mail({
+                    english="[CN]Where would you like to go?",
+                });
+                message_Close();
+                switch ( main_EnterAdventure(-1, 30) ) {
+                    case 0:
+                        @label_12;
+                        message_Close();
+                        switch ( main_EnterAdventure(251, 30) ) { }
+                        hold;
+                    case 1:
+                        @label_5;
+                        message_Close();
+                        supervision_Suspend(-2);
+                        end;
+                    case 7:
+                        message_Mail({
+                            english="""
+                                
+                                [CN]Caution!
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]This rescue cannot be undertaken unless
+                                [CN]the team includes certain Pokémon.
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Please put together your team
+                                [CN]with the Pokémon specified by
+                                [CN]the job, or "Suspend" the job.
+                            """,
+                        });
+                        jump @label_5;
+                    case 8:
+                        message_Mail({
+                            english="""
+                                
+                                [CN]Caution!
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]This rescue cannot be undertaken unless
+                                [CN]the team includes certain Pokémon.
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Please put together your team
+                                [CN]with the Pokémon specified by
+                                [CN]the job, or "Suspend" the job.
+                            """,
+                        });
+                        jump @label_5;
+                    case 20:
+                        if ( not debug ) {
+                            jump @label_5;
+                        } else {
+                            message_Notice({
+                                english="""
+                                    [CS:W]Dungeon Settings Error 3
+                                    This dungeon may not be entered from the
+                                    Crossroads.[CR]
+                                """,
+                            });
+                            jump @label_5;
+                        }
+                        break;
+                    case 21:
+                        if ( not debug ) {
+                            jump @label_5;
+                        } else {
+                            message_Notice({
+                                english="""
+                                    [CS:W]Dungeon Settings Error 4
+                                    This dungeon may not be entered from the
+                                    Crossroads.[CR]
+                                """,
+                            });
+                            jump @label_5;
+                        }
+                        break;
+                    case 22:
+                        if ( not debug ) {
+                            jump @label_5;
+                        } else {
+                            message_Notice({
+                                english="""
+                                    [CS:W]Dungeon Settings Error 5
+                                    This dungeon may not be entered from the
+                                    Crossroads.[CR]
+                                """,
+                            });
+                            jump @label_5;
+                        }
+                        break;
+                    case 23:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There is a restriction
+                                [CN]placed on [CS:P]Zero Isle North[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]In [CS:P]Zero Isle North[CR], you will
+                                [CN]not earn Exp. Points from the
+                                [CN]Pokémon you defeat. Is that OK?
+                            """,
+                        });
+                        @label_32;
+                        switch ( message_SwitchMenu(1, 2) ) {
+                            case menu({
+                                english="Yes",
+                            }):
+                                jump @label_12;
+                            case menu({
+                                english="No",
+                            }):
+                                jump @label_5;
+                            default:
+                                jump @label_5;
+                        }
+                        break;
+                    case 24:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to [CS:P]Zero Isle East[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Items from the 17th slot and beyond
+                                [CN]in your Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, all members' levels will be temporarily
+                                [CN]reduced to Level 1. (They will be restored
+                                [CN]upon leaving the dungeon.) Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 25:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to [CS:P]Zero Isle West[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Every item in your
+                                [CN]Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, all members' levels will be temporarily
+                                [CN]reduced to Level 1. (They will be restored
+                                [CN]upon leaving the dungeon.) Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 26:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to [CS:P]Zero Isle South[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]All the money and every item in
+                                [CN]your Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="[CN]Only the leader may enter...",
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, your level will be temporarily
+                                [CN]reduced to Level 1. (It will be restored
+                                [CN]upon leaving the dungeon.) Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 27:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to [CS:P]Zero Isle Center[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Items from the 17th slot and beyond
+                                [CN]in your Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]You will not earn Experience Points from the
+                                [CN]Pokémon you defeat.
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Any hidden traps that you trigger (even those
+                                [CN]that don't hit you) will remain invisible.
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, you cannot be rescued.
+                                [CN]Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 28:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to [CS:P]Destiny Tower[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]All the money and every item in
+                                [CN]your Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="[CN]Only the leader may enter...",
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, your level will be temporarily
+                                [CN]reduced to Level 1. (It will be restored
+                                [CN]upon leaving the dungeon.)
+                            """,
+                        });
+                        message_Mail({
+                            english="[CN]All IQ Skills will be unusable...",
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Any hidden traps that you trigger (even those
+                                [CN]that don't hit you) will remain invisible.
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, you cannot be rescued.
+                                [CN]Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 29:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to [CS:P]Oblivion Forest[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]All of your money and items from the 9th slot
+                                [CN]and beyond in your Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Any team members in the 3rd position and
+                                [CN]beyond will return to Treasure Town.
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, you cannot be rescued.
+                                [CN]Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 30:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to the [CS:P]Treacherous Waters[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]All of your money and items from the 9th slot
+                                [CN]and beyond in your Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Any team members in the 3rd position and
+                                [CN]beyond will return to Treasure Town.
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, you cannot be rescued.
+                                [CN]Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 31:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to the [CS:P]Southeastern Islands[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]All of your money and items from the 9th slot
+                                [CN]and beyond in your Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="[CN]Only the leader may enter...",
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, you cannot be rescued.
+                                [CN]Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 32:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]There are certain restrictions
+                                [CN]on going to [CS:P]Inferno Cave[CR].
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]All of your money and items from the 9th slot
+                                [CN]and beyond in your Treasure Bag will be lost...
+                            """,
+                        });
+                        message_Mail({
+                            english="[CN]Only the leader may enter...",
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Also, you cannot be rescued.
+                                [CN]Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 33:
+                        message_Mail({
+                            english="""
+                                [CN]Caution![K]
+                                [CN]You cannot be rescued in [CS:P]Star Cave[CR].
+                                [CN]Is that OK?
+                            """,
+                        });
+                        jump @label_32;
+                    case 18:
+                        if ( not debug ) {
+                            jump @label_5;
+                        } else {
+                            message_Notice({
+                                english="""
+                                    [CS:W]Dungeon Settings Error 1
+                                    Restrictions have been applied to dungeons
+                                    other than Zero Isle.[CR]
+                                """,
+                            });
+                            jump @label_32;
+                        }
+                        break;
+                    case 19:
+                        if ( not debug ) {
+                            jump @label_5;
+                        } else {
+                            message_Notice({
+                                english="""
+                                    [CS:W]Dungeon Settings Error 2
+                                    Restrictions have been applied to dungeons
+                                    other than Zero Isle.[CR]
+                                """,
+                            });
+                            jump @label_32;
+                        }
+                        break;
+                    default:
+                        jump @label_5;
+                }
+            } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+                Turn2Direction<actor ACTOR_PLAYER_BIPPA>(4, 10, DIR_RIGHT);
+                WaitExecuteLives(ACTOR_PLAYER_BIPPA);
+                jump @label_3;
+            } else {
+                supervision_ExecuteCommon(CORO_EVENT_N01_04);
+                jump @label_5;
+            }
+            break;
+        case 2:
+            SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+            jump @label_3;
+        default:
+            @label_2;
+            if ( scn($SCENARIO_MAIN) < [6, 3] ) {
+                @label_6;
+                SetAnimation<actor ACTOR_ATTENDANT1>(2);
+                SetAnimation<actor ACTOR_PLAYER>(2);
+                if ( scn($SCENARIO_MAIN) == [29, 48] ) {
+                    supervision_ExecuteCommon(CORO_EVENT_S03_12);
+                    @label_8;
+                    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                    WaitExecuteLives(ACTOR_ATTENDANT1);
+                    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     We have to get ready first,
+                                    [hero].
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     We have to get ready first,
+                                    [hero].
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     We have to get ready first,
+                                    [hero].
+                                """,
+                            }
+                    }
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english=" Let's go to Treasure Town.",
+                            }
+                        case 2:
+                            {
+                                english=" Let's go to Treasure Town.",
+                            }
+                        default:
+                            {
+                                english=" Let's go to Treasure Town.",
+                            }
+                    }
+                    jump @label_5;
+                } elseif ( scn($SCENARIO_MAIN) == [29, 1] ) {
+                    jump @label_8;
+                } elseif ( scn($SCENARIO_MAIN) == [14, 1] ) {
+                    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                    WaitExecuteLives(ACTOR_ATTENDANT1);
+                    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english=" No, we can't, [hero].",
+                            }
+                        case 2:
+                            {
+                                english=" No, we can't, [hero].",
+                            }
+                        default:
+                            {
+                                english=" No, we can't, [hero].",
+                            }
+                    }
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     We have to get ready for
+                                    capturing [CS:N]Grovyle[CR], right?
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     We're supposed to get ready for
+                                    capturing [CS:N]Grovyle[CR] first, right?
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     Aren't we supposed to get ready
+                                    for capturing [CS:N]Grovyle[CR] first?
+                                """,
+                            }
+                    }
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     Let's get back to the guild as
+                                    soon as we're ready.
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     Let's go back to the guild as
+                                    soon as we're ready.
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     We'll go back to the guild as
+                                    soon as we're ready.
+                                """,
+                            }
+                    }
+                    jump @label_5;
+                } elseif ( scn($SCENARIO_MAIN) == [9, 1] ) {
+                    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                    WaitExecuteLives(ACTOR_ATTENDANT1);
+                    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     If we dawdle now, they'll go
+                                    without us on the expedition!
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     If we dawdle now, they'll leave
+                                    us behind on the expedition!
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     If we're late now, they'll leave
+                                    us behind on the expedition!
+                                """,
+                            }
+                    }
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     When we're ready to leave on
+                                    the expedition, we have to go back to
+                                    the guild.
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     When we're ready for the
+                                    expedition, we have to go back to the guild.
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     When we're ready for the
+                                    expedition, we have to go back to the guild.
+                                """,
+                            }
+                    }
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     We have to let [CS:N]Chatot[CR] know
+                                    we're ready!
+                                """,
+                            }
+                        case 2:
+                            {
+                                english=" We have to report in to [CS:N]Chatot[CR]!",
+                            }
+                        default:
+                            {
+                                english="""
+                                     We have to let [CS:N]Chatot[CR] know
+                                    we're ready!
+                                """,
+                            }
+                    }
+                    jump @label_5;
+                } elseif ( scn($SCENARIO_MAIN) < [4, 5] ) {
+                    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                    WaitExecuteLives(ACTOR_ATTENDANT1);
+                    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     We don't have the time to
+                                    wander off.
+                                """,
+                            }
+                        case 2:
+                            {
+                                english=" This is no time to be dawdling.",
+                            }
+                        default:
+                            {
+                                english=" We can't take any detours.",
+                            }
+                    }
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     We have to do the guild's
+                                    work now.
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     We have to do the guild's
+                                    work now.
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     We have the guild's work to
+                                    do now.
+                                """,
+                            }
+                    }
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     [CS:N]Bidoof[CR]'s waiting at the guild.
+                                    Let's move it!
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     [CS:N]Bidoof[CR]'s waiting at the guild.
+                                    Let's get going!
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     [CS:N]Bidoof[CR]'s waiting at the guild.
+                                    We have to hurry!
+                                """,
+                            }
+                    }
+                    jump @label_5;
+                } else {
+                    jump @label_3;
+                }
+            } else {
+                $PERFORMANCE_PROGRESS_LIST[5] = 1;
+                jump @label_6;
+            }
+            break;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

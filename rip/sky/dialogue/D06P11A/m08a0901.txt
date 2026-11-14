@@ -1,0 +1,12 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	All set!
+ATTENDANT1	SwitchMenu	Which way should we go?
+ATTENDANT1	SwitchMenu	Craggy Coast
+ATTENDANT1	SwitchMenu	All right. Craggy Coast it is.
+ATTENDANT1	SwitchMenu	OK. Craggy Coast it is.
+ATTENDANT1	SwitchMenu	All right! Let's roll out!
+ATTENDANT1	Menu	Side Path
+ATTENDANT1	Menu	All right. Side Path it is.
+ATTENDANT1	Menu	OK. Side Path it is.
+ATTENDANT1	Menu	All right! Let's roll out!
+ATTENDANT1	Menu	Not yet...

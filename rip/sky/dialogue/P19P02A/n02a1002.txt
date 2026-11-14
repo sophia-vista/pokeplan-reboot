@@ -1,0 +1,33 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Wow! Amazing!
+PLAYER_PUPURIN	Talk	Secret base! Secret base! ♪
+NPC_AAMARUDO	Talk	My name is Armaldo.
+PLAYER_PUPURIN	Talk	So, what's exploring?
+NPC_AAMARUDO	Talk	That's right.
+PLAYER_PUPURIN	Talk	Really?
+PLAYER_PUPURIN	Talk	Oh?! That's so cool! ♪
+NPC_AAMARUDO	Talk	For example...
+NPC_AAMARUDO	Talk	For example, this secret map.
+NPC_AAMARUDO	Talk	Open it up and have a look.
+PLAYER_PUPURIN	Talk	.........
+NPC_AAMARUDO	Talk	...Hey!
+NPC_AAMARUDO	ImitationSound	Hot hot hot hot hot hot hot hot!
+NPC_AAMARUDO	Talk	Water! WATER!
+NPC_AAMARUDO	Talk	! Oh yeah! Water Gun!!
+NPC_AAMARUDO	Talk	Ah oh... Ah oh...
+NPC_AAMARUDO	Talk	My... My precious secret map...
+NPC_AAMARUDO	Talk	It's... It's charred...
+PLAYER_PUPURIN	Talk	Look! ♪
+NPC_AAMARUDO	Talk	What?
+NPC_AAMARUDO	Talk	Wh-what?
+PLAYER_PUPURIN	Talk	So I thought I'd burn it off! ♪
+NPC_AAMARUDO	Talk	... (Th-this kid...)
+NPC_AAMARUDO	Talk	I can't just jump back in...
+NPC_AAMARUDO	Talk	... (Th-that's...)
+NPC_AAMARUDO	Talk	(All right!)
+NPC_AAMARUDO	Talk	Hey, Junior.
+PLAYER_PUPURIN	Talk	R-really?
+NPC_AAMARUDO	Talk	Yes, really.
+NPC_AAMARUDO	Talk	Today, you should go on home...
+NPC_AAMARUDO	Talk	Tomorrow, we'll head out.
+PLAYER_PUPURIN	Talk	Yep! ♪ Thank you! ♪

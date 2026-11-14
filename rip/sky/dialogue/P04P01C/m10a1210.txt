@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Oh, my! So shimmering!
+NPC_BIPPA	Talk	Yup yup! Some kind of pretty!
+NPC_PUKURIN	Talk	The treasure!

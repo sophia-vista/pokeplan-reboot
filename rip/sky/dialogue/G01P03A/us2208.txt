@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_BAKUUDA	Talk	Thank you, Team !
+NPC_BAKUUDA	Talk	You did it! That's wonderful!
+NPC_BAKUUDA	Talk	Thank you so much!
+NPC_BAKUUDA	Talk	Your team won't fail! Go for it!
+NPC_BAKUUDA	Talk	Grovyle is a Grass type, I hear.

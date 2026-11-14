@@ -1,0 +1,97 @@
+
+def 0 {
+    sound_Stop();
+    back_SetDungeonBanner(66, 0);
+    screen_FadeIn(1, 16);
+    Wait(60);
+    screen_FadeOut(1, 16);
+    Wait(15);
+    back_SetGround(LEVEL_D39P41A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    screen_FadeIn(1, 30);
+    bgm_PlayFadeIn(BGM_IN_THE_DEPTHS_OF_THE_PIT, 0, 256);
+    MovePositionMark<actor ACTOR_PLAYER_APPOINT>(1, Position<'m0', 46.5, 43>);
+    MovePositionMark<actor ACTOR_ADVENTURE_NPC1>(1, Position<'m1', 49.5, 45>);
+    MovePositionMark<actor ACTOR_ADVENTURE_NPC2>(1, Position<'m2', 43.5, 45>);
+    MovePositionMark<actor ACTOR_ADVENTURE_NPC3>(1, Position<'m3', 46.5, 47>);
+    WaitExecuteLives(ACTOR_PLAYER_APPOINT);
+    Wait(15);
+    message_SetFace(ACTOR_NPC_PARUKIA, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             I AM [CS:N]PALKIA[CR]![K] I CONTROL THE
+            FABRIC OF SPACE ITSELF!
+        """,
+    });
+    message_Talk({
+        english="""
+             AND THIS IS MY SPACE![K]
+            MY TERRITORY!
+        """,
+    });
+    message_Talk({
+        english="""
+             ALL THOSE WHO VIOLATE
+            [CS:P]SPACIAL RIFT[CR]...
+        """,
+    });
+    message_Talk({
+        english="""
+             I WILL DESTROY! NO MATTER
+            WHO IT IS!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    message_SetFace(ACTOR_NPC_PARUKIA, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             BUT...[K]YOUR REGRET COMES TOO
+            LATE!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    message_SetFace(ACTOR_NPC_PARUKIA, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             THERE IS NO ESCAPING![K]
+            YOU MUST FACE ME IN BATTLE!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(2);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    WaitSe(5143);
+    message_SetFace(ACTOR_NPC_PARUKIA, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+    message_Talk({
+        english="""
+             PREPARE TO FALL![K]
+            GRRR-OOOOOO!
+        """,
+    });
+    SetDirection<actor ACTOR_NPC_PARUKIA>(DIR_DOWNRIGHT);
+    SetAnimation<actor ACTOR_NPC_PARUKIA>(44);
+    Wait(30);
+    message_CloseEnforce();
+    bgm_Stop();
+    CallCommon(CORO_BOSS_WIPE_FUNC);
+    end;
+}

@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	What are you doing?
+ATTENDANT1	Talk	...Huh?!
+ATTENDANT1	Talk	Wh-where is this?
+NPC_PERAPPU	Talk	Do it again! Get going!

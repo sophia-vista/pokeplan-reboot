@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Notice	Which dungeon will you enter?  A
+-	Notice	Which dungeon will you enter?  B
+-	Notice	Which dungeon will you enter?  C

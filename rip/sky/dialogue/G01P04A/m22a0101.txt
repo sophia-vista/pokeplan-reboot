@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ahem! So in short...
+NPC_PERAPPU	Talk	But we're not giving up!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Talk	Let's go, everyone!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+ATTENDANT1	Talk	We don't have any other leads.
+ATTENDANT1	Talk	We're out of leads.
+ATTENDANT1	Talk	Huh? Torkoal is here?
+ATTENDANT1	Talk	What? Torkoal is here?

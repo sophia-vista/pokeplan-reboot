@@ -1,0 +1,15 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	Whew... Here's Kecleon Market.
+PLAYER_BIPPA	Talk	Howdy!
+NPC_KAKUREON1	Talk	Have you come to shop? ♪
+NPC_KAKUREON1	Talk	No, no. It's no bother at all. ♪
+PLAYER_BIPPA	Talk	Two of them. OK, thanks!
+NPC_KAKUREON1	Talk	Do your best at your work! ♪
+NPC_KAKUREON1	Talk	...Huh? Is there something else?
+PLAYER_BIPPA	Talk	I just have a little problem...
+NPC_KAKUREON1	Talk	Oh... What kind of problem?
+PLAYER_BIPPA	Talk	For example...
+PLAYER_BIPPA	Talk	TM? ...That's the way?
+NPC_KAKUREON2	Talk	How about this one?
+PLAYER_BIPPA	Talk	Is that right...?
+PLAYER_BIPPA	Talk	But...but this money...

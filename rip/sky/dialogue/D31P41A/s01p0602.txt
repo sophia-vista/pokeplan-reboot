@@ -1,0 +1,17 @@
+speaker	kind	line
+-	Talk	Muah-hahahaha!
+PLAYER	Talk	(What...? Someone's here!)
+ATTENDANT1	Talk	Who is it? Who are you?!
+ATTENDANT1	Talk	Who's there? Who are you?!
+-	Talk	Welcome...to the world of darkness.
+-	Talk	I am the grand master of all things bad.
+ATTENDANT1	Talk	Whaaat?!
+-	Talk	Grand Master: Prepare to...
+NPC_PUKURIN	Talk	Grand Master: Uh...
+ATTENDANT1	Talk	Huh?! Wigglytuff?!
+ATTENDANT1	Talk	What?! Wigglytuff?!
+ATTENDANT1	Talk	And everyone else?!
+ATTENDANT1	Talk	What's going on here?!
+NPC_PERAPPU	Talk	Minion: H-hey! Bidoof!
+NPC_PERAPPU	Talk	Minion: Why did you take the cover off?
+NPC_BIPPA	Talk	Uh, what? Whoops!

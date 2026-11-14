@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	Y-you helped...
+PLAYER_FUTURE	Talk	That was close.
+NPC_YONOWAARU	Talk	Gah!
+PLAYER_FUTURE	Talk	Are you OK, Dusknoir?
+PLAYER_FUTURE	Talk	Yes.
+PLAYER_FUTURE	Talk	(Next time, I definitely will!)

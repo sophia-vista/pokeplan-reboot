@@ -1,0 +1,83 @@
+
+def 0 {
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 0:
+            @label_0;
+            SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+            supervision_ExecuteCommon(CORO_EVENT_N01_03);
+            JumpCommon(CORO_END_TALK);
+        case 2:
+            SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+            supervision_ExecuteCommon(CORO_EVENT_N04_03);
+            JumpCommon(CORO_END_TALK);
+        default:
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            if ( scn($SCENARIO_MAIN) <= [4, 3] ) {
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                WaitExecuteLives(ACTOR_ATTENDANT1);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english=" Hey, [hero].",
+                        }
+                    case 2:
+                        {
+                            english=" Listen, [hero].",
+                        }
+                    default:
+                        {
+                            english=" Say, [hero].",
+                        }
+                }
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                WaitExecuteLives(ACTOR_PLAYER);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 Didn't [CS:N]Bidoof[CR] say he'd help us
+                                pick an outlaw?
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 When it came to picking an
+                                outlaw, didn't [CS:N]Bidoof[CR] say he'd help us?
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 Didn't [CS:N]Bidoof[CR] say he'd help us
+                                pick an outlaw?
+                            """,
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english=" We should ask [CS:N]Bidoof[CR] first.",
+                        }
+                    case 2:
+                        {
+                            english=" Let's ask [CS:N]Bidoof[CR] for his advice.",
+                        }
+                    default:
+                        {
+                            english=" We should ask [CS:N]Bidoof[CR] first.",
+                        }
+                }
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                JumpCommon(CORO_END_TALK);
+            } else {
+                switch ( message_Menu(MENU_OUTLAW_BOARD) ) { }
+                JumpCommon(CORO_END_TALK);
+            }
+            break;
+    }
+}

@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ah, it's you.
+NPC_PERAPPU	Talk	That will do for now. ♪

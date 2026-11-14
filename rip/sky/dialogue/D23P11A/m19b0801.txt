@@ -1,0 +1,9 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	Yes
+NPC_JUPUTORU	Talk	Good. We're leaving.
+NPC_JUPUTORU	Talk	Let's go.
+NPC_JUPUTORU	Menu	Not yet
+ATTENDANT1	Menu	All right.
+ATTENDANT1	Menu	OK.
+ATTENDANT1	Menu	We'll go when you're ready.
+ATTENDANT1	Menu	Let's go when you're ready.

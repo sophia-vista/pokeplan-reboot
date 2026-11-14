@@ -1,0 +1,66 @@
+
+def 0 {
+    bgm_PlayFadeIn(BGM_MEMORIES_RETURNED, 0, 256);
+    back_SetGround(LEVEL_G01P05A);
+    supervision_Acting(0);
+    supervision_Acting(1);
+    Wait(1);
+    camera_SetMyself<performer 0>();
+    SetDirection<actor ACTOR_NPC_PUKURIN>(DIR_DOWN);
+    SetDirection<actor ACTOR_NPC_PERAPPU>(DIR_LEFT);
+    SetPositionOffset<actor ACTOR_ATTENDANT1>(0, -12);
+    SetPositionOffset<actor ACTOR_PLAYER>(0, -12);
+    SetAnimation<object OBJECT_G01P05A1_106>(18);
+    WaitAnimation<object OBJECT_G01P05A1_106>();
+    WaitExecuteObject(OBJECT_G01P05A1_106);
+    screen_FlushOut(1, 0, 8, 0, 0, 0);
+    screen_FadeIn(1, 30);
+    Wait(30);
+    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_HAPPY, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english=" Let's do this right, [hero]!",
+            }
+        case 2:
+            {
+                english="""
+                     Let's always do our best,
+                    [hero]!
+                """,
+            }
+        default:
+            {
+                english="""
+                     Let's always do our best,
+                    [hero]!
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    SetAnimation<actor ACTOR_PLAYER>(71);
+    WaitAnimation<actor ACTOR_PLAYER>();
+    WaitExecuteLives(ACTOR_PLAYER);
+    SetAnimation<actor ACTOR_PLAYER>(71);
+    WaitAnimation<actor ACTOR_PLAYER>();
+    WaitExecuteLives(ACTOR_PLAYER);
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    Wait(45);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_DOWN);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_DOWN);
+    WaitExecuteLives(ACTOR_PLAYER);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    Wait(20);
+    SetAnimation<actor ACTOR_PLAYER>(66);
+    SetAnimation<actor ACTOR_ATTENDANT1>(66);
+    WaitAnimation<actor ACTOR_PLAYER>();
+    WaitAnimation<actor ACTOR_ATTENDANT1>();
+    Wait(80);
+    screen_WhiteOut(1, 30);
+    screen_FlushIn(1, 0, 1, 0, 0, 0);
+    Wait(30);
+    end;
+}

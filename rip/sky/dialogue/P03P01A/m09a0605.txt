@@ -1,0 +1,3 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	So put it into this hollow place?
+ATTENDANT1	FacePositionOffset	Waaaah!

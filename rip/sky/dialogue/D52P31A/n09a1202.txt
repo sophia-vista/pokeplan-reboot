@@ -1,0 +1,5 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	This is...
+NPC_YONOWAARU	Talk	Egad! Grovyle, look!
+PLAYER_FUTURE	Talk	Yes! I can!
+PLAYER_FUTURE	Talk	Come on!

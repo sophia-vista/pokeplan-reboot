@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Huh? Sunflora?
+NPC_CHIRIIN	Talk	What are you doing?
+NPC_CHIRIIN	Talk	Huh? You're writing something!
+PLAYER_KIMAWARI	Talk	Oh my gosh! D-don't look!
+PLAYER_KIMAWARI	Talk	I'm so embarrassed!
+NPC_CHIRIIN	Talk	Wh-what?
+NPC_CHIRIIN	Talk	Oh! Don't tell me!
+PLAYER_KIMAWARI	Talk	Yep!
+PLAYER_KIMAWARI	Talk	To reflect on my day...
+PLAYER_KIMAWARI	Talk	I-if someone sneaked a peek...
+PLAYER_KIMAWARI	Talk	Nope! No good!
+PLAYER_KIMAWARI	Talk	It's just no good!

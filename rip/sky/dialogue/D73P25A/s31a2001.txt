@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_SHEIMI	Talk	Everyone wait a second!
+NPC_KUCHIITO	Talk	Wh-what?!
+NPC_MASUKIPPA	Talk	Huh? You...
+NPC_SHEIMI	Talk	We owe you...
+NPC_MASUKIPPA	Talk	!!! Where'd he go?!
+NPC_KINOGASSA	Talk	Huh...? Really...?
+NPC_GOORIKII	Talk	.........
+NPC_MASUKIPPA	Talk	See you!
+NPC_SHEIMI	Talk	Excuse me.
+NPC_GOORIKII	Talk	......... Sorry!
+NPC_KUCHIITO	Talk	Yeah!

@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	So sorry! To have disturbed you!
+NPC_YUKUSHII	Talk	You have earned my trust.
+NPC_YUKUSHII	Talk	Please hold true to that promise.
+NPC_PUKURIN	Talk	OK! Let's be on our way!
+NPC_PUKURIN	Talk	Chatot, if you will!
+NPC_PERAPPU	Talk	I'll hop to it, Guildmaster!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Narration	And so...
+NPC_PERAPPU	Narration	For  and the apprentices...
+NPC_PERAPPU	Narration	It was life as usual back at the guild!

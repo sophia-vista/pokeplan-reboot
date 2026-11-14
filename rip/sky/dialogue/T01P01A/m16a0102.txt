@@ -1,0 +1,31 @@
+speaker	kind	line
+NPC_HIMEGUMA	Talk	Oh, look! The guild members!
+NPC_YARUKIMONO	Talk	For them to be called...
+NPC_YUKUSHII	Talk	Azelf!
+NPC_AGUNOMU	Talk	Uxie! Mesprit!
+NPC_AGUNOMU	Talk	Yep. I'm OK.
+NPC_YUKUSHII	Talk	The Time Gear?
+NPC_AGUNOMU	Talk	It's in Crystal Lake.
+NPC_AGUNOMU	Talk	Yep. It will be safe for now.
+NPC_AGUNOMU	Talk	Stealing it won't be easy.
+ATTENDANT1	FacePositionOffset	Hey! Dusknoir, sir!
+ATTENDANT1	FacePositionOffset	Oh! Dusknoir, sir!
+NPC_YONOWAARU	Talk	You are safe! I am so relieved!
+ATTENDANT1	FacePositionOffset	Thank you for saving us!
+ATTENDANT1	FacePositionOffset	So... What happened?
+NPC_YONOWAARU	Talk	I gave chase to Grovyle.
+NPC_YONOWAARU	Talk	But he slipped away from me.
+NPC_JIBAKOIRU	Talk	ZZZT! If I may interrupt! ZZZT!
+NPC_DOGOOMU	Talk	Who knows? Don't ask ME!
+NPC_JIBAKOIRU	Talk	ZZZT! Everyone is here... ZZZT!
+NPC_JIBAKOIRU	Talk	ZZZT! Grovyle failed... ZZZT!
+NPC_RINGUMA	Talk	Wow!
+NPC_YARUKIMONO	Talk	Isn't that something!
+NPC_HIMEGUMA	Talk	That's astounding!
+NPC_YONOWAARU	Talk	Officer Magnezone...
+NPC_YONOWAARU	Talk	First...
+NPC_YONOWAARU	Talk	Everyone: WHAT?!
+NPC_YONOWAARU	Talk	First, Grovyle is...
+NPC_KIMAWARI	Talk	F-future?
+NPC_PERAPPU	Talk	The planet's...paralysis?
+NPC_YONOWAARU	Talk	Yes.

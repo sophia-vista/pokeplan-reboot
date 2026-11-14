@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_YAMIRAMI	Talk	Gr-Grovyle!
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!
+NPC_YAMIRAMI	Talk	M-Master Dusknoir!
+PLAYER_FUTURE	Talk	There's something I want to ask.
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!

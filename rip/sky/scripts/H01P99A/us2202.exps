@@ -1,0 +1,400 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] || scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] ) {
+        WaitSubScreen();
+        screen2_FadeOut(1, 30);
+        if ( $SCENARIO_TALK_BIT_FLAG[41] ) {
+            WaitSubScreen();
+            screen2_FadeOut(1, 30);
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_KURESERIA);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_KURESERIA);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     I would love to join your Team
+                    [team:]...
+                """,
+            });
+            message_Talk({
+                english=" Will you have me?",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            switch ( ProcessSpecial(PROCESS_SPECIAL_PREPARE_MENU_ACCEPT_TEAM_MEMBER, 18, 0) ) { }
+            switch ( message_Menu(MENU_ACCEPT_TEAM_MEMBER) ) {
+                case 1:
+                default:
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    message_SetFace(ACTOR_NPC_NEW_FRIEND, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english=" Thank you so much!",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_KURESERIA);
+                    WaitExecuteLives(ACTOR_ATTENDANT1);
+                    message_SetFace(ACTOR_ATTENDANT1, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     Oh, for sure, [c_name:NPC_NEW_FRIEND]!
+                                    Thank you for joining us!
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     Oh, you bet, [c_name:NPC_NEW_FRIEND]!
+                                    Thank you for joining us!
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     Oh, for sure, [c_name:NPC_NEW_FRIEND]!
+                                    Thank you for joining us!
+                                """,
+                            }
+                    }
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    me_Play(5);
+                    message_ResetActor();
+                    message_Mail({
+                        english="[CN][c_name:NPC_NEW_FRIEND] joined the team!",
+                    });
+                    WaitMe(5);
+                    message_Close();
+                    screen_FadeOut(1, 30);
+                    Destroy<actor ACTOR_NPC_KURESERIA>();
+                    Wait(60);
+                    screen_FadeIn(1, 30);
+                    @label_130;
+                    JumpCommon(CORO_END_TALK);
+                case 2:
+                    message_Close();
+                    Wait(30);
+                    message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english=" ...I see. That's disappointing.",
+                    });
+                    message_Talk({
+                        english="""
+                             If you have a change of heart,
+                            and you would let me join your team...
+                        """,
+                    });
+                    message_Talk({
+                        english=" Please tell me.",
+                    });
+                    message_Close();
+                    jump @label_130;
+            }
+        } else {
+            $SCENARIO_TALK_BIT_FLAG[41] = 1;
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_KURESERIA);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_KURESERIA);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     Thanks to you, [hero] and
+                    [partner], that [CS:N]Darkrai[CR] was stopped from
+                    carrying out his wicked scheme.
+                """,
+            });
+            message_Talk({
+                english=" My job here is done.",
+            });
+            message_Talk({
+                english=" Sincerely... Thank you.",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_WORRIED, FACE_POS_BOTTOM_R_FACEINW);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             [CS:N]Cresselia[CR], what about you?[K]
+                            What are you going to do now?
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             [CS:N]Cresselia[CR], what about you?[K]
+                            What are your plans now?
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             [CS:N]Cresselia[CR], what about you?[K]
+                            What are you going to do now?
+                        """,
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_NPC_KURESERIA>(4, 10, DIR_LEFT);
+            WaitExecuteLives(ACTOR_NPC_KURESERIA);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+            message_Talk({
+                english=" I've pondered many possibilities.",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2DirectionLives<actor ACTOR_NPC_KURESERIA>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_NPC_KURESERIA);
+            message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english=" May I...[K]join Team [team:]?",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8967);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_EXCLAMATION_MARK, 3);
+            WaitEffect<actor ACTOR_ATTENDANT1>();
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_SURPRISED, FACE_POS_BOTTOM_R_FACEINW);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             Huh?[K] [CS:N]Cresselia[CR]? In our
+                            exploration team?
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             What?[K] [CS:N]Cresselia[CR]? In our
+                            exploration team?
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             Pardon?[K] [CS:N]Cresselia[CR]? In our
+                            exploration team?
+                        """,
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     If I'm not a burden, I very much
+                    hope that you would accept me on your team...
+                """,
+            });
+            message_Talk({
+                english=" Will you have me?",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8975);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_SURPRISED, FACE_POS_BOTTOM_R_FACEINW);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             Are you joking? You're not a
+                            burden at all!
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             You must be joking! You're the
+                            last Pokémon I'd consider a burden!
+                        """,
+                    }
+                default:
+                    {
+                        english=" Not at all! You're no burden!",
+                    }
+            }
+            message_SetFace(ACTOR_ATTENDANT1, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" It's great you want to join us!",
+                    }
+                case 2:
+                    {
+                        english=" We're honored to have you!",
+                    }
+                default:
+                    {
+                        english=" We'd love to have you!",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Right, [hero]?",
+                    }
+                case 2:
+                    {
+                        english=" Right, [hero]?",
+                    }
+                default:
+                    {
+                        english=" Right, [hero]?",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            switch ( ProcessSpecial(PROCESS_SPECIAL_PREPARE_MENU_ACCEPT_TEAM_MEMBER, 18, 0) ) { }
+            switch ( message_Menu(MENU_ACCEPT_TEAM_MEMBER) ) {
+                case 1:
+                default:
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    message_SetFace(ACTOR_NPC_NEW_FRIEND, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english=" Thank you so much!",
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_KURESERIA);
+                    WaitExecuteLives(ACTOR_ATTENDANT1);
+                    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_KURESERIA);
+                    WaitExecuteLives(ACTOR_PLAYER);
+                    message_SetFace(ACTOR_ATTENDANT1, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+                    message_SwitchTalk ($PARTNER_TALK_KIND) {
+                        case 1:
+                            {
+                                english="""
+                                     Oh, for sure, [c_name:NPC_NEW_FRIEND]!
+                                    Thank you for joining us!
+                                """,
+                            }
+                        case 2:
+                            {
+                                english="""
+                                     Oh, you bet, [c_name:NPC_NEW_FRIEND]!
+                                    Thank you for joining us!
+                                """,
+                            }
+                        default:
+                            {
+                                english="""
+                                     Oh, for sure, [c_name:NPC_NEW_FRIEND]!
+                                    Thank you for joining us!
+                                """,
+                            }
+                    }
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    me_Play(5);
+                    message_ResetActor();
+                    message_Mail({
+                        english="[CN][c_name:NPC_NEW_FRIEND] joined the team!",
+                    });
+                    WaitMe(5);
+                    message_Close();
+                    screen_FadeOut(1, 30);
+                    Destroy<actor ACTOR_NPC_KURESERIA>();
+                    Wait(60);
+                    screen_FadeIn(1, 30);
+                    jump @label_130;
+                case 2:
+                    message_Close();
+                    Wait(30);
+                    message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english=" ...I see. That's disappointing.",
+                    });
+                    message_Talk({
+                        english="""
+                             If you have a change of heart,
+                            and you would let me join your team...
+                        """,
+                    });
+                    message_Talk({
+                        english=" Please tell me.",
+                    });
+                    message_Close();
+                    jump @label_130;
+            }
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 91] ) {
+        switch ( $GROUND_ENTER ) {
+            case 102:
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                SetAnimation<actor ACTOR_ATTENDANT1>(2);
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_KURESERIA);
+                message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I was driven to journey far and
+                        wide. I simply had to! I must stop [CS:N]Darkrai[CR]'s
+                        vile scheme.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         We don't have far to go.[K]
+                        There's no giving up now!
+                    """,
+                });
+                message_Close();
+                jump @label_130;
+            default:
+                @label_7;
+                supervision_ExecuteCommon(CORO_EVENT_S22_05);
+                jump @label_130;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 90] ) {
+        switch ( $GROUND_ENTER ) {
+            case 102:
+                @label_5;
+                switch ( $GROUND_ENTER ) {
+                    case 102:
+                        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+                        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_KURESERIA);
+                        message_SetFace(ACTOR_NPC_KURESERIA, FACE_NORMAL, FACE_POS_STANDARD);
+                        message_Talk({
+                            english="""
+                                 There's no telling when [CS:N]Darkrai[CR]
+                                will strike.
+                            """,
+                        });
+                        message_Talk({
+                            english="""
+                                 Let's proceed with
+                                utmost caution.
+                            """,
+                        });
+                        message_Close();
+                        jump @label_130;
+                    default:
+                        jump @label_7;
+                }
+                break;
+            default:
+                jump @label_7;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 89] ) {
+        jump @label_5;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] ) {
+        jump @label_7;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] || scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] || scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] || scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] || scn($SCENARIO_MAIN) >= [29, 56] || scn($SCENARIO_MAIN) >= [29, 55] || scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] || scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] || scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] || scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] || scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] || scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] || scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] || scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] || scn($SCENARIO_MAIN) >= [29, 8] || scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] || scn($SCENARIO_MAIN) >= [29, 4] || scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] || scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] || scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] || scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] || scn($SCENARIO_MAIN) >= [17, 1] || scn($SCENARIO_MAIN) >= [16, 2] || scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] || scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] || scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] || scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] || scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] || scn($SCENARIO_MAIN) >= [12, 1] || scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] || scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] || scn($SCENARIO_MAIN) >= [8, 3] || scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] || scn($SCENARIO_MAIN) >= [7, 6] || scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] || scn($SCENARIO_MAIN) >= [7, 1] || scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] || scn($SCENARIO_MAIN) >= [5, 5] || scn($SCENARIO_MAIN) >= [4, 7] || scn($SCENARIO_MAIN) >= [4, 5] || scn($SCENARIO_MAIN) >= [4, 3] || scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] || scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        jump @label_130;
+    } else {
+        jump @label_130;
+    }
+}

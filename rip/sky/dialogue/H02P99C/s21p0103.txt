@@ -1,0 +1,10 @@
+speaker	kind	line
+-	EmptyActor	(............)
+-	EmptyActor	(..................)
+-	EmptyActor	(........................)
+-	EmptyActor	(...Ugh. Can't sleep...)
+-	EmptyActor	( is...already asleep, I guess.)
+-	EmptyActor	(...But I have to wonder...)
+-	EmptyActor	(But how that leads to the world's ruin...)
+-	EmptyActor	(I still can't believe it...)
+-	EmptyActor	( said to me...)

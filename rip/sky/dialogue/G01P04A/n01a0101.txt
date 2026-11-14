@@ -1,0 +1,23 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	All right! Here we go today! ♪
+NPC_PERAPPU	Talk	Everyone: ONE! DON'T SHIRK WORK!
+NPC_PERAPPU	Talk	Everyone: TWO! RUN AWAY AND PAY!
+NPC_PERAPPU	Talk	Everyone: THREE! SMILES GO FOR MILES!
+NPC_PERAPPU	Talk	OK, Pokémon! Get to work! ♪
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+PLAYER_BIPPA	Mail	And someday...
+PLAYER_BIPPA	Notice	Start from where?
+PLAYER_BIPPA	SwitchMenu	Beginning
+PLAYER_BIPPA	SwitchMenu	SectionA
+PLAYER_BIPPA	SwitchMenu	SectionB
+PLAYER_BIPPA	SwitchMenu	SectionC
+PLAYER_BIPPA	SwitchMenu	SectionD(w/Snover)
+PLAYER_BIPPA	SwitchMenu	SectionD(w/oSnover)
+PLAYER_BIPPA	SwitchMenu	SectionF
+PLAYER_BIPPA	SwitchMenu	SectionG
+PLAYER_BIPPA	SwitchMenu	SectionH
+PLAYER_BIPPA	SwitchMenu	TALK-N01-01
+PLAYER_BIPPA	SwitchMenu	TALK-N01-02
+PLAYER_BIPPA	SwitchMenu	TALK-N01-03
+PLAYER_BIPPA	SwitchMenu	TALK-N01-035
+PLAYER_BIPPA	SwitchMenu	TALK-N01-04

@@ -1,0 +1,20 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Everyone! Time for dinner! ♪
+NPC_CHIRIIN	Talk	Everyone: YEAH!
+NPC_CHIRIIN	Talk	Everyone: Let's get...
+NPC_PERAPPU	Talk	Hold on, everyone!
+NPC_PERAPPU	Talk	Ahem! Before we start dinner...
+NPC_HEIGANI	Talk	Hey, hey, hey!
+NPC_PERAPPU	Talk	Quiet, please!
+NPC_PERAPPU	Talk	Another Time Gear was stolen!
+NPC_PERAPPU	Talk	Everyone: WHAT?!
+NPC_CHIRIIN	Talk	Another Time Gear?
+NPC_DOGOOMU	Talk	ANOTHER one got stolen?!
+NPC_PERAPPU	Talk	No, it wasn't.
+NPC_PERAPPU	Talk	It's apparently from elsewhere.
+NPC_PERAPPU	Talk	Understood?
+NPC_DAGUTORIO	Talk	Of course!
+NPC_DOGOOMU	Talk	I don't have a big mouth!
+NPC_PERAPPU	Talk	OK! OK! Quiet, everyone!
+NPC_PERAPPU	Talk	Sorry to keep you waiting.
+NPC_PERAPPU	Talk	Everyone: CHOW!

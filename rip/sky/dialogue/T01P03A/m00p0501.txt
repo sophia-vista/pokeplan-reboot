@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_GARAGARA	Talk	...V-visitors...?
+NPC_GARAGARA	Talk	But...I haven't had any visitors...
+NPC_GARAGARA	Talk	Along came you two!

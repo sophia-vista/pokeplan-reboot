@@ -1,0 +1,64 @@
+speaker	kind	line
+-	Notice	Something is written here...
+-	SwitchMenu	Read
+-	Mail	They defeated Darkrai! And they're back safe!
+-	Mail	Good luck,  and !
+-	Mail	Please win! And please come back safe!
+-	Mail	Go for it, Team !
+-	Mail	Oh my gosh! How is that possible?!
+-	Mail	...It's always sunny.
+-	Mail	The instant it thunders... Eeeeek!
+-	Mail	Oooh, just as I wrote that! Eeeeek! Thunder!
+-	Mail	Oh my gosh! She startled me!
+-	Mail	Oh my gosh! What an exciting day it was!
+-	Mail	...Oh! Where? Oh my gosh! Where am I?!
+-	Mail	...Oh, I see now...
+-	Mail	So that's all for tonight! Good night!
+-	Mail	Baby Manaphy went back to the sea...
+-	Mail	I feel terrible for them...
+-	Mail	Please get better soon, Manaphy!
+-	Mail	Eeeek! They've beaten me to the punch!
+-	Mail	Oh my gosh! I heard a fantastic rumor!
+-	Mail	Oh my gosh! Yippee! I want to go there!
+-	Mail	They did it!
+-	Mail	But those kids can make it! I'm sure of it! Eek!
+-	Mail	I'll be cheering for them!
+-	Mail	Our future is in the hands of those two kids.
+-	Mail	You can't fail us!
+-	Mail	Oh my gosh! Yippee! What a shock!
+-	Mail	It was such an amazing thing! Yippee!
+-	Mail	But if those kids said it, then it must be true.
+-	Mail	I choose to believe the kids.
+-	Mail	Oh! Then does that mean...
+-	Mail	Oh my gosh... A bad Pokémon?!
+-	Mail	What should I do?! What should I do?!
+-	Mail	It's because...Team  is missing.
+-	Mail	Oh, I hope they're safe... Those kids...
+-	Mail	We have to leave everything up to Dusknoir.
+-	Mail	Good luck, Dusknoir!
+-	Mail	Bidoof, Dugtrio, and I searched Crystal Cave.
+-	Mail	But our search turned up nothing.
+-	Mail	Where could that Grovyle be...?
+-	Mail	But he must be caught, no matter what!
+-	Mail	For Uxie's sake too, we'll catch that criminal!
+-	Mail	It's another new discovery! Eek!
+-	Mail	Yip-yip-yippee! That's what it feels like!
+-	Mail	Then (oh my gosh!) the others noticed too.
+-	Mail	There's an expedition coming up! Yippee!
+-	Mail	Oooh, I'm feeling motivated! Yippee!
+-	Mail	But...everyone denied responsibility for it!
+-	Mail	Eek, how mysteriously it crept upon us!
+-	Mail	Who is the culprit?! Eek!
+-	Mail	Oh my gosh! I had a nasty scare the other day!
+-	Mail	I should really explain what all this is about.
+-	Mail	Thank you, Loudred.
+-	Mail	He didn't even know that!
+-	Mail	We got the job done too! ♪ Another fun day!
+-	Mail	Tomorrow, I'll be off exploring with Bidoof.
+-	Mail	Oh? Why do we need lots of food?
+-	Mail	Oh my gosh! How horrifying! Eeek!
+-	Mail	P.S. Two new kids joined the guild!
+-	Mail	Oh my gosh. They're both adorable. Yippee!
+-	Mail	Double-eek! Is someone sneaking a peek?
+-	Mail	Oh my gosh! How horrifying! Eeek!
+-	Mail	Ignore it

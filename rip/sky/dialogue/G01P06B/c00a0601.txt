@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Talk	Aaaaah! I'm done eating! Excellent meal!
+-	Talk	I'm stuffed, and now I'm getting sleepy...
+-	Talk	Yep, I'm off to bed! Good night, gang!
+-	Talk	Good night!

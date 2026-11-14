@@ -1,0 +1,17 @@
+speaker	kind	line
+ATTENDANT1	EmptyActor	(Huh?)
+ATTENDANT1	EmptyActor	It's just the feeling that I get.
+ATTENDANT1	EmptyActor	That's just the feeling I get.
+ATTENDANT1	EmptyActor	I can't quite say why.
+ATTENDANT1	EmptyActor	I just can't shake that feeling.
+ATTENDANT1	EmptyActor	I can't help feeling that way.
+ATTENDANT1	EmptyActor	That's the feeling I keep getting.
+ATTENDANT1	EmptyActor	(The key to unlocking my memory...)
+ATTENDANT1	EmptyActor	(Was it in that dream?)
+ATTENDANT1	EmptyActor	(But even if that were true...)
+ATTENDANT1	EmptyActor	(How does it relate to anything else?)
+ATTENDANT1	EmptyActor	(Bad Pokémon, huh...)
+ATTENDANT1	EmptyActor	(Oh! That reminds me of what Chatot said.)
+ATTENDANT1	EmptyActor	You know...
+ATTENDANT1	EmptyActor	No one seems to know why.
+ATTENDANT1	EmptyActor	(Huh? Time Gears?)

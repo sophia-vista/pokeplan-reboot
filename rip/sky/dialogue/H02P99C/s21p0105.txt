@@ -1,0 +1,13 @@
+speaker	kind	line
+-	EmptyActor	( was unusually upbeat then!)
+-	EmptyActor	(...and tried to cheer me up.)
+-	EmptyActor	( had to have been frightened.)
+-	EmptyActor	(............)
+-	EmptyActor	(..................)
+-	EmptyActor	(I felt crushed by that, but...)
+-	EmptyActor	(But... But...)
+-	EmptyActor	(That's why...)
+-	EmptyActor	(I have to keep my spirits strong!)
+-	EmptyActor	(My spirits...strong...)
+-	EmptyActor	(...spirits...)
+-	EmptyActor	(..................)

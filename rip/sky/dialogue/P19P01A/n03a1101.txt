@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_AAMARUDO	Talk	We should try again.
+PLAYER_PUPURIN	Talk	Yep. ♪
+NPC_AAMARUDO	Talk	Let's try again today.
+NPC_AAMARUDO	Talk	Once you're ready, we'll go.
+PLAYER_PUPURIN	Talk	Yep, Master. ♪

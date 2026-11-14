@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Talk	An Acting Test will be conducted.
+-	Talk	The Event Test is finished.

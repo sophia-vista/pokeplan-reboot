@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_YARUKIMONO	Talk	That Marowak Dojo!
+NPC_YARUKIMONO	Talk	But! As in, however!
+PLAYER_KIMAWARI	Talk	Well, I'd love to go...

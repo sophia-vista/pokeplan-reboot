@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Mail	tested the doors.
+-	Mail	The doors failed to open.
+PLAYER	Mail	(It sure looks like we've been locked up!)

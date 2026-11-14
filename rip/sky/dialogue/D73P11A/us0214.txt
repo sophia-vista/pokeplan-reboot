@@ -1,0 +1,2 @@
+speaker	kind	line
+NPC_KINOGASSA	Talk	It's dangerous if you don't hurry.

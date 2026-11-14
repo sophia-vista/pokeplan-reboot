@@ -1,0 +1,18 @@
+speaker	kind	line
+NPC_HIMEGUMA	Talk	Oh! ! !
+ATTENDANT1	Talk	Hey! Teddiursa and Ursaring!
+ATTENDANT1	Talk	Hi! Teddiursa and Ursaring!
+ATTENDANT1	Talk	You're here too!
+NPC_HIMEGUMA	Talk	Yup.
+NPC_RINGUMA	Talk	We often come play here.
+ATTENDANT1	Talk	No. Nothing like that.
+NPC_HIMEGUMA	Talk	Why are you two here?
+ATTENDANT1	Talk	No, we're not.
+NPC_HIMEGUMA	Talk	Oh, Luminous Spring?
+NPC_HIMEGUMA	Talk	That's just up ahead here.
+ATTENDANT1	Talk	Huh? Really?
+ATTENDANT1	Talk	What? Really?
+ATTENDANT1	Talk	Oh? Really?
+NPC_HIMEGUMA	Talk	Want to come with us?
+NPC_RINGUMA	Talk	Yeah, come with us if you want.
+ATTENDANT1	Talk	Waaaaah!

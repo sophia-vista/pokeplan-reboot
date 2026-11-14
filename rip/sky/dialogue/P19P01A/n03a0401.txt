@@ -1,0 +1,12 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Good morning! ♪
+NPC_AAMARUDO	Talk	Hey, here you are, Junior.
+PLAYER_PUPURIN	Talk	Quick, let's go let's go! ♪
+NPC_AAMARUDO	Talk	No need to be impatient.
+PLAYER_PUPURIN	Talk	Prepared?
+NPC_AAMARUDO	Talk	Yes.
+NPC_AAMARUDO	Talk	Look at this.
+PLAYER_PUPURIN	Talk	What... What's this?
+PLAYER_PUPURIN	Talk	Really?
+NPC_AAMARUDO	Talk	Anyhow.
+PLAYER_PUPURIN	Talk	Yep! ♪ Got it! ♪

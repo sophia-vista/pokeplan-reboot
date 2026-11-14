@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_TAMATAMA	Talk	Oh, hey, you're back!
+NPC_TAMATAMA	Talk	How was the summit?
+NPC_TAMATAMA	Talk	Please make good use of it.

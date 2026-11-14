@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	That was close.
+PLAYER_FUTURE	Talk	Yeah.
+PLAYER_FUTURE	Talk	To find Celebi and Dialga!

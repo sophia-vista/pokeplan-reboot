@@ -1,0 +1,18 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	Where's Jirachi?
+-	Talk	Heh-heh!
+-	Talk	Heh-heh-heh-heh-heh!
+PLAYER_BIPPA	Talk	Wh-who's there?!
+-	Talk	Gwah-ha-ha-ha-ha-ha-ha!
+PLAYER_BIPPA	Talk	Wh-who...is that?!
+-	Talk	Heh-heh-heh! You are really so gullible!
+-	Talk	To come trustingly all the way here!
+NPC_TATSUBEI	Talk	Heh-heh-heh! Long time no see!
+PLAYER_BIPPA	Talk	Wh-what...are you doing here?!
+PLAYER_BIPPA	Talk	Jirachi's place in Star Cave is...
+NPC_YUKIKABURI	Talk	Humph! Jirachi was never here.
+PLAYER_BIPPA	Talk	Whaaaat?!
+NPC_YUKIKABURI	Talk	And I am their leader...
+NPC_YUKIKABURI	Talk	The great Snover!
+PLAYER_BIPPA	Talk	Eeeeeeeek!
+NPC_YUKIKABURI	Talk	That time...

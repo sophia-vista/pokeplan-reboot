@@ -1,0 +1,15 @@
+
+def 0 {
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 4:
+            @label_0;
+            SetAnimation<actor ACTOR_PLAYER_FUTURE>(2);
+            supervision_ExecuteCommon(CORO_EVENT_N08_21);
+            end;
+        default:
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            supervision_ExecuteCommon(CORO_EVENT_M19_03);
+            end;
+    }
+}

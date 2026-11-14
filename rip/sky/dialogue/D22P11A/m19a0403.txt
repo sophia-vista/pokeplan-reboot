@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Hey! What are you doing?!
+NPC_JUPUTORU	Talk	Hurry!
+ATTENDANT1	FacePositionOffset	Let's hurry, .
+ATTENDANT1	FacePositionOffset	We have to hurry, .
+ATTENDANT1	FacePositionOffset	Let's hurry, .
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!

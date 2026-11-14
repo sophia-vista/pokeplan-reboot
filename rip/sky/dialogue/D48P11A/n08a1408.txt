@@ -1,0 +1,3 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	... (Temporal Tower, huh...)
+PLAYER_FUTURE	Talk	(Together...for the future!)

@@ -1,0 +1,1332 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_TALK_SUB);
+    switch ( ProcessSpecial(PROCESS_SPECIAL_INIT_RANDOM_NPC_JOBS, 0, 0) ) { }
+    switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_TYPE, 0, 0) ) {
+        case 1:
+            @label_0;
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                case 0:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             Please hurry and help
+                            [c_name:RANDOM_REQUEST_NPC02]. I'm counting on you.
+                        """,
+                    });
+                    @label_20;
+                    JumpCommon(CORO_END_TALK);
+                default:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             If it isn't Team [team:]!
+                            I had something I wanted to ask you!
+                        """,
+                    });
+                    message_Talk({
+                        english=" I'd like you to help [c_name:RANDOM_REQUEST_NPC02].",
+                    });
+                    message_Talk({
+                        english="""
+                             I just can't do it myself...
+                            Please, I'm counting on you!
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    back2_SetMode(7);
+                    WaitSubScreen();
+                    message_Mail({
+                        english="[CN]Would you like to accept this job request?",
+                    });
+                    switch ( message_SwitchMenu(0, 1) ) {
+                        case menu({
+                            english="Yes",
+                        }):
+                        default:
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                case 1:
+                                    message_Mail({
+                                        english="""
+                                            [CN][hero] accepted
+                                            [CN]the job request!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Thank you so much!
+                                            Please help [c_name:RANDOM_REQUEST_NPC02]!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                                default:
+                                    message_Mail({
+                                        english="""
+                                            [CN]Your Job List is full,
+                                            [CN]so you cannot accept it.
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                            }
+                            break;
+                        case menu({
+                            english="No",
+                        }):
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Oh, no...
+                                    I really thought Team [team:] could help
+                                    [c_name:RANDOM_REQUEST_NPC02]...
+                                """,
+                            });
+                            jump @label_20;
+                    }
+                    break;
+            }
+            break;
+        case 8:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                case 0:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             Please hurry and find
+                            [c_name:RANDOM_REQUEST_NPC02]! I'm counting on you!
+                        """,
+                    });
+                    jump @label_20;
+                default:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             Oh, Team [team:]!
+                            Perfect timing!
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             I'd like to ask you to look for
+                            [c_name:RANDOM_REQUEST_NPC02], who's been gone for a while!
+                            Could you, please?
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    back2_SetMode(7);
+                    WaitSubScreen();
+                    message_Mail({
+                        english="[CN]Would you like to accept this job request?",
+                    });
+                    switch ( message_SwitchMenu(0, 1) ) {
+                        case menu({
+                            english="Yes",
+                        }):
+                        default:
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                case 1:
+                                    message_Mail({
+                                        english="""
+                                            [CN][hero] accepted
+                                            [CN]the job request!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Thank you so much!
+                                            Please help [c_name:RANDOM_REQUEST_NPC02]!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                                default:
+                                    message_Mail({
+                                        english="""
+                                            [CN]Your Job List is full,
+                                            [CN]so you cannot accept it.
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                            }
+                            break;
+                        case menu({
+                            english="No",
+                        }):
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Whaaat?!
+                                    I guess it can't be helped... I'll just put a
+                                    request up on the Job Bulletin Board.
+                                """,
+                            });
+                            jump @label_20;
+                    }
+                    break;
+            }
+            break;
+        case 2:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                case 0:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             I'll join you just inside the
+                            dungeon. I'm counting on you!
+                        """,
+                    });
+                    jump @label_20;
+                default:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             I have to go into the dungeon to
+                            meet [c_name:RANDOM_REQUEST_NPC02], but I'm too scared to go
+                            by myself.
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             Now, Team [team:]!
+                            Could you please escort me to meet
+                            [c_name:RANDOM_REQUEST_NPC02]?
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    back2_SetMode(7);
+                    WaitSubScreen();
+                    message_Mail({
+                        english="[CN]Would you like to accept this job request?",
+                    });
+                    switch ( message_SwitchMenu(0, 1) ) {
+                        case menu({
+                            english="Yes",
+                        }):
+                        default:
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                case 1:
+                                    message_Mail({
+                                        english="""
+                                            [CN][hero] accepted
+                                            [CN]the job request!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Thank you so much!
+                                            I'll try my best too!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                                default:
+                                    message_Mail({
+                                        english="""
+                                            [CN]Your Job List is full,
+                                            [CN]so you cannot accept it.
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                            }
+                            break;
+                        case menu({
+                            english="No",
+                        }):
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Oooh...
+                                    I'm so scared, but I guess I have no choice but
+                                    to go in alone...
+                                """,
+                            });
+                            jump @label_20;
+                    }
+                    break;
+            }
+            break;
+        case 3:
+        case 4:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                case 0:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             Yay! Yay!
+                            I get to explore with Team [team:]!
+                            Let's do our best!
+                        """,
+                    });
+                    jump @label_20;
+                default:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             Team [team:]!
+                            Will you take me exploring with you?
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    back2_SetMode(7);
+                    WaitSubScreen();
+                    message_Mail({
+                        english="[CN]Would you like to accept this job request?",
+                    });
+                    switch ( message_SwitchMenu(0, 1) ) {
+                        case menu({
+                            english="Yes",
+                        }):
+                        default:
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                case 1:
+                                    message_Mail({
+                                        english="""
+                                            [CN][hero] accepted
+                                            [CN]the job request!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             You'll really go with me?
+                                            OK then. Let's do our best!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                                default:
+                                    message_Mail({
+                                        english="""
+                                            [CN]Your Job List is full,
+                                            [CN]so you cannot accept it.
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                            }
+                            break;
+                        case menu({
+                            english="No",
+                        }):
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Aah...
+                                    I really wanted to explore with you,
+                                    Team [team:].
+                                """,
+                            });
+                            jump @label_20;
+                    }
+                    break;
+            }
+            break;
+        case 5:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                case 0:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             I'm so relieved...
+                            Now I'll be able to go there...
+                        """,
+                    });
+                    jump @label_20;
+                default:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             There's a place I really want
+                            to visit.
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             But I'm scared to explore a
+                            dungeon by myself.
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             I'd really like it if you could
+                            come with me, Team [team:]...
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    back2_SetMode(7);
+                    WaitSubScreen();
+                    message_Mail({
+                        english="[CN]Would you like to accept this job request?",
+                    });
+                    switch ( message_SwitchMenu(0, 1) ) {
+                        case menu({
+                            english="Yes",
+                        }):
+                        default:
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                case 1:
+                                    message_Mail({
+                                        english="""
+                                            [CN][hero] accepted
+                                            [CN]the job request!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Really?! Thank you so much!
+                                            I'll do my best to help and stay out of the way!
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                                default:
+                                    message_Mail({
+                                        english="""
+                                            [CN]Your Job List is full,
+                                            [CN]so you cannot accept it.
+                                        """,
+                                    });
+                                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                    jump @label_20;
+                            }
+                            break;
+                        case menu({
+                            english="No",
+                        }):
+                            message_Close();
+                            back2_SetMode(-1);
+                            WaitSubScreen();
+                            Wait(20);
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     ...I see. You can't help...
+                                    It's not a good idea to go alone...
+                                """,
+                            });
+                            jump @label_20;
+                    }
+                    break;
+            }
+            break;
+        case 9:
+        default:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_SUB_TYPE, 0, 0) ) {
+                case 1:
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                        case 0:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     I wrote down the location where
+                                    it was stolen in a Job Letter.
+                                    I'm depending on you!
+                                """,
+                            });
+                            jump @label_20;
+                        default:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Please listen. When I was
+                                    walking through a dungeon the other day,
+                                    someone stole an item from me...
+                                """,
+                            });
+                            message_Talk({
+                                english="""
+                                     Huh? What did you say?
+                                    You'll really get my item back for me,
+                                    Team [team:]?
+                                """,
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            back2_SetMode(7);
+                            WaitSubScreen();
+                            message_Mail({
+                                english="[CN]Would you like to accept this job request?",
+                            });
+                            switch ( message_SwitchMenu(0, 1) ) {
+                                case menu({
+                                    english="Yes",
+                                }):
+                                default:
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                        case 1:
+                                            message_Mail({
+                                                english="""
+                                                    [CN][hero] accepted
+                                                    [CN]the job request!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     Thank you so much!
+                                                    I know it causes some inconvenience to you,
+                                                    so I'm glad you're kind enough to accept it!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                        default:
+                                            message_Mail({
+                                                english="""
+                                                    [CN]Your Job List is full,
+                                                    [CN]so you cannot accept it.
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                    }
+                                    break;
+                                case menu({
+                                    english="No",
+                                }):
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Oh... It looks like we can't quite
+                                            reach an agreement.
+                                        """,
+                                    });
+                                    jump @label_20;
+                            }
+                            break;
+                    }
+                    break;
+                default:
+                    @label_11;
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                        case 0:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     I know you can get back my
+                                    item, Team [team:]! I'm counting on you!
+                                """,
+                            });
+                            jump @label_20;
+                        default:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english=" Haaa... What'll I do...",
+                            });
+                            message_Talk({
+                                english="""
+                                     Oh! Team [team:]!
+                                    I've got something I wanted to ask you!
+                                """,
+                            });
+                            message_Talk({
+                                english="""
+                                     [c_name:RANDOM_REQUEST_NPC02] took something of
+                                    mine, and I'd really like it if you could track
+                                    them down and get it back for me?
+                                """,
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            back2_SetMode(7);
+                            WaitSubScreen();
+                            message_Mail({
+                                english="[CN]Would you like to accept this job request?",
+                            });
+                            switch ( message_SwitchMenu(0, 1) ) {
+                                case menu({
+                                    english="Yes",
+                                }):
+                                default:
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                        case 1:
+                                            message_Mail({
+                                                english="""
+                                                    [CN][hero] accepted
+                                                    [CN]the job request!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     Thank you so very much!
+                                                    I am so grateful for your help!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                        default:
+                                            message_Mail({
+                                                english="""
+                                                    [CN]Your Job List is full,
+                                                    [CN]so you cannot accept it.
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                    }
+                                    break;
+                                case menu({
+                                    english="No",
+                                }):
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             That puts me in a difficult spot.
+                                            Hmm... What should I do...?
+                                        """,
+                                    });
+                                    jump @label_20;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+        case 10:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_SUB_TYPE, 0, 0) ) {
+                case 4:
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                        case 0:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     ZZZT! I'll meet you inside the
+                                    dungeon entrance, and we can apprehend
+                                    them together! ZZZT!
+                                """,
+                            });
+                            jump @label_20;
+                        default:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     ZZZT! Good day, Team
+                                    [team:]. I have something I wish to
+                                    discuss with you... ZZZT!
+                                """,
+                            });
+                            message_Talk({
+                                english="""
+                                     ZZZT! No matter how hard I've
+                                    tried, I cannot seem to catch [c_name:RANDOM_REQUEST_NPC02]
+                                    alone. Will you assist me? ZZZT!
+                                """,
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            back2_SetMode(7);
+                            WaitSubScreen();
+                            message_Mail({
+                                english="[CN]Would you like to accept this job request?",
+                            });
+                            switch ( message_SwitchMenu(0, 1) ) {
+                                case menu({
+                                    english="Yes",
+                                }):
+                                default:
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                        case 1:
+                                            message_Mail({
+                                                english="""
+                                                    [CN][hero] accepted
+                                                    [CN]the job request!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     ZZZT! Thank you very much!
+                                                    I appreciate your assistance! ZZZT!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                        default:
+                                            message_Mail({
+                                                english="""
+                                                    [CN]Your Job List is full,
+                                                    [CN]so you cannot accept it.
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                    }
+                                    break;
+                                case menu({
+                                    english="No",
+                                }):
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             ZZZT! I see...
+                                            If Team [team:] is too busy, then I'll
+                                            have to ask someone else... ZZZT!
+                                        """,
+                                    });
+                                    jump @label_20;
+                            }
+                            break;
+                    }
+                    break;
+                default:
+                    @label_13;
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                        case 0:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     ZZZT! Thank you for your
+                                    continued assistance! ZZZT!
+                                """,
+                            });
+                            jump @label_20;
+                        default:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     ZZZT! Hello, Team [team:].
+                                    Thank you for your continuing assistance in
+                                    capturing outlaws. ZZZT!
+                                """,
+                            });
+                            message_Talk({
+                                english="""
+                                     ZZZT! Today, I would like you
+                                    to search for and apprehend [c_name:RANDOM_REQUEST_NPC02]...
+                                    Can you assist me? ZZZT!
+                                """,
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            back2_SetMode(7);
+                            WaitSubScreen();
+                            message_Mail({
+                                english="[CN]Would you like to accept this job request?",
+                            });
+                            switch ( message_SwitchMenu(0, 1) ) {
+                                case menu({
+                                    english="Yes",
+                                }):
+                                default:
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                        case 1:
+                                            message_Mail({
+                                                english="""
+                                                    [CN][hero] accepted
+                                                    [CN]the job request!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     ZZZT! Thank you for your
+                                                    continued assistance! ZZZT!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                        default:
+                                            message_Mail({
+                                                english="""
+                                                    [CN]Your Job List is full,
+                                                    [CN]so you cannot accept it.
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                    }
+                                    break;
+                                case menu({
+                                    english="No",
+                                }):
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             ZZZT! I see... There's no way
+                                            around it. Team [team:] is busy too.
+                                            ZZZT!
+                                        """,
+                                    });
+                                    jump @label_20;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+        case 6:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_SUB_TYPE, 0, 0) ) {
+                case 4:
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                        case 0:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     Please, for my friend, bring me
+                                    a [CS:I]Gabite Scale[CR]!
+                                    Please!
+                                """,
+                            });
+                            jump @label_20;
+                        default:
+                            if ( $SCENARIO_TALK_BIT_FLAG[1] ) {
+                                message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                message_Talk({
+                                    english="""
+                                         Hey, Team [team:]!
+                                        Do you think you could lend me a hand?
+                                    """,
+                                });
+                                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                @label_71;
+                                back2_SetMode(7);
+                                WaitSubScreen();
+                                message_Mail({
+                                    english="[CN]Would you like to accept this job request?",
+                                });
+                                switch ( message_SwitchMenu(0, 1) ) {
+                                    case menu({
+                                        english="Yes",
+                                    }):
+                                    default:
+                                        message_Close();
+                                        back2_SetMode(-1);
+                                        WaitSubScreen();
+                                        Wait(20);
+                                        switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                            case 1:
+                                                message_Mail({
+                                                    english="""
+                                                        [CN][hero] accepted
+                                                        [CN]the job request!
+                                                    """,
+                                                });
+                                                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                                message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                                message_Talk({
+                                                    english="""
+                                                         Thank you so very much!
+                                                        You've made me very happy!
+                                                    """,
+                                                });
+                                                jump @label_20;
+                                            default:
+                                                message_Mail({
+                                                    english="""
+                                                        [CN]Your Job List is full,
+                                                        [CN]so you cannot accept it.
+                                                    """,
+                                                });
+                                                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                                jump @label_20;
+                                        }
+                                        break;
+                                    case menu({
+                                        english="No",
+                                    }):
+                                        message_Close();
+                                        back2_SetMode(-1);
+                                        WaitSubScreen();
+                                        Wait(20);
+                                        message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                        message_Talk({
+                                            english=" WHAAAAT?!",
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 I really thought that if anyone
+                                                would help me, it would definitely be
+                                                Team [team:]!
+                                            """,
+                                        });
+                                        message_Talk({
+                                            english="""
+                                                 That's too bad...
+                                                Maybe a different exploration team will help...
+                                            """,
+                                        });
+                                        jump @label_20;
+                                }
+                            } else {
+                                $SCENARIO_TALK_BIT_FLAG[1] = 1;
+                                message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                message_Talk({
+                                    english="""
+                                         Hey, Team [team:]!
+                                        Do you think you could lend me a hand?
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         I am in need of one more
+                                        [CS:I]Gabite Scale[CR] to save my sick friend.
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         It's said that when [CS:N]Gabite[CR] admits
+                                        the strength of a team, it spares a [CS:I]Gabite
+                                        Scale[CR] as a token of appreciation.
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         [CS:N]Gabite[CR] can be found in the
+                                        depths of [CS:P]Labyrinth Cave[CR]! Please get a
+                                        [CS:I]Gabite Scale[CR] for me!
+                                    """,
+                                });
+                                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                jump @label_71;
+                            }
+                            break;
+                    }
+                    break;
+                default:
+                    @label_15;
+                    switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                        case 0:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     You know, everyone talks about
+                                    how Team [team:] is an incredible
+                                    exploration team.
+                                """,
+                            });
+                            jump @label_20;
+                        default:
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     I heard that Team [team:]
+                                    is a great exploration team. Is it true?
+                                """,
+                            });
+                            message_Talk({
+                                english="""
+                                     If it is, I'd like you to retrieve
+                                    an item for me...
+                                """,
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            back2_SetMode(7);
+                            WaitSubScreen();
+                            message_Mail({
+                                english="[CN]Would you like to accept this job request?",
+                            });
+                            switch ( message_SwitchMenu(0, 1) ) {
+                                case menu({
+                                    english="Yes",
+                                }):
+                                default:
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                        case 1:
+                                            message_Mail({
+                                                english="""
+                                                    [CN][hero] accepted
+                                                    [CN]the job request!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     Thank you!
+                                                    I knew the rumors about the superb Team
+                                                    [team:] had to be true!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                        default:
+                                            message_Mail({
+                                                english="""
+                                                    [CN]Your Job List is full,
+                                                    [CN]so you cannot accept it.
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                    }
+                                    break;
+                                case menu({
+                                    english="No",
+                                }):
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Hmm...
+                                            I knew you were that kind of exploration team.
+                                        """,
+                                    });
+                                    jump @label_20;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+        case 11:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                case 0:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             Team [team:] must be an
+                            incredible team to take on a challenge like that.
+                        """,
+                    });
+                    jump @label_20;
+                default:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english=" Are you Team [team:]?",
+                    });
+                    switch ( message_SwitchMenu(0, 1) ) {
+                        case menu({
+                            english="Yes",
+                        }):
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english="""
+                                     I was previously asked to give
+                                    this to you by [c_name:RANDOM_REQUEST_NPC01].
+                                """,
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            back2_SetMode(7);
+                            WaitSubScreen();
+                            message_Mail({
+                                english="""
+                                    [CN]Wha--[K] This! No matter how you look at it,
+                                    [CN]it's a Challenge Letter!
+                                """,
+                            });
+                            message_Mail({
+                                english="[CN]Would you like to accept this challenge?",
+                            });
+                            switch ( message_SwitchMenu(0, 1) ) {
+                                case menu({
+                                    english="Yes",
+                                }):
+                                default:
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                        case 1:
+                                            message_Mail({
+                                                english="""
+                                                    [CN][hero] accepted
+                                                    [CN]the challenge!
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                            message_Talk({
+                                                english="""
+                                                     So we're clear. I've definitely
+                                                    delivered the letter.
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                        default:
+                                            message_Mail({
+                                                english="""
+                                                    [CN]Your Job List is full,
+                                                    [CN]so you cannot accept it.
+                                                """,
+                                            });
+                                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                            jump @label_20;
+                                    }
+                                    break;
+                                case menu({
+                                    english="No",
+                                }):
+                                    message_Close();
+                                    back2_SetMode(-1);
+                                    WaitSubScreen();
+                                    Wait(20);
+                                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                    message_Talk({
+                                        english="""
+                                             Huh? Oh no!
+                                            You have to take it! What would I do with it?
+                                        """,
+                                    });
+                                    jump @label_20;
+                            }
+                            break;
+                        case menu({
+                            english="No",
+                        }):
+                        default:
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                            message_Talk({
+                                english=" Oh? I must've been mistaken...",
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            jump @label_20;
+                    }
+                    break;
+            }
+            break;
+        case 14:
+            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RANDOM_NPC_JOB_STILL_AVAILABLE, 0, 0) ) {
+                case 0:
+                    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                    message_Talk({
+                        english="""
+                             Huh? You want to know who the
+                            Mission came from?
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             I don't really know who it was,
+                            but he was a Pokémon who had a very odd
+                            manner of speaking.
+                        """,
+                    });
+                    message_Talk({
+                        english="""
+                             Why couldn't he hand it over on
+                            his own? It's really strange.
+                        """,
+                    });
+                    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                    jump @label_20;
+                default:
+                    if ( $SCENARIO_TALK_BIT_FLAG[1] ) {
+                        message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                        message_Talk({
+                            english="""
+                                 Earlier, a strange Pokémon
+                                appeared and asked me to give this to
+                                Team [team:].
+                            """,
+                        });
+                        message_Talk({
+                            english="""
+                                 It won't do any good in my
+                                possession. You should take it.
+                            """,
+                        });
+                        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                        @label_65;
+                        message_Mail({
+                            english="""
+                                [CN][hero] read the
+                                [CN]paper.
+                            """,
+                        });
+                        message_Close();
+                        back2_SetMode(7);
+                        WaitSubScreen();
+                        message_Mail({
+                            english="""
+                                [CN]To Team [team:],
+                                [CN]From Exploration Team Federation!
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]This is a Special Mission
+                                [CN]assigned only to Secret Rank
+                                [CN]exploration teams!
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN]Act promptly!
+                                [CN]That's all!
+                            """,
+                        });
+                        message_Mail({
+                            english="""
+                                [CN].....................[K]
+                                [CN]Would you like to accept this Mission?
+                            """,
+                        });
+                        switch ( message_SwitchMenu(0, 1) ) {
+                            case menu({
+                                english="Yes",
+                            }):
+                            default:
+                                message_Close();
+                                back2_SetMode(-1);
+                                WaitSubScreen();
+                                Wait(20);
+                                switch ( ProcessSpecial(PROCESS_SPECIAL_ACCEPT_RANDOM_NPC_JOB, 0, 0) ) {
+                                    case 1:
+                                        message_Mail({
+                                            english="""
+                                                [CN][hero]
+                                                [CN]accepted the Special Mission!
+                                            """,
+                                        });
+                                        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                        jump @label_20;
+                                    default:
+                                        message_Mail({
+                                            english="""
+                                                [CN]Your Job List is full,
+                                                [CN]so you cannot accept it.
+                                            """,
+                                        });
+                                        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                        jump @label_20;
+                                }
+                                break;
+                            case menu({
+                                english="No",
+                            }):
+                                message_Close();
+                                back2_SetMode(-1);
+                                WaitSubScreen();
+                                Wait(20);
+                                message_Mail({
+                                    english="""
+                                        [CN][hero]
+                                        [CN]declined the Special Mission.
+                                    """,
+                                });
+                                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                                message_Talk({
+                                    english="""
+                                         Huh?
+                                        You won't take it?!
+                                    """,
+                                });
+                                message_Talk({
+                                    english="""
+                                         So, what am I supposed to do
+                                        with this, then?!
+                                    """,
+                                });
+                                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                                jump @label_20;
+                        }
+                    } else {
+                        $SCENARIO_TALK_BIT_FLAG[1] = 1;
+                        message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+                        message_Talk({
+                            english="""
+                                 Hey, Team [team:]!
+                                You've arrived at just the right time.
+                            """,
+                        });
+                        message_Talk({
+                            english="""
+                                 Earlier, a strange Pokémon
+                                appeared and asked me to give this to
+                                Team [team:].
+                            """,
+                        });
+                        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                        jump @label_65;
+                    }
+                    break;
+            }
+            break;
+    }
+}

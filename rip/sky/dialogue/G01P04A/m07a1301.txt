@@ -1,0 +1,17 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ahem. One last item.
+NPC_CHIRIIN	Talk	Wow!
+NPC_KIMAWARI	Talk	Oh my gosh! It will be so fun!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+ATTENDANT1	Talk	I'm so hungry, ...
+NPC_PERAPPU	Talk	Ah, you two.
+NPC_PERAPPU	Talk	We're counting on you. ♪
+ATTENDANT1	Talk	Huh?! Wh-why?!
+NPC_PERAPPU	Talk	That's all.
+-	Talk	Psst! Listen up!
+-	Talk	Shhh! Over here!
+ATTENDANT1	FacePositionOffset	Hey! Bidoof!
+ATTENDANT1	FacePositionOffset	Oh! Bidoof!
+ATTENDANT1	FacePositionOffset	Hi! Bidoof!
+NPC_BIPPA	Talk	Shhh! By golly, not so loud!
+NPC_BIPPA	Talk	Come this way!

@@ -1,0 +1,6 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	Here's your Reviver Seed!
+NPC_DOGOOMU	Talk	Wh-what...IS this? HUH?!
+NPC_DOGOOMU	Talk	THIS is a DOOM Seed, ISN'T it?!
+PLAYER_BIPPA	Talk	Eeeeeeeek!!
+PLAYER_BIPPA	Mail	And then another time...

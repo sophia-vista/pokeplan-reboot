@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_GOORIKII	Talk	Until we meet again!
+NPC_GOORIKII	Talk	That Shaymin...
+NPC_GOORIKII	Talk	..................
+NPC_GOORIKII	Talk	Please.
+NPC_GOORIKII	Talk	...Sorry!

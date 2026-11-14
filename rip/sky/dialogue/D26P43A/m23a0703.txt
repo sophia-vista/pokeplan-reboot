@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Hmmm. You two!
+NPC_PERAPPU	Talk	Be alert! They're very close by!
+NPC_PERAPPU	Talk	(What is this...?)
+NPC_PERAPPU	Talk	(An odd sense of foreboding!)
+NPC_PERAPPU	Talk	(That's it!)

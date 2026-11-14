@@ -1,0 +1,31 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	YAY! Wh-what is it?!
+NPC_SAANAITO	Talk	Let's go and find out!
+NPC_CHAAREMU	Talk	I know, I know, but...
+PLAYER_CHARMS	Talk	All right, all right. I'll open it!
+PLAYER_CHARMS	Talk	Oh! Truly... Truly... Please...
+PLAYER_CHARMS	Mail	Lopunny opened the treasure chest!
+NPC_CHAAREMU	Talk	Ta dah! What...
+NPC_SAANAITO	Talk	What kind of treasure...
+NPC_CHAAREMU	Talk	N... NOTHING?!
+NPC_SAANAITO	Talk	The treasure chest!
+PLAYER_CHARMS	Talk	There's nothing in it!
+NPC_CHAAREMU	Talk	Maybe I'm simply exhausted?
+NPC_CHAAREMU	Talk	Maybe I'm simply imagining this?
+NPC_SAANAITO	Talk	It is not your imagination.
+NPC_SAANAITO	Talk	But... Why not?...
+-	Talk	Y-YOU!!
+NPC_CHAAREMU	Talk	Team AWD?!
+NPC_DORAPION	Talk	Aaaah! Th-the treasure!
+NPC_CHAAREMU	Talk	N-no! Hang on!
+NPC_CHAAREMU	Talk	It was totally empty!
+NPC_DORAPION	Talk	Don't lie! You cheater!
+NPC_SAANAITO	Talk	It's not a lie! It's the truth!
+NPC_MANYUURA	Talk	...Humph!
+NPC_SAANAITO	Talk	What...?!
+NPC_CHAAREMU	Talk	What'd you say?!
+NPC_CHAAREMU	Talk	Humph! You're all talk!
+NPC_MANYUURA	Talk	Humph!
+NPC_MANYUURA	Talk	Make sure you savor it!
+NPC_MANYUURA	Talk	Arbok & Drapion: YEAH!
+NPC_CHAAREMU	Talk	Anytime!

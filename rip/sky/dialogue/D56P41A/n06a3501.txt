@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_AABOKKU	Talk	Th-they're...not here!
+NPC_DORAPION	Talk	Wh-where'd they go?!
+NPC_MANYUURA	Talk	Team Charm! They ran away!
+NPC_MANYUURA	Talk	Get the treasure from them!
+NPC_MANYUURA	Talk	Arbok & Drapion: YEAH!

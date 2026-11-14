@@ -1,0 +1,2 @@
+speaker	kind	line
+-	Notice	Set Dungeon Background Display Test

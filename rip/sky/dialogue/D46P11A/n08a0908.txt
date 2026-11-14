@@ -1,0 +1,5 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Argh... That didn't go well...
+PLAYER_FUTURE	Talk	I should turn back for now.
+PLAYER_FUTURE	Talk	I can't falter now.
+PLAYER_FUTURE	Talk	I can't waste any time.

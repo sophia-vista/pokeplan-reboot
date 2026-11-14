@@ -1,0 +1,11 @@
+speaker	kind	line
+-	Narration	Meanwhile, back at Treasure Town...
+NPC_KAKUREON1	Talk	What a mean thing to do!
+NPC_RURIRI	Talk	Yep!
+NPC_MARIRU	Talk	Yes. That's true!
+NPC_YONOWAARU	Talk	I see. That is terrible indeed.
+NPC_KAKUREON1	Talk	It's utterly unforgivable!
+NPC_MARIRU	Talk	They went to Amp Plains.
+NPC_YONOWAARU	Talk	No! This is ruinous!
+NPC_KAKUREON1	Talk	What?!
+NPC_KAKUREON1	Talk	What?! Wait!
