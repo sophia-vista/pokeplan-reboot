@@ -88,6 +88,10 @@ enum class Sfx(val file: String, val streams: Boolean = false) {
     /** A World job claimed: the Explorers of Sky "mission success" jingle (assets/sky-sfx, rendered from the game's sound data). */
     MISSION_SUCCESS("jingle-mission-success"),
 
+    /** A team recalled from a dungeon (the sentry-duty "decent" jingle) and a research step collected (the Team Charm jingle), Explorers of Sky, rendered like the one above; not listened to yet. */
+    TEAM_RECALLED("jingle-decent-sentry-duty"),
+    RESEARCH_DONE("jingle-team-charm-jingle"),
+
     // The story's sounds: Explorers of Sky's own cutscene effects, levelled to sit with the cries by tools/sprites/convert_story_sfx.py.
     // None of them has been listened to yet; the table in [StoryCues] is the one place to change which plays when.
     STORY_RUMBLE("story-rumble"),

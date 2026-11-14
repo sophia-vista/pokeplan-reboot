@@ -410,10 +410,10 @@ private fun WorldMissionsView(model: AppModel) {
     val store = model.store
     val world = model.data.world
     if (!Missions.boardOpen(world)) {
-        WorldBanner("guild-room", "The mission board", "Opens at Bronze rank", sky = Color(0xFF101038), top = true)
+        WorldBanner("map:sky-g01p02a", "The mission board", "Opens at Bronze rank", sky = Color(0xFF101038), top = true)
         return
     }
-    WorldBanner("guild-room", "The mission board", "${world.missions.count { it.done }} ready to report, ${world.missions.size} of ${Missions.MAX_ACTIVE} taken", sky = Color(0xFF101038), top = true) // copy-ok: game
+    WorldBanner("map:sky-g01p02a", "The mission board", "${world.missions.count { it.done }} ready to report, ${world.missions.size} of ${Missions.MAX_ACTIVE} taken", sky = Color(0xFF101038), top = true) // copy-ok: game
         world.missions.forEach { p ->
         val m = Missions.byId(p.id) ?: return@forEach
         TextBox {
@@ -516,6 +516,9 @@ private fun WorldSkillsView(model: AppModel) {
 }
 
 /** The pages of the Town: its landing is the headquarters map and a menu, so nothing but the one page you opened is on screen (docs/pokelife/MODULES/WORLD.md section 2.1). */
+/** The Town page (a [TownPage] name) a screenshot test opens on; null in the app, which opens on the menu. */
+internal var townPageToOpen: String? = null
+
 private enum class TownPage(val label: String, val icon: String) {
     FACILITIES("Facilities", "heart-scale"), CAFE("Café", "soothe-bell"),
     KECLEON("Kecleon Shop", "rare-candy"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
@@ -524,7 +527,7 @@ private enum class TownPage(val label: String, val icon: String) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun WorldTownView(model: AppModel) {
-    var page by remember { mutableStateOf<TownPage?>(null) }
+    var page by remember { mutableStateOf(townPageToOpen?.let { TownPage.valueOf(it) }) }
     val world = model.data.world
     val open = page
     if (open == null) {
@@ -572,8 +575,10 @@ private fun WorldTownView(model: AppModel) {
     }
         }
         TownPage.CAFE -> {
-    WorldBanner("cafe", "Spinda's Café", "A brew for the road", sky = Color(0xFF29180F), top = true, height = 150.dp)
+    WorldBanner("map:sky-p01p04a", "Spinda's Café", null, sky = Color(0xFF29180F), top = true, height = 150.dp)
     var steam by remember { mutableStateOf(0) }
+    var cafeMessage by remember { mutableStateOf(ShopLines.SPINDA_WELCOME) }
+    ShopVoice(Keepers.SPINDA, "Spinda", cafeMessage)
     val clock = model.worldNow.takeIf { it > 0 } ?: model.store.nowMillis
     val brewing = world.brewUntil > clock
     TextBox {
@@ -584,24 +589,25 @@ private fun WorldTownView(model: AppModel) {
             }
             Text("${app.pokeplan.world.Cafe.BERRIES} berries from your Bag make a brew for ${app.pokeplan.world.Cafe.HOURS} hours: 30% more Exploration XP, 5% more treasure chance and 1% more find chance on every floor.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
             if (brewing) Text("A brew is working for ${(world.brewUntil - clock) / 60_000} more minutes.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green) // copy-ok: game
-            var cafeMessage by remember { mutableStateOf("") }
-            PixelButton("Brew", { cafeMessage = if (brewing) "A brew is still working." else if (store.worldBrew()) { steam++; model.effect(Sfx.EATING); "Brewed." } else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
-            if (cafeMessage.isNotEmpty()) Text(cafeMessage, style = MaterialTheme.typography.bodyMedium)
+            PixelButton("Brew", { cafeMessage = if (brewing) "A brew is still working." else if (store.worldBrew()) { steam++; model.effect(Sfx.EATING); ShopLines.SPINDA_BREWED } else ShopLines.SPINDA_NO_FOOD }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
         }
     }
         }
         TownPage.KECLEON -> {
-            WorldBanner("pokemon-square", "Kecleon Shop", "Items, for Poké", height = 150.dp)
+            WorldBanner("map:sky-t01p01a", "Kecleon Shop", "Items, for Poké", top = true, height = 150.dp)
+            var kecleonSays by remember { mutableStateOf(ShopLines.KECLEON_WELCOME) }
+            ShopVoice(Keepers.KECLEON, "Kecleon", kecleonSays)
     // Today's shelf first (it changes each day), then the stock that is always sold.
     val day = store.shopDay
-    ShopShelf(model, "Today's shelf", app.pokeplan.world.KecleonShop.shelf(day))
-    ShopShelf(model, "Always in stock", app.pokeplan.world.KecleonShop.fixed)
+    ShopShelf(model, "Today's shelf", app.pokeplan.world.KecleonShop.shelf(day)) { kecleonSays = if (it) ShopLines.KECLEON_BOUGHT else ShopLines.KECLEON_BROKE }
+    ShopShelf(model, "Always in stock", app.pokeplan.world.KecleonShop.fixed) { kecleonSays = if (it) ShopLines.KECLEON_BOUGHT else ShopLines.KECLEON_BROKE }
         }
         TownPage.SWAP -> {
-            WorldBanner("square", "Croagunk Swap Shop", "Berry for berry", height = 150.dp)
+            WorldBanner("map:sky-t01p02a", "Croagunk Swap Shop", "Berry for berry", top = true, height = 150.dp)
     var swapFrom by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[0]) }
     var swapTo by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[1]) }
-    var swapMessage by remember { mutableStateOf("") }
+    var swapMessage by remember { mutableStateOf(ShopLines.SWAP_WELCOME) }
+    ShopVoice(Keepers.CROAGUNK, "Croagunk", swapMessage)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Berry swap", style = MaterialTheme.typography.titleSmall)
@@ -613,8 +619,7 @@ private fun WorldTownView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton(f, { swapTo = f }, color = if (swapTo == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
             }
-            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) { model.effect(Sfx.CONFIRM); "Swapped." } else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Module.WORLD.look.accent) // copy-ok: game
-            if (swapMessage.isNotEmpty()) Text(swapMessage, style = MaterialTheme.typography.bodyMedium)
+            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) { model.effect(Sfx.CONFIRM); ShopLines.SWAP_DONE } else ShopLines.SWAP_SHORT }, Module.WORLD.look.accent) // copy-ok: game
         }
     }
         }
@@ -676,7 +681,7 @@ private fun WorldTeamsView(model: AppModel) {
                         Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
                     }
                     if (outAt != null) SpeedExplainer(members, outAt, world)
-                    PixelButton("Recall", { store.worldRecall(team.id); model.effect(Sfx.STAIRS_UP) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                    PixelButton("Recall", { store.worldRecall(team.id); model.effect(Sfx.TEAM_RECALLED) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 } else {
                     PixelButton(if (editing) "Close" else "Choose the team", { editing = !editing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     if (editing) {
@@ -928,7 +933,7 @@ private fun ResearchPage(model: AppModel) {
                     Text(buildString { append("${step.poke} Poké"); step.itemId?.let { append(", ${Items.name(it)} x${step.count}") } }, style = MaterialTheme.typography.bodyMedium)
                 }
                 if (claimed) Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-                else PixelButton("Collect", { if (store.worldClaimResearch(step.species)) model.effect(Sfx.ITEM_GET) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
+                else PixelButton("Collect", { if (store.worldClaimResearch(step.species)) model.effect(Sfx.RESEARCH_DONE) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
             }
         }
     }
@@ -974,6 +979,14 @@ private fun RecordsPage(model: AppModel) {
         }
     }
     val recruited = model.data.player.pokemon.filter { model.data.origins[it.id]?.how == Origin.How.WORLD }
+    // The game's Adventure Log wording (Explorers of Sky "Adventure Log Entries") for the counters World keeps.
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            FieldLabel("Adventure Log")
+            Text("Pokémon that joined you: ${recruited.size}", style = MaterialTheme.typography.bodyLarge)
+            Text("Dungeons cleared: ${world.clears.values.sum()}", style = MaterialTheme.typography.bodyLarge)
+        }
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("Recruited")
@@ -1103,7 +1116,7 @@ private fun ArchiveRow(title: String, detail: String, moment: app.pokeplan.world
 
 /** A shelf of the Kecleon Shop: each item with its icon, how many the Bag holds, and its price. */
 @Composable
-private fun ShopShelf(model: AppModel, title: String, offers: List<app.pokeplan.world.ShopOffer>) {
+private fun ShopShelf(model: AppModel, title: String, offers: List<app.pokeplan.world.ShopOffer>, said: (Boolean) -> Unit = {}) {
     val store = model.store
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -1113,9 +1126,9 @@ private fun ShopShelf(model: AppModel, title: String, offers: List<app.pokeplan.
                     app.pokeplan.ui.ItemIcon(o.itemId, size = app.pokeplan.ui.theme.Sizes.Icon)
                     Column(Modifier.weight(1f)) {
                         Text((if (o.count > 1) "${o.count} " else "") + Items.name(o.itemId), style = MaterialTheme.typography.bodyLarge)
-                        Text("In the Bag: ${model.data.player.inventory[o.itemId]}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        Text(ShopLines.itemText(Items.name(o.itemId)) ?: "In the Bag: ${model.data.player.inventory[o.itemId]}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     }
-                    PixelButton("${o.price} Poké", { if (store.worldBuy(o.itemId)) model.effect(Sfx.CONFIRM) }, color = Module.WORLD.look.accent, enabled = model.data.player.coins >= o.price, compact = true)
+                    PixelButton("${o.price} Poké", { val bought = store.worldBuy(o.itemId); if (bought) model.effect(Sfx.CONFIRM); said(bought) }, color = Module.WORLD.look.accent, enabled = model.data.player.coins >= o.price, compact = true)
                 }
             }
         }

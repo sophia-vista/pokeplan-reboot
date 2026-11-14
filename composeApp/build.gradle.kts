@@ -17,6 +17,8 @@ val storyRescueMaps = arrayOf(
 val storySkyMaps = arrayOf(
     "T00P02", "T00P03", "G01P01A", "G01P01B", "G01P01C", "G01P02A", "G01P03A", "G01P06A", "G01P07A", "H01P99A", "V09P04A", "V25P01A", "V26P02A",
     "P05P01A", "D51P41A", "P02P01A", "V31P01A", "V38P06C", "D73P11A",
+    // Explorers of Sky places used as World banners and page backgrounds (Treasure Town, Spinda's Café, the guild's summit, the sea cliffs).
+    "T00P01", "T01P01A", "T01P02A", "T00P04A", "P01P04A", "H01P99C", "H02P99A",
 ).map { "$it.png" }.toTypedArray()
 
 // The sprites (assets/sprites) and the pixel font (assets/fonts) live outside the module; they are copied into the shape
@@ -63,7 +65,7 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     from(rootProject.file("assets/cries")) { include("*.ogg"); into("files/cries") }
     // Sounds the app has no use for yet stay in assets/sfx but are not bundled (reminder.ogg is the notification's res/raw copy).
     from(rootProject.file("assets/sfx")) { include("*.ogg"); exclude("pokemon-center.ogg", "drawer-open.ogg", "drawer-close.ogg", "reminder.ogg", "timer-done.ogg"); into("files/sfx") }
-    from(rootProject.file("assets/sky-sfx")) { include("jingle-mission-success.ogg"); into("files/sfx") }
+    from(rootProject.file("assets/sky-sfx")) { include("jingle-mission-success.ogg", "jingle-decent-sentry-duty.ogg", "jingle-team-charm-jingle.ogg"); into("files/sfx") }
     from(rootProject.file("assets/status")) { include("*.png"); exclude("sheet.png", "sheet2.png", "skull.png"); into("files/status") }
     from(rootProject.file("assets/weather")) { include("*.png", "ramps.tsv"); into("files/weather") }
     from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }

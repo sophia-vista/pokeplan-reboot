@@ -290,6 +290,18 @@ class ScreenshotTest {
         }
     }
 
+    /** The Town's shop pages with their keepers (the café, Kecleon, the Swap Shop), and the Records page's adventure log. */
+    @Test
+    fun worldShops() {
+        val model = AppModel(started())
+        model.worldSection = app.pokeplan.ui.screens.WorldSection.TOWN
+        for (page in listOf("CAFE", "KECLEON", "SWAP")) {
+            app.pokeplan.ui.screens.townPageToOpen = page
+            render("world-shop-${page.lowercase()}", height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        }
+        app.pokeplan.ui.screens.townPageToOpen = null
+    }
+
     /** The mission board once it is open: a held job, a finished one, the available jobs with where and how often, and the ones that cannot be taken, with why. */
     @Test
     fun worldMissionBoard() {

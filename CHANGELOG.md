@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.191.0
+
+World takes more of Explorers of Sky: its places, its shopkeepers' words and its jingles (owner, 14 November 2026).
+
+- **Banners from the game:** Spinda's Café, the Kecleon Shop, the Croagunk Swap Shop and the mission board now open on Explorers of Sky maps (the café's room, Treasure Town south and north, the guild hall) instead of the older crops.
+- **Shopkeepers speak:** Kecleon, Spinda and Croagunk show their Mystery Dungeon portraits beside the game's own lines (welcome, "Thank you! All yours!", "I've got a good feeling about this drink!", and the café's and counter's refusals). The four vitamins on Kecleon's shelf show the game's description.
+- **Journal:** the Records page opens with an Adventure Log in the game's wording (Pokémon that joined you, dungeons cleared).
+- **Jingles:** a recalled team plays the game's sentry-duty jingle, a collected research step the Team Charm jingle.
+- **Places:** twelve Explorers of Sky places (Treasure Town, the café, the guild's summit, sea cliffs, a meadow, the night sky, a sunrise) are page backgrounds in Settings → Look; the evening scenes of "The Marine Resort" are set on the cliff at dusk. `docs/ASSETS/SKY_SOUND_LISTENING_SHEET.md` lists the unlabelled game sounds to listen to.
+
 ## 0.190.0
 
 Traps play the game's own effects, and Explorers of Sky is ripped for reference (owner, 14 November 2026).
