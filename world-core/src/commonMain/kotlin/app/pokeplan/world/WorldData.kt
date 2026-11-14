@@ -120,6 +120,8 @@ data class WorldData(
     val layersDone: Set<String> = emptySet(),
     /** The legendary quests whose Pokémon has been given, by [LegendQuest.id]. */
     val legends: Set<String> = emptySet(),
+    /** Evolution Trials done in WORLD ([EvolutionTrialSites]), as `EvolutionTrials.doneKey`: one per evolution and Pokémon. */
+    val evolutionTrials: Set<String> = emptySet(),
     /** The shape of this save (for later migrations): 1 since Phase 2 added team names, presets and the typed journal. */
     val worldVersion: Int = 1,
     /** Saved teams, up to [MAX_PRESETS]. */

@@ -21,6 +21,8 @@ sealed interface WorldEvent {
     /** The team turned back at [floor] and came home safely: the expedition is over. */
     data class Retreat(val dungeonId: String, val floor: Int) : WorldEvent
     data class MissionDone(val missionId: String) : WorldEvent
+    /** A team member did its Evolution Trial ([EvolutionTrialSites]): [pokemonName] can now evolve into [into]. */
+    data class TrialDone(val pokemonName: String, val into: String, val title: String) : WorldEvent
     /** A floor event: [user] opened it (null: the team went around), and [gave] says what it gave. */
     /** A floor offered a choice, now waiting for an answer (or the default). */
     data class ChoiceOffered(val kind: ChoiceKind, val dungeonId: String, val floor: Int) : WorldEvent
@@ -255,6 +257,7 @@ object WorldSim {
             is WorldEvent.Setback -> { kind = JournalLine.KIND_SETBACK; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title had a setback on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and went on." }
             is WorldEvent.Retreat -> { kind = JournalLine.KIND_SETBACK; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title turned back at floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and came home safely." }
             is WorldEvent.MissionDone -> { kind = JournalLine.KIND_JOB; "A job is done: ${Missions.byId(event.missionId)?.title}. Report back on the board." }
+            is WorldEvent.TrialDone -> { kind = JournalLine.KIND_JOB; "Evolution Trial done: ${event.title}. ${event.pokemonName} can now evolve into ${event.into}." }
             WorldEvent.GuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian was faced. The story is complete." }
             is WorldEvent.LayerGuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian of ${event.layer.label} was faced. Its story is complete." }
             else -> return null
@@ -351,6 +354,7 @@ object WorldSim {
         }
         d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
         d = Missions.advance(d, dungeon.id, if (partial) 0 else floor, berries, at, teamSize, power, events, opened = events.drop(firstEvent).count { it is WorldEvent.FloorEvent && it.userName != null })
+        d = EvolutionTrialSites.advance(d, dungeon.id, if (partial) 0 else floor, members, events)
         if (!partial && floor == dungeon.floors && dungeon.guardian && !d.layerDone(dungeon.layer)) {
             if (dungeon.layer == WorldLayer.EXPLORERS) {
                 events += WorldEvent.GuardianFaced

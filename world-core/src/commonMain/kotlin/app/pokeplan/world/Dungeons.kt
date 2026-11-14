@@ -42,7 +42,8 @@ data class DungeonDef(
 /** The dungeons of the two Mystery Dungeon arcs: Rescue Team (Tiny Woods, Thunderwave Cave, Mt. Steel, Frosty Forest, Sky Tower) and Explorers (Beach Cave to the Temporal Tower), each its own layer. *(tune)* */
 object Dungeons {
     /** Every dungeon of every layer, the two Mystery Dungeon arcs first. */
-    val all: List<DungeonDef> by lazy { home + KantoDungeons.all + JohtoDungeons.all + HoennDungeons.all + SinnohDungeons.all }
+    val all: List<DungeonDef> by lazy { home + KantoDungeons.all + JohtoDungeons.all + HoennDungeons.all + SinnohDungeons.all +
+        UnovaDungeons.all + KalosDungeons.all + AlolaDungeons.all + GalarDungeons.all + PaldeaDungeons.all + HisuiDungeons.all }
 
     /** The dungeons of one layer, in the order the map lists them. */
     fun of(layer: WorldLayer): List<DungeonDef> = all.filter { it.layer == layer }

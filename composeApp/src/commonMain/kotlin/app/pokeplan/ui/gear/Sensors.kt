@@ -23,6 +23,15 @@ interface SensorFeed {
 
     /** Air pressure in hPa. Null without a barometer. */
     fun pressure(onReading: (Float) -> Unit): (() -> Unit)?
+
+    /** The gyroscope's turn rate around the phone's three axes, in radians a second (a spin evolution). Null without a gyroscope. */
+    fun rotation(onReading: (FloatArray) -> Unit): (() -> Unit)? = null
+
+    /**
+     * The phone's step counter: the steps since it was switched on, at each step (a steps evolution). Asks for the activity permission first;
+     * [onUnavailable] says why it cannot count (no sensor, permission refused). Null on a platform with no step counter at all.
+     */
+    fun steps(onReading: (Long) -> Unit, onUnavailable: (String) -> Unit): (() -> Unit)? = null
 }
 
 /** The maths behind the sensor tools. */

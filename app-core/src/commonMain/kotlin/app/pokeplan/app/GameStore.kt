@@ -1531,8 +1531,31 @@ class GameStore(
     }
 
     fun evolutionOptions(id: String): List<EvolutionOption> {
-        val ctx = EvolutionContext(now.hour, data.player.inventory.counts, data.completedTrials)
-        return EvolutionRules.options(pokemon(id), ctx)
+        val p = pokemon(id)
+        val mates = p.partyId?.let { party -> data.player.pokemon.filter { it.partyId == party && it.id != id } }.orEmpty()
+        val ctx = EvolutionContext(now.hour, data.player.inventory.counts, data.completedTrials + data.world.evolutionTrials, mates)
+        return EvolutionRules.options(p, ctx)
+    }
+
+    /** Records a phone action done for [option]'s evolution of Pokémon [id] (upside down, a spin, a finished walk); it can then evolve. */
+    fun deviceTrialDone(id: String, option: EvolutionOption) {
+        if (app.pokeplan.core.pokemon.EvolutionTrials.device(option.evolution) == null) return
+        update { d -> d.copy(completedTrials = d.completedTrials + app.pokeplan.core.pokemon.EvolutionTrials.doneKey(option.evolution, id)) }
+    }
+
+    /**
+     * A step-counter reading for Pokémon [id]'s walk: starts the walk at the first reading, adds the steps after it, and once
+     * [app.pokeplan.core.pokemon.EvolutionTrials.STEPS] are walked records the trial and ends the walk. Returns the steps walked.
+     */
+    fun stepReading(id: String, option: EvolutionOption, counter: Long): Int {
+        val walk = data.stepWalks[id]?.reading(counter) ?: StepWalk(counter)
+        val key = app.pokeplan.core.pokemon.EvolutionTrials.doneKey(option.evolution, id)
+        if (walk.walked >= app.pokeplan.core.pokemon.EvolutionTrials.STEPS) {
+            update { d -> d.copy(stepWalks = d.stepWalks - id, completedTrials = d.completedTrials + key) }
+        } else if (walk != data.stepWalks[id]) {
+            update { d -> d.copy(stepWalks = d.stepWalks + (id to walk)) }
+        }
+        return walk.walked
     }
 
     /** Evolves into one of [evolutionOptions]; uses up what it needs. */

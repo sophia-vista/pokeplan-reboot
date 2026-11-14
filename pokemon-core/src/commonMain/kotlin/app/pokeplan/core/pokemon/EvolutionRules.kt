@@ -11,7 +11,10 @@ import app.pokeplan.core.dex.TimeOfDay
 data class EvolutionContext(
     val hourOfDay: Int,
     val items: Map<String, Int> = emptyMap(),
+    /** Done trials (WORLD jobs and phone actions), as [EvolutionTrials.doneKey]. */
     val completedTrials: Set<String> = emptySet(),
+    /** The other members of the Pokémon's party, for evolutions that look at the party (Mantyke, Pancham). */
+    val partyMates: List<OwnedPokemon> = emptyList(),
 )
 
 /** One way a Pokémon could evolve right now. [missing] lists what is still needed; empty means it can evolve. */
@@ -24,7 +27,9 @@ data class EvolutionResult(val pokemon: OwnedPokemon, val consumed: Map<String, 
 /**
  * Evolution in the app: every game trigger maps to something playable (see "Evolution" in docs/design.md).
  * Level evolutions, friendship, gender, time-of-day, random-branch and trial evolutions cost one Super Candy;
- * stone evolutions use the stone; trade evolutions use a Link Cord.
+ * stone evolutions use the stone; trade evolutions use a Link Cord. A special evolution ([EvolutionKind.TRIAL]) asks what
+ * [EvolutionTrials.needs] reads from its game condition: checked on the spot, done with the phone, or an Evolution Trial in WORLD.
+ * A Pokémon holding an Everstone does not evolve.
  */
 object EvolutionRules {
     const val SUPER_CANDY = "super-candy"
@@ -39,10 +44,11 @@ object EvolutionRules {
         else -> TimeOfDay.NIGHT
     }
 
-    fun trialId(e: Evolution): String = "${e.from}-${e.to}-${e.requiredForm ?: "any"}"
+    /** One id per evolution row: two rows between the same species (Mr. Mime and Galarian Mr. Mime) differ in the form they give. */
+    fun trialId(e: Evolution): String = "${e.from}-${e.to}-${e.requiredForm ?: "any"}" + (e.evolvedForm?.let { "-$it" } ?: "")
 
     /** The evolutions that apply to [p]'s form: rows naming its exact form win over generic rows. */
-    private fun applicable(p: OwnedPokemon): List<Evolution> {
+    fun applicable(p: OwnedPokemon): List<Evolution> {
         val all = Dex.evolutionsFrom(p.speciesId)
         val exact = all.filter { it.requiredForm == p.formIdentifier }
         return exact.ifEmpty { all.filter { it.requiredForm == null } }
@@ -63,13 +69,18 @@ object EvolutionRules {
         return branches.last()
     }
 
+    /** A Pokémon holding an Everstone never evolves (the games' rule): every option says so and none is available. */
     fun options(p: OwnedPokemon, ctx: EvolutionContext): List<EvolutionOption> {
         val rows = applicable(p)
         val branch = randomBranch(p, rows)
+        val held = p.heldItem == EvolutionTrials.EVERSTONE
         return rows.filter { it.kind != EvolutionKind.RANDOM || it == branch }.map { e ->
-            EvolutionOption(e, targetForm(e), missing(p, e, ctx))
+            EvolutionOption(e, targetForm(e), (if (held) listOf(EVERSTONE_HELD) else emptyList()) + missing(p, e, ctx))
         }
     }
+
+    /** What an option lists while its Pokémon holds an Everstone. */
+    const val EVERSTONE_HELD = "to let go of its Everstone"
 
     private fun candy(ctx: EvolutionContext, missing: MutableList<String>) {
         if ((ctx.items[SUPER_CANDY] ?: 0) < 1) missing += "a Super Candy"
@@ -110,12 +121,54 @@ object EvolutionRules {
                 }
             }
             EvolutionKind.TRIAL -> {
-                level()
-                if (trialId(e) !in ctx.completedTrials) missing += "the evolution trial"
-                candy(ctx, missing)
+                level(); time()
+                trial(p, e, ctx, missing)
+                if (!EvolutionTrials.spendsInstead(e)) candy(ctx, missing)
             }
         }
         return missing
+    }
+
+    private fun trial(p: OwnedPokemon, e: Evolution, ctx: EvolutionContext, missing: MutableList<String>) {
+        val done = EvolutionTrials.doneKey(e, p.id) in ctx.completedTrials
+        for (n in EvolutionTrials.needs(e)) when (n) {
+            is TrialNeed.Move -> if (p.activeMoves.none { it.identifier == n.move }) missing += "to know ${moveName(n.move)}"
+            is TrialNeed.MoveType -> if (p.activeMoves.none { it.type == n.type }) missing += "to know a ${n.type.label} move"
+            TrialNeed.Friendship -> if (p.friendship < FriendshipRules.EVOLVE_AT) missing += "friendship ${FriendshipRules.EVOLVE_AT}"
+            is TrialNeed.Hold -> if (p.heldItem != n.item) missing += "to hold ${Items.name(n.item)}"
+            is TrialNeed.PartySpecies -> if (ctx.partyMates.none { it.speciesId == n.speciesId }) missing += "a ${app.pokeplan.core.dex.Dex.species(n.speciesId).name} in its party"
+            is TrialNeed.PartyType -> if (ctx.partyMates.none { n.type in it.form.types }) missing += "a ${n.type.label} type in its party"
+            is TrialNeed.Stats -> {
+                val s = p.stats
+                val ok = when { n.sign > 0 -> s.attack > s.defense; n.sign < 0 -> s.attack < s.defense; else -> s.attack == s.defense }
+                if (!ok) missing += when { n.sign > 0 -> "Attack above Defense"; n.sign < 0 -> "Defense above Attack"; else -> "Attack equal to Defense" }
+            }
+            is TrialNeed.Natures -> if (p.nature !in n.natures) missing += "another nature"
+            is TrialNeed.Spend -> if ((ctx.items[n.item] ?: 0) < n.count) missing += "${n.count} ${Items.name(n.item)}"
+            TrialNeed.Linked -> if ((ctx.items[LINK_CORD] ?: 0) < 1) missing += "a Link Cord"
+            is TrialNeed.Device -> if (!done) missing += n.action.label.replaceFirstChar { it.lowercase() }
+            is TrialNeed.World -> if (!done) missing += "its Evolution Trial in World"
+        }
+    }
+
+    private fun moveName(id: String): String = app.pokeplan.core.dex.Dex.move(id)?.name ?: id.split('-').joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+
+    /** A trial's needs in a few words, for the Pokédex. */
+    private fun trialHowTo(e: Evolution): List<String?> = EvolutionTrials.needs(e).map { n ->
+        when (n) {
+            is TrialNeed.Move -> "knowing ${moveName(n.move)}"
+            is TrialNeed.MoveType -> "knowing a ${n.type.label} move"
+            TrialNeed.Friendship -> "Friendship"
+            is TrialNeed.Hold -> "holding ${Items.name(n.item)}"
+            is TrialNeed.PartySpecies -> "${app.pokeplan.core.dex.Dex.species(n.speciesId).name} in the party"
+            is TrialNeed.PartyType -> "a ${n.type.label} type in the party"
+            is TrialNeed.Stats -> when { n.sign > 0 -> "Attack > Defense"; n.sign < 0 -> "Attack < Defense"; else -> "Attack = Defense" }
+            is TrialNeed.Natures -> "by nature"
+            is TrialNeed.Spend -> "${n.count} ${Items.name(n.item)}"
+            TrialNeed.Linked -> "Link Cord"
+            is TrialNeed.Device -> n.action.label
+            is TrialNeed.World -> "Evolution Trial in World"
+        }
     }
 
     /**
@@ -134,7 +187,7 @@ object EvolutionRules {
             EvolutionKind.FRIENDSHIP -> listOf("Friendship", "Super Candy", time)
             EvolutionKind.LEVEL_TIME -> listOf(level, "Super Candy", time)
             EvolutionKind.GENDER -> listOf(e.item?.let { Items.name(it) } ?: level, if (e.item == null) "Super Candy" else null, gender)
-            EvolutionKind.TRIAL -> listOf(level, "Evolution Trial")
+            EvolutionKind.TRIAL -> listOf(level) + trialHowTo(e) + listOf(if (EvolutionTrials.spendsInstead(e)) null else "Super Candy", time)
         }
         return parts.filterNotNull().joinToString(", ")
     }
@@ -144,6 +197,12 @@ object EvolutionRules {
         EvolutionKind.STONE -> e.item?.let { mapOf(it to 1) }.orEmpty()
         EvolutionKind.TRADE -> mapOf(LINK_CORD to 1)
         EvolutionKind.GENDER -> e.item?.let { mapOf(it to 1) } ?: mapOf(SUPER_CANDY to 1)
+        EvolutionKind.TRIAL -> buildMap {
+            val needs = EvolutionTrials.needs(e)
+            if (!EvolutionTrials.spendsInstead(e)) put(SUPER_CANDY, 1)
+            needs.filterIsInstance<TrialNeed.Spend>().forEach { put(it.item, (get(it.item) ?: 0) + it.count) }
+            if (TrialNeed.Linked in needs) put(LINK_CORD, 1)
+        }
         else -> mapOf(SUPER_CANDY to 1)
     }
 
@@ -151,7 +210,8 @@ object EvolutionRules {
         check(option.available) { "${p.nickname} still needs ${option.missing.joinToString()}" }
         val e = option.evolution
         var evolved = p.evolvedInto(e.to, option.target.identifier)
-        if (e.kind == EvolutionKind.TRADE && e.heldItem != null) evolved = evolved.withHeldItem(null)
+        // The item it held to evolve is used up (a Metal Coat on a trade, an Oval Stone, a Razor Claw, a Sweet).
+        if ((e.kind == EvolutionKind.TRADE || e.kind == EvolutionKind.TRIAL) && e.heldItem != null) evolved = evolved.withHeldItem(null)
         return EvolutionResult(evolved, cost(e))
     }
 }

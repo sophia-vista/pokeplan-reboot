@@ -300,6 +300,10 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
         val soft = MaterialTheme.typography.bodyMedium
         from?.let { Text("Evolves from ${it.name}", style = soft, color = Pixel.InkSoft) }
         if (options.isEmpty()) Text("This is its final form.", style = soft, color = Pixel.InkSoft)
+        if (p.heldItem == app.pokeplan.core.pokemon.Items.EVERSTONE && options.isNotEmpty()) Text("It holds an Everstone, so it will not evolve.", style = soft, color = Pixel.InkSoft)
+        // Evolving asks first (the games' "Evolve?"), with Cancel; the scene that follows can still be stopped.
+        var asking by remember(p.id) { mutableStateOf<app.pokeplan.core.pokemon.EvolutionOption?>(null) }
+        val worldDone = model.data.world.evolutionTrials + model.data.completedTrials
         options.forEach { o ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Sprite(o.target.id, false, o.target.name, size = Sizes.SpriteS)
@@ -307,10 +311,29 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
                     Text(o.target.name, style = MaterialTheme.typography.bodyLarge)
                     if (!o.available) Text("Needs ${o.missing.joinToString()}", style = soft, color = Pixel.InkSoft)
                 }
-                PixelButton("Evolve", {
-                    store.evolve(p.id, o)
-                    store.data.player.pokemon.firstOrNull { it.id == p.id }?.let { model.cutscene = Cutscene.Evolve(p, it) }
-                }, color = Pixel.Green, enabled = o.available, compact = true)
+                PixelButton("Evolve", { asking = o }, color = Pixel.Green, enabled = o.available && asking == null, compact = true)
+            }
+            val key = app.pokeplan.core.pokemon.EvolutionTrials.doneKey(o.evolution, p.id)
+            // An Evolution Trial in WORLD: where it is, in the region it belongs to.
+            app.pokeplan.world.EvolutionTrialSites.of(o.evolution)?.takeIf { key !in worldDone && p.heldItem != app.pokeplan.core.pokemon.Items.EVERSTONE }?.let { site ->
+                val d = app.pokeplan.world.Dungeons.byId(site.dungeonId)
+                Text("Evolution Trial, ${site.title}: ${site.story} Reach floor ${site.floor} of ${d?.name ?: site.dungeonId} (${d?.layer?.label}) with ${p.nickname} on the team.", style = soft, color = Pixel.InkSoft)
+            }
+            // Done with the phone: upside down, a spin, a walk.
+            app.pokeplan.core.pokemon.EvolutionTrials.device(o.evolution)?.takeIf { key !in worldDone && p.heldItem != app.pokeplan.core.pokemon.Items.EVERSTONE }?.let { action ->
+                DeviceTrial(model, p, o, action)
+            }
+            if (asking == o) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text("Evolve ${p.nickname} into ${o.target.name}?", style = MaterialTheme.typography.bodyLarge)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("Cancel", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Evolve", {
+                        asking = null
+                        // The scene makes the evolution at its end (Stop cancels it); this is what it will look like.
+                        val after = app.pokeplan.core.pokemon.EvolutionRules.evolve(p, o).pokemon
+                        model.cutscene = Cutscene.Evolve(p, after, o)
+                    }, Modifier.weight(1f), Pixel.Green, compact = true)
+                }
             }
         }
     }

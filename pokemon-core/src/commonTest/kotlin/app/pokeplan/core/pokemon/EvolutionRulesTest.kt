@@ -101,12 +101,90 @@ class EvolutionRulesTest {
     }
 
     @Test
-    fun specialConditionsNeedTheEvolutionTrial() {
+    fun aDarkTypeInThePartyEvolvesPancham() {
         val p = pokemon(Ids.PANCHAM, level = 32)
-        val locked = EvolutionRules.options(p, ctx(12, candy)).single()
-        assertEquals(listOf("the evolution trial"), locked.missing)
-        val done = EvolutionRules.options(p, ctx(12, candy, trials = setOf(EvolutionRules.trialId(locked.evolution)))).single()
+        val alone = EvolutionRules.options(p, ctx(12, candy)).single()
+        assertEquals(listOf("a Dark type in its party"), alone.missing)
+        val withDark = EvolutionRules.options(p, EvolutionContext(12, mapOf(candy), partyMates = listOf(pokemon(197)))).single()
+        assertTrue(withDark.available, "Umbreon is Dark")
+    }
+
+    @Test
+    fun aPokemonHoldingAnEverstoneNeverEvolves() {
+        val held = EvolutionRules.options(pokemon(Ids.BULBASAUR, level = 16, heldItem = Items.EVERSTONE), ctx(12, candy)).single()
+        assertEquals(listOf(EvolutionRules.EVERSTONE_HELD), held.missing)
+        assertFalse(held.available)
+        assertTrue(Items.holdable(Items.EVERSTONE))
+    }
+
+    @Test
+    fun malamarIsTheUpsideDownPhone() {
+        val inkay = pokemon(686, level = 30)
+        val o = EvolutionRules.options(inkay, ctx(12, candy)).single()
+        assertEquals(DeviceAction.UPSIDE_DOWN, EvolutionTrials.device(o.evolution))
+        assertEquals(listOf("turn the phone upside down"), o.missing)
+        val done = EvolutionRules.options(inkay, ctx(12, candy, trials = setOf(EvolutionTrials.doneKey(o.evolution, inkay.id)))).single()
         assertTrue(done.available)
+        assertFalse(EvolutionRules.options(pokemon(686, level = 29), ctx(12, candy, trials = setOf(EvolutionTrials.doneKey(o.evolution, inkay.id)))).single().available, "still level 30")
+        assertEquals(DeviceAction.SPIN, EvolutionTrials.device(app.pokeplan.core.dex.Dex.evolutionsFrom(868).first()))
+        assertEquals(DeviceAction.STEPS, EvolutionTrials.device(app.pokeplan.core.dex.Dex.evolutionsFrom(922).first()))
+    }
+
+    @Test
+    fun happinyHoldsAnOvalStoneInTheDayAndUsesItUp() {
+        val p = pokemon(440, heldItem = "oval-stone")
+        val day = EvolutionRules.options(p, ctx(12, candy)).single()
+        assertTrue(day.available, day.missing.toString())
+        assertFalse(EvolutionRules.options(p, ctx(23, candy)).single().available, "in the day")
+        assertFalse(EvolutionRules.options(pokemon(440), ctx(12, candy)).single().available, "holding it")
+        val result = EvolutionRules.evolve(p, day)
+        assertEquals(113, result.pokemon.speciesId)
+        assertEquals(null, result.pokemon.heldItem)
+        assertTrue(Items.holdable("oval-stone") && "oval-stone" in Items.heldEvolutionItems)
+    }
+
+    @Test
+    fun knownMovesStatsAndNatureAreCheckedOnTheSpot() {
+        val knows = pokemon(439, level = 30).withMoves(listOf("mimic"))
+        assertFalse(EvolutionRules.options(pokemon(439, level = 30).withMoves(listOf("confusion")), ctx(12, candy)).first { it.target.identifier == "mr-mime" }.available)
+        assertTrue(EvolutionRules.options(knows, ctx(12, candy)).first { it.target.identifier == "mr-mime" }.available)
+        // Tyrogue: Attack above Defense gives Hitmonlee, below it Hitmonchan.
+        val strong = pokemon(236, level = 20, nature = Nature.LONELY)
+        val byStats = EvolutionRules.options(strong, ctx(12, candy))
+        assertTrue(byStats.first { it.target.speciesId == 106 }.available)
+        assertFalse(byStats.first { it.target.speciesId == 107 }.available)
+        // Toxel: the nature picks Amped or Low Key.
+        val amped = EvolutionRules.options(pokemon(848, level = 30, nature = Nature.ADAMANT), ctx(12, candy))
+        assertTrue(amped.first { it.target.identifier == "toxtricity-amped" }.available)
+        assertFalse(amped.first { it.target.identifier == "toxtricity-low-key" }.available)
+    }
+
+    @Test
+    fun meltanAndGimmighoulGatherInsteadOfASuperCandy() {
+        val meltan = EvolutionRules.options(pokemon(808), ctx(12, Items.RARE_CANDY to 400)).single()
+        assertTrue(meltan.available, meltan.missing.toString())
+        assertEquals(mapOf(Items.RARE_CANDY to 400), EvolutionRules.evolve(pokemon(808), meltan).consumed)
+        val coins = EvolutionRules.options(pokemon(999), ctx(12, Items.GIMMIGHOUL_COIN to 998)).single()
+        assertEquals(listOf("999 Gimmighoul Coin"), coins.missing)
+        val palafin = EvolutionRules.options(pokemon(963, level = 38), ctx(12, candy, EvolutionRules.LINK_CORD to 1)).single()
+        assertEquals(mapOf(EvolutionRules.SUPER_CANDY to 1, EvolutionRules.LINK_CORD to 1), EvolutionRules.evolve(pokemon(963, level = 38), palafin).consumed)
+    }
+
+    @Test
+    fun battleConditionsAreAWorldTrialPerPokemon() {
+        val yamask = pokemon(562, "yamask-galar")
+        val o = EvolutionRules.options(yamask, ctx(12, candy)).first { it.target.speciesId == 867 }
+        assertEquals(listOf("its Evolution Trial in World"), o.missing)
+        assertTrue(EvolutionTrials.needsWorld(o.evolution))
+        assertTrue(EvolutionRules.options(yamask, ctx(12, candy, trials = setOf(EvolutionTrials.doneKey(o.evolution, yamask.id)))).first { it.target.speciesId == 867 }.available)
+        assertFalse(EvolutionRules.options(yamask, ctx(12, candy, trials = setOf(EvolutionTrials.doneKey(o.evolution, "another")))).first { it.target.speciesId == 867 }.available, "one Pokémon's trial is its own")
+    }
+
+    @Test
+    fun everySpecialEvolutionHasAWayIn() {
+        app.pokeplan.core.dex.Dex.evolutions.filter { it.kind == app.pokeplan.core.dex.EvolutionKind.TRIAL }.forEach { e ->
+            assertTrue(EvolutionTrials.needs(e).isNotEmpty(), "${e.from}->${e.to} ${e.conditions}")
+        }
     }
 
     @Test

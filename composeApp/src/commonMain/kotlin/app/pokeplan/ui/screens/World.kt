@@ -245,8 +245,9 @@ private fun WorldMapView(model: AppModel) {
     val clearedCount = dungeons.count { (world.clears[it.id] ?: 0) > 0 }
     // The layer switch: every layer is open from the first day.
     WorldLayerSwitch(model) { selected = null }
-    val spots = when (layer) { WorldLayer.RESCUE, WorldLayer.EXPLORERS -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots; WorldLayer.SINNOH -> sinnohSpots }
-    WorldMapPicture(
+    val spots = when (layer) { WorldLayer.RESCUE, WorldLayer.EXPLORERS -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots; WorldLayer.SINNOH -> sinnohSpots; else -> emptyMap() }
+    // A later region with no map art yet shows its dungeons as the list below only.
+    if (layer.hasMap) WorldMapPicture(
         stage = 1 + clearedCount * 7 / dungeons.size.coerceAtLeast(1),
         markers = dungeons.mapNotNull { d ->
             spots[d.id]?.let { (x, y) ->
