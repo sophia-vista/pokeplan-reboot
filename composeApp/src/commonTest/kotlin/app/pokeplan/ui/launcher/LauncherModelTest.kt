@@ -152,6 +152,9 @@ class LauncherModelTest {
         assertEquals(24, prefs.nextTownSize().nextTownSize().townSize)
         assertEquals(LauncherPrefs().withWalking(false).nextTownSize().withShowStatus(false).withEdgeDrag(false), prefs.withoutPins())
         assertEquals(24, LauncherPrefs.decode("K townSize\t9\n").townSize)
+        assertEquals(7, LauncherPrefs.decode(LauncherPrefs().withActivity(7).encode()).activity)
+        assertEquals(10, LauncherPrefs.decode("K activity\t42\n").activity)
+        assertEquals("", LauncherPrefs().withActivity(TownBehavior.ACTIVITY_DEFAULT).encode())
     }
 }
 
