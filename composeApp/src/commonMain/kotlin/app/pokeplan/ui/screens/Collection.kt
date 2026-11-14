@@ -35,7 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
+import app.pokeplan.app.PcPlace
 import app.pokeplan.app.PcSort
+import app.pokeplan.app.Places
 import app.pokeplan.app.PcView
 import app.pokeplan.app.quest.Quests
 import app.pokeplan.core.pokemon.PartyIds
@@ -49,6 +51,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
+import app.pokeplan.ui.theme.ToggleRow
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
@@ -69,11 +72,11 @@ private data class CollectionPage(val section: Section?, val dexEntry: Int?, val
 }
 
 @Composable
-fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null, startParty: Boolean = false) {
+fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null, startParty: Boolean = false, startPcEveryone: Boolean = false) {
     var section by remember { mutableStateOf(if (startParty) Section.PARTY else Section.entries.getOrNull(startSection)) }
     var selected by remember { mutableStateOf(startOpen) }
     // Kept here, not in the PC section, so opening a Pokémon and coming back leaves the sort and filters as they were.
-    var pcView by remember { mutableStateOf(PcView()) }
+    var pcView by remember { mutableStateOf(PcView(everyone = startPcEveryone)) }
     var dexView by remember { mutableStateOf(DexView()) }
     var dexEntry by remember { mutableStateOf<Int?>(null) }
     val player = model.data.player
@@ -129,19 +132,27 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                     }
                 }
                 Section.PC -> {
-                    // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
-                    val box = player.pokemon.filter { inPc(store, it) }
-                    if (box.isEmpty()) EmptyState("The PC is empty", icon = "storage-key", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+                    // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games. It shows the
+                    // Pokémon resting in the PC; "Show all Pokémon" adds the buddy, the parties, the Guardians, the World teams and the helpers.
+                    val places = remember(model.data) { PcPlace.all(store.data) }
+                    val placeOf = { id: String -> places[id] ?: PcPlace.PC }
+                    val inBox = player.pokemon.count { placeOf(it.id) == PcPlace.PC }
+                    if (player.pokemon.isEmpty()) EmptyState("The PC is empty", icon = "storage-key", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
                     else {
-                        val shown = pcView.apply(box) { store.isFavorite(it) }
+                        val total = if (pcView.everyone) player.pokemon.size else inBox
+                        val shown = pcView.apply(player.pokemon, placeOf) { store.isFavorite(it) }
                         val boxes = pcView.boxCount(shown.size)
                         val at = pcView.box.coerceIn(0, boxes - 1)
-                        PcControls(pcView, { pcView = it }, shown.size, box.size)
-                        if (shown.isEmpty()) EmptyState("Nothing matches", action = "Clear filters" to { pcView = pcView.copy(type = null, shinyOnly = false, starredOnly = false, search = "") })
+                        PcControls(pcView, { pcView = it }, shown.size, total)
+                        if (!pcView.everyone && inBox == 0) EmptyState("The PC is empty", icon = "storage-key", action = "Show all Pokémon" to { pcView = pcView.copy(everyone = true, box = 0) })
+                        else if (shown.isEmpty()) EmptyState("Nothing matches", action = "Clear filters" to { pcView = pcView.cleared() })
                         else {
                             if (boxes > 1) PcBoxBar(at, boxes) { pcView = pcView.copy(box = it) }
                             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                                pcView.page(shown).forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
+                                pcView.page(shown).forEach { p ->
+                                    val where = if (pcView.everyone) Places.short(store.data, p.id, placeOf(p.id) == PcPlace.LEAD) else null
+                                    PcTile(p, store.isFavorite(p.id), where, tall = pcView.everyone) { selected = p.id }
+                                }
                             }
                             if (boxes > 1) PcBoxBar(at, boxes) { pcView = pcView.copy(box = it) }
                         }
@@ -196,6 +207,7 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
             view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
             placeholder = "Search by name",
         )
+        ToggleRow("Show all Pokémon", view.everyone) { change(view.copy(everyone = it, where = null)) }
         var open by remember { mutableStateOf(false) }
         // Quiet: the boxes are the page, the controls only help find one.
         PixelButton(if (open) "Hide sort and filters" else "Sort and filters", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -203,6 +215,12 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
             SectionLabel("Sort by")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PcSort.entries.forEach { TabButton(it.label, view.sort == it, { change(view.copy(sort = it)) }) }
+            }
+            if (view.everyone) {
+                SectionLabel("Where")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PcPlace.entries.forEach { w -> TabButton(w.label, view.where == w, { change(view.copy(where = if (view.where == w) null else w)) }) }
+                }
             }
             SectionLabel("Show")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -222,7 +240,7 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
         }
         if (view.filtering) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text("$shown of $total", Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-            PixelButton("Clear", { change(view.copy(type = null, shinyOnly = false, starredOnly = false, search = "")) }, color = Pixel.InkSoft, compact = true)
+            PixelButton("Clear", { onChange(view.cleared()) }, color = Pixel.InkSoft, compact = true)
         }
     }
 }
@@ -237,14 +255,18 @@ private fun PcBoxBar(at: Int, boxes: Int, go: (Int) -> Unit) {
     }
 }
 
-/** A Pokémon in a box: its sprite, its name and one quiet line (level, with Shiny and Starred in words for screen readers). */
+/**
+ * A Pokémon in a box: its sprite, its name and one quiet line (level, with Shiny and Starred in words for screen readers). When the PC
+ * shows every Pokémon, [where] names a place other than the PC on a line of its own ([tall] keeps every tile the same height).
+ */
 @Composable
-private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
+private fun PcTile(p: OwnedPokemon, favorite: Boolean, where: String?, tall: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.size(width = 92.dp, height = 112.dp).clip(PixelShape).background(Pixel.Panel)
+        Modifier.size(width = 92.dp, height = if (tall) 152.dp else 112.dp).clip(PixelShape).background(Pixel.Panel)
             .quietClickable(onClickLabel = "Open ${p.nickname}", onClick = onClick)
             .semantics(mergeDescendants = true) {
-                contentDescription = "${p.nickname}, level ${p.level}" + (if (p.isShiny) ", shiny" else "") + (if (favorite) ", starred" else "")
+                contentDescription = "${p.nickname}, level ${p.level}" + (if (p.isShiny) ", shiny" else "") + (if (favorite) ", starred" else "") +
+                    (where?.let { ", $it" } ?: "")
             }
             .padding(horizontal = Spacing.XS, vertical = Spacing.S),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -255,6 +277,7 @@ private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
             "Lv. ${p.level}" + (if (p.isShiny) " · Shiny" else "") + (if (favorite) " · Starred" else ""),
             style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1,
         )
+        if (where != null) Text(where, style = MaterialTheme.typography.labelMedium, color = Pixel.Blue, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

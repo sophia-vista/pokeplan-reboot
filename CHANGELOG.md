@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.180.0
+
+A better PC. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone needs a migration.
+
+- **The PC shows the Pokémon resting in it**, as before, and a **Show all Pokémon** switch lists every one you own: the buddy, the leads and parties, the Guardians, the World teams and the Pokégear helpers. Each tile then names its place (Buddy, Plan lead, Care, Heal Guardian, World, Pokégear).
+- **Where** joins the sort and filters while every Pokémon shows: PC, Buddy, Leads, Parties, Guardians, World teams or Pokégear. Clear keeps the switch and the sort.
+- An empty PC with Pokémon elsewhere offers Show all Pokémon instead of a dead end.
+
 ## 0.178.0
 
 Plan's dates (REP-030, PLAN.md sections 4.7 and 5.1). No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone needs a migration.
