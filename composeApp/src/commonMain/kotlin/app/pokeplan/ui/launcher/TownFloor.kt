@@ -7,6 +7,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.delay
+import androidx.compose.ui.zIndex
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -125,7 +129,7 @@ private const val TILE = 24
 private val floorImages = BitmapCache(CacheBudget.TILES)
 
 @Composable
-private fun floorImage(name: String): ImageBitmap? {
+internal fun floorImage(name: String): ImageBitmap? {
     val image by produceState(floorImages[name], name) {
         value = floorImages[name]
         if (value == null) {
@@ -260,5 +264,46 @@ internal class FloorPickups {
 
     fun add(cell: Cell, find: TownFinds.Find) {
         list += Pickup(cell, FLOOR_ITEM_COLUMNS.indexOf(find.itemId), if (find.isPoke) "${find.amount} Poké" else Items.name(find.itemId))
+    }
+}
+
+/**
+ * The effects the game plays when a trap springs (`TRAP_ANIMATION_INFO` in the ROM; `assets/tiles/trap-fx.tsv`, cut by
+ * tools/sprites/extract_sky_effects.py): a strip of [width] x [height] frames, the anchor (the Pokémon's feet) at [originX], [originY]
+ * in a frame, and how many of the game's 1/60 s ticks each frame lasts. Warp, Trip and the Wonder Tile have none of their own in the game.
+ */
+internal enum class TrapFx(val file: String, val width: Int, val height: Int, val originX: Int, val originY: Int, val ticks: List<Int>) {
+    SPIN("trap-spin", 16, 16, 8, 12, listOf(1, 1, 3, 3, 3, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1)),
+    GUST("trap-gust", 56, 80, 28, 74, listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)),
+    SLOW("trap-slow", 32, 240, 16, 231, listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 30, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)),
+    ;
+
+    companion object {
+        fun of(trap: FloorTrap): TrapFx? = when (trap) {
+            FloorTrap.SPIN -> SPIN
+            FloorTrap.GUST -> GUST
+            FloorTrap.SLOW -> SLOW
+            else -> null
+        }
+    }
+}
+
+/** One play of [fx] with its anchor at [feet] (town pixels), at the town's [pixel] size; [onDone] when the last frame has shown. */
+@Composable
+internal fun TrapEffect(fx: TrapFx, feet: () -> Offset, pixel: Int, onDone: () -> Unit) {
+    val strip = floorImage(fx.file)
+    var frame by remember(fx) { mutableIntStateOf(0) }
+    LaunchedEffect(fx, strip != null) {
+        if (strip == null) return@LaunchedEffect
+        for (i in fx.ticks.indices) { frame = i; delay(fx.ticks[i] * 1000L / 60L) }
+        onDone()
+    }
+    val image = strip ?: return
+    val density = LocalDensity.current.density
+    Canvas(
+        Modifier.offset { feet().let { IntOffset(it.x.toInt() - fx.originX * pixel, it.y.toInt() - fx.originY * pixel) } }
+            .size((fx.width * pixel / density).dp, (fx.height * pixel / density).dp).zIndex(5f),
+    ) {
+        drawImage(image, IntOffset(frame * fx.width, 0), IntSize(fx.width, fx.height), IntOffset.Zero, IntSize(fx.width * pixel, fx.height * pixel), filterQuality = FilterQuality.None)
     }
 }
