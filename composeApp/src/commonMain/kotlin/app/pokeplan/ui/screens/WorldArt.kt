@@ -154,6 +154,26 @@ internal fun WorldBanner(name: String, title: String, subtitle: String? = null, 
     }
 }
 
+/** The game's picture of a dungeon's entrance (a "map:" name for [WorldPicture]: Red Rescue Team's `*_ENTRY` maps and Explorers of Sky's Beach Cave), or null where none is bundled. */
+internal fun dungeonEntrance(dungeonId: String): String? = when (dungeonId) {
+    "tiny-woods" -> "map:tiny-woods-entry"
+    "thunderwave-cave" -> "map:thunderwave-cave-entry"
+    "mt-steel" -> "map:mt-steel-entry"
+    "glacier-palace" -> "map:mt-freeze-entry"
+    "sky-tower" -> "map:sky-tower-entry"
+    "frosty-forest" -> "map:frosty-forest-entry"
+    "beach-cave" -> "map:sky-d01p11a"
+    else -> null
+}
+
+/** [name] (a ground map) as a framed strip showing the top of the picture, where a dungeon's entrance and sky are. */
+@Composable
+internal fun EntranceStrip(name: String, height: Dp = 96.dp) {
+    Box(Modifier.fillMaxWidth().height(height).border(Sizes.Line, Pixel.Ink).clipToBounds()) {
+        WorldPicture(name, Modifier.fillMaxSize(), crop = true, top = false)
+    }
+}
+
 private val tileAtlases = BitmapCache(CacheBudget.TILES)
 private val layouts = mutableMapOf<Pair<Int, Int>, app.pokeplan.ui.launcher.TownMap>()
 

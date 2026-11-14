@@ -266,6 +266,7 @@ private fun WorldMapView(model: AppModel) {
         val deepest = world.deepest[d.id] ?: 0
         val wild = d.wild.sortedByDescending { it.weight }.map { it.speciesId }.distinct().take(4)
             .map { TileWalker(Dex.defaultForm(it).id, false, Dex.species(it).name, sample = true) }
+        dungeonEntrance(d.id)?.let { EntranceStrip(it) }
         // The dungeon is drawn in its own tiles, the wild Pokémon that live there walking its floor; the text is on its walls.
         TileBox(d.id, wild, animate = !model.data.settings.reduceMotion, modifier = Modifier.alpha(if (open) 1f else 0.75f), scrolls = false) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -471,7 +472,7 @@ private fun WorldMissionsView(model: AppModel) {
                     ItemIcon(missionIcon(m.kind), size = Sizes.Icon, description = null)
                     Text("${m.kind.label}: ${m.title}", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 }
-                Text(m.story, style = MaterialTheme.typography.bodyMedium)
+                if (m.kind == MissionKind.RESCUE && m.rescued != null) RescueCall(m) else Text(m.story, style = MaterialTheme.typography.bodyMedium)
                 val place = m.dungeonId?.let { id -> Dungeons.byId(id)?.let { "${it.name}, ${it.layer.label}, floor ${m.floor}" } } ?: "Any dungeon"
                 Text("$place, ${entry.repeats}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 MissionReward(m)
@@ -742,6 +743,7 @@ internal fun RecruitCard(find: app.pokeplan.world.Find?, newcomer: app.pokeplan.
                 }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text("${newcomer.nickname} joined your team!", style = MaterialTheme.typography.titleSmall)
+                    Text(SkyBarks.healthy(newcomer.speciesId), style = MaterialTheme.typography.bodyLarge)
                     Text("Level ${newcomer.level}", style = MaterialTheme.typography.bodyMedium)
                     PixelButton("OK", onOk, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
                 }
