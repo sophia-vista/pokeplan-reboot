@@ -53,8 +53,9 @@ class SkyVoiceTest {
         val shown = Dungeons.all.mapNotNull { d -> dungeonEntrance(d.id)?.let { d.id to it } }
         assertTrue(shown.size >= 6)
         for ((id, map) in shown) {
-            val sky = map.startsWith("map:sky-")
-            val code = map.removePrefix("map:").removePrefix("sky-").uppercase().replace('-', '_')
+            // Explorers of Sky maps are "map:sky-<code>"; Rescue Team's "sky-tower-entry" is not one (its code, SKY_TOWER_ENTRY, is longer than a map code).
+            val sky = Regex("map:sky-[a-z][0-9]{2}p[0-9]{2}[a-z]?").matches(map)
+            val code = (if (sky) map.removePrefix("map:sky-") else map.removePrefix("map:")).uppercase().replace('-', '_')
             assertTrue(code in (if (sky) listedSky else listedRescue), "$id: $map is not bundled")
             assertTrue(File(root, "assets/${if (sky) "sky-maps" else "rescue-maps"}/$code.png").exists(), "$id: $map is missing")
         }
