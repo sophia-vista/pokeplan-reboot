@@ -3,6 +3,7 @@ package app.pokeplan.ui.launcher
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.draw.drawWithCache
@@ -135,6 +136,8 @@ internal fun Town(
     rotation: Int = 0,
     /** The weather the Pokémon react to (a twinkle for one at home in it, a drop of sweat for one that is not). */
     reactions: Boolean = true,
+    /** How lively they are, 1 (sleepy) to 10 (restless): Settings → Town → How lively. */
+    activity: Int = TownBehavior.ACTIVITY_DEFAULT,
 ) {
     val data = model.data
     // The sprite sheets are read once; until then everyone counts as having one, and the town re-picks when they arrive.
@@ -212,7 +215,7 @@ internal fun Town(
                 Resident(
                     model, mon, screenPx, heightPx, pixel, top, bottom, calm = calm, index = i, life = life, asleep = TownBehavior.asleep(mon, darkNow), screens = screens, interactive = interactive, gather = gather,
                     onMenu = onMenu, home = home, avoid = avoid, tapperOn = tapper != null, buddy = mon.id == buddyId, guardian = mon.id == guardian?.id, entering = mon.id == arriving,
-                    exposed = mon.id == buddyId || mon.id == guardian?.id || mon.id in data.favorites,
+                    exposed = mon.id == buddyId || mon.id == guardian?.id || mon.id in data.favorites, lively = TownBehavior.liveliness(activity),
                 )
             }
         }
@@ -236,10 +239,17 @@ private fun Resident(
     entering: Boolean = false,
     /** Walks off the edge of Home, then calls [onGone]. */
     leaving: Boolean = false, onGone: () -> Unit = {},
+    /** The town's liveliness, 0 (sleepy) to 1 (restless): see [TownBehavior.liveliness]. */
+    lively: Float = TownBehavior.liveliness(TownBehavior.ACTIVITY_DEFAULT),
 ) {
     val random = remember(mon.id) { Random(mon.id.hashCode()) }
     val anchor = remember(mon.id, screens, home, buddy) { TownBehavior.anchor(mon.id, screens, home, buddy) }
     val pace = remember(mon.id) { TownBehavior.pace(mon.id) }
+    val temper = remember(mon.id) { TownBehavior.temper(mon.id) }
+    val livelyNow by rememberUpdatedState(lively)
+    // Whether it is in a restless spell (pottering about) or resting, and the way it was last heading: a walk carries on from the last one.
+    var restless by remember(mon.id) { mutableStateOf(random.nextInt(4) == 0) }
+    var heading by remember(mon.id) { mutableStateOf(random.nextFloat() * 2f * kotlin.math.PI.toFloat()) }
     // Position as fractions of the ground: x across the screen, y from the back of the ground (0) to the front (1).
     val spot = remember(mon.id) { Animatable(if (entering) TownBehavior.entrance(random, home) else Offset(random.nextFloat() * screens, random.nextFloat()), Offset.VectorConverter) }
     var facingLeft by remember(mon.id) { mutableStateOf(false) }
@@ -280,16 +290,18 @@ private fun Resident(
             life.ripple(mon.id)
         }
     }
-    // Somewhere to walk to that no widget covers, if a few tries find one.
-    fun pickTarget(): Offset {
-        var t = TownBehavior.target(random, anchor, screens, guardian)
+    // The next leg of a walk: one that no widget covers and that does not stop on top of another Pokémon, if a few tries find one.
+    fun pickLeg(short: Boolean): TownBehavior.Leg {
+        val others = life.spots.filterKeys { it != mon.id }.values.map { it() }
+        var leg = TownBehavior.leg(random, spot.value, heading, anchor, screens, guardian, short, livelyNow)
         repeat(10) {
+            val t = leg.to
             val fy = groundTop + (groundBottom - groundTop) * t.y
             val up = fy - TILE * 1.5f * pixel / heightPx
-            if (avoidNow.none { r -> t.x in r.left..r.right && (fy in r.top..r.bottom || up in r.top..r.bottom) }) return t
-            t = TownBehavior.target(random, anchor, screens, guardian)
+            if (avoidNow.none { r -> t.x in r.left..r.right && (fy in r.top..r.bottom || up in r.top..r.bottom) } && !TownBehavior.crowded(t, others)) return leg
+            leg = TownBehavior.leg(random, spot.value, heading, anchor, screens, guardian, short, livelyNow)
         }
-        return t
+        return leg
     }
     val hold = life.holds[mon.id]
     // A Pokémon stands still while it sleeps or meets another.
@@ -308,9 +320,12 @@ private fun Resident(
         // The ground is deeper than it looks (a step in depth covers more screen than a step across), so weigh it up before choosing a side or a front view.
         walk = if (abs(dx) * 2f >= abs(dy)) SpriteAction.WALK_SIDE else if (dy < 0) SpriteAction.WALK_UP else SpriteAction.WALK_DOWN
         facing = when (walk) { SpriteAction.WALK_SIDE -> SpriteAction.IDLE_SIDE; SpriteAction.WALK_UP -> SpriteAction.IDLE_UP; else -> SpriteAction.IDLE }
-        // A steady stroll, about 6 seconds for the width of the screen, a little quicker or slower for each Pokémon.
-        val seconds = (0.8f + abs(dx) * 6f + abs(dy) * 2f) / speed
-        spot.animateTo(to, tween((seconds * 1000).toInt(), easing = LinearEasing))
+        // An unhurried stroll, about 7 seconds for the width of the screen, a little quicker or slower for each Pokémon and for a livelier town, along a
+        // gentle curve that eases in and out (TownBehavior.path), not a ruler line at one speed.
+        val seconds = (0.9f + abs(dx) * 7f + abs(dy) * 2.4f) / (speed * (0.85f + 0.3f * livelyNow))
+        val millis = (seconds * 1000).toInt()
+        val way = TownBehavior.path(random, spot.value, to)
+        spot.animateTo(to, keyframes { durationMillis = millis; way.forEachIndexed { i, p -> p at millis * (i + 1) / way.size using LinearEasing } })
         walk = null
     }
     // Leaving the town: off the edge of Home at a walk, then gone. (With Reduce motion it is simply gone.)
@@ -344,18 +359,21 @@ private fun Resident(
             strollTo(Offset(home + 0.06f + random.nextFloat() * 0.88f, random.nextFloat()))
         } else delay(300L + index * 150L)
         while (true) {
-            when (val beat = TownBehavior.next(random, guardian, facingLeft)) {
+            restless = TownBehavior.spell(random, restless, livelyNow, temper, guardian)
+            when (val beat = TownBehavior.next(random, guardian, facingLeft, restless, livelyNow)) {
                 is Beat.Stand -> delay(beat.millis)
                 is Beat.Turn -> { facingLeft = beat.left; delay(beat.millis) }
                 Beat.Graze -> { grazing = true; hopKey++; delay(2_800) }
                 Beat.Hop -> { hopping = true; hopKey++; delay(1_200) }
                 is Beat.Roam -> repeat(beat.legs) { leg ->
                     // The town has no side walls: a Pokémon may walk off one edge and come back in at the other.
-                    strollTo(pickTarget())
+                    val next = pickLeg(beat.short)
+                    strollTo(next.to)
+                    heading = next.heading
                     val x = spot.value.x
                     if (x > screens + 0.15f) spot.snapTo(Offset(x - (screens + 0.3f), spot.value.y)) else if (x < -0.15f) spot.snapTo(Offset(x + (screens + 0.3f), spot.value.y))
                     // A look about between the legs, now and then the other way.
-                    if (leg < beat.legs - 1) { if (random.nextInt(3) == 0) facingLeft = !facingLeft; delay(500L + random.nextLong(900)) }
+                    if (leg < beat.legs - 1) { if (random.nextInt(4) == 0) facingLeft = !facingLeft; delay(400L + random.nextLong(1_000)) }
                 }
             }
         }

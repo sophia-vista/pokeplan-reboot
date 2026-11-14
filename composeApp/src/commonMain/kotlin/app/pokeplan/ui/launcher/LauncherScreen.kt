@@ -381,7 +381,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     ),
                 ) {
                     Town(
-                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, chirps = prefs.chirps && !saver, weather = when (prefs.weather) { Weather.LIVE -> forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR; Weather.GUARDIAN -> guardianWeather(shownGuardian(model.data.player.pokemon, model.data.player.moduleGuardians.values, model.data.player.buddy?.id, rotation)); else -> prefs.weather }, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = atHome, gather = gather, rotation = rotation,
+                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, activity = prefs.activity, mood = mood, chirps = prefs.chirps && !saver, weather = when (prefs.weather) { Weather.LIVE -> forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR; Weather.GUARDIAN -> guardianWeather(shownGuardian(model.data.player.pokemon, model.data.player.moduleGuardians.values, model.data.player.buddy?.id, rotation)); else -> prefs.weather }, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = atHome, gather = gather, rotation = rotation,
                         modifier = Modifier.layout { measurable, constraints ->
                             // As many screens wide as there are pages, placed from the left edge and slid by the page (a required size would be centred instead).
                             val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * pageCount, constraints.maxHeight))
@@ -858,6 +858,7 @@ internal fun LauncherSettings(
                 PmdMenuLine("Scene: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, icon = "pa-layout", onClick = onTown)
                 PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel, icon = "pa-heart") { onPrefs(prefs.nextTownSize()) }
                 PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel, icon = "pa-zap") { onPrefs(prefs.withWalking(!prefs.walking)) }
+                if (prefs.walking) PmdVolume("How lively", "pa-sliders", prefs.activity * 10, pixel, min = 1, valueText = { TownBehavior.activityLabel(it) }, onChange = { v -> onPrefs(prefs.withActivity(v / 10)) }, onDone = {})
                 PmdMenuLine("Pokémon chirp: ${onOff(prefs.chirps)}", pixel, icon = "pa-heart") { onPrefs(prefs.withChirps(!prefs.chirps)) }
                 PmdMenuLine("Weather: ${prefs.weather.label}", pixel, icon = "pa-cloud") { onPrefs(prefs.nextWeather()) }
             }
@@ -907,7 +908,13 @@ internal fun LauncherSettings(
  * menu line's text does, and the bar's row is a full [Spacing.Target] tall to hit.
  */
 @Composable
-private fun PmdVolume(label: String, icon: String, value: Int, pixel: Int, onChange: (Int) -> Unit, onDone: () -> Unit) {
+private fun PmdVolume(
+    label: String, icon: String, value: Int, pixel: Int, onChange: (Int) -> Unit, onDone: () -> Unit,
+    /** The lowest level (a volume goes down to 0, a level that has no "off" starts at 1). */
+    min: Int = 0,
+    /** What the right of the label says for a level. */
+    valueText: (Int) -> String = { "$it of 10" },
+) {
     val density = LocalDensity.current.density
     val pad = pmdRowPad(pixel, density)
     val level = (value / 10).coerceIn(0, 10)
@@ -915,25 +922,25 @@ private fun PmdVolume(label: String, icon: String, value: Int, pixel: Int, onCha
     // A block at x sets that level; the first block again turns it to 0, so the sound can be switched off.
     fun set(x: Float) {
         val block = (x / width * 10).toInt().coerceIn(0, 9)
-        onChange((if (block == 0 && level == 1) 0 else block + 1) * 10)
+        onChange(maxOf(min, if (block == 0 && level == 1) 0 else block + 1) * 10)
     }
     Column(Modifier.fillMaxWidth().padding(vertical = Spacing.S)) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = pad), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = pad), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy((3 * pixel / density).dp)) {
                 if (icon.startsWith("pa-")) app.pokeplan.ui.Glyph(icon.removePrefix("pa-"), Color.White, size = 24.dp) else
                 app.pokeplan.ui.ItemIcon(icon, size = (9 * pixel / density).dp.coerceAtLeast(24.dp), description = null)
                 PmdText(label, pixel)
             }
-            PmdText("$level of 10", pixel)
+            PmdText(valueText(level), pixel)
         }
         Row(
             Modifier.fillMaxWidth().height(Spacing.Target).padding(horizontal = pad).onSizeChanged { width = it.width.toFloat().coerceAtLeast(1f) }
                 .pointerInput(level) { detectTapGestures { set(it.x); onDone() } }
                 .pointerInput(Unit) { detectHorizontalDragGestures(onDragEnd = onDone, onDragCancel = onDone) { change, _ -> change.consume(); set(change.position.x) } }
                 .semantics {
-                    contentDescription = "$label $level of 10"
+                    contentDescription = "$label ${valueText(level)}"
                     progressBarRangeInfo = androidx.compose.ui.semantics.ProgressBarRangeInfo(level.toFloat(), 0f..10f, 9)
-                    setProgress { target -> onChange(target.toInt().coerceIn(0, 10) * 10); true }
+                    setProgress { target -> onChange(target.toInt().coerceIn(min, 10) * 10); true }
                 },
             horizontalArrangement = Arrangement.spacedBy((pixel / density).dp), verticalAlignment = Alignment.CenterVertically,
         ) {

@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.181.0
+
+The launcher's town (LAUNCHER.md 6.2): calmer, more natural roaming, and a setting for it. Cosmetic only: no reward number changes, `RewardRules.VERSION` is unchanged, nothing stored needs a migration.
+
+- **How lively** (launcher settings → Town, under "Pokémon walk about"): ten blocks from Sleepy to Restless, default Calm (4), which is quieter than before. It sets how often the Pokémon set off and how long they rest; Restless is about as busy as the old town.
+- **Rest and restless spells:** each Pokémon alternates between resting (standing, looking about, grazing, shifting a step) and pottering about (two to four connected legs with short pauses), with a temper of its own, so the town has a rhythm instead of everyone rolling a fresh dice every beat.
+- **Walks that look walked:** each leg carries on roughly the way it was going (a correlated random walk) and bends back towards the Pokémon's own corner the further it strays, leans along the back and front of the ground instead of bouncing off it, avoids stopping on top of another Pokémon, and only now and then crosses the town. A leg follows a gentle curve and eases in and out instead of a straight line at one speed, and the stroll is a touch slower.
+- The volume and liveliness rows' value text now shares the label's centre line.
+- **The clock widget's battery shows its charge:** empty, one, two or three bars (Pixelarticons' battery levels), red at 20% or lower, with a bolt beside it while charging, instead of an empty outline whatever the charge.
+- **The agenda widget on a light day:** on the widget grid the list starts at the top instead of floating in the middle of its cells, it shows only whole rows (never one cut in half), the time column is as wide as the times instead of a third of the row, and the next day with anything on it (within a week) fills the room left, dimmed under its own heading ("Tomorrow" or the date).
 ## 0.180.0
 
 A better PC. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone needs a migration.

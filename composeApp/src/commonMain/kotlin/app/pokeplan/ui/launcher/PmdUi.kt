@@ -86,7 +86,12 @@ internal enum class PmdTone(val edge: Color, val band: Color, val deep: Color) {
  * [inset] is the room, in art pixels, between the frame and what is inside (rules and buttons run to it; text lines add 6 more, where the cursor goes, so text is 9 in). The frame is drawn in code (UI chrome).
  */
 @Composable
-internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 3, compact: Boolean = false, content: @Composable BoxScope.() -> Unit) {
+internal fun PmdBox(
+    pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 3, compact: Boolean = false,
+    /** On the widget grid, start the content at the top of the cells instead of their middle (a list, which reads from the top). */
+    alignTop: Boolean = false,
+    content: @Composable BoxScope.() -> Unit,
+) {
     val density = LocalDensity.current.density
     val fill = LocalGridFill.current
     Box(
@@ -96,7 +101,9 @@ internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = P
             .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = ((TOP + inset) * pixel / density).dp.let { if (compact || fill) it else maxOf(it, Spacing.BoxY) }),
         content = if (!fill) content else { {
             // On the widget grid the frame is as tall as its cells, and what does not fit is cut off inside it, never squeezed; the content sits in the middle, so a box taller than its lines has the same room above and below.
-            Box(Modifier.fillMaxSize().clipToBounds(), contentAlignment = Alignment.CenterStart) { Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.CenterVertically, unbounded = true)) { content() } }
+            Box(Modifier.fillMaxSize().clipToBounds(), contentAlignment = if (alignTop) Alignment.TopStart else Alignment.CenterStart) {
+                Box(Modifier.fillMaxWidth().wrapContentHeight(if (alignTop) Alignment.Top else Alignment.CenterVertically, unbounded = true)) { content() }
+            }
         } },
     )
 }
