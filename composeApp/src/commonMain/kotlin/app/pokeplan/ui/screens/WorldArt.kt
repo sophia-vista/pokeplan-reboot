@@ -170,9 +170,9 @@ internal fun dungeonEntrance(dungeonId: String): String? = when (dungeonId) {
 
 /** [name] (a ground map) as a framed strip showing the middle of the picture, where a dungeon's entrance is. */
 @Composable
-internal fun EntranceStrip(name: String, height: Dp = 120.dp) {
+internal fun EntranceStrip(name: String, height: Dp = 140.dp) {
     Box(Modifier.fillMaxWidth().height(height).border(Sizes.Line, Pixel.Ink).clipToBounds()) {
-        WorldPicture(name, Modifier.fillMaxSize(), crop = true, anchorY = 0.5f)
+        WorldPicture(name, Modifier.fillMaxSize(), crop = true, anchorY = 0.6f)
     }
 }
 
