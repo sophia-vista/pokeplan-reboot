@@ -176,7 +176,8 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
                 val skill = WorldSkill.entries.minByOrNull { data.skillLevel(it) }!!
                 data = data.train(skill, j.balance) ?: break; j.balance -= Dojo.COST; j.dojoSessions++; j.spentDojo += Dojo.COST
             }
-            while (facilitiesDone && j.balance >= data.candyPrice) { val price = data.candyPrice; j.spentShop += price; data = data.buyCandy(j.balance)!!; j.balance -= price; j.candiesBought++ }
+            // Then Exp. Candies at the Poké Mart (the Kecleon Shop sells no candy since 0.187.0).
+            if (facilitiesDone) { val each = app.pokeplan.core.pokemon.Shop.COINS_PER_RARE_CANDY; val n = j.balance / each; j.spentShop += n * each; j.balance -= n * each; j.candiesBought += n }
             if (cafe) {
                 val berryId = data.items.keys.firstOrNull { it.startsWith("berry-") && (data.items[it] ?: 0) >= Cafe.BERRIES }
                 if (berryId != null && data.brewUntil <= now) { data = (data.brew(now) ?: data).copy(items = data.items + (berryId to data.items.getValue(berryId) - Cafe.BERRIES)); j.brews++ }

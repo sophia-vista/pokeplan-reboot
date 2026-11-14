@@ -39,7 +39,7 @@ class HealRewardTest {
     @Test
     fun participationPaysOnlyAFewCandiesAndWarmsNobody() {
         val out = RewardEngine.heal(healState(), event(HealKind.PARTICIPATION), Random(1))
-        assertEquals(listOf<Reward>(Reward.Candies(CandyType.RARE, RewardEngine.HEAL_CANDIES.getValue(HealKind.PARTICIPATION))), out.rewards)
+        assertEquals(listOf<Reward>(Reward.Candies(CandyType.RARE, RewardEngine.HEAL_CANDIES.getValue(HealKind.PARTICIPATION)), Reward.Coins(RewardEngine.MODULE_POKE)), out.rewards)
         assertEquals(FriendshipRules.START, out.state.healLead!!.friendship)
     }
 

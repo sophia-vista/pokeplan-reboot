@@ -36,7 +36,7 @@ class RewardEngineTest {
         assertEquals("new", hatched.pokemon.id)
         assertEquals(false, hatched.fromTask)
         assertEquals(listOf(hatched.pokemon), out.state.pokemon)
-        assertEquals(5, out.state.coins, "1 coin per 5 minutes")
+        assertEquals(25, out.state.coins, "1 Poké a minute")
         assertEquals(1, out.state.inventory.counts.filterKeys { it.startsWith("berry-") }.values.sum())
     }
 
@@ -140,8 +140,8 @@ class RewardEngineTest {
 
     @Test
     fun coinsFollowTheTier() {
-        assertEquals(6, RewardEngine.achievement(PlayerState(), achievement(3), Random(1)).state.coins)
-        assertEquals(10, RewardEngine.achievement(PlayerState(), achievement(5), Random(1)).state.coins)
+        assertEquals(30, RewardEngine.achievement(PlayerState(), achievement(3), Random(1)).state.coins)
+        assertEquals(50, RewardEngine.achievement(PlayerState(), achievement(5), Random(1)).state.coins)
     }
 
     @Test

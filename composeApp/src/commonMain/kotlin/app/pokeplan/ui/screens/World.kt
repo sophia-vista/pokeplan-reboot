@@ -535,7 +535,7 @@ private fun WorldTownView(model: AppModel) {
                 val detail = when (p) {
                     TownPage.FACILITIES -> "Camp level ${world.facilityLevel(Facility.CAMP)}"
                     TownPage.CAFE -> "a brew for the road"
-                    TownPage.KECLEON -> "${world.candyPrice} Poké a candy"
+                    TownPage.KECLEON -> "stones ${app.pokeplan.world.KecleonShop.STONE_PRICE} Poké"
                     TownPage.SWAP -> "berry for berry"
                     TownPage.DOJO -> "${app.pokeplan.world.Dojo.COST} Poké a lesson"
                 }
@@ -592,12 +592,6 @@ private fun WorldTownView(model: AppModel) {
         }
         TownPage.KECLEON -> {
             WorldBanner("pokemon-square", "Kecleon Shop", "Items, for Poké", height = 150.dp)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Exp. Candy", style = MaterialTheme.typography.titleSmall)
-            PixelButton("Buy one: ${world.candyPrice} Poké", { if (store.worldBuyCandy()) model.effect(Sfx.CANDY) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = store.data.player.coins >= world.candyPrice, compact = true)
-        }
-    }
     // Today's shelf first (it changes each day), then the stock that is always sold.
     val day = store.shopDay
     ShopShelf(model, "Today's shelf", app.pokeplan.world.KecleonShop.shelf(day))

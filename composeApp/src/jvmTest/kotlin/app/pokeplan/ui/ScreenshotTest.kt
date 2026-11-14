@@ -906,6 +906,12 @@ class ScreenshotTest {
     fun collectionBag() = collection("collection-bag", 3)
 
     @Test
+    fun collectionMart() = collection("collection-mart", 4, height = 1600)
+
+    @Test
+    fun collectionMartDark() = collection("collection-mart-dark", 4, height = 1600, dark = true)
+
+    @Test
     fun pokemonDetail() = collection("pokemon-detail", 0, open = true)
 
     /** The whole detail page at a rank that shows stats, the IV judge and held items, at [fontScale]. */

@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.187.0
+
+A kinder economy and a Poké Mart of its own (owner, 14 November 2026: "economy seems stingy", "anything for individual Pokémon growth should be generous", "held items?"). `RewardRules.VERSION` 26.
+
+- **Poké Mart:** its own row in the Pokémon tab (it was a box at the top of the Bag), separate from World's Kecleon Shop. Exp. Candy 5 Poké as before, plus Super Candy 100 and each berry flavour 20; Buy 1, 10 or as many as you can afford.
+- **More Poké from real life:** a focus session pays 1 Poké a minute (was 1 per 5), a task 10 per rank tier (was 2), and each paid Care, Heal, Mint, Base and Link moment 10 (Care's weekly rhythm 30; Care Play, steps and imports none). About twice the Poké over 60 days in `docs/economy-report.md`.
+- **Kecleon Shop at about a fifth of its prices:** stones 400, Link Cord 500, Everstone 300, vitamins 100, perk held items 500 (Shiny Charm 1,500), Nature Mint 400, Ability Capsule 600, Bottle Cap 800, Tera Shards 1,000, Ability Patch 2,000. It no longer sells Exp. Candy (2,500 and rising); the Mart does. World's facilities, Café and Dojo keep their prices.
+
 ## 0.186.0
 
 Heal keeps steps and the readings Huawei Health shows (owner, 14 November 2026, `MODULES/HEAL.md` 22B). Own PR: **schema 11** (`10.sqm`, `databases/11.db`; `heal_steps` and `heal_vital`, sealed like every Heal row). `RewardRules.VERSION` 25.
