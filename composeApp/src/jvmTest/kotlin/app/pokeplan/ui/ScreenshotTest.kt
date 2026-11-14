@@ -1591,6 +1591,20 @@ class ScreenshotTest {
         }
     }
 
+    /** The agenda on a light day: the list starts at the top, and the next day with anything on it fills the room left. */
+    @Test
+    fun launcherAgendaLightDay() {
+        val store = started()
+        store.addTask("Write the report", Rank.B, planned = store.today)
+        store.addTask("Water the plants", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 1)))
+        store.addTask("Call the bank", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 1)))
+        val model = AppModel(store)
+        val grid = listOf(app.pokeplan.ui.launcher.GridWidget(app.pokeplan.ui.launcher.WidgetPage.HOME, app.pokeplan.ui.launcher.WidgetKind.AGENDA, "", 0, 0, 4, 8))
+        val prefs = app.pokeplan.ui.launcher.LauncherPrefs().withGridMode(true).withGrid(grid)
+        val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+        render("launcher-agenda-light-day", frames = 8, height = ((app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * 8 + 16) * 1.5f).toInt(), minBytes = 500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
+    }
+
     /** Holding a dragged widget at the right side of the screen hops it to the next page (and the page goes there). */
     @Test
     fun launcherGridHop() {

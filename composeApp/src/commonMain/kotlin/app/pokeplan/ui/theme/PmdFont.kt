@@ -116,6 +116,9 @@ class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
         private const val PLAIN = "aaaaaaceeeeiiiinoooooouuuuyy"
         private var cached: PmdFont? = null
 
+        /** The font if it has been read already (so a first frame need not wait), else null. */
+        fun cachedOrNull(): PmdFont? = cached
+
         fun normalize(c: Char): Char = when (c) { '\'' -> '\u2019'; '"' -> '\u201d'; else -> c }
 
         suspend fun load(): PmdFont? = cached ?: orNull {

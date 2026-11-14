@@ -14,7 +14,7 @@ NAMES = ["arrow-left", "arrow-right", "arrow-up", "arrow-down", "pencil", "copy"
          "chevron-up", "chevron-down", "more-horizontal", "flag", "repeat", "clipboard",
          "volume-2", "bell", "sun", "moon", "user", "cloud", "home", "sliders", "layout", "grid-2x2-2", "hand", "pointer",
          "drag-and-drop", "eye", "thermometer", "calendar", "clock", "battery", "map", "heart", "zap", "settings-cog",
-         "cursor-minimal", "power", "shield", "download", "upload", "info-box", "lock", "vibrate", "languages", "globe", "eye-off", "map-pin", "music", "battery-low", "users"]
+         "cursor-minimal", "power", "shield", "download", "upload", "info-box", "lock", "vibrate", "languages", "globe", "eye-off", "map-pin", "music", "battery-low", "users", "battery-medium", "battery-full"]
 SS = 8
 
 def subpaths(d):
