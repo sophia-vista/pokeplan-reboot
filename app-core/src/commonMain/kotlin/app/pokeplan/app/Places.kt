@@ -58,6 +58,19 @@ object Places {
         Place.Pc -> "Resting in the PC"
     }
 
+    /**
+     * Where [id] is in a word or two, for a PC tile when the PC shows every Pokémon: "Buddy", "Plan lead", "Care", "Heal Guardian",
+     * "World", "Pokégear"; null in the PC. [isLead] says whether it leads its party (the derived lead, which [PcPlace.all] works out).
+     */
+    fun short(d: AppData, id: String, isLead: Boolean): String? = when (val place = of(d, id)) {
+        Place.Buddy -> "Buddy"
+        is Place.Party -> if (isLead) "${partyName(place.partyId)} lead" else partyName(place.partyId)
+        is Place.Guardian -> "${partyName(place.module)} Guardian"
+        is Place.WorldTeam -> "World"
+        is Place.GearHelper -> "Pokégear"
+        Place.Pc -> null
+    }
+
     /** Whether [id] can be taken from its place now: not while its World team is out on an expedition. */
     fun movable(d: AppData, id: String): Boolean = d.world.teams.none { id in it.members && it.expedition != null }
 

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
@@ -20,6 +21,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +40,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Place
 import app.pokeplan.ui.Tab
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PmdFont
 import app.pokeplan.ui.theme.PmdText
 import app.pokeplan.ui.theme.Spacing
 import kotlinx.coroutines.delay
@@ -184,15 +187,25 @@ private fun ClockWidget(env: WidgetEnv) {
             // Narrower than the screen the date gives way to the time, and the battery to a wider place.
             PmdText(if (cells.w >= 3) "${formatDate(now.date, env.prefs.dateStyle)}   $time" else time, env.pixel, gap)
             Box(Modifier.weight(1f))
-            // A glyph says what the number is: a bolt while charging, a low battery in the saver, a battery otherwise.
+            // A battery filled to its charge (empty, one, two or three bars), with a bolt beside it while charging; low and not charging, it turns red.
             if (cells.w >= 4) battery?.let {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    app.pokeplan.ui.Glyph(if (it.charging) "zap" else if (env.saver) "battery-low" else "battery", Color.White.copy(alpha = 0.75f), size = 20.dp, description = if (it.charging) "Charging" else if (env.saver) "Battery saver" else "Battery")
+                    if (it.charging) app.pokeplan.ui.Glyph("zap", Color.White.copy(alpha = 0.75f), size = 16.dp, description = "Charging")
+                    val low = !it.charging && it.percent <= LOW_BATTERY
+                    app.pokeplan.ui.Glyph(batteryGlyph(it.percent), if (low) Pixel.Red else Color.White.copy(alpha = 0.75f), size = 20.dp, description = "Battery")
                     PmdText(it.percent.toString(), env.pixel, gap, alpha = 0.75f)
                 }
             }
         }
     }
+}
+
+/** The battery glyph for a charge of [percent]: empty at 10 or below, then one, two or three bars (Pixelarticons' battery levels). */
+internal fun batteryGlyph(percent: Int): String = when {
+    percent <= 10 -> "battery"
+    percent <= 40 -> "battery-low"
+    percent <= 75 -> "battery-medium"
+    else -> "battery-full"
 }
 
 @Composable
@@ -385,48 +398,85 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
     val pad = pmdRowPad(pixel, density)
     val day = state.day
     val open = model.data.tasks.filter { it.state == TaskState.OPEN }
-    val tasks = if (day == today) model.store.todayTasks().filter { it.state == TaskState.OPEN } else open.filter { it.planned == day || it.due?.date == day }
-    // The app's own events and the phone's calendars (Google Calendar's among them), all-day ones first and then by the hour.
-    class Line(val time: String, val title: String, val sort: Int)
-    val lines = (model.data.events.flatMap { it.occurrences(day, day) }.map { e -> Line(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.prefs.hour12), e.title, if (e.allDay) -1 else e.start.hour * 60 + e.start.minute) } +
-        state.device.filter { it.isOn(day) }.map { e ->
-            val from = e.span(day)?.first
-            Line(if (e.allDay || from == null) "All day" else formatTime(from / 60, from % 60, null, env.prefs.hour12), e.shownTitle, if (e.allDay || from == null) -1 else from)
+    // The app's own events and the phone's calendars (Google Calendar's among them), all-day ones first and then by the hour; then the open tasks of the day.
+    fun eventsOn(d: LocalDate): List<AgendaLine> = (model.data.events.flatMap { it.occurrences(d, d) }.map { e -> AgendaLine(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.prefs.hour12), e.title, if (e.allDay) -1 else e.start.hour * 60 + e.start.minute) } +
+        state.device.filter { it.isOn(d) }.map { e ->
+            val from = e.span(d)?.first
+            AgendaLine(if (e.allDay || from == null) "All day" else formatTime(from / 60, from % 60, null, env.prefs.hour12), e.shownTitle, if (e.allDay || from == null) -1 else from)
         }).sortedBy { it.sort }
-    // Small lists three lines, medium six, large all.
-    val room = when (size) { WidgetSize.SMALL -> 3; WidgetSize.MEDIUM -> 6; WidgetSize.LARGE -> Int.MAX_VALUE }
-    val shownEvents = lines.take(room)
-    val shownTasks = tasks.take((room - shownEvents.size).coerceAtLeast(0))
+    fun tasksOn(d: LocalDate) = if (d == today) model.store.todayTasks().filter { it.state == TaskState.OPEN } else open.filter { it.planned == d || it.due?.date == d }
+    val lines = eventsOn(day)
+    val tasks = tasksOn(day)
+    // Small lists three lines, medium six, large eight; on the grid, no more whole rows than its cells hold under the frame and the heading, so none is cut in half.
+    val cells = LocalCells.current
+    val unit = pixel / density
+    val fits = if (!LocalGridFill.current) Int.MAX_VALUE
+        else ((cells.h * WidgetGrid.ROW_DP - 12 * unit - (PmdFont.LINE * unit + 2 * Spacing.M.value + unit)) / Spacing.Target.value).toInt().coerceAtLeast(1)
     val source = model.calendars
-    PmdBox(pixel, Modifier.fillMaxWidth()) {
+    // The line that asks for Google Calendar takes a row of its own at the bottom.
+    val asks = source != null && (!source.permitted() || model.data.shownCalendars.isEmpty())
+    val room = (minOf(fits, when (size) { WidgetSize.SMALL -> 3; WidgetSize.MEDIUM -> 6; WidgetSize.LARGE -> 8 }) - if (asks) 1 else 0).coerceAtLeast(1)
+    // When not everything fits, the last row says how many more there are.
+    val total = lines.size + tasks.size
+    val listed = if (total > room) (room - 1).coerceAtLeast(1) else room
+    val shownEvents = lines.take(listed)
+    val shownTasks = tasks.take((listed - shownEvents.size).coerceAtLeast(0))
+    val more = total - shownEvents.size - shownTasks.size
+    // A light day leaves room: the next day with anything on it (within a week) fills it, under its own heading, so the box is not mostly empty.
+    val spare = room - shownEvents.size - shownTasks.size - (if (lines.isEmpty() && tasks.isEmpty()) 1 else 0) - 1
+    val ahead = if (spare <= 0 || more > 0) null else (1..7).asSequence().map { day.plus(DatePeriod(days = it)) }
+        .map { d -> Triple(d, eventsOn(d), tasksOn(d)) }.firstOrNull { (_, e, t) -> e.isNotEmpty() || t.isNotEmpty() }
+    val aheadEvents = ahead?.second?.take(spare).orEmpty()
+    val aheadTasks = ahead?.third?.take(spare - aheadEvents.size).orEmpty()
+    // The time column is as wide as the widest time shown, not a share of the row, so a short title is not pushed to the middle.
+    val font by produceState(PmdFont.cachedOrNull()) { value = PmdFont.load() }
+    val timeWidth = font?.let { f -> ((shownEvents + aheadEvents).maxOfOrNull { f.width(f.clean(it.time)) } ?: 0) * pixel / density }?.dp
+    fun label(d: LocalDate) = when (d) { today -> "Today"; today.plus(DatePeriod(days = 1)) -> "Tomorrow"; else -> "${dayName(d.dayOfWeek)} ${d.day} ${monthName(d.month)}" }
+
+    @Composable
+    fun EventRow(e: AgendaLine, alpha: Float) {
+        Row(Modifier.fillMaxWidth().height(Spacing.Target).padding(horizontal = pad), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PmdText(e.time, pixel, if (timeWidth != null) Modifier.width(timeWidth) else Modifier.weight(0.5f), alpha = 0.75f * alpha)
+            PmdText(e.title, pixel, Modifier.weight(1f), alpha = alpha)
+        }
+    }
+
+    // Completing a task here finishes it and pays it, like the Plan tab; the box is the whole row.
+    @Composable
+    fun TaskRow(t: app.pokeplan.plan.Task, alpha: Float) {
+        Row(
+            Modifier.fillMaxWidth().height(Spacing.Target).clickable(role = Role.Checkbox, onClickLabel = "Finish ${t.title}") { model.completeTask(t.id) }
+                .padding(horizontal = pad).semantics { contentDescription = "Task ${t.title}, not done" },
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+        ) {
+            Box(Modifier.size((7 * pixel / density).dp).border((pixel / density).dp, Color.White.copy(alpha = alpha)))
+            PmdText(t.title, pixel, Modifier.weight(1f), alpha = alpha)
+        }
+    }
+
+    // A list reads from the top: on the grid it starts under the frame, not in the middle of its cells.
+    PmdBox(pixel, Modifier.fillMaxWidth(), alignTop = true) {
         Column(Modifier.fillMaxWidth()) {
-            PmdText(if (day == today) "Today" else "${dayName(day.dayOfWeek)} ${day.day} ${monthName(day.month)}", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M))
+            PmdText(label(day), pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M))
             PmdRule(pixel)
             if (lines.isEmpty() && tasks.isEmpty()) PmdText("Nothing planned", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
-            shownEvents.forEach { e ->
-                Row(Modifier.fillMaxWidth().height(Spacing.Target).padding(horizontal = pad), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                    PmdText(e.time, pixel, Modifier.weight(0.5f), alpha = 0.75f)
-                    PmdText(e.title, pixel, Modifier.weight(1f))
-                }
+            shownEvents.forEach { EventRow(it, 1f) }
+            shownTasks.forEach { TaskRow(it, 1f) }
+            if (more > 0) PmdText("$more more", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.S), alpha = 0.7f)
+            if (ahead != null) {
+                PmdText(label(ahead.first), pixel, Modifier.padding(start = pad, end = pad, top = Spacing.L, bottom = Spacing.S), alpha = 0.7f)
+                aheadEvents.forEach { EventRow(it, 0.7f) }
+                aheadTasks.forEach { TaskRow(it, 0.7f) }
             }
-            // Completing a task here finishes it and pays it, like the Plan tab; the box is the whole row.
-            shownTasks.forEach { t ->
-                Row(
-                    Modifier.fillMaxWidth().height(Spacing.Target).clickable(role = Role.Checkbox, onClickLabel = "Finish ${t.title}") { model.completeTask(t.id) }
-                        .padding(horizontal = pad).semantics { contentDescription = "Task ${t.title}, not done" },
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
-                ) {
-                    Box(Modifier.size((7 * pixel / density).dp).border((pixel / density).dp, Color.White))
-                    PmdText(t.title, pixel, Modifier.weight(1f))
-                }
-            }
-            if (lines.size + tasks.size > shownEvents.size + shownTasks.size) PmdText("${lines.size + tasks.size - shownEvents.size - shownTasks.size} more", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.S), alpha = 0.7f)
             // Google Calendar, like the app: needs the calendar permission, and the calendars chosen in PokéLife's settings.
             if (source != null && !source.permitted()) PmdMenuLine("Show Google Calendar", pixel, dim = true) { source.requestPermission { state.permissionAnswers++ } }
             else if (source != null && model.data.shownCalendars.isEmpty()) PmdMenuLine("Choose calendars in PokéLife: Me, Settings", pixel, dim = true) { env.host.openApp(app.pokeplan.ui.Place.ME) }
         }
     }
 }
+
+/** One event line of the agenda: its time ("All day" or the hour), its title, and where it sorts (all-day first). */
+private class AgendaLine(val time: String, val title: String, val sort: Int)
 
 /** The days of the week in the order a calendar row shows them. */
 internal fun weekDays(sundayFirst: Boolean): List<DayOfWeek> =

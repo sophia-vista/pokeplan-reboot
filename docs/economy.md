@@ -250,7 +250,7 @@ Found while writing this down; each is its own change, none is in this rules ver
 
 - **Coins buy only Rare Candies** (0.46.0). design.md also plans Lures bought or crafted from berries; not built.
 - **Earned items with no use yet:** Lures (Focus never passes one). Mega Stones can be held but never drop.
-- **Trial evolutions** (0.179.0) are checked on the spot, done with the phone, or done in World (`EvolutionTrialSites`); see docs/design.md, "Evolution".
+- **Trial evolutions** (0.182.0) are checked on the spot, done with the phone, or done in World (`EvolutionTrialSites`); see docs/design.md, "Evolution".
 - **Stack caps are uneven:** transfers, the focus berry and the weekly review berry add without the cap; the server's gift caps every item at 9,999, the app caps non-candies at 999.
 - **Who decides.** The app computes every reward itself and the server checks the snapshot on sync (points never drop, the party and Guardians fit, column ranges). The server's `effort`, `task` and `achievement` kinds exist and are tested but no app calls them yet. Moving rewards to them (and adding the daily caps) is the step before a public release (`supabase/README.md`, Known limits).
 

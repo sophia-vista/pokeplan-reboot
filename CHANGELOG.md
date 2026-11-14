@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.179.0
+## 0.182.0
 
 Evolution methods, items and the shop (owner, 14 November 2026). `RewardRules.VERSION` 23: the life modules drop items. Nothing stored on the phone needs a migration (new optional fields).
 
@@ -17,6 +17,24 @@ Evolution methods, items and the shop (owner, 14 November 2026). `RewardRules.VE
 - **Items from every module:** each Care, Heal, Mint, Base and Link moment has a small chance of a themed item (Care sweets and soft stones, Heal vitamins and claws, Mint Nature Mints and coins, Base stones and the Everstone, Link the Link Cord and trade items), and a finished Mint review always gives a Nature Mint.
 - **The Kecleon Shop** always sells every evolution stone, the Link Cord, the Everstone and Gimmighoul Coins, and has a shelf of five more items that changes each day.
 - New item icons: Everstone, Oval Stone, Razor Claw, Razor Fang, Strawberry Sweet, Gimmighoul Coin (PokeAPI/sprites).
+
+## 0.181.0
+
+The launcher's town (LAUNCHER.md 6.2): calmer, more natural roaming, and a setting for it. Cosmetic only: no reward number changes, `RewardRules.VERSION` is unchanged, nothing stored needs a migration.
+
+- **How lively** (launcher settings → Town, under "Pokémon walk about"): ten blocks from Sleepy to Restless, default Calm (4), which is quieter than before. It sets how often the Pokémon set off and how long they rest; Restless is about as busy as the old town.
+- **Rest and restless spells:** each Pokémon alternates between resting (standing, looking about, grazing, shifting a step) and pottering about (two to four connected legs with short pauses), with a temper of its own, so the town has a rhythm instead of everyone rolling a fresh dice every beat.
+- **Walks that look walked:** each leg carries on roughly the way it was going (a correlated random walk) and bends back towards the Pokémon's own corner the further it strays, leans along the back and front of the ground instead of bouncing off it, avoids stopping on top of another Pokémon, and only now and then crosses the town. A leg follows a gentle curve and eases in and out instead of a straight line at one speed, and the stroll is a touch slower.
+- The volume and liveliness rows' value text now shares the label's centre line.
+- **The clock widget's battery shows its charge:** empty, one, two or three bars (Pixelarticons' battery levels), red at 20% or lower, with a bolt beside it while charging, instead of an empty outline whatever the charge.
+- **The agenda widget on a light day:** on the widget grid the list starts at the top instead of floating in the middle of its cells, it shows only whole rows (never one cut in half), the time column is as wide as the times instead of a third of the row, and the next day with anything on it (within a week) fills the room left, dimmed under its own heading ("Tomorrow" or the date).
+## 0.180.0
+
+A better PC. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone needs a migration.
+
+- **The PC shows the Pokémon resting in it**, as before, and a **Show all Pokémon** switch lists every one you own: the buddy, the leads and parties, the Guardians, the World teams and the Pokégear helpers. Each tile then names its place (Buddy, Plan lead, Care, Heal Guardian, World, Pokégear).
+- **Where** joins the sort and filters while every Pokémon shows: PC, Buddy, Leads, Parties, Guardians, World teams or Pokégear. Clear keeps the switch and the sort.
+- An empty PC with Pokémon elsewhere offers Show all Pokémon instead of a dead end.
 
 ## 0.178.0
 

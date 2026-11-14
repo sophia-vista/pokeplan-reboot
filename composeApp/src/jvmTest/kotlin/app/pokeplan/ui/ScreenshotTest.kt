@@ -568,13 +568,13 @@ class ScreenshotTest {
         return store
     }
 
-    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, fontScale: Float = 1f, height: Int = 1080, setup: (GameStore) -> Unit = {}) {
+    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, fontScale: Float = 1f, height: Int = 1080, everyone: Boolean = false, setup: (GameStore) -> Unit = {}) {
         val store = storeWithTeam(hatched).also(setup)
         val model = AppModel(store)
         render(name, fontScale = fontScale, height = height) {
             PixelTheme {
                 Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
-                    app.pokeplan.ui.screens.CollectionScreen(model, section, if (open) store.data.player.buddyId else null)
+                    app.pokeplan.ui.screens.CollectionScreen(model, section, if (open) store.data.player.buddyId else null, startPcEveryone = everyone)
                 }
             }
         }
@@ -879,6 +879,10 @@ class ScreenshotTest {
 
     @Test
     fun collectionPc() = collection("collection-pc", 1, hatched = 14)
+
+    /** "Show all Pokémon": the buddy and the party join the PC's, each tile naming its place. */
+    @Test
+    fun collectionPcEveryone() = collection("collection-pc-everyone", 1, hatched = 8, height = 1400, everyone = true)
 
     /** More than one box of Pokémon: names under the sprites and the Previous / Next bar. */
     @Test
@@ -1589,6 +1593,20 @@ class ScreenshotTest {
             val rows = app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * h + 16
             render("gridsize-${k.name.lowercase()}-${w}x$h", frames = 8, height = (rows * 1.5f).toInt(), minBytes = 500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
         }
+    }
+
+    /** The agenda on a light day: the list starts at the top, and the next day with anything on it fills the room left. */
+    @Test
+    fun launcherAgendaLightDay() {
+        val store = started()
+        store.addTask("Write the report", Rank.B, planned = store.today)
+        store.addTask("Water the plants", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 1)))
+        store.addTask("Call the bank", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 1)))
+        val model = AppModel(store)
+        val grid = listOf(app.pokeplan.ui.launcher.GridWidget(app.pokeplan.ui.launcher.WidgetPage.HOME, app.pokeplan.ui.launcher.WidgetKind.AGENDA, "", 0, 0, 4, 8))
+        val prefs = app.pokeplan.ui.launcher.LauncherPrefs().withGridMode(true).withGrid(grid)
+        val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+        render("launcher-agenda-light-day", frames = 8, height = ((app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * 8 + 16) * 1.5f).toInt(), minBytes = 500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
     }
 
     /** Holding a dragged widget at the right side of the screen hops it to the next page (and the page goes there). */
