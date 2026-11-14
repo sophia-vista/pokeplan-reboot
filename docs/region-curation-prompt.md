@@ -1,6 +1,6 @@
 # Curating a module region
 
-Every life module with a region (Plan, Care, Heal, Mint, Home, Link) has its own: a hand-curated dex of about 150 to 180 species (every species is in exactly one), open to every
+Every life module with a region (Plan, Care, Heal, Mint, Base, Link) has its own: a hand-curated dex of 150 to 200 species (every species is in exactly one), open to every
 player once the module ships ("Module regions" in [POKEMON_ECOSYSTEM.md](pokelife/FEATURES/POKEMON_ECOSYSTEM.md)). This kit is how a region's
 list is chosen, in a separate chat or with Claude Code, and brought back. The lists live in `tools/species/regions/`
 (`plan.txt`, `care.txt`, `heal.txt`, `mint.txt`, `household.txt`, `link.txt`, one per `Region` entry). All six were curated together in 0.139.0 (docs/design.md, "Species lists"); this kit is for changing one.
@@ -24,7 +24,7 @@ To refresh the candidates table after any rule change or curation: `./gradlew :p
 - **Care Region** (`care.txt`): Fairy, Grass, Water and Normal; gentle, soothing and caring Pokémon (sleep, comfort, healing, gratitude). Patrons Cresselia and Shaymin. Super Rare lines: Goomy and Slakoth.
 - **Heal Region** (`heal.txt`): Fighting, Fire, Water and Electric; sporty, outdoorsy and energetic Pokémon. Patrons Raikou, Entei and Suicune. Super Rare lines: Jangmo-o and Frigibax.
 - **Mint Region** (`mint.txt`): Steel, Rock and Ground; steady keepers, fossils, gems and hoarders. Patrons Diancie and Melmetal. Super Rare lines: Beldum and Duraludon.
-- **Home Region** (`household.txt`): kitchen, garden, hearth, fridge, closet and pets. Patrons Tapu Bulu and Ogerpon. Super Rare lines: Gible and Larvitar.
+- **Base Region** (`household.txt`): kitchen, garden, hearth, fridge, closet and pets. Patrons Tapu Bulu and Ogerpon. Super Rare lines: Gible and Larvitar.
 - **Link Region** (`link.txt`): postal birds, loyal dogs, pairs, singers and gift-givers. Patrons Latias and Latios. Super Rare lines: Dratini and Dreepy.
 
 (There is no Grow region any more.) The order of a list follows a mainline regional dex: starters, lines by rarity, quest species, patrons last.
@@ -32,7 +32,7 @@ To refresh the candidates table after any rule change or curation: `./gradlew :p
 ## The prompt
 
 ~~~~text
-You are helping me curate one module region's dex for my app PokéPlan. PokéPlan is a productivity and self-improvement app: finishing a focus session hatches a Pokémon egg, and finishing tasks, habits and goals earns candies and items that level up and evolve my Pokémon. Each life module of the app (Plan for tasks and focus, Care for self-care, Grow for learning, Home for the household) has its own region: a themed dex that every player can collect. Help me decide exactly which Pokémon go in the region below. Work with me in rounds and do not rush to a final list.
+You are helping me curate one module region's dex for my app PokéLife, a productivity and self-improvement app: finishing a focus session hatches a Pokémon egg, and finishing tasks, habits and goals earns candies and items that level up and evolve my Pokémon. Each life module of the app (Plan for tasks and focus, Care for self-care, Heal for health and fitness, Mint for money, Base for the household, Link for relationships) has its own region: a dex of Pokémon to collect there, and a species belongs to exactly one region. has its own region: a themed dex that every player can collect. Help me decide exactly which Pokémon go in the region below. Work with me in rounds and do not rush to a final list.
 
 I will attach a table of every Pokémon line that can hatch from an egg, with its rarity tier and the module region it is already in. Use the names exactly as written there.
 
@@ -41,7 +41,7 @@ REGION BRIEF
 
 HOW THE GAME USES THE DEX (these are constraints)
 1. Eggs hatch only from the region I am collecting in. The egg pool is every species in the dex that is an "entry point": a basic form, or any species whose pre-evolution is not in my list. Evolved forms are earned later with candies, items, friendship or special quests.
-2. Size: about 150 species (130 to 170 is fine). I should be able to complete the basic dex in about 2 months at roughly 5 eggs a day, which works out to about 55 to 65 hatchable lines. A line like Charmander > Charmeleon > Charizard is 1 hatchable line and 3 species. Prefer whole lines (all stages) so every species can be reached.
+2. Size: about 160 species (150 to 200; the app's tests refuse a list outside that). I should be able to complete the basic dex in about 2 months at roughly 5 eggs a day, which works out to about 55 to 65 hatchable lines. A line like Charmander > Charmeleon > Charizard is 1 hatchable line and 3 species. Prefer whole lines (all stages) so every species can be reached.
 3. Rarity tier belongs to the whole evolution line and is listed in the table; it cannot be changed. Egg odds depend on how long I focus:
    - 5 to 19 min: Common 60, Uncommon 30, Rare 9, Super Rare 1
    - 20 to 39 min: 45 / 35 / 15 / 5
@@ -51,7 +51,7 @@ HOW THE GAME USES THE DEX (these are constraints)
    - 240+ min: 0 / 10 / 50 / 40
    Staying completely still ("Deep Focus") moves the result up one row. Most of my sessions will be short, so I need enough Common and Uncommon lines or I will keep hatching the same few. Aim for at least 10 Common, 10 Uncommon, 15 Rare and 3 Super Rare hatchable lines. Within a tier, the egg picks uniformly among that tier's hatchable species.
 4. Legendary, mythical, Ultra Beast and Paradox Pokémon can be in my dex, but they never hatch from eggs: they are rewards for quests and milestones (listed at the end of the table). Limit them to about 10, tell me which, and do not count them as hatchable lines.
-5. My one "buddy" Pokémon gives perks based on its type, so I want at least one or two lines I would love as a long-term partner in each bucket:
+5. Each module's party lead gives perks based on its type, so I want at least one or two lines I would love as a long-term lead in each bucket:
    - Egg luck: Normal, Flying, Fairy
    - Candy yield: Fighting, Rock, Ground, Steel
    - Super Candy chance: Psychic, Dragon, Ghost
