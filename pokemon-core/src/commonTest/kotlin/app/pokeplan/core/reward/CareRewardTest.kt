@@ -34,7 +34,7 @@ class CareRewardTest {
     fun aRoutineGrowsTheBondAndALittleRank() {
         val out = care(CareKind.ROUTINE, careState(Nature.BOLD))
         assertEquals(FriendshipRules.START + 2, out.state.careLead!!.friendship, "a comfort-loving lead doubles a routine's friendship")
-        assertEquals(listOf(Reward.Friendship(2), Reward.Candies(CandyType.RARE, RewardEngine.CARE_CANDIES.getValue(CareKind.ROUTINE))), out.rewards)
+        assertEquals(listOf(Reward.Friendship(2), Reward.Candies(CandyType.RARE, RewardEngine.CARE_CANDIES.getValue(CareKind.ROUTINE)), Reward.Coins(RewardEngine.MODULE_POKE)), out.rewards)
         assertEquals(10 + RewardEngine.CARE_POINTS, out.state.trainerPoints)
     }
 
@@ -58,7 +58,7 @@ class CareRewardTest {
     fun withNoCareLeadCareWarmsNobody() {
         val out = care(CareKind.ROUTINE, state(Nature.BOLD))
         assertEquals(FriendshipRules.START, out.state.buddy!!.friendship, "the global buddy is never warmed by a module")
-        assertEquals(listOf(Reward.Candies(CandyType.RARE, RewardEngine.CARE_CANDIES.getValue(CareKind.ROUTINE))), out.rewards)
+        assertEquals(listOf(Reward.Candies(CandyType.RARE, RewardEngine.CARE_CANDIES.getValue(CareKind.ROUTINE)), Reward.Coins(RewardEngine.MODULE_POKE)), out.rewards)
     }
 
     @Test
@@ -97,11 +97,13 @@ class CareRewardTest {
     }
 
     @Test
-    fun everyCareMomentPaysRareCandiesButNoEggOrCoins() {
+    fun everyCareMomentPaysRareCandiesAndPokeButNoEgg() {
         for (kind in CareKind.entries) {
             val out = care(kind)
             assertEquals(RewardEngine.CARE_CANDIES.getValue(kind), out.state.inventory[Items.RARE_CANDY], "$kind")
-            assertTrue(out.rewards.none { it is Reward.Hatched || it is Reward.Coins }, "$kind: Care Eggs come from the app's meter")
+            assertTrue(out.rewards.none { it is Reward.Hatched }, "$kind: Care Eggs come from the app's meter")
+            val poke = when (kind) { CareKind.PLAY -> 0; CareKind.WEEKLY_RHYTHM -> RewardEngine.RHYTHM_POKE; else -> RewardEngine.MODULE_POKE }
+            assertEquals(poke, out.rewards.filterIsInstance<Reward.Coins>().sumOf { it.amount }, "$kind pays its Poké (Play pays none)")
             assertEquals(1, out.state.pokemon.size)
         }
     }

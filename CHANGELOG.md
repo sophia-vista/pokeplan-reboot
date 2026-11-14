@@ -5,6 +5,24 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.188.0
+
+The launcher town is a Mystery Dungeon floor (owner, 14 November 2026; REP-052, `FEATURES/LAUNCHER.md` 4.5). `RewardRules.VERSION` 27.
+
+- **Rooms and corridors** from the dungeon's own tiles across every page, walls everywhere else, ponds in some rooms and lakes in the walls; a new floor each day, and Launcher settings → Town → New floor layout for another one. Rooms go where the widgets are not.
+- **Real shapes:** each Explorers of Sky tileset's full autotile set (the 47 ways a square can meet its neighbours, the game's three variants) cut from the ROM by `tools/tiles/extract_sky_tiles.py`; the named towns that are Explorers dungeons use it too. Red Rescue Team tilesets keep rectangles until that ROM's sets are cut.
+- **Walking on the floor:** the Pokémon follow paths over the floor; Water types wade into water, Flying types cross walls; widgets are soft walls (nobody stops under one). A Guardian comes up the stairs and goes down them.
+- **Traps, for show:** hidden Warp, Spin, Slumber, Gust, Slow and Trip traps that a Pokémon finds by stepping on them, and sometimes a Wonder Tile; the game's own tiles (`tools/tiles/extract_sky_floor.py`).
+- **Three finds a day** on the floor (`TownFinds`: berries, vitamins or a little Poké), drawn with the game's floor pictures; a tap picks one up into the Bag, once a day.
+
+## 0.187.0
+
+A kinder economy and a Poké Mart of its own (owner, 14 November 2026: "economy seems stingy", "anything for individual Pokémon growth should be generous", "held items?"). `RewardRules.VERSION` 26.
+
+- **Poké Mart:** its own row in the Pokémon tab (it was a box at the top of the Bag), separate from World's Kecleon Shop. Exp. Candy 5 Poké as before, plus Super Candy 100 and each berry flavour 20; Buy 1, 10 or as many as you can afford.
+- **More Poké from real life:** a focus session pays 1 Poké a minute (was 1 per 5), a task 10 per rank tier (was 2), and each paid Care, Heal, Mint, Base and Link moment 10 (Care's weekly rhythm 30; Care Play, steps and imports none). About twice the Poké over 60 days in `docs/economy-report.md`.
+- **Kecleon Shop at about a fifth of its prices:** stones 400, Link Cord 500, Everstone 300, vitamins 100, perk held items 500 (Shiny Charm 1,500), Nature Mint 400, Ability Capsule 600, Bottle Cap 800, Tera Shards 1,000, Ability Patch 2,000. It no longer sells Exp. Candy (2,500 and rising); the Mart does. World's facilities, Café and Dojo keep their prices.
+
 ## 0.186.0
 
 Heal keeps steps and the readings Huawei Health shows (owner, 14 November 2026, `MODULES/HEAL.md` 22B). Own PR: **schema 11** (`10.sqm`, `databases/11.db`; `heal_steps` and `heal_vital`, sealed like every Heal row). `RewardRules.VERSION` 25.

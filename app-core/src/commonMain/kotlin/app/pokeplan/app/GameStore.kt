@@ -157,7 +157,7 @@ class GameStore(
     /**
      * One Poké balance (`PlayerState.coins`), written by the ledger (the live save turns a change of it into a ledger event, REP-014).
      * World's rules hold no balance: what they earn arrives as `WorldData.pokeEarned`, which is added to the coins here and cleared in the
-     * same update, and the rules that spend are given the balance and charged by the store (`worldUpgrade`, `worldBuyCandy`, `worldTrain`).
+     * same update, and the rules that spend are given the balance and charged by the store (`worldUpgrade`, `worldBuy`, `worldTrain`).
      * [worldPay] reads `pokeEarned` itself, in the same update, for the reward log and the ledger note.
      */
     private fun foldPoke(before: AppData, after: AppData): AppData {
@@ -506,19 +506,29 @@ class GameStore(
     fun careEggMeter(): Int = data.counters[Counters.CARE_EGG_METER] ?: 0
 
     /**
-     * The shop: trades [Shop.COINS_PER_RARE_CANDY] coins for each Rare Candy. Returns how many were bought (fewer when the
-     * coins or the bag's room run out, 0 for none).
+     * The Poké Mart ([Shop]): buys [count] of [itemId] at its Mart price. Returns how many were bought (fewer when the Poké or the Bag's room
+     * runs out, 0 for none or for an item the Mart does not sell).
      */
-    fun buyRareCandies(count: Int): Int {
-        val room = Inventory.MAX_CANDIES - data.player.inventory[Items.RARE_CANDY]
-        val n = minOf(count, data.player.coins / Shop.COINS_PER_RARE_CANDY, room)
+    fun martBuy(itemId: String, count: Int): Int {
+        val each = Shop.price(itemId) ?: return 0
+        val limit = if (Items.category(itemId) == ItemCategory.CANDY) Inventory.MAX_CANDIES else Inventory.MAX_STACK
+        val room = limit - data.player.inventory[itemId]
+        val n = minOf(count, data.player.coins / each, room)
         if (n <= 0) return 0
         update { d ->
-            val player = d.player.copy(coins = d.player.coins - n * Shop.COINS_PER_RARE_CANDY, inventory = d.player.inventory.add(Items.RARE_CANDY, n))
-            noted(d, log("Shop", listOf(Reward.Candies(CandyType.RARE, n)), d.copy(player = player), seen = true), "app:shop:$nowMillis", "APP", "shop", "purchase", nowMillis)
+            val player = d.player.copy(coins = d.player.coins - n * each, inventory = d.player.inventory.add(itemId, n))
+            val reward = when (itemId) {
+                Items.RARE_CANDY -> Reward.Candies(CandyType.RARE, n)
+                Items.SUPER_CANDY -> Reward.Candies(CandyType.SUPER, n)
+                else -> Reward.ItemDrop(itemId, n)
+            }
+            noted(d, log("Shop", listOf(reward), d.copy(player = player), seen = true), "app:shop:$nowMillis", "APP", "shop", "purchase", nowMillis)
         }
         return n
     }
+
+    /** Buys [count] Exp. Candies at the Poké Mart ([martBuy]). */
+    fun buyRareCandies(count: Int): Int = martBuy(Items.RARE_CANDY, count)
 
     override fun visitorLuck(): Double =
         app.pokeplan.core.pokemon.CarePerks.total(data.player.careLead, data.player.partyOf(PartyIds.CARE), data.player.guardianOf(PartyIds.CARE))[app.pokeplan.core.pokemon.CareBucket.VISITOR_LUCK] ?: 0.0
@@ -1889,14 +1899,6 @@ class GameStore(
         var left = bag
         for ((id, n) in berries) { val take = minOf(n, need); left = left.remove(id, take); need -= take; if (need == 0) break }
         update { d -> d.copy(player = d.player.copy(inventory = left), world = brewed) }
-        return true
-    }
-
-    /** Buys a Rare Candy at the Kecleon Shop for Poké. False when Poké is short. */
-    fun worldBuyCandy(): Boolean {
-        val price = data.world.candyPrice
-        val next = data.world.buyCandy(data.player.coins) ?: return false
-        update { d -> d.copy(world = next, player = d.player.copy(coins = d.player.coins - price, inventory = d.player.inventory.add(Items.RARE_CANDY, 1))) }
         return true
     }
 

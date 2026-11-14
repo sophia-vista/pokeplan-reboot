@@ -427,8 +427,8 @@ object ModuleDrops {
  * run this to grant rewards and clients can preview them. Daily limits and idempotency are the caller's job.
  */
 object RewardEngine {
-    /** Coins per 5 minutes of effort. *(tune)* */
-    const val COINS_PER_FIVE_MINUTES = 1
+    /** Poké per 5 minutes of effort: 1 a minute (rules version 26; it was 1 per 5 minutes). *(tune)* */
+    const val COINS_PER_FIVE_MINUTES = 5
 
     /** Rare Candies per 5 minutes of effort (a 25 minute session pays 10). *(tune)* */
     const val CANDIES_PER_FIVE_MINUTES = 2
@@ -437,8 +437,17 @@ object RewardEngine {
     const val NEW_SPECIES_CANDIES = 5
     const val NEW_SPECIES_SUPER_CANDIES = 1
 
-    /** A coin per tier point of finished work, doubled. *(tune)* */
-    const val COINS_PER_TIER = 2
+    /** Poké per tier point of finished work (rules version 26; it was 2). *(tune)* */
+    const val COINS_PER_TIER = 10
+
+    /**
+     * Poké for each deliberate paid moment of a life module (rules version 26, owner 14 November 2026: the economy was stingy outside World).
+     * Care Play, Heal's step and import payments and a befriended visitor pay none, as they drop no item either. *(tune)*
+     */
+    const val MODULE_POKE = 10
+
+    /** Care's weekly rhythm pays three moments' worth. */
+    const val RHYTHM_POKE = 30
 
     const val LURE_WEIGHT = 3.0
 
@@ -782,6 +791,9 @@ object RewardEngine {
         inventory = bag
         coins += overflow
         rewards += Reward.Candies(CandyType.RARE, candies)
+        val poke = when (e.kind) { CareKind.PLAY -> 0; CareKind.WEEKLY_RHYTHM -> RHYTHM_POKE; else -> MODULE_POKE }
+        coins += poke
+        if (poke > 0) rewards += Reward.Coins(poke)
         val points = if (e.kind == CareKind.WEEKLY_RHYTHM) RHYTHM_POINTS else CARE_POINTS
         return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + points), rewards), ModuleDrops.Module.CARE, rng)
     }
@@ -838,6 +850,9 @@ object RewardEngine {
         inventory = bag
         coins += overflow
         rewards += Reward.Candies(CandyType.RARE, candies)
+        val poke = if (e.kind == HealKind.STEPS || e.kind == HealKind.IMPORT) 0 else MODULE_POKE
+        coins += poke
+        if (poke > 0) rewards += Reward.Coins(poke)
         val paid = Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + HEAL_TRAINER_POINTS.getValue(e.kind)), rewards)
         // Only deliberate moments can drop an item: up to five step payments and three imports a day would otherwise drop one most days.
         return if (e.kind == HealKind.STEPS || e.kind == HealKind.IMPORT) paid else ModuleDrops.add(paid, ModuleDrops.Module.HEAL, rng)
@@ -882,7 +897,7 @@ object RewardEngine {
         val candies = MINT_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + MINT_POINTS), rewards), ModuleDrops.Module.MINT, rng, if (e.kind == MintKind.REVIEW) Items.NATURE_MINT else null)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow + MODULE_POKE, trainerPoints = state.trainerPoints + MINT_POINTS), rewards + Reward.Coins(MODULE_POKE)), ModuleDrops.Module.MINT, rng, if (e.kind == MintKind.REVIEW) Items.NATURE_MINT else null)
     }
 
     /**
@@ -924,7 +939,7 @@ object RewardEngine {
         val candies = HOME_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + HOME_POINTS), rewards), ModuleDrops.Module.BASE, rng)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow + MODULE_POKE, trainerPoints = state.trainerPoints + HOME_POINTS), rewards + Reward.Coins(MODULE_POKE)), ModuleDrops.Module.BASE, rng)
     }
 
     /**
@@ -966,6 +981,6 @@ object RewardEngine {
         val candies = LINK_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + LINK_POINTS), rewards), ModuleDrops.Module.LINK, rng)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow + MODULE_POKE, trainerPoints = state.trainerPoints + LINK_POINTS), rewards + Reward.Coins(MODULE_POKE)), ModuleDrops.Module.LINK, rng)
     }
 }

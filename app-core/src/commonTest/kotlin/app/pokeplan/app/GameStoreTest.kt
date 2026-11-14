@@ -1222,15 +1222,34 @@ class GameStoreTest {
         storage.save(GameStore.json.encodeToString(AppData.serializer(), s.data.copy(player = s.data.player.copy(coins = base + 5_000))))
         s.reload()
         assertEquals(base + 5_000, s.data.player.coins)
-        val candyBefore = s.data.player.inventory[app.pokeplan.core.pokemon.Items.RARE_CANDY]
-        assertTrue(s.worldBuyCandy(), "World's shop is paid from Plan's earnings")
-        assertTrue(s.data.player.coins < base + 5_000)
+        val cordBefore = s.data.player.inventory[app.pokeplan.core.pokemon.Items.LINK_CORD]
+        assertTrue(s.worldBuy(app.pokeplan.core.pokemon.Items.LINK_CORD), "World's shop is paid from Plan's earnings")
+        assertEquals(base + 5_000 - app.pokeplan.world.KecleonShop.LINK_CORD_PRICE, s.data.player.coins)
         assertEquals(0, s.data.world.pokeEarned)
-        assertTrue(s.data.player.inventory[app.pokeplan.core.pokemon.Items.RARE_CANDY] > candyBefore)
+        assertEquals(cordBefore + 1, s.data.player.inventory[app.pokeplan.core.pokemon.Items.LINK_CORD])
         val afterShop = s.data.player.coins
         assertEquals(1, s.buyRareCandies(1))
         assertEquals(afterShop - app.pokeplan.core.pokemon.Shop.COINS_PER_RARE_CANDY, s.data.player.coins, "Plan's shop is paid from the same balance")
         assertEquals(0, s.data.world.pokeEarned)
+    }
+
+    @Test
+    fun thePokeMartSellsCandiesAndBerriesAtItsOwnPrices() {
+        val storage = MemoryStorage()
+        val (s, _) = store(storage)
+        s.start("Sophia", 25)
+        val berry = app.pokeplan.core.pokemon.Items.berry("sweet")
+        storage.save(GameStore.json.encodeToString(AppData.serializer(), s.data.copy(player = s.data.player.copy(coins = 1_000))))
+        s.reload()
+        val berries = s.data.player.inventory[berry]
+        assertEquals(3, s.martBuy(berry, 3))
+        assertEquals(1_000 - 3 * app.pokeplan.core.pokemon.Shop.BERRY_PRICE, s.data.player.coins)
+        assertEquals(berries + 3, s.data.player.inventory[berry])
+        val supers = s.data.player.inventory[app.pokeplan.core.pokemon.Items.SUPER_CANDY]
+        assertEquals(9, s.martBuy(app.pokeplan.core.pokemon.Items.SUPER_CANDY, 50), "as many as the Poké left allows")
+        assertEquals(supers + 9, s.data.player.inventory[app.pokeplan.core.pokemon.Items.SUPER_CANDY])
+        assertEquals(40, s.data.player.coins)
+        assertEquals(0, s.martBuy(app.pokeplan.core.pokemon.Items.LINK_CORD, 1), "the Mart sells no specialty stock")
     }
 }
 
