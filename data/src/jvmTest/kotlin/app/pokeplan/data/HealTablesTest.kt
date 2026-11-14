@@ -40,7 +40,7 @@ class HealTablesTest {
 
     private fun countWrites(s: DataStore) {
         s.driver.execute(null, "CREATE TABLE write_log(t TEXT NOT NULL)", 0)
-        for (t in listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_state")) {
+        for (t in listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital", "heal_state")) {
             s.driver.execute(null, "CREATE TRIGGER log_ins_$t AFTER INSERT ON $t BEGIN INSERT INTO write_log VALUES ('$t'); END", 0)
             s.driver.execute(null, "CREATE TRIGGER log_del_$t AFTER DELETE ON $t BEGIN INSERT INTO write_log VALUES ('$t'); END", 0)
         }
@@ -158,7 +158,7 @@ class HealTablesTest {
         assertNull(s.live.read("heal"))
     }
 
-    private val KINDS = listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal")
+    private val KINDS = listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital")
 
     @Test
     fun theBackupSnapshotCarriesHealAndARestoreOfAnOlderBackupLeavesItAlone() {
@@ -186,7 +186,7 @@ class HealTablesTest {
         val text = BackupBundle.encode(docs, DataStore.SCHEMA_VERSION, 7)
         val staged = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && staged.documents.keys == setOf("save", "heal"))
-        assertEquals(10, DataStore.SCHEMA_VERSION) // Heal made it 7 (0.136.0), Mint's tables 8 (0.141.0), Home's tables 9, Link's tables 10
+        assertEquals(11, DataStore.SCHEMA_VERSION) // Heal made it 7 (0.136.0), Mint's tables 8 (0.141.0), Home's tables 9, Link's tables 10, Heal's steps and readings 11 (0.186.0)
         val bad = BackupBundle.encode(mapOf("save" to "{}"), 7, 7).replace("\"save\"", "\"health\"")
         assertTrue(BackupBundle.stage(bad, 7) is BackupBundle.Staged.Refused)
     }

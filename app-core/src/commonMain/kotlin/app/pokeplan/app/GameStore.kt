@@ -2213,12 +2213,12 @@ class GameStore(
         const val CARE_FRIEND_SOURCE = CARE_LOG_PREFIX + "made a friend"
 
         /** The most of each HEAL kind the world pays a day *(tune)*, a backstop to the same limits in `HealRules`. */
-        val HEAL_DAILY_CAP: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to HealRules.ACTIVITIES_PAID_PER_DAY, HealKind.PARTICIPATION to HealRules.PARTICIPATION_PAID_PER_DAY)
+        val HEAL_DAILY_CAP: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to HealRules.ACTIVITIES_PAID_PER_DAY, HealKind.PARTICIPATION to HealRules.PARTICIPATION_PAID_PER_DAY, HealKind.STEPS to HealRules.STEPS_PAID_PER_DAY, HealKind.IMPORT to HealRules.IMPORTS_PAID_PER_DAY)
 
         /** Every HEAL entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val HEAL_LOG_PREFIX = "Heal: "
         private val MODULE_LOG_PREFIXES by lazy { listOf(CARE_LOG_PREFIX, HEAL_LOG_PREFIX, MINT_LOG_PREFIX, BASE_LOG_PREFIX, OLD_BASE_LOG_PREFIX, LINK_LOG_PREFIX) }
-        private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research").mapValues { HEAL_LOG_PREFIX + it.value }
+        private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research", HealKind.STEPS to "Field Research: steps", HealKind.IMPORT to "Field Research: records read").mapValues { HEAL_LOG_PREFIX + it.value }
 
         /** The most of each MINT kind the world pays in its period *(tune)*, a backstop to the same limits in `MintRules`: reconciled accounts a day, reviews a week. */
         val MINT_CAPS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to app.pokeplan.mint.MintRules.RECONCILES_PAID_PER_DAY, MintKind.REVIEW to app.pokeplan.mint.MintRules.REVIEWS_PAID_PER_WEEK)

@@ -131,6 +131,16 @@ data class HuaweiHome(
     val weightUnit: String = "",
     val heartRate: Int? = null,
     val exerciseKm: Double? = null,
+    /** The heart card's resting heart rate ("Recent avg RHR ## bpm"); not in the 14 November capture, so read only if the card shows it. */
+    val restingHeartRate: Int? = null,
+    /** The SpO2 card, in percent. */
+    val spo2: Int? = null,
+    /** The skin temperature card, in °C (the card also spells it out in words). */
+    val skinTemperature: Double? = null,
+    /** Huawei's own stress number from the summary at the top (the word beside it, "Normal", is Huawei's judgement and is not kept). */
+    val stress: Int? = null,
+    /** Huawei's sleep score from the Health insights line "Your Sleep score is ## points." */
+    val sleepScore: Int? = null,
 ) {
     val isEmpty: Boolean get() = this == HuaweiHome()
 
@@ -138,6 +148,7 @@ data class HuaweiHome(
     fun then(other: HuaweiHome) = HuaweiHome(
         other.steps ?: steps, other.sleepMinutes ?: sleepMinutes, other.getUpMinute ?: getUpMinute,
         other.weight ?: weight, if (other.weight != null) other.weightUnit else weightUnit, other.heartRate ?: heartRate, other.exerciseKm ?: exerciseKm,
+        other.restingHeartRate ?: restingHeartRate, other.spo2 ?: spo2, other.skinTemperature ?: skinTemperature, other.stress ?: stress, other.sleepScore ?: sleepScore,
     )
 
     companion object {
@@ -146,6 +157,11 @@ data class HuaweiHome(
         private val hoursMinutes = Regex("""^\s*(?:(\d{1,2})\s*h)?\s*(?:(\d{1,2})\s*min)?\s*$""", RegexOption.IGNORE_CASE)
         private val bpm = Regex("""(\d{2,3})\s*bpm""", RegexOption.IGNORE_CASE)
         private fun number(s: String) = s.replace(",", "").trim().toDoubleOrNull()
+        private val rhr = Regex("""RHR\D{0,12}(\d{2,3})""", RegexOption.IGNORE_CASE)
+        private val percent = Regex("""^\s*(\d{2,3})\s*%""")
+        private val celsius = Regex("""(\d{2}(?:\.\d)?)\s*°\s*C""", RegexOption.IGNORE_CASE)
+        private val stressNumber = Regex("""^Stress,\s*(\d{1,2})\b""", RegexOption.IGNORE_CASE)
+        private val sleepScoreText = Regex("""Sleep score is\s*(\d{1,3})\s*points?""", RegexOption.IGNORE_CASE)
 
         /** Reads the Health page's summary and cards from [capture]; an empty [HuaweiHome] when it is not that page. */
         fun read(capture: ScreenCapture): HuaweiHome {
@@ -161,6 +177,8 @@ data class HuaweiHome(
                     } ?: home
                     "Heart" -> bpm.find(data)?.groupValues?.get(1)?.toIntOrNull()?.takeIf { it in 25..250 }?.let { home.copy(heartRate = it) } ?: home
                     "Exercise records" -> number(data)?.takeIf { it in 0.0..500.0 }?.let { home.copy(exerciseKm = it) } ?: home
+                    "SpO2", "SpO₂" -> percent.find(data)?.groupValues?.get(1)?.toIntOrNull()?.takeIf { it in 50..100 }?.let { home.copy(spo2 = it) } ?: home
+                    "Skin temperature" -> celsius.find(data)?.groupValues?.get(1)?.toDoubleOrNull()?.takeIf { it in 25.0..45.0 }?.let { home.copy(skinTemperature = it) } ?: home
                     else -> home
                 }
                 card = ""; data = ""
@@ -169,11 +187,15 @@ data class HuaweiHome(
                 when (id(n)) {
                     "function_set_items_title" -> { closeCard(); card = n.text.trim() }
                     "function_set_items_data" -> if (card.isNotEmpty()) data = n.text.trim()
+                    "function_set_bottom_left" -> if (card == "Heart") rhr.find(n.text)?.groupValues?.get(1)?.toIntOrNull()?.takeIf { it in 25..150 }?.let { home = home.copy(restingHeartRate = it) }
+                    "pressure_value" -> n.text.trim().toIntOrNull()?.takeIf { it in 1..99 }?.let { home = home.copy(stress = it) }
                     "function_set_items_unit" -> if (card == "Weight") {
                         val unit = n.text.trim()
                         number(data)?.takeIf { unit == "kg" || unit == "lb" }?.let { home = home.copy(weight = it, weightUnit = unit) }
                     }
                 }
+                if (id(n) != "pressure_value") stressNumber.find(n.description.ifBlank { n.text }.trim())?.groupValues?.get(1)?.toIntOrNull()?.takeIf { it in 1..99 }?.let { home = home.copy(stress = it) }
+                if (id(n) == "insights_text_one") sleepScoreText.find(n.text)?.groupValues?.get(1)?.toIntOrNull()?.takeIf { it in 1..100 }?.let { home = home.copy(sleepScore = it) }
                 getUp.matchEntire(n.description.ifBlank { n.text }.trim())?.let { m ->
                     val h = m.groupValues[1].toInt(); val mi = m.groupValues[2].toInt()
                     if (h in 0..23 && mi in 0..59) home = home.copy(getUpMinute = h * 60 + mi)

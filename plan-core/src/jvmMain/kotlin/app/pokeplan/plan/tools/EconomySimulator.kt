@@ -39,6 +39,35 @@ val profiles = listOf(
     Profile("Heavy", 0.95, 6..12, listOf(1.0, 2.0, 3.0, 3.0, 2.0), 2..5, listOf(25 to 30.0, 60 to 40.0, 90 to 30.0)),
 )
 
+/** A walker for the Heal steps section (rules version 25): steps a day on the days they walk, days a week, and how many families of record they read in each day. */
+data class Walker(val name: String, val steps: Int, val daysPerWeek: Double, val readFamilies: Int)
+
+val walkers = listOf(
+    Walker("Light walker", 3_500, 4.0, 1),
+    Walker("Typical walker", 7_000, 6.0, 1),
+    Walker("Active walker", 11_000, 7.0, 2),
+)
+
+/** Plays [days] days of [w]: one step payment for each 2,000 steps (at most 5 a day) and one import payment per family read (at most 3 a day), through the real reward engine. */
+private fun walk(w: Walker, days: Int, seed: Int): Pair<Int, Int> {
+    val rng = Random(seed)
+    var state = PlayerState(pokemon = listOf(Hatching.create("w", HatchOption(25, "pikachu"), 0, 0, 25, rng).copy(level = 5)))
+    var candies = 0; var points = 0; var n = 0
+    fun pay(kind: app.pokeplan.core.reward.HealKind) {
+        val out = RewardEngine.heal(state, app.pokeplan.core.reward.HealEvent("w-${n++}", kind, 0, "r"), rng)
+        state = out.state
+        candies += out.rewards.filterIsInstance<Reward.Candies>().sumOf { it.amount }
+        points += RewardEngine.HEAL_EGG_POINTS.getValue(kind)
+    }
+    for (day in 1..days) {
+        if (rng.nextDouble() >= w.daysPerWeek / 7) continue
+        val steps = (w.steps * (0.7 + rng.nextDouble() * 0.6)).toInt() // a day is 70% to 130% of the usual
+        repeat((steps / 2_000).coerceAtMost(5)) { pay(app.pokeplan.core.reward.HealKind.STEPS) }
+        repeat(w.readFamilies.coerceAtMost(3)) { pay(app.pokeplan.core.reward.HealKind.IMPORT) }
+    }
+    return candies to points
+}
+
 /** What it takes to evolve everything in a region once. */
 data class Demand(
     val evolutions: Int,
@@ -216,6 +245,7 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
     sb.appendLine("- Ranks quick at first, slower after: Apprentice within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.")
     sb.appendLine("- Evolving everything in the Plan Region once needs ${demand.evolutions} evolutions: ${demand.superCandies} Super Candies, ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} Rare Candies (with and without the catch-up discount), ${demand.stones} stones, ${demand.linkCords} Link Cords, ${demand.trials} trials.")
     sb.appendLine()
+    var typicalRare60 = 0.0
     for (p in profiles) {
         val runs = (1..runsPerProfile).map { Run(p, it, days).play() }
         sb.appendLine("## ${p.name}")
@@ -242,9 +272,24 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
         val superIncome = pct(runs.map { it.checkpoints[60]!!.superCandy.toDouble() }, .5)
         val rareIncome = pct(runs.map { it.checkpoints[60]!!.rare.toDouble() }, .5)
         sb.appendLine()
+        if (p.name == "Typical") typicalRare60 = pct(runs.map { it.checkpoints[60]!!.rare.toDouble() }, .5)
         sb.appendLine("Evolving the whole Plan Region needs ${demand.superCandies} Super Candies: at the 60-day rate (${fmt(superIncome)}) that is about ${fmt(demand.superCandies / maxOf(superIncome, 0.01) * 60)} days. Rare Candies: ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} needed, ${fmt(rareIncome)} earned in 60 days (about ${fmt(demand.rareCandiesLow / maxOf(rareIncome, 0.01) * 60)} to ${fmt(demand.rareCandiesHigh / maxOf(rareIncome, 0.01) * 60)} days).")
         sb.appendLine()
     }
+    sb.appendLine("## Heal: steps and reading records in (rules version 25)")
+    sb.appendLine()
+    sb.appendLine("Steps pay one payment for each full 2,000 steps of the day, at most 5 a day (`HealRules.STEPS_PER_REWARD`, `STEPS_PAID_PER_DAY`): ${RewardEngine.HEAL_CANDIES.getValue(app.pokeplan.core.reward.HealKind.STEPS)} Rare Candy and a friendship step for Heal's lead each, no berry, no Egg meter point, no trainer point, no item drop. Reading records in pays ${RewardEngine.HEAL_CANDIES.getValue(app.pokeplan.core.reward.HealKind.IMPORT)} Rare Candy for each family of record that brought something new, once a day, at most 3 a day (`IMPORTS_PAID_PER_DAY`). Medians over $runsPerProfile simulated walkers of $days days; a day's steps vary from 70% to 130% of the usual. The last column compares with the Typical Plan player's Rare Candies in 60 days (${fmt(typicalRare60)}, which includes transfers).")
+    sb.appendLine()
+    sb.appendLine("| Walker | Steps on a walking day | Days a week | Families read a day | Rare Candies a day | Rare Candies in 60 days | Compared with a Typical Plan player |")
+    sb.appendLine("|---|---|---|---|---|---|---|")
+    for (w in walkers) {
+        val got = (1..runsPerProfile).map { walk(w, 60, it).first.toDouble() }
+        val median = pct(got, .5)
+        sb.appendLine("| ${w.name} | ${"%,d".format(w.steps)} | ${fmt(w.daysPerWeek)} | ${w.readFamilies} | ${fmt(median / 60)} | ${fmt(median)} | ${fmt(median / maxOf(typicalRare60, 0.01) * 100)}% |")
+    }
+    sb.appendLine()
+    sb.appendLine("Steps add no Egg meter points and no trainer points, so they cannot make Field Eggs or ranks faster; a full day of walking (5 payments) plus two reads is 7 Rare Candies, about two logged activities.")
+    sb.appendLine()
     return sb.toString()
 }
 

@@ -23,7 +23,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * Reads Huawei Health's screens (INTEGRATIONS_AND_PRIVACY.md 5.2.2). Declared for `com.huawei.health` only (res/xml/huawei_reader.xml), so Android sends it
  * no other app's events; the package is checked again on every event and every window. It captures what is visible on a page once the page settles (Huawei
  * Health keeps its hidden tabs in the window, and those are left out), keeps it in [HuaweiCapture] (memory only), and on the player's tap walks Huawei Health:
- * the Health page scrolled to the end, then the Sleep, Weight and Exercise records cards' own pages, and back. The only things it taps are those three cards,
+ * the Health page scrolled to the end, then the Sleep, Weight and Exercise records cards' own pages (and, where a page has Day / Week tabs, its Week tab), and back. The only things it taps are those three cards and that tab,
  * found by their title; it never types or changes anything, and stops as soon as Back does not bring the Health page back. It never logs. After every walk it
  * turns itself off, because banking apps refuse to open while a sideloaded accessibility service is on.
  */
@@ -152,11 +152,22 @@ class HuaweiScreenService : AccessibilityService() {
             val detail = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
             if (isHealthPage(detail)) continue // the tap opened nothing
             scrollThrough(forward = true, DETAIL_SCROLLS)
+            // A page with Day / Week / Month / Year tabs (the Sleep page): also capture its Week view, which is a tab of the same page, so Back below still leaves it.
+            if (openWeek()) { delay(PAGE_WAIT_MS); scrollThrough(forward = true, DETAIL_SCROLLS) }
             performGlobalAction(GLOBAL_ACTION_BACK)
             delay(BACK_WAIT_MS)
             if (awaitHealthPage() == null) return "Stopped after $title: Back did not return to the Health page" // copy-ok: result
         }
         return null
+    }
+
+    /** Taps the "Week" tab of the open card page, when it has one and it is not the tab already showing; returns whether it tapped. */
+    private fun openWeek(): Boolean {
+        val root = huaweiRoot() ?: return false
+        if (isHealthPage(root)) return false
+        val tab = visible(root).firstOrNull { it.text?.toString()?.trim() == "Week" && it.className?.toString()?.endsWith("TextView") == true } ?: return false
+        if (tab.isSelected) return false
+        return clickableAncestor(tab)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
     }
 
     /** The Health page, waiting through a splash or an ad for a few tries; null when it does not come. */

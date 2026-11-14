@@ -76,7 +76,7 @@ class HuaweiProbeTest {
 
     @Test fun theHealthPageIsRead() {
         val home = HuaweiHome.read(healthPage)
-        assertEquals(HuaweiHome(steps = 4916, sleepMinutes = 309, getUpMinute = 7 * 60 + 12, weight = 54.8, weightUnit = "kg", heartRate = 83, exerciseKm = 1.91), home)
+        assertEquals(HuaweiHome(steps = 4916, sleepMinutes = 309, getUpMinute = 7 * 60 + 12, weight = 54.8, weightUnit = "kg", heartRate = 83, exerciseKm = 1.91, skinTemperature = 34.1), home)
     }
 
     @Test fun anotherPageReadsAsNothing() {

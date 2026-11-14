@@ -12,76 +12,88 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 
 ## Targets
 
-- Basic Plan dex (57 hatchable species) in about 45 days for a typical player (rules version 12: easy to fill, hard to perfect).
+- Basic Plan dex (68 hatchable species) in about 45 days for a typical player (rules version 12: easy to fill, hard to perfect).
 - Ranks quick at first, slower after: Apprentice within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.
-- Evolving everything in the Plan Region once needs 83 evolutions: 70 Super Candies, 2562 to 4707 Rare Candies (with and without the catch-up discount), 12 stones, 1 Link Cords, 3 trials.
+- Evolving everything in the Plan Region once needs 88 evolutions: 82 Super Candies, 2306 to 4241 Rare Candies (with and without the catch-up discount), 5 stones, 1 Link Cords, 6 trials.
 
 ## Light
 
 | Measure | Value |
 |---|---|
-| Day the basic Plan dex is complete (181 = not within 180) | 181 (181 to 181) |
+| Day the basic Plan dex is complete (181 = not within 180) | 181 (143 to 181) |
 | Day the basic Care dex is complete (181 = not within 180) | 181 (181 to 181) |
 | Rank after 30 days | 2.0 (2.0 to 2.0) |
-| Eggs after 30 days (incl. Task Eggs) | 30.0 (23.0 to 37.0) |
+| Eggs after 30 days (incl. Task Eggs) | 29.0 (23.0 to 35.0) |
 | Rank after 60 days | 3.0 (3.0 to 3.0) |
-| Eggs after 60 days (incl. Task Eggs) | 61.0 (53.0 to 71.0) |
+| Eggs after 60 days (incl. Task Eggs) | 60.0 (50.0 to 69.0) |
 | Rank after 90 days | 4.0 (4.0 to 4.0) |
-| Eggs after 90 days (incl. Task Eggs) | 92.0 (82.0 to 101) |
-| Task Eggs after 60 days | 39.0 (34.0 to 46.0) |
-| Rare Candies earned in 60 days (incl. transfers) | 2515 (2196 to 2822) |
-| Super Candies earned in 60 days | 100 (73.0 to 117) |
-| Coins after 60 days | 2044 (1733 to 2353) |
-| Item drops in 60 days | 33.0 (27.0 to 40.0) |
+| Eggs after 90 days (incl. Task Eggs) | 92.0 (80.0 to 102) |
+| Task Eggs after 60 days | 40.0 (34.0 to 45.0) |
+| Rare Candies earned in 60 days (incl. transfers) | 2517 (2162 to 2878) |
+| Super Candies earned in 60 days | 109 (84.0 to 132) |
+| Coins after 60 days | 1959 (1603 to 2285) |
+| Item drops in 60 days | 32.0 (25.0 to 39.0) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 1.0 (0.0 to 3.0) |
-| Species owned after 90 days | 45.0 (40.0 to 48.0) |
+| Shinies in 180 days | 2.0 (0.0 to 4.0) |
+| Species owned after 90 days | 60.0 (57.0 to 64.0) |
 
-Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (100) that is about 42.0 days. Rare Candies: 2562 to 4707 needed, 2515 earned in 60 days (about 61.1 to 112 days).
+Evolving the whole Plan Region needs 82 Super Candies: at the 60-day rate (109) that is about 45.1 days. Rare Candies: 2306 to 4241 needed, 2517 earned in 60 days (about 55.0 to 101 days).
 
 ## Typical
 
 | Measure | Value |
 |---|---|
-| Day the basic Plan dex is complete (181 = not within 180) | 42.0 (34.0 to 56.0) |
-| Day the basic Care dex is complete (181 = not within 180) | 84.0 (71.0 to 106) |
+| Day the basic Plan dex is complete (181 = not within 180) | 37.0 (27.0 to 49.0) |
+| Day the basic Care dex is complete (181 = not within 180) | 181 (181 to 181) |
 | Rank after 30 days | 4.0 (4.0 to 5.0) |
-| Eggs after 30 days (incl. Task Eggs) | 123 (109 to 138) |
+| Eggs after 30 days (incl. Task Eggs) | 118 (106 to 135) |
 | Rank after 60 days | 6.0 (6.0 to 6.0) |
-| Eggs after 60 days (incl. Task Eggs) | 247 (224 to 265) |
+| Eggs after 60 days (incl. Task Eggs) | 241 (220 to 260) |
 | Rank after 90 days | 7.0 (7.0 to 7.0) |
-| Eggs after 90 days (incl. Task Eggs) | 368 (340 to 393) |
-| Task Eggs after 60 days | 140 (129 to 155) |
-| Rare Candies earned in 60 days (incl. transfers) | 10349 (9429 to 11328) |
-| Super Candies earned in 60 days | 321 (262 to 365) |
-| Coins after 60 days | 9306 (8629 to 10341) |
-| Item drops in 60 days | 142 (123 to 153) |
+| Eggs after 90 days (incl. Task Eggs) | 362 (338 to 386) |
+| Task Eggs after 60 days | 138 (128 to 151) |
+| Rare Candies earned in 60 days (incl. transfers) | 10463 (9365 to 11296) |
+| Super Candies earned in 60 days | 364 (294 to 427) |
+| Coins after 60 days | 9120 (8160 to 9941) |
+| Item drops in 60 days | 136 (118 to 150) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 7.0 (4.0 to 9.0) |
-| Species owned after 90 days | 122 (119 to 122) |
+| Shinies in 180 days | 7.0 (3.0 to 10.0) |
+| Species owned after 90 days | 259 (214 to 278) |
 
-Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (321) that is about 13.1 days. Rare Candies: 2562 to 4707 needed, 10349 earned in 60 days (about 14.9 to 27.3 days).
+Evolving the whole Plan Region needs 82 Super Candies: at the 60-day rate (364) that is about 13.5 days. Rare Candies: 2306 to 4241 needed, 10463 earned in 60 days (about 13.2 to 24.3 days).
 
 ## Heavy
 
 | Measure | Value |
 |---|---|
-| Day the basic Plan dex is complete (181 = not within 180) | 19.0 (14.0 to 24.0) |
-| Day the basic Care dex is complete (181 = not within 180) | 36.0 (30.0 to 44.0) |
+| Day the basic Plan dex is complete (181 = not within 180) | 16.0 (13.0 to 19.0) |
+| Day the basic Care dex is complete (181 = not within 180) | 113 (103 to 127) |
 | Rank after 30 days | 6.0 (6.0 to 7.0) |
-| Eggs after 30 days (incl. Task Eggs) | 263 (246 to 286) |
+| Eggs after 30 days (incl. Task Eggs) | 268 (248 to 284) |
 | Rank after 60 days | 8.0 (8.0 to 8.0) |
-| Eggs after 60 days (incl. Task Eggs) | 531 (500 to 561) |
+| Eggs after 60 days (incl. Task Eggs) | 532 (506 to 558) |
 | Rank after 90 days | 8.0 (8.0 to 8.0) |
-| Eggs after 90 days (incl. Task Eggs) | 798 (765 to 839) |
-| Task Eggs after 60 days | 333 (314 to 351) |
-| Rare Candies earned in 60 days (incl. transfers) | 23631 (22084 to 24932) |
-| Super Candies earned in 60 days | 703 (642 to 791) |
-| Coins after 60 days | 29769 (27277 to 32010) |
-| Item drops in 60 days | 273 (250 to 297) |
+| Eggs after 90 days (incl. Task Eggs) | 799 (770 to 838) |
+| Task Eggs after 60 days | 336 (318 to 350) |
+| Rare Candies earned in 60 days (incl. transfers) | 24991 (23752 to 26335) |
+| Super Candies earned in 60 days | 926 (861 to 1023) |
+| Coins after 60 days | 31137 (29116 to 33134) |
+| Item drops in 60 days | 270 (259 to 291) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 15.0 (11.0 to 19.0) |
-| Species owned after 90 days | 122 (122 to 122) |
+| Shinies in 180 days | 15.0 (11.0 to 20.0) |
+| Species owned after 90 days | 400 (388 to 409) |
 
-Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (703) that is about 6.0 days. Rare Candies: 2562 to 4707 needed, 23631 earned in 60 days (about 6.5 to 12.0 days).
+Evolving the whole Plan Region needs 82 Super Candies: at the 60-day rate (926) that is about 5.3 days. Rare Candies: 2306 to 4241 needed, 24991 earned in 60 days (about 5.5 to 10.2 days).
+
+## Heal: steps and reading records in (rules version 25)
+
+Steps pay one payment for each full 2,000 steps of the day, at most 5 a day (`HealRules.STEPS_PER_REWARD`, `STEPS_PAID_PER_DAY`): 1 Rare Candy and a friendship step for Heal's lead each, no berry, no Egg meter point, no trainer point, no item drop. Reading records in pays 1 Rare Candy for each family of record that brought something new, once a day, at most 3 a day (`IMPORTS_PAID_PER_DAY`). Medians over 60 simulated walkers of 180 days; a day's steps vary from 70% to 130% of the usual. The last column compares with the Typical Plan player's Rare Candies in 60 days (10463, which includes transfers).
+
+| Walker | Steps on a walking day | Days a week | Families read a day | Rare Candies a day | Rare Candies in 60 days | Compared with a Typical Plan player |
+|---|---|---|---|---|---|---|
+| Light walker | 3,500 | 4.0 | 1 | 1.3 | 78.0 | 0.7% |
+| Typical walker | 7,000 | 6.0 | 1 | 3.4 | 206 | 2.0% |
+| Active walker | 11,000 | 7.0 | 2 | 6.6 | 395 | 3.8% |
+
+Steps add no Egg meter points and no trainer points, so they cannot make Field Eggs or ranks faster; a full day of walking (5 payments) plus two reads is 7 Rare Candies, about two logged activities.
 

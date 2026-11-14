@@ -20,10 +20,9 @@ enum class HealthKind(val label: String, val reads: String, val kind: HealKindOf
     companion object {
         /** What is **not** imported, and the reason; shown on the connection page so an absent metric is never taken for zero (HEAL.md 10.1, "do not assume"). */
         val unsupported: List<Pair<String, String>> = listOf(
-            "Steps and distance" to "HEAL keeps no step count; sessions you log or import carry their own length.",
-            "Heart rate, resting heart rate, HRV and stress" to "HEAL has no record for them, so they are not read.",
-            "Blood oxygen and temperature" to "HEAL does not interpret health readings.",
-            "Calories burned" to "HEAL never turns a number into a target.",
+            "Steps, heart rate, blood oxygen, temperature, stress and sleep score from Health Connect" to "only Huawei Health's own pages carry these into HEAL (as history, never judged); Health Connect is asked for none of them.",
+            "Heart rate variability (HRV)" to "HEAL has no record for it, so it is not read.",
+            "Distance on its own, calories burned" to "HEAL never turns a number into a target; a session carries its own distance.",
             "Sleep stages" to "a night is one start and one end.",
             "Nutrition, medication, symptoms" to "not part of this import.",
         )
@@ -31,38 +30,58 @@ enum class HealthKind(val label: String, val reads: String, val kind: HealKindOf
 }
 
 /** Which of HEAL's own families of record a [HealthKind] lands in. */
-enum class HealKindOf { ACTIVITY, SLEEP, MEASUREMENTS, HYDRATION }
+enum class HealKindOf { ACTIVITY, SLEEP, MEASUREMENTS, HYDRATION, STEPS, VITALS }
 
 /** A provider-neutral record read from outside (INTEGRATIONS_AND_PRIVACY.md 3.1: no vendor object ever reaches HEAL's domain). [app] is the writing app's package, [id] the provider's own id. */
 sealed interface Imported {
     val provider: String
     val app: String
     val id: String
-    val kind: HealthKind
+    /** The Health Connect permission this record needs; null for a record only Huawei Health's pages carry (steps, vitals). */
+    val kind: HealthKind?
+    val family: HealKindOf
 
     data class Exercise(override val provider: String, override val app: String, override val id: String, val type: ActivityType, val startMillis: Long, val endMillis: Long, val distanceMeters: Int? = null) : Imported {
         override val kind get() = HealthKind.EXERCISE
+        override val family get() = HealKindOf.ACTIVITY
     }
     data class Sleep(override val provider: String, override val app: String, override val id: String, val startMillis: Long, val endMillis: Long) : Imported {
         override val kind get() = HealthKind.SLEEP
+        override val family get() = HealKindOf.SLEEP
     }
     data class Body(override val provider: String, override val app: String, override val id: String, val type: MeasureType, val value: Double, val unit: String, val atMillis: Long) : Imported {
         override val kind get() = if (type == MeasureType.BODY_FAT) HealthKind.BODY_FAT else HealthKind.WEIGHT
+        override val family get() = HealKindOf.MEASUREMENTS
     }
     data class Drink(override val provider: String, override val app: String, override val id: String, val atMillis: Long, val ml: Int) : Imported {
         override val kind get() = HealthKind.HYDRATION
+        override val family get() = HealKindOf.HYDRATION
+    }
+    /** A day's step count as the provider showed it at [atMillis]; the id is one per day, so a later read of the same day updates the count. */
+    data class Steps(override val provider: String, override val app: String, override val id: String, val steps: Int, val atMillis: Long) : Imported {
+        override val kind: HealthKind? get() = null
+        override val family get() = HealKindOf.STEPS
+    }
+    /** A heart rate, resting heart rate, SpO2, skin temperature, stress or sleep score reading, [value] in the type's own unit (skin temperature in °C). */
+    data class Vital(override val provider: String, override val app: String, override val id: String, val type: VitalType, val value: Double, val atMillis: Long) : Imported {
+        override val kind: HealthKind? get() = null
+        override val family get() = HealKindOf.VITALS
     }
 }
 
 /** What one read of a provider gave: the records, the window that was asked for and whether the read failed part-way (a partial read is still imported, and the rest can be retried). */
 data class ProviderRead(val records: List<Imported>, val fromMillis: Long, val toMillis: Long, val failed: Boolean = false)
 
-/** One record that will be added, and the id of the record it may duplicate (kept, flagged), if any. */
-data class Candidate(val record: Imported, val possibleDuplicateOf: String? = null)
+/** One record that will be added, and the id of the record it may duplicate (kept, flagged), if any. [updates] is the id of the record of the same provider and day it brings a newer value for (steps, vitals); null for a new one. */
+data class Candidate(val record: Imported, val possibleDuplicateOf: String? = null, val updates: String? = null)
 
 /** What an import would do, shown before anything is saved (HEAL.md 10.3). [alreadyHere] were imported before; [rejected] could not be read as a valid record and are not stored. */
 data class ImportPlan(val candidates: List<Candidate>, val alreadyHere: Int, val rejected: Int) {
-    fun count(kind: HealthKind) = candidates.count { it.record.kind == kind }
+    fun count(kind: HealthKind) = candidates.count { it.record.kind == kind && it.updates == null }
+    /** New records of a family only Huawei Health's pages carry. */
+    fun count(family: HealKindOf) = candidates.count { it.record.family == family && it.updates == null }
+    /** Records already here that this read brings a newer value for. */
+    val updated: Int get() = candidates.count { it.updates != null }
     val flagged: Int get() = candidates.count { it.possibleDuplicateOf != null }
     val isEmpty: Boolean get() = candidates.isEmpty()
 }
@@ -90,18 +109,43 @@ object HealImport {
     const val MAX_DAYS_BACK = 30
 
     fun plan(data: HealData, read: List<Imported>, nowMillis: Long): ImportPlan {
-        val have = (data.activities.mapNotNull { it.provenance } + data.hydration.mapNotNull { it.provenance } + data.sleep.mapNotNull { it.provenance } + data.measurements.mapNotNull { it.provenance })
+        val have = (data.activities.mapNotNull { it.provenance } + data.hydration.mapNotNull { it.provenance } + data.sleep.mapNotNull { it.provenance } + data.measurements.mapNotNull { it.provenance } +
+            data.steps.mapNotNull { it.provenance } + data.vitals.mapNotNull { it.provenance })
             .map { it.provider to it.externalId }.toHashSet()
         var already = 0; var rejected = 0
         val seen = HashSet<Pair<String, String>>()
         val out = ArrayList<Candidate>()
         for (r in read) {
             val key = r.provider to r.id
-            if (key in have || !seen.add(key)) { already++; continue }
+            if (!seen.add(key)) { already++; continue }
             if (!valid(r, nowMillis)) { rejected++; continue }
+            if (key in have) {
+                // Steps and vitals are one per day: a newer value for a day already here updates it; anything else already here is skipped.
+                val id = newerThanStored(data, r)
+                if (id != null) out += Candidate(r, updates = id) else already++
+                continue
+            }
             out += Candidate(r, duplicateOf(data, r))
         }
         return ImportPlan(out, already, rejected)
+    }
+
+    /** The id of the stored record [r] brings a newer value for, or null: only steps (a larger count) and the once-a-day vitals (a different value) can be updated. */
+    private fun newerThanStored(data: HealData, r: Imported): String? = when (r) {
+        is Imported.Steps -> data.steps.firstOrNull { it.provenance?.provider == r.provider && it.provenance.externalId == r.id }?.takeIf { r.steps > it.steps }?.id
+        is Imported.Vital -> if (r.type == VitalType.HEART_RATE) null
+            else data.vitals.firstOrNull { it.provenance?.provider == r.provider && it.provenance.externalId == r.id }?.takeIf { r.atMillis > it.atMillis && r.value != it.value }?.id
+        else -> null
+    }
+
+    /** When the record happened: the end of a session or night, else its own time. */
+    fun happenedAt(r: Imported): Long = when (r) {
+        is Imported.Exercise -> r.endMillis
+        is Imported.Sleep -> r.endMillis
+        is Imported.Body -> r.atMillis
+        is Imported.Drink -> r.atMillis
+        is Imported.Steps -> r.atMillis
+        is Imported.Vital -> r.atMillis
     }
 
     private fun minutesOf(start: Long, end: Long) = ((end - start) / MINUTE.toDouble()).roundToInt().coerceAtLeast(1)
@@ -112,6 +156,8 @@ object HealImport {
         is Imported.Sleep -> r.endMillis <= now + HealRules.FUTURE_SLACK_MILLIS && HealRules.checkSleep(r.startMillis, r.endMillis) is Check.Ok
         is Imported.Body -> r.atMillis <= now + HealRules.FUTURE_SLACK_MILLIS && HealRules.checkMeasurement(r.type, r.value, r.unit) is Check.Ok
         is Imported.Drink -> r.atMillis <= now + HealRules.FUTURE_SLACK_MILLIS && HealRules.checkHydration(r.ml) is Check.Ok
+        is Imported.Steps -> r.atMillis <= now + HealRules.FUTURE_SLACK_MILLIS && HealRules.checkSteps(r.steps) is Check.Ok
+        is Imported.Vital -> r.atMillis <= now + HealRules.FUTURE_SLACK_MILLIS && HealRules.checkVital(r.type, r.value) is Check.Ok
     }
 
     /** The id of an existing record (of any source) that [r] may be the same event as, by a conservative match on time and size (HEAL.md 10.4, step 3); null when none. */
@@ -122,6 +168,8 @@ object HealImport {
             m.type == r.type && abs(m.atMillis - r.atMillis) <= 5 * MINUTE && (HealUnits.convert(m.value, m.unit, r.unit)?.let { abs(it - r.value) < 0.06 } ?: false)
         }?.id
         is Imported.Drink -> data.hydration.firstOrNull { it.ml == r.ml && abs(it.atMillis - r.atMillis) <= 2 * MINUTE }?.id
+        // A step count or a reading is never something the player wrote, and one per day replaces itself, so it can not repeat a record of another source.
+        is Imported.Steps, is Imported.Vital -> null
     }
 
     /**
@@ -141,6 +189,10 @@ object HealImport {
                 is Imported.Sleep -> d.copy(sleep = d.sleep + SleepRecord(newId(), r.startMillis, r.endMillis, dayOf(r.endMillis), "", SourceKind.IMPORTED, prov))
                 is Imported.Body -> d.copy(measurements = d.measurements + Measurement(newId(), r.type, r.value, r.unit, r.atMillis, dayOf(r.atMillis), source = SourceKind.IMPORTED, provenance = prov))
                 is Imported.Drink -> d.copy(hydration = d.hydration + HydrationEntry(newId(), r.atMillis, dayOf(r.atMillis), r.ml, "", SourceKind.IMPORTED, paid = false, provenance = prov))
+                is Imported.Steps -> if (c.updates != null) d.copy(steps = d.steps.map { if (it.id == c.updates) it.copy(steps = r.steps, updatedMillis = r.atMillis) else it })
+                    else d.copy(steps = d.steps + StepsRecord(newId(), dayOf(r.atMillis), r.steps, r.atMillis, provenance = prov))
+                is Imported.Vital -> if (c.updates != null) d.copy(vitals = d.vitals.map { if (it.id == c.updates) it.copy(value = r.value, atMillis = r.atMillis, day = dayOf(r.atMillis)) else it })
+                    else d.copy(vitals = d.vitals + VitalReading(newId(), r.type, r.value, r.atMillis, dayOf(r.atMillis), provenance = prov))
             }
         }
         return d
@@ -149,15 +201,16 @@ object HealImport {
     // --- sources, flags and removal ---------------------------------------------------------------------------------------
 
     /** The imported records by the app that wrote them (for Health Connect, a package name) and by family, so the player sees what came from where. */
-    data class SourceCount(val provider: String, val app: String, val activities: Int, val sleep: Int, val measurements: Int, val hydration: Int) {
-        val total get() = activities + sleep + measurements + hydration
+    data class SourceCount(val provider: String, val app: String, val activities: Int, val sleep: Int, val measurements: Int, val hydration: Int, val steps: Int = 0, val vitals: Int = 0) {
+        val total get() = activities + sleep + measurements + hydration + steps + vitals
     }
 
     fun sources(data: HealData): List<SourceCount> {
         val all = data.activities.mapNotNull { it.provenance }.map { it to 0 } + data.sleep.mapNotNull { it.provenance }.map { it to 1 } +
-            data.measurements.mapNotNull { it.provenance }.map { it to 2 } + data.hydration.mapNotNull { it.provenance }.map { it to 3 }
+            data.measurements.mapNotNull { it.provenance }.map { it to 2 } + data.hydration.mapNotNull { it.provenance }.map { it to 3 } +
+            data.steps.mapNotNull { it.provenance }.map { it to 4 } + data.vitals.mapNotNull { it.provenance }.map { it to 5 }
         return all.groupBy { it.first.provider to it.first.app }.map { (k, v) ->
-            SourceCount(k.first, k.second, v.count { it.second == 0 }, v.count { it.second == 1 }, v.count { it.second == 2 }, v.count { it.second == 3 })
+            SourceCount(k.first, k.second, v.count { it.second == 0 }, v.count { it.second == 1 }, v.count { it.second == 2 }, v.count { it.second == 3 }, v.count { it.second == 4 }, v.count { it.second == 5 })
         }.sortedByDescending { it.total }
     }
 
@@ -176,6 +229,8 @@ object HealImport {
             sleep = data.sleep.filterNot { gone(it.provenance) },
             measurements = data.measurements.filterNot { gone(it.provenance) },
             hydration = data.hydration.filterNot { gone(it.provenance) },
+            steps = data.steps.filterNot { gone(it.provenance) },
+            vitals = data.vitals.filterNot { gone(it.provenance) },
         )
     }
 

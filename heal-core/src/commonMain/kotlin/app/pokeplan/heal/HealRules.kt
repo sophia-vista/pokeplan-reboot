@@ -53,6 +53,25 @@ object HealRules {
         else -> Check.Ok
     }
 
+    /** A day's step count is never above this; anything larger is not a step count. */
+    const val STEPS_MAX = 200_000
+
+    /** Steps: at least one (a page that shows 0 may just not have synced: missing is not zero) and at most [STEPS_MAX]. */
+    fun checkSteps(steps: Int): Check = if (steps in 1..STEPS_MAX) Check.Ok else Check.Refused("That is not a step count.")
+
+    /** The range a reading of [type] must be in to be one at all (never a judgement: a low or a high reading in range is kept like any other). Skin temperature is in °C. */
+    fun vitalRange(type: VitalType): ClosedFloatingPointRange<Double> = when (type) {
+        VitalType.HEART_RATE -> 25.0..250.0
+        VitalType.RESTING_HEART_RATE -> 25.0..150.0
+        VitalType.SPO2 -> 50.0..100.0
+        VitalType.SKIN_TEMPERATURE -> 25.0..45.0
+        VitalType.STRESS -> 1.0..99.0
+        VitalType.SLEEP_SCORE -> 1.0..100.0
+    }
+
+    fun checkVital(type: VitalType, value: Double): Check =
+        if (value.isFinite() && value in vitalRange(type)) Check.Ok else Check.Refused("That does not look like a ${type.label.lowercase()} reading.")
+
     // --- Field Research: what may pay (HEAL.md section 12) -------------------------------------------------------------------
 
     /** A session under this long is logged but does not count for Field Research, so a few seconds of walking is not farmed. *(tune)* */
@@ -96,6 +115,41 @@ object HealRules {
         entry.source == SourceKind.MANUAL && entry.atMillis <= nowMillis + FUTURE_SLACK_MILLIS &&
             entry.atMillis >= nowMillis - FRESH_MILLIS && paidToday < PARTICIPATION_PAID_PER_DAY
 
+    // --- Field Research: steps and imports (owner, 14 November 2026) ---------------------------------------------------------
+
+    /** Steps pay per amount: one payment for each full [STEPS_PER_REWARD] steps of today. *(tune: set with `simulateEconomy`)* */
+    const val STEPS_PER_REWARD = 2_000
+
+    /** Step payments in a day: [STEPS_PAID_PER_DAY] x [STEPS_PER_REWARD] steps (10,000), the rest are still kept. *(tune)* */
+    const val STEPS_PAID_PER_DAY = 5
+
+    /** How many amounts of [STEPS_PER_REWARD] a day's [steps] has reached, at most [STEPS_PAID_PER_DAY]. */
+    fun stepPayments(steps: Int): Int = (steps / STEPS_PER_REWARD).coerceIn(0, STEPS_PAID_PER_DAY)
+
+    /** Reading records in pays once a day for each family of record that brought something new, at most this many a day. *(tune)* */
+    const val IMPORTS_PAID_PER_DAY = 3
+
+    /**
+     * Whether a new imported record counts towards an import payment: steps pay by the amount instead, a workout from a provider that pays its sessions already paid
+     * for itself, and a record must be recent (no backfilled history).
+     */
+    fun importCounts(family: HealKindOf, provider: String, atMillis: Long, nowMillis: Long): Boolean =
+        family != HealKindOf.STEPS && !(family == HealKindOf.ACTIVITY && provider in HealImport.PAYING_PROVIDERS) &&
+            atMillis <= nowMillis + FUTURE_SLACK_MILLIS && atMillis >= nowMillis - IMPORT_FRESH_MILLIS
+
+    fun stepMark(day: LocalDate, n: Int) = "steps|$day|$n"
+    fun importMark(day: LocalDate, family: HealKindOf) = "import|$day|${family.name}"
+
+    /** [marks] without the ones older than [HealSettings.MARK_DAYS] days before [today]. */
+    fun pruneMarks(marks: Set<String>, today: LocalDate): Set<String> {
+        val oldest = today.toEpochDays() - HealSettings.MARK_DAYS
+        return marks.filterTo(HashSet()) { m -> m.split('|').getOrNull(1)?.let { runCatching { LocalDate.parse(it).toEpochDays() }.getOrNull() }?.let { it >= oldest } ?: false }
+    }
+
+    /** The largest step amount of [day] already paid, from the record and the marks (0 when none). */
+    fun stepsPaidOn(data: HealData, day: LocalDate): Int =
+        maxOf(data.steps.filter { it.day == day }.maxOfOrNull { it.paidBuckets } ?: 0, data.settings.paidMarks.maxOfOrNull { m -> m.split('|').let { if (it[0] == "steps" && it.getOrNull(1) == day.toString()) it.getOrNull(2)?.toIntOrNull() ?: 0 else 0 } } ?: 0)
+
     fun activitiesPaidOn(data: HealData, day: LocalDate): Int = data.activities.count { it.day == day && it.paid }
     fun participationPaidOn(data: HealData, day: LocalDate): Int = data.hydration.count { it.day == day && it.paid }
 
@@ -115,6 +169,12 @@ object HealRules {
     /** Millilitres logged on [day], or null when no drink was logged that day (not 0). */
     fun hydrationOn(data: HealData, day: LocalDate): Int? =
         data.hydration.filter { it.day == day }.takeIf { it.isNotEmpty() }?.sumOf { it.ml }
+
+    /** Steps on [day] (the largest count read), or null when none was read that day (not 0). */
+    fun stepsOn(data: HealData, day: LocalDate): Int? = data.steps.filter { it.day == day }.maxOfOrNull { it.steps }
+
+    /** The newest reading of [type], or null. */
+    fun latestVital(data: HealData, type: VitalType): VitalReading? = data.vitals.filter { it.type == type }.maxByOrNull { it.atMillis }
 
     /** The most recent finished sleep, or null: an unfinished night is never shown as a total (section 2.2). */
     fun latestSleep(data: HealData): SleepRecord? = data.sleep.maxByOrNull { it.endMillis }

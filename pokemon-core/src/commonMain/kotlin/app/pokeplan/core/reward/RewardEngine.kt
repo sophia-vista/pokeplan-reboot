@@ -217,6 +217,10 @@ data class CareEvent(
 enum class HealKind {
     @SerialName("activity_logged") ACTIVITY,
     @SerialName("participation") PARTICIPATION,
+    /** One full amount of steps (`HealRules.STEPS_PER_REWARD`) reached today: a count, never the figure itself (owner, 14 November 2026). */
+    @SerialName("steps_reached") STEPS,
+    /** Reading records in from outside (Health Connect, Huawei Health's pages) that brought something new: a family of record, once a day, never a value. */
+    @SerialName("records_imported") IMPORT,
 }
 
 /**
@@ -490,12 +494,15 @@ object RewardEngine {
     const val RHYTHM_BERRIES = 3
 
     /** Rare Candies for each HEAL moment (Field Research). *(tune)* */
-    val HEAL_CANDIES: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to 4, HealKind.PARTICIPATION to 1)
+    val HEAL_CANDIES: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to 4, HealKind.PARTICIPATION to 1, HealKind.STEPS to 1, HealKind.IMPORT to 1)
 
     /** Field Research's meter, kept by the app: each moment adds its points and a full meter discovers a Field Egg ([healEgg]). *(tune)* */
-    val HEAL_EGG_POINTS: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to 2, HealKind.PARTICIPATION to 1)
+    val HEAL_EGG_POINTS: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to 2, HealKind.PARTICIPATION to 1, HealKind.STEPS to 0, HealKind.IMPORT to 0)
     const val HEAL_EGG_METER_SIZE = 4
     const val HEAL_POINTS = 1
+
+    /** Trainer points for each HEAL moment: steps and imports pay candies (and steps friendship) only, so Heal's trainer points stay at most 4 a day. *(tune)* */
+    val HEAL_TRAINER_POINTS: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to HEAL_POINTS, HealKind.PARTICIPATION to HEAL_POINTS, HealKind.STEPS to 0, HealKind.IMPORT to 0)
 
     /** Rare Candies for each MINT moment (Ledger Research). *(tune)* */
     val MINT_CANDIES: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to 3, MintKind.REVIEW to 5)
@@ -807,7 +814,7 @@ object RewardEngine {
         var pokemon = state.pokemon
         val lead = state.healLead
         val perks = HealPerks.total(lead, state.partyOf(PartyIds.HEAL), state.guardianOf(PartyIds.HEAL))
-        if (lead != null && e.kind == HealKind.ACTIVITY) {
+        if (lead != null && (e.kind == HealKind.ACTIVITY || e.kind == HealKind.STEPS)) {
             var grown = lead.gainFriendship(FriendshipRules.Source.ACTIVITY)
             val extra = perks[HealBucket.FRIENDSHIP_GAIN] ?: 0.0
             if (extra > 0 && rng.nextDouble() * 100 < extra) grown = grown.gainFriendship(FriendshipRules.Source.ACTIVITY)
@@ -831,7 +838,9 @@ object RewardEngine {
         inventory = bag
         coins += overflow
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + HEAL_POINTS), rewards), ModuleDrops.Module.HEAL, rng)
+        val paid = Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + HEAL_TRAINER_POINTS.getValue(e.kind)), rewards)
+        // Only deliberate moments can drop an item: up to five step payments and three imports a day would otherwise drop one most days.
+        return if (e.kind == HealKind.STEPS || e.kind == HealKind.IMPORT) paid else ModuleDrops.add(paid, ModuleDrops.Module.HEAL, rng)
     }
 
     /**

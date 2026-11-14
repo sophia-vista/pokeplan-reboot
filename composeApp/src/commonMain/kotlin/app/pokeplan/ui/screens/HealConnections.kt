@@ -158,6 +158,8 @@ internal fun HealConnectionsView(model: AppModel) {
                                 HealKindOf.SLEEP -> heal.deleteSleep(id)
                                 HealKindOf.MEASUREMENTS -> heal.deleteMeasurement(id)
                                 HealKindOf.HYDRATION -> heal.deleteDrink(id)
+                                HealKindOf.STEPS -> heal.deleteSteps(id)
+                                HealKindOf.VITALS -> heal.deleteVital(id)
                             }
                         }, Modifier.weight(1f), Pixel.Danger, compact = true)
                     }
@@ -174,6 +176,9 @@ internal fun ImportPreview(plan: ImportPlan, onAdd: () -> Unit, onCancel: () -> 
         if (plan.isEmpty) Text("Nothing new", style = MaterialTheme.typography.bodyLarge)
         else {
             HealthKind.entries.filter { plan.count(it) > 0 }.forEach { Text("${it.label}: ${plan.count(it)}", style = MaterialTheme.typography.bodyLarge) }
+            if (plan.count(HealKindOf.STEPS) > 0) Text("Step counts: ${plan.count(HealKindOf.STEPS)}", style = MaterialTheme.typography.bodyLarge)
+            if (plan.count(HealKindOf.VITALS) > 0) Text("Readings: ${plan.count(HealKindOf.VITALS)}", style = MaterialTheme.typography.bodyLarge)
+            if (plan.updated > 0) Text("${plan.updated} updated with a newer value", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (plan.alreadyHere > 0) Text("${plan.alreadyHere} already here, skipped", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (plan.rejected > 0) Text("${plan.rejected} left out", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
@@ -191,5 +196,7 @@ private fun duplicateLine(model: AppModel, id: String, family: HealKindOf): Stri
         HealKindOf.SLEEP -> d.sleep.firstOrNull { it.id == id }?.let { "Sleep, ${it.minutes / 60} h ${it.minutes % 60} min, woke ${it.endMillis.shortDate()}" }
         HealKindOf.MEASUREMENTS -> d.measurements.firstOrNull { it.id == id }?.let { "${it.type.label} ${app.pokeplan.heal.HealRules.format(it.value)} ${it.unit}, ${it.atMillis.shortDate()}" }
         HealKindOf.HYDRATION -> d.hydration.firstOrNull { it.id == id }?.let { "Drink ${it.ml} ml, ${it.atMillis.shortDate()}" }
+        HealKindOf.STEPS -> d.steps.firstOrNull { it.id == id }?.let { "Steps, ${it.updatedMillis.shortDate()}" }
+        HealKindOf.VITALS -> d.vitals.firstOrNull { it.id == id }?.let { "${it.type.label}, ${it.atMillis.shortDate()}" }
     } ?: "A record"
 }

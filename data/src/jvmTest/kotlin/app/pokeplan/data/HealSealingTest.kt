@@ -58,12 +58,37 @@ class HealSealingTest {
     private fun count(s: DataStore, sql: String): Long =
         s.driver.executeQuery(null, sql, { c -> QueryResult.Value(if (c.next().value) c.getLong(0) else null) }, 0).value ?: 0L
 
-    private val tables = listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_state")
+    private val tables = listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital", "heal_state")
 
     private fun everyStoredText(s: DataStore): List<String> = tables.flatMap { t ->
         val out = mutableListOf<String>()
         s.driver.executeQuery(null, "SELECT json FROM $t", { c -> while (c.next().value) out += c.getString(0)!!; QueryResult.Unit }, 0)
         out
+    }
+
+    @Test
+    fun stepsAndReadingsLiveInTheirOwnSealedTablesAndComeBackEqual() {
+        val (s, g) = clearPhone()
+        s.healCipher = key(1)
+        assertTrue(s.healTables.seal(10))
+        val heal = healOn(s, g)
+        val now = start
+        heal.importFromProvider(app.pokeplan.heal.ProviderRead(listOf(
+            app.pokeplan.heal.Imported.Steps("huawei-screen", "com.huawei.health", "steps:2026-11-14", 8321, now - 1_000),
+            app.pokeplan.heal.Imported.Vital("huawei-screen", "com.huawei.health", "spo2:2026-11-14", app.pokeplan.heal.VitalType.SPO2, 97.0, now - 1_000),
+            app.pokeplan.heal.Imported.Vital("huawei-screen", "com.huawei.health", "stress:2026-11-14", app.pokeplan.heal.VitalType.STRESS, 42.0, now - 1_000),
+        ), 0, now))
+        assertEquals(1, count(s, "SELECT count(*) FROM heal_steps")); assertEquals(2, count(s, "SELECT count(*) FROM heal_vital"))
+        val texts = everyStoredText(s)
+        assertTrue(texts.all { RowCipher.isSealed(it) }, "the new rows are sealed too")
+        for (secret in listOf("8321", "97.0", "SPO2", "STRESS", "steps|")) assertFalse(texts.any { secret in it }, "a row still shows $secret")
+        val back = healOn(s, g).data
+        assertEquals(8321, back.steps.single().steps); assertEquals(2, back.vitals.size)
+        // Reading the same again adds no row, and erasing steps leaves the readings.
+        heal.importFromProvider(app.pokeplan.heal.ProviderRead(listOf(app.pokeplan.heal.Imported.Steps("huawei-screen", "com.huawei.health", "steps:2026-11-14", 8321, now - 500)), 0, now))
+        assertEquals(1, count(s, "SELECT count(*) FROM heal_steps"))
+        s.healTables.erase("steps")
+        assertEquals(0, count(s, "SELECT count(*) FROM heal_steps")); assertEquals(2, count(s, "SELECT count(*) FROM heal_vital"))
     }
 
     @Test

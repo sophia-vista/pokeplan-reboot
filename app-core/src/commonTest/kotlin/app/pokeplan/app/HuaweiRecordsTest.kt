@@ -123,7 +123,7 @@ class HuaweiRecordsTest {
     @Test fun healthConnectAndRepeatsOfAManualSessionStillPayNothing() {
         val (heal, spy) = store()
         heal.importFromProvider(ProviderRead(listOf(session("hc", 1, provider = HealImport.PROVIDER_HEALTH_CONNECT)), 0, now))
-        assertTrue(spy.events.isEmpty())
+        assertTrue(spy.events.all { it.kind == app.pokeplan.core.reward.HealKind.IMPORT }, "the session itself pays nothing; only the read does (rules version 25)")
         // A walk logged by hand now, then the same walk read from Huawei: flagged as a possible repeat, so it is not paid a second time.
         heal.logActivity(ActivityType.WALK, 30)
         val paidByHand = spy.events.size

@@ -14,6 +14,7 @@ import app.pokeplan.heal.HealImport
 import app.pokeplan.heal.HealKindOf
 import app.pokeplan.heal.HealthKind
 import app.pokeplan.heal.ImportPlan
+import app.pokeplan.heal.Imported
 import app.pokeplan.heal.ProviderRead
 import app.pokeplan.heal.HealKinds
 import app.pokeplan.heal.HealRules
@@ -80,8 +81,8 @@ class HealStore(
 
     private fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
 
-    private fun pay(kind: HealKind, recordId: String): List<Reward>? =
-        if (!data.settings.fieldResearch) null else world.heal(HealEvent("heal:${kind.name.lowercase()}:$recordId", kind, nowMillis, recordId))
+    private fun pay(kind: HealKind, recordId: String, eventKey: String = recordId): List<Reward>? =
+        if (!data.settings.fieldResearch) null else world.heal(HealEvent("heal:${kind.name.lowercase()}:$eventKey", kind, nowMillis, recordId))
 
     // --- activity -----------------------------------------------------------------------------------------------------
 
@@ -177,6 +178,11 @@ class HealStore(
 
     fun deleteMeasurement(id: String) = update { d -> d.copy(measurements = d.measurements.filterNot { it.id == id }) }
 
+    // --- steps and readings (read from outside, never typed, so only deleted) ------------------------------------------
+
+    fun deleteSteps(id: String) = update { d -> d.copy(steps = d.steps.filterNot { it.id == id }) }
+    fun deleteVital(id: String) = update { d -> d.copy(vitals = d.vitals.filterNot { it.id == id }) }
+
     // --- goals (optional; never pay, never punish) -----------------------------------------------------------------------
 
     fun addGoal(kind: GoalKind, target: Int): HealGoal? {
@@ -232,16 +238,53 @@ class HealStore(
             if (HealRules.activityPays(a, nowMillis, paidThatDay) && pay(HealKind.ACTIVITY, a.id) != null) paidIds += a.id
         }
         if (paidIds.isNotEmpty()) added = added.copy(activities = added.activities.map { if (it.id in paidIds) it.copy(paid = true) else it })
+        added = payStepsAndImports(added, plan)
         val result = added
         val huawei = read.records.any { it.provider == HealImport.PROVIDER_HUAWEI_SCREEN }
         update { if (read.failed || huawei) result else result.copy(settings = result.settings.copy(healthLastSyncMillis = nowMillis)) }
         return plan
     }
 
+    /**
+     * Field Research for steps and for reading records in (owner, 14 November 2026). **Steps** pay per amount: one payment for each full [HealRules.STEPS_PER_REWARD] steps of
+     * *today*, in order, at most [HealRules.STEPS_PAID_PER_DAY] a day, so a read that shows more steps pays only the new amounts. **A read** pays once a day for each family of
+     * record (workouts that do not pay for themselves, sleep, body measurements, drinks, heart rate and the other readings) that brought something new and recent, at most
+     * [HealRules.IMPORTS_PAID_PER_DAY] a day. Each payment leaves a mark in the sealed settings, so deleting a record and reading it again pays nothing twice. Needs Field Research on.
+     */
+    private fun payStepsAndImports(d: HealData, plan: ImportPlan): HealData {
+        var data = d
+        val today = dayOf(nowMillis)
+        val marks = HashSet(HealRules.pruneMarks(data.settings.paidMarks, today))
+        // steps: today's record only (the daily limit counts today)
+        data.steps.firstOrNull { it.day == today }?.let { rec ->
+            var paid = maxOf(rec.paidBuckets, HealRules.stepsPaidOn(data, today))
+            val reached = HealRules.stepPayments(rec.steps)
+            while (paid < reached) {
+                if (pay(HealKind.STEPS, rec.id, "${rec.id}:${paid + 1}") == null) break
+                paid++
+                marks += HealRules.stepMark(today, paid)
+            }
+            if (paid != rec.paidBuckets) data = data.copy(steps = data.steps.map { if (it.id == rec.id) it.copy(paidBuckets = paid) else it })
+        }
+        // reading records in: a family that brought something new, once a day
+        val families = plan.candidates.filter { it.updates == null && HealRules.importCounts(it.record.family, it.record.provider, HealImport.happenedAt(it.record), nowMillis) }
+            .map { it.record.family }.distinct().sortedBy { it.ordinal }
+        var paidToday = marks.count { it.startsWith("import|$today|") }
+        for (family in families) {
+            if (paidToday >= HealRules.IMPORTS_PAID_PER_DAY) break
+            val mark = HealRules.importMark(today, family)
+            if (mark in marks) continue
+            if (pay(HealKind.IMPORT, newId()) == null) break
+            marks += mark
+            paidToday++
+        }
+        return if (marks == data.settings.paidMarks) data else data.copy(settings = data.settings.copy(paidMarks = marks))
+    }
+
     /** The records the Huawei Health reader's captures hold now (INTEGRATIONS_AND_PRIVACY.md 5.2.2), as a read to preview and import like any provider's. */
     fun readHuawei(seen: HuaweiSeen): ProviderRead {
         val records = HuaweiRecords.read(seen, nowMillis, zone)
-        val from = records.minOfOrNull { (it as? app.pokeplan.heal.Imported.Exercise)?.startMillis ?: (it as? app.pokeplan.heal.Imported.Sleep)?.startMillis ?: (it as? app.pokeplan.heal.Imported.Body)?.atMillis ?: nowMillis } ?: nowMillis
+        val from = records.minOfOrNull { (it as? app.pokeplan.heal.Imported.Exercise)?.startMillis ?: (it as? app.pokeplan.heal.Imported.Sleep)?.startMillis ?: (it as? app.pokeplan.heal.Imported.Body)?.atMillis ?: HealImport.happenedAt(it) } ?: nowMillis
         return ProviderRead(records, from, nowMillis)
     }
 
@@ -308,6 +351,8 @@ object HealExport {
         HealKinds.SLEEP -> d.copy(sleep = emptyList())
         HealKinds.MEASUREMENTS -> d.copy(measurements = emptyList())
         HealKinds.GOALS -> d.copy(goals = emptyList())
+        HealKinds.STEPS -> d.copy(steps = emptyList())
+        HealKinds.VITALS -> d.copy(vitals = emptyList())
     }
 
 }
