@@ -1013,6 +1013,20 @@ class ScreenshotTest {
             heal.logMeasurement(app.pokeplan.heal.MeasureType.WEIGHT, 68.4, "kg")
             heal.addGoal(app.pokeplan.heal.GoalKind.WEEKLY_ACTIVE_MINUTES, 150)
             heal.setHydrationTarget(2000)
+            if (section == app.pokeplan.ui.screens.HealSection.READINGS) {
+                val t = clock.millis
+                val p = "huawei-screen"; val app_ = "com.huawei.health"
+                heal.importFromProvider(app.pokeplan.heal.ProviderRead(listOf(
+                    app.pokeplan.heal.Imported.Steps(p, app_, "steps:a", 8321, t - 60_000),
+                    app.pokeplan.heal.Imported.Steps(p, app_, "steps:b", 12045, t - 86_400_000L),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "hr:a", app.pokeplan.heal.VitalType.HEART_RATE, 72.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "rhr:a", app.pokeplan.heal.VitalType.RESTING_HEART_RATE, 58.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "spo2:a", app.pokeplan.heal.VitalType.SPO2, 97.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "skin:a", app.pokeplan.heal.VitalType.SKIN_TEMPERATURE, 34.1, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "stress:a", app.pokeplan.heal.VitalType.STRESS, 31.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "sleepscore:a", app.pokeplan.heal.VitalType.SLEEP_SCORE, 81.0, t - 60_000),
+                ), 0, t))
+            }
             store.markRewardsSeen()
         }
         model.module = app.pokeplan.ui.screens.Module.HEAL
@@ -1028,6 +1042,12 @@ class ScreenshotTest {
 
     @Test
     fun healMenuDark() = heal("heal-menu-dark", null, height = 2400, healParty = 3, dark = true)
+
+    @Test
+    fun healReadings() = heal("heal-readings", app.pokeplan.ui.screens.HealSection.READINGS, height = 2200)
+
+    @Test
+    fun healReadingsDark() = heal("heal-readings-dark", app.pokeplan.ui.screens.HealSection.READINGS, height = 2200, dark = true)
 
     @Test
     fun healActivity() = heal("heal-activity", app.pokeplan.ui.screens.HealSection.ACTIVITY, height = 2000)

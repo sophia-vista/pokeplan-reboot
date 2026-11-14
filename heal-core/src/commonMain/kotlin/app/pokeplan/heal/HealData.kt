@@ -194,10 +194,10 @@ data class StepsRecord(
 enum class VitalType(val label: String, val unit: String) {
     HEART_RATE("Heart rate", "bpm"),
     RESTING_HEART_RATE("Resting heart rate", "bpm"),
-    SPO2("Blood oxygen (SpO2)", "%"),
+    SPO2("Blood oxygen", "%"),
     SKIN_TEMPERATURE("Skin temperature", "°C"),
-    STRESS("Stress (Huawei's number)", ""),
-    SLEEP_SCORE("Sleep score (Huawei's)", ""),
+    STRESS("Huawei stress", ""),
+    SLEEP_SCORE("Huawei sleep score", ""),
 }
 
 /** One such reading. [atMillis] is when PokéLife read it (the Health page shows no time of its own); [day] is that local day, fixed when it was saved. */
