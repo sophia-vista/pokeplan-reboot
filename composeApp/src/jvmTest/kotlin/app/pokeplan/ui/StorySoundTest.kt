@@ -18,7 +18,7 @@ class StorySoundTest {
     @Test
     fun everySoundHasItsFile() {
         val dir = assetsDir()
-        Sfx.entries.filter { it.file != "jingle-mission-success" }.forEach { assertTrue(File(dir, it.file + ".ogg").exists(), "${it.name}: ${it.file}.ogg") }
+        Sfx.entries.filter { !it.file.startsWith("jingle-") } // the Explorers of Sky jingles are in assets/sky-sfx, which SfxAssetsTest checks.forEach { assertTrue(File(dir, it.file + ".ogg").exists(), "${it.name}: ${it.file}.ogg") }
     }
 
     @Test

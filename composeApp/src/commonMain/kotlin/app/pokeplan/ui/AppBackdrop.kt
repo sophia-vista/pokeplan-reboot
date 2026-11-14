@@ -33,8 +33,16 @@ import app.pokeplan.ui.launcher.TownScenes
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.Spacing
 
+/** Places of Pokémon Mystery Dungeon: Explorers of Sky (assets/sky-maps, bundled as `files/maps/sky-<code>`), named by their game map code. */
+private val SkyPlaces: List<Pair<String, String>> = listOf(
+    "map:sky-t00p01" to "Treasure Town", "map:sky-t00p02" to "Treasure Town, east", "map:sky-t01p01a" to "Treasure Town, south", "map:sky-t01p02a" to "Treasure Town, north",
+    "map:sky-p01p04a" to "Spinda's Café", "map:sky-t00p04a" to "Wigglytuff's Guild summit", "map:sky-h01p99c" to "Sea cliff at dusk", "map:sky-h02p99a" to "Seaside cliff",
+    "map:sky-d73p11a" to "Flower meadow", "map:sky-p02p01a" to "Forest clearing", "map:sky-v31p01a" to "Night sky", "map:sky-v38p06c" to "Sunrise over the peaks",
+)
+
 /** The page's background choices: the day gradient, then the real scenes, the dungeon towns and the Rescue Team Friend Areas. */
-val AppBackgrounds: List<Pair<String, String>> = listOf("day" to "Day") + TownScenes.all + FriendAreas.all
+val AppBackgrounds: List<Pair<String, String>> = listOf("day" to "Day") + TownScenes.all + FriendAreas.all + SkyPlaces
+
 
 /** The choices in the groups the picker shows, each with its heading (none for the first). */
 private val BackgroundGroups: List<Pair<String?, List<Pair<String, String>>>> = listOf(
@@ -43,6 +51,7 @@ private val BackgroundGroups: List<Pair<String?, List<Pair<String, String>>>> = 
     "Rescue Team dungeons" to TownScenes.rescueTeam,
     "Rescue Team Friend Areas" to FriendAreas.all,
     "Explorers of Sky dungeons" to TownScenes.explorers,
+    "Explorers of Sky places" to SkyPlaces,
 )
 
 /**

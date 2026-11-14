@@ -462,7 +462,7 @@ internal object ExplorersPostStory {
             say("wigglytuff", "Treasure hunt! Hee-hee! Everybody follows the map!", JOYOUS)
             say(BUDDY, "Lead the way, Marill.", HAPPY)
         },
-        stage("explorers-post-106-sunset", "Evening at the water", StoryPlaces.SEA_CLIFF, listOf(buddy, wigglytuff, chatot, loudred, sunflora, bidoof, marill, azurill)) {
+        stage("explorers-post-106-sunset", "Evening at the water", StoryPlaces.SEA_CLIFF_DUSK, listOf(buddy, wigglytuff, chatot, loudred, sunflora, bidoof, marill, azurill)) {
             narr("Evening. The treasure hunt wanders along the shore, over rocks and into tide pools. The sea turns gold and rose.")
             show(BUDDY, 4.4f, 3.4f)
             show("marill", 2.8f, 3.8f); show("azurill", 3.6f, 4.2f)
@@ -501,7 +501,7 @@ internal object ExplorersPostStory {
             narr("Whichever way the evening went, the sea keeps rolling in, patient and warm.")
             say("sunflora", "Today's Oh My Gosh: this was the best day of the whole trip!", JOYOUS)
         },
-        stage("explorers-post-106-cliff", "Lanterns on the cliff", StoryPlaces.SEA_CLIFF, listOf(buddy, wigglytuff, chatot, bidoof)) {
+        stage("explorers-post-106-cliff", "Lanterns on the cliff", StoryPlaces.SEA_CLIFF_DUSK, listOf(buddy, wigglytuff, chatot, bidoof)) {
             narr("Night falls. The guild gathers on the cliff above the shore, each with a small lantern.")
             show(BUDDY, 4.0f, 3.4f)
             show("wigglytuff", 6.2f, 2.8f, Facing.LEFT)

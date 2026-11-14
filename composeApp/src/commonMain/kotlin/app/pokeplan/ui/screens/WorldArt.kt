@@ -79,7 +79,7 @@ internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boo
         // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = worldArt[name]
         if (value == null) {
-            value = orNull { Res.readBytes("files/world/$name.png").decodeToImageBitmap() }
+            value = orNull { Res.readBytes(if (name.startsWith("map:")) "files/maps/${name.removePrefix("map:")}.png" else "files/world/$name.png").decodeToImageBitmap() }
             worldArt[name] = value
         }
     }
@@ -363,7 +363,7 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
         // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = worldArt[name]
         if (value == null) {
-            value = orNull { Res.readBytes("files/world/$name.png").decodeToImageBitmap() }
+            value = orNull { Res.readBytes(if (name.startsWith("map:")) "files/maps/${name.removePrefix("map:")}.png" else "files/world/$name.png").decodeToImageBitmap() }
             worldArt[name] = value
         }
     }
