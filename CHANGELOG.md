@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.192.0
+
+More of Explorers of Sky in World: lost Pokémon's calls, recruits' words and dungeon entrances (owner, 14 November 2026).
+
+- **The job board:** a rescue notice shows the lost Pokémon's Mystery Dungeon portrait (tearful) beside the game's own call for help ("I can't get out!", "I've lost my way!", "Help me!"...), in place of the app's description. A job keeps the same call every time the board is opened.
+- **Recruits speak:** a Pokémon that joins your team says one of the game's lines ("Let's do our best!", "I've got a good feeling that we're going to find treasure!"); a species always says the same one.
+- **Entrances:** the Atlas card of Tiny Woods, Thunderwave Cave, Mt. Steel, the Glacier Palace, the Sky Tower, Frosty Forest and Beach Cave opens with the game's picture of the dungeon's entrance.
+- The Town's shop pages are checked in the dark palette (Spinda's Café, the Kecleon Shop, the Swap Shop).
+- **Kecleon's shelf icons:** Protector, Magmarizer, Electirizer, Reaper Cloth, Dubious Disc, Up-Grade, Metal Coat, King's Rock, Dragon Scale, Deep Sea Tooth and Scale, Prism Scale, Sachet and Whipped Dream had no picture; they have now.
+- **Launcher, from phone testing:** Pokémon no longer act out the same script at the same moments (each one's timing is its own, and a crowd has one meeting at a time instead of every pair at once); they keep a square apart when they start, when they choose where to stand and while two head for the same spot, so they overlap far less; and none is placed where it could never walk out (a swimmer's lake in the rock, a ghost's hollow in a wall).
+- **Traps with effects:** a Spin Trap leaves a Pokémon confused for about 25 seconds (a question mark over its head; it stumbles a square to the side now and then), and the new Poison Trap poisons it for about 30 seconds (a skull over its head; it walks slower). Each wears off by itself with a twinkle. Nothing is lost.
+
 ## 0.191.0
 
 World takes more of Explorers of Sky: its places, its shopkeepers' words and its jingles (owner, 14 November 2026).

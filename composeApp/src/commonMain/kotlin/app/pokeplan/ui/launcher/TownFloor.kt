@@ -1,5 +1,6 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.ui.StatusKind
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -95,21 +96,34 @@ internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val scr
         (spot.y * heightPx / tilePx - FEET + 0.5f).toInt().coerceIn(0, floor.rows - 1),
     )
 
-    /** A square [mover] can stop on, at random from [random], on page [page] if it has one. */
-    fun restingCell(random: Random, mover: Mover, page: Int? = null): Cell {
+    /**
+     * A square [mover] can stop on and walk away from, at random from [random], on page [page] if it has one, and not beside any square in
+     * [apart] (so two Pokémon do not start on top of each other) if there is room for that.
+     */
+    fun restingCell(random: Random, mover: Mover, page: Int? = null, apart: Collection<Cell> = emptyList()): Cell {
         val all = floor.restingCells(mover)
-        val on = if (page == null) all else all.filter { it.x * tilePx / screenPx >= page && it.x * tilePx / screenPx < page + 1 }
-        return (on.ifEmpty { all }.ifEmpty { listOf(floor.stairs) }).random(random)
+        val on = (if (page == null) all else all.filter { it.x * tilePx / screenPx >= page && it.x * tilePx / screenPx < page + 1 }).ifEmpty { all }
+        val spaced = on.filter { c -> apart.none { near(c, it) } }
+        return (spaced.ifEmpty { on }.ifEmpty { listOf(floor.stairs) }).random(random)
     }
 
-    /** The square nearest [wanted] that [mover] can stop on and nobody stands on ([taken]), searching outwards a few squares. */
-    fun nearestResting(wanted: Cell, mover: Mover, taken: Set<Cell>): Cell? {
-        for (r in 0..6) {
-            val ring = (-r..r).flatMap { dy -> (-r..r).map { dx -> Cell(wanted.x + dx, wanted.y + dy) } }.filter { maxOf(kotlin.math.abs(it.x - wanted.x), kotlin.math.abs(it.y - wanted.y)) == r }
-            ring.firstOrNull { floor.canRest(it, mover) && it !in taken }?.let { return it }
+    /**
+     * The square nearest [wanted] that [mover] can stop on and nobody stands on ([taken]), searching outwards: first one that is not beside
+     * a taken square either ([room]), so two Pokémon never stand overlapping, then, if the floor is that full, any free one.
+     */
+    fun nearestResting(wanted: Cell, mover: Mover, taken: Set<Cell>, room: Boolean = true): Cell? {
+        fun search(blocked: (Cell) -> Boolean): Cell? {
+            for (r in 0..12) {
+                val ring = (-r..r).flatMap { dy -> (-r..r).map { dx -> Cell(wanted.x + dx, wanted.y + dy) } }.filter { maxOf(kotlin.math.abs(it.x - wanted.x), kotlin.math.abs(it.y - wanted.y)) == r }
+                ring.firstOrNull { floor.canRoam(it, mover) && !blocked(it) }?.let { return it }
+            }
+            return null
         }
-        return null
+        return (if (room) search { c -> taken.any { near(c, it) } } else null) ?: search { it in taken }
     }
+
+    /** Whether two squares touch (a Pokémon is wider than its square, so neighbours would overlap). */
+    private fun near(a: Cell, b: Cell) = kotlin.math.abs(a.x - b.x) <= 1 && kotlin.math.abs(a.y - b.y) <= 1
 
     companion object {
         /** The feet stand this far down a square (0 its top, 1 its bottom). */
@@ -306,4 +320,13 @@ internal fun TrapEffect(fx: TrapFx, feet: () -> Offset, pixel: Int, onDone: () -
     ) {
         drawImage(image, IntOffset(frame * fx.width, 0), IntSize(fx.width, fx.height), IntOffset.Zero, IntSize(fx.width * pixel, fx.height * pixel), filterQuality = FilterQuality.None)
     }
+}
+
+/**
+ * What a trap leaves a Pokémon with for a while, as in the games (owner, 14 November 2026): [CONFUSED] (the Spin Trap: it stumbles about, a
+ * question mark over its head) and [POISONED] (the Poison Trap: it drags along at [pace], a skull over its head). It wears off by itself after
+ * [seconds], with a twinkle, and costs nothing: it is for show.
+ */
+internal enum class Condition(val icon: StatusKind, val seconds: Int, val pace: Float) {
+    CONFUSED(StatusKind.QUESTION, 25, 1f), POISONED(StatusKind.SKULL, 30, 0.7f),
 }

@@ -30,6 +30,8 @@ enum class StatusKind(val file: String, val frames: Int, val start: Int = 0, val
     /** The yellow flash of a shock, the blue drop of a nervous one and a white sparkle for something nice (24 px, 16 px and 24 px frames). */
     ZAP("zap", 2, millis = 140, cell = 24), SWEAT("sweat", 2, millis = 300), TWINKLE("twinkle", 3, millis = 160, cell = 24),
     /** The stat icons of the games, for the buddy's type-flavoured reactions: a flame, a shield, a fist, and a block of ice (32 px frames). */
+    /** The skull of poison (16 px frames). */
+    SKULL("skull", 8, millis = 140),
     FLAME("flame", 7), SHIELD("shield", 13), FIST("fist", 8, millis = 130), ICE("ice", 6, millis = 160, cell = 32),
 }
 

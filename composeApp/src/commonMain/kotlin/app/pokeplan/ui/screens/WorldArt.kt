@@ -74,7 +74,7 @@ private val worldArt = BitmapCache(CacheBudget.WORLD_ART)
  * picture sits centred inside it.
  */
 @Composable
-internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boolean = false, top: Boolean = false) {
+internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boolean = false, top: Boolean = false, anchorY: Float? = null) {
     val image by produceState(worldArt[name], name) {
         // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = worldArt[name]
@@ -94,10 +94,12 @@ internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boo
         val srcH = if (h > size.height) (size.height / scale).toInt().coerceAtMost(picture.height) else picture.height
         val dstW = (srcW * scale).toInt()
         val dstH = (srcH * scale).toInt()
+        // Which part of a cropped picture shows: [anchorY] 0 the top, 1 the bottom, 0.5 the middle (else [top] picks the top or the bottom).
+        val ay = anchorY ?: if (top) 0f else 1f
         drawImage(
             picture,
-            srcOffset = IntOffset((picture.width - srcW) / 2, if (top) 0 else picture.height - srcH), srcSize = IntSize(srcW, srcH),
-            dstOffset = IntOffset(((size.width - dstW) / 2).toInt(), if (crop) (if (top) 0 else (size.height - dstH).toInt()) else ((size.height - dstH) / 2).toInt()), dstSize = IntSize(dstW, dstH),
+            srcOffset = IntOffset((picture.width - srcW) / 2, ((picture.height - srcH) * ay).toInt()), srcSize = IntSize(srcW, srcH),
+            dstOffset = IntOffset(((size.width - dstW) / 2).toInt(), if (crop) ((size.height - dstH) * ay).toInt() else ((size.height - dstH) / 2).toInt()), dstSize = IntSize(dstW, dstH),
             filterQuality = if (scale >= 1f) FilterQuality.None else FilterQuality.Medium,
         )
     }
@@ -151,6 +153,26 @@ internal fun WorldBanner(name: String, title: String, subtitle: String? = null, 
                 if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color(0xFFE3EEF5))
             }
         }
+    }
+}
+
+/** The game's picture of a dungeon's entrance (a "map:" name for [WorldPicture]: Red Rescue Team's `*_ENTRY` maps and Explorers of Sky's Beach Cave), or null where none is bundled. */
+internal fun dungeonEntrance(dungeonId: String): String? = when (dungeonId) {
+    "tiny-woods" -> "map:tiny-woods-entry"
+    "thunderwave-cave" -> "map:thunderwave-cave-entry"
+    "mt-steel" -> "map:mt-steel-entry"
+    "glacier-palace" -> "map:mt-freeze-entry"
+    "sky-tower" -> "map:sky-tower-entry"
+    "frosty-forest" -> "map:frosty-forest-entry"
+    "beach-cave" -> "map:sky-d01p11a"
+    else -> null
+}
+
+/** [name] (a ground map) as a framed strip showing the middle of the picture, where a dungeon's entrance is. */
+@Composable
+internal fun EntranceStrip(name: String, height: Dp = 140.dp) {
+    Box(Modifier.fillMaxWidth().height(height).border(Sizes.Line, Pixel.Ink).clipToBounds()) {
+        WorldPicture(name, Modifier.fillMaxSize(), crop = true, anchorY = 0.6f)
     }
 }
 
