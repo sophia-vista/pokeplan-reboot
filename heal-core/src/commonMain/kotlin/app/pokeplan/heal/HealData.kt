@@ -142,8 +142,14 @@ data class HealSettings(
     val huaweiRemindAt: LocalTime = LocalTime(21, 0),
     /** When Huawei Health was last read (0 when never); the reminder counts its days from here. */
     val huaweiLastReadMillis: Long = 0,
+    /**
+     * What Field Research paid for steps and imports, as `kind|day|n` marks ("steps|2026-11-14|3": the third step amount of that day; "import|2026-11-14|SLEEP": that family's read that
+     * day). Kept here, sealed with the other settings, and not in the shared save, so no day or count of steps sits in the clear; they survive deleting a record, so
+     * deleting and reading it again can not pay twice. Marks older than [MARK_DAYS] days are dropped.
+     */
+    val paidMarks: Set<String> = emptySet(),
 ) {
-    companion object { const val MAX_REMINDERS = 3 }
+    companion object { const val MAX_REMINDERS = 3; const val MARK_DAYS = 45 }
 }
 
 /**
@@ -158,6 +164,52 @@ data class HealData(
     val measurements: List<Measurement> = emptyList(),
     val goals: List<HealGoal> = emptyList(),
     val settings: HealSettings = HealSettings(),
+    /** Daily step counts (0.186.0), read from outside; one per day and provider. */
+    val steps: List<StepsRecord> = emptyList(),
+    /** Heart rate, resting heart rate, SpO2, skin temperature, Huawei's stress and sleep score (0.186.0), read from outside. */
+    val vitals: List<VitalReading> = emptyList(),
+)
+
+/**
+ * One day's step count, read from outside (Huawei Health's Health page or its step notification). There is one per [day] and provider: a later read of the same day
+ * replaces [steps] with the larger count (a day's steps only grow), keeping the record's id. [paidBuckets] is how many [HealRules.STEPS_PER_REWARD] amounts Field
+ * Research has paid for this day, set once and never lowered, so editing, deleting or reading again can not pay one twice. History only: HEAL never says whether a count is enough.
+ */
+@Serializable
+data class StepsRecord(
+    val id: String,
+    val day: LocalDate,
+    val steps: Int,
+    val updatedMillis: Long,
+    val paidBuckets: Int = 0,
+    val source: SourceKind = SourceKind.IMPORTED,
+    val provenance: Provenance? = null,
+)
+
+/**
+ * The readings HEAL keeps beside the body measurements, only ever read from outside and shown as the provider showed them: HEAL never calls one good or bad, high or low, and
+ * [STRESS] and [SLEEP_SCORE] are Huawei's own number and judgement, not HEAL's. [unit] is what a value is shown with.
+ */
+@Serializable
+enum class VitalType(val label: String, val unit: String) {
+    HEART_RATE("Heart rate", "bpm"),
+    RESTING_HEART_RATE("Resting heart rate", "bpm"),
+    SPO2("Blood oxygen (SpO2)", "%"),
+    SKIN_TEMPERATURE("Skin temperature", "°C"),
+    STRESS("Stress (Huawei's number)", ""),
+    SLEEP_SCORE("Sleep score (Huawei's)", ""),
+}
+
+/** One such reading. [atMillis] is when PokéLife read it (the Health page shows no time of its own); [day] is that local day, fixed when it was saved. */
+@Serializable
+data class VitalReading(
+    val id: String,
+    val type: VitalType,
+    val value: Double,
+    val atMillis: Long,
+    val day: LocalDate,
+    val source: SourceKind = SourceKind.IMPORTED,
+    val provenance: Provenance? = null,
 )
 
 /** The kinds of private record, each kept in its own table family (`heal_activity`, ...); the names are stable. */
@@ -167,4 +219,6 @@ enum class HealKinds(val field: String, val label: String) {
     SLEEP("sleep", "Sleep"),
     MEASUREMENTS("measurements", "Body measurements"),
     GOALS("goals", "Goals"),
+    STEPS("steps", "Steps"),
+    VITALS("vitals", "Heart, oxygen, temperature, stress and sleep score"),
 }

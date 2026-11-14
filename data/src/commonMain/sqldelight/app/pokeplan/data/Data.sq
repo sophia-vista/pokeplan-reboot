@@ -375,6 +375,22 @@ CREATE TABLE heal_state (
     json TEXT NOT NULL
 );
 
+-- HEAL's steps and readings (version 11, 0.186.0): a daily step count, and heart rate, resting heart rate, SpO2, skin temperature, Huawei's stress and sleep
+-- score, read from outside and kept as history only. Same shape and the same sealing as the other heal_* record tables.
+CREATE TABLE heal_steps (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE heal_vital (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
 -- MINT's own records (version 8, REP-014): the Mint save kept in tables from the start, one family per kind of private record (account, category,
 -- transaction, budget, bill, bill payment, reconciliation, review) so each can be read, exported or erased on its own. Same shape as HEAL's (key,
 -- position, day, and the record as JSON in `json`; every amount is an integer in minor units inside that JSON, never a floating-point number).

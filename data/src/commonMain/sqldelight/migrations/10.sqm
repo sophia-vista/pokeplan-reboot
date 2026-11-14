@@ -1,0 +1,15 @@
+-- Version 10 to 11: HEAL's steps and readings (see Data.sq). New in this version: nothing is moved, the tables start empty. They are sealed with the rest of HEAL
+-- as soon as they hold a row (HealTables writes every Heal row through the same cipher once Heal is sealed).
+CREATE TABLE heal_steps (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE heal_vital (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);

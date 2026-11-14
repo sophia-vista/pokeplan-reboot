@@ -182,7 +182,7 @@ class BaseTablesTest {
         val text = BackupBundle.encode(docs, DataStore.SCHEMA_VERSION, 7)
         val staged = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && staged.documents.keys == setOf("save", "home"))
-        assertEquals(10, DataStore.SCHEMA_VERSION)
+        assertEquals(11, DataStore.SCHEMA_VERSION)
         val bad = BackupBundle.encode(mapOf("save" to "{}"), 9, 7).replace("\"save\"", "\"household\"")
         assertTrue(BackupBundle.stage(bad, 9) is BackupBundle.Staged.Refused)
     }

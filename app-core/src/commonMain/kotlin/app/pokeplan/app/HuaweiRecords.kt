@@ -3,6 +3,7 @@ package app.pokeplan.app
 import app.pokeplan.heal.ActivityType
 import app.pokeplan.heal.Imported
 import app.pokeplan.heal.MeasureType
+import app.pokeplan.heal.VitalType
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -40,7 +41,62 @@ object HuaweiRecords {
             }
             records.forEach { out[it.id] = it }
         }
+        return out.values.toList() + steps(seen, zone) + vitals(seen, today, zone)
+    }
+
+    // --- steps and vitals (0.186.0) -----------------------------------------------------------------------------------------------
+
+    private fun dayOf(millis: Long, zone: TimeZone) = millis.toLocalDateTime(zone).date
+
+    /**
+     * A day's steps from the Health page's summary and from the step notification, each at the time it was captured. One record per day: the largest count seen
+     * wins (a day's steps only grow) and its capture time is kept. A notification only says "N steps" and the Health page "N steps" for the same day.
+     */
+    private fun steps(seen: HuaweiSeen, zone: TimeZone): List<Imported> {
+        val found = seen.screens.mapNotNull { s -> HuaweiHome.read(s).steps?.takeIf { it > 0 }?.let { it to s.atMillis } } + seen.notifications.mapNotNull { n -> n.steps?.takeIf { it > 0 }?.let { it to n.atMillis } }
+        return found.groupBy { dayOf(it.second, zone) }.map { (day, list) ->
+            val best = list.maxWith(compareBy({ it.first }, { it.second }))
+            Imported.Steps(HuaweiHealth.PROVIDER, APP, "steps:$day", best.first, best.second)
+        }
+    }
+
+    /**
+     * The readings the Health page shows (each card of the 14 November capture) and the sleep score on the Sleep page. The Health page has no time for a reading, so it is
+     * stamped with the capture and its day: a day keeps one resting heart rate, SpO2, skin temperature, stress and sleep score (a later read of the same day that shows
+     * another value updates it), and one heart rate per value (a re-read of the same bpm adds nothing). The Sleep page's score belongs to the night it shows, not today.
+     */
+    private fun vitals(seen: HuaweiSeen, today: LocalDate, zone: TimeZone): List<Imported> {
+        val out = LinkedHashMap<String, Imported.Vital>()
+        fun put(type: VitalType, value: Double, day: LocalDate, at: Long, key: String) {
+            val v = Imported.Vital(HuaweiHealth.PROVIDER, APP, key, type, value, at)
+            val old = out[key]
+            if (old == null || at >= old.atMillis) out[key] = v
+        }
+        for (s in seen.screens) {
+            val day = dayOf(s.atMillis, zone)
+            val h = HuaweiHome.read(s)
+            h.heartRate?.let { put(VitalType.HEART_RATE, it.toDouble(), day, s.atMillis, "heartrate:$day:$it") }
+            h.restingHeartRate?.let { put(VitalType.RESTING_HEART_RATE, it.toDouble(), day, s.atMillis, "restingheartrate:$day") }
+            h.spo2?.let { put(VitalType.SPO2, it.toDouble(), day, s.atMillis, "spo2:$day") }
+            h.skinTemperature?.let { put(VitalType.SKIN_TEMPERATURE, it, day, s.atMillis, "skintemperature:$day") }
+            h.stress?.let { put(VitalType.STRESS, it.toDouble(), day, s.atMillis, "stress:$day") }
+            h.sleepScore?.let { put(VitalType.SLEEP_SCORE, it.toDouble(), day, s.atMillis, "sleepscore:$day") }
+            if (s.title.startsWith("KnitSleepDetail")) sleepScore(s, today, zone)?.let { (night, score) ->
+                // Stamped with the capture, or noon of that morning if the capture is later: it lands on the night's own day.
+                put(VitalType.SLEEP_SCORE, score.toDouble(), night, minOf(s.atMillis, millis(night, LocalTime(12, 0), zone)), "sleepscore:$night")
+            }
+        }
         return out.values.toList()
+    }
+
+    /** The night a Sleep page shows (its date, "Today" or "Sat, Nov 14") and the score it gives, "## points"; null when either is missing. */
+    private fun sleepScore(s: ScreenCapture, today: LocalDate, zone: TimeZone): Pair<LocalDate, Int>? {
+        val dateText = s.nodes.firstOrNull { id(it) == "fitness_detail_time_date_tv" }?.text?.trim() ?: return null
+        val on = if (dateText.equals("Today", ignoreCase = true)) today else sleepDate.matchEntire(dateText)?.let { m ->
+            month(m.groupValues[2])?.let { latestYear(it, m.groupValues[3].toInt(), today, weekdays[m.groupValues[1].lowercase()]) }
+        } ?: return null
+        val score = s.nodes.firstOrNull { id(it) == "scoring_value" }?.text?.trim()?.toIntOrNull()?.takeIf { it in 1..100 } ?: return null
+        return on to score
     }
 
     // --- dates ----------------------------------------------------------------------------------------------------------------

@@ -50,7 +50,8 @@ class HealImportTest {
         val a = heal.data.activities.single()
         assertEquals(SourceKind.IMPORTED, a.source); assertEquals("com.huawei.health", a.provenance?.app); assertEquals("r1", a.provenance?.externalId); assertEquals(30, a.minutes)
         assertEquals(1, heal.data.sleep.size); assertEquals(1, heal.data.measurements.size); assertEquals(1, heal.data.hydration.size)
-        assertTrue(spy.events.isEmpty(), "an import is not a Field Research event, even for a session that ended 3 hours ago")
+        assertTrue(spy.events.all { it.kind == app.pokeplan.core.reward.HealKind.IMPORT }, "no record is paid for itself, even a session that ended 3 hours ago; only the read pays, by family, once a day")
+        assertEquals(app.pokeplan.heal.HealRules.IMPORTS_PAID_PER_DAY, spy.events.size, "four families brought something new; three a day are paid")
         assertTrue(heal.data.activities.none { it.paid } && heal.data.hydration.none { it.paid })
         assertEquals(now, heal.data.settings.healthLastSyncMillis)
     }

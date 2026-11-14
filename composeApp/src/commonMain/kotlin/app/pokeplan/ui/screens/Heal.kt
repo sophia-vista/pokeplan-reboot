@@ -41,6 +41,7 @@ import app.pokeplan.heal.HydrationEntry
 import app.pokeplan.heal.Measurement
 import app.pokeplan.heal.SleepRecord
 import app.pokeplan.heal.MeasureType
+import app.pokeplan.heal.VitalType
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
@@ -68,7 +69,7 @@ import kotlin.math.roundToInt
 /** Heal's screens (docs/pokelife `MODULES/HEAL.md`), the manual slice: activity, hydration, sleep, body measurements and optional goals. */
 enum class HealSection(val label: String, val icon: String) {
     ACTIVITY("Activity", "x-speed"), HYDRATION("Hydration", "fresh-water"), SLEEP("Sleep", "moon-stone"), BODY("Body", "scope-lens"),
-    GOALS("Goals", "star-piece"), CONNECTIONS("Connections", "town-map"), SETTINGS("Settings", "storage-key"),
+    READINGS("Readings", "hp-up"), GOALS("Goals", "star-piece"), CONNECTIONS("Connections", "town-map"), SETTINGS("Settings", "storage-key"),
 }
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
@@ -103,6 +104,7 @@ private fun HealPage(model: AppModel, section: HealSection?, openPokemon: (Strin
             HealSection.HYDRATION -> HydrationView(model)
             HealSection.SLEEP -> SleepView(model)
             HealSection.BODY -> BodyView(model)
+            HealSection.READINGS -> ReadingsView(model)
             HealSection.GOALS -> GoalsHealView(model)
             HealSection.CONNECTIONS -> HealConnectionsView(model)
             HealSection.SETTINGS -> HealSettingsView(model)
@@ -128,6 +130,7 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(HealSection.HYDRATION.name, HealSection.HYDRATION.icon, "Hydration", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.SLEEP.name, HealSection.SLEEP.icon, "Sleep", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.BODY.name, HealSection.BODY.icon, "Body", tint = ModuleAccent.HEAL.accent),
+                    MenuEntry(HealSection.READINGS.name, HealSection.READINGS.icon, "Readings", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.CONNECTIONS.name, HealSection.CONNECTIONS.icon, "Connections", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
@@ -556,6 +559,49 @@ private fun BodyView(model: AppModel) {
         }
         if (MeasureType.entries.any { t -> data.measurements.count { it.type == t } > shown }) ShowOlder { shown += PAGE }
     }
+}
+
+/**
+ * Daily steps and the readings Huawei Health showed (heart rate, resting heart rate, SpO2, skin temperature, Huawei's own stress number and sleep score), as history only
+ * (HEAL.md section 22B): the values as read, never called good, bad, high or low, and never edited; a wrong one is deleted.
+ */
+@Composable
+private fun ReadingsView(model: AppModel) {
+    val heal = model.heal
+    val data = model.healData
+    if (data.steps.isEmpty() && data.vitals.isEmpty()) { EmptyState("Nothing here", icon = HealSection.READINGS.icon); return }
+    var shown by remember { mutableStateOf(10) }
+    if (data.steps.isNotEmpty()) {
+        SectionLabel("Steps")
+        HistoryBox {
+            data.steps.sortedByDescending { it.day }.take(shown).forEachIndexed { i, r ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                HistoryRow(trail = {
+                    PixelButton("Delete", { val before = model.healData; heal.deleteSteps(r.id); model.offerUndo("Deleted: steps") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
+                }) {
+                    Text(r.steps.toString().reversed().chunked(3).joinToString(",").reversed() + " steps", style = MaterialTheme.typography.bodyLarge)
+                    Text(r.day.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+            }
+        }
+    }
+    VitalType.entries.forEach { t ->
+        val own = data.vitals.filter { it.type == t }
+        if (own.isEmpty()) return@forEach
+        SectionLabel(t.label)
+        HistoryBox {
+            own.sortedByDescending { it.atMillis }.take(shown).forEachIndexed { i, v ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                HistoryRow(trail = {
+                    PixelButton("Delete", { val before = model.healData; heal.deleteVital(v.id); model.offerUndo("Deleted: reading") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
+                }) {
+                    Text((HealRules.format(v.value) + " " + t.unit).trim(), style = MaterialTheme.typography.bodyLarge)
+                    Text(v.day.short() + " " + clockText(v.atMillis.localTime()), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+            }
+        }
+    }
+    if (data.steps.size > shown || VitalType.entries.any { t -> data.vitals.count { it.type == t } > shown }) ShowOlder { shown += PAGE }
 }
 
 /** One measurement with Edit for its value, unit and exact moment, and Delete. */

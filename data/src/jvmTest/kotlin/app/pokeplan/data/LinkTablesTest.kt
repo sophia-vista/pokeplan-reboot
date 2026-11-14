@@ -171,7 +171,7 @@ class LinkTablesTest {
         val text = BackupBundle.encode(docs, DataStore.SCHEMA_VERSION, 7)
         val staged = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && staged.documents.keys == setOf("save", "link"))
-        assertEquals(10, DataStore.SCHEMA_VERSION)
+        assertEquals(11, DataStore.SCHEMA_VERSION)
         val bad = BackupBundle.encode(mapOf("save" to "{}"), 10, 7).replace("\"save\"", "\"contacts\"")
         assertTrue(BackupBundle.stage(bad, 10) is BackupBundle.Staged.Refused)
     }

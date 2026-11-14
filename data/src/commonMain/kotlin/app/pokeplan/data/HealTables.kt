@@ -13,7 +13,7 @@ import kotlinx.serialization.json.contentOrNull
  * `ARCHITECTURE/DATA_AND_MIGRATIONS.md` section 7.4). HEAL is the first module that never had a document row: the app reads and writes it as one JSON document,
  * `HealData`, so the rules stay pure and tested, and this class is what stands under it, as [CareTables] stands under Care's.
  *
- * **One table family per private kind of record** (`heal_activity`, `heal_hydration`, `heal_sleep`, `heal_measurement`, `heal_goal`, plus
+ * **One table family per private kind of record** (`heal_activity`, `heal_hydration`, `heal_sleep`, `heal_measurement`, `heal_goal`, `heal_steps` and `heal_vital` (schema 11, 0.186.0), plus
  * `heal_state` for the settings), so a kind can be read ([readKind]), exported or erased ([erase]) on its own; erasing HEAL ([clear]) touches
  * nothing outside the `heal_*` tables: not the Pokémon, the Bag, the ledger, Plan or Care.
  *
@@ -231,6 +231,8 @@ class HealTables(private val store: DataStore) {
             Slice("sleep", "heal_sleep", "day"),
             Slice("measurements", "heal_measurement", "day"),
             Slice("goals", "heal_goal", "startDay"),
+            Slice("steps", "heal_steps", "day"),
+            Slice("vitals", "heal_vital", "day"),
         )
 
         /** The document fields that are a kind of private record, each with its own table family. */

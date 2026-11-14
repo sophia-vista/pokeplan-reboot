@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.186.0
+
+Heal keeps steps and the readings Huawei Health shows (owner, 14 November 2026, `MODULES/HEAL.md` 22B). Own PR: **schema 11** (`10.sqm`, `databases/11.db`; `heal_steps` and `heal_vital`, sealed like every Heal row). `RewardRules.VERSION` 25.
+
+- **New records, history only:** daily steps, heart rate, resting heart rate, SpO2, skin temperature, and Huawei's own stress number and sleep score. Read from the Health page, the Sleep page and the step notification (parsers written from the owner's probe capture); in Heal → Readings, export and erase. Never judged: no target, no good or bad.
+- **No duplicates:** one record per day (and bpm); the page and the notification, a repeated read, or the Sleep page and the insights line are one record; a larger step count or a new value for the day updates it. The preview says new, updated and already here.
+- **Rewards:** steps pay per 2,000 (at most 5 a day: 1 Rare Candy and a friendship step each); reading records in pays 1 Rare Candy per family of record that brought something new, once a day each, at most 3 a day, for Health Connect too. No reading pays for its value. Simulated in `docs/economy-report.md`.
+- **Reader:** also taps the Week tab of a page that has one, to capture it for the next probe (not parsed yet).
+- `HealthKind.unsupported` and HEAL.md's "Not read" list updated.
+
 ## 0.185.0
 
 Huawei Health records, nightly to weekly (REP-046, owner 14 November 2026, `INTEGRATIONS_AND_PRIVACY.md` 5.2.2). `RewardRules.VERSION` 24. Nothing stored on the phone needs a migration (new optional settings).

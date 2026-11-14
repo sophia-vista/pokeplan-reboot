@@ -61,6 +61,11 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                 home.weight?.let { StatusLine("Weight", "${app.pokeplan.heal.HealRules.format(it)} ${home.weightUnit}") }
                 home.heartRate?.let { StatusLine("Heart rate", "$it bpm") }
                 home.exerciseKm?.let { StatusLine("Exercise", "${app.pokeplan.heal.HealRules.format(it)} km") }
+                home.restingHeartRate?.let { StatusLine("Resting heart rate", "$it bpm") }
+                home.spo2?.let { StatusLine("SpO2", "$it%") }
+                home.skinTemperature?.let { StatusLine("Skin temperature", "${app.pokeplan.heal.HealRules.format(it)} °C") }
+                home.stress?.let { StatusLine("Stress", it.toString()) }
+                home.sleepScore?.let { StatusLine("Sleep score", it.toString()) }
                 if (!state.screenReading && !state.canSwitchItself) {
                     PixelButton("Turn on screen reading", { reader.openScreenReadingSettings() }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                     Text("Greyed out? App info → ⋮ → Allow restricted settings", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
