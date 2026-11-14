@@ -59,7 +59,7 @@ jobs:
           GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: pokeplan
           GRADLE_BUILD_ACTION_CACHE_KEY_JOB: gradle
       - name: Unit tests (JVM) and the web build
-        run: ./gradlew jvmTest compileKotlinWasmJs :composeApp:compileKotlinJvm --no-daemon
+        run: ./gradlew jvmTest compileKotlinWasmJs :composeApp:compileKotlinJvm -Pscreenshots --no-daemon
       # Compiling the Android app costs about as much as packaging it (most of it is compiling the shared modules a second time), so
       # it is done only when the PR can break it: it touches the Android app, an Android source set or the Gradle setup, or has the
       # "android" or "apk" label. Changes to shared code are already compiled for the JVM and the web above; every merge to main is

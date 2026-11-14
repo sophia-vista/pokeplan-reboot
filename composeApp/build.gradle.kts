@@ -148,3 +148,11 @@ compose.desktop {
         mainClass = "app.pokeplan.ui.MainKt"
     }
 }
+
+// ScreenshotTest renders every screen (about 12 of the full gate's 15 minutes), so `jvmTest` skips it unless asked: name the screens a
+// change touches (`--tests "*ScreenshotTest.collection*"`, which runs them as before) or pass `-Pscreenshots` to render them all (CI does).
+val allScreenshots = providers.gradleProperty("screenshots").isPresent
+val namedTests = gradle.startParameter.taskRequests.flatMap { it.args }.any { it == "--tests" || it.startsWith("--tests=") }
+tasks.withType<Test>().configureEach {
+    if (name == "jvmTest" && !allScreenshots && !namedTests) filter.excludeTestsMatching("app.pokeplan.ui.ScreenshotTest")
+}
