@@ -74,7 +74,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                     }
                 }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = !state.walking, compact = true, loading = state.walking)
                 if (state.screenReading && !state.walking) PixelButton("Turn off screen reading", { reader.turnOff() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                Text("Banking apps won't open while screen reading is on. It turns itself off after each read.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text("Off after each read, for banking apps", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
             if (!seen.isEmpty) {
                 StatusLine("Seen, not saved", "${count(seen.screens.size, "page")}, ${count(seen.notifications.size, "notification")}")
