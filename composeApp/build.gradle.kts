@@ -66,7 +66,7 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     // Sounds the app has no use for yet stay in assets/sfx but are not bundled (reminder.ogg is the notification's res/raw copy).
     from(rootProject.file("assets/sfx")) { include("*.ogg"); exclude("pokemon-center.ogg", "drawer-open.ogg", "drawer-close.ogg", "reminder.ogg", "timer-done.ogg"); into("files/sfx") }
     from(rootProject.file("assets/sky-sfx")) { include("jingle-mission-success.ogg", "jingle-decent-sentry-duty.ogg", "jingle-team-charm-jingle.ogg"); into("files/sfx") }
-    from(rootProject.file("assets/status")) { include("*.png"); exclude("sheet.png", "sheet2.png", "skull.png"); into("files/status") }
+    from(rootProject.file("assets/status")) { include("*.png"); exclude("sheet.png", "sheet2.png"); into("files/status") }
     from(rootProject.file("assets/weather")) { include("*.png", "ramps.tsv"); into("files/weather") }
     from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }
     from(rootProject.file("assets/fonts")) { include("pmd-dialogue.*"); into("files/fonts") }

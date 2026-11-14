@@ -97,4 +97,44 @@ class DungeonFloorTest {
         val walls = TownMap(3, 3, Array(9) { TownCell.WALL })
         assertEquals(46, Autotile.column(walls, 1, 1))
     }
+
+    @Test
+    fun noPokemonCanStartOrBeSentWhereItCouldNeverWalkOut() {
+        for (seed in 0L until 40L) {
+            val f = floor(seed)
+            for (m in listOf(Mover.WALKER, Mover.WADER, Mover.GHOST)) {
+                val cells = f.restingCells(m)
+                assertTrue(cells.isNotEmpty(), "somewhere to rest (seed $seed, $m)")
+                // Every one of them has a way to the stairs, and back.
+                for (c in cells.filterIndexed { i, _ -> i % 7 == 0 }) {
+                    assertNotNull(f.path(c, f.stairs, m), "a way out of $c (seed $seed, $m)")
+                    assertNotNull(f.path(f.stairs, c, m), "a way to $c (seed $seed, $m)")
+                }
+            }
+        }
+    }
+
+    @Test
+    fun aSpotIsChosenAwayFromOthersWhenThereIsRoom() {
+        val f = floor(5)
+        val geo = FloorGeometry.of(f, 1, f.cols * 24f, f.rows * 24f)
+        val taken = setOf(f.stairs.let { Cell(it.x + 2, it.y) })
+        val rest = f.restingCells(Mover.WALKER).first()
+        val got = assertNotNull(geo.nearestResting(rest, Mover.WALKER, setOf(rest)))
+        assertTrue(maxOf(kotlin.math.abs(got.x - rest.x), kotlin.math.abs(got.y - rest.y)) >= 2, "not beside $rest: $got")
+        // Starting squares keep apart too.
+        val random = kotlin.random.Random(3)
+        val placed = ArrayList<Cell>()
+        repeat(12) { placed += geo.restingCell(random, Mover.WALKER, apart = placed) }
+        for (i in placed.indices) for (j in i + 1 until placed.size)
+            assertTrue(maxOf(kotlin.math.abs(placed[i].x - placed[j].x), kotlin.math.abs(placed[i].y - placed[j].y)) >= 2, "${placed[i]} and ${placed[j]} overlap")
+        assertTrue(taken.isNotEmpty())
+    }
+
+    @Test
+    fun floorsHideTheStatusTrapsAndTheyWearOff() {
+        val kinds = (0L until 80L).flatMap { floor(it).traps.values }.toSet()
+        assertTrue(FloorTrap.POISON in kinds && FloorTrap.SPIN in kinds, "poison and confusion traps turn up: $kinds")
+        Condition.entries.forEach { assertTrue(it.seconds in 10..120 && it.pace in 0.3f..1f, "$it wears off in a while") }
+    }
 }

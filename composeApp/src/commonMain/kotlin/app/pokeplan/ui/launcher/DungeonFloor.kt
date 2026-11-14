@@ -10,10 +10,11 @@ data class Cell(val x: Int, val y: Int)
 
 /**
  * The gentle traps of Explorers of Sky a floor can hide (LAUNCHER.md 4.5), by their index in `assets/tiles/floor-traps.png` (the game's
- * own trap numbers). What each does is for show only: see [Town].
+ * own trap numbers). What each does is for show: a warp, a spin that leaves the Pokémon confused, sleep, a gust, slowness, a trip or poison, each
+ * for a while and then it wears off (see [Town] and [Condition]); nothing is ever lost.
  */
 enum class FloorTrap(val tile: Int) {
-    WARP(6), SPIN(8), SLUMBER(9), GUST(7), SLOW(10), TRIP(22),
+    WARP(6), SPIN(8), SLUMBER(9), GUST(7), SLOW(10), TRIP(22), POISON(12),
 
     /** Always shown, as in the games. */
     WONDER(17),
@@ -84,8 +85,37 @@ class DungeonFloor(
     fun canRest(c: Cell, mover: Mover): Boolean = canStand(c, mover) && !isSoft(c) && c != stairs && c !in traps &&
         (map.at(c.x, c.y) != TownCell.WALL || isFloorNear(c))
 
-    /** Every square [mover] could stop on ([canRest]). */
-    fun restingCells(mover: Mover): List<Cell> = (0 until rows).flatMap { y -> (0 until cols).map { Cell(it, y) } }.filter { canRest(it, mover) }
+    /**
+     * Every square [mover] could stop on ([canRest]) and walk to from the stairs: a pocket it cannot get out of (a lake in the rock for a
+     * swimmer, a hollow in a wall for a ghost) is no place to start, to be warped to or to head for, or the Pokémon there would be stuck.
+     */
+    fun restingCells(mover: Mover): List<Cell> {
+        val region = region(mover)
+        return (0 until rows).flatMap { y -> (0 until cols).map { Cell(it, y) } }.filter { canRest(it, mover) && it in region }
+    }
+
+    /** Whether [mover] may stop on [c] and can walk from there to the rest of the floor. */
+    fun canRoam(c: Cell, mover: Mover): Boolean = canRest(c, mover) && c in region(mover)
+
+    private val regions = HashMap<Mover, Set<Cell>>()
+
+    /** Every square [mover] can walk to from the stairs, by the same steps as [path] (eight directions, no cutting a corner). */
+    fun region(mover: Mover): Set<Cell> = regions.getOrPut(mover) {
+        val seen = HashSet<Cell>()
+        val queue = ArrayDeque<Cell>()
+        seen += stairs; queue += stairs
+        while (queue.isNotEmpty()) {
+            val c = queue.removeFirst()
+            for (dy in -1..1) for (dx in -1..1) {
+                if (dx == 0 && dy == 0) continue
+                val next = Cell(c.x + dx, c.y + dy)
+                if (!canStand(next, mover) || next in seen) continue
+                if (dx != 0 && dy != 0 && (!canStand(Cell(c.x + dx, c.y), mover) || !canStand(Cell(c.x, c.y + dy), mover))) continue
+                seen += next; queue += next
+            }
+        }
+        seen
+    }
 
     private fun isFloorNear(c: Cell) = (-1..1).any { dy -> (-1..1).any { dx -> isFloor(Cell(c.x + dx, c.y + dy)) } }
 
