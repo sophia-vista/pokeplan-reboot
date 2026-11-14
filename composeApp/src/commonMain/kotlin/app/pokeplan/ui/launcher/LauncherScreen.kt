@@ -381,7 +381,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     ),
                 ) {
                     Town(
-                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, activity = prefs.activity, mood = mood, chirps = prefs.chirps && !saver, weather = when (prefs.weather) { Weather.LIVE -> forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR; Weather.GUARDIAN -> guardianWeather(shownGuardian(model.data.player.pokemon, model.data.player.moduleGuardians.values, model.data.player.buddy?.id, rotation)); else -> prefs.weather }, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = atHome, gather = gather, rotation = rotation,
+                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, activity = prefs.activity, mood = mood, chirps = prefs.chirps && !saver, weather = when (prefs.weather) { Weather.LIVE -> forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR; Weather.GUARDIAN -> guardianWeather(shownGuardian(model.data.player.pokemon, model.data.player.moduleGuardians.values, model.data.player.buddy?.id, rotation)); else -> prefs.weather }, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = atHome, gather = gather, rotation = rotation, layoutRoll = prefs.layoutRollOn(model.store.today.toEpochDays().toLong()),
                         modifier = Modifier.layout { measurable, constraints ->
                             // As many screens wide as there are pages, placed from the left edge and slid by the page (a required size would be centred instead).
                             val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * pageCount, constraints.maxHeight))
@@ -861,6 +861,8 @@ internal fun LauncherSettings(
                 if (prefs.walking) PmdVolume("How lively", "pa-sliders", prefs.activity * 10, pixel, min = 1, valueText = { TownBehavior.activityLabel(it) }, onChange = { v -> onPrefs(prefs.withActivity(v / 10)) }, onDone = {})
                 PmdMenuLine("Pokémon chirp: ${onOff(prefs.chirps)}", pixel, icon = "pa-heart") { onPrefs(prefs.withChirps(!prefs.chirps)) }
                 PmdMenuLine("Weather: ${prefs.weather.label}", pixel, icon = "pa-cloud") { onPrefs(prefs.nextWeather()) }
+                // A dungeon town is a new floor each day; this lays out another one for today (the day's finds stay the same, LAUNCHER.md 4.5).
+                if (TownScenes.isDungeon(prefs.scene)) PmdMenuLine("New floor layout", pixel, icon = "pa-reload") { model.effect(Sfx.STAIRS_DOWN); onPrefs(prefs.withNewLayout(model.store.today.toEpochDays().toLong())) }
             }
             Section("Home screen", "home") {
                 PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, icon = "pa-grid-2x2-2", onClick = onWidgets)

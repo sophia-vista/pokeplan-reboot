@@ -1544,6 +1544,18 @@ class ScreenshotTest {
         render("launcher-night", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, phone = fakeHost) }
     }
 
+    /** The town as a dungeon floor (LAUNCHER.md 4.5): rooms and corridors from Explorers of Sky's full autotile set, and a Red Rescue Team floor with only the 3 x 3 block. */
+    @Test
+    fun launcherFloor() {
+        val store = started()
+        listOf(1, 4, 7, 39, 52, 54, 94, 133, 143, 150, 151, 25, 175, 183).forEach { store.grantPokemon(it, "test") }
+        val model = AppModel(store)
+        val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera").withGridMode(true)
+        render("launcher-floor", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.copy(scene = "crystal-cave"), {}, isDefault = true, phone = fakeHost) }
+        render("launcher-floor-new", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.copy(scene = "ex-090").withNewLayout(store.today.toEpochDays().toLong()), {}, isDefault = true, phone = fakeHost) }
+        render("launcher-floor-rescue", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.copy(scene = "rr-14"), {}, isDefault = true, phone = fakeHost) }
+    }
+
     /** The launcher's home page on the widget grid (the preview), beside the stacked one: the same widgets, in cells. */
     @Test
     fun launcherGrid() {
