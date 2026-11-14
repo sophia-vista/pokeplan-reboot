@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.189.0
+
+The town's Pokémon pick up the day's finds (owner, 14 November 2026; `FEATURES/LAUNCHER.md` 4.5).
+
+- A Pokémon that walks onto a find on the dungeon floor picks it up into the Bag, as a team does in the games: a hop, a twinkle, the find rising with its name, and the pick-up sound when it is on Home. Now and then one heads for the nearest find it has spotted. Tapping a find still works; it is the same three finds a day, so nothing pays more.
+
 ## 0.188.1
 
 Fixes to the launcher's dungeon floor from phone testing (owner, 14 November 2026; `FEATURES/LAUNCHER.md` 4.5).

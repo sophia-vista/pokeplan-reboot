@@ -185,12 +185,19 @@ internal fun Town(
         val pickups = remember { FloorPickups() }
         // Reading the counters makes a collected find disappear at once.
         val finds = if (geo == null) emptyList() else remember(data.counters, day) { model.store.townFinds() }
-        fun collect(i: Int) {
-            val g = geo ?: return
-            val find = finds.getOrNull(i) ?: return
-            if (model.store.collectTownFind(i) == null) return
-            model.effect(Sfx.ITEM_GET)
+        /** Today's find [i] into the Bag: tapped ([heard] always) or picked up by a Pokémon walking onto it (heard only on Home). */
+        fun collect(i: Int, heard: Boolean = true): Boolean {
+            val g = geo ?: return false
+            val find = finds.getOrNull(i) ?: return false
+            if (model.store.collectTownFind(i) == null) return false
+            if (heard) model.effect(Sfx.ITEM_GET)
             pickups.add(g.floor.finds[i], find)
+            return true
+        }
+        // The finds still lying on the floor, by square, for the Pokémon to pick up as they walk over them (as a team does in the games).
+        SideEffect {
+            life.finds = if (geo == null) emptyMap() else finds.withIndex().filter { it.value != null }.mapNotNull { (i, _) -> geo.floor.finds.getOrNull(i)?.let { it to i } }.toMap()
+            life.pickUp = { i, heard -> collect(i, heard) }
         }
         if (geo != null) {
             LaunchedEffect(geo.floor) { life.revealed.clear() }
@@ -459,7 +466,14 @@ private fun Resident(
         val way = withContext(Dispatchers.Default) { g.floor.path(from, goal, mover, known) } ?: return
         val hit = way.drop(1).indexOfFirst { it in g.floor.traps }
         val walked = if (hit >= 0) way.take(hit + 2) else way
-        for (c in g.floor.turns(walked).drop(1)) stepTo(g, g.spotOf(c), speed)
+        // A find on the way is a stop of its own: it picks it up as it steps onto it, not at the end of the run.
+        val stops = g.floor.turns(walked).toSet() + walked.filter { it in life.finds }
+        for (c in walked.drop(1).filter { it in stops }) {
+            stepTo(g, g.spotOf(c), speed)
+            life.finds[c]?.let { i ->
+                if (life.pickUp(i, interactive && g.spotOf(c).x.let { it >= home && it < home + 1 })) { walk = null; hopping = true; hopKey++; feel(StatusKind.TWINKLE, 900); delay(500) }
+            }
+        }
         walk = null
         if (hit >= 0) spring(g, walked.last(), g.floor.traps.getValue(walked.last()), walked)
     }
@@ -511,9 +525,10 @@ private fun Resident(
                 Beat.Graze -> { grazing = true; hopKey++; delay(2_800) }
                 Beat.Hop -> { hopping = true; hopKey++; delay(1_200) }
                 is Beat.Roam -> if (geo != null) repeat(beat.legs) { leg ->
-                    // On a floor: the same wandering, but along the floor to the nearest square it can stop on.
+                    // On a floor: the same wandering, but along the floor to the nearest square it can stop on; now and then it heads for a find it has spotted.
                     val next = TownBehavior.leg(random, spot.value, heading, anchor, screens, guardian, beat.short, livelyNow)
-                    roamFloor(geo, next.to)
+                    val find = life.finds.keys.minByOrNull { c -> abs(c.x - geo.cellOf(spot.value).x) + abs(c.y - geo.cellOf(spot.value).y) }
+                    if (find != null && !guardian && !beat.short && random.nextInt(100) < FIND_SEEK_PERCENT) roamFloor(geo, geo.spotOf(find)) else roamFloor(geo, next.to)
                     heading = next.heading
                     if (leg < beat.legs - 1) { if (random.nextInt(4) == 0) facingLeft = !facingLeft; delay(400L + random.nextLong(1_000)) }
                 } else repeat(beat.legs) { leg ->
@@ -568,6 +583,9 @@ private fun Resident(
 /** How far above its feet an icon sits, in art pixels (a Pokémon is about this tall); a bigger icon sits a little higher. */
 private const val ICON_RISE = 22
 
+/** How often (in a hundred legs) a Pokémon on a floor heads for the nearest find instead of wandering. *(tune)* */
+private const val FIND_SEEK_PERCENT = 15
+
 /** Where the night starts for the town: the darkness at which the sleepy ones lie down. */
 internal const val NIGHT = 0.5f
 
@@ -588,6 +606,10 @@ internal class TownLife {
     val pets = mutableMapOf<String, () -> Unit>()
     /** Called with the id of a Pokémon that was tapped: the ones next to it may notice (set by the town). */
     var ripple: (String) -> Unit = {}
+
+    /** Today's finds still on the floor, by square (the index is the find's), and how one is picked up: true when it was (set by the town). */
+    var finds: Map<Cell, Int> = emptyMap()
+    var pickUp: (Int, Boolean) -> Boolean = { _, _ -> false }
 
     /** The traps found on today's floor (a Pokémon stepped on them): shown from then on. */
     val revealed = mutableStateMapOf<Cell, Boolean>()
