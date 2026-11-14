@@ -78,7 +78,7 @@ Buildings and scenery should remain visually legible without permanent labels. L
 
 ### 4.2 Continuous pages and viewport
 
-Multiple home pages form one continuous environment. Horizontal page movement shifts the viewport through a finite scene or connected scene regions. Background layers maintain spatial continuity; Pokémon retain logical world positions; widgets and folders remain anchored to logical positions. A bounded parallax effect is optional and must be disabled by Reduced Motion. Infinite procedural generation is out of scope.
+Multiple home pages form one continuous environment. Horizontal page movement shifts the viewport through a finite scene or connected scene regions. Background layers maintain spatial continuity; Pokémon retain logical world positions; widgets and folders remain anchored to logical positions. A bounded parallax effect is optional and must be disabled by Reduced Motion. Infinite procedural generation is out of scope; a town of a dungeon's tiles is one finite floor laid out each day from the game's own tiles (section 4.5).
 
 ### 4.3 Environment presets and atmosphere
 
@@ -95,6 +95,19 @@ The town's weather imitates the original game's ground-screen weather (pret/pmd-
 - **Rain:** the 61-frame sheet (240 x 160) is the dungeon's rain effect (16), a shower that builds up (15 opaque pixels at frame 0, 266 at frame 41, 23 at frame 60) and fades; it plays frames 0 to 60 round and round at 70 ms. The game's real frame durations and loop points are not decoded.
 - **Colour ramps:** for dungeon-tile towns each tile colour goes through the weather's own ramp (`out5 = ramp[channel] * brightness / 256 & 0x1F` on the 8-bit value `v5 * 8 + 7`), a lookup and not a tint (a straight line is off by up to 31 of 255). Clear is the identity. What each does to black: sunny lifts to 15; sandstorm to 63 with blue crushed (white becomes 255, 255, 207: yellow-brown); cloudy to 31, 31, 63 and white to 231, 231, 255; rain sinks red and green and lifts blue (0, 0, 39); hail 0, 15, 31; fog flattens to grey (black 87, white 239); snow 0, 23, 39 and white 231.
 - **Open:** decode the rain (effect 16) and sandstorm (239) effect animations; the game takes about a second to move to a new ramp while the town changes at once; ground kinds 0 to 8 (map-specific layers), the dungeon's sunny and fog weathers and weather transitions are not used.
+
+### 4.5 The dungeon floor (owner, 14 November 2026; REP-052)
+
+A town of a dungeon's tiles is a Mystery Dungeon floor that the app lays out from the game's own tiles: the code arranges real tiles, it never draws any (`DungeonFloor` in `launcher/DungeonFloor.kt`). Scenes (whole pictures) keep their ground band.
+
+- **Layout:** rooms joined by corridors, walls everywhere else, as on the games' floors, across every page as one floor. Each page is a grid of sectors with a room in most of them; corridors join neighbouring sectors so every floor square reaches every other. Some rooms hold a pond and some wall holds water, from the tileset's own water. The floor's edges are wall. Rooms are placed where widgets are not, when there is room.
+- **A new floor each day:** the seed is the tileset and the local date, so the floor is the same all day; Launcher settings → Town → New layout gives another one for the same day (the finds stay the same, see below).
+- **Shapes:** with a tileset's full autotile set (`assets/tiles/ex-NNN-auto.png`: the 47 neighbourhoods a square can have, the game's three variants of each, cut by `tools/tiles/extract_sky_tiles.py`) walls and water take any shape, with ragged room edges and irregular ponds. A tileset with only the 3 x 3 block (the Red Rescue Team ones, until their full sets are cut) keeps rectangles and walls at least two squares thick.
+- **Walking:** a Pokémon walks only on the floor, along a path over its squares. Water types may wade into water; Flying types may cross walls. Widgets are soft walls: nobody stops, rests or meets under a widget, and a path goes round one when it can; it passes behind only where there is no other way (a widget row as wide as the screen).
+- **Stairs:** each floor has the game's stairs. A Guardian that arrives comes up them; one that leaves goes down them.
+- **Traps (cosmetic only):** a few of the games' gentle traps lie hidden on the floor: Warp, Spin, Slumber, Gust, Slow and Trip. A Pokémon that steps on one reveals it (it stays shown for the day) and the trap does its thing for show: it warps the Pokémon to another room, spins it, sends it to sleep for a moment, blows it back a few squares, slows it, trips it. A Wonder Tile is always shown and gives a twinkle. No reward, no harm, nothing in Reduce motion. Tiles from `assets/tiles/floor-traps.png` (`tools/tiles/extract_sky_floor.py`).
+- **Finds:** `TownFinds.PER_DAY` (3) things lie on the floor each day: berries, vitamins or a little Poké (`docs/economy.md`, `TownFinds`). They come from the date, not the layout, so a new layout moves them and never makes more. A tap picks one up into the Bag (or adds its Poké), with the game's pick-up sound and the reward toast; it is gone until tomorrow. Never under a widget. Pictures from `assets/tiles/floor-items.png`, the game's own floor pictures for those items.
+- **Sky:** none yet. Outdoor tilesets would have a sky strip above the top wall only once a matching Mystery Dungeon sky is found among real assets (REP-052 open item); a sky from another game would not match.
 
 ## 5. Main navigation and app access
 
@@ -344,7 +357,7 @@ No cloud account, remote server or internet connection is required to render the
 
 Read canonical species/form data, owned Pokémon instances, module-party references where explicitly requested, global buddy selection, favorites, display eligibility and asset references from `FEATURES/POKEMON_ECOSYSTEM.md`. Use owned instance IDs to identify individuals; species IDs alone cannot distinguish duplicates.
 
-The launcher must not create owned Pokémon, award XP, change levels/evolution, deliver rewards, modify party/buddy selection independently or maintain affection. It only projects the shared data into the scene.
+The launcher must not create owned Pokémon, award XP, change levels/evolution, deliver rewards (the one exception is the dungeon floor's daily finds, section 4.5, owner 14 November 2026), modify party/buddy selection independently or maintain affection. It only projects the shared data into the scene.
 
 ### 15.2 Module projections and actions
 
