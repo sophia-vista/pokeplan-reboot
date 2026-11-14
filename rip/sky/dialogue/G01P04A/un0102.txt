@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_GUREGGURU	Talk	I wait for good news!
+NPC_GUREGGURU	Talk	Meh-heh-heh. Vacation, huh?
+NPC_GUREGGURU	Talk	I'm not jealous at all.
+NPC_GUREGGURU	Talk	Because...

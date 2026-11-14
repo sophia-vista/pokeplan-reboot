@@ -1,0 +1,27 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [4, 7] ) {
+        @label_0;
+        supervision_Station(8);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 5] ) {
+        supervision_Station(6);
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_HEIGANI {
+    switch ( sector() ) {
+        case 8:
+            SetMoveRange(Position<'m0', 29, 18>, 7, 7);
+            JumpCommon(CORO_MOVE_TYPE1);
+        case 6:
+            SetMoveRange(Position<'m1', 29, 18>, 7, 7);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

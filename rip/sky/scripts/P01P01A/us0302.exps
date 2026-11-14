@@ -1,0 +1,8 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_NPC_MANAFI>(2);
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    supervision_ExecuteCommon(CORO_EVENT_S03_08);
+    end;
+}

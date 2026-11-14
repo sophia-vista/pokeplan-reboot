@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Talk	Everyone: AND...THREE! SMILES GO FOR MILES!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+PLAYER_BIPPA	Talk	Just a little farther to Jirachi!

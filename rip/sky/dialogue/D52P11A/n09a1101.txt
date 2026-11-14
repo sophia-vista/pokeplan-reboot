@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Argh... We didn't do so well...
+PLAYER_FUTURE	Talk	We should turn back for now.
+PLAYER_FUTURE	Talk	Once we're prepared, let's go!

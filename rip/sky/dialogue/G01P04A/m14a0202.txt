@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	I'm sorry.
+NPC_YONOWAARU	Talk	I sincerely apologize.
+NPC_PERAPPU	Talk	Everyone: HOORAY!

@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_YUKUSHII	Talk	That is...a Time Gear.
+ATTENDANT1	Talk	What?! Really?! A Time Gear?!
+ATTENDANT1	Talk	What?! That's a Time Gear?!
+NPC_YUKUSHII	Talk	Yes.
+NPC_YUKUSHII	Talk	I guard the Time Gear.
+NPC_YUKUSHII	Talk	It's the sole reason I'm here.

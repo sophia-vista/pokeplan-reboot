@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Welcome back! ♪
+ATTENDANT1	Talk	But this is the base camp!
+ATTENDANT1	Talk	Uh... No, nothing.
+NPC_PERAPPU	Talk	Oh?! Nothing?!
+NPC_PERAPPU	Talk	Get going!

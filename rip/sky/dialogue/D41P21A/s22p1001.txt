@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_KURESERIA	Talk	So true.
+NPC_KURESERIA	Talk	We mustn't give up now.

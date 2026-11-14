@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_GOOSUTO	Talk	GUOOOOhhhhhh!!
+NPC_GOOSUTO	Talk	GUUUUOOOOOOOooooooohhhhhhhh!
+PLAYER_KIMAWARI	Talk	.........
+PLAYER_KIMAWARI	Talk	Oh my gosh! It's so bright!
+PLAYER_KIMAWARI	Talk	I-I can't see a thing!
+PLAYER_KIMAWARI	Talk	Oh my gosh!
+PLAYER_KIMAWARI	Talk	Wh...what?!
+PLAYER_KIMAWARI	Talk	Why is he suddenly fine?!
+NPC_GOOSUTO	Talk	GAH HA HA HA HA HA HA HA!!
+PLAYER_KIMAWARI	Talk	I-invincible?
+PLAYER_KIMAWARI	Talk	Oh...
+PLAYER_KIMAWARI	Talk	... (That reminds me...)

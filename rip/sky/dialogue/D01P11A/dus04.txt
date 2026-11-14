@@ -1,0 +1,44 @@
+speaker	kind	line
+NPC_MANKII	SwitchMenu	Wait & Movement Test
+NPC_MANKII	SwitchMenu	Hang on...
+NPC_MANKII	Talk	What, you're holding out?!
+NPC_MANKII	Talk	What, you're holding out on me?!
+NPC_MANKII	Talk	What should I do...
+NPC_MANKII	Talk	Come on, gimme a Chestnut!
+NPC_MANKII	Talk	Do the Mankey Dance.
+NPC_MANKII	SwitchMenu	No problem.
+NPC_MANKII	SwitchMenu	MovePosition-Related
+NPC_MANKII	Notice	Sometimes, I turn 'round! ♪
+NPC_MANKII	Notice	But I always run, run, run! ♪♪
+NPC_MANKII	Notice	But with a look back... ♪
+NPC_MANKII	Notice	And sometimes slow... ♪
+NPC_MANKII	Notice	Let's kick it up to high speed. ♪
+NPC_MANKII	Notice	No walls can hold me back. ♪
+NPC_MANKII	Notice	Thank you. ♪
+NPC_MANKII	Notice	Move2Position-Related
+NPC_MANKII	Notice	I sometimes go back. ♪
+NPC_MANKII	Notice	Never will I look back. ♪
+NPC_MANKII	Notice	Sometimes slow... ♪
+NPC_MANKII	Notice	But not a look back. ♪
+NPC_MANKII	Notice	Now let's go high speed. ♪
+NPC_MANKII	Notice	Thank you. ♪
+NPC_MANKII	Notice	Move3Position-Related
+NPC_MANKII	Notice	I sometimes go back. ♪
+NPC_MANKII	Notice	Never will I look back. ♪
+NPC_MANKII	Notice	Sometimes slow... ♪
+NPC_MANKII	Notice	But not a look back. ♪
+NPC_MANKII	Notice	Now let's go high speed. ♪
+NPC_MANKII	Notice	Thank you. ♪
+NPC_MANKII	Notice	************
+NPC_MANKII	Notice	Cancel
+NPC_MANKII	SwitchMenu	MovePosition-Related
+NPC_MANKII	SwitchMenu	Move2Position-Related
+NPC_MANKII	SwitchMenu	Move3Position-Related
+NPC_MANKII	SwitchMenu	************
+NPC_MANKII	SwitchMenu	Cancel
+NPC_MANKII	SwitchMenu	I don't like pain...
+NPC_MANKII	Notice	You can't have one!
+NPC_MANKII	Talk	Hah?! You won't give me one?!
+NPC_MANKII	Notice	I'm out of here!
+NPC_MANKII	Notice	You can't have one!
+NPC_MANKII	Talk	Hah?! You canceled? Get lost!

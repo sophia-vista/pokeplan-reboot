@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Guildmaster...Guildmaster?
+NPC_PUKURIN	Talk	Hiya!
+ATTENDANT1	Talk	An expedition?
+ATTENDANT1	Talk	Really?!
+ATTENDANT1	Talk	R-really?!
+NPC_PERAPPU	Talk	Now, now!
+NPC_PUKURIN	Talk	I'm sure you two can do it!
+NPC_PUKURIN	Talk	Try hard!
+ATTENDANT1	Talk	Yup!
+ATTENDANT1	Talk	Yes!
+ATTENDANT1	Talk	Yep!

@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_MANAFI	Talk	House?
+NPC_MANAFI	Talk	House, house! ♪
+NPC_MANAFI	Talk	Goomi! Goomi!
+ATTENDANT1	Talk	Oh, OK! You want a Blue Gummi!
+ATTENDANT1	Talk	All right!
+ATTENDANT1	Talk	OK!

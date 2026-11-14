@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	Back where we started...
+NPC_SAANAITO	Talk	We're right back here again...
+NPC_CHAAREMU	Talk	...What did you expect?
+PLAYER_CHARMS	Talk	Huh? That was interesting.
+NPC_CHAAREMU	Talk	This isn't interesting at all!

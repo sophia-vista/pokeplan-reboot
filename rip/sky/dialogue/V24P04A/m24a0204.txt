@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	It's true!
+ATTENDANT1	Talk	Lapras! Wh-what is that?!
+NPC_RAPURASU	Talk	The edge of the gap in time.

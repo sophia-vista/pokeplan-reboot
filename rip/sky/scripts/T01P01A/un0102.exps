@@ -1,0 +1,25 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] || scn($SCENARIO_SIDE) >= [40, 3] || scn($SCENARIO_SIDE) >= [40, 2] ) {
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PONIITA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 [CS:N]Wigglytuff[CR]'s Guild is famous for
+                hard training.
+            """,
+        });
+        message_Talk({
+            english="""
+                 But it seems like it's really
+                worth it, so do your best.
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

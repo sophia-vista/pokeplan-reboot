@@ -1,0 +1,10 @@
+speaker	kind	line
+-	Talk	Why did you come here?!
+-	Talk	This is our territory!
+-	Talk	All right... Let's take them out!
+ATTENDANT1	Talk	Who are you?! Come out!
+ATTENDANT1	Talk	Who are you?! Show yourself!
+-	Talk	Ha ha ha!
+-	Talk	My name is Manectric!
+ATTENDANT1	Talk	Waaaah!
+NPC_RAIBORUTO	Talk	Now, prepare to fight!

@@ -1,0 +1,6 @@
+speaker	kind	line
+-	Notice	Loop Scroll Test
+-	Notice	Scroll Test
+-	Notice	Loop Scroll Test 2
+-	Notice	Loop Scroll Test 3A
+-	Notice	Loop Scroll Test 3B

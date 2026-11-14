@@ -1,0 +1,6 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_TALK_SUB);
+    JumpCommon(CORO_TALK_UNIT);
+}

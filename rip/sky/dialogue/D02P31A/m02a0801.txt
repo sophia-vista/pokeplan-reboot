@@ -1,0 +1,10 @@
+speaker	kind	line
+ATTENDANT1	Explanation	Hey! There it is!
+ATTENDANT1	Explanation	Oh! Look at that!
+ATTENDANT1	Explanation	Oh! Over there!
+ATTENDANT1	Explanation	This has to be Spoink's pearl!
+ATTENDANT1	Explanation	This must be Spoink's pearl!
+ATTENDANT1	Explanation	This has to be Spoink's pearl!
+ATTENDANT1	Explanation	Let's take it back right now!
+ATTENDANT1	Explanation	Let's hurry back with it!
+ATTENDANT1	Explanation	Quick! Let's take it back!

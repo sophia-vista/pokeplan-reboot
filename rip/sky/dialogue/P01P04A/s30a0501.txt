@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_SOONANO	Talk	I'll mark it on your map for you!
+NPC_SOONANO	Talk	Please keep recycling!

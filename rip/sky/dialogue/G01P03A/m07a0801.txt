@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Whaaaat? You failed?!
+NPC_PERAPPU	Talk	Seriously! What am I to do?!
+ATTENDANT1	Talk	Urk...
+NPC_PERAPPU	Talk	You leave me no choice.
+ATTENDANT1	Talk	What?! B-but...
+ATTENDANT1	Talk	Ugh...
+NPC_PERAPPU	Talk	Waaaaaaah!
+NPC_PERAPPU	Talk	That's an order!

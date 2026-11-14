@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_JUPETTA	Talk	Hey! Igglybuff!
+NPC_JUPETTA	Talk	W-were you OK after that?!
+PLAYER_PUPURIN	Talk	Yep. ♪
+NPC_SUKORUPI	Talk	I can't believe you got away!
+PLAYER_PUPURIN	Talk	I made a friend. ♪
+NPC_JUPETTA	Talk	F-friend?
+PLAYER_PUPURIN	Talk	Yep--a friend. ♪

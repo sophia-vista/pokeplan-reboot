@@ -1,0 +1,10 @@
+speaker	kind	line
+-	Talk	...Sorry to make you WAIT.
+-	Talk	But you don't SEEM to be bad...
+-	Talk	OK, good enough! ENTER!
+ATTENDANT1	Talk	Yikes!
+ATTENDANT1	Talk	Yipes!
+ATTENDANT1	Talk	I'm so nervous! So jittery!
+ATTENDANT1	Talk	Anyway, let's go.
+ATTENDANT1	Talk	OK, let's go in.
+ATTENDANT1	Talk	Anyway, let's go.

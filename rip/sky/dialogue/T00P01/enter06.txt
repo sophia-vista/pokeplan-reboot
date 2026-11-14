@@ -1,0 +1,19 @@
+speaker	kind	line
+-	Notice	Which function will you access?
+-	SwitchMenu	Job Bulletin Board
+-	Menu	Outlaw Notice Board
+-	Menu	Exploration Results
+-	Menu	Team Controls
+-	Notice	Which function will you access?
+-	SwitchMenu	Initialize Team
+-	Menu	Team Returns from Map
+-	Menu	Team Defeated in Map
+-	Menu	Inspect Team
+-	Notice	Hero & Partner Only
+-	Notice	Partner & Hero Only
+-	Notice	Hero & Partner Present
+-	Notice	Solo Player Character
+-	Notice	Other Teams
+-	Notice	Default Team Setup 1
+-	Notice	Default Team Setup 2
+-	Notice	Status Update

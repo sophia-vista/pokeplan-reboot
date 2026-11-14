@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_TATSUBEI	Talk	Ha! Finally caught you!
+NPC_YUKIKABURI	Talk	Ow-ow! Let go of me!
+NPC_TATSUBEI	Talk	You of all people should know!
+NPC_GURAIGAA	Talk	Not here! The map's not here!
+NPC_GURAIGAA	Talk	Bagon! He doesn't have the map!
+NPC_TATSUBEI	Talk	WHAAAAT?!
+NPC_TATSUBEI	Talk	Y-YOU! Where'd you stash it?!
+NPC_YUKIKABURI	Talk	I... I don't know...
+NPC_GURAIGAA	Talk	LIAR!
+NPC_YUKIKABURI	Talk	OUCH!
+NPC_YUKIKABURI	Talk	Ooooh... No matter what...
+NPC_TATSUBEI	Talk	ARGH!

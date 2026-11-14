@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ahem! So wrapping up...
+NPC_BIPPA	Talk	By golly, yes!
+NPC_KIMAWARI	Talk	I'm all ready to go!
+NPC_PERAPPU	Talk	Good!
+NPC_PERAPPU	Talk	Let's get right to it, everyone!
+NPC_PERAPPU	Talk	Everyone: HOORAY!

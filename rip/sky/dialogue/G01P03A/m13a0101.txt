@@ -1,0 +1,55 @@
+speaker	kind	line
+NPC_BIPPA	Talk	Huff-puff...
+NPC_BIPPA	Talk	Come on! Hurry!
+NPC_BIPPA	Talk	Everyone's here, yup yup!
+ATTENDANT1	Talk	Sorry, everyone!
+ATTENDANT1	Talk	So, what's up?
+ATTENDANT1	Talk	What's going on?
+NPC_PERAPPU	Talk	Another Time Gear was stolen!
+NPC_BIPPA	Talk	What?! Not another one!
+ATTENDANT1	Talk	From where now...?
+NPC_PERAPPU	Talk	W-well, it...
+NPC_BIPPA	Talk	Uh...what's the problem?
+ATTENDANT1	Talk	Wait! It wasn't the one from...
+NPC_KIMAWARI	Talk	Yes...it was!
+NPC_BIPPA	Talk	Huh?!
+ATTENDANT1	Talk	But, how?!
+ATTENDANT1	Talk	B-but, how?!
+ATTENDANT1	Talk	Only we knew about that, right?
+ATTENDANT1	Talk	So, what happened?!
+ATTENDANT1	Talk	So how could this happen?!
+NPC_PERAPPU	Talk	........................
+NPC_DOGOOMU	Talk	WHAT?! That was uncalled for!
+ATTENDANT1	Talk	Urk! Sorry! You guys are right...
+NPC_PUKURIN	Talk	I apologize, great Dusknoir.
+ATTENDANT1	Talk	Uxie?!
+ATTENDANT1	Talk	Is Uxie all right?!
+NPC_PERAPPU	Talk	Yes. Uxie is fine.
+ATTENDANT1	Talk	Whew! Glad to hear that!
+ATTENDANT1	Talk	Whew! I'm glad to hear that!
+NPC_PERAPPU	Talk	See for yourselves.
+PLAYER	Talk	(Grovyle...)
+PLAYER	Talk	(So this is the Pokémon...)
+PLAYER	Talk	(...the thief who's stealing the Time Gears.)
+NPC_PERAPPU	Talk	This wanted poster just arrived.
+ATTENDANT1	Talk	We promised Uxie...
+ATTENDANT1	Talk	But then this happens...
+NPC_KIMAWARI	Talk	We didn't leak the secret, but...
+NPC_PUKURIN	Talk	Urrrr...
+NPC_CHIRIIN	Talk	Hey! Guildmaster...!
+NPC_PUKURIN	Talk	Urrr... Urrrrrr... Urrrrrrr...!
+NPC_PERAPPU	Talk	G-G-Guildmaster!
+NPC_PUKURIN	Talk	Urrrrrrrrr...!!!
+NPC_PUKURIN	Talk	YOOM...TAH!
+NPC_DOGOOMU	Talk	WAH!
+NPC_PERAPPU	Talk	Squawk! Squawk!
+NPC_PUKURIN	Talk	Everyone! We'll catch Grovyle!
+NPC_PUKURIN	Talk	Chatot, if you will!
+NPC_PERAPPU	Talk	Y-yes!
+NPC_PERAPPU	Talk	OK, everyone!
+NPC_DOGOOMU	Talk	It goes without saying!
+NPC_YONOWAARU	Talk	Wigglytuff...
+NPC_PUKURIN	Talk	Th-thank you, great Dusknoir!
+NPC_HEIGANI	Talk	Hey, hey! We're honored!
+NPC_YONOWAARU	Talk	No, no! It's my honor entirely.
+NPC_PERAPPU	Talk	Everyone: HOORAY!

@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	...That's the current situation!
+NPC_PERAPPU	Talk	Try to be natural! ♪
+NPC_PERAPPU	Talk	That is all!
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Talk	Oh, you two!
+NPC_PERAPPU	Talk	That will do! ♪

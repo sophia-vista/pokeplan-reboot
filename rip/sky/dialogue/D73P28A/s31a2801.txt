@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_SHEIMI	Talk	The 8th Station Clearing! Hurry!
+NPC_SHEIMI	Talk	Ampharos!
+NPC_DENRYUU	Talk	Indeed? Did something happen?
+NPC_SHEIMI	Talk	At the 7th Station Clearing!
+NPC_SHEIMI	Talk	Yes!
+NPC_DENRYUU	Talk	You wait for me here.
+NPC_SHEIMI	Talk	We're counting on you!

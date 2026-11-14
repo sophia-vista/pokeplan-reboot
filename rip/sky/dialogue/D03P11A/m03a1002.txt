@@ -1,0 +1,18 @@
+speaker	kind	line
+NPC_JIBAKOIRU	Talk	ZZZT! Thanks to you...
+NPC_JIBAKOIRU	Talk	ZZZT! Now come with us! ZZZT!
+NPC_SURIIPU	Talk	Awww...
+NPC_MARIRU	Talk	Azurill!
+NPC_RURIRI	Talk	Marill!
+NPC_RURIRI	Talk	Waaaaah!
+NPC_RURIRI	Talk	Marill! It was so scary!
+NPC_MARIRU	Talk	You OK, Azurill? Are you hurt?
+NPC_MARIRU	Talk	Really?
+NPC_MARIRU	Talk	That's a relief!
+NPC_MARIRU	Talk	Oh, Azurill...Azurill...
+ATTENDANT1	Talk	I'm really glad for you guys.
+ATTENDANT1	Talk	I'm glad you kids are happy!
+ATTENDANT1	Talk	I'm truly happy for you two!
+NPC_MARIRU	Talk	Come on, Azurill. You too.
+NPC_RURIRI	Talk	Yup...
+NPC_MARIRU	Talk	Really... Really, thank you!

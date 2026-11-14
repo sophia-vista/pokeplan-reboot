@@ -1,0 +1,13 @@
+speaker	kind	line
+TALK_SUB	SwitchMenu	Duskull Bank
+TALK_SUB	Menu	Kangaskhan Storage
+TALK_SUB	Menu	Kecleon Shop
+TALK_SUB	Menu	Kecleon Wares
+TALK_SUB	Menu	Name
+TALK_SUB	Menu	Croagunk Swap Shop
+TALK_SUB	Menu	Evolution
+TALK_SUB	Menu	Egg (Day Care)
+TALK_SUB	Menu	Drink
+TALK_SUB	Menu	Recycle
+TALK_SUB	Menu	Prize Drawing
+TALK_SUB	Talk	I see...

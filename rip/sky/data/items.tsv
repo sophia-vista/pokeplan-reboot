@@ -1,0 +1,1401 @@
+index	name	action_name	ai_flag_1	ai_flag_2	ai_flag_3	buy_price	category	is_in_td	is_valid	item_id	move_id	palette	range_max	range_min	sell_price	sprite
+0	Nothing	0	False	False	False	0	2	False	False	0	0	0	0	0	0	2
+1	Stick	1	True	False	False	2	0	True	True	1	0	1	6	4	1	0
+2	Iron Thorn	1	True	False	False	4	0	True	True	2	0	2	5	4	2	0
+3	Silver Spike	1	True	False	False	6	0	True	True	3	0	11	5	4	3	0
+4	Gold Fang	1	True	False	False	8	0	True	True	4	0	3	5	4	4	0
+5	Cacnea Spike	1	True	False	False	10	0	True	True	5	0	10	5	4	5	0
+6	Corsola Twig	1	True	False	False	12	0	True	True	6	0	4	5	4	6	0
+7	Gravelerock	2	True	False	False	50	1	True	True	7	0	1	5	3	5	1
+8	Geo Pebble	2	True	False	False	25	1	True	True	8	0	11	6	5	2	1
+9	Gold Thorn	1	False	False	False	100	0	True	True	9	0	3	7	4	10	59
+10	Rare Fossil	1	False	False	False	3000	1	True	True	10	0	12	7	5	300	55
+11	[M:D1]$$$	1	True	False	False	1	0	True	False	11	0	1	7	5	1	0
+12	[M:D1]$$$	1	True	False	False	1	0	True	False	12	0	1	7	5	1	0
+13	No-Slip Cap	1	False	False	False	8000	4	False	True	13	0	4	7	5	550	4
+14	Y-Ray Specs	1	True	False	False	9000	4	False	True	14	0	2	7	5	900	13
+15	Gaggle Specs	1	True	False	False	3500	4	False	True	15	0	2	7	5	350	13
+16	Mobile Scarf	12	False	False	False	8500	4	True	True	16	0	4	0	0	300	4
+17	Heal Ribbon	3	False	False	False	6500	4	True	True	17	0	4	0	0	350	4
+18	Twist Band	12	False	False	False	3500	4	True	True	18	0	4	0	0	400	4
+19	Scope Lens	11	False	False	False	7500	4	True	True	19	0	3	0	0	450	13
+20	Patsy Band	12	True	False	False	1500	4	True	True	20	0	4	0	0	400	4
+21	No-Stick Cap	12	False	False	False	8000	4	True	True	21	0	4	0	0	550	4
+22	Pierce Band	12	False	False	False	8000	4	True	True	22	0	4	0	0	600	4
+23	Joy Ribbon	3	False	False	False	3500	4	True	True	23	0	4	0	0	350	4
+24	X-Ray Specs	11	False	False	False	9000	4	True	True	24	0	2	0	0	900	13
+25	Persim Band	12	False	False	False	4500	4	True	True	25	0	4	0	0	450	4
+26	Power Band	12	False	False	False	2500	4	True	True	26	0	4	0	0	250	4
+27	Pecha Scarf	12	False	False	False	3500	4	True	True	27	0	4	0	0	350	4
+28	Insomniscope	11	False	False	False	3500	4	True	True	28	0	12	0	0	350	13
+29	Warp Scarf	12	False	False	False	1200	4	True	True	29	0	4	0	0	120	4
+30	Tight Belt	12	False	False	False	8000	4	True	True	30	0	4	0	0	800	4
+31	Sneak Scarf	12	False	False	False	8000	4	True	True	31	0	4	0	0	800	4
+32	Gold Ribbon	3	False	False	False	4000	4	True	True	32	0	4	0	0	2000	4
+33	Goggle Specs	11	False	False	False	3500	4	True	True	33	0	2	0	0	350	13
+34	Diet Ribbon	3	True	False	False	4500	4	True	True	34	0	4	0	0	450	4
+35	Trap Scarf	12	False	False	False	8000	4	True	True	35	0	4	0	0	800	4
+36	Racket Band	12	False	False	False	3000	4	True	True	36	0	4	0	0	300	4
+37	Def. Scarf	12	False	False	False	2500	4	True	True	37	0	4	0	0	250	4
+38	Stamina Band	3	False	False	False	3500	4	True	True	38	0	4	0	0	350	4
+39	Plain Ribbon	3	False	False	False	100	4	True	True	39	0	4	0	0	10	4
+40	Special Band	12	False	False	False	3000	4	True	True	40	0	4	0	0	300	4
+41	Zinc Band	12	False	False	False	3000	4	True	True	41	0	4	0	0	300	4
+42	Detect Band	12	False	False	False	7500	4	True	True	42	0	4	0	0	750	4
+43	Space Globe	11	False	False	False	9000	4	False	True	43	0	11	0	0	1	15
+44	Dodge Scarf	12	False	False	False	5000	4	True	True	44	0	4	0	0	500	4
+45	Bounce Band	3	False	False	False	3500	4	True	True	45	0	4	0	0	350	4
+46	Curve Band	12	False	False	False	2500	4	True	True	46	0	4	0	0	250	4
+47	Whiff Specs	11	True	False	False	2500	4	True	True	47	0	2	0	0	250	13
+48	No-Aim Scope	11	True	False	False	2000	4	True	True	48	0	12	0	0	200	13
+49	Lockon Specs	11	False	False	False	4000	4	True	True	49	0	2	0	0	400	13
+50	Munch Belt	12	False	False	False	2500	4	True	True	50	0	4	0	0	250	4
+51	Pass Scarf	12	False	False	False	6500	4	True	True	51	0	4	0	0	650	4
+52	Weather Band	12	False	False	False	5000	4	True	True	52	0	4	0	0	500	4
+53	Friend Bow	3	False	False	False	6500	4	True	True	53	0	4	0	0	650	4
+54	Beauty Scarf	12	False	False	False	1000	4	True	True	54	0	10	0	0	1	4
+55	Sun Ribbon	3	False	False	False	1000	4	True	True	55	0	3	0	0	1	4
+56	Lunar Ribbon	3	False	False	False	1000	4	True	True	56	0	0	0	0	1	4
+57	Golden Mask	3	False	False	False	5100	4	True	True	57	0	5	0	0	510	60
+58	Amber Tear	3	False	False	False	5200	4	True	True	58	0	2	0	0	510	35
+59	Icy Flute	3	False	False	False	5300	4	True	True	59	0	3	0	0	510	7
+60	Fiery Drum	3	False	False	False	5100	4	True	True	60	0	3	0	0	510	7
+61	Terra Cymbal	3	False	False	False	5100	4	True	True	61	0	3	0	0	510	7
+62	Aqua-Monica	3	False	False	False	5100	4	True	True	62	0	3	0	0	510	7
+63	Rock Horn	3	False	False	False	5100	4	True	True	63	0	3	0	0	510	7
+64	Grass Cornet	3	False	False	False	5100	4	True	True	64	0	3	0	0	510	7
+65	Sky Melodica	3	False	False	False	5100	4	True	True	65	0	3	0	0	510	7
+66	Miracle Chest	3	False	False	False	8000	4	True	True	66	0	4	0	0	500	10
+67	Wonder Chest	3	False	False	False	8000	4	True	True	67	0	3	0	0	500	10
+68	IQ Booster	3	False	False	False	5100	4	False	True	68	0	5	0	0	510	10
+69	Heal Seed	4	False	True	True	250	2	True	True	69	0	13	0	0	25	14
+70	Oran Berry	4	False	True	True	50	2	True	True	70	0	0	0	0	5	2
+71	Sitrus Berry	4	False	True	True	2500	2	True	True	71	0	3	0	0	250	2
+72	Eyedrop Seed	4	False	True	True	60	2	True	True	72	0	13	0	0	6	14
+73	Reviver Seed	4	False	False	False	800	2	True	True	73	0	13	0	0	80	14
+74	Blinker Seed	4	True	False	False	50	2	True	True	74	0	13	0	0	5	14
+75	Doom Seed	4	True	False	False	20	2	True	True	75	0	13	0	0	2	14
+76	X-Eye Seed	4	True	False	False	60	2	True	True	76	0	13	0	0	6	14
+77	Life Seed	4	False	True	True	3000	2	True	True	77	0	13	0	0	300	14
+78	Rawst Berry	4	False	True	True	90	2	True	True	78	0	12	0	0	9	2
+79	Hunger Seed	4	True	False	False	50	2	True	True	79	0	13	0	0	5	14
+80	Quick Seed	4	False	True	True	30	2	True	True	80	0	13	0	0	15	14
+81	Pecha Berry	4	False	True	True	60	2	True	True	81	0	4	0	0	6	2
+82	Cheri Berry	4	False	True	True	80	2	True	True	82	0	6	0	0	8	2
+83	Totter Seed	4	True	False	False	60	2	True	True	83	0	13	0	0	30	14
+84	Sleep Seed	4	True	False	False	70	2	True	True	84	0	13	0	0	35	14
+85	Plain Seed	4	False	False	False	6	2	True	True	85	0	13	0	0	1	14
+86	Warp Seed	4	True	False	False	20	2	True	True	86	0	13	0	0	10	14
+87	Blast Seed	4	True	False	False	30	2	True	True	87	0	13	0	0	15	14
+88	Ginseng	5	False	True	False	6000	2	True	True	88	0	1	0	0	600	12
+89	Joy Seed	4	False	True	True	6500	2	True	True	89	0	13	0	0	650	14
+90	Chesto Berry	4	False	True	True	30	2	True	True	90	0	2	0	0	3	2
+91	Stun Seed	4	True	False	False	50	2	True	True	91	0	13	0	0	5	14
+92	Gabite Scale	4	False	True	True	50	2	True	True	92	0	5	0	0	1	25
+93	Golden Seed	4	False	True	False	2500	2	True	True	93	0	3	0	0	100	14
+94	Vile Seed	4	True	False	False	350	2	True	True	94	0	13	0	0	50	14
+95	Pure Seed	4	False	False	False	150	2	True	True	95	0	13	0	0	20	14
+96	Violent Seed	4	False	True	True	150	2	True	True	96	0	13	0	0	20	14
+97	Vanish Seed	4	False	True	True	1000	2	True	True	97	0	13	0	0	100	14
+98	[M:D1]$$$	4	False	False	False	1	2	True	False	98	0	13	0	0	1	14
+99	Max Elixir	5	False	True	True	250	2	True	True	99	0	1	0	0	25	12
+100	Protein	5	False	True	True	4000	2	True	True	100	0	1	0	0	400	12
+101	Calcium	5	False	True	True	4000	2	True	True	101	0	1	0	0	400	12
+102	Iron	5	False	True	True	4500	2	True	True	102	0	1	0	0	450	12
+103	Nectar	5	False	True	False	100	2	True	True	103	0	1	0	0	1	12
+104	Dropeye Seed	4	True	False	False	60	2	False	True	104	0	13	0	0	6	14
+105	Reviser Seed	4	False	False	False	800	2	False	True	105	0	13	0	0	80	14
+106	Slip Seed	4	False	True	True	70	2	False	True	106	0	13	0	0	35	14
+107	Via Seed	4	True	False	False	350	2	False	True	107	0	13	0	0	50	14
+108	Zinc	5	False	True	True	4500	2	True	True	108	0	1	0	0	450	12
+109	Apple	4	False	True	True	25	3	True	True	109	0	6	0	0	1	3
+110	Big Apple	4	False	True	True	50	3	True	True	110	0	6	0	0	1	3
+111	Grimy Food	4	True	False	False	5	3	True	True	111	0	7	0	0	1	1
+112	Huge Apple	4	False	True	True	450	3	True	True	112	0	6	0	0	10	3
+113	[M:D1]$$$	4	False	True	True	5	3	True	False	113	0	0	0	0	1	4
+114	[M:D1]$$$	6	False	False	False	3	3	True	False	114	0	1	0	0	1	11
+115	Golden Apple	4	False	True	False	5000	3	True	True	115	0	3	0	0	1	3
+116	Mix Elixir	5	False	True	True	250	2	False	True	116	0	1	0	0	25	12
+117	Oren Berry	4	True	False	False	50	2	False	True	117	0	0	0	0	5	2
+118	Dough Seed	4	False	True	True	20	2	False	True	118	0	13	0	0	2	14
+119	White Gummi	4	False	True	False	800	3	True	True	119	0	0	0	0	50	30
+120	Red Gummi	4	False	True	False	800	3	True	True	120	0	0	0	0	50	17
+121	Blue Gummi	4	False	True	False	800	3	True	True	121	0	4	0	0	50	17
+122	Grass Gummi	4	False	True	False	800	3	True	True	122	0	6	0	0	50	17
+123	Yellow Gummi	4	False	True	False	800	3	True	True	123	0	2	0	0	50	17
+124	Clear Gummi	4	False	True	False	800	3	True	True	124	0	0	0	0	50	30
+125	Orange Gummi	4	False	True	False	800	3	True	True	125	0	7	0	0	50	17
+126	Pink Gummi	4	False	True	False	800	3	True	True	126	0	1	0	0	50	17
+127	Brown Gummi	4	False	True	False	800	3	True	True	127	0	11	0	0	50	17
+128	Sky Gummi	4	False	True	False	800	3	True	True	128	0	3	0	0	50	17
+129	Gold Gummi	4	False	True	False	800	3	True	True	129	0	2	0	0	50	17
+130	Green Gummi	4	False	True	False	800	3	True	True	130	0	9	0	0	50	17
+131	Gray Gummi	4	False	True	False	800	3	True	True	131	0	10	0	0	50	17
+132	Purple Gummi	4	False	True	False	800	3	True	True	132	0	13	0	0	50	17
+133	Royal Gummi	4	False	True	False	800	3	True	True	133	0	12	0	0	50	17
+134	Black Gummi	4	False	True	False	800	3	True	True	134	0	11	0	0	50	30
+135	Silver Gummi	4	False	True	False	800	3	True	True	135	0	10	0	0	50	30
+136	Wonder Gummi	4	False	True	False	3500	3	True	True	136	0	15	0	0	50	17
+137	Gravelyrock	4	False	True	True	50	3	False	True	137	0	1	0	0	5	1
+138	[M:D1]$$$	4	False	True	False	50	3	True	False	138	0	11	0	0	5	17
+139	Upgrade	8	False	False	False	1000	8	True	True	139	0	12	0	0	1	5
+140	King's Rock	8	False	False	False	1000	8	True	True	140	0	0	0	0	1	5
+141	Thunderstone	8	False	False	False	1000	8	True	True	141	0	5	0	0	1	55
+142	Deepseascale	8	False	False	False	1000	8	True	True	142	0	2	0	0	1	20
+143	Deepseatooth	8	False	False	False	1000	8	True	True	143	0	2	0	0	1	5
+144	Sun Stone	8	False	False	False	1000	8	True	True	144	0	15	0	0	1	55
+145	Moon Stone	8	False	False	False	1000	8	True	True	145	0	0	0	0	1	55
+146	Fire Stone	8	False	False	False	1000	8	True	True	146	0	4	0	0	1	55
+147	Water Stone	8	False	False	False	1000	8	True	True	147	0	6	0	0	1	55
+148	Metal Coat	8	False	False	False	1000	8	True	True	148	0	11	0	0	1	5
+149	Leaf Stone	8	False	False	False	1000	8	True	True	149	0	1	0	0	1	55
+150	Dragon Scale	8	False	False	False	1000	8	True	True	150	0	10	0	0	1	20
+151	Link Cable	8	False	False	False	1000	8	True	True	151	0	10	0	0	1	5
+152	Dubious Disc	8	False	False	False	1000	8	True	True	152	0	4	1	1	1	5
+153	Protector	8	False	False	False	1000	8	True	True	153	0	1	2	2	1	5
+154	Reaper Cloth	8	False	False	False	1000	8	True	True	154	0	7	3	3	1	5
+155	Razor Fang	8	False	False	False	1000	8	True	True	155	0	8	3	3	1	5
+156	Razor Claw	8	False	False	False	1000	8	True	True	156	0	0	3	3	1	5
+157	Electirizer	8	False	False	False	1000	8	True	True	157	0	3	4	4	1	5
+158	Magmarizer	8	False	False	False	1000	8	True	True	158	0	6	5	5	1	5
+159	Oval Stone	8	False	False	False	1000	8	True	True	159	0	7	6	6	1	55
+160	Dawn Stone	8	False	False	False	1000	8	True	True	160	0	8	7	7	1	55
+161	Shiny Stone	8	False	False	False	1000	8	True	True	161	0	9	8	8	1	55
+162	Dusk Stone	8	False	False	False	1000	8	True	True	162	0	11	9	9	1	55
+163	Coronet Rock	8	False	False	False	1000	8	True	True	163	0	4	10	10	1	61
+164	Mossy Rock	8	False	False	False	1000	8	True	True	164	0	1	11	11	1	61
+165	Frozen Rock	8	False	False	False	1000	8	True	True	165	0	7	12	12	1	61
+166	[M:D1]$$$	8	False	False	False	1000	8	False	False	166	0	0	13	13	1	10
+167	Gone Pebble	8	False	True	True	25	8	False	True	167	0	11	14	14	2	1
+168	Wander Gummi	8	True	False	False	3500	8	False	True	168	0	15	15	15	60	17
+169	Prize Ticket	8	False	False	False	1000	8	False	True	169	0	1	16	16	1	27
+170	Silver Ticket	8	False	False	False	1000	8	False	True	170	0	10	17	17	1	27
+171	Gold Ticket	8	False	False	False	1000	8	False	True	171	0	5	18	18	1	27
+172	Prism Ticket	8	False	False	False	1000	8	False	True	172	0	4	19	19	1	27
+173	Mystery Part	7	False	False	False	5000	8	True	True	173	0	3	0	0	1	18
+174	Secret Slab	8	False	False	False	5000	8	True	True	174	0	5	0	0	1	46
+175	[M:D1]$$$	8	False	False	False	5000	8	True	False	175	0	11	0	0	1	4
+176	[M:D1]$$$	8	False	False	False	5000	8	True	False	176	0	6	0	0	1	4
+177	[M:D1]$$$	8	False	False	False	5000	8	True	False	177	0	5	0	0	1	5
+178	Wonder Egg	10	False	False	False	8000	4	True	True	178	0	3	0	0	500	62
+179	Gracidea	10	False	True	False	8000	8	False	True	179	0	6	0	0	1	51
+180	Sky Gift	10	False	False	False	8000	8	True	True	180	0	0	0	0	1	5
+181	[M:D1]$$$	10	False	False	False	8000	8	True	False	181	0	0	0	0	1	10
+182	Key	8	False	False	False	8000	8	True	True	182	0	11	0	0	1	16
+183	Poké	7	False	False	False	0	6	True	True	183	0	3	0	0	0	6
+184	[M:D1]$$$	8	False	False	False	1	8	True	False	184	0	5	0	0	1	16
+185	[M:D1]$$$	8	False	False	False	1000	8	True	False	185	0	3	0	0	1	16
+186	Lost Loot	8	False	False	False	9999	8	True	True	186	0	3	0	0	4000	5
+187	[M:I0]Used TM	9	False	False	False	1	11	True	True	187	0	2	0	0	1	8
+188	[M:I0]Focus Punch	9	False	False	False	6000	5	True	True	188	75	0	0	0	250	8
+189	[M:I0]Dragon Claw	9	False	False	False	8000	5	True	True	189	208	0	0	0	250	8
+190	[M:I0]Water Pulse	9	False	False	False	7500	5	True	True	190	310	0	0	0	250	8
+191	[M:I0]Calm Mind	9	False	False	False	8000	5	True	True	191	319	0	0	0	250	8
+192	[M:I0]Roar	9	False	False	False	6000	5	True	True	192	284	0	0	0	250	8
+193	[M:I0]Toxic	9	False	False	False	6000	5	True	True	193	197	0	0	0	250	8
+194	[M:I0]Hail	9	False	False	False	6000	5	True	False	194	14	0	0	0	250	8
+195	[M:I0]Bulk Up	13	False	False	False	8000	5	True	True	195	265	0	0	0	250	8
+196	[M:I0]Bullet Seed	9	False	False	False	6000	5	True	True	196	163	0	0	0	250	8
+197	[M:I0]Hidden Power	9	False	False	False	6500	5	True	True	197	324	0	0	0	250	8
+198	[M:D1]$$$	9	False	False	False	6500	5	True	False	198	223	0	0	0	250	8
+199	[M:I0]Taunt	9	False	False	False	6000	5	True	True	199	172	0	0	0	250	8
+200	[M:I0]Ice Beam	13	False	False	False	8000	5	True	True	200	345	0	0	0	250	8
+201	[M:I0]Blizzard	9	False	False	False	9000	5	True	True	201	270	0	0	0	250	8
+202	[M:I0]Hyper Beam	9	False	False	False	9000	5	True	True	202	242	0	0	0	250	8
+203	[M:I0]Light Screen	9	False	False	False	6500	5	True	True	203	259	0	0	0	250	8
+204	[M:I0]Protect	9	False	False	False	6000	5	True	True	204	301	0	0	0	250	8
+205	[M:D1]$$$	9	False	False	False	6000	5	True	False	205	12	0	0	0	250	8
+206	[M:I0]Giga Drain	9	False	False	False	7000	5	True	True	206	76	0	0	0	250	8
+207	[M:I0]Safeguard	9	False	False	False	6000	5	True	True	207	134	0	0	0	250	8
+208	[M:I0]Frustration	13	False	False	False	6000	5	True	True	208	328	0	0	0	250	8
+209	[M:I0]SolarBeam	9	False	False	False	7000	5	True	True	209	151	0	0	0	250	8
+210	[M:I0]Iron Tail	9	False	False	False	8000	5	True	True	210	1	0	0	0	250	8
+211	[M:I0]Thunderbolt	9	False	False	False	8000	5	True	True	211	129	0	0	0	250	8
+212	[M:I0]Thunder	9	False	False	False	9000	5	True	True	212	64	0	0	0	250	8
+213	[M:I0]Earthquake	9	False	False	False	6500	5	True	True	213	118	0	0	0	250	8
+214	[M:I0]Return	9	False	False	False	6500	5	True	True	214	48	0	0	0	250	8
+215	[M:I0]Dig	9	False	False	False	6500	5	True	True	215	8	0	0	0	250	8
+216	[M:I0]Psychic	9	False	False	False	6000	5	True	True	216	109	0	0	0	250	8
+217	[M:I0]Shadow Ball	9	False	False	False	6500	5	True	True	217	127	0	0	0	250	8
+218	[M:I0]Brick Break	9	False	False	False	6500	5	True	True	218	72	0	0	0	250	8
+219	[M:D1]$$$	9	False	False	False	6500	5	True	False	219	56	0	0	0	250	8
+220	[M:I0]Reflect	9	False	False	False	6500	5	True	True	220	338	0	0	0	250	8
+221	[M:I0]Shock Wave	9	False	False	False	7500	5	True	True	221	189	0	0	0	250	8
+222	[M:I0]Flamethrower	9	False	False	False	8000	5	True	True	222	53	0	0	0	250	8
+223	[M:I0]Sludge Bomb	13	False	False	False	7500	5	True	True	223	280	0	0	0	250	8
+224	[M:D1]$$$	9	False	False	False	9000	5	True	False	224	141	0	0	0	250	8
+225	[M:I0]Fire Blast	9	False	False	False	9000	5	True	True	225	157	0	0	0	250	8
+226	[M:D1]$$$	9	False	False	False	9000	5	True	False	226	73	0	0	0	250	8
+227	[M:I0]Aerial Ace	9	False	False	False	7500	5	True	True	227	179	0	0	0	250	8
+228	[M:I0]Torment	9	False	False	False	6000	5	True	True	228	22	0	0	0	250	8
+229	[M:I0]Facade	9	False	False	False	6000	5	True	True	229	67	0	0	0	250	8
+230	[M:I0]Secret Power	13	False	False	False	6500	5	True	True	230	263	0	0	0	250	8
+231	[M:I0]Rest	9	False	False	False	6500	5	True	True	231	232	0	0	0	250	8
+232	[M:I0]Attract	13	False	False	False	6500	5	True	True	232	326	0	0	0	250	8
+233	[M:I0]Thief	9	False	False	False	6500	5	True	True	233	214	0	0	0	250	8
+234	[M:I0]Steel Wing	9	False	False	False	7000	5	True	True	234	244	0	0	0	250	8
+235	[M:I0]Skill Swap	9	False	False	False	7000	5	True	True	235	137	0	0	0	250	8
+236	[M:D1]$$$	9	False	False	False	7000	5	True	False	236	334	0	0	0	250	8
+237	[M:I0]Overheat	9	False	False	False	6500	5	True	True	237	41	0	0	0	250	8
+238	[M:I0]Roost	9	False	False	False	6500	5	True	True	238	509	0	0	0	250	8
+239	[M:I0]Focus Blast	9	False	False	False	6500	5	True	True	239	454	0	0	0	250	8
+240	[M:I0]Energy Ball	9	False	False	False	6500	5	True	True	240	443	0	0	0	250	8
+241	[M:I0]False Swipe	9	False	False	False	6500	5	True	True	241	314	0	0	0	250	8
+242	[M:I0]Brine	9	False	False	False	6500	5	True	True	242	469	0	0	0	250	8
+243	[M:I0]Fling	9	False	False	False	6500	5	True	True	243	503	0	0	0	250	8
+244	[M:I0]Charge Beam	9	False	False	False	6500	5	True	True	244	489	0	0	0	250	8
+245	[M:I0]Endure	9	False	False	False	6500	5	True	True	245	104	0	0	0	250	8
+246	[M:I0]Dragon Pulse	9	False	False	False	6500	5	True	True	246	539	0	0	0	250	8
+247	[M:I0]Drain Punch	9	False	False	False	6500	5	True	True	247	500	0	0	0	250	8
+248	[M:I0]Will-O-Wisp	9	False	False	False	6500	5	True	True	248	47	0	0	0	250	8
+249	[M:I0]Silver Wind	9	False	False	False	6500	5	True	True	249	82	0	0	0	250	8
+250	[M:I0]Embargo	9	False	False	False	6500	5	True	True	250	466	0	0	0	250	8
+251	[M:I0]Explosion	9	False	False	False	6500	5	True	True	251	155	0	0	0	250	8
+252	[M:I0]Shadow Claw	9	False	False	False	6500	5	True	True	252	476	0	0	0	250	8
+253	[M:I0]Payback	9	False	False	False	6500	5	True	True	253	472	0	0	0	250	8
+254	[M:I0]Recycle	9	False	False	False	6500	5	True	True	254	337	0	0	0	250	8
+255	[M:I0]Giga Impact	9	False	False	False	6500	5	True	True	255	455	0	0	0	250	8
+256	[M:I0]Rock Polish	9	False	False	False	6500	5	True	True	256	540	0	0	0	250	8
+257	[M:I0]Wide Slash	9	False	False	False	6500	5	True	True	257	360	0	0	0	250	8
+258	[M:D1]$$$	9	False	False	False	6500	5	True	False	258	361	0	0	0	250	8
+259	[M:D1]$$$	9	False	False	False	6500	5	True	False	259	362	0	0	0	250	8
+260	[M:I0]Vacuum-Cut	9	False	False	False	6500	5	True	True	260	394	0	0	0	250	8
+261	[M:I0]Dive	13	False	False	False	6500	5	True	True	261	156	0	0	0	250	8
+262	[M:I0]Flash	9	False	False	False	6500	5	True	True	262	273	0	0	0	250	8
+263	[M:I0]Stone Edge	9	False	False	False	6500	5	True	True	263	481	0	1	1	250	8
+264	[M:I0]Avalanche	9	False	False	False	6500	5	True	True	264	535	0	2	2	250	8
+265	[M:I0]Thunder Wave	9	False	False	False	6500	5	True	True	265	192	0	3	3	250	8
+266	[M:I0]Gyro Ball	9	False	False	False	6500	5	True	True	266	475	0	4	4	250	8
+267	[M:I0]Swords Dance	9	False	False	False	6500	5	True	True	267	181	0	5	5	250	8
+268	[M:I0]Stealth Rock	9	False	False	False	6500	5	True	True	268	480	0	6	6	250	8
+269	[M:I0]Psych Up	9	False	False	False	6500	5	True	True	269	115	0	7	7	250	8
+270	[M:I0]Captivate	9	False	False	False	6500	5	True	True	270	534	0	8	8	250	8
+271	[M:I0]Dark Pulse	9	False	False	False	6500	5	True	True	271	436	0	9	9	250	8
+272	[M:I0]Rock Slide	9	False	False	False	6500	5	True	True	272	30	0	10	10	250	8
+273	[M:I0]X-Scissor	9	False	False	False	6500	5	True	True	273	470	0	11	11	250	8
+274	[M:I0]Sleep Talk	9	False	False	False	6500	5	True	True	274	227	0	12	12	250	8
+275	[M:I0]Natural Gift	9	False	False	False	6500	5	True	True	275	471	0	13	13	250	8
+276	[M:I0]Poison Jab	9	False	False	False	6500	5	True	True	276	495	0	14	14	250	8
+277	[M:I0]Dream Eater	9	False	False	False	6500	5	True	True	277	331	0	15	15	250	8
+278	[M:I0]Grass Knot	9	False	False	False	6500	5	True	True	278	458	0	16	16	250	8
+279	[M:I0]Swagger	9	False	False	False	6500	5	True	True	279	24	0	17	17	250	8
+280	[M:I0]Pluck	9	False	False	False	6500	5	True	True	280	490	0	18	18	250	8
+281	[M:I0]U-turn	9	False	False	False	6500	5	True	True	281	502	0	19	19	250	8
+282	[M:I0]Substitute	9	False	False	False	6500	5	True	True	282	304	0	20	20	250	8
+283	[M:I0]Flash Cannon	9	False	False	False	6500	5	True	True	283	536	0	21	21	250	8
+284	[M:I0]Trick Room	9	False	False	False	6500	5	True	True	284	499	0	22	22	250	8
+285	[M:I0]Cut	9	False	False	False	7500	5	True	True	285	18	3	0	0	250	8
+286	[M:I0]Fly	13	False	False	False	7500	5	True	True	286	153	3	0	0	250	8
+287	[M:I0]Surf	9	False	False	False	7500	5	True	True	287	219	3	0	0	250	8
+288	[M:I0]Strength	9	False	False	False	7500	5	True	True	288	50	3	0	0	250	8
+289	[M:I0]Defog	9	False	False	False	7500	5	True	True	289	456	3	0	0	250	8
+290	[M:I0]Rock Smash	9	False	False	False	7500	5	True	True	290	29	3	0	0	250	8
+291	[M:I0]Waterfall	13	False	False	False	7500	5	True	True	291	158	3	0	0	250	8
+292	[M:I0]Rock Climb	13	False	False	False	7500	5	True	True	292	541	3	0	0	250	8
+293	[M:D1]$$$	13	False	False	False	7500	5	True	False	293	364	0	0	0	250	8
+294	[M:D1]$$$	13	False	False	False	7500	5	True	False	294	364	0	0	0	250	8
+295	[M:D1]$$$	13	False	False	False	7500	5	True	False	295	364	0	0	0	250	8
+296	[M:D1]$$$	13	False	False	False	7500	5	True	False	296	364	0	0	0	250	8
+297	[M:D1]$$$	13	False	False	False	7500	5	True	False	297	364	0	0	0	250	8
+298	[M:D1]$$$	13	False	False	False	7500	5	True	False	298	364	0	0	0	250	8
+299	[M:D1]$$$	13	False	False	False	7500	5	True	False	299	364	0	0	0	30	8
+300	[M:D1]$$$	13	False	False	False	70	9	True	False	300	365	0	0	0	30	15
+301	[M:I1]Hail Orb	13	False	False	False	70	9	True	True	301	14	0	0	0	30	15
+302	[M:I1]Sunny Orb	13	False	False	False	70	9	True	True	302	223	0	0	0	30	15
+303	[M:I1]Rainy Orb	13	False	False	False	70	9	True	True	303	12	0	0	0	30	15
+304	[M:I1]Evasion Orb	13	False	False	False	150	9	True	True	304	56	0	0	0	30	15
+305	[M:I1]Sandy Orb	13	False	False	False	70	9	True	True	305	141	0	0	0	30	15
+306	[M:I1]Rocky Orb	13	False	False	False	150	9	True	True	306	73	0	0	0	30	15
+307	[M:I1]Snatch Orb	13	False	False	False	150	9	True	True	307	334	0	0	0	30	15
+308	[M:I1]See-Trap Orb	13	False	False	False	150	9	True	True	308	363	0	0	0	30	15
+309	[M:I1]Mug Orb	13	False	False	False	150	9	True	True	309	364	0	0	0	30	15
+310	[M:I1]Rebound Orb	13	False	False	False	150	9	True	True	310	365	0	0	0	30	15
+311	[M:I1]Lob Orb	13	False	False	False	150	9	True	True	311	366	0	0	0	30	15
+312	[M:I1]Switcher Orb	13	False	False	False	150	9	True	True	312	367	0	0	0	30	15
+313	[M:I1]Blowback Orb	13	False	False	False	150	9	True	True	313	368	0	0	0	30	15
+314	[M:I1]Warp Orb	13	False	False	False	150	9	True	True	314	369	0	0	0	30	15
+315	[M:I1]Transfer Orb	13	False	False	False	150	9	True	True	315	370	0	0	0	30	15
+316	[M:I1]Slow Orb	13	False	False	False	150	9	True	True	316	371	0	0	0	30	15
+317	[M:I1]Quick Orb	13	False	False	False	150	9	True	True	317	372	0	0	0	30	15
+318	[M:I1]Luminous Orb	13	False	False	False	150	9	True	True	318	373	0	0	0	30	15
+319	[M:I1]Petrify Orb	13	False	False	False	150	9	True	True	319	374	0	0	0	30	15
+320	[M:I1]Stayaway Orb	13	False	False	False	150	9	True	True	320	375	0	0	0	30	15
+321	[M:I1]Pounce Orb	13	False	False	False	150	9	True	True	321	376	0	0	0	30	15
+322	[M:I1]Trawl Orb	13	False	False	False	150	9	True	True	322	377	0	0	0	30	15
+323	[M:I1]Cleanse Orb	13	False	False	False	150	9	True	True	323	378	0	0	0	30	15
+324	[M:D1]$$$	13	False	False	False	150	9	True	False	324	0	0	0	0	30	15
+325	[M:I1]Decoy Orb	13	False	False	False	150	9	True	True	325	380	0	0	0	30	15
+326	[M:I1]Slumber Orb	13	False	False	False	150	9	True	True	326	381	0	0	0	30	15
+327	[M:I1]Totter Orb	13	False	False	False	150	9	True	True	327	382	0	0	0	30	15
+328	[M:I1]Two-Edge Orb	13	False	False	False	150	9	True	True	328	383	0	0	0	30	15
+329	[M:I1]Silence Orb	13	False	False	False	150	9	True	True	329	384	0	0	0	30	15
+330	[M:I1]Escape Orb	9	False	False	False	150	9	True	True	330	385	0	0	0	1	15
+331	[M:I1]Scanner Orb	13	False	False	False	150	9	True	True	331	386	0	0	0	30	15
+332	[M:I1]Radar Orb	13	False	False	False	150	9	True	True	332	387	0	0	0	30	15
+333	[M:I1]Drought Orb	13	False	False	False	150	9	True	True	333	388	0	0	0	30	15
+334	[M:I1]Trapbust Orb	13	False	False	False	150	9	True	True	334	389	0	0	0	30	15
+335	[M:I1]Rollcall Orb	13	False	False	True	150	9	True	True	335	390	0	0	0	30	15
+336	[M:I1]Invisify Orb	13	False	False	False	150	9	True	True	336	391	0	0	0	50	15
+337	[M:I1]One-Shot Orb	13	False	False	False	500	9	True	True	337	392	0	0	0	30	15
+338	[M:I1]Identify Orb	13	False	False	False	150	9	True	True	338	393	0	0	0	30	15
+339	[M:D1]$$$	13	False	False	False	150	9	True	False	339	0	0	0	0	30	15
+340	[M:I1]Shocker Orb	13	False	False	False	150	9	True	True	340	396	0	0	0	30	15
+341	[M:I1]Sizebust Orb	13	False	False	False	150	9	True	True	341	397	0	0	0	30	15
+342	[M:I1]One-Room Orb	13	False	False	False	150	9	True	True	342	399	0	0	0	30	15
+343	[M:I1]Fill-In Orb	13	False	False	False	150	9	True	True	343	400	0	0	0	30	15
+344	[M:I1]Trapper Orb	13	False	False	False	150	9	True	True	344	401	0	0	0	30	15
+345	[M:D1]$$$	9	False	False	False	150	9	True	False	345	0	0	0	0	30	15
+346	[M:I1]Itemizer Orb	9	False	False	False	150	9	True	True	346	403	0	0	0	30	15
+347	[M:I1]Hurl Orb	9	False	False	False	150	9	True	True	347	406	0	0	0	30	15
+348	[M:I1]Mobile Orb	9	False	False	False	150	9	True	True	348	407	0	0	0	30	15
+349	[M:D1]$$$	9	False	False	False	150	9	True	False	349	0	0	0	0	30	15
+350	[M:I1]Stairs Orb	9	False	False	False	150	9	True	True	350	409	0	0	0	30	15
+351	[M:I1]Longtoss Orb	9	False	False	False	150	9	True	True	351	410	0	0	0	30	15
+352	[M:I1]Pierce Orb	9	False	False	False	150	9	True	True	352	412	0	0	0	30	15
+353	[M:D1]$$$	13	False	False	False	150	9	True	False	353	0	0	0	0	30	15
+354	[M:I1]Spurn Orb	13	False	False	False	150	9	True	True	354	424	0	0	0	30	15
+355	[M:I1]Foe-Hold Orb	13	False	False	False	150	9	True	True	355	425	0	0	0	30	15
+356	[M:I1]All-Mach Orb	13	False	False	False	150	9	True	True	356	426	0	0	0	30	15
+357	[M:I1]Foe-Fear Orb	13	False	False	False	150	9	True	True	357	427	0	0	0	30	15
+358	[M:I1]All-Hit Orb	13	False	False	False	150	9	True	True	358	428	0	0	0	30	15
+359	[M:I1]Foe-Seal Orb	13	False	False	False	150	9	True	True	359	429	0	0	0	30	15
+360	[M:D1]$$$	10	False	False	False	8000	10	True	False	360	0	0	0	0	800	10
+361	[M:D1]$$$	10	False	False	False	8000	10	True	False	361	0	0	0	0	300	10
+362	Link Box	10	False	False	False	9000	10	True	True	362	0	0	0	0	150	10
+363	[M:D1]$$$	10	False	False	False	1500	10	True	False	363	0	0	0	0	500	10
+364	Gorgeous Box	10	False	False	False	8000	12	True	True	364	0	3	0	0	200	19
+365	Gorgeous Box	10	False	False	False	8000	13	True	True	365	0	3	0	0	200	19
+366	Gorgeous Box	10	False	False	False	8000	14	True	True	366	0	3	0	0	200	19
+367	Heavy Box	10	False	False	False	8000	12	True	True	367	0	0	0	0	200	19
+368	Heavy Box	10	False	False	False	8000	13	True	True	368	0	0	0	0	200	19
+369	Heavy Box	10	False	False	False	8000	14	True	True	369	0	0	0	0	200	19
+370	Shiny Box	10	False	False	False	8000	12	True	True	370	0	3	0	0	200	19
+371	Shiny Box	10	False	False	False	8000	13	True	True	371	0	3	0	0	200	19
+372	Shiny Box	10	False	False	False	8000	14	True	True	372	0	3	0	0	200	19
+373	Nifty Box	10	False	False	False	8000	12	True	True	373	0	0	0	0	200	24
+374	Nifty Box	10	False	False	False	8000	13	True	True	374	0	0	0	0	200	24
+375	Nifty Box	10	False	False	False	8000	14	True	True	375	0	0	0	0	200	24
+376	Dainty Box	10	False	False	False	8000	12	True	True	376	0	0	0	0	200	24
+377	Dainty Box	10	False	False	False	8000	13	True	True	377	0	0	0	0	200	24
+378	Dainty Box	10	False	False	False	8000	14	True	True	378	0	0	0	0	200	24
+379	Glittery Box	10	False	False	False	8000	12	True	True	379	0	3	0	0	200	19
+380	Glittery Box	10	False	False	False	8000	13	True	True	380	0	3	0	0	200	19
+381	Glittery Box	10	False	False	False	8000	14	True	True	381	0	3	0	0	200	19
+382	Pretty Box	10	False	False	False	8000	12	True	True	382	0	3	0	0	200	19
+383	Pretty Box	10	False	False	False	8000	13	True	True	383	0	3	0	0	200	19
+384	Pretty Box	10	False	False	False	8000	14	True	True	384	0	3	0	0	200	19
+385	Deluxe Box	10	False	False	False	8000	12	True	True	385	0	3	0	0	200	19
+386	Deluxe Box	10	False	False	False	8000	13	True	True	386	0	3	0	0	200	19
+387	Deluxe Box	10	False	False	False	8000	14	True	True	387	1	3	1	1	200	19
+388	Light Box	10	False	False	False	8000	12	True	True	388	0	0	0	0	200	19
+389	Light Box	10	False	False	False	8000	13	True	True	389	0	0	0	0	200	19
+390	Light Box	10	False	False	False	8000	14	True	True	390	2	0	2	2	200	19
+391	Cute Box	10	False	False	False	8000	12	True	True	391	0	0	0	0	200	24
+392	Cute Box	10	False	False	False	8000	13	True	True	392	0	0	0	0	200	24
+393	Cute Box	10	False	False	False	8000	14	True	True	393	3	0	3	3	200	24
+394	Hard Box	10	False	False	False	8000	12	True	True	394	0	0	0	0	200	19
+395	Hard Box	10	False	False	False	8000	13	True	True	395	0	0	0	0	200	19
+396	Hard Box	10	False	False	False	8000	14	True	True	396	4	0	4	4	200	19
+397	Sinister Box	10	False	False	False	8000	12	True	True	397	0	0	0	0	200	24
+398	Sinister Box	10	False	False	False	8000	13	True	True	398	0	0	0	0	200	24
+399	Sinister Box	10	False	False	False	8000	14	True	True	399	5	0	5	5	200	24
+400	[FT:1]A[FT:0]-Stone	0	False	False	False	3000	4	True	True	400	0	5	0	0	10	1
+401	[FT:1]B[FT:0]-Stone	0	False	False	False	3000	4	True	True	401	0	5	0	0	10	1
+402	[FT:1]C[FT:0]-Stone	0	False	False	False	3000	4	True	True	402	0	5	0	0	10	1
+403	[FT:1]D[FT:0]-Stone	0	False	False	False	3000	4	True	True	403	0	5	0	0	10	1
+404	[FT:1]E[FT:0]-Stone	0	False	False	False	3000	4	True	True	404	0	5	0	0	10	1
+405	[FT:1]F[FT:0]-Stone	0	False	False	False	3000	4	True	True	405	0	5	0	0	10	1
+406	[FT:1]G[FT:0]-Stone	0	False	False	False	3000	4	True	True	406	0	5	0	0	10	1
+407	[FT:1]H[FT:0]-Stone	0	False	False	False	3000	4	True	True	407	0	5	0	0	10	1
+408	[FT:1]I[FT:0]-Stone	0	False	False	False	3000	4	True	True	408	0	5	0	0	10	1
+409	[FT:1]J[FT:0]-Stone	0	False	False	False	3000	4	True	True	409	0	5	0	0	10	1
+410	[FT:1]K[FT:0]-Stone	0	False	False	False	3000	4	True	True	410	0	5	0	0	10	1
+411	[FT:1]L[FT:0]-Stone	0	False	False	False	3000	4	True	True	411	0	5	0	0	10	1
+412	[FT:1]M[FT:0]-Stone	0	False	False	False	3000	4	True	True	412	0	5	0	0	10	1
+413	[FT:1]N[FT:0]-Stone	0	False	False	False	3000	4	True	True	413	0	5	0	0	10	1
+414	[FT:1]O[FT:0]-Stone	0	False	False	False	3000	4	True	True	414	0	5	0	0	10	1
+415	[FT:1]P[FT:0]-Stone	0	False	False	False	3000	4	True	True	415	0	5	0	0	10	1
+416	[FT:1]Q[FT:0]-Stone	0	False	False	False	3000	4	True	True	416	0	5	0	0	10	1
+417	[FT:1]R[FT:0]-Stone	0	False	False	False	3000	4	True	True	417	0	5	0	0	10	1
+418	[FT:1]S[FT:0]-Stone	0	False	False	False	3000	4	True	True	418	0	5	0	0	10	1
+419	[FT:1]T[FT:0]-Stone	0	False	False	False	3000	4	True	True	419	0	5	0	0	10	1
+420	[FT:1]U[FT:0]-Stone	0	False	False	False	3000	4	True	True	420	0	5	0	0	10	1
+421	[FT:1]V[FT:0]-Stone	0	False	False	False	3000	4	True	True	421	0	5	0	0	10	1
+422	[FT:1]W[FT:0]-Stone	0	False	False	False	3000	4	True	True	422	0	5	0	0	10	1
+423	[FT:1]X[FT:0]-Stone	0	False	False	False	3000	4	True	True	423	0	5	0	0	10	1
+424	[FT:1]Y[FT:0]-Stone	0	False	False	False	3000	4	True	True	424	0	5	0	0	10	1
+425	[FT:1]Z[FT:0]-Stone	0	False	False	False	3000	4	True	True	425	0	5	0	0	10	1
+426	[FT:1]![FT:0]-Stone	0	False	False	False	3000	4	True	True	426	0	5	0	0	10	1
+427	[FT:1]?[FT:0]-Stone	0	False	False	False	3000	4	True	True	427	0	5	0	0	10	1
+428	Silver Bow	0	False	False	False	9500	4	True	True	428	0	10	0	0	350	53
+429	Brown Bow	0	False	False	False	9500	4	True	True	429	0	11	0	0	350	53
+430	Red Bow	0	False	False	False	9500	4	True	True	430	0	0	0	0	350	53
+431	Pink Bow	0	False	False	False	9500	4	True	True	431	0	1	0	0	350	53
+432	Orange Bow	0	False	False	False	9500	4	True	True	432	0	7	0	0	350	53
+433	Yellow Bow	0	False	False	False	9500	4	True	True	433	0	2	0	0	350	53
+434	Lime Bow	0	False	False	False	9500	4	True	True	434	0	8	0	0	350	53
+435	Green Bow	0	False	False	False	9500	4	True	True	435	0	6	0	0	350	53
+436	Viridian Bow	0	False	False	False	9500	4	True	True	436	0	9	0	0	350	53
+437	Minty Bow	0	False	False	False	9500	4	True	True	437	0	5	0	0	350	53
+438	Sky Blue Bow	0	False	False	False	9500	4	True	True	438	0	3	0	0	350	53
+439	Blue Bow	0	False	False	False	9500	4	True	True	439	0	4	0	0	350	53
+440	Cobalt Bow	0	False	False	False	9500	4	True	True	440	0	12	0	0	350	53
+441	Purple Bow	0	False	False	False	9500	4	True	True	441	0	13	0	0	350	53
+442	Violet Bow	0	False	False	False	9500	4	True	True	442	0	14	0	0	350	53
+443	Fuchsia Bow	0	False	False	False	9500	4	True	True	443	0	15	0	0	350	53
+444	Prism Ruff	0	False	False	False	3500	15	True	True	444	0	14	0	0	150	37
+445	Aqua Collar	0	False	False	False	3500	15	True	True	445	0	11	0	0	150	37
+446	Volt Collar	0	False	False	False	3500	15	True	True	446	0	11	0	0	150	37
+447	Fire Collar	0	False	False	False	3500	15	True	True	447	0	11	0	0	150	37
+448	Light Collar	0	False	False	False	3500	15	True	True	448	0	11	0	0	150	37
+449	Dusk Collar	0	False	False	False	3500	15	True	True	449	0	11	0	0	150	37
+450	Virid Collar	0	False	False	False	3500	15	True	True	450	0	11	0	0	150	37
+451	Icy Collar	0	False	False	False	3500	15	True	True	451	0	11	0	0	150	37
+452	Pep Sash	0	False	False	False	3000	15	True	True	452	0	0	0	0	100	37
+453	Counter Ruff	0	False	False	False	3000	15	True	True	453	0	14	0	0	100	37
+454	Victory Belt	0	False	False	False	3000	15	True	True	454	0	1	0	0	100	58
+455	Power Bangle	0	False	False	False	3000	15	True	True	455	0	7	0	0	100	54
+456	Thundershard	0	False	False	False	2000	15	True	True	456	0	3	0	0	100	29
+457	Fallen Star	0	False	False	False	2000	15	True	True	457	0	4	0	0	100	29
+458	Fluff Dust	0	False	False	False	2000	15	True	True	458	0	7	0	0	100	34
+459	Egg Shard	0	False	False	False	2000	15	True	True	459	0	3	0	0	100	29
+460	Heroic Medal	0	False	False	False	2000	15	True	True	460	0	11	0	0	100	6
+461	Chic Shard	0	False	False	False	2000	15	True	True	461	0	3	0	0	100	29
+462	Yellow Jewel	0	False	False	False	2000	15	True	True	462	0	9	0	0	100	49
+463	Red Jewel	0	False	False	False	2000	15	True	True	463	0	4	0	0	100	49
+464	Blue Jewel	0	False	False	False	2000	15	True	True	464	0	6	0	0	100	49
+465	Laugh Dust	0	False	False	False	2000	15	True	True	465	0	7	0	0	100	34
+466	Guard Sand	0	False	False	False	2000	15	True	True	466	0	10	0	0	100	34
+467	Purple Jewel	0	False	False	False	2000	15	True	True	467	0	13	0	0	100	49
+468	White Jewel	0	False	False	False	2000	15	True	True	468	0	0	0	0	100	49
+469	Brave Dust	0	False	False	False	2000	15	True	True	469	0	7	0	0	100	34
+470	Heal Dew	0	False	False	False	2000	15	True	True	470	0	10	0	0	100	35
+471	Marine Cache	0	False	False	False	2000	15	True	True	471	0	6	0	0	100	49
+472	Freeze Veil	0	False	False	False	5000	15	True	True	472	0	2	0	0	150	56
+473	Thunder Veil	0	False	False	False	5000	15	True	True	473	0	2	0	0	150	56
+474	Fire Veil	0	False	False	False	5000	15	True	True	474	0	2	0	0	150	56
+475	Havoc Robe	0	False	False	False	5000	15	True	True	475	0	10	0	0	150	57
+476	Life Ring	0	False	False	False	5000	15	True	True	476	0	10	0	0	150	54
+477	Bolt Fang	0	False	False	False	5000	15	True	True	477	0	0	0	0	150	32
+478	Flare Fang	0	False	False	False	5000	15	True	True	478	0	0	0	0	150	32
+479	Aqua Mantle	0	False	False	False	5000	15	True	True	479	0	13	0	0	150	56
+480	Silver Veil	0	False	False	False	5000	15	True	True	480	0	2	0	0	150	56
+481	Rainbow Veil	0	False	False	False	5000	15	True	True	481	0	2	0	0	150	56
+482	Chrono Veil	0	False	False	False	5000	15	True	True	482	0	2	0	0	150	56
+483	Rock Sash	0	False	False	False	5000	15	True	True	483	0	0	0	0	150	37
+484	Ice Sash	0	False	False	False	5000	15	True	True	484	0	0	0	0	150	37
+485	Steel Sash	0	False	False	False	5000	15	True	True	485	0	0	0	0	150	37
+486	Heart Brooch	0	False	False	False	5000	15	True	True	486	0	3	0	0	150	47
+487	Eon Veil	0	False	False	False	5000	15	True	True	487	0	2	0	0	150	56
+488	Seabed Veil	0	False	False	False	5000	15	True	True	488	0	2	0	0	150	56
+489	Terra Ring	0	False	False	False	5000	15	True	True	489	0	10	0	0	150	54
+490	SkyHigh Veil	0	False	False	False	5000	15	True	True	490	0	2	0	0	150	56
+491	Wish Mantle	0	False	False	False	5000	15	True	True	491	0	13	0	0	150	56
+492	Revive Robe	0	False	False	False	5000	15	True	True	492	0	10	0	0	150	57
+493	Shadow Veil	0	False	False	False	5000	15	True	True	493	0	2	0	0	150	56
+494	Plasma Veil	0	False	False	False	5000	15	True	True	494	0	2	0	0	150	56
+495	Edify Robe	0	False	False	False	5000	15	True	True	495	0	10	0	0	150	57
+496	Charity Robe	0	False	False	False	5000	15	True	True	496	0	10	0	0	150	57
+497	Hope Robe	0	False	False	False	5000	15	True	True	497	0	10	0	0	150	57
+498	Time Shield	0	False	False	False	5000	15	True	True	498	0	10	0	0	150	46
+499	Air Blade	0	False	False	False	5000	15	True	True	499	0	10	0	0	150	39
+500	Searing Ring	0	False	False	False	5000	15	True	True	500	0	10	0	0	150	54
+501	Ancient Ring	0	False	False	False	5000	15	True	True	501	0	10	0	0	150	54
+502	Nether Veil	0	False	False	False	5000	15	True	True	502	0	2	0	0	150	56
+503	Lunar Veil	0	False	False	False	5000	15	True	True	503	0	2	0	0	150	56
+504	Tidal Cape	0	False	False	False	5000	15	True	True	504	0	3	0	0	150	37
+505	Eclipse Robe	0	False	False	False	5000	15	True	True	505	0	10	0	0	150	57
+506	White Silk	0	False	False	False	5000	15	True	True	506	0	0	0	0	150	40
+507	Normal Dust	0	False	False	False	5000	15	True	True	507	0	7	0	0	150	34
+508	White Gem	0	False	False	False	5000	15	True	True	508	0	5	0	0	150	49
+509	Joy Globe	0	False	False	False	5000	15	True	True	509	0	4	0	0	150	15
+510	Red Silk	0	False	False	False	9500	15	True	True	510	0	0	0	0	350	56
+511	Fire Dust	0	False	False	False	9500	15	True	True	511	0	7	0	0	350	34
+512	Fiery Gem	0	False	False	False	9500	15	True	True	512	0	5	0	0	350	49
+513	Fiery Globe	0	False	False	False	9500	15	True	True	513	0	4	0	0	350	15
+514	Blue Silk	0	False	False	False	9500	15	True	True	514	0	4	0	0	350	56
+515	Water Dust	0	False	False	False	9500	15	True	True	515	0	7	0	0	350	34
+516	Aqua Gem	0	False	False	False	9500	15	True	True	516	0	5	0	0	350	49
+517	Aqua Globe	0	False	False	False	9500	15	True	True	517	0	4	0	0	350	15
+518	Grass Silk	0	False	False	False	9500	15	True	True	518	0	8	0	0	350	56
+519	Grass Dust	0	False	False	False	9500	15	True	True	519	0	7	0	0	350	34
+520	Grass Gem	0	False	False	False	9500	15	True	True	520	0	5	0	0	350	49
+521	Soothe Globe	0	False	False	False	9500	15	True	True	521	0	4	0	0	350	15
+522	Yellow Silk	0	False	False	False	9500	15	True	True	522	0	2	0	0	350	56
+523	Thunder Dust	0	False	False	False	9500	15	True	True	523	0	7	0	0	350	34
+524	Thunder Gem	0	False	False	False	9500	15	True	True	524	0	5	0	0	350	49
+525	Volt Globe	0	False	False	False	9500	15	True	True	525	0	4	0	0	350	15
+526	Clear Silk	0	False	False	False	9500	15	True	True	526	0	2	0	0	350	40
+527	Icy Dust	0	False	False	False	9500	15	True	True	527	0	7	0	0	350	34
+528	Icy Gem	0	False	False	False	9500	15	True	True	528	0	5	0	0	350	49
+529	Icy Globe	0	False	False	False	9500	15	True	True	529	0	4	0	0	350	15
+530	Orange Silk	0	False	False	False	9500	15	True	True	530	0	7	0	0	350	56
+531	Courage Dust	0	False	False	False	9500	15	True	True	531	0	7	0	0	350	34
+532	Fight Gem	0	False	False	False	9500	15	True	True	532	0	5	0	0	350	49
+533	Power Globe	0	False	False	False	9500	15	True	True	533	0	4	0	0	350	15
+534	Pink Silk	0	False	False	False	9500	15	True	True	534	0	15	0	0	350	56
+535	Poison Dust	0	False	False	False	9500	15	True	True	535	0	7	0	0	350	34
+536	Poison Gem	0	False	False	False	9500	15	True	True	536	0	5	0	0	350	49
+537	Poison Globe	0	False	False	False	9500	15	True	True	537	0	4	0	0	350	15
+538	Brown Silk	0	False	False	False	9500	15	True	True	538	0	12	0	0	350	40
+539	Ground Dust	0	False	False	False	9500	15	True	True	539	0	7	0	0	350	34
+540	Earth Gem	0	False	False	False	9500	15	True	True	540	0	5	0	0	350	49
+541	Terra Globe	0	False	False	False	9500	15	True	True	541	0	4	0	0	350	15
+542	Sky Silk	0	False	False	False	9500	15	True	True	542	0	14	0	0	350	40
+543	Sky Dust	0	False	False	False	9500	15	True	True	543	0	7	0	0	350	34
+544	Sky Gem	0	False	False	False	9500	15	True	True	544	0	5	0	0	350	49
+545	Sky Globe	0	False	False	False	9500	15	True	True	545	0	4	0	0	350	15
+546	Gold Silk	0	False	False	False	9500	15	True	True	546	0	5	0	0	350	40
+547	Psyche Dust	0	False	False	False	9500	15	True	True	547	0	7	0	0	350	34
+548	Psyche Gem	0	False	False	False	9500	15	True	True	548	0	5	0	0	350	49
+549	Psyche Globe	0	False	False	False	9500	15	True	True	549	0	4	0	0	350	15
+550	Green Silk	0	False	False	False	9500	15	True	True	550	0	6	0	0	350	56
+551	Wonder Dust	0	False	False	False	9500	15	True	True	551	0	7	0	0	350	34
+552	Guard Gem	0	False	False	False	9500	15	True	True	552	0	5	0	0	350	49
+553	Defend Globe	0	False	False	False	9500	15	True	True	553	0	4	0	0	350	15
+554	Gray Silk	0	False	False	False	9500	15	True	True	554	0	10	0	0	350	56
+555	Rock Dust	0	False	False	False	9500	15	True	True	555	0	7	0	0	350	34
+556	Stone Gem	0	False	False	False	9500	15	True	True	556	0	5	0	0	350	49
+557	Rock Globe	0	False	False	False	9500	15	True	True	557	0	4	0	0	350	15
+558	Purple Silk	0	False	False	False	9500	15	True	True	558	0	8	0	0	350	40
+559	Shady Dust	0	False	False	False	9500	15	True	True	559	0	7	0	0	350	34
+560	Shadow Gem	0	False	False	False	9500	15	True	True	560	0	5	0	0	350	49
+561	Nether Globe	0	False	False	False	9500	15	True	True	561	0	4	0	0	350	15
+562	Royal Silk	0	False	False	False	9500	15	True	True	562	0	12	0	0	350	56
+563	Dragon Dust	0	False	False	False	9500	15	True	True	563	0	7	0	0	350	34
+564	Dragon Gem	0	False	False	False	9500	15	True	True	564	0	5	0	0	350	49
+565	Dragon Globe	0	False	False	False	9500	15	True	True	565	0	4	0	0	350	15
+566	Black Silk	0	False	False	False	9500	15	True	True	566	0	11	0	0	350	40
+567	Dark Dust	0	False	False	False	9500	15	True	True	567	0	7	0	0	350	34
+568	Dark Gem	0	False	False	False	9500	15	True	True	568	0	5	0	0	350	49
+569	Dusk Globe	0	False	False	False	9500	15	True	True	569	0	4	0	0	350	15
+570	Iron Silk	0	False	False	False	9500	15	True	True	570	0	10	0	0	350	40
+571	Steel Dust	0	False	False	False	9500	15	True	True	571	0	7	0	0	350	34
+572	Metal Gem	0	False	False	False	9500	15	True	True	572	0	5	0	0	350	49
+573	Steel Globe	0	False	False	False	9500	15	True	True	573	0	4	0	0	350	15
+574	Bulba-Claw	0	False	False	False	2500	15	True	True	574	0	0	0	0	125	39
+575	Bulba-Fang	0	False	False	False	2500	15	True	True	575	0	0	0	0	125	32
+576	Grass-Guard	0	False	False	False	2500	15	True	True	576	0	6	0	0	125	49
+577	Leafy Tie	0	False	False	False	2500	15	True	True	577	0	10	0	0	125	52
+578	Ivy-Claw	0	False	False	False	2500	15	True	True	578	0	0	0	0	125	39
+579	Ivy-Fang	0	False	False	False	2500	15	True	True	579	0	0	0	0	125	32
+580	Ivy-Crest	0	False	False	False	2500	15	True	True	580	0	2	0	0	125	28
+581	Plant Torc	0	False	False	False	2500	15	True	True	581	0	5	0	0	125	54
+582	Venus-Claw	0	False	False	False	2500	15	True	True	582	0	0	0	0	125	39
+583	Venus-Fang	0	False	False	False	2500	15	True	True	583	0	0	0	0	125	32
+584	Venus-Seal	0	False	False	False	2500	15	True	True	584	0	11	0	0	125	28
+585	Solar Sash	0	False	False	False	2500	15	True	True	585	0	0	0	0	125	37
+586	Char-Claw	0	False	False	False	2500	15	True	True	586	0	0	0	0	125	39
+587	Char-Fang	0	False	False	False	2500	15	True	True	587	0	0	0	0	125	32
+588	Fiery Heart	0	False	False	False	2500	15	True	True	588	0	4	0	0	125	42
+589	Heat Armlet	0	False	False	False	2500	15	True	True	589	0	4	0	0	125	54
+590	Charme-Claw	0	False	False	False	2500	15	True	True	590	0	0	0	0	125	39
+591	Charme-Fang	0	False	False	False	2500	15	True	True	591	0	0	0	0	125	32
+592	Charme-Crest	0	False	False	False	2500	15	True	True	592	0	2	0	0	125	28
+593	Kindle Scarf	0	False	False	False	2500	15	True	True	593	0	12	0	0	125	37
+594	Chariz-Claw	0	False	False	False	2500	15	True	True	594	0	0	0	0	125	39
+595	Chariz-Fang	0	False	False	False	2500	15	True	True	595	0	0	0	0	125	32
+596	Chariz-Seal	0	False	False	False	2500	15	True	True	596	0	11	0	0	125	28
+597	Flame Bangle	0	False	False	False	2500	15	True	True	597	0	7	0	0	125	54
+598	Squirt-Foam	0	False	False	False	2500	15	True	True	598	0	12	0	0	125	15
+599	Squirt-Card	0	False	False	False	2500	15	True	True	599	0	14	0	0	125	27
+600	Water-Guard	0	False	False	False	2500	15	True	True	600	0	6	0	0	125	49
+601	Aqua Tie	0	False	False	False	2500	15	True	True	601	0	10	0	0	125	52
+602	Wartor-Claw	0	False	False	False	2500	15	True	True	602	0	0	0	0	125	39
+603	Wartor-Fang	0	False	False	False	2500	15	True	True	603	0	0	0	0	125	32
+604	Wartor-Crest	0	False	False	False	2500	15	True	True	604	0	2	0	0	125	28
+605	BubbleBangle	0	False	False	False	2500	15	True	True	605	0	7	0	0	125	54
+606	Blasto-Claw	0	False	False	False	2500	15	True	True	606	0	0	0	0	125	39
+607	Blasto-Card	0	False	False	False	2500	15	True	True	607	0	14	0	0	125	27
+608	Blasto-Seal	0	False	False	False	2500	15	True	True	608	0	11	0	0	125	28
+609	Hydro Band	0	False	False	False	2500	15	True	True	609	0	12	0	0	125	58
+610	Pichu Hair	0	False	False	False	2500	15	True	True	610	0	1	0	0	125	33
+611	Pichu Card	0	False	False	False	2500	15	True	True	611	0	14	0	0	125	27
+612	Express Tag	0	False	False	False	2500	15	True	True	612	0	13	0	0	125	27
+613	Shocker Cape	0	False	False	False	2500	15	True	True	613	0	3	0	0	125	37
+614	Pikachu Hair	0	False	False	False	2500	15	True	True	614	0	1	0	0	125	33
+615	Pikachu Card	0	False	False	False	2500	15	True	True	615	0	14	0	0	125	27
+616	Volt Charm	0	False	False	False	2500	15	True	True	616	0	3	0	0	125	28
+617	Volt Torc	0	False	False	False	2500	15	True	True	617	0	5	0	0	125	54
+618	Raichu Hair	0	False	False	False	2500	15	True	True	618	0	1	0	0	125	33
+619	Raichu Card	0	False	False	False	2500	15	True	True	619	0	14	0	0	125	27
+620	Raichu Crest	0	False	False	False	2500	15	True	True	620	0	2	0	0	125	28
+621	Zapper Scarf	0	False	False	False	2500	15	True	True	621	0	12	0	0	125	37
+622	Meowth Claw	0	False	False	False	2500	15	True	True	622	0	0	0	0	125	39
+623	Meowth Fang	0	False	False	False	2500	15	True	True	623	0	0	0	0	125	32
+624	Coin Charm	0	False	False	False	2500	15	True	True	624	0	3	0	0	125	28
+625	Bling Ruff	0	False	False	False	2500	15	True	True	625	0	14	0	0	125	37
+626	Persian Claw	0	False	False	False	2500	15	True	True	626	0	0	0	0	125	39
+627	Persian Fang	0	False	False	False	2500	15	True	True	627	0	0	0	0	125	32
+628	Insight Rock	0	False	False	False	2500	15	True	True	628	0	4	0	0	125	49
+629	Noble Scarf	0	False	False	False	2500	15	True	True	629	0	12	0	0	125	37
+630	Chiko-Claw	0	False	False	False	2500	15	True	True	630	0	0	0	0	125	39
+631	Chiko-Card	0	False	False	False	2500	15	True	True	631	0	14	0	0	125	27
+632	Dawn Jewel	0	False	False	False	2500	15	True	True	632	0	13	0	0	125	49
+633	Fresh Bow	0	False	False	False	2500	15	True	True	633	0	4	0	0	125	52
+634	Bayleef Claw	0	False	False	False	2500	15	True	True	634	0	0	0	0	125	39
+635	Bayleef Card	0	False	False	False	2500	15	True	True	635	0	14	0	0	125	27
+636	Bayleef Seal	0	False	False	False	2500	15	True	True	636	0	11	0	0	125	28
+637	Spice Bow	0	False	False	False	2500	15	True	True	637	0	4	0	0	125	52
+638	Megani-Claw	0	False	False	False	2500	15	True	True	638	0	0	0	0	125	39
+639	Megani-Card	0	False	False	False	2500	15	True	True	639	0	14	0	0	125	27
+640	Shiny Charm	0	False	False	False	2500	15	True	True	640	0	3	0	0	125	28
+641	Bright Veil	0	False	False	False	2500	15	True	True	641	0	2	0	0	125	56
+642	Cynda-Hair	0	False	False	False	2500	15	True	True	642	0	1	0	0	125	33
+643	Cynda-Claw	0	False	False	False	2500	15	True	True	643	0	0	0	0	125	39
+644	Blazing Rock	0	False	False	False	2500	15	True	True	644	0	6	0	0	125	49
+645	Storm Sash	0	False	False	False	2500	15	True	True	645	0	0	0	0	125	37
+646	Quila-Hair	0	False	False	False	2500	15	True	True	646	0	1	0	0	125	33
+647	Quila-Card	0	False	False	False	2500	15	True	True	647	0	14	0	0	125	27
+648	Quila-Crest	0	False	False	False	2500	15	True	True	648	0	2	0	0	125	28
+649	Volcano Torc	0	False	False	False	2500	15	True	True	649	0	5	0	0	125	54
+650	Typhlo-Gasp	0	False	False	False	2500	15	True	True	650	0	7	0	0	125	15
+651	Typhlo-Fang	0	False	False	False	2500	15	True	True	651	0	0	0	0	125	32
+652	Typhlo-Seal	0	False	False	False	2500	15	True	True	652	0	11	0	0	125	28
+653	Blast Bangle	0	False	False	False	2500	15	True	True	653	0	7	0	0	125	54
+654	Totodi-Dew	0	False	False	False	2500	15	True	True	654	0	10	0	0	125	35
+655	Totodi-Fang	0	False	False	False	2500	15	True	True	655	0	0	0	0	125	32
+656	Water Heart	0	False	False	False	2500	15	True	True	656	0	4	0	0	125	42
+657	Wash Bow	0	False	False	False	2500	15	True	True	657	0	4	0	0	125	52
+658	Croco-Fang	0	False	False	False	2500	15	True	True	658	0	0	0	0	125	32
+659	Croco-Card	0	False	False	False	2500	15	True	True	659	0	14	0	0	125	27
+660	Swirl Rock	0	False	False	False	2500	15	True	True	660	0	6	0	0	125	49
+661	Anger Scarf	0	False	False	False	2500	15	True	True	661	0	12	0	0	125	37
+662	Feral-Claw	0	False	False	False	2500	15	True	True	662	0	0	0	0	125	39
+663	Feral-Fang	0	False	False	False	2500	15	True	True	663	0	0	0	0	125	32
+664	Feral-Crest	0	False	False	False	2500	15	True	True	664	0	2	0	0	125	28
+665	Hydro Jaw	0	False	False	False	2500	15	True	True	665	0	10	0	0	125	32
+666	Treeck-Thorn	0	False	False	False	2500	15	True	True	666	0	10	0	0	125	59
+667	Treeck-Card	0	False	False	False	2500	15	True	True	667	0	14	0	0	125	27
+668	Forest Ore	0	False	False	False	2500	15	True	True	668	0	6	0	0	125	49
+669	Guard Ring	0	False	False	False	2500	15	True	True	669	0	10	0	0	125	54
+670	Grovy-Shoot	0	False	False	False	2500	15	True	True	670	0	1	0	0	125	59
+671	Grovy-Card	0	False	False	False	2500	15	True	True	671	0	14	0	0	125	27
+672	Jungle-Tag	0	False	False	False	2500	15	True	True	672	0	13	0	0	125	27
+673	Grass Blade	0	False	False	False	2500	15	True	True	673	0	10	0	0	125	39
+674	Scept-Claw	0	False	False	False	2500	15	True	True	674	0	0	0	0	125	39
+675	Scept-Card	0	False	False	False	2500	15	True	True	675	0	14	0	0	125	27
+676	Scept-Seal	0	False	False	False	2500	15	True	True	676	0	11	0	0	125	28
+677	Drain Bangle	0	False	False	False	2500	15	True	True	677	0	7	0	0	125	54
+678	Torchic Hair	0	False	False	False	2500	15	True	True	678	0	1	0	0	125	33
+679	Torchic Card	0	False	False	False	2500	15	True	True	679	0	14	0	0	125	27
+680	Hot Pebble	0	False	False	False	2500	15	True	True	680	0	0	0	0	125	49
+681	Fire Cape	0	False	False	False	2500	15	True	True	681	0	3	0	0	125	37
+682	Combus-Sweat	0	False	False	False	2500	15	True	True	682	0	3	0	0	125	35
+683	Combus-Claw	0	False	False	False	2500	15	True	True	683	0	0	0	0	125	39
+684	Charge Tag	0	False	False	False	2500	15	True	True	684	0	13	0	0	125	27
+685	Gutsy Band	0	False	False	False	2500	15	True	True	685	0	12	0	0	125	58
+686	Blazi-Claw	0	False	False	False	2500	15	True	True	686	0	0	0	0	125	39
+687	Blazi-Card	0	False	False	False	2500	15	True	True	687	0	14	0	0	125	27
+688	Blazi-Seal	0	False	False	False	2500	15	True	True	688	0	11	0	0	125	28
+689	Blaze Torc	0	False	False	False	2500	15	True	True	689	0	5	0	0	125	54
+690	Mudkip Mud	0	False	False	False	2500	15	True	True	690	0	1	0	0	125	15
+691	Mudkip Card	0	False	False	False	2500	15	True	True	691	0	14	0	0	125	27
+692	Mud Jewel	0	False	False	False	2500	15	True	True	692	0	13	0	0	125	49
+693	Speed Scarf	0	False	False	False	2500	15	True	True	693	0	12	0	0	125	37
+694	Marsh-Mud	0	False	False	False	2500	15	True	True	694	0	1	0	0	125	15
+695	Marsh-Card	0	False	False	False	2500	15	True	True	695	0	14	0	0	125	27
+696	Marsh-Crest	0	False	False	False	2500	15	True	True	696	0	2	0	0	125	28
+697	Marsh Torc	0	False	False	False	2500	15	True	True	697	0	5	0	0	125	54
+698	Swamp-Mud	0	False	False	False	2500	15	True	True	698	0	1	0	0	125	15
+699	Swamp-Card	0	False	False	False	2500	15	True	True	699	0	14	0	0	125	27
+700	Swamp-Seal	0	False	False	False	2500	15	True	True	700	0	11	0	0	125	28
+701	Swamp Bangle	0	False	False	False	2500	15	True	True	701	0	7	0	0	125	54
+702	Skitty Fang	0	False	False	False	2500	15	True	True	702	0	0	0	0	125	32
+703	Skitty Card	0	False	False	False	2500	15	True	True	703	0	14	0	0	125	27
+704	Smile Pebble	0	False	False	False	2500	15	True	True	704	0	0	0	0	125	49
+705	Heal Pendant	0	False	False	False	2500	15	True	True	705	0	0	0	0	125	54
+706	Delcat-Hair	0	False	False	False	2500	15	True	True	706	0	1	0	0	125	33
+707	Delcat-Fang	0	False	False	False	2500	15	True	True	707	0	0	0	0	125	32
+708	Prim Pebble	0	False	False	False	2500	15	True	True	708	0	0	0	0	125	49
+709	Guard Collar	0	False	False	False	2500	15	True	True	709	0	11	0	0	125	37
+710	Lucky Leaf	0	False	False	False	2500	15	True	True	710	0	3	0	0	125	41
+711	Turtwig Card	0	False	False	False	2500	15	True	True	711	0	14	0	0	125	27
+712	Sprout Rock	0	False	False	False	2500	15	True	True	712	0	6	0	0	125	49
+713	Leafy Hat	0	False	False	False	2500	15	True	True	713	0	3	0	0	125	43
+714	Grotle Twig	0	False	False	False	2500	15	True	True	714	0	1	0	0	125	59
+715	Grotle Claw	0	False	False	False	2500	15	True	True	715	0	0	0	0	125	39
+716	Grotle Crest	0	False	False	False	2500	15	True	True	716	0	2	0	0	125	28
+717	Woody Scarf	0	False	False	False	2500	15	True	True	717	0	12	0	0	125	37
+718	Tort-Claw	0	False	False	False	2500	15	True	True	718	0	0	0	0	125	39
+719	Tort-Horn	0	False	False	False	2500	15	True	True	719	0	8	0	0	125	38
+720	Tort-Seal	0	False	False	False	2500	15	True	True	720	0	11	0	0	125	28
+721	Forest Torc	0	False	False	False	2500	15	True	True	721	0	5	0	0	125	54
+722	Chim-Hair	0	False	False	False	2500	15	True	True	722	0	1	0	0	125	33
+723	Chim-Fang	0	False	False	False	2500	15	True	True	723	0	0	0	0	125	32
+724	Nimble Charm	0	False	False	False	2500	15	True	True	724	0	3	0	0	125	28
+725	Ember Cap	0	False	False	False	2500	15	True	True	725	0	3	0	0	125	43
+726	Monfer-Hair	0	False	False	False	2500	15	True	True	726	0	1	0	0	125	33
+727	Monfer-Fang	0	False	False	False	2500	15	True	True	727	0	0	0	0	125	32
+728	Monfer-Crest	0	False	False	False	2500	15	True	True	728	0	2	0	0	125	28
+729	Burst Sash	0	False	False	False	2500	15	True	True	729	0	0	0	0	125	37
+730	Infern-Hair	0	False	False	False	2500	15	True	True	730	0	1	0	0	125	33
+731	Infern-Fang	0	False	False	False	2500	15	True	True	731	0	0	0	0	125	32
+732	Infern-Seal	0	False	False	False	2500	15	True	True	732	0	11	0	0	125	28
+733	Blazing Ruff	0	False	False	False	2500	15	True	True	733	0	14	0	0	125	37
+734	Piplup Foam	0	False	False	False	2500	15	True	True	734	0	12	0	0	125	15
+735	Piplup Card	0	False	False	False	2500	15	True	True	735	0	14	0	0	125	27
+736	Sea Ore	0	False	False	False	2500	15	True	True	736	0	6	0	0	125	49
+737	Water Cape	0	False	False	False	2500	15	True	True	737	0	3	0	0	125	37
+738	Prin-Foam	0	False	False	False	2500	15	True	True	738	0	12	0	0	125	15
+739	Prin-Card	0	False	False	False	2500	15	True	True	739	0	14	0	0	125	27
+740	Prin-Crest	0	False	False	False	2500	15	True	True	740	0	2	0	0	125	28
+741	Aqua Blade	0	False	False	False	2500	15	True	True	741	0	10	0	0	125	39
+742	Empol-Claw	0	False	False	False	2500	15	True	True	742	0	0	0	0	125	39
+743	Empol-Horn	0	False	False	False	2500	15	True	True	743	0	8	0	0	125	38
+744	Empol-Seal	0	False	False	False	2500	15	True	True	744	0	11	0	0	125	28
+745	Marine Crown	0	False	False	False	2500	15	True	True	745	0	5	0	0	125	31
+746	Munch-Drool	0	False	False	False	2500	15	True	True	746	0	4	0	0	125	35
+747	Munch-Claw	0	False	False	False	2500	15	True	True	747	0	0	0	0	125	39
+748	Tummy Charm	0	False	False	False	2500	15	True	True	748	0	3	0	0	125	28
+749	Glutton Cape	0	False	False	False	2500	15	True	True	749	0	3	0	0	125	37
+750	Snorlax Gasp	0	False	False	False	2500	15	True	True	750	0	7	0	0	125	15
+751	Snorlax Fang	0	False	False	False	2500	15	True	True	751	0	0	0	0	125	32
+752	Valor Charm	0	False	False	False	2500	15	True	True	752	0	3	0	0	125	28
+753	Glee Scarf	0	False	False	False	2500	15	True	True	753	0	12	0	0	125	37
+754	Scyther Fang	0	False	False	False	2500	15	True	True	754	0	0	0	0	125	32
+755	Scyther Card	0	False	False	False	2500	15	True	True	755	0	14	0	0	125	27
+756	Ambush Rock	0	False	False	False	2500	15	True	True	756	0	4	0	0	125	49
+757	Strike Ruff	0	False	False	False	2500	15	True	True	757	0	14	0	0	125	37
+758	Scizor Wing	0	False	False	False	2500	15	True	True	758	0	12	0	0	125	44
+759	Scizor Card	0	False	False	False	2500	15	True	True	759	0	14	0	0	125	27
+760	Steel Charm	0	False	False	False	2500	15	True	True	760	0	3	0	0	125	28
+761	Red Armlet	0	False	False	False	2500	15	True	True	761	0	4	0	0	125	54
+762	Lapras Song	0	False	False	False	2500	15	True	True	762	0	0	0	0	125	7
+763	Lapras Card	0	False	False	False	2500	15	True	True	763	0	14	0	0	125	27
+764	Wavy Charm	0	False	False	False	2500	15	True	True	764	0	3	0	0	125	28
+765	Mystic Scarf	0	False	False	False	2500	15	True	True	765	0	12	0	0	125	37
+766	Eevee Tail	0	False	False	False	2500	15	True	True	766	0	1	0	0	125	26
+767	Eevee Card	0	False	False	False	2500	15	True	True	767	0	14	0	0	125	27
+768	Evolve Charm	0	False	False	False	2500	15	True	True	768	0	3	0	0	125	28
+769	[M:D1]Eevee	0	False	False	False	2500	15	True	False	769	0	14	0	0	125	37
+770	Cleffa Dew	0	False	False	False	2500	15	True	True	770	0	12	0	0	125	35
+771	Cleffa Card	0	False	False	False	2500	15	True	True	771	0	14	0	0	125	27
+772	Starry Ore	0	False	False	False	2500	15	True	True	772	0	6	0	0	125	49
+773	Comet Ring	0	False	False	False	2500	15	True	True	773	0	10	0	0	125	54
+774	Clef-Claw	0	False	False	False	2500	15	True	True	774	0	0	0	0	125	39
+775	Clef-Fang	0	False	False	False	2500	15	True	True	775	0	0	0	0	125	32
+776	Moon Jewel	0	False	False	False	2500	15	True	True	776	0	13	0	0	125	49
+777	Moon Scarf	0	False	False	False	2500	15	True	True	777	0	12	0	0	125	37
+778	Clefa-Claw	0	False	False	False	2500	15	True	True	778	0	0	0	0	125	39
+779	Clefa-Card	0	False	False	False	2500	15	True	True	779	0	14	0	0	125	27
+780	Moon Rock	0	False	False	False	2500	15	True	True	780	0	6	0	0	125	49
+781	Fairy Bow	0	False	False	False	2500	15	True	True	781	0	4	0	0	125	52
+782	Iggly-Dew	0	False	False	False	2500	15	True	True	782	0	12	0	0	125	35
+783	Iggly-Card	0	False	False	False	2500	15	True	True	783	0	14	0	0	125	27
+784	Bouncy Charm	0	False	False	False	2500	15	True	True	784	0	3	0	0	125	28
+785	Pretty Bow	0	False	False	False	2500	15	True	True	785	0	4	0	0	125	52
+786	Jiggly-Song	0	False	False	False	2500	15	True	True	786	0	0	0	0	125	7
+787	Jiggly-Card	0	False	False	False	2500	15	True	True	787	0	14	0	0	125	27
+788	Slumber Rock	0	False	False	False	2500	15	True	True	788	0	6	0	0	125	49
+789	Snooze Ring	0	False	False	False	2500	15	True	True	789	0	10	0	0	125	54
+790	Wiggly-Hair	0	False	False	False	2500	15	True	True	790	0	1	0	0	125	33
+791	Wiggly-Card	0	False	False	False	2500	15	True	True	791	0	14	0	0	125	27
+792	Buddy Rock	0	False	False	False	2500	15	True	True	792	0	6	0	0	125	49
+793	Friend Torc	0	False	False	False	2500	15	True	True	793	0	5	0	0	125	54
+794	Togepi Dew	0	False	False	False	2500	15	True	True	794	0	12	0	0	125	35
+795	Togepi Card	0	False	False	False	2500	15	True	True	795	0	14	0	0	125	27
+796	Pure Heart	0	False	False	False	2500	15	True	True	796	0	4	0	0	125	42
+797	Angel Scarf	0	False	False	False	2500	15	True	True	797	0	12	0	0	125	37
+798	Togetic Wing	0	False	False	False	2500	15	True	True	798	0	12	0	0	125	44
+799	Togetic Card	0	False	False	False	2500	15	True	True	799	0	14	0	0	125	27
+800	Happy Rock	0	False	False	False	2500	15	True	True	800	0	6	0	0	125	49
+801	Luck Brooch	0	False	False	False	2500	15	True	True	801	0	3	0	0	125	47
+802	Togek-Wing	0	False	False	False	2500	15	True	True	802	0	12	0	0	125	44
+803	Togek-Card	0	False	False	False	2500	15	True	True	803	0	14	0	0	125	27
+804	Ovation Rock	0	False	False	False	2500	15	True	True	804	0	6	0	0	125	49
+805	Glitter Robe	0	False	False	False	2500	15	True	True	805	0	10	0	0	125	57
+806	Sneasel Claw	0	False	False	False	2500	15	True	True	806	0	0	0	0	125	39
+807	Sneasel Card	0	False	False	False	2500	15	True	True	807	0	14	0	0	125	27
+808	Dusk Jewel	0	False	False	False	2500	15	True	True	808	0	13	0	0	125	49
+809	Cruel Ring	0	False	False	False	2500	15	True	True	809	0	10	0	0	125	54
+810	Weavile Claw	0	False	False	False	2500	15	True	True	810	0	0	0	0	125	39
+811	Weavile Fang	0	False	False	False	2500	15	True	True	811	0	0	0	0	125	32
+812	Vile Tag	0	False	False	False	2500	15	True	True	812	0	13	0	0	125	27
+813	Ruin Armlet	0	False	False	False	2500	15	True	True	813	0	4	0	0	125	54
+814	Teddi-Claw	0	False	False	False	2500	15	True	True	814	0	0	0	0	125	39
+815	Teddi-Card	0	False	False	False	2500	15	True	True	815	0	14	0	0	125	27
+816	Honey Rock	0	False	False	False	2500	15	True	True	816	0	6	0	0	125	49
+817	Heal Scarf	0	False	False	False	2500	15	True	True	817	0	12	0	0	125	37
+818	Ursa-Claw	0	False	False	False	2500	15	True	True	818	0	0	0	0	125	39
+819	Ursa-Fang	0	False	False	False	2500	15	True	True	819	0	0	0	0	125	32
+820	Calming Rock	0	False	False	False	2500	15	True	True	820	0	6	0	0	125	49
+821	Hiber Scarf	0	False	False	False	2500	15	True	True	821	0	12	0	0	125	37
+822	Tyro-Sweat	0	False	False	False	2500	15	True	True	822	0	3	0	0	125	35
+823	Tyro-Card	0	False	False	False	2500	15	True	True	823	0	14	0	0	125	27
+824	Muscle Charm	0	False	False	False	2500	15	True	True	824	0	3	0	0	125	28
+825	[M:D1]Tyrogue	0	False	False	False	2500	15	True	False	825	0	0	0	0	125	37
+826	Smooch-Song	0	False	False	False	2500	15	True	True	826	0	0	0	0	125	7
+827	Smooch-Card	0	False	False	False	2500	15	True	True	827	0	14	0	0	125	27
+828	Kiss Charm	0	False	False	False	2500	15	True	True	828	0	3	0	0	125	28
+829	Heart Tiara	0	False	False	False	2500	15	True	True	829	0	10	0	0	125	31
+830	Jynx Song	0	False	False	False	2500	15	True	True	830	0	0	0	0	125	7
+831	Jynx Card	0	False	False	False	2500	15	True	True	831	0	14	0	0	125	27
+832	Frozen Ore	0	False	False	False	2500	15	True	True	832	0	4	0	0	125	49
+833	Ruin Scarf	0	False	False	False	2500	15	True	True	833	0	12	0	0	125	37
+834	Elekid Claw	0	False	False	False	2500	15	True	True	834	0	0	0	0	125	39
+835	Elekid Card	0	False	False	False	2500	15	True	True	835	0	14	0	0	125	27
+836	Jolt Charm	0	False	False	False	2500	15	True	True	836	0	3	0	0	125	28
+837	Current Ring	0	False	False	False	2500	15	True	True	837	0	10	0	0	125	54
+838	Electa-Claw	0	False	False	False	2500	15	True	True	838	0	0	0	0	125	39
+839	Electa-Fang	0	False	False	False	2500	15	True	True	839	0	0	0	0	125	32
+840	Charge Seal	0	False	False	False	2500	15	True	True	840	0	13	0	0	125	27
+841	Volt Bangle	0	False	False	False	2500	15	True	True	841	0	7	0	0	125	54
+842	Electi-Claw	0	False	False	False	2500	15	True	True	842	0	0	0	0	125	39
+843	Electi-Card	0	False	False	False	2500	15	True	True	843	0	14	0	0	125	27
+844	Voltaic Rock	0	False	False	False	2500	15	True	True	844	0	6	0	0	125	49
+845	Voltaic Band	0	False	False	False	2500	15	True	True	845	0	12	0	0	125	58
+846	Magby Claw	0	False	False	False	2500	15	True	True	846	0	0	0	0	125	39
+847	Magby Card	0	False	False	False	2500	15	True	True	847	0	14	0	0	125	27
+848	Ember Jewel	0	False	False	False	2500	15	True	True	848	0	13	0	0	125	49
+849	Coal Ring	0	False	False	False	2500	15	True	True	849	0	10	0	0	125	54
+850	Magmar Claw	0	False	False	False	2500	15	True	True	850	0	0	0	0	125	39
+851	Magmar Card	0	False	False	False	2500	15	True	True	851	0	14	0	0	125	27
+852	Erupt Ore	0	False	False	False	2500	15	True	True	852	0	6	0	0	125	49
+853	Magma Scarf	0	False	False	False	2500	15	True	True	853	0	12	0	0	125	37
+854	Magmor-Claw	0	False	False	False	2500	15	True	True	854	0	0	0	0	125	39
+855	Magmor-Card	0	False	False	False	2500	15	True	True	855	0	14	0	0	125	27
+856	Vulcan Rock	0	False	False	False	2500	15	True	True	856	0	6	0	0	125	49
+857	Burning Torc	0	False	False	False	2500	15	True	True	857	0	5	0	0	125	54
+858	Azuri-Dew	0	False	False	False	2500	15	True	True	858	0	12	0	0	125	35
+859	Azuri-Card	0	False	False	False	2500	15	True	True	859	0	14	0	0	125	27
+860	Fount Charm	0	False	False	False	2500	15	True	True	860	0	3	0	0	125	28
+861	Water Float	0	False	False	False	2500	15	True	True	861	0	6	0	0	125	54
+862	Marill Dew	0	False	False	False	2500	15	True	True	862	0	10	0	0	125	35
+863	Marill Card	0	False	False	False	2500	15	True	True	863	0	14	0	0	125	27
+864	Surfer Rock	0	False	False	False	2500	15	True	True	864	0	6	0	0	125	49
+865	Brine Scarf	0	False	False	False	2500	15	True	True	865	0	12	0	0	125	37
+866	Azuma-Dew	0	False	False	False	2500	15	True	True	866	0	10	0	0	125	35
+867	Azuma-Card	0	False	False	False	2500	15	True	True	867	0	14	0	0	125	27
+868	Stream Charm	0	False	False	False	2500	15	True	True	868	0	3	0	0	125	28
+869	Dotted Scarf	0	False	False	False	2500	15	True	True	869	0	12	0	0	125	37
+870	Plusle Tail	0	False	False	False	2500	15	True	True	870	0	15	0	0	125	36
+871	Plusle Card	0	False	False	False	2500	15	True	True	871	0	14	0	0	125	27
+872	Cheer Rock	0	False	False	False	2500	15	True	True	872	0	6	0	0	125	49
+873	Pulse Bow	0	False	False	False	2500	15	True	True	873	0	4	0	0	125	52
+874	Minun Tail	0	False	False	False	2500	15	True	True	874	0	15	0	0	125	36
+875	Minun Card	0	False	False	False	2500	15	True	True	875	0	14	0	0	125	27
+876	Volt Heart	0	False	False	False	2500	15	True	True	876	0	4	0	0	125	42
+877	Spark Tie	0	False	False	False	2500	15	True	True	877	0	10	0	0	125	52
+878	Cast-Dew	0	False	False	False	2500	15	True	True	878	0	10	0	0	125	35
+879	Cast-Card	0	False	False	False	2500	15	True	True	879	0	14	0	0	125	27
+880	Cloud Rock	0	False	False	False	2500	15	True	True	880	0	6	0	0	125	49
+881	Weather Cape	0	False	False	False	2500	15	True	True	881	0	12	0	0	125	37
+882	Wynaut Tail	0	False	False	False	2500	15	True	True	882	0	15	0	0	125	36
+883	Wynaut Card	0	False	False	False	2500	15	True	True	883	0	14	0	0	125	27
+884	Grin Charm	0	False	False	False	2500	15	True	True	884	0	3	0	0	125	28
+885	Cheery Scarf	0	False	False	False	2500	15	True	True	885	0	12	0	0	125	37
+886	Wobbu-Sweat	0	False	False	False	2500	15	True	True	886	0	3	0	0	125	35
+887	Wobbu-Card	0	False	False	False	2500	15	True	True	887	0	14	0	0	125	27
+888	Endure Rock	0	False	False	False	2500	15	True	True	888	0	6	0	0	125	49
+889	Suffer Scarf	0	False	False	False	2500	15	True	True	889	0	12	0	0	125	37
+890	Bidoof Tooth	0	False	False	False	2500	15	True	True	890	0	0	0	0	125	50
+891	Bidoof Card	0	False	False	False	2500	15	True	True	891	0	14	0	0	125	27
+892	Fall Charm	0	False	False	False	2500	15	True	True	892	0	3	0	0	125	28
+893	Stolid Scarf	0	False	False	False	2500	15	True	True	893	0	12	0	0	125	37
+894	Biba-Tooth	0	False	False	False	2500	15	True	True	894	0	0	0	0	125	50
+895	Biba-Card	0	False	False	False	2500	15	True	True	895	0	14	0	0	125	27
+896	River Charm	0	False	False	False	2500	15	True	True	896	0	3	0	0	125	28
+897	Dam Scarf	0	False	False	False	2500	15	True	True	897	0	12	0	0	125	37
+898	Shinx Claw	0	False	False	False	2500	15	True	True	898	0	0	0	0	125	39
+899	Shinx Fang	0	False	False	False	2500	15	True	True	899	0	0	0	0	125	32
+900	Flash Tag	0	False	False	False	2500	15	True	True	900	0	13	0	0	125	27
+901	Energy Scarf	0	False	False	False	2500	15	True	True	901	0	12	0	0	125	37
+902	Luxio Claw	0	False	False	False	2500	15	True	True	902	0	0	0	0	125	39
+903	Luxio Fang	0	False	False	False	2500	15	True	True	903	0	0	0	0	125	32
+904	Spark Tag	0	False	False	False	2500	15	True	True	904	0	13	0	0	125	27
+905	Spark Scarf	0	False	False	False	2500	15	True	True	905	0	12	0	0	125	37
+906	Luxray Claw	0	False	False	False	2500	15	True	True	906	0	0	0	0	125	39
+907	Luxray Fang	0	False	False	False	2500	15	True	True	907	0	0	0	0	125	32
+908	Glare Tag	0	False	False	False	2500	15	True	True	908	0	13	0	0	125	27
+909	Glare Sash	0	False	False	False	2500	15	True	True	909	0	0	0	0	125	37
+910	Pachi-Tooth	0	False	False	False	2500	15	True	True	910	0	0	0	0	125	50
+911	Pachi-Card	0	False	False	False	2500	15	True	True	911	0	14	0	0	125	27
+912	Rouse Charm	0	False	False	False	2500	15	True	True	912	0	3	0	0	125	28
+913	Miracle Bow	0	False	False	False	2500	15	True	True	913	0	4	0	0	125	52
+914	Buizel Fang	0	False	False	False	2500	15	True	True	914	0	0	0	0	125	32
+915	Buizel Card	0	False	False	False	2500	15	True	True	915	0	14	0	0	125	27
+916	Swimmer Rock	0	False	False	False	2500	15	True	True	916	0	6	0	0	125	49
+917	Screw Torc	0	False	False	False	2500	15	True	True	917	0	5	0	0	125	54
+918	Float-Fang	0	False	False	False	2500	15	True	True	918	0	0	0	0	125	32
+919	Float-Card	0	False	False	False	2500	15	True	True	919	0	14	0	0	125	27
+920	Rescue Rock	0	False	False	False	2500	15	True	True	920	0	6	0	0	125	49
+921	Float Aid	0	False	False	False	2500	15	True	True	921	0	6	0	0	125	54
+922	Drifloo-Gasp	0	False	False	False	2500	15	True	True	922	0	7	0	0	125	15
+923	Drifloo-Card	0	False	False	False	2500	15	True	True	923	0	14	0	0	125	27
+924	Wind Heart	0	False	False	False	2500	15	True	True	924	0	4	0	0	125	42
+925	Draft Ring	0	False	False	False	2500	15	True	True	925	0	10	0	0	125	54
+926	Drifbli-Gasp	0	False	False	False	2500	15	True	True	926	0	7	0	0	125	15
+927	Drifbli-Card	0	False	False	False	2500	15	True	True	927	0	14	0	0	125	27
+928	Easy Charm	0	False	False	False	2500	15	True	True	928	0	3	0	0	125	28
+929	Breeze Scarf	0	False	False	False	2500	15	True	True	929	0	12	0	0	125	37
+930	Cherubi Seed	0	False	False	False	2500	15	True	True	930	0	4	0	0	125	14
+931	Cherubi Card	0	False	False	False	2500	15	True	True	931	0	14	0	0	125	27
+932	Cute Ore	0	False	False	False	2500	15	True	True	932	0	6	0	0	125	49
+933	Charm Bow	0	False	False	False	2500	15	True	True	933	0	4	0	0	125	52
+934	Cherrim Dew	0	False	False	False	2500	15	True	True	934	0	10	0	0	125	35
+935	Cherrim Card	0	False	False	False	2500	15	True	True	935	0	14	0	0	125	27
+936	Sweet Aroma	0	False	False	False	2500	15	True	True	936	0	13	0	0	125	35
+937	Petal Dress	0	False	False	False	2500	15	True	True	937	0	15	0	0	125	57
+938	Bonsly Dew	0	False	False	False	2500	15	True	True	938	0	12	0	0	125	35
+939	Bonsly Card	0	False	False	False	2500	15	True	True	939	0	14	0	0	125	27
+940	Arid Tag	0	False	False	False	2500	15	True	True	940	0	13	0	0	125	27
+941	Teary Cape	0	False	False	False	2500	15	True	True	941	0	3	0	0	125	37
+942	Sudo-Sweat	0	False	False	False	2500	15	True	True	942	0	3	0	0	125	35
+943	Sudo-Card	0	False	False	False	2500	15	True	True	943	0	14	0	0	125	27
+944	Drain Rock	0	False	False	False	2500	15	True	True	944	0	4	0	0	125	49
+945	Fake Torc	0	False	False	False	2500	15	True	True	945	0	5	0	0	125	54
+946	Junior Beam	0	False	False	False	2500	15	True	True	946	0	3	0	0	125	15
+947	Junior Card	0	False	False	False	2500	15	True	True	947	0	14	0	0	125	27
+948	Mimic Pebble	0	False	False	False	2500	15	True	True	948	0	0	0	0	125	49
+949	Copy Mask	0	False	False	False	2500	15	True	True	949	0	0	0	0	125	43
+950	Mime Key	0	False	False	False	2500	15	True	True	950	0	12	0	0	125	16
+951	Mime Card	0	False	False	False	2500	15	True	True	951	0	14	0	0	125	27
+952	Bulwark Rock	0	False	False	False	2500	15	True	True	952	0	4	0	0	125	49
+953	Barrier Bow	0	False	False	False	2500	15	True	True	953	0	4	0	0	125	52
+954	Happiny Dew	0	False	False	False	2500	15	True	True	954	0	12	0	0	125	35
+955	Happiny Card	0	False	False	False	2500	15	True	True	955	0	14	0	0	125	27
+956	Play Tag	0	False	False	False	2500	15	True	True	956	0	13	0	0	125	27
+957	Nurture Cape	0	False	False	False	2500	15	True	True	957	0	3	0	0	125	37
+958	Chansey Song	0	False	False	False	2500	15	True	True	958	0	0	0	0	125	7
+959	Chansey Card	0	False	False	False	2500	15	True	True	959	0	14	0	0	125	27
+960	Lucky Charm	0	False	False	False	2500	15	True	True	960	0	3	0	0	125	28
+961	Lucky Scarf	0	False	False	False	2500	15	True	True	961	0	12	0	0	125	37
+962	Blissey Song	0	False	False	False	2500	15	True	True	962	0	0	0	0	125	7
+963	Blissey Card	0	False	False	False	2500	15	True	True	963	0	14	0	0	125	27
+964	Amity Rock	0	False	False	False	2500	15	True	True	964	0	6	0	0	125	49
+965	Faith Ring	0	False	False	False	2500	15	True	True	965	0	10	0	0	125	54
+966	Gible Fang	0	False	False	False	2500	15	True	True	966	0	0	0	0	125	32
+967	Gible Card	0	False	False	False	2500	15	True	True	967	0	14	0	0	125	27
+968	Dragon Jewel	0	False	False	False	2500	15	True	True	968	0	13	0	0	125	49
+969	Dragon Tie	0	False	False	False	2500	15	True	True	969	0	10	0	0	125	52
+970	Gabite Claw	0	False	False	False	2500	15	True	True	970	0	0	0	0	125	39
+971	Gabite Fang	0	False	False	False	2500	15	True	True	971	0	0	0	0	125	32
+972	Star Rock	0	False	False	False	2500	15	True	True	972	0	4	0	0	125	49
+973	Meteor Torc	0	False	False	False	2500	15	True	True	973	0	5	0	0	125	54
+974	Gar-Claw	0	False	False	False	2500	15	True	True	974	0	0	0	0	125	39
+975	Gar-Fang	0	False	False	False	2500	15	True	True	975	0	0	0	0	125	32
+976	Speed Tag	0	False	False	False	2500	15	True	True	976	0	13	0	0	125	27
+977	Mach Scarf	0	False	False	False	2500	15	True	True	977	0	12	0	0	125	37
+978	Riolu Tail	0	False	False	False	2500	15	True	True	978	0	1	0	0	125	26
+979	Riolu Card	0	False	False	False	2500	15	True	True	979	0	14	0	0	125	27
+980	Valiant Rock	0	False	False	False	2500	15	True	True	980	0	6	0	0	125	49
+981	Emit Ring	0	False	False	False	2500	15	True	True	981	0	10	0	0	125	54
+982	Lucario Fang	0	False	False	False	2500	15	True	True	982	0	0	0	0	125	32
+983	Lucario Card	0	False	False	False	2500	15	True	True	983	0	14	0	0	125	27
+984	Pledge Rock	0	False	False	False	2500	15	True	True	984	0	6	0	0	125	49
+985	Ravage Ring	0	False	False	False	2500	15	True	True	985	0	10	0	0	125	54
+986	Mantyke Beam	0	False	False	False	2500	15	True	True	986	0	3	0	0	125	15
+987	Mantyke Card	0	False	False	False	2500	15	True	True	987	0	14	0	0	125	27
+988	Waft Rock	0	False	False	False	2500	15	True	True	988	0	6	0	0	125	49
+989	Ocean Bow	0	False	False	False	2500	15	True	True	989	0	4	0	0	125	52
+990	Mantine Foam	0	False	False	False	2500	15	True	True	990	0	12	0	0	125	15
+991	Mantine Card	0	False	False	False	2500	15	True	True	991	0	14	0	0	125	27
+992	Sunset Rock	0	False	False	False	2500	15	True	True	992	0	6	0	0	125	49
+993	Horizon Bow	0	False	False	False	2500	15	True	True	993	0	4	0	0	125	52
+994	Phione Song	0	False	False	False	2500	15	True	True	994	0	0	0	0	125	7
+995	Phione Card	0	False	False	False	2500	15	True	True	995	0	14	0	0	125	27
+996	Wave Jewel	0	False	False	False	2500	15	True	True	996	0	13	0	0	125	49
+997	Ripple Cape	0	False	False	False	2500	15	True	True	997	0	3	0	0	125	37
+998	Vulpix Tail	0	False	False	False	2500	15	False	True	998	0	1	0	0	125	26
+999	Vulpix Card	0	False	False	False	2500	15	False	True	999	0	14	0	0	125	27
+1000	Vulpix Tag	0	False	False	False	2500	15	False	True	1000	0	13	0	0	125	27
+1001	Glowing Bow	0	False	False	False	2500	15	False	True	1001	0	4	0	0	125	52
+1002	Nine-Hair	0	False	False	False	2500	15	False	True	1002	0	1	0	0	125	33
+1003	Nine-Card	0	False	False	False	2500	15	False	True	1003	0	14	0	0	125	27
+1004	Nine-Seal	0	False	False	False	2500	15	False	True	1004	0	11	0	0	125	28
+1005	Afire Collar	0	False	False	False	2500	15	False	True	1005	0	11	0	0	125	37
+1006	Phanpy Claw	0	False	False	False	2500	15	False	True	1006	0	0	0	0	125	39
+1007	Phanpy Card	0	False	False	False	2500	15	False	True	1007	0	14	0	0	125	27
+1008	Phanpy Tag	0	False	False	False	2500	15	False	True	1008	0	13	0	0	125	27
+1009	Value Ruff	0	False	False	False	2500	15	False	True	1009	0	14	0	0	125	37
+1010	Donphan Fang	0	False	False	False	2500	15	False	True	1010	0	0	0	0	125	32
+1011	Donphan Card	0	False	False	False	2500	15	False	True	1011	0	14	0	0	125	27
+1012	Don-Crest	0	False	False	False	2500	15	False	True	1012	0	2	0	0	125	28
+1013	Armor Scarf	0	False	False	False	2500	15	False	True	1013	0	12	0	0	125	37
+1014	Cater-Belt	0	False	False	False	2500	15	False	True	1014	0	1	0	0	125	58
+1015	Defense Bow	0	False	False	False	2500	15	False	True	1015	0	4	0	0	125	52
+1016	Glittery Bow	0	False	False	False	2500	15	False	True	1016	0	4	0	0	125	52
+1017	Weedle Bow	0	False	False	False	2500	15	False	True	1017	0	4	0	0	125	52
+1018	Kakuna Scarf	0	False	False	False	2500	15	False	True	1018	0	12	0	0	125	37
+1019	Charge Scarf	0	False	False	False	2500	15	False	True	1019	0	12	0	0	125	37
+1020	Pidgey Bow	0	False	False	False	2500	15	False	True	1020	0	4	0	0	125	52
+1021	Pidgeo-Scarf	0	False	False	False	2500	15	False	True	1021	0	12	0	0	125	37
+1022	Pidgeot Torc	0	False	False	False	2500	15	False	True	1022	0	5	0	0	125	54
+1023	Ratta-Scarf	0	False	False	False	2500	15	False	True	1023	0	12	0	0	125	37
+1024	Overcome Bow	0	False	False	False	2500	15	False	True	1024	0	4	0	0	125	52
+1025	Quirky Bow	0	False	False	False	2500	15	False	True	1025	0	4	0	0	125	52
+1026	Wing Scarf	0	False	False	False	2500	15	False	True	1026	0	12	0	0	125	37
+1027	Leash Bow	0	False	False	False	2500	15	False	True	1027	0	4	0	0	125	52
+1028	Shock Ruff	0	False	False	False	2500	15	False	True	1028	0	14	0	0	125	37
+1029	Sand-Scarf	0	False	False	False	2500	15	False	True	1029	0	12	0	0	125	37
+1030	Sandy Torc	0	False	False	False	2500	15	False	True	1030	0	5	0	0	125	54
+1031	Pointy Scarf	0	False	False	False	2500	15	False	True	1031	0	12	0	0	125	37
+1032	Return Scarf	0	False	False	False	2500	15	False	True	1032	0	12	0	0	125	37
+1033	Impact Torc	0	False	False	False	2500	15	False	True	1033	0	5	0	0	125	54
+1034	Halve Scarf	0	False	False	False	2500	15	False	True	1034	0	12	0	0	125	37
+1035	Thorny Scarf	0	False	False	False	2500	15	False	True	1035	0	12	0	0	125	37
+1036	King Sash	0	False	False	False	2500	15	False	True	1036	0	0	0	0	125	37
+1037	Dodge Bow	0	False	False	False	2500	15	False	True	1037	0	4	0	0	125	52
+1038	Absorb Scarf	0	False	False	False	2500	15	False	True	1038	0	12	0	0	125	37
+1039	Odd Bow	0	False	False	False	2500	15	False	True	1039	0	4	0	0	125	52
+1040	Guard Hat	0	False	False	False	2500	15	False	True	1040	0	3	0	0	125	43
+1041	Aroma Scarf	0	False	False	False	2500	15	False	True	1041	0	12	0	0	125	37
+1042	Moving Scarf	0	False	False	False	2500	15	False	True	1042	0	12	0	0	125	37
+1043	Firm Hat	0	False	False	False	2500	15	False	True	1043	0	13	0	0	125	43
+1044	Gaze Goggles	0	False	False	False	2500	15	False	True	1044	0	12	0	0	125	13
+1045	Venomoth Bow	0	False	False	False	2500	15	False	True	1045	0	4	0	0	125	52
+1046	Diglett Hat	0	False	False	False	2500	15	False	True	1046	0	13	0	0	125	43
+1047	Dugtrio Bow	0	False	False	False	2500	15	False	True	1047	0	4	0	0	125	52
+1048	Psyduck Hat	0	False	False	False	2500	15	False	True	1048	0	13	0	0	125	43
+1049	Paddle Scarf	0	False	False	False	2500	15	False	True	1049	0	12	0	0	125	37
+1050	Mankey Torc	0	False	False	False	2500	15	False	True	1050	0	5	0	0	125	54
+1051	Nullify Belt	0	False	False	False	2500	15	False	True	1051	0	1	0	0	125	58
+1052	Growl-Scarf	0	False	False	False	2500	15	False	True	1052	0	12	0	0	125	37
+1053	Legend Bow	0	False	False	False	2500	15	False	True	1053	0	4	0	0	125	52
+1054	Damp Bow	0	False	False	False	2500	15	False	True	1054	0	4	0	0	125	52
+1055	Poli-Bow	0	False	False	False	2500	15	False	True	1055	0	4	0	0	125	52
+1056	Bold Belt	0	False	False	False	2500	15	False	True	1056	0	1	0	0	125	58
+1057	Predict Torc	0	False	False	False	2500	15	False	True	1057	0	5	0	0	125	54
+1058	Psychic Torc	0	False	False	False	2500	15	False	True	1058	0	5	0	0	125	54
+1059	Sparkle Ruff	0	False	False	False	2500	15	False	True	1059	0	14	0	0	125	37
+1060	Impish Band	0	False	False	False	2500	15	False	True	1060	0	12	0	0	125	58
+1061	Strong Belt	0	False	False	False	2500	15	False	True	1061	0	1	0	0	125	58
+1062	Machamp Belt	0	False	False	False	2500	15	False	True	1062	0	1	0	0	125	58
+1063	Bell-Bow	0	False	False	False	2500	15	False	True	1063	0	4	0	0	125	52
+1064	Digest Scarf	0	False	False	False	2500	15	False	True	1064	0	12	0	0	125	37
+1065	Victree-Torc	0	False	False	False	2500	15	False	True	1065	0	5	0	0	125	54
+1066	Tangle Bow	0	False	False	False	2500	15	False	True	1066	0	4	0	0	125	52
+1067	Tenta-Cape	0	False	False	False	2500	15	False	True	1067	0	15	0	0	125	57
+1068	Geodude Torc	0	False	False	False	2500	15	False	True	1068	0	5	0	0	125	54
+1069	Rocky Torc	0	False	False	False	2500	15	False	True	1069	0	5	0	0	125	54
+1070	Rugged Sash	0	False	False	False	2500	15	False	True	1070	0	0	0	0	125	37
+1071	Heated Bow	0	False	False	False	2500	15	False	True	1071	0	4	0	0	125	52
+1072	Sunlight Bow	0	False	False	False	2500	15	False	True	1072	0	4	0	0	125	52
+1073	Slowpoke Hat	0	False	False	False	2500	15	False	True	1073	0	3	0	0	125	43
+1074	Slow-Scarf	0	False	False	False	2500	15	False	True	1074	0	12	0	0	125	37
+1075	Magne-Torc	0	False	False	False	2500	15	False	True	1075	0	5	0	0	125	54
+1076	Magneton Bow	0	False	False	False	2500	15	False	True	1076	0	4	0	0	125	52
+1077	Bullseye Bow	0	False	False	False	2500	15	False	True	1077	0	4	0	0	125	52
+1078	Buddy Torc	0	False	False	False	2500	15	False	True	1078	0	5	0	0	125	54
+1079	Fight Torc	0	False	False	False	2500	15	False	True	1079	0	5	0	0	125	54
+1080	Gentle Bow	0	False	False	False	2500	15	False	True	1080	0	4	0	0	125	52
+1081	North Torc	0	False	False	False	2500	15	False	True	1081	0	5	0	0	125	54
+1082	Grimy Scarf	0	False	False	False	2500	15	False	True	1082	0	12	0	0	125	37
+1083	Slimy Bow	0	False	False	False	2500	15	False	True	1083	0	4	0	0	125	52
+1084	Shell-Torc	0	False	False	False	2500	15	False	True	1084	0	5	0	0	125	54
+1085	Cover Armor	0	False	False	False	2500	15	False	True	1085	0	2	0	0	125	57
+1086	Gastly Veil	0	False	False	False	2500	15	False	True	1086	0	2	0	0	125	56
+1087	Slip Scarf	0	False	False	False	2500	15	False	True	1087	0	12	0	0	125	37
+1088	Sunglasses	0	False	False	False	2500	15	False	True	1088	0	11	0	0	125	13
+1089	Trust Brooch	0	False	False	False	2500	15	False	True	1089	0	3	0	0	125	47
+1090	Drowzee Tie	0	False	False	False	2500	15	False	True	1090	0	10	0	0	125	52
+1091	Dream Coin	0	False	False	False	2500	15	False	True	1091	0	11	0	0	125	6
+1092	Krabby Bow	0	False	False	False	2500	15	False	True	1092	0	4	0	0	125	52
+1093	Super Sash	0	False	False	False	2500	15	False	True	1093	0	0	0	0	125	37
+1094	Ball Scarf	0	False	False	False	2500	15	False	True	1094	0	12	0	0	125	37
+1095	Electro-Bow	0	False	False	False	2500	15	False	True	1095	0	4	0	0	125	52
+1096	Repel Scarf	0	False	False	False	2500	15	False	True	1096	0	12	0	0	125	37
+1097	Exeggu-Sash	0	False	False	False	2500	15	False	True	1097	0	0	0	0	125	37
+1098	Cubone Scarf	0	False	False	False	2500	15	False	True	1098	0	12	0	0	125	37
+1099	Marowak Torc	0	False	False	False	2500	15	False	True	1099	0	5	0	0	125	54
+1100	Licky Scarf	0	False	False	False	2500	15	False	True	1100	0	12	0	0	125	37
+1101	Koffing Bow	0	False	False	False	2500	15	False	True	1101	0	4	0	0	125	52
+1102	Weez-Scarf	0	False	False	False	2500	15	False	True	1102	0	12	0	0	125	37
+1103	Solid Shield	0	False	False	False	2500	15	False	True	1103	0	9	0	0	125	46
+1104	Pierce Drill	0	False	False	False	2500	15	False	True	1104	0	2	0	0	125	38
+1105	Sticky Bow	0	False	False	False	2500	15	False	True	1105	0	4	0	0	125	52
+1106	Kang-Apron	0	False	False	False	2500	15	False	True	1106	0	4	0	0	125	57
+1107	Horsea Bow	0	False	False	False	2500	15	False	True	1107	0	4	0	0	125	52
+1108	Swirl Scarf	0	False	False	False	2500	15	False	True	1108	0	12	0	0	125	37
+1109	Goldeen Bow	0	False	False	False	2500	15	False	True	1109	0	4	0	0	125	52
+1110	Seaking Bow	0	False	False	False	2500	15	False	True	1110	0	4	0	0	125	52
+1111	Recover Torc	0	False	False	False	2500	15	False	True	1111	0	5	0	0	125	54
+1112	Starmie Belt	0	False	False	False	2500	15	False	True	1112	0	1	0	0	125	58
+1113	Pinsir Sash	0	False	False	False	2500	15	False	True	1113	0	0	0	0	125	37
+1114	Rushing Bow	0	False	False	False	2500	15	False	True	1114	0	4	0	0	125	52
+1115	Magikarp Bow	0	False	False	False	2500	15	False	True	1115	0	4	0	0	125	52
+1116	Tempest Sash	0	False	False	False	2500	15	False	True	1116	0	0	0	0	125	37
+1117	Ditto Torc	0	False	False	False	2500	15	False	True	1117	0	5	0	0	125	54
+1118	AI Brooch	0	False	False	False	2500	15	False	True	1118	0	3	0	0	125	47
+1119	Spike Brooch	0	False	False	False	2500	15	False	True	1119	0	3	0	0	125	47
+1120	Aged Scarf	0	False	False	False	2500	15	False	True	1120	0	12	0	0	125	37
+1121	Kabuto Hat	0	False	False	False	2500	15	False	True	1121	0	3	0	0	125	43
+1122	Kabu-Torc	0	False	False	False	2500	15	False	True	1122	0	5	0	0	125	54
+1123	Old Brooch	0	False	False	False	2500	15	False	True	1123	0	3	0	0	125	47
+1124	Dragon Sash	0	False	False	False	2500	15	False	True	1124	0	7	0	0	125	58
+1125	Aloft Mantle	0	False	False	False	2500	15	False	True	1125	0	13	0	0	125	56
+1126	Mirage Cape	0	False	False	False	2500	15	False	True	1126	0	15	0	0	125	57
+1127	Sentret Ruff	0	False	False	False	2500	15	False	True	1127	0	14	0	0	125	37
+1128	Body Collar	0	False	False	False	2500	15	False	True	1128	0	11	0	0	125	37
+1129	Expose Specs	0	False	False	False	2500	15	False	True	1129	0	13	0	0	125	13
+1130	Noctowl Torc	0	False	False	False	2500	15	False	True	1130	0	5	0	0	125	54
+1131	Morning Bow	0	False	False	False	2500	15	False	True	1131	0	4	0	0	125	52
+1132	Ledian Bow	0	False	False	False	2500	15	False	True	1132	0	4	0	0	125	52
+1133	Spina-Scarf	0	False	False	False	2500	15	False	True	1133	0	12	0	0	125	37
+1134	Ariados Bow	0	False	False	False	2500	15	False	True	1134	0	4	0	0	125	52
+1135	Slash Bow	0	False	False	False	2500	15	False	True	1135	0	4	0	0	125	52
+1136	Shine Torc	0	False	False	False	2500	15	False	True	1136	0	5	0	0	125	54
+1137	Lanturn Bow	0	False	False	False	2500	15	False	True	1137	0	4	0	0	125	52
+1138	Lively Scarf	0	False	False	False	2500	15	False	True	1138	0	12	0	0	125	37
+1139	Xatu Bow	0	False	False	False	2500	15	False	True	1139	0	4	0	0	125	52
+1140	Wool Bow	0	False	False	False	2500	15	False	True	1140	0	4	0	0	125	52
+1141	Fluffy Scarf	0	False	False	False	2500	15	False	True	1141	0	12	0	0	125	37
+1142	Sacred Scarf	0	False	False	False	2500	15	False	True	1142	0	12	0	0	125	37
+1143	Bright Tiara	0	False	False	False	2500	15	False	True	1143	0	10	0	0	125	31
+1144	Rain Crown	0	False	False	False	2500	15	False	True	1144	0	5	0	0	125	31
+1145	Zephyr Bow	0	False	False	False	2500	15	False	True	1145	0	4	0	0	125	52
+1146	Skip-Scarf	0	False	False	False	2500	15	False	True	1146	0	12	0	0	125	37
+1147	Cotton Torc	0	False	False	False	2500	15	False	True	1147	0	5	0	0	125	54
+1148	Revenge Ruff	0	False	False	False	2500	15	False	True	1148	0	14	0	0	125	37
+1149	Hasty Bow	0	False	False	False	2500	15	False	True	1149	0	4	0	0	125	52
+1150	Sun Scarf	0	False	False	False	2500	15	False	True	1150	0	12	0	0	125	37
+1151	Chitin Bow	0	False	False	False	2500	15	False	True	1151	0	4	0	0	125	52
+1152	Wooper Bow	0	False	False	False	2500	15	False	True	1152	0	4	0	0	125	52
+1153	Quag-Torc	0	False	False	False	2500	15	False	True	1153	0	5	0	0	125	54
+1154	Murkrow Hat	0	False	False	False	2500	15	False	True	1154	0	13	0	0	125	43
+1155	King Cap	0	False	False	False	2500	15	False	True	1155	0	3	0	0	125	43
+1156	Misdrea-Cape	0	False	False	False	2500	15	False	True	1156	0	3	0	0	125	37
+1157	Cryptic Sash	0	False	False	False	2500	15	False	True	1157	0	0	0	0	125	37
+1158	Reverse Bow	0	False	False	False	2500	15	False	True	1158	0	4	0	0	125	52
+1159	Robust Bow	0	False	False	False	2500	15	False	True	1159	0	4	0	0	125	52
+1160	Dense Poncho	0	False	False	False	2500	15	False	True	1160	0	12	0	0	125	57
+1161	Escape Scarf	0	False	False	False	2500	15	False	True	1161	0	12	0	0	125	37
+1162	Takeoff Ruff	0	False	False	False	2500	15	False	True	1162	0	14	0	0	125	37
+1163	Quartz Torc	0	False	False	False	2500	15	False	True	1163	0	5	0	0	125	54
+1164	Snub-Cape	0	False	False	False	2500	15	False	True	1164	0	3	0	0	125	37
+1165	Stern Sash	0	False	False	False	2500	15	False	True	1165	0	0	0	0	125	37
+1166	Qwilfish Bow	0	False	False	False	2500	15	False	True	1166	0	4	0	0	125	52
+1167	Shuckle Bow	0	False	False	False	2500	15	False	True	1167	0	4	0	0	125	52
+1168	Horn Torc	0	False	False	False	2500	15	False	True	1168	0	5	0	0	125	54
+1169	Lava Bow	0	False	False	False	2500	15	False	True	1169	0	4	0	0	125	52
+1170	Torrid Scarf	0	False	False	False	2500	15	False	True	1170	0	12	0	0	125	37
+1171	Frigid Bow	0	False	False	False	2500	15	False	True	1171	0	4	0	0	125	52
+1172	Frost Torc	0	False	False	False	2500	15	False	True	1172	0	5	0	0	125	54
+1173	Eager Brooch	0	False	False	False	2500	15	False	True	1173	0	3	0	0	125	47
+1174	Reach Bow	0	False	False	False	2500	15	False	True	1174	0	4	0	0	125	52
+1175	Psy Bow	0	False	False	False	2500	15	False	True	1175	0	4	0	0	125	52
+1176	Snow Brooch	0	False	False	False	2500	15	False	True	1176	0	3	0	0	125	47
+1177	Skar-Cape	0	False	False	False	2500	15	False	True	1177	0	15	0	0	125	57
+1178	Dark Choker	0	False	False	False	2500	15	False	True	1178	0	6	0	0	125	58
+1179	Pit Fang	0	False	False	False	2500	15	False	True	1179	0	0	0	0	125	32
+1180	Tornado Bow	0	False	False	False	2500	15	False	True	1180	0	4	0	0	125	52
+1181	Virtual Bow	0	False	False	False	2500	15	False	True	1181	0	4	0	0	125	52
+1182	Delusion Bow	0	False	False	False	2500	15	False	True	1182	0	4	0	0	125	52
+1183	Paint Scarf	0	False	False	False	2500	15	False	True	1183	0	12	0	0	125	37
+1184	Milky Scarf	0	False	False	False	2500	15	False	True	1184	0	12	0	0	125	37
+1185	Larvitar Bow	0	False	False	False	2500	15	False	True	1185	0	4	0	0	125	52
+1186	Pupita-Scarf	0	False	False	False	2500	15	False	True	1186	0	12	0	0	125	37
+1187	Crash Claw	0	False	False	False	2500	15	False	True	1187	0	0	0	0	125	39
+1188	Pooch-Collar	0	False	False	False	2500	15	False	True	1188	0	0	0	0	125	54
+1189	Dark Fang	0	False	False	False	2500	15	False	True	1189	0	10	0	0	125	32
+1190	Merry Scarf	0	False	False	False	2500	15	False	True	1190	0	12	0	0	125	37
+1191	Linoone Ruff	0	False	False	False	2500	15	False	True	1191	0	14	0	0	125	37
+1192	Wurmple Bow	0	False	False	False	2500	15	False	True	1192	0	4	0	0	125	52
+1193	Tough Scarf	0	False	False	False	2500	15	False	True	1193	0	12	0	0	125	37
+1194	Vivid Silk	0	False	False	False	2500	15	False	True	1194	0	2	0	0	125	56
+1195	Guard Bow	0	False	False	False	2500	15	False	True	1195	0	4	0	0	125	52
+1196	Dustox Bow	0	False	False	False	2500	15	False	True	1196	0	4	0	0	125	52
+1197	Kelp Hat	0	False	False	False	2500	15	False	True	1197	0	3	0	0	125	43
+1198	Jolly Scarf	0	False	False	False	2500	15	False	True	1198	0	12	0	0	125	37
+1199	Ludicolo Hat	0	False	False	False	2500	15	False	True	1199	0	13	0	0	125	43
+1200	Seedot Hat	0	False	False	False	2500	15	False	True	1200	0	13	0	0	125	43
+1201	Nuzleaf Bow	0	False	False	False	2500	15	False	True	1201	0	4	0	0	125	52
+1202	Shiftry Belt	0	False	False	False	2500	15	False	True	1202	0	1	0	0	125	58
+1203	Taillow Bow	0	False	False	False	2500	15	False	True	1203	0	4	0	0	125	52
+1204	Midair Scarf	0	False	False	False	2500	15	False	True	1204	0	12	0	0	125	37
+1205	Wingull Bow	0	False	False	False	2500	15	False	True	1205	0	4	0	0	125	52
+1206	Stock Scarf	0	False	False	False	2500	15	False	True	1206	0	12	0	0	125	37
+1207	Sensing Hat	0	False	False	False	2500	15	False	True	1207	0	13	0	0	125	43
+1208	Magical Bow	0	False	False	False	2500	15	False	True	1208	0	4	0	0	125	52
+1209	Caring Scarf	0	False	False	False	2500	15	False	True	1209	0	12	0	0	125	37
+1210	Bliss Scarf	0	False	False	False	2500	15	False	True	1210	0	12	0	0	125	37
+1211	Blocking Bow	0	False	False	False	2500	15	False	True	1211	0	4	0	0	125	52
+1212	Mobile Bow	0	False	False	False	2500	15	False	True	1212	0	4	0	0	125	52
+1213	Thwart Bow	0	False	False	False	2500	15	False	True	1213	0	4	0	0	125	52
+1214	Slak-Scarf	0	False	False	False	2500	15	False	True	1214	0	12	0	0	125	37
+1215	Vigor Sash	0	False	False	False	2500	15	False	True	1215	0	0	0	0	125	37
+1216	Lazy Ruff	0	False	False	False	2500	15	False	True	1216	0	14	0	0	125	37
+1217	Novice Scarf	0	False	False	False	2500	15	False	True	1217	0	12	0	0	125	37
+1218	Ninja Ruff	0	False	False	False	2500	15	False	True	1218	0	14	0	0	125	37
+1219	Awe Mantle	0	False	False	False	2500	15	False	True	1219	0	13	0	0	125	56
+1220	Good Earring	0	False	False	False	2500	15	False	True	1220	0	5	0	0	125	54
+1221	Nice Bangle	0	False	False	False	2500	15	False	True	1221	0	7	0	0	125	54
+1222	Great Torc	0	False	False	False	2500	15	False	True	1222	0	5	0	0	125	54
+1223	Makuhit-Belt	0	False	False	False	2500	15	False	True	1223	0	1	0	0	125	58
+1224	Thrust Belt	0	False	False	False	2500	15	False	True	1224	0	15	0	0	125	58
+1225	Nose-Torc	0	False	False	False	2500	15	False	True	1225	0	5	0	0	125	54
+1226	Sable-Scope	0	False	False	False	2500	15	False	True	1226	0	12	0	0	125	13
+1227	Deceit Mask	0	False	False	False	2500	15	False	True	1227	0	0	0	0	125	43
+1228	Iron Torc	0	False	False	False	2500	15	False	True	1228	0	5	0	0	125	54
+1229	Metal Bangle	0	False	False	False	2500	15	False	True	1229	0	7	0	0	125	54
+1230	Iron Helmet	0	False	False	False	2500	15	False	True	1230	0	11	0	0	125	43
+1231	Intuit Bow	0	False	False	False	2500	15	False	True	1231	0	4	0	0	125	52
+1232	Ponder Sash	0	False	False	False	2500	15	False	True	1232	0	0	0	0	125	37
+1233	Punish Torc	0	False	False	False	2500	15	False	True	1233	0	5	0	0	125	54
+1234	Protect Mask	0	False	False	False	2500	15	False	True	1234	0	0	0	0	125	43
+1235	Neon Scarf	0	False	False	False	2500	15	False	True	1235	0	12	0	0	125	37
+1236	Evening Bow	0	False	False	False	2500	15	False	True	1236	0	4	0	0	125	52
+1237	Thorned Torc	0	False	False	False	2500	15	False	True	1237	0	5	0	0	125	54
+1238	Gulpin Bow	0	False	False	False	2500	15	False	True	1238	0	4	0	0	125	52
+1239	Swalot Belt	0	False	False	False	2500	15	False	True	1239	0	1	0	0	125	58
+1240	Carva-Sash	0	False	False	False	2500	15	False	True	1240	0	0	0	0	125	37
+1241	Vicious Bow	0	False	False	False	2500	15	False	True	1241	0	4	0	0	125	52
+1242	Spout Scarf	0	False	False	False	2500	15	False	True	1242	0	12	0	0	125	37
+1243	Huge Bow	0	False	False	False	2500	15	False	True	1243	0	4	0	0	125	52
+1244	Numel Bow	0	False	False	False	2500	15	False	True	1244	0	4	0	0	125	52
+1245	Erupt Scarf	0	False	False	False	2500	15	False	True	1245	0	12	0	0	125	37
+1246	Sooty Sash	0	False	False	False	2500	15	False	True	1246	0	0	0	0	125	37
+1247	Spring Bow	0	False	False	False	2500	15	False	True	1247	0	4	0	0	125	52
+1248	Scheme Scarf	0	False	False	False	2500	15	False	True	1248	0	12	0	0	125	37
+1249	Hula Bow	0	False	False	False	2500	15	False	True	1249	0	4	0	0	125	52
+1250	Desert Bow	0	False	False	False	2500	15	False	True	1250	0	4	0	0	125	52
+1251	Vibra Scarf	0	False	False	False	2500	15	False	True	1251	0	12	0	0	125	37
+1252	Red Glasses	0	False	False	False	2500	15	False	True	1252	0	11	0	0	125	13
+1253	Desert Sash	0	False	False	False	2500	15	False	True	1253	0	0	0	0	125	37
+1254	Cacturne Hat	0	False	False	False	2500	15	False	True	1254	0	13	0	0	125	43
+1255	Tuft Bow	0	False	False	False	2500	15	False	True	1255	0	4	0	0	125	52
+1256	Cloud Ruff	0	False	False	False	2500	15	False	True	1256	0	14	0	0	125	37
+1257	Strong Sash	0	False	False	False	2500	15	False	True	1257	0	0	0	0	125	37
+1258	Seviper Bow	0	False	False	False	2500	15	False	True	1258	0	4	0	0	125	52
+1259	Lunaton-Torc	0	False	False	False	2500	15	False	True	1259	0	5	0	0	125	54
+1260	Solrock Bow	0	False	False	False	2500	15	False	True	1260	0	4	0	0	125	52
+1261	Soak Scarf	0	False	False	False	2500	15	False	True	1261	0	12	0	0	125	37
+1262	Whiscash Bow	0	False	False	False	2500	15	False	True	1262	0	4	0	0	125	52
+1263	Bossy Scarf	0	False	False	False	2500	15	False	True	1263	0	12	0	0	125	37
+1264	Cower Sash	0	False	False	False	2500	15	False	True	1264	0	0	0	0	125	37
+1265	Bal-Brooch	0	False	False	False	2500	15	False	True	1265	0	3	0	0	125	47
+1266	Claydol Torc	0	False	False	False	2500	15	False	True	1266	0	5	0	0	125	54
+1267	Bind Scarf	0	False	False	False	2500	15	False	True	1267	0	12	0	0	125	37
+1268	Cradily Bow	0	False	False	False	2500	15	False	True	1268	0	4	0	0	125	52
+1269	Guard Claw	0	False	False	False	2500	15	False	True	1269	0	0	0	0	125	39
+1270	Rigid Cape	0	False	False	False	2500	15	False	True	1270	0	15	0	0	125	57
+1271	Admire Scarf	0	False	False	False	2500	15	False	True	1271	0	12	0	0	125	37
+1272	Grace Scarf	0	False	False	False	2500	15	False	True	1272	0	12	0	0	125	37
+1273	Kecleon Torc	0	False	False	False	2500	15	False	True	1273	0	5	0	0	125	54
+1274	Shuppet Cape	0	False	False	False	2500	15	False	True	1274	0	3	0	0	125	37
+1275	Ominous Torc	0	False	False	False	2500	15	False	True	1275	0	5	0	0	125	54
+1276	Duskull Ruff	0	False	False	False	2500	15	False	True	1276	0	14	0	0	125	37
+1277	Illusion Bow	0	False	False	False	2500	15	False	True	1277	0	4	0	0	125	52
+1278	Tropius Bow	0	False	False	False	2500	15	False	True	1278	0	4	0	0	125	52
+1279	Chime-Scarf	0	False	False	False	2500	15	False	True	1279	0	12	0	0	125	37
+1280	Perish Torc	0	False	False	False	2500	15	False	True	1280	0	5	0	0	125	54
+1281	Chilly Hat	0	False	False	False	2500	15	False	True	1281	0	3	0	0	125	43
+1282	Hail Scarf	0	False	False	False	2500	15	False	True	1282	0	12	0	0	125	37
+1283	Sleet Bow	0	False	False	False	2500	15	False	True	1283	0	4	0	0	125	52
+1284	Safe Scarf	0	False	False	False	2500	15	False	True	1284	0	12	0	0	125	37
+1285	Walrein Torc	0	False	False	False	2500	15	False	True	1285	0	5	0	0	125	54
+1286	Clam-Brooch	0	False	False	False	2500	15	False	True	1286	0	3	0	0	125	47
+1287	Deep Torc	0	False	False	False	2500	15	False	True	1287	0	5	0	0	125	54
+1288	Gore-Scarf	0	False	False	False	2500	15	False	True	1288	0	12	0	0	125	37
+1289	Reli-Torc	0	False	False	False	2500	15	False	True	1289	0	5	0	0	125	54
+1290	Luvdisc Torc	0	False	False	False	2500	15	False	True	1290	0	5	0	0	125	54
+1291	Crag Helmet	0	False	False	False	2500	15	False	True	1291	0	11	0	0	125	43
+1292	Outlast Bow	0	False	False	False	2500	15	False	True	1292	0	4	0	0	125	52
+1293	Sala-Cape	0	False	False	False	2500	15	False	True	1293	0	15	0	0	125	57
+1294	Beldum Torc	0	False	False	False	2500	15	False	True	1294	0	5	0	0	125	54
+1295	Metang Scarf	0	False	False	False	2500	15	False	True	1295	0	12	0	0	125	37
+1296	Meta-Torc	0	False	False	False	2500	15	False	True	1296	0	5	0	0	125	54
+1297	Starly Bow	0	False	False	False	2500	15	False	True	1297	0	4	0	0	125	52
+1298	Regret Torc	0	False	False	False	2500	15	False	True	1298	0	5	0	0	125	54
+1299	Guts Sash	0	False	False	False	2500	15	False	True	1299	0	0	0	0	125	37
+1300	Still Bow	0	False	False	False	2500	15	False	True	1300	0	4	0	0	125	52
+1301	Kricke-Torc	0	False	False	False	2500	15	False	True	1301	0	5	0	0	125	54
+1302	Budew Scarf	0	False	False	False	2500	15	False	True	1302	0	12	0	0	125	37
+1303	Bouquet Cape	0	False	False	False	2500	15	False	True	1303	0	15	0	0	125	57
+1304	Hard Helmet	0	False	False	False	2500	15	False	True	1304	0	11	0	0	125	43
+1305	Skull Helmet	0	False	False	False	2500	15	False	True	1305	0	11	0	0	125	43
+1306	Rebound Bow	0	False	False	False	2500	15	False	True	1306	0	4	0	0	125	52
+1307	Block Brooch	0	False	False	False	2500	15	False	True	1307	0	3	0	0	125	47
+1308	Straw Cape	0	False	False	False	2500	15	False	True	1308	0	15	0	0	125	57
+1309	Worma-Bow	0	False	False	False	2500	15	False	True	1309	0	4	0	0	125	52
+1310	Mothim Bow	0	False	False	False	2500	15	False	True	1310	0	4	0	0	125	52
+1311	Nectar Bow	0	False	False	False	2500	15	False	True	1311	0	4	0	0	125	52
+1312	Vespi-Torc	0	False	False	False	2500	15	False	True	1312	0	5	0	0	125	54
+1313	Awake Bow	0	False	False	False	2500	15	False	True	1313	0	4	0	0	125	52
+1314	Gastro-Torc	0	False	False	False	2500	15	False	True	1314	0	5	0	0	125	54
+1315	Ambipom Bow	0	False	False	False	2500	15	False	True	1315	0	4	0	0	125	52
+1316	Defrost Ruff	0	False	False	False	2500	15	False	True	1316	0	14	0	0	125	37
+1317	Allure Coat	0	False	False	False	2500	15	False	True	1317	0	4	0	0	125	57
+1318	Magic Hat	0	False	False	False	2500	15	False	True	1318	0	13	0	0	125	43
+1319	Honch-Cape	0	False	False	False	2500	15	False	True	1319	0	15	0	0	125	57
+1320	Glameow Bow	0	False	False	False	2500	15	False	True	1320	0	4	0	0	125	52
+1321	Scary Belt	0	False	False	False	2500	15	False	True	1321	0	1	0	0	125	58
+1322	Ching-Torc	0	False	False	False	2500	15	False	True	1322	0	5	0	0	125	54
+1323	Stinky Scarf	0	False	False	False	2500	15	False	True	1323	0	12	0	0	125	37
+1324	Stench Sash	0	False	False	False	2500	15	False	True	1324	0	0	0	0	125	37
+1325	Image Brooch	0	False	False	False	2500	15	False	True	1325	0	3	0	0	125	47
+1326	Mirror Torc	0	False	False	False	2500	15	False	True	1326	0	5	0	0	125	54
+1327	Chatot Scarf	0	False	False	False	2500	15	False	True	1327	0	12	0	0	125	37
+1328	Thick Scarf	0	False	False	False	2500	15	False	True	1328	0	12	0	0	125	37
+1329	Grit Veil	0	False	False	False	2500	15	False	True	1329	0	2	0	0	125	56
+1330	Skorupi Bow	0	False	False	False	2500	15	False	True	1330	0	4	0	0	125	52
+1331	Dust Scarf	0	False	False	False	2500	15	False	True	1331	0	12	0	0	125	37
+1332	Croa-Torc	0	False	False	False	2500	15	False	True	1332	0	5	0	0	125	54
+1333	Toxi-Belt	0	False	False	False	2500	15	False	True	1333	0	1	0	0	125	58
+1334	Carni-Bow	0	False	False	False	2500	15	False	True	1334	0	4	0	0	125	52
+1335	Swim Bow	0	False	False	False	2500	15	False	True	1335	0	4	0	0	125	52
+1336	Lumi-Torc	0	False	False	False	2500	15	False	True	1336	0	5	0	0	125	54
+1337	Snowy Torc	0	False	False	False	2500	15	False	True	1337	0	5	0	0	125	54
+1338	Frozen Cape	0	False	False	False	2500	15	False	True	1338	0	15	0	0	125	57
+1339	Builder Sash	0	False	False	False	2500	15	False	True	1339	0	0	0	0	125	37
+1340	Flabby Belt	0	False	False	False	2500	15	False	True	1340	0	1	0	0	125	58
+1341	Rhyperi-Torc	0	False	False	False	2500	15	False	True	1341	0	5	0	0	125	54
+1342	Clinging Bow	0	False	False	False	2500	15	False	True	1342	0	4	0	0	125	52
+1343	Yanmega Bow	0	False	False	False	2500	15	False	True	1343	0	4	0	0	125	52
+1344	Gliscor Cape	0	False	False	False	2500	15	False	True	1344	0	15	0	0	125	57
+1345	Glacier Cape	0	False	False	False	2500	15	False	True	1345	0	15	0	0	125	57
+1346	Best Scarf	0	False	False	False	2500	15	False	True	1346	0	12	0	0	125	37
+1347	Gallant Torc	0	False	False	False	2500	15	False	True	1347	0	5	0	0	125	54
+1348	Probo-Hat	0	False	False	False	2500	15	False	True	1348	0	13	0	0	125	43
+1349	Unlucky Sash	0	False	False	False	2500	15	False	True	1349	0	0	0	0	125	37
+1350	Froslass Bow	0	False	False	False	2500	15	False	True	1350	0	4	0	0	125	52
+1351	Purify Veil	0	False	False	False	2500	15	False	True	1351	0	2	0	0	125	56
+1352	[M:D1]$$$	0	False	False	False	2500	15	False	False	1352	0	0	0	0	125	0
+1353	[M:D1]$$$	0	False	False	False	2500	15	False	False	1353	0	0	0	0	125	0
+1354	[M:D1]$$$	0	False	False	False	2500	15	False	False	1354	0	0	0	0	125	0
+1355	[M:D1]$$$	0	False	False	False	2500	15	False	False	1355	0	0	0	0	125	0
+1356	[M:D1]$$$	0	False	False	False	2500	15	False	False	1356	0	0	0	0	125	0
+1357	[M:D1]$$$	0	False	False	False	2500	15	False	False	1357	0	0	0	0	125	0
+1358	[M:D1]$$$	0	False	False	False	2500	15	False	False	1358	0	0	0	0	125	0
+1359	[M:D1]$$$	0	False	False	False	2500	15	False	False	1359	0	0	0	0	125	0
+1360	[M:D1]$$$	0	False	False	False	2500	15	False	False	1360	0	0	0	0	125	0
+1361	[M:D1]$$$	0	False	False	False	2500	15	False	False	1361	0	0	0	0	125	0
+1362	[M:D1]$$$	0	False	False	False	2500	15	False	False	1362	0	0	0	0	125	0
+1363	[M:D1]$$$	0	False	False	False	2500	15	False	False	1363	0	0	0	0	125	0
+1364	[M:D1]$$$	0	False	False	False	2500	15	False	False	1364	0	0	0	0	125	0
+1365	[M:D1]$$$	0	False	False	False	2500	15	False	False	1365	0	0	0	0	125	0
+1366	[M:D1]$$$	0	False	False	False	2500	15	False	False	1366	0	0	0	0	125	0
+1367	[M:D1]$$$	0	False	False	False	2500	15	False	False	1367	0	0	0	0	125	0
+1368	[M:D1]$$$	0	False	False	False	2500	15	False	False	1368	0	0	0	0	125	0
+1369	[M:D1]$$$	0	False	False	False	2500	15	False	False	1369	0	0	0	0	125	0
+1370	[M:D1]$$$	0	False	False	False	2500	15	False	False	1370	0	0	0	0	125	0
+1371	[M:D1]$$$	0	False	False	False	2500	15	False	False	1371	0	0	0	0	125	0
+1372	[M:D1]$$$	0	False	False	False	2500	15	False	False	1372	0	0	0	0	125	0
+1373	[M:D1]$$$	0	False	False	False	2500	15	False	False	1373	0	0	0	0	125	0
+1374	[M:D1]$$$	0	False	False	False	2500	15	False	False	1374	0	0	0	0	125	0
+1375	[M:D1]$$$	0	False	False	False	2500	15	False	False	1375	0	0	0	0	125	0
+1376	[M:D1]$$$	0	False	False	False	2500	15	False	False	1376	0	0	0	0	125	0
+1377	[M:D1]$$$	0	False	False	False	2500	15	False	False	1377	0	0	0	0	125	0
+1378	[M:D1]$$$	0	False	False	False	2500	15	False	False	1378	0	0	0	0	125	0
+1379	[M:D1]$$$	0	False	False	False	2500	15	False	False	1379	0	0	0	0	125	0
+1380	[M:D1]$$$	0	False	False	False	2500	15	False	False	1380	0	0	0	0	125	0
+1381	[M:D1]$$$	0	False	False	False	2500	15	False	False	1381	0	0	0	0	125	0
+1382	[M:D1]$$$	0	False	False	False	2500	15	False	False	1382	0	0	0	0	125	0
+1383	[M:D1]$$$	0	False	False	False	2500	15	False	False	1383	0	0	0	0	125	0
+1384	[M:D1]$$$	0	False	False	False	2500	15	False	False	1384	0	0	0	0	125	0
+1385	[M:D1]$$$	0	False	False	False	2500	15	False	False	1385	0	0	0	0	125	0
+1386	[M:D1]$$$	0	False	False	False	2500	15	False	False	1386	0	0	0	0	125	0
+1387	[M:D1]$$$	0	False	False	False	2500	15	False	False	1387	0	0	0	0	125	0
+1388	[M:D1]$$$	0	False	False	False	2500	15	False	False	1388	0	0	0	0	125	0
+1389	[M:D1]$$$	0	False	False	False	2500	15	False	False	1389	0	0	0	0	125	0
+1390	[M:D1]$$$	0	False	False	False	2500	15	False	False	1390	0	0	0	0	125	0
+1391	[M:D1]$$$	0	False	False	False	2500	15	False	False	1391	0	0	0	0	125	0
+1392	[M:D1]$$$	0	False	False	False	2500	15	False	False	1392	0	0	0	0	125	0
+1393	[M:D1]$$$	0	False	False	False	2500	15	False	False	1393	0	0	0	0	125	0
+1394	[M:D1]$$$	0	False	False	False	2500	15	False	False	1394	0	0	0	0	125	0
+1395	[M:D1]$$$	0	False	False	False	2500	15	False	False	1395	0	0	0	0	125	0
+1396	[M:D1]$$$	0	False	False	False	2500	15	False	False	1396	0	0	0	0	125	0
+1397	[M:D1]$$$	0	False	False	False	2500	15	False	False	1397	0	0	0	0	125	0
+1398	[M:D1]$$$	0	False	False	False	2500	15	False	False	1398	0	0	0	0	125	0
+1399	[M:D1]$$$	0	False	False	False	2500	15	False	False	1399	0	0	0	0	125	0

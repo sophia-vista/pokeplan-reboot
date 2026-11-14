@@ -1,0 +1,12 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Yeah...I'm a bit busy exploring.
+NPC_PUKURIN_MAMA	Talk	Exploring? With Banette...?
+PLAYER_PUPURIN	Talk	Yep! ♪ Got it, Mama. ♪
+NPC_PUKURIN_MAMA	Talk	Be careful out there today.
+NPC_PUKURIN_MAMA	Talk	Don't go anywhere dangerous.
+NPC_PUKURIN_MAMA	Talk	Be careful, OK?
+NPC_PUKURIN_MAMA	Talk	Come home before it gets dark.
+PLAYER_PUPURIN	Talk	Yep! ♪ Got it, Mama. ♪
+NPC_PUKURIN_MAMA	Talk	Have fun playing, but be careful!
+NPC_PUKURIN_MAMA	Talk	Come back before it gets dark.
+PLAYER_PUPURIN	Talk	Yeah. ♪

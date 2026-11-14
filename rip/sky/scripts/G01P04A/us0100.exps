@@ -1,0 +1,22 @@
+
+def 0 {
+    debug_Print('S01_B2');
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [29, 6] ) {
+        @label_0;
+        supervision_Station(10);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 5] ) {
+        supervision_Station(10);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 2] ) {
+        supervision_Station(8);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 1] ) {
+        debug_Print('SET_S01_01');
+        supervision_Station(8);
+        end;
+    } else {
+        end;
+    }
+}

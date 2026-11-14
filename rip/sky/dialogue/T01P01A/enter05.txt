@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_YOMAWARU	Talk	Best of luck! Do take care!
+NPC_YOMAWARU	Talk	Whooooo! I wish to see them!
+NPC_YOMAWARU	Talk	My thoughts go with you...
+NPC_YOMAWARU	Talk	Ah, welcome back.

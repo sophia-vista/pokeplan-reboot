@@ -1,0 +1,3 @@
+speaker	kind	line
+PLAYER_CHARMS	Talk	Thanks, Bellossom.
+PLAYER_CHARMS	Talk	So don't worry.

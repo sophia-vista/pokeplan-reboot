@@ -1,0 +1,15 @@
+
+def 0 {
+    supervision_Station(0);
+    switch ( sector() ) { }
+    if ( scn($SCENARIO_MAIN) >= [20, 4] ) {
+        @label_0;
+        supervision_Station(4);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [20, 3] ) {
+        supervision_Station(3);
+        end;
+    } else {
+        end;
+    }
+}

@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DONMERU	SwitchMenu	Yes
+NPC_DONMERU	Mail	No

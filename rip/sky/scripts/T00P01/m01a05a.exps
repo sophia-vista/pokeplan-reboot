@@ -1,0 +1,42 @@
+
+def 0 {
+    debug_Print('acting_M01A05A');
+    with (actor ACTOR_PLAYER) {
+        hold;
+    }
+    with (actor ACTOR_ATTENDANT1) {
+        hold;
+    }
+    screen_FadeOut(1, 30);
+    message_Narration(30, {
+        english="[CN]Where am I?",
+    });
+    message_SetWaitMode(120, 60);
+    message_Narration(30, {
+        english="[CN]Am I dreaming this?",
+    });
+    message_Narration(30, {
+        english="[CN]I feel a pleasant breeze.",
+    });
+    Wait(30);
+    message_Explanation({
+        english="""
+            It sounds like the natural disasters were
+            interfering with our ability to evolve.
+        """,
+    });
+    message_Explanation({
+        english="""
+            I think the timing's right.[K] I should think about
+            evolving...
+        """,
+    });
+    screen_FadeIn(1, 30);
+    message_SetWaitMode(-1, -1);
+    message_Talk({
+        english="But when I evolve...[K] I become a [CS:L]Ludicolo[CR]...",
+    });
+    message_Close();
+    supervision_Suspend(-2);
+    end;
+}

@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	All accounted for, it appears.
+ATTENDANT1	FacePositionOffset	Fogbound Lake?
+NPC_PERAPPU	Talk	It is also rumored...
+ATTENDANT1	FacePositionOffset	This is so exciting!
+NPC_PUKURIN	Talk	Yup! It will be fun, fun, fun! ♪
+NPC_SUKATANKU	Talk	(Chaw-haw-haw.)

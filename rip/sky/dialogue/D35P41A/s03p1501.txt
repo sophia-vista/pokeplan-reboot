@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_FIONE1	Talk	Hee-dee-dee! ♪
+NPC_FIONE1	Talk	Tee-hee-dee! ♪
+NPC_FIONE1	Talk	Glee! ♪
+NPC_FIONE1	Talk	Whee! ♪
+NPC_FIONE1	ImitationSound	GRRAAAAAH!
+NPC_FIONE1	Talk	Eeeeek!
+NPC_GYARADOSU	Talk	OH? NOW WHO MIGHT YOU BE?
+NPC_GYARADOSU	Talk	NO MERCY FOR MEDDLERS!
+NPC_GYARADOSU	Talk	GRRAAAAHH!

@@ -1,0 +1,76 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Uwaaaahhh. ♪
+PLAYER_PUPURIN	Talk	Hey, Master. This is outside. ♪
+NPC_AAMARUDO	Talk	Don't tell me that this is...
+PLAYER_PUPURIN	Talk	Oh! Master!
+PLAYER_PUPURIN	Talk	Look over there!
+PLAYER_PUPURIN	Talk	Hey, Master!
+NPC_AAMARUDO	Talk	Oh.
+-	Talk	Wait!
+NPC_NIDOKINGU	Talk	I've finally found you, Armaldo!
+NPC_AAMARUDO	Talk	What... What did you say?
+PLAYER_PUPURIN	Talk	Oh! Papa! Mama!
+PLAYER_PUPURIN	Talk	And everyone!
+NPC_PUKURIN_MAMA	Talk	A-are you all right, Igglybuff?!
+NPC_PUKURIN_MAMA	Talk	You're not hurt?!
+PLAYER_PUPURIN	Talk	I'm fine, Mama. Why?
+NPC_MUCHUURU	Talk	Igglybuff! Listen carefully!
+NPC_MUCHUURU	Talk	An outlaw!
+PLAYER_PUPURIN	Talk	What? An outlaw?
+PLAYER_PUPURIN	Talk	Master is...a bad guy...?
+NPC_NIDOKINGU	Talk	That's right.
+PLAYER_PUPURIN	Talk	...Th-that...
+NPC_NIDOKINGU	Talk	So. Let the kid go, Armaldo.
+NPC_AAMARUDO	Talk	.........
+PLAYER_PUPURIN	Talk	...It's a lie...
+PLAYER_PUPURIN	Talk	It can't be true...
+NPC_NIDOKINGU	Talk	Kid. It's all right.
+PLAYER_PUPURIN	Talk	N-no! I asked him!
+PLAYER_PUPURIN	Talk	S-stop...
+PLAYER_PUPURIN	Talk	Please... Listen to me...
+NPC_NIDOKINGU	Talk	Hurry up! Move it!
+NPC_KOIRU	Talk	Whoa. What... What is this?!
+PLAYER_PUPURIN	Talk	Yoo... Yooo...
+NPC_NIDOKINGU	Talk	Th-the ground... Is it shaking?
+NPC_JIBAKOIRU	Talk	WAWAWAWAWAH!
+PLAYER_PUPURIN	Talk	YOOOOOOOOOOOOOOOOOMMM...
+PLAYER_PUPURIN	Talk	...Huh?
+NPC_AAMARUDO	Talk	I'm asking you! Stop, please!
+PLAYER_PUPURIN	Talk	M-Master...
+NPC_AAMARUDO	Talk	So please stop now!
+NPC_AAMARUDO	Talk	Officer Magnezone.
+NPC_JIBAKOIRU	Talk	ZZZT! Yes? ZZZT!
+NPC_AAMARUDO	Talk	Could you give me a minute?
+NPC_AAMARUDO	Talk	It's all right. I won't try to run.
+NPC_JIBAKOIRU	Talk	ZZZT! ...Understood. ZZZT!
+NPC_AAMARUDO	Talk	I'm sorry, Junior.
+NPC_AAMARUDO	Talk	I'm a bad guy.
+PLAYER_PUPURIN	Talk	That... That's not true!
+NPC_AAMARUDO	Talk	Listen, Junior.
+PLAYER_PUPURIN	Talk	M-Master...
+NPC_AAMARUDO	Talk	Anyway. I am a bad guy.
+NPC_AAMARUDO	Talk	But... You're different.
+NPC_AAMARUDO	Talk	So you... You can't be with me.
+PLAYER_PUPURIN	Talk	But--
+NPC_AAMARUDO	Talk	Junior. Did you enjoy exploring?
+PLAYER_PUPURIN	Talk	Yeah...
+NPC_AAMARUDO	Talk	Don't be a blockhead like me.
+NPC_AAMARUDO	Talk	You've got a gift for exploring.
+PLAYER_PUPURIN	Talk	M-Master...
+NPC_JIBAKOIRU	Talk	ZZZT! It's about time. ZZZT!
+PLAYER_PUPURIN	Talk	D-don't go!
+NPC_AAMARUDO	Talk	Junior.
+NPC_AAMARUDO	Talk	Thank you very much.
+PLAYER_PUPURIN	Talk	Oooooohhhh... Master...
+PLAYER_PUPURIN	Talk	Don't... I don't want you to go...
+NPC_AAMARUDO	Talk	Junior. Try to understand.
+NPC_AAMARUDO	Talk	I'll become an explorer.
+PLAYER_PUPURIN	Talk	It's... It's a promise!
+NPC_AAMARUDO	Talk	Sorry to have kept you waiting.
+PLAYER_PUPURIN	Talk	Master! Master!
+NPC_AAMARUDO	Talk	Take this!
+NPC_AAMARUDO	Talk	Be seeing you.
+PLAYER_PUPURIN	Talk	MASTER!
+PLAYER_PUPURIN	Talk	WAAAAAAAAAaaaaaaaaaaahhhhh!
+PLAYER_PUPURIN	Mail	The last thing Master gave me...
+PLAYER_PUPURIN	Mail	A Defend Globe.

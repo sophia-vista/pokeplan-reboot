@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ahem! So in conclusion...
+NPC_PERAPPU	Talk	Hmm... No clues, eh?
+NPC_KIMAWARI	Talk	So true! Yippee!
+NPC_BIPPA	Talk	I'm not giving up, by golly!
+NPC_DOGOOMU	Talk	Nothing can break ME!
+NPC_PERAPPU	Talk	Let's get this done!
+NPC_PERAPPU	Talk	Everyone: HOORAY!

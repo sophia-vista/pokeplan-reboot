@@ -1,0 +1,104 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_HEIGANI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Hey, hey! [CS:Y]Bidoof[CR]!",
+        });
+        message_Talk({
+            english=" Have a successful exploration!",
+        });
+        message_Talk({
+            english=" I'm cheering for you! Hey, hey!",
+        });
+        message_Close();
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 3] ) {
+        SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+        SetAnimation<actor ACTOR_NPC_HEIGANI>(2);
+        message_SetFace(ACTOR_NPC_HEIGANI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I wonder...[K]what kind of jobs we
+                have today? Hey, hey...
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_HEIGANI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Hey, hey! [CS:Y]Bidoof[CR]! I've heard!",
+        });
+        message_Talk({
+            english="""
+                 You're taking the day off, huh?
+                Hey, hey!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Nice...[K] I wonder if I can get a
+                day off too...
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_HEIGANI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hey, hey! [CS:Y]Bidoof[CR]![K]
+                Are you headed out?
+            """,
+        });
+        message_Talk({
+            english="""
+                 You've had a few setbacks
+                so far, but no worries! Hey, hey, hey!
+            """,
+        });
+        message_Talk({
+            english=" Incidentally...",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2DirectionMark<actor ACTOR_NPC_HEIGANI>(4, 10, Position<'m0', 65, 20>, 1, 1);
+        WaitExecuteLives(ACTOR_NPC_HEIGANI);
+        message_SetFace(ACTOR_NPC_HEIGANI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Did you know that you can also
+                make a record of your adventure at the
+                Watering Hole?
+            """,
+        });
+        message_Talk({
+            english="""
+                 You don't have to head all the
+                way back to your bed. You can do that
+                here too! Hey, hey!
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        Turn2DirectionLives<actor ACTOR_NPC_HEIGANI>(4, 10, ACTOR_PLAYER_BIPPA);
+        WaitExecuteLives(ACTOR_NPC_HEIGANI);
+        message_SetFace(ACTOR_NPC_HEIGANI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 It's convenient when you want to
+                make a record of your progress frequently,
+                so don't forget! Hey, hey!
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

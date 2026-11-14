@@ -1,0 +1,28 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Let's rest awhile.
+NPC_YONOWAARU	Talk	.........
+NPC_YONOWAARU	Talk	... (Grovyle... He's...)
+PLAYER_FUTURE	Talk	By the way...that time...
+NPC_YONOWAARU	Talk	It's a misunderstanding, Grovyle.
+NPC_YONOWAARU	Talk	Still, I protected you...
+NPC_YONOWAARU	Talk	To take out that new henchman.
+NPC_YONOWAARU	Talk	They're nothing to worry about.
+PLAYER_FUTURE	Talk	We'll head out in a little while.
+PLAYER_FUTURE	Talk	What is it?
+NPC_YONOWAARU	Talk	Grovyle... You...
+NPC_YONOWAARU	Talk	But if you do, you'll disappear.
+NPC_YONOWAARU	Talk	Your existence...will end.
+NPC_YONOWAARU	Talk	To make myself disappear...
+NPC_YONOWAARU	Talk	I will not allow it.
+PLAYER_FUTURE	Talk	...Dusknoir.
+PLAYER_FUTURE	Talk	But me... This is what I think.
+PLAYER_FUTURE	Talk	Even if we were to disappear...
+NPC_YONOWAARU	Talk	What?
+PLAYER_FUTURE	Talk	Everything ends eventually.
+NPC_YONOWAARU	Talk	... (With your life...)
+PLAYER_FUTURE	Talk	While I live, I want to shine.
+PLAYER_FUTURE	Talk	I want to prove that I exist.
+PLAYER_FUTURE	Talk	No... Not just into the future.
+PLAYER_FUTURE	Talk	In them, my spirit is alive.
+PLAYER_FUTURE	Talk	That is...
+NPC_YONOWAARU	Talk	(My spirit is...alive!)

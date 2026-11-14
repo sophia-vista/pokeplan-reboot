@@ -1,0 +1,55 @@
+speaker	kind	line
+PLAYER	Monologue	(Wh-what was that...?)
+NPC_JUPUTORU	Talk	's done it!
+NPC_YONOWAARU	Talk	...Gwoh!
+NPC_YONOWAARU	Talk	GWWWOOOOOHHHH!
+PLAYER	Talk	(Gwah!)
+PLAYER	Talk	(Waah!)
+NPC_JUPUTORU	Talk	Urrgggghhh!
+PLAYER	Talk	(Grovyle!)
+NPC_YONOWAARU	Talk	That's taken a heavy toll on you!
+NPC_JUPUTORU	Talk	Uwroh... Wrooooooooh!
+NPC_YONOWAARU	Talk	Wh-what are you doing?!
+NPC_JUPUTORU	Talk	Urrggh... Dusknoir!
+NPC_JUPUTORU	Talk	I'm... I'm taking you with me...
+NPC_JUPUTORU	Talk	We're going back to the future!
+NPC_YONOWAARU	Talk	Wha...
+PLAYER	Talk	(What?!)
+NPC_YONOWAARU	Talk	Gah! Those are...!
+PLAYER	Talk	(Time Gears!)
+ATTENDANT1	Talk	Wha...what's going on?!
+ATTENDANT1	Talk	Wha...what's happening?!
+NPC_JUPUTORU	Talk	! This is it for me!
+ATTENDANT1	Talk	Huh?! Wh-what?!
+ATTENDANT1	Talk	B-but...!
+NPC_YONOWAARU	Talk	Gwoh! Unhand me! Release me!
+NPC_JUPUTORU	Talk	We're almost there! Quiet!
+NPC_JUPUTORU	Talk	...!
+NPC_JUPUTORU	Talk	Take care, .
+NPC_JUPUTORU	Talk	I was lucky to have known you.
+PLAYER	Talk	(Grovyle!)
+NPC_JUPUTORU	Talk	Sorry for the holdup, Dusknoir!
+NPC_YONOWAARU	Talk	Gwaaaaaaah!
+ATTENDANT1	Talk	Ugh... Grovyle... Why...?
+PLAYER	Talk	(Grovyle...)
+PLAYER	Talk	(It's getting louder!)
+PLAYER	Talk	(...The Rainbow Stoneship...)
+PLAYER	Talk	(It looks like it's gonna move...)
+PLAYER	Talk	(It looks like it's ready to go...)
+ATTENDANT1	Talk	...Grovyle...
+ATTENDANT1	Talk	...Sigh...
+ATTENDANT1	Talk	...It's sad...
+ATTENDANT1	Talk	...So sad...
+ATTENDANT1	Talk	...But...
+PLAYER	Talk	(Right...)
+PLAYER	Talk	(If we don't hurry...)
+PLAYER	Talk	(...Grovyle...)
+PLAYER	Talk	(I may be sad... But right now...)
+PLAYER	Talk	(Even though I'm sad... I have to do this...)
+ATTENDANT1	Talk	..................
+ATTENDANT1	Talk	We gotta go...
+ATTENDANT1	Talk	We'd better go...
+ATTENDANT1	Talk	We should go...
+ATTENDANT1	Talk	...The Time Gears...
+PLAYER	Talk	(But...)
+PLAYER	Talk	(What Dusknoir said...)

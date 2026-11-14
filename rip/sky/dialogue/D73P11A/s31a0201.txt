@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_SHEIMI	Talk	Welcome to the Shaymin Village.
+ATTENDANT1	Talk	Ha ha ha!
+ATTENDANT1	Talk	Yep. That's it.
+ATTENDANT1	Talk	Yeah, that's right.
+ATTENDANT1	Talk	Yes, that's correct.
+ATTENDANT1	Talk	Really? I see.
+ATTENDANT1	Talk	Oh, yeah! Speaking of legends...
+NPC_SHEIMI	Talk	That's right.
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	No
+ATTENDANT1	SwitchMenu	Whaat?! Really?!
+NPC_SHEIMI	Talk	Hee hee hee. Yay!
+NPC_SHEIMI	Talk	See you later!

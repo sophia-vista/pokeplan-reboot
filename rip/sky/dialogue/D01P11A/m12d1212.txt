@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	I beg your pardon?! H-human?!
+NPC_YONOWAARU	Talk	I became convinced then!
+NPC_YONOWAARU	Talk	You...are...?
+NPC_YONOWAARU	Talk	And...that name would be...?
+NPC_YONOWAARU	Talk	Ah! I see...
+NPC_YONOWAARU	Talk	...
+ATTENDANT1	Talk	Does that name ring a bell?
+NPC_YONOWAARU	Talk	...No.
+PLAYER	Talk	(Uh, what?!)
+PLAYER	Talk	(Did I just see...the faintest...)
+PLAYER	Talk	(Or did I imagine that...?)
+PLAYER	Talk	There was no doubt!

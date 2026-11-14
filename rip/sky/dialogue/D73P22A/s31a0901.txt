@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_SHEIMI	Talk	Wow... Incredible!
+NPC_SHEIMI	Talk	This is...
+NPC_KINOGASSA	Talk	Everything's free!

@@ -1,0 +1,124 @@
+
+def 0 {
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 0:
+            @label_0;
+            SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+            supervision_ExecuteCommon(CORO_EVENT_N01_02);
+            JumpCommon(CORO_END_TALK);
+        case 2:
+            SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+            supervision_ExecuteCommon(CORO_EVENT_N04_02);
+            JumpCommon(CORO_END_TALK);
+        default:
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            if ( scn($SCENARIO_MAIN) <= [4, 3] ) {
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                WaitExecuteLives(ACTOR_ATTENDANT1);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english=" Hey, [hero].",
+                        }
+                    case 2:
+                        {
+                            english=" Hey, [hero].",
+                        }
+                    default:
+                        {
+                            english=" Say, [hero].",
+                        }
+                }
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                WaitExecuteLives(ACTOR_PLAYER);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 Today, they didn't want us to do
+                                any jobs from the Job Bulletin Board.
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 Today, they didn't want us to do
+                                any jobs from the Job Bulletin Board.
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 Today, they didn't want us to do
+                                any jobs from the Job Bulletin Board.
+                            """,
+                        }
+                }
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_RIGHT);
+                WaitExecuteLives(ACTOR_ATTENDANT1);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 We're supposed to check the
+                                jobs on the Outlaw Notice Board, right?
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 We're supposed to check the
+                                jobs on the Outlaw Notice Board, right?
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 We're supposed to check the
+                                jobs on the Outlaw Notice Board, right?
+                            """,
+                        }
+                }
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                WaitExecuteLives(ACTOR_ATTENDANT1);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 If we're ready to go on the job,
+                                we're supposed to tell [CS:N]Bidoof[CR] by the Outlaw
+                                Notice Board.
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 If we're ready for the job,
+                                we're supposed to tell [CS:N]Bidoof[CR] by the Outlaw
+                                Notice Board.
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 If we're ready to go do the job,
+                                we have to tell [CS:N]Bidoof[CR] by the Outlaw
+                                Notice Board.
+                            """,
+                        }
+                }
+                CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                JumpCommon(CORO_END_TALK);
+            } else {
+                switch ( message_Menu(MENU_JOB_BOARD) ) { }
+                JumpCommon(CORO_END_TALK);
+            }
+            break;
+    }
+}

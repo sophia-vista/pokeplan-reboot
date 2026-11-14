@@ -1,0 +1,36 @@
+
+def 0 {
+    back2_SetMode(0);
+    back_SetGround(LEVEL_V00P01);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    SetEffect<performer 3>(EFFECT_VERY_HEAVY_RAIN, 3);
+    MovePositionOffset<performer 0>(0.5, 210, 0);
+    Wait(30);
+    screen_FadeIn(1, 30);
+    Wait(30);
+    message_ImitationSound({
+        english="""
+            [CS:W]Memo: WI.
+            No BG prepared.[CR]
+        """,
+    });
+    Wait(60);
+    PauseEffect<performer 3>(EFFECT_VERY_HEAVY_RAIN);
+    Wait(120);
+    ResumeEffect<performer 3>(EFFECT_VERY_HEAVY_RAIN);
+    message_ImitationSound({
+        english="""
+            [CS:W]Memo: Raging sea
+            Side scroll[CR].
+        """,
+    });
+    Wait(60);
+    message_CloseEnforce();
+    screen_FadeOut(1, 30);
+    WaitExecutePerformer(0);
+    Wait(30);
+    back2_SetMode(-1);
+    supervision_ExecuteStation(LEVEL_T00P01, 'M01A01', 0);
+    hold;
+}

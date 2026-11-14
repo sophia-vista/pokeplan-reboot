@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_RINGUMA	Talk	Oh! ! !
+ATTENDANT1	Talk	Hey, what's going on over here?
+NPC_RINGUMA	Talk	But...
+ATTENDANT1	Talk	But?
+ATTENDANT1	Talk	Different...?
+NPC_RINGUMA	Talk	Yeah.
+NPC_RINGUMA	Talk	I felt that too.
+NPC_RINGUMA	Talk	But there's something different.
+ATTENDANT1	Talk	Really? We can evolve now?
+NPC_RINGUMA	Talk	We just wanted to let you know.
+NPC_RINGUMA	Talk	See you.

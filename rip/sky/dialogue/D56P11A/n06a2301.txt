@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_SAANAITO	Talk	I bet that's the exit!
+NPC_CHAAREMU	Talk	Wait... I-isn't this...?
+NPC_SAANAITO	Talk	Right...where we started...
+NPC_CHAAREMU	Talk	We... We were tricked!
+NPC_CHAAREMU	Talk	This isn't the right entrance...

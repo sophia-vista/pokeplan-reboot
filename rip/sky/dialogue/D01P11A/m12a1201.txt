@@ -1,0 +1,45 @@
+speaker	kind	line
+ATTENDANT1	Talk	Yep, this is the spot.
+ATTENDANT1	Talk	Yes, right here exactly.
+ATTENDANT1	Talk	Yes, this is the exact spot.
+NPC_YONOWAARU	Talk	Then you regained consciousness.
+NPC_YONOWAARU	Talk	Though you'd lost your memory.
+ATTENDANT1	Talk	Yep. With a memory of a name...
+ATTENDANT1	Talk	Yes. With a memory of a name...
+NPC_YONOWAARU	Talk	I beg your pardon?! H-human?!
+ATTENDANT1	Talk	That's true...
+NPC_YONOWAARU	Talk	You...are...?
+NPC_YONOWAARU	Talk	And...that name would be...?
+NPC_YONOWAARU	Talk	Ah! I see...
+NPC_YONOWAARU	Talk	You're......
+ATTENDANT1	Talk	Does that name ring a bell?
+NPC_YONOWAARU	Talk	...No.
+PLAYER	Talk	(Uh, what?!)
+PLAYER	Talk	(Did I just see...the faintest...)
+PLAYER	Talk	(Or did I imagine that...?)
+NPC_YONOWAARU	Talk	However...
+ATTENDANT1	Talk	Really?! What is it?!
+ATTENDANT1	Talk	Oh, really?! What is it?!
+ATTENDANT1	Talk	Dimensional...Scream?
+NPC_YONOWAARU	Talk	Indeed.
+NPC_YONOWAARU	Talk	To manifest as visions...
+PLAYER	Talk	(..................)
+NPC_YONOWAARU	Talk	I offer you my full cooperation!
+ATTENDANT1	Talk	Oh! You will?!
+NPC_YONOWAARU	Talk	Yes. To be perfectly candid...
+NPC_YONOWAARU	Talk	Ha-ha-ha! Hoo-hoo-ha!
+ATTENDANT1	Talk	Isn't this great, ?
+ATTENDANT1	Talk	Huh? Look at all the Pelipper!
+ATTENDANT1	Talk	Hey! Look at all the Pelipper!
+ATTENDANT1	Talk	..................
+NPC_YONOWAARU	Talk	Could something be the matter?
+NPC_BIPPA	Talk	Hey!
+ATTENDANT1	Talk	Hi, Bidoof!
+ATTENDANT1	Talk	Hello, Bidoof!
+ATTENDANT1	Talk	Oh, hello, Bidoof!
+NPC_BIPPA	Talk	I f-finally...f-found you all...
+NPC_BIPPA	Talk	The call has been put out!
+ATTENDANT1	Talk	Oh, no. Something is up!
+ATTENDANT1	Talk	Uh-oh. Something is up!
+NPC_YONOWAARU	Talk	I will go with you!
+NPC_BIPPA	Talk	Hurry, everyone!

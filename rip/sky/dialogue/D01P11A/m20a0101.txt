@@ -1,0 +1,27 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Ugh...
+ATTENDANT1	Talk	Hey! Grovyle!
+ATTENDANT1	Talk	Look around! We made it home!
+ATTENDANT1	Talk	Look! We made it home!
+ATTENDANT1	Talk	Look around! We made it home!
+ATTENDANT1	Talk	Back to our world!
+NPC_JUPUTORU	Talk	So we did it...?
+NPC_JUPUTORU	Talk	We made it through...
+NPC_JUPUTORU	Talk	back to this world?
+ATTENDANT1	Talk	Yup!
+ATTENDANT1	Talk	Yes!
+ATTENDANT1	Talk	Yep!
+ATTENDANT1	Talk	Let's see...
+ATTENDANT1	Talk	Let me see...
+ATTENDANT1	Talk	It was around here.
+ATTENDANT1	Talk	I think it was right here.
+ATTENDANT1	Talk	It would be around here.
+NPC_JUPUTORU	Talk	So that's what happened.
+ATTENDANT1	Talk	Oh, that's right!
+ATTENDANT1	Talk	Can you explain it to us, please?
+ATTENDANT1	Talk	Will you please explain it to us?
+NPC_JUPUTORU	Talk	Hold on.
+ATTENDANT1	Talk	Oh, I know! There's a good place.
+NPC_JUPUTORU	Talk	Lead the way.
+ATTENDANT1	Talk	All right. It's this way.
+ATTENDANT1	Talk	OK. It's this way.

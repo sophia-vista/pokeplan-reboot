@@ -1,0 +1,5 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	Wait! Haunter!
+NPC_GOOSUTO	Talk	Ugh! You again?!
+NPC_GOOSUTO	Talk	Humph!
+NPC_GOOSUTO	Talk	So let's go!

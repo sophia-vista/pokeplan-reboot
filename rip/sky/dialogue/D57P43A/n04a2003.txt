@@ -1,0 +1,7 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	That's how you always escaped!
+NPC_GOOSUTO	Talk	Heh!
+NPC_GOOSUTO	Talk	Heh heh heh!
+NPC_GOOSUTO	Talk	Looks like we're found out!
+NPC_GOOSUTO	Talk	We can't let you return!
+PLAYER_KIMAWARI	Talk	Wha...

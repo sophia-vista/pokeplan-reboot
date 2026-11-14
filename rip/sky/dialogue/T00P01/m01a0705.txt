@@ -1,0 +1,11 @@
+speaker	kind	line
+-	Talk	Who are you?
+-	Talk	Everyone: We are...
+-	Talk	Everyone:  and !
+TALK_MAIN	Talk	Male
+TALK_MAIN	Talk	Female
+TALK_MAIN	Talk	Mystery
+TALK_SUB	Talk	Male
+TALK_SUB	Talk	Yo!
+TALK_SUB	Talk	Hey!
+TALK_SUB	Talk	Good-bye.

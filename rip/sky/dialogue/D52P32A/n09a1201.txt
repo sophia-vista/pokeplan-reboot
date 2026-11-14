@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Looks like we made it through.
+NPC_YONOWAARU	Talk	I think the Sableye are up ahead.
+NPC_YONOWAARU	Talk	Let's proceed with caution.

@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_KABUTOPUSU	Talk	You again!
+NPC_KABUTOPUSU	Talk	Take THIS!

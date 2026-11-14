@@ -1,0 +1,2 @@
+speaker	kind	line
+-	Explanation	H-h-h...HELP!

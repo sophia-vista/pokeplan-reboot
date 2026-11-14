@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DAGUTORIO	Talk	Hey, Bidoof!
+NPC_DAGUTORIO	Talk	Don't fail! (Still jealous...)

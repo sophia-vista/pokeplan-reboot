@@ -1,0 +1,1106 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    @label_19;
+    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+            An event will be activated.
+            Which one would you like to see?
+        """,
+    });
+    switch ( message_SwitchMenu(1, 1) ) {
+        case menu({
+            english="ACTING_TEST",
+        }):
+            @label_0;
+            message_Talk({
+                english="""
+                    An Acting Test will be activated.
+                    Which one would you like?
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="M01A01A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A01A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A01A', 0);
+                    hold;
+                case menu({
+                    english="M01A02A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A02A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A02A', 0);
+                    hold;
+                case menu({
+                    english="M01A03A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A03A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A03A', 0);
+                    hold;
+                case menu({
+                    english="M01A04A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A04A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A04A', 0);
+                    hold;
+                case menu({
+                    english="M01A05A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A05A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A05A', 0);
+                    hold;
+                case menu({
+                    english="M01A06A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A06A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A06A', 0);
+                    hold;
+                case menu({
+                    english="M01A07A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A07A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A07A', 0);
+                    hold;
+                case menu({
+                    english="M01A08A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A08A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A08A', 0);
+                    hold;
+                case menu({
+                    english="M01A09A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A09A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A09A', 0);
+                    hold;
+                case menu({
+                    english="M01A10A",
+                }):
+                    debug_Print('EXECUTE_T00P01_M01A10A');
+                    message_Close();
+                    supervision_ExecuteActing(LEVEL_T00P01, 'M01A10A', 0);
+                    hold;
+                default:
+                    jump @label_19;
+            }
+            break;
+        case menu({
+            english="STATION_TEST",
+        }):
+            message_Talk({
+                english="""
+                    A Station Test will be activated.
+                    Which one would you like?
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="STATION_01",
+                }):
+                    message_Close();
+                    debug_Print('STATION_01');
+                    supervision_Station(1);
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="STATION_02",
+                }):
+                    message_Close();
+                    debug_Print('STATION_02');
+                    supervision_Station(2);
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="REMOVE_01",
+                }):
+                    message_Close();
+                    debug_Print('REMOVE_01');
+                    supervision_Remove(1);
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="REMOVE_02",
+                }):
+                    message_Close();
+                    debug_Print('REMOVE_02');
+                    supervision_Remove(2);
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="STATION_M01A02_0",
+                }):
+                    message_Close();
+                    supervision_ExecuteStation(LEVEL_T00P01, 'M01A02', 0);
+                    hold;
+                case menu({
+                    english="STATION_M01A02_1",
+                }):
+                    message_Close();
+                    supervision_ExecuteStation(LEVEL_T00P01, 'M01A02', 1);
+                    hold;
+                case menu({
+                    english="STATION_M01A02_2",
+                }):
+                    message_Close();
+                    supervision_ExecuteStation(LEVEL_T00P01, 'M01A02', 2);
+                    hold;
+                default:
+                    jump @label_19;
+            }
+            break;
+        case menu({
+            english="SOUND_TEST",
+        }):
+            @label_2;
+            message_Talk({
+                english="""
+                    A Sound Test will be activated.
+                    Which one would you like?
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="BGM1",
+                }):
+                    message_Talk({
+                        english="""
+                            A BGM Test will be activated.
+                            Which one would you like?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="BGM_PLAY",
+                        }):
+                            bgm_Play(BGM_BOSS_BATTLE);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM_FADEIN",
+                        }):
+                            bgm_PlayFadeIn(BGM_ON_THE_CEILING, 120, 64);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM_STOP",
+                        }):
+                            bgm_Stop();
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM_FADEOUT",
+                        }):
+                            bgm_FadeOut(120);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM_WAIT",
+                        }):
+                            bgm_Play(BGM_MISSION_FAILURE);
+                            WaitBgm(BGM_MISSION_FAILURE);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM_CHANGE",
+                        }):
+                            bgm_ChangeVolume(120, 80);
+                            Wait(120);
+                            bgm_ChangeVolume(120, 256);
+                            Wait(120);
+                            JumpCommon(CORO_END_TALK);
+                        default:
+                            jump @label_2;
+                    }
+                    break;
+                case menu({
+                    english="BGM2",
+                }):
+                    message_Talk({
+                        english="""
+                            A BGM2 Test will be activated.
+                            Which one would you like?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="BGM2_PLAY",
+                        }):
+                            bgm2_Play(BGM_BOSS_BATTLE);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM2_FADEIN",
+                        }):
+                            bgm2_PlayFadeIn(BGM_VIBRATING_NOISE, 0, 256);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM2_STOP",
+                        }):
+                            bgm2_Stop();
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM2_FADEOUT",
+                        }):
+                            bgm2_FadeOut(120);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM2_WAIT",
+                        }):
+                            bgm2_Play(BGM_MISSION_SUCCESS);
+                            WaitBgm2(BGM_MISSION_SUCCESS);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM2_CHANGE",
+                        }):
+                            bgm2_ChangeVolume(120, 80);
+                            Wait(120);
+                            bgm2_ChangeVolume(120, 256);
+                            Wait(120);
+                            JumpCommon(CORO_END_TALK);
+                        default:
+                            jump @label_2;
+                    }
+                    break;
+                case menu({
+                    english="ME",
+                }):
+                    message_Talk({
+                        english="""
+                            An ME Test will be activated.
+                            Which one would you like?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="ME_PLAY",
+                        }):
+                            me_Play(0);
+                            WaitMe(0);
+                            JumpCommon(CORO_END_TALK);
+                        default:
+                            jump @label_2;
+                    }
+                    break;
+                case menu({
+                    english="SE",
+                }):
+                    message_Talk({
+                        english="""
+                            An SE Test will be activated.
+                            Which one would you like?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="SE_PLAY",
+                        }):
+                            se_Play(5130);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="SE_STOP",
+                        }):
+                            se_Play(5131);
+                            Wait(120);
+                            se_Stop(5131);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="SE_FADEOUT",
+                        }):
+                            se_Play(5130);
+                            Wait(60);
+                            se_FadeOut(5130, 120);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="SE_WAIT",
+                        }):
+                            message_Talk({
+                                english="SE Play 1",
+                            });
+                            se_Play(4890);
+                            WaitSe(4890);
+                            message_Talk({
+                                english="SE Play 2",
+                            });
+                            se_Play(7187);
+                            WaitSe(7187);
+                            message_Talk({
+                                english="Se Play 3",
+                            });
+                            se_Play(7183);
+                            WaitSe(7183);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="SE_PLAY_VOLUME",
+                        }):
+                            message_Talk({
+                                english="SE Play 1",
+                            });
+                            se_PlayFull(4890, 256, 0);
+                            WaitSe(4890);
+                            message_Talk({
+                                english="SE Play 2",
+                            });
+                            se_PlayFull(4890, 128, 0);
+                            WaitSe(4890);
+                            message_Talk({
+                                english="Se Play 3",
+                            });
+                            se_PlayFull(4890, 64, 0);
+                            WaitSe(4890);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="SE_PLAY_PAN",
+                        }):
+                            message_Talk({
+                                english="SE Play 1",
+                            });
+                            se_PlayFull(4890, 256, 0);
+                            WaitSe(4890);
+                            message_Talk({
+                                english="SE Play 2",
+                            });
+                            se_PlayFull(4890, 256, -256);
+                            WaitSe(4890);
+                            message_Talk({
+                                english="Se Play 3",
+                            });
+                            se_PlayFull(4890, 256, 256);
+                            WaitSe(4890);
+                            message_Talk({
+                                english="SE Play 4",
+                            });
+                            se_PlayFull(4890, 256, -128);
+                            WaitSe(4890);
+                            message_Talk({
+                                english="SE Play 5",
+                            });
+                            se_PlayFull(4890, 256, 128);
+                            WaitSe(4890);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="SE_CHANGE_VOLUME",
+                        }):
+                            message_ImitationSound({
+                                english="Change Volume Test",
+                            });
+                            se_PlayVolume(5130, 256);
+                            Wait(120);
+                            message_ImitationSound({
+                                english="Lower",
+                            });
+                            se_ChangeVolume(5130, 120, 128);
+                            Wait(120);
+                            message_ImitationSound({
+                                english="Higher",
+                            });
+                            se_ChangeVolume(5130, 120, 256);
+                            Wait(120);
+                            message_ImitationSound({
+                                english="Lower",
+                            });
+                            se_ChangeVolume(5130, 240, 0);
+                            Wait(240);
+                            message_ImitationSound({
+                                english="Stop",
+                            });
+                            Wait(60);
+                            message_ImitationSound({
+                                english="Higher",
+                            });
+                            se_ChangeVolume(5130, 240, 128);
+                            Wait(240);
+                            message_ImitationSound({
+                                english="Stop",
+                            });
+                            Wait(120);
+                            se_Stop(5130);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="SE_CHANGE_PAN",
+                        }):
+                            message_ImitationSound({
+                                english="Change Pan Test",
+                            });
+                            se_PlayPan(5130, 0);
+                            Wait(120);
+                            message_ImitationSound({
+                                english="Right",
+                            });
+                            se_ChangePan(5130, 120, 128);
+                            Wait(120);
+                            message_ImitationSound({
+                                english="Left",
+                            });
+                            se_ChangePan(5130, 120, -128);
+                            Wait(120);
+                            message_ImitationSound({
+                                english="Right",
+                            });
+                            se_ChangePan(5130, 240, 256);
+                            Wait(240);
+                            message_ImitationSound({
+                                english="Stop",
+                            });
+                            Wait(60);
+                            message_ImitationSound({
+                                english="Left",
+                            });
+                            se_ChangePan(5130, 240, -256);
+                            Wait(240);
+                            message_ImitationSound({
+                                english="Stop",
+                            });
+                            Wait(120);
+                            se_Stop(5130);
+                            JumpCommon(CORO_END_TALK);
+                        default:
+                            jump @label_2;
+                    }
+                    break;
+                case menu({
+                    english="SPECIAL",
+                }):
+                    message_Talk({
+                        english="""
+                            A Sound Test will be activated.
+                            Which one would you like?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="SOUND_STOP",
+                        }):
+                            sound_Stop();
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="SOUND_FADEOUT",
+                        }):
+                            sound_FadeOut(120);
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="BGM_SIGNAL",
+                        }):
+                            message_Talk({
+                                english="BGM Play",
+                            });
+                            bgm_Play(BGM_POKEMON_EXPLORATION_TEAM_THEME);
+                            WaitBgmSignal();
+                            message_Talk({
+                                english="BGM Signal Reception",
+                            });
+                            WaitBgm(BGM_POKEMON_EXPLORATION_TEAM_THEME);
+                            message_Talk({
+                                english="BGM End",
+                            });
+                            JumpCommon(CORO_END_TALK);
+                        case menu({
+                            english="ERROR_TEST",
+                        }):
+                            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+                            message_Notice({
+                                english="[CS:W]Memo: Test 1[CR]",
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            bgm_FadeOut(120);
+                            WaitBgm(BGM_WIGGLYTUFFS_GUILD_REMIX);
+                            message_Notice({
+                                english="[CS:W]Memo: Test 2[CR]",
+                            });
+                            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+                            JumpCommon(CORO_END_TALK);
+                        default:
+                            jump @label_2;
+                    }
+                    break;
+                default:
+                    jump @label_19;
+            }
+            break;
+        case menu({
+            english="DUNGEON_OPEN",
+        }):
+            message_Talk({
+                english="""
+                    The Dungeon Mode will be set.
+                    Which one would you like?
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="ALL_CLOSE",
+                }):
+                    dungeon_mode(0) = DMODE_CLOSED;
+                    dungeon_mode(1) = DMODE_CLOSED;
+                    dungeon_mode(2) = DMODE_CLOSED;
+                    dungeon_mode(3) = DMODE_CLOSED;
+                    dungeon_mode(4) = DMODE_CLOSED;
+                    dungeon_mode(5) = DMODE_CLOSED;
+                    dungeon_mode(6) = DMODE_CLOSED;
+                    dungeon_mode(7) = DMODE_CLOSED;
+                    dungeon_mode(8) = DMODE_CLOSED;
+                    dungeon_mode(9) = DMODE_CLOSED;
+                    dungeon_mode(10) = DMODE_CLOSED;
+                    dungeon_mode(11) = DMODE_CLOSED;
+                    dungeon_mode(12) = DMODE_CLOSED;
+                    dungeon_mode(13) = DMODE_CLOSED;
+                    dungeon_mode(14) = DMODE_CLOSED;
+                    dungeon_mode(15) = DMODE_CLOSED;
+                    dungeon_mode(16) = DMODE_CLOSED;
+                    dungeon_mode(17) = DMODE_CLOSED;
+                    dungeon_mode(18) = DMODE_CLOSED;
+                    dungeon_mode(19) = DMODE_CLOSED;
+                    dungeon_mode(20) = DMODE_CLOSED;
+                    dungeon_mode(21) = DMODE_CLOSED;
+                    dungeon_mode(22) = DMODE_CLOSED;
+                    dungeon_mode(23) = DMODE_CLOSED;
+                    dungeon_mode(24) = DMODE_CLOSED;
+                    dungeon_mode(25) = DMODE_CLOSED;
+                    dungeon_mode(26) = DMODE_CLOSED;
+                    dungeon_mode(27) = DMODE_CLOSED;
+                    dungeon_mode(28) = DMODE_CLOSED;
+                    dungeon_mode(29) = DMODE_CLOSED;
+                    dungeon_mode(30) = DMODE_CLOSED;
+                    dungeon_mode(31) = DMODE_CLOSED;
+                    dungeon_mode(32) = DMODE_CLOSED;
+                    dungeon_mode(33) = DMODE_CLOSED;
+                    dungeon_mode(34) = DMODE_CLOSED;
+                    dungeon_mode(35) = DMODE_CLOSED;
+                    dungeon_mode(36) = DMODE_CLOSED;
+                    dungeon_mode(37) = DMODE_CLOSED;
+                    dungeon_mode(38) = DMODE_CLOSED;
+                    dungeon_mode(39) = DMODE_CLOSED;
+                    dungeon_mode(40) = DMODE_CLOSED;
+                    dungeon_mode(41) = DMODE_CLOSED;
+                    dungeon_mode(42) = DMODE_CLOSED;
+                    dungeon_mode(43) = DMODE_CLOSED;
+                    dungeon_mode(44) = DMODE_CLOSED;
+                    dungeon_mode(45) = DMODE_CLOSED;
+                    dungeon_mode(46) = DMODE_CLOSED;
+                    dungeon_mode(47) = DMODE_CLOSED;
+                    dungeon_mode(48) = DMODE_CLOSED;
+                    dungeon_mode(49) = DMODE_CLOSED;
+                    dungeon_mode(50) = DMODE_CLOSED;
+                    dungeon_mode(51) = DMODE_CLOSED;
+                    dungeon_mode(52) = DMODE_CLOSED;
+                    dungeon_mode(53) = DMODE_CLOSED;
+                    dungeon_mode(54) = DMODE_CLOSED;
+                    dungeon_mode(55) = DMODE_CLOSED;
+                    dungeon_mode(56) = DMODE_CLOSED;
+                    dungeon_mode(57) = DMODE_CLOSED;
+                    dungeon_mode(58) = DMODE_CLOSED;
+                    dungeon_mode(59) = DMODE_CLOSED;
+                    dungeon_mode(60) = DMODE_CLOSED;
+                    dungeon_mode(61) = DMODE_CLOSED;
+                    dungeon_mode(62) = DMODE_CLOSED;
+                    dungeon_mode(63) = DMODE_CLOSED;
+                    dungeon_mode(64) = DMODE_CLOSED;
+                    dungeon_mode(65) = DMODE_CLOSED;
+                    dungeon_mode(66) = DMODE_CLOSED;
+                    dungeon_mode(67) = DMODE_CLOSED;
+                    dungeon_mode(68) = DMODE_CLOSED;
+                    dungeon_mode(69) = DMODE_CLOSED;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="ALL_SCENARIO",
+                }):
+                    dungeon_mode(0) = DMODE_OPEN;
+                    dungeon_mode(1) = DMODE_OPEN;
+                    dungeon_mode(3) = DMODE_OPEN;
+                    dungeon_mode(4) = DMODE_OPEN;
+                    dungeon_mode(6) = DMODE_OPEN;
+                    dungeon_mode(7) = DMODE_OPEN;
+                    dungeon_mode(8) = DMODE_OPEN;
+                    dungeon_mode(9) = DMODE_OPEN;
+                    dungeon_mode(10) = DMODE_OPEN;
+                    dungeon_mode(11) = DMODE_OPEN;
+                    dungeon_mode(12) = DMODE_OPEN;
+                    dungeon_mode(13) = DMODE_OPEN;
+                    dungeon_mode(14) = DMODE_OPEN;
+                    dungeon_mode(15) = DMODE_OPEN;
+                    dungeon_mode(17) = DMODE_OPEN;
+                    dungeon_mode(18) = DMODE_OPEN;
+                    dungeon_mode(20) = DMODE_OPEN;
+                    dungeon_mode(21) = DMODE_OPEN;
+                    dungeon_mode(22) = DMODE_OPEN;
+                    dungeon_mode(24) = DMODE_OPEN;
+                    dungeon_mode(25) = DMODE_OPEN;
+                    dungeon_mode(27) = DMODE_OPEN;
+                    dungeon_mode(28) = DMODE_OPEN;
+                    dungeon_mode(29) = DMODE_OPEN;
+                    dungeon_mode(30) = DMODE_OPEN;
+                    dungeon_mode(32) = DMODE_OPEN;
+                    dungeon_mode(33) = DMODE_OPEN;
+                    dungeon_mode(34) = DMODE_OPEN;
+                    dungeon_mode(35) = DMODE_OPEN;
+                    dungeon_mode(36) = DMODE_OPEN;
+                    dungeon_mode(38) = DMODE_OPEN;
+                    dungeon_mode(39) = DMODE_OPEN;
+                    dungeon_mode(41) = DMODE_OPEN;
+                    dungeon_mode(42) = DMODE_OPEN;
+                    dungeon_mode(44) = DMODE_OPEN;
+                    dungeon_mode(46) = DMODE_OPEN;
+                    dungeon_mode(47) = DMODE_OPEN;
+                    dungeon_mode(50) = DMODE_OPEN;
+                    dungeon_mode(51) = DMODE_OPEN;
+                    dungeon_mode(54) = DMODE_OPEN;
+                    dungeon_mode(55) = DMODE_OPEN;
+                    dungeon_mode(56) = DMODE_OPEN;
+                    dungeon_mode(57) = DMODE_OPEN;
+                    dungeon_mode(58) = DMODE_OPEN;
+                    dungeon_mode(59) = DMODE_OPEN;
+                    dungeon_mode(60) = DMODE_OPEN;
+                    dungeon_mode(61) = DMODE_OPEN;
+                    dungeon_mode(62) = DMODE_OPEN;
+                    dungeon_mode(63) = DMODE_OPEN;
+                    dungeon_mode(64) = DMODE_OPEN;
+                    dungeon_mode(65) = DMODE_OPEN;
+                    dungeon_mode(67) = DMODE_OPEN;
+                    dungeon_mode(68) = DMODE_OPEN;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="ALL_RANDOM",
+                }):
+                    dungeon_mode(0) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(1) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(2) = DMODE_REQUEST;
+                    dungeon_mode(3) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(4) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(5) = DMODE_REQUEST;
+                    dungeon_mode(6) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(7) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(8) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(9) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(10) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(11) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(12) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(13) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(14) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(15) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(16) = DMODE_REQUEST;
+                    dungeon_mode(17) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(18) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(19) = DMODE_REQUEST;
+                    dungeon_mode(20) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(21) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(22) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(23) = DMODE_REQUEST;
+                    dungeon_mode(24) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(25) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(26) = DMODE_REQUEST;
+                    dungeon_mode(27) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(28) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(29) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(30) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(31) = DMODE_REQUEST;
+                    dungeon_mode(32) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(33) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(34) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(35) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(36) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(37) = DMODE_REQUEST;
+                    dungeon_mode(38) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(39) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(40) = DMODE_REQUEST;
+                    dungeon_mode(41) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(42) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(43) = DMODE_REQUEST;
+                    dungeon_mode(44) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(45) = DMODE_REQUEST;
+                    dungeon_mode(46) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(47) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(48) = DMODE_REQUEST;
+                    dungeon_mode(49) = DMODE_REQUEST;
+                    dungeon_mode(50) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(51) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(52) = DMODE_REQUEST;
+                    dungeon_mode(53) = DMODE_REQUEST;
+                    dungeon_mode(54) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(55) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(56) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(57) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(58) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(59) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(60) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(61) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(62) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(63) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(64) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(65) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(66) = DMODE_REQUEST;
+                    dungeon_mode(67) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(68) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(69) = DMODE_REQUEST;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="TYPE1",
+                }):
+                    dungeon_mode(0) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(1) = DMODE_OPEN_AND_REQUEST;
+                    dungeon_mode(2) = DMODE_REQUEST;
+                    dungeon_mode(3) = DMODE_OPEN;
+                    dungeon_mode(4) = DMODE_CLOSED;
+                    dungeon_mode(5) = DMODE_CLOSED;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="D006B_CLOSE",
+                }):
+                    dungeon_mode(212) = DMODE_CLOSED;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="D006B_SCENARIO",
+                }):
+                    dungeon_mode(212) = DMODE_OPEN;
+                    JumpCommon(CORO_END_TALK);
+                default:
+                    jump @label_19;
+            }
+            break;
+        case menu({
+            english="VISUAL_TEST",
+        }):
+            @label_4;
+            message_Talk({
+                english="""
+                    A Visual Test will be activated.
+                    Which one would you like?
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="NEXT",
+                }):
+                    message_Talk({
+                        english="""
+                            A Visual Test will be activated.
+                            Which one would you like?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="NEXT",
+                        }):
+                            message_Talk({
+                                english="""
+                                    A Visual Test will be activated.
+                                    Which one would you like?
+                                """,
+                            });
+                            switch ( message_SwitchMenu(1, 1) ) {
+                                case menu({
+                                    english="NEXT",
+                                }):
+                                    jump @label_4;
+                                case menu({
+                                    english="V00P03_M01A01A",
+                                }):
+                                    message_Close();
+                                    screen_FadeOut(1, 30);
+                                    supervision_ExecuteActing(LEVEL_V00P03, 'M01A01A', 0);
+                                    hold;
+                                default:
+                                    jump @label_19;
+                            }
+                            break;
+                        case menu({
+                            english="V00P02_M01A01A",
+                        }):
+                            message_Close();
+                            screen_FadeOut(1, 30);
+                            supervision_ExecuteActing(LEVEL_V00P02, 'M01A01A', 0);
+                            hold;
+                        case menu({
+                            english="V00P02_M01A02A",
+                        }):
+                            message_Close();
+                            screen_FadeOut(1, 30);
+                            supervision_ExecuteActing(LEVEL_V00P02, 'M01A02A', 0);
+                            hold;
+                        case menu({
+                            english="V00P02_M01A03A",
+                        }):
+                            message_Close();
+                            screen_FadeOut(1, 30);
+                            supervision_ExecuteActing(LEVEL_V00P02, 'M01A03A', 0);
+                            hold;
+                        case menu({
+                            english="V00P02_M01A04A",
+                        }):
+                            message_Close();
+                            screen_FadeOut(1, 30);
+                            supervision_ExecuteActing(LEVEL_V00P02, 'M01A04A', 0);
+                            hold;
+                        case menu({
+                            english="V00P02_M01A05A",
+                        }):
+                            message_Close();
+                            screen_FadeOut(1, 30);
+                            supervision_ExecuteActing(LEVEL_V00P02, 'M01A05A', 0);
+                            hold;
+                        case menu({
+                            english="V00P02_M01A06A",
+                        }):
+                            message_Close();
+                            screen_FadeOut(1, 30);
+                            supervision_ExecuteActing(LEVEL_V00P02, 'M01A06A', 0);
+                            hold;
+                        default:
+                            jump @label_19;
+                    }
+                    break;
+                case menu({
+                    english="V00P01_M01A01A",
+                }):
+                    message_Close();
+                    screen_FadeOut(1, 30);
+                    supervision_ExecuteActing(LEVEL_V00P01, 'M01A01A', 0);
+                    hold;
+                case menu({
+                    english="V00P01_M01A02A",
+                }):
+                    message_Close();
+                    screen_FadeOut(1, 30);
+                    supervision_ExecuteActing(LEVEL_V00P01, 'M01A02A', 0);
+                    hold;
+                default:
+                    jump @label_19;
+            }
+            break;
+        case menu({
+            english="PARTY_TEST",
+        }):
+            @label_5;
+            message_Talk({
+                english="""
+                    A Party Test will be activated.
+                    Which one would you like?
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="NEXT",
+                }):
+                    message_Talk({
+                        english="""
+                            A Party Test will be activated for adding
+                            a new team member.
+                            Which one would you like?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(1, 1) ) {
+                        case menu({
+                            english="NEXT",
+                        }):
+                            jump @label_5;
+                        case menu({
+                            english="CHECK_LIVES_EXIST",
+                        }):
+                            message_Close();
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_IS_RECURITABLE_IN_TEAM, 16, 0) ) {
+                                case 0:
+                                    message_Notice({
+                                        english="""
+                                            
+                                            [CN][c_name:NPC_MANAFI] isn't in the team.
+                                        """,
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                default:
+                                    message_Notice({
+                                        english="""
+                                            
+                                            [CN][c_name:NPC_MANAFI] is in the team.
+                                        """,
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                            }
+                            break;
+                        case menu({
+                            english="CHECK_LIVES_LEVEL",
+                        }):
+                            message_Close();
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_RECURITABLE_CURRENT_LEVEL, 16, 0) ) {
+                                case <= 0:
+                                default:
+                                    message_Notice({
+                                        english="""
+                                            
+                                            [CN][c_name:NPC_MANAFI] is not here.
+                                        """,
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                case 1:
+                                    message_Notice({
+                                        english="""
+                                            
+                                            [CN][c_name:NPC_MANAFI] is Level 1.
+                                        """,
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                case >= 2:
+                                    message_Notice({
+                                        english="""
+                                            
+                                            [CN][c_name:NPC_MANAFI] is at least Level 2.
+                                        """,
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                            }
+                            break;
+                        case menu({
+                            english="JOIN_LIVES",
+                        }):
+                            message_Close();
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_ADD_RECRUITABLE_TO_TEAM, 16, 0) ) {
+                                case 0:
+                                    message_Notice({
+                                        english="""
+                                            
+                                            [CN]
+                                        """,
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                default:
+                                    message_Notice({
+                                        english="""
+                                            
+                                            [CN][c_name:NPC_NEW_FRIEND] joined the team.
+                                        """,
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                            }
+                            break;
+                        case menu({
+                            english="CHECK_HERO",
+                        }):
+                            message_Close();
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_HERO_KIND, 0, 0) ) {
+                                case 0:
+                                    message_Notice({
+                                        english="It's Torchic.",
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                case 1:
+                                    message_Notice({
+                                        english="It's Charmander.",
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                default:
+                                    message_Notice({
+                                        english="It's something else.",
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                            }
+                            break;
+                        case menu({
+                            english="CHECK_PARTNER",
+                        }):
+                            message_Close();
+                            switch ( ProcessSpecial(PROCESS_SPECIAL_GET_PARTNER_KIND, 0, 0) ) {
+                                case 0:
+                                    message_Notice({
+                                        english="It's Torchic.",
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                case 1:
+                                    message_Notice({
+                                        english="It's Charmander.",
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                                default:
+                                    message_Notice({
+                                        english="It's something else.",
+                                    });
+                                    JumpCommon(CORO_END_TALK);
+                            }
+                            break;
+                        default:
+                            jump @label_19;
+                    }
+                    break;
+                case menu({
+                    english="PLAYER_HERO",
+                }):
+                    message_Close();
+                    $PLAYER_KIND = 0;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="PLAYER_APPOINT",
+                }):
+                    message_Close();
+                    $PLAYER_KIND = 3;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="ATTENDANT1_NONE",
+                }):
+                    message_Close();
+                    $ATTENDANT1_KIND = 0;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="ATTENDANT1_PARTNER",
+                }):
+                    message_Close();
+                    $ATTENDANT1_KIND = 2;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="ATTENDANT2_NONE",
+                }):
+                    message_Close();
+                    $ATTENDANT2_KIND = 0;
+                    JumpCommon(CORO_END_TALK);
+                case menu({
+                    english="ATTENDANT2_MANAFI",
+                }):
+                    message_Close();
+                    $ATTENDANT2_KIND = 10;
+                    JumpCommon(CORO_END_TALK);
+                default:
+                    jump @label_19;
+            }
+            break;
+        case menu({
+            english="WORLD_MAP",
+        }):
+            message_Close();
+            screen_FadeOut(1, 30);
+            supervision_ExecuteActing(LEVEL_V00P02, 'M01A06A', 0);
+            hold;
+        case menu({
+            english="KEY_WAIT",
+        }):
+            message_Close();
+            debug_Print('Talk1');
+            switch ( ProcessSpecial(PROCESS_SPECIAL_KEY_WAIT_INIT, 0, 0) ) { }
+            switch ( ProcessSpecial(PROCESS_SPECIAL_KEY_WAIT_PRESS, 0, 0) ) { }
+            debug_Print('Talk2');
+            switch ( ProcessSpecial(PROCESS_SPECIAL_KEY_WAIT_INIT, 160, 0) ) { }
+            @label_95;
+            forever {
+                Wait(1);
+                switch ( ProcessSpecial(PROCESS_SPECIAL_KEY_WAIT_CHECK, 0, 0) ) {
+                    case 0:
+                        continue;  // may be redundant
+                        break;
+                    default:
+                        break_loop;
+                        break;
+                }
+            }
+            debug_Print('Talk3');
+            jump @label_19;
+        case menu({
+            english="MIST_FADE",
+        }):
+            back_SetWeather(11);
+            Wait(120);
+            back_SetEffect(17, 240);
+            Wait(240);
+            JumpCommon(CORO_END_TALK);
+        default:
+            message_Talk({
+                english="I see...",
+            });
+            JumpCommon(CORO_END_TALK);
+    }
+}

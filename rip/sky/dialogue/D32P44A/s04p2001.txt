@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_REJIGIGASU	Talk	I AM REGIGIGAS...
+NPC_REJIGIGASU	Talk	I PLEDGE...SERVICE TO YOU...
+NPC_REJIGIGASU	Mail	joined the team!
+NPC_REJIGIGASU	SwitchMenu	Reconsider
+NPC_REJIGIGASU	SwitchMenu	Refuse

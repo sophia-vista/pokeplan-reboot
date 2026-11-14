@@ -1,0 +1,20 @@
+speaker	kind	line
+NPC_NEW_FRIEND	Talk	Really?
+NPC_NEW_FRIEND	Talk	Th-thank you so very much!
+NPC_NEW_FRIEND	Talk	I'm so incredibly happy!
+NPC_NEW_FRIEND	Mail	joined the team!
+NPC_SHEIMI	Talk	Oh, Team !
+NPC_SHEIMI	Talk	It's really strange...
+NPC_SHEIMI	Talk	Um... I...
+NPC_NEW_FRIEND	Talk	Really?
+NPC_NEW_FRIEND	Talk	Th-thank you so very much!
+NPC_NEW_FRIEND	Talk	I'm so incredibly happy!
+NPC_NEW_FRIEND	Mail	joined the team!
+NPC_SHEIMI	Talk	Once you're ready, let's go!
+NPC_SHEIMI	Talk	Let's hurry, !
+NPC_SHEIMI	Talk	There's snow from here on.
+NPC_SHEIMI	Talk	I wonder if Sneasel's all right...
+NPC_SHEIMI	Talk	If we don't hurry, Sneasel...
+NPC_SHEIMI	Talk	Let's hurry, !
+NPC_SHEIMI	Talk	All right! Let's regroup and go!
+NPC_SHEIMI	Talk	! We'll hurry too!

@@ -1,0 +1,12 @@
+speaker	kind	line
+-	Mail	Where would you like to go?
+-	SwitchMenu	Yes
+-	SwitchMenu	No
+-	Mail	Only the leader may enter...
+-	Mail	All IQ Skills will be unusable...
+-	Mail	Only the leader may enter...
+ATTENDANT1	Notice	Let's go to Treasure Town.
+ATTENDANT1	Notice	No, we can't, .
+ATTENDANT1	Notice	We have to report in to Chatot!
+ATTENDANT1	Notice	This is no time to be dawdling.
+ATTENDANT1	Notice	We can't take any detours.

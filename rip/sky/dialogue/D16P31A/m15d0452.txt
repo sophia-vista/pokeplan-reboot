@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Explanation	I see...
+-	Explanation	The path should reveal itself.

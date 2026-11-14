@@ -1,0 +1,21 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	This is it? The Groudon statue?
+NPC_KIMAWARI	Talk	Oh! But there's no one else here!
+NPC_HEIGANI	Talk	Sure, I'm sure!
+NPC_DIGUDA	Talk	Hmm? The ground...
+NPC_BIPPA	Talk	Uh-what...? It's shaking!
+NPC_BIPPA	ImitationSound	GRROOOOOOH...!
+NPC_CHIRIIN	Talk	What...whatever could that be?!
+NPC_DOGOOMU	Talk	What an uproar! Is it maybe...?
+NPC_HEIGANI	Talk	Something is going on up there!
+NPC_HEIGANI	Talk	Let's head up! Hurry!
+NPC_DIGUDA	Talk	Hmm?
+NPC_DIGUDA	Talk	Like moaning and groaning?
+NPC_DIGUDA	Talk	Yep!
+NPC_ZUBATTO	Talk	Ouchee-wow-wow!
+NPC_DOGAASU	Talk	I'm d-d-deflated! I can't move!
+NPC_SUKATANKU	Talk	Hork-ork-how did that happen?
+NPC_ZUBATTO	Talk	It's un-believable...
+NPC_ZUBATTO	Talk	Ack...
+NPC_DOGAASU	Talk	Erk...
+NPC_SUKATANKU	Talk	Ork...

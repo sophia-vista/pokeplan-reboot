@@ -1,0 +1,66 @@
+speaker	kind	line
+NPC_KIMAWARI	Talk	What Dusknoir did then...
+NPC_PERAPPU	Talk	Really? Do you think so?
+NPC_DOGOOMU	Talk	NO WAY!
+NPC_PERAPPU	Talk	What? Wait a minute!
+NPC_PERAPPU	Talk	So is that what you think now?
+NPC_PERAPPU	Talk	Everyone: ..............................
+NPC_PERAPPU	Talk	Well, what's your answer?
+NPC_BIPPA	Talk	Uh...I...believe them...
+NPC_PERAPPU	Talk	What?! What did you say?!
+NPC_PERAPPU	Talk	Wh-wh-what!
+ATTENDANT1	Talk	B-Bidoof!
+NPC_HEIGANI	Talk	Hey, hey! I believe too!
+ATTENDANT1	Talk	Oh, Corphish! And Sunflora!
+NPC_DOGOOMU	Talk	I believe them!
+NPC_DIGUDA	Talk	Me too!
+NPC_CHIRIIN	Talk	So do I!
+NPC_PERAPPU	Talk	Squawk!
+ATTENDANT1	Talk	Urf... Thank you, everyone...
+ATTENDANT1	Talk	Thank you...for believing us!
+NPC_PUKURIN	Talk	Well, hiya!
+NPC_PUKURIN	Talk	Sounds like we all agree! ♪
+NPC_PUKURIN	Talk	Everyone: HUH?!
+NPC_PUKURIN	Talk	Hm? What's wrong?
+NPC_PUKURIN	Talk	Huh?
+NPC_DOGOOMU	Talk	We're all good with the story...
+NPC_PUKURIN	Talk	Oh? Is that all? ♪
+NPC_PUKURIN	Talk	Everyone: HUH?!
+NPC_PUKURIN	Talk	Chatot is convinced...right?
+NPC_PUKURIN	Talk	Everyone: HUH?!
+NPC_PUKURIN	Talk	Right, Chatot? ♪
+NPC_PERAPPU	Talk	Hee...! Hee-hee...!
+NPC_PERAPPU	Talk	Hee-heeee!
+NPC_DOGOOMU	Talk	WH-WHAT?
+NPC_KIMAWARI	Talk	How peculiar!
+NPC_PERAPPU	Talk	Everyone: HUH? REALLY?!
+NPC_DOGOOMU	Talk	...What's all this...?
+NPC_PERAPPU	Talk	That's why I was so contrary!
+NPC_BIPPA	Talk	...Gosh, likely story...
+NPC_KIMAWARI	Talk	...Says you...
+NPC_PERAPPU	Talk	Hee! Hee-heeee!
+NPC_PUKURIN	Talk	! !
+NPC_PUKURIN	Talk	Now listen, everyone!
+NPC_PUKURIN	Talk	From 's story...
+NPC_PUKURIN	Talk	We know our world is in danger.
+NPC_PUKURIN	Talk	This is our time.
+NPC_PUKURIN	Talk	We'll combine all our efforts!
+NPC_PUKURIN	Talk	We'll discover the Hidden Land!
+NPC_PUKURIN	Talk	Let's do this, everyone!
+NPC_PUKURIN	Talk	Everyone: HOORAY!
+NPC_PUKURIN	Talk	Chatot!
+NPC_PERAPPU	Talk	Y-yes, sir.
+NPC_PERAPPU	Talk	OK, everyone!
+NPC_DOGOOMU	Talk	I sure will!
+NPC_BIPPA	Talk	I'll get the word out, by golly!
+NPC_DIGUDA	Talk	I'll go too!
+NPC_HEIGANI	Talk	Hey, hey! Then I'll go tell them!
+NPC_DOGOOMU	Talk	YEAH!
+NPC_BIPPA	Talk	Yes, sir!
+NPC_KIMAWARI	Talk	We'll hurry!
+NPC_PUKURIN	Talk	YOOM...TAH!
+NPC_PUKURIN	Talk	Everyone: HOORAY!
+NPC_DOGOOMU	Talk	All right! Let's show some guts!
+NPC_HEIGANI	Talk	Hey, hey, hey!
+ATTENDANT1	Talk	Torkoal, the town elder?
+ATTENDANT1	Talk	Oh! I remember!

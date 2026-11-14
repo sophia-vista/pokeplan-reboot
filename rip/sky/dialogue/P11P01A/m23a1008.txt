@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_RAPURASU	Talk	... ...
+NPC_RAPURASU	Talk	and Grovyle...correct?
+ATTENDANT1	Talk	You know our names?
+NPC_RAPURASU	Talk	Yes.
+NPC_RAPURASU	Talk	I was informed by Wigglytuff.
+ATTENDANT1	Talk	W-Wigglytuff told you?
+ATTENDANT1	Talk	You appeared right after that.
+ATTENDANT1	Talk	And then you appeared.
+ATTENDANT1	Talk	Can you tell me who you are?
+NPC_RAPURASU	Talk	It is beyond the sea.
+NPC_JUPUTORU	Talk	! !
+NPC_JUPUTORU	Talk	Let's go! Beyond the sea!

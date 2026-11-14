@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ah, you two.
+NPC_PERAPPU	Talk	Correct. ♪
+NPC_PERAPPU	Talk	The Guildmaster w-w-would...
+NPC_PERAPPU	Talk	...erk!
+NPC_PERAPPU	Talk	The G-Guildmaster would.........
+NPC_PERAPPU	Talk	...Yes, that's what would happen.
+ATTENDANT1	Talk	But, oh well.
+NPC_PERAPPU	Talk	Good! ♪
+NPC_PERAPPU	Talk	...erk!
+NPC_PERAPPU	Talk	...So please don't fail! ♪
+ATTENDANT1	Talk	OK!

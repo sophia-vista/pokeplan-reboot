@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_TAMATAMA	Talk	We'd love to fly sometime...
+NPC_TAMATAMA	Talk	From here on, there's snow.

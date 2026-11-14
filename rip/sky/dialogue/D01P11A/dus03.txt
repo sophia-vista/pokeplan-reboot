@@ -1,0 +1,169 @@
+speaker	kind	line
+NPC_ZUBATTO	Mail	Message Wait Test
+NPC_ZUBATTO	Notice	Narration
+NPC_ZUBATTO	Notice	EXPLANATION
+NPC_ZUBATTO	Explanation	Emoticon Test
+NPC_ZUBATTO	SwitchMenu	Charmander
+NPC_ZUBATTO	Notice	!
+NPC_ZUBATTO	Notice	?
+NPC_ZUBATTO	Notice	Celebrate!
+NPC_ZUBATTO	Notice	Shocked!
+NPC_ZUBATTO	Notice	Cold sweat
+NPC_ZUBATTO	Notice	Laughter
+NPC_ZUBATTO	Notice	Anger
+NPC_ZUBATTO	Notice	Flustered
+NPC_ZUBATTO	Notice	Noticed
+NPC_ZUBATTO	Notice	!
+NPC_ZUBATTO	Notice	?
+NPC_ZUBATTO	Notice	Celebrate!
+NPC_ZUBATTO	Notice	Shocked!
+NPC_ZUBATTO	Notice	Cold sweat
+NPC_ZUBATTO	Notice	Laughter
+NPC_ZUBATTO	Notice	Anger
+NPC_ZUBATTO	Notice	Flustered
+NPC_ZUBATTO	Notice	Noticed
+NPC_ZUBATTO	Notice	!
+NPC_ZUBATTO	Notice	?
+NPC_ZUBATTO	Notice	Celebrate!
+NPC_ZUBATTO	Notice	Shocked!
+NPC_ZUBATTO	Notice	Cold sweat
+NPC_ZUBATTO	Notice	Laughter
+NPC_ZUBATTO	Notice	Anger
+NPC_ZUBATTO	Notice	Flustered
+NPC_ZUBATTO	Notice	Noticed
+NPC_ZUBATTO	Notice	!
+NPC_ZUBATTO	Notice	?
+NPC_ZUBATTO	Notice	Celebrate!
+NPC_ZUBATTO	Notice	Shocked!
+NPC_ZUBATTO	Notice	Cold sweat
+NPC_ZUBATTO	Notice	Laughter
+NPC_ZUBATTO	Notice	Anger
+NPC_ZUBATTO	Notice	Flustered
+NPC_ZUBATTO	Notice	Noticed
+NPC_ZUBATTO	Notice	Exit
+NPC_ZUBATTO	Notice	Ursaring
+NPC_ZUBATTO	Notice	!
+NPC_ZUBATTO	Notice	?
+NPC_ZUBATTO	Notice	Celebrate!
+NPC_ZUBATTO	Notice	Shocked!
+NPC_ZUBATTO	Notice	Cold sweat
+NPC_ZUBATTO	Notice	Laughter
+NPC_ZUBATTO	Notice	Anger
+NPC_ZUBATTO	Notice	Flustered
+NPC_ZUBATTO	Notice	Noticed
+NPC_ZUBATTO	Notice	!
+NPC_ZUBATTO	Notice	?
+NPC_ZUBATTO	Notice	Celebrate!
+NPC_ZUBATTO	Notice	Shocked!
+NPC_ZUBATTO	Notice	Cold sweat
+NPC_ZUBATTO	Notice	Laughter
+NPC_ZUBATTO	Notice	Anger
+NPC_ZUBATTO	Notice	Flustered
+NPC_ZUBATTO	Notice	Noticed
+NPC_ZUBATTO	Notice	!
+NPC_ZUBATTO	Notice	?
+NPC_ZUBATTO	Notice	Celebrate!
+NPC_ZUBATTO	Notice	Shocked!
+NPC_ZUBATTO	Notice	Cold sweat
+NPC_ZUBATTO	Notice	Laughter
+NPC_ZUBATTO	Notice	Anger
+NPC_ZUBATTO	Notice	Flustered
+NPC_ZUBATTO	Notice	Noticed
+NPC_ZUBATTO	Notice	!
+NPC_ZUBATTO	Notice	?
+NPC_ZUBATTO	Notice	Celebrate!
+NPC_ZUBATTO	Notice	Shocked!
+NPC_ZUBATTO	Notice	Cold sweat
+NPC_ZUBATTO	Notice	Laughter
+NPC_ZUBATTO	Notice	Anger
+NPC_ZUBATTO	Notice	Flustered
+NPC_ZUBATTO	Notice	Noticed
+NPC_ZUBATTO	Notice	Exit
+NPC_ZUBATTO	Notice	Cancel
+NPC_ZUBATTO	Notice	See you.
+NPC_ZUBATTO	Notice	Message Test
+NPC_ZUBATTO	SwitchMenu	Message Control
+NPC_ZUBATTO	SwitchMenu	Close
+NPC_ZUBATTO	Talk	Close Enforce
+NPC_ZUBATTO	Talk	There's nothing set yet.
+NPC_ZUBATTO	Talk	SetActor
+NPC_ZUBATTO	Talk	There's no portrait window.
+NPC_ZUBATTO	Talk	Is this OK?
+NPC_ZUBATTO	Talk	SetFace
+NPC_ZUBATTO	SwitchMenu	Standard
+ATTENDANT1	Talk	Grin
+ATTENDANT1	Talk	Pained
+ATTENDANT1	Talk	Angry
+ATTENDANT1	Talk	Others
+ATTENDANT1	SwitchMenu	Worried
+ATTENDANT1	Talk	Sad
+ATTENDANT1	Talk	Crying
+ATTENDANT1	Talk	Shouting
+ATTENDANT1	Talk	Others
+ATTENDANT1	SwitchMenu	Teary-eyed
+ATTENDANT1	Talk	Determined
+ATTENDANT1	Talk	Joyous
+ATTENDANT1	Talk	Inspired
+ATTENDANT1	Talk	Others
+ATTENDANT1	SwitchMenu	Surprised
+ATTENDANT1	Talk	Dizzy
+ATTENDANT1	Talk	Back
+ATTENDANT1	Talk	Next
+ATTENDANT1	SwitchMenu	ResetActor
+NPC_ZUBATTO	Talk	Set just the Portrait Window.
+-	Talk	Delete!
+NPC_ZUBATTO	Talk	There's no character portrait.
+-	Talk	Delete!
+-	Talk	SetFacePosition
+ATTENDANT1	Notice	Choose the placement position.
+ATTENDANT1	SwitchMenu	Standard
+ATTENDANT1	Talk	Standard
+ATTENDANT1	Talk	Absolute Coordinates Standard
+ATTENDANT1	Talk	Absolute Coordinates Left
+ATTENDANT1	Talk	Absolute Coordinates Right
+ATTENDANT1	Talk	Bottom
+ATTENDANT1	Talk	Bottom Center Right-Facing
+ATTENDANT1	Talk	Bottom Left Inner-Facing
+ATTENDANT1	Talk	Bottom Right Inner-Facing
+ATTENDANT1	Talk	Bottom Left Center
+ATTENDANT1	Talk	Bottom Right Center
+ATTENDANT1	Talk	Bottom Center Left-Facing
+ATTENDANT1	Talk	Bottom Left Outer-Facing
+ATTENDANT1	Talk	Bottom Right Outer-Facing
+ATTENDANT1	Talk	Bottom Left-Center Outer-Facing
+ATTENDANT1	Talk	Bottom Right-Center Outer-Facing
+ATTENDANT1	Talk	Top
+ATTENDANT1	Talk	Top Center (Right-Facing)
+ATTENDANT1	Talk	Top Left Inner-Facing
+ATTENDANT1	Talk	Top Right Inner-Facing
+ATTENDANT1	Talk	Top Left Center
+ATTENDANT1	Talk	Top Right Center
+ATTENDANT1	Talk	Top Center (Left-Facing)
+ATTENDANT1	Talk	Top Left-Center Right-Facing
+ATTENDANT1	Talk	Top Right-Center Right-Facing
+ATTENDANT1	Talk	Top Left-Center Outer-Facing
+ATTENDANT1	Talk	Top Right-Center Outer-Facing
+ATTENDANT1	Talk	Cancel
+ATTENDANT1	Talk	FacePositionOffset
+NPC_ZUBATTO	Talk	Set the Portrait Window.
+NPC_ZUBATTO	Talk	The Portrait was moved back.
+NPC_ZUBATTO	Talk	Cancel
+NPC_ZUBATTO	Talk	Message Output
+NPC_ZUBATTO	SwitchMenu	Notice
+NPC_ZUBATTO	Notice	Monologue
+NPC_ZUBATTO	Monologue	It's like this.
+NPC_ZUBATTO	Talk	Talk
+NPC_ZUBATTO	Talk	It's like this.
+NPC_ZUBATTO	Talk	Mail
+NPC_ZUBATTO	Mail	ImitationSound
+NPC_ZUBATTO	ImitationSound	Kabooooooom!
+NPC_ZUBATTO	ImitationSound	Cancel
+NPC_ZUBATTO	ImitationSound	Choice Message
+PLAYER	Notice	(I'm disappointed but I'm a boy.)
+PLAYER	Notice	(I'm a girl...)
+ATTENDANT1	Notice	Multiple-Choice Tag
+ATTENDANT1	Notice	To be added
+ATTENDANT1	Notice	Cancel
+ATTENDANT1	Notice	Message Color
+ATTENDANT1	Notice	Cancel
+ATTENDANT1	Notice	All right.

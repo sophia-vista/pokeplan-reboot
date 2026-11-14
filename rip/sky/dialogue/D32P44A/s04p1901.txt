@@ -1,0 +1,17 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	We did it!
+NPC_MIMIROPPU	Talk	Wh-what is this?!
+NPC_SAANAITO	Mail	Will you close your eyes?
+NPC_SAANAITO	SwitchMenu	Yes
+NPC_SAANAITO	SwitchMenu	No
+NPC_CHAAREMU	Mail	did as instructed.
+NPC_CHAAREMU	Mail	And 's aura spread to the ground!
+NPC_CHAAREMU	ImitationSound	GZZZ... GZZZZ...
+NPC_CHAAREMU	Talk	What?!
+NPC_SAANAITO	Talk	Regigigas!
+NPC_MIMIROPPU	Talk	We're in for another round?
+NPC_REJIGIGASU	Talk	GRRRROOOOHHHH!
+NPC_REJIGIGASU	ImitationSound	Gzzzz...ummmm...mmmm...
+NPC_REJIGIGASU	ImitationSound	GRRRRR...OOOOHHHH...OOOOHHHH!
+NPC_CHAAREMU	Talk	Wa-wa-waaah!
+NPC_SAANAITO	Talk	Hurry, we have to get out!

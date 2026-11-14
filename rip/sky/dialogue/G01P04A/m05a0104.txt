@@ -1,0 +1,17 @@
+speaker	kind	line
+NPC_DAGUTORIO	Talk	T-time has stopped?!
+NPC_KIMAWARI	Talk	But...
+NPC_KIMAWARI	Talk	It's unthinkable!
+NPC_PERAPPU	Talk	Stolen!
+NPC_BIPPA	Talk	Huh?!
+NPC_DAGUTORIO	Talk	The Time Gear was s-stolen?!
+NPC_PERAPPU	Talk	Quiet, everyone!
+NPC_PERAPPU	Talk	That is all.
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Talk	Oh, you there.
+NPC_PERAPPU	Talk	You two, come here.
+NPC_PERAPPU	Talk	So!
+ATTENDANT1	Talk	R-really?! Woo-hoo!
+ATTENDANT1	Talk	R-really?! Hooray!
+ATTENDANT1	Talk	R-really?! Yay!
+NPC_PERAPPU	Talk	Let me see your Wonder Map.

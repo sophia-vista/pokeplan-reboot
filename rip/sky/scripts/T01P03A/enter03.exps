@@ -1,0 +1,11 @@
+
+def 0 {
+    debug_Print('BGM_FADEOUT');
+    bgm_FadeOut(60);
+    main_EnterGround(LEVEL_T01P04A, 30);
+    hold;
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

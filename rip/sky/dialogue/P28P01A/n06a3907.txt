@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_MANYUURA	Talk	...A Time Gear, huh...?
+NPC_CHAAREMU	Talk	Huh?! W-wait up, you!
+NPC_MANYUURA	Talk	What?
+NPC_CHAAREMU	Talk	I-is that so?
+NPC_MANYUURA	Talk	Yeah...
+NPC_MANYUURA	Talk	Like a Time Gear...

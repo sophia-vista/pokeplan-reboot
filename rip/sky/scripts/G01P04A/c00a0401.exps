@@ -1,0 +1,97 @@
+
+def 0 {
+    sound_Stop();
+    back_SetGround(LEVEL_S04P01A);
+    screen_FadeIn(1, 0);
+    switch ( scn($SCENARIO_MAIN)[0] ) {
+        case == 25:
+        case == 26:
+            @label_0;
+            message_SetFace(ACTOR_ATTENDANT1, FACE_PAIN, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Urk! We didn't do well on that.",
+                    }
+                case 2:
+                    {
+                        english=" Urk! That's how not to do it.",
+                    }
+                default:
+                    {
+                        english=" Urk! That didn't work.",
+                    }
+            }
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             Hmm... This is demanding.[K]
+                            Let's go back for now.
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             Hmm... This is challenging.[K]
+                            Let's go back for now.
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             Hmm... This is kind of hard.[K]
+                            Let's go back for now.
+                        """,
+                    }
+            }
+            message_KeyWait();
+            @label_1;
+            screen_FadeOutAll(1, 60);
+            message_CloseEnforce();
+            Wait(60);
+            CallCommon(CORO_FADE_OUT_ALL_AFTER);
+            end;
+        default:
+            message_SetFace(ACTOR_ATTENDANT1, FACE_PAIN, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Ugh! Well, that went badly.",
+                    }
+                case 2:
+                    {
+                        english=" Ugh! That didn't go well.",
+                    }
+                default:
+                    {
+                        english=" Ugh! Well that wasn't so good.",
+                    }
+            }
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             It's harder than I thought...[K]
+                            Let's try this another time.
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             It's harder than I thought...[K]
+                            Let's call it a day.
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             It's harder than I thought...[K]
+                            Let's go home for the day.
+                        """,
+                    }
+            }
+            message_KeyWait();
+            jump @label_1;
+    }
+}

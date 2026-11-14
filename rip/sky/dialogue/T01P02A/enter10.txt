@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_GARUURA	Talk	Well! Aren't you impressive!
+NPC_GARUURA	Talk	Welcome back!
+NPC_GARUURA	Talk	I can see that!

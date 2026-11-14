@@ -1,0 +1,31 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] || scn($SCENARIO_SIDE) >= [40, 3] || scn($SCENARIO_SIDE) >= [40, 2] ) {
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_YADON, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hey...[K]does anyone ever call
+                you slow?
+            """,
+        });
+        message_Talk({
+            english="""
+                 They call us slow.[K]
+                We move really slowly...
+            """,
+        });
+        message_Talk({
+            english="""
+                 But the truth is...[K]
+                We don't really have any ambition...
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

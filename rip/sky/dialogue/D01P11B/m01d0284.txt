@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_ZUBATTO	Talk	Sorry, kiddo. We'll take that!
+ATTENDANT1	FacePositionOffset	Aaaah!
+NPC_DOGAASU	Talk	Come on. Let's get out of here.

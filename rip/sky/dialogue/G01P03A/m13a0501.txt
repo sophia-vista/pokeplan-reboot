@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	Uh...sort of...
+NPC_BIPPA	Talk	Everyone: HOORAY!

@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	Excuse me? A dream, you say?
+NPC_YONOWAARU	Talk	By dream, what do you mean?
+NPC_YONOWAARU	Talk	And...

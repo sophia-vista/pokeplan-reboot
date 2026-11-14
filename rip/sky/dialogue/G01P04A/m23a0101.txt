@@ -1,0 +1,24 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Um...I wouldn't know that...
+NPC_PERAPPU	Talk	You have me to lead you!
+NPC_DAGUTORIO	Talk	............
+NPC_DOGOOMU	Talk	........................
+NPC_KIMAWARI	Talk	....................................
+NPC_PERAPPU	Talk	It...it can't be!
+NPC_PERAPPU	Talk	E-everyone! Out with it!
+NPC_PERAPPU	Talk	Am I perhaps...perhaps...
+NPC_PERAPPU	Talk	Inadequate? Worthless to you?!
+ATTENDANT1	FacePositionOffset	That's right.
+ATTENDANT1	FacePositionOffset	Let's go for it on our own!
+NPC_CHIRIIN	Talk	Chatot.
+NPC_CHIRIIN	Talk	And that's you, Chatot.
+NPC_PERAPPU	Talk	Huh? Wh-who? Me?
+NPC_CHIRIIN	Talk	Of course. You said so earlier.
+NPC_CHIRIIN	Talk	Lead the way! Show us, Chatot!
+NPC_BIPPA	Talk	Yup yup! I'm counting on you!
+NPC_PERAPPU	Talk	Urk!
+NPC_PERAPPU	Talk	W-w-well...e-e-everyone...
+NPC_PERAPPU	Talk	I know! I know!
+NPC_PERAPPU	Talk	Commencing now...
+NPC_PERAPPU	Talk	Everyone! Let us excel together!
+NPC_PERAPPU	Talk	Everyone: HOORAY!

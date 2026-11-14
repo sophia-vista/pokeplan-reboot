@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_HEIGANI	SwitchMenu	Yes
+NPC_HEIGANI	SwitchMenu	No

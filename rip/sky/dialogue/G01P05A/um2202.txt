@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	You two are fantastic!
+NPC_PUKURIN	Talk	Keep up your exploring! ♪
+NPC_PUKURIN	Talk	It's good you found Drowzee! ♪
+NPC_PUKURIN	Talk	Bring Drowzee back here! ♪
+NPC_PUKURIN	Talk	Keep up exploring as always! ♪
+NPC_PUKURIN	Talk	The Secret Rank?
+NPC_PUKURIN	Talk	Wow! Seems like a fun rank! ♪
+NPC_PUKURIN	Talk	Best of luck! ♪
+NPC_PUKURIN	Talk	Do your very best!
+NPC_PUKURIN	Talk	Hiya!
+NPC_PUKURIN	Talk	Yay! Thanks! ♪

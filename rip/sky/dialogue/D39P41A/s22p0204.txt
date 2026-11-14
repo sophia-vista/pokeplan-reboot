@@ -1,0 +1,21 @@
+speaker	kind	line
+NPC_KURESERIA	Talk	Excellent! I was just in time!
+NPC_DAAKURAI	Talk	Blast you... Cresselia!
+NPC_KURESERIA	Talk	By Darkrai there!
+NPC_PARUKIA	Talk	WHAT?!
+NPC_KURESERIA	Talk	It was merely a mockery of me!
+NPC_PARUKIA	Talk	WHAT?!
+NPC_KURESERIA	Talk	Darkrai!
+NPC_KURESERIA	Talk	That is so very unlike you!
+NPC_DAAKURAI	Talk	.....................
+NPC_DAAKURAI	Talk	You two, behind Cresselia...
+ATTENDANT1	Talk	Wh-what, us?
+NPC_DAAKURAI	Talk	Correct. Pay close attention.
+NPC_DAAKURAI	Talk	It is my doing. Mine alone.
+ATTENDANT1	Talk	Huh?! Wh-what did you say?!
+ATTENDANT1	Talk	What?! What did you say?!
+NPC_DAAKURAI	Talk	Come to me in the Dark Crater.
+ATTENDANT1	Talk	D-Darkrai vanished?!
+NPC_DAAKURAI	Talk	You cannot catch me, Cresselia...
+NPC_DAAKURAI	Talk	...Not ever.
+ATTENDANT1	Talk	...Dark... Crater...

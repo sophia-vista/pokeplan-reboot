@@ -1,0 +1,37 @@
+speaker	kind	line
+NPC_GURAADON	Talk	GRROOOoooh...oooooh...
+NPC_GURAADON	Talk	GRROOOOOOH!
+ATTENDANT1	Talk	We did it! We KO'd Groudon!
+ATTENDANT1	Talk	We did it! We defeated Groudon!
+ATTENDANT1	Talk	But...is it really...?
+ATTENDANT1	Talk	Waaah!
+ATTENDANT1	Talk	Huh? Where did Groudon go?!
+ATTENDANT1	Talk	Huh? Groudon disappeared?!
+ATTENDANT1	Talk	Huh? Groudon vanished?!
+-	Talk	That was...
+-	Talk	That was not Groudon.
+ATTENDANT1	Talk	OK, who said that?!
+ATTENDANT1	Talk	Who said that?
+ATTENDANT1	Talk	Who...who said that?
+-	Talk	Like I said earlier, I am the guardian here.
+-	Talk	And I cannot allow you to pass.
+ATTENDANT1	Talk	Wait!
+ATTENDANT1	Talk	Wait, please!
+ATTENDANT1	Talk	W-wait, please!
+ATTENDANT1	Talk	We didn't come to make trouble!
+ATTENDANT1	Talk	We're not here to cause trouble!
+ATTENDANT1	Talk	We came only for information!
+-	Talk	Information, you say?
+ATTENDANT1	Talk	Yes! That's all. No lie!
+ATTENDANT1	Talk	Yes! That's the honest truth!
+ATTENDANT1	Talk	We're telling the total truth!
+ATTENDANT1	Talk	C'mon! You have to believe me!
+ATTENDANT1	Talk	Please! Please believe us!
+-	Talk	Hmm...
+-	Talk	Well...OK, I believe you.
+NPC_YUKUSHII	Talk	Let me welcome you, then.
+ATTENDANT1	Talk	No way! Did you say Uxie?!
+ATTENDANT1	Talk	What?! Did you say Uxie?!
+ATTENDANT1	Talk	P-pardon?! Did you say Uxie?!
+NPC_YUKUSHII	Talk	Yes, truly.
+NPC_YUKUSHII	Talk	Please, come this way.

@@ -1,0 +1,11 @@
+speaker	kind	line
+-	Talk	Grand Master: Th-they got me...
+-	Talk	Grand Master: Everyone, run away!
+NPC_PUKURIN	Talk	Grand Master: Aiyeeh!
+NPC_PERAPPU	Talk	Minion: Squawk!
+NPC_KIMAWARI	Talk	Minion: Eeeeeeek!
+NPC_HEIGANI	Talk	Minion: Hey, hey!
+ATTENDANT1	Talk	Whew...
+ATTENDANT1	Talk	I guess we did all right.
+ATTENDANT1	Talk	Well, I guess we're done here.
+ATTENDANT1	Talk	I guess it's all right.

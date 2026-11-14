@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_PONIITA	Talk	Oh, Team Charm was here...?
+NPC_PONIITA	Talk	H-how incredible! Thank you!
+NPC_PONIITA	Talk	It isn't over yet! Good luck!
+NPC_PONIITA	Talk	That Grovyle must be caught!
+NPC_PONIITA	Talk	We've heard...

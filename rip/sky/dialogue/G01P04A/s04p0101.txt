@@ -1,0 +1,40 @@
+speaker	kind	line
+NPC_KIMAWARI	Talk	Oh my gosh! It's unbelievable!
+NPC_BIPPA	Talk	They're the real deal, by golly!
+NPC_PUKURIN	Talk	Hiya!
+NPC_DOGOOMU	Talk	...Long time...? You mean...
+NPC_PUKURIN	Talk	Ha ha ha! ♪
+NPC_PERAPPU	Talk	Whaaaat?!
+NPC_PUKURIN	Talk	So what brings you all here?
+NPC_DOGOOMU	Talk	A vast trove of...
+NPC_KIMAWARI	Talk	Treasure?!
+NPC_PUKURIN	Talk	Key? Um... What kind of key?
+NPC_PUKURIN	Talk	I don't remember. Ha ha ha!
+NPC_SAANAITO	Talk	Lopunny, it's time for our gift...
+NPC_MIMIROPPU	Talk	I hear you, Gardevoir.
+NPC_PUKURIN	Talk	Yay! Thank you!
+NPC_SAANAITO	Talk	So...about that key...
+NPC_PUKURIN	Talk	I'll go look!
+NPC_PUKURIN	Talk	YOOM...TAH!
+NPC_PUKURIN	Talk	Here you go! ♪
+NPC_MIMIROPPU	Talk	Thank you, Wigglytuff!
+NPC_SAANAITO	Talk	...You really haven't changed...
+NPC_MIMIROPPU	Talk	We'll be going now, sweetie.
+NPC_MIMIROPPU	Talk	See you, Wigglytuff!
+ATTENDANT1	Talk	Uh... Excuse me!
+NPC_MIMIROPPU	Talk	Yes?
+NPC_DOGOOMU	Talk	ME TOO!
+NPC_DIGUDA	Talk	And me!
+NPC_KIMAWARI	Talk	Oh my gosh! I want to go too!
+ATTENDANT1	FacePositionOffset	And you, ?
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	FacePositionOffset	Please let us join you!
+ATTENDANT1	Talk	Everyone: PLEASE?
+NPC_MIMIROPPU	Talk	Of course you may!
+ATTENDANT1	Talk	Wa-hah! Yes! Thank you!
+ATTENDANT1	Talk	Yay! Yes! Thank you!
+ATTENDANT1	FacePositionOffset	All right, !
+ATTENDANT1	FacePositionOffset	This is great, !
+ATTENDANT1	Mail	No
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	No

@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_AAMARUDO	SwitchMenu	Yep!
+PLAYER_PUPURIN	Talk	Yep. ♪
+NPC_AAMARUDO	Talk	All right, then!
+NPC_AAMARUDO	Talk	Let's go! To Eastern Cave!
+PLAYER_PUPURIN	Talk	Yep. ♪
+NPC_AAMARUDO	Talk	All right!
+NPC_AAMARUDO	Talk	Not yet.
+NPC_AAMARUDO	Talk	What do you mean, not yet?
+NPC_AAMARUDO	Talk	Once you're ready, we'll go.
+NPC_AAMARUDO	Talk	What do you mean, not yet?
+NPC_AAMARUDO	Talk	Once you're ready, we'll go.

@@ -1,0 +1,18 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	The planet's paralysis will begin.
+NPC_JUPUTORU	Talk	Try to understand, .
+PLAYER	Talk	(...So that's how it was...)
+PLAYER	Talk	(I came to this world...with such a resolve...)
+PLAYER	Talk	(But...)
+PLAYER	Talk	(That means...we have to do it.)
+PLAYER	Talk	(Even if that means I must disappear.)
+NPC_JUPUTORU	Talk	Oh, ...
+NPC_JUPUTORU	Talk	But...there's just one thing...
+NPC_JUPUTORU	Talk	looks up to you.
+NPC_JUPUTORU	Talk	has a good spirit.
+NPC_JUPUTORU	Talk	But...
+NPC_JUPUTORU	Talk	left all alone.
+PLAYER	Talk	(I finally understand.)
+PLAYER	Talk	(If I change history...I will disappear.)
+PLAYER	Talk	(If I disappear...  will be...)
+PLAYER	Talk	(...)

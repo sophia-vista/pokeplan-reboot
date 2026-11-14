@@ -1,0 +1,11 @@
+speaker	kind	line
+-	Talk	...This is proceeding nicely.
+-	Talk	My own power will be amplified!
+-	Talk	Hm?! Someone's coming!
+-	Talk	It's Cresselia... That persistent pest!
+-	Talk	I must not be caught...
+-	Talk	Not ever!
+NPC_KURESERIA	Talk	...He got away again...
+NPC_KURESERIA	Talk	But he always slips away.
+NPC_KURESERIA	Talk	I've got to do whatever it takes.
+NPC_KURESERIA	Talk	I must stop Darkrai!

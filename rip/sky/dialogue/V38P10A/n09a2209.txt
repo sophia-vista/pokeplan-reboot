@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_SEREBII	Talk	Th-this is...?
+NPC_YONOWAARU	Talk	Master Dialga's...telepathy?

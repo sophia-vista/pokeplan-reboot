@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_HERAKUROSU	Talk	Oh no!
+NPC_HERAKUROSU	Talk	I'm so forgetful!
+NPC_HERAKUROSU	Mail	Give the ?
+NPC_HERAKUROSU	SwitchMenu	Yes
+NPC_HERAKUROSU	Talk	I'll find a way to pay you back!
+NPC_HERAKUROSU	Talk	Oh, that's right...! Here!
+NPC_SHEIMI	Mail	Don't have the ...?
+NPC_SHEIMI	Mail	No

@@ -1,0 +1,26 @@
+speaker	kind	line
+-	ImitationSound	GRROOOOOOH...!
+ATTENDANT1	ImitationSound	It sounded like a roar!
+ATTENDANT1	ImitationSound	It was like some sort of roar!
+ATTENDANT1	ImitationSound	But I wonder what it could be!
+ATTENDANT1	ImitationSound	There's no telling what's ahead!
+ATTENDANT1	ImitationSound	Who knows what's ahead?
+ATTENDANT1	ImitationSound	Who can say what's ahead?
+ATTENDANT1	ImitationSound	Not far to go now. Let's do this!
+ATTENDANT1	ImitationSound	We're nearly there. Let's go!
+PLAYER	ImitationSound	(Yes. We are nearly there.)
+PLAYER	ImitationSound	(And when we reach the top...)
+PLAYER	ImitationSound	(We may meet Uxie at last.)
+PLAYER	ImitationSound	(It may answer my big question! Who am I?)
+ATTENDANT1	FacePositionOffset	Yes? What is it, ?
+ATTENDANT1	FacePositionOffset	You want to tell me something?
+ATTENDANT1	FacePositionOffset	You have something to tell me?
+ATTENDANT1	FacePositionOffset	Yeah? Go ahead!
+ATTENDANT1	FacePositionOffset	What is it?
+ATTENDANT1	FacePositionOffset	OK, go ahead!
+ATTENDANT1	Mail	Uh...you what?!
+ATTENDANT1	Mail	You...you what?
+ATTENDANT1	Mail	I beg...I beg your pardon?
+ATTENDANT1	Mail	Ever since we hit base camp...
+ATTENDANT1	Mail	Hmmm... !
+ATTENDANT1	Mail	OK! Let's go up, !

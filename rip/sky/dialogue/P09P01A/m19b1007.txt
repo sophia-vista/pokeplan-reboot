@@ -1,0 +1,22 @@
+speaker	kind	line
+ATTENDANT1	Talk	Urk... Dusknoir really was lying!
+NPC_JUPUTORU	Talk	.....................
+PLAYER	Talk	(I was a human from the future...?)
+ATTENDANT1	Talk	Urgh! Dusknoir...no...
+ATTENDANT1	Talk	Dusknoir!
+ATTENDANT1	Talk	G-Grovyle!
+ATTENDANT1	Talk	!
+NPC_YONOWAARU	Talk	This is the end...for you!
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!
+ATTENDANT1	Talk	Urk...
+NPC_JUPUTORU	Talk	Gah... You say not to give up...?
+ATTENDANT1	Talk	We have to think!
+ATTENDANT1	Talk	I know!
+ATTENDANT1	Talk	Even a little will do! Please!
+NPC_YONOWAARU	Talk	Attack!
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!
+NPC_SEREBII	Talk	Time to travel!
+NPC_YAMIRAMI	Talk	Wheh-heh...?
+NPC_YONOWAARU	Talk	They v-v-vanished?
+NPC_YONOWAARU	Talk	Master Dialga!
+NPC_YONOWAARU	ImitationSound	GRRR-OOOOOO...OOOOOH!

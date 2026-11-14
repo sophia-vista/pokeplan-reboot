@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_YUKIKABURI	Talk	I suddenly had an idea.
+PLAYER_BIPPA	Talk	Sniff... Th-then...
+NPC_YUKIKABURI	Talk	A complete fabrication.
+NPC_YUKIKABURI	Talk	So... We came here to find out!
+PLAYER_BIPPA	Talk	Sniff...
+NPC_YUKIKABURI	Talk	Too bad...
+NPC_YUKIKABURI	Talk	Your money...we're taking it!
+NPC_YUKIKABURI	Talk	Prepare yourself!
+PLAYER_BIPPA	Talk	Eeeeeeeeeek!!

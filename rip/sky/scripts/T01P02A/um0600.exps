@@ -1,0 +1,24 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [7, 6] ) {
+        @label_0;
+        supervision_Station(5);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 2] ) {
+        supervision_Station(3);
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_YARUKIMONO {
+    switch ( sector() ) {
+        case 5:
+            SetMoveRange(Position<'m0', 26, 27>, 12, 3);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

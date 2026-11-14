@@ -1,0 +1,52 @@
+speaker	kind	line
+-	Talk	Chaw-haw-haw! Easily done!
+ATTENDANT1	Talk	Who said that?!
+-	Talk	Chaw-haw-haw!
+ATTENDANT1	Talk	What?! You!
+NPC_DOGAASU	Talk	What took you so long?
+ATTENDANT1	Talk	Whaaaat?!
+ATTENDANT1	Talk	Huh?!
+ATTENDANT1	Talk	Pardon?!
+ATTENDANT1	Talk	Oh! Some Perfect Apples!
+NPC_SUKATANKU	Talk	See? What'd I tell you?
+NPC_DOGAASU	Talk	Whoa-ho-ho.
+NPC_ZUBATTO	Talk	Heh-heh.
+ATTENDANT1	Talk	...
+ATTENDANT1	Talk	I won't be fooled again!
+ATTENDANT1	Talk	You can't fool me again!
+ATTENDANT1	Talk	You won't fool me again!
+NPC_DOGAASU	Talk	Aww. How boring is that.
+ATTENDANT1	Talk	I knew it!
+ATTENDANT1	Talk	I was right!
+ATTENDANT1	Talk	I knew it!
+ATTENDANT1	Talk	The only thing we can!
+ATTENDANT1	Talk	Even now I'm a little scared...
+ATTENDANT1	Talk	But I won't lose again!
+ATTENDANT1	Talk	I won't ever back down again!
+NPC_SUKATANKU	Talk	So be it.
+NPC_SUKATANKU	Talk	In recognition of your courage...
+ATTENDANT1	Talk	W-watch out, !
+ATTENDANT1	Talk	They're going to try something!
+NPC_SUKATANKU	Talk	Chaw-haw-haw!
+NPC_SUKATANKU	Talk	Koffing and I will use our...
+NPC_SUKATANKU	Talk	noxious gas combo!
+ATTENDANT1	Talk	Waaaah! WAAAAH!
+ATTENDANT1	Talk	Ugh... That was awful...
+ATTENDANT1	Talk	Ugh... That was disgusting...
+ATTENDANT1	Talk	Ugh... That was awful...
+ATTENDANT1	Talk	Oh, !
+ATTENDANT1	Talk	Are you all right, ?
+ATTENDANT1	Talk	Are you OK, ?
+ATTENDANT1	Talk	Whew!
+ATTENDANT1	Talk	I'm glad!
+ATTENDANT1	Talk	Thank goodness!
+NPC_ZUBATTO	Talk	Urrgh...
+NPC_ZUBATTO	Talk	Aaaaah!
+NPC_ZUBATTO	Talk	Waaah! They left without me!
+ATTENDANT1	Talk	Urf... We both got knocked out...
+ATTENDANT1	Talk	But what a horrible stench.
+ATTENDANT1	Talk	It still reeks a little...
+ATTENDANT1	Talk	The stench is still lingering...
+ATTENDANT1	Talk	It still reeks a little... Ewww...
+ATTENDANT1	Talk	Aw! They're gone!
+ATTENDANT1	Talk	Did those bullies eat them all?

@@ -1,0 +1,17 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	Sniff... It's too tough...
+PLAYER_BIPPA	Talk	N...no...
+PLAYER_BIPPA	Talk	Who do you think you are...?
+NPC_YUKIKABURI	Talk	Argh! This one's really stubborn!
+NPC_YUKIKABURI	Talk	Bagon & Gligar: YEAH!
+-	Talk	WAAAAIT!!
+NPC_YUKIKABURI	Talk	Huh?! What?!
+NPC_PERAPPU	Talk	Wigglytuff's Guild is here!
+NPC_TATSUBEI	Talk	Uh-oh!
+PLAYER_BIPPA	Talk	E-everyone...
+NPC_DOGOOMU	Talk	You BETTER be READY!
+NPC_GURAIGAA	Talk	Huh! What do we do?!
+NPC_YUKIKABURI	Talk	W-wait! Don't run away!
+NPC_YUKIKABURI	Talk	Bagon & Gligar: YEAH!
+NPC_PUKURIN	Talk	Let's go, everyone!
+NPC_PUKURIN	Talk	YOOM...TAH!

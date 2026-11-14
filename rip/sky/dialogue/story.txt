@@ -1,0 +1,4429 @@
+
+== m01a0101 (S04P01A) ==
+-: Whoa! Wh-wh-whoa...!
+-: Are... Are you OK?!
+-: No! Don't let go!
+-: Just a little longer... Come on! Hang on!
+-: N-n-no! I can't...hold on...!
+-: Waaaaaah!
+
+== m01a0101 (T00P01) ==
+TALK_SUB: Can add Shaymin
+TALK_SUB: Cannot add Shaymin
+TALK_SUB: Link Moves
+NPC_NEW_FRIEND: Good morning! I am .
+NPC_NEW_FRIEND: Add Items
+NPC_NEW_FRIEND: Could not receive
+NPC_NEW_FRIEND: Received
+NPC_NEW_FRIEND: NPC Job
+RANDOM_REQUEST_NPC01: Will you take the job?
+RANDOM_REQUEST_NPC01: Added to list.
+RANDOM_REQUEST_NPC01: List is full.
+RANDOM_REQUEST_NPC01: No
+RANDOM_REQUEST_NPC01: Good-bye.
+RANDOM_REQUEST_NPC01: Job Distribution Complete
+RANDOM_REQUEST_NPC01: Bottled Message Job
+RANDOM_REQUEST_NPC01: There was a Message in the Bottle.
+RANDOM_REQUEST_NPC01: Receive this Message?
+RANDOM_REQUEST_NPC01: Added to list.
+RANDOM_REQUEST_NPC01: List is full.
+RANDOM_REQUEST_NPC01: No
+RANDOM_REQUEST_NPC01: Left that spot.
+RANDOM_REQUEST_NPC01: The Bottle was empty.
+RANDOM_REQUEST_NPC01: Release Jobs
+RANDOM_REQUEST_NPC01: Unlocked a dungeon.
+RANDOM_REQUEST_NPC01: Cleared all Special Episodes
+RANDOM_REQUEST_NPC01: Cleared all Special Episodes.
+RANDOM_REQUEST_NPC01: I see.
+
+== m01a0102 (T00P01) ==
+TALK_SUB: I see...
+
+== m01a0103 (D01P11A) ==
+-: ......
+-: ............
+-: ..................
+-: Urrgh...
+-: Where...
+-: ...Where am I?
+PLAYER: ...I can't... Drifting off...
+
+== m01a0103 (T00P01) ==
+-: Who are you?
+-: Everyone: We are...
+-: Everyone:  and !
+TALK_MAIN: Male
+TALK_MAIN: Female
+TALK_MAIN: Mystery
+TALK_SUB: Male
+TALK_SUB: Yo!
+TALK_SUB: Hey!
+TALK_SUB: Good-bye.
+
+== m01a0104 (G01P01B) ==
+-: Pokémon detected! Pokémon detected!
+-: Whose footprint? Whose footprint?
+ATTENDANT1: Waah!
+ATTENDANT1: That shocked me!
+ATTENDANT1: That was too shocking!
+ATTENDANT1: That shocked me!
+ATTENDANT1: Whew...
+ATTENDANT1: But I just can't do it.
+ATTENDANT1: Sigh...I just can't do it.
+ATTENDANT1: I'm such a coward...
+ATTENDANT1: This is so discouraging...
+NPC_DOGAASU: Hey, Zubat. Did you get a load of that?!
+NPC_ZUBATTO: You bet I did, Koffing.
+NPC_DOGAASU: Do we go after it?
+NPC_ZUBATTO: We do.
+
+== m01a0104 (T00P01) ==
+-: Do you need something?
+-: Do you really need something from me?
+-: and
+-: ?
+-: I can't help you with anything right now.
+-: No
+-: I see...
+-: No
+
+== m01a0105 (T00P01) ==
+TALK_SUB: But when I evolve... I become a Ludicolo...
+TALK_SUB: You know? Ludicolo is a carefree Pokémon.
+
+== m01a0116 (T00P01) ==
+TALK_SUB: SE Play 1
+TALK_SUB: SE Play 2
+TALK_SUB: Se Play 3
+TALK_SUB: SE_PLAY_VOLUME
+TALK_SUB: SE Play 1
+TALK_SUB: SE Play 2
+TALK_SUB: Se Play 3
+TALK_SUB: SE_PLAY_PAN
+TALK_SUB: SE Play 1
+TALK_SUB: SE Play 2
+TALK_SUB: Se Play 3
+TALK_SUB: SE Play 4
+TALK_SUB: SE Play 5
+TALK_SUB: SE_CHANGE_VOLUME
+TALK_SUB: Change Volume Test
+TALK_SUB: Lower
+TALK_SUB: Higher
+TALK_SUB: Lower
+TALK_SUB: Stop
+TALK_SUB: Higher
+TALK_SUB: Stop
+TALK_SUB: SE_CHANGE_PAN
+TALK_SUB: Change Pan Test
+TALK_SUB: Right
+TALK_SUB: Left
+TALK_SUB: Right
+TALK_SUB: Stop
+TALK_SUB: Left
+TALK_SUB: Stop
+TALK_SUB: SPECIAL
+TALK_SUB: BGM Play
+TALK_SUB: BGM Signal Reception
+TALK_SUB: BGM End
+TALK_SUB: ERROR_TEST
+TALK_SUB: Memo: Test 1
+TALK_SUB: Memo: Test 2
+TALK_SUB: DUNGEON_OPEN
+TALK_SUB: CHECK_LIVES_LEVEL
+TALK_SUB: JOIN_LIVES
+TALK_SUB: CHECK_HERO
+TALK_SUB: It's Torchic.
+TALK_SUB: It's Charmander.
+TALK_SUB: It's something else.
+TALK_SUB: CHECK_PARTNER
+TALK_SUB: It's Torchic.
+TALK_SUB: It's Charmander.
+TALK_SUB: It's something else.
+TALK_SUB: PLAYER_HERO
+TALK_SUB: PLAYER_APPOINT
+TALK_SUB: ATTENDANT1_NONE
+TALK_SUB: ATTENDANT1_PARTNER
+TALK_SUB: ATTENDANT2_NONE
+TALK_SUB: ATTENDANT2_MANAFI
+TALK_SUB: WORLD_MAP
+TALK_SUB: KEY_WAIT
+TALK_SUB: MIST_FADE
+TALK_SUB: I see...
+
+== m01a0117 (T00P01) ==
+TALK_SUB: Gritty hard
+
+== m01a0118 (T00P01) ==
+TALK_SUB: Soft & fluffy
+
+== m01a01a (D00P01) ==
+-: Set Dungeon Background Display Test
+
+== m01a01a (D00P02) ==
+-: Random Dungeon Background Display Test
+
+== m01a01a (T00P02) ==
+-: An Acting Test will be conducted.
+-: The Event Test is finished.
+
+== m01a01a (V00P02) ==
+-: Memo: Raging storm at night.
+
+== m01a0208 (D01P11B) ==
+PLAYER: (..................)
+PLAYER: (...Ugh...)
+ATTENDANT1: Great! You're awake!
+ATTENDANT1: You're awake! That's a relief!
+ATTENDANT1: You're awake! Thank goodness!
+PLAYER: (Where...where am I...?)
+PLAYER: (I... I was unconscious? What happened...?)
+ATTENDANT1: So who might you be?
+ATTENDANT1: And who are you?
+ATTENDANT1: Huh? You say you're a human?
+ATTENDANT1: What? You say you're a human?
+PLAYER: (It's...it's true!)
+PLAYER: (I've turned into an !)
+ATTENDANT1: You're...a little odd...
+ATTENDANT1: You're telling me the truth?
+PLAYER: (My name? That's right, my name is...)
+NPC_DOGAASU: Well, I do beg your pardon.
+NPC_ZUBATTO: Heh-heh-heh! Can't figure it out?
+NPC_ZUBATTO: That's yours, isn't it?
+NPC_ZUBATTO: Sorry, kiddo. We'll take that!
+NPC_DOGAASU: Come on. Let's get out of here.
+ATTENDANT1: ...Ohhh...
+ATTENDANT1: Wh-what should I do?
+ATTENDANT1: If I lose that...
+ATTENDANT1: No! There's no time to waste!
+
+== m01a02a (T00P01) ==
+-: An Event Test is under way.
+-: A Placement Test will be conducted.
+-: Place Sector 1
+-: Place Sector 2
+-: Remove Sector 1
+-: Remove Sector 2
+-: Place Date Indicator on Sector 1
+-: Place Date Indicator on Sector 2
+-: Label Request
+-: Remove
+-: The Event Test is finished.
+
+== m01a02a (T00P02) ==
+-: An Acting Test will be conducted.
+-: The Event Test is finished.
+
+== m01a02a (V00P01) ==
+-: Loop Scroll Test
+-: Scroll Test
+-: Loop Scroll Test 2
+-: Loop Scroll Test 3A
+-: Loop Scroll Test 3B
+
+== m01a03a (T00P01) ==
+-: An Acting Test will be conducted.
+-: The Event Test is finished.
+
+== m01a03a (T00P02) ==
+-: A Special Movement Test will be conducted.
+-: The Test is finished.
+
+== m01a0401 (D01P41A) ==
+NPC_DOGAASU: Well, well...
+ATTENDANT1: Urk!
+ATTENDANT1: Whaaaat?!
+ATTENDANT1: You can't!
+
+== m01a04a (T00P01) ==
+-: An Acting Test will be conducted.
+-: The Event Test is finished.
+
+== m01a0501 (D01P41A) ==
+NPC_DOGAASU: Y-you... Shut up!
+
+== m01a05a (T00P01) ==
+-: Where am I?
+-: Am I dreaming this?
+-: I feel a pleasant breeze.
+-: But when I evolve... I become a Ludicolo...
+
+== m01a0601 (D01P41A) ==
+-: This appears to be the end of the dungeon.
+
+== m01a06a (V00P02) ==
+-: Which function would you like to use?
+-: Which Level would you like?
+
+== m01a0701 (D01P41A) ==
+NPC_DOGAASU: Owowow...
+NPC_ZUBATTO: Ugh... We got roughed up...
+NPC_ZUBATTO: Bah! Here you go. Take it, then!
+NPC_ZUBATTO: Yeah, you just remember that!
+ATTENDANT1: Oh! It's my Relic Fragment!
+ATTENDANT1: Thanks, !
+ATTENDANT1: Thank you, !
+
+== m01a0702 (D01P11B) ==
+ATTENDANT1: And so...
+ATTENDANT1: and ...
+ATTENDANT1: formed an exploration team.
+ATTENDANT1: This turned out to be...
+ATTENDANT1: their very first step into...
+
+== m01a0704 (T00P01) ==
+TALK_SUB: I see...
+
+== m01a0705 (T00P01) ==
+-: Who are you?
+-: Everyone: We are...
+-: Everyone:  and !
+TALK_MAIN: Male
+TALK_MAIN: Female
+TALK_MAIN: Mystery
+TALK_SUB: Male
+TALK_SUB: Yo!
+TALK_SUB: Hey!
+TALK_SUB: Good-bye.
+
+== m01a0706 (T00P01) ==
+-: Do you need something?
+-: Do you really need something from me?
+-: and
+-: ?
+-: I can't help you with anything right now.
+-: No
+-: I see...
+-: No
+
+== m01a0707 (T00P01) ==
+TALK_SUB: But when I evolve... I become a Ludicolo...
+TALK_SUB: You know? Ludicolo is a carefree Pokémon.
+
+== m01a0710 (T00P01) ==
+-: There's nothing here.
+
+== m01a07a (T00P01) ==
+NPC_PARTNER: Acting Test under way...
+
+== m01a08a (T00P01) ==
+NPC_PARTNER: Acting Test under way...
+
+== m01a09a (T00P01) ==
+-: The Color Effect Test will be conducted.
+-: The Test has completed.
+
+== m01d0284 (D01P11B) ==
+NPC_ZUBATTO: Sorry, kiddo. We'll take that!
+NPC_DOGAASU: Come on. Let's get out of here.
+
+== m01d0712 (D01P41A) ==
+NPC_ZUBATTO: Yeah, you just remember that!
+
+== m02a0101 (G01P01B) ==
+-: Pokémon detected! Pokémon detected!
+-: Whose footprint? Whose footprint?
+ATTENDANT1: Waah!
+ATTENDANT1: N-no. I have to tough it out...
+ATTENDANT1: N-no. I have to be strong...
+ATTENDANT1: N-no. I can't lose it now...
+-: ...You may ENTER!
+ATTENDANT1: They said to stand up here.
+PLAYER: (............)
+PLAYER: (There's a grate covering the hole...)
+PLAYER: (It's made so that no one can fall through...)
+PLAYER: (Still, it's really strange...)
+PLAYER: (It looks like it will tickle my feet or...)
+-: Hey, you! Stranger! Get on the GRATE!
+-: Pokémon detected! Pokémon detected!
+-: Whose footprint? Whose footprint?
+-: The footprint is... The footprint is... Um...
+-: What's the matter?! Sentry! Sentry?!
+-: What's wrong, sentry Diglett?
+NPC_DIGUDA: Umm... Er...
+
+== m02a0104 (V02P03A) ==
+NPC_DIGUDA: Umm... The footprint is...
+-: What?! MAYBE?!
+-: UGH! That's pretty crummy!
+-: That's your job, ISN'T it, Diglett?
+
+== m02a0105 (G01P01B) ==
+-: ...Sorry to make you WAIT.
+-: But you don't SEEM to be bad...
+-: OK, good enough! ENTER!
+ATTENDANT1: Yikes!
+ATTENDANT1: Yipes!
+ATTENDANT1: I'm so nervous! So jittery!
+ATTENDANT1: Anyway, let's go.
+ATTENDANT1: OK, let's go in.
+ATTENDANT1: Anyway, let's go.
+
+== m02a0108 (G01P03A) ==
+-: Excuse me!
+NPC_PERAPPU: It was you two that just came in, right?
+ATTENDANT1: Y-yes!
+ATTENDANT1: N-no! That's not why we're here!
+NPC_PERAPPU: Wh-what?! Exploration team?
+ATTENDANT1: Hey.
+ATTENDANT1: Excuse me.
+NPC_PERAPPU: What?!
+NPC_PERAPPU: Well...no! No, no, no!
+ATTENDANT1: His attitude did an about-face...
+ATTENDANT1: What a shift in attitude!
+
+== m02a0109 (G01P04A) ==
+NPC_PERAPPU: Oh, please! Hush now!
+ATTENDANT1: Oh.
+
+== m02a0110 (G01P05A) ==
+NPC_PERAPPU: Guildmaster...um...Guildmaster?
+NPC_PUKURIN: Hiya!
+NPC_PUKURIN: So tell me your team's name?
+ATTENDANT1: Huh? The team's name?
+ATTENDANT1: Oh? Our team's name?
+ATTENDANT1: I never thought of that.
+ATTENDANT1: We didn't think of that.
+ATTENDANT1: I didn't think about a team name.
+NPC_PUKURIN: Registering! ♪ Registering! ♪
+NPC_PUKURIN: All registered...
+NPC_PUKURIN: YOOM...TAH!
+NPC_PUKURIN: Quick, open it up.
+NPC_PUKURIN: And a Wonder Map...
+NPC_PUKURIN: And a Treasure Bag!
+NPC_PUKURIN: It's a very wonderful bag! ♪
+NPC_PUKURIN: Those two items are special.
+ATTENDANT1: Th-thank you! We'll do our best!
+ATTENDANT1: We will!
+ATTENDANT1: Let's do this right, !
+
+== m02a0111 (G01P07A) ==
+NPC_PERAPPU: This is your room! ♪
+
+== m02a0113 (G01P07C) ==
+ATTENDANT1: ...
+ATTENDANT1: ......
+ATTENDANT1: My heart's been racing all day...
+ATTENDANT1: Yawn... I'm getting sleepy...
+ATTENDANT1: I'm feeling a little sleepy...
+ATTENDANT1: I'm getting a little sleepy...
+ATTENDANT1: Let's do our best tomorrow.
+ATTENDANT1: Let's give it our all tomorrow.
+ATTENDANT1: OK, . Good night.
+ATTENDANT1: OK, . Sleep tight.
+
+== m02a0201 (G01P07A) ==
+-: The next morning...
+-: HEY! HEY THERE!
+-: RISE AND SHINE!
+PLAYER: (Ugh!)
+PLAYER: (M-my head is pounding!)
+NPC_DOGOOMU: Why are you still ASLEEP?! WAKE UP!
+PLAYER: (Ugh!)
+NPC_DOGOOMU: C'mon! Snap OUT of it!
+NPC_DOGOOMU: I'm Loudred! And I'm a fellow apprentice!
+NPC_DOGOOMU: So ANYWAY...
+NPC_DOGOOMU: SO GET IT IN GEAR!
+ATTENDANT1: Urk! My ears are still ringing...
+ATTENDANT1: Er... Oh yeah!
+ATTENDANT1: But that means...
+
+== m02a0202 (G01P04A) ==
+NPC_DOGOOMU: You're LATE, rookies!
+NPC_PERAPPU: Hush!
+NPC_PERAPPU: Your voice is ridiculously loud!
+NPC_DOGOOMU: Humph...
+NPC_PERAPPU: Everyone seems to be present.
+NPC_PUKURIN: Zzzz... Zzzz... Snorfle... Zzz...
+NPC_PUKURIN: Apprentice: (Yeah, you got that right!)
+NPC_PUKURIN: Apprentice: (Yup, looks like he's wide awake.)
+NPC_PERAPPU: Everyone: A ONE, A TWO...A ONE-TWO-THREE!
+NPC_PERAPPU: Everyone: ONE! DON'T SHIRK WORK!
+NPC_PERAPPU: Everyone: TWO! RUN AWAY AND PAY!
+NPC_PERAPPU: Everyone: THREE! SMILES GO FOR MILES!
+NPC_PERAPPU: OK, Pokémon! Get to work! ♪
+NPC_PERAPPU: Everyone: HOORAY!
+
+== m02a0301 (G01P04A) ==
+NPC_PERAPPU: You two come here. ♪
+
+== m02a0302 (G01P03A) ==
+NPC_PERAPPU: You're just beginners.
+PLAYER: (The flow of time is getting messed up?)
+PLAYER: (What's going on here?!)
+PLAYER: (Mystery dungeons?!)
+ATTENDANT1: So, !
+NPC_PERAPPU: Ah, yes. ♪ Maybe this will do?
+ATTENDANT1: Oh, yeah? Let's read it!
+ATTENDANT1: Oh, really? Let's read it!
+ATTENDANT1: \"Hello! My name is Spoink!\"
+ATTENDANT1: \"That pearl is life itself...to me!\"
+ATTENDANT1: \"But I've heard my pearl has been sighted!\"
+ATTENDANT1: \"I could never go somewhere so frightening!\"
+ATTENDANT1: Hold on a second!
+ATTENDANT1: Wait a second...
+NPC_PERAPPU: Hush!
+ATTENDANT1: Yikes!
+ATTENDANT1: Hmm...
+
+== m02a0501 (G01P03A) ==
+ATTENDANT1: Ugh... That didn't end well...
+ATTENDANT1: Ugh... That didn't go well, did it?
+ATTENDANT1: Ugh... That didn't work at all...
+ATTENDANT1: Ugh...
+
+== m02a0601 (G01P07C) ==
+NPC_PERAPPU: Hey, beginners!
+
+== m02a0603 (G01P05C) ==
+NPC_PUKURIN: Hiya!
+NPC_PUKURIN: Job not going well? That stinks!
+NPC_PUKURIN: That's why I'm giving you these!
+NPC_PUKURIN: In addition, he also gave you an Oran Berry!
+NPC_PUKURIN: Incredibly, he also gave you a Max Elixir!
+
+== m02a0801 (D02P31A) ==
+ATTENDANT1: Hey! There it is!
+ATTENDANT1: Oh! Look at that!
+ATTENDANT1: Oh! Over there!
+ATTENDANT1: This has to be Spoink's pearl!
+ATTENDANT1: This must be Spoink's pearl!
+ATTENDANT1: This has to be Spoink's pearl!
+ATTENDANT1: Let's take it back right now!
+ATTENDANT1: Let's hurry back with it!
+ATTENDANT1: Quick! Let's take it back!
+
+== m02a0901 (D02P31A) ==
+-: This appears to be the end of the dungeon.
+
+== m02a1001 (G01P03A) ==
+NPC_BANEBUU: Th-thank you!
+NPC_BANEBUU: You have my sincere thanks!
+NPC_BANEBUU: You also received a Calcium!
+NPC_BANEBUU: You also received an Iron!
+NPC_BANEBUU: Farewell!
+NPC_PERAPPU: Well done, team! ♪
+ATTENDANT1: Huh?!
+ATTENDANT1: Excuse me?!
+ATTENDANT1: Huh?! We keep only 200?
+ATTENDANT1: That's terrible!
+ATTENDANT1: That's awful!
+ATTENDANT1: That's not fair!
+ATTENDANT1: Hmph...
+
+== m02a1003 (G01P07C) ==
+ATTENDANT1: Hey, ...
+ATTENDANT1: Listen, ...
+ATTENDANT1: Say, ...
+ATTENDANT1: Yawn... I'm getting sleepy.
+ATTENDANT1: Good night, ...
+ATTENDANT1: Sleep tight, ...
+
+== m02d0112 (G01P01B) ==
+-: Pokémon detected! Pokémon detected!
+-: Whose footprint? Whose footprint?
+ATTENDANT1: Waah!
+
+== m03a0101 (G01P04A) ==
+NPC_PERAPPU: Well, come with me.
+
+== m03a0102 (G01P03A) ==
+NPC_PERAPPU: Correct! ♪
+NPC_PERAPPU: Take a closer look! ♪
+ATTENDANT1: Hey! Check it out, !
+ATTENDANT1: Oh, look, !
+ATTENDANT1: Oh! Look at this, !
+ATTENDANT1: Who are these Pokémon, Chatot?
+ATTENDANT1: Oh no! They're outlaws?!
+ATTENDANT1: No way! That's not possible!
+NPC_PERAPPU: Hee-heeee! ♪ Just joking! ♪
+NPC_PERAPPU: Hee-heeeee! ♪
+ATTENDANT1: Um... You say some are weak...
+NPC_PERAPPU: Hey! Bidoof! Bidoof?!
+NPC_BIPPA: Yup yup!
+NPC_BIPPA: Huff-puff-huff... You called?
+NPC_PERAPPU: Ah, Bidoof! ♪
+NPC_PERAPPU: Off you go! ♪
+NPC_BIPPA: Aw, shucks, I'm overjoyed!
+ATTENDANT1: Why's that?
+NPC_BIPPA: Sniffle...
+
+== m03a0105 (G01P04A) ==
+NPC_BIPPA: First things first!
+NPC_BIPPA: Here, we have Croagunk...
+NPC_BIPPA: Over this way's the mess hall.
+
+== m03a0107 (T01P01A) ==
+NPC_BIPPA: It's called Treasure Town.
+ATTENDANT1: That place is Duskull Bank.
+ATTENDANT1: That over there is Duskull Bank.
+ATTENDANT1: We can save our money there.
+
+== m03a0109 (T01P01A) ==
+ATTENDANT1: All right, let's go.
+ATTENDANT1: OK, let's go.
+ATTENDANT1: Let's go to the Kecleon Market!
+
+== m03a0301 (T01P02A) ==
+NPC_MARIRU: Misters Kecleon!
+NPC_RURIRI: Hello. May I buy an Apple?
+NPC_KAKUREON1: Oh, most certainly!
+NPC_MARIRU: Thank you, Misters Kecleon!
+NPC_MARIRU: Misters Kecleon!
+NPC_RURIRI: There was an extra Apple!
+NPC_MARIRU: We didn't pay for this many.
+NPC_MARIRU: Really?!
+NPC_RURIRI: Yowch!
+PLAYER: (Huh? What was that?)
+PLAYER: (D-dizzy? Or am I...?)
+
+== m03a0401 (T01P01A) ==
+NPC_RURIRI: Yaaaay!
+NPC_MARIRU: Thank you!
+NPC_SURIIPU: Please! It's nothing.
+ATTENDANT1: What's going on?
+ATTENDANT1: What's happening?
+NPC_RURIRI: Oh! Hi!
+NPC_MARIRU: Then Mr. Drowzee came along...
+NPC_MARIRU: We're so happy about this!
+ATTENDANT1: Awesome! That's great for you!
+ATTENDANT1: Yeah! That's great for you!
+ATTENDANT1: Is that right? How nice for you!
+NPC_RURIRI: Thank you, Mr. Drowzee!
+NPC_SURIIPU: Oh, please...
+NPC_MARIRU: Yup!
+NPC_RURIRI: Yup!
+NPC_SURIIPU: Whoops! Excuse me.
+PLAYER: (Urk... Wh-what is this...?)
+PLAYER: (It's happening again...)
+PLAYER: (Another dizzy spell...)
+
+== m03a0501 (G01P03A) ==
+NPC_BIPPA: Not yet, huh?
+
+== m03a0502 (G01P03A) ==
+ATTENDANT1: Let's see. Which should we pick?
+ATTENDANT1: Don't pick one that looks scary!
+ATTENDANT1: Don't choose anyone too scary!
+ATTENDANT1: Please don't pick anyone scary!
+-: Stand clear! Updating listings!
+ATTENDANT1: What's that? What's happening?
+NPC_BIPPA: Oh, the data's getting updated.
+ATTENDANT1: It's being...updated?
+ATTENDANT1: What's going on here?
+NPC_BIPPA: While the panel is flipped over...
+ATTENDANT1: Dugtrio?
+
+== m03a0505 (V03P03A) ==
+NPC_BIPPA: Updating data is Dugtrio's duty.
+NPC_BIPPA: He tunnels his way to our guild...
+
+== m03a0506 (G01P03A) ==
+NPC_DAGUTORIO: Update completed! Stand clear!
+ATTENDANT1: Oh, looks like he's done.
+NPC_BIPPA: Yes sirree! The data is updated.
+ATTENDANT1: ...
+NPC_BIPPA: It's not cold here, after all.
+ATTENDANT1: L-l-look at this, !
+ATTENDANT1: Up top! On the left!
+ATTENDANT1: At the top! On the left!
+NPC_BIPPA: Now what's going on?
+NPC_BIPPA: Where are you all off to?
+
+== m03a0511 (P01P01A) ==
+NPC_MARIRU: Yes...about them...!
+ATTENDANT1: So which way did they go?!
+NPC_MARIRU: Th-that way!
+
+== m03a0601 (D03P11A) ==
+NPC_MARIRU: Yes...
+ATTENDANT1: I think they're up ahead here.
+ATTENDANT1: Let's roll, . Quick!
+ATTENDANT1: Let's get going, !
+
+== m03a0801 (D03P41A) ==
+NPC_RURIRI: Uh-oh. It's a dead end.
+NPC_SURIIPU: Sorry, kiddo.
+NPC_RURIRI: Huh?
+NPC_RURIRI: My...big brother...
+NPC_RURIRI: Huh?!
+NPC_SURIIPU: See that hole behind you?
+NPC_SURIIPU: Well...
+NPC_SURIIPU: And that's where you come in!
+NPC_SURIIPU: Don't worry. Just do as I say.
+NPC_RURIRI: B-but...
+NPC_SURIIPU: Go on, get going!
+NPC_RURIRI: I want my big brother!
+NPC_SURIIPU: H-hey! Stop that!
+NPC_RURIRI: H-h-h...HELP!
+ATTENDANT1: Stop right there!
+NPC_SURIIPU: H-how did you find this place?!
+ATTENDANT1: No criminal can escape us!
+NPC_SURIIPU: ...Huh? Are you...trembling?
+NPC_SURIIPU: A-ha! I've figured it out!
+ATTENDANT1: Urk!
+NPC_SURIIPU: But can you two do the job?
+ATTENDANT1: Urk!
+ATTENDANT1: Y-yes. We can! Yes, we can!
+ATTENDANT1: Urk!
+NPC_SURIIPU: Show me what you've got!
+
+== m03a0901 (D03P41A) ==
+NPC_SURIIPU: Not you again.
+ATTENDANT1: Let go of Azurill, Drowzee!
+NPC_SURIIPU: C'mon! Whenever you want!
+
+== m03a1001 (D03P41A) ==
+NPC_SURIIPU: Rrrrawrrr!
+ATTENDANT1: We came to rescue you.
+ATTENDANT1: We're here to rescue you.
+NPC_RURIRI: I'm OK.
+ATTENDANT1: Awesome! That's a big relief!
+ATTENDANT1: Great! What a relief!
+NPC_RURIRI: OK.
+
+== m03a1002 (D03P11A) ==
+NPC_JIBAKOIRU: ZZZT! Thanks to you...
+NPC_JIBAKOIRU: ZZZT! Now come with us! ZZZT!
+NPC_SURIIPU: Awww...
+NPC_MARIRU: Azurill!
+NPC_RURIRI: Marill!
+NPC_RURIRI: Waaaaah!
+NPC_RURIRI: Marill! It was so scary!
+NPC_MARIRU: You OK, Azurill? Are you hurt?
+NPC_MARIRU: Really?
+NPC_MARIRU: That's a relief!
+NPC_MARIRU: Oh, Azurill...Azurill...
+ATTENDANT1: I'm really glad for you guys.
+ATTENDANT1: I'm glad you kids are happy!
+ATTENDANT1: I'm truly happy for you two!
+NPC_MARIRU: Come on, Azurill. You too.
+NPC_RURIRI: Yup...
+NPC_MARIRU: Really... Really, thank you!
+
+== m03a1101 (D03P41A) ==
+-: This appears to be the end of the dungeon.
+
+== m03a1201 (G01P03A) ==
+NPC_PERAPPU: Well done, you two! ♪
+NPC_PERAPPU: However...
+NPC_PERAPPU: That portion was withheld...
+ATTENDANT1: Huh?! We get only this much?!
+ATTENDANT1: What?! This is all we get?!
+ATTENDANT1: No way! This is all we get?!
+ATTENDANT1: After all that hard work...
+ATTENDANT1: After all our effort...
+ATTENDANT1: Urf...
+PLAYER: (It's true!)
+PLAYER: (I can't explain it, but...)
+PLAYER: (That first shout I heard from Azurill...)
+PLAYER: H-h-h...HELP!
+PLAYER: (And that dream I had...)
+
+== m03a1314 (V03P12A) ==
+-: I've finally found it! A Time Gear!
+-: But...this is only the first of many...
+
+== m03d0313 (T01P02A) ==
+-: H-h-h...HELP!
+
+== m03d0314 (T01P02A) ==
+NPC_RURIRI: Is something the matter?
+NPC_RURIRI: Yup! I'm coming! Wait up!
+NPC_MARIRU: Are you all right?
+NPC_RURIRI: Yup!
+NPC_MARIRU: Let's get going.
+NPC_RURIRI: Yup! I'm coming!
+ATTENDANT1: Ha! Those little guys are cute.
+ATTENDANT1: Hey, Kecleon brothers.
+ATTENDANT1: Say, Kecleon brothers.
+NPC_KAKUREON1: No, nothing out of the ordinary.
+NPC_KAKUREON2: I didn't hear anything odd either.
+PLAYER: (No, I'm positive that I didn't imagine it.)
+PLAYER: (I definitely heard it!)
+PLAYER: (That shout that I heard...)
+PLAYER: H-h-h...HELP!
+PLAYER: (There's no mistaking it...)
+PLAYER: (That was Azurill's scream!)
+ATTENDANT1: Uh, are you daydreaming?
+ATTENDANT1: Let's go already, !
+ATTENDANT1: Let's move it, !
+ATTENDANT1: Let's hustle, !
+
+== m03d0412 (T01P01A) ==
+NPC_SURIIPU: Whoops! Excuse me.
+
+== m03d0812 (D03P41A) ==
+NPC_RURIRI: H-h-h...HELP!
+
+== m04a0101 (G01P04A) ==
+NPC_DOGOOMU: HEY, you two!
+NPC_DOGOOMU: Diglett, I brought them!
+NPC_DIGUDA: Thank you, Loudred.
+NPC_DIGUDA: That's why I can't man my post.
+NPC_DOGOOMU: ...And that's THAT.
+NPC_DOGOOMU: Shut your YAP!
+ATTENDANT1: Ugh... My head hurts...
+ATTENDANT1: Ow... My head is pounding...
+ATTENDANT1: Ow... My head hurts...
+ATTENDANT1: What are we supposed to do?
+ATTENDANT1: Sentry duty?
+NPC_DOGOOMU: You heard right. Sentry duty.
+ATTENDANT1: My footprint? What do you...?
+
+== m04a0106 (G01P04A) ==
+NPC_DOGOOMU: All right? Understood?
+NPC_DOGOOMU: Good! Then let's get to WORK!
+NPC_DOGOOMU: Buck up and do a GOOD job!
+ATTENDANT1: We'll have to feel our way...
+ATTENDANT1: ...
+ATTENDANT1: ......
+ATTENDANT1: Yup! We're here!
+ATTENDANT1: Yes! We're in position!
+ATTENDANT1: Yep! We're here!
+NPC_DOGOOMU: GOOD!
+ATTENDANT1: Yup! Got it!
+ATTENDANT1: Yes! Understood!
+ATTENDANT1: Yep! We got it!
+NPC_DOGOOMU: GOOD! Let's get started!
+NPC_DOGOOMU: Please explain again
+
+== m04a0201 (G01P04A) ==
+NPC_PERAPPU: Your results were...dreadful!
+NPC_PERAPPU: You failed so many times!
+NPC_DOGOOMU: UGH...!
+NPC_DOGOOMU: You two got SO many wrong...
+NPC_DOGOOMU: I even got in TROUBLE for it!
+NPC_PERAPPU: H-hush!
+NPC_DOGOOMU: WHAAAT?!
+NPC_PERAPPU: Furthermore!
+NPC_PERAPPU: You'll go without dinner tonight!
+ATTENDANT1: B-but...
+NPC_PERAPPU: Your results were...adequate.
+NPC_DOGOOMU: Hmm...
+ATTENDANT1: Oh...
+-: received 100!
+NPC_PERAPPU: You've all worked an honest day.
+NPC_PERAPPU: Good job, team! ♪
+NPC_DOGOOMU: Good!
+ATTENDANT1: Yay!
+-: received 200!
+NPC_PERAPPU: Keep up the good work! ♪
+NPC_DOGOOMU: Excellent!
+ATTENDANT1: We did it!
+-: received 500!
+-: But that's not the end of it!
+-: So many rewards! Can you believe it?
+NPC_PERAPPU: Keep up the good work! ♪
+
+== m04a0301 (G01P06B) ==
+NPC_PERAPPU: OK, everyone! Dinnertime! ♪
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_DOGOOMU: Uggggh...
+ATTENDANT1: I'm...starving...
+ATTENDANT1: So very...hungry...
+ATTENDANT1: So hungry...
+NPC_DOGOOMU: Grrr...
+ATTENDANT1: Come on, quit giving me the eye!
+ATTENDANT1: Don't glare at me like that...
+ATTENDANT1: Please don't glare at me...
+-: I'm stuffed! That was delicious!
+-: Oof... I'm so full and sleepy!
+-: We're all off to bed, then. Good night!
+-: Good night!
+
+== m04a0302 (G01P07C) ==
+NPC_DOGOOMU: Grrr...
+
+== m05a0101 (G01P04A) ==
+NPC_PERAPPU: In Treeshroud Forest...
+NPC_PERAPPU: Time has apparently stopped...
+NPC_DIGUDA: Huh?!
+NPC_KIMAWARI: Eek! What did you say?!
+NPC_PERAPPU: Yes, that's correct...
+
+== m05a0104 (G01P04A) ==
+NPC_DAGUTORIO: T-time has stopped?!
+NPC_KIMAWARI: But...
+NPC_KIMAWARI: It's unthinkable!
+NPC_PERAPPU: Stolen!
+NPC_BIPPA: Huh?!
+NPC_DAGUTORIO: The Time Gear was s-stolen?!
+NPC_PERAPPU: Quiet, everyone!
+NPC_PERAPPU: That is all.
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_PERAPPU: Oh, you there.
+NPC_PERAPPU: You two, come here.
+NPC_PERAPPU: So!
+ATTENDANT1: R-really?! Woo-hoo!
+ATTENDANT1: R-really?! Hooray!
+ATTENDANT1: R-really?! Yay!
+NPC_PERAPPU: Let me see your Wonder Map.
+
+== m05a0202 (S01P01A) ==
+NPC_PERAPPU: Treasure Town is here.
+
+== m05a0203 (G01P04A) ==
+NPC_PERAPPU: Good! ♪
+ATTENDANT1: ...
+NPC_PERAPPU: A-are you all right?
+ATTENDANT1: I'm feeling a little worked up...
+ATTENDANT1: I'm getting a bit emotional...
+ATTENDANT1: Let's do this right, !
+ATTENDANT1: Let's do our best, !
+ATTENDANT1: Please explain again
+NPC_PERAPPU: Fine, I'll explain it again.
+NPC_PERAPPU: Let me see your Wonder Map.
+
+== m05a0601 (D04P31A) ==
+ATTENDANT1: Urrrrgh! Urrrrgh! Ugh...
+ATTENDANT1: Nope, it's not budging...
+ATTENDANT1: It's really stuck tight.
+PLAYER: (Whoa!)
+PLAYER: (This is really stuck!)
+PLAYER: (It won't budge!)
+PLAYER: (Urrrrgh...ugh... Nope, no good...)
+ATTENDANT1: But we can't just give up.
+ATTENDANT1: Urrrrrrgh! Urrrrrrgh!
+PLAYER: (Hmm...)
+PLAYER: (It's not budging one bit...)
+PLAYER: (Huh? Oh no...)
+PLAYER: (It's happening again...)
+PLAYER: (It's...)
+
+== m05a0603 (P02P01A) ==
+NPC_HIMEGUMA: Hi, hi! Are you two OK?
+NPC_HIMEGUMA: You plopped down from nowhere!
+NPC_HIMEGUMA: Oh, you startled everyone!
+ATTENDANT1: Where are we?
+NPC_HIMEGUMA: This is the Hot Spring.
+ATTENDANT1: H-Hot Spring?!
+NPC_KOOTASU: Indeed! This is the Hot Spring.
+NPC_KOOTASU: Unfold it for me.
+
+== m05a0604 (S01P01A) ==
+NPC_KOOTASU: There. We are here.
+NPC_KOOTASU: This is the Hot Spring's location.
+ATTENDANT1: Oh. I get it.
+ATTENDANT1: Oh. I see.
+ATTENDANT1: Oh. OK.
+ATTENDANT1: The waterfall is over here, so...
+ATTENDANT1: The waterfall is here, so...
+
+== m05a0701 (G01P04A) ==
+NPC_PERAPPU: No, no, no! Emphatically, no!
+NPC_PERAPPU: This is a major discovery!
+ATTENDANT1: R-really?!
+NPC_PERAPPU: Undoubtedly! ♪
+ATTENDANT1: Oh, I see! We made a discovery!
+PLAYER: (When I had those dizzy spells...)
+PLAYER: (The shadow of that Pokémon I saw...)
+
+== m05a0705 (G01P04A) ==
+ATTENDANT1: Huh? What's up, ?
+ATTENDANT1: Huh?
+ATTENDANT1: Pardon?!
+NPC_PERAPPU: I should be used to it by now...
+ATTENDANT1: What was that, Chatot?
+NPC_PERAPPU: Please wait here.
+ATTENDANT1: So how did it go?
+NPC_PERAPPU: And then he said...
+NPC_PERAPPU: Well, that's too bad for you.
+ATTENDANT1: Urf...
+
+== m05a0811 (G01P07C) ==
+NPC_PERAPPU: Hey, you two!
+
+== m05a0911 (G01P05C) ==
+NPC_PERAPPU: Guildmaster...Guildmaster?
+NPC_PUKURIN: Hiya!
+ATTENDANT1: An expedition?
+ATTENDANT1: Really?!
+ATTENDANT1: R-really?!
+NPC_PERAPPU: Now, now!
+NPC_PUKURIN: I'm sure you two can do it!
+NPC_PUKURIN: Try hard!
+ATTENDANT1: Yup!
+ATTENDANT1: Yes!
+ATTENDANT1: Yep!
+
+== m05d0616 (D04P31A) ==
+PLAYER: (Aaaack! That's...)
+ATTENDANT1: Huh? What's going on?
+ATTENDANT1: Huh? What's happening?
+ATTENDANT1: Waaah! It's a flood!
+ATTENDANT1: Waaaaaaah!
+
+== m06a0101 (G01P04A) ==
+NPC_PERAPPU: Precisely! ♪
+NPC_PERAPPU: We will depart in several days.
+NPC_KIMAWARI: Oh my gosh! This is so exciting!
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_PERAPPU: Ah, you two.
+NPC_PERAPPU: That will do for now. ♪
+
+== m06a0201 (G01P03A) ==
+NPC_ZUBATTO: Hey!
+NPC_DOGAASU: You two?!
+ATTENDANT1: Huh? That duo...
+
+== m06a0203 (G01P03A) ==
+ATTENDANT1: So we're training at this guild.
+NPC_DOGAASU: Whaaaat?!
+NPC_DOGAASU: You! Come with us for a second.
+ATTENDANT1: Wh-what is it?
+ATTENDANT1: What?! Why?!
+ATTENDANT1: B-but!
+ATTENDANT1: It-it's true that I'm timid...
+NPC_DOGAASU: Oh? An expedition, you say?
+ATTENDANT1: B-big talk!
+ATTENDANT1: Ch-Chief?
+NPC_ZUBATTO: Heh-heh. That's right.
+NPC_ZUBATTO: Our Chief is incredibly talented.
+ATTENDANT1: Smell?
+NPC_ZUBATTO: Here's the Chief!
+NPC_SUKATANKU: Move! Out of the way!
+ATTENDANT1: Oh, !
+ATTENDANT1: Ugh! What's this awful stench?
+ATTENDANT1: Ew! What's this awful stench?
+NPC_KIMAWARI: Eek! It reeks like rotten cheese!
+NPC_BIPPA: That is foul, yes sirree!
+NPC_HEIGANI: Hey, hey! My eyes are burning!
+ATTENDANT1: Oh no...
+NPC_DOGAASU: Chief!
+NPC_ZUBATTO: Psst...psst...whisper...psst...
+NPC_SUKATANKU: That does sound tasty.
+NPC_DOGAASU: Doesn't it?
+NPC_SUKATANKU: Come on. We're going.
+NPC_SUKATANKU: Koffing & Zubat: Yeah!
+NPC_ZUBATTO: Heh-heh, see you around, wimps.
+ATTENDANT1: Are you all right, ?!
+ATTENDANT1: Are you OK, ?!
+ATTENDANT1: That sure was rough, though.
+ATTENDANT1: That goon was rough, though.
+
+== m06a0301 (G01P04A) ==
+NPC_PERAPPU: Ah, it's you.
+NPC_PERAPPU: That will do for now. ♪
+
+== m06a0401 (G01P04A) ==
+NPC_DOGOOMU: HEY, YOU TWO!
+NPC_DOGOOMU: All right! Let's DO this!
+NPC_DOGOOMU: Good! Then, let's get to WORK!
+NPC_DOGOOMU: Buck up and do a GOOD job!
+NPC_DOGOOMU: No, please explain...
+
+== m06a0403 (G01P04A) ==
+NPC_DOGOOMU: All right? Understood?
+NPC_DOGOOMU: Good! Then, let's get to WORK!
+NPC_DOGOOMU: Buck up and do a GOOD job!
+NPC_DOGOOMU: No, please explain...
+
+== m06a0501 (G01P04A) ==
+NPC_PERAPPU: Hey! Over here, please. ♪
+NPC_DOGOOMU: Ugh! What stinks?!
+NPC_DOGAASU: Whoa-ho-ho! I'm Koffing.
+NPC_SUKATANKU: And I'm Team Skull's leader.
+NPC_SUKATANKU: I'm Skuntank. Remember it.
+NPC_PERAPPU: What, you're already acquainted?
+NPC_PERAPPU: That simplifies things. ♪
+NPC_PERAPPU: Why are you so shocked?
+NPC_PERAPPU: Hm. Very well, then.
+NPC_PERAPPU: Everyone: ...Hooray.
+NPC_DOGOOMU: You gotta be KIDDING!
+NPC_DOGOOMU: WH-WHAT?
+NPC_PUKURIN: YOOM...
+NPC_PUKURIN: YOOOOOOM...
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_DOGAASU: Whoa-ho-ho!
+NPC_ZUBATTO: Heh-heh-heh!
+NPC_PERAPPU: Ah, you two.
+NPC_PERAPPU: We're counting on you. ♪
+
+== m07a0201 (G01P07A) ==
+NPC_SUKATANKU: Let's go find it now.
+NPC_ZUBATTO: Huh? Find what?
+NPC_DOGAASU: I like that thinking, Chief!
+NPC_ZUBATTO: Okay, let's get to it!
+
+== m07a0301 (G01P04A) ==
+NPC_PERAPPU: Ah, you two.
+NPC_PERAPPU: Correct. ♪
+NPC_PERAPPU: The Guildmaster w-w-would...
+NPC_PERAPPU: ...erk!
+NPC_PERAPPU: The G-Guildmaster would.........
+NPC_PERAPPU: ...Yes, that's what would happen.
+ATTENDANT1: But, oh well.
+NPC_PERAPPU: Good! ♪
+NPC_PERAPPU: ...erk!
+NPC_PERAPPU: ...So please don't fail! ♪
+ATTENDANT1: OK!
+
+== m07a0701 (D05P31A) ==
+-: Chaw-haw-haw! Easily done!
+ATTENDANT1: Who said that?!
+-: Chaw-haw-haw!
+ATTENDANT1: What?! You!
+NPC_DOGAASU: What took you so long?
+ATTENDANT1: Whaaaat?!
+ATTENDANT1: Huh?!
+ATTENDANT1: Pardon?!
+ATTENDANT1: Oh! Some Perfect Apples!
+NPC_SUKATANKU: See? What'd I tell you?
+NPC_DOGAASU: Whoa-ho-ho.
+NPC_ZUBATTO: Heh-heh.
+ATTENDANT1: ...
+ATTENDANT1: I won't be fooled again!
+ATTENDANT1: You can't fool me again!
+ATTENDANT1: You won't fool me again!
+NPC_DOGAASU: Aww. How boring is that.
+ATTENDANT1: I knew it!
+ATTENDANT1: I was right!
+ATTENDANT1: I knew it!
+ATTENDANT1: The only thing we can!
+ATTENDANT1: Even now I'm a little scared...
+ATTENDANT1: But I won't lose again!
+ATTENDANT1: I won't ever back down again!
+NPC_SUKATANKU: So be it.
+NPC_SUKATANKU: In recognition of your courage...
+ATTENDANT1: W-watch out, !
+ATTENDANT1: They're going to try something!
+NPC_SUKATANKU: Chaw-haw-haw!
+NPC_SUKATANKU: Koffing and I will use our...
+NPC_SUKATANKU: noxious gas combo!
+ATTENDANT1: Waaaah! WAAAAH!
+ATTENDANT1: Ugh... That was awful...
+ATTENDANT1: Ugh... That was disgusting...
+ATTENDANT1: Ugh... That was awful...
+ATTENDANT1: Oh, !
+ATTENDANT1: Are you all right, ?
+ATTENDANT1: Are you OK, ?
+ATTENDANT1: Whew!
+ATTENDANT1: I'm glad!
+ATTENDANT1: Thank goodness!
+NPC_ZUBATTO: Urrgh...
+NPC_ZUBATTO: Aaaaah!
+NPC_ZUBATTO: Waaah! They left without me!
+ATTENDANT1: Urf... We both got knocked out...
+ATTENDANT1: But what a horrible stench.
+ATTENDANT1: It still reeks a little...
+ATTENDANT1: The stench is still lingering...
+ATTENDANT1: It still reeks a little... Ewww...
+ATTENDANT1: Aw! They're gone!
+ATTENDANT1: Did those bullies eat them all?
+
+== m07a0801 (G01P03A) ==
+NPC_PERAPPU: Whaaaat? You failed?!
+NPC_PERAPPU: Seriously! What am I to do?!
+ATTENDANT1: Urk...
+NPC_PERAPPU: You leave me no choice.
+ATTENDANT1: What?! B-but...
+ATTENDANT1: Ugh...
+NPC_PERAPPU: Waaaaaaah!
+NPC_PERAPPU: That's an order!
+
+== m07a0901 (G01P06B) ==
+ATTENDANT1: Urf...
+
+== m07a1001 (G01P05C) ==
+NPC_PUKURIN: Hiya!
+NPC_PUKURIN: Thank you!
+NPC_PERAPPU: Uh... There's, uh, a slight...
+NPC_PUKURIN: Huh? What's wrong?
+NPC_PERAPPU: You see, uh, truth be told...
+NPC_PERAPPU: So, uh, to put it another way...
+NPC_PUKURIN: It's OK. I understand. ♪
+NPC_PUKURIN: ...Oh.
+NPC_PERAPPU: That means, Guildmaster...
+NPC_PERAPPU: Yep, that's what it means!
+NPC_PERAPPU: Um, Guildmaster? Guildmaster?
+NPC_PUKURIN: Sniffle...
+NPC_PUKURIN: Sob...
+ATTENDANT1: (Whoa! He's going to bawl!)
+ATTENDANT1: (Whoa! He's going to cry!)
+NPC_PUKURIN: Sniffle-snivel-snivel-snivel...
+NPC_PERAPPU: Waaaah! N-no!
+NPC_PUKURIN: Urrrrffff... Urrrrrrrrrr...
+NPC_PUKURIN: Waa... Waaaaaaaaahhh...
+NPC_PERAPPU: Cover your ears!
+ATTENDANT1: W-why?!
+NPC_PERAPPU: Don't argue! Do it now!
+NPC_PUKURIN: WAAAAAAAAAAAAAAAAH!
+NPC_PERAPPU: Eeeeeeh!
+NPC_PUKURIN: BWEEEEEEEEEAAAAAHHHHH!
+NPC_PERAPPU: Aiyeeeeee!
+NPC_PUKURIN: Huh?
+NPC_PERAPPU: It will be truly inspiring!
+
+== m07a1101 (G01P07A) ==
+NPC_ZUBATTO: That would've been hilarious.
+NPC_DOGAASU: Yeah, my thoughts exactly.
+NPC_DOGAASU: I get it now.
+NPC_SUKATANKU: But...
+NPC_SUKATANKU: He's no big deal.
+NPC_DOGAASU: We knock out the guild's crew.
+NPC_ZUBATTO: Heh-heh.
+NPC_SUKATANKU: Chaw-haw-haw.
+
+== m07a1301 (G01P04A) ==
+NPC_PERAPPU: Ahem. One last item.
+NPC_CHIRIIN: Wow!
+NPC_KIMAWARI: Oh my gosh! It will be so fun!
+NPC_PERAPPU: Everyone: HOORAY!
+ATTENDANT1: I'm so hungry, ...
+NPC_PERAPPU: Ah, you two.
+NPC_PERAPPU: We're counting on you. ♪
+ATTENDANT1: Huh?! Wh-why?!
+NPC_PERAPPU: That's all.
+-: Psst! Listen up!
+-: Shhh! Over here!
+NPC_BIPPA: Shhh! By golly, not so loud!
+NPC_BIPPA: Come this way!
+
+== m07a1302 (G01P07A) ==
+NPC_KIMAWARI: Well...here you go.
+ATTENDANT1: Hey! Apples!
+ATTENDANT1: Oh! Apples!
+NPC_CHIRIIN: You must be very hungry.
+NPC_KIMAWARI: Now, eat up!
+ATTENDANT1: Th-thanks, everyone!
+ATTENDANT1: Whoa! Thanks! I'm revitalized!
+NPC_CHIRIIN: Great!
+ATTENDANT1: Sniffle... Thanks, everyone...
+ATTENDANT1: What if we get picked to go?
+ATTENDANT1: What if we were chosen to go?
+ATTENDANT1: Would you all be OK with that?
+NPC_KIMAWARI: No, I wouldn't like that...
+NPC_CHIRIIN: Then someone else can't go.
+NPC_CHIRIIN: That's just the way it is!
+ATTENDANT1: We'll keep on trying to the end!
+NPC_BIPPA: Yup yup! That's the spirit!
+NPC_CHIRIIN: Yes! Let's all do our best!
+ATTENDANT1: Yep!
+ATTENDANT1: Yes!
+
+== m07a1401 (G01P04A) ==
+NPC_PERAPPU: You two!
+NPC_PERAPPU: Anyway! We're counting on you!
+ATTENDANT1: Uh... All right.
+
+== m08a0101 (G01P06B) ==
+NPC_CHIRIIN: Everyone: Yeah!
+NPC_CHIRIIN: Everyone: Let's get...
+NPC_PERAPPU: Everyone! Hold up!
+NPC_PERAPPU: I wish to make an announcement.
+NPC_HEIGANI: Hey, hey, heeeeeey!
+NPC_DIGUDA: Boooo! Boooo!
+NPC_PERAPPU: Order! I must have order!
+NPC_PERAPPU: Everyone: WHOA!
+NPC_BIPPA: By golly, it's finally settled.
+NPC_PERAPPU: Everyone: LET'S EAT!
+
+== m08a0102 (G01P07C) ==
+-: There it is! Another Time Gear!
+
+== m08a0202 (V03P07A) ==
+-: This is the second one!
+
+== m08a0301 (G01P04A) ==
+NPC_PERAPPU: Ahem! Now then.
+NPC_PERAPPU: Guildmaster, the memo, please.
+NPC_KIMAWARI: Ooh... It's finally happening.
+NPC_BIPPA: My heart's a-pounding, by golly.
+NPC_PERAPPU: Our first member...Loudred! ♪
+NPC_DOGOOMU: Y-yes! I DID IT!
+NPC_DOGOOMU: WOO-HOOOO!
+NPC_KIMAWARI: (Says you...)
+NPC_BIPPA: (Big talker, yup yup.)
+NPC_PERAPPU: Next up is...Corphish! ♪
+NPC_HEIGANI: Hey, hey, hey! Got it!
+NPC_PERAPPU: Next is... Oh, what's this?
+NPC_BIPPA: Really?! Really and truly?!
+NPC_PERAPPU: Come on, step forward.
+NPC_CHIRIIN: Oh? Us too?
+NPC_KIMAWARI: Eeek! Oh my gosh!
+NPC_ZUBATTO: (Heh-heh. Serves them right!)
+NPC_PERAPPU: (This is so hard to decipher...)
+NPC_PERAPPU: What?! Whaaaat?!
+NPC_PERAPPU: Every member of the guild!
+NPC_PUKURIN: Yup! That's right!
+NPC_PUKURIN: Huh?! Of course there's a point!
+NPC_PUKURIN: That is...
+NPC_SUKATANKU: What?!
+NPC_SUKATANKU: What...?
+NPC_PUKURIN: Let's all do our best! ♪
+NPC_PUKURIN: Everyone: HOORAY!
+NPC_PERAPPU: Urrgh... Well, that's settled.
+NPC_PERAPPU: That is all. Dismissed!
+ATTENDANT1: I'm glad we never gave up!
+NPC_HEIGANI: Hey, hey!
+NPC_KIMAWARI: Yippee! That's the spirit!
+NPC_DOGOOMU: Yeah! THAT'S the spirit!
+NPC_CHIRIIN: Let's do our best!
+NPC_BIPPA: Sniff... Sniff...
+ATTENDANT1: Let's band together and do it!
+
+== m08a0401 (G01P04A) ==
+NPC_PERAPPU: Incidentally...
+NPC_PERAPPU: I didn't know...
+NPC_PERAPPU: Understood. ♪
+NPC_PERAPPU: No
+
+== m08a0501 (G01P04A) ==
+NPC_PERAPPU: All accounted for, it appears.
+NPC_PERAPPU: It is also rumored...
+NPC_PUKURIN: Yup! It will be fun, fun, fun! ♪
+NPC_SUKATANKU: (Chaw-haw-haw.)
+
+== m08a0502 (S01P01A) ==
+NPC_PERAPPU: Our guild is here.
+
+== m08a0503 (G01P04A) ==
+NPC_KIMAWARI: You should talk!
+NPC_DAGUTORIO: We're a solid group!
+NPC_CHIRIIN: I promise to try my best!
+NPC_HEIGANI: Hey, hey, likewise!
+NPC_PERAPPU: Erm... Let's see...
+NPC_PUKURIN: That's so boooooring!
+NPC_PUKURIN: ...Meanie.
+NPC_SUKATANKU: Understood. Chaw-haw-haw!
+NPC_PERAPPU: Well then...
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_PERAPPU: And thus...
+
+== m08a0601 (D06P11A) ==
+NPC_BIPPA: It's a Kangaskhan Rock.
+ATTENDANT1: Kangaskhan Rock?
+NPC_BIPPA: It's a real help to travelers.
+ATTENDANT1: Ha ha ha. That goes for us too.
+ATTENDANT1: Let's check the Wonder Map.
+
+== m08a0602 (S01P01A) ==
+NPC_BIPPA: Yup yup! I agree with that.
+
+== m08a0603 (D06P11A) ==
+NPC_BIPPA: Huh? Problem?
+NPC_BIPPA: Huh? Now, that is mighty vexing.
+ATTENDANT1: What'll we do, ?
+ATTENDANT1: Which way should we go?
+
+== m08a0801 (D06P11A) ==
+ATTENDANT1: I guess we got a little careless.
+ATTENDANT1: Maybe we got a little careless.
+ATTENDANT1: Let's get it done!
+
+== m08a1001 (D07P11A) ==
+ATTENDANT1: Let's check the Wonder Map.
+ATTENDANT1: Let's look at the Wonder Map.
+
+== m08a1003 (D07P11A) ==
+ATTENDANT1: Ha ha ha! Us too!
+NPC_BIPPA: I agree completely!
+ATTENDANT1: Then let's eat!
+NPC_BIPPA: Yeeeehaw!
+NPC_BIPPA: Let's get it done!
+
+== m08a1101 (D07P11A) ==
+ATTENDANT1: Let's get it done, !
+
+== m08b1201 (D07P11A) ==
+ATTENDANT1: Yup! Let's get it done!
+ATTENDANT1: Yes! Let's get it done!
+ATTENDANT1: Yup! Let's get it done!
+
+== m09a0101 (D08P11A) ==
+NPC_BIPPA: Huff-huff...
+ATTENDANT1: Urgh...
+NPC_BIPPA: Yes sirree!
+ATTENDANT1: Hm? What's up, ?
+PLAYER: (...)
+PLAYER: (What's this weird sensation?)
+PLAYER: (I don't know why I'm feeling this way...)
+PLAYER: (I...)
+PLAYER: (Wait a second! I know this place!)
+PLAYER: (Have I been here before?)
+PLAYER: (Maybe.)
+ATTENDANT1: Let's move it, .
+ATTENDANT1: Let's go, .
+ATTENDANT1: We have to go, .
+NPC_PERAPPU: Erm... Attention, please.
+NPC_HEIGANI: Hey, hey, hey!
+NPC_KIMAWARI: Silly Corphish.
+NPC_DOGOOMU: Yeah, don't spoil things now!
+NPC_HEIGANI: Hey, hey...
+NPC_CHIRIIN: Um, may I?
+NPC_PERAPPU: A legend, you say?
+PLAYER: (What?! Wipe their memories clean?!)
+NPC_PERAPPU: Ahem.
+NPC_KIMAWARI: Absolutely, eek!
+NPC_PUKURIN: Let's try! ♪ Let's try! ♪
+NPC_PERAPPU: Let's move on with our plan.
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_KIMAWARI: Let's all try our best!
+NPC_DOGOOMU: I'll be the FIRST to find it!
+NPC_DAGUTORIO: OK, everyone, we're off.
+NPC_BIPPA: Yup yup! We need to hurry!
+NPC_ZUBATTO: Heh-heh-heh!
+NPC_DOGAASU: Whoa-ho-ho!
+ATTENDANT1: We've got to go, .
+ATTENDANT1: Let's go, .
+ATTENDANT1: We should go, .
+ATTENDANT1: We need to hurry.
+PLAYER: (...)
+PLAYER: (I know this place...)
+PLAYER: (Hmm.)
+PLAYER: (Maybe I came here before I lost my memory.)
+PLAYER: (Could that have happened?)
+ATTENDANT1: Hey, !
+
+== m09a0201 (D08P11A) ==
+ATTENDANT1: Hey! This stone feels warm!
+ATTENDANT1: Wow! This stone feels warm!
+ATTENDANT1: Wow! It feels warm!
+ATTENDANT1: It might be rare. I'll keep it.
+ATTENDANT1: This could be rare. I'll keep it.
+
+== m09a0301 (D08P11A) ==
+NPC_PERAPPU: Welcome back! ♪
+ATTENDANT1: But this is the base camp!
+ATTENDANT1: Uh... No, nothing.
+NPC_PERAPPU: Oh?! Nothing?!
+NPC_PERAPPU: Get going!
+
+== m09a0401 (D08P11A) ==
+NPC_PERAPPU: What are you doing?
+ATTENDANT1: ...Huh?!
+ATTENDANT1: Wh-where is this?
+NPC_PERAPPU: Do it again! Get going!
+
+== m09a0601 (P03P01A) ==
+-: Hey, hey, hey!
+ATTENDANT1: Look, it's Corphish!
+ATTENDANT1: No, nothing yet...
+ATTENDANT1: What about you, Corphish?
+ATTENDANT1: How about you, Corphish?
+ATTENDANT1: Interesting?
+NPC_HEIGANI: There. Have a look for yourself.
+ATTENDANT1: Wh-what?! What is this?!
+NPC_HEIGANI: I don't know.
+ATTENDANT1: Huh? Is this an inscription here?
+ATTENDANT1: Umm...
+ATTENDANT1: Oh, !
+NPC_HEIGANI: Hey, hey, hey! Y-you think so?
+ATTENDANT1: Hmm...
+ATTENDANT1: Huh? Wait a second!
+ATTENDANT1: Huh? Wait!
+PLAYER: (...)
+PLAYER: (I was thinking that too.)
+PLAYER: (If it means finding the key to my own past...)
+PLAYER: (If the answers are held by this statue...)
+ATTENDANT1: You're going to do it!
+ATTENDANT1: You'll do it for us!
+
+== m09a0606 (P03P02A) ==
+NPC_HEIGANI: Hey, hey! The fog is gone!
+ATTENDANT1: The sky cleared...
+ATTENDANT1: The sunlight's harsh!
+ATTENDANT1: Hey! Look!
+ATTENDANT1: B-both of you! Up! Look up!
+NPC_HEIGANI: Hey, hey! What is that?!
+ATTENDANT1: That's what the fog was hiding.
+NPC_HEIGANI: Hey, hey! So you're saying...
+ATTENDANT1: Yes, that's what I think.
+ATTENDANT1: Yes. That's what I think.
+
+== m09a0701 (P03P02A) ==
+NPC_HEIGANI: You two go on ahead!
+ATTENDANT1: Onward to Fogbound Lake!
+-: Hold it!
+ATTENDANT1: Y-you brutes?!
+NPC_SUKATANKU: Good job! Chaw-haw-haw!
+ATTENDANT1: You fiends!
+ATTENDANT1: We'll make you eat those words!
+ATTENDANT1: Gulp...
+NPC_SUKATANKU: Enough talking! Take this!
+-: Waah! Wait! Wait for me!
+NPC_ZUBATTO: Wh-what?
+-: Perfect Apple! ♪ Perfect Apple! ♪
+NPC_PUKURIN: Oh? Oh-oh?
+NPC_PUKURIN: Oh, you two!
+NPC_PUKURIN: And my friends too! ♪
+NPC_PUKURIN: Huh? What am I doing?
+NPC_PUKURIN: Oh, yes!
+ATTENDANT1: Huh?
+ATTENDANT1: But...
+NPC_PUKURIN: Hurry, get exploring! ♪
+ATTENDANT1: Um... OK.
+ATTENDANT1: L-let's go, .
+NPC_PUKURIN: Good luck. ♪
+NPC_SUKATANKU: Um. Guildmaster...
+NPC_PUKURIN: Oh?!
+NPC_PUKURIN: Let's wait for their report. ♪
+NPC_SUKATANKU: No hard feelings...
+NPC_SUKATANKU: Is finished! Chaw-haw!
+
+== m09d0212 (D08P11A) ==
+ATTENDANT1: Hey! This stone feels warm!
+ATTENDANT1: Wow! This stone feels warm!
+ATTENDANT1: Wow! It feels warm!
+
+== m09d0612 (P03P01A) ==
+-: That's it!
+-: It's here!
+
+== m09d0614 (P03P01A) ==
+-: I see!
+-: That lifts the fog!
+
+== m10a0301 (P03P02A) ==
+-: Meanwhile...
+-: back at the Groudon statue...
+NPC_SUKATANKU: Shhh! Shut your yap!
+NPC_PUKURIN: I bet I can make you laugh too!
+NPC_PUKURIN: Blabba! ♪ Blabba! ♪ Blapp! ♪
+NPC_PUKURIN: Blobba! ♪ Blobba! ♪ Blopp! ♪
+NPC_DOGAASU: C'mon, Chief...!
+NPC_SUKATANKU: Hey, Wigglytuff!
+NPC_PUKURIN: Whatiswhatiswhatis...what is it?
+
+== m10a0501 (D10P21A) ==
+ATTENDANT1: GRROOOOOOH...!
+ATTENDANT1: Huh? What was that?!
+ATTENDANT1: Hey! What was that?
+ATTENDANT1: GRROOOOOOH...!
+ATTENDANT1: That! Did you hear that?!
+ATTENDANT1: Just now... Did you hear that?
+ATTENDANT1: Was that for real? Or not?
+ATTENDANT1: Did I just imagine that...or not?
+ATTENDANT1: Was it all in my head? Or not?
+
+== m10a0601 (D10P21A) ==
+-: Would you like to go on?
+
+== m10a0701 (D10P21A) ==
+-: GRROOOOOOH...!
+ATTENDANT1: It sounded like a roar!
+ATTENDANT1: It was like some sort of roar!
+ATTENDANT1: But I wonder what it could be!
+ATTENDANT1: There's no telling what's ahead!
+ATTENDANT1: Who knows what's ahead?
+ATTENDANT1: Who can say what's ahead?
+ATTENDANT1: Not far to go now. Let's do this!
+ATTENDANT1: We're nearly there. Let's go!
+PLAYER: (Yes. We are nearly there.)
+PLAYER: (And when we reach the top...)
+PLAYER: (We may meet Uxie at last.)
+PLAYER: (It may answer my big question! Who am I?)
+ATTENDANT1: Uh...you what?!
+ATTENDANT1: You...you what?
+ATTENDANT1: I beg...I beg your pardon?
+ATTENDANT1: Ever since we hit base camp...
+ATTENDANT1: Hmmm... !
+ATTENDANT1: OK! Let's go up, !
+
+== m10a0901 (D10P41A) ==
+ATTENDANT1: GRROOOOOOH...GRROOOOOOH...!
+ATTENDANT1: Eep!
+ATTENDANT1: I knew it! It was roaring!
+ATTENDANT1: GRROOOOOOH...!
+ATTENDANT1: S-s-something is...
+ATTENDANT1: ...is...coming!
+
+== m10a0902 (P03P02A) ==
+NPC_PERAPPU: This is it? The Groudon statue?
+NPC_KIMAWARI: Oh! But there's no one else here!
+NPC_HEIGANI: Sure, I'm sure!
+NPC_DIGUDA: Hmm? The ground...
+NPC_BIPPA: Uh-what...? It's shaking!
+NPC_BIPPA: GRROOOOOOH...!
+NPC_CHIRIIN: What...whatever could that be?!
+NPC_DOGOOMU: What an uproar! Is it maybe...?
+NPC_HEIGANI: Something is going on up there!
+NPC_HEIGANI: Let's head up! Hurry!
+NPC_DIGUDA: Hmm?
+NPC_DIGUDA: Like moaning and groaning?
+NPC_DIGUDA: Yep!
+NPC_ZUBATTO: Ouchee-wow-wow!
+NPC_DOGAASU: I'm d-d-deflated! I can't move!
+NPC_SUKATANKU: Hork-ork-how did that happen?
+NPC_ZUBATTO: It's un-believable...
+NPC_ZUBATTO: Ack...
+NPC_DOGAASU: Erk...
+NPC_SUKATANKU: Ork...
+
+== m10a0903 (D10P41A) ==
+-: GRROOOOOOH...GRROOOOOOH...!
+ATTENDANT1: Wh-what is that?!
+ATTENDANT1: Waaah! Wh-what is that?!
+ATTENDANT1: It looks like the statue!
+ATTENDANT1: Th-that Pokémon...really exists?
+-: GRROOOOOOH...GRROOOOOOH...!
+ATTENDANT1: Eep!
+NPC_GURAADON: GRROOOOOOH...!
+NPC_GURAADON: DEPART NOW!
+NPC_GURAADON: WHAT?! FOGBOUND LAKE?!
+ATTENDANT1: Whaaat?!
+
+== m10a0904 (D09P11A) ==
+NPC_HEIGANI: Hey, hey! There's the way in!
+NPC_KIMAWARI: We can go up through here!
+NPC_DOGOOMU: Let's HURRY!
+NPC_HEIGANI: H...h...hey...
+NPC_HEIGANI: A legendary Pokémon?
+NPC_PERAPPU: Correct.
+
+== m10a0905 (D10P41A) ==
+NPC_HEIGANI: What would happen?
+NPC_GURAADON: GRROOOOOOH!
+ATTENDANT1: Urk... Scary stuff!
+ATTENDANT1: Urk... This is scary...
+ATTENDANT1: Urk... I'm scared!
+ATTENDANT1: But we gotta be brave!
+ATTENDANT1: But we need to be brave!
+ATTENDANT1: But it's time to be brave!
+ATTENDANT1: And I gotta face up to this!
+ATTENDANT1: And I need to face up to this!
+ATTENDANT1: And I need to stand up to this!
+ATTENDANT1: No stopping now, !
+
+== m10a1001 (D10P41A) ==
+NPC_GURAADON: GRR...GRR...OOOOOOOOOH!
+NPC_GURAADON: YOU AGAIN!
+NPC_GURAADON: NEVER!
+
+== m10a1101 (D10P41A) ==
+NPC_GURAADON: GRROOOoooh...oooooh...
+NPC_GURAADON: GRROOOOOOH!
+ATTENDANT1: We did it! We KO'd Groudon!
+ATTENDANT1: We did it! We defeated Groudon!
+ATTENDANT1: But...is it really...?
+ATTENDANT1: Waaah!
+ATTENDANT1: Huh? Where did Groudon go?!
+ATTENDANT1: Huh? Groudon disappeared?!
+ATTENDANT1: Huh? Groudon vanished?!
+-: That was...
+-: That was not Groudon.
+ATTENDANT1: OK, who said that?!
+ATTENDANT1: Who said that?
+ATTENDANT1: Who...who said that?
+-: Like I said earlier, I am the guardian here.
+-: And I cannot allow you to pass.
+ATTENDANT1: Wait!
+ATTENDANT1: Wait, please!
+ATTENDANT1: W-wait, please!
+ATTENDANT1: We didn't come to make trouble!
+ATTENDANT1: We're not here to cause trouble!
+ATTENDANT1: We came only for information!
+-: Information, you say?
+ATTENDANT1: Yes! That's all. No lie!
+ATTENDANT1: Yes! That's the honest truth!
+ATTENDANT1: We're telling the total truth!
+ATTENDANT1: C'mon! You have to believe me!
+ATTENDANT1: Please! Please believe us!
+-: Hmm...
+-: Well...OK, I believe you.
+NPC_YUKUSHII: Let me welcome you, then.
+ATTENDANT1: No way! Did you say Uxie?!
+ATTENDANT1: What?! Did you say Uxie?!
+ATTENDANT1: P-pardon?! Did you say Uxie?!
+NPC_YUKUSHII: Yes, truly.
+NPC_YUKUSHII: Please, come this way.
+
+== m10a1201 (P04P01C) ==
+NPC_YUKUSHII: Behold! Fogbound Lake!
+ATTENDANT1: Wow!
+
+== m10a1204 (P04P01C) ==
+ATTENDANT1: Yep, I see it!
+ATTENDANT1: Yes, I see it!
+ATTENDANT1: Sure, I can see it!
+ATTENDANT1: It's coming from below!
+ATTENDANT1: It's radiating from below!
+ATTENDANT1: That blue green radiance, right?
+ATTENDANT1: The bluish green radiance, right?
+NPC_YUKUSHII: Step forward for a closer look.
+
+== m10a1205 (V03P09A) ==
+NPC_YUKUSHII: That is...a Time Gear.
+ATTENDANT1: What?! Really?! A Time Gear?!
+ATTENDANT1: What?! That's a Time Gear?!
+NPC_YUKUSHII: Yes.
+NPC_YUKUSHII: I guard the Time Gear.
+NPC_YUKUSHII: It's the sole reason I'm here.
+
+== m10a1206 (P04P01C) ==
+ATTENDANT1: Groudon? How'd you do that?
+NPC_YUKUSHII: Like so...
+ATTENDANT1: Waah!
+NPC_YUKUSHII: There is no need to be startled.
+NPC_YUKUSHII: As I've said, it's just an illusion.
+NPC_YUKUSHII: And, thus, protected the lake.
+ATTENDANT1: Took away their memories...?
+ATTENDANT1: Meet my partner, !
+NPC_YUKUSHII: Oh, really? A human?
+NPC_YUKUSHII: The cause lies elsewhere.
+ATTENDANT1: Oh, well...OK.
+ATTENDANT1: Oh, well...that's OK.
+ATTENDANT1: Oh, well...thanks anyway.
+NPC_PUKURIN: We can't take a Time Gear.
+NPC_PUKURIN: Wow! Fantastic!
+NPC_YUKUSHII: And who might this be?
+ATTENDANT1: Our Guildmaster!
+ATTENDANT1: That's our Guildmaster!
+ATTENDANT1: Oh, meet our Guildmaster!
+NPC_PUKURIN: Gaze upon this amazing view!
+
+== m10a1208 (P04P01C) ==
+NPC_KIMAWARI: Whew! Here we are at last!
+NPC_HEIGANI: Hey, hey! Someone's over there!
+NPC_PERAPPU: Let's go!
+NPC_PERAPPU: Squ-squ-squawk?!
+NPC_DOGOOMU: Gr-Gr-Gr-
+NPC_KIMAWARI: It's Groudon! Spit it out!
+NPC_CHIRIIN: D-d-d-ding!
+NPC_HEIGANI: Don't eat me! I'm not tasty!
+NPC_PERAPPU: G-G-Guildmaster!
+NPC_PUKURIN: It's spouting!
+NPC_PUKURIN: Pretty! Pretty!
+NPC_PUKURIN: Everyone: HUH?
+
+== m10a1210 (P04P01C) ==
+NPC_CHIRIIN: Oh, my! So shimmering!
+NPC_BIPPA: Yup yup! Some kind of pretty!
+NPC_PUKURIN: The treasure!
+
+== m10a1213 (P04P01C) ==
+NPC_PUKURIN: So sorry! To have disturbed you!
+NPC_YUKUSHII: You have earned my trust.
+NPC_YUKUSHII: Please hold true to that promise.
+NPC_PUKURIN: OK! Let's be on our way!
+NPC_PUKURIN: Chatot, if you will!
+NPC_PERAPPU: I'll hop to it, Guildmaster!
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_PERAPPU: And so...
+NPC_PERAPPU: For  and the apprentices...
+NPC_PERAPPU: It was life as usual back at the guild!
+
+== m10d0952 (D10P41A) ==
+NPC_GURAADON: GRR...GRR...OOOOOOOOOH!
+ATTENDANT1: Urk... Scary stuff!
+ATTENDANT1: Urk... This is scary...
+ATTENDANT1: Urk... I'm scared!
+ATTENDANT1: But we gotta be brave!
+ATTENDANT1: But we need to be brave!
+ATTENDANT1: But it's time to be brave!
+ATTENDANT1: And I gotta face up to this!
+ATTENDANT1: And I need to face up to this!
+ATTENDANT1: And I need to stand up to this!
+ATTENDANT1: No stopping now, !
+
+== m11a0101 (G01P07A) ==
+-: The next morning...
+NPC_DOGOOMU: UP AND AT 'EM! IT'S MORNING!
+ATTENDANT1: Ugh...
+
+== m11a0201 (G01P04A) ==
+NPC_DOGOOMU: What do you MEAN?!
+NPC_PERAPPU: What's wrong?
+NPC_DOGOOMU: Diglett is an outstanding sentry.
+ATTENDANT1: Right, ?
+NPC_PERAPPU: Dus...Dusknoir?!
+NPC_DOGOOMU: The world-famous Dusknoir?!
+NPC_YONOWAARU: No, no! Think nothing of it!
+NPC_YONOWAARU: The honor is all mine!
+ATTENDANT1: Hey, Loudred.
+ATTENDANT1: Excuse me, Loudred?
+ATTENDANT1: Tell me, Loudred...
+NPC_DOGOOMU: What do you want?
+ATTENDANT1: Who's that visitor?
+NPC_DOGOOMU: The famous explorer?!
+ATTENDANT1: Urk! Well, uh, well...
+ATTENDANT1: Urk... Well, you know, I...
+ATTENDANT1: Eeek... Well, maybe, I...
+ATTENDANT1: OK, I don't know!
+ATTENDANT1: I haven't heard of him!
+ATTENDANT1: OK, I admit it...I haven't!
+NPC_KIMAWARI: That's not surprising, really!
+NPC_KIMAWARI: He's a new arrival on the scene!
+ATTENDANT1: So Dusknoir is really so great?
+ATTENDANT1: Alone?
+ATTENDANT1: Wow! So he knows that much?
+ATTENDANT1: Wow! He's that knowledgeable?
+NPC_KIMAWARI: So the rumor goes!
+ATTENDANT1: Does Dusknoir visit here often?
+ATTENDANT1: Huh?!
+ATTENDANT1: Pardon?!
+NPC_PUKURIN: Sorry! We didn't learn a thing!
+NPC_YONOWAARU: Not at all! It's no trouble to me!
+NPC_PUKURIN: No problem!
+NPC_PUKURIN: Everyone! This is Dusknoir!
+NPC_BIPPA: Yup yup! It's a great honor!
+NPC_PERAPPU: Oh! You two!
+
+== m11a0303 (G01P01C) ==
+NPC_SUKATANKU: Chaw-haw! Great idea!
+
+== m11a0401 (G01P04A) ==
+NPC_PERAPPU: Oh! You two!
+NPC_PERAPPU: Before you get to work today...
+NPC_PERAPPU: I'd like you to run an errand.
+ATTENDANT1: An errand?
+NPC_PERAPPU: Yes, an errand!
+NPC_PERAPPU: Correct.
+NPC_PERAPPU: Precisely!
+NPC_PERAPPU: Great! Way to take charge! ♪
+
+== m11a0501 (T01P02A) ==
+ATTENDANT1: Yup. We're Team .
+ATTENDANT1: Yes. We're Team .
+NPC_YONOWAARU: No, no. Simply enjoying a chat!
+ATTENDANT1: Sounds like the rumors are true!
+ATTENDANT1: I guess the rumors are true!
+ATTENDANT1: You see...
+NPC_KAKUREON1: Hmm... I see... Perfect Apples?
+ATTENDANT1: Oh, OK. Too bad.
+ATTENDANT1: Oh, all right. That's too bad.
+ATTENDANT1: Oh, OK. Too bad.
+NPC_MARIRU: Azurill, hurry!
+NPC_RURIRI: Wait for me!
+NPC_RURIRI: Oh! Hi, Kecleon brothers!
+NPC_MARIRU: Oh! And Team  too!
+NPC_MARIRU: Yes! An item called Water Float!
+NPC_MARIRU: We're rushing to the beach now!
+NPC_ZUBATTO: Heh-heh-heh! Juicy tidbit!
+NPC_MARIRU: Yes!
+NPC_RURIRI: Yep!
+NPC_MARIRU: Come on, Azurill! Let's go quick!
+NPC_RURIRI: Yep!
+NPC_KAKUREON1: What purpose does it serve?
+NPC_KAKUREON1: Gah! Is that so?
+ATTENDANT1: Let's race back to the guild!
+ATTENDANT1: Let's go back to the guild!
+ATTENDANT1: Hurry! Back to the guild!
+
+== m11a0502 (G01P04A) ==
+NPC_PERAPPU: What?! You're joking!
+NPC_PERAPPU: You failed utterly!
+NPC_PERAPPU: ...I'm sorry.
+
+== m11a0601 (G01P06B) ==
+NPC_CHIRIIN: Everyone! Time for dinner! ♪
+NPC_CHIRIIN: Everyone: YEAH!
+NPC_CHIRIIN: Everyone: Let's get...
+NPC_PERAPPU: Hold on, everyone!
+NPC_PERAPPU: Ahem! Before we start dinner...
+NPC_HEIGANI: Hey, hey, hey!
+NPC_PERAPPU: Quiet, please!
+NPC_PERAPPU: Another Time Gear was stolen!
+NPC_PERAPPU: Everyone: WHAT?!
+NPC_CHIRIIN: Another Time Gear?
+NPC_DOGOOMU: ANOTHER one got stolen?!
+NPC_PERAPPU: No, it wasn't.
+NPC_PERAPPU: It's apparently from elsewhere.
+NPC_PERAPPU: Understood?
+NPC_DAGUTORIO: Of course!
+NPC_DOGOOMU: I don't have a big mouth!
+NPC_PERAPPU: OK! OK! Quiet, everyone!
+NPC_PERAPPU: Sorry to keep you waiting.
+NPC_PERAPPU: Everyone: CHOW!
+
+== m11a0704 (G01P07C) ==
+NPC_YUKUSHII: Hmm...
+NPC_YUKUSHII: I knew it...
+
+== m11a0705 (D10P41A) ==
+NPC_YUKUSHII: Soon after they left...
+NPC_YUKUSHII: Another Pokémon would come...
+NPC_YUKUSHII: But this one...
+NPC_YUKUSHII: It stole the Time Gear!
+
+== m11a0706 (P04P01C) ==
+NPC_YUKUSHII: ..................
+NPC_YUKUSHII: I should have done it...
+-: .....................
+
+== m11a0707 (V03P12A) ==
+-: The third Time Gear!
+
+== m11d0512 (T01P02A) ==
+ATTENDANT1: Yup. We're Team .
+ATTENDANT1: Yes. We're Team .
+
+== m12a0101 (G01P04A) ==
+NPC_DOGOOMU: WHAT? What's going on?!
+NPC_DOGOOMU: ...OK. Got it! Hold on!
+NPC_DOGOOMU: You two! Team !
+ATTENDANT1: Huh? What?
+ATTENDANT1: Huh? Excuse me?
+ATTENDANT1: Huh? Pardon me?
+ATTENDANT1: What's up?
+ATTENDANT1: You called?
+ATTENDANT1: What's up?
+ATTENDANT1: Visitors?
+ATTENDANT1: I wonder who it is...
+ATTENDANT1: Who could it be?
+ATTENDANT1: I wonder who it is...
+
+== m12a0102 (G01P01A) ==
+ATTENDANT1: Huh? It's you little guys...
+ATTENDANT1: Oh! It's you little guys...
+ATTENDANT1: Hey! It's you little guys...
+ATTENDANT1: Help?
+NPC_MARIRU: Yep!
+ATTENDANT1: A Water Float?
+ATTENDANT1: This scrap of paper?
+ATTENDANT1: There's writing on it.
+ATTENDANT1: \"...is now in our possession.\"
+ATTENDANT1: It's a ransom note! Isn't it?!
+ATTENDANT1: It could be a trap.
+ATTENDANT1: I suspect a trap.
+ATTENDANT1: It's probably a trap!
+NPC_MARIRU: We really want to get it back.
+NPC_RURIRI: I said I would go too!
+NPC_MARIRU: I went to Amp Plains by myself.
+NPC_MARIRU: I'm no match for them.
+ATTENDANT1: No problem! I know what to do!
+NPC_RURIRI: Really?!
+NPC_MARIRU: You will?!
+ATTENDANT1: Yup! So no more crying!
+ATTENDANT1: Yep! So no more tears!
+
+== m12a0501 (D12P21A) ==
+-: Would you like to go on?
+
+== m12a0601 (T01P02A) ==
+-: Meanwhile, back at Treasure Town...
+NPC_KAKUREON1: What a mean thing to do!
+NPC_RURIRI: Yep!
+NPC_MARIRU: Yes. That's true!
+NPC_YONOWAARU: I see. That is terrible indeed.
+NPC_KAKUREON1: It's utterly unforgivable!
+NPC_MARIRU: They went to Amp Plains.
+NPC_YONOWAARU: No! This is ruinous!
+NPC_KAKUREON1: What?!
+NPC_KAKUREON1: What?! Wait!
+
+== m12a0801 (D12P41A) ==
+-: Why did you come here?!
+-: This is our territory!
+-: All right... Let's take them out!
+ATTENDANT1: Who are you?! Come out!
+ATTENDANT1: Who are you?! Show yourself!
+-: Ha ha ha!
+-: My name is Manectric!
+ATTENDANT1: Waaaah!
+NPC_RAIBORUTO: Now, prepare to fight!
+
+== m12a0901 (D12P41A) ==
+NPC_RAIBORUTO: You trespass again?!
+NPC_RAIBORUTO: To claim our territory?!
+ATTENDANT1: You're wrong! We came to...
+NPC_RAIBORUTO: Save your lies!
+NPC_RAIBORUTO: Prepare to fight!
+
+== m12a1001 (D12P41A) ==
+NPC_RAIBORUTO: Rrroooaarrr!
+NPC_RAIBORUTO: You...you dare?!
+ATTENDANT1: W-wait!
+ATTENDANT1: W-w-wait a second!
+ATTENDANT1: W-w-wait just a second!
+NPC_RAIBORUTO: Enough! Take this!
+ATTENDANT1: Waaah!
+-: Stop!
+ATTENDANT1: Dus... Dusknoir!
+NPC_RAIBORUTO: You! Who are you?!
+NPC_YONOWAARU: I am the explorer Dusknoir!
+NPC_YONOWAARU: I understand that completely!
+NPC_YONOWAARU: Please, believe me! Manectric!
+NPC_RAIBORUTO: Come.
+ATTENDANT1: Whew!
+ATTENDANT1: Thank you, Dusknoir, sir!
+ATTENDANT1: You saved us!
+ATTENDANT1: But...
+ATTENDANT1: Who were they?
+ATTENDANT1: Oh! I forgot something!
+-: ........................
+NPC_DOGAASU: Whoa-ho-ho!
+NPC_ZUBATTO: Heh-heh-heh!
+NPC_SUKATANKU: Chaw-haw-haw!
+NPC_YONOWAARU: Shall we settle this?
+NPC_SUKATANKU: That's a different story!
+NPC_SUKATANKU: Let's skedaddle, boys!
+NPC_SUKATANKU: Koffing & Zubat: Yeah!
+
+== m12a1101 (T01P02A) ==
+NPC_RURIRI: Yay! Thank you! Really!
+NPC_MARIRU: But, really...thank you!
+ATTENDANT1: Hey, that's all right!
+ATTENDANT1: Oh, please! It's OK.
+NPC_MARIRU: Thank you very much!
+NPC_RURIRI: Thank you, Dusknoir, sir!
+ATTENDANT1: But that's not exactly the truth.
+ATTENDANT1: But that's not really the truth.
+ATTENDANT1: But that's not exactly the truth.
+NPC_YONOWAARU: Excuse me? A dream, you say?
+NPC_YONOWAARU: By dream, what do you mean?
+ATTENDANT1: Oh! Right!
+ATTENDANT1: Oh! That's right!
+NPC_YONOWAARU: What?! Well, that's...that's...
+NPC_YONOWAARU: The Dimensional Scream!
+
+== m12a1201 (D01P11A) ==
+ATTENDANT1: Yep, this is the spot.
+ATTENDANT1: Yes, right here exactly.
+ATTENDANT1: Yes, this is the exact spot.
+NPC_YONOWAARU: Then you regained consciousness.
+NPC_YONOWAARU: Though you'd lost your memory.
+ATTENDANT1: Yep. With a memory of a name...
+ATTENDANT1: Yes. With a memory of a name...
+NPC_YONOWAARU: I beg your pardon?! H-human?!
+ATTENDANT1: That's true...
+NPC_YONOWAARU: You...are...?
+NPC_YONOWAARU: And...that name would be...?
+NPC_YONOWAARU: Ah! I see...
+NPC_YONOWAARU: You're......
+ATTENDANT1: Does that name ring a bell?
+NPC_YONOWAARU: ...No.
+PLAYER: (Uh, what?!)
+PLAYER: (Did I just see...the faintest...)
+PLAYER: (Or did I imagine that...?)
+NPC_YONOWAARU: However...
+ATTENDANT1: Really?! What is it?!
+ATTENDANT1: Oh, really?! What is it?!
+ATTENDANT1: Dimensional...Scream?
+NPC_YONOWAARU: Indeed.
+NPC_YONOWAARU: To manifest as visions...
+PLAYER: (..................)
+NPC_YONOWAARU: I offer you my full cooperation!
+ATTENDANT1: Oh! You will?!
+NPC_YONOWAARU: Yes. To be perfectly candid...
+NPC_YONOWAARU: Ha-ha-ha! Hoo-hoo-ha!
+ATTENDANT1: Isn't this great, ?
+ATTENDANT1: Huh? Look at all the Pelipper!
+ATTENDANT1: Hey! Look at all the Pelipper!
+ATTENDANT1: ..................
+NPC_YONOWAARU: Could something be the matter?
+NPC_BIPPA: Hey!
+ATTENDANT1: Hi, Bidoof!
+ATTENDANT1: Hello, Bidoof!
+ATTENDANT1: Oh, hello, Bidoof!
+NPC_BIPPA: I f-finally...f-found you all...
+NPC_BIPPA: The call has been put out!
+ATTENDANT1: Oh, no. Something is up!
+ATTENDANT1: Uh-oh. Something is up!
+NPC_YONOWAARU: I will go with you!
+NPC_BIPPA: Hurry, everyone!
+
+== m12d1112 (T01P02A) ==
+NPC_YONOWAARU: Excuse me? A dream, you say?
+NPC_YONOWAARU: By dream, what do you mean?
+NPC_YONOWAARU: And...
+
+== m12d1212 (D01P11A) ==
+NPC_YONOWAARU: I beg your pardon?! H-human?!
+NPC_YONOWAARU: I became convinced then!
+NPC_YONOWAARU: You...are...?
+NPC_YONOWAARU: And...that name would be...?
+NPC_YONOWAARU: Ah! I see...
+NPC_YONOWAARU: ...
+ATTENDANT1: Does that name ring a bell?
+NPC_YONOWAARU: ...No.
+PLAYER: (Uh, what?!)
+PLAYER: (Did I just see...the faintest...)
+PLAYER: (Or did I imagine that...?)
+PLAYER: There was no doubt!
+
+== m12d1215 (D01P11A) ==
+NPC_YONOWAARU: However...
+ATTENDANT1: Really?! What is it?!
+ATTENDANT1: Oh, really?! What is it?!
+ATTENDANT1: Dimensional... Scream?
+NPC_YONOWAARU: Indeed.
+NPC_YONOWAARU: To manifest as visions...
+PLAYER: (..................)
+NPC_YONOWAARU: I offer you my full cooperation!
+ATTENDANT1: Oh! You will?!
+NPC_YONOWAARU: Yes. To be perfectly candid...
+NPC_YONOWAARU: Ha-ha-ha! Hoo-hoo-ha!
+ATTENDANT1: Isn't this great, ?
+ATTENDANT1: Huh? Look at all the Pelipper!
+ATTENDANT1: Hey! Look at all the Pelipper!
+
+== m13a0101 (G01P03A) ==
+NPC_BIPPA: Huff-puff...
+NPC_BIPPA: Come on! Hurry!
+NPC_BIPPA: Everyone's here, yup yup!
+ATTENDANT1: Sorry, everyone!
+ATTENDANT1: So, what's up?
+ATTENDANT1: What's going on?
+NPC_PERAPPU: Another Time Gear was stolen!
+NPC_BIPPA: What?! Not another one!
+ATTENDANT1: From where now...?
+NPC_PERAPPU: W-well, it...
+NPC_BIPPA: Uh...what's the problem?
+ATTENDANT1: Wait! It wasn't the one from...
+NPC_KIMAWARI: Yes...it was!
+NPC_BIPPA: Huh?!
+ATTENDANT1: But, how?!
+ATTENDANT1: B-but, how?!
+ATTENDANT1: Only we knew about that, right?
+ATTENDANT1: So, what happened?!
+ATTENDANT1: So how could this happen?!
+NPC_PERAPPU: ........................
+NPC_DOGOOMU: WHAT?! That was uncalled for!
+ATTENDANT1: Urk! Sorry! You guys are right...
+NPC_PUKURIN: I apologize, great Dusknoir.
+ATTENDANT1: Uxie?!
+ATTENDANT1: Is Uxie all right?!
+NPC_PERAPPU: Yes. Uxie is fine.
+ATTENDANT1: Whew! Glad to hear that!
+ATTENDANT1: Whew! I'm glad to hear that!
+NPC_PERAPPU: See for yourselves.
+PLAYER: (Grovyle...)
+PLAYER: (So this is the Pokémon...)
+PLAYER: (...the thief who's stealing the Time Gears.)
+NPC_PERAPPU: This wanted poster just arrived.
+ATTENDANT1: We promised Uxie...
+ATTENDANT1: But then this happens...
+NPC_KIMAWARI: We didn't leak the secret, but...
+NPC_PUKURIN: Urrrr...
+NPC_CHIRIIN: Hey! Guildmaster...!
+NPC_PUKURIN: Urrr... Urrrrrr... Urrrrrrr...!
+NPC_PERAPPU: G-G-Guildmaster!
+NPC_PUKURIN: Urrrrrrrrr...!!!
+NPC_PUKURIN: YOOM...TAH!
+NPC_DOGOOMU: WAH!
+NPC_PERAPPU: Squawk! Squawk!
+NPC_PUKURIN: Everyone! We'll catch Grovyle!
+NPC_PUKURIN: Chatot, if you will!
+NPC_PERAPPU: Y-yes!
+NPC_PERAPPU: OK, everyone!
+NPC_DOGOOMU: It goes without saying!
+NPC_YONOWAARU: Wigglytuff...
+NPC_PUKURIN: Th-thank you, great Dusknoir!
+NPC_HEIGANI: Hey, hey! We're honored!
+NPC_YONOWAARU: No, no! It's my honor entirely.
+NPC_PERAPPU: Everyone: HOORAY!
+
+== m13a0301 (G01P03A) ==
+NPC_PERAPPU: Now, I see everyone's with us!
+NPC_PERAPPU: But where are the Time Gears?
+NPC_DOGOOMU: Got it!
+NPC_HEIGANI: Hey, hey! We'll do our best!
+NPC_BIPPA: Yup yup! Will do!
+NPC_DAGUTORIO: Understood.
+NPC_KIMAWARI: Oh my gosh! I'll search hard!
+ATTENDANT1: The Northern Desert?
+NPC_PERAPPU: Correct. Open your Wonder Map.
+ATTENDANT1: OK.
+
+== m13a0302 (S01P01A) ==
+NPC_PERAPPU: See? This area.
+ATTENDANT1: Yep! Gotcha!
+ATTENDANT1: OK! We understand!
+
+== m13a0303 (G01P03A) ==
+NPC_DIGUDA: Um... What about me...?
+NPC_PERAPPU: Diglett will remain at the guild.
+NPC_DIGUDA: Y-yes!
+NPC_PUKURIN: YOOM...TAH!
+NPC_PUKURIN: Everyone: HOORAY!
+NPC_YONOWAARU: Please, do take care!
+ATTENDANT1: Yep! Thanks!
+ATTENDANT1: Will do! Thank you!
+ATTENDANT1: , let's do our best!
+ATTENDANT1: , let's try our best!
+
+== m13a0501 (G01P03A) ==
+NPC_DOGOOMU: Uh...sort of...
+NPC_BIPPA: Everyone: HOORAY!
+
+== m13a0701 (D14P11A) ==
+ATTENDANT1: The clouds parted over the Northern Desert!
+
+== m13a0801 (G01P03A) ==
+NPC_DAGUTORIO: Disappointing.
+NPC_KIMAWARI: That's what happened, all right!
+NPC_BIPPA: Mighty pretty cave, I tell you!
+NPC_KIMAWARI: Ooh! When did you pick that up?
+NPC_DAGUTORIO: Bidoof...
+NPC_DAGUTORIO: Who do you think you are?!
+NPC_BIPPA: Oof! Gosh, I'm sorry!
+NPC_PERAPPU: Dusknoir, sir, I regret to say it.
+NPC_YONOWAARU: Ah, this is vexing.
+NPC_PERAPPU: Rest up! Prepare for tomorrow!
+NPC_PERAPPU: Everyone: UNDERSTOOD!
+
+== m13a0901 (G01P04A) ==
+NPC_PERAPPU: While we develop this strategy...
+NPC_PERAPPU: That is all.
+NPC_PERAPPU: Everyone: HOORAY!
+ATTENDANT1: Well, where should we go?
+ATTENDANT1: Where should we go?
+ATTENDANT1: So where should we go?
+PLAYER: (Hmmm, I wonder...?)
+PLAYER: (Oh! Wait a second!)
+PLAYER: (Yesterday...when we were out there...)
+
+== m14a0202 (G01P04A) ==
+NPC_YONOWAARU: I'm sorry.
+NPC_YONOWAARU: I sincerely apologize.
+NPC_PERAPPU: Everyone: HOORAY!
+
+== m14a0501 (D15P21A) ==
+-: Would you like to go on?
+
+== m14a0601 (D15P41A) ==
+-: Wait!
+-: What?! Who are you?!
+ATTENDANT1: Waaah! Who said that?
+ATTENDANT1: Waah! Who said that?
+-: ..................
+-: Why...
+-: Why did you come here?!
+-: Stay away from the Time Gear!
+ATTENDANT1: Who...who are you?!
+-: I'm Mesprit!
+ATTENDANT1: Protect the Time Gear?!
+NPC_EMURITTO: Get ready!
+
+== m14a0701 (D15P41A) ==
+NPC_EMURITTO: You're back?!
+NPC_EMURITTO: Get ready!
+
+== m14a0801 (D15P41A) ==
+NPC_EMURITTO: Urgh...urgh...
+ATTENDANT1: Listen!
+ATTENDANT1: Will you please listen?!
+ATTENDANT1: Please, listen!
+NPC_EMURITTO: Don't lie to me!
+ATTENDANT1: What? You heard it from Uxie?
+NPC_EMURITTO: That was your doing, wasn't it?!
+ATTENDANT1: No! It wasn't us!
+ATTENDANT1: No! We didn't do it!
+ATTENDANT1: No! It wasn't us!
+NPC_EMURITTO: Then who's responsible?!
+-: That would probably be...me.
+NPC_EMURITTO: Who are you?!
+ATTENDANT1: G-Grovyle!
+PLAYER: (Th-that's Grovyle!)
+ATTENDANT1: Waah!
+NPC_JUPUTORU: Stand aside.
+NPC_EMURITTO: I...I won't!
+NPC_JUPUTORU: I have no choice then...
+NPC_EMURITTO: Urgh!
+ATTENDANT1: Mesprit!
+NPC_JUPUTORU: You lost that fight.
+NPC_JUPUTORU: You sustained serious damage.
+NPC_JUPUTORU: So don't push it.
+ATTENDANT1: You're not getting by us!
+NPC_JUPUTORU: All right...
+NPC_JUPUTORU: Sorry for this.
+ATTENDANT1: Ugh! He's so...fast!
+NPC_JUPUTORU: But I'm taking that Time Gear!
+NPC_EMURITTO: I...I'm sorry...
+NPC_EMURITTO: It was that Pokémon...
+NPC_EMURITTO: I'm sorry for doubting you.
+NPC_EMURITTO: Oh! This is bad!
+NPC_EMURITTO: We have to get out of here!
+ATTENDANT1: Wh-why?
+
+== m14a0804 (D15P41A) ==
+NPC_EMURITTO: So time in this whole area...
+ATTENDANT1: What?!
+ATTENDANT1: Excuse me?!
+NPC_EMURITTO: Hurry! Run with all your might!
+
+== m14a0901 (G01P04A) ==
+ATTENDANT1: Yep. But about that Time Gear...
+ATTENDANT1: Yes. But about that Time Gear...
+ATTENDANT1: Grovyle took off with it...
+ATTENDANT1: Grovyle stole it...
+ATTENDANT1: Grovyle took off with it...
+NPC_BIPPA: That's not true, by golly!
+NPC_BIPPA: You all did great work!
+NPC_DAGUTORIO: I must agree.
+NPC_DAGUTORIO: Where will Grovyle strike next?
+NPC_DAGUTORIO: We have no way of knowing.
+NPC_KIMAWARI: We're back to square one!
+NPC_YONOWAARU: Maybe not. Not necessarily.
+NPC_PERAPPU: Dusknoir, sir!
+NPC_YONOWAARU: There are some clues.
+ATTENDANT1: Uxie told her by using telepathy!
+ATTENDANT1: Uxie alerted her by telepathy!
+NPC_DAGUTORIO: Incredible!
+NPC_DOGOOMU: Now that IS really something!
+NPC_YONOWAARU: I should have known.
+NPC_YONOWAARU: There is an ancient legend...
+ATTENDANT1: Th-three?
+ATTENDANT1: So besides Uxie and Mesprit...
+ATTENDANT1: There's one other Pokémon?
+NPC_YONOWAARU: Yes.
+NPC_CHIRIIN: Oh, I see!
+NPC_CHIRIIN: If we could locate Azelf...
+NPC_YONOWAARU: That's correct.
+NPC_YONOWAARU: So the lake where Azelf lives...
+NPC_PERAPPU: My, my, my! ♪
+NPC_YONOWAARU: Thank you... It's really nothing...
+NPC_DAGUTORIO: No, no! We, too, revere you!
+NPC_YONOWAARU: Ah, I have an idea.
+NPC_YONOWAARU: Bidoof...
+NPC_BIPPA: Yup yup, you want me?
+NPC_BIPPA: What can I do for you?
+NPC_YONOWAARU: I have a request.
+NPC_YONOWAARU: May I borrow it briefly?
+NPC_BIPPA: My crystal?!
+NPC_BIPPA: N-no! No sirree!
+NPC_YONOWAARU: Now, ...
+NPC_YONOWAARU: Please touch Bidoof's crystal.
+PLAYER: (...!)
+PLAYER: (I should touch the crystal...?)
+PLAYER: (I see. That's what this is about...)
+NPC_KIMAWARI: Oh my gosh! Really?
+NPC_YONOWAARU: Please, may we?
+PLAYER: (This crystal...)
+PLAYER: (What will it reveal...?)
+PLAYER: (Everyone's watching...)
+PLAYER: (I don't know if I will see anything, but...)
+PLAYER: (I need to concentrate...)
+PLAYER: (...............)
+
+== m14a0903 (G01P04A) ==
+NPC_DOGOOMU: WHAT?!
+NPC_HEIGANI: Hey, hey, !
+NPC_CHIRIIN: Or was that in the future?
+PLAYER: (Come to think of it...)
+PLAYER: (Visions in the past...visions in the future...)
+PLAYER: (It's never clear when my visions take place!)
+NPC_DAGUTORIO: Well then...
+NPC_DAGUTORIO: In that case...
+NPC_YONOWAARU: Everyone, please hold on!
+ATTENDANT1: Hmm...
+
+== m14a0905 (G01P04A) ==
+NPC_YONOWAARU: But the name Azelf...?
+ATTENDANT1: I've never heard it before.
+NPC_YONOWAARU: Then there's still a chance!
+NPC_YONOWAARU: But that was not the case.
+NPC_PERAPPU: I see...
+NPC_DOGOOMU: Yeah! Maybe it IS there!
+NPC_YONOWAARU: Or we may still have time!
+NPC_HEIGANI: Hey, hey! Absolutely!
+NPC_PERAPPU: Dusknoir, sir!
+NPC_PERAPPU: Onward to Crystal Cave!
+NPC_PERAPPU: Guildmaster! Are you with us?!
+NPC_PUKURIN: ...Zzzz...
+NPC_PERAPPU: Huh?
+NPC_PUKURIN: ...Zzzz...zzzz...
+NPC_HEIGANI: (H-hey, you gotta be kidding!)
+NPC_DAGUTORIO: (No! It looks like...!)
+NPC_PERAPPU: (Oh no! This just won't do!)
+NPC_PERAPPU: (I must rouse him somehow...)
+NPC_PERAPPU: Guildmaster! Guildmaster!
+NPC_PUKURIN: ...Huh...?
+NPC_PERAPPU: GUILDMASTER!
+NPC_PUKURIN: Chatot!
+NPC_PERAPPU: YES, GUILDMASTER?
+NPC_PERAPPU: Er, I mean...yes, Guildmaster...?
+NPC_PUKURIN: YOOM...TAH!
+NPC_PUKURIN: Everyone: HOORAY!
+NPC_KIMAWARI: Let's go to Crystal Cave!
+NPC_YONOWAARU: Let's do our best, everyone.
+NPC_YONOWAARU: Everyone: HOORAY!
+NPC_PERAPPU: ........................
+ATTENDANT1: On to Crystal Cave!
+
+== m14d0812 (D15P41A) ==
+NPC_EMURITTO: Don't lie to me!
+
+== m15a0201 (G01P03A) ==
+ATTENDANT1: Off to Crystal Cave!
+
+== m15b0904 (D17P34A) ==
+NPC_AGUNOMU: Ugh...urgh...
+NPC_JUPUTORU: Now I'll take it! The Time Gear!
+NPC_AGUNOMU: No...you can't take it... Never...
+
+== m15b0906 (D17P34A) ==
+NPC_JUPUTORU: Fine, then. Azelf, wasn't it?
+NPC_AGUNOMU: Ugh...w-wait...
+NPC_AGUNOMU: Hold it... Grovyle...
+NPC_JUPUTORU: ..................
+NPC_JUPUTORU: You know...my name?
+NPC_AGUNOMU: Grovyle the thief...
+NPC_AGUNOMU: So I set up a fail-safe system.
+NPC_JUPUTORU: What?!
+NPC_JUPUTORU: What did you do?!
+
+== m15b0909 (D17P45A) ==
+NPC_JUPUTORU: Th-this...
+NPC_AGUNOMU: Grovyle...
+NPC_JUPUTORU: Y-you!
+ATTENDANT1: Hold it!
+ATTENDANT1: Stop!
+ATTENDANT1: Never! You can't make me!
+ATTENDANT1: No! I won't move!
+ATTENDANT1: No way! You can't make me!
+NPC_JUPUTORU: Are you serious?!
+NPC_JUPUTORU: Then if you won't stand aside...
+NPC_JUPUTORU: You leave me with no choice!
+NPC_JUPUTORU: I'll knock you out first!
+NPC_JUPUTORU: Just try to stop me!
+
+== m15b1001 (D17P45A) ==
+NPC_JUPUTORU: Get out of the way!
+ATTENDANT1: (I...I can't talk...)
+NPC_JUPUTORU: You refuse?!
+NPC_JUPUTORU: Then you leave me no choice!
+PLAYER: (N-no!)
+PLAYER: ('s in serious trouble!)
+PLAYER: (B-but...I can't move...)
+ATTENDANT1: .................. (Urk...)
+NPC_JUPUTORU: This is all for the Time Gear!
+NPC_JUPUTORU: Forgive me!
+ATTENDANT1: ..................! (WAAAAAAAAAH!)
+NPC_JUPUTORU: Gah!
+ATTENDANT1: (Oh! Dusknoir!)
+NPC_YONOWAARU: Are you all right, ?
+NPC_YONOWAARU: Please! Let me handle this!
+NPC_JUPUTORU: Rrrroh!
+NPC_JUPUTORU: Y-you?!
+NPC_YONOWAARU: It's been too long!
+ATTENDANT1: (Huh? What was that?!)
+ATTENDANT1: (What...what was that?!)
+NPC_JUPUTORU: Gah!
+NPC_JUPUTORU: Dusknoir...
+NPC_JUPUTORU: But I'm ready!
+NPC_YONOWAARU: So you'll fight. Then so be it.
+NPC_YONOWAARU: But can you win? Against ME?
+ATTENDANT1: (Grovyle vanished?!)
+NPC_YONOWAARU: There's no escaping ME!
+NPC_KIMAWARI: Eek! There! There they are!
+NPC_HEIGANI: Hey, hey! Come on, hurry!
+NPC_BIPPA: Oh, golly! They're down!
+NPC_HEIGANI: Hey, hey! Are you all right?
+NPC_DAGUTORIO: They're badly hurt!
+NPC_DOGOOMU: All right!
+
+== m15b1101 (G01P07A) ==
+NPC_CHIRIIN: Oh! Are you awake?
+ATTENDANT1: Wh-where...?
+NPC_CHIRIIN: You're in your room at the guild.
+ATTENDANT1: Are you all right, ?
+ATTENDANT1: Whew! Am I glad!
+ATTENDANT1: Whew! Am I glad to hear it!
+ATTENDANT1: It seems like I can speak again...
+ATTENDANT1: Oh yeah! What about Azelf?!
+ATTENDANT1: Oh! What about Azelf?!
+ATTENDANT1: Is Azelf all right?
+ATTENDANT1: Is Azelf OK?
+NPC_CHIRIIN: He's fine.
+ATTENDANT1: Oh, that's great!
+ATTENDANT1: Oh, excellent!
+ATTENDANT1: Oh, I'm glad to hear that!
+NPC_CHIRIIN: Everyone! They're awake!
+NPC_DOGOOMU: R-really?! AWESOME!
+NPC_BIPPA: Oof! I'm mighty glad!
+NPC_BIPPA: I'd... I'd... Oof...
+ATTENDANT1: Oh! That's right!
+NPC_HEIGANI: Hey, hey...?
+NPC_KIMAWARI: And what would that be?
+
+== m15b1201 (G01P04A) ==
+NPC_PERAPPU: What?! What did you say?!
+NPC_DAGUTORIO: Well, then...
+NPC_DAGUTORIO: What became of Dusknoir?
+ATTENDANT1: Well, Grovyle escaped...
+ATTENDANT1: I think he went off in pursuit.
+ATTENDANT1: I think he went after the thief.
+NPC_DOGOOMU: What?! The EMERGENCY siren!
+NPC_DAGUTORIO: Hey, Diglett! What's the matter?
+NPC_DIGUDA: It's an alert from Magnemite.
+NPC_DIGUDA: Please speak clearly!
+NPC_KOIRU: Zzzt! Can you hear me? Zzzt!
+ATTENDANT1: I wonder what's going on?
+ATTENDANT1: What's happening now?
+ATTENDANT1: I wonder what this is about?
+
+== m15d0452 (D16P31A) ==
+-: I see...
+-: The path should reveal itself.
+
+== m16a0102 (T01P01A) ==
+NPC_HIMEGUMA: Oh, look! The guild members!
+NPC_YARUKIMONO: For them to be called...
+NPC_YUKUSHII: Azelf!
+NPC_AGUNOMU: Uxie! Mesprit!
+NPC_AGUNOMU: Yep. I'm OK.
+NPC_YUKUSHII: The Time Gear?
+NPC_AGUNOMU: It's in Crystal Lake.
+NPC_AGUNOMU: Yep. It will be safe for now.
+NPC_AGUNOMU: Stealing it won't be easy.
+NPC_YONOWAARU: You are safe! I am so relieved!
+NPC_YONOWAARU: I gave chase to Grovyle.
+NPC_YONOWAARU: But he slipped away from me.
+NPC_JIBAKOIRU: ZZZT! If I may interrupt! ZZZT!
+NPC_DOGOOMU: Who knows? Don't ask ME!
+NPC_JIBAKOIRU: ZZZT! Everyone is here... ZZZT!
+NPC_JIBAKOIRU: ZZZT! Grovyle failed... ZZZT!
+NPC_RINGUMA: Wow!
+NPC_YARUKIMONO: Isn't that something!
+NPC_HIMEGUMA: That's astounding!
+NPC_YONOWAARU: Officer Magnezone...
+NPC_YONOWAARU: First...
+NPC_YONOWAARU: Everyone: WHAT?!
+NPC_YONOWAARU: First, Grovyle is...
+NPC_KIMAWARI: F-future?
+NPC_PERAPPU: The planet's...paralysis?
+NPC_YONOWAARU: Yes.
+
+== m16a0104 (T01P01A) ==
+NPC_YARUKIMONO: Th-the world's...ruin?!
+NPC_POPPO: S-so that's what would happen...
+NPC_OOSUBAME: This is bad!
+NPC_TANEBOO: W-we've got to do something!
+NPC_HEIGANI: Hey, hey! I have a question!
+NPC_YONOWAARU: Yes? What is it?
+NPC_POPPO: That's true...
+NPC_TANEBOO: Come to think...
+NPC_YONOWAARU: So, why do I know these things?
+NPC_YONOWAARU: It's because...
+NPC_YONOWAARU: Everyone: WHAT?!
+NPC_BIPPA: By gosh and golly!
+NPC_YONOWAARU: I...I'm sorry.
+NPC_RINGUMA: Urgh...
+NPC_PERAPPU: It makes sense...
+NPC_DIGUDA: M-me too!
+NPC_BIPPA: By golly, me too!
+NPC_HEIGANI: Hey, hey! Count me in!
+NPC_YUKUSHII: We will cooperate as well!
+NPC_EMURITTO: I refuse to remain a victim!
+NPC_YONOWAARU: Everyone, thank you so much.
+NPC_YONOWAARU: to capture Grovyle...
+NPC_YONOWAARU: Everyone: YEAH!
+NPC_AGUNOMU: Dusknoir, sir.
+NPC_AGUNOMU: Grovyle will come after me.
+NPC_AGUNOMU: Yup.
+NPC_EMURITTO: I'd like nothing more!
+NPC_AGUNOMU: If that means stopping Grovyle...
+NPC_YUKUSHII: We're ready to take that risk.
+NPC_YONOWAARU: Then...I understand.
+NPC_DOGOOMU: I get it NOW!
+NPC_KOIRU: ZZZT! Arrest! Arrest! ZZZT!
+NPC_YONOWAARU: Grovyle will be extremely wary.
+NPC_YONOWAARU: I'm terribly sorry, .
+NPC_YONOWAARU: Please forgive my selfishness.
+NPC_PERAPPU: Up to now...
+NPC_PERAPPU: At least, that was the plan.
+NPC_HEIGANI: Well, hey, hey...
+NPC_DOGOOMU: If that's what it takes...
+NPC_KIMAWARI: We have no choice...?
+NPC_PUKURIN: Yup, yup! ♪
+NPC_YONOWAARU: And...
+NPC_YONOWAARU: Everyone: YEAH!
+NPC_YONOWAARU: And thus...
+NPC_YONOWAARU: set off for Crystal Cave.
+
+== m16a0105 (G01P04A) ==
+NPC_PERAPPU: ...That's the current situation!
+NPC_PERAPPU: Try to be natural! ♪
+NPC_PERAPPU: That is all!
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_PERAPPU: Oh, you two!
+NPC_PERAPPU: That will do! ♪
+
+== m16a0401 (G01P04A) ==
+NPC_PERAPPU: Ahem...so here's where it stands.
+NPC_PERAPPU: We don't know that either.
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_PERAPPU: Ah, you two!
+NPC_PERAPPU: That will do! ♪
+
+== m16a0601 (G01P04A) ==
+NPC_PERAPPU: Oh! What's that siren?!
+NPC_DIGUDA: Deputy Magnemite is here!
+NPC_DOGOOMU: Whoa! At LAST!
+NPC_BIPPA: By gosh! Grovyle's been caught!
+NPC_KIMAWARI: Oh my gosh! They did it! Yippee!
+NPC_KOIRU: Zzzt! There's more! Zzzt!
+NPC_CHIRIIN: Dusknoir is...
+NPC_DOGOOMU: Going back to the future...?
+NPC_DOGOOMU: How do you...go back?
+
+== m16a0701 (T01P01A) ==
+NPC_CHIRIIN: Everyone's already here!
+NPC_DOGOOMU: What's THAT?!
+NPC_JIBAKOIRU: ZZZT! Watch out! ZZZT!
+NPC_JIBAKOIRU: ZZZT! Stay clear! ZZZT!
+NPC_BIPPA: Oof!
+NPC_YUKUSHII: !
+NPC_EMURITTO: Naturally!
+NPC_AGUNOMU: Yep.
+NPC_AGUNOMU: Grovyle's been captured.
+NPC_YUKUSHII: Dusknoir should be along shortly.
+NPC_RINGUMA: Oh! Who's that?!
+NPC_HIMEGUMA: It's the great Dusknoir!
+NPC_KAKUREON1: Here comes the great Dusknoir!
+NPC_DOGOOMU: Everyone! MAKE WAY!
+NPC_BIPPA: Th-that's...
+NPC_KAKUREON1: That's Grovyle?
+NPC_YONOWAARU: Everyone!
+NPC_YONOWAARU: Finally...Grovyle...
+NPC_YONOWAARU: Grovyle has been captured!
+NPC_YONOWAARU: I can't thank you enough!
+NPC_JUPUTORU: Mmmmmf! Mmmmmf!
+ATTENDANT1: He can't say a word that way.
+NPC_HEIGANI: Oh, so that was true? Hey, hey...
+NPC_BIPPA: I'm feeling the blues...
+NPC_YONOWAARU: Uxie...Mesprit...Azelf...
+NPC_YONOWAARU: I entrust you with the rest.
+NPC_AGUNOMU: Yep.
+NPC_EMURITTO: We know.
+NPC_YUKUSHII: We got the Time Gears back.
+NPC_YONOWAARU: The task is yours.
+NPC_YONOWAARU: Oh, no, no...
+NPC_YONOWAARU: Everyone! Though it pains me...
+NPC_KIMAWARI: Ooogie...I hate sad good-byes!
+NPC_DIGUDA: I h-h-hope we see you again...
+NPC_PERAPPU: Waaah!
+NPC_PERAPPU: Dusknoir...sir...waaah!
+NPC_YONOWAARU: Oh, yes.
+NPC_YONOWAARU: ! And !
+ATTENDANT1: It's us. Let's go up there.
+ATTENDANT1: That's us. Let's go up there.
+ATTENDANT1: So, this is really good-bye!
+ATTENDANT1: Dusknoir, sir!
+NPC_YONOWAARU: Well...this is...good-bye...
+NPC_YONOWAARU: Or is it?
+ATTENDANT1: Huh?!
+ATTENDANT1: What?!
+ATTENDANT1: Pardon?!
+NPC_YONOWAARU: It's too soon for farewells!
+ATTENDANT1: Waah!
+NPC_YONOWAARU: You two...are coming with me!
+ATTENDANT1: Waaah!
+NPC_BIPPA: By gosh!
+NPC_CHIRIIN: ! !
+NPC_KAKUREON1: Wh-what was...
+NPC_KIMAWARI: What just happened...?
+
+== m16d0122 (T01P01A) ==
+NPC_PERAPPU: The planet's...paralysis?
+NPC_YONOWAARU: Yes.
+
+== m16d0712 (T01P01A) ==
+NPC_YONOWAARU: Uxie...Mesprit...Azelf...
+NPC_YONOWAARU: I entrust you with the rest.
+NPC_AGUNOMU: Yep.
+NPC_EMURITTO: We know.
+NPC_YUKUSHII: We got the Time Gears back.
+NPC_YONOWAARU: The task is yours.
+
+== m16d0714 (T01P01A) ==
+NPC_YONOWAARU: It's too soon for farewells!
+ATTENDANT1: Waah!
+NPC_YONOWAARU: You two...are coming with me!
+ATTENDANT1: Waaah!
+NPC_BIPPA: By gosh!
+NPC_CHIRIIN: ! !
+NPC_KAKUREON1: Wh-what was...
+NPC_KIMAWARI: What just happened...?
+
+== m17a0103 (P05P01A) ==
+NPC_YONOWAARU: GRRRRRRRRR...
+NPC_YONOWAARU: ...I understand. As you wish.
+NPC_YONOWAARU: I take my leave.
+
+== m17a0201 (P05P02A) ==
+-: tested the doors.
+-: The doors failed to open.
+PLAYER: (It sure looks like we've been locked up!)
+
+== m17a0301 (P05P02A) ==
+NPC_YAMIRAMI: They're awake. How convenient.
+NPC_YAMIRAMI: All right. We'll do this quick.
+ATTENDANT1: Do this quick? Do what?!
+PLAYER: (Wh-what?!)
+NPC_YAMIRAMI: Come with us.
+ATTENDANT1: Ow! Quit shoving!
+ATTENDANT1: Ow! Don't shove me!
+ATTENDANT1: Ow! Don't push!
+ATTENDANT1: Where are they taking us?
+ATTENDANT1: But where are they taking us?
+NPC_YAMIRAMI: We're here.
+
+== m17a0302 (P05P03A) ==
+-: Humph!
+NPC_JUPUTORU: Humph! I couldn't care less.
+NPC_JUPUTORU: I don't care.
+NPC_JUPUTORU: Here they come.
+NPC_YONOWAARU: Good.
+NPC_YONOWAARU: Very well. Sableye.
+NPC_YONOWAARU: Sableye: Wheh-heh-heh!
+ATTENDANT1: W-wait a minute! Dusknoir, sir!
+ATTENDANT1: What's wrong with you?!
+ATTENDANT1: What's happened to you?!
+ATTENDANT1: Why are you doing this to us?!
+ATTENDANT1: Urk...! Keep...my voice down?
+NPC_JUPUTORU: ...give me your full cooperation.
+ATTENDANT1: What...? Help you, Grovyle...?
+NPC_JUPUTORU: Psst...hey! You there...
+PLAYER: (...!)
+NPC_JUPUTORU: ...Tell me...
+NPC_JUPUTORU: ...What can you do right now?
+PLAYER: (What? What can I do?)
+PLAYER: (You ask me that out of nowhere...! Umm...)
+PLAYER: (Wh-what to do...?)
+NPC_JUPUTORU: ...No. An item's no good...
+PLAYER: (Urk...! That's easy for you to say... Ummm...)
+PLAYER: Use a move!
+NPC_JUPUTORU: ...No! That's no good...
+PLAYER: (Urk...! You're not helping... Ummm...)
+PLAYER: Attack!
+NPC_JUPUTORU: ...! That's it... That'll do...
+NPC_JUPUTORU: ...Good.
+NPC_YAMIRAMI: Then we are ready to begin!
+NPC_YONOWAARU: Very well.
+NPC_YONOWAARU: Especially that Grovyle.
+NPC_YONOWAARU: Sableye: Wheh-heh-heh!
+NPC_YONOWAARU: Commence...now!
+NPC_YONOWAARU: Sableye: Wheh-heh-heh!
+ATTENDANT1: ...! They're coming...
+NPC_JUPUTORU: ...Listen carefully...
+NPC_JUPUTORU: ...Sableye use claws to strike...
+ATTENDANT1: ...! Yikes...that sounds scary!
+ATTENDANT1: ...B-b-but...
+ATTENDANT1: Sableye: Wheh-heh-heh!
+ATTENDANT1: WAAAAAAH!
+PLAYER: (Urggh!)
+ATTENDANT1: But if they keep going...
+ATTENDANT1: Hey!
+PLAYER: (There's a break in the rope!)
+NPC_JUPUTORU: Now! Attack!
+ATTENDANT1: Go!
+NPC_YAMIRAMI: Gwah!
+NPC_YONOWAARU: Wh-what is this?!
+NPC_JUPUTORU: There!
+NPC_YAMIRAMI: Gaaaah!
+NPC_YAMIRAMI: We can't see!
+NPC_YONOWAARU: Its effect wears off quickly!
+NPC_YONOWAARU: B-blast it!
+NPC_YONOWAARU: Sableye: Wheh-heh-heh!
+ATTENDANT1: Blecch! I got dirt in my mouth...
+PLAYER: (We're... We're safe...)
+PLAYER: (So Grovyle can use Dig?)
+PLAYER: (He sure knows many moves.)
+NPC_JUPUTORU: Let's get out of here, and fast.
+
+== m17a0401 (P05P04A) ==
+NPC_JUPUTORU: Come on! Faster! Pick it up!
+ATTENDANT1: This is the fastest I can go!
+ATTENDANT1: I'm running as fast as I can!
+ATTENDANT1: Quit ordering me around!
+ATTENDANT1: Don't order me around!
+ATTENDANT1: Anyway, Grovyle...!
+NPC_JUPUTORU: What?
+ATTENDANT1: Is this...the future?
+NPC_JUPUTORU: That's right. You catch on fast.
+ATTENDANT1: Urk! So it is, after all...
+ATTENDANT1: Huff-huff... Huff-huff...
+ATTENDANT1: We did it! We're...outside!
+ATTENDANT1: Wah! What...what is this?!
+
+== m17a0403 (P05P04A) ==
+NPC_JUPUTORU: Exactly.
+ATTENDANT1: What?!
+ATTENDANT1: Pardon?!
+ATTENDANT1: Wheh-heh-heh!
+ATTENDANT1: Wah! I hear those Sableye!
+NPC_JUPUTORU: We have to keep running!
+
+== m17a0501 (D18P11A) ==
+NPC_JUPUTORU: There's no time to rest!
+ATTENDANT1: I can't. I have to rest.
+NPC_JUPUTORU: All right.
+ATTENDANT1: Huff-huff... Huff-huff...
+NPC_JUPUTORU: This forms a natural alcove.
+NPC_JUPUTORU: This should shield us from view.
+ATTENDANT1: W-wait a minute.
+PLAYER: (...)
+NPC_JUPUTORU: Humph!
+ATTENDANT1: Urk...
+NPC_JUPUTORU: We'll go our separate ways.
+NPC_JUPUTORU: Good luck.
+ATTENDANT1: Wait a second!
+ATTENDANT1: You say to leave soon, but...
+ATTENDANT1: You tell us to leave soon, but...
+ATTENDANT1: You say to leave soon, but...
+NPC_JUPUTORU: That isn't possible.
+ATTENDANT1: Huh?!
+ATTENDANT1: What?!
+ATTENDANT1: Pardon?!
+NPC_JUPUTORU: The darkness persists forever.
+ATTENDANT1: Wh-why?
+ATTENDANT1: The planet is...paralyzed?
+ATTENDANT1: The planet's paralysis...
+
+== m17a0504 (D18P11A) ==
+ATTENDANT1: Urk... .
+ATTENDANT1: But despite all our efforts...
+ATTENDANT1: Wheh-heh-heh!
+ATTENDANT1: Waah! The Sableye!
+
+== m18a0101 (D19P11A) ==
+ATTENDANT1: ...How's it going, ?
+ATTENDANT1: ...Well, ?
+ATTENDANT1: ...How's it going, ?
+ATTENDANT1: Can you see anything?
+PLAYER: (..................)
+PLAYER: (..............................)
+PLAYER: (..........................................)
+PLAYER: (...No. I'm not sensing anything.)
+ATTENDANT1: No, huh?
+ATTENDANT1: We didn't learn anything at all...
+ATTENDANT1: We've spent a lot of time here.
+
+== m18b0801 (D21P21A) ==
+-: Would you like to go on?
+
+== m18b0902 (D21P41A) ==
+NPC_JUPUTORU: If I get through here...
+NPC_JUPUTORU: I should be at the forest.
+NPC_JUPUTORU: Have they eluded the Sableye?
+NPC_JUPUTORU: Oh, forget it. This isn't the time!
+NPC_JUPUTORU: Time to go.
+-: You there! STOP!
+NPC_JUPUTORU: Hmm?
+NPC_JUPUTORU: Who's there?!
+-: You INVADE this place with no warning!
+-: Then you DISTURB our slumber!
+-: Then, without APOLOGY, you try to leave?
+NPC_JUPUTORU: Who's there?! Who are you?!
+-: You DARE to anger us!
+-: We expect you to PAY for these insults!
+-: You ACCUSE us of hiding?
+-: We do NOT hide.
+-: We are... We are HERE!
+-: We are SPIRITOMB!
+NPC_JUPUTORU: Gaaaah!
+
+== m18b1101 (D21P41A) ==
+NPC_JUPUTORU: Urggh... You two...
+ATTENDANT1: G-Grovyle! Are you all right?!
+ATTENDANT1: G-Grovyle! Are you OK?!
+NPC_JUPUTORU: S-stay back!
+ATTENDANT1: Huh? Wh-why?!
+ATTENDANT1: What? Wh-why?!
+NPC_JUPUTORU: Careful! An enemy lurks nearby!
+ATTENDANT1: What?! Wh-where?
+NPC_JUPUTORU: It's right...beside you!
+ATTENDANT1: Next to me...?
+ATTENDANT1: It can't be this...
+ATTENDANT1: Waaah!
+NPC_MIKARUGE: HEE-hee...HEE-hee...
+NPC_MIKARUGE: None shall be FORGIVEN! None!
+NPC_MIKARUGE: Not least of all...YOU!
+ATTENDANT1: Who is that?! Who are you?!
+NPC_MIKARUGE: You ask that of US?
+NPC_MIKARUGE: Our name is...SPIRITOMB.
+NPC_MIKARUGE: One hundred and EIGHT of them!
+
+== m18b1201 (D21P41A) ==
+NPC_MIKARUGE: HEE-hee...HEE-hee...! Back again?
+
+== m18b1301 (D21P41A) ==
+NPC_MIKARUGE: UGGGH...OOOOH...ARRGH!
+NPC_MIKARUGE: OOOOH...ARRGH! ...GWAAAAAAH!
+ATTENDANT1: Whoa! Wh-what's happening?
+ATTENDANT1: Waah! Wh-what's happening?
+NPC_MIKARUGE: Eeep!
+NPC_MIKARUGE: R-r-run away!
+NPC_JUPUTORU: They got spooked and ran.
+ATTENDANT1: Grovyle!
+ATTENDANT1: Are you all right?
+NPC_JUPUTORU: Yeah... I'll be fine...
+ATTENDANT1: Can you get up?
+NPC_JUPUTORU: Somehow... Urk!
+NPC_JUPUTORU: That Pokémon... It was cunning.
+ATTENDANT1: So that was a bad Pokémon.
+NPC_JUPUTORU: No. That's not true.
+NPC_JUPUTORU: It's normally a timid Pokémon.
+ATTENDANT1: I see...
+ATTENDANT1: That makes me sad.
+NPC_JUPUTORU: Hey! You two!
+NPC_JUPUTORU: Now will you finally trust me?
+ATTENDANT1: Ummm...somewhat?
+NPC_JUPUTORU: Humph! I've told you before.
+NPC_JUPUTORU: I'm leaving.
+ATTENDANT1: Oh, wait!
+ATTENDANT1: I didn't say I don't believe you!
+ATTENDANT1: To be perfectly honest...
+ATTENDANT1: And...
+ATTENDANT1: It just seems to be logical.
+ATTENDANT1: Tell us about this future...
+ATTENDANT1: I'll listen, then decide.
+NPC_JUPUTORU: Well...fine. Follow me.
+
+== m18b1401 (P07P01A) ==
+NPC_JUPUTORU: Good. This will do.
+ATTENDANT1: Tell us, Grovyle.
+ATTENDANT1: Please tell us, Grovyle.
+ATTENDANT1: D-Dialga? Who is that?
+ATTENDANT1: What...what happened to Dialga?
+NPC_JUPUTORU: Dialga is now beyond recognition.
+ATTENDANT1: OK... Urf...
+NPC_JUPUTORU: Primal Dialga feels no emotion.
+ATTENDANT1: What?!
+NPC_JUPUTORU: You've got to be joking!
+NPC_JUPUTORU: I was collecting Time Gears...
+NPC_JUPUTORU: What else could it be?
+NPC_JUPUTORU: Because Dusknoir really is...
+NPC_JUPUTORU: That's right.
+NPC_JUPUTORU: I have said that Primal Dialga...
+NPC_JUPUTORU: He sent Dusknoir after me.
+ATTENDANT1: I can't believe it at all!
+ATTENDANT1: But I admired...Dusknoir...
+ATTENDANT1: But I respected...Dusknoir...
+ATTENDANT1: But I looked up to...Dusknoir...
+ATTENDANT1: I can't... I can't believe you...
+NPC_JUPUTORU: Hey! Where are you going?
+NPC_JUPUTORU: What?!
+NPC_JUPUTORU: What's the point of that?!
+NPC_JUPUTORU: What are you supposed to do?!
+NPC_JUPUTORU: Didn't you wonder this earlier?!
+NPC_JUPUTORU: To do that...
+NPC_JUPUTORU: I need to find Celebi.
+ATTENDANT1: Cel...Celebi?
+NPC_JUPUTORU: That's right.
+NPC_JUPUTORU: I'm off.
+ATTENDANT1: Urk...
+
+== m18d0112 (D19P11A) ==
+ATTENDANT1: ...How's it going, ?
+ATTENDANT1: ...Well, ?
+ATTENDANT1: ...How's it going, ?
+ATTENDANT1: Can you see anything?
+PLAYER: (..................)
+PLAYER: (..............................)
+PLAYER: (..........................................)
+PLAYER: (...No. I'm not sensing anything.)
+
+== m19a0102 (P05P01A) ==
+-: GRRRRRRRRR...
+NPC_YONOWAARU: Master Dialga.
+NPC_YONOWAARU: When the time comes...
+NPC_YONOWAARU: GRRRRRRRRR...
+NPC_YONOWAARU: ...As you wish.
+NPC_YONOWAARU: By your leave, we shall proceed.
+
+== m19a0201 (D22P11A) ==
+NPC_JUPUTORU: Deep in this forest...
+NPC_JUPUTORU: We should find Celebi.
+ATTENDANT1: Who is Celebi?
+NPC_JUPUTORU: But... Well, she's a little odd...
+ATTENDANT1: So if we find Celebi...
+ATTENDANT1: Can we return to our world?
+ATTENDANT1: Can we get back to our world?
+NPC_JUPUTORU: Yes, you can go back. But...
+NPC_JUPUTORU: So there's no time to waste.
+
+== m19a0301 (D22P11A) ==
+NPC_JUPUTORU: You seem to be ready.
+NPC_JUPUTORU: Fine! We leave now!
+
+== m19a0401 (D22P11A) ==
+NPC_JUPUTORU: You seem to be finally prepared.
+NPC_JUPUTORU: Let's go.
+ATTENDANT1: Wait a sec! Hold on!
+ATTENDANT1: Oh, wait! Don't go!
+ATTENDANT1: Oh, wait! Hold on!
+NPC_JUPUTORU: What is it?
+NPC_JUPUTORU: Well...yes, I will.
+ATTENDANT1: But I...
+ATTENDANT1: Grovyle, I'm not convinced yet.
+ATTENDANT1: I don't completely trust you yet.
+ATTENDANT1: I don't completely trust you.
+ATTENDANT1: If we do get back, Grovyle...
+ATTENDANT1: If we do return, Grovyle...
+ATTENDANT1: If we do go back, Grovyle...
+ATTENDANT1: I'm going to stop you, Grovyle!
+NPC_JUPUTORU: Let's go.
+PLAYER: (............)
+PLAYER: (I feel it...)
+PLAYER: (I am sensing something strange...)
+
+== m19a0403 (D22P11A) ==
+NPC_JUPUTORU: Hey! What are you doing?!
+NPC_JUPUTORU: Hurry!
+NPC_YAMIRAMI: Wheh-heh-heh!
+
+== m19a0601 (P08P01A) ==
+NPC_JUPUTORU: Celebi will have fled from here.
+NPC_JUPUTORU: Then Celebi should still be here.
+NPC_JUPUTORU: Hello? Celebi?
+NPC_JUPUTORU: It's me! Grovyle!
+NPC_JUPUTORU: Reveal yourself...if you're here!
+ATTENDANT1: She's...not coming out...
+ATTENDANT1: Did Primal Dialga chase her off?
+ATTENDANT1: What if...
+-: Captured?
+ATTENDANT1: Whoa! Who said that?!
+ATTENDANT1: Wah! Who said that?!
+ATTENDANT1: But now...I don't hear anything.
+ATTENDANT1: That voice... Did I imagine it?
+-: Tee-hee! You didn't imagine it!
+-: Me? Captured?
+-: How insulting! Captured?!
+-: Impossible, that's for sure! Tee-hee!
+NPC_SEREBII: It's been too long, my dear Grovyle!
+NPC_JUPUTORU: Yes. It has been a while, Celebi.
+ATTENDANT1: Huh?! This tiny thing is Celebi?
+ATTENDANT1: What?! This tiny thing is Celebi?
+NPC_SEREBII: Now that is downright rude!
+ATTENDANT1: Uh...I'm sorry.
+NPC_SEREBII: But...I forgive you.
+NPC_SEREBII: After all...
+ATTENDANT1: Uh, yeah...
+ATTENDANT1: Um, yes.
+ATTENDANT1: Well, yes.
+NPC_JUPUTORU: Celebi. I need your help again.
+NPC_SEREBII: I know.
+NPC_JUPUTORU: Urk... Yes, it's true.
+NPC_JUPUTORU: Sorry, no time to chat...
+NPC_JUPUTORU: The Sableye are tracking us.
+NPC_SEREBII: It's ready. It is nearby.
+NPC_JUPUTORU: That's good. Can you guide us?
+NPC_SEREBII: Yes!
+NPC_JUPUTORU: Yeah. That's right.
+NPC_SEREBII: Oh?! What's...this? Your friend!
+PLAYER: (What...? What...?)
+NPC_SEREBII: ........................
+NPC_SEREBII: No... That can't be...
+NPC_JUPUTORU: Is something the matter, Celebi?
+NPC_SEREBII: No... It's nothing.
+
+== m19b0701 (D23P11A) ==
+NPC_SEREBII: Oh! I see it!
+
+== m19b0801 (D23P11A) ==
+NPC_JUPUTORU: Good. We're leaving.
+NPC_JUPUTORU: Let's go.
+
+== m19b1001 (P09P01A) ==
+NPC_SEREBII: Oh! I see it now!
+NPC_SEREBII: There it is!
+ATTENDANT1: Is that...the Passage of Time?
+NPC_JUPUTORU: Do your thing.
+NPC_SEREBII: Sure.
+-: Stop there! That will do!
+NPC_JUPUTORU: What...? That voice!
+ATTENDANT1: It... It can't be...
+-: Hello to you all. It's been a while.
+NPC_JUPUTORU: D-Dusknoir!
+ATTENDANT1: Dusknoir...
+NPC_YONOWAARU: Your scurrying carried you far...
+NPC_YAMIRAMI: Wheh-heh-heh!
+ATTENDANT1: The Sableye too...
+NPC_JUPUTORU: Humph. That's crafty, Dusknoir.
+ATTENDANT1: What?! So you mean we were...
+ATTENDANT1: followed the whole time?!
+NPC_JUPUTORU: Humph. I didn't see this coming.
+NPC_JUPUTORU: It's all my fault, Celebi.
+ATTENDANT1: Huh?! You bet I am!
+ATTENDANT1: What?! Of course!
+ATTENDANT1: G-got it!
+NPC_YONOWAARU: Ha! So you'll resist?
+NPC_JUPUTORU: Dusknoir! You and me! Now!
+NPC_JUPUTORU: Wh-what?!
+NPC_YONOWAARU: Now, Master Dialga!
+ATTENDANT1: Whoa! It turned pitch black!
+ATTENDANT1: Waah! It turned pitch black!
+ATTENDANT1: GRRR-OOOOOO!
+ATTENDANT1: GRRR-OOOOOO...OOOOOH!
+ATTENDANT1: Waaah!
+NPC_JUPUTORU: That... That's...!
+NPC_JUPUTORU: That's...Primal...Dialga...
+ATTENDANT1: What!?! That is?!
+ATTENDANT1: That's Primal Dialga?!
+NPC_JUPUTORU: Gah...
+NPC_SEREBII: My dear Grovyle...
+NPC_JUPUTORU: Urf... This...is it for us...
+ATTENDANT1: Huh?! Why?!
+ATTENDANT1: What?! Why?!
+ATTENDANT1: Aren't we going to fight?!
+NPC_JUPUTORU: You two have kept up so well...
+ATTENDANT1: But...
+NPC_JUPUTORU: I surrender, Dusknoir.
+NPC_JUPUTORU: Do with me...as you will.
+NPC_SEREBII: My d-d-dear Grovyle!
+NPC_YONOWAARU: What's the matter, Grovyle?
+NPC_JUPUTORU: Yes. I am giving up.
+NPC_JUPUTORU: But...hope is still alive.
+NPC_JUPUTORU: Celebi, you remember...
+NPC_JUPUTORU: That's right. I had a partner.
+NPC_JUPUTORU: We headed to the past together.
+NPC_JUPUTORU: We became separated.
+NPC_JUPUTORU: Even if I am eliminated...
+NPC_YONOWAARU: .....................
+NPC_YONOWAARU: Ha! Ha-ha-ha! Hoo-hoo-ha!
+NPC_JUPUTORU: What's... What's so funny?
+NPC_YONOWAARU: Go on. Say the name.
+NPC_JUPUTORU: Why ask such a thing?
+NPC_YONOWAARU: Can't tell me?
+NPC_JUPUTORU: My best friend...
+PLAYER: (What?!)
+ATTENDANT1: Uh...what?!
+ATTENDANT1: Wh-what?!
+NPC_JUPUTORU: What?!
+NPC_JUPUTORU: You're...?
+NPC_JUPUTORU: ...No...it can't be. It isn't.
+ATTENDANT1: What?!
+NPC_YONOWAARU: Hoo-hoo-ha! Precisely!
+NPC_JUPUTORU: What?!
+NPC_JUPUTORU: Wh-what?!
+
+== m19b1007 (P09P01A) ==
+ATTENDANT1: Urk... Dusknoir really was lying!
+NPC_JUPUTORU: .....................
+PLAYER: (I was a human from the future...?)
+ATTENDANT1: Urgh! Dusknoir...no...
+ATTENDANT1: Dusknoir!
+ATTENDANT1: G-Grovyle!
+ATTENDANT1: !
+NPC_YONOWAARU: This is the end...for you!
+NPC_YAMIRAMI: Wheh-heh-heh!
+ATTENDANT1: Urk...
+NPC_JUPUTORU: Gah... You say not to give up...?
+ATTENDANT1: We have to think!
+ATTENDANT1: I know!
+ATTENDANT1: Even a little will do! Please!
+NPC_YONOWAARU: Attack!
+NPC_YAMIRAMI: Wheh-heh-heh!
+NPC_SEREBII: Time to travel!
+NPC_YAMIRAMI: Wheh-heh...?
+NPC_YONOWAARU: They v-v-vanished?
+NPC_YONOWAARU: Master Dialga!
+NPC_YONOWAARU: GRRR-OOOOOO...OOOOOH!
+
+== m19b1009 (P09P01A) ==
+NPC_YONOWAARU: There they are!
+NPC_SEREBII: Dive in now! You can make it!
+NPC_SEREBII: Now! Into the Passage of Time!
+ATTENDANT1: Wh-what about you, Celebi?!
+NPC_JUPUTORU: Thanks!
+ATTENDANT1: Thanks, Celebi!
+ATTENDANT1: Thank you, Celebi!
+NPC_YONOWAARU: You're not getting away!
+NPC_YONOWAARU: Gah...
+
+== m19d1072 (P09P01A) ==
+NPC_YONOWAARU: This is the end...for you!
+NPC_YAMIRAMI: Wheh-heh-heh!
+ATTENDANT1: Urk...
+NPC_JUPUTORU: Gah... You say not to give up...?
+ATTENDANT1: We have to think!
+
+== m20a0101 (D01P11A) ==
+NPC_JUPUTORU: Ugh...
+ATTENDANT1: Hey! Grovyle!
+ATTENDANT1: Look around! We made it home!
+ATTENDANT1: Look! We made it home!
+ATTENDANT1: Look around! We made it home!
+ATTENDANT1: Back to our world!
+NPC_JUPUTORU: So we did it...?
+NPC_JUPUTORU: We made it through...
+NPC_JUPUTORU: back to this world?
+ATTENDANT1: Yup!
+ATTENDANT1: Yes!
+ATTENDANT1: Yep!
+ATTENDANT1: Let's see...
+ATTENDANT1: Let me see...
+ATTENDANT1: It was around here.
+ATTENDANT1: I think it was right here.
+ATTENDANT1: It would be around here.
+NPC_JUPUTORU: So that's what happened.
+ATTENDANT1: Oh, that's right!
+ATTENDANT1: Can you explain it to us, please?
+ATTENDANT1: Will you please explain it to us?
+NPC_JUPUTORU: Hold on.
+ATTENDANT1: Oh, I know! There's a good place.
+NPC_JUPUTORU: Lead the way.
+ATTENDANT1: All right. It's this way.
+ATTENDANT1: OK. It's this way.
+
+== m20a0202 (H01P99A) ==
+NPC_JUPUTORU: Sharpedo Bluff?
+ATTENDANT1: It's down here.
+ATTENDANT1: Go on...go in.
+ATTENDANT1: Go ahead...go in.
+ATTENDANT1: Go on, after you.
+
+== m20a0203 (H02P99A) ==
+NPC_JUPUTORU: Agreed.
+
+== m20a0205 (H02P99C) ==
+NPC_JUPUTORU: But ...
+PLAYER: (..................)
+NPC_JUPUTORU: Yes,  and I...
+NPC_JUPUTORU: Yeah.
+NPC_JUPUTORU: It played a vital part.
+NPC_JUPUTORU: Exactly.
+ATTENDANT1: A trusted...partner...
+NPC_JUPUTORU: That's why we worked together.
+ATTENDANT1: W-wait! Hold on a second!
+ATTENDANT1: W-wait a second!
+ATTENDANT1: W-wait! Wait a second!
+NPC_JUPUTORU: Your point?
+ATTENDANT1: Urk! When you put it like that...
+ATTENDANT1: I mean...it's a bit embarrassing.
+ATTENDANT1: It's a little embarrassing!
+ATTENDANT1: I mean...it's a bit embarrassing.
+ATTENDANT1: Hmm...really?
+ATTENDANT1: I don't remember it that way...
+ATTENDANT1: That's not how I remember it...
+ATTENDANT1: Hey, .
+ATTENDANT1: Listen, .
+ATTENDANT1: Say, .
+PLAYER: (Oh! That explains it!)
+PLAYER: (Maybe that's why...that time...)
+PLAYER: (when we were in the future...)
+
+== m20a0207 (H02P99C) ==
+NPC_JUPUTORU: Anyway...
+NPC_JUPUTORU: That's it!
+NPC_JUPUTORU: Here!
+NPC_JUPUTORU: A Time Gear is here!
+NPC_JUPUTORU: I see!
+NPC_JUPUTORU: That lifts the fog!
+NPC_JUPUTORU: We took the Passage of Time.
+NPC_JUPUTORU: However...
+-: Whoa! Wh-wh-whoa...!
+-: Are... Are you OK?!
+-: No! Don't let go!
+-: Just a little longer... Come on! Hang on!
+-: N-n-no! I can't...hold on...!
+-: Waaaaaah!
+PLAYER: (..................)
+PLAYER: (I...I came from the future...)
+NPC_JUPUTORU: You were my closest friend.
+PLAYER: (..................)
+NPC_JUPUTORU: What are you going to do?
+ATTENDANT1: Umm...
+ATTENDANT1: Well then!
+NPC_JUPUTORU: OK, then. We'll go together.
+NPC_JUPUTORU: But the hour is late.
+
+== m20a0301 (H02P99C) ==
+NPC_JUPUTORU: Hm?  isn't here...
+NPC_JUPUTORU: Maybe outside...?
+
+== m20a0302 (H01P99D) ==
+NPC_JUPUTORU: What's the matter? Can't sleep?
+ATTENDANT1: Yeah. Just thinking.
+ATTENDANT1: Yes. Just thinking.
+ATTENDANT1: Yep. Just thinking.
+NPC_JUPUTORU: Thinking about Dusknoir?
+ATTENDANT1: No, not that.
+ATTENDANT1: No, that's not it.
+ATTENDANT1: Hey! Look, Grovyle!
+ATTENDANT1: Oh! Look, Grovyle!
+ATTENDANT1: Sunlight! It's sunrise!
+ATTENDANT1: It's pretty, isn't it!
+NPC_JUPUTORU: Yes.
+ATTENDANT1: The sun rises... Then it sets...
+ATTENDANT1: But things we take for granted...
+NPC_JUPUTORU: It was staggering.
+
+== m20a0305 (H01P99E) ==
+NPC_JUPUTORU: Even I had given up.
+NPC_JUPUTORU: What compelled you?
+ATTENDANT1: Well...I wonder too.
+ATTENDANT1: I really don't know...
+ATTENDANT1: But maybe...
+NPC_JUPUTORU: ...?
+ATTENDANT1: Take a look at this.
+ATTENDANT1: Have a look at this.
+NPC_JUPUTORU: This... What could it be...?
+ATTENDANT1: ...
+
+== m20a0309 (H01P99E) ==
+NPC_JUPUTORU: ...All right.
+NPC_JUPUTORU: is...lucky...
+NPC_JUPUTORU: Well, it's morning.
+NPC_JUPUTORU: We should be leaving soon.
+ATTENDANT1: Yup.
+ATTENDANT1: Yes.
+ATTENDANT1: Yep.
+
+== m20a0310 (H02P99A) ==
+ATTENDANT1: Let's check the Wonder Map.
+
+== m20a0311 (S01P01A) ==
+ATTENDANT1: Where is that?
+NPC_JUPUTORU: Here.
+ATTENDANT1: Great!
+ATTENDANT1: Oh, great!
+NPC_JUPUTORU: Exactly.
+
+== m20a0401 (D24P11A) ==
+NPC_JUPUTORU: Oh?
+ATTENDANT1: What's up, Grovyle?
+ATTENDANT1: What is it, Grovyle?
+ATTENDANT1: Is something wrong, Grovyle?
+NPC_JUPUTORU: No. I must be imagining it.
+NPC_JUPUTORU: We'll go in when you're ready.
+
+== m20a0601 (D24P11A) ==
+NPC_JUPUTORU: I thought so.
+NPC_JUPUTORU: ...somewhere in its depths.
+ATTENDANT1: Ugh! We'd better hurry up then.
+ATTENDANT1: Ugh! We'd better hurry then.
+
+== m20a0701 (D24P31A) ==
+NPC_JUPUTORU: Wh-what is this?!
+
+== m20a0704 (D24P31A) ==
+NPC_JUPUTORU: Time...is at a standstill here!
+ATTENDANT1: But didn't they...?
+
+== m20a0706 (D24P31A) ==
+NPC_JUPUTORU: But time remains stopped here...
+ATTENDANT1: That means...
+ATTENDANT1: That could mean...
+ATTENDANT1: That means...
+
+== m20a0707 (V03P06A) ==
+ATTENDANT1: But...
+ATTENDANT1: Time here seems to be stopped.
+ATTENDANT1: There's no wind...
+ATTENDANT1: No wind is blowing...
+ATTENDANT1: There isn't even a breeze...
+ATTENDANT1: Time really is stopped here!
+ATTENDANT1: Time is stopped here!
+ATTENDANT1: Time has really stopped here!
+NPC_JUPUTORU: ........................
+ATTENDANT1: Hey! What are you doing?!
+NPC_JUPUTORU: Time has already stopped here.
+ATTENDANT1: M-more worrying?
+NPC_JUPUTORU: Forget it. Let's leave.
+ATTENDANT1: What is it?
+ATTENDANT1: In Treasure Town?
+ATTENDANT1: Gotcha. I'll go find out.
+ATTENDANT1: OK. I'll go find out.
+ATTENDANT1: Sure thing. I'll go find out.
+NPC_JUPUTORU: I'm counting on you.
+
+== m20a0801 (H02P99A) ==
+NPC_JUPUTORU: What's the word?
+ATTENDANT1: The word is...not very good.
+ATTENDANT1: After we went to the future...
+NPC_JUPUTORU: Is that true?
+NPC_JUPUTORU: ..................
+ATTENDANT1: Temporal Tower is...collapsing?
+ATTENDANT1: What?! But...
+ATTENDANT1: We have to hurry, then!
+NPC_JUPUTORU: We need to gather Time Gears...
+NPC_JUPUTORU: But there is a problem.
+ATTENDANT1: But...there isn't any time!
+NPC_JUPUTORU: I'll go collect the Time Gears.
+ATTENDANT1: Gotcha.
+ATTENDANT1: Understood.
+ATTENDANT1: OK.
+ATTENDANT1: Is that OK, ?
+NPC_JUPUTORU: OK then. You're in charge.
+ATTENDANT1: Cross the sea...
+ATTENDANT1: Now...
+ATTENDANT1: .....................
+ATTENDANT1: Umm...
+
+== m21a0101 (G01P01B) ==
+NPC_DIGUDA: The footprint belongs to...
+NPC_DIGUDA: The f-f-footprint belongs to...
+NPC_DOGOOMU: What...? HEY, Diglett!
+NPC_DIGUDA: That... That footprint...
+NPC_DIGUDA: It's !
+NPC_BIPPA: What...?
+NPC_KIMAWARI: Wha...?
+NPC_KIMAWARI: Everyone: WHAT?!
+NPC_DIGUDA: It is !
+NPC_DIGUDA: And  too!
+ATTENDANT1: Diglett! Long time no see!
+ATTENDANT1: Whoa! What is that?
+ATTENDANT1: Waah! What is that?!
+NPC_HEIGANI: Hey, hey! It's true!
+NPC_DOGOOMU: You're both ALIVE!
+NPC_CHIRIIN: We worried so much about you!
+NPC_BIPPA: I...I...I was...by golly!
+ATTENDANT1: E-everyone... We're home...
+
+== m21a0201 (G01P04A) ==
+NPC_PERAPPU: ...What?! What was that again?
+NPC_PERAPPU: Just...just hold on for a moment.
+NPC_PERAPPU: Let me get this story straight!
+ATTENDANT1: OK...
+ATTENDANT1: Right.
+ATTENDANT1: Yes.
+ATTENDANT1: Yep!
+ATTENDANT1: Yup.
+ATTENDANT1: Yes.
+ATTENDANT1: Yep.
+NPC_PERAPPU: So he took them to the future?
+ATTENDANT1: Yup. And me too.
+ATTENDANT1: Yes. And me too.
+ATTENDANT1: Yep. And me too.
+ATTENDANT1: Yup.
+ATTENDANT1: Yes.
+ATTENDANT1: Yep.
+ATTENDANT1: Yup. That's all of it!
+ATTENDANT1: Yes. That's all of it!
+ATTENDANT1: Yep! That's all of it!
+NPC_PERAPPU: ........................
+NPC_PERAPPU: Hee! Hee-heeee! Hee-heeee!
+NPC_PERAPPU: and ...
+ATTENDANT1: What?!
+ATTENDANT1: Now, wait a second!
+ATTENDANT1: What? Wait a second!
+ATTENDANT1: Now, hold on a second!
+ATTENDANT1: You're saying we're lying?
+ATTENDANT1: You think we're lying?
+ATTENDANT1: Are you accusing us of lying?
+NPC_PERAPPU: I'm sure...I'm sure... ♪
+NPC_PERAPPU: A good nap will fix that! ♪
+NPC_PERAPPU: That's quite enough!
+NPC_PERAPPU: A place called the Hidden Land?!
+ATTENDANT1: But...!
+NPC_PERAPPU: I'll hear no more of this!
+NPC_PERAPPU: That's simply unbelievable!
+NPC_DAGUTORIO: We hold Dusknoir in high esteem.
+NPC_DAGUTORIO: We cannot believe it.
+NPC_PERAPPU: See?! See?!
+NPC_KIMAWARI: But...
+NPC_PERAPPU: Hm? What is it, Sunflora?
+NPC_KIMAWARI: That time...
+
+== m21a0203 (G01P04A) ==
+NPC_KIMAWARI: What Dusknoir did then...
+NPC_PERAPPU: Really? Do you think so?
+NPC_DOGOOMU: NO WAY!
+NPC_PERAPPU: What? Wait a minute!
+NPC_PERAPPU: So is that what you think now?
+NPC_PERAPPU: Everyone: ..............................
+NPC_PERAPPU: Well, what's your answer?
+NPC_BIPPA: Uh...I...believe them...
+NPC_PERAPPU: What?! What did you say?!
+NPC_PERAPPU: Wh-wh-what!
+ATTENDANT1: B-Bidoof!
+NPC_HEIGANI: Hey, hey! I believe too!
+ATTENDANT1: Oh, Corphish! And Sunflora!
+NPC_DOGOOMU: I believe them!
+NPC_DIGUDA: Me too!
+NPC_CHIRIIN: So do I!
+NPC_PERAPPU: Squawk!
+ATTENDANT1: Urf... Thank you, everyone...
+ATTENDANT1: Thank you...for believing us!
+NPC_PUKURIN: Well, hiya!
+NPC_PUKURIN: Sounds like we all agree! ♪
+NPC_PUKURIN: Everyone: HUH?!
+NPC_PUKURIN: Hm? What's wrong?
+NPC_PUKURIN: Huh?
+NPC_DOGOOMU: We're all good with the story...
+NPC_PUKURIN: Oh? Is that all? ♪
+NPC_PUKURIN: Everyone: HUH?!
+NPC_PUKURIN: Chatot is convinced...right?
+NPC_PUKURIN: Everyone: HUH?!
+NPC_PUKURIN: Right, Chatot? ♪
+NPC_PERAPPU: Hee...! Hee-hee...!
+NPC_PERAPPU: Hee-heeee!
+NPC_DOGOOMU: WH-WHAT?
+NPC_KIMAWARI: How peculiar!
+NPC_PERAPPU: Everyone: HUH? REALLY?!
+NPC_DOGOOMU: ...What's all this...?
+NPC_PERAPPU: That's why I was so contrary!
+NPC_BIPPA: ...Gosh, likely story...
+NPC_KIMAWARI: ...Says you...
+NPC_PERAPPU: Hee! Hee-heeee!
+NPC_PUKURIN: ! !
+NPC_PUKURIN: Now listen, everyone!
+NPC_PUKURIN: From 's story...
+NPC_PUKURIN: We know our world is in danger.
+NPC_PUKURIN: This is our time.
+NPC_PUKURIN: We'll combine all our efforts!
+NPC_PUKURIN: We'll discover the Hidden Land!
+NPC_PUKURIN: Let's do this, everyone!
+NPC_PUKURIN: Everyone: HOORAY!
+NPC_PUKURIN: Chatot!
+NPC_PERAPPU: Y-yes, sir.
+NPC_PERAPPU: OK, everyone!
+NPC_DOGOOMU: I sure will!
+NPC_BIPPA: I'll get the word out, by golly!
+NPC_DIGUDA: I'll go too!
+NPC_HEIGANI: Hey, hey! Then I'll go tell them!
+NPC_DOGOOMU: YEAH!
+NPC_BIPPA: Yes, sir!
+NPC_KIMAWARI: We'll hurry!
+NPC_PUKURIN: YOOM...TAH!
+NPC_PUKURIN: Everyone: HOORAY!
+NPC_DOGOOMU: All right! Let's show some guts!
+NPC_HEIGANI: Hey, hey, hey!
+ATTENDANT1: Torkoal, the town elder?
+ATTENDANT1: Oh! I remember!
+
+== m21a0205 (G01P04A) ==
+NPC_PUKURIN: Go ask Torkoal for advice! ♪
+ATTENDANT1: Let's go! Off to the Hot Spring!
+NPC_CHIRIIN: But first...!
+NPC_CHIRIIN: It is getting late. And besides...
+NPC_CHIRIIN: You must be hungry!
+ATTENDANT1: Huh?
+ATTENDANT1: My stomach growled!
+ATTENDANT1: Ha ha! Yours did too!
+NPC_DOGOOMU: Ho-ho! Did everyone hear THAT?
+NPC_DOGOOMU: Everyone: HA HA HA!
+
+== m21a0410 (G01P04A) ==
+NPC_PERAPPU: Ahem! So wrapping up...
+NPC_BIPPA: By golly, yes!
+NPC_KIMAWARI: I'm all ready to go!
+NPC_PERAPPU: Good!
+NPC_PERAPPU: Let's get right to it, everyone!
+NPC_PERAPPU: Everyone: HOORAY!
+
+== m21a0520 (G01P04A) ==
+NPC_PERAPPU: Ahem! So in conclusion...
+NPC_PERAPPU: Hmm... No clues, eh?
+NPC_KIMAWARI: So true! Yippee!
+NPC_BIPPA: I'm not giving up, by golly!
+NPC_DOGOOMU: Nothing can break ME!
+NPC_PERAPPU: Let's get this done!
+NPC_PERAPPU: Everyone: HOORAY!
+
+== m21a0601 (P02P01A) ==
+NPC_KOOTASU: ...Oh? Not so?
+NPC_KOOTASU: I see... You seek my wisdom.
+NPC_KOOTASU: I have heard of it.
+ATTENDANT1: Oh, really?!
+ATTENDANT1: No matter! Please tell us!
+ATTENDANT1: A hidden place?
+NPC_KOOTASU: Yes.
+NPC_KOOTASU: They are...
+NPC_KOOTASU: Er... Er... Now what were they?
+NPC_KOOTASU: I'm sorry. It's slipped my mind.
+ATTENDANT1: Huh? You forgot?
+ATTENDANT1: Oh no! You've forgotten?!
+ATTENDANT1: Oh no! You can't remember?!
+ATTENDANT1: It's really important.
+ATTENDANT1: This is really important.
+NPC_KOOTASU: Oh! That's it! You need proof!
+ATTENDANT1: Proof? What kind of proof?
+NPC_KOOTASU: That would be...
+NPC_KOOTASU: Er? Um?
+NPC_KOOTASU: Forgive me. I've forgotten again.
+ATTENDANT1: What? You can't remember?!
+NPC_KOOTASU: I... I'm sorry to disappoint you.
+NPC_KOOTASU: ...No. That's all.
+ATTENDANT1: Yes, please. Thank you, Torkoal.
+
+== m21a0701 (G01P04A) ==
+NPC_PERAPPU: That's too bad...
+NPC_PUKURIN: Oh! That's not entirely true!
+NPC_PUKURIN: Right? ♪
+NPC_HEIGANI: Hey, hey! We're searching too...
+NPC_DOGOOMU: Yeah, but we didn't find anything.
+NPC_DIGUDA: I'll keep trying too!
+ATTENDANT1: Oh, well... Thanks, everyone!
+
+== m22a0101 (G01P04A) ==
+NPC_PERAPPU: Ahem! So in short...
+NPC_PERAPPU: But we're not giving up!
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_PERAPPU: Let's go, everyone!
+NPC_PERAPPU: Everyone: HOORAY!
+ATTENDANT1: We don't have any other leads.
+ATTENDANT1: We're out of leads.
+ATTENDANT1: Huh? Torkoal is here?
+ATTENDANT1: What? Torkoal is here?
+
+== m22a0201 (G01P04A) ==
+ATTENDANT1: What brings you here, Torkoal?
+NPC_KOOTASU: But...it really is something small.
+NPC_PUKURIN: Not a worry! ♪
+NPC_PUKURIN: Please, say it! Say it! ♪
+ATTENDANT1: A certain pattern?
+NPC_KOOTASU: Er... How can I describe it?
+NPC_KOOTASU: It's difficult to describe it...
+NPC_BIPPA: A pattern you rarely see... Golly!
+NPC_CHIRIIN: Hmm...what could it be...?
+PLAYER: (..................)
+PLAYER: (The kind of pattern you rarely see...)
+PLAYER: (What could a pattern like that look like...?)
+PLAYER: (A pattern you rarely see... A peculiar...)
+PLAYER: (Wait a second! A peculiar pattern?)
+PLAYER: (A peculiar pattern! I remember that time...)
+
+== m22a0204 (G01P04A) ==
+NPC_KOOTASU: Oh! Th-this is it!
+NPC_KOOTASU: It's a pattern exactly like this!
+NPC_KOOTASU: Everyone: WHAT?!
+NPC_KOOTASU: Where...where did you get this?
+ATTENDANT1: I just happened to pick it up.
+NPC_KIMAWARI: Yippee! This is fabulous!
+NPC_PUKURIN: Knowing only that is a lot! ♪
+NPC_KOOTASU: I suppose so...
+NPC_PUKURIN: Yes! We are! ♪
+NPC_KOOTASU: My goodness! What a surprise!
+NPC_PUKURIN: Chatot!
+NPC_PUKURIN: Everyone: WHAT?!
+NPC_PERAPPU: Y-yes...
+NPC_PERAPPU: The sea inlet to the northwest...
+NPC_PERAPPU: Inside Brine Cave...
+NPC_PERAPPU: But, Guildmaster! That place...!
+NPC_KIMAWARI: A vicious...
+NPC_BIPPA: Bandit? By golly!
+NPC_PUKURIN: Everyone, please listen.
+NPC_PUKURIN: However, there is one problem.
+NPC_DOGOOMU: Aren't we explorers?
+NPC_KIMAWARI: We all need to be brave!
+NPC_PUKURIN: Thanks, everyone! ♪
+NPC_PUKURIN: Everyone: HOORAY!
+ATTENDANT1: Yup! Count on it!
+ATTENDANT1: Yes! You can count on us!
+ATTENDANT1: Yep! You can count on us!
+NPC_PUKURIN: Thank you, Torkoal!
+NPC_KOOTASU: Oh, it was nothing. Ho-ho-ho!
+NPC_PUKURIN: OK! Dismissed!
+NPC_PUKURIN: Everyone: HOORAY!
+NPC_PUKURIN: Chatot!
+NPC_PERAPPU: Please, let me go to Brine Cave!
+NPC_PERAPPU: Please, take me to Brine Cave!
+NPC_PUKURIN: ...OK.
+NPC_PUKURIN: But I want you to be careful.
+NPC_PERAPPU: Thank you! I won't let you down!
+NPC_PUKURIN: You're in charge while I'm gone.
+NPC_PERAPPU: As you wish.
+ATTENDANT1: Urk! OK.
+ATTENDANT1: !
+ATTENDANT1: We should go get ready.
+ATTENDANT1: Let's go get ready.
+ATTENDANT1: We should go get ready.
+ATTENDANT1: Let's go down to Treasure Town.
+ATTENDANT1: Let's go to Treasure Town.
+ATTENDANT1: Let's go down to Treasure Town.
+
+== m22a0302 (P01P01A) ==
+NPC_KOOTASU: Oh, to be young again!
+-: Whoa-ho-ho! Hold it there, old-timer!
+NPC_KOOTASU: Wh-who is it?
+NPC_KOOTASU: I... I was only...
+NPC_ZUBATTO: Huh? Someone's coming!
+NPC_DOGAASU: Whoa-ho-ho! Guild chumps?
+NPC_SUKATANKU: Old-timer...
+NPC_KOOTASU: Hey...!
+
+== m22a0602 (H02P99A) ==
+ATTENDANT1: \"How goes your search for the Hidden Land?\"
+ATTENDANT1: \"I have to find only two more Time Gears.\"
+ATTENDANT1: \"I plan to join you when I've collected all five.\"
+ATTENDANT1: Dusknoir?!
+ATTENDANT1: Come to think of it...
+ATTENDANT1: All right, let me keep reading.
+ATTENDANT1: OK, I'll keep reading.
+ATTENDANT1: OK, I'll finish reading.
+ATTENDANT1: \"Good luck on your end.\"
+ATTENDANT1: We'd better hold up our end too.
+ATTENDANT1: We'd better not fail on our end.
+ATTENDANT1: We can't fail on our end.
+
+== m22a0701 (H02P99A) ==
+-: \"How goes your search for the Hidden Land?\"
+-: \"I have to find only two more Time Gears.\"
+-: \"I plan to join you when I've collected all five.\"
+-: \"Good luck on your end.\"
+-: No
+
+== m22a0903 (D01P11B) ==
+NPC_SUKATANKU: Chaw-haw-haw!
+NPC_DOGAASU: Whoa-ho-ho! But, Chief!
+NPC_DOGAASU: Whoa-ho-ho!
+NPC_ZUBATTO: Heh-heh-heh!
+
+== m22a1004 (P10P01A) ==
+NPC_PUKURIN: Lapras! Long time no see! ♪
+NPC_RAPURASU: Is Chatot doing well too?
+NPC_PUKURIN: Yes! Very well! ♪
+NPC_RAPURASU: I'm glad to hear that!
+NPC_RAPURASU: I've always meant to thank you.
+NPC_PUKURIN: No problem! ♪ No big deal! ♪
+NPC_PUKURIN: So please tell me...
+
+== m23a0101 (G01P04A) ==
+NPC_PERAPPU: Um...I wouldn't know that...
+NPC_PERAPPU: You have me to lead you!
+NPC_DAGUTORIO: ............
+NPC_DOGOOMU: ........................
+NPC_KIMAWARI: ....................................
+NPC_PERAPPU: It...it can't be!
+NPC_PERAPPU: E-everyone! Out with it!
+NPC_PERAPPU: Am I perhaps...perhaps...
+NPC_PERAPPU: Inadequate? Worthless to you?!
+NPC_CHIRIIN: Chatot.
+NPC_CHIRIIN: And that's you, Chatot.
+NPC_PERAPPU: Huh? Wh-who? Me?
+NPC_CHIRIIN: Of course. You said so earlier.
+NPC_CHIRIIN: Lead the way! Show us, Chatot!
+NPC_BIPPA: Yup yup! I'm counting on you!
+NPC_PERAPPU: Urk!
+NPC_PERAPPU: W-w-well...e-e-everyone...
+NPC_PERAPPU: I know! I know!
+NPC_PERAPPU: Commencing now...
+NPC_PERAPPU: Everyone! Let us excel together!
+NPC_PERAPPU: Everyone: HOORAY!
+
+== m23a0201 (D25P11A) ==
+NPC_PERAPPU: Now listen, everyone.
+NPC_BIPPA: E-extremely vicious?
+NPC_BIPPA: Golly, that sounds scary! Gulp!
+NPC_HEIGANI: Hey, hey! Chatot!
+NPC_PERAPPU: What is it?
+NPC_PERAPPU: It was then, however...
+NPC_PERAPPU: Those tough Pokémon appeared.
+NPC_PERAPPU: Uh...I don't remember at all.
+NPC_DOGOOMU: Huh?! You don't REMEMBER?!
+NPC_PERAPPU: Yes, but I'm loath to admit it.
+NPC_DAGUTORIO: That gives us nothing to go on.
+NPC_PERAPPU: ...No, it wasn't just one.
+NPC_DOGOOMU: Like a tidal wave?
+NPC_PERAPPU: That's right.
+NPC_BIPPA: We'll do that, sir! Yup yup!
+NPC_PERAPPU: You two!
+NPC_PERAPPU: Understood?
+NPC_PERAPPU: Let's give it our all!
+NPC_PERAPPU: Everyone: HOORAY!
+NPC_SUKATANKU: Chaw-haw-haw! Naturally!
+NPC_SUKATANKU: Anyway...
+NPC_ZUBATTO: Heh-heh-heh!
+NPC_DOGAASU: Whoa-ho-ho!
+NPC_SUKATANKU: Chaw-haw!
+
+== m23a0301 (D25P11A) ==
+NPC_PERAPPU: This is Brine Cave's entrance.
+NPC_PERAPPU: We got sent back.
+
+== m23a0401 (D25P11A) ==
+NPC_PERAPPU: We'll make it through this time!
+
+== m23a0402 (D26P21A) ==
+-: Would you like to go on?
+
+== m23a0501 (D26P21A) ==
+NPC_PERAPPU: We're nearly there.
+ATTENDANT1: Yep. We can't get careless.
+ATTENDANT1: Ow!
+ATTENDANT1: Ouch!
+NPC_DOGAASU: Whoops! Excuuuse me!
+ATTENDANT1: Hey!
+NPC_DOGAASU: Whoa-ho! Long time, weaklings!
+NPC_PERAPPU: Oh, you're that nice team...eh?
+NPC_SUKATANKU: This is it? The Relic Fragment?
+ATTENDANT1: Th-that's...!
+NPC_SUKATANKU: Chaw-haw-haw! I'll take this!
+ATTENDANT1: Hey!
+NPC_PERAPPU: Why are you even here?
+NPC_PERAPPU: I fretted for your well-being!
+NPC_SUKATANKU: Worried, huh...? Chaw-haw-haw!
+NPC_PERAPPU: Oh-oh-oh?!
+ATTENDANT1: Chatot!
+NPC_PERAPPU: Wha-wha-what?! Is that true?!
+NPC_DOGAASU: Whoa-ho! What else?
+NPC_PERAPPU: Squawk! Sq-sq-squawk!
+ATTENDANT1: Hey! Wait! Chatot!
+ATTENDANT1: Oh! Wait! Chatot!
+ATTENDANT1: H-he's gone!
+ATTENDANT1: We should hurry too!
+
+== m23a0701 (D26P31A) ==
+-: Gggh...
+ATTENDANT1: Hey! I heard a voice over there!
+ATTENDANT1: Let's check it out, !
+ATTENDANT1: Let's go, !
+ATTENDANT1: Hey! It's Team Skull!
+ATTENDANT1: Wow! It's Team Skull!
+ATTENDANT1: Oh! It's Team Skull!
+NPC_SUKATANKU: Urggghhh...
+ATTENDANT1: Wh-what happened here?!
+ATTENDANT1: Wh-what happened to you guys?!
+ATTENDANT1: Wh-what happened to you?!
+NPC_ZUBATTO: Not that you'd...tell us...heh-heh.
+ATTENDANT1: Skuntank! Are you all right?!
+ATTENDANT1: Huh? Chatot did what?!
+ATTENDANT1: Pardon?! Chatot did what?!
+NPC_SUKATANKU: Here's what he did!
+NPC_SUKATANKU: But...if you think about it...
+ATTENDANT1: You still look pretty badly hurt.
+NPC_SUKATANKU: Chaw-haw-haw...haw-haw...
+ATTENDANT1: Hey! The Relic Fragment!
+NPC_SUKATANKU: Chaw-haw...and I can't move yet.
+ATTENDANT1: Skuntank...
+ATTENDANT1: Skuntank... Thanks.
+NPC_SUKATANKU: Humph. Why thank me?
+ATTENDANT1: That's right! Where is Chatot?
+NPC_SUKATANKU: You two hurry up and go too.
+ATTENDANT1: Thanks, Skuntank.
+ATTENDANT1: Let's go, .
+ATTENDANT1: We have to go, .
+ATTENDANT1: Let's go, .
+NPC_SUKATANKU: ...You two, can you move?
+NPC_DOGAASU: Whoa-ho... You can't be serious!
+NPC_SUKATANKU: So that's it...
+NPC_DOGAASU: Whoa-ho-ho...but, Chief...
+NPC_SUKATANKU: Shut it... Chaw-haw-haw...
+NPC_SUKATANKU: Shut up... Chaw-haw-haw...
+
+== m23a0703 (D26P43A) ==
+NPC_PERAPPU: Hmmm. You two!
+NPC_PERAPPU: Be alert! They're very close by!
+NPC_PERAPPU: (What is this...?)
+NPC_PERAPPU: (An odd sense of foreboding!)
+NPC_PERAPPU: (That's it!)
+
+== m23a0704 (V23P01A) ==
+-: Grrrrrr...
+
+== m23a0706 (D26P43A) ==
+NPC_PERAPPU: They're above us!
+ATTENDANT1: What?!
+ATTENDANT1: Wah...
+-: I am Kabutops!
+-: And the Omastar brothers!
+ATTENDANT1: Waaaaah!
+NPC_PERAPPU: Urrgghh...
+ATTENDANT1: Ch-Chatot!
+NPC_KABUTOPUSU: Wh-what?!
+NPC_KABUTOPUSU: That's not what I'd call smart.
+NPC_OMUSUTAA: Hey! I remember!
+NPC_KABUTOPUSU: Ha ha ha!
+NPC_PERAPPU: Urrgghh... Say what you will...
+NPC_PERAPPU: They're...our prized recruits!
+NPC_PERAPPU: I won't let you harm them!
+ATTENDANT1: Ch-Chatot...
+NPC_PERAPPU: Urrgghh...
+ATTENDANT1: Chatot!
+NPC_KABUTOPUSU: Ha ha ha!
+NPC_KABUTOPUSU: It's your turn next!
+NPC_KABUTOPUSU: Take THIS!
+
+== m23a0801 (D26P43A) ==
+NPC_KABUTOPUSU: You again!
+NPC_KABUTOPUSU: Take THIS!
+
+== m23a0901 (D26P43A) ==
+NPC_OMUSUTAA: Eep...
+NPC_OMUSUTAA2: Erf...
+NPC_KABUTOPUSU: Aiyeeeh!
+ATTENDANT1: Chatot!
+NPC_PERAPPU: Urf...
+-: Chatot!
+NPC_PERAPPU: That voice... Guildmaster...
+NPC_DOGOOMU: Guildmaster!
+NPC_DOGOOMU: WAAH! Grovyle!
+NPC_PUKURIN: Chatot!
+NPC_BIPPA: Golly! He's hurt!
+NPC_PERAPPU: Ha ha ha... I'm fine...
+NPC_PUKURIN: Chatot!
+NPC_PERAPPU: But...this is so humiliating!
+NPC_PUKURIN: That isn't true, Chatot!
+NPC_PUKURIN: The last time we came here...
+NPC_PERAPPU: Excuse me...?
+NPC_PUKURIN: I owe my life to Chatot.
+NPC_PERAPPU: That's...what happened?
+NPC_PUKURIN: Chatot, you are...
+NPC_PUKURIN: my invaluable partner.
+NPC_PERAPPU: I'm...such a happy Pokémon...
+NPC_PERAPPU: ...Pfft.
+NPC_DOGOOMU: WHOA, Chatot!
+NPC_CHIRIIN: Chatot!
+NPC_JUPUTORU: Everyone, stay calm!
+NPC_JUPUTORU: ...Yes. He'll live.
+ATTENDANT1: But...!
+NPC_PUKURIN: Don't worry about it.
+ATTENDANT1: Urf...
+NPC_PUKURIN: The strange pattern is up ahead.
+NPC_PUKURIN: Now, hurry.
+ATTENDANT1: ...Yup.
+ATTENDANT1: ...OK.
+ATTENDANT1: Let's go, .
+NPC_PUKURIN: Good luck! Find the Hidden Land!
+
+== m23a1001 (P11P01A) ==
+NPC_JUPUTORU: Wigglytuff brought me.
+ATTENDANT1: Huh? Wigglytuff did?
+ATTENDANT1: What? Wigglytuff did?
+ATTENDANT1: Pardon? Wigglytuff did?
+ATTENDANT1: Awesome!
+ATTENDANT1: Yes!
+ATTENDANT1: Whoa! There's water here!
+ATTENDANT1: Wow! There's water here!
+ATTENDANT1: ...Wait a second. It's seawater!
+ATTENDANT1: ...Hold on. This is seawater!
+ATTENDANT1: Look at that, !
+
+== m23a1003 (P11P01A) ==
+PLAYER: (Oh! That's...)
+ATTENDANT1: Huh? , what's up?
+ATTENDANT1: Hey! Look at this!
+ATTENDANT1: I'll bring out the Relic Fragment.
+ATTENDANT1: Hey! The Relic Fragment!
+ATTENDANT1: Oh! The Relic Fragment!
+ATTENDANT1: Waaah!
+
+== m23a1007 (V23P04A) ==
+NPC_JUPUTORU: What... What was that?
+ATTENDANT1: A beam of light shot out to sea...
+ATTENDANT1: What's that out there...?
+ATTENDANT1: ...Huh? That's...
+ATTENDANT1: ...What? That's...
+
+== m23a1008 (P11P01A) ==
+NPC_RAPURASU: ... ...
+NPC_RAPURASU: and Grovyle...correct?
+ATTENDANT1: You know our names?
+NPC_RAPURASU: Yes.
+NPC_RAPURASU: I was informed by Wigglytuff.
+ATTENDANT1: W-Wigglytuff told you?
+ATTENDANT1: You appeared right after that.
+ATTENDANT1: And then you appeared.
+ATTENDANT1: Can you tell me who you are?
+NPC_RAPURASU: It is beyond the sea.
+NPC_JUPUTORU: ! !
+NPC_JUPUTORU: Let's go! Beyond the sea!
+
+== m24a0103 (G01P04C) ==
+NPC_CHIRIIN: Oh! Guildmaster!
+NPC_PUKURIN: Yep! ♪
+NPC_DOGOOMU: YEAH!
+NPC_DIGUDA: I'm glad to hear that!
+NPC_KIMAWARI: Guildmaster...?
+NPC_PUKURIN: What is it, Sunflora?
+NPC_PUKURIN: Yep! This is what happened...
+
+== m24a0104 (V23P01A) ==
+NPC_PERAPPU: Guildmaster! Watch out!
+
+== m24a0105 (G01P04C) ==
+NPC_PUKURIN: That was when Lapras appeared.
+NPC_KIMAWARI: Lapras?
+NPC_PUKURIN: Yep. Lapras.
+NPC_PUKURIN: Lapras saved Chatot.
+
+== m24a0106 (V24P01A) ==
+NPC_RAPURASU: I simply had to help.
+NPC_RAPURASU: Afterward...
+ATTENDANT1: A promise?
+NPC_RAPURASU: Yes.
+
+== m24a0107 (G01P04C) ==
+NPC_PUKURIN: So he said to us...
+
+== m24a0108 (V24P01A) ==
+ATTENDANT1: So that's what happened.
+ATTENDANT1: A gap in time?
+NPC_RAPURASU: Yes. It is hard to explain, but...
+NPC_JUPUTORU: A gap in time...
+
+== m24a0109 (G01P04C) ==
+NPC_PUKURIN: Because I had to see Lapras.
+
+== m24a0111 (G01P04C) ==
+NPC_KIMAWARI: So...what happened?
+NPC_PUKURIN: Lapras revealed it to me.
+NPC_CHIRIIN: It chooses. On its own?
+NPC_PUKURIN: Yep. Apparently so! ♪
+NPC_PUKURIN: I don't really know.
+
+== m24a0202 (V24P02A) ==
+NPC_RAPURASU: Yes?
+NPC_RAPURASU: I'm fine, .
+NPC_RAPURASU: See! It's coming into view!
+ATTENDANT1: Huh?
+ATTENDANT1: What?
+
+== m24a0204 (V24P04A) ==
+NPC_JUPUTORU: It's true!
+ATTENDANT1: Lapras! Wh-what is that?!
+NPC_RAPURASU: The edge of the gap in time.
+
+== m24a0205 (V24P03A) ==
+NPC_RAPURASU: OK! Here we go!
+ATTENDANT1: Whoa! Lapras!
+ATTENDANT1: Waah! Lapras!
+ATTENDANT1: Lapras is flying!
+NPC_JUPUTORU: No! That's not it!
+NPC_JUPUTORU: This... This isn't flying!
+NPC_JUPUTORU: We're crossing the sea of time!
+
+== m24a0206 (V24P05A) ==
+NPC_JUPUTORU: Lapras...!
+NPC_JUPUTORU: Is that it?!
+NPC_JUPUTORU: Is that the Hidden Land?!
+NPC_RAPURASU: Yes! That's the Hidden Land!
+NPC_RAPURASU: We're going in!
+
+== m24a0301 (D27P11A) ==
+NPC_JUPUTORU: We finally made it here.
+NPC_RAPURASU: Please...look ahead.
+ATTENDANT1: Hey! What's that?!
+ATTENDANT1: Oh! What's that?!
+NPC_JUPUTORU: Is that... Is that perhaps...
+NPC_RAPURASU: Yes. It's Temporal Tower.
+NPC_JUPUTORU: ...That's where Dialga is...
+ATTENDANT1: But... Take a closer look...
+ATTENDANT1: But...if you take a close look...
+NPC_JUPUTORU: The Rainbow Stoneship?
+ATTENDANT1: Thank you, Lapras!
+ATTENDANT1: OK!
+ATTENDANT1: Grovyle! !
+
+== m24a0501 (D27P11A) ==
+NPC_JUPUTORU: We've come too far to give up.
+NPC_JUPUTORU: We'll take on the challenge again.
+
+== m24a0601 (D28P21A) ==
+-: Would you like to go on?
+
+== m24a0701 (D28P21A) ==
+NPC_JUPUTORU: We've come this far.
+
+== m24a0801 (D28P31A) ==
+ATTENDANT1: Yeah, that's right!
+ATTENDANT1: Yup, that's right!
+ATTENDANT1: Let's get in there!
+ATTENDANT1: Let's go in there!
+ATTENDANT1: Let's get in there!
+
+== m24a0802 (D28P32A) ==
+ATTENDANT1: Let's head up these stairs.
+
+== m24a0803 (D28P33A) ==
+NPC_JUPUTORU: This appears to be the top.
+ATTENDANT1: Hey! Look here!
+NPC_JUPUTORU: The strange pattern is here too.
+ATTENDANT1: What's it for...?
+ATTENDANT1: I wonder what it's for...?
+PLAYER: (Oh? What's that...?)
+NPC_JUPUTORU: Hm? What is it, ?
+PLAYER: (There's a stone tablet...)
+PLAYER: (There seems to be something inscribed here.)
+PLAYER: (What are these...? These strange runes...?)
+ATTENDANT1: Can you read it, Grovyle?
+ATTENDANT1: You can read that, Grovyle?
+ATTENDANT1: Really?! Great! Quick! Read it!
+ATTENDANT1: ...So, Grovyle?
+ATTENDANT1: Huh?! This is it?!
+ATTENDANT1: What?! This is it?!
+ATTENDANT1: Pardon?! This is it?!
+NPC_JUPUTORU: Yeah. That's right.
+NPC_JUPUTORU: There is an indentation there.
+NPC_JUPUTORU: Here it is.
+NPC_JUPUTORU: .
+NPC_JUPUTORU: This is where it goes.
+ATTENDANT1: Really?!
+NPC_JUPUTORU: Try it and see.
+ATTENDANT1: OK!
+ATTENDANT1: I'll fit it into this hollow spot!
+-: That's quite enough of that.
+NPC_JUPUTORU: Who...who's there?!
+NPC_YAMIRAMI: Wheh-heh-heh.
+ATTENDANT1: The Sableye!
+NPC_YONOWAARU: Ha-ha-ha! Hoo-hoo-ha!
+ATTENDANT1: D-Dusknoir!
+NPC_JUPUTORU: How did you get here?!
+NPC_YONOWAARU: Humph... Quite simple, actually.
+NPC_JUPUTORU: Urgh...
+NPC_YONOWAARU: Sableye: Wheh-heh-heh!
+
+== m24a0804 (D28P44A) ==
+NPC_YONOWAARU: Sableye!
+NPC_YONOWAARU: Sableye: Wheh-heh-heh!
+ATTENDANT1: ...Yeah?
+ATTENDANT1: ...Yes?
+ATTENDANT1: ...Yep?
+PLAYER: (...I'm with you!)
+PLAYER: Sableye: Gyaaaah!
+NPC_JUPUTORU: You expected anything less?
+NPC_YONOWAARU: Humph. You leave me no choice.
+NPC_JUPUTORU: Urgh...
+NPC_YONOWAARU: Show me!
+NPC_YONOWAARU: Swarm them!
+
+== m24a0901 (D28P21A) ==
+NPC_YAMIRAMI: Wheh-heh...heh?
+NPC_YONOWAARU: They vanished?! No, that isn't it.
+NPC_YONOWAARU: They just managed to retreat.
+NPC_YONOWAARU: They will return. They have to.
+ATTENDANT1: Urk! This isn't easy at all.
+ATTENDANT1: Urk! This is really challenging.
+ATTENDANT1: Urk! It's really tough.
+NPC_JUPUTORU: We will get through this time.
+
+== m24a1001 (D28P44A) ==
+NPC_YONOWAARU: How deliciously convenient.
+NPC_JUPUTORU: Urgh...
+NPC_YONOWAARU: This time...
+NPC_YONOWAARU: This is it!
+
+== m25a0101 (D28P44A) ==
+NPC_YONOWAARU: I... I... I...
+NPC_YONOWAARU: I...refuse to lose!
+NPC_JUPUTORU: Gwah!
+ATTENDANT1: Urf...
+NPC_YONOWAARU: Humph. So foolhardy.
+NPC_YONOWAARU: You dared to challenge me?
+NPC_YONOWAARU: For all the effort in the world...
+ATTENDANT1: Ugh... Dusknoir is truly tough.
+ATTENDANT1: That's easy for you to say...
+NPC_YONOWAARU: But it's all over now.
+NPC_YONOWAARU: This is...the end!
+NPC_JUPUTORU: H-he's going to do something!
+PLAYER: (Is he going to unleash a move on us?!)
+PLAYER: (From that mouth on his stomach?!)
+PLAYER: (Wait a second... The mouth on his stomach?!)
+PLAYER: (Th-that's it! This could work!)
+NPC_JUPUTORU: What is it, ?!
+ATTENDANT1: Wh-what?!
+NPC_JUPUTORU: Is that possible?!
+NPC_YONOWAARU: TAKE THIS!
+ATTENDANT1: Now! Go!
+NPC_YONOWAARU: GWAAAAAAAAAAH!
+
+== m25a0201 (D28P44A) ==
+ATTENDANT1: We...did it...
+NPC_JUPUTORU: Dusknoir is...down...
+NPC_JUPUTORU: We've finally beaten Dusknoir!
+NPC_YAMIRAMI: Wheh... It can't be...
+NPC_YAMIRAMI2: Wheeh... Lord Dusknoir...
+NPC_YAMIRAMI5: Lord Dusknoir...was defeated!
+NPC_YAMIRAMI4: Wheeeeh!
+NPC_JUPUTORU: Humph. Your Sableye ran off.
+NPC_YONOWAARU: Urgggh...
+NPC_JUPUTORU: .
+ATTENDANT1: What is it?
+NPC_JUPUTORU: Go to the top of the temple.
+ATTENDANT1: All right. I'll go do that.
+ATTENDANT1: OK. I'll go do that.
+NPC_JUPUTORU: I hope it activates...
+NPC_YONOWAARU: Urgggh...
+NPC_JUPUTORU: Don't move!
+NPC_YONOWAARU: Is this really...
+NPC_YONOWAARU: Is this what you really want?
+PLAYER: (Wh-what?)
+NPC_YONOWAARU: It won't be just me.
+PLAYER: (If we change history, we'll disappear too?!)
+PLAYER: (Is Dusknoir...)
+PLAYER: (Is Dusknoir telling...the truth?)
+PLAYER: (Grovyle!)
+NPC_JUPUTORU: ...It's true, .
+PLAYER: (G-Grovyle!)
+NPC_JUPUTORU: But...that doesn't matter...
+PLAYER: (Even Celebi?)
+PLAYER: (Oh! I recall, when we were in the future...)
+
+== m25a0203 (D28P44A) ==
+NPC_JUPUTORU: The planet's paralysis will begin.
+NPC_JUPUTORU: Try to understand, .
+PLAYER: (...So that's how it was...)
+PLAYER: (I came to this world...with such a resolve...)
+PLAYER: (But...)
+PLAYER: (That means...we have to do it.)
+PLAYER: (Even if that means I must disappear.)
+NPC_JUPUTORU: Oh, ...
+NPC_JUPUTORU: But...there's just one thing...
+NPC_JUPUTORU: looks up to you.
+NPC_JUPUTORU: has a good spirit.
+NPC_JUPUTORU: But...
+NPC_JUPUTORU: left all alone.
+PLAYER: (I finally understand.)
+PLAYER: (If I change history...I will disappear.)
+PLAYER: (If I disappear...  will be...)
+PLAYER: (...)
+
+== m25a0301 (D28P33A) ==
+ATTENDANT1: Whoa! It moved! It moved!
+ATTENDANT1: Waah! It moved! It moved!
+
+== m25a0302 (D28P44A) ==
+PLAYER: (Wh-what was that...?)
+NPC_JUPUTORU: 's done it!
+NPC_YONOWAARU: ...Gwoh!
+NPC_YONOWAARU: GWWWOOOOOHHHH!
+PLAYER: (Gwah!)
+PLAYER: (Waah!)
+NPC_JUPUTORU: Urrgggghhh!
+PLAYER: (Grovyle!)
+NPC_YONOWAARU: That's taken a heavy toll on you!
+NPC_JUPUTORU: Uwroh... Wrooooooooh!
+NPC_YONOWAARU: Wh-what are you doing?!
+NPC_JUPUTORU: Urrggh... Dusknoir!
+NPC_JUPUTORU: I'm... I'm taking you with me...
+NPC_JUPUTORU: We're going back to the future!
+NPC_YONOWAARU: Wha...
+PLAYER: (What?!)
+NPC_YONOWAARU: Gah! Those are...!
+PLAYER: (Time Gears!)
+ATTENDANT1: Wha...what's going on?!
+ATTENDANT1: Wha...what's happening?!
+NPC_JUPUTORU: ! This is it for me!
+ATTENDANT1: Huh?! Wh-what?!
+ATTENDANT1: B-but...!
+NPC_YONOWAARU: Gwoh! Unhand me! Release me!
+NPC_JUPUTORU: We're almost there! Quiet!
+NPC_JUPUTORU: ...!
+NPC_JUPUTORU: Take care, .
+NPC_JUPUTORU: I was lucky to have known you.
+PLAYER: (Grovyle!)
+NPC_JUPUTORU: Sorry for the holdup, Dusknoir!
+NPC_YONOWAARU: Gwaaaaaaah!
+ATTENDANT1: Ugh... Grovyle... Why...?
+PLAYER: (Grovyle...)
+PLAYER: (It's getting louder!)
+PLAYER: (...The Rainbow Stoneship...)
+PLAYER: (It looks like it's gonna move...)
+PLAYER: (It looks like it's ready to go...)
+ATTENDANT1: ...Grovyle...
+ATTENDANT1: ...Sigh...
+ATTENDANT1: ...It's sad...
+ATTENDANT1: ...So sad...
+ATTENDANT1: ...But...
+PLAYER: (Right...)
+PLAYER: (If we don't hurry...)
+PLAYER: (...Grovyle...)
+PLAYER: (I may be sad... But right now...)
+PLAYER: (Even though I'm sad... I have to do this...)
+ATTENDANT1: ..................
+ATTENDANT1: We gotta go...
+ATTENDANT1: We'd better go...
+ATTENDANT1: We should go...
+ATTENDANT1: ...The Time Gears...
+PLAYER: (But...)
+PLAYER: (What Dusknoir said...)
+
+== m25a0901 (D30P21A) ==
+-: Would you like to go on?
+
+== m25a1101 (D30P41A) ==
+ATTENDANT1: GRRRRRRRRR...
+-: SO! IT'S YOU!
+ATTENDANT1: What?! That's not true!
+ATTENDANT1: What?! You're wrong!
+ATTENDANT1: What?! That's not true!
+-: TIME...STOPPING...
+-: TIME... GRRR-OOOOOO!
+ATTENDANT1: D-Dialga!
+NPC_DARK_DIARUGA: GRRR-OOOOOO!
+ATTENDANT1: No! You've got it wrong!
+ATTENDANT1: No! That's wrong!
+ATTENDANT1: No! That's not it!
+NPC_DARK_DIARUGA: SILENCE! GRRR-OOOOOO!
+NPC_DARK_DIARUGA: I WILL SHOW NO MERCY!
+NPC_DARK_DIARUGA: GRRR-OOOOOO...OOOOOH!
+ATTENDANT1: It's no use, !
+ATTENDANT1: He won't listen to us!
+ATTENDANT1: He's not listening to us at all!
+PLAYER: (But...)
+PLAYER: (This isn't like Primal Dialga in the future...)
+PLAYER: (There's still hope!)
+ATTENDANT1: H-here he comes, !
+NPC_DARK_DIARUGA: GRRR-OOOOOO!
+
+== m25a1201 (D30P41A) ==
+PLAYER: (Dialga's taken on more darkness!)
+PLAYER: (That darkness will soon consume him!)
+PLAYER: (We have to stop it!)
+PLAYER: (For the world! For the future!)
+ATTENDANT1: H-here he comes, !
+NPC_DARK_DIARUGA: GRRR-OOOOOO...OOOOOH!
+
+== m25d0212 (D28P44A) ==
+NPC_YONOWAARU: Is this really...
+NPC_YONOWAARU: Is this what you really want?
+
+== m26a0101 (D30P41A) ==
+NPC_DARK_DIARUGA: GRRR-OOOOOO...OOOOOH!
+ATTENDANT1: We...did it...
+NPC_DARK_DIARUGA: GRR... GRRRRRR...
+ATTENDANT1: OK, ! It's time!
+ATTENDANT1: Wa-waah!
+ATTENDANT1: Th-this...
+PLAYER: (T-Temporal Tower is...)
+PLAYER: (If... If that were to happen...)
+
+== m26a0201 (D30P32A) ==
+NPC_DIARUGA: THIS IS...TEMPORAL TOWER.
+ATTENDANT1: Wah! Dialga!
+ATTENDANT1: Huh?
+ATTENDANT1: What?
+NPC_DIARUGA: BUT IT HAS SURVIVED.
+NPC_DIARUGA: NOW, OBSERVE.
+
+== m26a0308 (D30P32A) ==
+ATTENDANT1: R-really?!
+ATTENDANT1: We did it, !
+ATTENDANT1: We finally did it!
+ATTENDANT1: We brought peace to the world!
+NPC_DIARUGA: ALLOW ME TO THANK YOU.
+ATTENDANT1: D-Dialga...
+ATTENDANT1: OK!
+ATTENDANT1: Let's go home, !
+ATTENDANT1: Back to Treasure Town!
+
+== m26a0503 (P12P01A) ==
+ATTENDANT1: finally succeeded in their mission...
+ATTENDANT1: and saved the world from disaster.
+ATTENDANT1: rode Lapras across the sea...
+
+== m26a0505 (G01P01A) ==
+-: Upon returning to the guild...
+
+== m26a0506 (T01P01A) ==
+-: to as many Pokémon as possible.
+-: It was a story that had to be told.
+-: It was a story of hope for world peace.
+-: It was a story of hope for future peace.
+-: So months passed...
+-: and life gradually returned to normal...
+
+== m26a0601 (G01P01B) ==
+ATTENDANT1: Yup. Out for a walk.
+ATTENDANT1: Yes. Out for a walk.
+ATTENDANT1: Yep. Out for a walk.
+NPC_BIPPA: Sounds nice, yup yup!
+ATTENDANT1: Yep. I hear you.
+ATTENDANT1: OK. Understood.
+ATTENDANT1: Yep. I hear you.
+
+== m26a0615 (D01P11B) ==
+NPC_BIPPA: Wah! !
+NPC_BIPPA: Wh-what's the matter?
+ATTENDANT1: B-Bidoof! Bidoof!
+ATTENDANT1: Waaaah!
+
+== m26a06d3 (P05P03A) ==
+NPC_JUPUTORU: Now! Attack!
+ATTENDANT1: Go!
+NPC_YAMIRAMI: Gwah!
+
+== m26a0803 (D30P32A) ==
+NPC_DIARUGA: .
+NPC_DIARUGA: WHEN YOU LEFT HERE...
+NPC_DIARUGA: I WILL GRANT YOUR WISH.
+NPC_DIARUGA: THE WORLD NEEDS YOU BOTH.
+NPC_DIARUGA: I LEAVE TO YOU...THE FUTURE!
+
+== m26a0804 (V26P07A) ==
+NPC_DIARUGA: THIS IS MY THANKS!
+NPC_DIARUGA: PLEASE ACCEPT IT!
+-: GRRR-OOOOOO...OOOOOH!
+
+== m99a0103 (D05P31A) ==
+-: This appears to be the end of the dungeon.
+
+== m99a0104 (D10P41A) ==
+NPC_YUKUSHII: Very well.
+NPC_YUKUSHII: Your challenge...
+NPC_YUKUSHII: I accept it!
+NPC_YUKUSHII: Come!
+
+== m99a0105 (D10P41A) ==
+NPC_YUKUSHII: ..................
+NPC_YUKUSHII: Uxie wants to join the team.
+NPC_NEW_FRIEND: We'll go together from now on!
+NPC_NEW_FRIEND: My future is with you!
+-: joined the team!
+-: Uxie sadly went away...
+
+== m99a0106 (D10P41A) ==
+-: There appears to be no one here.
+
+== m99a0107 (D12P41A) ==
+-: There appears to be no one here.
+
+== m99a0108 (D15P41A) ==
+NPC_EMURITTO: How amusing...
+NPC_EMURITTO: This challenge of yours...
+NPC_EMURITTO: I accept it!
+NPC_EMURITTO: Come on!
+
+== m99a0109 (D15P41A) ==
+NPC_EMURITTO: ...I...I lost.
+NPC_EMURITTO: Mesprit wants to join the team.
+NPC_NEW_FRIEND: Oh, all right... I'll go too.
+NPC_NEW_FRIEND: I'll go with you!
+NPC_NEW_FRIEND: joined the team!
+NPC_NEW_FRIEND: Mesprit sadly went away...
+
+== m99a0110 (D15P41A) ==
+-: There appears to be no one here.
+
+== m99a0111 (D17P45A) ==
+NPC_AGUNOMU: I know why you're here.
+NPC_AGUNOMU: Sure thing.
+NPC_AGUNOMU: Your challenge...
+NPC_AGUNOMU: I'm up for it!
+NPC_AGUNOMU: Come on!
+
+== m99a0112 (D17P45A) ==
+NPC_AGUNOMU: ..................
+NPC_AGUNOMU: Azelf wants to join the team.
+NPC_NEW_FRIEND: I'll go with you!
+NPC_NEW_FRIEND: We'll all go together!
+NPC_NEW_FRIEND: joined the team!
+NPC_NEW_FRIEND: Azelf sadly went away...
+
+== m99a0113 (D17P45A) ==
+-: There appears to be no one here.
+
+== m99a0114 (D24P31A) ==
+-: This appears to be the end of the dungeon.
+
+== m99a0115 (D26P43A) ==
+-: There appears to be no one here.
+
+== m99a0116 (D30P41A) ==
+NPC_DIARUGA: GRRR-OOOOOO...OOOOOH!
+NPC_DIARUGA: SO BE IT!
+NPC_DIARUGA: YOUR CHALLENGE...I ACCEPT!
+NPC_DIARUGA: HOWEVER!
+NPC_DIARUGA: GRRR-OOOOOO!
+
+== m99a0117 (D30P41A) ==
+NPC_DIARUGA: ..................
+NPC_DIARUGA: Dialga wants to join the team.
+NPC_NEW_FRIEND: joined the team!
+NPC_NEW_FRIEND: Dialga sadly went away...
+
+== m99a0118 (D30P41A) ==
+-: There appears to be no one here.
+
+== m99a0119 (D31P31A) ==
+-: This appears to be the end of the dungeon.
+
+== m99a0120 (D36P41A) ==
+-: This appears to be the end of the dungeon.
+
+== m99a0122 (D39P41A) ==
+NPC_PARUKIA: Palkia wants to join the team.
+NPC_NEW_FRIEND: ...YOU DEFEATED ME.
+NPC_NEW_FRIEND: joined the team!
+NPC_NEW_FRIEND: Palkia sadly went away...
+
+== m99a0123 (D39P41A) ==
+-: There appears to be no one here.
+
+== m99a0124 (D41P41A) ==
+-: There appears to be no one here.
+
+== m99a0129 (D80P41A) ==
+-: Thank you, Gabite!
+
+== m99a0141 (D42P42A) ==
+-: There appears to be no one here.
+
+== m99a0142 (D63P41A) ==
+-: examined the statue!

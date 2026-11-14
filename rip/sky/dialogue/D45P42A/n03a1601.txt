@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_AAMARUDO	Talk	Be careful!
+NPC_AAMARUDO	Talk	UWAAAAAaaaaaaahhhhhh!
+NPC_AAMARUDO	ImitationSound	???: GARURURURURURURURURURURU...
+NPC_AAMARUDO	ImitationSound	???: GWWWOOOOOOAAAaaaaaAAAAAHHHH!!!
+PLAYER_PUPURIN	Talk	Hey, Master.
+NPC_AAMARUDO	Talk	Wh-what is it? Can it wait?!
+PLAYER_PUPURIN	Talk	We fell in the pit again...
+PLAYER_PUPURIN	Talk	We'll get through this time! ♪
+NPC_AAMARUDO	Talk	That's what I expected!

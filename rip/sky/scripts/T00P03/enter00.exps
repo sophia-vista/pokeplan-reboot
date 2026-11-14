@@ -1,0 +1,44 @@
+
+def 0 {
+    debug_Print('ENTER_T00P03');
+    if ( debug ) {
+        @label_0;
+        back_SetGround(LEVEL_T00P03);
+        switch ( $GROUND_GETOUT ) {
+            case 1:
+                supervision_StationCommon(3);
+                @label_3;
+                supervision_StationCommon(0);
+                screen_FadeOutAll(1, 0);
+                JumpCommon(CORO_COMMON_ENTER);
+            case 2:
+                supervision_StationCommon(4);
+                jump @label_3;
+            default:
+                supervision_StationCommon(1);
+                jump @label_3;
+        }
+    } else {
+        hold;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    SetAnimation(2);
+    WaitFadeIn();
+    end;
+}
+
+def 2 for actor ACTOR_ATTENDANT1 {
+    SetAnimation(2);
+    WaitFadeIn();
+    end;
+}
+
+def 3 for object 65535 {
+    @label_4;
+    SetAnimation(17);
+    WaitAnimation();
+    Wait(240);
+    jump @label_4;
+}

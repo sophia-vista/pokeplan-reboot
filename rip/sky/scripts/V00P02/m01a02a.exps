@@ -1,0 +1,58 @@
+
+def 0 {
+    back2_SetMode(0);
+    screen_FadeOut(1, 30);
+    back_SetBanner2(LEVEL_G01P01C, 1, 240, 80, -1, {
+        english="""
+            Final
+            Banner
+            Test
+        """,
+    });
+    screen_FadeIn(1, 30);
+    Wait(120);
+    screen_FadeOut(1, 30);
+    back_SetSpecialEpisodeBanner3(1, {
+        english="Special Banner Test 3",
+    });
+    screen_FadeIn(1, 30);
+    Wait(120);
+    screen_FadeOutAll(1, 30);
+    back_SetGround(LEVEL_S04P01A);
+    screen_FadeOut(1, 0);
+    screen_FadeInAll(1, 0);
+    back_SetSpecialEpisodeBanner2(1, {
+        english="Special Banner Test 2",
+    });
+    Wait(120);
+    screen_FadeOutAll(1, 30);
+    back_SetGround(LEVEL_S04P01A);
+    screen_FadeOut(1, 0);
+    screen_FadeInAll(1, 0);
+    back_SetSpecialEpisodeBanner(1, {
+        english="Special Banner Test 1",
+    });
+    Wait(120);
+    screen_FadeOut(1, 30);
+    back_SetBanner(-1, 5);
+    screen_FadeIn(1, 30);
+    Wait(120);
+    screen_FadeOut(1, 30);
+    back_SetTitleBanner(56, {
+        english="""
+            A Tale of an
+            Exploration Team
+        """,
+    });
+    screen_FadeIn(1, 30);
+    Wait(120);
+    screen_FadeOut(1, 30);
+    back_SetDungeonBanner(10, -1);
+    screen_FadeIn(1, 30);
+    Wait(120);
+    screen_FadeOut(1, 30);
+    back_SetGround(32767);
+    back2_SetMode(-1);
+    supervision_ExecuteStation(LEVEL_T00P01, 'M01A01', 0);
+    hold;
+}

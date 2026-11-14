@@ -1,0 +1,13 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	...We...
+PLAYER_FUTURE	Talk	We...truly...are still here...
+NPC_SEREBII	Talk	Wonderful!!
+NPC_SEREBII	Talk	But anyway... Everyone is alive!
+NPC_SEREBII	Talk	Everyone is safe!
+NPC_DARK_DIARUGA	Talk	NO. IT WAS NO MIRACLE.
+PLAYER_FUTURE	Talk	Dialga!
+NPC_YONOWAARU	Talk	Master Dialga!
+NPC_DIARUGA	Talk	AND DURING THAT TIME...
+NPC_YONOWAARU	Talk	M-Master Dialga...
+NPC_DIARUGA	Talk	I TAKE RESPONSIBILITY FOR IT!
+NPC_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!

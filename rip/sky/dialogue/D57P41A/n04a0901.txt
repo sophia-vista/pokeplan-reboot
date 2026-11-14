@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_GOOSUTO	Talk	I told you already!
+NPC_GOOSUTO	Talk	No one has ever caught me!
+NPC_GOOSUTO	Talk	That kind of disappointment...
+NPC_GOOSUTO	Talk	Let's go!

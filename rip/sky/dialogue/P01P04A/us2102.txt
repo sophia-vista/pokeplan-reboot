@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_OKUTAN	Talk	I can't go on like this!
+NPC_OKUTAN	Talk	Oh, Ampharos... My hero...
+NPC_OKUTAN	Talk	Hey, did you already find out?
+NPC_OKUTAN	Talk	I can't even imagine!
+NPC_OKUTAN	Talk	One day, I'll win big!
+NPC_OKUTAN	Talk	It's a wonderful memory.

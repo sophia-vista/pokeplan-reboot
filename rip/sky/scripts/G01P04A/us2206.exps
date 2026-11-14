@@ -1,0 +1,1333 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] || scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Ah, you two! ♪",
+        });
+        message_Talk({
+            english="""
+                 I do hope you'll work hard and
+                earn good money again today.
+            """,
+        });
+        message_Talk({
+            english="""
+                 The guild certainly appreciates
+                the funding you provide! ♪
+            """,
+        });
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Also...[K] I must thank you for
+                putting a stop to [CS:N]Darkrai[CR]'s wicked scheme! ♪
+            """,
+        });
+        message_Close();
+        @label_129;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_PAIN, FACE_POS_STANDARD);
+        message_Talk({
+            english=" So it was all [CS:N]Darkrai[CR]'s doing...",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The entire crew is investigating
+                the distortion of space.
+            """,
+        });
+        message_Talk({
+            english="""
+                 If you discover anything, share
+                it with us right away.
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 76] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hmm... What would the world of
+                dreams be like...?
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 75] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh?[K] It's possible for you to
+                enter dreams?
+            """,
+        });
+        message_Talk({
+            english="""
+                 That's excellent news![K]
+                Of course, the journey has yet to start...
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Rumor has it that [CS:N]Drowzee[CR] can
+                enter dreams.
+            """,
+        });
+        message_Talk({
+            english="""
+                 If we obtained [CS:N]Drowzee[CR]'s help,
+                it might be possible to enter [CS:N]Azurill[CR]'s dream.
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Ah, you two! ♪",
+        });
+        message_Talk({
+            english="""
+                 I do hope you'll work hard and
+                earn good money again today.
+            """,
+        });
+        message_Talk({
+            english="""
+                 The guild certainly appreciates
+                the funding you provide! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 56] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hee-heeee! ♪[K] How very weak
+                of everyone to get caught up in it all! ♪
+            """,
+        });
+        message_Talk({
+            english="""
+                 Why, I'm positively sure that I
+                could solve that mystery in a jiffy! ♪[K]
+                (Whew! Well...now I am glad I didn't go...)
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 55] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_JOYOUS, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hee-heeee! ♪ My goodness!
+                Everyone gets so smitten by celebrity! ♪[K]
+                (Squawk...if only I could get so silly too...)
+            """,
+        });
+        message_Talk({
+            english="""
+                 Very well, then...! ♪[K]
+                (Squawk! Don't...don't say it...!)
+            """,
+        });
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_SIGH, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I shall remain here and tend to
+                the guild...[K]while everyone else explores! ♪[K]
+                (Squawk! I really want to go too!)
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Ah, you two! ♪",
+        });
+        message_Talk({
+            english="""
+                 I expect you to work hard and
+                earn money for the guild! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 52] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_STUNNED, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Ah, it's you two! How are you
+                holding up?
+            """,
+        });
+        message_Talk({
+            english="""
+                 I know that your parting hurt.
+                But it was the right thing to do for [CS:N]Manaphy[CR].
+            """,
+        });
+        message_Talk({
+            english=" You two did the best you could.",
+        });
+        message_Talk({
+            english="""
+                 I'm sure that [CS:N]Manaphy[CR] won't
+                forget you.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Who knows? He may well come
+                back one day for a visit.
+            """,
+        });
+        message_Talk({
+            english=" ..................",
+        });
+        message_Talk({
+            english="""
+                 I know it's sad. But do cheer up.
+                Tears won't help the hurt.
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" I will look after [CS:N]Manaphy[CR].",
+        });
+        message_Talk({
+            english="""
+                 You two should get moving to
+                the [CS:P]Miracle Sea[CR] and find the [CS:N]Phione[CR].
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" I trust [CS:N]Manaphy[CR] is well?",
+        });
+        message_Talk({
+            english="""
+                 We know precious little about
+                [CS:N]Manaphy[CR].[K] Take good care of that baby.
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I would imagine that [CS:N]Manaphy[CR]
+                is hungry.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Why not give him [CS:I]Blue Gummis[CR]?
+                That's the favorite of Water-type Pokémon.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I believe [CS:I]Blue Gummis[CR] can be
+                found in [CS:P]Craggy Coast[CR].
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Secret Rank?",
+        });
+        message_Talk({
+            english="""
+                 Hmm...[K] What could such a
+                sinister-sounding rank possibly mean for you?
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] || scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] || scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] || scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] || scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] || scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] || scn($SCENARIO_MAIN) >= [29, 8] || scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Well done, you two! Good job!
+                I'm delighted about your graduation from
+                the guild! ♪
+            """,
+        });
+        message_Talk({
+            english="""
+                 Now I'll expect you to keep on
+                doing highly profitable jobs!
+            """,
+        });
+        message_Talk({
+            english="""
+                 The guild certainly appreciates
+                the funding you provide! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_STANDARD);
+        message_Talk({
+            english=" ........................",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Deep in [CS:P]Mystifying Forest[CR] is a
+                special place.
+            """,
+        });
+        message_Talk({
+            english=" It is called [CS:P]Luminous Spring[CR].",
+        });
+        message_Talk({
+            english="""
+                 Your objective is to reach
+                [CS:P]Luminous Spring[CR]...[K]and return with
+                its treasure.
+            """,
+        });
+        message_Talk({
+            english="""
+                 If you can safely return with
+                the treasure, you will pass the exam.
+            """,
+        });
+        message_Talk({
+            english="""
+                 You'll gain official recognition as
+                a first-rate exploration team.
+            """,
+        });
+        message_Talk({
+            english="""
+                 And you will earn the honor of
+                graduating from the guild.
+            """,
+        });
+        message_Talk({
+            english=" I wish you the best of luck! ♪",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I'll be fine now. There's no
+                need for concern! ♪
+            """,
+        });
+        message_Talk({
+            english="""
+                 A much more pressing matter is
+                at hand...[K] I'll trust you with the rest.
+                Now don't fail me!
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [24, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+        Turn2DirectionLives<actor ACTOR_NPC_PERAPPU>(4, 10, ACTOR_PLAYER);
+        se_Play(5122);
+        SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+        WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+        SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+        WaitExecuteLives(ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 There's no giving up! I won't
+                have that!
+            """,
+        });
+        message_Talk({
+            english="""
+                 We're getting to the end next
+                time, no matter what!
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 It's tomorrow that we're off 
+                to [CS:P]Brine Cave[CR].[K] The whole guild is going!
+            """,
+        });
+        message_Talk({
+            english="""
+                 And you two will personally
+                accompany me when we explore tomorrow.
+            """,
+        });
+        message_Talk({
+            english="""
+                 As such, you may not bring
+                nonguild members of Team [team:].
+            """,
+        });
+        message_Talk({
+            english="""
+                 Understood?[K] Now I must insist
+                that you two not slow me down.
+            """,
+        });
+        message_Talk({
+            english="""
+                 So I expect you to fully stock up
+                with supplies in Treasure Town! Get prepared!
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [22, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The wise old [CS:N]Torkoal[CR] loves the
+                Hot Spring.
+            """,
+        });
+        message_Talk({
+            english="""
+                 So the Hot Spring would be the
+                logical place to look for him! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [22, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The wise old [CS:N]Torkoal[CR] loves the
+                Hot Spring.
+            """,
+        });
+        message_Talk({
+            english="""
+                 So the Hot Spring would be the
+                logical place to look for him! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The Job Bulletin Board and
+                Outlaw Notice Board will do today for you.
+            """,
+        });
+        message_Talk({
+            english=" I'll leave you to it! ♪",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [17, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The Job Bulletin Board and
+                Outlaw Notice Board will do today for you.
+            """,
+        });
+        message_Talk({
+            english=" I'll leave you to it! ♪",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [16, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Everyone seems to be having a
+                rough time...
+            """,
+        });
+        message_Talk({
+            english="""
+                 But our guild takes pride in not
+                giving up until the end.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I know that it is challenging. But
+                I need the best out of you!
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [16, 0] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The others have yet to return
+                from [CS:P]Crystal Cave[CR].
+            """,
+        });
+        message_Talk({
+            english="""
+                 I understand that they are
+                scouring the place for clues.
+            """,
+        });
+        message_Talk({
+            english="""
+                 You two shouldn't waste any
+                time joining them.
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [15, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_PAIN, FACE_POS_STANDARD);
+        message_Talk({
+            english=" ...........................",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We are working up a new plan
+                with the great [CS:N]Dusknoir[CR].
+            """,
+        });
+        message_Talk({
+            english="""
+                 Until we devise a new plan, you
+                are free to explore.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Take the time to investigate the
+                whereabouts of other Time Gears.
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Ah, [hero] and
+                [partner]! You've been assigned the task of
+                searching the [CS:P]Northern Desert[CR].
+            """,
+        });
+        message_Talk({
+            english=" I'm counting on you two!",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [14, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 You two should get prepared for
+                exploration.
+            """,
+        });
+        message_Talk({
+            english="""
+                 When you are done, return here
+                for instructions.
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [13, 2] ) {
+        if ( $SCENARIO_TALK_BIT_FLAG[50] ) {
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            se_Play(8964);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_EXCLAMATION_MARK, 3);
+            WaitEffect<actor ACTOR_ATTENDANT1>();
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            Wait(5);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_SURPRISED, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Whoa! No, no, [hero]!",
+                    }
+                case 2:
+                    {
+                        english=" Waah! No, [hero]!",
+                    }
+                default:
+                    {
+                        english=" Waah! No, no, [hero]!",
+                    }
+            }
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             We have to keep our plans to go
+                            to [CS:P]Amp Plains[CR] a secret from [CS:N]Chatot[CR]!
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             We have to keep our plans to go
+                            to [CS:P]Amp Plains[CR] a secret from [CS:N]Chatot[CR]!
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             We have to keep our plans to go
+                            to [CS:P]Amp Plains[CR] a secret from [CS:N]Chatot[CR]!
+                        """,
+                    }
+            }
+            message_Close();
+            jump @label_129;
+        } else {
+            $SCENARIO_TALK_BIT_FLAG[50] = 1;
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+            se_Play(8968);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_SHOCKED, 3);
+            WaitEffect<actor ACTOR_NPC_PERAPPU>();
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_SURPRISED, FACE_POS_BOTTOM_R_FACEINW);
+            message_Talk({
+                english="""
+                     What is it?[K] Are you asking for
+                    time off from work again...?
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8975);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_SURPRISED, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Ack... No, no! It's nothing!",
+                    }
+                case 2:
+                    {
+                        english=" Ack... No, no! It's nothing!",
+                    }
+                default:
+                    {
+                        english=" Ack... No, no! It's nothing!",
+                    }
+            }
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             We'll get back to work like
+                            we're supposed to!
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             We'll get back to work like
+                            we're supposed to!
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             We'll get back to work like
+                            we're supposed to!
+                        """,
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2DirectionLives<actor ACTOR_NPC_PERAPPU>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            se_Play(8962);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_QUESTION_MARK, 3);
+            WaitEffect<actor ACTOR_NPC_PERAPPU>();
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+            message_Talk({
+                english="""
+                     Hmm...[K] I don't know what you're
+                    going on about, but...
+                """,
+            });
+            message_Talk({
+                english="""
+                     No matter![K] I'll simply ask that
+                    you go about jobs for the guild as usual! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_NPC_PERAPPU>(4, 10, DIR_DOWN);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            Wait(5);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            Wait(15);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_WORRIED, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             Urk...[K] We can't tell [CS:N]Chatot[CR] about
+                            going to [CS:P]Amp Plains[CR].
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             Urk...[K] We can't tell [CS:N]Chatot[CR] about
+                            going to [CS:P]Amp Plains[CR].
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             Urk...[K] We can't tell [CS:N]Chatot[CR] about
+                            going to [CS:P]Amp Plains[CR].
+                        """,
+                    }
+            }
+            message_Close();
+            jump @label_129;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [13, 1] ) {
+        if ( $SCENARIO_TALK_BIT_FLAG[49] ) {
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            se_Play(8964);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_EXCLAMATION_MARK, 3);
+            WaitEffect<actor ACTOR_ATTENDANT1>();
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            Wait(5);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            se_Play(8972);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_SURPRISED, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Whoa! No, no, [hero]!",
+                    }
+                case 2:
+                    {
+                        english=" Waah! No, [hero]!",
+                    }
+                default:
+                    {
+                        english=" Waah! No, no, [hero]!",
+                    }
+            }
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             We have to keep our plans to go
+                            to [CS:P]Amp Plains[CR] a secret from [CS:N]Chatot[CR].
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             We have to keep our plans to go
+                            to [CS:P]Amp Plains[CR] a secret from [CS:N]Chatot[CR].
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             We have to keep our plans to go
+                            to [CS:P]Amp Plains[CR] a secret from [CS:N]Chatot[CR].
+                        """,
+                    }
+            }
+            message_Close();
+            jump @label_129;
+        } else {
+            $SCENARIO_TALK_BIT_FLAG[49] = 1;
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+            se_Play(8968);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_SHOCKED, 3);
+            WaitEffect<actor ACTOR_NPC_PERAPPU>();
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_SURPRISED, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     What?[K] You want to take a
+                    holiday from the guild's work today?
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_ANGRY, FACE_POS_STANDARD);
+            message_Talk({
+                english=" You...[K] You must be joking!",
+            });
+            message_Talk({
+                english="""
+                     We're barely making ends meet!
+                    We're short staffed as it is!
+                """,
+            });
+            message_Talk({
+                english="""
+                     A pair of rookies wanting to
+                    slack off...?
+                """,
+            });
+            message_Talk({
+                english=" Now, smarten up!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_NPC_PERAPPU>(4, 10, DIR_DOWN);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            se_Play(8972);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_SAD, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             Urk![K] We got chewed out right
+                            off the bat...
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             Urk![K] We got yelled at right off
+                            the bat...
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             Urk![K] We got yelled at right off
+                            the bat...
+                        """,
+                    }
+            }
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             Then there's no choice.[K] We have
+                            to go out to [CS:P]Amp Plains[CR] without telling [CS:N]Chatot[CR].
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             Then there's no choice.[K] We have
+                            to go out to [CS:P]Amp Plains[CR] without telling [CS:N]Chatot[CR].
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             We have no choice.[K] We'll have
+                            to go to [CS:P]Amp Plains[CR] without telling [CS:N]Chatot[CR].
+                        """,
+                    }
+            }
+            message_Close();
+            jump @label_129;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [12, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_PAIN, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 You two! Oh, just go take some
+                jobs on the Job Bulletin Board and the Outlaw
+                Notice Board...
+            """,
+        });
+        message_Close();
+        Turn2DirectionTurn<actor ACTOR_NPC_PERAPPU>(4, 10, 5);
+        WaitExecuteLives(ACTOR_NPC_PERAPPU);
+        Wait(10);
+        se_Play(8961);
+        SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_SWEAT_DROP, 3);
+        message_Talk({
+            english="""
+                 ...Squawk! ...This won't do...[K]
+                I'd best go gather the Perfect Apples by
+                myself... Squawk!
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [12, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Go to [CS:K]Kecleon[CR] Market and inquire
+                if they will be carrying Perfect Apples in
+                the future.
+            """,
+        });
+        message_Talk({
+            english=" I'll leave you to it! ♪",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [12, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Today you two should look up the
+                Job Bulletin Board and the Outlaw Notice
+                Board.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Handle the jobs listed there.[K]
+                I'll leave you to it! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [10, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh? You haven't seen our
+                Guildmaster? You're wondering where he is?
+            """,
+        });
+        message_Talk({
+            english="""
+                 The Guildmaster has...[K]wandered
+                off somewhere.
+            """,
+        });
+        message_Close();
+        se_Play(5122);
+        SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+        WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+        WaitExecuteLives(ACTOR_NPC_PERAPPU);
+        SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_PAIN, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 It's amazing, really, how little
+                patience he has.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I would imagine he's taking a
+                stroll in the forest without a care in
+                the world.
+            """,
+        });
+        message_Talk({
+            english="""
+                 I imagine he'll come back
+                soon enough.
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [10, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Ah, you two! You have yet
+                to leave?
+            """,
+        });
+        message_Talk({
+            english="""
+                 Get ready quickly! Then be on
+                your way!
+            """,
+        });
+        message_Talk({
+            english=" Ah, by the way...",
+        });
+        message_Close();
+        Turn2Direction<actor ACTOR_NPC_PERAPPU>(4, 10, DIR_UPRIGHT);
+        WaitExecuteLives(ACTOR_NPC_PERAPPU);
+        message_Talk({
+            english="""
+                 You can use the Kangaskhan Rock
+                to store and take out your items. And to save
+                your progress.
+            """,
+        });
+        message_Close();
+        Turn2DirectionLives<actor ACTOR_NPC_PERAPPU>(4, 10, ACTOR_PLAYER);
+        WaitExecuteLives(ACTOR_NPC_PERAPPU);
+        message_Talk({
+            english="""
+                 So you should try using the
+                Kangaskhan Rock to sort out your inventory.
+            """,
+        });
+        message_Talk({
+            english="""
+                 No matter how you choose to do
+                that, just get ready quickly, then head out!
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        supervision_ExecuteCommon(CORO_EVENT_M08_04);
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] || scn($SCENARIO_MAIN) >= [8, 3] ) {
+        @label_122;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Today you should take on
+                job requests.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Examine the Job Bulletin Board
+                and the Outlaw Notice Board.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Take the jobs that you're capable
+                of handling...[K] I'll leave you to it! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_R_CENTER);
+        message_Talk({
+            english="""
+                 Ah, you two![K] Today your job is
+                to gather Perfect Apples.
+            """,
+        });
+        message_Talk({
+            english="""
+                 The Perfect Apples can be found
+                in the deepest part of [CS:P]Apple Woods[CR].
+            """,
+        });
+        message_Talk({
+            english="""
+                 Now, listen up...[K] This may seem
+                simple. But it's an important job.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Remember, I'm really trusting
+                you with a very big job! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [7, 6] || scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] || scn($SCENARIO_MAIN) >= [7, 1] ) {
+        jump @label_122;
+    } elseif ( scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Ah, you two!",
+        });
+        message_Talk({
+            english="""
+                 Today you're on assignment. So
+                go to the waterfall and investigate what
+                secrets it may hide.
+            """,
+        });
+        message_Talk({
+            english=" I'll leave you to it! ♪",
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [5, 5] || scn($SCENARIO_MAIN) >= [4, 7] ) {
+        jump @label_122;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Ah, you two. Are you more or
+                less settled into the guild?
+            """,
+        });
+        message_Talk({
+            english="""
+                 If you've finally made yourself
+                comfortable, then you should get down to work.
+            """,
+        });
+        message_Talk({
+            english="""
+                 It will be good to earn loads of
+                money for yourselves...and the guild! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+        message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 You two![K] Did [CS:N]Bidoof[CR] give you a
+                tour of the premises?
+            """,
+        });
+        message_Talk({
+            english="""
+                 Very well. Then I want you to
+                examine the Outlaw Notice Board.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Choose a weak criminal or two.
+                That should be suitable for you! ♪[K] I can trust
+                you with that, I'm sure! ♪
+            """,
+        });
+        message_Close();
+        jump @label_129;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] || scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        jump @label_129;
+    } else {
+        jump @label_129;
+    }
+}

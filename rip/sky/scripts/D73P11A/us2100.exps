@@ -1,0 +1,49 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [29, 85] ) {
+        @label_0;
+        supervision_Station(21);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 84] ) {
+        supervision_Station(21);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 83] ) {
+        supervision_Station(21);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 82] ) {
+        supervision_Station(21);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 81] ) {
+        supervision_Station(21);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 80] ) {
+        supervision_Station(21);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 78] ) {
+        supervision_Station(21);
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_SHEIMI3 {
+    switch ( sector() ) {
+        case 21:
+            SetMoveRange(Position<'m0', 45, 32.5>, 6, 5);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_MOVE_TYPE1);
+    }
+}
+
+def 2 for actor ACTOR_NPC_SHEIMI4 {
+    switch ( sector() ) {
+        case 21:
+            SetMoveRange(Position<'m1', 60, 33>, 3, 9);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_MOVE_TYPE1);
+    }
+}

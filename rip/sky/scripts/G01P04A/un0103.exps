@@ -1,0 +1,66 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Do YOUR best!",
+        });
+        message_Talk({
+            english=" HAVE a SUCCESSFUL exploration!",
+        });
+        message_Close();
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 3] ) {
+        SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" HEY! [CS:N]Diglett[CR]!",
+        });
+        message_Talk({
+            english="""
+                 Let me know right away if
+                ANYONE sketchy comes along!
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetActor(ACTOR_NPC_DIGUDA);
+        message_Talk({
+            english=" Yes! Will do!",
+        });
+        message_Close();
+        jump @label_3;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" I HEARD you got the DAY OFF?",
+        });
+        message_Talk({
+            english="""
+                 You TALKED him INTO IT...[K]
+                I'm JEALOUS...
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } else {
+        SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 All right![K] Time to buck up and
+                WORK HARD!
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

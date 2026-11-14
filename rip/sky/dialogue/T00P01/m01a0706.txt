@@ -1,0 +1,11 @@
+speaker	kind	line
+-	Talk	Do you need something?
+-	SwitchMenu	Yes
+-	Talk	Do you really need something from me?
+-	SwitchMenu	Yes
+-	Talk	and
+-	Talk	?
+-	Talk	I can't help you with anything right now.
+-	Talk	No
+-	Talk	I see...
+-	Talk	No

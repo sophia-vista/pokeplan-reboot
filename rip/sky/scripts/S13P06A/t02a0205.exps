@@ -1,0 +1,37 @@
+
+def 0 {
+    screen2_WhiteOut(0, 0);
+    screen_WhiteOut(1, 0);
+    back2_SetMode(4);
+    back2_SetGround(LEVEL_S13P01A);
+    back_SetGround(LEVEL_S13P06A);
+    back_SetBackScrollSpeed(4, 3);
+    supervision_Acting(0);
+    SetOutputAttribute<actor ACTOR_NPC_DEMO_HERO>(8);
+    SetOutputAttribute<actor ACTOR_NPC_DEMO_PARTNER>(8);
+    SetAnimation<actor ACTOR_NPC_DEMO_HERO>(5);
+    SetAnimation<actor ACTOR_NPC_DEMO_PARTNER>(5);
+    back_SetEffect(12, 0);
+    camera_SetMyself<performer 0>();
+    WaitBgmSignal();
+    screen2_FadeIn(0, 10);
+    screen_FadeIn(1, 10);
+    back2_SetBackEffect(3);
+    Wait(67);
+    Wait(24);
+    ResetOutputAttribute<object OBJECT_S05P02C1_377>(128);
+    back_SetEffect(11, 10);
+    Wait(88);
+    Wait(32);
+    Wait(106);
+    Wait(12);
+    screen_FadeOut(1, 30);
+    end;
+}
+
+def 1 for object OBJECT_S05P02C1_377 {
+    SetOutputAttribute(128);
+    SetOutputAttribute(64);
+    SetOutputAttribute(8);
+    hold;
+}

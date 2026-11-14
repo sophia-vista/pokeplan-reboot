@@ -1,0 +1,11 @@
+speaker	kind	line
+ATTENDANT1	Talk	What?! This is Spacial Rift?!
+NPC_PARUKIA	Talk	I WILL BE RID OF YOU NOW!
+ATTENDANT1	Talk	What?!
+NPC_PARUKIA	Talk	THIS IS THE END!
+ATTENDANT1	Talk	Whoa! What are you doing?!
+ATTENDANT1	Talk	Waah! What are you doing?!
+NPC_PARUKIA	Talk	GRRR-OOOOOO!
+ATTENDANT1	Talk	Waaaaaah!
+NPC_PARUKIA	Talk	GRRRR! THEY FELL!
+NPC_PARUKIA	Talk	GRRR-OOOOOO!

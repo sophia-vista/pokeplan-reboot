@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_BARIYAADO	Talk	I'm going too.
+ATTENDANT1	Talk	I wonder what's up this time.
+ATTENDANT1	Talk	Hey, . Let's go too.

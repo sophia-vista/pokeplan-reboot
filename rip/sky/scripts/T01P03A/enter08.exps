@@ -1,0 +1,117 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] || scn($SCENARIO_SIDE) >= [40, 3] || scn($SCENARIO_SIDE) >= [40, 2] ) {
+        @label_4;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( $SCENARIO_TALK_BIT_FLAG[126] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_GARAGARA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 [CS:K]Marowak[CR] Dojo is
+                definitely...[K] Just definitely!
+            """,
+        });
+        message_Talk({
+            english=" Definitely coming back!!",
+        });
+        message_Close();
+        jump @label_4;
+    } else {
+        $SCENARIO_TALK_BIT_FLAG[126] = 1;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_GARAGARA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 .........[K]
+                Cus...[K]customers...
+            """,
+        });
+        message_Talk({
+            english="""
+                 ...[K]You came all the way here,
+                but...
+            """,
+        });
+        message_Talk({
+            english="""
+                 [CS:K]Marowak[CR] Dojo is closed as
+                of today...
+            """,
+        });
+        message_Talk({
+            english=" However!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8975);
+        ExecuteCommon<actor ACTOR_NPC_GARAGARA>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+        WaitExecuteLives(ACTOR_NPC_GARAGARA);
+        message_SetFace(ACTOR_NPC_GARAGARA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 One day...definitely...[K]
+                I'll be reviving it!
+            """,
+        });
+        message_Talk({
+            english="""
+                 Definitely! [K]Definitely![K]
+                Definitely reviving it!
+            """,
+        });
+        message_Talk({
+            english=" Uhhn...huhhn...",
+        });
+        message_Talk({
+            english="""
+                 ...[K]This dojo will be closed
+                beginning tomorrow...
+            """,
+        });
+        message_Talk({
+            english=" Definitely be revived!",
+        });
+        message_Talk({
+            english=" Ah... So you won't forget...",
+        });
+        message_Talk({
+            english=" I'll give this to you.",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_Mail({
+            english="""
+                [CN]In remembrance of the failed [CS:K]Marowak[CR] Dojo,
+                [CN][CS:Y]Bidoof[CR]...
+            """,
+        });
+        message_KeyWait();
+        me_Play(4);
+        message_Mail({
+            english="[CN]Received a [CS:I]Reviver Seed[CR]!",
+        });
+        WaitMe(4);
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        item_Set(0, 73, 0);
+        switch ( message_Menu(MENU_GIVE_ITEM) ) { }
+        message_SetFace(ACTOR_NPC_GARAGARA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Remember the dojo whenever
+                you look at it, OK?
+            """,
+        });
+        message_Talk({
+            english="""
+                 [CS:K]Marowak[CR] Dojo is
+                definitely...[K] Just definitely!
+            """,
+        });
+        message_Talk({
+            english=" Definitely coming back!",
+        });
+        message_Close();
+        jump @label_4;
+    }
+}

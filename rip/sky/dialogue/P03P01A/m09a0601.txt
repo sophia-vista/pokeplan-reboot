@@ -1,0 +1,28 @@
+speaker	kind	line
+-	Talk	Hey, hey, hey!
+ATTENDANT1	Talk	Look, it's Corphish!
+ATTENDANT1	Talk	No, nothing yet...
+ATTENDANT1	Talk	What about you, Corphish?
+ATTENDANT1	Talk	How about you, Corphish?
+ATTENDANT1	Talk	Interesting?
+NPC_HEIGANI	Talk	There. Have a look for yourself.
+ATTENDANT1	Talk	Wh-what?! What is this?!
+NPC_HEIGANI	Talk	I don't know.
+ATTENDANT1	Talk	Huh? Is this an inscription here?
+ATTENDANT1	Talk	Umm...
+ATTENDANT1	Talk	Oh, !
+NPC_HEIGANI	Talk	Hey, hey, hey! Y-you think so?
+ATTENDANT1	Talk	Hmm...
+ATTENDANT1	Talk	Huh? Wait a second!
+ATTENDANT1	Talk	Huh? Wait!
+PLAYER	Talk	(...)
+PLAYER	Talk	(I was thinking that too.)
+PLAYER	Talk	(If it means finding the key to my own past...)
+PLAYER	Talk	(If the answers are held by this statue...)
+ATTENDANT1	Talk	You're going to do it!
+ATTENDANT1	Talk	You'll do it for us!
+ATTENDANT1	FacePositionOffset	Getting anything, ?
+ATTENDANT1	FacePositionOffset	Feeling anything, ?
+ATTENDANT1	FacePositionOffset	Sensing anything, ?
+PLAYER	FacePositionOffset	(It's coming...)
+PLAYER	FacePositionOffset	(That dizzy feeling...)

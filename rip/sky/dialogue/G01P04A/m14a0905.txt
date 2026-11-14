@@ -1,0 +1,32 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	But the name Azelf...?
+ATTENDANT1	Talk	I've never heard it before.
+NPC_YONOWAARU	Talk	Then there's still a chance!
+NPC_YONOWAARU	Talk	But that was not the case.
+NPC_PERAPPU	Talk	I see...
+NPC_DOGOOMU	Talk	Yeah! Maybe it IS there!
+NPC_YONOWAARU	Talk	Or we may still have time!
+NPC_HEIGANI	Talk	Hey, hey! Absolutely!
+NPC_PERAPPU	Talk	Dusknoir, sir!
+NPC_PERAPPU	Talk	Onward to Crystal Cave!
+NPC_PERAPPU	Talk	Guildmaster! Are you with us?!
+NPC_PUKURIN	Talk	...Zzzz...
+NPC_PERAPPU	Talk	Huh?
+NPC_PUKURIN	Talk	...Zzzz...zzzz...
+NPC_HEIGANI	Talk	(H-hey, you gotta be kidding!)
+NPC_DAGUTORIO	Talk	(No! It looks like...!)
+NPC_PERAPPU	Talk	(Oh no! This just won't do!)
+NPC_PERAPPU	Talk	(I must rouse him somehow...)
+NPC_PERAPPU	Talk	Guildmaster! Guildmaster!
+NPC_PUKURIN	Talk	...Huh...?
+NPC_PERAPPU	Talk	GUILDMASTER!
+NPC_PUKURIN	Talk	Chatot!
+NPC_PERAPPU	Talk	YES, GUILDMASTER?
+NPC_PERAPPU	Talk	Er, I mean...yes, Guildmaster...?
+NPC_PUKURIN	Talk	YOOM...TAH!
+NPC_PUKURIN	Talk	Everyone: HOORAY!
+NPC_KIMAWARI	Talk	Let's go to Crystal Cave!
+NPC_YONOWAARU	Talk	Let's do our best, everyone.
+NPC_YONOWAARU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Talk	........................
+ATTENDANT1	Talk	On to Crystal Cave!

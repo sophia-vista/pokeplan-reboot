@@ -1,0 +1,32 @@
+
+def 0 {
+    back_SetGround(LEVEL_H01P99D);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    back2_SetMode(4);
+    back2_SetGround(LEVEL_V21P02A);
+    camera2_SetPositionMark(Position<'m0', 20, 18.5>);
+    supervision_Acting(1);
+    WaitBgmSignal();
+    screen2_FadeIn(0, 5);
+    screen_FadeIn(1, 5);
+    Move2PositionMark<object OBJECT_V21P02A1_272>(0.0469, Position<'m1', 20, 22.5>);
+    back2_SetBackEffect(3);
+    back_SetBackEffect(3);
+    Wait(45);
+    Turn2Direction<actor ACTOR_NPC_DEMO_PARTNER>(4, 10, DIR_RIGHT);
+    WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+    SetEffect<actor ACTOR_NPC_DEMO_PARTNER>(EFFECT_TWO_ARROWS_AT_SIDE_RIGHT, 3);
+    WaitEffect<actor ACTOR_NPC_DEMO_PARTNER>();
+    WaitExecuteLives(ACTOR_NPC_DEMO_PARTNER);
+    Turn2Direction<actor ACTOR_NPC_DEMO_HERO>(4, 10, DIR_RIGHT);
+    WaitExecuteLives(ACTOR_NPC_DEMO_HERO);
+    Wait(15);
+    Wait(160);
+    screen2_FadeOut(0, 5);
+    screen_FadeOut(1, 5);
+    screen_FadeIn(1, 5);
+    Wait(220);
+    screen_FadeOut(1, 10);
+    end;
+}

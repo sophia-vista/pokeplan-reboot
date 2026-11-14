@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_GARAGARA	Talk	The wall just gave way!
+ATTENDANT1	Talk	Your grandpa?
+ATTENDANT1	Talk	Your grandfather?
+NPC_GARAGARA	Talk	...! Y-you two... You're not...

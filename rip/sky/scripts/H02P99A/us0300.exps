@@ -1,0 +1,56 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [29, 53] ) {
+        @label_0;
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 52] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 50] ) {
+        supervision_Station(16);
+        supervision_Station(20);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 49] ) {
+        supervision_Station(16);
+        supervision_Station(20);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 48] ) {
+        supervision_Station(20);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 47] ) {
+        supervision_Station(20);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 46] ) {
+        supervision_Station(20);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 45] ) {
+        supervision_Station(15);
+        supervision_Station(20);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 44] ) {
+        supervision_Station(15);
+        supervision_Station(20);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 43] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 42] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 41] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 40] ) {
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_MANAFI {
+    switch ( sector() ) {
+        case 16:
+            SetAnimation(46);
+            @label_14;
+            end;
+        default:
+            jump @label_14;
+    }
+}

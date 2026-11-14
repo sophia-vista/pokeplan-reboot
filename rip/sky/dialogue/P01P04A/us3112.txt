@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_SOONANO	Talk	We made a wonderful discovery!
+NPC_SOONANO	Talk	Please look forward to it!
+NPC_SOONANO	Talk	Right here, right?
+NPC_SOONANSU	Talk	That's right!

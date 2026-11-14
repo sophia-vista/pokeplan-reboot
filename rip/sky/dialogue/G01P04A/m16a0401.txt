@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ahem...so here's where it stands.
+NPC_PERAPPU	Talk	We don't know that either.
+NPC_PERAPPU	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Talk	Ah, you two!
+NPC_PERAPPU	Talk	That will do! ♪

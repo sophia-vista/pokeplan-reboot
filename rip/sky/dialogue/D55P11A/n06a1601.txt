@@ -1,0 +1,2 @@
+speaker	kind	line
+PLAYER_CHARMS	Talk	Once you're ready, let's head out.

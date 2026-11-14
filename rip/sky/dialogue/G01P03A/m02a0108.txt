@@ -1,0 +1,12 @@
+speaker	kind	line
+-	Talk	Excuse me!
+NPC_PERAPPU	Talk	It was you two that just came in, right?
+ATTENDANT1	Talk	Y-yes!
+ATTENDANT1	Talk	N-no! That's not why we're here!
+NPC_PERAPPU	Talk	Wh-what?! Exploration team?
+ATTENDANT1	Talk	Hey.
+ATTENDANT1	Talk	Excuse me.
+NPC_PERAPPU	Talk	What?!
+NPC_PERAPPU	Talk	Well...no! No, no, no!
+ATTENDANT1	Talk	His attitude did an about-face...
+ATTENDANT1	Talk	What a shift in attitude!

@@ -1,0 +1,17 @@
+
+def 0 {
+    supervision_Station(0);
+    switch ( sector() ) { }
+    if ( scn($SCENARIO_MAIN) >= [11, 4] ) {
+        @label_0;
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [11, 3] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [11, 2] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [11, 1] ) {
+        end;
+    } else {
+        end;
+    }
+}

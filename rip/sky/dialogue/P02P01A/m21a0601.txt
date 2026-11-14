@@ -1,0 +1,25 @@
+speaker	kind	line
+NPC_KOOTASU	Talk	...Oh? Not so?
+NPC_KOOTASU	Talk	I see... You seek my wisdom.
+NPC_KOOTASU	Talk	I have heard of it.
+ATTENDANT1	Talk	Oh, really?!
+ATTENDANT1	Talk	No matter! Please tell us!
+ATTENDANT1	Talk	A hidden place?
+NPC_KOOTASU	Talk	Yes.
+NPC_KOOTASU	Talk	They are...
+NPC_KOOTASU	Talk	Er... Er... Now what were they?
+NPC_KOOTASU	Talk	I'm sorry. It's slipped my mind.
+ATTENDANT1	Talk	Huh? You forgot?
+ATTENDANT1	Talk	Oh no! You've forgotten?!
+ATTENDANT1	Talk	Oh no! You can't remember?!
+ATTENDANT1	Talk	It's really important.
+ATTENDANT1	Talk	This is really important.
+NPC_KOOTASU	Talk	Oh! That's it! You need proof!
+ATTENDANT1	Talk	Proof? What kind of proof?
+NPC_KOOTASU	Talk	That would be...
+NPC_KOOTASU	Talk	Er? Um?
+NPC_KOOTASU	Talk	Forgive me. I've forgotten again.
+ATTENDANT1	Talk	What? You can't remember?!
+NPC_KOOTASU	Talk	I... I'm sorry to disappoint you.
+NPC_KOOTASU	Talk	...No. That's all.
+ATTENDANT1	Talk	Yes, please. Thank you, Torkoal.

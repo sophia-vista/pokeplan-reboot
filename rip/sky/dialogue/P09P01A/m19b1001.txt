@@ -1,0 +1,72 @@
+speaker	kind	line
+NPC_SEREBII	Talk	Oh! I see it now!
+NPC_SEREBII	Talk	There it is!
+ATTENDANT1	Talk	Is that...the Passage of Time?
+NPC_JUPUTORU	Talk	Do your thing.
+NPC_SEREBII	Talk	Sure.
+-	Talk	Stop there! That will do!
+NPC_JUPUTORU	Talk	What...? That voice!
+ATTENDANT1	Talk	It... It can't be...
+-	Talk	Hello to you all. It's been a while.
+NPC_JUPUTORU	Talk	D-Dusknoir!
+ATTENDANT1	Talk	Dusknoir...
+NPC_YONOWAARU	Talk	Your scurrying carried you far...
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!
+ATTENDANT1	Talk	The Sableye too...
+NPC_JUPUTORU	Talk	Humph. That's crafty, Dusknoir.
+ATTENDANT1	Talk	What?! So you mean we were...
+ATTENDANT1	Talk	followed the whole time?!
+NPC_JUPUTORU	Talk	Humph. I didn't see this coming.
+NPC_JUPUTORU	Talk	It's all my fault, Celebi.
+ATTENDANT1	Talk	Huh?! You bet I am!
+ATTENDANT1	Talk	What?! Of course!
+ATTENDANT1	Talk	G-got it!
+NPC_YONOWAARU	Talk	Ha! So you'll resist?
+NPC_JUPUTORU	Talk	Dusknoir! You and me! Now!
+NPC_JUPUTORU	Talk	Wh-what?!
+NPC_YONOWAARU	Talk	Now, Master Dialga!
+ATTENDANT1	Talk	Whoa! It turned pitch black!
+ATTENDANT1	Talk	Waah! It turned pitch black!
+ATTENDANT1	ImitationSound	GRRR-OOOOOO!
+ATTENDANT1	ImitationSound	GRRR-OOOOOO...OOOOOH!
+ATTENDANT1	ImitationSound	Waaah!
+NPC_JUPUTORU	Talk	That... That's...!
+NPC_JUPUTORU	Talk	That's...Primal...Dialga...
+ATTENDANT1	Talk	What!?! That is?!
+ATTENDANT1	Talk	That's Primal Dialga?!
+NPC_JUPUTORU	Talk	Gah...
+NPC_SEREBII	Talk	My dear Grovyle...
+NPC_JUPUTORU	Talk	Urf... This...is it for us...
+ATTENDANT1	Talk	Huh?! Why?!
+ATTENDANT1	Talk	What?! Why?!
+ATTENDANT1	Talk	Aren't we going to fight?!
+NPC_JUPUTORU	Talk	You two have kept up so well...
+ATTENDANT1	Talk	But...
+NPC_JUPUTORU	Talk	I surrender, Dusknoir.
+NPC_JUPUTORU	Talk	Do with me...as you will.
+NPC_SEREBII	Talk	My d-d-dear Grovyle!
+NPC_YONOWAARU	Talk	What's the matter, Grovyle?
+NPC_JUPUTORU	Talk	Yes. I am giving up.
+NPC_JUPUTORU	Talk	But...hope is still alive.
+NPC_JUPUTORU	Talk	Celebi, you remember...
+NPC_JUPUTORU	Talk	That's right. I had a partner.
+NPC_JUPUTORU	Talk	We headed to the past together.
+NPC_JUPUTORU	Talk	We became separated.
+NPC_JUPUTORU	Talk	Even if I am eliminated...
+NPC_YONOWAARU	Talk	.....................
+NPC_YONOWAARU	Talk	Ha! Ha-ha-ha! Hoo-hoo-ha!
+NPC_JUPUTORU	Talk	What's... What's so funny?
+NPC_YONOWAARU	Talk	Go on. Say the name.
+NPC_JUPUTORU	Talk	Why ask such a thing?
+NPC_YONOWAARU	Talk	Can't tell me?
+NPC_JUPUTORU	Talk	My best friend...
+PLAYER	Talk	(What?!)
+ATTENDANT1	Talk	Uh...what?!
+ATTENDANT1	Talk	Wh-what?!
+NPC_JUPUTORU	Talk	What?!
+NPC_JUPUTORU	Talk	You're...?
+NPC_JUPUTORU	Talk	...No...it can't be. It isn't.
+ATTENDANT1	Talk	What?!
+NPC_YONOWAARU	Talk	Hoo-hoo-ha! Precisely!
+NPC_JUPUTORU	Talk	What?!
+NPC_JUPUTORU	Talk	Wh-what?!

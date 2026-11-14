@@ -1,0 +1,12 @@
+speaker	kind	line
+-	Talk	An Event Test is under way.
+-	Talk	A Placement Test will be conducted.
+-	Talk	Place Sector 1
+-	Talk	Place Sector 2
+-	Talk	Remove Sector 1
+-	Talk	Remove Sector 2
+-	Talk	Place Date Indicator on Sector 1
+-	Talk	Place Date Indicator on Sector 2
+-	Talk	Label Request
+-	Talk	Remove
+-	Talk	The Event Test is finished.

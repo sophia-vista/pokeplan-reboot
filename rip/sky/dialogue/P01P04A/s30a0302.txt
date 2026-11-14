@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_PATCHIIRU	Talk	Ahem.
+NPC_PATCHIIRU	Talk	By opening a new service!
+NPC_PATCHIIRU	Talk	We're calling it Project P!
+NPC_BARIYAADO	Talk	Project P?
+NPC_OKUTAN	Talk	What's that?
+NPC_PATCHIIRU	Talk	Allow me to explain.

@@ -1,0 +1,13 @@
+speaker	kind	line
+-	Narration	One night at the guild...
+-	Notice	Start from where?
+-	SwitchMenu	Beginning
+-	SwitchMenu	SectionA
+-	SwitchMenu	SectionB
+-	SwitchMenu	SectionC
+-	SwitchMenu	SectionD
+-	SwitchMenu	SpringCaveMidpoint
+-	SwitchMenu	SpringCaveDepths2ndTry
+-	SwitchMenu	SectionF
+-	SwitchMenu	TALK-N04-01
+-	SwitchMenu	TALK-N04-02

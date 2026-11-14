@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Mail	Continue through the wall?
+-	SwitchMenu	Yes
+-	Menu	No

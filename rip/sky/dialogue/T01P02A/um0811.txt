@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DOGAASU	Talk	Whoa-ho! Gonna whine again?
+NPC_DOGAASU	Talk	We'll put up with you, whoa-ho!

@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_NAMAKERO	Talk	Exploring is...too much effort.
+NPC_NAMAKERO	Talk	Huh? It's not too much effort?

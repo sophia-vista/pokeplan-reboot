@@ -1,0 +1,19 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	I think I'm almost through.
+NPC_YONOWAARU	Talk	Grovyle!
+NPC_YONOWAARU	Talk	Ah. You're injured too.
+NPC_YAMIRAMI	Talk	Gro-Grovyle!
+NPC_YAMIRAMI	Talk	There he is! Over there!
+NPC_YAMIRAMI	Talk	Sableye: Wheh-heh-heh!
+NPC_YONOWAARU	Talk	Ha hah hah ha... Ha heh heh heh!
+NPC_YONOWAARU	Talk	Sableye: Wheh-heh-heh!
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!
+PLAYER_FUTURE	Talk	Agh!
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!
+NPC_YONOWAARU	Talk	What?!
+PLAYER_FUTURE	Talk	Don't you get it?!
+NPC_YONOWAARU	Talk	What are you saying?!
+NPC_YONOWAARU	Talk	Why... Why me...
+PLAYER_FUTURE	Talk	I don't know either!
+PLAYER_FUTURE	Talk	Believe me...if this goes on...
+PLAYER_FUTURE	Talk	Sableye: Wheh-heh-heh!

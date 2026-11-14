@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_POCHIENA_B	Talk	That stink is finally fading...
+NPC_POCHIENA_A	Talk	Outlaws are also ranked.

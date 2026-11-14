@@ -1,0 +1,3 @@
+speaker	kind	line
+ATTENDANT1	Talk	Let's check the Wonder Map.
+ATTENDANT1	Talk	Let's look at the Wonder Map.

@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Explanation	Yes, that's exactly it!
+-	Explanation	Never abandon hope!

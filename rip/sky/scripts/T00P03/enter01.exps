@@ -1,0 +1,9 @@
+
+def 0 {
+    main_EnterGround(LEVEL_T00P01, 30);
+    hold;
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

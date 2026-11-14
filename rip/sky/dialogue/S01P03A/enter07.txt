@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_PERIPPAA1	SwitchMenu	Yes
+NPC_PERIPPAA1	SwitchMenu	No
+NPC_PERIPPAA1	SwitchMenu	Yes
+NPC_PERIPPAA1	SwitchMenu	No

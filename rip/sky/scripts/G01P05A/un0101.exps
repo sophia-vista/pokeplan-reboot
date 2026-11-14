@@ -1,0 +1,106 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] ) {
+        @label_0;
+        if ( $SCENARIO_TALK_BIT_FLAG[131] ) {
+            SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+            SetAnimation<actor ACTOR_NPC_PUKURIN>(2);
+            Turn2DirectionLives<actor ACTOR_PLAYER_BIPPA>(4, 10, ACTOR_NPC_PUKURIN);
+            Turn2DirectionLives<actor ACTOR_NPC_PUKURIN>(4, 10, ACTOR_PLAYER_BIPPA);
+            se_Play(8972);
+            SetEffect<actor ACTOR_NPC_PUKURIN>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+            WaitEffect<actor ACTOR_NPC_PUKURIN>();
+            WaitExecuteLives(ACTOR_NPC_PUKURIN);
+            message_SetFace(ACTOR_NPC_PUKURIN, FACE_NORMAL, FACE_POS_STANDARD);
+            message_Talk({
+                english="""
+                     S-sorry...[K]
+                    It's nothing.
+                """,
+            });
+            message_Talk({
+                english="""
+                     Have fun on your
+                    exploration! ♪
+                """,
+            });
+            message_Close();
+            @label_3;
+            JumpCommon(CORO_END_TALK);
+        } else {
+            $SCENARIO_TALK_BIT_FLAG[131] = 1;
+            ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+            ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+            supervision_ExecuteCommon(CORO_EVENT_N00_01);
+            jump @label_3;
+        }
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Having fun on your day off?",
+        });
+        message_Talk({
+            english="""
+                 If you're going to take a day off,
+                make it a memorable one! La-la-la! ♪
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" I've heard... ♪",
+        });
+        message_Talk({
+            english="""
+                 You are taking a day off?[K]
+                Sounds like fun, fun, fun! ♪
+            """,
+        });
+        message_Talk({
+            english="""
+                 Really, I'd like to take a day
+                off to go searching for Perfect Apples...
+            """,
+        });
+        message_SetFace(ACTOR_NPC_PUKURIN, FACE_SAD, FACE_POS_STANDARD);
+        message_Talk({
+            english=" But...[K][CS:N]Chatot[CR]...",
+        });
+        message_Talk({
+            english=" [CS:N]Chatot[CR] doesn't let me...[K] Sniff...",
+        });
+        message_Close();
+        jump @label_3;
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 How is it living at the guild?[K]
+                Are you getting used to it?
+            """,
+        });
+        message_Talk({
+            english="""
+                 It must be difficult, having just
+                joined...
+            """,
+        });
+        message_SetFace(ACTOR_NPC_PUKURIN, FACE_HAPPY, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Work hard, so you can soon
+                become a first-rate explorer! ♪
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

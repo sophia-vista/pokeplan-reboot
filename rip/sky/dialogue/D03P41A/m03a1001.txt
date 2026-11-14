@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_SURIIPU	Talk	Rrrrawrrr!
+ATTENDANT1	Talk	We came to rescue you.
+ATTENDANT1	Talk	We're here to rescue you.
+NPC_RURIRI	Talk	I'm OK.
+ATTENDANT1	Talk	Awesome! That's a big relief!
+ATTENDANT1	Talk	Great! What a relief!
+NPC_RURIRI	Talk	OK.

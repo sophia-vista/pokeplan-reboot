@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	This is Brine Cave's entrance.
+NPC_PERAPPU	Talk	We got sent back.

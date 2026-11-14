@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_MIMIROPPU	Talk	Ah, you're Team .
+NPC_MIMIROPPU	Talk	That's quite a good name.
+NPC_MIMIROPPU	Talk	I think we should be on our way.
+NPC_MIMIROPPU	Talk	OK, sweeties, we're off!
+NPC_HEIGANI	Talk	Hey, hey, hey!

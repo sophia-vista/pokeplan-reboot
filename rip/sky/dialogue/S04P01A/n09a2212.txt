@@ -1,0 +1,2 @@
+speaker	kind	line
+-	Explanation	We are still alive!!

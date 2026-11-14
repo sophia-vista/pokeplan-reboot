@@ -1,0 +1,137 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [42, 4] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN_PAPA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I've heard that you've been
+                playing with your new friend lately?
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english="""
+                 Yep! ♪[K] But now he's not just
+                a friendly friend... He's Master [CS:N]Armaldo[CR]! ♪
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8962);
+        SetEffect<actor ACTOR_NPC_PUKURIN_PAPA>(EFFECT_QUESTION_MARK, 3);
+        WaitEffect<actor ACTOR_NPC_PUKURIN_PAPA>();
+        WaitExecuteLives(ACTOR_NPC_PUKURIN_PAPA);
+        message_SetFace(ACTOR_NPC_PUKURIN_PAPA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Master?[K] When you
+                say master...
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8978);
+        SetEffect<actor ACTOR_NPC_PUKURIN_PAPA>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+        WaitEffect<actor ACTOR_NPC_PUKURIN_PAPA>();
+        WaitExecuteLives(ACTOR_NPC_PUKURIN_PAPA);
+        message_SetFace(ACTOR_NPC_PUKURIN_PAPA, FACE_SIGH, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh, I think I get it![K] You mean a
+                friend that you respect a great deal.
+            """,
+        });
+        message_SetFace(ACTOR_NPC_PUKURIN_PAPA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 That's great, [CS:Y]Igglybuff[CR].[K]
+                That you've made a friend like that.
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Yep! ♪",
+        });
+        message_Close();
+        @label_4;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [41, 6] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN_PAPA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Are you headed out with friends
+                again today?
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english="""
+                 Yep! ♪[K] I made a new
+                friendly friend! ♪
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_PUKURIN_PAPA, FACE_HAPPY, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Oh, a new friend!",
+        });
+        message_Talk({
+            english=" That's great!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Yep! ♪",
+        });
+        message_Close();
+        jump @label_4;
+    } elseif ( scn($SCENARIO_SIDE) >= [41, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN_PAPA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Are you headed out with friends
+                again today?
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Yep! ♪",
+        });
+        message_Close();
+        jump @label_4;
+    } elseif ( scn($SCENARIO_SIDE) >= [41, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_PUKURIN_PAPA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 [CS:Y]Igglybuff[CR], it's good to see
+                you have so many friends.
+            """,
+        });
+        message_Talk({
+            english=" Be nice to your friends, OK?",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_PUPURIN, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english="""
+                 Yep! ♪[K] My friendly
+                friends! ♪
+            """,
+        });
+        message_Close();
+        jump @label_4;
+    } else {
+        jump @label_4;
+    }
+}

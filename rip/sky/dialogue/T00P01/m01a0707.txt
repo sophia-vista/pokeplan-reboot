@@ -1,0 +1,3 @@
+speaker	kind	line
+TALK_SUB	Talk	But when I evolve... I become a Ludicolo...
+TALK_SUB	Talk	You know? Ludicolo is a carefree Pokémon.

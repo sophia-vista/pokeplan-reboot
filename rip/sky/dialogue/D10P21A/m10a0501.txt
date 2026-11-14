@@ -1,0 +1,10 @@
+speaker	kind	line
+ATTENDANT1	ImitationSound	GRROOOOOOH...!
+ATTENDANT1	ImitationSound	Huh? What was that?!
+ATTENDANT1	ImitationSound	Hey! What was that?
+ATTENDANT1	ImitationSound	GRROOOOOOH...!
+ATTENDANT1	ImitationSound	That! Did you hear that?!
+ATTENDANT1	ImitationSound	Just now... Did you hear that?
+ATTENDANT1	ImitationSound	Was that for real? Or not?
+ATTENDANT1	ImitationSound	Did I just imagine that...or not?
+ATTENDANT1	ImitationSound	Was it all in my head? Or not?

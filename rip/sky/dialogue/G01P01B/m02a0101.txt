@@ -1,0 +1,21 @@
+speaker	kind	line
+-	Talk	Pokémon detected! Pokémon detected!
+-	Talk	Whose footprint? Whose footprint?
+ATTENDANT1	Talk	Waah!
+ATTENDANT1	Talk	N-no. I have to tough it out...
+ATTENDANT1	Talk	N-no. I have to be strong...
+ATTENDANT1	Talk	N-no. I can't lose it now...
+-	Talk	...You may ENTER!
+ATTENDANT1	Talk	They said to stand up here.
+PLAYER	Talk	(............)
+PLAYER	Talk	(There's a grate covering the hole...)
+PLAYER	Talk	(It's made so that no one can fall through...)
+PLAYER	Talk	(Still, it's really strange...)
+PLAYER	Talk	(It looks like it will tickle my feet or...)
+-	Talk	Hey, you! Stranger! Get on the GRATE!
+-	Talk	Pokémon detected! Pokémon detected!
+-	Talk	Whose footprint? Whose footprint?
+-	Talk	The footprint is... The footprint is... Um...
+-	Talk	What's the matter?! Sentry! Sentry?!
+-	Talk	What's wrong, sentry Diglett?
+NPC_DIGUDA	Talk	Umm... Er...

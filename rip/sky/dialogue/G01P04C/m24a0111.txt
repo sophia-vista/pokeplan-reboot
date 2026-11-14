@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_KIMAWARI	Talk	So...what happened?
+NPC_PUKURIN	Talk	Lapras revealed it to me.
+NPC_CHIRIIN	Talk	It chooses. On its own?
+NPC_PUKURIN	Talk	Yep. Apparently so! ♪
+NPC_PUKURIN	Talk	I don't really know.

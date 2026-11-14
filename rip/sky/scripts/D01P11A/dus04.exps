@@ -1,0 +1,466 @@
+
+def 0 {
+    @label_14;
+    with (actor ACTOR_PLAYER) {
+        hold;
+    }
+    message_SetFace(ACTOR_NPC_MANKII, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Notice({
+        english="""
+             What's it take for you to give
+            me a Chestnut?!
+        """,
+    });
+    switch ( message_SwitchMenu(1, 1) ) {
+        case menu({
+            english="Wait & Movement Test",
+        }):
+            @label_0;
+            message_Notice({
+                english="""
+                     What's the holdup? Hurry up
+                    and choose!
+                """,
+            });
+            switch ( message_SwitchMenu(1, 1) ) {
+                case menu({
+                    english="Hang on...",
+                }):
+                default:
+                    Wait(10);
+                    message_Talk({
+                        english=" What, you're holding out?!",
+                    });
+                    Wait(30);
+                    message_Talk({
+                        english=" What, you're holding out on me?!",
+                    });
+                    jump @label_0;
+                case menu({
+                    english="What should I do...",
+                }):
+                    message_Talk({
+                        english="""
+                             What's the deal with making me
+                            wait randomly?!
+                        """,
+                    });
+                    message_Close();
+                    WaitRandom(15, 60);
+                    message_Talk({
+                        english=" Come on, gimme a Chestnut!",
+                    });
+                    jump @label_0;
+                case menu({
+                    english="Do the [CS:N]Mankey[CR] Dance.",
+                }):
+                    message_Notice({
+                        english="""
+                             Darn tootin'! You watch me until
+                            I finish my dance!
+                        """,
+                    });
+                    message_Notice({
+                        english="""
+                             But let me ask you this first:
+                            will it be all right if I bumped into things?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(0, 1) ) {
+                        case menu({
+                            english="No problem.",
+                        }):
+                        default:
+                            ResetHitAttribute<actor ACTOR_NPC_MANKII>(31);
+                            ResetHitAttribute<actor ACTOR_PLAYER>(31);
+                            message_Notice({
+                                english="""
+                                     All right! Now I can dance with
+                                    wild abandon!
+                                """,
+                            });
+                            message_Close();
+                            @label_8;
+                            message_Notice({
+                                english="""
+                                     Which Dance should I do?
+                                    No. 1 Direction Variable   No. 2 Constant
+                                    No. 3 Time
+                                """,
+                            });
+                            switch ( message_SwitchMenu(1, 1) ) {
+                                case menu({
+                                    english="MovePosition-Related",
+                                }):
+                                    @label_9;
+                                    message_Notice({
+                                        english="""
+                                             Hey! Let's dance!
+                                            The Direction Changing Dance!
+                                        """,
+                                    });
+                                    message_Close();
+                                    Wait(30);
+                                    MovePositionOffset<actor ACTOR_NPC_MANKII>(2, 32, 0);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    MovePositionOffset<actor ACTOR_NPC_MANKII>(2, -32, 0);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    MovePositionOffset<actor ACTOR_NPC_MANKII>(2, 0, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    MovePositionOffset<actor ACTOR_NPC_MANKII>(2, 0, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english="""
+                                             When I was a young lad,
+                                            I lived on the straight and narrow! ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    MovePositionOffset<actor ACTOR_NPC_MANKII>(2, 32, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    MovePositionOffset<actor ACTOR_NPC_MANKII>(2, -32, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    MovePositionOffset<actor ACTOR_NPC_MANKII>(2, 64, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    MovePositionOffset<actor ACTOR_NPC_MANKII>(2, -64, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english="""
+                                             But I didn't notice myself
+                                            running crooked! ♪ Lalala, I'm the smooth
+                                            [CS:N]Mankey[CR]! ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    MovePosition<actor ACTOR_NPC_MANKII>(2, 128, 128);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    MovePosition<actor ACTOR_NPC_MANKII>(4, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Sometimes, I turn 'round! ♪",
+                                    });
+                                    message_Close();
+                                    MovePosition<actor ACTOR_NPC_MANKII>(2, 43, 23);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" But I always run, run, run! ♪♪",
+                                    });
+                                    message_Close();
+                                    MovePosition<actor ACTOR_NPC_MANKII>(4, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" But with a look back... ♪",
+                                    });
+                                    message_Close();
+                                    MovePosition<actor ACTOR_NPC_MANKII>(1, 408, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" And sometimes slow... ♪",
+                                    });
+                                    message_Close();
+                                    MovePosition<actor ACTOR_NPC_MANKII>(4, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Close();
+                                    message_Notice({
+                                        english="""
+                                             But I get my groove back,
+                                            'cause it's my comeback. ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    MovePosition<actor ACTOR_NPC_MANKII>(8, 344, 64);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Let's kick it up to high speed. ♪",
+                                    });
+                                    message_Close();
+                                    message_Notice({
+                                        english=" No walls can hold me back. ♪",
+                                    });
+                                    message_Close();
+                                    MovePosition<actor ACTOR_NPC_MANKII>(2, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Thank you. ♪",
+                                    });
+                                    jump @label_14;
+                                case menu({
+                                    english="Move2Position-Related",
+                                }):
+                                    @label_10;
+                                    message_Notice({
+                                        english="""
+                                             Hey! Let's dance!
+                                            The Direction Constant Dance!
+                                        """,
+                                    });
+                                    message_Close();
+                                    Wait(30);
+                                    Move2PositionOffset<actor ACTOR_NPC_MANKII>(2, 32, 0);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move2PositionOffset<actor ACTOR_NPC_MANKII>(2, -32, 0);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move2PositionOffset<actor ACTOR_NPC_MANKII>(2, 0, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move2PositionOffset<actor ACTOR_NPC_MANKII>(2, 0, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english="""
+                                             I lived straight and narrow
+                                            without a look back. ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    Move2PositionOffset<actor ACTOR_NPC_MANKII>(2, 32, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move2PositionOffset<actor ACTOR_NPC_MANKII>(2, -32, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move2PositionOffset<actor ACTOR_NPC_MANKII>(2, 64, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move2PositionOffset<actor ACTOR_NPC_MANKII>(2, -64, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english="""
+                                             But I ran crooked without
+                                            meaning to. ♪ And never a look back. ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    Move2Position<actor ACTOR_NPC_MANKII>(2, 128, 128);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move2Position<actor ACTOR_NPC_MANKII>(4, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" I sometimes go back. ♪",
+                                    });
+                                    message_Close();
+                                    Move2Position<actor ACTOR_NPC_MANKII>(2, 43, 23);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english="""
+                                             Then I run again without
+                                            changing direction. ♪♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    Move2Position<actor ACTOR_NPC_MANKII>(4, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Never will I look back. ♪",
+                                    });
+                                    message_Close();
+                                    Move2Position<actor ACTOR_NPC_MANKII>(1, 408, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Sometimes slow... ♪",
+                                    });
+                                    message_Close();
+                                    Move2Position<actor ACTOR_NPC_MANKII>(4, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Close();
+                                    message_Notice({
+                                        english=" But not a look back. ♪",
+                                    });
+                                    message_Close();
+                                    Move2Position<actor ACTOR_NPC_MANKII>(8, 344, 64);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Now let's go high speed. ♪",
+                                    });
+                                    message_Close();
+                                    message_Notice({
+                                        english="""
+                                             My own walls can't hold
+                                            me now. ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    Move2Position<actor ACTOR_NPC_MANKII>(2, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Thank you. ♪",
+                                    });
+                                    jump @label_14;
+                                case menu({
+                                    english="Move3Position-Related",
+                                }):
+                                    @label_11;
+                                    message_Notice({
+                                        english="""
+                                             Hey! Let's dance!
+                                            The Direction Time Dance!
+                                        """,
+                                    });
+                                    message_Close();
+                                    Wait(30);
+                                    Move3PositionOffset<actor ACTOR_NPC_MANKII>(10, 32, 0);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move3PositionOffset<actor ACTOR_NPC_MANKII>(10, -32, 0);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move3PositionOffset<actor ACTOR_NPC_MANKII>(10, 0, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move3PositionOffset<actor ACTOR_NPC_MANKII>(10, 0, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english="""
+                                             I lived straight and narrow
+                                            without a look back. ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    Move3PositionOffset<actor ACTOR_NPC_MANKII>(10, 32, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move3PositionOffset<actor ACTOR_NPC_MANKII>(10, -32, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move3PositionOffset<actor ACTOR_NPC_MANKII>(10, 64, -32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move3PositionOffset<actor ACTOR_NPC_MANKII>(10, -64, 32);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english="""
+                                             But I ran crooked without
+                                            meaning to. ♪ And never a look back. ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    Move3Position<actor ACTOR_NPC_MANKII>(20, 128, 128);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    Move3Position<actor ACTOR_NPC_MANKII>(20, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" I sometimes go back. ♪",
+                                    });
+                                    message_Close();
+                                    Move3Position<actor ACTOR_NPC_MANKII>(20, 43, 23);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english="""
+                                             Then I run again without
+                                            changing direction. ♪♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    Move3Position<actor ACTOR_NPC_MANKII>(20, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Never will I look back. ♪",
+                                    });
+                                    message_Close();
+                                    Move3Position<actor ACTOR_NPC_MANKII>(60, 408, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Sometimes slow... ♪",
+                                    });
+                                    message_Close();
+                                    Move3Position<actor ACTOR_NPC_MANKII>(20, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Close();
+                                    message_Notice({
+                                        english=" But not a look back. ♪",
+                                    });
+                                    message_Close();
+                                    Move3Position<actor ACTOR_NPC_MANKII>(20, 344, 64);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Now let's go high speed. ♪",
+                                    });
+                                    message_Close();
+                                    message_Notice({
+                                        english="""
+                                             My own walls can't hold
+                                            me now. ♪
+                                        """,
+                                    });
+                                    message_Close();
+                                    Move3Position<actor ACTOR_NPC_MANKII>(30, 344, 184);
+                                    WaitExecuteLives(ACTOR_NPC_MANKII);
+                                    message_Notice({
+                                        english=" Thank you. ♪",
+                                    });
+                                    jump @label_14;
+                                case menu({
+                                    english="************",
+                                }):
+                                    jump @label_14;
+                                case menu({
+                                    english="Cancel",
+                                }):
+                                    message_Notice({
+                                        english="""
+                                             Which Dance should I do?
+                                            No. 1 Direction Variable   No. 2 Constant
+                                            No. 3 Time
+                                        """,
+                                    });
+                                    switch ( message_SwitchMenu(1, 1) ) {
+                                        case menu({
+                                            english="MovePosition-Related",
+                                        }):
+                                            jump @label_9;
+                                        case menu({
+                                            english="Move2Position-Related",
+                                        }):
+                                            jump @label_10;
+                                        case menu({
+                                            english="Move3Position-Related",
+                                        }):
+                                            jump @label_11;
+                                        case menu({
+                                            english="************",
+                                        }):
+                                        case menu({
+                                            english="Cancel",
+                                        }):
+                                            jump @label_14;
+                                        default:
+                                            jump @label_8;
+                                    }
+                                    break;
+                                default:
+                                    jump @label_14;
+                            }
+                            break;
+                        case menu({
+                            english="I don't like pain...",
+                        }):
+                            SetHitAttribute<actor ACTOR_NPC_MANKII>(4);
+                            SetHitAttribute<actor ACTOR_PLAYER>(4);
+                            message_Notice({
+                                english="""
+                                     It could be lights-out if you
+                                    bump into me! Be prepared for that!
+                                """,
+                            });
+                            message_Close();
+                            jump @label_8;
+                    }
+                    break;
+                case menu({
+                    english="You can't have one!",
+                }):
+                    @label_1;
+                    message_Talk({
+                        english=" Hah?! You won't give me one?!",
+                    });
+                    @label_2;
+                    message_Notice({
+                        english=" I'm out of here!",
+                    });
+                    message_Close();
+                    SetHitAttribute<actor ACTOR_NPC_MANKII>(0);
+                    SetHitAttribute<actor ACTOR_PLAYER>(0);
+                    supervision_Suspend(-2);
+                    end;
+            }
+            break;
+        case menu({
+            english="You can't have one!",
+        }):
+            jump @label_1;
+        default:
+            message_Talk({
+                english=" Hah?! You canceled? Get lost!",
+            });
+            jump @label_2;
+    }
+}

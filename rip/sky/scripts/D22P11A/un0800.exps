@@ -1,0 +1,6 @@
+
+def 0 {
+    debug_Print('UN08_OPEN');
+    supervision_Station(0);
+    end;
+}

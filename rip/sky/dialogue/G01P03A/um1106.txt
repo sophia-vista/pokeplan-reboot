@@ -1,0 +1,4 @@
+speaker	kind	line
+ATTENDANT1	Talk	Zero Isle?
+NPC_MANYUURA	Talk	Drapion! You talk too much!
+NPC_DORAPION	Talk	Urk! I'm sorry, my lady Weavile.

@@ -1,0 +1,40 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	You've worked an honest day! ♪
+NPC_PERAPPU	Talk	Your results were...dreadful!
+NPC_PERAPPU	Talk	You failed so many times!
+NPC_PERAPPU	Talk	What nonsense were you up to?!
+NPC_DOGOOMU	Talk	UGH...!
+NPC_DOGOOMU	Talk	You two got SO many wrong...
+NPC_DOGOOMU	Talk	I even got in TROUBLE for it!
+NPC_PERAPPU	Talk	H-hush!
+NPC_PERAPPU	Talk	You've worked an honest day! ♪
+NPC_DOGOOMU	Talk	Hmm...
+ATTENDANT1	Talk	Oh...
+-	Mail	received 50!
+NPC_PERAPPU	Talk	You've worked an honest day! ♪
+NPC_PERAPPU	Talk	Good job, you two! ♪
+NPC_DOGOOMU	Talk	Good!
+ATTENDANT1	Talk	Yay!
+-	Mail	received 100!
+NPC_PERAPPU	Talk	You two, keep that up! ♪
+NPC_PERAPPU	Talk	You've worked an honest day! ♪
+NPC_DOGOOMU	Talk	Excellent!
+ATTENDANT1	Talk	We did it!
+-	Mail	received 300!
+-	Mail	But that's not the end of it!
+NPC_PERAPPU	Talk	You two, keep that up! ♪
+NPC_PERAPPU	Talk	You've worked an honest day! ♪
+NPC_PERAPPU	Talk	Your results were...dreadful!
+NPC_PERAPPU	Talk	You've worked an honest day! ♪
+-	Mail	received 100!
+NPC_PERAPPU	Talk	You've worked an honest day! ♪
+NPC_DOGOOMU	Talk	Good!
+ATTENDANT1	Talk	Yay!
+-	Mail	received 200!
+NPC_PERAPPU	Talk	You two, keep that up! ♪
+NPC_PERAPPU	Talk	You've worked an honest day! ♪
+NPC_DOGOOMU	Talk	Excellent!
+ATTENDANT1	Talk	We did it!
+-	Mail	received 400!
+-	Mail	But that's not the end of it!
+NPC_PERAPPU	Talk	You two, keep that up! ♪

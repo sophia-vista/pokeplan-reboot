@@ -1,0 +1,10 @@
+speaker	kind	line
+-	Narration	Meanwhile...
+-	Narration	back at the Groudon statue...
+NPC_SUKATANKU	Talk	Shhh! Shut your yap!
+NPC_PUKURIN	Talk	I bet I can make you laugh too!
+NPC_PUKURIN	Talk	Blabba! ♪ Blabba! ♪ Blapp! ♪
+NPC_PUKURIN	Talk	Blobba! ♪ Blobba! ♪ Blopp! ♪
+NPC_DOGAASU	Talk	C'mon, Chief...!
+NPC_SUKATANKU	Talk	Hey, Wigglytuff!
+NPC_PUKURIN	Talk	Whatiswhatiswhatis...what is it?

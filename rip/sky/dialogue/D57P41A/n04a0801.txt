@@ -1,0 +1,14 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	.........
+-	Talk	Hey! You!
+-	Talk	You! What did you just say?!
+-	Talk	Don't tell me... You're looking for me?!
+-	Talk	Heh heh heh! You can't see me?
+-	Talk	If that's the case, then I'll show myself!
+NPC_GOOSUTO	Talk	Gah ha ha ha ha ha ha! I'm Haunter!
+PLAYER_KIMAWARI	Talk	Th-that's right!
+NPC_GOOSUTO	Talk	Apprehend?
+NPC_GOOSUTO	Talk	You're funny!
+NPC_GOOSUTO	Talk	Hey, Sunflora!
+PLAYER_KIMAWARI	Talk	.........!!
+NPC_GOOSUTO	Talk	Let's go!

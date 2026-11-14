@@ -1,0 +1,6 @@
+speaker	kind	line
+-	EmptyActor	(............)
+-	EmptyActor	(..................)
+-	EmptyActor	(...! Huh?)
+PLAYER	EmptyActor	( isn't here...)
+PLAYER	EmptyActor	(Maybe outside...?)

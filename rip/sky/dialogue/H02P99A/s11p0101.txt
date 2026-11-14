@@ -1,0 +1,6 @@
+speaker	kind	line
+-	Talk	Oh! ! !
+-	Talk	Good morning! Are you awake?
+ATTENDANT1	Talk	Hm? Who's out there?
+ATTENDANT1	Talk	Hm? Who could that be?
+ATTENDANT1	Talk	Hm? Who's our visitor?

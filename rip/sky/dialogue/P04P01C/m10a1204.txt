@@ -1,0 +1,9 @@
+speaker	kind	line
+ATTENDANT1	Talk	Yep, I see it!
+ATTENDANT1	Talk	Yes, I see it!
+ATTENDANT1	Talk	Sure, I can see it!
+ATTENDANT1	Talk	It's coming from below!
+ATTENDANT1	Talk	It's radiating from below!
+ATTENDANT1	Talk	That blue green radiance, right?
+ATTENDANT1	Talk	The bluish green radiance, right?
+NPC_YUKUSHII	Talk	Step forward for a closer look.

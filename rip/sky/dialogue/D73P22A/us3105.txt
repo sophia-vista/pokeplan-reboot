@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_KUCHIITO	Talk	Haven't had a break in a while...
+NPC_KUCHIITO	Talk	This is Drifblim's Gondola.

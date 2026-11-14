@@ -1,0 +1,27 @@
+speaker	kind	line
+PLAYER	SwitchMenu	Form a team
+PLAYER	SwitchMenu	Say no
+ATTENDANT1	SwitchMenu	Huh? Oh, come on!
+ATTENDANT1	SwitchMenu	What?! Oh, but...
+ATTENDANT1	SwitchMenu	What?! Oh, please!
+ATTENDANT1	SwitchMenu	Are you...?
+ATTENDANT1	SwitchMenu	Huh? Am I what?
+ATTENDANT1	SwitchMenu	What do you mean, \"Are you...?\"
+ATTENDANT1	SwitchMenu	You're trying to talk me into it?
+ATTENDANT1	SwitchMenu	What?! Talk you into it?!
+ATTENDANT1	SwitchMenu	I wasn't trying to do anything!
+ATTENDANT1	SwitchMenu	I didn't even think of it!
+PLAYER	SwitchMenu	(It's true, I do have nowhere to go...)
+PLAYER	SwitchMenu	(I don't have any clue what I should do next.)
+PLAYER	SwitchMenu	(OK! That's settled!)
+ATTENDANT1	SwitchMenu	Yeah? Really?!
+ATTENDANT1	SwitchMenu	Yes? Really?!
+ATTENDANT1	SwitchMenu	Oh? Really?!
+ATTENDANT1	SwitchMenu	Yahoo! Thanks!
+ATTENDANT1	SwitchMenu	Yes! Thank you!
+ATTENDANT1	SwitchMenu	Yay! Thank you!
+ATTENDANT1	Narration	And so...
+ATTENDANT1	Narration	and ...
+ATTENDANT1	Narration	formed an exploration team.
+ATTENDANT1	Narration	This turned out to be...
+ATTENDANT1	Narration	their very first step into...

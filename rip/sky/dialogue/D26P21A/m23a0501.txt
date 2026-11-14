@@ -1,0 +1,25 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	We're nearly there.
+ATTENDANT1	Talk	Yep. We can't get careless.
+ATTENDANT1	Talk	Ow!
+ATTENDANT1	Talk	Ouch!
+NPC_DOGAASU	Talk	Whoops! Excuuuse me!
+ATTENDANT1	Talk	Hey!
+NPC_DOGAASU	Talk	Whoa-ho! Long time, weaklings!
+NPC_PERAPPU	Talk	Oh, you're that nice team...eh?
+NPC_SUKATANKU	Talk	This is it? The Relic Fragment?
+ATTENDANT1	Talk	Th-that's...!
+NPC_SUKATANKU	Talk	Chaw-haw-haw! I'll take this!
+ATTENDANT1	Talk	Hey!
+NPC_PERAPPU	Talk	Why are you even here?
+NPC_PERAPPU	Talk	I fretted for your well-being!
+NPC_SUKATANKU	Talk	Worried, huh...? Chaw-haw-haw!
+NPC_PERAPPU	Talk	Oh-oh-oh?!
+ATTENDANT1	Talk	Chatot!
+NPC_PERAPPU	Talk	Wha-wha-what?! Is that true?!
+NPC_DOGAASU	Talk	Whoa-ho! What else?
+NPC_PERAPPU	Talk	Squawk! Sq-sq-squawk!
+ATTENDANT1	Talk	Hey! Wait! Chatot!
+ATTENDANT1	Talk	Oh! Wait! Chatot!
+ATTENDANT1	Talk	H-he's gone!
+ATTENDANT1	Talk	We should hurry too!

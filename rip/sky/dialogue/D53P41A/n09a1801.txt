@@ -1,0 +1,26 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Primal Dialga!
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!
+NPC_DARK_DIARUGA	Talk	GIGI... GIGIGIGI...
+NPC_DARK_DIARUGA	Talk	GI! GIGAGAGAGAGAGAGAGAGAGA!
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!
+NPC_YONOWAARU	Talk	GWOOOoooh!
+NPC_SEREBII	Talk	GYAA!
+PLAYER_FUTURE	Talk	Guh... A-are you all right?
+NPC_SEREBII	Talk	Yeah! But...
+NPC_DARK_DIARUGA	Talk	GIGI... GIGIGIGIGIGIGIGI...
+NPC_YONOWAARU	Talk	The planet's moving again...
+PLAYER_FUTURE	Talk	Celebi! Look behind Dialga!
+NPC_SEREBII	Talk	Yeah! The Passage of Time!
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!
+NPC_SEREBII	Talk	It's becoming brighter...
+NPC_YONOWAARU	Talk	The wind is stronger!
+NPC_DARK_DIARUGA	Talk	GIGIGIGIGIGI!
+NPC_SEREBII	Talk	Our...our bodies too?!
+NPC_YONOWAARU	Talk	History is being distorted!
+NPC_SEREBII	Talk	History...distorted?!
+NPC_SEREBII	Talk	What?!
+PLAYER_FUTURE	Talk	Oh! For the future!
+PLAYER_FUTURE	Talk	Our fight... This is the final one!
+PLAYER_FUTURE	Talk	Let's go!
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!

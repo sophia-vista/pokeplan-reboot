@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	!!! You've found Manaphy!
+NPC_PERAPPU	Talk	Ma-Manaphy!
+NPC_PERAPPU	Talk	..................
+NPC_PERAPPU	Talk	That's why this infant is ill.
+ATTENDANT1	Talk	How do we go about curing him?
+NPC_PERAPPU	Talk	Here's something I've heard...
+ATTENDANT1	Talk	Gotcha. The Miracle Sea!
+ATTENDANT1	Talk	OK. The Miracle Sea!
+ATTENDANT1	Talk	OK. The Miracle Sea it is!

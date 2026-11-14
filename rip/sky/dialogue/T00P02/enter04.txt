@@ -1,0 +1,9 @@
+speaker	kind	line
+TALK_SUB	Talk	What can I help you with today?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Talk	Do you really need help with anything?
+TALK_SUB	SwitchMenu	Yes
+TALK_SUB	Talk	I can't help you with anything right now.
+TALK_SUB	Talk	No
+TALK_SUB	Talk	I see...
+TALK_SUB	Talk	No

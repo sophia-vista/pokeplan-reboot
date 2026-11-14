@@ -1,0 +1,38 @@
+speaker	kind	line
+NPC_MANAFI	Talk	Weh... Weh... Waaaah!
+NPC_MANAFI	SwitchMenu	Yes
+NPC_MANAFI	Talk	Weh... Wah?
+ATTENDANT1	Talk	Go on! Eat it. It's a Blue Gummi.
+NPC_MANAFI	Talk	...Goomi?
+NPC_MANAFI	Talk	Nibble, nibble...
+NPC_MANAFI	Talk	!
+NPC_MANAFI	Talk	Goomi! Goomi!
+ATTENDANT1	Talk	Oh, whew! He ate the Gummi.
+NPC_MANAFI	Talk	Goomi! ♪ Goomi! ♪
+ATTENDANT1	Talk	Ha! He likes you, !
+ATTENDANT1	Talk	He's so cute.
+ATTENDANT1	Talk	Aww, what a cutie.
+ATTENDANT1	Talk	Hey, .
+ATTENDANT1	Talk	Say, .
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	All right! Awesome! We'll do it!
+ATTENDANT1	SwitchMenu	OK! Awesome! We'll do it!
+ATTENDANT1	SwitchMenu	Oh, thank you! We'll do it!
+NPC_MANAFI	Talk	Doodit! ♪
+NPC_PERAPPU	Talk	..................
+NPC_PERAPPU	Talk	I'm not sure this is a good idea...
+ATTENDANT1	Talk	Huh?
+ATTENDANT1	Talk	What?
+ATTENDANT1	Talk	Hmm...
+NPC_PERAPPU	Talk	Hmmm...
+NPC_PERAPPU	Talk	...Fine. If you insist.
+ATTENDANT1	Talk	Don't worry! You can rely on us!
+ATTENDANT1	Talk	Right, ?
+ATTENDANT1	Talk	No
+ATTENDANT1	Talk	Huh?!
+ATTENDANT1	Talk	What?!
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	No
+ATTENDANT1	Mail	doesn't have a Blue Gummi...
+ATTENDANT1	Mail	No
+NPC_MANAFI	Talk	Weh... Weh... Waaaah!

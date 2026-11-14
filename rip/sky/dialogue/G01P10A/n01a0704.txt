@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Narration	The next morning...
+PLAYER_BIPPA	Talk	H-huh...? What's that...?
+NPC_DOGOOMU	Talk	How LATE will you SLEEP!
+PLAYER_BIPPA	Talk	I-I've got to hurry!

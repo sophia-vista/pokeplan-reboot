@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_SUTORAIKU	Talk	We're leaving soon.
+NPC_SUTORAIKU	Talk	Where could he have gotten to?
+NPC_SUTORAIKU	Talk	So the baby's called Manaphy...
+NPC_SUTORAIKU	Talk	It's really great for tired bones.
+NPC_SUTORAIKU	Talk	Tch! No! What am I saying?
+NPC_SUTORAIKU	Talk	That Grovyle.
+NPC_SUTORAIKU	Talk	It's eco-friendly, you know?

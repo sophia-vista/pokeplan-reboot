@@ -1,0 +1,42 @@
+speaker	kind	line
+NPC_RAIBORUTO	Talk	Rrroooaarrr!
+NPC_RAIBORUTO	Talk	You...you dare?!
+ATTENDANT1	Talk	W-wait!
+ATTENDANT1	Talk	W-w-wait a second!
+ATTENDANT1	Talk	W-w-wait just a second!
+NPC_RAIBORUTO	Talk	Enough! Take this!
+ATTENDANT1	Talk	Waaah!
+-	Talk	Stop!
+ATTENDANT1	Talk	Dus... Dusknoir!
+NPC_RAIBORUTO	Talk	You! Who are you?!
+NPC_YONOWAARU	Talk	I am the explorer Dusknoir!
+NPC_YONOWAARU	Talk	I understand that completely!
+NPC_YONOWAARU	Talk	Please, believe me! Manectric!
+NPC_RAIBORUTO	Talk	Come.
+ATTENDANT1	Talk	Whew!
+ATTENDANT1	Talk	Thank you, Dusknoir, sir!
+ATTENDANT1	Talk	You saved us!
+ATTENDANT1	Talk	But...
+ATTENDANT1	Talk	Who were they?
+ATTENDANT1	Talk	Oh! I forgot something!
+ATTENDANT1	FacePositionOffset	It's here! Here it is!
+ATTENDANT1	FacePositionOffset	It's here! This is it!
+ATTENDANT1	FacePositionOffset	Dusknoir, sir, is this the...?
+ATTENDANT1	FacePositionOffset	Dusknoir, sir, is this...?
+ATTENDANT1	FacePositionOffset	Really?!
+ATTENDANT1	FacePositionOffset	Huh?
+ATTENDANT1	FacePositionOffset	What?
+ATTENDANT1	FacePositionOffset	Pardon?
+-	Talk	........................
+ATTENDANT1	FacePositionOffset	Hey! It's you thugs!?
+NPC_DOGAASU	Talk	Whoa-ho-ho!
+NPC_ZUBATTO	Talk	Heh-heh-heh!
+NPC_SUKATANKU	Talk	Chaw-haw-haw!
+ATTENDANT1	FacePositionOffset	So you guys did it! But why?
+NPC_YONOWAARU	Talk	Shall we settle this?
+NPC_SUKATANKU	Talk	That's a different story!
+NPC_SUKATANKU	Talk	Let's skedaddle, boys!
+NPC_SUKATANKU	Talk	Koffing & Zubat: Yeah!
+ATTENDANT1	FacePositionOffset	What stinkers!
+ATTENDANT1	FacePositionOffset	I'm never forgiving those thugs!
+ATTENDANT1	FacePositionOffset	I'm never forgiving those guys!

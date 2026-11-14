@@ -1,0 +1,37 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	This appears to be the top.
+ATTENDANT1	Talk	Hey! Look here!
+NPC_JUPUTORU	Talk	The strange pattern is here too.
+ATTENDANT1	Talk	What's it for...?
+ATTENDANT1	Talk	I wonder what it's for...?
+PLAYER	Talk	(Oh? What's that...?)
+NPC_JUPUTORU	Talk	Hm? What is it, ?
+PLAYER	Talk	(There's a stone tablet...)
+PLAYER	Talk	(There seems to be something inscribed here.)
+PLAYER	Talk	(What are these...? These strange runes...?)
+ATTENDANT1	Talk	Can you read it, Grovyle?
+ATTENDANT1	Talk	You can read that, Grovyle?
+ATTENDANT1	Talk	Really?! Great! Quick! Read it!
+ATTENDANT1	Talk	...So, Grovyle?
+ATTENDANT1	Talk	Huh?! This is it?!
+ATTENDANT1	Talk	What?! This is it?!
+ATTENDANT1	Talk	Pardon?! This is it?!
+NPC_JUPUTORU	Talk	Yeah. That's right.
+NPC_JUPUTORU	Talk	There is an indentation there.
+NPC_JUPUTORU	Talk	Here it is.
+NPC_JUPUTORU	Talk	.
+NPC_JUPUTORU	Talk	This is where it goes.
+ATTENDANT1	Talk	Really?!
+NPC_JUPUTORU	Talk	Try it and see.
+ATTENDANT1	Talk	OK!
+ATTENDANT1	Talk	I'll fit it into this hollow spot!
+-	Talk	That's quite enough of that.
+NPC_JUPUTORU	Talk	Who...who's there?!
+NPC_YAMIRAMI	Talk	Wheh-heh-heh.
+ATTENDANT1	Talk	The Sableye!
+NPC_YONOWAARU	Talk	Ha-ha-ha! Hoo-hoo-ha!
+ATTENDANT1	Talk	D-Dusknoir!
+NPC_JUPUTORU	Talk	How did you get here?!
+NPC_YONOWAARU	Talk	Humph... Quite simple, actually.
+NPC_JUPUTORU	Talk	Urgh...
+NPC_YONOWAARU	Talk	Sableye: Wheh-heh-heh!

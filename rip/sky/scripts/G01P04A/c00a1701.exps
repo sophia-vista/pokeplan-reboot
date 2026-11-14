@@ -1,0 +1,1315 @@
+
+def 0 {
+    sound_Stop();
+    back_SetGround(LEVEL_G01P04A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    switch ( $EVENT_LOCAL ) {
+        case 0:
+        default:
+            @label_0;
+            screen_FadeIn(1, 30);
+            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You've worked an honest day! ♪",
+            });
+            message_Talk({
+                english="""
+                     Let me review your sentry-duty
+                    performance...
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            message_Talk({
+                english=" Your results were...[K]dreadful!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            bgm_Stop();
+            bgm_PlayFadeIn(BGM_FAILED_SENTRY_DUTY, 0, 256);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROP, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SWEAT_DROP, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_SWEAT_DROP, 3);
+            WaitBgm(BGM_FAILED_SENTRY_DUTY);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_PAIN, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You failed so many times!",
+            });
+            Wait(20);
+            Turn2Direction<actor ACTOR_PLAYER>(1, 10, DIR_UP);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(1, 10, DIR_UP);
+            message_Close();
+            Wait(20);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            se_Play(8971);
+            ExecuteCommon<actor ACTOR_NPC_PERAPPU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_ANGRY, 3);
+            ExecuteCommon<actor ACTOR_PLAYER>(CORO_JUMP_SURPRISE_FUNC_SERIES, 0);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_SURPRISE_FUNC_SERIES, 0);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_SHOCKED_MIRRORED, 3);
+            WaitEffect<actor ACTOR_NPC_DOGOOMU>();
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_ANGRY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" What nonsense were you up to?!",
+            });
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_TOP_L_CENTER);
+            message_Talk({
+                english=" UGH...!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(9);
+            Wait(30);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UPLEFT);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_UPLEFT);
+            Turn2Direction<actor ACTOR_NPC_PERAPPU>(4, 10, DIR_DOWNLEFT);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_ANGRY, 3);
+            message_SetFace(ACTOR_NPC_DOGOOMU, FACE_ANGRY, FACE_POS_TOP_L_CENTER);
+            message_Talk({
+                english=" You two got SO many wrong...",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            se_Play(8971);
+            camera_SetEffect(2, 2, 3.0);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(19);
+            WaitAnimation<actor ACTOR_NPC_DOGOOMU>();
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_ANGRY, 3);
+            Wait(5);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_SHOCKED, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SHOCKED, 3);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_SHOCKED, 3);
+            SetAnimation<actor ACTOR_PLAYER>(68);
+            SetAnimation<actor ACTOR_ATTENDANT1>(68);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(11);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            WaitSe(8971);
+            camera_SetEffect(0, 0, 0);
+            message_Talk({
+                english=" I even got in TROUBLE for it!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetAnimation<actor ACTOR_PLAYER>(9);
+            SetAnimation<actor ACTOR_ATTENDANT1>(9);
+            Wait(10);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            Wait(10);
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            Turn2Direction<actor ACTOR_NPC_PERAPPU>(4, 10, DIR_DOWNLEFT);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+            se_Play(8972);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+            WaitEffect<actor ACTOR_NPC_PERAPPU>();
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_DIZZY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" H-hush!",
+            });
+            Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UP);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_UP);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8971);
+            ExecuteCommon<actor ACTOR_NPC_PERAPPU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_ANGRY, 3);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_ANGRY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Don't you dare blame
+                    anyone else!
+                """,
+            });
+            message_Talk({
+                english="""
+                     Sentry duty is a cooperative job,
+                    isn't it?
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            Turn2Direction<actor ACTOR_NPC_PERAPPU>(4, 10, DIR_DOWN);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            se_Play(8971);
+            ExecuteCommon<actor ACTOR_NPC_PERAPPU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_ANGRY, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_ANGRY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Anyway...[K] This job was a
+                    flagrant fiasco!
+                """,
+            });
+            message_Talk({
+                english="""
+                     As such, there shall be
+                    no reward!
+                """,
+            });
+            message_Close();
+            se_Play(8968);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_SHOCKED, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_SHOCKED_MIRRORED, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SHOCKED, 3);
+            WaitEffect<actor ACTOR_ATTENDANT1>();
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Wait(30);
+            @label_8;
+            screen_FadeOut(1, 60);
+            Wait(30);
+            end;
+        case 1:
+            screen_FadeIn(1, 30);
+            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You've worked an honest day! ♪",
+            });
+            message_Talk({
+                english="""
+                     Let me review your sentry-duty
+                    performance...
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            message_Talk({
+                english="""
+                     Your results were...[K] Hmm.[K] 
+                    Merely adequate.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            bgm_Stop();
+            bgm_PlayFadeIn(BGM_DECENT_SENTRY_DUTY, 0, 256);
+            WaitBgm(BGM_DECENT_SENTRY_DUTY);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_TOP_L_CENTER);
+            message_Talk({
+                english=" Hmm...",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Oh...",
+                    }
+                case 2:
+                    {
+                        english=" Oh...",
+                    }
+                default:
+                    {
+                        english=" Oh...",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Here are your rewards for
+                    the job.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_ResetActor();
+            message_Mail({
+                english="""
+                    [CN]As the reward for doing the job,
+                    [CN][hero]'s team...
+                """,
+            });
+            message_KeyWait();
+            me_Play(4);
+            message_Mail({
+                english="[CN]received [CS:G]50[CR][M:S0]!",
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            $CARRY_GOLD += 50;
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]In addition, the team
+                    [CN]also received an [CS:I]Oran Berry[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 70, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     I expect to see a better effort
+                    out of you next time! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            SetAnimation<actor ACTOR_PLAYER>(71);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            SetAnimation<actor ACTOR_ATTENDANT1>(71);
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            Wait(30);
+            jump @label_8;
+        case 2:
+            screen_FadeIn(1, 30);
+            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You've worked an honest day! ♪",
+            });
+            message_Talk({
+                english="""
+                     Let me review your sentry-duty
+                    performance...
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            message_Talk({
+                english="""
+                     Your results were...[K] Hmm![K] 
+                    Well done!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_LAUGHING, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" Good job, you two! ♪",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            bgm_Stop();
+            bgm_PlayFadeIn(BGM_GOOD_SENTRY_DUTY, 0, 256);
+            WaitBgm(BGM_GOOD_SENTRY_DUTY);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_JOYOUS, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_JOYOUS, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_JOYOUS, 3);
+            ExecuteCommon<actor ACTOR_PLAYER>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(5);
+            message_SetFace(ACTOR_NPC_DOGOOMU, FACE_HAPPY, FACE_POS_TOP_L_CENTER);
+            message_Talk({
+                english=" Good!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_JOYOUS, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Yay!",
+                    }
+                case 2:
+                    {
+                        english=" Yay!",
+                    }
+                default:
+                    {
+                        english=" Yay!",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Here are your rewards for your
+                    honest effort! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Wait(15);
+            message_ResetActor();
+            message_Mail({
+                english="""
+                    [CN]As the reward for a job well
+                    [CN]done, [hero]'s team...
+                """,
+            });
+            message_KeyWait();
+            me_Play(4);
+            message_Mail({
+                english="[CN]received [CS:G]100[CR][M:S0]!",
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            $CARRY_GOLD += 100;
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]In addition, the team
+                    [CN]also received a [CS:I]Max Elixir[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 99, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]Not only that, the team
+                    [CN]also received a [CS:I]Nectar[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 103, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_LAUGHING, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_JOYOUS, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You two, keep that up! ♪",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            SetAnimation<actor ACTOR_PLAYER>(71);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            SetAnimation<actor ACTOR_ATTENDANT1>(71);
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            SetAnimation<actor ACTOR_PLAYER>(71);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            SetAnimation<actor ACTOR_ATTENDANT1>(71);
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            Wait(30);
+            jump @label_8;
+        case 3:
+            screen_FadeIn(1, 30);
+            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You've worked an honest day! ♪",
+            });
+            message_Talk({
+                english="""
+                     Let me review your sentry-duty
+                    performance...
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            message_Talk({
+                english="""
+                     Your results were...[K] Well, well!
+                    Perfect!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            bgm_Stop();
+            bgm_PlayFadeIn(BGM_PERFECT_SENTRY_DUTY, 0, 256);
+            WaitBgm(BGM_PERFECT_SENTRY_DUTY);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_LAUGHING, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_JOYOUS, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     You identified every visitor
+                    correctly! ♪
+                """,
+            });
+            se_Play(7944);
+            SetEffect<performer 3>(EFFECT_CONFETTI, 3);
+            Wait(10);
+            SetEffect<performer 4>(EFFECT_CONFETTI, 3);
+            SetEffect<performer 5>(EFFECT_CONFETTI, 3);
+            Wait(10);
+            SetEffect<performer 6>(EFFECT_CONFETTI, 3);
+            SetEffect<performer 7>(EFFECT_CONFETTI, 3);
+            WaitEffect<performer 3>();
+            WaitEffect<performer 4>();
+            WaitEffect<performer 5>();
+            SetPositionMark<performer 3>(Position<'m0', 21.5, 35.5>);
+            SetPositionMark<performer 4>(Position<'m1', 18, 35.5>);
+            SetPositionMark<performer 5>(Position<'m2', 25, 35.5>);
+            SetEffect<performer 3>(EFFECT_CONFETTI, 3);
+            SetEffect<performer 4>(EFFECT_CONFETTI, 3);
+            SetEffect<performer 5>(EFFECT_CONFETTI, 3);
+            WaitEffect<performer 3>();
+            WaitEffect<performer 4>();
+            WaitEffect<performer 5>();
+            WaitExecutePerformer(5);
+            SetEffect<performer 3>(EFFECT_NONE, 3);
+            SetEffect<performer 4>(EFFECT_NONE, 3);
+            SetEffect<performer 5>(EFFECT_NONE, 3);
+            SetEffect<performer 6>(EFFECT_NONE, 3);
+            SetEffect<performer 7>(EFFECT_NONE, 3);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_JOYOUS, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_JOYOUS, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_JOYOUS, 3);
+            ExecuteCommon<actor ACTOR_PLAYER>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(5);
+            message_SetFace(ACTOR_NPC_DOGOOMU, FACE_HAPPY, FACE_POS_TOP_L_CENTER);
+            message_Talk({
+                english=" Excellent!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_RIGHT);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_LEFT);
+            WaitExecuteLives(ACTOR_PLAYER);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_JOYOUS, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" We did it!",
+                    }
+                case 2:
+                    {
+                        english=" We did it!",
+                    }
+                default:
+                    {
+                        english=" We did it!",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_FadeOut(7944, 30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Your effort will certainly be
+                    rewarded! ♪[K] The reward will be special too!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            message_Talk({
+                english="""
+                     You two deserve an especially
+                    generous selection of rewards! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_ResetActor();
+            message_Mail({
+                english="""
+                    [CN]As the reward for a job perfectly
+                    [CN]done, [hero]'s team...
+                """,
+            });
+            message_KeyWait();
+            me_Play(4);
+            message_Mail({
+                english="[CN]received [CS:G]300[CR][M:S0]!",
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            $CARRY_GOLD += 300;
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]In addition, the team
+                    [CN]also received a [CS:I]Def. Scarf[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 37, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]Not only that, the team
+                    [CN]also received a [CS:I]Reviver Seed[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 73, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            message_Mail({
+                english="[CN]But that's not the end of it!",
+            });
+            message_KeyWait();
+            me_Play(9);
+            message_Mail({
+                english="""
+                    [CN]The team even
+                    [CN]received a [CS:I]Heal Seed[CR]!
+                """,
+            });
+            WaitMe(9);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 69, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            ExecuteCommon<actor ACTOR_PLAYER>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(5);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_LAUGHING, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_LAUGHING, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_LAUGHING, 3);
+            message_Mail({
+                english="""
+                    [CN]Is it really OK to be
+                    [CN]rewarded this much?!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_LAUGHING, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You two, keep that up! ♪",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Turn2Direction<actor ACTOR_PLAYER>(4, 2, DIR_DOWN);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_DOWN);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Wait(20);
+            SetAnimation<actor ACTOR_PLAYER>(66);
+            SetAnimation<actor ACTOR_ATTENDANT1>(66);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            Wait(80);
+            jump @label_8;
+        case 4:
+            screen_FadeIn(1, 30);
+            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You've worked an honest day! ♪",
+            });
+            message_Talk({
+                english="""
+                     Let me review your sentry-duty
+                    performance...
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            message_Talk({
+                english=" Your results were...[K]dreadful!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            bgm_Stop();
+            bgm_PlayFadeIn(BGM_FAILED_SENTRY_DUTY, 0, 256);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_SWEAT_DROP, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_SWEAT_DROP, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_SWEAT_DROP, 3);
+            WaitBgm(BGM_FAILED_SENTRY_DUTY);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Still, you have shown some
+                    improvement from before...
+                """,
+            });
+            Wait(20);
+            Turn2Direction<actor ACTOR_PLAYER>(1, 10, DIR_UP);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(1, 10, DIR_UP);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            message_Talk({
+                english="""
+                     Well, isn't this amazing.[K]
+                    You've beaten the previous high score! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8971);
+            ExecuteCommon<actor ACTOR_NPC_PERAPPU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_ANGRY, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_ANGRY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     But it doesn't alter the fact that
+                    your performance as sentries was utterly
+                    dreadful![K] Don't get cocky!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8968);
+            ExecuteCommon<actor ACTOR_PLAYER>(CORO_JUMP_SURPRISE_FUNC_SERIES, 0);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_SURPRISE_FUNC_SERIES, 0);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_SHOCKED_MIRRORED, 3);
+            WaitEffect<actor ACTOR_NPC_DOGOOMU>();
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Wait(30);
+            jump @label_8;
+        case 5:
+            screen_FadeIn(1, 30);
+            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You've worked an honest day! ♪",
+            });
+            message_Talk({
+                english="""
+                     Let me review your sentry-duty
+                    performance...
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Your results were...[K] Hmm.[K] 
+                    Merely adequate.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            bgm_Stop();
+            bgm_PlayFadeIn(BGM_DECENT_SENTRY_DUTY, 0, 256);
+            WaitBgm(BGM_DECENT_SENTRY_DUTY);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Well...[K] You have improved
+                    from before.
+                """,
+            });
+            Wait(20);
+            Turn2Direction<actor ACTOR_PLAYER>(1, 10, DIR_UP);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(1, 10, DIR_UP);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            message_Talk({
+                english="""
+                     Well, isn't this amazing.[K]
+                    You've beaten the previous high score! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            ExecuteCommon<actor ACTOR_NPC_PERAPPU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     But it doesn't alter the fact that
+                    your performance as sentries was only
+                    adequate.[K] Don't get cocky!
+                """,
+            });
+            message_Talk({
+                english="""
+                     Here are your rewards for
+                    the job.
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_ResetActor();
+            message_Mail({
+                english="""
+                    [CN]As the reward for doing the job,
+                    [CN][hero]'s team...
+                """,
+            });
+            message_KeyWait();
+            me_Play(4);
+            message_Mail({
+                english="[CN]received [CS:G]100[CR][M:S0]!",
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            $CARRY_GOLD += 100;
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]In addition, the team
+                    [CN]also received a [CS:I]Max Elixir[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 99, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     I expect to see a better effort
+                    out of you next time! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            SetAnimation<actor ACTOR_PLAYER>(71);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            SetAnimation<actor ACTOR_ATTENDANT1>(71);
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            Wait(30);
+            jump @label_8;
+        case 6:
+            screen_FadeIn(1, 30);
+            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You've worked an honest day! ♪",
+            });
+            message_Talk({
+                english="""
+                     Let me review your sentry-duty
+                    performance...
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            message_Talk({
+                english="""
+                     Your results were...[K] Hmm![K] 
+                    Well done!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_LAUGHING, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Ah, yes, this is impressive![K]
+                    You've beaten the previous high score! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            bgm_Stop();
+            bgm_PlayFadeIn(BGM_GOOD_SENTRY_DUTY, 0, 256);
+            WaitBgm(BGM_GOOD_SENTRY_DUTY);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_JOYOUS, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_JOYOUS, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_JOYOUS, 3);
+            ExecuteCommon<actor ACTOR_PLAYER>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(5);
+            message_SetFace(ACTOR_NPC_DOGOOMU, FACE_HAPPY, FACE_POS_TOP_L_CENTER);
+            message_Talk({
+                english=" Good!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_JOYOUS, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Yay!",
+                    }
+                case 2:
+                    {
+                        english=" Yay!",
+                    }
+                default:
+                    {
+                        english=" Yay!",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Here are your rewards for your
+                    honest effort! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Wait(15);
+            message_ResetActor();
+            message_Mail({
+                english="""
+                    [CN]As the reward for a job well
+                    [CN]done, [hero]'s team...
+                """,
+            });
+            message_KeyWait();
+            me_Play(4);
+            message_Mail({
+                english="[CN]received [CS:G]200[CR][M:S0]!",
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            $CARRY_GOLD += 200;
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]In addition, the team
+                    [CN]also received a [CS:I]Heal Seed[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 69, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]Not only that, the team
+                    [CN]also received a [CS:I]Nectar[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 103, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_LAUGHING, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_JOYOUS, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You two, keep that up! ♪",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_PLAYER);
+            SetAnimation<actor ACTOR_PLAYER>(71);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            SetAnimation<actor ACTOR_ATTENDANT1>(71);
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            SetAnimation<actor ACTOR_PLAYER>(71);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            SetAnimation<actor ACTOR_ATTENDANT1>(71);
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            Wait(30);
+            jump @label_8;
+        case 7:
+            screen_FadeIn(1, 30);
+            bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+            Wait(30);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_NORMAL, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You've worked an honest day! ♪",
+            });
+            message_Talk({
+                english="""
+                     Let me review your sentry-duty
+                    performance...
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Wait(10);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            Wait(30);
+            message_Talk({
+                english="""
+                     Your results were...[K] Well, well!
+                    Perfect!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            bgm_Stop();
+            bgm_PlayFadeIn(BGM_PERFECT_SENTRY_DUTY, 0, 256);
+            WaitBgm(BGM_PERFECT_SENTRY_DUTY);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_LAUGHING, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_JOYOUS, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Ah, yes, this is impressive![K]
+                    You've beaten the previous high score! ♪
+                """,
+            });
+            se_Play(7944);
+            SetEffect<performer 3>(EFFECT_CONFETTI, 3);
+            Wait(10);
+            SetEffect<performer 4>(EFFECT_CONFETTI, 3);
+            SetEffect<performer 5>(EFFECT_CONFETTI, 3);
+            Wait(10);
+            SetEffect<performer 6>(EFFECT_CONFETTI, 3);
+            SetEffect<performer 7>(EFFECT_CONFETTI, 3);
+            WaitEffect<performer 3>();
+            WaitEffect<performer 4>();
+            WaitEffect<performer 5>();
+            SetPositionMark<performer 3>(Position<'m3', 21.5, 35.5>);
+            SetPositionMark<performer 4>(Position<'m4', 18, 35.5>);
+            SetPositionMark<performer 5>(Position<'m5', 25, 35.5>);
+            SetEffect<performer 3>(EFFECT_CONFETTI, 3);
+            SetEffect<performer 4>(EFFECT_CONFETTI, 3);
+            SetEffect<performer 5>(EFFECT_CONFETTI, 3);
+            WaitEffect<performer 3>();
+            WaitEffect<performer 4>();
+            WaitEffect<performer 5>();
+            WaitExecutePerformer(5);
+            se_FadeOut(7944, 15);
+            SetEffect<performer 3>(EFFECT_NONE, 3);
+            SetEffect<performer 4>(EFFECT_NONE, 3);
+            SetEffect<performer 5>(EFFECT_NONE, 3);
+            SetEffect<performer 6>(EFFECT_NONE, 3);
+            SetEffect<performer 7>(EFFECT_NONE, 3);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_JOYOUS, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_JOYOUS, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_JOYOUS, 3);
+            ExecuteCommon<actor ACTOR_PLAYER>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(5);
+            message_SetFace(ACTOR_NPC_DOGOOMU, FACE_HAPPY, FACE_POS_TOP_L_CENTER);
+            message_Talk({
+                english=" Excellent!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_RIGHT);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_LEFT);
+            WaitExecuteLives(ACTOR_PLAYER);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_JOYOUS, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" We did it!",
+                    }
+                case 2:
+                    {
+                        english=" We did it!",
+                    }
+                default:
+                    {
+                        english=" We did it!",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english="""
+                     Your effort will certainly be
+                    rewarded! ♪[K] The reward will be special too!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+            Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERAPPU);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_UPRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            message_Talk({
+                english="""
+                     You two deserve an especially
+                    generous selection of rewards! ♪
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_ResetActor();
+            message_Mail({
+                english="""
+                    [CN]As the reward for a job perfectly
+                    [CN]done, [hero]'s team...
+                """,
+            });
+            message_KeyWait();
+            me_Play(4);
+            message_Mail({
+                english="[CN]received [CS:G]400[CR][M:S0]!",
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            $CARRY_GOLD += 400;
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]In addition, the team
+                    [CN]also received a [CS:I]Pecha Scarf[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 27, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            me_Play(4);
+            message_Mail({
+                english="""
+                    [CN]Not only that, the team
+                    [CN]also received a [CS:I]Reviver Seed[CR]!
+                """,
+            });
+            WaitMe(4);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 73, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            message_Mail({
+                english="[CN]But that's not the end of it!",
+            });
+            message_KeyWait();
+            me_Play(9);
+            message_Mail({
+                english="""
+                    [CN]The team even
+                    [CN]received a [CS:I]Max Elixir[CR]!
+                """,
+            });
+            WaitMe(9);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            item_Set(0, 99, 0);
+            switch ( message_Menu(MENU_GIVE_ITEM2) ) { }
+            Wait(10);
+            ExecuteCommon<actor ACTOR_PLAYER>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            Wait(5);
+            ExecuteCommon<actor ACTOR_NPC_DOGOOMU>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(5);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_LAUGHING, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_LAUGHING, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_LAUGHING, 3);
+            message_Mail({
+                english="""
+                    [CN]Is it really OK to be
+                    [CN]rewarded this much?!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_NONE, 3);
+            SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_NONE, 3);
+            se_Play(5122);
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(18);
+            WaitAnimation<actor ACTOR_NPC_PERAPPU>();
+            SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+            WaitExecuteLives(ACTOR_NPC_PERAPPU);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_LAUGHING, 3);
+            message_SetFace(ACTOR_NPC_PERAPPU, FACE_HAPPY, FACE_POS_TOP_C_FACEL);
+            message_Talk({
+                english=" You two, keep that up! ♪",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+            SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+            Turn2Direction<actor ACTOR_NPC_DOGOOMU>(4, 10, DIR_DOWNRIGHT);
+            WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+            Turn2Direction<actor ACTOR_PLAYER>(4, 2, DIR_DOWN);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_DOWN);
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            Wait(20);
+            SetAnimation<actor ACTOR_PLAYER>(66);
+            SetAnimation<actor ACTOR_ATTENDANT1>(66);
+            WaitAnimation<actor ACTOR_PLAYER>();
+            WaitAnimation<actor ACTOR_ATTENDANT1>();
+            Wait(80);
+            jump @label_8;
+    }
+}

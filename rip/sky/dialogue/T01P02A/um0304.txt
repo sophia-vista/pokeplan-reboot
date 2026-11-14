@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_YAMIKARASU	Talk	The Lost Loot is rightfully mine!
+NPC_YAMIKARASU	Talk	And that is...the Lost Loot!
+NPC_YAMIKARASU	Talk	Do you know anything of it?
+NPC_YAMIKARASU	Talk	I want a Golden Apple!
+NPC_YAMIKARASU	Talk	Oooh, I must have it!
+NPC_YAMIKARASU	Talk	The Hidden Land?
+NPC_YAMIKARASU	Talk	There's no mistake!
+NPC_YAMIKARASU	Talk	Arrgh, it is just so frustrating!

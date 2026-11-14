@@ -1,0 +1,152 @@
+
+def 0 {
+    sound_Stop();
+    $SCENARIO_MAIN_BIT_FLAG[12] = 1;
+    back_SetGround(LEVEL_T01P03A);
+    supervision_StationCommon(5);
+    supervision_StationCommon(0);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    Wait(1);
+    MovePositionOffset<actor ACTOR_PLAYER>(1, 0, -32);
+    MovePositionOffset<actor ACTOR_ATTENDANT1>(1, 0, -40);
+    screen_FadeIn(1, 30);
+    Wait(30);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    se_Play(8968);
+    SetEffect<actor ACTOR_NPC_GARAGARA>(EFFECT_SHOCKED, 3);
+    WaitEffect<actor ACTOR_NPC_GARAGARA>();
+    WaitExecuteLives(ACTOR_NPC_GARAGARA);
+    message_SetFace(ACTOR_NPC_GARAGARA, FACE_NORMAL, FACE_POS_TOP_L_CENTER);
+    message_Talk({
+        english=" ...[K]V-[K]visitors...?",
+    });
+    message_Talk({
+        english="""
+             F-finally...[K] M-my...[K]
+            first visitors!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8975);
+    SetEffect<actor ACTOR_NPC_GARAGARA>(EFFECT_JOYOUS, 3);
+    ExecuteCommon<actor ACTOR_NPC_GARAGARA>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_NPC_GARAGARA);
+    SetEffect<actor ACTOR_NPC_GARAGARA>(EFFECT_NONE, 3);
+    Wait(15);
+    MovePositionMark<actor ACTOR_NPC_GARAGARA>(1.5, Position<'m0', 31.5, 31.5>);
+    WaitExecuteLives(ACTOR_NPC_GARAGARA);
+    bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD_REMIX, 0, 256);
+    message_SetFace(ACTOR_NPC_GARAGARA, FACE_NORMAL, FACE_POS_TOP_C_FACER);
+    message_Talk({
+        english="""
+             Welcome to [CS:K]Marowak[CR] Dojo.[K]
+            This is my place! It's dedicated to the training
+            of exploration teams!
+        """,
+    });
+    message_Talk({
+        english="""
+             The dojo went to rack and ruin,
+            then to a pile of rubble, but...[K]it has now
+            risen from the dust to its former glory!
+        """,
+    });
+    message_Talk({
+        english=" But...[K]I haven't had any visitors...",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8972);
+    SetEffect<actor ACTOR_NPC_GARAGARA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+    WaitEffect<actor ACTOR_NPC_GARAGARA>();
+    WaitExecuteLives(ACTOR_NPC_GARAGARA);
+    message_Talk({
+        english="""
+             There hasn't been even one.[K]
+            It saddened me to my very marrow...[K] But then!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    ExecuteCommon<actor ACTOR_NPC_GARAGARA>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_NPC_GARAGARA);
+    message_Talk({
+        english=" Along came you two!",
+    });
+    message_Talk({
+        english="""
+             You are my first customers![K]
+            From my very marrow, I'm feeling overjoyed!
+        """,
+    });
+    message_Talk({
+        english="""
+             I don't even want money![K]
+            Keep it! Just train here, that's all I ask!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    MovePositionMark<performer 0>(1, Position<'m1', 31.5, 24.5>);
+    MovePositionMark<actor ACTOR_NPC_GARAGARA>(1, Position<'m2', 31.5, 23.5>);
+    Wait(10);
+    MovePositionOffset<actor ACTOR_PLAYER>(1, 0, -72);
+    Wait(5);
+    MovePositionOffset<actor ACTOR_ATTENDANT1>(1, 0, -72);
+    Turn2Direction<actor ACTOR_NPC_GARAGARA>(4, 10, DIR_UPRIGHT);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UPRIGHT);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_UPRIGHT);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_NPC_GARAGARA, FACE_NORMAL, FACE_POS_TOP_C_FACER);
+    message_Talk({
+        english="""
+             There's the entrance to the
+            training mazes.
+        """,
+    });
+    message_Talk({
+        english="""
+             I have to tell you one thing...[K]
+            Training mazes aren't like ordinary dungeons...
+        """,
+    });
+    message_Talk({
+        english="""
+             There's this icky part, you see.
+            When you go in, you hand over everything
+            that's in your Treasure Bag.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Turn2Direction<actor ACTOR_NPC_GARAGARA>(4, 10, DIR_DOWN);
+    WaitExecuteLives(ACTOR_NPC_GARAGARA);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_UP);
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_UP);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_Talk({
+        english="""
+             To avoid losing the items in your
+            Treasure Bag, put them in [CS:K]Kangaskhan[CR] Storage
+            before you go in.
+        """,
+    });
+    message_Talk({
+        english="""
+             There's more![K] If you get KO'd,
+            you don't lose the new money and items that
+            you found in the maze. You get to keep them!
+        """,
+    });
+    message_Talk({
+        english="""
+             There's no risk to you, so you
+            can go all out while you train.
+        """,
+    });
+    message_Talk({
+        english="""
+             So, yes, make me happy. Train
+            your team here.[K] How about it?
+        """,
+    });
+    message_Close();
+    end;
+}

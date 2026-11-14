@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_YUKUSHII	Talk	Very well.
+NPC_YUKUSHII	Talk	Your challenge...
+NPC_YUKUSHII	Talk	I accept it!
+NPC_YUKUSHII	Talk	Come!

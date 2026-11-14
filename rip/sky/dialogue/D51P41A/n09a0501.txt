@@ -1,0 +1,24 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	It should be much easier.
+NPC_YONOWAARU	Talk	Grovyle! Look out! Above you!
+PLAYER_FUTURE	Talk	What?!
+PLAYER_FUTURE	Talk	Gwaaaaaaahhh!!
+PLAYER_FUTURE	Talk	D-Dusknoir!
+NPC_YONOWAARU	Talk	Oof!
+PLAYER_FUTURE	Talk	Are you all right?!
+NPC_YONOWAARU	Talk	Ugh... N-never mind that...
+NPC_YONOWAARU	Talk	Look out... They're coming...
+-	Talk	GOGIGIGIGI!!
+PLAYER_FUTURE	Talk	Th-these...guys?!
+NPC_YONOWAARU	Talk	B-but...
+NPC_ONIGOORI	Talk	GOGI!
+NPC_ONIGOORI	Talk	GOGIGI!
+NPC_ONIGOORI	Talk	GOGIGIGIGI!
+PLAYER_FUTURE	Talk	What?!
+-	Talk	BUAOOOOOON!
+PLAYER_FUTURE	Talk	Wh-what?!
+NPC_MANMUU	Talk	BUAOOOOOON!
+PLAYER_FUTURE	Talk	He's a...?!
+NPC_YONOWAARU	Talk	He's a Mamoswine!
+NPC_MANMUU	Talk	BUAAAAOOOOOON!
+NPC_YONOWAARU	Talk	H-here they come!

@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	Invincibility...doesn't exist!
+NPC_GOOSUTO	Talk	Heh heh! Persistent!
+NPC_GOOSUTO	Talk	Let's go!

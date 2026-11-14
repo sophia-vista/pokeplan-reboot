@@ -1,0 +1,36 @@
+speaker	kind	line
+NPC_EMURITTO	Talk	Urgh...urgh...
+ATTENDANT1	Talk	Listen!
+ATTENDANT1	Talk	Will you please listen?!
+ATTENDANT1	Talk	Please, listen!
+NPC_EMURITTO	Talk	Don't lie to me!
+ATTENDANT1	Talk	What? You heard it from Uxie?
+NPC_EMURITTO	Talk	That was your doing, wasn't it?!
+ATTENDANT1	Talk	No! It wasn't us!
+ATTENDANT1	Talk	No! We didn't do it!
+ATTENDANT1	Talk	No! It wasn't us!
+NPC_EMURITTO	Talk	Then who's responsible?!
+-	Talk	That would probably be...me.
+NPC_EMURITTO	Talk	Who are you?!
+ATTENDANT1	Talk	G-Grovyle!
+PLAYER	Talk	(Th-that's Grovyle!)
+ATTENDANT1	Talk	Waah!
+NPC_JUPUTORU	Talk	Stand aside.
+NPC_EMURITTO	Talk	I...I won't!
+NPC_JUPUTORU	Talk	I have no choice then...
+NPC_EMURITTO	Talk	Urgh!
+ATTENDANT1	Talk	Mesprit!
+NPC_JUPUTORU	Talk	You lost that fight.
+NPC_JUPUTORU	Talk	You sustained serious damage.
+NPC_JUPUTORU	Talk	So don't push it.
+ATTENDANT1	Talk	You're not getting by us!
+NPC_JUPUTORU	Talk	All right...
+NPC_JUPUTORU	Talk	Sorry for this.
+ATTENDANT1	Talk	Ugh! He's so...fast!
+NPC_JUPUTORU	Talk	But I'm taking that Time Gear!
+NPC_EMURITTO	Talk	I...I'm sorry...
+NPC_EMURITTO	Talk	It was that Pokémon...
+NPC_EMURITTO	Talk	I'm sorry for doubting you.
+NPC_EMURITTO	Talk	Oh! This is bad!
+NPC_EMURITTO	Talk	We have to get out of here!
+ATTENDANT1	Talk	Wh-why?

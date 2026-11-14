@@ -1,0 +1,17 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	All right? Understood?
+NPC_DOGOOMU	SwitchMenu	Understood
+NPC_DOGOOMU	Talk	Good! Then let's get to WORK!
+NPC_DOGOOMU	Talk	Buck up and do a GOOD job!
+ATTENDANT1	Talk	We'll have to feel our way...
+ATTENDANT1	Talk	...
+ATTENDANT1	Talk	......
+ATTENDANT1	Talk	Yup! We're here!
+ATTENDANT1	Talk	Yes! We're in position!
+ATTENDANT1	Talk	Yep! We're here!
+NPC_DOGOOMU	Talk	GOOD!
+ATTENDANT1	Talk	Yup! Got it!
+ATTENDANT1	Talk	Yes! Understood!
+ATTENDANT1	Talk	Yep! We got it!
+NPC_DOGOOMU	Talk	GOOD! Let's get started!
+NPC_DOGOOMU	Talk	Please explain again

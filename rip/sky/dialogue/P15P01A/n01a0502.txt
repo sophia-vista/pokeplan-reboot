@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	Th-this money...!?
+PLAYER_BIPPA	Talk	Sniff... M-Mama...
+NPC_BIIDARU	Talk	Your Mama's rooting for you!

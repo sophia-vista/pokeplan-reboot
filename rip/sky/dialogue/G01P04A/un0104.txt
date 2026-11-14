@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DIGUDA	Talk	Do your best, Bidoof!
+NPC_DIGUDA	Talk	Let's do our best, Loudred!

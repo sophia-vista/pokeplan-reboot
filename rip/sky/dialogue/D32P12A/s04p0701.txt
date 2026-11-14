@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Talk	That was good work!
+NPC_MIMIROPPU	Talk	We're off!

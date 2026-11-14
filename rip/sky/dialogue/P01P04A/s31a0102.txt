@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_OKUTAN	Talk	Sky Peak?
+NPC_BARIYAADO	Talk	I've heard of it.

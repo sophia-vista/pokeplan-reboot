@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Explanation	That's it!
+-	Explanation	It's here!

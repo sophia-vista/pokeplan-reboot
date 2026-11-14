@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_YONOWAARU	SwitchMenu	Yes
+NPC_YONOWAARU	SwitchMenu	No

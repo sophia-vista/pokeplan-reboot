@@ -1,0 +1,22 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_SetFace(ACTOR_PLAYER_CHARMS, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english=" It's a promise, [CS:N]Sentret[CR].",
+    });
+    message_Talk({
+        english="""
+             Well, if we run into Team [CS:X]AWD[CR],
+            we'll make sure to give them what for!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_NPC_METAMON_OTACHI, FACE_TEARY_EYED, FACE_POS_STANDARD);
+    message_Talk({
+        english=" Th-thank you very much!",
+    });
+    message_Close();
+    JumpCommon(CORO_END_TALK);
+}

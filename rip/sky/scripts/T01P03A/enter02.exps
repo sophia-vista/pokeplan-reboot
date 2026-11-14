@@ -1,0 +1,95 @@
+
+def 0 {
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 0:
+            @label_0;
+            SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+            message_Mail({
+                english="""
+                    [CN]There's a notice posted here.[K]
+                    [CN]Something's written on it...
+                """,
+            });
+            message_Mail({
+                english="""
+                    "[CS:K]Marowak[CR] Dojo has collapsed.[K] But it will rise
+                    from the rubble again!"
+                """,
+            });
+            message_Mail({
+                english="""
+                    "Yes! The Dojo will be resurrected to its
+                    former glory![K]
+                              - [CS:K]Marowak[CR] Dojo's Sensei -"
+                """,
+            });
+            message_Close();
+            JumpCommon(CORO_END_TALK);
+        default:
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            dungeon_mode(180) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(181) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(182) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(183) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(184) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(185) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(186) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(187) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(188) = DMODE_OPEN_AND_REQUEST;
+            dungeon_mode(189) = DMODE_OPEN_AND_REQUEST;
+            switch ( main_EnterTraining(-1, 30) ) {
+                case 1:
+                    @label_1;
+                    supervision_Suspend(-2);
+                    end;
+                default:
+                    message_Mail({
+                        english="""
+                            
+                            [CN]Caution!
+                        """,
+                    });
+                    message_Mail({
+                        english="""
+                            [CN]If you enter here, all the items in
+                            [CN]your Treasure Bag will be lost.
+                        """,
+                    });
+                    message_Mail({
+                        english="""
+                            [CN]Will you enter, even though
+                            [CN]all your items will be lost?
+                        """,
+                    });
+                    switch ( message_SwitchMenu(0, 2) ) {
+                        case menu({
+                            english="Yes",
+                        }):
+                            message_Close();
+                            switch ( main_EnterTraining(251, 30) ) { }
+                            hold;
+                        case menu({
+                            english="No",
+                        }):
+                            message_Close();
+                            message_Mail({
+                                english="""
+                                    [CN]You should leave important items with
+                                    [CN][CS:K]Kangaskhan[CR] Storage before coming here.
+                                """,
+                            });
+                            message_Close();
+                            jump @label_1;
+                        default:
+                            jump @label_1;
+                    }
+                    break;
+            }
+            break;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

@@ -1,0 +1,23 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	Yeah, that's him all right!
+ATTENDANT1	FacePositionOffset	Yeah, that's him!
+ATTENDANT1	FacePositionOffset	Yes, that's him all right!
+ATTENDANT1	FacePositionOffset	But...why Drowzee?
+NPC_PERAPPU	Talk	This is just rumor, mind you...
+ATTENDANT1	FacePositionOffset	Really?! He can go into dreams?
+ATTENDANT1	FacePositionOffset	Really?! He can enter dreams?
+ATTENDANT1	FacePositionOffset	Really?! He can go into dreams?
+NPC_PERAPPU	Talk	However, the possibility exists.
+ATTENDANT1	FacePositionOffset	Hey, Magnemite.
+ATTENDANT1	FacePositionOffset	Say, Magnemite.
+NPC_KOIRU	Talk	Zzzt! So we released him. Zzzt!
+NPC_HEIGANI	Talk	Sounds really sketchy, hey, hey?!
+NPC_KIMAWARI	Talk	So...where is Drowzee now?
+NPC_MARIRU	Talk	Oh, ...
+ATTENDANT1	FacePositionOffset	Wait for us, Marill.
+NPC_MARIRU	Talk	Urf... ...
+NPC_PUKURIN	Talk	It's decided, then! ♪
+NPC_PERAPPU	Talk	Apprentices: HOORAY!
+ATTENDANT1	FacePositionOffset	All right! Let's move!
+ATTENDANT1	FacePositionOffset	OK! Let's move it!
+ATTENDANT1	FacePositionOffset	OK! Let's go!

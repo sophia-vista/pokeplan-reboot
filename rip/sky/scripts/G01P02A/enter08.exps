@@ -1,0 +1,23 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    message_Notice({
+        english="""
+            [CN]Welcome!
+            [CN][CS:N]Wigglytuff[CR]'s Guild!
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]No salespeople!
+            [CN]No agents!
+            [CN]No survey takers!
+        """,
+    });
+    JumpCommon(CORO_END_TALK);
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

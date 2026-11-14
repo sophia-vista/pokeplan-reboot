@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_SURIIPU	Talk	Not you again.
+ATTENDANT1	Talk	Let go of Azurill, Drowzee!
+NPC_SURIIPU	Talk	C'mon! Whenever you want!

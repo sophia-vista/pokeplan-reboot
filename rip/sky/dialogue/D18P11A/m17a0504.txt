@@ -1,0 +1,5 @@
+speaker	kind	line
+ATTENDANT1	Talk	Urk... .
+ATTENDANT1	Talk	But despite all our efforts...
+ATTENDANT1	Talk	Wheh-heh-heh!
+ATTENDANT1	Talk	Waah! The Sableye!

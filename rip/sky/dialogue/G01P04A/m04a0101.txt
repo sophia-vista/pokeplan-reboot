@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	HEY, you two!
+NPC_DOGOOMU	Talk	Diglett, I brought them!
+NPC_DIGUDA	Talk	Thank you, Loudred.
+NPC_DIGUDA	Talk	That's why I can't man my post.
+NPC_DOGOOMU	Talk	...And that's THAT.
+NPC_DOGOOMU	Talk	Shut your YAP!
+ATTENDANT1	Talk	Ugh... My head hurts...
+ATTENDANT1	Talk	Ow... My head is pounding...
+ATTENDANT1	Talk	Ow... My head hurts...
+ATTENDANT1	Talk	What are we supposed to do?
+ATTENDANT1	Talk	Sentry duty?
+NPC_DOGOOMU	Talk	You heard right. Sentry duty.
+ATTENDANT1	Talk	My footprint? What do you...?

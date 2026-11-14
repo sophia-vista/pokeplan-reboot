@@ -1,0 +1,8 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	...I'm...ashamed.
+ATTENDANT1	FacePositionOffset	Oh, ...
+ATTENDANT1	FacePositionOffset	I won't give up, either!
+PLAYER	FacePositionOffset	(!)
+PLAYER	FacePositionOffset	(That's right!)
+PLAYER	FacePositionOffset	(That's the  I know!)
+ATTENDANT1	FacePositionOffset	Let's find a way out of this!

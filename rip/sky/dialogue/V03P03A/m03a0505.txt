@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_BIPPA	Talk	Updating data is Dugtrio's duty.
+NPC_BIPPA	Talk	He tunnels his way to our guild...

@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	It's too soon for farewells!
+ATTENDANT1	Talk	Waah!
+NPC_YONOWAARU	Talk	You two...are coming with me!
+ATTENDANT1	Talk	Waaah!
+NPC_BIPPA	Talk	By gosh!
+NPC_CHIRIIN	Talk	! !
+NPC_KAKUREON1	Talk	Wh-what was...
+NPC_KIMAWARI	Talk	What just happened...?

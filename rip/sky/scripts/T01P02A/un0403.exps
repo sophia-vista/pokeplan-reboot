@@ -1,0 +1,21 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [43, 2] ) {
+    }
+    @label_2;
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+             The shop down from here looks
+            unoccupied now...
+        """,
+    });
+    message_Talk({
+        english=" Not in business yet, I guess...",
+    });
+    message_Close();
+    @label_1;
+    JumpCommon(CORO_END_TALK);
+}

@@ -1,0 +1,3 @@
+speaker	kind	line
+ATTENDANT1	Talk	Yup. We're Team .
+ATTENDANT1	Talk	Yes. We're Team .

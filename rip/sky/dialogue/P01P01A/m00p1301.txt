@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Oh, !
+NPC_CHIRIIN	Talk	Were you just at the café?
+NPC_CHIRIIN	SwitchMenu	OK.
+NPC_CHIRIIN	Talk	Thank you, !
+NPC_CHIRIIN	Talk	Oh! I almost forgot!
+NPC_CHIRIIN	SwitchMenu	Yes
+NPC_CHIRIIN	Talk	No
+NPC_CHIRIIN	Talk	I...I knew it!
+NPC_CHIRIIN	Talk	So try it sometime and see!
+NPC_CHIRIIN	Talk	No way.
+NPC_CHIRIIN	Talk	...I understand how you feel...
+NPC_CHIRIIN	Talk	I'll ask you again, .
+NPC_CHIRIIN	SwitchMenu	OK!
+NPC_CHIRIIN	SwitchMenu	No way.

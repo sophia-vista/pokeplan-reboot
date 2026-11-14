@@ -1,0 +1,27 @@
+speaker	kind	line
+-	Narration	On the eastern horizon...
+-	Narration	In a small expanse of ruins...
+NPC_GOROON	Talk	.........Hah hah... This is...
+NPC_GOROON	Talk	...D-don't tell me...
+NPC_GOROON	Talk	It is! It has to be!
+NPC_GOROON	Talk	And, finally...
+NPC_GOROON	Talk	Ha ha ha ho ho!
+NPC_GOROON	Talk	This totally rocks! I can't wait...
+NPC_GOROON	Talk	...Oh, darn!
+NPC_GOROON	Talk	This treasure...is mine!
+-	Talk	Wait a moment!
+-	Talk	We're not handing it over to you!
+NPC_GOROON	Talk	Show yourself!
+-	Talk	Hee hee hee! Show yourself, you say?
+-	Talk	All right! We'll show ourselves!
+NPC_CHAAREMU	Talk	Strength!
+NPC_SAANAITO	Talk	Knowledge!
+PLAYER_CHARMS	Talk	Beauty!
+NPC_GOROON	Talk	Wh-what's this?
+NPC_GOROON	Talk	Waaah! It's suddenly...
+NPC_GOROON	Talk	T-too dark to see!
+NPC_GOROON	Talk	Aaah! The treasure's gone!
+NPC_GOROON	Talk	Blast! I've been tricked!
+NPC_GOROON	Talk	Th-them!!
+NPC_GOROON	Talk	AAAAARRRRGGGHHH!
+NPC_GOROON	Talk	I-it's coming down! Oh, no!

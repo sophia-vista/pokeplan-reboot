@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_SAANAITO	Talk	Everyone...all right?
+PLAYER_CHARMS	Talk	Yeah. I'm fine.
+PLAYER_CHARMS	Talk	And it will take a while.
+NPC_CHAAREMU	Talk	Yeah.
+NPC_SAANAITO	Talk	Got it.

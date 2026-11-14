@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	Grrr...
+ATTENDANT1	FacePositionOffset	Will you let it go already?
+ATTENDANT1	FacePositionOffset	Can you stop that already?
+ATTENDANT1	FacePositionOffset	Can you let it go, please?
+ATTENDANT1	FacePositionOffset	We're going to bed too...

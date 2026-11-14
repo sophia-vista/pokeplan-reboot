@@ -1,0 +1,4 @@
+speaker	kind	line
+ATTENDANT1	Talk	Yup! Let's get it done!
+ATTENDANT1	Talk	Yes! Let's get it done!
+ATTENDANT1	Talk	Yup! Let's get it done!

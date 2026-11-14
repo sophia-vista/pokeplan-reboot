@@ -1,0 +1,19 @@
+speaker	kind	line
+NPC_SURIIPU	Talk	Wa-wah! You two?!
+NPC_SURIIPU	Talk	What did you come here for?!
+ATTENDANT1	Talk	Whoa! Hold up, Drowzee.
+ATTENDANT1	Talk	W-wait! That's not it, Drowzee.
+NPC_SURIIPU	Talk	H-huh? Me? You need my help?
+NPC_SURIIPU	Talk	Huh? That Azurill tyke?
+ATTENDANT1	Talk	That's why we searched for you.
+NPC_SURIIPU	Talk	..................
+ATTENDANT1	Talk	Hey, Drowzee...
+ATTENDANT1	Talk	So, Drowzee...
+ATTENDANT1	Talk	Say, Drowzee...
+ATTENDANT1	Talk	How about it? Will you help us?
+NPC_SURIIPU	Talk	..................
+NPC_SURIIPU	Talk	...I...I...
+ATTENDANT1	Talk	Drowzee!
+ATTENDANT1	Talk	OK!
+ATTENDANT1	Talk	It's this way! Quick!
+ATTENDANT1	Talk	It's this way! Let's hurry!

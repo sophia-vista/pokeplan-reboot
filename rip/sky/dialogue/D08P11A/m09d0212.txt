@@ -1,0 +1,4 @@
+speaker	kind	line
+ATTENDANT1	Mail	Hey! This stone feels warm!
+ATTENDANT1	Mail	Wow! This stone feels warm!
+ATTENDANT1	Mail	Wow! It feels warm!

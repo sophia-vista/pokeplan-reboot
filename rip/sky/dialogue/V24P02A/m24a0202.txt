@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_RAPURASU	Talk	Yes?
+NPC_RAPURASU	Talk	I'm fine, .
+NPC_RAPURASU	Talk	See! It's coming into view!
+ATTENDANT1	Talk	Huh?
+ATTENDANT1	Talk	What?

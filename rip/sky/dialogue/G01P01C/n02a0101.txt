@@ -1,0 +1,24 @@
+speaker	kind	line
+-	Notice	Start from where?
+-	SwitchMenu	Beginning
+-	SwitchMenu	SectionA
+-	SwitchMenu	SectionB
+-	SwitchMenu	SectionC
+-	SwitchMenu	SectionD
+-	SwitchMenu	SectionG
+-	SwitchMenu	SectionH
+-	SwitchMenu	SectionI
+-	SwitchMenu	SectionJ
+-	SwitchMenu	SectionK
+-	SwitchMenu	SectionL
+-	SwitchMenu	SectionM
+-	SwitchMenu	Fortune Ravine Boss 2nd Try
+-	SwitchMenu	TALK-N02-01
+-	SwitchMenu	TALK-N02-02
+-	SwitchMenu	TALK-N02-03
+-	SwitchMenu	TALK-N02-04
+-	SwitchMenu	TALK-N03-01
+-	SwitchMenu	TALK-N03-02
+-	SwitchMenu	TALK-N03-03
+-	SwitchMenu	TALK-N03-04
+-	Menu	TALK-N03-05

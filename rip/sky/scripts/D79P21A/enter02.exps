@@ -1,0 +1,10 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    se_Play(16130);
+    $SCENARIO_MAIN_BIT_FLAG[7] = 1;
+    CallCommon(CORO_HANYOU_SAVE_FUNC);
+    JumpCommon(CORO_END_TALK);
+}

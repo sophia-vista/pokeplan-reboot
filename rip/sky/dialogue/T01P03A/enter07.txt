@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_GARAGARA	SwitchMenu	Info
+NPC_GARAGARA	SwitchMenu	Cancel
+NPC_GARAGARA	Talk	Go into battle with confidence!
+NPC_GARAGARA	Talk	Roooaaar!

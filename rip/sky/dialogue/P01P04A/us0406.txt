@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_TOGEPII	Talk	I'm having so much fun! ♪
+NPC_TOGEPII	Talk	Mountains are so beautiful! ♪
+NPC_TOGEPII	Talk	Ha ha ha!
+NPC_TOGEPII	Talk	Let's go! Let's go! ♪
+NPC_TOGEPII	Talk	Ooh, that's so cool! ♪
+NPC_NYOROTONO	Talk	I want a Blue Gummi!
+NPC_REDIBA	Talk	I want a Green Gummi!
+NPC_REDIBA	Talk	But wait...! Hold on a second!
+NPC_TOGEPII	Talk	Oh! You're so right!
+NPC_NYOROTONO	Talk	That's so silly of us!
+NPC_TOGEPII	Talk	Ha ha ha!
+NPC_NYOROTONO	Talk	Ha ha ha!
+NPC_REDIBA	Talk	Ha ha ha! Ha ha ha!

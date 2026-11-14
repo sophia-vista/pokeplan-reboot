@@ -1,0 +1,10 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	Oh! That reminds me!
+NPC_YUKIKABURI	Talk	And then I saw you, Bidoof...
+NPC_YUKIKABURI	Talk	And so I came here to thank you.
+PLAYER_BIPPA	Talk	Is it really a map to Star Cave?
+NPC_YUKIKABURI	Talk	That's right.
+PLAYER_BIPPA	Talk	Yes? What is it?
+PLAYER_BIPPA	Talk	No, no! N-not at all! Yup yup!
+NPC_YUKIKABURI	Talk	Really?! YAY! I'm so happy!
+PLAYER_BIPPA	Mail	So...

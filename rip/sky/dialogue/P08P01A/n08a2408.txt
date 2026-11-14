@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_YAMIRAMI	Talk	Wheh-heh-heh? N-not here?!
+NPC_YAMIRAMI	Talk	D-did...they run away?!
+NPC_YAMIRAMI	Talk	L-look! Look for them!
+NPC_YAMIRAMI	Talk	Sableye: Wheh-heh-heh!

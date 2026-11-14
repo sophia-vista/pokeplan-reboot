@@ -1,0 +1,47 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [29, 53] ) {
+        @label_0;
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 52] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 50] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 49] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 48] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 47] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 46] ) {
+        supervision_Station(7);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 45] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 44] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 43] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 42] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 41] ) {
+        supervision_Station(17);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 40] ) {
+        supervision_Station(17);
+        end;
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_HEIGANI {
+    switch ( sector() ) {
+        case 17:
+            SetMoveRange(Position<'m0', 10, 19>, 12, 5);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

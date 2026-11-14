@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Talk	Pokémon detected! Pokémon detected!
+-	Talk	Whose footprint? Whose footprint?
+ATTENDANT1	Talk	Waah!

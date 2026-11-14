@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	Is this it, Grovyle?
+NPC_YONOWAARU	Talk	The place you met Celebi?
+PLAYER_FUTURE	Talk	Yeah, that's right.
+NPC_YONOWAARU	Talk	...It's quiet...
+NPC_YONOWAARU	Talk	Could be any one of those...
+PLAYER_FUTURE	Talk	Sableye: Wheh-heh-heh!
+NPC_YONOWAARU	Talk	I knew it...
+PLAYER_FUTURE	Talk	Here they come!
+PLAYER_FUTURE	Talk	Sableye: Wheh-heh-heh!

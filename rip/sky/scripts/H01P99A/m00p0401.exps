@@ -1,0 +1,252 @@
+
+def 0 {
+    bgm_PlayFadeIn(BGM_OCEAN1, 0, 256);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_NPC_DAGUTORIO>(2);
+    message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+    message_Talk({
+        english=" O sea![K] We call out to you!",
+    });
+    message_Talk({
+        english="""
+             We are frustrated with our
+            insignificant selves!
+        """,
+    });
+    message_Talk({
+        english="""
+             There is nothing we want more
+            than to capture that [CS:N]Grovyle[CR] thief on our own!
+        """,
+    });
+    message_Talk({
+        english="""
+             But that is denied to us! Every
+            day, we must toil away at our dull job!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    SetAnimation<actor ACTOR_NPC_DAGUTORIO>(9);
+    message_Talk({
+        english=" We are so...[K] We are very...",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    SetAnimation<actor ACTOR_NPC_DAGUTORIO>(2);
+    SetEffect<actor ACTOR_NPC_DAGUTORIO>(EFFECT_JOYOUS, 3);
+    message_Talk({
+        english=" We're extremely frustrated!",
+    });
+    message_KeyWait();
+    SetEffect<actor ACTOR_NPC_DAGUTORIO>(EFFECT_NONE, 3);
+    message_Talk({
+        english=" What are we to do?!",
+    });
+    message_Talk({
+        english="""
+             Answer, O mighty sea![K] Tell us
+            what to do!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Wait(60);
+    message_ImitationSound({
+        english="[CN]SPLOOOOSH...",
+    });
+    message_KeyWait();
+    message_ImitationSound({
+        english="[CN]SPLAAAASH...",
+    });
+    message_KeyWait();
+    bgm_FadeOut(10);
+    se_Play(6675);
+    message_ImitationSound({
+        english="[CN]SPLOOSH...SPLASH!",
+    });
+    WaitSe(6675);
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8967);
+    SetEffect<actor ACTOR_NPC_DAGUTORIO>(EFFECT_EXCLAMATION_MARK, 3);
+    WaitEffect<actor ACTOR_NPC_DAGUTORIO>();
+    WaitExecuteLives(ACTOR_NPC_DAGUTORIO);
+    message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+    message_Talk({
+        english="""
+             What?![K] O sea![K] Whatever did
+            you just say, O sea?
+        """,
+    });
+    message_Talk({
+        english=" What...[K] What did you say?!",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Wait(30);
+    message_EmptyActor();
+    message_Talk({
+        english="[CN]...[K]YOUR...DUTY...",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8978);
+    SetEffect<actor ACTOR_NPC_DAGUTORIO>(EFFECT_EXCLAMATION_MARK, 3);
+    WaitEffect<actor ACTOR_NPC_DAGUTORIO>();
+    WaitExecuteLives(ACTOR_NPC_DAGUTORIO);
+    message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+    message_Talk({
+        english=" Uh...[K] Yes...?",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Wait(30);
+    message_EmptyActor();
+    message_Talk({
+        english="[CN]...[K]DO YOUR DUTY...",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8968);
+    SetEffect<actor ACTOR_NPC_DAGUTORIO>(EFFECT_SHOCKED, 3);
+    WaitEffect<actor ACTOR_NPC_DAGUTORIO>();
+    message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+    message_Talk({
+        english=" But...?!",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_EmptyActor();
+    message_Talk({
+        english="""
+            [CN]NO MORE BELLYACHING![K]
+            [CN]GO DO YOUR DUTY!
+        """,
+    });
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(3);
+    screen_FadeIn(1, 2);
+    Wait(10);
+    se_Play(5143);
+    screen_WhiteOut(1, 2);
+    Wait(5);
+    screen_FadeIn(1, 2);
+    WaitSe(5143);
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8972);
+    SetEffect<actor ACTOR_NPC_DAGUTORIO>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+    WaitEffect<actor ACTOR_NPC_DAGUTORIO>();
+    message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_BOTTOM_L_FACEOUTW);
+    message_Talk({
+        english=" Waaaah! S-s-sorry!",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(6422);
+    SetDirection<actor ACTOR_NPC_DAGUTORIO>(DIR_DOWN);
+    SetAnimation<actor ACTOR_NPC_DAGUTORIO>(25);
+    WaitAnimation<actor ACTOR_NPC_DAGUTORIO>();
+    Destroy<actor ACTOR_NPC_DAGUTORIO>();
+    Wait(60);
+    bgm_PlayFadeIn(BGM_OCEAN1, 120, 256);
+    Wait(90);
+    message_SetActor(ACTOR_NPC_DOGOOMU);
+    message_Talk({
+        english="""
+             Hey, [CS:N]Diglett[CR].[K] That's what you
+            wanted me to do, right?
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8978);
+    SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_EXCLAMATION_MARK, 3);
+    Wait(5);
+    SetEffect<actor ACTOR_PLAYER>(EFFECT_EXCLAMATION_MARK, 3);
+    WaitEffect<actor ACTOR_ATTENDANT1>();
+    Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_RIGHT);
+    WaitEffect<actor ACTOR_PLAYER>();
+    Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_RIGHT);
+    supervision_Acting(0);
+    SetPositionLives<performer 0>(0);
+    camera_SetMyself<performer 0>();
+    MovePositionMark<performer 0>(1.5, Position<'m0', 45, 24.5>);
+    WaitExecutePerformer(0);
+    message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_TOP_R_FACEINW);
+    message_Talk({
+        english=" Yes. Exactly.",
+    });
+    message_Talk({
+        english="""
+             Your voice carries so well,
+            [CS:N]Loudred[CR]. It worked perfectly!
+        """,
+    });
+    message_Talk({
+        english="""
+             Thank you so much for this,
+            [CS:N]Loudred[CR].
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english="""
+             But, wow...[K]pulling a stunt like
+            that on your own dad.
+        """,
+    });
+    message_Talk({
+        english="""
+             You're sure you did the right
+            thing? I'm serious!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_TOP_R_FACEINW);
+    message_Talk({
+        english="""
+             Yes, I'm certain.[K] It's about time
+            my dad got over this and went back to work.
+        """,
+    });
+    message_Talk({
+        english=" He needed a jolt like that.",
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    se_Play(8972);
+    SetEffect<actor ACTOR_NPC_DOGOOMU>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+    WaitEffect<actor ACTOR_NPC_DOGOOMU>();
+    message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english="""
+             W-well now, you're sure tough
+            as a rock when it comes to your family.
+        """,
+    });
+    message_Talk({
+        english="""
+             But if you're OK with it,
+            I'm glad to have helped!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_TOP_R_FACEINW);
+    message_Talk({
+        english="""
+             Thank you![K] We should get back
+            to our own sentry jobs, [CS:N]Loudred[CR]!
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_NPC_DOGOOMU, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english=" Yeah!",
+    });
+    message_Close();
+    se_Play(6422);
+    SetDirection<actor ACTOR_NPC_DIGUDA>(DIR_UP);
+    SetAnimation<actor ACTOR_NPC_DIGUDA>(24);
+    WaitAnimation<actor ACTOR_NPC_DIGUDA>();
+    Destroy<actor ACTOR_NPC_DIGUDA>();
+    Wait(10);
+    MovePositionMark<actor ACTOR_NPC_DOGOOMU>(1, Position<'m1', 62, 25.5>);
+    WaitExecuteLives(ACTOR_NPC_DOGOOMU);
+    Destroy<actor ACTOR_NPC_DOGOOMU>();
+    Wait(30);
+    MovePositionLives<performer 0>(1.5, ACTOR_PLAYER);
+    WaitExecutePerformer(0);
+    end;
+}

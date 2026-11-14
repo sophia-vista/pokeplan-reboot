@@ -1,0 +1,16 @@
+speaker	kind	line
+-	Narration	The next morning...
+ATTENDANT1	Narration	Good morning, !
+ATTENDANT1	Narration	Whoa! It moved!
+ATTENDANT1	Narration	Wa-waah! It moved!
+ATTENDANT1	Narration	Oh, ! The Egg is...
+ATTENDANT1	Narration	It's going to hatch!
+ATTENDANT1	Narration	It's hatching!
+NPC_MANAFI	Talk	.........?
+NPC_MANAFI	Talk	Hi...iiii! ♪
+NPC_MANAFI	Talk	Kyakya! ♪ Kyakya! ♪
+ATTENDANT1	Talk	Ha! He's cute!
+ATTENDANT1	Talk	Ha! What a cutie!
+NPC_MANAFI	Talk	Poké?
+NPC_MANAFI	Talk	I say?
+ATTENDANT1	Talk	Hmmm...

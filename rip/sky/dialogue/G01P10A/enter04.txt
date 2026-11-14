@@ -1,0 +1,55 @@
+speaker	kind	line
+-	Notice	Something is written here...
+-	SwitchMenu	Read
+-	Mail	Sunflora is some kind of awesome!
+-	Mail	I... I didn't realize it!
+-	Mail	Yup yup! I'm happy, by golly!
+-	Mail	Oh? Why am I so downright happy?
+-	Mail	Well... Finally...
+-	Mail	Finally, I've got junior members under me!
+-	Mail	Yeaaah! I'll do better starting tomorrow!
+-	Mail	Oof... I sure miss my home and folks. Yup yup!
+-	Mail	They had me so worried... Sniffle...
+-	Mail	And they're my heroes.
+-	Mail	My thoughts go with them, by gosh!
+-	Mail	It's a little worrying, by golly...
+-	Mail	Yawwwn... Shucks, I am sleepy...
+-	Mail	That's what I think... Yup yup... Zzzz... Zzzzz...
+-	Mail	They're at the guild! Yup yup yuppers!
+-	Mail	I am...over the moon with happiness!
+-	Mail	Waaaah! I'm an embarrassment to myself!
+-	Mail	I'm beside myself with embarrassment! Yipes!
+-	Mail	..................
+-	Mail	I think I'm smitten with myself... I'm blushing!
+-	Mail	And that'll mean me too...
+-	Mail	...That does it!
+-	Mail	It'll be my turn to shine!
+-	Mail	Team ! You all have to shine!
+-	Mail	I'll lend my support from Treasure Town!
+-	Mail	You all do what you can to win!
+-	Mail	Yup yup! I was some kind of happy... Sniffle...
+-	Mail	After we became buddies in the guild and all...
+-	Mail	Oof... I miss them...
+-	Mail	Oof... I surely do miss them...
+-	Mail	It's shocking, by golly!
+-	Mail	I don't rightly understand it...not totally...
+-	Mail	Grovyle's scheme can't continue!
+-	Mail	Yup yup! I have to spread that rumor on thick!
+-	Mail	Huh, diary? You wanted me to peek?
+-	Mail	It surely was a pretty place! Yup yup.
+-	Mail	It's my own precious treasure! Yup yup!
+-	Mail	P.S. The great Dusknoir is sure mighty wise.
+-	Mail	But what sticks most in my mind, by golly...
+-	Mail	There was sort of a scene today!
+-	Mail	Still...going without dinner's a rotten thing.
+-	Mail	Turns out that everyone had the same idea!
+-	Mail	We all saved a bit of our dinners, it seems.
+-	Mail	Oof... This is making me all emotional, by golly.
+-	Mail	The guild's going on an expedition soon!
+-	Mail	But will they think about choosing me?
+-	Mail	But I'm surely not giving up, by golly!
+-	Mail	Something was sure a surprise the other day!
+-	Mail	I didn't know that! But there's more!
+-	Mail	You need to hit the foe only once with a move.
+-	Mail	Sunflora is some kind of awesome!
+-	Mail	Ignore it

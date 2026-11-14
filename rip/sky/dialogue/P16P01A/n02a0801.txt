@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_JUPETTA	Talk	All right, guys?
+NPC_SUKORUPI	Talk	Yeah!
+PLAYER_PUPURIN	Talk	Yeah! ♪
+NPC_JUPETTA	Talk	Let's go! Yay! Yay!
+NPC_JUPETTA	Talk	Oooooh!
+NPC_SUKORUPI	Talk	OOoooohhhh!
+PLAYER_PUPURIN	Talk	OOOhhhhh! ♪

@@ -1,0 +1,34 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    SetAnimation<actor ACTOR_TALK_SUB>(2);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY, 0);
+    message_SetFace(ACTOR_TALK_SUB, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+            It sounds like the natural disasters were
+            interfering with our ability to evolve.
+        """,
+    });
+    message_Talk({
+        english="""
+            I think the timing's right.[K] I should think about
+            evolving...
+        """,
+    });
+    message_SetFace(ACTOR_TALK_SUB, FACE_WORRIED, FACE_POS_STANDARD);
+    message_Talk({
+        english="But when I evolve...[K] I become a [CS:L]Ludicolo[CR]...",
+    });
+    message_SetFace(ACTOR_TALK_SUB, FACE_SAD, FACE_POS_BOTTOM_C_FACER);
+    message_Talk({
+        english="You know? [CS:L]Ludicolo[CR] is a carefree Pokémon.",
+    });
+    message_Talk({
+        english="""
+            I don't know about having my personality
+            become carefree...[K] What do you think? Huh?
+        """,
+    });
+    JumpCommon(CORO_END_TALK);
+}

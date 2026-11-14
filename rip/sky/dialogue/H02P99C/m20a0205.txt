@@ -1,0 +1,26 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	But ...
+PLAYER	Talk	(..................)
+NPC_JUPUTORU	Talk	Yes,  and I...
+NPC_JUPUTORU	Talk	Yeah.
+NPC_JUPUTORU	Talk	It played a vital part.
+NPC_JUPUTORU	Talk	Exactly.
+ATTENDANT1	Talk	A trusted...partner...
+NPC_JUPUTORU	Talk	That's why we worked together.
+ATTENDANT1	Talk	W-wait! Hold on a second!
+ATTENDANT1	Talk	W-wait a second!
+ATTENDANT1	Talk	W-wait! Wait a second!
+NPC_JUPUTORU	Talk	Your point?
+ATTENDANT1	Talk	Urk! When you put it like that...
+ATTENDANT1	Talk	I mean...it's a bit embarrassing.
+ATTENDANT1	Talk	It's a little embarrassing!
+ATTENDANT1	Talk	I mean...it's a bit embarrassing.
+ATTENDANT1	Talk	Hmm...really?
+ATTENDANT1	Talk	I don't remember it that way...
+ATTENDANT1	Talk	That's not how I remember it...
+ATTENDANT1	Talk	Hey, .
+ATTENDANT1	Talk	Listen, .
+ATTENDANT1	Talk	Say, .
+PLAYER	Talk	(Oh! That explains it!)
+PLAYER	Talk	(Maybe that's why...that time...)
+PLAYER	Talk	(when we were in the future...)

@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_WATAKKO	Talk	Hello!
+NPC_WATAKKO	SwitchMenu	Thank you!
+NPC_WATAKKO	Mail	You gently open the lid...
+NPC_WATAKKO	Mail	A warm and fuzzy feeling falls over you...
+NPC_WATAKKO	Talk	No, thanks.

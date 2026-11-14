@@ -1,0 +1,33 @@
+speaker	kind	line
+NPC_MANAFI	Talk	Goomi! Goomi!
+NPC_MANAFI	SwitchMenu	Yes
+NPC_MANAFI	Talk	Goomi! ♪
+NPC_MANAFI	Talk	Chew, chew...
+ATTENDANT1	Talk	Is it tasty? Er... Goomi tasty?
+NPC_MANAFI	Talk	Tasty?
+ATTENDANT1	Talk	Yup. Tasty?
+ATTENDANT1	Talk	That's right. Tasty?
+ATTENDANT1	Talk	Yes. Tasty?
+NPC_MANAFI	Talk	Tasty! ♪ Goomi tasty! ♪
+NPC_MANAFI	Talk	.....................
+ATTENDANT1	Talk	Huh? Is something the matter?
+ATTENDANT1	Talk	What? Is something wrong?
+ATTENDANT1	Talk	Oh? Is something the matter?
+NPC_MANAFI	Talk	...Yawn... Snuffle...
+ATTENDANT1	Talk	Let's let him sleep.
+ATTENDANT1	Talk	Let's be quiet and let him sleep.
+ATTENDANT1	Talk	We should let him sleep.
+ATTENDANT1	Talk	Sleep tight, Manaphy.
+ATTENDANT1	Narration	The next morning...
+ATTENDANT1	Narration	Good morning, !
+NPC_MANAFI	Talk	Hi!
+ATTENDANT1	Talk	Good morning, Manaphy.
+ATTENDANT1	Talk	That's awesome, Manaphy!
+NPC_MANAFI	Talk	Awesome!
+NPC_MANAFI	Talk	Walk! ♪
+NPC_MANAFI	Mail	doesn't have a Blue Gummi...
+NPC_MANAFI	Mail	No
+NPC_MANAFI	Talk	Weh... Weh... Waaaah!
+ATTENDANT1	Talk	Whoa, whoa... Please don't cry!
+ATTENDANT1	Talk	Oh no... Please don't cry!
+ATTENDANT1	Talk	Oh, no no... Please don't cry!

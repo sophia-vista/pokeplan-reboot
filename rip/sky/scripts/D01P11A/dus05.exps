@@ -1,0 +1,47 @@
+
+def 0 {
+    @label_3;
+    message_SetFace(ACTOR_NPC_DAGUTORIO, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Notice({
+        english=" Where do you want to go?",
+    });
+    switch ( message_SwitchMenu(1, 1) ) {
+        case menu({
+            english="Ground Map",
+        }):
+            @label_0;
+            message_Notice({
+                english="""
+                     No, there's something there.
+                    I can't do any digging over there.
+                """,
+            });
+            jump @label_3;
+        case menu({
+            english="Cancel",
+        }):
+            message_Notice({
+                english="""
+                     What, you don't like getting into
+                    the holes I dig?
+                """,
+            });
+            @label_2;
+            message_Notice({
+                english="""
+                     ...All right. I'm going back to
+                    earth again.
+                """,
+            });
+            message_Close();
+            end;
+        default:
+            message_Talk({
+                english="""
+                     What, you're canceling? I was
+                    all set to dig too.
+                """,
+            });
+            jump @label_2;
+    }
+}

@@ -1,0 +1,66 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [43, 2] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_GUREGGURU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Meh-heh-heh. How was it?
+                How's the job?
+            """,
+        });
+        message_Talk({
+            english="""
+                 You came all the way back here.
+                That must mean...
+            """,
+        });
+        message_Talk({
+            english="""
+                 Must have been a tough time, I'm
+                guessing? Meh-heh-heh.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Well, do your best!
+                Meh-heh-heh.
+            """,
+        });
+        message_Close();
+        @label_1;
+        JumpCommon(CORO_END_TALK);
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_GUREGGURU, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The Guildmaster was looking for
+                you earlier. Meh-heh-heh.
+            """,
+        });
+        message_Talk({
+            english="""
+                 It was just after Officer
+                [CS:N]Magnezone[CR] went in...
+            """,
+        });
+        message_Talk({
+            english="""
+                 Seems almost like official
+                business! Meh-heh-heh!
+            """,
+        });
+        message_Talk({
+            english="""
+                 I don't know what kind of job
+                they'll give you, but don't fail! Meh-heh-heh.
+            """,
+        });
+        message_Close();
+        jump @label_1;
+    }
+}

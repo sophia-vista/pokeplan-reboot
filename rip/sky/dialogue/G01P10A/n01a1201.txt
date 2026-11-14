@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Narration	The next morning...
+PLAYER_BIPPA	Talk	Hu-uuh...?

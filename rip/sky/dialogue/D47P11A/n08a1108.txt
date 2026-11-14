@@ -1,0 +1,3 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	Let's get a move on!
+NPC_YONOWAARU	Talk	Keep a leash on your impatience.

@@ -1,0 +1,47 @@
+speaker	kind	line
+NPC_GOOSUTO	Talk	Ugh!
+NPC_GOOSUTO	Talk	GAAAAAAAAAAAaaaaaaaaaaaah!!!
+PLAYER_KIMAWARI	Talk	...Anyway...
+PLAYER_KIMAWARI	Talk	I managed to knock him out...
+PLAYER_KIMAWARI	Talk	But...
+PLAYER_KIMAWARI	Talk	Oh my gosh!
+PLAYER_KIMAWARI	Talk	A-again!
+NPC_GOOSUTO	Talk	I'm invincible!
+PLAYER_KIMAWARI	Talk	Ooogh... Why...
+PLAYER_KIMAWARI	Talk	Why is it...
+PLAYER_KIMAWARI	Talk	Waaah! Wh-what is it?!
+NPC_GOOSUTO	Talk	These are Slugma!
+NPC_GOOSUTO	Talk	So I hired them in advance...
+NPC_GOOSUTO	Talk	They are Fire-type Pokémon!
+PLAYER_KIMAWARI	Talk	...! (Fire type!)
+NPC_MAGUMAGGU	Talk	GURURURURURURU...
+NPC_MAGUMAGGU	Talk	GURURURURURU!
+PLAYER_KIMAWARI	Talk	.........
+NPC_GOOSUTO	Talk	See ya!
+PLAYER_KIMAWARI	Talk	Hey! Don't run away!
+PLAYER_KIMAWARI	Talk	...! (Was I...unprepared?!)
+PLAYER_KIMAWARI	Talk	Hot hot hot hot hot hot hot!!
+NPC_MAGUMAGGU	Talk	GOOOooooohhhh!
+PLAYER_KIMAWARI	Talk	Oh my gosh!
+NPC_MAGUMAGGU	Talk	GOOOOOooooooohhhhhh!
+PLAYER_KIMAWARI	Talk	Oh my gosh!
+NPC_MAGUMAGGU	Talk	GAAAAAaaaaah!!
+PLAYER_KIMAWARI	Talk	Oh my gosh!
+PLAYER_KIMAWARI	Talk	Uhhn...huhhn...
+NPC_MAGUMAGGU	Talk	GURURURURU!
+PLAYER_KIMAWARI	Talk	Oh my gosh! I'm losing hope!
+PLAYER_KIMAWARI	Talk	HELP!
+NPC_MAGUMAGGU	Talk	Bugyaaaaaaaah!
+PLAYER_KIMAWARI	Talk	...! (L-Loudred?!)
+NPC_DOGOOMU	Talk	Ugaaaaah!
+NPC_MAGUMAGGU	Talk	Gyah!
+NPC_MAGUMAGGU	Talk	GYAAAAaaaaaaaah!!
+NPC_DOGOOMU	Talk	A-are you ALL RIGHT, Sunflora?
+PLAYER_KIMAWARI	Talk	Y-yeah... (Y-you saved me...)
+NPC_DOGOOMU	Talk	I-is that SO? GOOD.
+NPC_DOGOOMU	Talk	Huh? WHY?
+NPC_DOGOOMU	Talk	OH...
+PLAYER_KIMAWARI	Talk	Humph! What's that?
+PLAYER_KIMAWARI	Talk	Humph...
+PLAYER_KIMAWARI	Talk	I really wanted to thank him...
+PLAYER_KIMAWARI	Talk	Just then...

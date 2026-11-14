@@ -1,0 +1,560 @@
+index	name	accuracy	affected_by_magic_coat	ai_condition1_chance	ai_frozen_check	ai_weight	base_power	base_pp	category	crit_chance	ignores_taunted	is_snatchable	max_upgrade_level	message_id	miss_accuracy	move_id	number_chained_hits	range_check_text	type	uses_mouth
+0	Nothing	0	False	0	False	0	0	99	0	0	False	False	0	0	0	0	0	0	1	False
+1	Iron Tail	78	False	75	True	15	40	10	0	8	True	False	99	0	125	1	1	11	17	False
+2	Ice Ball	60	False	75	True	10	1	15	0	2	True	False	99	0	75	2	5	3	6	False
+3	Yawn	125	True	75	True	15	0	17	2	8	False	False	0	0	125	3	1	11	1	True
+4	Lovely Kiss	78	True	75	True	15	0	11	2	8	False	False	0	0	88	4	1	2	1	True
+5	Nightmare	100	True	75	True	15	0	12	2	8	False	False	0	0	88	5	1	11	14	False
+6	Morning Sun	125	False	75	True	15	0	12	2	8	False	True	0	0	100	6	1	4	1	False
+7	Vital Throw	100	False	75	True	15	0	17	0	8	False	False	0	0	125	7	1	19	7	False
+8	Dig	100	False	75	True	15	12	12	0	8	True	False	99	0	125	8	1	20	9	False
+9	Thrash	78	False	75	True	15	18	12	0	8	True	False	99	0	125	9	3	12	1	False
+10	Sweet Scent	100	True	75	True	10	0	22	2	8	False	False	0	0	100	10	1	15	1	False
+11	Charm	100	True	75	True	15	0	22	2	8	False	False	0	0	75	11	1	11	1	False
+12	Rain Dance	125	False	75	True	15	0	12	2	8	False	False	0	0	125	12	1	24	3	False
+13	Confuse Ray	100	True	75	True	15	0	13	2	8	False	False	0	0	100	13	1	11	14	False
+14	Hail	125	False	75	True	15	0	13	2	8	False	False	0	0	125	14	1	24	6	False
+15	Aromatherapy	125	False	75	False	15	0	12	2	8	False	True	0	0	125	15	1	16	4	False
+16	Bubble	88	False	75	True	10	4	12	1	8	True	False	99	0	95	16	1	14	3	False
+17	Encore	100	True	75	True	15	0	12	2	8	False	False	0	0	100	17	1	11	1	False
+18	Cut	84	False	75	True	30	10	10	0	8	True	False	99	0	88	18	1	2	1	False
+19	Rage	100	False	75	True	15	0	22	2	8	False	False	0	0	125	19	1	19	1	False
+20	Super Fang	90	False	75	True	15	0	17	0	8	True	False	0	0	100	20	1	11	1	True
+21	Pain Split	100	False	75	True	15	0	22	2	8	False	False	0	0	100	21	1	11	1	False
+22	Torment	100	False	75	True	15	0	16	2	8	False	False	0	0	100	22	1	11	16	True
+23	String Shot	78	True	75	True	10	0	16	2	8	False	False	0	0	75	23	1	14	12	False
+24	Swagger	90	True	75	True	15	0	18	2	8	False	False	0	0	100	24	1	11	1	False
+25	Snore	95	False	75	True	15	4	16	1	8	True	False	99	0	125	25	1	10	1	True
+26	Heal Bell	125	False	75	False	15	0	12	2	8	False	True	0	0	125	26	1	16	1	False
+27	Screech	88	True	75	True	15	0	22	2	8	False	False	0	0	100	27	1	3	1	True
+28	Rock Throw	90	False	75	True	20	5	16	0	8	True	False	99	0	125	28	1	11	13	False
+29	Rock Smash	100	False	75	True	20	0	99	2	8	False	False	0	0	125	29	1	25	7	False
+30	Rock Slide	90	False	75	True	20	14	13	0	8	True	False	99	0	100	30	1	11	13	False
+31	Weather Ball	90	False	75	True	10	5	15	1	8	True	False	99	0	95	31	1	14	1	False
+32	Whirlpool	78	False	75	True	30	2	17	1	8	True	False	99	0	100	32	1	11	3	False
+33	Fake Tears	100	True	75	True	15	0	22	2	8	False	False	0	0	100	33	1	11	16	True
+34	Sing	84	True	75	True	10	0	13	2	8	False	False	0	0	87	34	1	3	1	True
+35	Spite	100	False	75	True	15	0	15	2	8	False	False	0	0	100	35	1	11	14	False
+36	Air Cutter	90	False	75	True	10	2	17	1	30	True	False	99	0	125	36	1	3	10	False
+37	SmokeScreen	78	True	75	True	15	0	10	2	8	False	False	0	0	100	37	1	3	1	False
+38	Pursuit	100	False	75	True	30	0	17	0	8	False	False	0	0	125	38	1	19	16	False
+39	DoubleSlap	55	False	75	True	15	4	10	0	2	True	False	99	0	75	39	0	11	1	False
+40	Mirror Move	125	False	75	True	15	0	7	2	8	False	False	0	0	125	40	1	19	10	False
+41	Overheat	84	False	75	False	15	20	10	1	8	True	False	99	0	100	41	1	2	2	False
+42	Aurora Beam	65	False	75	True	10	10	17	1	8	True	False	99	0	95	42	1	14	6	False
+43	Memento	100	False	75	True	10	0	15	2	8	False	False	0	0	100	43	1	15	16	False
+44	Octazooka	88	False	75	True	10	8	15	1	8	True	False	99	0	95	44	1	14	3	True
+45	Flatter	100	True	75	True	15	0	17	2	8	False	False	0	0	100	45	1	11	16	True
+46	Astonish	88	False	75	True	30	6	17	0	8	True	False	99	0	125	46	1	11	14	False
+47	Will-O-Wisp	78	True	75	True	20	0	17	2	8	False	False	0	0	100	47	1	3	2	False
+48	Return	100	False	75	True	15	0	12	0	8	True	False	0	0	100	48	1	11	1	False
+49	Grudge	100	False	75	True	15	0	12	2	8	False	False	0	0	125	49	1	19	14	False
+50	Strength	100	False	75	True	20	0	12	0	8	False	False	0	0	100	50	1	11	1	False
+51	Counter	100	False	75	True	15	0	17	0	8	False	False	0	0	125	51	1	19	7	False
+52	Flame Wheel	88	False	75	False	20	12	11	0	8	True	False	99	0	100	52	1	3	2	False
+53	Flamethrower	88	False	75	False	10	18	12	1	8	True	False	99	0	95	53	1	14	2	False
+54	Odor Sleuth	100	False	75	True	10	0	22	2	8	False	False	0	0	100	54	1	15	1	False
+55	Sharpen	125	False	75	True	15	0	17	2	8	False	True	0	0	125	55	1	19	1	False
+56	Double Team	125	False	75	True	10	0	17	2	8	False	True	0	0	125	56	1	19	1	False
+57	Gust	88	False	75	True	20	4	19	1	8	True	False	99	0	125	57	1	11	10	False
+58	Harden	125	False	75	True	15	0	16	2	8	False	True	0	0	125	58	1	19	1	False
+59	Disable	78	True	75	True	15	0	9	2	8	False	False	0	0	100	59	1	11	1	False
+60	Razor Wind	100	False	75	True	15	16	13	1	30	True	False	99	0	125	60	1	28	1	False
+61	Bide	100	False	75	True	15	0	15	0	8	False	False	0	0	125	61	1	19	1	False
+62	Crunch	88	False	75	True	20	16	13	0	8	True	False	99	0	100	62	1	11	16	True
+63	Bite	90	False	75	True	20	7	19	0	8	True	False	99	0	125	63	1	11	16	True
+64	Thunder	73	False	75	True	20	45	7	1	8	True	False	99	0	100	64	1	11	5	False
+65	ThunderPunch	88	False	75	True	20	6	17	0	8	True	False	99	0	100	65	1	11	5	False
+66	Endeavor	100	False	75	True	15	0	12	0	8	True	False	0	0	100	66	1	11	1	False
+67	Facade	84	False	75	True	20	14	12	0	8	True	False	99	0	125	67	1	11	1	False
+68	Karate Chop	90	False	75	True	20	10	18	0	30	True	False	99	0	100	68	1	11	7	False
+69	Clamp	78	False	75	True	20	6	17	0	8	True	False	99	0	125	69	1	11	3	False
+70	Withdraw	125	False	75	True	15	0	16	2	8	False	True	0	0	125	70	1	19	3	False
+71	Constrict	90	False	75	True	30	2	22	0	8	True	False	99	0	88	71	1	11	1	False
+72	Brick Break	88	False	75	True	15	14	12	0	8	True	False	99	0	100	72	1	11	7	False
+73	Rock Tomb	60	False	75	True	30	10	12	0	8	True	False	99	0	100	73	1	11	13	False
+74	Focus Energy	125	False	75	True	30	0	27	2	8	False	True	0	0	125	74	1	19	1	False
+75	Focus Punch	100	False	75	True	15	55	8	0	8	True	False	99	0	125	75	1	20	7	False
+76	Giga Drain	88	False	75	True	30	12	10	1	8	True	False	99	0	125	76	1	11	4	False
+77	Reversal	90	False	75	True	30	2	12	0	8	True	False	99	0	70	77	1	11	7	False
+78	SmellingSalt	88	False	75	True	30	12	15	0	8	True	False	99	0	125	78	1	11	1	False
+79	Spore	100	True	75	True	10	0	12	2	8	False	False	0	0	88	79	1	15	4	False
+80	Leech Life	90	False	75	True	30	4	19	0	8	True	False	99	0	100	80	1	11	12	True
+81	Slash	88	False	75	True	30	14	11	0	30	True	False	99	0	100	81	1	11	1	False
+82	Silver Wind	70	False	75	True	30	6	7	1	8	True	False	99	0	88	82	1	15	12	False
+83	Metal Sound	88	True	75	True	15	0	17	2	8	False	False	0	0	100	83	1	3	17	False
+84	GrassWhistle	90	True	75	True	15	0	12	2	8	False	False	0	0	88	84	1	3	4	True
+85	Tickle	100	True	75	True	15	0	17	2	8	False	False	0	0	100	85	1	11	1	False
+86	Spider Web	100	True	75	True	15	0	16	2	8	False	False	0	0	100	86	1	3	12	False
+87	Crabhammer	88	False	75	True	20	18	12	0	30	True	False	99	0	88	87	1	11	3	False
+88	Haze	125	False	75	True	15	0	13	2	8	False	False	0	0	125	88	1	17	6	False
+89	Mean Look	100	True	75	True	15	0	12	2	8	False	False	0	0	100	89	1	11	1	False
+90	Cross Chop	84	False	75	True	30	20	10	0	30	True	False	99	0	125	90	1	11	7	False
+91	Outrage	50	False	75	True	15	18	6	0	8	True	False	99	0	85	91	0	11	15	False
+92	Low Kick	90	False	75	True	30	7	16	0	8	True	False	99	0	100	92	1	11	7	False
+93	AncientPower	88	False	75	True	30	12	12	1	8	True	False	99	0	100	93	1	3	13	False
+94	Synthesis	125	False	75	True	15	0	12	2	8	False	True	0	0	125	94	1	21	4	False
+95	Agility	125	False	75	True	10	0	12	2	8	False	True	0	0	125	95	1	16	11	False
+96	Rapid Spin	90	False	75	True	30	4	17	0	8	True	False	99	0	125	96	1	11	1	False
+97	Icy Wind	84	False	75	True	10	5	13	1	8	True	False	99	0	95	97	1	14	6	False
+98	Mind Reader	100	False	75	True	15	0	12	2	8	False	False	0	0	125	98	1	19	1	False
+99	Cosmic Power	125	False	75	True	15	0	14	2	8	False	True	0	0	125	99	1	19	11	False
+100	Sky Attack	90	False	75	True	15	50	6	0	8	True	False	99	0	125	100	1	28	10	False
+101	Powder Snow	90	False	75	True	20	4	10	1	8	True	False	99	0	125	101	1	15	6	False
+102	Follow Me	100	False	75	True	10	0	15	2	8	False	False	0	0	125	102	1	19	1	False
+103	Meteor Mash	88	False	75	True	10	20	9	0	8	True	False	99	0	95	103	1	14	17	False
+104	Endure	100	False	75	True	15	0	17	2	8	False	False	0	0	75	104	1	19	1	False
+105	Rollout	60	False	75	True	15	1	14	0	8	True	False	99	0	75	105	5	11	13	False
+106	Scary Face	100	True	75	True	15	0	14	2	8	False	False	0	0	70	106	1	11	1	False
+107	Psybeam	84	False	75	True	10	12	17	1	8	True	False	99	0	95	107	1	14	11	False
+108	Psywave	88	False	75	True	10	0	19	1	8	True	False	0	0	95	108	1	14	11	False
+109	Psychic	88	False	75	True	10	38	10	1	8	True	False	99	0	100	109	1	11	11	False
+110	Psycho Boost	88	False	75	True	10	44	5	1	8	True	False	99	0	100	110	1	11	11	False
+111	Hypnosis	60	True	75	True	15	0	13	2	8	False	False	0	0	88	111	1	3	11	False
+112	Uproar	100	False	75	True	10	0	17	2	8	False	False	0	0	125	112	1	16	1	True
+113	Water Spout	84	False	75	True	10	42	5	1	8	True	False	99	0	100	113	1	11	3	False
+114	Signal Beam	84	False	75	True	10	8	15	1	8	True	False	99	0	95	114	1	14	12	False
+115	Psych Up	125	False	75	True	15	0	17	2	8	False	False	0	0	125	115	1	30	1	False
+116	Submission	84	False	75	True	30	15	17	0	8	True	False	99	0	125	116	1	11	7	False
+117	Recover	125	False	75	True	15	0	12	2	8	False	True	0	0	125	117	1	19	1	False
+118	Earthquake	65	False	75	True	20	5	10	0	8	True	False	99	0	80	118	1	18	9	False
+119	Nature Power	125	False	75	True	15	0	24	2	8	False	False	0	0	125	119	1	10	1	False
+120	Lick	100	False	75	True	30	4	20	0	8	True	False	99	0	100	120	1	11	14	True
+121	Flail	100	False	75	True	30	2	17	0	8	True	False	99	0	100	121	1	11	1	False
+122	Tail Whip	100	True	75	True	15	0	22	2	8	False	False	0	0	100	122	1	11	1	False
+123	Selfdestruct	100	False	75	True	15	0	12	0	8	True	False	0	0	125	123	1	26	1	False
+124	Stun Spore	78	True	75	True	15	0	17	2	8	False	False	0	0	88	124	1	2	4	False
+125	Bind	78	False	75	True	20	4	17	0	8	True	False	99	0	125	125	1	11	1	False
+126	Shadow Punch	125	False	75	True	20	6	8	0	8	True	False	99	0	125	126	1	11	14	False
+127	Shadow Ball	88	False	75	True	10	16	10	1	8	True	False	99	0	95	127	1	14	14	False
+128	Charge	100	False	75	True	15	0	20	2	8	False	True	0	0	125	128	1	20	5	False
+129	Thunderbolt	84	False	75	True	30	18	10	1	8	True	False	99	0	88	129	1	2	5	False
+130	Mist	125	False	75	True	15	0	17	2	8	False	True	0	0	125	130	1	19	6	False
+131	Fissure	100	False	75	True	20	0	10	0	8	True	False	0	0	20	131	1	11	9	False
+132	ExtremeSpeed	88	False	75	True	25	16	12	0	8	True	False	99	0	100	132	1	13	1	False
+133	Extrasensory	88	False	75	True	20	16	12	1	8	True	False	99	0	100	133	1	11	11	False
+134	Safeguard	125	False	75	True	10	0	13	2	8	False	True	0	0	125	134	1	16	1	False
+135	Absorb	88	False	75	True	15	1	15	1	8	True	False	99	0	100	135	1	11	4	True
+136	Sky Uppercut	90	False	75	True	20	16	12	0	8	True	False	99	0	100	136	1	11	7	False
+137	Skill Swap	100	False	75	True	15	0	14	2	8	False	False	0	0	100	137	1	11	11	False
+138	Sketch	125	False	75	True	20	0	1	2	8	False	False	0	0	100	138	1	11	1	False
+139	Headbutt	90	False	75	True	20	6	17	0	8	True	False	99	0	100	139	1	11	1	False
+140	Double-Edge	100	False	75	True	15	20	12	0	8	True	False	99	0	125	140	1	11	1	False
+141	Sandstorm	125	False	20	True	15	0	14	2	8	False	False	0	0	125	141	1	24	13	False
+142	Sand-Attack	100	True	75	True	15	0	20	2	8	False	False	0	0	80	142	1	3	9	False
+143	Sand Tomb	73	False	75	True	20	4	17	0	8	True	False	99	0	125	143	1	11	9	False
+144	Spark	88	False	75	True	20	12	15	0	8	True	False	99	0	100	144	1	11	5	False
+145	Swift	125	False	75	True	30	10	8	1	8	True	False	99	0	125	145	1	3	1	False
+146	Kinesis	84	False	75	True	15	0	17	2	8	False	False	0	0	100	146	1	11	11	False
+147	Smog	73	False	75	True	15	4	17	1	8	True	False	99	0	100	147	1	11	8	False
+148	Growth	125	False	75	True	15	0	20	2	8	False	True	0	0	125	148	1	19	1	False
+149	Sacred Fire	88	False	75	True	30	50	10	0	8	True	False	99	0	100	149	1	11	2	False
+150	Sheer Cold	100	False	75	True	20	0	12	1	8	True	False	0	0	20	150	1	11	6	False
+151	SolarBeam	100	False	75	True	15	24	9	1	8	True	False	99	0	125	151	1	28	4	False
+152	SonicBoom	90	False	75	True	10	0	11	1	8	True	False	0	0	95	152	1	14	1	False
+153	Fly	100	False	75	True	15	14	12	0	8	True	False	99	0	125	153	1	20	10	False
+154	Tackle	95	False	75	True	25	6	30	0	8	True	False	99	0	100	154	1	11	1	False
+155	Explosion	100	False	75	True	15	0	6	0	8	True	False	0	0	125	155	1	27	1	False
+156	Dive	100	False	75	True	15	12	12	0	8	True	False	99	0	125	156	1	20	3	False
+157	Fire Blast	88	False	75	False	30	33	9	1	8	True	False	99	0	100	157	1	3	2	False
+158	Waterfall	88	False	75	True	30	16	12	0	8	True	False	99	0	100	158	1	11	3	False
+159	Muddy Water	84	False	75	True	30	18	10	1	8	True	False	99	0	100	159	1	11	3	False
+160	Stockpile	125	False	75	True	15	0	17	2	8	False	True	0	0	125	160	1	19	1	True
+161	Slam	78	False	75	True	30	16	12	0	8	True	False	99	0	100	161	1	11	1	False
+162	Twister	90	False	75	True	30	8	15	1	8	True	False	99	0	100	162	1	11	15	False
+163	Bullet Seed	60	False	75	True	10	10	10	0	2	True	False	99	0	80	163	0	14	4	False
+164	Twineedle	55	False	75	True	30	6	10	0	2	True	False	99	0	85	164	2	14	12	False
+165	Softboiled	100	False	75	True	15	0	15	2	8	False	True	0	0	125	165	1	16	1	False
+166	Egg Bomb	78	False	75	True	30	10	15	0	8	True	False	99	0	100	166	1	3	1	False
+167	Faint Attack	125	False	75	True	30	6	25	0	8	True	False	99	0	125	167	1	11	16	False
+168	Barrage	55	False	75	True	10	1	12	0	2	True	False	99	0	80	168	0	3	1	False
+169	Minimize	125	False	75	True	15	0	27	2	8	False	True	0	0	125	169	1	19	1	False
+170	Seismic Toss	100	False	75	True	30	0	10	0	8	True	False	0	0	100	170	1	11	7	False
+171	Supersonic	55	True	75	True	15	0	10	2	8	False	False	0	0	100	171	1	3	1	True
+172	Taunt	100	True	75	True	15	0	20	2	8	False	False	0	0	100	172	1	11	16	False
+173	Moonlight	125	False	75	True	10	0	12	2	8	False	True	0	0	125	173	1	5	1	False
+174	Peck	95	False	75	True	25	4	26	0	8	True	False	99	0	100	174	1	11	10	False
+175	Arm Thrust	50	False	75	True	30	2	10	0	2	True	False	99	0	80	175	0	11	7	False
+176	Horn Attack	95	False	75	True	25	8	18	0	8	True	False	99	0	100	176	1	11	1	False
+177	Horn Drill	100	False	75	True	25	0	12	0	8	True	False	0	0	20	177	1	11	1	False
+178	Wing Attack	95	False	75	True	25	6	20	0	8	True	False	99	0	100	178	1	11	10	False
+179	Aerial Ace	125	False	75	True	20	10	8	0	8	True	False	99	0	125	179	1	11	10	False
+180	Icicle Spear	45	False	50	True	20	2	8	0	2	True	False	99	0	75	180	0	3	6	False
+181	Swords Dance	125	False	20	True	15	0	7	2	8	False	True	0	0	125	181	1	19	1	False
+182	Vine Whip	88	False	75	True	20	6	18	0	8	True	False	99	0	100	182	1	11	4	False
+183	Conversion	125	False	75	True	15	0	22	2	8	False	False	0	0	125	183	1	19	1	False
+184	Conversion 2	100	False	75	True	15	0	22	2	8	False	False	0	0	125	184	1	19	1	False
+185	Helping Hand	100	False	75	True	10	0	16	2	8	False	False	0	0	125	185	1	22	1	False
+186	Iron Defense	125	False	75	True	15	0	16	2	8	False	True	0	0	125	186	1	19	17	False
+187	Teleport	125	False	75	True	15	0	7	2	8	False	False	0	0	125	187	1	19	11	False
+188	ThunderShock	88	False	75	True	25	1	17	1	2	True	False	99	0	100	188	1	11	5	False
+189	Shock Wave	125	False	75	True	10	7	8	1	8	True	False	99	0	125	189	1	14	5	False
+190	Quick Attack	88	False	75	True	25	4	13	0	8	True	False	99	0	100	190	1	13	1	False
+191	Sweet Kiss	84	True	75	True	15	0	15	2	8	False	False	0	0	100	191	1	11	1	True
+192	Thunder Wave	100	True	75	True	15	0	17	2	8	False	False	0	0	65	192	1	11	5	False
+193	Zap Cannon	65	False	75	True	10	20	9	1	8	True	False	99	0	95	193	1	14	5	False
+194	Block	100	True	75	True	15	0	12	2	8	False	False	0	0	100	194	1	11	1	False
+195	Howl	125	False	75	True	15	0	27	2	8	False	True	0	0	125	195	1	19	1	True
+196	Poison Gas	84	True	75	True	15	0	27	2	8	False	False	0	0	88	196	1	11	8	False
+197	Toxic	84	True	75	True	15	0	12	2	8	False	False	0	0	88	197	1	11	8	False
+198	Poison Fang	84	False	75	True	20	10	15	0	8	True	False	99	0	88	198	1	11	8	False
+199	PoisonPowder	84	True	75	True	15	0	22	2	8	False	False	0	0	100	199	1	11	8	False
+200	Poison Sting	73	False	75	True	20	3	19	0	8	True	False	99	0	100	200	1	3	8	False
+201	Spike Cannon	55	False	75	True	10	3	10	0	2	True	False	99	0	80	201	0	14	1	False
+202	Acid Armor	125	False	75	True	15	0	16	2	8	False	True	0	0	125	202	1	19	8	False
+203	Take Down	88	False	75	True	25	8	19	0	8	True	False	99	0	125	203	1	11	1	False
+204	Jump Kick	88	False	75	True	25	14	13	0	8	True	False	99	0	100	204	1	11	7	False
+205	Bounce	100	False	75	True	15	16	11	0	8	True	False	99	0	125	205	1	20	10	False
+206	Hi Jump Kick	90	False	75	True	30	16	11	0	8	True	False	99	0	100	206	1	11	7	False
+207	Tri Attack	100	False	75	False	25	6	17	1	8	True	False	99	0	100	207	1	3	1	False
+208	Dragon Claw	88	False	75	True	25	16	10	0	8	True	False	99	0	100	208	1	11	15	False
+209	Trick	100	False	75	True	15	0	17	2	8	False	False	0	0	100	209	1	11	11	False
+210	Triple Kick	70	False	75	True	25	8	15	0	2	True	False	99	0	75	210	3	11	7	False
+211	Drill Peck	88	False	75	True	25	16	13	0	8	True	False	99	0	100	211	1	11	10	False
+212	Mud Sport	100	False	75	True	10	0	17	2	8	False	False	0	0	125	212	1	24	9	False
+213	Mud-Slap	84	False	75	True	15	4	16	1	8	True	False	99	0	100	213	1	3	9	False
+214	Thief	100	False	75	True	15	2	20	0	8	True	False	99	0	100	214	1	11	16	False
+215	Amnesia	125	False	75	True	15	0	22	2	8	False	True	0	0	125	215	1	19	11	False
+216	Night Shade	100	False	75	True	25	0	8	1	8	True	False	0	0	88	216	1	2	14	False
+217	Growl	100	True	75	True	10	0	20	2	8	False	False	0	0	100	217	1	15	1	True
+218	Slack Off	100	False	75	True	15	0	17	2	8	False	True	0	0	125	218	1	19	1	False
+219	Surf	88	False	75	True	25	30	11	1	8	True	False	99	0	125	219	1	11	3	False
+220	Role Play	100	False	75	True	15	0	17	2	8	False	False	0	0	100	220	1	11	11	False
+221	Needle Arm	88	False	75	True	20	36	11	0	8	True	False	99	0	100	221	1	11	4	False
+222	Double Kick	87	False	75	True	20	6	14	0	3	True	False	99	0	88	222	2	11	7	False
+223	Sunny Day	125	False	75	True	10	0	12	2	8	False	False	0	0	125	223	1	24	2	False
+224	Leer	100	True	75	True	15	0	27	2	8	False	False	0	0	100	224	1	11	1	False
+225	Wish	100	False	75	True	10	0	15	2	8	False	False	0	0	125	225	1	19	1	False
+226	Fake Out	80	False	75	True	20	8	12	0	8	True	False	99	0	100	226	1	13	1	False
+227	Sleep Talk	125	False	75	True	15	0	17	2	8	False	False	0	0	125	227	1	10	1	True
+228	Pay Day	90	False	75	True	20	8	16	0	8	True	False	99	0	100	228	1	11	1	False
+229	Assist	95	False	75	True	15	0	27	2	8	False	False	0	1	100	229	1	10	1	False
+230	Heat Wave	80	False	75	False	10	10	8	1	8	True	False	99	0	100	230	1	15	2	False
+231	Sleep Powder	78	True	75	True	15	0	13	2	8	False	False	0	0	80	231	1	2	4	False
+232	Rest	125	False	75	True	15	0	8	2	8	False	True	0	0	125	232	1	19	11	False
+233	Ingrain	100	False	75	True	20	0	22	2	8	False	True	0	0	125	233	1	19	4	False
+234	Confusion	85	False	75	True	25	5	22	1	8	True	False	99	0	100	234	1	11	11	False
+235	Body Slam	85	False	75	True	15	12	17	0	8	True	False	99	0	100	235	1	11	1	False
+236	Swallow	125	False	75	True	15	0	15	2	8	False	True	0	0	125	236	1	21	1	True
+237	Curse	125	False	75	True	20	0	17	2	8	False	False	0	0	100	237	1	10	1	False
+238	Frenzy Plant	84	False	75	True	20	45	6	1	8	True	False	99	0	125	238	1	3	4	False
+239	Hydro Cannon	84	False	75	True	20	33	6	1	8	True	False	99	0	125	239	1	14	3	False
+240	Hydro Pump	84	False	75	True	10	24	8	1	8	True	False	99	0	95	240	1	14	3	False
+241	Hyper Voice	90	False	75	True	30	18	12	1	8	True	False	99	0	100	241	1	3	1	True
+242	Hyper Beam	90	False	75	True	10	30	8	1	8	True	False	99	0	95	242	1	14	1	False
+243	Superpower	90	False	75	True	25	24	11	0	8	True	False	99	0	125	243	1	11	7	False
+244	Steel Wing	88	False	75	True	25	35	10	0	8	True	False	99	0	100	244	1	11	17	False
+245	Spit Up	88	False	75	True	25	20	12	1	8	True	False	99	0	125	245	1	11	1	True
+246	DynamicPunch	78	False	75	True	20	10	13	0	8	True	False	99	0	100	246	1	11	7	False
+247	Guillotine	100	False	75	True	20	0	12	0	8	True	False	0	0	20	247	1	11	1	False
+248	ViceGrip	90	False	75	True	30	6	22	0	8	True	False	99	0	100	248	1	11	1	False
+249	Knock Off	100	False	75	True	15	0	22	0	8	False	False	0	0	100	249	1	11	16	False
+250	Pound	90	False	75	True	25	6	27	0	8	True	False	99	0	100	250	1	11	1	False
+251	Razor Leaf	84	False	75	True	15	2	12	0	30	True	False	99	0	95	251	1	14	4	False
+252	Baton Pass	125	False	75	True	10	0	15	2	8	False	False	0	0	75	252	1	17	1	False
+253	Petal Dance	55	False	75	True	25	7	9	1	8	True	False	99	0	80	253	0	11	4	False
+254	Splash	125	False	75	True	15	0	50	2	8	False	False	0	0	125	254	1	19	1	False
+255	BubbleBeam	88	False	75	True	20	6	10	1	8	True	False	99	0	95	255	1	14	3	False
+256	Doom Desire	88	False	75	True	15	0	11	2	8	False	False	0	0	125	256	1	19	17	False
+257	Belly Drum	100	False	75	True	25	0	10	2	8	False	True	0	0	125	257	1	19	1	False
+258	Barrier	125	False	75	True	15	0	16	2	8	False	True	0	0	125	258	1	19	11	False
+259	Light Screen	125	False	75	True	15	0	14	2	8	False	True	0	0	125	259	1	19	11	False
+260	Scratch	90	False	75	True	25	6	28	0	8	True	False	99	0	100	260	1	11	1	False
+261	Hyper Fang	88	False	75	True	25	16	13	0	8	True	False	99	0	100	261	1	11	1	True
+262	Ember	88	False	75	False	20	7	15	1	8	True	False	99	0	100	262	1	3	2	False
+263	Secret Power	88	False	75	True	30	14	10	0	8	True	False	99	0	100	263	1	11	1	False
+264	Dizzy Punch	90	False	75	True	20	6	17	0	8	True	False	99	0	100	264	1	11	1	False
+265	Bulk Up	125	False	75	True	15	0	16	2	8	False	True	0	0	125	265	1	19	7	False
+266	Imprison	100	True	75	True	15	0	15	2	8	False	False	0	0	100	266	1	11	11	False
+267	FeatherDance	100	True	75	True	15	0	22	2	8	False	False	0	0	100	267	1	11	10	False
+268	Whirlwind	100	False	75	True	15	0	27	2	8	False	False	0	0	100	268	1	11	1	False
+269	Beat Up	100	False	75	True	15	0	15	2	8	False	False	0	0	125	269	1	4	16	False
+270	Blizzard	84	False	75	True	20	24	7	1	8	True	False	99	0	80	270	1	15	6	False
+271	Stomp	90	False	75	True	20	12	17	0	8	True	False	99	0	100	271	1	11	1	False
+272	Blast Burn	84	False	75	False	25	30	6	1	8	True	False	99	0	125	272	1	2	2	True
+273	Flash	84	True	75	True	15	0	24	2	8	False	False	0	0	100	273	1	11	1	False
+274	Teeter Dance	100	True	75	True	15	0	15	2	8	False	False	0	0	100	274	1	17	1	False
+275	Crush Claw	90	False	75	True	20	14	15	0	8	True	False	99	0	100	275	1	11	1	False
+276	Blaze Kick	88	False	75	False	30	16	13	0	30	True	False	99	0	100	276	1	11	2	False
+277	Present	90	False	75	True	15	0	19	0	8	True	False	0	0	100	277	1	3	1	False
+278	Eruption	84	False	75	False	20	40	6	1	8	True	False	99	0	100	278	1	3	2	False
+279	Sludge	88	False	75	True	25	12	15	1	8	True	False	99	0	100	279	1	3	8	False
+280	Sludge Bomb	84	False	75	True	10	18	10	1	8	True	False	99	0	95	280	1	14	8	False
+281	Glare	78	True	75	True	15	0	22	2	8	False	False	0	0	100	281	1	11	1	False
+282	Transform	125	False	75	True	15	0	1	2	8	False	False	0	0	125	282	1	19	1	False
+283	Poison Tail	88	False	75	True	30	10	15	0	30	True	False	99	0	100	283	1	11	8	False
+284	Roar	100	False	75	True	15	0	14	2	8	False	False	0	0	100	284	1	11	1	True
+285	Bone Rush	50	False	75	True	25	12	8	0	2	True	False	99	0	75	285	0	3	9	False
+286	Camouflage	100	False	75	True	20	0	22	2	8	False	True	0	0	125	286	1	19	1	False
+287	Covet	88	False	75	True	15	8	27	0	8	True	False	99	0	125	287	1	11	1	False
+288	Tail Glow	100	False	75	True	15	0	22	2	8	False	True	0	0	125	288	1	19	12	False
+289	Bone Club	88	False	75	True	25	12	15	0	8	True	False	99	0	100	289	1	11	9	False
+290	Bonemerang	75	False	75	True	10	10	14	0	8	True	False	99	0	88	290	2	14	9	False
+291	Fire Spin	73	False	75	False	15	4	19	1	8	True	False	99	0	100	291	1	11	2	False
+292	Fire Punch	78	False	75	False	20	14	13	0	8	True	False	99	0	100	292	1	11	2	False
+293	Perish Song	125	True	75	True	10	0	15	2	8	False	False	0	0	15	293	1	7	1	True
+294	Wrap	88	False	75	True	15	0	22	0	8	False	False	0	0	100	294	1	11	1	False
+295	Spikes	125	False	75	True	10	0	22	2	8	False	False	0	0	125	295	1	24	9	False
+296	Magnitude	100	False	75	True	20	0	15	0	8	True	False	0	0	100	296	1	18	9	False
+297	Magical Leaf	125	False	75	True	30	12	8	1	8	True	False	99	0	125	297	1	3	4	False
+298	Magic Coat	100	False	75	True	15	0	19	2	8	False	False	0	0	125	298	1	19	11	False
+299	Mud Shot	65	False	75	True	20	12	13	1	8	True	False	99	0	100	299	1	3	9	False
+300	Mach Punch	90	False	75	True	20	8	22	0	8	True	False	99	0	100	300	1	13	7	False
+301	Protect	100	False	75	True	10	0	10	2	8	False	False	0	0	75	301	1	19	1	False
+302	Defense Curl	125	False	75	True	15	0	16	2	8	False	True	0	0	125	302	1	19	1	False
+303	Rolling Kick	88	False	75	True	20	12	13	0	8	True	False	99	0	100	303	1	11	7	False
+304	Substitute	125	False	75	True	15	0	7	2	8	False	True	0	0	100	304	1	30	1	False
+305	Detect	100	False	75	True	15	0	12	2	8	False	False	0	0	75	305	1	19	7	False
+306	Pin Missile	60	False	75	True	10	4	10	0	1	True	False	99	0	75	306	0	14	12	False
+307	Water Sport	100	False	75	True	10	0	19	2	8	False	False	0	0	125	307	1	24	3	False
+308	Water Gun	88	False	75	True	20	5	17	1	8	True	False	99	0	100	308	1	3	3	False
+309	Mist Ball	88	False	75	True	20	14	10	1	8	True	False	99	0	100	309	1	3	11	False
+310	Water Pulse	88	False	75	True	10	12	12	1	8	True	False	99	0	95	310	1	14	3	False
+311	Fury Attack	55	False	75	True	20	1	12	0	1	True	False	99	0	80	311	0	11	1	False
+312	Fury Swipes	55	False	75	True	25	5	10	0	1	True	False	99	0	75	312	0	11	1	False
+313	Destiny Bond	125	False	75	True	15	0	12	2	8	False	False	0	0	100	313	1	3	14	False
+314	False Swipe	100	False	75	True	30	40	15	0	8	True	False	99	0	100	314	1	11	1	False
+315	Foresight	100	False	75	True	15	0	22	2	8	False	False	0	0	100	315	1	11	1	False
+316	Mirror Coat	100	False	75	True	15	0	15	1	8	False	False	0	0	125	316	1	19	11	False
+317	Future Sight	90	False	75	True	15	0	13	2	8	False	False	0	0	125	317	1	19	11	False
+318	Milk Drink	125	False	75	True	15	0	15	2	8	False	True	0	0	125	318	1	5	1	True
+319	Calm Mind	125	False	75	True	15	0	19	2	8	False	True	0	0	125	319	1	19	11	False
+320	Mega Drain	88	False	75	True	20	8	17	1	8	True	False	99	0	100	320	1	11	4	False
+321	Mega Kick	84	False	75	True	20	16	12	0	8	True	False	99	0	100	321	1	11	1	False
+322	Mega Punch	88	False	75	True	20	16	12	0	8	True	False	99	0	100	322	1	11	1	False
+323	Megahorn	84	False	75	True	20	38	7	0	8	True	False	99	0	100	323	1	3	12	False
+324	Hidden Power	88	False	75	True	20	2	12	1	8	True	False	99	0	100	324	1	3	0	False
+325	Metal Claw	90	False	75	True	20	10	15	0	8	True	False	99	0	100	325	1	11	17	False
+326	Attract	78	True	75	True	20	0	10	2	8	False	False	0	0	75	326	1	3	1	False
+327	Mimic	100	False	75	True	15	0	17	2	8	False	False	0	0	100	327	1	11	1	False
+328	Frustration	100	False	75	True	30	0	16	0	8	True	False	0	0	100	328	1	11	1	False
+329	Leech Seed	90	True	75	True	15	0	17	2	8	False	False	0	0	100	329	1	3	4	False
+330	Metronome	125	False	75	True	15	0	22	2	8	False	False	0	0	100	330	1	10	1	False
+331	Dream Eater	100	False	75	True	30	20	13	1	8	True	False	99	0	125	331	1	11	11	True
+332	Acid	88	False	75	True	30	8	17	1	8	True	False	99	0	125	332	1	3	8	False
+333	Meditate	125	False	75	True	15	0	22	2	8	False	True	0	0	125	333	1	19	11	False
+334	Snatch	100	False	75	True	10	0	17	2	8	False	False	0	0	125	334	1	19	16	False
+335	Luster Purge	88	False	75	True	20	14	12	1	8	True	False	99	0	100	335	1	11	11	False
+336	Leaf Blade	88	False	75	True	20	14	12	0	30	True	False	99	0	100	336	1	11	4	False
+337	Recycle	100	False	75	True	15	0	10	2	8	False	False	0	0	125	337	1	23	1	False
+338	Reflect	125	False	75	True	15	0	22	2	8	False	True	0	0	125	338	1	19	11	False
+339	Refresh	100	False	75	False	15	0	17	2	8	False	True	0	0	125	339	1	16	1	False
+340	Revenge	100	False	75	True	15	0	12	0	8	False	False	0	0	125	340	1	19	7	False
+341	Dragon Rage	100	False	75	True	20	0	8	1	8	True	False	0	0	100	341	1	3	15	False
+342	DragonBreath	88	False	75	True	10	12	12	1	8	True	False	99	0	95	342	1	14	15	True
+343	Dragon Dance	125	False	75	True	15	0	22	2	8	False	True	0	0	125	343	1	19	15	False
+344	Ice Punch	88	False	75	True	20	14	12	0	8	True	False	99	0	100	344	1	11	6	False
+345	Ice Beam	88	False	75	True	20	15	8	1	8	True	False	99	0	95	345	1	14	6	False
+346	Fury Cutter	75	False	75	True	15	2	12	0	8	True	False	99	0	88	346	2	11	12	False
+347	Comet Punch	60	False	75	True	30	3	10	0	1	True	False	99	0	75	347	0	11	1	False
+348	Skull Bash	100	False	75	True	15	10	15	0	8	True	False	99	0	125	348	1	20	1	False
+349	Lock-On	100	False	75	True	15	0	7	2	8	False	False	0	0	125	349	1	19	1	False
+350	Rock Blast	60	False	75	True	30	4	10	0	1	True	False	99	0	75	350	0	3	13	False
+351	Cotton Spore	100	True	75	True	15	0	13	2	8	False	False	0	0	70	351	1	11	4	False
+352	Struggle	100	False	75	True	30	30	1	0	8	True	False	0	0	100	352	1	11	1	False
+353	Aeroblast	84	False	75	True	20	20	12	1	30	True	False	99	0	95	353	1	14	10	False
+354	Volt Tackle	84	False	75	True	10	24	8	0	8	True	False	99	0	125	354	1	13	5	False
+355	regular attack	93	False	75	True	70	1	17	0	0	True	False	1	2	125	355	1	11	0	False
+356	is watching	84	False	75	True	10	2	17	2	6	True	False	99	0	80	356	1	11	0	False
+357	Bide	100	False	75	True	10	2	17	0	6	True	False	99	3	100	357	1	11	1	False
+358	Revenge	100	False	75	True	10	2	17	0	6	True	False	99	0	100	358	1	19	7	False
+359	Avalanche	100	False	75	True	10	0	17	0	6	True	False	99	0	100	359	1	19	6	False
+360	Wide Slash	88	False	75	True	20	20	10	0	8	True	False	99	0	125	360	1	1	0	False
+361	$$$	100	False	75	True	8	2	99	2	0	True	False	99	0	125	361	1	19	0	False
+362	$$$	100	False	75	True	20	15	10	0	8	True	False	99	0	125	362	1	9	0	False
+363	See-Trap	100	False	75	True	8	2	22	2	0	False	False	0	0	125	363	1	1	0	False
+364	Takeaway	100	False	75	True	20	2	12	0	0	True	False	99	0	100	364	1	11	0	False
+365	Rebound	100	False	75	True	8	2	22	2	0	False	False	0	0	125	365	1	19	0	False
+366	Bloop Slash	100	False	75	True	20	10	22	0	8	True	False	99	0	125	366	1	13	0	False
+367	Switcher	100	False	75	True	20	2	17	2	0	False	False	0	0	100	367	1	14	0	False
+368	Blowback	100	False	75	True	20	2	17	2	0	False	False	0	0	100	368	1	14	0	False
+369	Warp	100	False	75	True	8	2	14	2	0	False	False	0	0	100	369	1	15	0	False
+370	Transfer	100	False	75	True	8	2	22	2	0	False	False	0	0	100	370	1	3	0	False
+371	Slow Down	100	False	75	True	8	2	37	2	0	False	False	0	0	100	371	1	15	0	False
+372	Speed Boost	100	False	75	True	8	2	22	2	0	False	False	0	0	125	372	1	16	0	False
+373	Searchlight	100	False	75	True	8	2	22	2	0	False	False	0	0	125	373	1	1	0	False
+374	Petrify	100	False	75	True	8	2	22	2	0	False	False	0	0	100	374	1	15	0	False
+375	Stay Away	100	False	75	True	8	2	22	2	0	False	False	0	0	100	375	1	3	0	False
+376	Pounce	100	False	75	True	8	2	22	2	0	False	False	0	0	125	376	1	10	0	False
+377	Trawl	100	False	75	True	20	2	22	2	0	False	False	0	0	125	377	1	1	0	False
+378	Cleanse	100	False	20	True	8	2	17	2	0	False	False	0	0	125	378	1	10	0	False
+379	Observer	100	False	75	True	8	2	22	2	0	False	False	0	0	100	379	1	3	0	False
+380	Decoy Maker	100	False	75	True	8	2	22	2	0	False	False	0	0	100	380	1	3	0	False
+381	Siesta	100	False	75	True	15	2	12	2	0	False	False	0	0	100	381	1	15	0	False
+382	Totter	100	False	75	True	15	2	12	2	0	False	False	0	0	100	382	1	15	0	False
+383	Two-Edge	100	False	75	True	20	2	22	2	0	False	False	0	0	125	383	1	15	0	False
+384	No-Move	100	False	75	True	8	2	22	2	0	False	False	0	0	100	384	1	11	0	False
+385	Escape	100	False	75	True	8	2	1	2	0	False	False	0	0	125	385	1	10	0	False
+386	Scan	100	False	75	True	8	2	27	2	0	False	False	0	0	125	386	1	1	0	False
+387	Power-Ears	100	False	75	True	8	2	27	2	0	False	False	0	0	125	387	1	1	0	False
+388	Drought	100	False	75	True	8	2	22	2	0	False	False	0	0	125	388	1	29	0	False
+389	Trap Buster	100	False	75	True	8	2	57	2	0	False	False	0	0	125	389	1	1	0	False
+390	Wild Call	100	False	75	True	8	2	22	2	0	False	False	0	0	125	390	1	4	0	False
+391	Invisify	100	False	75	True	8	2	12	2	0	False	False	0	0	125	391	1	1	0	False
+392	One-Shot	100	False	75	True	8	200	3	2	0	True	False	99	0	65	392	1	11	0	False
+393	HP Gauge	100	False	75	True	8	2	32	2	0	False	False	0	0	125	393	1	6	0	False
+394	Vacuum-Cut	100	False	75	True	20	0	7	1	0	True	False	0	0	100	394	1	15	0	False
+395	Reviver	100	False	75	True	8	2	4	2	0	False	False	0	0	125	395	1	19	0	False
+396	Shocker	45	False	75	True	8	2	22	2	0	True	False	0	0	125	396	1	11	0	False
+397	Echo	45	False	75	True	20	10	27	1	0	True	False	99	0	125	397	1	11	0	False
+398	Famish	100	False	75	True	8	2	22	2	0	False	False	0	0	100	398	1	15	0	False
+399	One-Room	100	False	75	True	8	2	22	2	0	False	False	0	0	125	399	1	29	0	False
+400	Fill-In	100	False	75	True	8	2	99	2	0	False	False	0	0	125	400	1	29	0	False
+401	Trapper	100	False	75	True	10	2	17	2	0	False	False	0	0	125	401	1	1	0	False
+402	Possess	100	False	75	True	8	2	12	2	0	False	False	0	0	100	402	1	11	0	False
+403	Itemize	100	False	75	True	8	2	17	2	0	False	False	0	0	65	403	1	3	0	False
+404	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	404	1	19	0	False
+405	projectile	100	False	75	True	8	2	57	0	0	False	False	0	0	125	405	1	10	0	False
+406	Hurl	100	False	75	True	15	2	22	2	0	True	False	99	0	100	406	1	11	0	False
+407	Mobile	100	False	75	True	8	2	17	2	0	False	False	0	0	125	407	1	19	0	False
+408	Item-Toss	100	False	75	True	8	2	96	2	0	False	False	0	0	100	408	1	10	0	False
+409	See Stairs	100	False	75	True	8	2	22	2	0	False	False	0	0	125	409	1	19	0	False
+410	Long Toss	100	False	75	True	8	2	22	2	0	False	False	0	0	125	410	1	19	0	False
+411	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	125	411	1	19	0	False
+412	Pierce	100	False	75	True	8	2	22	2	0	False	False	0	0	125	412	1	19	0	False
+413	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	413	1	19	0	False
+414	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	414	1	19	0	False
+415	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	415	1	19	0	False
+416	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	416	1	19	0	False
+417	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	417	1	19	0	False
+418	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	418	1	19	0	False
+419	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	419	1	19	0	False
+420	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	420	1	19	0	False
+421	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	421	1	19	0	False
+422	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	422	1	19	0	False
+423	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	100	423	1	19	0	False
+424	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	125	424	1	19	0	False
+425	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	125	425	1	19	0	False
+426	[M:D1]	100	False	75	True	10	2	22	2	8	False	False	0	0	125	426	1	19	0	False
+427	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	125	427	1	19	0	False
+428	[M:D1]	125	False	75	True	30	2	22	2	8	False	False	0	0	125	428	1	19	0	False
+429	[M:D1]	100	False	75	True	8	2	22	2	0	False	False	0	0	125	429	1	19	0	False
+430	Hammer Arm	80	False	75	True	30	18	16	0	8	True	False	99	0	100	430	1	11	7	False
+431	Iron Head	80	False	75	True	30	16	12	0	8	True	False	99	0	100	431	1	11	17	False
+432	Aqua Jet	88	False	75	True	30	4	18	0	8	True	False	99	0	100	432	1	13	3	False
+433	Aqua Tail	80	False	75	True	30	16	11	0	8	True	False	99	0	100	433	1	3	3	False
+434	Aqua Ring	100	False	75	True	15	0	20	2	8	False	True	0	0	125	434	1	19	3	False
+435	Spacial Rend	80	False	75	True	20	15	5	1	30	True	False	99	0	100	435	1	15	15	False
+436	Dark Pulse	84	False	75	True	20	16	10	1	8	True	False	99	0	88	436	1	2	16	False
+437	Ominous Wind	88	False	75	True	30	6	8	1	8	True	False	99	0	88	437	1	15	14	False
+438	Gastro Acid	100	True	75	True	15	0	16	2	8	False	False	0	0	125	438	1	31	8	True
+439	Healing Wish	100	False	75	False	15	0	16	2	8	False	True	0	0	125	439	1	16	11	False
+440	Close Combat	80	False	75	True	30	43	7	0	8	True	False	99	0	100	440	1	11	7	False
+441	Wood Hammer	100	False	75	True	30	36	10	0	8	True	False	99	0	125	441	1	3	4	False
+442	Air Slash	88	False	75	True	30	15	15	1	8	True	False	99	0	100	442	1	11	10	False
+443	Energy Ball	88	False	75	True	30	16	11	1	8	True	False	99	0	100	443	1	14	4	False
+444	Tailwind	100	False	75	True	15	0	12	2	8	False	True	0	0	125	444	1	16	10	False
+445	Punishment	88	False	75	True	30	1	8	0	8	True	False	99	0	100	445	1	11	16	False
+446	Chatter	88	False	75	True	30	10	12	1	8	True	False	99	0	88	446	1	2	10	True
+447	Lucky Chant	100	False	75	True	15	0	22	2	8	False	True	0	0	125	447	1	16	1	False
+448	Guard Swap	100	False	75	True	15	0	11	2	8	False	False	0	0	125	448	1	31	11	False
+449	Heal Order	100	False	75	True	15	0	12	2	8	False	True	0	0	125	449	1	19	12	False
+450	Heal Block	100	True	75	True	15	0	16	2	8	False	False	0	0	125	450	1	15	11	False
+451	Shadow Sneak	88	False	75	True	20	4	16	0	8	True	False	99	0	100	451	1	13	14	False
+452	Thunder Fang	88	False	75	True	30	12	15	0	8	True	False	99	0	100	452	1	11	5	True
+453	Rock Wrecker	88	False	75	True	30	28	7	0	8	True	False	99	0	125	453	1	14	13	False
+454	Focus Blast	80	False	75	True	30	25	6	1	8	True	False	99	0	100	454	1	14	7	False
+455	Giga Impact	80	False	75	True	30	60	4	0	8	True	False	99	0	125	455	1	11	1	False
+456	Defog	88	False	75	True	20	0	14	2	8	False	False	0	0	100	456	1	15	10	False
+457	Trump Card	125	False	75	True	20	1	5	1	8	True	False	99	0	125	457	1	11	1	False
+458	Grass Knot	88	False	75	True	30	1	20	1	8	True	False	99	0	100	458	1	11	4	False
+459	Cross Poison	88	False	75	True	20	15	12	0	30	True	False	99	0	100	459	1	11	8	False
+460	Attack Order	80	False	75	True	20	11	10	0	30	True	False	99	0	100	460	1	15	12	False
+461	Ice Fang	88	False	75	True	30	10	15	0	8	True	False	99	0	100	461	1	11	6	True
+462	Ice Shard	88	False	75	True	30	4	16	0	8	True	False	99	0	100	462	1	13	6	False
+463	Psycho Cut	88	False	75	True	30	10	14	0	30	True	False	99	0	100	463	1	3	11	False
+464	Psycho Shift	100	False	75	True	15	0	10	2	8	False	False	0	0	125	464	1	30	11	False
+465	Me First	100	False	75	True	15	0	22	2	8	False	False	0	0	125	465	1	10	1	False
+466	Embargo	100	True	75	True	15	0	18	2	8	False	False	0	0	125	466	1	11	16	False
+467	$$$	80	False	75	True	30	20	7	1	8	True	False	99	0	125	467	1	15	1	False
+468	Seed Flare	80	False	75	True	20	44	5	1	8	True	False	99	0	88	468	1	2	4	False
+469	Brine	88	False	75	True	30	8	8	1	8	True	False	99	0	100	469	1	11	3	False
+470	X-Scissor	88	False	75	True	30	40	10	0	8	True	False	99	0	100	470	1	11	12	False
+471	Natural Gift	88	False	75	True	30	1	17	0	8	True	False	99	0	100	471	1	11	1	False
+472	Payback	100	False	75	True	15	0	16	0	8	False	False	0	0	125	472	1	19	16	False
+473	Zen Headbutt	88	False	75	True	30	15	9	0	8	True	False	99	0	100	473	1	11	11	False
+474	Wring Out	88	False	75	True	10	1	10	1	8	True	False	99	0	100	474	1	11	1	False
+475	Gyro Ball	88	False	75	True	30	1	12	0	8	True	False	99	0	100	475	1	11	17	False
+476	Shadow Claw	88	False	75	True	25	13	10	0	30	True	False	99	0	100	476	1	11	14	False
+477	Shadow Force	100	False	75	True	15	50	6	0	8	True	False	99	0	100	477	1	20	14	False
+478	Gravity	100	False	75	True	15	0	10	2	8	False	False	0	0	125	478	1	24	11	False
+479	Vacuum Wave	88	False	75	True	25	11	14	1	8	True	False	99	0	100	479	1	13	7	False
+480	Stealth Rock	100	False	75	True	15	0	20	2	8	False	False	0	0	125	480	1	24	13	False
+481	Stone Edge	80	False	75	True	30	38	7	0	30	True	False	99	0	100	481	1	11	13	False
+482	Switcheroo	100	False	75	True	15	0	16	2	8	False	False	0	0	125	482	1	3	16	False
+483	Dark Void	100	True	75	True	15	0	8	2	8	False	False	0	0	88	483	1	15	16	False
+484	Earth Power	88	False	75	True	30	9	8	1	8	True	False	99	0	100	484	1	15	9	False
+485	Gunk Shot	80	False	75	True	30	22	6	0	8	True	False	99	0	100	485	1	14	8	False
+486	Seed Bomb	88	False	75	True	30	16	11	0	8	True	False	99	0	100	486	1	3	4	False
+487	Double Hit	80	False	75	True	30	3	13	0	8	True	False	99	0	88	487	2	11	1	False
+488	Assurance	88	False	75	True	30	9	12	0	8	True	False	99	0	100	488	1	11	16	False
+489	Charge Beam	88	False	75	True	30	9	12	1	8	True	False	99	0	100	489	1	3	5	False
+490	Pluck	100	False	75	True	30	10	15	0	8	True	False	99	0	125	490	1	11	10	True
+491	Night Slash	88	False	75	True	30	13	12	0	30	True	False	99	0	100	491	1	11	16	False
+492	Acupressure	100	False	75	True	15	0	22	2	8	False	True	0	0	125	492	1	16	1	False
+493	Magnet Rise	100	False	75	True	15	0	13	2	8	False	True	0	0	125	493	1	19	5	False
+494	Roar of Time	80	False	75	True	30	24	4	1	8	True	False	99	0	100	494	1	15	15	True
+495	Poison Jab	88	False	75	True	30	14	14	0	8	True	False	99	0	100	495	1	11	8	False
+496	Toxic Spikes	100	False	75	True	15	0	18	2	8	False	False	0	0	125	496	1	24	8	False
+497	Last Resort	80	False	75	True	30	30	7	0	8	True	False	99	0	100	497	1	11	1	False
+498	Dragon Rush	80	False	75	True	30	40	8	0	8	True	False	99	0	100	498	1	11	15	False
+499	Trick Room	100	False	75	True	15	0	10	2	8	False	False	0	0	125	499	1	6	11	False
+500	Drain Punch	88	False	75	True	30	13	8	0	8	True	False	99	0	100	500	1	3	7	False
+501	Mud Bomb	88	False	75	True	30	12	10	1	8	True	False	99	0	100	501	1	3	9	False
+502	U-turn	88	False	75	True	30	14	12	0	8	True	False	99	0	100	502	1	13	12	False
+503	Fling	100	False	75	True	15	0	16	2	8	False	False	0	0	125	503	1	11	16	False
+504	Worry Seed	100	False	75	True	15	0	14	2	8	False	False	0	0	100	504	1	14	4	False
+505	Crush Grip	88	False	75	True	30	15	6	0	8	True	False	99	0	100	505	1	11	1	False
+506	Heart Swap	100	False	75	True	15	0	10	2	8	False	False	0	0	125	506	1	31	11	False
+507	Force Palm	88	False	75	True	30	12	12	0	8	True	False	99	0	100	507	1	11	7	False
+508	Aura Sphere	125	False	75	True	30	16	10	1	8	True	False	99	0	125	508	1	14	7	False
+509	Roost	100	False	75	True	15	0	14	2	8	False	True	0	0	125	509	1	19	10	False
+510	Bullet Punch	88	False	75	True	30	4	16	0	8	True	False	99	0	100	510	1	13	17	False
+511	Power Whip	80	False	75	True	30	42	8	0	8	True	False	99	0	100	511	1	11	4	False
+512	Power Gem	88	False	75	True	30	12	15	1	8	True	False	99	0	100	512	1	3	13	False
+513	Power Swap	100	False	75	True	15	0	13	2	8	False	False	0	0	125	513	1	31	11	False
+514	Power Trick	100	False	75	True	15	0	13	2	8	False	False	0	0	125	514	1	19	11	False
+515	Sucker Punch	88	False	75	True	30	15	7	0	8	True	False	99	0	100	515	1	13	16	False
+516	Feint	88	False	75	True	30	5	12	0	8	True	False	99	0	100	516	1	11	1	False
+517	Flare Blitz	88	False	75	False	30	32	6	0	8	True	False	99	0	125	517	1	11	2	False
+518	Brave Bird	88	False	75	True	30	42	6	0	8	True	False	99	0	125	518	1	3	10	False
+519	Lava Plume	80	False	75	False	30	15	10	1	8	True	False	99	0	88	519	1	2	2	False
+520	Defend Order	100	False	75	True	15	0	13	2	8	False	True	0	0	125	520	1	19	12	False
+521	Discharge	70	False	75	True	30	9	8	1	8	True	False	99	0	100	521	1	15	5	False
+522	Fire Fang	88	False	75	False	30	12	13	0	8	True	False	99	0	100	522	1	11	2	True
+523	Magnet Bomb	125	False	75	True	30	12	10	0	8	True	False	99	0	125	523	1	11	17	False
+524	Magma Storm	80	False	75	False	30	55	5	1	8	True	False	99	0	100	524	1	11	2	False
+525	Copycat	100	False	75	True	15	0	19	2	8	False	False	0	0	125	525	1	3	1	False
+526	Lunar Dance	100	False	75	False	15	0	12	2	8	False	True	0	0	125	526	1	16	11	False
+527	Mirror Shot	88	False	75	True	30	12	10	1	8	True	False	99	0	100	527	1	3	17	False
+528	Miracle Eye	125	False	75	True	30	0	27	2	8	False	False	0	0	125	528	1	11	11	False
+529	Bug Bite	100	False	75	True	30	11	12	0	8	True	False	99	0	125	529	1	11	12	True
+530	Bug Buzz	88	False	75	True	30	16	10	1	8	True	False	99	0	88	530	1	2	12	False
+531	Wake-Up Slap	88	False	75	True	30	12	10	0	8	True	False	99	0	100	531	1	11	7	False
+532	Metal Burst	100	False	75	True	15	0	12	0	8	False	False	0	0	125	532	1	19	17	False
+533	Head Smash	80	False	75	True	30	50	5	0	8	True	False	99	0	125	533	1	11	13	False
+534	Captivate	100	True	75	True	15	0	20	2	8	False	False	0	0	125	534	1	11	1	False
+535	Avalanche	100	False	75	True	15	6	12	0	8	False	False	0	0	125	535	1	19	6	False
+536	Flash Cannon	88	False	75	True	30	15	11	1	8	True	False	99	0	100	536	1	3	17	False
+537	Leaf Storm	80	False	75	True	30	27	5	1	8	True	False	99	0	100	537	1	14	4	False
+538	Draco Meteor	80	False	75	True	30	14	5	1	8	True	False	99	0	100	538	1	15	15	False
+539	Dragon Pulse	80	False	75	True	25	18	10	1	8	True	False	99	0	100	539	1	3	15	False
+540	Rock Polish	100	False	75	True	15	0	22	2	8	False	True	0	0	125	540	1	19	13	False
+541	Rock Climb	88	False	75	True	30	12	14	0	8	True	False	99	0	100	541	1	11	1	False
+542	Nasty Plot	100	False	75	True	15	0	20	2	8	False	True	0	0	125	542	1	19	16	False
+543	[M:D1]	100	False	75	True	8	1	22	1	0	False	False	0	0	100	414	1	19	0	False
+544	[M:D1]	100	False	75	True	8	1	22	1	0	False	False	0	0	100	415	1	19	0	False
+545	[M:D1]	100	False	75	True	8	1	22	1	0	False	False	0	0	100	416	1	19	0	False
+546	[M:D1]	100	False	75	True	8	1	22	1	0	False	False	0	0	100	417	1	19	0	False
+547	[M:D1]	100	False	75	True	8	1	22	0	0	False	False	0	0	100	418	1	19	0	False
+548	[M:D1]	100	False	75	True	8	1	22	1	0	False	False	0	0	100	419	1	19	0	False
+549	[M:D1]	100	False	75	True	8	1	22	0	0	False	False	0	0	100	420	1	19	0	False
+550	[M:D1]	100	False	75	True	8	1	22	0	0	False	False	0	0	100	421	1	19	0	False
+551	[M:D1]	100	False	75	True	8	1	22	1	0	False	False	0	0	100	422	1	19	0	False
+552	[M:D1]	100	False	75	True	8	1	22	0	0	False	False	0	0	100	423	1	19	0	False
+553	[M:D1]	100	False	75	True	8	1	22	0	0	False	False	0	0	100	424	1	19	0	False
+554	[M:D1]	100	False	75	True	8	1	22	0	0	False	False	0	0	100	425	1	19	0	False
+555	[M:D1]	100	False	75	True	8	1	22	0	0	False	False	0	0	100	426	1	19	0	False
+556	[M:D1]	100	False	75	True	8	1	22	2	0	False	False	0	0	100	427	1	19	0	False
+557	[M:D1]	100	False	75	True	8	1	22	1	0	False	False	0	0	100	428	1	19	0	False
+558	[M:D1]	100	False	75	True	8	1	22	2	0	False	False	0	0	100	429	1	19	0	False

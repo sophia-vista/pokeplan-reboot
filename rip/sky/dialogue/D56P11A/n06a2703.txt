@@ -1,0 +1,32 @@
+speaker	kind	line
+PLAYER_CHARMS	Talk	Hey, Gardevoir. Got any ideas?
+NPC_SAANAITO	Talk	No.
+NPC_CHAAREMU	Talk	Eh? What do you mean by that?
+NPC_CHAAREMU	Talk	You're welcome.
+-	Talk	Heeey! Wait!
+NPC_SAANAITO	Talk	Wh... What?!
+PLAYER_CHARMS	Talk	Y-you're...
+NPC_SAANAITO	Talk	Wigglytuff?
+NPC_PUKURIN	Talk	Oh! It's Team Charm. ♪
+NPC_PUKURIN	Talk	Yay! Friendly friends!
+NPC_SAANAITO	Talk	Wh-why...
+PLAYER_CHARMS	Talk	Why is Wigglytuff here?
+NPC_CHAAREMU	Talk	Oh! Let me guess!
+NPC_PUKURIN	Talk	Huh? Treasure?
+NPC_SAANAITO	Talk	Oh... I see.
+NPC_SAANAITO	Talk	It's fine, it's fine...
+NPC_CHAAREMU	Talk	Aww...
+NPC_CHAAREMU	Talk	You said it!
+NPC_CHAAREMU	Talk	It was a mistake to ask him!
+NPC_PUKURIN	Talk	Nope. I'm listening carefully.
+NPC_CHAAREMU	Talk	Huh?
+NPC_PUKURIN	Talk	I give up too. ♪ I don't know.
+NPC_PUKURIN	Talk	...However...
+NPC_SAANAITO	Talk	However?
+NPC_SAANAITO	Talk	The visible paths...
+PLAYER_CHARMS	Talk	Aren't the only ones...?
+NPC_PUKURIN	Talk	Whoops! M-my Perfect Apple!
+NPC_PUKURIN	Talk	P-Perfect Apple!
+NPC_PUKURIN	Talk	Perfect Apple! Perfect Apple!!
+PLAYER_CHARMS	Talk	Where'd it go?
+NPC_SAANAITO	Talk	But--if that's the case...

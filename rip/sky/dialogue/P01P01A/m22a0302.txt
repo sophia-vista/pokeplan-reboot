@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_KOOTASU	Talk	Oh, to be young again!
+-	Talk	Whoa-ho-ho! Hold it there, old-timer!
+NPC_KOOTASU	Talk	Wh-who is it?
+NPC_KOOTASU	Talk	I... I was only...
+NPC_ZUBATTO	Talk	Huh? Someone's coming!
+NPC_DOGAASU	Talk	Whoa-ho-ho! Guild chumps?
+NPC_SUKATANKU	Talk	Old-timer...
+NPC_KOOTASU	Talk	Hey...!

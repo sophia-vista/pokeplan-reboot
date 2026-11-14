@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	We've come too far to give up.
+NPC_JUPUTORU	Talk	We'll take on the challenge again.

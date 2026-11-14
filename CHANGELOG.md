@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.190.0
+
+Traps play the game's own effects, and Explorers of Sky is ripped for reference (owner, 14 November 2026).
+
+- **Trap effects:** when a Spin, Gust or Slow trap springs on the dungeon floor, the game's own effect plays at the Pokémon's feet (the swirl, the wind, the falling light), picked through the game's `TRAP_ANIMATION_INFO` table (`tools/sprites/extract_sky_effects.py`).
+- **The rip** (`rip/sky/`, not in the app; `rip/sky/README.md`): every string, every script decompiled and as dialogue (with the main story in order in `dialogue/story.txt`), the Pokémon, move, item and floor tables, the portraits, backgrounds, textures and all 1,020 effect animations (`tools/rip/rip_sky.py`).
+
 ## 0.189.0
 
 The town's Pokémon pick up the day's finds (owner, 14 November 2026; `FEATURES/LAUNCHER.md` 4.5).

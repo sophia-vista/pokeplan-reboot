@@ -1,0 +1,40 @@
+
+def 0 {
+    debug_Print('BGM_FADEOUT');
+    bgm_FadeOut(60);
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 0:
+        case 2:
+            @label_0;
+            main_EnterGround(LEVEL_D01P11A, 30);
+            hold;
+        default:
+            if ( scn($SCENARIO_MAIN) == [23, 3] ) {
+                screen_FadeOut(0, 30);
+                supervision_ExecuteCommon(CORO_EVENT_M22_09_10);
+                @label_2;
+                screen_FadeOut(0, 30);
+                supervision_ExecuteCommon(CORO_EVENT_S03_09);
+                @label_3;
+                screen_FadeOut(0, 30);
+                supervision_ExecuteCommon(CORO_EVENT_S03_13);
+                @label_4;
+                screen_FadeOut(0, 30);
+                supervision_ExecuteCommon(CORO_EVENT_S21_03);
+                end;
+            } elseif ( scn($SCENARIO_MAIN) == [29, 46] ) {
+                jump @label_2;
+            } elseif ( scn($SCENARIO_MAIN) == [29, 48] ) {
+                jump @label_3;
+            } elseif ( scn($SCENARIO_MAIN) == [29, 79] ) {
+                jump @label_4;
+            } else {
+                jump @label_0;
+            }
+            break;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

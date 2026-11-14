@@ -1,0 +1,16 @@
+speaker	kind	line
+ATTENDANT1	Talk	What brings you here, Torkoal?
+NPC_KOOTASU	Talk	But...it really is something small.
+NPC_PUKURIN	Talk	Not a worry! ♪
+NPC_PUKURIN	Talk	Please, say it! Say it! ♪
+ATTENDANT1	Talk	A certain pattern?
+NPC_KOOTASU	Talk	Er... How can I describe it?
+NPC_KOOTASU	Talk	It's difficult to describe it...
+NPC_BIPPA	Talk	A pattern you rarely see... Golly!
+NPC_CHIRIIN	Talk	Hmm...what could it be...?
+PLAYER	Talk	(..................)
+PLAYER	Talk	(The kind of pattern you rarely see...)
+PLAYER	Talk	(What could a pattern like that look like...?)
+PLAYER	Talk	(A pattern you rarely see... A peculiar...)
+PLAYER	Talk	(Wait a second! A peculiar pattern?)
+PLAYER	Talk	(A peculiar pattern! I remember that time...)

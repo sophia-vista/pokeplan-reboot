@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_SANDOPAN	Talk	Take care.
+NPC_SANDOPAN	Talk	That little baby sure was cute.
+NPC_SANDOPAN	Talk	...That's one cute baby.
+NPC_SANDOPAN	Talk	Here, may I see it?
+NPC_SANDOPAN	Talk	...So this mark is it?
+NPC_SANDOPAN	Talk	...You're not kidding?!
+NPC_SANDOPAN	Talk	This is a pretty nice shop...

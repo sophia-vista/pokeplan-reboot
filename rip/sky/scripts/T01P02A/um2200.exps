@@ -1,0 +1,51 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [23, 3] ) {
+        @label_0;
+        supervision_Station(8);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [23, 2] ) {
+        supervision_Station(3);
+        supervision_Station(8);
+        if ( $SCENARIO_TALK_BIT_FLAG[121] ) {
+            @label_2;
+            end;
+        } else {
+            supervision_StationCommon(15);
+            jump @label_2;
+        }
+    } else {
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_KIMAWARI {
+    switch ( sector() ) {
+        case 8:
+            SetMoveRange(Position<'m0', 39, 33>, 6, 13);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}
+
+def 2 for actor ACTOR_NPC_YARUKIMONO {
+    switch ( sector() ) {
+        case 8:
+            SetMoveRange(Position<'m1', 24, 27>, 10, 3);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}
+
+def 3 for actor ACTOR_NPC_BIPPA {
+    switch ( sector() ) {
+        case 8:
+            SetMoveRange(Position<'m2', 40, 27>, 10, 6);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

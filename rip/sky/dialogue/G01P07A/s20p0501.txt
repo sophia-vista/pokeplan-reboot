@@ -1,0 +1,17 @@
+speaker	kind	line
+ATTENDANT1	FacePositionOffset	Hey, Azurill! Is he all right?
+ATTENDANT1	FacePositionOffset	Oh, Azurill! Is he all right?
+ATTENDANT1	FacePositionOffset	What happened to him?!
+ATTENDANT1	FacePositionOffset	Huh?! He won't wake up?
+ATTENDANT1	FacePositionOffset	What?! He won't wake up?
+NPC_MARIRU	Talk	Yes...
+NPC_RURIRI	Talk	Urf... Urrrfff...
+NPC_HEIGANI	Talk	Hey, hey, that could be it.
+NPC_DOGOOMU	Talk	What is it, Bidoof?
+NPC_DOGOOMU	Talk	How do we do THAT?!
+NPC_DOGOOMU	Talk	Look inside a DREAM?!
+NPC_BIPPA	Talk	Yipes! Gosh, I'm sorry.
+NPC_PERAPPU	Talk	Actually...that might be possible.
+NPC_PERAPPU	Talk	Everyone: WHAT?!
+NPC_HEIGANI	Talk	Hey, hey! How do you do that?!
+ATTENDANT1	FacePositionOffset	Th-that's it!

@@ -1,0 +1,8 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Master, where is this?
+NPC_AAMARUDO	Talk	This is a dungeon waypoint...
+PLAYER_PUPURIN	Talk	I see. ♪
+NPC_AAMARUDO	Talk	That's right... I'm sure of it...
+PLAYER_PUPURIN	Talk	Something awaits... Like what?
+PLAYER_PUPURIN	Talk	Boss?
+NPC_AAMARUDO	Talk	Yes, that's right.

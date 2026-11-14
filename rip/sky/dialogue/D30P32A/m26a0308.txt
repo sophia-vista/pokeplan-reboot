@@ -1,0 +1,10 @@
+speaker	kind	line
+ATTENDANT1	Talk	R-really?!
+ATTENDANT1	Talk	We did it, !
+ATTENDANT1	Talk	We finally did it!
+ATTENDANT1	Talk	We brought peace to the world!
+NPC_DIARUGA	Talk	ALLOW ME TO THANK YOU.
+ATTENDANT1	Talk	D-Dialga...
+ATTENDANT1	Talk	OK!
+ATTENDANT1	Talk	Let's go home, !
+ATTENDANT1	Talk	Back to Treasure Town!

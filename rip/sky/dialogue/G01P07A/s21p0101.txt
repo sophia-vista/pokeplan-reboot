@@ -1,0 +1,24 @@
+speaker	kind	line
+ATTENDANT1	Talk	Yup.
+ATTENDANT1	Talk	Yes.
+ATTENDANT1	Talk	Yep.
+NPC_PERAPPU	Talk	That is what Cresselia said?
+ATTENDANT1	Talk	Yup...
+ATTENDANT1	Talk	Yes...
+ATTENDANT1	Talk	Yep...
+NPC_PERAPPU	Talk	We've got to do something!
+ATTENDANT1	Talk	Urk! She didn't seem so kindly...
+ATTENDANT1	Talk	The power to banish darkness...
+NPC_SURIIPU	Talk	Hey, .
+NPC_SURIIPU	Talk	Waaah! Wh-why are you jumpy?
+NPC_SURIIPU	Talk	D-did I ask something weird...?
+ATTENDANT1	Talk	N-no. It's nothing you said.
+ATTENDANT1	Talk	N-no. It's not what you said.
+ATTENDANT1	Talk	N-no. It isn't anything you said.
+ATTENDANT1	Talk	........................
+NPC_SURIIPU	Talk	Ah, I see... That is unfortunate...
+NPC_PUKURIN	Talk	Well, anyway! ♪
+NPC_PUKURIN	Talk	Chatot!
+NPC_PERAPPU	Talk	Y-yes, Guildmaster!
+NPC_BIPPA	Talk	Yup yup! Will do!
+NPC_PERAPPU	Talk	All right, dismissed!

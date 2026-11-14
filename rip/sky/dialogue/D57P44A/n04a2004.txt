@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_GOOSUTO	Talk	Knowing that, we ran here!
+NPC_GOOSUTO	Talk	Brace yourself!
+PLAYER_KIMAWARI	Talk	Oh my gosh!
+NPC_GOOSUTO	Talk	Huh?!
+PLAYER_KIMAWARI	Talk	L-Loudred!
+NPC_DOGOOMU	Talk	Are you ALL RIGHT, Sunflora?
+NPC_DOGOOMU	Talk	FORGET that!
+NPC_DOGOOMU	Talk	Here they COME! Look OUT!
+NPC_DOGOOMU	Talk	That is...hot hot hot hot hot!

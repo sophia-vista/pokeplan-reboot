@@ -1,0 +1,11 @@
+speaker	kind	line
+ATTENDANT1	Talk	Huh? What's up, ?
+ATTENDANT1	Talk	Huh?
+ATTENDANT1	Talk	Pardon?!
+NPC_PERAPPU	Talk	I should be used to it by now...
+ATTENDANT1	Talk	What was that, Chatot?
+NPC_PERAPPU	Talk	Please wait here.
+ATTENDANT1	Talk	So how did it go?
+NPC_PERAPPU	Talk	And then he said...
+NPC_PERAPPU	Talk	Well, that's too bad for you.
+ATTENDANT1	Talk	Urf...

@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Let's both do our best!
+NPC_CHIRIIN	Talk	Oh! Sunflora!
+NPC_CHIRIIN	Talk	Something happening?
+NPC_CHIRIIN	Talk	Sunflora! Good luck!
+PLAYER_KIMAWARI	Talk	Really? That's wonderful!
+PLAYER_KIMAWARI	Talk	Congratulations, Chimecho!
+NPC_CHIRIIN	Talk	Yeah! Let's both work hard!
+PLAYER_KIMAWARI	Talk	Yeah!

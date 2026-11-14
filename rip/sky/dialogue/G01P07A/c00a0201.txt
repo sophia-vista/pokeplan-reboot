@@ -1,0 +1,5 @@
+speaker	kind	line
+-	Narration	The next morning...
+NPC_DOGOOMU	Talk	UP AND AT 'EM! IT'S MORNING!
+ATTENDANT1	Talk	The Gatekeepers
+ATTENDANT1	Talk	Team Skull

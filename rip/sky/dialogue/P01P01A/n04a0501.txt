@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	OK.
+PLAYER_KIMAWARI	Talk	.........
+PLAYER_KIMAWARI	Talk	Yup! All right, here I go!

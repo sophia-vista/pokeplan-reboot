@@ -1,0 +1,42 @@
+speaker	kind	line
+NPC_DAAKURAI	Talk	Gah! Gaaaah!
+NPC_KURESERIA	Talk	We...did it...
+NPC_DAAKURAI	Talk	Urrgggghh!
+NPC_KURESERIA	Talk	This is the end for you, Darkrai!
+NPC_DAAKURAI	Talk	Urrggghh...
+NPC_DAAKURAI	Talk	I said you...cannot catch me!
+ATTENDANT1	Talk	Hey! What is that?!
+PLAYER	Talk	(It's a dimensional hole!)
+NPC_DAAKURAI	Talk	Mwahaha...
+NPC_DAAKURAI	Talk	I've failed only in this time.
+ATTENDANT1	Talk	S-stop! Darkrai!
+NPC_KURESERIA	Talk	You're not getting away!
+ATTENDANT1	Talk	Ugh...
+NPC_DAAKURAI	Talk	You cannot catch me.
+NPC_KURESERIA	Talk	Oh...
+NPC_DAAKURAI	Talk	Good-bye to you!
+ATTENDANT1	Talk	Urk...
+NPC_DAAKURAI	Talk	It ends in my ultimate victory!
+NPC_PARUKIA	Talk	I WON'T ALLOW THAT!
+NPC_DAAKURAI	Talk	Wh-what?!
+NPC_DAAKURAI	Talk	Y-you're...
+ATTENDANT1	Talk	P-Palkia!
+NPC_PARUKIA	Talk	THIS IS A STRIKE FOR JUSTICE!
+NPC_PARUKIA	Talk	TAKE THIS!
+NPC_PARUKIA	Talk	GRRR-OOOOOO!
+NPC_DAAKURAI	Talk	What... Waaaaaah!
+NPC_PARUKIA	Talk	THERE IS NO ESCAPE!
+NPC_DAAKURAI	Talk	Gaaaaaah!
+PLAYER	Talk	(The dimensional hole...)
+ATTENDANT1	Talk	I heard Darkrai scream...
+ATTENDANT1	Talk	Did Darkrai disappear forever?
+NPC_PARUKIA	Talk	NO. THAT HAS NOT HAPPENED.
+ATTENDANT1	Talk	When he recovers from injury...
+NPC_KURESERIA	Talk	That remains to be seen...
+NPC_KURESERIA	Talk	So just like ...
+ATTENDANT1	Talk	Darkrai has lost his memory?!
+ATTENDANT1	Talk	Darkrai...
+NPC_PARUKIA	Talk	GRRR-OOOOOO!
+ATTENDANT1	Talk	Yup!
+ATTENDANT1	Talk	Yes!
+ATTENDANT1	Talk	Yep!

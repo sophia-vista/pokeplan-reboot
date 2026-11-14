@@ -1,0 +1,58 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [43, 2] ) {
+    }
+    @label_2;
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    message_SetFace(ACTOR_NPC_YADON, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="""
+             We're Team [CS:X]Slacker[CR].[K] We're the
+            zero-motivation exploration team.
+        """,
+    });
+    message_Talk({
+        english="""
+             You seem pretty motivated and
+            hardworking.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_PLAYER_KIMAWARI, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_Talk({
+        english=" Well, it's only natural.",
+    });
+    message_Talk({
+        english="""
+             I'm on my way to take care of
+            a job.
+        """,
+    });
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_NPC_YADON, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english=" Is that right...?[K] Do your best...",
+    });
+    message_Talk({
+        english="""
+             Zero motivation, but we're an
+            exploration team...
+        """,
+    });
+    message_Talk({
+        english="""
+             We came over here to
+            the Bulletin Board to look for jobs...
+        """,
+    });
+    message_Talk({
+        english="""
+             But to move away from here...[K]
+            Takes so much effort...
+        """,
+    });
+    message_Close();
+    @label_1;
+    JumpCommon(CORO_END_TALK);
+}

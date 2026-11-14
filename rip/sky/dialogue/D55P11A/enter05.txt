@@ -1,0 +1,3 @@
+speaker	kind	line
+PLAYER_CHARMS	Talk	It's a promise, Sentret.
+NPC_METAMON_OTACHI	Talk	Th-thank you very much!

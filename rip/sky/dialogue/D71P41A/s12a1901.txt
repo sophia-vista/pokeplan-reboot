@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_REKKUUZA	Talk	Seekers of the seven treasures!
+NPC_REKKUUZA	Talk	Possess the sky...
+NPC_REKKUUZA	Talk	Demonstrate your power to me!
+NPC_REKKUUZA	Talk	Now it begins!

@@ -1,0 +1,2 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	N-nope... Not this way.

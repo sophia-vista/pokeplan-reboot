@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_BIPPA	SwitchMenu	Yes
+NPC_BIPPA	SwitchMenu	No
+NPC_BIPPA	Talk	Not yet, huh?

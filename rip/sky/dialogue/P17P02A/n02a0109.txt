@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_PUKURIN_PAPA	Talk	Good morning, Igglybuff.
+NPC_PUKURIN_MAMA	Talk	Hey, Igglybuff.
+PLAYER_PUPURIN	Talk	Yep. ♪ Thanks, Mama. ♪
+-	Talk	Igglybuff!
+-	Talk	Igglybuff. ♪ Let's play. ♪
+NPC_PUKURIN_MAMA	Talk	Look... Your friends are here.
+PLAYER_PUPURIN	Talk	Yep. ♪ I'm off! ♪
+PLAYER_PUPURIN	Mail	Also...
+PLAYER_PUPURIN	Mail	Igglybuff's bed is the top one on the left.
+PLAYER_PUPURIN	Mail	To save your progress, visit Igglybuff's bed.

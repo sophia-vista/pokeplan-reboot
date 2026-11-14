@@ -1,0 +1,6 @@
+speaker	kind	line
+-	Mail	There's a Bottle here.
+-	SwitchMenu	Yes
+-	Mail	No
+-	SwitchMenu	Yes
+-	SwitchMenu	No

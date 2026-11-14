@@ -1,0 +1,69 @@
+
+def 0 {
+    debug_Print('ENTER_T00P01');
+    if ( debug ) {
+        @label_0;
+        switch ( sector() ) {
+            case 1:
+                debug_Print('ENTER_T00P01_LOCAL');
+                supervision_StationCommon(0);
+                supervision_StationCommon(1);
+                end;
+            default:
+                back_SetGround(LEVEL_T00P01);
+                supervision_ExecuteStationSub(LEVEL_T00P01, 'M01A01', 1);
+                @label_2;
+                switch ( $GROUND_START_MODE ) {
+                    case 1:
+                        @label_5;
+                        supervision_StationCommon(1);
+                        @label_11;
+                        supervision_StationCommon(0);
+                        screen_FadeOutAll(1, 0);
+                        JumpCommon(CORO_COMMON_ENTER);
+                    case 4:
+                        supervision_StationCommon(2);
+                        jump @label_11;
+                    case 3:
+                        @switch2_30;
+                        switch ( $GROUND_GETOUT ) {
+                            case 2:
+                                supervision_StationCommon(3);
+                                jump @label_11;
+                            case 3:
+                                supervision_StationCommon(4);
+                                jump @label_11;
+                            default:
+                                jump @label_5;
+                        }
+                        break;
+                    case 8:
+                    case 9:
+                        supervision_StationCommon(6);
+                        jump @label_11;
+                    case 10:
+                    case 11:
+                        jump @switch2_30;
+                    default:
+                        jump @label_5;
+                }
+                break;
+        }
+    } else {
+        hold;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    SetAnimation(2);
+    SetFunctionAttribute(2);
+    WaitFadeIn();
+    end;
+}
+
+def 2 for actor ACTOR_ATTENDANT1 {
+    SetAnimation(2);
+    SetFunctionAttribute(2);
+    WaitFadeIn();
+    end;
+}

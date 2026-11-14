@@ -1,0 +1,25 @@
+speaker	kind	line
+NPC_PARUKIA	Talk	GRRR-OOOOO-AAAAH!
+NPC_PARUKIA	Talk	GRRR-OOOO...AAAAAAH!
+ATTENDANT1	Talk	...H-huh?
+ATTENDANT1	Talk	What's happening...?
+ATTENDANT1	Talk	What happened to him...?
+-	Talk	Palkia has been...
+-	Talk	Just as Azurill has.
+ATTENDANT1	Talk	Who are you?
+-	Talk	But you two...
+-	Talk	Would you two enter Palkia's nightmare?
+ATTENDANT1	Talk	What?
+ATTENDANT1	Talk	Palkia's nightmare?!
+-	Talk	Yes.
+-	Talk	By entering his nightmare...
+-	Talk	You will learn why Palkia attacked you.
+-	Talk	So? What will you do?
+ATTENDANT1	Talk	What'll we do, ?
+ATTENDANT1	SwitchMenu	Enter the nightmare
+ATTENDANT1	SwitchMenu	Refuse
+ATTENDANT1	SwitchMenu	Wh-what, you won't?
+ATTENDANT1	SwitchMenu	Wh-what, you won't go in?
+ATTENDANT1	SwitchMenu	But...if we don't do anything...
+-	Talk	Fine! You've decided!
+-	Talk	I will send you into Palkia's nightmare.

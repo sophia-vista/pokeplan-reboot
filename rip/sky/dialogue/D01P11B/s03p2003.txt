@@ -1,0 +1,15 @@
+speaker	kind	line
+ATTENDANT1	Talk	Take good care of the little guy.
+NPC_MANAFI	Talk	?
+NPC_MANAFI	Talk	...? ?
+NPC_MANAFI	Talk	...?
+NPC_PERAPPU	Talk	.....................
+NPC_PERAPPU	Talk	Walrein, please...
+NPC_TODOZERUGA	Talk	Aye.
+NPC_TODOZERUGA	Talk	We're going, Manaphy.
+NPC_MANAFI	Talk	...?
+NPC_MANAFI	Talk	...???
+NPC_MANAFI	Talk	...?
+NPC_MANAFI	Talk	...! ...!
+ATTENDANT1	Talk	Sniffle...
+ATTENDANT1	Talk	Take care... Manaphy.

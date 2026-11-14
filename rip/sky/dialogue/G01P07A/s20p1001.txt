@@ -1,0 +1,17 @@
+speaker	kind	line
+NPC_SURIIPU	Talk	Will you go into Azurill's dream?
+NPC_SURIIPU	SwitchMenu	Yes
+NPC_SURIIPU	Talk	Good.
+NPC_SURIIPU	Talk	Then come over here.
+NPC_SURIIPU	Talk	Here goes!
+ATTENDANT1	Talk	Hold on a second, .
+ATTENDANT1	Talk	Hold on, .
+ATTENDANT1	SwitchMenu	Accept leadership
+ATTENDANT1	SwitchMenu	Let's go! Into the nightmare!
+ATTENDANT1	SwitchMenu	OK, Drowzee! It's your show!
+ATTENDANT1	SwitchMenu	Refuse
+NPC_SURIIPU	Talk	Tell me when you're ready.
+NPC_SURIIPU	Talk	By the way...
+NPC_SURIIPU	SwitchMenu	Go as a duo
+NPC_SURIIPU	SwitchMenu	Don't enter the nightmare
+NPC_SURIIPU	SwitchMenu	No

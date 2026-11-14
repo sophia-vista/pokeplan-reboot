@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_KAGEBOUZU	Talk	So? Know anything about it?
+NPC_KAGEBOUZU	Talk	Gondolas are so convenient...
+NPC_KAGEBOUZU	Talk	But my partner Murkrow...
+NPC_KAGEBOUZU	Talk	Oh, what am I to do with her...?
+NPC_KAGEBOUZU	Talk	Well? Nice, huh?

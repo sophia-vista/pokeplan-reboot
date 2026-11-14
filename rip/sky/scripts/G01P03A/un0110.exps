@@ -1,0 +1,60 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_KIMAWARI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 It's all right![K] You'll succeed in
+                the exploration, [CS:Y]Bidoof[CR]!
+            """,
+        });
+        message_Talk({
+            english=" Do your best! [K]Fight, fight!",
+        });
+        message_Close();
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 3] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_KIMAWARI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Today I'm handling jobs with
+                [CS:N]Corphish[CR].
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 2] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_KIMAWARI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Oh, [CS:Y]Bidoof[CR]![K]
+                Are you headed somewhere?
+            """,
+        });
+        message_Talk({
+            english=" Take care!",
+        });
+        message_Close();
+        jump @label_3;
+    } else {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_KIMAWARI, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Well, it's time to do our
+                daily chores!
+            """,
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

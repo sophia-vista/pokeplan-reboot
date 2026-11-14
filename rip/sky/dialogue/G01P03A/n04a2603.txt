@@ -1,0 +1,25 @@
+speaker	kind	line
+NPC_JIBAKOIRU	Talk	ZZZT! The outlaw Haunter...
+NPC_JIBAKOIRU	Talk	Was finally apprehended! ZZZT!
+NPC_JIBAKOIRU	Talk	ZZZT! It was magnificent!
+NPC_JIBAKOIRU	Talk	Sunflora.
+PLAYER_KIMAWARI	Talk	A-a Sun Scarf!
+PLAYER_KIMAWARI	Talk	Oh my gosh! I'm so happy!
+NPC_PERAPPU	Talk	Attention!
+NPC_PERAPPU	Talk	You really did a great job. ♪
+PLAYER_KIMAWARI	Talk	No, no... I must say...
+PLAYER_KIMAWARI	Talk	I didn't do it all by myself...
+PLAYER_KIMAWARI	Talk	Huh?
+PLAYER_KIMAWARI	Talk	Where is Loudred?
+NPC_PERAPPU	Talk	Loudred?
+NPC_PERAPPU	Talk	He's in trouble!
+PLAYER_KIMAWARI	Talk	Huh?!
+PLAYER_KIMAWARI	Talk	... (L-Loudred...)
+PLAYER_KIMAWARI	Talk	That's not true, Chatot.
+NPC_PERAPPU	Talk	Huh? What isn't?
+PLAYER_KIMAWARI	Talk	The truth is, Loudred...
+NPC_PERAPPU	Talk	Whaaaat?! Is that right?!
+NPC_PERAPPU	Talk	But...
+NPC_BIPPA	Talk	Golly, what is it?
+NPC_PERAPPU	Talk	Guild rules are strict.
+NPC_PERAPPU	Talk	A punishment is a punishment.

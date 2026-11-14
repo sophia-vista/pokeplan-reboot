@@ -1,0 +1,32 @@
+speaker	kind	line
+NPC_MIKARUGE	Talk	UGGGH...OOOOH...ARRGH!
+NPC_MIKARUGE	Talk	OOOOH...ARRGH! ...GWAAAAAAH!
+ATTENDANT1	Talk	Whoa! Wh-what's happening?
+ATTENDANT1	Talk	Waah! Wh-what's happening?
+NPC_MIKARUGE	Talk	Eeep!
+NPC_MIKARUGE	Talk	R-r-run away!
+NPC_JUPUTORU	Talk	They got spooked and ran.
+ATTENDANT1	Talk	Grovyle!
+ATTENDANT1	Talk	Are you all right?
+NPC_JUPUTORU	Talk	Yeah... I'll be fine...
+ATTENDANT1	Talk	Can you get up?
+NPC_JUPUTORU	Talk	Somehow... Urk!
+NPC_JUPUTORU	Talk	That Pokémon... It was cunning.
+ATTENDANT1	Talk	So that was a bad Pokémon.
+NPC_JUPUTORU	Talk	No. That's not true.
+NPC_JUPUTORU	Talk	It's normally a timid Pokémon.
+ATTENDANT1	Talk	I see...
+ATTENDANT1	Talk	That makes me sad.
+NPC_JUPUTORU	Talk	Hey! You two!
+NPC_JUPUTORU	Talk	Now will you finally trust me?
+ATTENDANT1	Talk	Ummm...somewhat?
+NPC_JUPUTORU	Talk	Humph! I've told you before.
+NPC_JUPUTORU	Talk	I'm leaving.
+ATTENDANT1	Talk	Oh, wait!
+ATTENDANT1	Talk	I didn't say I don't believe you!
+ATTENDANT1	Talk	To be perfectly honest...
+ATTENDANT1	Talk	And...
+ATTENDANT1	Talk	It just seems to be logical.
+ATTENDANT1	Talk	Tell us about this future...
+ATTENDANT1	Talk	I'll listen, then decide.
+NPC_JUPUTORU	Talk	Well...fine. Follow me.

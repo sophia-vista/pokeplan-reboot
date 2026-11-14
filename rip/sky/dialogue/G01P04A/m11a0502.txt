@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	What?! You're joking!
+NPC_PERAPPU	Talk	You failed utterly!
+NPC_PERAPPU	Talk	...I'm sorry.

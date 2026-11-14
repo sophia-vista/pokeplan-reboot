@@ -1,0 +1,20 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	Which way should we go?
+ATTENDANT1	SwitchMenu	Foggy Forest
+ATTENDANT1	SwitchMenu	All right. Foggy Forest it is.
+ATTENDANT1	SwitchMenu	All right! Let's roll out!
+PLAYER	SwitchMenu	(...)
+PLAYER	SwitchMenu	(Anyway...)
+PLAYER	SwitchMenu	(Fogbound Lake...)
+ATTENDANT1	SwitchMenu	Huh? What is this?
+ATTENDANT1	Mail	Hey! This stone feels warm!
+ATTENDANT1	Mail	Wow! This stone feels warm!
+ATTENDANT1	Mail	Wow! It feels warm!
+ATTENDANT1	Mail	It might be rare. I'll keep it.
+ATTENDANT1	Mail	This could be rare. I'll keep it.
+ATTENDANT1	Menu	Forest Path
+ATTENDANT1	Menu	All right. Forest Path it is.
+ATTENDANT1	Menu	All right! Let's roll out!
+ATTENDANT1	Menu	Not yet
+ATTENDANT1	Menu	Tell me when you're set.

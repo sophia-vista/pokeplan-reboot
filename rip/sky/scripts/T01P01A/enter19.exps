@@ -1,0 +1,16 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    message_Notice({
+        english="""
+            [CN]All Your Item Needs Fulfilled!
+            [CN]← [CS:K]Kangaskhan[CR] Storage    [CS:K]Kecleon[CR] Market
+        """,
+    });
+    JumpCommon(CORO_END_TALK);
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

@@ -1,0 +1,27 @@
+
+def 0 {
+    back_SetGround(LEVEL_P15P01A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    SetPositionMark<performer 0>(Position<'m0', 29.5, 20.5>);
+    SetDirection<actor ACTOR_NPC_BIPPA_BRO>(DIR_LEFT);
+    SetDirection<actor ACTOR_NPC_BIPPA_SIS>(DIR_LEFT);
+    MovePositionOffset<actor ACTOR_PLAYER_BIPPA>(1.1992, -160, 0);
+    screen_FadeIn(1, 15);
+    Wait(10);
+    MovePositionOffset<actor ACTOR_NPC_BIPPA_BRO>(1, -64, 0);
+    Wait(5);
+    MovePositionOffset<actor ACTOR_NPC_BIPPA_SIS>(1, -32, 0);
+    WaitExecuteLives(ACTOR_NPC_BIPPA_SIS);
+    ExecuteCommon<actor ACTOR_NPC_BIPPA_BRO>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_NPC_BIPPA_BRO);
+    SetEffect<actor ACTOR_NPC_BIPPA_BRO>(EFFECT_JOYOUS, 3);
+    SetAnimation<actor ACTOR_NPC_BIPPA_BRO>(51);
+    Wait(7);
+    SetAnimation<actor ACTOR_NPC_BIPPA_SIS>(42);
+    Wait(5);
+    SetAnimation<actor ACTOR_NPC_BIIDARU>(42);
+    Wait(34);
+    screen_FadeOut(1, 15);
+    end;
+}

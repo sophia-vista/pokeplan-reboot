@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	Let's find more treasure. ♪
+NPC_CHAAREMU	Talk	We'll get through next time!
+NPC_CHAAREMU	Talk	I...I am so nervous...
+NPC_CHAAREMU	Talk	Hey! No way can I forgive them!
+NPC_CHAAREMU	Talk	We'll get those Aggron!
+NPC_CHAAREMU	Talk	We won't lose!
+NPC_CHAAREMU	Talk	After this, it's the real deal!
+NPC_CHAAREMU	Talk	We'll definitely win next time!
+NPC_CHAAREMU	Talk	We'll get through this time!
+NPC_CHAAREMU	Talk	We're almost there! Aargh!
+NPC_CHAAREMU	Talk	We'll get through this time!
+NPC_CHAAREMU	Talk	Next time, we'll definitely win!
+NPC_CHAAREMU	Talk	I wonder where they are now...

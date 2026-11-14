@@ -1,0 +1,8 @@
+speaker	kind	line
+ATTENDANT1	Talk	Yup. Out for a walk.
+ATTENDANT1	Talk	Yes. Out for a walk.
+ATTENDANT1	Talk	Yep. Out for a walk.
+NPC_BIPPA	Talk	Sounds nice, yup yup!
+ATTENDANT1	Talk	Yep. I hear you.
+ATTENDANT1	Talk	OK. Understood.
+ATTENDANT1	Talk	Yep. I hear you.

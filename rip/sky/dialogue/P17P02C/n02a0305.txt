@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_PUKURIN_PAPA	Talk	Of that, I am certain.
+NPC_PUKURIN_MAMA	Talk	...Yes. You're right...
+NPC_PUKURIN_MAMA	Talk	I'm sorry, Papa.
+NPC_PUKURIN_PAPA	Talk	Yeah.
+NPC_PUKURIN_MAMA	Talk	Yeah. Thank you, Papa. ♪

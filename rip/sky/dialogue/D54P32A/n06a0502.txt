@@ -1,0 +1,28 @@
+speaker	kind	line
+NPC_SAANAITO	Talk	S-someone's...unconscious!
+PLAYER_CHARMS	Talk	...He's not moving...
+NPC_CHAAREMU	Talk	Not moving... It can't be...
+NPC_CHAAREMU	Talk	Huh?! Oh, no! Is he...?
+NPC_CHAAREMU	Mail	Guuuuuuuu!
+NPC_CHAAREMU	Talk	Th-that sound again!
+NPC_SAANAITO	Mail	Guuuuuuuu!
+PLAYER_CHARMS	Talk	I-is that from...?
+NPC_CHAAREMU	Talk	Got it. I'll put it down and see.
+NPC_PUKURIN	Talk	...Ooogh...
+NPC_PUKURIN	Talk	Ooogh...
+NPC_PUKURIN	Talk	Wh-what's...? This smell...
+NPC_PUKURIN	Talk	This smell!
+NPC_PUKURIN	Talk	I knew it! A Perfect Apple! ♪
+PLAYER_CHARMS	Talk	Here, you can have mine too.
+NPC_PUKURIN	Talk	R-really?!
+NPC_PUKURIN	Talk	Thank you so much! ♪
+NPC_PUKURIN	Talk	Yay! ♪
+NPC_SAANAITO	Talk	And you are?
+NPC_PUKURIN	Talk	Yep. ♪ I'm Wigglytuff.
+NPC_SAANAITO	Talk	Wigglytuff? Nice to meet you.
+NPC_CHAAREMU	Talk	I-it's no joke!
+NPC_SAANAITO	Talk	Oh... Is that it...?
+NPC_SAANAITO	Talk	If that's it, that's fine...
+NPC_CHAAREMU	Talk	He's such a strange explorer...
+PLAYER_CHARMS	Talk	Well, let's hurry on ahead.
+NPC_CHAAREMU	Talk	Bye-bye!

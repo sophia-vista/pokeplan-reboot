@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_HIIDORAN	Talk	Seekers of the seven treasures!
+NPC_HIIDORAN	Talk	Withstand the scorching fire...
+NPC_HIIDORAN	Talk	Demonstrate your power to me!
+NPC_HIIDORAN	Talk	Now it begins!

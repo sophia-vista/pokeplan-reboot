@@ -1,0 +1,100 @@
+
+def 0 {
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 0:
+        case 1:
+        case 2:
+        case 4:
+        case 3:
+            @label_0;
+            switch ( $GROUND_ENTER ) {
+                case 224:
+                    @label_3;
+                    main_EnterGround(LEVEL_P01P02A, 30);
+                    hold;
+                default:
+                    debug_Print('BGM_FADEOUT');
+                    bgm_FadeOut(60);
+                    jump @label_3;
+            }
+            break;
+        default:
+            if ( scn($SCENARIO_MAIN) == [29, 1] ) {
+                SetAnimation<actor ACTOR_ATTENDANT1>(2);
+                SetAnimation<actor ACTOR_PLAYER>(2);
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                WaitExecuteLives(ACTOR_ATTENDANT1);
+                Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 We have to get equipped for
+                                exploration first, [hero].
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 We have to get ready for
+                                exploration first, [hero].
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 We have to get ready for
+                                exploration first, [hero].
+                            """,
+                        }
+                }
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english="""
+                                 We have to go by Treasure
+                                Town.
+                            """,
+                        }
+                    case 2:
+                        {
+                            english="""
+                                 We have to go by Treasure
+                                Town.
+                            """,
+                        }
+                    default:
+                        {
+                            english="""
+                                 We have to go by Treasure
+                                Town.
+                            """,
+                        }
+                }
+                @label_4;
+                message_Close();
+                supervision_Suspend(-2);
+                end;
+            } elseif ( scn($SCENARIO_MAIN) < [4, 5] || $SCENARIO_MAIN_BIT_FLAG[96] ) {
+                jump @label_0;
+            } else {
+                $SCENARIO_MAIN_BIT_FLAG[96] = 1;
+                @label_2;
+                screen_FadeOutAll(0, 30);
+                screen2_FadeOut(1, 30);
+                WaitScreenFade();
+                WaitScreenFadeAll();
+                screen_FadeOut(1, 0);
+                screen_FadeInAll(1, 0);
+                supervision_ExecuteCommon(CORO_EVENT_M00_12);
+                hold;
+                end;
+            }
+            break;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

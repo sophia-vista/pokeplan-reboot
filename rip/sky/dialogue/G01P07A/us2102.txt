@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_RURIRI	Talk	Urf... Urrrrrfff...
+NPC_RURIRI	Talk	I hope you get lots of treasure!

@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	You two!
+NPC_PERAPPU	Talk	Anyway! We're counting on you!
+ATTENDANT1	Talk	Uh... All right.

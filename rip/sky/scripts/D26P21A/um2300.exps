@@ -1,0 +1,10 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [24, 1] ) {
+        @label_0;
+        end;
+    } else {
+        end;
+    }
+}

@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_PINPUKU	Talk	I won't forget this kindness!
+NPC_PINPUKU	Talk	Um... Excuse me.
+NPC_PINPUKU	Talk	It's probably too much trouble...
+NPC_PINPUKU	SwitchMenu	Here you go!
+NPC_PINPUKU	Talk	Really?
+NPC_PINPUKU	Talk	I won't forget this kindness!
+NPC_PINPUKU	Mail	I can't do that...
+NPC_PINPUKU	Talk	I see... Makes sense, really...

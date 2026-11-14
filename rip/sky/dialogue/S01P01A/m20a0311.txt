@@ -1,0 +1,6 @@
+speaker	kind	line
+ATTENDANT1	Talk	Where is that?
+NPC_JUPUTORU	Talk	Here.
+ATTENDANT1	Talk	Great!
+ATTENDANT1	Talk	Oh, great!
+NPC_JUPUTORU	Talk	Exactly.

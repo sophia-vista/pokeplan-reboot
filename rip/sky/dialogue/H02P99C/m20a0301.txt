@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Hm?  isn't here...
+NPC_JUPUTORU	Talk	Maybe outside...?

@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	I've got it!
+NPC_YUKIKABURI	Talk	See you later.
+PLAYER_BIPPA	Talk	I'll do my best!

@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DAAKURAI	Talk	That blasted Cresselia!
+NPC_DAAKURAI	Talk	All I need to do is wait.

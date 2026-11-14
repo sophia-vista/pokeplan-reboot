@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_KURESERIA	Talk	Let's hurry.
+ATTENDANT1	Talk	This time, we have to do it!
+ATTENDANT1	Talk	This time, we'll get it done!

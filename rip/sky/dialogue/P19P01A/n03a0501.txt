@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_AAMARUDO	Talk	Ooogh... That was pretty tough...
+NPC_AAMARUDO	Talk	I'll have to try it again.
+PLAYER_PUPURIN	Talk	Yep. ♪
+NPC_AAMARUDO	Talk	We've still got time today.
+PLAYER_PUPURIN	Talk	Oh! ♪

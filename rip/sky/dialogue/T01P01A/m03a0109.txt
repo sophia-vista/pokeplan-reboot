@@ -1,0 +1,4 @@
+speaker	kind	line
+ATTENDANT1	Talk	All right, let's go.
+ATTENDANT1	Talk	OK, let's go.
+ATTENDANT1	Talk	Let's go to the Kecleon Market!

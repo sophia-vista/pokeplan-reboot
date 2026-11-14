@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Mail	Would you like to keep going?
+-	SwitchMenu	Yes
+-	SwitchMenu	No

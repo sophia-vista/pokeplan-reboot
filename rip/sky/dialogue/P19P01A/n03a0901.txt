@@ -1,0 +1,11 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Good morning, Master. ♪
+NPC_AAMARUDO	Talk	Oh hi, Junior.
+PLAYER_PUPURIN	Talk	Huh? So we're not going?
+PLAYER_PUPURIN	Talk	It's all right, all right! ♪
+NPC_AAMARUDO	Talk	... (That's right...)
+NPC_AAMARUDO	Talk	...All right. I agree.
+NPC_AAMARUDO	Talk	Let's go. To Fortune Ravine.
+PLAYER_PUPURIN	Talk	M-Master!
+NPC_AAMARUDO	Talk	Once you're ready, we'll go.
+PLAYER_PUPURIN	Talk	Yep. ♪

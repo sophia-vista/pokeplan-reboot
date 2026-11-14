@@ -1,0 +1,4 @@
+
+def 0 {
+    JumpCommon(CORO_TALK_ADVENTURE);
+}

@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Oh! What's that siren?!
+NPC_DIGUDA	Talk	Deputy Magnemite is here!
+NPC_DOGOOMU	Talk	Whoa! At LAST!
+NPC_BIPPA	Talk	By gosh! Grovyle's been caught!
+NPC_KIMAWARI	Talk	Oh my gosh! They did it! Yippee!
+NPC_KOIRU	Talk	Zzzt! There's more! Zzzt!
+NPC_CHIRIIN	Talk	Dusknoir is...
+ATTENDANT1	FacePositionOffset	Going home?
+NPC_DOGOOMU	Talk	Going back to the future...?
+NPC_DOGOOMU	Talk	How do you...go back?

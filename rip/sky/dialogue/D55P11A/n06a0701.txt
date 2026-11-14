@@ -1,0 +1,56 @@
+speaker	kind	line
+NPC_SAANAITO	Talk	Probably.
+NPC_NOKOTCHI	Talk	S-so cool...
+NPC_BUUBAAN	Talk	Oh. No one's found it yet.
+NPC_METAMON_OTACHI	Talk	It's really easy to get lost in it.
+NPC_SAANAITO	Talk	Difficult?
+PLAYER_CHARMS	Talk	There's value in finding it.
+NPC_NOKOTCHI	Talk	S-so cool...
+-	Talk	Hey! You...over there!
+-	Talk	You! Give up now! This treasure's ours!
+NPC_BUUBAAN	Talk	Team AW...Team AWD?!
+NPC_MANYUURA	Talk	Got it? You!
+NPC_CHAAREMU	Talk	Hey... What's with them?
+NPC_NOKUTASU	Talk	Rumor says she's really strong...
+NPC_AABOKKU	Talk	Sss-sssss. Better lissssten up!
+NPC_NOKOTCHI	Talk	Ummm...
+NPC_BUUBAAN	Talk	Ummmmmmm...
+NPC_CHAAREMU	Talk	E-everyone... What's wrong?
+NPC_NOKUTASU	Talk	I-I...I give up...
+NPC_NOKOTCHI	Talk	M-me too!
+NPC_BUUBAAN	Talk	M-me t-too!
+NPC_DORAPION	Talk	Bah! Cowards!
+NPC_AABOKKU	Talk	Ssssay, Drapion!
+NPC_DORAPION	Talk	Yeah! Yeah, they are!
+NPC_AABOKKU	Talk	Aren't you ssssscared of ussss?
+NPC_AABOKKU	Talk	Oh! I ssssee!
+NPC_DORAPION	Talk	Wha...?
+NPC_AABOKKU	Talk	Wh-whaaaat?!
+NPC_DORAPION	Talk	Y...YOU!!
+NPC_DORAPION	Talk	Guwaaa!
+NPC_AABOKKU	Talk	Guooh!
+NPC_DORAPION	Talk	H-huh...whaaaat!?
+NPC_MANYUURA	Talk	Wait!
+NPC_MANYUURA	Talk	Hold it, you!
+NPC_AABOKKU	Talk	B-bosssssss...
+NPC_DORAPION	Talk	My lady Weavile...
+PLAYER_CHARMS	Talk	Hee-hee! Not at all!
+NPC_AABOKKU	Talk	You! Remember thisssss!
+NPC_CHAAREMU	Talk	We won't lose!
+NPC_CHAAREMU	Talk	Lopunny! Gardevoir! Let's hurry!
+NPC_METAMON_OTACHI	Talk	Excuse me...
+PLAYER_CHARMS	Talk	Y-you're...
+NPC_SAANAITO	Talk	Earlier...
+NPC_CHAAREMU	Talk	You... Didn't you run away?
+NPC_METAMON_OTACHI	Talk	Y-yes, that's right...
+NPC_METAMON_OTACHI	Talk	I have a request.
+PLAYER_CHARMS	Talk	A request?
+NPC_METAMON_OTACHI	Talk	Yes. Team AWD...
+NPC_METAMON_OTACHI	Talk	Team AWD needs to be punished.
+NPC_SAANAITO	Talk	Why Team AWD?
+NPC_METAMON_OTACHI	Talk	They were hurt very badly...
+NPC_CHAAREMU	Talk	Wh-whaaat?!
+NPC_CHAAREMU	Talk	That's terrible!
+NPC_SAANAITO	Talk	We understand, Sentret.
+NPC_SAANAITO	Talk	In honor of your friends...
+NPC_METAMON_OTACHI	Talk	Th-thank you so much!

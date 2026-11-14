@@ -1,0 +1,11 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [9, 0] ) {
+        @label_0;
+        supervision_Station(3);
+        end;
+    } else {
+        end;
+    }
+}

@@ -1,0 +1,14 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Come on! Faster! Pick it up!
+ATTENDANT1	Talk	This is the fastest I can go!
+ATTENDANT1	Talk	I'm running as fast as I can!
+ATTENDANT1	Talk	Quit ordering me around!
+ATTENDANT1	Talk	Don't order me around!
+ATTENDANT1	Talk	Anyway, Grovyle...!
+NPC_JUPUTORU	Talk	What?
+ATTENDANT1	Talk	Is this...the future?
+NPC_JUPUTORU	Talk	That's right. You catch on fast.
+ATTENDANT1	Talk	Urk! So it is, after all...
+ATTENDANT1	Talk	Huff-huff... Huff-huff...
+ATTENDANT1	Talk	We did it! We're...outside!
+ATTENDANT1	Talk	Wah! What...what is this?!

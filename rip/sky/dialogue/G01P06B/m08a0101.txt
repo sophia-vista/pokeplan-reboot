@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Everyone: Yeah!
+NPC_CHIRIIN	Talk	Everyone: Let's get...
+NPC_PERAPPU	Talk	Everyone! Hold up!
+NPC_PERAPPU	Talk	I wish to make an announcement.
+NPC_HEIGANI	Talk	Hey, hey, heeeeeey!
+NPC_DIGUDA	Talk	Boooo! Boooo!
+NPC_PERAPPU	Talk	Order! I must have order!
+NPC_PERAPPU	Talk	Everyone: WHOA!
+NPC_BIPPA	Talk	By golly, it's finally settled.
+NPC_PERAPPU	Talk	Everyone: LET'S EAT!

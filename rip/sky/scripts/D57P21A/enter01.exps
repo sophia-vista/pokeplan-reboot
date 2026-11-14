@@ -1,0 +1,12 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+    if ( scn($SCENARIO_SIDE) >= [43, 8] ) {
+        @label_0;
+        supervision_ExecuteCommon(CORO_EVENT_N04_19);
+        end;
+    } else {
+        supervision_ExecuteCommon(CORO_EVENT_N04_17);
+        hold;
+    }
+}

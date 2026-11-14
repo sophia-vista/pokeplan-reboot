@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_KURESERIA	Talk	It certainly was close.
+NPC_KURESERIA	Talk	But...we have to go back.

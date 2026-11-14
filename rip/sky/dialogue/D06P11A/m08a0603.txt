@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_BIPPA	Talk	Huh? Problem?
+NPC_BIPPA	Talk	Huh? Now, that is mighty vexing.
+ATTENDANT1	Talk	What'll we do, ?
+ATTENDANT1	Talk	Which way should we go?
+ATTENDANT1	SwitchMenu	Craggy Coast
+ATTENDANT1	SwitchMenu	OK. Craggy Coast it is.
+ATTENDANT1	SwitchMenu	All right. Now...
+NPC_BIPPA	Menu	Side Path
+ATTENDANT1	Menu	OK. Side Path it is.

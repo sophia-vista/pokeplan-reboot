@@ -1,0 +1,45 @@
+speaker	kind	line
+ATTENDANT1	Talk	So we're training at this guild.
+NPC_DOGAASU	Talk	Whaaaat?!
+NPC_DOGAASU	Talk	You! Come with us for a second.
+ATTENDANT1	Talk	Wh-what is it?
+ATTENDANT1	Talk	What?! Why?!
+ATTENDANT1	Talk	B-but!
+ATTENDANT1	Talk	It-it's true that I'm timid...
+NPC_DOGAASU	Talk	Oh? An expedition, you say?
+ATTENDANT1	Talk	B-big talk!
+ATTENDANT1	Talk	Ch-Chief?
+NPC_ZUBATTO	Talk	Heh-heh. That's right.
+NPC_ZUBATTO	Talk	Our Chief is incredibly talented.
+ATTENDANT1	Talk	Smell?
+NPC_ZUBATTO	Talk	Here's the Chief!
+NPC_SUKATANKU	Talk	Move! Out of the way!
+ATTENDANT1	Talk	Oh, !
+ATTENDANT1	Talk	Ugh! What's this awful stench?
+ATTENDANT1	Talk	Ew! What's this awful stench?
+NPC_KIMAWARI	Talk	Eek! It reeks like rotten cheese!
+NPC_BIPPA	Talk	That is foul, yes sirree!
+NPC_HEIGANI	Talk	Hey, hey! My eyes are burning!
+ATTENDANT1	Talk	Oh no...
+NPC_DOGAASU	Talk	Chief!
+NPC_ZUBATTO	Talk	Psst...psst...whisper...psst...
+NPC_SUKATANKU	Talk	That does sound tasty.
+NPC_DOGAASU	Talk	Doesn't it?
+NPC_SUKATANKU	Talk	Come on. We're going.
+NPC_SUKATANKU	Talk	Koffing & Zubat: Yeah!
+NPC_ZUBATTO	Talk	Heh-heh, see you around, wimps.
+ATTENDANT1	Talk	Are you all right, ?!
+ATTENDANT1	Talk	Are you OK, ?!
+ATTENDANT1	Talk	That sure was rough, though.
+ATTENDANT1	Talk	That goon was rough, though.
+ATTENDANT1	SwitchMenu	You're not a wimp...
+ATTENDANT1	SwitchMenu	But...
+ATTENDANT1	SwitchMenu	But I really am a wimp...
+ATTENDANT1	SwitchMenu	But it's nothing new for me...
+ATTENDANT1	SwitchMenu	Thanks, !
+ATTENDANT1	SwitchMenu	Thank you, !
+ATTENDANT1	SwitchMenu	Let's keep at it, !
+ATTENDANT1	SwitchMenu	Bok bok bok!
+ATTENDANT1	SwitchMenu	I-I guess you're right...
+ATTENDANT1	SwitchMenu	I'm a really big chicken.
+ATTENDANT1	SwitchMenu	But it's nothing new for me...

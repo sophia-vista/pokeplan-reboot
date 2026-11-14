@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_PERIPPAA1	Talk	Oh! Welcome back!
+NPC_PERIPPAA2	Talk	Oh! Welcome back!

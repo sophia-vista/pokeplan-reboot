@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DAAKURAI	Talk	Come to me in the Dark Crater.
+ATTENDANT1	Talk	...Dark... Crater...

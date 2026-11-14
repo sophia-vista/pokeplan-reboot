@@ -1,0 +1,22 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [43, 2] ) {
+        @label_0;
+        supervision_Station(0);
+        end;
+    } else {
+        @label_1;
+        supervision_Station(0);
+        end;
+    }
+}
+
+def 1 for actor ACTOR_NPC_YARUKIMONO {
+    switch ( sector() ) {
+        case 0:
+            SetMoveRange(Position<'m0', 42, 28>, 8, 5);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

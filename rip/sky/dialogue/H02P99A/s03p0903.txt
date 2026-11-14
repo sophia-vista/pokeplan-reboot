@@ -1,0 +1,8 @@
+speaker	kind	line
+-	Narration	The next morning...
+ATTENDANT1	Narration	Good morning, !
+ATTENDANT1	Narration	Good morning, Mana...!
+ATTENDANT1	Narration	Manaphy?
+ATTENDANT1	Narration	Oh, ! Manaphy...?
+ATTENDANT1	Narration	Manaphy is missing!
+ATTENDANT1	Narration	L-let's go look for Manaphy!

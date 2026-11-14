@@ -1,0 +1,27 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [40, 7] ) {
+        @label_0;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Do your best, [CS:Y]Bidoof[CR]!",
+        });
+        message_Close();
+        @label_3;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_SIDE) >= [40, 3] || scn($SCENARIO_SIDE) >= [40, 2] ) {
+        jump @label_3;
+    } else {
+        SetAnimation<actor ACTOR_PLAYER_BIPPA>(2);
+        SetAnimation<actor ACTOR_NPC_DOGOOMU>(2);
+        SetAnimation<actor ACTOR_NPC_DIGUDA>(2);
+        message_SetFace(ACTOR_NPC_DIGUDA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Let's do our best, [CS:N]Loudred[CR]!",
+        });
+        message_Close();
+        jump @label_3;
+    }
+}

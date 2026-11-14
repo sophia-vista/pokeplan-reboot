@@ -1,0 +1,20 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	If I get through here...
+NPC_JUPUTORU	Talk	I should be at the forest.
+NPC_JUPUTORU	Talk	Have they eluded the Sableye?
+NPC_JUPUTORU	Talk	Oh, forget it. This isn't the time!
+NPC_JUPUTORU	Talk	Time to go.
+-	Talk	You there! STOP!
+NPC_JUPUTORU	Talk	Hmm?
+NPC_JUPUTORU	Talk	Who's there?!
+-	Talk	You INVADE this place with no warning!
+-	Talk	Then you DISTURB our slumber!
+-	Talk	Then, without APOLOGY, you try to leave?
+NPC_JUPUTORU	Talk	Who's there?! Who are you?!
+-	Talk	You DARE to anger us!
+-	Talk	We expect you to PAY for these insults!
+-	Talk	You ACCUSE us of hiding?
+-	Talk	We do NOT hide.
+-	Talk	We are... We are HERE!
+-	Talk	We are SPIRITOMB!
+NPC_JUPUTORU	Talk	Gaaaah!

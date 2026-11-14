@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	......! (S-SUNFLORA!)
+NPC_DOGOOMU	Talk	Heh-HEH!

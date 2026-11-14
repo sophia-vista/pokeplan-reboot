@@ -1,0 +1,15 @@
+speaker	kind	line
+ATTENDANT1	Mail	Urrrrgh! Urrrrgh! Ugh...
+ATTENDANT1	Mail	Nope, it's not budging...
+ATTENDANT1	Mail	It's really stuck tight.
+PLAYER	Mail	(Whoa!)
+PLAYER	Mail	(This is really stuck!)
+PLAYER	Mail	(It won't budge!)
+PLAYER	Mail	(Urrrrgh...ugh... Nope, no good...)
+ATTENDANT1	Mail	But we can't just give up.
+ATTENDANT1	Mail	Urrrrrrgh! Urrrrrrgh!
+PLAYER	Mail	(Hmm...)
+PLAYER	Mail	(It's not budging one bit...)
+PLAYER	Mail	(Huh? Oh no...)
+PLAYER	Mail	(It's happening again...)
+PLAYER	Mail	(It's...)

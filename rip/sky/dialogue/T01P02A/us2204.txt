@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_SURIIPU	Talk	You two have true courage.
+NPC_SURIIPU	Talk	Don't let that Darkrai beat you!

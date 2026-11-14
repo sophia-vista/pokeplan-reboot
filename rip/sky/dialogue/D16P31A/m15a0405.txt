@@ -1,0 +1,9 @@
+speaker	kind	line
+PLAYER	FacePositionOffset	(The color does change when I touch it.)
+PLAYER	FacePositionOffset	(And it can change into a variety of colors.)
+PLAYER	FacePositionOffset	(Three crystals?)
+PLAYER	FacePositionOffset	(Changing colors?)
+PLAYER	FacePositionOffset	(What could this all mean?)
+PLAYER	FacePositionOffset	(Urk...)
+PLAYER	FacePositionOffset	(It's starting...again...)
+PLAYER	FacePositionOffset	(A Dimensional Scream...)

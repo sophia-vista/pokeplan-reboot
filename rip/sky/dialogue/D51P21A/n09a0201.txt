@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	We've climbed pretty far.
+NPC_YONOWAARU	Talk	Yes.
+NPC_YONOWAARU	Talk	Be prepared.

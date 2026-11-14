@@ -1,0 +1,7 @@
+speaker	kind	line
+ATTENDANT1	ImitationSound	GRROOOOOOH...GRROOOOOOH...!
+ATTENDANT1	ImitationSound	Eep!
+ATTENDANT1	ImitationSound	I knew it! It was roaring!
+ATTENDANT1	ImitationSound	GRROOOOOOH...!
+ATTENDANT1	ImitationSound	S-s-something is...
+ATTENDANT1	ImitationSound	...is...coming!

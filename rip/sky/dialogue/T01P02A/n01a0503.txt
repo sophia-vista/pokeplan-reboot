@@ -1,0 +1,21 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	I can't just spend it carelessly...
+NPC_KAKUREON2	Talk	Anytime!
+NPC_YUKIKABURI	Talk	Erk... Scary...
+NPC_YUKIKABURI	Talk	Umm... Umm... What should I do...
+NPC_YUKIKABURI	Talk	Excuse me! H-hold this!
+PLAYER_BIPPA	Talk	Huh... Golly, what is this?
+PLAYER_BIPPA	Talk	Hey! You...wait!
+NPC_GURAIGAA	Talk	Do you see him...? Bagon!
+NPC_TATSUBEI	Talk	Nope. Lost sight of him.
+NPC_GURAIGAA	Talk	Blast! Where'd he disappear to?!
+NPC_TATSUBEI	Talk	Hey! You!
+PLAYER_BIPPA	Talk	Yes?
+PLAYER_BIPPA	Talk	A Pokémon...? Let me see...
+NPC_GURAIGAA	Talk	Come on! We're in a hurry!
+NPC_TATSUBEI	Talk	Hey, hold on, Gligar.
+PLAYER_BIPPA	Talk	Um... Uh... Th-that is...
+PLAYER_BIPPA	Talk	He went that way...
+NPC_GURAIGAA	Talk	Let's go!
+NPC_TATSUBEI	Talk	Yeah!
+PLAYER_BIPPA	Talk	Sniff... They were pretty scary.

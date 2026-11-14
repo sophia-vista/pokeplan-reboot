@@ -1,0 +1,31 @@
+speaker	kind	line
+NPC_AAMARUDO	Talk	Th-this...is...!
+PLAYER_PUPURIN	Talk	Wow! ♪ So cool! ♪
+PLAYER_PUPURIN	Talk	What is this?
+NPC_AAMARUDO	Talk	This is a Defend Globe.
+PLAYER_PUPURIN	Talk	A Defend Globe? (Yay! Yay! ♪)
+NPC_AAMARUDO	Talk	Oh...
+NPC_AAMARUDO	Talk	...Hey!
+PLAYER_PUPURIN	Talk	It's all right. ♪ I heard you. ♪
+PLAYER_PUPURIN	Talk	We did it! ♪ Ah ha ha ha! ♪
+NPC_AAMARUDO	Talk	(This kid is...)
+PLAYER_PUPURIN	Talk	Yay, yay! ♪ Ah ha ha ha ha! ♪
+PLAYER_PUPURIN	Talk	I had no idea! ♪
+PLAYER_PUPURIN	Talk	...! Oh yeah!
+PLAYER_PUPURIN	Talk	Master!
+NPC_AAMARUDO	Talk	? M-master? Me?!
+NPC_AAMARUDO	Talk	M-my...apprentice?!
+NPC_AAMARUDO	Talk	And besides, I quit exploring!
+PLAYER_PUPURIN	Talk	You did, didn't you? Master...
+NPC_AAMARUDO	Talk	Err...
+PLAYER_PUPURIN	Talk	Master! Please!
+NPC_AAMARUDO	Talk	(Wh-what should I do?)
+NPC_AAMARUDO	Talk	(All right.)
+PLAYER_PUPURIN	Talk	R-really?!
+NPC_AAMARUDO	Talk	But... My training is very strict!
+PLAYER_PUPURIN	Talk	Yay! I did it! Thank you! ♪
+PLAYER_PUPURIN	Talk	Yay, yay, yay! ♪
+PLAYER_PUPURIN	Mail	And so...
+PLAYER_PUPURIN	Mail	And he returned to being an explorer...
+PLAYER_PUPURIN	Talk	Ah ha ha ha ha ha ha! ♪
+NPC_AAMARUDO	Talk	Taking care of you... Hey, wait!

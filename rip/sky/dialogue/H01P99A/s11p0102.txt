@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_MANAFI	Talk	: Good morning!
+NPC_MANAFI	Talk	: And I found a really great place!
+ATTENDANT1	Talk	A really great place?
+ATTENDANT1	Talk	Yup, yup!
+ATTENDANT1	Talk	Of course!
+ATTENDANT1	Talk	Yep, yep!
+NPC_MANAFI	Talk	: OK, bye!

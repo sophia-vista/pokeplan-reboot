@@ -1,0 +1,44 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_PLAYER>(CORO_LIVES_REPLY_NORMAL, 0);
+    switch ( dungeon_mode(4) ) {
+        case DMODE_CLOSED:
+        default:
+            @label_0;
+            message_Notice({
+                english="Which dungeon will you enter?  A",
+            });
+            message_Close();
+            @label_3;
+            switch ( main_EnterAdventure(-1, 30) ) {
+                case 1:
+                    @switch1_24;
+                    message_Close();
+                    supervision_Suspend(-2);
+                    end;
+                case 0:
+                case 19:
+                    @label_5;
+                    message_Close();
+                    switch ( main_EnterAdventure(251, 30) ) { }
+                    hold;
+                case 18:
+                    jump @switch1_24;
+                default:
+                    jump @label_5;
+            }
+            break;
+        case DMODE_OPEN:
+            message_Notice({
+                english="Which dungeon will you enter?  B",
+            });
+            message_Close();
+            jump @label_3;
+        case DMODE_OPEN_AND_REQUEST:
+            message_Notice({
+                english="Which dungeon will you enter?  C",
+            });
+            message_Close();
+            jump @label_3;
+    }
+}

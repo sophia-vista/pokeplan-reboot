@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_RINGUMA	Talk	Oh, it's you!
+ATTENDANT1	Talk	Uh... Er, something came up.
+ATTENDANT1	Talk	Uh... Something held us up.
+ATTENDANT1	Talk	Anyway...what's up?
+ATTENDANT1	Talk	Anyway...what's going on?
+ATTENDANT1	Talk	Anyway...what are you doing?
+ATTENDANT1	Talk	Well then! We'll open it!
+NPC_RINGUMA	Talk	You guys should open it.
+PLAYER	Talk	(I think it probably would be OK...)
+PLAYER	Talk	(But you never know. It could be a trap.)
+PLAYER	Mail	(The dizziness...)
+PLAYER	Mail	(The dizziness is starting...)

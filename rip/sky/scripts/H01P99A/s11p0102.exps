@@ -1,0 +1,262 @@
+
+def 0 {
+    back_SetGround(LEVEL_H01P99A);
+    switch ( ProcessSpecial(PROCESS_SPECIAL_IS_RECURITABLE_IN_TEAM, 18, 0) ) {
+        case 1:
+            @label_0;
+            supervision_Acting(0);
+            camera_SetMyself<performer 0>();
+            bgm_PlayFadeIn(BGM_OCEAN1, 90, 256);
+            screen_FadeIn(1, 30);
+            Wait(30);
+            supervision_Acting(1);
+            Wait(10);
+            Turn2Direction<actor ACTOR_NPC_MANAFI>(4, 10, DIR_UPLEFT);
+            WaitExecuteLives(ACTOR_NPC_MANAFI);
+            se_Play(8978);
+            SetEffect<actor ACTOR_NPC_MANAFI>(EFFECT_EXCLAMATION_MARK, 3);
+            MovePositionOffset<actor ACTOR_PLAYER>(1, 24, 0);
+            Wait(15);
+            supervision_Acting(2);
+            Wait(10);
+            MovePositionOffset<actor ACTOR_ATTENDANT1>(1, 24, 0);
+            MovePositionMark<actor ACTOR_PLAYER>(1, Position<'m0', 39.5, 25.5>);
+            MovePositionMark<actor ACTOR_ATTENDANT1>(1, Position<'m1', 39.5, 22.5>);
+            Wait(15);
+            Turn2Direction<actor ACTOR_NPC_MANAFI>(4, 10, DIR_LEFT);
+            Turn2Direction<actor ACTOR_PLAYER>(4, 10, DIR_RIGHT);
+            Turn2Direction<actor ACTOR_ATTENDANT1>(4, 10, DIR_RIGHT);
+            message_SetFaceEmpty(ACTOR_NPC_MANAFI, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: Hi, [hero] and
+                    [partner]!
+                """,
+            });
+            message_Talk({
+                english="[c_name:NPC_MANAFI]: Good morning!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8964);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_EXCLAMATION_MARK, 3);
+            WaitEffect<actor ACTOR_ATTENDANT1>();
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             Hey, it's [c_name:NPC_MANAFI]!
+                            Good morning to you!
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             Hey, it's [c_name:NPC_MANAFI]!
+                            Good morning!
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             Hey, it's [c_name:NPC_MANAFI]!
+                            Good morning!
+                        """,
+                    }
+            }
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             What brings you back here so
+                            early in the morning?
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             What brings you back here so
+                            early in the morning!
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             What brings you back here so
+                            early in the morning!
+                        """,
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8975);
+            ExecuteCommon<actor ACTOR_NPC_MANAFI>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_NPC_MANAFI);
+            message_SetFaceEmpty(ACTOR_NPC_MANAFI, FACE_JOYOUS, FACE_POS_BOTTOM_R_FACEINW);
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: Well, um, I was on my daily
+                    morning travels...
+                """,
+            });
+            message_Talk({
+                english="[c_name:NPC_MANAFI]: And I found a really great place!",
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" A really great place?",
+                    }
+                case 2:
+                    {
+                        english=" A really great place?",
+                    }
+                default:
+                    {
+                        english=" A really great place?",
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            ExecuteCommon<actor ACTOR_NPC_MANAFI>(CORO_JUMP_HAPPY_FUNC_SERIES, 0);
+            WaitExecuteLives(ACTOR_NPC_MANAFI);
+            message_SetFaceEmpty(ACTOR_NPC_MANAFI, FACE_JOYOUS, FACE_POS_BOTTOM_R_FACEINW);
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: Yep, yep! It has crystal clear
+                    water and a white-sand beach...
+                """,
+            });
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: And it's got plenty of totally
+                    yummi Gummis!
+                """,
+            });
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: And the place is named the
+                    [CS:P]Marine Resort[CR]! It's a Pokémon paradise!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            se_Play(8967);
+            SetEffect<actor ACTOR_PLAYER>(EFFECT_EXCLAMATION_MARK, 3);
+            SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_EXCLAMATION_MARK, 3);
+            WaitEffect<actor ACTOR_ATTENDANT1>();
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_INSPIRED, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english="""
+                             The [CS:P]Marine Resort[CR]![K]
+                            A Pokémon paradise?!
+                        """,
+                    }
+                case 2:
+                    {
+                        english="""
+                             The [CS:P]Marine Resort[CR]![K]
+                            A Pokémon paradise?!
+                        """,
+                    }
+                default:
+                    {
+                        english="""
+                             The [CS:P]Marine Resort[CR]![K]
+                            A Pokémon paradise?!
+                        """,
+                    }
+            }
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFaceEmpty(ACTOR_NPC_MANAFI, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: I couldn't wait to come tell you
+                    and [hero] right away. 
+                """,
+            });
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: So I cut my daily trip short
+                    and came straight here to tell you!
+                """,
+            });
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: I'll show you where it is.
+                    Can you open your map for me?
+                """,
+            });
+            message_Close();
+            se_Play(6667);
+            screen_FadeOut(1, 30);
+            worldmap_SetMode(4);
+            back2_SetMode(3);
+            WaitSubScreen();
+            worldmap_SetCamera(73);
+            worldmap_SetArrow(73);
+            worldmap_BlinkMark(73);
+            Wait(30);
+            me_Play(6);
+            message_Mail({
+                english="""
+                    [CN]You can now go to
+                    [CN]the [CS:P]Marine Resort[CR]!
+                """,
+            });
+            WaitMe(6);
+            message_Close();
+            screen2_FadeOut(0, 30);
+            screen_FadeIn(1, 30);
+            Wait(30);
+            back2_SetMode(0);
+            message_SetFaceEmpty(ACTOR_NPC_MANAFI, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+            message_Talk({
+                english="""
+                    [c_name:NPC_MANAFI]: Let's go play there
+                    together sometime!
+                """,
+            });
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+            message_SetFace(ACTOR_ATTENDANT1, FACE_INSPIRED, FACE_POS_STANDARD);
+            message_SwitchTalk ($PARTNER_TALK_KIND) {
+                case 1:
+                    {
+                        english=" Yup, yup!",
+                    }
+                case 2:
+                    {
+                        english=" Of course!",
+                    }
+                default:
+                    {
+                        english=" Yep, yep!",
+                    }
+            }
+            WaitExecuteLives(ACTOR_ATTENDANT1);
+            CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+            message_SetFaceEmpty(ACTOR_NPC_MANAFI, FACE_HAPPY, FACE_POS_BOTTOM_R_FACEINW);
+            message_Talk({
+                english="[c_name:NPC_MANAFI]: OK, bye!",
+            });
+            message_Close();
+            MovePositionOffset<actor ACTOR_NPC_MANAFI>(1.1992, 160, 0);
+            WaitExecuteLives(ACTOR_NPC_MANAFI);
+            Destroy<actor ACTOR_NPC_MANAFI>();
+            bgm_FadeOut(120);
+            screen_FadeOut(1, 30);
+            Wait(90);
+            bgm_PlayFadeIn(BGM_OCEAN1, 90, 256);
+            screen_FadeIn(1, 30);
+            Wait(30);
+            end;
+        default:
+            supervision_LoadStation(LEVEL_H01P99A, 'US23');
+            supervision_Station(2);
+            jump @label_0;
+    }
+}

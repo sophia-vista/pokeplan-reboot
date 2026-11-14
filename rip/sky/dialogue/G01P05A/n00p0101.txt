@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	.........
+NPC_PUKURIN	Talk	Oh...!
+NPC_PUKURIN	Talk	Good luck exploring! ♪

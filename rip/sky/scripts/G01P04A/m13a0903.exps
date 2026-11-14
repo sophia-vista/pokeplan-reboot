@@ -1,0 +1,255 @@
+
+def 0 {
+    sound_Stop();
+    back_SetGround(LEVEL_G01P04A);
+    supervision_LoadStation(LEVEL_G01P04A, 'UM13');
+    supervision_Station(6);
+    supervision_Acting(0);
+    SetPositionInitial<actor ACTOR_NPC_PERAPPU>();
+    SetPositionInitial<actor ACTOR_NPC_YONOWAARU>();
+    SetAnimation<actor ACTOR_NPC_PERAPPU>(2);
+    SetAnimation<actor ACTOR_NPC_YONOWAARU>(2);
+    camera_SetMyself<performer 0>();
+    Wait(1);
+    SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_JOYOUS, 3);
+    screen_FadeIn(1, 30);
+    Wait(30);
+    se_Play(8965);
+    SetEffect<actor ACTOR_PLAYER>(EFFECT_EXCLAMATION_MARK, 3);
+    WaitEffect<actor ACTOR_PLAYER>();
+    WaitExecuteLives(ACTOR_PLAYER);
+    message_SetFace(ACTOR_PLAYER, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(Yes![K] That's right!)",
+            }
+        default:
+            {
+                english="(Yes![K] That's right!)",
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="""
+                    (Yesterday at the quicksand pits, we assumed
+                    that it was a dead end for our search...)
+                """,
+            }
+        default:
+            {
+                english="""
+                    (Yesterday at the quicksand pits, we assumed
+                    that it was a dead end for our search...)
+                """,
+            }
+    }
+    message_SwitchMonologue ($HERO_TALK_KIND) {
+        case 4:
+            {
+                english="(But maybe there really are secrets there...)",
+            }
+        default:
+            {
+                english="(But maybe there really are secrets there...)",
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_HAPPY, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     What's up?[K] Are you daydreaming
+                    again?
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     What's the matter?[K] Are you off
+                    in another daydream?
+                """,
+            }
+        default:
+            {
+                english="""
+                     What's wrong?[K] You seem to be
+                    in a daze again!
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Wait(15);
+    se_Play(8978);
+    SetEffect<actor ACTOR_PLAYER>(EFFECT_TWO_ARROWS_AT_SIDE_LEFT, 3);
+    WaitEffect<actor ACTOR_PLAYER>();
+    WaitExecuteLives(ACTOR_PLAYER);
+    Turn2DirectionLives<actor ACTOR_PLAYER>(4, 10, ACTOR_ATTENDANT1);
+    WaitExecuteLives(ACTOR_PLAYER);
+    Wait(30);
+    ExecuteCommon<actor ACTOR_PLAYER>(CORO_EXPLANATION_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_PLAYER);
+    se_Play(8964);
+    SetEffect<actor ACTOR_ATTENDANT1>(EFFECT_EXCLAMATION_MARK, 3);
+    WaitEffect<actor ACTOR_ATTENDANT1>();
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Huh? You want to go back to
+                    [CS:P]Quicksand Desert[CR]?
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     What? You want to go back to
+                    [CS:P]Quicksand Desert[CR]?
+                """,
+            }
+        default:
+            {
+                english="""
+                     Pardon? You want us to go back
+                    to [CS:P]Quicksand Desert[CR]?
+                """,
+            }
+    }
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     But we were there yesterday!
+                    There wasn't anything there.
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     But we were there yesterday!
+                    We didn't find anything!
+                """,
+            }
+        default:
+            {
+                english="""
+                     But we were there yesterday!
+                    We didn't find anything!
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    ExecuteCommon<actor ACTOR_PLAYER>(CORO_EXPLANATION_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_PLAYER);
+    se_Play(8967);
+    ExecuteCommon<actor ACTOR_ATTENDANT1>(CORO_JUMP_SURPRISE_FUNC_SERIES, 0);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_SURPRISED, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Huh?! When we were at
+                    [CS:P]Quicksand Desert[CR]...
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     What?! When we were at
+                    [CS:P]Quicksand Desert[CR]...
+                """,
+            }
+        default:
+            {
+                english="""
+                     What?![K] When we were at
+                    [CS:P]Quicksand Desert[CR]...
+                """,
+            }
+    }
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     You had the same sensation that
+                    you had at [CS:P]Fogbound Lake[CR]?!
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     You experienced the same
+                    sensation that you had at [CS:P]Fogbound Lake[CR]?!
+                """,
+            }
+        default:
+            {
+                english="""
+                     You had the same sensations that
+                    you had at [CS:P]Fogbound Lake[CR]?!
+                """,
+            }
+    }
+    CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+    Wait(30);
+    Turn2Direction<actor ACTOR_ATTENDANT1>(8, 10, DIR_UPRIGHT);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    Wait(90);
+    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+    WaitExecuteLives(ACTOR_ATTENDANT1);
+    message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english=" OK, [hero]. If you say so!",
+            }
+        case 2:
+            {
+                english="""
+                     Well then, that's settled,
+                    [hero]. What you say must be true.
+                """,
+            }
+        default:
+            {
+                english="""
+                     OK, I getcha, [hero]! It
+                    must be true.
+                """,
+            }
+    }
+    message_SwitchTalk ($PARTNER_TALK_KIND) {
+        case 1:
+            {
+                english="""
+                     Let's go out there again! Back to
+                    [CS:P]Quicksand Desert[CR]!
+                """,
+            }
+        case 2:
+            {
+                english="""
+                     Let's go there again! Back to
+                    [CS:P]Quicksand Desert[CR]!
+                """,
+            }
+        default:
+            {
+                english="""
+                     Let's go there again! Back to
+                    [CS:P]Quicksand Desert[CR]!
+                """,
+            }
+    }
+    message_Close();
+    SetEffect<actor ACTOR_NPC_PERAPPU>(EFFECT_NONE, 3);
+    bgm_PlayFadeIn(BGM_WIGGLYTUFFS_GUILD, 0, 256);
+    dungeon_mode(21) = DMODE_OPEN;
+    $SCENARIO_MAIN = scn[14, 6];
+    end;
+}

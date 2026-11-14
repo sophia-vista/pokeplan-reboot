@@ -1,0 +1,92 @@
+
+def 0 {
+    switch ( $GROUND_ENTER ) {
+        case 113:
+        case 114:
+        case 117:
+        case 118:
+        case 119:
+        case 50:
+        case 121:
+        case 122:
+        case 123:
+        case 125:
+            @label_12;
+            JumpCommon(CORO_END_TALK);
+        case 129:
+            if ( scn($SCENARIO_SIDE) >= [48, 9] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YAMIRAMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We're ready to accept what
+                        will happen to us!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Please, [CS:Y]Grovyle[CR]![K]
+                        Stop Master [CS:N]Dialga[CR]!
+                    """,
+                });
+                message_Talk({
+                    english=" For the future!",
+                });
+                message_Close();
+                jump @label_12;
+            } elseif ( scn($SCENARIO_SIDE) >= [48, 6] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YAMIRAMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We're ready to accept what
+                        will happen to us!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Please, [CS:Y]Grovyle[CR]![K]
+                        Stop Master [CS:N]Dialga[CR]!
+                    """,
+                });
+                message_Talk({
+                    english=" For the future!",
+                });
+                message_Close();
+                jump @label_12;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_YAMIRAMI, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         We're ready to accept what
+                        will happen to us!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Please, [CS:Y]Grovyle[CR]![K]
+                        Stop Master [CS:N]Dialga[CR]!
+                    """,
+                });
+                message_Talk({
+                    english=" For the future!",
+                });
+                message_Close();
+                jump @label_12;
+            }
+            break;
+        case 131:
+            if ( scn($SCENARIO_SIDE) >= [48, 9] || scn($SCENARIO_SIDE) >= [48, 8] ) {
+                jump @label_12;
+            } else {
+                jump @label_12;
+            }
+            break;
+        default:
+            jump @label_12;
+    }
+}

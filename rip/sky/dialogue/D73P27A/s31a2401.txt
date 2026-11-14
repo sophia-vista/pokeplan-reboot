@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_SHEIMI	Talk	What happened?!
+NPC_SHEIMI	Talk	.........
+NPC_SHEIMI	Talk	This isn't good at all...
+NPC_SHEIMI	Talk	I'll go get help.
+NPC_SHEIMI	Talk	We're going ahead!
+NPC_KUCHIITO	Talk	I see. We're counting on you!
+NPC_SHEIMI	Talk	Let's hurry, !

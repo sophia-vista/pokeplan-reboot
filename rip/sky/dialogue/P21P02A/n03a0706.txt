@@ -1,0 +1,10 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	Hey, Master.
+PLAYER_PUPURIN	Talk	R-really?!
+PLAYER_PUPURIN	Talk	A-amazing! I can't wait! ♪
+NPC_AAMARUDO	Talk	Yeah.
+PLAYER_PUPURIN	Talk	Yep. ♪ I'm fine. ♪
+PLAYER_PUPURIN	Talk	Yep! ♪
+NPC_AAMARUDO	Talk	Cheerful is good, but...
+NPC_NIDOKINGU	Talk	That Pokémon...
+NPC_NIDOKINGU	Talk	That Pokémon... Was that...

@@ -1,0 +1,14 @@
+speaker	kind	line
+PLAYER_PUPURIN	Talk	S-so...scary...
+NPC_PUKURIN_PAPA	Talk	Are you all right?! Igglybuff?
+PLAYER_PUPURIN	Talk	Y-yeah...
+PLAYER_PUPURIN	Talk	Yeah...
+PLAYER_PUPURIN	Talk	Waaaaaaaahhh!!
+NPC_PUKURIN_PAPA	Talk	I...Igglybuff!
+NPC_PUKURIN_PAPA	Mail	And right then!
+NPC_PUKURIN_PAPA	Talk	W-waaaaaaaahhhhhhh!!
+PLAYER_PUPURIN	Talk	P...Papa!!
+PLAYER_PUPURIN	Mail	(It's no good!) (I'm going to be crushed!)
+PLAYER_PUPURIN	Mail	...And just when I thought that!
+PLAYER_PUPURIN	Talk	YOOM...TAH!!
+PLAYER_PUPURIN	Mail	Somehow the boulder was smashed to pieces...

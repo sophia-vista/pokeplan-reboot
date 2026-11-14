@@ -1,0 +1,7 @@
+speaker	kind	line
+-	SwitchMenu	Yes
+-	Mail	\"How goes your search for the Hidden Land?\"
+-	Mail	\"I have to find only two more Time Gears.\"
+-	Mail	\"I plan to join you when I've collected all five.\"
+-	Mail	\"Good luck on your end.\"
+-	Mail	No

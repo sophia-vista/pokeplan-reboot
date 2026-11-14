@@ -1,0 +1,10 @@
+speaker	kind	line
+ATTENDANT1	Talk	Hey, Teddiursa and Ursaring!
+ATTENDANT1	Talk	Hi, Teddiursa and Ursaring!
+ATTENDANT1	Talk	What?! Mystifying Forest?!
+ATTENDANT1	Talk	Pardon?! Mystifying Forest?!
+ATTENDANT1	Talk	But isn't it dangerous there?
+NPC_RINGUMA	Talk	Let's go.
+NPC_HIMEGUMA	Talk	Bye.
+ATTENDANT1	Talk	...Something's strange.
+ATTENDANT1	Talk	...Something's not right.

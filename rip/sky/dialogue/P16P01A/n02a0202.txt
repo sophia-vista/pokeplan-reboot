@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_SUBOMII	Talk	Hey, what should we play today?
+NPC_UPAA	Talk	Let's play in the mud!
+NPC_MUCHUURU	Talk	Yuck! I don't want to!
+NPC_SUBOMII	Talk	Yay!
+NPC_UPAA	Talk	I want one!

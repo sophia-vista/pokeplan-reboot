@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	There's no one here.
+NPC_DORAPION	Talk	They're here! Over there!
+PLAYER_CHARMS	Talk	Hee-hee!
+NPC_AABOKKU	Talk	What?!
+NPC_CHAAREMU	Talk	We didn't run away!
+NPC_DORAPION	Talk	What are you saying?!
+NPC_MANYUURA	Talk	Humph! Interesting!
+NPC_MANYUURA	Talk	Arbok & Drapion: YEAH!
+NPC_CHAAREMU	Talk	Anytime!

@@ -1,0 +1,13 @@
+speaker	kind	line
+ATTENDANT1	Mail	\"How goes your search for the Hidden Land?\"
+ATTENDANT1	Mail	\"I have to find only two more Time Gears.\"
+ATTENDANT1	Mail	\"I plan to join you when I've collected all five.\"
+ATTENDANT1	Mail	Dusknoir?!
+ATTENDANT1	Mail	Come to think of it...
+ATTENDANT1	Mail	All right, let me keep reading.
+ATTENDANT1	Mail	OK, I'll keep reading.
+ATTENDANT1	Mail	OK, I'll finish reading.
+ATTENDANT1	Mail	\"Good luck on your end.\"
+ATTENDANT1	Mail	We'd better hold up our end too.
+ATTENDANT1	Mail	We'd better not fail on our end.
+ATTENDANT1	Mail	We can't fail on our end.

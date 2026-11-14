@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_RINGUMA	Talk	The weather's nice as usual.
+NPC_RINGUMA	Talk	What?! Your little buddy's sick?
+NPC_RINGUMA	Talk	Nope. Can't say I have.
+NPC_RINGUMA	Talk	It's been peaceful lately.
+NPC_RINGUMA	Talk	It's me, Ursaring.
+NPC_RINGUMA	Talk	Sounds mighty chilly...
+NPC_RINGUMA	Talk	You can count on my support!
+NPC_RINGUMA	Talk	Well, that's...hard to believe.
+NPC_RINGUMA	Talk	No one can evolve lately.

@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	This is the end...for you!
+NPC_YAMIRAMI	Talk	Wheh-heh-heh!
+ATTENDANT1	Talk	Urk...
+NPC_JUPUTORU	Talk	Gah... You say not to give up...?
+ATTENDANT1	Talk	We have to think!

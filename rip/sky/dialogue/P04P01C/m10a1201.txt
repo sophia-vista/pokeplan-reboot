@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_YUKUSHII	Talk	Behold! Fogbound Lake!
+ATTENDANT1	Talk	Wow!

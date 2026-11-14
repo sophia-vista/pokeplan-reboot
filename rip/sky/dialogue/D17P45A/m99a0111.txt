@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_AGUNOMU	Talk	I know why you're here.
+NPC_AGUNOMU	Talk	Sure thing.
+NPC_AGUNOMU	Talk	Your challenge...
+NPC_AGUNOMU	Talk	I'm up for it!
+NPC_AGUNOMU	Talk	Come on!

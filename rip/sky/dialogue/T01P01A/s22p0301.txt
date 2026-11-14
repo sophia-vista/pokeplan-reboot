@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_RURIRI	Talk	Marill!
+NPC_RURIRI	Talk	Yup!
+NPC_RURIRI	Talk	And Mister Drowzee too!
+NPC_SURIIPU	Talk	Huh?! Me?!
+NPC_MARIRU	Talk	Thank you so very much!
+NPC_PERAPPU	Talk	Well done! How remarkable!
+NPC_KURESERIA	Talk	. And, .
+ATTENDANT1	FacePositionOffset	...That's... That's true!
+PLAYER	FacePositionOffset	(It's true...)
+PLAYER	FacePositionOffset	(The first time was in a dream.)
+PLAYER	FacePositionOffset	(Then later on, come to think of it...)

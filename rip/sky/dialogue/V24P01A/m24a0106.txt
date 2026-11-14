@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_RAPURASU	Talk	I simply had to help.
+NPC_RAPURASU	Talk	Afterward...
+ATTENDANT1	Talk	A promise?
+NPC_RAPURASU	Talk	Yes.

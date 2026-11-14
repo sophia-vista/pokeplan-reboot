@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	! This is it for me!
+ATTENDANT1	Talk	Huh?! Wh-what?!
+ATTENDANT1	Talk	B-but...!

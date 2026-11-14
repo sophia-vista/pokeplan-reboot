@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	Huh?
+NPC_CHAAREMU	Talk	Here... There's two entrances?

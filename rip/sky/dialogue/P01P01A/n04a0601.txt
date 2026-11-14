@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_KIMAWARI	Talk	Ooogh... I couldn't do it...
+PLAYER_KIMAWARI	Talk	But--I won't be discouraged!
+PLAYER_KIMAWARI	Talk	This time, I'll catch Haunter!

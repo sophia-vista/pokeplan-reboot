@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_YUKIKABURI	Talk	Bidoof!
+PLAYER_BIPPA	Talk	We'll do our best! Yup yup!
+NPC_YUKIKABURI	Talk	Yeah!

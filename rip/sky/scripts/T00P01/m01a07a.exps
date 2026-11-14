@@ -1,0 +1,28 @@
+
+def 0 {
+    debug_Print('acting_M01A07A');
+    with (actor ACTOR_PLAYER) {
+        hold;
+    }
+    with (actor ACTOR_ATTENDANT1) {
+        hold;
+    }
+    screen_FadeOut(1, 30);
+    back_SetGround(LEVEL_T00P01);
+    supervision_StationCommon(0);
+    supervision_Acting(0);
+    with (actor ACTOR_PLAYER) {
+        hold;
+    }
+    with (actor ACTOR_ATTENDANT1) {
+        hold;
+    }
+    screen_FadeIn(1, 30);
+    message_SetFace(ACTOR_NPC_PARTNER, FACE_NORMAL, FACE_POS_STANDARD);
+    message_Talk({
+        english="Acting Test under way...",
+    });
+    message_Close();
+    supervision_ExecuteStation(LEVEL_T00P01, 'M01A07', 0);
+    hold;
+}

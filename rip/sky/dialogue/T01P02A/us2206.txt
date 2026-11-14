@@ -1,0 +1,25 @@
+speaker	kind	line
+NPC_YARUKIMONO	Talk	Yo! You two sure showed them!
+NPC_YARUKIMONO	Talk	You get my thanks for that!
+NPC_YARUKIMONO	Talk	...Oh. They never mentioned it...
+NPC_YARUKIMONO	Talk	...Rrrroar.
+NPC_YARUKIMONO	Talk	I'm a huge fan of Team Charm!
+NPC_YARUKIMONO	Talk	Yo! Come on, cheer up!
+NPC_YARUKIMONO	Talk	Yep, that's a cute little baby!
+NPC_YARUKIMONO	Talk	You did it! Congratulations!
+NPC_YARUKIMONO	Talk	Yo! I've heard!
+NPC_YARUKIMONO	Talk	That's bad news! Bad, bad, bad!
+NPC_YARUKIMONO	Talk	Yo! You two are safe!
+NPC_YARUKIMONO	Talk	That's amazing stuff, you two!
+NPC_YARUKIMONO	Talk	Your gutsiness... I like it!
+NPC_YARUKIMONO	Talk	...OK. Nothing yet.
+NPC_YARUKIMONO	Talk	You're getting my best effort!
+NPC_YARUKIMONO	Talk	Is something the matter?
+NPC_YARUKIMONO	Talk	See! See that shop there?
+NPC_YARUKIMONO	Talk	It's just down from here.
+NPC_YARUKIMONO	Talk	Yo! Another great day!
+ATTENDANT1	Talk	Marowak Dojo?
+ATTENDANT1	Talk	Huh?!
+ATTENDANT1	Talk	What?!
+ATTENDANT1	Talk	Pardon?!
+NPC_YARUKIMONO	Talk	Yo! Another great day!

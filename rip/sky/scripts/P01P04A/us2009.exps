@@ -1,0 +1,237 @@
+
+def 0 {
+    if ( scn($SCENARIO_MAIN) >= [29, 94] || scn($SCENARIO_MAIN) >= [29, 93] || scn($SCENARIO_MAIN) >= [29, 92] || scn($SCENARIO_MAIN) >= [29, 91] || scn($SCENARIO_MAIN) >= [29, 90] || scn($SCENARIO_MAIN) >= [29, 89] || scn($SCENARIO_MAIN) >= [29, 88] || scn($SCENARIO_MAIN) >= [29, 87] || scn($SCENARIO_MAIN) >= [29, 85] || scn($SCENARIO_MAIN) >= [29, 84] || scn($SCENARIO_MAIN) >= [29, 83] || scn($SCENARIO_MAIN) >= [29, 82] || scn($SCENARIO_MAIN) >= [29, 81] || scn($SCENARIO_MAIN) >= [29, 80] || scn($SCENARIO_MAIN) >= [29, 78] || scn($SCENARIO_MAIN) >= [29, 76] || scn($SCENARIO_MAIN) >= [29, 75] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 [CS:N]Drowzee[CR] has become a changed
+                Pokémon?[K] Good to hear he has reformed.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Not that it matters to us, since
+                we're a team that focuses on catching outlaws.
+            """,
+        });
+        message_Talk({
+            english="""
+                 But if [CS:N]Drowzee[CR] becomes an
+                outlaw again, we'll be there to catch him.
+            """,
+        });
+        message_Close();
+        @label_130;
+        JumpCommon(CORO_END_TALK);
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 73] || scn($SCENARIO_MAIN) >= [29, 72] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We heard that [CS:N]Drowzee[CR] is holed
+                up on [CS:P]Mt. Travail[CR].
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 71] || scn($SCENARIO_MAIN) >= [29, 70] || scn($SCENARIO_MAIN) >= [29, 69] || scn($SCENARIO_MAIN) >= [29, 67] || scn($SCENARIO_MAIN) >= [29, 56] || scn($SCENARIO_MAIN) >= [29, 55] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I had a Pulpy Life Seed earlier,
+                and it was pretty tasty.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 54] || scn($SCENARIO_MAIN) >= [29, 53] || scn($SCENARIO_MAIN) >= [29, 52] || scn($SCENARIO_MAIN) >= [29, 50] || scn($SCENARIO_MAIN) >= [29, 49] || scn($SCENARIO_MAIN) >= [29, 48] || scn($SCENARIO_MAIN) >= [29, 47] || scn($SCENARIO_MAIN) >= [29, 46] || scn($SCENARIO_MAIN) >= [29, 45] || scn($SCENARIO_MAIN) >= [29, 44] || scn($SCENARIO_MAIN) >= [29, 43] || scn($SCENARIO_MAIN) >= [29, 42] || scn($SCENARIO_MAIN) >= [29, 41] || scn($SCENARIO_MAIN) >= [29, 40] || scn($SCENARIO_MAIN) >= [29, 39] || scn($SCENARIO_MAIN) >= [29, 33] || scn($SCENARIO_MAIN) >= [29, 32] || scn($SCENARIO_MAIN) >= [29, 31] || scn($SCENARIO_MAIN) >= [29, 30] || scn($SCENARIO_MAIN) >= [29, 29] || scn($SCENARIO_MAIN) >= [29, 28] || scn($SCENARIO_MAIN) >= [29, 27] || scn($SCENARIO_MAIN) >= [29, 26] || scn($SCENARIO_MAIN) >= [29, 25] || scn($SCENARIO_MAIN) >= [29, 24] || scn($SCENARIO_MAIN) >= [29, 23] || scn($SCENARIO_MAIN) >= [29, 22] || scn($SCENARIO_MAIN) >= [29, 21] || scn($SCENARIO_MAIN) >= [29, 20] || scn($SCENARIO_MAIN) >= [29, 19] || scn($SCENARIO_MAIN) >= [29, 18] || scn($SCENARIO_MAIN) >= [29, 17] || scn($SCENARIO_MAIN) >= [29, 16] || scn($SCENARIO_MAIN) >= [29, 15] || scn($SCENARIO_MAIN) >= [29, 14] || scn($SCENARIO_MAIN) >= [29, 13] || scn($SCENARIO_MAIN) >= [29, 12] || scn($SCENARIO_MAIN) >= [29, 11] || scn($SCENARIO_MAIN) >= [29, 10] || scn($SCENARIO_MAIN) >= [29, 8] || scn($SCENARIO_MAIN) >= [29, 6] || scn($SCENARIO_MAIN) >= [29, 5] || scn($SCENARIO_MAIN) >= [29, 4] || scn($SCENARIO_MAIN) >= [29, 3] || scn($SCENARIO_MAIN) >= [29, 2] || scn($SCENARIO_MAIN) >= [29, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I've never heard of that.[K]
+                The grand master of all things bad?
+            """,
+        });
+        message_Talk({
+            english="""
+                 Still, there's plenty we don't
+                know about the world.
+            """,
+        });
+        message_Talk({
+            english="""
+                 It makes it that much more
+                rewarding to be an exploration team.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Oh, there's something else...[K]
+                We heard this from other teams...
+            """,
+        });
+        message_Talk({
+            english="""
+                 They told us about some newly
+                discovered dungeons.[K] The wild Pokémon in
+                them seem more intelligent!
+            """,
+        });
+        message_Talk({
+            english="""
+                 They've learned to use
+                items...[K] And they're smarter in the ways they
+                move and attack!
+            """,
+        });
+        message_Talk({
+            english="""
+                 So your team should keep that in
+                mind when you're going into new dungeons!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [25, 4] || scn($SCENARIO_MAIN) >= [25, 3] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 2] || scn($SCENARIO_MAIN) >= [25, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Good luck to you!",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [24, 1] || scn($SCENARIO_MAIN) >= [23, 3] || scn($SCENARIO_MAIN) >= [23, 2] || scn($SCENARIO_MAIN) >= [23, 1] || scn($SCENARIO_MAIN) >= [22, 3] || scn($SCENARIO_MAIN) >= [22, 2] || scn($SCENARIO_MAIN) >= [21, 2] || scn($SCENARIO_MAIN) >= [21, 1] || scn($SCENARIO_MAIN) >= [20, 4] || scn($SCENARIO_MAIN) >= [20, 3] || scn($SCENARIO_MAIN) >= [20, 2] || scn($SCENARIO_MAIN) >= [20, 1] || scn($SCENARIO_MAIN) >= [17, 3] || scn($SCENARIO_MAIN) >= [17, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 But if [CS:N]Grovyle[CR] is out to get the
+                Time Gears...[K]it might be better to just seal
+                them away.
+            """,
+        });
+        message_Talk({
+            english=" It's an option worth considering.",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [16, 2] || scn($SCENARIO_MAIN) >= [16, 0] || scn($SCENARIO_MAIN) >= [15, 4] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 There's no way we can ignore
+                what [CS:N]Grovyle[CR] is up to.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [15, 1] || scn($SCENARIO_MAIN) >= [14, 5] || scn($SCENARIO_MAIN) >= [14, 4] || scn($SCENARIO_MAIN) >= [14, 2] || scn($SCENARIO_MAIN) >= [14, 1] || scn($SCENARIO_MAIN) >= [13, 2] || scn($SCENARIO_MAIN) >= [13, 1] || scn($SCENARIO_MAIN) >= [12, 4] || scn($SCENARIO_MAIN) >= [12, 3] || scn($SCENARIO_MAIN) >= [12, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Our sense of smell's acute.
+                We're real sensitive about it.
+            """,
+        });
+        message_Talk({
+            english="""
+                 But the stink is mostly gone.
+                That's a good thing.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [10, 2] || scn($SCENARIO_MAIN) >= [10, 1] || scn($SCENARIO_MAIN) >= [9, 5] || scn($SCENARIO_MAIN) >= [9, 4] || scn($SCENARIO_MAIN) >= [9, 2] || scn($SCENARIO_MAIN) >= [9, 1] || scn($SCENARIO_MAIN) >= [8, 7] || scn($SCENARIO_MAIN) >= [8, 6] || scn($SCENARIO_MAIN) >= [8, 5] || scn($SCENARIO_MAIN) >= [8, 3] || scn($SCENARIO_MAIN) >= [8, 2] || scn($SCENARIO_MAIN) >= [8, 1] || scn($SCENARIO_MAIN) >= [7, 6] || scn($SCENARIO_MAIN) >= [7, 3] || scn($SCENARIO_MAIN) >= [7, 2] || scn($SCENARIO_MAIN) >= [7, 1] || scn($SCENARIO_MAIN) >= [6, 5] || scn($SCENARIO_MAIN) >= [6, 1] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 The shop down from here looks
+                unoccupied now...
+            """,
+        });
+        message_Talk({
+            english=" Not in business yet, I guess...",
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [5, 5] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 There are bad Pokémon out and
+                about in the world. That's why we can make a
+                business of catching them.
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 7] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_POCHIENA_C);
+        message_SetFace(ACTOR_NPC_POCHIENA_A, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 We target only outlaws with a
+                "[CS:K]C[CR:0]" rank.[K] They have bigger bounties on them
+                than the ones with "E" and "[CS:I]D[CR:0]" ranks.
+            """,
+        });
+        message_Talk({
+            english="""
+                 There's a catch...[K] Outlaws with a
+                "[CS:K]C[CR:0]" rank are much tougher.
+            """,
+        });
+        message_Talk({
+            english="""
+                 We have to fight those crooks
+                carefully. Otherwise, we could take a beating!
+            """,
+        });
+        message_Close();
+        jump @label_130;
+    } elseif ( scn($SCENARIO_MAIN) >= [4, 5] || scn($SCENARIO_MAIN) >= [4, 3] || scn($SCENARIO_MAIN) >= [4, 2] || scn($SCENARIO_MAIN) >= [4, 1] || scn($SCENARIO_MAIN) >= [4, 0] || scn($SCENARIO_MAIN) >= [3, 1] ) {
+        jump @label_130;
+    } else {
+        jump @label_130;
+    }
+}

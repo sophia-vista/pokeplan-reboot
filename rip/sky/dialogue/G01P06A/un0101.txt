@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	I know you can do it, Bidoof!
+NPC_CHIRIIN	Talk	Good luck, Bidoof!
+NPC_CHIRIIN	Talk	I know how you feel, Bidoof.
+NPC_CHIRIIN	Talk	I think that happens to everyone.
+NPC_CHIRIIN	Talk	But it's not time to eat yet...
+NPC_CHIRIIN	Talk	Keep at your chores until then!

@@ -1,0 +1,18 @@
+speaker	kind	line
+NPC_GARAGARA	Talk	Oh my! It's you again!
+NPC_GARAGARA	Talk	Oh my! It's you!
+NPC_GARAGARA	Talk	Oh! You've completed it!
+NPC_GARAGARA	Talk	That's good work, you two!
+NPC_GARAGARA	Talk	Oh! You've completed it, then!
+NPC_GARAGARA	Talk	Not just that...
+NPC_GARAGARA	Talk	Ack! Couldn't get through...
+NPC_GARAGARA	Talk	Ack! You couldn't get through...
+NPC_GARAGARA	Talk	That's how everyone grows up!
+NPC_GARAGARA	SwitchMenu	Trust your own luck.
+NPC_GARAGARA	SwitchMenu	Cheat.
+NPC_GARAGARA	SwitchMenu	Success.
+NPC_GARAGARA	SwitchMenu	All success.
+NPC_GARAGARA	SwitchMenu	Failure.
+NPC_GARAGARA	SwitchMenu	Success on legend.
+NPC_GARAGARA	SwitchMenu	Success on all legends.
+NPC_GARAGARA	SwitchMenu	Failure on legend.

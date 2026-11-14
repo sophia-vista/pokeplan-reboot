@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_GARAGARA	Talk	Definitely coming back!!
+NPC_GARAGARA	Talk	However!
+NPC_GARAGARA	Talk	Uhhn...huhhn...
+NPC_GARAGARA	Talk	Definitely be revived!
+NPC_GARAGARA	Talk	Ah... So you won't forget...
+NPC_GARAGARA	Talk	I'll give this to you.
+NPC_GARAGARA	Mail	Received a Reviver Seed!
+NPC_GARAGARA	Talk	Definitely coming back!

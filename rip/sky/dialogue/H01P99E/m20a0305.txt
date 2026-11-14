@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Even I had given up.
+NPC_JUPUTORU	Talk	What compelled you?
+ATTENDANT1	Talk	Well...I wonder too.
+ATTENDANT1	Talk	I really don't know...
+ATTENDANT1	Talk	But maybe...
+NPC_JUPUTORU	Talk	...?
+ATTENDANT1	Talk	Take a look at this.
+ATTENDANT1	Talk	Have a look at this.
+NPC_JUPUTORU	Talk	This... What could it be...?
+ATTENDANT1	Talk	...

@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	The planet's...paralysis?
+NPC_YONOWAARU	Talk	Yes.

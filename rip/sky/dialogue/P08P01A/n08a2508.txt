@@ -1,0 +1,3 @@
+speaker	kind	line
+-	Talk	Sableye: Wheh-heh-heh!
+PLAYER_FUTURE	Talk	Let's go!

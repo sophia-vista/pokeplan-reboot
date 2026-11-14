@@ -1,0 +1,7 @@
+speaker	kind	line
+NPC_HIMEGUMA	Talk	I believe what you said!
+NPC_HIMEGUMA	Talk	Is that really true?!
+NPC_HIMEGUMA	Talk	I hope you succeed!
+NPC_HIMEGUMA	Talk	Hi! Isn't the weather wonderful?
+NPC_HIMEGUMA	Talk	Congratulations!
+NPC_HIMEGUMA	Talk	Good luck with that!

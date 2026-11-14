@@ -1,0 +1,13 @@
+speaker	kind	line
+-	Narration	The next morning...
+ATTENDANT1	Narration	Hey, .
+ATTENDANT1	Narration	Come on, .
+ATTENDANT1	Narration	Wake up, .
+ATTENDANT1	Narration	It's morning already.
+ATTENDANT1	Narration	It's morning.
+PLAYER	Narration	(Uh... Uh-huh...)
+PLAYER	Narration	(I... I had a dream again.)
+PLAYER	Narration	(It felt strangely real for a dream, though.)
+PLAYER	Narration	(I was told...I can't exist in this world.)
+PLAYER	Narration	(..................)
+PLAYER	Narration	(In my dream... Cresselia said...)

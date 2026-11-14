@@ -1,0 +1,11 @@
+speaker	kind	line
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!
+NPC_DARK_DIARUGA	Talk	GIGI... GIGIGIGI...
+NPC_DARK_DIARUGA	Talk	GI! GIGAGAGAGAGAGAGAGAGAGA!
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!
+PLAYER_FUTURE	Talk	We're disappearing faster!
+NPC_YONOWAARU	Talk	Just a little more!
+NPC_SEREBII	Talk	Stop him at all costs!
+NPC_SEREBII	Talk	Until life is at an end!
+PLAYER_FUTURE	Talk	Let's go!
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!

@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_NAMAKERO	Talk	What's a Recycle Shop?
+NPC_NAMAKERO	Talk	We're not moving either way.
+NPC_YADON	Talk	But it hasn't affected us.
+NPC_NAMAKERO	Talk	We have no motivation at all...
+NPC_NAMAKERO	Talk	Exploring is...too much effort.

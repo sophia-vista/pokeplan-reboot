@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_SUKORUPI	Talk	Ooogh... It's a bit tough...
+PLAYER_PUPURIN	Talk	Yeah. ♪

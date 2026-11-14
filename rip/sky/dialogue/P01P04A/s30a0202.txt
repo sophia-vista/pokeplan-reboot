@@ -1,0 +1,7 @@
+speaker	kind	line
+ATTENDANT1	Talk	A café for explorers?
+NPC_PATCHIIRU	Talk	This is the Juice Bar.
+NPC_PATCHIIRU	Talk	Here's the next facility...
+NPC_PATCHIIRU	Talk	Doesn't that seem wasteful?
+ATTENDANT1	Talk	Ooh, sounds like such a fun shop!
+NPC_PATCHIIRU	Talk	Thank you very much!

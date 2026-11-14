@@ -1,0 +1,10 @@
+speaker	kind	line
+ATTENDANT1	SwitchMenu	Yes
+ATTENDANT1	SwitchMenu	Which way should we go?
+ATTENDANT1	SwitchMenu	Foggy Forest
+ATTENDANT1	SwitchMenu	All right. Foggy Forest it is.
+ATTENDANT1	SwitchMenu	All right! Let's go!
+ATTENDANT1	Menu	Forest Path
+ATTENDANT1	Menu	OK, Forest Path it is.
+ATTENDANT1	Menu	OK! Let's go!
+ATTENDANT1	Menu	Not yet

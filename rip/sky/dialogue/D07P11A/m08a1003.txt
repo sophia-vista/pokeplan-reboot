@@ -1,0 +1,6 @@
+speaker	kind	line
+ATTENDANT1	Talk	Ha ha ha! Us too!
+NPC_BIPPA	Talk	I agree completely!
+ATTENDANT1	Talk	Then let's eat!
+NPC_BIPPA	Talk	Yeeeehaw!
+NPC_BIPPA	Talk	Let's get it done!

@@ -1,0 +1,49 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    message_Notice({
+        english="""
+            [CN]- Assembly Post -
+            [CN]For service, please ring bell!
+            [CN]            -[CS:N]Chimecho[CR]
+        """,
+    });
+    message_Notice({
+        english="""
+            [CN]Ring the bell and
+            [CN]summon [CS:N]Chimecho[CR]?
+        """,
+    });
+    switch ( message_SwitchMenu(1, 1) ) {
+        case menu({
+            english="Yes",
+        }):
+            @label_0;
+            message_Close();
+            supervision_RemoveCommon(7);
+            supervision_StationCommon(8);
+            se_Play(5123);
+            switch ( $GROUND_ENTER ) {
+                case 224:
+                default:
+                    supervision_ExecuteActing(LEVEL_P01P01A, 'M00P1001', 0);
+                    end;
+                case 156:
+                    supervision_ExecuteCommon(CORO_EVENT_S31_40);
+                    end;
+            }
+            break;
+        case menu({
+            english="No",
+        }):
+            @label_1;
+            JumpCommon(CORO_END_TALK);
+        default:
+            jump @label_1;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

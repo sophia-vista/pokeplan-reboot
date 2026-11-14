@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_SUBOMII	Talk	Oh! Igglybuff!
+NPC_MUCHUURU	Talk	Was it all right?
+PLAYER_PUPURIN	Talk	Yeah. ♪ I was fine. ♪
+NPC_MUCHUURU	Talk	Smooches! That's good!
+NPC_SUBOMII	Talk	We were worried about you.
+NPC_SUBOMII	Talk	Plans? Where are you going?
+PLAYER_PUPURIN	Talk	Murky Forest. ♪
+NPC_MUCHUURU	Talk	Whaaat?! Murky Forest?!
+PLAYER_PUPURIN	Talk	Yup. ♪ See you later! ♪

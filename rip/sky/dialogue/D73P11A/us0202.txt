@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_SHEIMI	Talk	Would you like a Gracidea?
+NPC_SHEIMI	SwitchMenu	Yes, please.
+NPC_SHEIMI	Talk	Here you go.
+NPC_SHEIMI	Talk	No, thanks.

@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	Sableye!
+NPC_YONOWAARU	Talk	Sableye: Wheh-heh-heh!
+ATTENDANT1	Talk	...Yeah?
+ATTENDANT1	Talk	...Yes?
+ATTENDANT1	Talk	...Yep?
+PLAYER	Talk	(...I'm with you!)
+PLAYER	Talk	Sableye: Gyaaaah!
+NPC_JUPUTORU	Talk	You expected anything less?
+NPC_YONOWAARU	Talk	Humph. You leave me no choice.
+NPC_JUPUTORU	Talk	Urgh...
+NPC_YONOWAARU	Talk	Show me!
+NPC_YONOWAARU	Talk	Swarm them!

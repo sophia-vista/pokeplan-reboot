@@ -1,0 +1,7 @@
+speaker	kind	line
+-	Narration	The next morning...
+ATTENDANT1	Narration	Good morning, !
+NPC_MANAFI	Talk	Hi!
+ATTENDANT1	Talk	Good morning, Manaphy!
+ATTENDANT1	Talk	All right, .
+ATTENDANT1	Talk	OK, .

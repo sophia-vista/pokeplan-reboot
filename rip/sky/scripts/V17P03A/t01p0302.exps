@@ -1,0 +1,17 @@
+
+def 0 {
+    back_SetGround(LEVEL_V17P03A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    WaitBgmSignal();
+    screen_FadeIn(1, 5);
+    MovePositionMark<performer 0>(0.5, Position<'m0', 44, 19.5>);
+    back_SetBackScrollSpeed(2, 0);
+    Wait(230);
+    back_SetBackScrollSpeed(0, 0);
+    screen_FadeOut(1, 5);
+    screen_FadeIn(1, 5);
+    Wait(90);
+    screen_FadeOut(1, 5);
+    end;
+}

@@ -1,0 +1,17 @@
+speaker	kind	line
+NPC_PATCHIIRU	Talk	Everyone: HOORAY!
+NPC_PATCHIIRU	Talk	Furthermore! Fur-ther-more!
+NPC_PATCHIIRU	Talk	Everyone: HOORAY!
+NPC_NYOROTONO	Talk	Shaymin?
+NPC_PATCHIIRU	Talk	But they are incredibly cute! ♪
+NPC_HERAKUROSU	Talk	C-cute...
+NPC_SANDOPAN	Talk	I-I'm interested...
+NPC_PATCHIIRU	Talk	Furthermore!
+NPC_PATCHIIRU	Talk	This is a huge discovery!
+NPC_PATCHIIRU	Talk	Everyone: HOORAY!
+NPC_OKUTAN	Talk	Treasure!
+NPC_BARIYAADO	Talk	Discoveries!
+NPC_HERAKUROSU	Talk	Woooonderful!
+NPC_PATCHIIRU	Talk	Everyone: HOORAY!
+ATTENDANT1	Talk	This is awesome, !
+ATTENDANT1	Talk	This is so cool, !

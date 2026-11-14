@@ -1,0 +1,34 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Get out of the way!
+ATTENDANT1	Talk	(I...I can't talk...)
+NPC_JUPUTORU	Talk	You refuse?!
+NPC_JUPUTORU	Talk	Then you leave me no choice!
+PLAYER	Talk	(N-no!)
+PLAYER	Talk	('s in serious trouble!)
+PLAYER	Talk	(B-but...I can't move...)
+ATTENDANT1	Talk	.................. (Urk...)
+NPC_JUPUTORU	Talk	This is all for the Time Gear!
+NPC_JUPUTORU	Talk	Forgive me!
+ATTENDANT1	Talk	..................! (WAAAAAAAAAH!)
+NPC_JUPUTORU	Talk	Gah!
+ATTENDANT1	Talk	(Oh! Dusknoir!)
+NPC_YONOWAARU	Talk	Are you all right, ?
+NPC_YONOWAARU	Talk	Please! Let me handle this!
+NPC_JUPUTORU	Talk	Rrrroh!
+NPC_JUPUTORU	Talk	Y-you?!
+NPC_YONOWAARU	Talk	It's been too long!
+ATTENDANT1	Talk	(Huh? What was that?!)
+ATTENDANT1	Talk	(What...what was that?!)
+NPC_JUPUTORU	Talk	Gah!
+NPC_JUPUTORU	Talk	Dusknoir...
+NPC_JUPUTORU	Talk	But I'm ready!
+NPC_YONOWAARU	Talk	So you'll fight. Then so be it.
+NPC_YONOWAARU	Talk	But can you win? Against ME?
+ATTENDANT1	Talk	(Grovyle vanished?!)
+NPC_YONOWAARU	Talk	There's no escaping ME!
+NPC_KIMAWARI	Talk	Eek! There! There they are!
+NPC_HEIGANI	Talk	Hey, hey! Come on, hurry!
+NPC_BIPPA	Talk	Oh, golly! They're down!
+NPC_HEIGANI	Talk	Hey, hey! Are you all right?
+NPC_DAGUTORIO	Talk	They're badly hurt!
+NPC_DOGOOMU	Talk	All right!

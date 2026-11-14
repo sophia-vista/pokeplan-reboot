@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_ZANGUUSU	Talk	Nope, haven't seen him.
+NPC_ZANGUUSU	Talk	I don't know, either.
+NPC_ZANGUUSU	Talk	Us? Did we climb to the top too?
+NPC_ZANGUUSU	Talk	Hah-hahahaha.
+NPC_ZANGUUSU	Talk	But I was wrong.
+NPC_ZANGUUSU	Talk	We heard...
+NPC_ZANGUUSU	Talk	Recycling is a trend of the time.
+NPC_ZANGUUSU	Talk	I have really taken to this shop.

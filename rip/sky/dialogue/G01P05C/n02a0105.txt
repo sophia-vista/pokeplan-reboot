@@ -1,0 +1,13 @@
+speaker	kind	line
+NPC_PUKURIN	Talk	Yay! ♪ Thank you! ♪
+NPC_PERAPPU	Talk	This is the last time!
+NPC_PERAPPU	Talk	I'm fed up with it!
+NPC_PERAPPU	Talk	Please, let me stop doing this!
+NPC_PUKURIN	Talk	Oh!
+NPC_PERAPPU	Talk	Is this...a Defend Globe?
+NPC_PUKURIN	Talk	Yes. I know you're right...
+NPC_PUKURIN	Talk	But...
+NPC_PUKURIN	Talk	But this is a special thing.
+NPC_PERAPPU	Talk	Special thing?
+NPC_PUKURIN	Talk	Yep. ♪ Special thing.
+NPC_PUKURIN	Talk	The starting point.

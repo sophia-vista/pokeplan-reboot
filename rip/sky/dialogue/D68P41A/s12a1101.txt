@@ -1,0 +1,4 @@
+speaker	kind	line
+-	Mail	joined the team!
+-	SwitchMenu	Reconsider
+-	SwitchMenu	Refuse

@@ -1,0 +1,6 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Well...it's special!
+NPC_CHIRIIN	Talk	Yes!
+ATTENDANT1	Talk	Oh, cool! So that means...
+ATTENDANT1	Talk	Oh, I get it! So that means...
+NPC_CHIRIIN	Talk	Absolutely!

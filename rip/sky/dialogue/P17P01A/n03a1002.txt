@@ -1,0 +1,28 @@
+speaker	kind	line
+NPC_SUBOMII	Talk	Oh! It's Igglybuff's Mama!
+NPC_MUCHUURU	Talk	By the way, Igglybuff's Mama.
+NPC_PUKURIN_MAMA	Talk	What is it, Smoochum?
+NPC_PUKURIN_MAMA	Talk	Whaaaat?! In Murky Forest?!
+NPC_PUKURIN_MAMA	Talk	I-is that true, Smoochum?
+NPC_SUBOMII	Talk	If it's true...
+NPC_UPAA	Talk	Hey, Banette!
+NPC_JUPETTA	Talk	Igglybuff?
+NPC_JUPETTA	Talk	Everyone: WHAAAAAAAAT?!
+NPC_SUKORUPI	Talk	To be going to that scary place...
+NPC_JUPETTA	Talk	Everyone: WHAAAAAAAAAAAAAAAAT?!
+NPC_PUKURIN_MAMA	Talk	P-Papa... Papa...
+-	Talk	Can I talk to you for a moment?
+NPC_NIDOKINGU	Talk	Hey, you.
+NPC_JUPETTA	Talk	M-me?
+NPC_NIDOKINGU	Talk	What's he look like?
+NPC_JUPETTA	Talk	H-he looks like...
+NPC_NIDOKINGU	Talk	...I'll bet it's him. It's gotta be.
+NPC_PUKURIN_PAPA	Talk	Um... Who are you?
+NPC_NIDOKINGU	Talk	My apologies for not introducing myself.
+NPC_NIDOKINGU	Talk	I am Nidoking. I'm an explorer.
+NPC_PUKURIN_PAPA	Talk	An explorer?
+NPC_NIDOKINGU	Talk	Yes.
+NPC_NIDOKINGU	Talk	The truth is, I am...
+NPC_NIDOKINGU	Talk	Everyone: WHAAAAAAAAAAAAAAAAAT?!
+NPC_UPAA	Talk	R-really?!
+NPC_MUCHUURU	Talk	We... We've got a problem!!

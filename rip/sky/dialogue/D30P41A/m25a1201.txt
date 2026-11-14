@@ -1,0 +1,7 @@
+speaker	kind	line
+PLAYER	Talk	(Dialga's taken on more darkness!)
+PLAYER	Talk	(That darkness will soon consume him!)
+PLAYER	Talk	(We have to stop it!)
+PLAYER	Talk	(For the world! For the future!)
+ATTENDANT1	Talk	H-here he comes, !
+NPC_DARK_DIARUGA	Talk	GRRR-OOOOOO...OOOOOH!

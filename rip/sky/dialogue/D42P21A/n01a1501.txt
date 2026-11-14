@@ -1,0 +1,4 @@
+speaker	kind	line
+PLAYER_BIPPA	Talk	We've gone pretty far...
+PLAYER_BIPPA	Talk	Aren't we to Jirachi's place yet?
+PLAYER_BIPPA	Talk	Is that right?!

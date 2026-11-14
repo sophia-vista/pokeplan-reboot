@@ -1,0 +1,53 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	Good. This will do.
+ATTENDANT1	Talk	Tell us, Grovyle.
+ATTENDANT1	Talk	Please tell us, Grovyle.
+ATTENDANT1	Talk	D-Dialga? Who is that?
+ATTENDANT1	Talk	What...what happened to Dialga?
+NPC_JUPUTORU	Talk	Dialga is now beyond recognition.
+ATTENDANT1	Talk	OK... Urf...
+NPC_JUPUTORU	Talk	Primal Dialga feels no emotion.
+ATTENDANT1	Talk	What?!
+NPC_JUPUTORU	Talk	You've got to be joking!
+NPC_JUPUTORU	Talk	I was collecting Time Gears...
+NPC_JUPUTORU	Talk	What else could it be?
+NPC_JUPUTORU	Talk	Because Dusknoir really is...
+NPC_JUPUTORU	Talk	That's right.
+NPC_JUPUTORU	Talk	I have said that Primal Dialga...
+NPC_JUPUTORU	Talk	He sent Dusknoir after me.
+ATTENDANT1	Talk	I can't believe it at all!
+ATTENDANT1	Talk	But I admired...Dusknoir...
+ATTENDANT1	Talk	But I respected...Dusknoir...
+ATTENDANT1	Talk	But I looked up to...Dusknoir...
+ATTENDANT1	Talk	I can't... I can't believe you...
+PLAYER	FacePositionOffset	(It is hard to accept, but...)
+PLAYER	FacePositionOffset	(And  knows it.)
+PLAYER	FacePositionOffset	(But...)
+NPC_JUPUTORU	Talk	Hey! Where are you going?
+ATTENDANT1	FacePositionOffset	I'm going to see Dusknoir.
+NPC_JUPUTORU	Talk	What?!
+NPC_JUPUTORU	Talk	What's the point of that?!
+NPC_JUPUTORU	Talk	What are you supposed to do?!
+NPC_JUPUTORU	Talk	Didn't you wonder this earlier?!
+ATTENDANT1	FacePositionOffset	Urk...
+NPC_JUPUTORU	Talk	To do that...
+NPC_JUPUTORU	Talk	I need to find Celebi.
+ATTENDANT1	Talk	Cel...Celebi?
+NPC_JUPUTORU	Talk	That's right.
+NPC_JUPUTORU	Talk	I'm off.
+ATTENDANT1	Talk	Urk...
+PLAYER	FacePositionOffset	(...............)
+PLAYER	FacePositionOffset	(I don't know what I should believe either.)
+PLAYER	FacePositionOffset	(In this future world of darkness...)
+PLAYER	FacePositionOffset	(The planet is paralyzed.)
+PLAYER	FacePositionOffset	(That's why, to stop that from happening...)
+PLAYER	FacePositionOffset	(We have to get back to the past!)
+PLAYER	FacePositionOffset	(We have to get back! Back to our world!)
+ATTENDANT1	FacePositionOffset	...
+ATTENDANT1	FacePositionOffset	Yup... I know...
+ATTENDANT1	FacePositionOffset	Yes... I know...
+ATTENDANT1	FacePositionOffset	Yep... I know...
+ATTENDANT1	FacePositionOffset	I'm all right now... Let's go.
+ATTENDANT1	FacePositionOffset	Let's catch up to Grovyle.
+ATTENDANT1	FacePositionOffset	.
+ATTENDANT1	FacePositionOffset	Back to our own world!

@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_GYARADOSU	Talk	GRR...rahhhh...
+NPC_FIONE1	Talk	Oh! Very good!
+NPC_FIONE1	Talk	Very good! Very good!
+NPC_FIONE1	Talk	This is our thank-you! ♪

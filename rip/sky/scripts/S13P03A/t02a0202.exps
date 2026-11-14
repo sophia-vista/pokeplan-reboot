@@ -1,0 +1,20 @@
+
+def 0 {
+    back2_SetMode(6);
+    back_SetGround(LEVEL_S13P03A);
+    supervision_Acting(0);
+    SetOutputAttribute<object OBJECT_S13P03A2_350>(1024);
+    camera_SetMyself<performer 0>();
+    back_SetBackScrollSpeed(-120, -6);
+    WaitBgmSignal();
+    screen2_FadeIn(0, 15);
+    screen_FadeIn(1, 15);
+    MovePositionMark<performer 0>(1, Position<'m0', 18.5, 47.5>);
+    Wait(127);
+    Move2PositionOffset<object OBJECT_S13P03A1_339>(2, -1000, 0);
+    Wait(86);
+    screen2_FadeOut(0, 60);
+    screen_FadeOut(1, 60);
+    back2_SetMode(0);
+    end;
+}

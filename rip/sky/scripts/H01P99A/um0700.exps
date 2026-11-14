@@ -1,0 +1,29 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [8, 4] ) {
+        @label_0;
+        supervision_Station(6);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 2] ) {
+        if ( $SCENARIO_TALK_BIT_FLAG[26] ) {
+            supervision_Station(10);
+            end;
+        } else {
+            supervision_Station(10);
+            supervision_Station(11);
+            end;
+        }
+    } elseif ( scn($SCENARIO_MAIN) >= [8, 1] ) {
+        if ( $SCENARIO_TALK_BIT_FLAG[26] ) {
+            supervision_Station(10);
+            end;
+        } else {
+            supervision_Station(10);
+            supervision_Station(11);
+            end;
+        }
+    } else {
+        end;
+    }
+}

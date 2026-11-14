@@ -1,0 +1,39 @@
+
+def 0 {
+    SetAnimation<actor ACTOR_PLAYER>(2);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 2:
+            @label_0;
+            message_Mail({
+                english="""
+                    [CN]- [CS:K]Spinda[CR]'s Café -
+                    [CN]-Shop of Hopes & Dreams-
+                    [CN]Opening Soon! Win Big!
+                """,
+            });
+            message_Close();
+            @label_2;
+            JumpCommon(CORO_END_TALK);
+        default:
+            if ( scn($SCENARIO_MAIN) >= [7, 3] ) {
+                message_Mail({
+                    english="""
+                        [CN]- [CS:K]Spinda[CR]'s Café -
+                        [CN]-Shop of Hopes & Dreams-
+                        [CN]Win Big!
+                    """,
+                });
+                message_Close();
+                jump @label_2;
+            } else {
+                jump @label_0;
+            }
+            break;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

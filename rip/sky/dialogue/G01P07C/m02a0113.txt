@@ -1,0 +1,19 @@
+speaker	kind	line
+ATTENDANT1	Explanation	...
+ATTENDANT1	Explanation	......
+ATTENDANT1	Explanation	My heart's been racing all day...
+ATTENDANT1	Explanation	Yawn... I'm getting sleepy...
+ATTENDANT1	Explanation	I'm feeling a little sleepy...
+ATTENDANT1	Explanation	I'm getting a little sleepy...
+ATTENDANT1	Explanation	Let's do our best tomorrow.
+ATTENDANT1	Explanation	Let's give it our all tomorrow.
+ATTENDANT1	Explanation	OK, . Good night.
+ATTENDANT1	Explanation	OK, . Sleep tight.
+ATTENDANT1	EmptyActor	(Um...)
+ATTENDANT1	EmptyActor	(Now I'm suddenly apprenticing at the guild...)
+ATTENDANT1	EmptyActor	(But first things first...)
+ATTENDANT1	EmptyActor	(Who am I?)
+ATTENDANT1	EmptyActor	(How did I turn into a Pokémon?)
+ATTENDANT1	EmptyActor	(How did I end up unconscious on that beach?)
+ATTENDANT1	EmptyActor	(I'm feeling sleepy too...)
+ATTENDANT1	EmptyActor	(I'll surely get to the bottom of this in time.)

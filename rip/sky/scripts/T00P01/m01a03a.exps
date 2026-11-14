@@ -1,0 +1,82 @@
+
+def 0 {
+    debug_Print('acting_M01A03A');
+    message_ResetActor();
+    message_Talk({
+        english="An Acting Test will be conducted.",
+    });
+    message_Close();
+    supervision_Acting(0);
+    supervision_Acting(1);
+    supervision_Acting(2);
+    camera_Move2PositionMark(1.0, Position<'m0', 65, 39.5>, Position<'m1', 61, 39.5>, Position<'m2', 61, 36.5>, Position<'m3', 66, 34.5>);
+    Move2PositionMark<actor ACTOR_NPC_TEST007>(1.0, Position<'m4', 65, 39.5>, Position<'m5', 61, 39.5>, Position<'m6', 61, 36.5>, Position<'m7', 66, 34.5>);
+    WaitExecuteLives(ACTOR_NPC_TEST005);
+    WaitExecuteLives(ACTOR_NPC_TEST007);
+    WaitExecuteLives(ACTOR_NPC_TEST009);
+    WaitExecuteLives(ACTOR_NPC_TEST010);
+    message_Talk({
+        english="The Event Test is finished.",
+    });
+    message_Close();
+    camera_Move2Default(1.0);
+    supervision_RemoveActing(1);
+    supervision_RemoveActing(2);
+    supervision_Suspend(-2);
+    end;
+}
+
+def 1 for actor ACTOR_NPC_TEST005 {
+    debug_Print('TEST005_MOVE1');
+    MovePositionOffset(1.0, 32, 0, 0, 32, -32, 0, 0, -32);
+    debug_Print('TEST005_MOVE2');
+    Move2PositionMark(1.0, Position<'m8', 65, 39.5>, Position<'m9', 61, 39.5>, Position<'m10', 61, 36.5>, Position<'m11', 66, 34.5>);
+    debug_Print('TEST005_MOVE3');
+    Slide2PositionOffset(1.0, 32, 0);
+    Slide2PositionOffset(0.5, 0, 32);
+    Slide2PositionOffset(1.0, -32, 0);
+    Slide2PositionOffset(0.5, 0, -32);
+    debug_Print('TEST005_MOVE4');
+    Move3PositionOffset(16, 32, 0);
+    Move3PositionOffset(16, 0, 32);
+    Move3PositionOffset(16, -32, 0);
+    Move3PositionOffset(16, 0, -32);
+    debug_Print('TEST005_MOVE5');
+    Slide3PositionOffset(8, 32, 0);
+    Slide3PositionOffset(8, 0, 32);
+    Slide3PositionOffset(8, -32, 0);
+    Slide3PositionOffset(8, 0, -32);
+    end;
+}
+
+def 2 for actor ACTOR_NPC_TEST007 {
+    hold;
+}
+
+def 3 for actor ACTOR_NPC_TEST009 {
+    debug_Print('TEST009_MOVE1');
+    MoveDirection(16, 0.5, DIR_DOWN);
+    MoveDirection(16, 0.5, DIR_RIGHT);
+    MoveDirection(16, 0.5, DIR_UP);
+    MoveDirection(16, 0.5, DIR_LEFT);
+    debug_Print('TEST009_MOVE2');
+    SetDirection(DIR_DOWN);
+    MoveTurn(16, 0.5, 0);
+    MoveTurn(16, 0.5, 4);
+    MoveTurn(16, 0.5, 4);
+    MoveTurn(16, 0.5, 4);
+    end;
+}
+
+def 4 for actor ACTOR_NPC_TEST010 {
+    debug_Print('TEST010_MOVE1');
+    Turn2DirectionLives(30, 10, ACTOR_NPC_TEST005);
+    Turn2DirectionLives(30, 10, ACTOR_NPC_TEST003);
+    Turn2DirectionLives(30, 10, ACTOR_NPC_TEST007);
+    SetPositionMark(Position<'m12', 71, 36.5>);
+    debug_Print('TEST010_MOVE2');
+    Turn2DirectionLives2(20, 10, 73);
+    Turn2DirectionLives2(20, 10, 71);
+    Turn2DirectionLives2(20, 10, 75);
+    end;
+}

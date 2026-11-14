@@ -1,0 +1,2 @@
+speaker	kind	line
+ATTENDANT1	Mail	The clouds parted over the Northern Desert!

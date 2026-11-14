@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_ZUBATTO	Talk	We're only stocking up.
+NPC_ZUBATTO	Talk	Oh? What are we doing in here?

@@ -1,0 +1,27 @@
+speaker	kind	line
+NPC_OOSUBAME	Talk	As a leader...I must be a failure.
+NPC_OOSUBAME	Talk	What...what are you suggesting?
+NPC_OOSUBAME	Talk	Me? Eat you? Are you kidding?
+NPC_OOSUBAME	Talk	Hm? Why are you crying?
+NPC_OOSUBAME	Talk	Hey, Wurmple!
+NPC_OOSUBAME	Talk	When things are this mellow...
+NPC_KEMUSSO	Talk	Wh-what?! H-hungry?!
+NPC_KEMUSSO	Talk	Eeep! Y-y-yeesh!
+NPC_OOSUBAME	Talk	So let me ask you a question.
+NPC_KEMUSSO	Talk	Y-y-yeesh!
+NPC_KEMUSSO	Talk	Eeeep!
+NPC_OOSUBAME	Talk	Go for it, Team !
+NPC_OOSUBAME	Talk	We have to trust him to do it.
+NPC_OOSUBAME	Talk	Hey, Wurmple!
+NPC_KEMUSSO	Talk	Y-yes!
+NPC_OOSUBAME	Talk	The weather's good today.
+NPC_KEMUSSO	Talk	Huh? Really?! Eeep! Y-y-yeesh!
+NPC_OOSUBAME	SwitchMenu	Yes
+NPC_OOSUBAME	Talk	Well, all right! Let me explain!
+NPC_OOSUBAME	Talk	No
+NPC_OOSUBAME	Talk	...Oh. You're not interested...
+NPC_OOSUBAME	Talk	It's fun to do jobs, but...
+NPC_OOSUBAME	Talk	Incidentally...
+NPC_OOSUBAME	Talk	Hey, Wurmple!
+NPC_OOSUBAME	Talk	Sounds real tasty!
+NPC_KEMUSSO	Talk	T-t-tasty...?! S-s-sheesh...

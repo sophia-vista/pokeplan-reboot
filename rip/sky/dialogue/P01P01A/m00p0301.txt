@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_CHIRIIN	Talk	Oh, ! !
+ATTENDANT1	Talk	Hey! Chimecho!
+ATTENDANT1	Talk	Hi! Chimecho!
+ATTENDANT1	Talk	What's up?
+ATTENDANT1	Talk	What's going on?
+ATTENDANT1	Talk	What's happening?
+NPC_CHIRIIN	Talk	Oh, ! !
+ATTENDANT1	Talk	Special service?
+ATTENDANT1	Talk	A special service?

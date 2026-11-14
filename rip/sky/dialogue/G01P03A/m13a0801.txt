@@ -1,0 +1,12 @@
+speaker	kind	line
+NPC_DAGUTORIO	Talk	Disappointing.
+NPC_KIMAWARI	Talk	That's what happened, all right!
+NPC_BIPPA	Talk	Mighty pretty cave, I tell you!
+NPC_KIMAWARI	Talk	Ooh! When did you pick that up?
+NPC_DAGUTORIO	Talk	Bidoof...
+NPC_DAGUTORIO	Talk	Who do you think you are?!
+NPC_BIPPA	Talk	Oof! Gosh, I'm sorry!
+NPC_PERAPPU	Talk	Dusknoir, sir, I regret to say it.
+NPC_YONOWAARU	Talk	Ah, this is vexing.
+NPC_PERAPPU	Talk	Rest up! Prepare for tomorrow!
+NPC_PERAPPU	Talk	Everyone: UNDERSTOOD!

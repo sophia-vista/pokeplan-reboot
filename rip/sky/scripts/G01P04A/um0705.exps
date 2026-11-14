@@ -1,0 +1,14 @@
+
+def 0 {
+    if ( $SCENARIO_MAIN_BIT_FLAG[9] ) {
+        @label_0;
+        end;
+    } else {
+        SetAnimation<actor ACTOR_PLAYER>(2);
+        SetAnimation<actor ACTOR_ATTENDANT1>(2);
+        $SCENARIO_MAIN_BIT_FLAG[9] = 1;
+        supervision_Remove(11);
+        supervision_ExecuteCommon(CORO_EVENT_M00_02);
+        jump @label_0;
+    }
+}

@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_DERIBAADO	Talk	I love to give out presents.
+NPC_DERIBAADO	SwitchMenu	Thank you!
+NPC_DERIBAADO	Talk	Here you go.
+NPC_DERIBAADO	Mail	You gently open the lid...
+NPC_DERIBAADO	Mail	A warm and fuzzy feeling falls over you...
+NPC_DERIBAADO	Talk	That's really too bad.
+NPC_DERIBAADO	Talk	No, thanks.

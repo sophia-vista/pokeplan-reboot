@@ -1,0 +1,8 @@
+speaker	kind	line
+NPC_AAMARUDO	SwitchMenu	Yep!
+PLAYER_PUPURIN	Talk	Yep. ♪
+NPC_AAMARUDO	Talk	All right!
+PLAYER_PUPURIN	Talk	Yep. ♪
+PLAYER_PUPURIN	Talk	Not yet.
+NPC_AAMARUDO	Talk	What do you mean, not yet?
+NPC_AAMARUDO	Talk	Once you're ready, we'll go.

@@ -1,0 +1,28 @@
+
+def 0 {
+    back2_SetMode(5);
+    back_SetGround(LEVEL_V26P07A);
+    supervision_Acting(0);
+    camera_SetMyself<performer 0>();
+    SetAnimation<object OBJECT_V26P07A1_332>(17);
+    SetOutputAttribute<object OBJECT_V26P07A1_332>(2);
+    screen2_FadeIn(0, 15);
+    screen_FadeIn(1, 15);
+    Destroy<object OBJECT_V26P07A1_332>();
+    supervision_Acting(1);
+    SetAnimation<object OBJECT_V26P07A1_333>(18);
+    WaitAnimation<object OBJECT_V26P07A1_333>();
+    WaitExecuteObject(OBJECT_V26P07A1_333);
+    Destroy<object OBJECT_V26P07A1_333>();
+    supervision_Acting(2);
+    SetOutputAttribute<object OBJECT_V26P07A1_334>(1024);
+    SetAnimation<object OBJECT_V26P07A1_334>(3);
+    MovePositionMark<performer 0>(10, Position<'m0', 19.5, 11.5>);
+    Wait(30);
+    Wait(25);
+    screen2_FadeOut(0, 30);
+    screen_FadeOutAll(1, 30);
+    back2_SetMode(0);
+    CallCommon(CORO_FADE_OUT_ALL_AFTER);
+    end;
+}

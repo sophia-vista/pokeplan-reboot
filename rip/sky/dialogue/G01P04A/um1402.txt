@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	That's all I can ask of you now.
+NPC_YONOWAARU	Talk	Please do take care!
+NPC_YONOWAARU	Talk	Good day! You're from the guild!
+NPC_YONOWAARU	Talk	This is an excellent place.

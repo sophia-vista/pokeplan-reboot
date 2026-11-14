@@ -1,0 +1,584 @@
+
+def 0 {
+    ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+    ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+    SetAnimation<actor ACTOR_ATTENDANT1>(2);
+    Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_NPC_PERIPPAA1);
+    if ( $SCENARIO_TALK_BIT_FLAG[120] ) {
+        @label_0;
+        message_SetFace(ACTOR_NPC_PERIPPAA1, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Hello! Which dungeon would you
+                like to explore?
+            """,
+        });
+        message_Close();
+        @label_1;
+        switch ( main_EnterAdventure(-1, 30) ) {
+            case 0:
+                @switch0_129;
+                @label_2;
+                message_Talk({
+                    english="""
+                         Very good! I'll show you to the
+                        dungeon right away!
+                    """,
+                });
+                message_Close();
+                bgm_FadeOut(60);
+                bgm2_FadeOut(60);
+                $SCENARIO_MAIN_BIT_FLAG[40] = 1;
+                switch ( main_EnterAdventure(251, 30) ) { }
+                hold;
+            case 1:
+                @label_3;
+                message_Talk({
+                    english="""
+                         I see...[K] If you would like to go
+                        on an exploration, please do tell me.
+                    """,
+                });
+                JumpCommon(CORO_END_TALK);
+            case 20:
+                switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_HERO_AND_PARTNER_ONLY, 0, 0) ) {
+                    case 1:
+                        jump @label_2;
+                    default:
+                        switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_PARTNER_AND_HERO_ONLY, 0, 0) ) {
+                            case 1:
+                                message_Talk({
+                                    english="""
+                                         For going to the [CS:P]Hidden Land[CR],
+                                        [hero] will be made the team leader.
+                                        Is that OK?
+                                    """,
+                                });
+                                @label_23;
+                                switch ( message_SwitchMenu(0, 2) ) {
+                                    case menu({
+                                        english="Yes",
+                                    }):
+                                    default:
+                                        switch ( ProcessSpecial(PROCESS_SPECIAL_SET_TEAM_SETUP_HERO_AND_PARTNER_ONLY, 0, 0) ) { }
+                                        jump @label_2;
+                                    case menu({
+                                        english="No",
+                                    }):
+                                        jump @label_3;
+                                }
+                                break;
+                            default:
+                                @label_22;
+                                message_Talk({
+                                    english="""
+                                         For going to the [CS:P]Hidden Land[CR],
+                                        your team must consist of only [hero]
+                                        and [partner]. Is that OK?
+                                    """,
+                                });
+                                jump @label_23;
+                        }
+                        break;
+                }
+                break;
+            case 21:
+                switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_HERO_AND_PARTNER_ONLY, 0, 0) ) {
+                    case 1:
+                        jump @label_2;
+                    default:
+                        switch ( ProcessSpecial(PROCESS_SPECIAL_IS_TEAM_SETUP_PARTNER_AND_HERO_ONLY, 0, 0) ) {
+                            case 1:
+                                message_Talk({
+                                    english="""
+                                         For going to [CS:P]Temporal Tower[CR],
+                                        [hero] will be made the team leader.
+                                        Is that OK?
+                                    """,
+                                });
+                                jump @label_23;
+                            default:
+                                @label_25;
+                                message_Talk({
+                                    english="""
+                                         For going to [CS:P]Temporal Tower[CR],
+                                        your team must consist of only [hero]
+                                        and [partner]. Is that OK?
+                                    """,
+                                });
+                                jump @label_23;
+                        }
+                        break;
+                }
+                break;
+            case 22:
+                if ( not debug ) {
+                    @label_20;
+                    message_Talk({
+                        english="""
+                             Hmm...[K] You may not go to this
+                            dungeon.
+                        """,
+                    });
+                    JumpCommon(CORO_END_TALK);
+                } else {
+                    message_Notice({
+                        english="""
+                            [CS:W]Dungeon Settings Error 4
+                            This dungeon is inaccessible while you are
+                            awaiting rescue.[CR]
+                        """,
+                    });
+                    JumpCommon(CORO_END_TALK);
+                }
+                break;
+            case 23:
+                message_Talk({
+                    english="""
+                         There is a restriction placed on
+                        [CS:P]Zero Isle North[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         In [CS:P]Zero Isle North[CR], you will not
+                        earn Experience Points from the Pokémon you
+                        defeat. Is that OK?
+                    """,
+                });
+                @label_26;
+                switch ( message_SwitchMenu(0, 2) ) {
+                    case menu({
+                        english="Yes",
+                    }):
+                        jump @label_2;
+                    case menu({
+                        english="No",
+                    }):
+                        jump @label_3;
+                    default:
+                        jump @label_23;
+                }
+                break;
+            case 24:
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to [CS:P]Zero Isle East[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Items in your Treasure Bag
+                        from the 17th slot and beyond will be lost.[K]
+                        And all team members will be put at Level 1.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Oh, about the level reduction to
+                        Level 1... It's only temporary.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         When you exit the dungeon, all
+                        team members will be returned to their
+                        original levels. No need for worry!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 25:
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to [CS:P]Zero Isle West[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         All items in your Treasure Bag
+                        will be lost.[K] All team members will also be
+                        dropped to Level 1.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Oh, about the level reduction to
+                        Level 1... It's only temporary.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         When you exit the dungeon, all
+                        team members will be returned to their
+                        original levels. No need for worry!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 26:
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to [CS:P]Zero Isle South[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         All your money and the items in
+                        your Treasure Bag will be lost.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Only the leader may enter the
+                        dungeon. Furthermore, the leader's level will
+                        be dropped to Level 1. Is that OK?
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Oh, about the level reduction to
+                        Level 1... It's only temporary.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         When you exit the dungeon, your
+                        level will be returned to the original level.
+                        No need for worry!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 27:
+                WaitSubScreen();
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to [CS:P]Zero Isle Center[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Items from the 17th slot and
+                        beyond in your Treasure Bag will be lost.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         You don't earn Experience Points
+                        from the Pokémon you defeat.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         And any hidden traps that you
+                        trigger (even those that don't hit you) will
+                        remain invisible.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 28:
+                WaitSubScreen();
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to [CS:P]Destiny Tower[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         All your money and the items in
+                        your Treasure Bag will be lost.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Only the leader may enter the
+                        dungeon...[K]and the leader's level will
+                        be dropped to Level 1.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Oh, about the level reduction to
+                        Level 1... It's only temporary.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         When you exit the dungeon, all
+                        team members will be returned to their
+                        original levels. No need for worry!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         What else...[K] Your IQ
+                        Skills cannot be used...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Any traps that you trigger (even
+                        those that don't hit you) will remain invisible.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 29:
+                WaitSubScreen();
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to [CS:P]Oblivion Forest[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Money and items from the
+                        9th slot and beyond in your Treasure Bag
+                        will be lost...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Only the first two members are
+                        allowed to go, so team members from the
+                        third slot on can't come along.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 30:
+                WaitSubScreen();
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to the [CS:P]Treacherous Waters[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Money and items from the
+                        9th slot and beyond in your Treasure Bag
+                        will be lost...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Only the first two members are
+                        allowed to go, so team members from the
+                        third slot on can't come along.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 31:
+                WaitSubScreen();
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to the [CS:P]Southeastern Islands[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Money and items from the
+                        9th slot and beyond in your Treasure Bag
+                        will be lost...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Only the leader may enter
+                        the dungeon.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 32:
+                WaitSubScreen();
+                message_Talk({
+                    english="""
+                         There are certain restrictions
+                        on going to [CS:P]Inferno Cave[CR].
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Money and items from the
+                        9th slot and beyond in your Treasure Bag
+                        will be lost...
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Only the leader may enter
+                        the dungeon.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         Those are the restrictions for
+                        this dungeon.[K] Would you like to go there for
+                        an exploration?
+                    """,
+                });
+                jump @label_26;
+            case 33:
+                jump @switch0_129;
+            case 18:
+                if ( not debug ) {
+                    jump @label_20;
+                } else {
+                    message_Notice({
+                        english="""
+                            [CS:W]Dungeon Settings Error 1
+                            Restrictions have been applied to dungeons
+                            other than Zero Isle.[CR]
+                        """,
+                    });
+                    JumpCommon(CORO_END_TALK);
+                }
+                break;
+            case 19:
+                if ( not debug ) {
+                    jump @label_20;
+                } else {
+                    message_Notice({
+                        english="""
+                            [CS:W]Dungeon Settings Error 2
+                            Restrictions have been applied to dungeons
+                            other than Zero Isle.[CR]
+                        """,
+                    });
+                    JumpCommon(CORO_END_TALK);
+                }
+                break;
+            default:
+                jump @label_3;
+        }
+    } else {
+        $SCENARIO_TALK_BIT_FLAG[120] = 1;
+        $SCENARIO_MAIN_BIT_FLAG[40] = 1;
+        message_SetFace(ACTOR_NPC_PERIPPAA1, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Greetings![K] Welcome to [CS:P]Pelipper
+                Island[CR].
+            """,
+        });
+        message_Talk({
+            english="""
+                 This is where you can spend
+                time until you have been rescued.
+            """,
+        });
+        message_Talk({
+            english="""
+                 You may go explore dungeons
+                that you have visited before.
+            """,
+        });
+        message_Talk({
+            english="""
+                 It's an ideal way to spend some
+                time while you wait for rescue.
+            """,
+        });
+        message_Talk({
+            english="""
+                 However, if your team were to
+                be defeated here, you may not send out for
+                a rescue.
+            """,
+        });
+        message_Talk({
+            english="""
+                 And when you exit the dungeon
+                and return here to the island, your level and
+                moves will be set back to what they were.
+            """,
+        });
+        message_Talk({
+            english="""
+                 You also can't recruit new
+                members to your team.
+            """,
+        });
+        message_Talk({
+            english="""
+                 What can you do? Well, you get
+                to keep all the money and items you find!
+            """,
+        });
+        message_Talk({
+            english="""
+                 But the items and money must
+                be put in storage here before you leave if
+                you want to take them out in Treasure Town.
+            """,
+        });
+        message_Talk({
+            english="""
+                 Now which dungeon would you
+                like to explore?
+            """,
+        });
+        message_Close();
+        jump @label_1;
+    }
+}

@@ -1,0 +1,2 @@
+speaker	kind	line
+ATTENDANT1	Talk	Off to Crystal Cave!

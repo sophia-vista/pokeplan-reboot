@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_CHAAREMU	Talk	Wh-where are we?!
+NPC_SAANAITO	Talk	I-in a limestone cavern!
+PLAYER_CHARMS	Talk	I knew it.
+NPC_SAANAITO	Talk	...Wigglytuff isn't here...

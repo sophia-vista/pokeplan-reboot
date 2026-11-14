@@ -1,0 +1,145 @@
+
+def 0 {
+    if ( scn($SCENARIO_SIDE) >= [43, 2] ) {
+    }
+    @label_3;
+    if ( $SCENARIO_TALK_BIT_FLAG[132] ) {
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" [CS:Y]Sunflora[CR]'s such a kind lady...",
+        });
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_SIGH, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Whoa...",
+        });
+        message_Close();
+        @label_2;
+        JumpCommon(CORO_END_TALK);
+    } else {
+        $SCENARIO_TALK_BIT_FLAG[132] = 1;
+        ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+        ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+        Wait(1);
+        se_Play(8978);
+        SetEffect<actor ACTOR_NPC_BIPPA>(EFFECT_EXCLAMATION_MARK, 3);
+        WaitEffect<actor ACTOR_NPC_BIPPA>();
+        WaitExecuteLives(ACTOR_NPC_BIPPA);
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_STUNNED, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Oh! [K]Oh, miss!",
+        });
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_SIGH, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Whoa...",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8972);
+        SetEffect<actor ACTOR_PLAYER_KIMAWARI>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+        WaitEffect<actor ACTOR_PLAYER_KIMAWARI>();
+        WaitExecuteLives(ACTOR_PLAYER_KIMAWARI);
+        message_SetFace(ACTOR_PLAYER_KIMAWARI, FACE_SURPRISED, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english="""
+                 Wh-what's going on?[K]
+                M-miss?
+            """,
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_SURPRISED, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Ah...[K]n-no!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8972);
+        SetEffect<actor ACTOR_NPC_BIPPA>(EFFECT_SWEAT_DROPS_FROM_BOTH_SIDES_MEDIUM, 3);
+        WaitEffect<actor ACTOR_NPC_BIPPA>();
+        WaitExecuteLives(ACTOR_NPC_BIPPA);
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_SURPRISED, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 I-it's nothing![K]
+                I was just whispering to myself! Yup, yup!
+            """,
+        });
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_NORMAL, FACE_POS_STANDARD);
+        message_Talk({
+            english=" Anyhow...",
+        });
+        message_Talk({
+            english="""
+                 Thanks for taking me along on
+                that exploration the other day!
+            """,
+        });
+        message_Talk({
+            english="""
+                 You're great at exploring,
+                [CS:Y]Sunflora[CR]!
+            """,
+        });
+        message_Talk({
+            english=" I really respect you... Yup!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_KIMAWARI, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" R-respect?",
+        });
+        message_KeyWait();
+        SetEffect<actor ACTOR_PLAYER_KIMAWARI>(EFFECT_JOYOUS, 3);
+        message_SetFace(ACTOR_PLAYER_KIMAWARI, FACE_JOYOUS, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english=" Oh my gosh![K] I'm so happy!",
+        });
+        message_KeyWait();
+        SetEffect<actor ACTOR_PLAYER_KIMAWARI>(EFFECT_NONE, 3);
+        message_SetFace(ACTOR_PLAYER_KIMAWARI, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english="""
+                 You know...you were not so 
+                great in the beginning, [CS:N]Bidoof[CR]...
+            """,
+        });
+        message_Talk({
+            english="""
+                 But look...you've learned how
+                to fight and gotten better little by little...
+            """,
+        });
+        message_Talk({
+            english=" I am so glad!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        se_Play(8978);
+        SetEffect<actor ACTOR_NPC_BIPPA>(EFFECT_EXCLAMATION_MARK, 3);
+        WaitEffect<actor ACTOR_NPC_BIPPA>();
+        WaitExecuteLives(ACTOR_NPC_BIPPA);
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_SURPRISED, FACE_POS_STANDARD);
+        message_Talk({
+            english=" R-[K]really? You mean it?",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_PLAYER_KIMAWARI, FACE_NORMAL, FACE_POS_BOTTOM_R_FACEINW);
+        message_Talk({
+            english="""
+                 Yes. [K]If you keep on working
+                hard, you'll be a great explorer in no time!
+            """,
+        });
+        message_Talk({
+            english=" Do your best!",
+        });
+        CallCommon(CORO_MESSAGE_CLOSE_WAIT_FUNC);
+        message_SetFace(ACTOR_NPC_BIPPA, FACE_TEARY_EYED, FACE_POS_STANDARD);
+        message_Talk({
+            english="""
+                 Gosh, I'm so happy![K]
+                I'm gonna do my best to be an explorer!
+            """,
+        });
+        message_Close();
+        jump @label_2;
+    }
+}

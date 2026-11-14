@@ -1,0 +1,25 @@
+speaker	kind	line
+NPC_JUPUTORU	Talk	There's no time to rest!
+ATTENDANT1	Talk	I can't. I have to rest.
+NPC_JUPUTORU	Talk	All right.
+ATTENDANT1	Talk	Huff-huff... Huff-huff...
+NPC_JUPUTORU	Talk	This forms a natural alcove.
+NPC_JUPUTORU	Talk	This should shield us from view.
+ATTENDANT1	Talk	W-wait a minute.
+PLAYER	Talk	(...)
+NPC_JUPUTORU	Talk	Humph!
+ATTENDANT1	Talk	Urk...
+NPC_JUPUTORU	Talk	We'll go our separate ways.
+NPC_JUPUTORU	Talk	Good luck.
+ATTENDANT1	Talk	Wait a second!
+ATTENDANT1	Talk	You say to leave soon, but...
+ATTENDANT1	Talk	You tell us to leave soon, but...
+ATTENDANT1	Talk	You say to leave soon, but...
+NPC_JUPUTORU	Talk	That isn't possible.
+ATTENDANT1	Talk	Huh?!
+ATTENDANT1	Talk	What?!
+ATTENDANT1	Talk	Pardon?!
+NPC_JUPUTORU	Talk	The darkness persists forever.
+ATTENDANT1	Talk	Wh-why?
+ATTENDANT1	Talk	The planet is...paralyzed?
+ATTENDANT1	Talk	The planet's paralysis...

@@ -1,0 +1,66 @@
+speaker	kind	line
+NPC_DAAKURAI	Talk	My original plan ended in failure.
+NPC_KURESERIA	Talk	That's why...
+NPC_DAAKURAI	Talk	..................
+NPC_KURESERIA	Talk	Even now...you lured us here...
+NPC_DAAKURAI	Talk	But...I've had a change of heart.
+NPC_DAAKURAI	Talk	So.......
+ATTENDANT1	Talk	Huh?
+ATTENDANT1	Talk	What?
+ATTENDANT1	Talk	What?!
+PLAYER	Talk	(R-rule the world...with Darkrai?!)
+NPC_DAAKURAI	Talk	Well? Will you join me?
+NPC_KURESERIA	Talk	Oh, ! !
+NPC_KURESERIA	Talk	Don't believe his lies!
+ATTENDANT1	Talk	..................
+ATTENDANT1	Talk	...Maybe Darkrai...is right.
+NPC_KURESERIA	Talk	No, !
+ATTENDANT1	Talk	It's pointless to resist.
+ATTENDANT1	Talk	Joining Darkrai...
+ATTENDANT1	Talk	It may be the best thing to do.
+PLAYER	Talk	(! Wh-why?!)
+NPC_DAAKURAI	Talk	Mwahaha...
+NPC_DAAKURAI	Talk	When you are one of us...
+NPC_KURESERIA	Talk	Wh-what did you say?!
+NPC_KURESERIA	Talk	Don't go... !
+ATTENDANT1	FacePositionOffset	Please, come here, .
+NPC_KURESERIA	Talk	!
+PLAYER	FacePositionOffset	(...)
+NPC_DAAKURAI	Talk	Mwahaha...
+NPC_DAAKURAI	Talk	Your choice, ?
+NPC_DAAKURAI	Talk	Will you join us?
+PLAYER	FacePositionOffset	(..................)
+NPC_DAAKURAI	Talk	Join me and ...
+NPC_DAAKURAI	Talk	We'll rule the world together!
+NPC_DAAKURAI	SwitchMenu	..................
+PLAYER	FacePositionOffset	(..................)
+PLAYER	FacePositionOffset	(...My...)
+PLAYER	FacePositionOffset	(...My answer is...)
+PLAYER	Explanation	Don't, !
+PLAYER	Explanation	Don't be fooled!
+PLAYER	Explanation	......!
+PLAYER	Explanation	Th-that voice just now... ?!
+PLAYER	Explanation	Th-that's it! This is all... This is all...
+NPC_DAAKURAI	Talk	Gaaaah!
+ATTENDANT1	Talk	Oh, !
+NPC_KURESERIA	Talk	Oh, !
+NPC_DAAKURAI	Talk	Y-you!
+PLAYER	FacePositionOffset	(I was right!)
+PLAYER	FacePositionOffset	(I was being deceived!)
+PLAYER	FacePositionOffset	(Darkrai was showing me an illusion!)
+PLAYER	FacePositionOffset	(That was close!)
+PLAYER	FacePositionOffset	(Of course!)
+PLAYER	FacePositionOffset	(Join with Darkrai? Not on my life!)
+PLAYER	FacePositionOffset	(A world of darkness... I won't let it happen!)
+ATTENDANT1	Talk	Whoa! We're surrounded!
+ATTENDANT1	Talk	Waah! We're surrounded!
+NPC_DAAKURAI	Talk	Humph. Say what you will.
+NPC_DAAKURAI	Talk	as its king.
+NPC_DAAKURAI	Talk	This is it! Attack!
+NPC_DAAKURAI	Explanation	Don't, !
+NPC_DAAKURAI	Explanation	Don't be fooled!
+NPC_DAAKURAI	Explanation	Don't, !
+NPC_DAAKURAI	Explanation	Don't be fooled!
+NPC_DAAKURAI	Explanation	I refuse!
+PLAYER	FacePositionOffset	(Do that...? I refuse!)
+PLAYER	FacePositionOffset	(This is all... This is all...)

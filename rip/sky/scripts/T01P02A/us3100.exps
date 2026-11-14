@@ -1,0 +1,77 @@
+
+def 0 {
+    supervision_Station(0);
+    if ( scn($SCENARIO_MAIN) >= [29, 31] ) {
+        @label_0;
+        supervision_Station(1);
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 30] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 29] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 28] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 27] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 26] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 25] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 24] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 23] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 22] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 21] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 20] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 19] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 18] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 17] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 16] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 15] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 14] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 13] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 12] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 11] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 10] ) {
+        end;
+    } elseif ( scn($SCENARIO_MAIN) >= [29, 8] ) {
+        @label_22;
+        supervision_Station(1);
+        end;
+    } else {
+        jump @label_22;
+    }
+}
+
+def 1 for actor ACTOR_NPC_YARUKIMONO {
+    switch ( sector() ) {
+        case 1:
+            SetMoveRange(Position<'m0', 19, 27>, 9, 3);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}
+
+def 2 for actor ACTOR_NPC_BIPPA {
+    switch ( sector() ) {
+        case 1:
+            SetMoveRange(Position<'m1', 34, 28>, 8, 4);
+            JumpCommon(CORO_MOVE_TYPE1);
+        default:
+            JumpCommon(CORO_LIVES_MOVE_NORMAL);
+    }
+}

@@ -1,0 +1,3 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Oh, please! Hush now!
+ATTENDANT1	Talk	Oh.

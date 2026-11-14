@@ -1,0 +1,59 @@
+
+def 0 {
+    switch ( $EXECUTE_SPECIAL_EPISODE_TYPE ) {
+        case 2:
+            @label_0;
+            SetAnimation<actor ACTOR_PLAYER>(2);
+            SetAnimation<actor ACTOR_ATTENDANT1>(2);
+            SetAnimation<actor ACTOR_PLAYER_APPOINT>(2);
+            SetAnimation<actor ACTOR_PLAYER_KIMAWARI>(2);
+            message_Mail({
+                english="""
+                    [CN]The door is still closed, so you can't get in.
+                    [CN]It seems like they're still getting ready.
+                """,
+            });
+            message_Close();
+            supervision_Suspend(-2);
+            end;
+        default:
+            if ( scn($SCENARIO_MAIN) == [29, 46] ) {
+                SetAnimation<actor ACTOR_PLAYER>(2);
+                SetAnimation<actor ACTOR_ATTENDANT1>(2);
+                SetAnimation<actor ACTOR_ATTENDANT2>(2);
+                Turn2DirectionLives<actor ACTOR_ATTENDANT1>(4, 10, ACTOR_PLAYER);
+                message_SetFace(ACTOR_ATTENDANT1, FACE_NORMAL, FACE_POS_STANDARD);
+                message_SwitchTalk ($PARTNER_TALK_KIND) {
+                    case 1:
+                        {
+                            english=" Let's take [CS:N]Manaphy[CR] to the beach.",
+                        }
+                    case 2:
+                        {
+                            english=" Let's take [CS:N]Manaphy[CR] to the beach.",
+                        }
+                    default:
+                        {
+                            english=" Let's take [CS:N]Manaphy[CR] to the beach.",
+                        }
+                }
+                message_Close();
+                supervision_Suspend(-2);
+                end;
+            } elseif ( scn($SCENARIO_MAIN) >= [7, 3] ) {
+                debug_Print('LABEL_PACCHIIRU_OPEN');
+                debug_Print('BGM_FADEOUT');
+                bgm_FadeOut(60);
+                main_EnterGround(LEVEL_P01P04A, 30);
+                hold;
+                end;
+            } else {
+                jump @label_0;
+            }
+            break;
+    }
+}
+
+def 1 for actor ACTOR_PLAYER {
+    hold;
+}

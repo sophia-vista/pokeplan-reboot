@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_YADON	Talk	I like it here. It's so laid back.
+NPC_YADON	Talk	This shop is lacking drive.
+NPC_YADON	Talk	Wasn't it too much work?
+NPC_YADON	Talk	It didn't have any effect on us.

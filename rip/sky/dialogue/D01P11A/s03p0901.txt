@@ -1,0 +1,10 @@
+speaker	kind	line
+NPC_MANAFI	Talk	!!!
+NPC_MANAFI	Talk	Kyakya! ♪ Kyakya! ♪
+ATTENDANT1	Talk	Manaphy, this is the sea. Sea...
+NPC_MANAFI	Talk	Sea?
+NPC_MANAFI	Talk	Sea! Sea!
+NPC_MANAFI	Talk	! ♪
+NPC_MANAFI	Talk	Sea! Sea!
+NPC_MANAFI	Talk	Sea! ♪ Sea! ♪
+NPC_MANAFI	Narration	That night...

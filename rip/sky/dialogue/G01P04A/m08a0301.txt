@@ -1,0 +1,38 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ahem! Now then.
+NPC_PERAPPU	Talk	Guildmaster, the memo, please.
+NPC_KIMAWARI	Talk	Ooh... It's finally happening.
+NPC_BIPPA	Talk	My heart's a-pounding, by golly.
+NPC_PERAPPU	Talk	Our first member...Loudred! ♪
+NPC_DOGOOMU	Talk	Y-yes! I DID IT!
+NPC_DOGOOMU	Talk	WOO-HOOOO!
+NPC_KIMAWARI	Talk	(Says you...)
+NPC_BIPPA	Talk	(Big talker, yup yup.)
+NPC_PERAPPU	Talk	Next up is...Corphish! ♪
+NPC_HEIGANI	Talk	Hey, hey, hey! Got it!
+NPC_PERAPPU	Talk	Next is... Oh, what's this?
+NPC_BIPPA	Talk	Really?! Really and truly?!
+NPC_PERAPPU	Talk	Come on, step forward.
+NPC_CHIRIIN	Talk	Oh? Us too?
+NPC_KIMAWARI	Talk	Eeek! Oh my gosh!
+ATTENDANT1	FacePositionOffset	Urf...
+NPC_ZUBATTO	Talk	(Heh-heh. Serves them right!)
+NPC_PERAPPU	Talk	(This is so hard to decipher...)
+NPC_PERAPPU	Talk	What?! Whaaaat?!
+NPC_PERAPPU	Talk	Every member of the guild!
+NPC_PUKURIN	Talk	Yup! That's right!
+NPC_PUKURIN	Talk	Huh?! Of course there's a point!
+NPC_PUKURIN	Talk	That is...
+NPC_SUKATANKU	Talk	What?!
+NPC_SUKATANKU	Talk	What...?
+NPC_PUKURIN	Talk	Let's all do our best! ♪
+NPC_PUKURIN	Talk	Everyone: HOORAY!
+NPC_PERAPPU	Talk	Urrgh... Well, that's settled.
+NPC_PERAPPU	Talk	That is all. Dismissed!
+ATTENDANT1	Talk	I'm glad we never gave up!
+NPC_HEIGANI	Talk	Hey, hey!
+NPC_KIMAWARI	Talk	Yippee! That's the spirit!
+NPC_DOGOOMU	Talk	Yeah! THAT'S the spirit!
+NPC_CHIRIIN	Talk	Let's do our best!
+NPC_BIPPA	Talk	Sniff... Sniff...
+ATTENDANT1	Talk	Let's band together and do it!

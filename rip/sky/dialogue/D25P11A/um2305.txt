@@ -1,0 +1,18 @@
+speaker	kind	line
+NPC_DIGUDA	Talk	Ugh... I would love to go too...
+NPC_DIGUDA	Talk	...........................
+NPC_DIGUDA	Talk	I'm so sorry...
+NPC_DIGUDA	Talk	But I'll do my best!
+NPC_DIGUDA	Talk	Yes, Loudred!
+NPC_DIGUDA	Talk	Incidentally...
+NPC_DIGUDA	Talk	Ooh, I'm so excited!
+NPC_DAGUTORIO	Talk	My son.
+NPC_DIGUDA	Talk	Yes, Dad?
+NPC_DIGUDA	Talk	Why did you call me out here?
+NPC_DAGUTORIO	Talk	See? The sea is vast.
+NPC_DIGUDA	Talk	I'm supposed to be working, Dad.
+NPC_DAGUTORIO	Talk	You'll be scolded?
+NPC_DIGUDA	Talk	I don't know what that means!
+NPC_DIGUDA	Talk	Team Skull is kind of scary...
+NPC_DIGUDA	Talk	Let's do our best, Loudred!
+NPC_DIGUDA	Talk	Yes! I'll try my hardest!

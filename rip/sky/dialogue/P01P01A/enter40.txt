@@ -1,0 +1,2 @@
+speaker	kind	line
+ATTENDANT1	Mail	Let's take Manaphy to the beach.

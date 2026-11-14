@@ -1,0 +1,13 @@
+speaker	kind	line
+-	Talk	Wait!
+-	Talk	What?! Who are you?!
+ATTENDANT1	Talk	Waaah! Who said that?
+ATTENDANT1	Talk	Waah! Who said that?
+-	Talk	..................
+-	Talk	Why...
+-	Talk	Why did you come here?!
+-	Talk	Stay away from the Time Gear!
+ATTENDANT1	Talk	Who...who are you?!
+-	Talk	I'm Mesprit!
+ATTENDANT1	Talk	Protect the Time Gear?!
+NPC_EMURITTO	Talk	Get ready!

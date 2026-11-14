@@ -1,0 +1,6 @@
+speaker	kind	line
+PLAYER_FUTURE	Talk	... (Celebi...)
+NPC_YONOWAARU	Talk	Grovyle.
+PLAYER_FUTURE	Talk	Shut up, Dusknoir!
+PLAYER_FUTURE	Talk	(But!)
+PLAYER_FUTURE	Talk	(Keep yourself safe!)

@@ -1,0 +1,12 @@
+speaker	kind	line
+ATTENDANT1	Talk	Hey, what's going on over here?
+ATTENDANT1	Talk	Hello! What's going on here?
+ATTENDANT1	Talk	Assembly?
+ATTENDANT1	Talk	Yeah? How do we start?
+ATTENDANT1	Talk	Oh? How do we start?
+ATTENDANT1	Talk	How do we start?
+NPC_CHIRIIN	Talk	Here goes! Hey-yah!
+ATTENDANT1	Talk	R-really?
+ATTENDANT1	Talk	Great! Thanks, Chimecho!
+ATTENDANT1	Talk	Oh, wow! Thanks, Chimecho!
+ATTENDANT1	Talk	Wow! Thank you, Chimecho!

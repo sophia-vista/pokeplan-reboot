@@ -1,0 +1,5 @@
+speaker	kind	line
+NPC_DOGAASU	Talk	Well, well...
+ATTENDANT1	Talk	Urk!
+ATTENDANT1	Talk	Whaaaat?!
+ATTENDANT1	Talk	You can't!

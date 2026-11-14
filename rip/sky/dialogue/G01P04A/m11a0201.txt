@@ -1,0 +1,37 @@
+speaker	kind	line
+NPC_DOGOOMU	Talk	What do you MEAN?!
+NPC_PERAPPU	Talk	What's wrong?
+NPC_DOGOOMU	Talk	Diglett is an outstanding sentry.
+ATTENDANT1	Talk	Right, ?
+NPC_PERAPPU	Talk	Dus...Dusknoir?!
+NPC_DOGOOMU	Talk	The world-famous Dusknoir?!
+NPC_YONOWAARU	Talk	No, no! Think nothing of it!
+NPC_YONOWAARU	Talk	The honor is all mine!
+ATTENDANT1	Talk	Hey, Loudred.
+ATTENDANT1	Talk	Excuse me, Loudred?
+ATTENDANT1	Talk	Tell me, Loudred...
+NPC_DOGOOMU	Talk	What do you want?
+ATTENDANT1	Talk	Who's that visitor?
+NPC_DOGOOMU	Talk	The famous explorer?!
+ATTENDANT1	Talk	Urk! Well, uh, well...
+ATTENDANT1	Talk	Urk... Well, you know, I...
+ATTENDANT1	Talk	Eeek... Well, maybe, I...
+ATTENDANT1	Talk	OK, I don't know!
+ATTENDANT1	Talk	I haven't heard of him!
+ATTENDANT1	Talk	OK, I admit it...I haven't!
+NPC_KIMAWARI	Talk	That's not surprising, really!
+NPC_KIMAWARI	Talk	He's a new arrival on the scene!
+ATTENDANT1	Talk	So Dusknoir is really so great?
+ATTENDANT1	Talk	Alone?
+ATTENDANT1	Talk	Wow! So he knows that much?
+ATTENDANT1	Talk	Wow! He's that knowledgeable?
+NPC_KIMAWARI	Talk	So the rumor goes!
+ATTENDANT1	Talk	Does Dusknoir visit here often?
+ATTENDANT1	Talk	Huh?!
+ATTENDANT1	Talk	Pardon?!
+NPC_PUKURIN	Talk	Sorry! We didn't learn a thing!
+NPC_YONOWAARU	Talk	Not at all! It's no trouble to me!
+NPC_PUKURIN	Talk	No problem!
+NPC_PUKURIN	Talk	Everyone! This is Dusknoir!
+NPC_BIPPA	Talk	Yup yup! It's a great honor!
+NPC_PERAPPU	Talk	Oh! You two!

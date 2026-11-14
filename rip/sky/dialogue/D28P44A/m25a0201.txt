@@ -1,0 +1,31 @@
+speaker	kind	line
+ATTENDANT1	Talk	We...did it...
+NPC_JUPUTORU	Talk	Dusknoir is...down...
+NPC_JUPUTORU	Talk	We've finally beaten Dusknoir!
+NPC_YAMIRAMI	Talk	Wheh... It can't be...
+NPC_YAMIRAMI2	Talk	Wheeh... Lord Dusknoir...
+NPC_YAMIRAMI5	Talk	Lord Dusknoir...was defeated!
+NPC_YAMIRAMI4	Talk	Wheeeeh!
+NPC_JUPUTORU	Talk	Humph. Your Sableye ran off.
+NPC_YONOWAARU	Talk	Urgggh...
+NPC_JUPUTORU	Talk	.
+ATTENDANT1	Talk	What is it?
+NPC_JUPUTORU	Talk	Go to the top of the temple.
+ATTENDANT1	Talk	All right. I'll go do that.
+ATTENDANT1	Talk	OK. I'll go do that.
+NPC_JUPUTORU	Talk	I hope it activates...
+NPC_YONOWAARU	Talk	Urgggh...
+NPC_JUPUTORU	Talk	Don't move!
+NPC_YONOWAARU	Talk	Is this really...
+NPC_YONOWAARU	Talk	Is this what you really want?
+PLAYER	Talk	(Wh-what?)
+NPC_YONOWAARU	Talk	It won't be just me.
+PLAYER	Talk	(If we change history, we'll disappear too?!)
+PLAYER	Talk	(Is Dusknoir...)
+PLAYER	Talk	(Is Dusknoir telling...the truth?)
+PLAYER	Talk	(Grovyle!)
+NPC_JUPUTORU	Talk	...It's true, .
+PLAYER	Talk	(G-Grovyle!)
+NPC_JUPUTORU	Talk	But...that doesn't matter...
+PLAYER	Talk	(Even Celebi?)
+PLAYER	Talk	(Oh! I recall, when we were in the future...)

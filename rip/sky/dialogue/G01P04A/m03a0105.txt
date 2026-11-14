@@ -1,0 +1,4 @@
+speaker	kind	line
+NPC_BIPPA	Talk	First things first!
+NPC_BIPPA	Talk	Here, we have Croagunk...
+NPC_BIPPA	Talk	Over this way's the mess hall.

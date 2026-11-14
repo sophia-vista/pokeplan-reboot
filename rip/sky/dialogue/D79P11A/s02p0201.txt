@@ -1,0 +1,2 @@
+speaker	kind	line
+-	Mail	It's the entrance to another dungeon!

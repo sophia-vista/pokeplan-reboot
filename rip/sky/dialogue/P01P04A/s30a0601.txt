@@ -1,0 +1,70 @@
+speaker	kind	line
+NPC_SOONANO	SwitchMenu	Red
+NPC_SOONANO	Talk	OK, Red then.
+NPC_SOONANSU	Talk	Right! Red!
+NPC_SOONANO	Talk	Is it a win? Is it not?
+NPC_SOONANSU	Talk	.........
+NPC_SOONANSU	Talk	That's right!
+NPC_SOONANO	Talk	Is that so? That's not too bad.
+NPC_SOONANO	Talk	Draw another Prize Ticket?
+NPC_SOONANO	SwitchMenu	Yes
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	Talk	Draw a Prize Ticket?
+NPC_SOONANO	SwitchMenu	Yes
+NPC_SOONANO	SwitchMenu	No
+NPC_SOONANO	Talk	Draw a Silver Ticket?
+NPC_SOONANO	Talk	Draw a Gold Ticket?
+NPC_SOONANO	Talk	Draw a Prism Ticket?
+NPC_SOONANO	Talk	Cancel
+NPC_SOONANO	Talk	You want to cancel?
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	Select which Ticket to use.
+NPC_SOONANO	SwitchMenu	Cancel
+NPC_SOONANO	Talk	No
+NPC_SOONANO	Talk	Come back anytime!
+NPC_SOONANO	Talk	Huh? Your Bag's full?
+NPC_SOONANO	Talk	So is it a win or not?
+NPC_SOONANSU	Talk	That's right!
+NPC_SOONANO	Talk	Wow! That's wonderful!
+NPC_SOONANSU	Talk	.........
+NPC_SOONANSU	Talk	That's right!
+NPC_RUNPAPPA	Talk	Oh, yeaaaaah!
+NPC_SOONANO	Mail	What will you do?
+NPC_SOONANO	SwitchMenu	Leave it to chance
+NPC_SOONANO	SwitchMenu	Lose
+NPC_SOONANO	SwitchMenu	Win
+NPC_SOONANO	SwitchMenu	Look like a big win, but lose
+NPC_SOONANO	SwitchMenu	Win big
+NPC_SOONANO	SwitchMenu	Blue
+NPC_SOONANO	Talk	OK, Blue then.
+NPC_SOONANSU	Talk	Right! Blue!
+NPC_SOONANSU	Talk	Yellow
+NPC_SOONANO	Talk	OK, Yellow then.
+NPC_SOONANSU	Talk	Right! Yellow!
+NPC_SOONANO	SwitchMenu	Yes
+NPC_SOONANO	SwitchMenu	No

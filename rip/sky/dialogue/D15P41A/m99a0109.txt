@@ -1,0 +1,9 @@
+speaker	kind	line
+NPC_EMURITTO	Talk	...I...I lost.
+NPC_EMURITTO	Mail	Mesprit wants to join the team.
+NPC_NEW_FRIEND	Talk	Oh, all right... I'll go too.
+NPC_NEW_FRIEND	Talk	I'll go with you!
+NPC_NEW_FRIEND	Mail	joined the team!
+NPC_NEW_FRIEND	SwitchMenu	Reconsider
+NPC_NEW_FRIEND	SwitchMenu	Refuse
+NPC_NEW_FRIEND	Mail	Mesprit sadly went away...

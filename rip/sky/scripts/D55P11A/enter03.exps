@@ -1,0 +1,315 @@
+
+def 0 {
+    switch ( $GROUND_ENTER ) {
+        case 135:
+        default:
+            @label_0;
+            if ( scn($SCENARIO_SIDE) >= [45, 2] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         It seems like nobody's found the
+                        treasure yet...
+                    """,
+                });
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_HAPPY, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         When that's the situation, we
+                        get more excited. ♪
+                    """,
+                });
+                message_Talk({
+                    english=" Let's find more treasure. ♪",
+                });
+                message_Close();
+                @label_6;
+                JumpCommon(CORO_END_TALK);
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         It seems like nobody's found the
+                        treasure yet...
+                    """,
+                });
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_HAPPY, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         When that's the situation, we
+                        get more excited. ♪
+                    """,
+                });
+                message_Talk({
+                    english=" Let's find more treasure. ♪",
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+        case 138:
+            if ( scn($SCENARIO_SIDE) >= [45, 7] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We'll get through next time!",
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 4] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         [CS:Y]Lopunny[CR] and [CS:N]Gardevoir[CR]
+                        say so, but...
+                    """,
+                });
+                message_Talk({
+                    english=" I...I am so nervous...",
+                });
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_WORRIED, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Why is this?[K] Is it because I'm
+                        mad at Team [CS:X]AWD[CR]?
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                Wait(1);
+                ExecuteCommon<actor ACTOR_NPC_CHAAREMU>(CORO_JUMP_ANGRY_FUNC_SERIES, 0);
+                WaitExecuteLives(ACTOR_NPC_CHAAREMU);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_ANGRY, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" Hey! No way can I forgive them!",
+                });
+                message_Talk({
+                    english="""
+                         I'll defeat them next time
+                        they come into my sight!
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+        case 139:
+            if ( scn($SCENARIO_SIDE) >= [45, 7] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We'll get those [CS:N]Aggron[CR]!",
+                });
+                message_Talk({
+                    english=" We won't lose!",
+                });
+                message_Close();
+                jump @label_6;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" After this, it's the real deal!",
+                });
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_HAPPY, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I love this type of tension![K]
+                        It's so exciting! ♪
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+        case 141:
+            if ( scn($SCENARIO_SIDE) >= [45, 13] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         The next time we meet Team
+                        [CS:X]AWD[CR], we're going to knock them out!
+                    """,
+                });
+                message_Talk({
+                    english=" We'll definitely win next time!",
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 10] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We'll get through this time!",
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 9] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Come on, let's hurry![K]
+                        Through the wall, between the two paths!
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( $SIDE06_ROOM[2] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                Wait(1);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_ANGRY, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We're almost there![K] Aargh!",
+                });
+                message_Close();
+                SetEffect<actor ACTOR_NPC_CHAAREMU>(EFFECT_NONE, 3);
+                WaitEffect<actor ACTOR_NPC_CHAAREMU>();
+                WaitExecuteLives(ACTOR_NPC_CHAAREMU);
+                jump @label_6;
+            } elseif ( $SIDE06_ROOM[0] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We'll get through this time!",
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( $SIDE06_ROOM[1] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We'll get through this time!",
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 8] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english=" We'll get through this time!",
+                });
+                message_Close();
+                jump @label_6;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         I think the one on the right
+                        is the correct path.
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         No![K] Maybe they just want you to
+                        think that! Maybe it's really the one on
+                        the left!
+                    """,
+                });
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_WORRIED, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Hmm...[K] Which one is it...
+                        really...?[K] Hmm...
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+        case 143:
+            if ( scn($SCENARIO_SIDE) >= [45, 13] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         The next time we meet [CS:X]Team
+                        AWD[CR], we're going to knock them out!
+                    """,
+                });
+                message_Talk({
+                    english=" Next time, we'll definitely win!",
+                });
+                message_Close();
+                jump @label_6;
+            } elseif ( scn($SCENARIO_SIDE) >= [45, 12] ) {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Speaking of...[K] What is Team
+                        [CS:X]AWD[CR] up to now?
+                    """,
+                });
+                message_Talk({
+                    english=" I wonder where they are now...",
+                });
+                message_Talk({
+                    english="""
+                         Never mind.[K] Instead of worrying
+                        about them, I should be worrying about us!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         [CS:Y]Lopunny[CR]![K] Let's find some
+                        treasure this time!
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            } else {
+                ExecuteCommon<actor ACTOR_TALK_MAIN>(CORO_LIVES_REPLY_NORMAL, 0);
+                ExecuteCommon<actor ACTOR_TALK_SUB>(CORO_LIVES_REPLY_NORMAL, 0);
+                message_SetFace(ACTOR_NPC_CHAAREMU, FACE_NORMAL, FACE_POS_STANDARD);
+                message_Talk({
+                    english="""
+                         Speaking of... [K]What is Team
+                        [CS:X]AWD[CR] up to now?
+                    """,
+                });
+                message_Talk({
+                    english=" I wonder where they are now...",
+                });
+                message_Talk({
+                    english="""
+                         Never mind.[K] Instead of worrying
+                        about them, I should be worrying about us!
+                    """,
+                });
+                message_Talk({
+                    english="""
+                         [CS:Y]Lopunny[CR]![K] Let's find some
+                        treasure this time!
+                    """,
+                });
+                message_Close();
+                jump @label_6;
+            }
+            break;
+    }
+}

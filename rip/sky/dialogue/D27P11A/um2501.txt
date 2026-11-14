@@ -1,0 +1,33 @@
+speaker	kind	line
+NPC_RAPURASU	SwitchMenu	Yes
+NPC_RAPURASU	Talk	I see.
+NPC_RAPURASU	Talk	Off we go to Treasure Town!
+NPC_RAPURASU	Talk	No
+NPC_RAPURASU	Talk	I see.
+NPC_RAPURASU	SwitchMenu	Yes
+NPC_RAPURASU	Talk	Grovyle is...?
+ATTENDANT1	Talk	Lapras...well, Grovyle is...
+NPC_RAPURASU	Talk	...N-n-no...it can't be...
+NPC_RAPURASU	Talk	Grovyle is...?
+NPC_RAPURASU	Talk	For now...we must go onward...
+NPC_RAPURASU	Talk	No
+NPC_RAPURASU	SwitchMenu	Yes
+NPC_RAPURASU	Talk	I see.
+NPC_RAPURASU	Talk	Off we go to the Hidden Land.
+ATTENDANT1	Menu	Hey, .
+ATTENDANT1	Menu	Listen, .
+ATTENDANT1	Menu	Say, .
+ATTENDANT1	SwitchMenu	Accept leadership
+ATTENDANT1	SwitchMenu	Let's go! Off to the Hidden Land!
+ATTENDANT1	SwitchMenu	Refuse
+NPC_RAPURASU	SwitchMenu	Go as a duo
+NPC_RAPURASU	SwitchMenu	Don't go
+NPC_RAPURASU	Talk	I see.
+NPC_RAPURASU	SwitchMenu	Go as a trio
+NPC_RAPURASU	SwitchMenu	Don't go
+NPC_RAPURASU	SwitchMenu	No
+NPC_RAPURASU	Talk	Oh...I see...
+NPC_RAPURASU	Talk	That could be a very good thing.
+NPC_RAPURASU	Talk	Well...that is over.
+NPC_RAPURASU	Talk	Thank you very much!
+NPC_RAPURASU	Talk	Bring lasting peace to the world!

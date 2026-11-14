@@ -1,0 +1,15 @@
+speaker	kind	line
+NPC_YONOWAARU	Talk	However...
+ATTENDANT1	Talk	Really?! What is it?!
+ATTENDANT1	Talk	Oh, really?! What is it?!
+ATTENDANT1	Talk	Dimensional... Scream?
+NPC_YONOWAARU	Talk	Indeed.
+NPC_YONOWAARU	Talk	To manifest as visions...
+PLAYER	Talk	(..................)
+NPC_YONOWAARU	Talk	I offer you my full cooperation!
+ATTENDANT1	Talk	Oh! You will?!
+NPC_YONOWAARU	Talk	Yes. To be perfectly candid...
+NPC_YONOWAARU	Talk	Ha-ha-ha! Hoo-hoo-ha!
+ATTENDANT1	Talk	Isn't this great, ?
+ATTENDANT1	Talk	Huh? Look at all the Pelipper!
+ATTENDANT1	Talk	Hey! Look at all the Pelipper!

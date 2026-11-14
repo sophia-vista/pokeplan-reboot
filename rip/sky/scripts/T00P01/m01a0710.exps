@@ -1,0 +1,10 @@
+
+def 0 {
+    with (actor ACTOR_PLAYER) {
+        hold;
+    }
+    message_Notice({
+        english="There's nothing here.",
+    });
+    JumpCommon(CORO_END_TALK);
+}

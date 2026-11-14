@@ -1,0 +1,21 @@
+speaker	kind	line
+NPC_KIMAWARI	Talk	Well...here you go.
+ATTENDANT1	Talk	Hey! Apples!
+ATTENDANT1	Talk	Oh! Apples!
+NPC_CHIRIIN	Talk	You must be very hungry.
+NPC_KIMAWARI	Talk	Now, eat up!
+ATTENDANT1	Talk	Th-thanks, everyone!
+ATTENDANT1	ImitationSound	Whoa! Thanks! I'm revitalized!
+NPC_CHIRIIN	Talk	Great!
+ATTENDANT1	Talk	Sniffle... Thanks, everyone...
+ATTENDANT1	Talk	What if we get picked to go?
+ATTENDANT1	Talk	What if we were chosen to go?
+ATTENDANT1	Talk	Would you all be OK with that?
+NPC_KIMAWARI	Talk	No, I wouldn't like that...
+NPC_CHIRIIN	Talk	Then someone else can't go.
+NPC_CHIRIIN	Talk	That's just the way it is!
+ATTENDANT1	Talk	We'll keep on trying to the end!
+NPC_BIPPA	Talk	Yup yup! That's the spirit!
+NPC_CHIRIIN	Talk	Yes! Let's all do our best!
+ATTENDANT1	Talk	Yep!
+ATTENDANT1	Talk	Yes!

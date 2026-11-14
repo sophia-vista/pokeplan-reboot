@@ -1,0 +1,28 @@
+speaker	kind	line
+NPC_PERAPPU	Talk	Ah, you two! ♪
+NPC_PERAPPU	Talk	So it was all Darkrai's doing...
+NPC_PERAPPU	Talk	Ah, you two! ♪
+NPC_PERAPPU	Talk	You two did the best you could.
+NPC_PERAPPU	Talk	..................
+NPC_PERAPPU	Talk	I will look after Manaphy.
+NPC_PERAPPU	Talk	I trust Manaphy is well?
+NPC_PERAPPU	Talk	Secret Rank?
+NPC_PERAPPU	Talk	........................
+NPC_PERAPPU	Talk	It is called Luminous Spring.
+NPC_PERAPPU	Talk	I wish you the best of luck! ♪
+NPC_PERAPPU	Talk	I'll leave you to it! ♪
+NPC_PERAPPU	Talk	...........................
+NPC_PERAPPU	Talk	I'm counting on you two!
+ATTENDANT1	Talk	Whoa! No, no, !
+ATTENDANT1	Talk	Waah! No, !
+ATTENDANT1	Talk	Waah! No, no, !
+ATTENDANT1	Talk	Ack... No, no! It's nothing!
+ATTENDANT1	Talk	Whoa! No, no, !
+ATTENDANT1	Talk	Waah! No, !
+ATTENDANT1	Talk	Waah! No, no, !
+NPC_PERAPPU	Talk	You... You must be joking!
+NPC_PERAPPU	Talk	Now, smarten up!
+NPC_PERAPPU	Talk	I'll leave you to it! ♪
+NPC_PERAPPU	Talk	Ah, by the way...
+NPC_PERAPPU	Talk	Ah, you two!
+NPC_PERAPPU	Talk	I'll leave you to it! ♪
