@@ -11,6 +11,7 @@ Each module already has its own way to get Pokémon (Focus and Task Eggs, Care P
 - **Privacy** (13): a life module still pays through a minimal event with no figure, name or private word. MINT ideas count actions, never amounts.
 - **GEAR stays visual** (GEAR.md 23): no progression, items or rewards.
 - **Real assets only**: every idea names its source in section 2. An idea with no pixel art is dropped or changed, not drawn.
+- **Which art goes where** (`ASSETS_AND_AUDIO.md` 4.0, owner, 14 November 2026): Pokémon sprites and portraits are Mystery Dungeon first; Mystery Dungeon places and tilesets are for WORLD and the launcher only; a module's places, rooms and items are mainline art, mostly Generation 3. The tables below follow it.
 - Already specified elsewhere, so not repeated here: adapted abilities (Pickup, Honey Gather...), special evolutions done with the phone or the step counter, Ribbons and Marks, held items (`POKEMON_ECOSYSTEM.md` 8.5 and 20.1).
 
 ## 2. Where the art can come from
@@ -19,8 +20,8 @@ Checked on 14 November 2026 against the public repositories (file lists, not eve
 
 | Source | What it has | ROM needed | State |
 |---|---|---|---|
-| `assets/rescue-maps/` (in the repo) | 245 Red Rescue Team maps as whole pictures: 57 Friend Areas, Pelipper Post Office (outside and inside), Makuhita Dojo, Pokémon Square, Whiscash Pond, the team bases | No | Already fetched. The team base is WORLD's headquarters picture and the post office and pond are in WORLD's story |
-| `assets/sky-maps/` (in the repo) | 440 Explorers of Sky maps, by map code | Owner's ROM, already ripped | Already cut. Which code is which place still has to be named. Branch `ccr-e4556dac` (REP-017) is adding the base interior |
+| `assets/rescue-maps/` (in the repo) | 245 Red Rescue Team maps as whole pictures: 57 Friend Areas, Pelipper Post Office (outside and inside), Makuhita Dojo, Pokémon Square, Whiscash Pond, the team bases | No | Already fetched. **WORLD and the launcher only** |
+| `assets/sky-maps/` (in the repo) | 440 Explorers of Sky maps, by map code | Owner's ROM, already ripped | Already cut. **WORLD and the launcher only** |
 | PokeAPI/sprites | `badges/` (Gym badges), every Berry icon, every Mail icon, Gimmighoul Coin | No | Verified. Only 6 berries and the coin are in `assets/items` today |
 | `pret/pokeemerald` | 43 Secret Base decoration sprites (dolls, mats, desks, plants, tents, bricks), the Secret Base tilesets (per cave, tree and shrub type), 32 Berry tree growth sheets, Pokéblock art, Mail papers, object sprites | No | Verified |
 | `pret/pokecrystal` | Mom's sprite, Mail borders | No | Verified. The bedroom decorations (bed, carpet, poster, dolls) are not checked yet |
@@ -32,7 +33,7 @@ Limits that shape the ideas:
 
 - **Gen 1 to 3 rooms are tiles, not pictures.** A Hoenn room has to be put together from a tileset and a layout by a small tool (as `tools/tiles/` does for dungeons), or laid out by the app from the decoration sprites.
 - **Gen 4 and 5 maps and furniture are 3D.** Only their 2D art (menus, icons, sprites) is usable, so Amity Square, the Underground bases, Join Avenue and the Villa are out as places.
-- **Two drawing scales.** Mainline overworld art uses 16-pixel tiles; the SpriteCollab Pokémon are Mystery Dungeon scale. A mixed room needs a test render before anything is built on it. Mystery Dungeon maps match the sprites as they are.
+- **Two drawing scales.** Mainline overworld art uses 16-pixel tiles; the SpriteCollab Pokémon are Mystery Dungeon scale. Every module place mixes the two (rule 4.0), so a test render of one room comes first, to settle the scale and where the Pokémon stand.
 - All of it is Nintendo art, on the same private-use footing as the Sky rip. One `tools/sprites/fetch_pret.py` with pinned commits would cover Gens 1 to 4, and each asset used gets its line in `docs/assets.md`.
 
 ## 3. Ideas, round one
@@ -60,35 +61,35 @@ A place is a real location from the games that a module opens onto or keeps a co
 |---|---|---|---|---|---|
 | P1 | BASE | Secret Base (Hoenn) | A1: the room, with the berry plot (A2) outside it | pokeemerald | First choice |
 | P2 | BASE | The player's bedroom (Johto) | An alternative or second room: the bed, carpet, poster and dolls Mom buys (A6) | pokecrystal, not checked | Check the art first |
-| P3 | PLAN | Day Care (Hoenn Route 117, or Chansey's Day Care in Sky) | Where Focus and Task Eggs wait. The Day-Care Man stands outside when one is ready, as in the games | pokeemerald tiles and sprites; the Sky map has to be found by code | Strong fit with Eggs |
+| P3 | PLAN | Day Care (Hoenn Route 117) | Where Focus and Task Eggs wait. The Day-Care Man stands outside when one is ready, as in the games | pokeemerald tiles and sprites | Strong fit with Eggs |
 | P4 | PLAN | Gym and Hall of Fame | A3: the badge case, and the room finished goals are recorded in | PokeAPI badges, pokeemerald Hall of Fame art (not checked) | Buildable |
 | P5 | PLAN | Trainers' School (Rustboro) | The weekly review, at the blackboard | pokeemerald tiles | Small; only if reviews want a scene |
-| P6 | CARE | Hot spring (Lavaridge, or the Hot Spring in Sky) | Care's quiet place: the party soaks while a routine is done. Visitors can turn up here | pokeemerald tiles, or a Sky map | Good fit; Sky version matches the sprites |
+| P6 | CARE | Hot spring (Lavaridge) | Care's quiet place: the party soaks while a routine is done. Visitors can turn up here | pokeemerald tiles | Good fit |
 | P7 | CARE | Berry Blender or Poffin house | A7's kitchen | pokeemerald, pokeplatinum | With A7 |
 | P8 | HEAL | Pokémon Center | The counter where an activity is logged; the heal jingle is already in `assets/sfx` | pokeemerald tiles | The most recognisable place in the list |
 | P9 | HEAL | Safari Zone or National Park | Where steps are walked (with A9 if its art is found, or on its own as the walk scene) | pokeemerald tiles | After P8 |
 | P10 | HEAL | Professor's lab | Field Research's home: the research notes and the discovery | pokeemerald tiles | Small |
-| P11 | MINT | Bank (Felicity Bank in Rescue Team, Duskull Bank in Sky) | Mint's counter for reconciling and review. WORLD.md lists the Duskull Bank as a later WORLD facility: one module has to own it | Felicity Bank is part of the Pokémon Square picture, not its own map; the Sky one has to be found | Needs the owner's call |
+| P11 | MINT | Poké Mart counter | Mint's counter for reconciling and review. The mainline games have no bank, and the Mystery Dungeon banks stay with WORLD (rule 4.0) | pokeemerald tiles | Small; P12 may be enough on its own |
 | P12 | MINT | Department Store (Lilycove) | The shop where Poké buys decorations, as its rooftop sale does in Hoenn. Gives Poké a cosmetic sink | pokeemerald tiles | With A1 |
-| P13 | LINK | Pelipper Post Office (Rescue Team) | Link's home: Mail (A4) and the Postcard Trail leave from here | In the repo, outside and inside | No fetch needed. WORLD's story also uses it |
-| P14 | LINK | Pokémon Center upstairs (Union Room, Cable Club) | Where a trade evolution is done with a Link Cord | pokeemerald tiles | Small |
-| P15 | Pokémon tab | Friend Areas (Rescue Team) | The PC's Pokémon are shown living in the Friend Area that suits their type, instead of only in boxes | 57 maps in the repo | No fetch needed. WORLD.md lists "Friend Area camps" as later: settle which it is |
+| P13 | LINK | Pokémon Center upstairs (Union Room, Cable Club) | Link's home: Mail (A4) and the Postcard Trail leave from here, and a trade evolution is done here with a Link Cord. (The Pelipper Post Office is Mystery Dungeon, so WORLD's.) | pokeemerald tiles | Buildable |
+| P15 | WORLD | Friend Areas (Rescue Team) | Stay WORLD's, as the "Friend Area camps" WORLD.md already lists for later; not a view of the PC (rule 4.0) | 57 maps in the repo | WORLD's to schedule |
 | P16 | Me | Trainer Card | The profile as the games' card: name, rank, badges (A3), time played | pokeemerald trainer card art (not checked) | Small |
 | P17 | GEAR | Radio Tower, Pokétch Company | A header picture only | pokecrystal or pokeplatinum | Low value |
+
+Left to WORLD and the launcher by rule 4.0: the team base, Pelipper Post Office, Friend Areas, the Duskull and Felicity banks, Chansey's Day Care, the Sky hot spring.
 
 Not possible with real art: Amity Square, the Sinnoh Underground, Join Avenue, the Resort Area Villa (all 3D).
 
 ## 5. Suggested order
 
-1. **Test render** of P1: a Hoenn room with the decorations and the Base party's SpriteCollab sprites, both palettes. It decides whether mainline rooms (P1, P3, P8, P12) are usable at all, or whether places should stay with Mystery Dungeon maps (P6 in Sky, P13, P15).
-2. **No-fetch places**: P13 (post office for LINK) and P15 (Friend Areas for the PC).
-3. **One fetch script** for pret and the missing PokeAPI folders, then A1, A2, A3.
+1. **Test render** of P1: a Hoenn Secret Base room with the decorations and the Base party's SpriteCollab sprites, both palettes. It settles the scale for every module place.
+2. **One fetch script** for pret (pinned commits) and the missing PokeAPI folders (badges, berries, mail), then A1, A2, A3.
+3. P8 (Pokémon Center for HEAL) and P3 (Day Care for PLAN), which reuse the room tool from step 1.
 4. A6 and P12 (Mom and the Department Store) once decorations exist; A5 at any time.
 
 ## 6. Questions for the owner
 
-1. **Mainline rooms or Mystery Dungeon maps for places?** It decides the look of every place. A: Mystery Dungeon maps only (they match the sprites; fewer places). B: mainline Gen 3 rooms where the test render looks right, Mystery Dungeon elsewhere. C: mainline only. *Recommended: B.*
-2. **Who owns the Bank?** WORLD.md has the Duskull Bank as a later facility; P11 makes it MINT's counter. A: MINT. B: WORLD. C: neither. *Recommended: A, since MINT is where money is recorded.*
-3. **Friend Areas: the PC's view or WORLD camps?** A: the PC (P15). B: WORLD camps as WORLD.md says. C: both, the same maps. *Recommended: A; one meaning per place.*
-4. **How are decorations earned?** A: from BASE upkeep only. B: upkeep, plus bought with Poké at the Department Store (P12). C: B plus Mom's gifts (A6). *Recommended: C, since it ties MINT and BASE together and gives Poké a sink.*
-5. **Which first?** A: the order in section 5. B: Secret Base only. C: another pick. *Recommended: A.*
+Answered by rule 4.0 (14 November 2026): places in modules are mainline rooms, not Mystery Dungeon maps; the banks and the Friend Areas stay with WORLD.
+
+1. **How are decorations earned?** A: from BASE upkeep only. B: upkeep, plus bought with Poké at the Department Store (P12). C: B plus Mom's gifts for MINT actions (A6). *Recommended: C, since it ties MINT and BASE together and gives Poké a sink.*
+2. **Which first?** A: the order in section 5. B: Secret Base only. C: another pick. *Recommended: A.*
