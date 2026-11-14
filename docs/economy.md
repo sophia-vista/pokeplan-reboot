@@ -128,7 +128,7 @@ Every paid moment of Care, Heal, Mint, Base and Link has a 10% chance (`PERCENT`
 
 World: a Paldea floor has Gimmighoul Coins 30% of the time (1 to 8, `WorldSim.COIN_PERCENT`, `COIN_MAX`), and Paldea's milestones pay 670 in all.
 
-### The Kecleon Shop (`KecleonShop`, 0.179.0)
+### The Kecleon Shop (`KecleonShop`, 0.182.0)
 
 Poké buys, besides the climbing-price Exp. Candy: **always in stock** every evolution stone 2,000, the Link Cord 3,000, the Everstone 1,500, 50 Gimmighoul Coins 600; **today's shelf**, 5 items chosen for the player's local day from trade and held evolution items 2,500, vitamins 1,000, perk held items 4,000 (Shiny Charm 12,000), Tera Shards 10,000, Nature Mint 5,000, Ability Capsule 6,000, Bottle Cap 8,000, Ability Patch 20,000. No countdown, nothing sold only on the shelf (every catalogue item comes round). *(tune)*
 
