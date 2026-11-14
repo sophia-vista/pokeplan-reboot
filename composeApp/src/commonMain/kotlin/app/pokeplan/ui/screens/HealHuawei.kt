@@ -50,14 +50,20 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
             else {
                 StatusLine("Screen reading", if (state.screenReading) "On" else "Off")
                 StatusLine("Notification reading", if (state.notificationReading) "On" else "Off")
-                seen.latestSteps?.let { StatusLine("Steps", it.toString()) }
-                if (!state.screenReading) {
+                val home = seen.home
+                (seen.latestSteps ?: home.steps)?.let { StatusLine("Steps", it.toString()) }
+                home.sleepMinutes?.let { StatusLine("Sleep", "${it / 60} h ${it % 60} min") }
+                home.getUpMinute?.let { StatusLine("Got up", "${it / 60}:${(it % 60).toString().padStart(2, '0')}") }
+                home.weight?.let { StatusLine("Weight", "${app.pokeplan.heal.HealRules.format(it)} ${home.weightUnit}") }
+                home.heartRate?.let { StatusLine("Heart rate", "$it bpm") }
+                home.exerciseKm?.let { StatusLine("Exercise", "${app.pokeplan.heal.HealRules.format(it)} km") }
+                if (!state.screenReading && !state.canSwitchItself) {
                     PixelButton("Turn on screen reading", { reader.openScreenReadingSettings() }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                     Text("Greyed out? App info → ⋮ → Allow restricted settings", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     PixelButton("Open App info", { reader.openAppInfo() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 }
                 if (!state.notificationReading) PixelButton("Turn on notification reading", { reader.openNotificationSettings() }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
-                if (state.screenReading) PixelButton("Read Huawei Health", {
+                if (state.screenReading || state.canSwitchItself) PixelButton("Read Huawei Health", {
                     note = null
                     val before = reader.seen().screens.size
                     state = state.copy(walking = true)
@@ -67,6 +73,8 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                         note = problem ?: if (added == 0) "No new pages" else "$added new ${if (added == 1) "page" else "pages"}" // copy-ok: result
                     }
                 }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = !state.walking, compact = true, loading = state.walking)
+                if (state.screenReading && !state.walking) PixelButton("Turn off screen reading", { reader.turnOff() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                Text("Off after each read, for banking apps", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
             if (!seen.isEmpty) {
                 StatusLine("Seen, not saved", "${count(seen.screens.size, "page")}, ${count(seen.notifications.size, "notification")}")

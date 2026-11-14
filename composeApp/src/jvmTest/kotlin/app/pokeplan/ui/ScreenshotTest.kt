@@ -1206,6 +1206,7 @@ class ScreenshotTest {
             override fun seen() = seen
             override fun clear() {}
             override fun walk(done: (String?) -> Unit) = done(null)
+            override fun turnOff() {}
             override fun openScreenReadingSettings() {}
             override fun openNotificationSettings() {}
             override fun openAppInfo() {}

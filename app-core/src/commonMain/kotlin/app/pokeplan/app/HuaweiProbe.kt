@@ -68,6 +68,9 @@ data class NotificationCapture(val atMillis: Long, val title: String, val text: 
 /** Everything the probe saw since it was last cleared. */
 data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifications: List<NotificationCapture> = emptyList()) {
     val latestSteps: Int? get() = notifications.lastOrNull { it.steps != null }?.steps
+
+    /** The Health page as the latest captures show it, each field from the newest page that had it. */
+    val home: HuaweiHome get() = screens.fold(HuaweiHome()) { acc, s -> acc.then(HuaweiHome.read(s)) }
     val isEmpty: Boolean get() = screens.isEmpty() && notifications.isEmpty()
 
     /**
@@ -112,4 +115,73 @@ class HuaweiProbe(private val maxScreens: Int = 40, private val maxNotifications
     }
 
     fun clear() { seen = HuaweiSeen() }
+}
+
+/**
+ * What Huawei Health's own Health page shows, read from a capture (INTEGRATIONS_AND_PRIVACY.md 5.2.2). Each field is null when the page did not show it:
+ * missing is never zero. The page gives no times (sleep is a length and a get-up time, weight has no date, exercise is the day's distance), so nothing here
+ * becomes a HEAL record by itself; the detail pages carry the times.
+ */
+data class HuaweiHome(
+    val steps: Int? = null,
+    val sleepMinutes: Int? = null,
+    /** The get-up time on the summary, as minutes after midnight. */
+    val getUpMinute: Int? = null,
+    val weight: Double? = null,
+    val weightUnit: String = "",
+    val heartRate: Int? = null,
+    val exerciseKm: Double? = null,
+) {
+    val isEmpty: Boolean get() = this == HuaweiHome()
+
+    /** [other]'s fields where it has them, this one's where it does not. */
+    fun then(other: HuaweiHome) = HuaweiHome(
+        other.steps ?: steps, other.sleepMinutes ?: sleepMinutes, other.getUpMinute ?: getUpMinute,
+        other.weight ?: weight, if (other.weight != null) other.weightUnit else weightUnit, other.heartRate ?: heartRate, other.exerciseKm ?: exerciseKm,
+    )
+
+    companion object {
+        private fun id(n: ScreenNode) = n.viewId.substringAfter(":id/")
+        private val getUp = Regex("""^(\d{1,2}):(\d{2}),?\s*Get-up time$""", RegexOption.IGNORE_CASE)
+        private val hoursMinutes = Regex("""^\s*(?:(\d{1,2})\s*h)?\s*(?:(\d{1,2})\s*min)?\s*$""", RegexOption.IGNORE_CASE)
+        private val bpm = Regex("""(\d{2,3})\s*bpm""", RegexOption.IGNORE_CASE)
+        private fun number(s: String) = s.replace(",", "").trim().toDoubleOrNull()
+
+        /** Reads the Health page's summary and cards from [capture]; an empty [HuaweiHome] when it is not that page. */
+        fun read(capture: ScreenCapture): HuaweiHome {
+            var home = HuaweiHome()
+            var card = ""
+            var data = ""
+            fun closeCard() {
+                if (card.isEmpty()) return
+                home = when (card) {
+                    "Sleep" -> hoursMinutes.matchEntire(data)?.takeIf { it.groupValues[1].isNotEmpty() || it.groupValues[2].isNotEmpty() }?.let { m ->
+                        val min = (m.groupValues[1].toIntOrNull() ?: 0) * 60 + (m.groupValues[2].toIntOrNull() ?: 0)
+                        if (min in 1..24 * 60) home.copy(sleepMinutes = min) else null
+                    } ?: home
+                    "Heart" -> bpm.find(data)?.groupValues?.get(1)?.toIntOrNull()?.takeIf { it in 25..250 }?.let { home.copy(heartRate = it) } ?: home
+                    "Exercise records" -> number(data)?.takeIf { it in 0.0..500.0 }?.let { home.copy(exerciseKm = it) } ?: home
+                    else -> home
+                }
+                card = ""; data = ""
+            }
+            for (n in capture.nodes) {
+                when (id(n)) {
+                    "function_set_items_title" -> { closeCard(); card = n.text.trim() }
+                    "function_set_items_data" -> if (card.isNotEmpty()) data = n.text.trim()
+                    "function_set_items_unit" -> if (card == "Weight") {
+                        val unit = n.text.trim()
+                        number(data)?.takeIf { unit == "kg" || unit == "lb" }?.let { home = home.copy(weight = it, weightUnit = unit) }
+                    }
+                }
+                getUp.matchEntire(n.description.ifBlank { n.text }.trim())?.let { m ->
+                    val h = m.groupValues[1].toInt(); val mi = m.groupValues[2].toInt()
+                    if (h in 0..23 && mi in 0..59) home = home.copy(getUpMinute = h * 60 + mi)
+                }
+                if (id(n) == "time_strength_layout_middle" || n.text.trim().endsWith(" steps", ignoreCase = true)) HuaweiHealth.stepsIn(n.text, n.description)?.let { home = home.copy(steps = it) }
+            }
+            closeCard()
+            return home
+        }
+    }
 }

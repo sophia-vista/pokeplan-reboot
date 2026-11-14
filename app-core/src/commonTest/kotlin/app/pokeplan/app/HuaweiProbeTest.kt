@@ -56,4 +56,39 @@ class HuaweiProbeTest {
         probe.clear()
         assertTrue(probe.seen.isEmpty)
     }
+
+    private fun n(id: String, text: String = "", description: String = "") = ScreenNode(text, description, "com.huawei.health:id/$id")
+
+    /** The Health page as Huawei Health 14 November 2026 lays it out (owner's capture, values made up). */
+    private val healthPage = ScreenCapture(1, "MainActivity", listOf(
+        n("action_bar_title", "Health"),
+        n("tv_steps", "Sleep"), n("data_layout_step_layout", description = "07:12, Get-up time"), n("stepsText", "07:12"), n("hw_health_steps", "Get-up time"),
+        n("tv_sport_intensity", "Steps"), n("time_strength_layout_middle", description = "4916 steps"), n("activity_hours", "Mood"),
+        n("function_set_items_title", "Exercise records"), n("function_set_items_data", "1.91"), n("function_set_items_unit", "km"), n("theme", "Get Smart Fit Plan"),
+        n("function_set_items_title", "Health Clovers"), n("function_set_items_data", "1/7"), n("function_set_items_unit", "Tasks completed"),
+        n("function_set_items_title", "Heart"), n("function_set_items_data", "Heart rate 83 bpm"), n("function_set_bottom_left", "11/14 | November 14"),
+        n("function_set_items_title", "Weight"), n("function_set_items_data", "54.8"), n("function_set_items_unit", "kg"), n("function_set_bottom_left", "Deficit: 1,085 kcal"),
+        n("function_set_items_title", "Sleep"), n("function_set_items_data", "5 h 9 min"), n("theme", "Take a 2-minute break"),
+        n("function_set_items_title", "Skin temperature"), n("function_set_items_data", "34.1°C | 34.1 degrees Celsius"),
+        n("function_set_items_title", "Cycle Calendar"), n("function_set_items_data", "Period expected to start in 11 days"),
+        n("content", "Devices"), n("equipment_name", "HUAWEI WATCH FIT 4 Pro"),
+    ))
+
+    @Test fun theHealthPageIsRead() {
+        val home = HuaweiHome.read(healthPage)
+        assertEquals(HuaweiHome(steps = 4916, sleepMinutes = 309, getUpMinute = 7 * 60 + 12, weight = 54.8, weightUnit = "kg", heartRate = 83, exerciseKm = 1.91), home)
+    }
+
+    @Test fun anotherPageReadsAsNothing() {
+        assertTrue(HuaweiHome.read(ScreenCapture(1, "Me", listOf(n("content_title", "My data"), n("vip_text", "HUAWEI Health+")))).isEmpty)
+        val odd = ScreenCapture(1, "", listOf(n("function_set_items_title", "Sleep"), n("function_set_items_data", "--"), n("function_set_items_title", "Weight"), n("function_set_items_data", "--"), n("function_set_items_unit", "kg")))
+        assertTrue(HuaweiHome.read(odd).isEmpty, "a card with no value is missing, not zero")
+    }
+
+    @Test fun theNewestPageWinsFieldByField() {
+        val later = ScreenCapture(2, "MainActivity", listOf(n("function_set_items_title", "Weight"), n("function_set_items_data", "54.2"), n("function_set_items_unit", "kg")))
+        val seen = HuaweiSeen(listOf(healthPage, later))
+        assertEquals(54.2, seen.home.weight)
+        assertEquals(309, seen.home.sleepMinutes, "a field the newer page lacks keeps the older value")
+    }
 }

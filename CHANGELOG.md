@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.184.0
+
+Huawei Health reader, second step (REP-046, `INTEGRATIONS_AND_PRIVACY.md` 5.2.2), from the owner's first capture. Nothing is saved or paid yet.
+
+- **Banking apps open again.** MariBank and GCash refuse to run while a sideloaded accessibility service is on. Screen reading now turns itself off as soon as a read ends, however it ends, and Connections has a Turn off button. Optional one-tap reads: after `adb shell pm grant app.pokeplan android.permission.WRITE_SECURE_SETTINGS` from a computer, Read Huawei Health switches screen reading on for that one read and off after.
+- **The walk opens the card pages.** After scrolling the Health page, Read Huawei Health opens the Sleep, Weight and Exercise records cards one at a time (found by their title), scrolls each a little and goes back. It stops if Back does not return to the Health page. These three cards are the only things it taps.
+- **Only what is on screen is captured.** Huawei Health keeps its hidden Devices and Me tabs in the window, which made the first capture too long to paste.
+- **The Health page is read:** steps, last night's sleep and get-up time, weight, heart rate and the day's exercise distance show on Connections. They are not saved, because the page gives no times; the card pages should have them.
+
 ## 0.183.0
 
 Reading Huawei Health on the phone, probe stage (REP-046, owner decision 14 November 2026, `INTEGRATIONS_AND_PRIVACY.md` 5.2.2). Nothing is saved or paid yet, so nothing stored on the phone changes.
