@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Heal's Huawei Health reader (INTEGRATIONS_AND_PRIVACY.md 5.2.2): Huawei Health's package only, so Android sends no other app's screens. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:packageNames="com.huawei.health"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagReportViewIds"
+    android:canRetrieveWindowContent="true"
+    android:canPerformGestures="false"
+    android:notificationTimeout="300"
+    android:isAccessibilityTool="false"
+    android:description="@string/huawei_reader_description" />
