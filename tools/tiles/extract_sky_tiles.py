@@ -13,6 +13,12 @@ water block (columns 3-5), and the floor tile with its two alternates (row 3, co
 chosen by the game's own rules, so the corners, edges and middles are the game's. The first palette
 frame is used (the water's sparkle colours are not animated). Nintendo / Chunsoft art: private use only.
 
+Beside each it writes assets/tiles/ex-NNN-auto.png, the full autotile set the launcher's dungeon floor (REP-052) draws
+walls and water of any shape with: 47 columns, one per way a square can touch its eight neighbours once the
+corners that cannot show are dropped (a diagonal counts only when both squares beside it are the same; the order is
+[blob_masks]), and six rows: the wall's three variants, then the water's three, each chunk the game's own pick for
+that neighbourhood. The bits are N 1, NE 2, E 4, SE 8, S 16, SW 32, W 64, NW 128 (set: the neighbour is the same).
+
 Usage: python3 tools/tiles/extract_sky_tiles.py ROM.nds [--sheets DIR]   (--sheets also saves every chunk of each tileset)
 """
 import argparse
@@ -31,6 +37,35 @@ from skytemple_files.graphics.dma.util import get_tile_neighbors
 ROM_SHA1 = "5fa96ca8d8dd6405d6cd2bad73ed68bc73a9d152"
 OUT = Path(__file__).resolve().parents[2] / "assets" / "tiles"
 TILE = 24
+
+# Where each neighbour sits in a 3 x 3 grid around the middle square, by bit (see the docstring).
+NEIGHBOURS = {1: (1, 0), 2: (2, 0), 4: (2, 1), 8: (2, 2), 16: (1, 2), 32: (0, 2), 64: (0, 1), 128: (0, 0)}
+
+
+def blob_masks():
+    """The 47 neighbourhoods an autotile can tell apart, ascending: a diagonal bit is kept only when both squares beside it are set."""
+    def reduce(m):
+        for d, a, b in ((2, 1, 4), (8, 4, 16), (32, 16, 64), (128, 64, 1)):
+            if not (m & a and m & b):
+                m &= ~d
+        return m
+    return sorted({reduce(m) for m in range(256)})
+
+
+def auto_atlas(dma, chunk):
+    """The full autotile set of a tileset: 47 columns ([blob_masks]) by six rows (wall variants 0-2, water variants 0-2)."""
+    masks = blob_masks()
+    out = Image.new("RGB", (TILE * len(masks), TILE * 6))
+    for k, ctype in enumerate((DmaType.WALL, DmaType.WATER)):
+        for col, m in enumerate(masks):
+            grid = [[0] * 3 for _ in range(3)]
+            grid[1][1] = 1
+            for bit, (x, y) in NEIGHBOURS.items():
+                if m & bit:
+                    grid[y][x] = 1
+            for v, idx in enumerate(dma.get(ctype, get_tile_neighbors(grid, 1, 1, True))[:3]):
+                out.paste(chunk(idx), (col * TILE, (k * 3 + v) * TILE))
+    return out
 
 
 def main():
@@ -73,9 +108,15 @@ def main():
             alias[n] = seen[digest]
             print("tileset", n, "is the same as", seen[digest])
             (OUT / f"ex-{n:03d}.png").unlink(missing_ok=True)
+            (OUT / f"ex-{n:03d}-auto.png").unlink(missing_ok=True)
             continue
         seen[digest] = n
         atlas.save(OUT / f"ex-{n:03d}.png", optimize=True)
+        auto = auto_atlas(dma, chunk)
+        # Lossless in a palette (a tileset has far fewer than 256 colours): a quarter of the size of an RGB file.
+        if len(auto.getcolors(256) or []) > 0:
+            auto = auto.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
+        auto.save(OUT / f"ex-{n:03d}-auto.png", optimize=True)
         rows.append((n, len(dpl.palettes), chunks.height // TILE))
         if args.sheets:
             Path(args.sheets).mkdir(parents=True, exist_ok=True)

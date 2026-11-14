@@ -34,6 +34,7 @@ import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
 import app.pokeplan.core.reward.CandyType
 import app.pokeplan.core.reward.RewardRules
+import app.pokeplan.core.reward.TownFinds
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.reward.AchievementEvent
@@ -2156,6 +2157,28 @@ class GameStore(
 
     /** Uses an item that needs no choice: a vitamin, a berry, the Ability Capsule or Patch, a Tera Shard. */
     fun useItem(itemId: String, pokemonId: String): Boolean = useItem(ItemUse.Plain(itemId), pokemonId)
+
+    /** Today's finds on the launcher town's floor ([TownFinds]), in order; a collected one is null. */
+    fun townFinds(): List<TownFinds.Find?> {
+        val taken = Counters.TOWN_FINDS.get(data.counters, today)
+        return TownFinds.forDay(epochDay).mapIndexed { i, f -> f.takeIf { taken and (1 shl i) == 0 } }
+    }
+
+    /** Picks up today's find number [index] from the town's floor: into the Bag (over the limit, Poké), or its Poké. Null if it is gone. */
+    fun collectTownFind(index: Int): Reward? {
+        val find = townFinds().getOrNull(index) ?: return null
+        val reward = if (find.isPoke) Reward.Poke(find.amount) else Reward.ItemDrop(find.itemId, find.amount)
+        update { d ->
+            val taken = Counters.TOWN_FINDS.get(d.counters, today)
+            val counters = Counters.TOWN_FINDS.set(d.counters, today, taken or (1 shl index))
+            val player = if (find.isPoke) d.player.copy(coins = d.player.coins + find.amount) else {
+                val (bag, over) = d.player.inventory.addCapped(find.itemId, find.amount)
+                d.player.copy(inventory = bag, coins = d.player.coins + over)
+            }
+            noted(d, log("Town floor", listOf(reward), d.copy(counters = counters, player = player)), "town:find:$epochDay:$index", "WORLD", "town:$epochDay", "town-find", nowMillis)
+        }
+        return reward
+    }
 
     /** Puts items in the bag (gifts, quest rewards, the shop). Anything over the bag limit turns into coins. */
     fun grant(itemId: String, amount: Int) = update { d ->

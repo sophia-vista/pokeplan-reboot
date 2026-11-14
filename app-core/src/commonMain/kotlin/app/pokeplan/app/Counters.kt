@@ -54,6 +54,9 @@ internal object Counters {
     /** Mini-quests done on the streak day; the detail is the quest. */
     val MINI_QUEST = PeriodCounter("mq-")
 
+    /** Which of today's finds on the launcher town's floor are collected: a bit per find (`TownFinds`). */
+    val TOWN_FINDS = PeriodCounter("town-finds-")
+
     /** The streak day's mini-quest reroll. */
     val MINI_QUEST_REROLL = PeriodCounter("mq-reroll-")
 

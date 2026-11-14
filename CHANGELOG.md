@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.188.0
+
+The launcher town is a Mystery Dungeon floor (owner, 14 November 2026; REP-052, `FEATURES/LAUNCHER.md` 4.5). `RewardRules.VERSION` 27.
+
+- **Rooms and corridors** from the dungeon's own tiles across every page, walls everywhere else, ponds in some rooms and lakes in the walls; a new floor each day, and Launcher settings → Town → New floor layout for another one. Rooms go where the widgets are not.
+- **Real shapes:** each Explorers of Sky tileset's full autotile set (the 47 ways a square can meet its neighbours, the game's three variants) cut from the ROM by `tools/tiles/extract_sky_tiles.py`; the named towns that are Explorers dungeons use it too. Red Rescue Team tilesets keep rectangles until that ROM's sets are cut.
+- **Walking on the floor:** the Pokémon follow paths over the floor; Water types wade into water, Flying types cross walls; widgets are soft walls (nobody stops under one). A Guardian comes up the stairs and goes down them.
+- **Traps, for show:** hidden Warp, Spin, Slumber, Gust, Slow and Trip traps that a Pokémon finds by stepping on them, and sometimes a Wonder Tile; the game's own tiles (`tools/tiles/extract_sky_floor.py`).
+- **Three finds a day** on the floor (`TownFinds`: berries, vitamins or a little Poké), drawn with the game's floor pictures; a tap picks one up into the Bag, once a day.
+
 ## 0.187.0
 
 A kinder economy and a Poké Mart of its own (owner, 14 November 2026: "economy seems stingy", "anything for individual Pokémon growth should be generous", "held items?"). `RewardRules.VERSION` 26.

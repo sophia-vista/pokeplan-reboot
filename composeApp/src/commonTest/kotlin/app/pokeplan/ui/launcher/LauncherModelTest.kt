@@ -61,6 +61,15 @@ class LauncherModelTest {
     }
 
     @Test
+    fun aNewFloorLayoutCountsForItsDayOnlyAndIsRemembered() {
+        val prefs = LauncherPrefs().withNewLayout(20_000).withNewLayout(20_000)
+        assertEquals(2, prefs.layoutRollOn(20_000))
+        assertEquals(0, prefs.layoutRollOn(20_001), "a new day starts on the day's own floor")
+        assertEquals(1, prefs.withNewLayout(20_001).layoutRollOn(20_001))
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+    }
+
+    @Test
     fun theTownSceneIsRememberedAndAnUnknownOneIgnored() {
         val prefs = LauncherPrefs().withScene("beach")
         assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
