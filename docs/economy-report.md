@@ -31,7 +31,7 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 | Task Eggs after 60 days | 40.0 (34.0 to 45.0) |
 | Rare Candies earned in 60 days (incl. transfers) | 2517 (2162 to 2878) |
 | Super Candies earned in 60 days | 109 (84.0 to 132) |
-| Coins after 60 days | 1959 (1603 to 2285) |
+| Coins after 60 days | 3954 (3341 to 4574) |
 | Item drops in 60 days | 32.0 (25.0 to 39.0) |
 | Buddy level after 60 days | 100 (100 to 100) |
 | Shinies in 180 days | 2.0 (0.0 to 4.0) |
@@ -54,7 +54,7 @@ Evolving the whole Plan Region needs 82 Super Candies: at the 60-day rate (109) 
 | Task Eggs after 60 days | 138 (128 to 151) |
 | Rare Candies earned in 60 days (incl. transfers) | 10463 (9365 to 11296) |
 | Super Candies earned in 60 days | 364 (294 to 427) |
-| Coins after 60 days | 9120 (8160 to 9941) |
+| Coins after 60 days | 18016 (16428 to 19225) |
 | Item drops in 60 days | 136 (118 to 150) |
 | Buddy level after 60 days | 100 (100 to 100) |
 | Shinies in 180 days | 7.0 (3.0 to 10.0) |
@@ -77,7 +77,7 @@ Evolving the whole Plan Region needs 82 Super Candies: at the 60-day rate (364) 
 | Task Eggs after 60 days | 336 (318 to 350) |
 | Rare Candies earned in 60 days (incl. transfers) | 24991 (23752 to 26335) |
 | Super Candies earned in 60 days | 926 (861 to 1023) |
-| Coins after 60 days | 31137 (29116 to 33134) |
+| Coins after 60 days | 53905 (50546 to 57189) |
 | Item drops in 60 days | 270 (259 to 291) |
 | Buddy level after 60 days | 100 (100 to 100) |
 | Shinies in 180 days | 15.0 (11.0 to 20.0) |

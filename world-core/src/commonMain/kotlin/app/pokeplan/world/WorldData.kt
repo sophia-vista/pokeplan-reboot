@@ -93,7 +93,7 @@ data class WorldData(
     /** The Guardian has been faced (the story is complete) and whether its reward was given. */
     val guardianDone: Boolean = false,
     val guardianGranted: Boolean = false,
-    /** Rare Candies bought from the shop so far (the price rises with each). */
+    /** Rare Candies bought at the Kecleon Shop before 0.187.0, when it sold them at a climbing price (candies are the Poké Mart's now); kept so old saves read. */
     val shopCandies: Int = 0,
     /** For a daily or weekly job, the day number it was last claimed. */
     val missionClaimedDay: Map<String, Long> = emptyMap(),
@@ -295,14 +295,6 @@ data class WorldData(
         return copy(pokeEarned = pokeEarned + step.poke, items = bag, researchClaimed = researchClaimed + species)
     }
 
-    /** The Poké the next shop Rare Candy costs. *(tune)* */
-    val candyPrice: Int get() = Shop.CANDY_BASE + Shop.CANDY_STEP * shopCandies
-
-    /** Buys a Rare Candy at the Kecleon Shop; null when the [balance] is short. The caller charges [candyPrice] (as it was before) and puts the candy in the Bag. */
-    fun buyCandy(balance: Int): WorldData? {
-        if (balance < candyPrice) return null
-        return copy(shopCandies = shopCandies + 1)
-    }
 
     /** Brews at the Café at [now] (the caller took the berries; null while a brew still works, so berries are never wasted): every floor finished in the next [Cafe.HOURS] hours is luckier. */
     fun brew(now: Long): WorldData? = if (now < brewUntil) null else copy(brewUntil = now + Cafe.HOURS * 3_600_000L)

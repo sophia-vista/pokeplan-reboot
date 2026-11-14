@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.ItemUse
 import app.pokeplan.core.pokemon.Items
-import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.Stat
@@ -49,24 +48,6 @@ internal fun BagView(model: AppModel) {
     val player = model.data.player
     var open by remember { mutableStateOf<String?>(null) }
     val items = player.inventory.counts.entries.filter { it.value > 0 }.sortedWith(compareBy({ Items.category(it.key)?.ordinal ?: 99 }, { it.key }))
-    if (store.sees(Feature.COINS)) TextBox {
-        // The shop: coins buy Exp. Candies.
-        val each = Shop.COINS_PER_RARE_CANDY
-        val afford = player.coins / each
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("${player.coins} Poké", style = MaterialTheme.typography.titleMedium)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                ItemIcon(Items.RARE_CANDY, size = Sizes.Icon)
-                Text("Exp. Candy: $each Poké each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                listOf(1, 10).forEach { n ->
-                    PixelButton("Buy $n", { if (store.buyRareCandies(n) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = afford >= n)
-                }
-                PixelButton("Buy $afford", { if (store.buyRareCandies(afford) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = afford > 10)
-            }
-        }
-    }
     if (items.isEmpty()) EmptyState("The bag is empty", icon = "seal-bag", sleeper = true, action = "Start a focus session" to { model.open(Place.FOCUS, true) })
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())

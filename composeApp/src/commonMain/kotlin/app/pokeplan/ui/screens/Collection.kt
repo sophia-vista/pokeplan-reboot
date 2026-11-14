@@ -63,7 +63,7 @@ import app.pokeplan.ui.theme.SectionLabel
 
 private enum class Section(val title: String, val icon: String) {
     PARTY("Party", "poke-ball"), PC("PC boxes", "storage-key"), DEX("Pokédex", "great-ball"), BAG("Bag", "seal-bag"),
-    QUESTS("Quests", "oaks-letter"),
+    MART("Poké Mart", "amulet-coin"), QUESTS("Quests", "oaks-letter"),
 }
 
 /** What the Pokémon tab shows: its menu, a section, a Pokédex entry or one Pokémon; each one opened goes a level deeper. */
@@ -107,6 +107,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                             MenuEntry("PC", "storage-key", "PC boxes", count = "${player.pokemon.count { inPc(store, it) }}"),
                             MenuEntry("DEX", "great-ball", "Pokédex", count = "${player.caught.size} caught"),
                             if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", count = "${player.inventory.counts.count { it.value > 0 }}") else null,
+                            if (store.sees(Feature.COINS)) MenuEntry("MART", "amulet-coin", "Poké Mart", count = "${player.coins} Poké") else null,
                             if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", count = if (store.activeQuests.isEmpty()) "" else "${store.activeQuests.size}", badge = ready),
                         ),
                     ) { key -> section = Section.valueOf(key) }
@@ -160,6 +161,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 }
                 Section.DEX -> PokedexView(model, dexView, { dexView = it }) { dexEntry = it }
                 Section.BAG -> BagView(model)
+                Section.MART -> MartView(model)
                 Section.QUESTS -> QuestsView(model)
             }
         }

@@ -46,12 +46,6 @@ object Research {
     )
 }
 
-/** The Kecleon Shop: Poké buys Rare Candies at a price that climbs with each one bought (so Poké always has a use). *(tune)* */
-object Shop {
-    const val CANDY_BASE = 2_500
-    const val CANDY_STEP = 500
-}
-
 /** Spinda's Café: three berries from the Bag make a brew that lasts [HOURS] hours: 30% more Exploration XP, 5% more treasure chance, 1% more find chance. *(tune)* */
 object Cafe {
     const val HOURS = 3

@@ -112,7 +112,7 @@ class BackChainTest {
     @Test
     fun pokemonSectionsGoBackToThePokemonMenu() {
         val menu = model().let { m -> var h: List<Int> = emptyList(); scene({ app.pokeplan.ui.screens.CollectionScreen(m, startSection = -1) }) { s -> s.settle(); h = s.header() }; h }
-        for (i in 0..3) {
+        for (i in 0..4) {
             val m = model()
             scene({ app.pokeplan.ui.screens.CollectionScreen(m, startSection = i) }) { s ->
                 s.settle()
