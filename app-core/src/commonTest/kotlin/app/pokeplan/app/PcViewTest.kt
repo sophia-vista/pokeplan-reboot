@@ -67,4 +67,34 @@ class PcViewTest {
         assertEquals(sorted.take(30).map { it.id }, view.copy(box = -2).page(sorted).map { it.id })
         assertTrue(view.page(emptyList()).isEmpty())
     }
+
+    @Test
+    fun showsOnlyThePcUntilEveryoneIsAsked() {
+        val places = box.associate { p ->
+            val n = p.id.drop(1).toInt()
+            p.id to when (n % 5) { 0 -> PcPlace.BUDDY; 1 -> PcPlace.PARTY; 2 -> PcPlace.WORLD; else -> PcPlace.PC }
+        }
+        val placeOf = { id: String -> places.getValue(id) }
+        val pcOnly = PcView().apply(box, placeOf) { false }
+        assertEquals(places.filterValues { it == PcPlace.PC }.keys, pcOnly.map { it.id }.toSet())
+        assertEquals(box.size, PcView(everyone = true).apply(box, placeOf) { false }.size)
+        val world = PcView(everyone = true, where = PcPlace.WORLD).apply(box, placeOf) { false }
+        assertEquals(places.filterValues { it == PcPlace.WORLD }.keys, world.map { it.id }.toSet())
+        assertEquals(pcOnly.map { it.id }, PcView(where = PcPlace.WORLD).apply(box, placeOf) { false }.map { it.id }, "where only counts with everyone")
+        assertTrue(PcView(everyone = true, where = PcPlace.BUDDY).filtering)
+        assertTrue(!PcView(everyone = true).filtering)
+        val cleared = PcView(everyone = true, where = PcPlace.GEAR, shinyOnly = true, search = "x", box = 3, sort = PcSort.LEVEL).cleared()
+        assertEquals(PcView(everyone = true, sort = PcSort.LEVEL), cleared)
+    }
+
+    @Test
+    fun placeGroupsFollowPlaces() {
+        assertEquals(PcPlace.LEAD, PcPlace.of(Place.Party("plan"), isLead = true))
+        assertEquals(PcPlace.PARTY, PcPlace.of(Place.Party("plan"), isLead = false))
+        assertEquals(PcPlace.GUARDIAN, PcPlace.of(Place.Guardian("heal"), false))
+        assertEquals(PcPlace.WORLD, PcPlace.of(Place.WorldTeam(1), false))
+        assertEquals(PcPlace.GEAR, PcPlace.of(Place.GearHelper("CLOCK"), false))
+        assertEquals(PcPlace.BUDDY, PcPlace.of(Place.Buddy, false))
+        assertEquals(PcPlace.PC, PcPlace.of(Place.Pc, false))
+    }
 }

@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.179.0
+## 0.181.0
 
 The launcher's town (LAUNCHER.md 6.2): calmer, more natural roaming, and a setting for it. Cosmetic only: no reward number changes, `RewardRules.VERSION` is unchanged, nothing stored needs a migration.
 
@@ -15,6 +15,13 @@ The launcher's town (LAUNCHER.md 6.2): calmer, more natural roaming, and a setti
 - The volume and liveliness rows' value text now shares the label's centre line.
 - **The clock widget's battery shows its charge:** empty, one, two or three bars (Pixelarticons' battery levels), red at 20% or lower, with a bolt beside it while charging, instead of an empty outline whatever the charge.
 - **The agenda widget on a light day:** on the widget grid the list starts at the top instead of floating in the middle of its cells, it shows only whole rows (never one cut in half), the time column is as wide as the times instead of a third of the row, and the next day with anything on it (within a week) fills the room left, dimmed under its own heading ("Tomorrow" or the date).
+## 0.180.0
+
+A better PC. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone needs a migration.
+
+- **The PC shows the Pokémon resting in it**, as before, and a **Show all Pokémon** switch lists every one you own: the buddy, the leads and parties, the Guardians, the World teams and the Pokégear helpers. Each tile then names its place (Buddy, Plan lead, Care, Heal Guardian, World, Pokégear).
+- **Where** joins the sort and filters while every Pokémon shows: PC, Buddy, Leads, Parties, Guardians, World teams or Pokégear. Clear keeps the switch and the sort.
+- An empty PC with Pokémon elsewhere offers Show all Pokémon instead of a dead end.
 
 ## 0.178.0
 
