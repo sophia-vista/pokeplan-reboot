@@ -413,20 +413,20 @@ class ScreenshotTest {
         val room = HoennRoom.room(
             HoennRoom.floor("SecretBase_Tree1", "tree", 11, 9),
             listOf(
-                HoennRoom.Placed("thunder_mat", 96, 106),
+                HoennRoom.Placed("thunder_mat", 88, 102),
                 HoennRoom.Placed("lapras_doll", 70, 56),
                 HoennRoom.Placed("snorlax_doll", 104, 56),
-                HoennRoom.Placed("red_plant", 136, 56),
-                HoennRoom.Placed("pretty_desk", 136, 100),
-                HoennRoom.Placed("tropical_plant", 44, 112),
+                HoennRoom.Placed("red_plant", 140, 56),
+                HoennRoom.Placed("pretty_desk", 142, 110),
+                HoennRoom.Placed("tropical_plant", 36, 112),
             ),
             listOf(
-                HoennRoom.Mon(25, 80, 90),   // Pikachu
-                HoennRoom.Mon(133, 116, 80), // Eevee
-                HoennRoom.Mon(143, 56, 84),  // Snorlax
-                HoennRoom.Mon(255, 100, 118), // Torchic
-                HoennRoom.Mon(197, 70, 112), // Umbreon
-                HoennRoom.Mon(448, 118, 118), // Lucario
+                HoennRoom.Mon(25, 52, 86),    // Pikachu
+                HoennRoom.Mon(133, 92, 80),   // Eevee
+                HoennRoom.Mon(255, 128, 88),  // Torchic
+                HoennRoom.Mon(197, 62, 118),  // Umbreon
+                HoennRoom.Mon(448, 112, 118), // Lucario
+                HoennRoom.Mon(258, 88, 104),  // Mudkip, on the mat
             ),
         ).toComposeImageBitmap()
         listOf(2, 3).forEach { scale ->
