@@ -42,6 +42,8 @@ import app.pokeplan.ui.theme.PmdText
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 import kotlin.math.ceil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 /**
@@ -71,12 +73,11 @@ internal val FLOOR_ITEM_COLUMNS = listOf(
     "berry-spicy", "berry-sour", "berry-sweet", "berry-dry", "berry-bitter", "hp-up", "protein", "iron", "calcium", "zinc", "carbos", TownFinds.POKE,
 )
 
-/** How [mon] gets about the floor: a Flying type over walls, a Water type into water, the rest on foot. */
-internal fun moverOf(mon: OwnedPokemon): Mover = when {
-    PokemonType.FLYING in mon.form.types -> Mover.FLIER
-    PokemonType.WATER in mon.form.types -> Mover.WADER
-    else -> Mover.WALKER
-}
+/** How [mon] gets about the floor ([Mover]): a Ghost type through walls, a Water or Flying type over water, the rest on foot. */
+internal fun moverOf(mon: OwnedPokemon): Mover = Mover(
+    water = PokemonType.WATER in mon.form.types || PokemonType.FLYING in mon.form.types,
+    walls = PokemonType.GHOST in mon.form.types,
+)
 
 /**
  * Where the squares of a [floor] are on the town: [tilePx] screen pixels a square, [screenPx] a page, [heightPx] tall. A Pokémon's spot is
@@ -101,7 +102,7 @@ internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val scr
     fun nearestResting(wanted: Cell, mover: Mover, taken: Set<Cell>): Cell? {
         for (r in 0..6) {
             val ring = (-r..r).flatMap { dy -> (-r..r).map { dx -> Cell(wanted.x + dx, wanted.y + dy) } }.filter { maxOf(kotlin.math.abs(it.x - wanted.x), kotlin.math.abs(it.y - wanted.y)) == r }
-            ring.firstOrNull { floor.canStand(it, mover) && !floor.isSoft(it) && it != floor.stairs && it !in taken }?.let { return it }
+            ring.firstOrNull { floor.canRest(it, mover) && it !in taken }?.let { return it }
         }
         return null
     }
@@ -128,7 +129,8 @@ private fun floorImage(name: String): ImageBitmap? {
     val image by produceState(floorImages[name], name) {
         value = floorImages[name]
         if (value == null) {
-            value = orNull { Res.readBytes("files/tiles/$name.png").decodeToImageBitmap() }
+            // Decoded off the main thread, so coming back to the home screen does not wait on it.
+            value = orNull { Res.readBytes("files/tiles/$name.png").let { bytes -> withContext(Dispatchers.Default) { bytes.decodeToImageBitmap() } } }
             floorImages[name] = value
         }
     }
@@ -145,37 +147,53 @@ internal fun FloorBackdrop(scene: String, floor: DungeonFloor, pixel: Int, weath
     val name = TownTiles.source(scene)
     val atlas = floorImage(name)
     val auto = if (floor.organic) floorImage("$name-auto") else null
+    // The weather's colours, worked out off the main thread by [gradedFor] (once per tileset and weather).
     val shown by produceState(atlas, atlas, weather) { value = atlas?.let { gradedFor(name, it, weather) } }
     val shownAuto by produceState(auto, auto, weather) { value = auto?.let { gradedFor("$name-auto", it, weather) } }
     val fade by rememberFadeIn(atlas != null)
-    val seed = floor.stairs.hashCode()
-    key(floor) {
-        Box(
-            modifier.graphicsLayer {}.drawWithCache {
-                val tile = TILE * pixel
-                onDrawBehind {
-                    val image = shown ?: atlas ?: return@onDrawBehind drawRect(PmdPalette.Loading)
-                    val autoImage = shownAuto ?: auto
-                    val map = floor.map
-                    for (y in 0 until floor.rows) for (x in 0 until floor.cols) {
-                        val dx = x * tile
-                        if (dx > size.width) continue
-                        val cell = map.at(x, y)
-                        val (sx, sy) = if (cell != TownCell.GROUND && autoImage != null && floor.organic) {
-                            val roll = ((x * 73856093) xor (y * 19349663) xor (seed * 83492791)).let { (it ushr 3) % 100 }
-                            val variant = if (roll < 80) 0 else if (roll < 90) 1 else 2
-                            Autotile.column(map, x, y) * TILE to ((if (cell == TownCell.WATER) 3 else 0) + variant) * TILE
-                        } else map.atlas(x, y, seed).let { (ax, ay) -> ax * TILE to ay * TILE }
-                        drawImage(
-                            if (cell != TownCell.GROUND && autoImage != null && floor.organic) autoImage else image, srcOffset = IntOffset(sx, sy), srcSize = IntSize(TILE, TILE),
-                            dstOffset = IntOffset(dx, y * tile), dstSize = IntSize(tile, tile), alpha = fade, filterQuality = FilterQuality.None,
-                        )
-                        if (!floor.organic || autoImage == null) map.innerCorners(x, y).let { if (it != 0) drawInnerCorners(image, it, dx, y * tile, TILE, pixel) }
-                    }
+    // Which tile each square draws, worked out once per floor (not on every draw), and the drawing kept in a layer of its own whose alpha is
+    // the fade-in: a recomposition (the clock's seconds) or a walking sprite never draws the tiles again.
+    val tiles = remember(floor) {
+        val seed = floor.stairs.hashCode()
+        val map = floor.map
+        IntArray(floor.rows * floor.cols * 3).also { out ->
+            for (y in 0 until floor.rows) for (x in 0 until floor.cols) {
+                val i = (y * floor.cols + x) * 3
+                val cell = map.at(x, y)
+                if (cell != TownCell.GROUND && floor.organic) {
+                    val roll = ((x * 73856093) xor (y * 19349663) xor (seed * 83492791)).let { (it ushr 3) % 100 }
+                    val variant = if (roll < 80) 0 else if (roll < 90) 1 else 2
+                    out[i] = Autotile.column(map, x, y) * TILE; out[i + 1] = ((if (cell == TownCell.WATER) 3 else 0) + variant) * TILE; out[i + 2] = 1
+                } else {
+                    val (ax, ay) = map.atlas(x, y, seed)
+                    out[i] = ax * TILE; out[i + 1] = ay * TILE; out[i + 2] = map.innerCorners(x, y) shl 1
                 }
-            },
-        )
+            }
+        }
     }
+    val draw = remember(floor, pixel, atlas, auto, tiles) {
+        Modifier.graphicsLayer { alpha = fade }.drawWithCache {
+            val tile = TILE * pixel
+            onDrawBehind {
+                val image = shown ?: atlas ?: return@onDrawBehind drawRect(PmdPalette.Loading)
+                val autoImage = shownAuto ?: auto
+                for (y in 0 until floor.rows) for (x in 0 until floor.cols) {
+                    val dx = x * tile
+                    if (dx > size.width) continue
+                    val i = (y * floor.cols + x) * 3
+                    val fromAuto = tiles[i + 2] == 1
+                    if (fromAuto && autoImage == null) continue
+                    drawImage(
+                        if (fromAuto) autoImage!! else image, srcOffset = IntOffset(tiles[i], tiles[i + 1]), srcSize = IntSize(TILE, TILE),
+                        dstOffset = IntOffset(dx, y * tile), dstSize = IntSize(tile, tile), filterQuality = FilterQuality.None,
+                    )
+                    val corners = tiles[i + 2] shr 1
+                    if (!fromAuto && corners != 0) drawInnerCorners(image, corners, dx, y * tile, TILE, pixel)
+                }
+            }
+        }
+    }
+    Box(modifier.then(draw))
 }
 
 /** A find just picked up: it rises and fades with its name. */
