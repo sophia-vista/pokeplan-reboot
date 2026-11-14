@@ -74,6 +74,18 @@ class DungeonFloorTest {
     }
 
     @Test
+    fun onlyGhostsPassWallsAndOnlySwimmersAndFliersGoInWaterAndNobodyRestsOnATrap() {
+        val f = floor(11)
+        val all = (0 until f.rows).flatMap { y -> (0 until f.cols).map { Cell(it, y) } }
+        val wall = all.first { it.x in 1 until f.cols - 1 && it.y in 1 until f.rows - 1 && f.map.at(it.x, it.y) == TownCell.WALL }
+        assertTrue(!f.canStand(wall, Mover.WALKER) && !f.canStand(wall, Mover.WADER) && f.canStand(wall, Mover.GHOST))
+        all.firstOrNull { f.map.at(it.x, it.y) == TownCell.WATER }?.let { water ->
+            assertTrue(!f.canStand(water, Mover.WALKER) && f.canStand(water, Mover.WADER) && !f.canStand(water, Mover.GHOST))
+        }
+        for (m in listOf(Mover.WALKER, Mover.WADER, Mover.GHOST)) assertTrue(f.restingCells(m).none { it in f.traps || it == f.stairs })
+    }
+
+    @Test
     fun theAutotileColumnsMatchTheExtractor() {
         assertEquals(47, Autotile.masks.size)
         assertEquals(0, Autotile.masks.first())

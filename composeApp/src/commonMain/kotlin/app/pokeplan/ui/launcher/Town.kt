@@ -72,6 +72,8 @@ import androidx.compose.foundation.background
 import app.pokeplan.ui.theme.PmdText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 import kotlin.math.abs
@@ -407,8 +409,19 @@ private fun Resident(
     /** What a trap does when it steps on one: for show only, and found for the day (the Wonder Tile was never hidden). */
     suspend fun spring(g: FloorGeometry, at: Cell, trap: FloorTrap, walked: List<Cell>) {
         if (trap != FloorTrap.WONDER) life.revealed[at] = true
+        // The game's sound for it, only for one on Home (the page in view), so a far-off trap is not heard.
+        if (interactive) model.effect(when (trap) {
+            FloorTrap.WARP -> Sfx.QUICK_ESCAPE
+            FloorTrap.SPIN -> Sfx.CONFUSION_STATUS
+            FloorTrap.SLUMBER, FloorTrap.SLOW -> Sfx.SAD
+            FloorTrap.GUST -> Sfx.STORY_WIND
+            FloorTrap.TRIP -> Sfx.SURPRISE
+            FloorTrap.WONDER -> Sfx.HEAL
+        })
         when (trap) {
             FloorTrap.WARP -> {
+                feel(StatusKind.ALERT, 500)
+                delay(400)
                 fade.animateTo(0f, tween(260))
                 spot.snapTo(g.spotOf(g.restingCell(random, mover)))
                 fade.animateTo(1f, tween(260))
@@ -416,9 +429,9 @@ private fun Resident(
             }
             FloorTrap.SPIN -> {
                 feel(StatusKind.SWEAT, 1_600)
-                repeat(2) {
+                repeat(3) {
                     for ((pose, left) in listOf(SpriteAction.IDLE to false, SpriteAction.IDLE_SIDE to false, SpriteAction.IDLE_UP to false, SpriteAction.IDLE_SIDE to true)) {
-                        spinning = pose; facingLeft = left; delay(120)
+                        spinning = pose; facingLeft = left; delay(100)
                     }
                 }
                 spinning = null
@@ -426,7 +439,8 @@ private fun Resident(
             FloorTrap.SLUMBER -> { napping = true; delay(3_500); napping = false; hopping = true; hopKey++ }
             FloorTrap.GUST -> {
                 feel(StatusKind.ALERT, 900)
-                spot.animateTo(g.spotOf(walked[maxOf(0, walked.size - 5)]), tween(380))
+                hopping = true; hopKey++
+                spot.animateTo(g.spotOf(walked[maxOf(0, walked.size - 6)]), tween(420))
             }
             FloorTrap.SLOW -> { slowUntil = TimeSource.Monotonic.markNow() + 20.seconds; feel(StatusKind.SWEAT, 1_400) }
             FloorTrap.TRIP -> { hopping = true; hopKey++; feel(StatusKind.SWEAT, 1_200) }
@@ -438,9 +452,12 @@ private fun Resident(
     suspend fun roamFloor(g: FloorGeometry, target: Offset, speed: Float = pace) {
         val others = life.spots.filterKeys { it != mon.id }.values.map { g.cellOf(it()) }.toSet()
         val goal = g.nearestResting(g.cellOf(Offset(target.x.coerceIn(0f, screens - 0.01f), target.y.coerceIn(0f, 0.999f))), mover, others) ?: return
-        val way = g.floor.path(g.cellOf(spot.value), goal, mover) ?: return
-        // A hidden trap always springs; one already found, now and then (they mostly step round what they know is there).
-        val hit = way.drop(1).indexOfFirst { c -> g.floor.traps[c]?.let { c !in life.revealed || random.nextInt(4) == 0 } == true }
+        // They step round the traps they know about (found ones and the Wonder Tile) when they can; any trap stepped on springs, as in the games.
+        val known = life.revealed.keys + g.floor.traps.filterValues { it == FloorTrap.WONDER }.keys
+        // Worked out off the main thread: two dozen Pokémon setting off together when the home screen comes back must not hold up its first frames.
+        val from = g.cellOf(spot.value)
+        val way = withContext(Dispatchers.Default) { g.floor.path(from, goal, mover, known) } ?: return
+        val hit = way.drop(1).indexOfFirst { it in g.floor.traps }
         val walked = if (hit >= 0) way.take(hit + 2) else way
         for (c in g.floor.turns(walked).drop(1)) stepTo(g, g.spotOf(c), speed)
         walk = null
@@ -448,23 +465,24 @@ private fun Resident(
     }
 
     // Leaving the town: off the edge of Home at a walk (on a floor, down the stairs), then gone. (With Reduce motion it is simply gone.)
-    LaunchedEffect(leaving, calm) {
+    LaunchedEffect(leaving, calm, geo) {
         if (!leaving) return@LaunchedEffect
         if (!calm) {
             if (geo != null) {
-                geo.floor.path(geo.cellOf(spot.value), geo.floor.stairs, Mover.FLIER)?.let { way -> for (c in geo.floor.turns(way).drop(1)) stepTo(geo, geo.spotOf(c), 0.9f) }
+                geo.floor.path(geo.cellOf(spot.value), geo.floor.stairs, Mover.ANYWHERE)?.let { way -> for (c in geo.floor.turns(way).drop(1)) stepTo(geo, geo.spotOf(c), 0.9f) }
                 walk = null
                 fade.animateTo(0f, tween(400))
             } else strollTo(TownBehavior.exit(spot.value, home), 0.9f)
         }
         onGone()
     }
-    // Walking stops with Reduce motion and whenever the launcher is out of sight, and starts again when it is back.
-    if (!calm && !leaving) LaunchedEffect(mon.id, still, gather) {
+    // Walking stops with Reduce motion and whenever the launcher is out of sight, and starts again when it is back. A new floor (the widgets
+    // measured, a new day, New floor layout) starts it again too, so nobody walks the paths of the floor that was there before.
+    if (!calm && !leaving) LaunchedEffect(mon.id, still, gather, geo) {
         if (still) {
             walk = null
-            // Meeting someone: step up to them, then stand turned towards them.
-            hold?.approach?.let { to ->
+            // Meeting someone: step up to them, then stand turned towards them. On a floor only onto a square it can stand on (else it just turns).
+            hold?.approach?.takeIf { to -> geo == null || geo.floor.canStand(geo.cellOf(to), mover) }?.let { to ->
                 facingLeft = hold.faceLeft ?: facingLeft
                 walk = SpriteAction.WALK_SIDE
                 spot.animateTo(to, tween(600, easing = LinearEasing))

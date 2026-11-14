@@ -72,7 +72,8 @@ internal suspend fun gradedFor(name: String, atlas: ImageBitmap, weather: Weathe
     val ramp = weather.rampName()?.let { weatherRamps()[it] } ?: return atlas
     val key = "$name|${weather.rampName()}"
     if (key in graded) return graded[key] ?: atlas
-    return atlas.graded(ramp).also { graded[key] = it }
+    // The colours are worked out off the main thread (a big atlas has thousands of points to draw); the cache is read and written on the caller's.
+    return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { atlas.graded(ramp) }.also { graded[key] = it }
 }
 
 /**

@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.188.1
+
+Fixes to the launcher's dungeon floor from phone testing (owner, 14 November 2026; `FEATURES/LAUNCHER.md` 4.5).
+
+- **Nobody walks in the walls:** each Pokémon's walk starts again on a new floor (it kept walking the floor that was there before, through the new one's walls), and a meeting only steps onto a square it can stand on.
+- **Only Ghost types pass through walls**, as in the games; Water types swim and Flying types fly over water.
+- **Every trap springs** when a Pokémon steps on it (a found one sprang only one time in four), with the game's sound on Home; they step round the traps they know about and never stop on one.
+- **Less lag coming back to the home screen:** paths, the tile pictures and their weather colours are worked out off the main thread, and the floor's tiles are worked out once per floor and drawn in a layer of their own.
+
 ## 0.188.0
 
 The launcher town is a Mystery Dungeon floor (owner, 14 November 2026; REP-052, `FEATURES/LAUNCHER.md` 4.5). `RewardRules.VERSION` 27.

@@ -22,8 +22,20 @@ enum class FloorTrap(val tile: Int) {
 /** The stairs tile in `floor-traps.png`. */
 internal const val STAIRS_TILE = 27
 
-/** How a Pokémon gets about: on the floor only, wading into water too, or flying over walls as well. */
-enum class Mover { WALKER, WADER, FLIER }
+/**
+ * How a Pokémon gets about the floor, as in the games (owner, 14 November 2026): every one on the floor; [water] also into water (Water
+ * types swim, Flying types fly over it); [walls] also through walls (Ghost types only).
+ */
+data class Mover(val water: Boolean = false, val walls: Boolean = false) {
+    companion object {
+        val WALKER = Mover()
+        val WADER = Mover(water = true)
+        val GHOST = Mover(walls = true)
+
+        /** Anywhere at all: the way to the stairs for a Guardian that is leaving, wherever it stands. */
+        val ANYWHERE = Mover(water = true, walls = true)
+    }
+}
 
 /**
  * A Mystery Dungeon floor for the launcher's town (LAUNCHER.md 4.5, REP-052): rooms joined by corridors across [screens] pages of
@@ -57,8 +69,8 @@ class DungeonFloor(
         if (!inside(c)) return false
         return when (map.at(c.x, c.y)) {
             TownCell.GROUND -> true
-            TownCell.WATER -> mover != Mover.WALKER
-            TownCell.WALL -> mover == Mover.FLIER && c.y > 0 && c.y < rows - 1 && c.x > 0 && c.x < cols - 1
+            TownCell.WATER -> mover.water
+            TownCell.WALL -> mover.walls && c.y > 0 && c.y < rows - 1 && c.x > 0 && c.x < cols - 1
         }
     }
 
@@ -68,17 +80,21 @@ class DungeonFloor(
     /** The room [c] is in, if any. */
     fun roomOf(c: Cell): Room? = rooms.firstOrNull { c in it }
 
-    /** Every square [mover] could stop on: not under a widget, not the stairs. */
-    fun restingCells(mover: Mover): List<Cell> = (0 until rows).flatMap { y -> (0 until cols).map { Cell(it, y) } }
-        .filter { canStand(it, mover) && !isSoft(it) && it != stairs && (mover != Mover.FLIER || map.at(it.x, it.y) != TownCell.WALL || isFloorNear(it)) }
+    /** Whether [mover] may stop on [c]: it can stand there, no widget covers it, and it is not the stairs or a trap (a ghost rests in a wall only beside the floor). */
+    fun canRest(c: Cell, mover: Mover): Boolean = canStand(c, mover) && !isSoft(c) && c != stairs && c !in traps &&
+        (map.at(c.x, c.y) != TownCell.WALL || isFloorNear(c))
+
+    /** Every square [mover] could stop on ([canRest]). */
+    fun restingCells(mover: Mover): List<Cell> = (0 until rows).flatMap { y -> (0 until cols).map { Cell(it, y) } }.filter { canRest(it, mover) }
 
     private fun isFloorNear(c: Cell) = (-1..1).any { dy -> (-1..1).any { dx -> isFloor(Cell(c.x + dx, c.y + dy)) } }
 
     /**
      * The shortest way from [from] to [to] for [mover], in eight directions without cutting a wall's corner, a square under a widget costing
-     * [SOFT_COST] times as much (so a path goes round one when it can); null if there is none. Both ends are included.
+     * [SOFT_COST] times as much (so a path goes round one when it can), and so does a trap in [known] (a Pokémon steps round a trap it knows is
+     * there, but walks into one when there is no other way); null if there is none. Both ends are included.
      */
-    fun path(from: Cell, to: Cell, mover: Mover): List<Cell>? {
+    fun path(from: Cell, to: Cell, mover: Mover, known: Set<Cell> = emptySet()): List<Cell>? {
         if (!canStand(to, mover) || !inside(from)) return null
         if (from == to) return listOf(from)
         val n = cols * rows
@@ -98,11 +114,11 @@ class DungeonFloor(
             for (dy in -1..1) for (dx in -1..1) {
                 if (dx == 0 && dy == 0) continue
                 val next = Cell(c.x + dx, c.y + dy)
-                // The start may be off the floor (warped, or a wall a flier rests on): leaving it is always allowed.
+                // The start may be off the floor (a wall a ghost rests in): leaving it is always allowed.
                 if (!canStand(next, mover)) continue
                 if (dx != 0 && dy != 0 && (!canStand(Cell(c.x + dx, c.y), mover) || !canStand(Cell(c.x, c.y + dy), mover))) continue
-                val step = (if (dx != 0 && dy != 0) 1.414f else 1f) * (if (isSoft(next)) SOFT_COST else 1f) *
-                    (if (mover == Mover.FLIER && map.at(next.x, next.y) == TownCell.WALL) 1.5f else 1f)
+                val step = (if (dx != 0 && dy != 0) 1.414f else 1f) * (if (isSoft(next) || next in known) SOFT_COST else 1f) *
+                    (if (map.at(next.x, next.y) == TownCell.WALL) 1.5f else 1f)
                 val nc = cost[cur] + step
                 if (nc < cost[id(next)]) {
                     cost[id(next)] = nc
