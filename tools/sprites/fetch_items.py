@@ -6,8 +6,14 @@ Usage: python3 -I tools/sprites/fetch_items.py
 The icons are the real game art: the app's bag items, plus the items used as tab icons. Files are named by the app's item
 id (assets/items/<app id>.png); where the app's id is not a PokeAPI name (super-candy, link-cord, lures...) a mapping below
 picks the closest real item. Writes assets/items/manifest.tsv (app id, PokeAPI name). Existing files are skipped.
+
+`python3 -I tools/sprites/fetch_items.py extras` fetches only the REP-053 extras (needs no species cache): every
+`*-berry.png` and `*-mail.png` into assets/items under their PokeAPI names (listed in assets/items/berries-mail.tsv; the build
+does not bundle them until a module uses them) and the Gym and Contest badges `sprites/badges/N.png` into assets/badges
+(manifest.tsv there). A plain run does these too.
 """
 import csv
+import hashlib
 import os
 import sys
 import urllib.error
@@ -50,6 +56,46 @@ SAME = ['ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax-band',
         # Module cards: Heal's Today, Activity and Hydration.
         'potion', 'x-speed', 'fresh-water',
         'everstone', 'oval-stone', 'razor-claw', 'razor-fang', 'strawberry-sweet', 'gimmighoul-coin']
+
+
+BERRIES = """aguav apicot aspear babiri belue bluk charti cheri chesto chilan chople coba colbur cornn custap durin enigma figy
+ganlon golden-nanab golden-pinap golden-razz grepa haban hondew hopo iapapa jaboca kasib kebia kee kelpsy lansat leppa liechi
+lum mago magost maranga micle nanab nomel occa oran pamtre passho payapa pecha persim petaya pinap pomeg qualot rabuta rawst
+razz rindo roseli rowap salac shuca silver-nanab silver-pinap silver-razz sitrus spelon starf tamato tanga wacan watmel wepear
+wiki yache""".split()
+MAILS = """air bead bloom brick bubble dream fab favored flame glitter grass greet harbor heart inquiry like mech mosaic orange
+reply retro rsvp shadow snow space steel thanks tropic tunnel wave wood""".split()
+BADGES = range(1, 78)  # sprites/badges/1.png .. 77.png at the pinned commit
+
+
+def download(url, path):
+    """Fetch url to path unless it is already there; return (sha256, bytes written now)."""
+    if not (os.path.exists(path) and os.path.getsize(path) > 0):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with urllib.request.urlopen(url, timeout=30) as r:
+            data = r.read()
+        with open(path, 'wb') as fh:
+            fh.write(data)
+    with open(path, 'rb') as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+
+
+def fetch_extras():
+    """Every Berry and Mail icon (assets/items) and the badges (assets/badges); each folder gets a tsv receipt."""
+    rows = []
+    for name in [f'{b}-berry' for b in BERRIES] + [f'{m}-mail' for m in MAILS]:
+        sha = download(BASE + name + '.png', os.path.join(OUT, name + '.png'))
+        rows.append(f'{name}\t{BASE}{name}.png\t{sha}')
+    with open(os.path.join(OUT, 'berries-mail.tsv'), 'w', encoding='utf-8') as fh:
+        fh.write(f'# PokeAPI/sprites @ {SPRITES_COMMIT}\nname\turl\tsha256\n' + '\n'.join(rows) + '\n')
+    badge_base = BASE.replace('/items/', '/badges/')
+    badges = []
+    for n in BADGES:
+        sha = download(f'{badge_base}{n}.png', os.path.join(ROOT, 'assets/badges', f'{n}.png'))
+        badges.append(f'{n}\t{badge_base}{n}.png\t{sha}')
+    with open(os.path.join(ROOT, 'assets/badges/manifest.tsv'), 'w', encoding='utf-8') as fh:
+        fh.write(f'# PokeAPI/sprites @ {SPRITES_COMMIT}\nid\turl\tsha256\n' + '\n'.join(badges) + '\n')
+    print(f'{len(rows)} berry and mail icons, {len(badges)} badges')
 
 
 def read_csv(name):
@@ -113,5 +159,9 @@ def fetch_types():
 
 
 if __name__ == '__main__':
-    main()
-    fetch_types()
+    if sys.argv[1:] == ['extras']:
+        fetch_extras()
+    else:
+        main()
+        fetch_types()
+        fetch_extras()
