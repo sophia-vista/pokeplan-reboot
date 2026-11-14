@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.182.0
+
+Evolution methods, items and the shop (owner, 14 November 2026). `RewardRules.VERSION` 23: the life modules drop items. Nothing stored on the phone needs a migration (new optional fields).
+
+- **Every special evolution has a way in.** Checked on the spot: a known move (Mime Jr., Tangela, Yanma, Lickitung, Aipom, Piloswine, Steenee, Poipole, Clobbopus, Girafarig, Dipplin), a held item at a time of day (Happiny, Sneasel, Gligar), the party (Mantyke, Pancham), Attack against Defense (Tyrogue), the nature (Toxel), a Fairy move and friendship (Sylveon), 400 Exp. Candies (Meltan), 999 Gimmighoul Coins (Gimmighoul), a Link Cord (Finizen).
+- **Evolutions done with the phone:** Inkay turns into Malamar when you hold the phone upside down, Milcery into Alcremie when you spin with it (gyroscope), and Pawmo, Bramblin and Rellor after 1,000 real steps (the step counter keeps counting while the app is closed; a 5-floor World expedition also counts).
+- **Evolution Trials in World**, in the evolution's own region: a team with the Pokémon reaches the trial floor (Galarian Sirfetch'd, Runerigus, Weezing and Mr. Mime in Galar; the Hisuian forms, Wyrdeer, Basculegion and Overqwil in Hisui; Alolan Marowak in Alola; Goodra in Kalos's rain; Annihilape and Kingambit in Paldea; Shedinja in Hoenn). The Pokémon's page says where.
+- **Six new World regions:** Unova, Kalos, Alola, Galar, Paldea and Hisui, nine dungeons each with their own Pokémon, five story chapters, and their legendaries as quests and Guardians. They have no map picture yet.
+- **Evolve asks first**, with Cancel, and **Stop** during the evolution cancels it with nothing used up. A Pokémon **holding an Everstone** does not evolve.
+- **Items from every module:** each Care, Heal, Mint, Base and Link moment has a small chance of a themed item (Care sweets and soft stones, Heal vitamins and claws, Mint Nature Mints and coins, Base stones and the Everstone, Link the Link Cord and trade items), and a finished Mint review always gives a Nature Mint.
+- **The Kecleon Shop** always sells every evolution stone, the Link Cord, the Everstone and Gimmighoul Coins, and has a shelf of five more items that changes each day.
+- New item icons: Everstone, Oval Stone, Razor Claw, Razor Fang, Strawberry Sweet, Gimmighoul Coin (PokeAPI/sprites).
+
 ## 0.181.0
 
 The launcher's town (LAUNCHER.md 6.2): calmer, more natural roaming, and a setting for it. Cosmetic only: no reward number changes, `RewardRules.VERSION` is unchanged, nothing stored needs a migration.

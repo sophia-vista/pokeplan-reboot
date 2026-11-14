@@ -25,6 +25,12 @@ object Story {
         WorldLayer.JOHTO -> JohtoStory.chapters
         WorldLayer.HOENN -> HoennStory.chapters
         WorldLayer.SINNOH -> SinnohStory.chapters
+        WorldLayer.UNOVA -> UnovaStory.chapters
+        WorldLayer.KALOS -> KalosStory.chapters
+        WorldLayer.ALOLA -> AlolaStory.chapters
+        WorldLayer.GALAR -> GalarStory.chapters
+        WorldLayer.PALDEA -> PaldeaStory.chapters
+        WorldLayer.HISUI -> HisuiStory.chapters
     }
 
     /** What the Guardian of [layer] gives once its story is complete. */
@@ -35,6 +41,12 @@ object Story {
         WorldLayer.JOHTO -> JohtoStory.GUARDIAN_BONUS
         WorldLayer.HOENN -> HoennStory.GUARDIAN_BONUS
         WorldLayer.SINNOH -> SinnohStory.GUARDIAN_BONUS
+        WorldLayer.UNOVA -> UnovaStory.GUARDIAN_BONUS
+        WorldLayer.KALOS -> KalosStory.GUARDIAN_BONUS
+        WorldLayer.ALOLA -> AlolaStory.GUARDIAN_BONUS
+        WorldLayer.GALAR -> GalarStory.GUARDIAN_BONUS
+        WorldLayer.PALDEA -> PaldeaStory.GUARDIAN_BONUS
+        WorldLayer.HISUI -> HisuiStory.GUARDIAN_BONUS
     }
 
     /** How many different dungeons of [layer] have been cleared (repeating one counts once, so a cheap dungeon cannot be farmed for chapters). */

@@ -133,7 +133,11 @@ Every evolution is reachable solo. Each game trigger maps to an in-app one:
 | Friendship (with or without day / night) | friendship at 220 or more, then a Super Candy, at the right time of day where it matters |
 | Level plus time of day | Super Candy used between 06:00 and 18:00 (day) or otherwise (night), local time |
 | Gender-dependent | uses the Pokémon's gender |
-| Special conditions (known move, location, party contents, weather, stats, beauty, etc.) | an **Evolution Trial**: a short quest (a number of paid tasks, or one focus session of a given length), flavoured after the original condition |
+| Special conditions, checked on the spot (0.182.0) | a known move (Mime Jr., Tangela, Yanma...), a held item at a time of day (Happiny's Oval Stone, Sneasel's Razor Claw, Gligar's Razor Fang; used up), the party (Mantyke with a Remoraid, Pancham with a Dark type in its own module party), Attack against Defense (Tyrogue), the nature (Toxel), a Fairy move and friendship (Sylveon), 400 Exp. Candies (Meltan), 999 Gimmighoul Coins (Gimmighoul), a Link Cord (Finizen); then a Super Candy unless it spends instead |
+| Special conditions done with the phone (0.182.0) | Inkay at 30: hold the phone upside down for 1.5 s (accelerometer); Milcery holding a Strawberry Sweet in the day: a full turn with the phone flat in under 5 s (gyroscope); Pawmo, Bramblin, Rellor: 1,000 steps on the phone's step counter (asks for the activity permission; counts between openings), or a World expedition of 5 floors with it on the team. Kept per Pokémon (`AppData.completedTrials`) |
+| Special conditions that need a battle, a place or the weather | an **Evolution Trial in World** (`EvolutionTrialSites`): a team with the Pokémon (at the level it needs) reaches a given floor of a dungeon in the evolution's own region: Galarian forms in Galar, Hisuian forms and the strong and agile style moves in Hisui, Alolan Marowak in Alola, Goodra in Kalos's rain, Annihilape and Kingambit in Paldea, Shedinja in Hoenn. Kept per Pokémon (`WorldData.evolutionTrials`) |
+| Everstone (held) | the Pokémon does not evolve: every option says so and Evolve is off |
+| Evolve | asks "Evolve X into Y?" with Cancel; the evolution is made at the end of the scene, and Stop during it cancels with nothing used up |
 | Branching (Eevee, Tyrogue, Poliwhirl…) | the trigger picks the branch |
 | Random branch (Wurmple) | decided when it hatches, as in the games |
 

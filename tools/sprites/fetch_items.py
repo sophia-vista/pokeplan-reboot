@@ -48,7 +48,8 @@ SAME = ['ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax-band',
         'great-ball', 'storage-key', 'seal-bag', 'master-ball', 'oaks-letter', 'exp-share', 'heart-scale', 'gb-sounds',
         'oaks-parcel', 'timer-ball', 'premier-ball', 'friend-ball',
         # Module cards: Heal's Today, Activity and Hydration.
-        'potion', 'x-speed', 'fresh-water']
+        'potion', 'x-speed', 'fresh-water',
+        'everstone', 'oval-stone', 'razor-claw', 'razor-fang', 'strawberry-sweet', 'gimmighoul-coin']
 
 
 def read_csv(name):

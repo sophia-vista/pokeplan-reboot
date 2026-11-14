@@ -9,6 +9,7 @@ import app.pokeplan.world.WorldLayer
 object StoryCatalog {
     private val episodes: List<StoryEpisode> by lazy {
         listOf(IntroMewChapter.episode()) + RescueChapters.all() + ExplorersChaptersA.all() + ExplorersChaptersB.all() + KantoChapters.all() + JohtoChapters.all() + HoennChapters.all() + SinnohChapters.all() +
+            UnovaChapters.all() + KalosChapters.all() + AlolaChapters.all() + GalarChapters.all() + PaldeaChapters.all() + HisuiChapters.all() +
             RescuePostStory.all().map { it.copy(summary = RescuePostStory.summaries[it.chapter].orEmpty()) } +
             ExplorersPostStory.all().map { it.copy(summary = ExplorersPostStory.summaries[it.chapter].orEmpty()) }
     }

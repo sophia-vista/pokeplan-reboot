@@ -21,6 +21,8 @@ sealed interface WorldEvent {
     /** The team turned back at [floor] and came home safely: the expedition is over. */
     data class Retreat(val dungeonId: String, val floor: Int) : WorldEvent
     data class MissionDone(val missionId: String) : WorldEvent
+    /** A team member did its Evolution Trial ([EvolutionTrialSites]): [pokemonName] can now evolve into [into]. */
+    data class TrialDone(val pokemonName: String, val into: String, val title: String) : WorldEvent
     /** A floor event: [user] opened it (null: the team went around), and [gave] says what it gave. */
     /** A floor offered a choice, now waiting for an answer (or the default). */
     data class ChoiceOffered(val kind: ChoiceKind, val dungeonId: String, val floor: Int) : WorldEvent
@@ -96,6 +98,10 @@ object WorldSim {
     /** The chance a floor has a berry, and the chance of a treasure box, in percent. *(tune)* */
     const val BERRY_PERCENT = 70
     const val TREASURE_PERCENT = 6
+
+    /** The chance a Paldea floor has Gimmighoul Coins, in percent, and the most in one pile. *(tune)* */
+    const val COIN_PERCENT = 30
+    const val COIN_MAX = 8
 
     /**
      * A team's power: the sum of its members' [contribution]s, each its level, 20% more for a type the dungeon favors, and what its moves, ability and
@@ -255,6 +261,7 @@ object WorldSim {
             is WorldEvent.Setback -> { kind = JournalLine.KIND_SETBACK; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title had a setback on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and went on." }
             is WorldEvent.Retreat -> { kind = JournalLine.KIND_SETBACK; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title turned back at floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and came home safely." }
             is WorldEvent.MissionDone -> { kind = JournalLine.KIND_JOB; "A job is done: ${Missions.byId(event.missionId)?.title}. Report back on the board." }
+            is WorldEvent.TrialDone -> { kind = JournalLine.KIND_JOB; "Evolution Trial done: ${event.title}. ${event.pokemonName} can now evolve into ${event.into}." }
             WorldEvent.GuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian was faced. The story is complete." }
             is WorldEvent.LayerGuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian of ${event.layer.label} was faced. Its story is complete." }
             else -> return null
@@ -309,6 +316,15 @@ object WorldSim {
             events += WorldEvent.Item(berry, 1)
             d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 1))
         }
+        // Paldea's floors: Gimmighoul Coins lie about (Gimmighoul needs 999). Their own dice, so nothing else a floor gives changes. *(tune)*
+        if (!partial && dungeon.layer == WorldLayer.PALDEA) {
+            val coinDice = Random(seed(teamId, trip, index) xor 0x6A09E667L)
+            if (coinDice.nextInt(100) < COIN_PERCENT) {
+                val n = 1 + coinDice.nextInt(COIN_MAX)
+                events += WorldEvent.Item(Items.GIMMIGHOUL_COIN, n)
+                d = d.copy(items = d.items + (Items.GIMMIGHOUL_COIN to (d.items[Items.GIMMIGHOUL_COIN] ?: 0) + n))
+            }
+        }
         val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION)) + if (modifier == DungeonModifier.BOUNTY) DungeonModifiers.POKE_PERCENT else 0) / 100
         val paid = if (partial) poke / 2 else poke
         events += WorldEvent.Poke(paid)
@@ -351,6 +367,7 @@ object WorldSim {
         }
         d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
         d = Missions.advance(d, dungeon.id, if (partial) 0 else floor, berries, at, teamSize, power, events, opened = events.drop(firstEvent).count { it is WorldEvent.FloorEvent && it.userName != null })
+        d = EvolutionTrialSites.advance(d, dungeon.id, if (partial) 0 else floor, members, events)
         if (!partial && floor == dungeon.floors && dungeon.guardian && !d.layerDone(dungeon.layer)) {
             if (dungeon.layer == WorldLayer.EXPLORERS) {
                 events += WorldEvent.GuardianFaced

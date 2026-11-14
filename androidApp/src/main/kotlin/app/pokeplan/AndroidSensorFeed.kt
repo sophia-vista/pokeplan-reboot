@@ -1,6 +1,11 @@
 package app.pokeplan
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -8,11 +13,14 @@ import android.hardware.SensorManager
 import app.pokeplan.ui.gear.SensorFeed
 
 /**
- * The motion and pressure sensors for the Pokégear's Compass, Level and Barometer, read through `SensorManager`. A listener is registered
- * only when a tool asks (at the normal UI rate) and the returned function unregisters it, so nothing listens while no tool is open.
+ * The motion and pressure sensors for the Pokégear's Compass, Level and Barometer, and the gyroscope and step counter for the evolutions done with
+ * the phone, read through `SensorManager`. A listener is registered only when a screen asks (at the normal UI rate) and the returned function
+ * unregisters it, so nothing listens while no tool is open. Create it in `onCreate`: it registers the activity permission's launcher.
  */
-class AndroidSensorFeed(context: Context) : SensorFeed {
-    private val manager = context.applicationContext.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+class AndroidSensorFeed(private val activity: ComponentActivity) : SensorFeed {
+    private val manager = activity.applicationContext.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+    private var waiting: ((Boolean) -> Unit)? = null
+    private val permission = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> waiting?.invoke(granted); waiting = null }
 
     private fun sensor(type: Int): Sensor? = try { manager?.getDefaultSensor(type) } catch (e: Exception) { null }
 
@@ -45,5 +53,26 @@ class AndroidSensorFeed(context: Context) : SensorFeed {
     override fun pressure(onReading: (Float) -> Unit): (() -> Unit)? {
         val baro = sensor(Sensor.TYPE_PRESSURE) ?: return null
         return listen(listOf(baro)) { e -> onReading(e.values[0]) }
+    }
+
+    override fun rotation(onReading: (FloatArray) -> Unit): (() -> Unit)? {
+        val gyro = sensor(Sensor.TYPE_GYROSCOPE) ?: return null
+        return listen(listOf(gyro)) { e -> onReading(e.values.copyOf(3)) }
+    }
+
+    override fun steps(onReading: (Long) -> Unit, onUnavailable: (String) -> Unit): (() -> Unit)? {
+        val counter = sensor(Sensor.TYPE_STEP_COUNTER)
+        if (counter == null) { onUnavailable("This phone has no step counter."); return {} }
+        var stop: (() -> Unit)? = null
+        var cancelled = false
+        fun start() { if (!cancelled) stop = listen(listOf(counter)) { e -> onReading(e.values[0].toLong()) } }
+        // Android 10 and later ask for the physical activity permission before the step counter reports.
+        val needed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        if (!needed || activity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) start()
+        else {
+            waiting = { ok -> if (ok) start() else onUnavailable("Physical activity permission was not given. You can allow it in the phone's settings for PokéLife.") }
+            permission.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
+        return { cancelled = true; stop?.invoke() }
     }
 }

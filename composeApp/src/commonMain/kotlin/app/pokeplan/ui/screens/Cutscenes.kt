@@ -65,7 +65,11 @@ sealed interface Cutscene {
     /** A new Pokémon arriving. [how] is where it came from, which picks the scene: Plan's egg hatches, Care's friend walks in, Heal's is found on a route, Mint's is catalogued. */
     data class Hatch(val pokemon: OwnedPokemon, val fromTask: Boolean, val how: app.pokeplan.app.Origin.How? = null) : Cutscene
 
-    data class Evolve(val before: OwnedPokemon, val after: OwnedPokemon) : Cutscene
+    /**
+     * An evolution. With [option] the evolution is not made yet: it is made when the scene reaches its end, and Stop (as B in the games)
+     * cancels it with nothing used up. Without it the evolution was already made.
+     */
+    data class Evolve(val before: OwnedPokemon, val after: OwnedPokemon, val option: app.pokeplan.core.pokemon.EvolutionOption? = null) : Cutscene
 
     /** A World rank reached or a story chapter opened. */
     data class World(val moment: app.pokeplan.world.WorldMoment) : Cutscene
@@ -134,14 +138,17 @@ private fun SceneFrame(onTap: () -> Unit, flash: Float, flashColor: Color, conte
 
 /** The line under a scene, read out by screen readers as it changes, with the button that ends or skips it. */
 @Composable
-private fun SceneText(text: String, detail: String?, done: Boolean, skip: () -> Unit, close: () -> Unit) {
+private fun SceneText(text: String, detail: String?, done: Boolean, skip: () -> Unit, close: () -> Unit, stop: (() -> Unit)? = null) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(text, Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyLarge)
             detail?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S, Alignment.End)) {
                 if (done) PixelButton("OK", close, color = Pixel.Green, compact = true)
-                else PixelButton("Skip", skip, color = Pixel.InkSoft, compact = true)
+                else {
+                    stop?.let { PixelButton("Stop", it, color = Pixel.InkSoft, compact = true) }
+                    PixelButton("Skip", skip, color = Pixel.InkSoft, compact = true)
+                }
             }
         }
     }
@@ -388,13 +395,16 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
     val after = scene.after
     val still = model.data.settings.reduceMotion
     var done by remember(after) { mutableStateOf(false) }
+    // Stop (B in the games): the Pokémon stays as it is and nothing is used up. Only an evolution not made yet can be stopped.
+    var stopped by remember(after) { mutableStateOf(false) }
+    var made by remember(after) { mutableStateOf(scene.option == null) }
     var showNew by remember(after) { mutableStateOf(false) }
     val white = remember(after) { Animatable(0f) }
     val flash = remember(after) { Animatable(0f) }
     // Once evolved it turns around on the spot (its Rotate animation, else a hop), so the new body is seen all round.
     var spin by remember(after) { mutableStateOf(!still) }
-    LaunchedEffect(after, done) {
-        if (done) return@LaunchedEffect
+    LaunchedEffect(after, done, stopped) {
+        if (done || stopped) return@LaunchedEffect
         if (!still) {
             // The games' evolution music for the glow and the flicker (not the healing jingle).
             model.effect(Sfx.EVOLUTION)
@@ -411,8 +421,10 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
         }
         done = true
     }
-    LaunchedEffect(after, done) {
-        if (!done) return@LaunchedEffect
+    LaunchedEffect(after, done, stopped) {
+        if (!done || stopped) return@LaunchedEffect
+        // The evolution is made here, at the end, once: a stopped scene never gets this far.
+        if (!made) { scene.option?.let { model.store.evolve(before.id, it) }; made = true }
         showNew = true
         white.snapTo(0f)
         model.cry(after)
@@ -428,6 +440,13 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
         model.effect(Sfx.UNLOCK)
     }
 
+    if (stopped) {
+        SceneFrame(close, 0f, FlashWhite) {
+            Stage("bw08", 260.dp) { Sprite(before.form.id, before.isShiny, before.nickname, Modifier.align(Alignment.Center), size = 160.dp) }
+            SceneText(text = "Huh? ${before.nickname} stopped evolving!", detail = null, done = true, skip = close, close = close)
+        }
+        return
+    }
     SceneFrame({ done = true }, flash.value, FlashWhite) {
         Stage("bw08", 260.dp) {
             if (done) {
@@ -450,6 +469,7 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
         SceneText(
             text = if (done) "Congratulations! Your ${before.nickname} evolved into ${after.species.name}!" else "What? ${before.nickname} is evolving!",
             detail = null, done = done, skip = { done = true }, close = close,
+            stop = if (scene.option != null && !made) ({ stopped = true }) else null,
         )
     }
 }

@@ -311,6 +311,7 @@ Evolution rules are centralized. Preserve meaningful canonical requirements but 
 - Apply item consumption, evolution, party read-model refresh, dex updates, and history in one transaction.
 - Preserve owned ID, acquisition origin, XP/level, nickname, favorite/protection, and applicable persistent state.
 - Evolution must not create a second Pokémon or reward event.
+- *(Owner, 14 November 2026)* Evolve asks first, with Cancel, and the evolution scene can be stopped (as B in the games) with nothing used up. A Pokémon holding an Everstone does not evolve. Special evolutions are checked on the spot (a known move, a held item, the party, the stats, the nature), done with the phone (Malamar upside down, Alcremie's spin with the gyroscope, 1,000 steps on the step counter) or done as an Evolution Trial in WORLD, in the region the evolution belongs to (docs/design.md, "Evolution").
 - Forms and regional evolutions resolve through canonical catalog definitions.
 
 ## 9. Eggs, hatching, and recruitment
@@ -872,7 +873,7 @@ Every item definition must declare at least one valid acquisition source before 
 
 - Shops are WORLD facilities backed by shared Bag and Poké repositories.
 - Purchase is a single transaction: validate price/stock/capacity, debit Poké, grant item, append ledger entries; rollback all if any step fails.
-- Avoid real-time rotating stock, expiring offers and login-timed deals. Use unlock-based permanent catalogs or clearly stated restock rules tied to game progression.
+- No expiring offers, countdowns or login-timed deals. *(Owner, 14 November 2026)* The Kecleon Shop has a fixed stock that is always sold (every evolution stone, the Link Cord, the Everstone, Gimmighoul Coins) and a daily shelf of five more items chosen for the player's local day; nothing is sold only on the shelf and every catalogue item comes round (`KecleonShop`, docs/economy.md).
 - Essential evolution and progression materials must have a reliable path. Chance drops may supplement but cannot be the only route for an essential requirement.
 - Selling items is optional and never required to recover from ordinary play. Held items may be sold only after explicit confirmation and must be unequipped first; default UI should favor storage/equipment rather than liquidation.
 

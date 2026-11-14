@@ -30,8 +30,10 @@ data class ReportSummary(
     /** Floors the team was too weak for (half the Poké and Exploration XP, nothing else) and the dungeons a team turned back in (WORLD.md 3.6). */
     val setbacks: Int = 0,
     val retreats: List<String> = emptyList(),
+    /** Evolution Trials done, as "name:evolves into". */
+    val trialsDone: List<String> = emptyList(),
 ) {
-    val isEmpty: Boolean get() = floors == 0 && setbacks == 0 && retreats.isEmpty() && milestones.isEmpty() && finds.isEmpty() && jobsDone.isEmpty() && !guardianFaced
+    val isEmpty: Boolean get() = floors == 0 && setbacks == 0 && retreats.isEmpty() && milestones.isEmpty() && finds.isEmpty() && jobsDone.isEmpty() && trialsDone.isEmpty() && !guardianFaced
 
     operator fun plus(o: ReportSummary): ReportSummary = ReportSummary(
         floors + o.floors, (byDungeon.keys + o.byDungeon.keys).associateWith { (byDungeon[it] ?: 0) + (o.byDungeon[it] ?: 0) },
@@ -49,7 +51,7 @@ data class ReportSummary(
             for (e in report.events) s = when (e) {
                 is WorldEvent.FloorCleared -> s.copy(floors = s.floors + 1, byDungeon = s.byDungeon + (e.dungeonId to (s.byDungeon[e.dungeonId] ?: 0) + 1))
                 is WorldEvent.Poke -> s.copy(poke = s.poke + e.amount)
-                is WorldEvent.Item -> s.copy(berries = s.berries + e.count)
+                is WorldEvent.Item -> if (e.itemId.startsWith("berry-")) s.copy(berries = s.berries + e.count) else s
                 is WorldEvent.Treasure -> s.copy(treasure = s.treasure + (e.tier to (s.treasure[e.tier] ?: 0) + 1))
                 is WorldEvent.Milestone -> s.copy(milestones = s.milestones + (e.dungeonId to e.reward))
                 is WorldEvent.Found -> s.copy(finds = s.finds + e.speciesId)
@@ -60,6 +62,7 @@ data class ReportSummary(
                 is WorldEvent.ChoiceOffered -> s.copy(choicesOffered = s.choicesOffered + 1)
                 is WorldEvent.FloorEvent -> if (e.userName != null) s.copy(eventsOpened = s.eventsOpened + 1) else s.copy(eventsPassed = s.eventsPassed + 1)
                 WorldEvent.GuardianFaced, is WorldEvent.LayerGuardianFaced -> s.copy(guardianFaced = true)
+                is WorldEvent.TrialDone -> s.copy(trialsDone = s.trialsDone + "${e.pokemonName}:${e.into}")
             }
             return s
         }

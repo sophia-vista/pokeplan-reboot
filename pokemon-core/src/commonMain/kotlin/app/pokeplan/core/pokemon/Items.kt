@@ -20,6 +20,8 @@ object Items {
     const val ABILITY_PATCH = "ability-patch"
     const val BOTTLE_CAP = "bottle-cap"
     const val DYNAMAX_BAND = "dynamax-band"
+    const val EVERSTONE = EvolutionTrials.EVERSTONE
+    const val GIMMIGHOUL_COIN = EvolutionTrials.GIMMIGHOUL_COIN
 
     /** Vitamins: +10 EVs in one stat. */
     val vitamins: Map<String, Stat> = mapOf(
@@ -50,6 +52,8 @@ object Items {
         ABILITY_PATCH to ("Ability Patch" to ItemCategory.TRAINING),
         BOTTLE_CAP to ("Bottle Cap" to ItemCategory.TRAINING),
         DYNAMAX_BAND to ("Dynamax Band" to ItemCategory.KEY),
+        EVERSTONE to ("Everstone" to ItemCategory.HELD),
+        GIMMIGHOUL_COIN to ("Gimmighoul Coin" to ItemCategory.EVOLUTION),
         "hp-up" to ("HP Up" to ItemCategory.VITAMIN), "protein" to ("Protein" to ItemCategory.VITAMIN),
         "iron" to ("Iron" to ItemCategory.VITAMIN), "calcium" to ("Calcium" to ItemCategory.VITAMIN),
         "zinc" to ("Zinc" to ItemCategory.VITAMIN), "carbos" to ("Carbos" to ItemCategory.VITAMIN),
@@ -77,8 +81,16 @@ object Items {
         Dex.evolutions.filter { it.kind == EvolutionKind.TRADE }.mapNotNull { it.heldItem }.distinct().sorted()
     }
 
-    /** Whether a Pokémon can hold [id]: a perk item, a Mega Stone, or an item it needs to hold for a trade evolution. */
-    fun holdable(id: String): Boolean = id in HeldItems.perks || id.startsWith("mega-stone-") || id in tradeItems
+    /** Items a Pokémon holds to evolve in a special evolution (an Oval Stone, a Razor Claw, a Sweet), taken from the evolution data. */
+    val heldEvolutionItems: List<String> by lazy {
+        Dex.evolutions.filter { it.kind == EvolutionKind.TRIAL }.mapNotNull { it.heldItem }.distinct().sorted()
+    }
+
+    /**
+     * Whether a Pokémon can hold [id]: a perk item, a Mega Stone, an item it needs to hold for a trade or special evolution, or the Everstone
+     * (which stops it evolving).
+     */
+    fun holdable(id: String): Boolean = id in HeldItems.perks || id.startsWith("mega-stone-") || id in tradeItems || id in heldEvolutionItems || id == EVERSTONE
 
     fun category(id: String): ItemCategory? = when {
         id in special -> special.getValue(id).second
@@ -87,7 +99,7 @@ object Items {
         id.startsWith("tera-shard-") -> ItemCategory.TERA
         id.startsWith("mega-stone-") -> ItemCategory.FORM
         id in HeldItems.perks -> ItemCategory.HELD
-        id in evolutionItems || id in tradeItems -> ItemCategory.EVOLUTION
+        id in evolutionItems || id in tradeItems || id in heldEvolutionItems -> ItemCategory.EVOLUTION
         else -> null
     }
 

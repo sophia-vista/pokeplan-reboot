@@ -66,7 +66,10 @@ data class AppData(
     val rewardLog: List<RewardEntry> = emptyList(),
     /** Legendary and mythical quests the player has accepted, by quest id. */
     val quests: Map<String, QuestState> = emptyMap(),
+    /** Special-evolution trials done (a WORLD trial job, a phone action), as `EvolutionTrials.doneKey`: one per evolution and Pokémon. */
     val completedTrials: Set<String> = emptySet(),
+    /** Walks under way for a steps evolution (Pawmo, Bramblin, Rellor), by Pokémon id. */
+    val stepWalks: Map<String, StepWalk> = emptyMap(),
     /** Emergency pauses used on [emergencyPausesDay]. */
     val emergencyPausesDay: LocalDate? = null,
     val emergencyPausesUsed: Int = 0,
@@ -485,3 +488,12 @@ val AppData.perks: PerkBonuses get() = player.let { Perks.total(it.planLead, it.
  */
 fun AppData.streakAt(now: LocalDateTime): Streaks.Result =
     Streaks.daily(activeDays, restDays, Streaks.streakDay(now), perks.extraForgivenDays, settings.weekStart)
+
+/**
+ * A walk for a steps evolution: the phone's step counter (steps since it was switched on) as it was at the last reading ([lastCounter]), and the
+ * steps walked so far. A counter that went down means the phone restarted; the walk then goes on from the new count, nothing is lost.
+ */
+@Serializable
+data class StepWalk(val lastCounter: Long, val walked: Int = 0) {
+    fun reading(counter: Long): StepWalk = copy(lastCounter = counter, walked = walked + (if (counter >= lastCounter) (counter - lastCounter) else counter).toInt().coerceAtLeast(0))
+}

@@ -51,6 +51,23 @@ object Legends {
         LegendQuest("sinnoh-palkia", 484, "Palkia", WorldLayer.SINNOH, "spear-pillar", 3, false, "Space folds around the Spear Pillar. Clear it three times.", setOf(PokemonType.WATER)),
         LegendQuest("sinnoh-giratina", 487, "Giratina", WorldLayer.SINNOH, "distortion-world", 1, true, "Sinnoh's Guardian waits in the Distortion World.", setOf(PokemonType.GHOST), treasurePercent = 3),
         LegendQuest("hoenn-rayquaza", 384, "Rayquaza", WorldLayer.HOENN, "sky-pillar", 1, true, "Hoenn's Guardian waits at the top of the Sky Pillar.", setOf(PokemonType.FLYING, PokemonType.DRAGON), findPermille = 5),
+        // The later regions (14 November 2026): two box legendaries cleared three times, and the Guardian.
+        LegendQuest("unova-reshiram", 643, "Reshiram", WorldLayer.UNOVA, "dragonspiral-tower", 3, false, "The tower's top burns white. Clear the Dragonspiral Tower three times.", setOf(PokemonType.FIRE)),
+        LegendQuest("unova-zekrom", 644, "Zekrom", WorldLayer.UNOVA, "n-castle", 3, false, "A storm gathers in N's Castle. Clear it three times.", setOf(PokemonType.ELECTRIC)),
+        LegendQuest("unova-kyurem", 646, "Kyurem", WorldLayer.UNOVA, "giant-chasm", 1, true, "Unova's Guardian waits in the Giant Chasm.", setOf(PokemonType.ICE), treasurePercent = 3),
+        LegendQuest("kalos-xerneas", 716, "Xerneas", WorldLayer.KALOS, "victory-road-kalos", 3, false, "The tree of life glows past Victory Road. Clear it three times.", setOf(PokemonType.FAIRY)),
+        LegendQuest("kalos-yveltal", 717, "Yveltal", WorldLayer.KALOS, "lysandre-labs", 3, false, "Life drains away beneath Lysandre Labs. Clear it three times.", setOf(PokemonType.DARK)),
+        LegendQuest("kalos-zygarde", 718, "Zygarde", WorldLayer.KALOS, "terminus-cave", 1, true, "Kalos's Guardian keeps order in the Terminus Cave.", setOf(PokemonType.GROUND), treasurePercent = 3),
+        LegendQuest("alola-solgaleo", 791, "Solgaleo", WorldLayer.ALOLA, "mount-lanakila", 3, false, "The sun rests on the summit of Mount Lanakila. Clear it three times.", setOf(PokemonType.STEEL)),
+        LegendQuest("alola-lunala", 792, "Lunala", WorldLayer.ALOLA, "aether-paradise", 3, false, "The moon sings in the Aether Paradise. Clear it three times.", setOf(PokemonType.GHOST)),
+        LegendQuest("alola-necrozma", 800, "Necrozma", WorldLayer.ALOLA, "ultra-megalopolis", 1, true, "Alola's Guardian waits in the Ultra Megalopolis.", setOf(PokemonType.PSYCHIC), treasurePercent = 3),
+        LegendQuest("galar-zacian", 888, "Zacian", WorldLayer.GALAR, "route-10", 3, false, "The sword's old hero waits where the snow is deepest. Clear Route 10 three times.", setOf(PokemonType.FAIRY)),
+        LegendQuest("galar-zamazenta", 889, "Zamazenta", WorldLayer.GALAR, "giants-seat", 3, false, "The shield's old hero waits at Giant's Seat. Clear it three times.", setOf(PokemonType.FIGHTING)),
+        LegendQuest("galar-eternatus", 890, "Eternatus", WorldLayer.GALAR, "energy-plant", 1, true, "Galar's Guardian waits in the Energy Plant.", setOf(PokemonType.POISON), treasurePercent = 3),
+        LegendQuest("paldea-koraidon", 1007, "Koraidon", WorldLayer.PALDEA, "socarrat-trail", 3, false, "An old partner runs the Socarrat Trail. Clear it three times.", setOf(PokemonType.DRAGON)),
+        LegendQuest("paldea-miraidon", 1008, "Miraidon", WorldLayer.PALDEA, "zero-lab", 3, false, "A future partner hums inside the Zero Lab. Clear it three times.", setOf(PokemonType.ELECTRIC)),
+        LegendQuest("paldea-terapagos", 1024, "Terapagos", WorldLayer.PALDEA, "area-zero", 1, true, "Paldea's Guardian waits at the bottom of Area Zero.", setOf(PokemonType.NORMAL), treasurePercent = 3),
+        LegendQuest("hisui-arceus", 493, "Arceus", WorldLayer.HISUI, "temple-of-sinnoh", 1, true, "Hisui's Guardian, the Original One, waits in the Temple of Sinnoh.", setOf(PokemonType.NORMAL), treasurePercent = 3),
     )
 
     /** The species World gives through its own quests: Plan has no quest for them (a decision of 1 November 2026: Plan keeps the rest until a region or module gives them). */
