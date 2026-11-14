@@ -22,24 +22,24 @@ import app.pokeplan.ui.theme.Spacing
 internal object ShopLines {
     const val KECLEON_WELCOME = "Welcome to the Kecleon Shop! ♪"
     const val KECLEON_BOUGHT = "Thank you! All yours! ♪"
-    const val KECLEON_BROKE = "What? You don't seem to have the money."
+    const val KECLEON_BROKE = "What? You don't seem to have the money." // copy-ok: game
     const val KECLEON_FAREWELL = "Thanks! Please come again! ♪"
 
-    const val SPINDA_WELCOME = "Welcome to the fresh and friendly Spinda's Juice Bar!"
-    const val SPINDA_BREWED = "I've got a good feeling about this drink!"
-    const val SPINDA_NO_FOOD = "I'm sorry to say this, but in this café you must provide your own ingredients. You don't appear to have any food items."
+    const val SPINDA_WELCOME = "Welcome to the fresh and friendly Spinda's Juice Bar!" // copy-ok: game
+    const val SPINDA_BREWED = "I've got a good feeling about this drink!" // copy-ok: game
+    const val SPINDA_NO_FOOD = "I'm sorry to say this, but in this café you must provide your own ingredients. You don't appear to have any food items." // copy-ok: game
     const val SPINDA_FAREWELL = "Have a great day."
 
-    const val SWAP_WELCOME = "Hello! Welcome to the Swap Shop, where everyone is happy! Hey, why not?"
+    const val SWAP_WELCOME = "Hello! Welcome to the Swap Shop, where everyone is happy! Hey, why not?" // copy-ok: game
     const val SWAP_DONE = "Thanks for swapping! Come back anytime!"
-    const val SWAP_SHORT = "You don't have enough items to trade for this!"
+    const val SWAP_SHORT = "You don't have enough items to trade for this!" // copy-ok: game
 
     /** The game's short description of the items the shelf sells that the game has too (the four vitamins), else null. */
     fun itemText(name: String): String? = when (name) {
-        "Protein" -> "A drink that permanently raises the Pokémon's Attack. It also slightly fills the Pokémon's Belly."
-        "Calcium" -> "A drink that permanently raises the Pokémon's Special Attack. It also slightly fills the Pokémon's Belly."
-        "Iron" -> "A drink that permanently raises the Pokémon's Defense. It also slightly fills the Pokémon's Belly."
-        "Zinc" -> "A drink that permanently raises the Pokémon's Special Defense. It also slightly fills the Pokémon's Belly."
+        "Protein" -> "A drink that permanently raises the Pokémon's Attack. It also slightly fills the Pokémon's Belly." // copy-ok: game
+        "Calcium" -> "A drink that permanently raises the Pokémon's Special Attack. It also slightly fills the Pokémon's Belly." // copy-ok: game
+        "Iron" -> "A drink that permanently raises the Pokémon's Defense. It also slightly fills the Pokémon's Belly." // copy-ok: game
+        "Zinc" -> "A drink that permanently raises the Pokémon's Special Defense. It also slightly fills the Pokémon's Belly." // copy-ok: game
         else -> null
     }
 }
