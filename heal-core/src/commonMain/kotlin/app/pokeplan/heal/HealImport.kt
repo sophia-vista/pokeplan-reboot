@@ -71,11 +71,18 @@ data class ImportPlan(val candidates: List<Candidate>, val alreadyHere: Int, val
  * Importing from a provider, pure (INTEGRATIONS_AND_PRIVACY.md 5.1; HEAL.md 10.3 and 10.4). The rules, in order of importance:
  * 1. **Never overwrite or delete a record the player wrote.** A possible match is added beside it, both flagged.
  * 2. **Idempotent:** a record with a provider id that is already here is skipped, so a retry, a second read or a read after a crash adds nothing twice.
- * 3. **Never a reward.** Imported records carry [SourceKind.IMPORTED]; only a manual record can pay (`HealRules.activityPays`), and nothing here calls the world.
+ * 3. **No reward from here.** Imported records carry [SourceKind.IMPORTED] and nothing here calls the world. Only a manual session, or one from a provider in
+ *    [PAYING_PROVIDERS] that is not flagged as a possible duplicate, can pay (`HealRules.activityPays`), and the store decides that after applying.
  * 4. **Missing is not zero**, and a record that cannot be a valid one (negative, impossible, in the future) is rejected, never repaired.
  */
 object HealImport {
     const val PROVIDER_HEALTH_CONNECT = "healthconnect"
+
+    /** Records PokéLife read from Huawei Health's own pages on the phone (INTEGRATIONS_AND_PRIVACY.md 5.2.2). Its sessions pay like manual ones (owner, 14 November 2026). */
+    const val PROVIDER_HUAWEI_SCREEN = "huawei-screen"
+
+    /** Providers whose imported sessions Field Research pays exactly like manual ones ([HealRules.activityPays]). Health Connect is not one of them. */
+    val PAYING_PROVIDERS: Set<String> = setOf(PROVIDER_HUAWEI_SCREEN)
 
     private const val MINUTE = 60_000L
 

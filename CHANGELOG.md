@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.185.0
+
+Huawei Health records, nightly to weekly (REP-046, owner 14 November 2026, `INTEGRATIONS_AND_PRIVACY.md` 5.2.2). `RewardRules.VERSION` 24. Nothing stored on the phone needs a migration (new optional settings).
+
+- **Saved into Heal after a preview:** workouts from Exercise records (type, start, duration, distance), weight and body fat from the Weight page (at their own time), and today's sleep (its length, ending at the get-up time on the Health page; other nights show no times, so they are left out). Reading the same pages again adds nothing twice.
+- **Huawei workouts pay like ones you log** (rules version 24): same length rule and daily share on the session's own day, up to 8 days back so a weekly read still counts. A workout you also logged by hand is flagged as a repeat and is not paid twice. Health Connect imports still pay nothing.
+- **Remind me to read:** Off, Nightly or Weekly at a time you pick, counted from the last read. A daily read keeps every night's sleep; weekly keeps every workout and the latest weight.
+- **Save, numbers hidden** writes the capture to a `.txt` file instead of the clipboard.
+- The walk scrolls each card page a little further (6 steps), for a week of Exercise records.
+
 ## 0.184.0
 
 Huawei Health reader, second step (REP-046, `INTEGRATIONS_AND_PRIVACY.md` 5.2.2), from the owner's first capture. Nothing is saved or paid yet.

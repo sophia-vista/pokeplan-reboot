@@ -136,6 +136,12 @@ data class HealSettings(
     val healthKinds: Set<HealthKind> = emptySet(),
     /** When Health Connect was last read successfully, and what it returned then ("last successful sync", HEAL.md 10.3); 0 when never. */
     val healthLastSyncMillis: Long = 0,
+    /** How often to remind the player to read Huawei Health, in days (1 every night to 7 once a week); null when that reminder is off (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
+    val huaweiEveryDays: Int? = null,
+    /** The time of day that reminder goes off. */
+    val huaweiRemindAt: LocalTime = LocalTime(21, 0),
+    /** When Huawei Health was last read (0 when never); the reminder counts its days from here. */
+    val huaweiLastReadMillis: Long = 0,
 ) {
     companion object { const val MAX_REMINDERS = 3 }
 }

@@ -218,16 +218,38 @@ class HealStore(
     /**
      * Saves what [read] returned, in one write, and notes the time of the last successful read (a failed or partial read still imports what came and does not
      * move that time). Records already here (same provider id) are skipped, so a retry is harmless; a possible match with a record the player wrote is added beside
-     * it and flagged. **Nothing is paid**: imported records are never a Field Research event (HEAL.md 10.3). Returns the plan that was applied.
+     * it and flagged. Health Connect records are never a Field Research event (HEAL.md 10.3); sessions from a provider in [HealImport.PAYING_PROVIDERS]
+     * (Huawei Health's pages) pay exactly like manual ones, oldest first, under the same freshness, length and daily rules. Returns the plan that was applied.
      */
     fun importFromProvider(read: ProviderRead): ImportPlan {
         val plan = previewImport(read)
-        update { d ->
-            val added = HealImport.apply(d, plan, nowMillis, ::newId, ::dayOf)
-            if (read.failed) added else added.copy(settings = added.settings.copy(healthLastSyncMillis = nowMillis))
+        val before = data
+        var added = HealImport.apply(before, plan, nowMillis, ::newId, ::dayOf)
+        val known = before.activities.mapTo(HashSet()) { it.id }
+        val paidIds = HashSet<String>()
+        added.activities.filter { it.id !in known && HealRules.paysLikeManual(it) }.sortedBy { it.startMillis }.forEach { a ->
+            val paidThatDay = HealRules.activitiesPaidOn(added, a.day) + paidIds.count { id -> added.activities.first { it.id == id }.day == a.day }
+            if (HealRules.activityPays(a, nowMillis, paidThatDay) && pay(HealKind.ACTIVITY, a.id) != null) paidIds += a.id
         }
+        if (paidIds.isNotEmpty()) added = added.copy(activities = added.activities.map { if (it.id in paidIds) it.copy(paid = true) else it })
+        val result = added
+        val huawei = read.records.any { it.provider == HealImport.PROVIDER_HUAWEI_SCREEN }
+        update { if (read.failed || huawei) result else result.copy(settings = result.settings.copy(healthLastSyncMillis = nowMillis)) }
         return plan
     }
+
+    /** The records the Huawei Health reader's captures hold now (INTEGRATIONS_AND_PRIVACY.md 5.2.2), as a read to preview and import like any provider's. */
+    fun readHuawei(seen: HuaweiSeen): ProviderRead {
+        val records = HuaweiRecords.read(seen, nowMillis, zone)
+        val from = records.minOfOrNull { (it as? app.pokeplan.heal.Imported.Exercise)?.startMillis ?: (it as? app.pokeplan.heal.Imported.Sleep)?.startMillis ?: (it as? app.pokeplan.heal.Imported.Body)?.atMillis ?: nowMillis } ?: nowMillis
+        return ProviderRead(records, from, nowMillis)
+    }
+
+    /** Huawei Health was just read: the reading reminder counts from now. */
+    fun markHuaweiRead() = settings { it.copy(huaweiLastReadMillis = nowMillis) }
+
+    /** The reminder to read Huawei Health: every [everyDays] days (1 to 7) at [at], or off with null. */
+    fun setHuaweiReminder(everyDays: Int?, at: LocalTime) = settings { it.copy(huaweiEveryDays = everyDays?.coerceIn(1, 7), huaweiRemindAt = at) }
 
     /** The kinds the player chose to import; none disconnects HEAL from Health Connect in the app (the screen also revokes Android's permissions). Imported records stay. */
     fun setHealthKinds(kinds: Set<HealthKind>) = settings { it.copy(healthKinds = kinds, healthLastSyncMillis = if (kinds.isEmpty()) 0 else it.healthLastSyncMillis) }

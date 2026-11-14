@@ -67,14 +67,29 @@ object HealRules {
     /** A session pays only while it is fresh: it ended no more than this long ago (so backfilling history never pays, section 10.3). *(tune)* */
     const val FRESH_MILLIS = 12 * 60 * 60 * 1000L
 
+    /**
+     * How far back a session read from Huawei Health may have ended and still pay: reads are nightly to weekly (owner, 14 November 2026), so a week and a day,
+     * against [FRESH_MILLIS] for one logged by hand. The daily share still counts on the session's own day. *(tune)*
+     */
+    const val IMPORT_FRESH_MILLIS = 8 * 24 * 60 * 60 * 1000L
+
+    fun freshFor(activity: ActivityRecord): Long = if (activity.source == SourceKind.IMPORTED) IMPORT_FRESH_MILLIS else FRESH_MILLIS
+
     /** The clock of a phone can be a little ahead of what the user typed; a session ending this far in the future is still today's. */
     const val FUTURE_SLACK_MILLIS = 5 * 60 * 1000L
 
     /** Whether a just-logged session may be paid: it is long enough, it ended recently and not in the future, and the day's share is not used. */
     fun activityPays(activity: ActivityRecord, nowMillis: Long, paidToday: Int): Boolean =
-        activity.source == SourceKind.MANUAL && activity.minutes >= RESEARCH_MIN_MINUTES &&
-            activity.endMillis <= nowMillis + FUTURE_SLACK_MILLIS && activity.endMillis >= nowMillis - FRESH_MILLIS &&
+        paysLikeManual(activity) && activity.minutes >= RESEARCH_MIN_MINUTES &&
+            activity.endMillis <= nowMillis + FUTURE_SLACK_MILLIS && activity.endMillis >= nowMillis - freshFor(activity) &&
             paidToday < ACTIVITIES_PAID_PER_DAY
+
+    /**
+     * Manual sessions, and sessions read from a provider in [HealImport.PAYING_PROVIDERS] (Huawei Health's pages, owner 14 November 2026) that are not flagged as
+     * a possible repeat of one already here: a session logged by hand and also read from Huawei pays once, by hand.
+     */
+    fun paysLikeManual(activity: ActivityRecord): Boolean = activity.source == SourceKind.MANUAL ||
+        (activity.source == SourceKind.IMPORTED && activity.provenance?.let { it.provider in HealImport.PAYING_PROVIDERS && it.possibleDuplicateOf == null } == true)
 
     /** Whether a just-logged drink may be paid: it is now (not backfilled), and none was paid today. Only for a player who has opted in; the caller checks. */
     fun participationPays(entry: HydrationEntry, nowMillis: Long, paidToday: Int): Boolean =

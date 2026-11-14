@@ -168,7 +168,7 @@ internal fun HealConnectionsView(model: AppModel) {
 }
 
 @Composable
-private fun ImportPreview(plan: ImportPlan, onAdd: () -> Unit, onCancel: () -> Unit) {
+internal fun ImportPreview(plan: ImportPlan, onAdd: () -> Unit, onCancel: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelTitle("Ready to add")
         if (plan.isEmpty) Text("Nothing new", style = MaterialTheme.typography.bodyLarge)

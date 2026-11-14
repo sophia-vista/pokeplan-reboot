@@ -9,8 +9,8 @@ object HuaweiHealth {
     /** The only package either reader looks at. */
     const val PACKAGE = "com.huawei.health"
 
-    /** The provenance provider of the records the parsers will save. */
-    const val PROVIDER = "huawei-screen"
+    /** The provenance provider of the records read from Huawei Health's pages; HEAL pays its sessions like manual ones (`HealRules.activityPays`). */
+    const val PROVIDER = app.pokeplan.heal.HealImport.PROVIDER_HUAWEI_SCREEN
 
     /** A day's step count is never above this; anything larger is not a step count. */
     const val MAX_STEPS = 200_000

@@ -1217,12 +1217,17 @@ class ScreenshotTest {
             app.pokeplan.app.ScreenNode("Sleep  7 h 12 min", viewId = "com.huawei.health:id/sleep_card", type = "LinearLayout", depth = 3, clickable = true),
             app.pokeplan.app.ScreenNode(viewId = "com.huawei.health:id/recycler", type = "RecyclerView", depth = 2, scrollable = true),
         ))
-        val seen = app.pokeplan.app.HuaweiSeen(listOf(page), listOf(app.pokeplan.app.NotificationCapture(2, "12,045 steps", "Goal 10,000 steps · 8.2 km")))
+        fun hw(id: String, text: String) = app.pokeplan.app.ScreenNode(text, viewId = "com.huawei.health:id/hw_show_health_running_history_child_item_$id")
+        val sessions = app.pokeplan.app.ScreenCapture(2, "SportHistoryActivity", listOf(
+            hw("chief_sport_type_text", "Outdoor walk"), hw("date", "January 3"), hw("left_date_text", "5:40 PM"), hw("chief_sport_data_text", "3.10"),
+            hw("chief_sport_data_unit", "km"), hw("center_text", "00:41:05"),
+        ))
+        val seen = app.pokeplan.app.HuaweiSeen(listOf(page, sessions), listOf(app.pokeplan.app.NotificationCapture(2, "12,045 steps", "Goal 10,000 steps · 8.2 km")))
         listOf(false, true).forEach { dark ->
             val model = AppModel(storeWithTeam())
             render("heal-huawei-off${if (dark) "-dark" else ""}", height = 700) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.HuaweiProbeBox(model, Fake(false, app.pokeplan.app.HuaweiSeen())) } } } }
-            render("heal-huawei-seen${if (dark) "-dark" else ""}", height = 1400) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+            render("heal-huawei-seen${if (dark) "-dark" else ""}", height = 2000) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.HuaweiProbeBox(model, Fake(true, seen), startShowing = true) } } } }
         }
     }
