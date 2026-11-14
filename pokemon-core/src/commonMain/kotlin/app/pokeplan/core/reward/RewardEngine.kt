@@ -355,6 +355,70 @@ object DropTable {
 }
 
 /**
+ * The life modules' item drops (owner, 14 November 2026: "themed small chance", and Nature Mints in MINT): each paid moment of Care, Heal, Mint,
+ * Base and Link has a [PERCENT] chance of one item from its own table, so every module has a way to evolution items, and the shop sells the
+ * essential ones (a sure path). MINT's finished review also pays one Nature Mint every time. Weights are relative. *(tune)*
+ */
+object ModuleDrops {
+    const val PERCENT = 10
+
+    /** Gimmighoul Coins come by the handful (Gimmighoul needs 999). */
+    const val COIN_HANDFUL = 10
+
+    enum class Module { CARE, HEAL, MINT, BASE, LINK }
+
+    private fun stones(vararg ids: String) = ids.filter { it in Items.evolutionItems }
+
+    val tables: Map<Module, Map<String, Double>> by lazy {
+        mapOf(
+            // Care: gentle things. Sweets, the stones of soft evolutions, and the Everstone for a Pokémon that should stay as it is.
+            Module.CARE to buildMap {
+                put("strawberry-sweet", 4.0); put("oval-stone", 2.0); put(Items.EVERSTONE, 2.0); put("leftovers", 0.5)
+                stones("moon-stone", "shiny-stone", "dawn-stone").forEach { put(it, 1.0) }
+            },
+            // Heal: training. Vitamins, and the claws and fangs of the outdoors, the sun and the leaf.
+            Module.HEAL to buildMap {
+                Items.vitamins.keys.forEach { put(it, 3.0) }
+                put("razor-claw", 1.0); put("razor-fang", 1.0)
+                stones("sun-stone", "leaf-stone", "water-stone").forEach { put(it, 1.0) }
+            },
+            // Mint: Nature Mints above all, and things of value: Gimmighoul Coins, a Bottle Cap, an Amulet Coin, a Star Piece.
+            Module.MINT to mapOf(Items.NATURE_MINT to 6.0, Items.GIMMIGHOUL_COIN to 3.0, Items.BOTTLE_CAP to 1.0, "amulet-coin" to 1.0, "star-piece" to 1.0),
+            // Base: the house. The stones of fire, water, thunder, leaf and ice, and the Everstone.
+            Module.BASE to buildMap {
+                stones("fire-stone", "water-stone", "thunder-stone", "leaf-stone").forEach { put(it, 2.0) }
+                stones("ice-stone", "dusk-stone").forEach { put(it, 1.0) }
+                put(Items.EVERSTONE, 2.0); put("oval-stone", 1.0)
+            },
+            // Link: what friends pass along. The Link Cord and the items a trade evolution needs.
+            Module.LINK to buildMap { put(Items.LINK_CORD, 4.0); Items.tradeItems.forEach { put(it, 1.0) } },
+        )
+    }
+
+    /** One roll: an item, or null (most of the time). */
+    fun roll(module: Module, rng: Random): String? {
+        if (rng.nextInt(100) >= PERCENT) return null
+        val table = tables.getValue(module)
+        var pick = rng.nextDouble() * table.values.sum()
+        for ((id, w) in table) { pick -= w; if (pick < 0) return id }
+        return table.keys.last()
+    }
+
+    /** [outcome] with [module]'s drop roll added (an item over the bag limit becomes Poké, as everywhere). */
+    fun add(outcome: Outcome, module: Module, rng: Random, guaranteed: String? = null): Outcome {
+        var state = outcome.state
+        val rewards = outcome.rewards.toMutableList()
+        for (id in listOfNotNull(guaranteed, roll(module, rng))) {
+            val n = if (id == Items.GIMMIGHOUL_COIN) COIN_HANDFUL else 1
+            val (bag, extra) = state.inventory.addCapped(id, n)
+            state = state.copy(inventory = bag, coins = state.coins + extra)
+            rewards += Reward.ItemDrop(id, n)
+        }
+        return outcome.copy(state = state, rewards = rewards)
+    }
+}
+
+/**
  * Turns activity into rewards. Pure: the same state, event and random source give the same outcome, so the server can
  * run this to grant rewards and clients can preview them. Daily limits and idempotency are the caller's job.
  */
@@ -712,7 +776,7 @@ object RewardEngine {
         coins += overflow
         rewards += Reward.Candies(CandyType.RARE, candies)
         val points = if (e.kind == CareKind.WEEKLY_RHYTHM) RHYTHM_POINTS else CARE_POINTS
-        return Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + points), rewards)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + points), rewards), ModuleDrops.Module.CARE, rng)
     }
     /**
      * A Field Egg from a full Field Research meter ([HEAL_EGG_POINTS]): rolled like a Task Egg from the Heal Region (species not caught yet
@@ -767,7 +831,7 @@ object RewardEngine {
         inventory = bag
         coins += overflow
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + HEAL_POINTS), rewards)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + HEAL_POINTS), rewards), ModuleDrops.Module.HEAL, rng)
     }
 
     /**
@@ -809,7 +873,7 @@ object RewardEngine {
         val candies = MINT_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + MINT_POINTS), rewards)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + MINT_POINTS), rewards), ModuleDrops.Module.MINT, rng, if (e.kind == MintKind.REVIEW) Items.NATURE_MINT else null)
     }
 
     /**
@@ -851,7 +915,7 @@ object RewardEngine {
         val candies = HOME_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + HOME_POINTS), rewards)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + HOME_POINTS), rewards), ModuleDrops.Module.BASE, rng)
     }
 
     /**
@@ -893,6 +957,6 @@ object RewardEngine {
         val candies = LINK_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + LINK_POINTS), rewards)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + LINK_POINTS), rewards), ModuleDrops.Module.LINK, rng)
     }
 }

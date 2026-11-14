@@ -99,6 +99,10 @@ object WorldSim {
     const val BERRY_PERCENT = 70
     const val TREASURE_PERCENT = 6
 
+    /** The chance a Paldea floor has Gimmighoul Coins, in percent, and the most in one pile. *(tune)* */
+    const val COIN_PERCENT = 30
+    const val COIN_MAX = 8
+
     /**
      * A team's power: the sum of its members' [contribution]s, each its level, 20% more for a type the dungeon favors, and what its moves, ability and
      * held item add ([BattleIdentity], at most 25% of the level).
@@ -311,6 +315,15 @@ object WorldSim {
             val berry = Items.berry(flavor)
             events += WorldEvent.Item(berry, 1)
             d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 1))
+        }
+        // Paldea's floors: Gimmighoul Coins lie about (Gimmighoul needs 999). Their own dice, so nothing else a floor gives changes. *(tune)*
+        if (!partial && dungeon.layer == WorldLayer.PALDEA) {
+            val coinDice = Random(seed(teamId, trip, index) xor 0x6A09E667L)
+            if (coinDice.nextInt(100) < COIN_PERCENT) {
+                val n = 1 + coinDice.nextInt(COIN_MAX)
+                events += WorldEvent.Item(Items.GIMMIGHOUL_COIN, n)
+                d = d.copy(items = d.items + (Items.GIMMIGHOUL_COIN to (d.items[Items.GIMMIGHOUL_COIN] ?: 0) + n))
+            }
         }
         val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION)) + if (modifier == DungeonModifier.BOUNTY) DungeonModifiers.POKE_PERCENT else 0) / 100
         val paid = if (partial) poke / 2 else poke

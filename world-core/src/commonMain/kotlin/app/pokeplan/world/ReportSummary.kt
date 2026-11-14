@@ -51,7 +51,7 @@ data class ReportSummary(
             for (e in report.events) s = when (e) {
                 is WorldEvent.FloorCleared -> s.copy(floors = s.floors + 1, byDungeon = s.byDungeon + (e.dungeonId to (s.byDungeon[e.dungeonId] ?: 0) + 1))
                 is WorldEvent.Poke -> s.copy(poke = s.poke + e.amount)
-                is WorldEvent.Item -> s.copy(berries = s.berries + e.count)
+                is WorldEvent.Item -> if (e.itemId.startsWith("berry-")) s.copy(berries = s.berries + e.count) else s
                 is WorldEvent.Treasure -> s.copy(treasure = s.treasure + (e.tier to (s.treasure[e.tier] ?: 0) + 1))
                 is WorldEvent.Milestone -> s.copy(milestones = s.milestones + (e.dungeonId to e.reward))
                 is WorldEvent.Found -> s.copy(finds = s.finds + e.speciesId)

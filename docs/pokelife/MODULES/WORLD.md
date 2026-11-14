@@ -755,6 +755,8 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 3. A region's Pokémon are found only in that region; official game map art for each.
 4. Main (box) legendaries are quests and Guardians of their region; side legendaries (Mew also as a Kanto quest, the beasts, Celebi, Latias and Latios, Jirachi, Deoxys, the regis and the like) are featured by modules, not regions. A Guardian helps other places depending on the module it is placed in.
 
+5. *(Owner, 14 November 2026)* The Unova, Kalos, Alola, Galar, Paldea and Hisui layers are built (nine dungeons each from the regional dex, five authored chapters, the box legendaries as quests and Guardians: Reshiram, Zekrom, Kyurem; Xerneas, Yveltal, Zygarde; Solgaleo, Lunala, Necrozma; Zacian, Zamazenta, Eternatus; Koraidon, Miraidon, Terapagos; Arceus). They have no map picture yet (no game map art could be fetched), so their dungeons are a list. Evolution Trials happen there (`EvolutionTrialSites`): a team member that could make a special evolution reaches its trial floor in a dungeon of the evolution's region. Paldea's floors and milestones give Gimmighoul Coins.
+
 ### 14.8 Not built and open
 - Settlements and routes as map nodes, fog of war, a story track versus an optional exploration track, regional jobs for the mainline layers, postgame per region (deeper floors, modifiers, rematches), fuller story text, the remaining regions and spin-off layers above.
 - More skills (Mining, Archaeology, Survival, Navigation), Friend Area camps, Storage and the Duskull Bank, team roles and equipment, Pokégear helpers.

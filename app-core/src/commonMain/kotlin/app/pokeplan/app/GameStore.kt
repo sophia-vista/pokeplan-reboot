@@ -1899,6 +1899,23 @@ class GameStore(
         return true
     }
 
+    /** Today's day number at the Kecleon Shop (the player's local day), for its daily shelf. */
+    val shopDay: Long get() = (nowMillis + utcOffsetMillis).floorDiv(86_400_000L)
+
+    /**
+     * Buys [itemId] at the Kecleon Shop for Poké, from the fixed stock or today's shelf ([app.pokeplan.world.KecleonShop]): the price comes off the
+     * balance and the items go into the Bag in one update. False when it is not on sale today or Poké is short.
+     */
+    fun worldBuy(itemId: String): Boolean {
+        val offer = app.pokeplan.world.KecleonShop.offer(shopDay, itemId) ?: return false
+        if (data.player.coins < offer.price) return false
+        update { d ->
+            val (bag, extra) = d.player.inventory.addCapped(offer.itemId, offer.count)
+            d.copy(player = d.player.copy(coins = d.player.coins - offer.price + extra, inventory = bag))
+        }
+        return true
+    }
+
     /** The Swap Shop: three berries of the flavour [from] for one of the flavour [to]. False without the berries or when the flavours are the same. */
     fun worldSwap(from: String, to: String): Boolean {
         if (from == to || from !in app.pokeplan.world.SwapShop.flavors || to !in app.pokeplan.world.SwapShop.flavors) return false

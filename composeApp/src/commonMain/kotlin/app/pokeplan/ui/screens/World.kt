@@ -591,13 +591,17 @@ private fun WorldTownView(model: AppModel) {
     }
         }
         TownPage.KECLEON -> {
-            WorldBanner("pokemon-square", "Kecleon Shop", "Exp. Candy, for Poké", height = 150.dp)
+            WorldBanner("pokemon-square", "Kecleon Shop", "Items, for Poké", height = 150.dp)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Exp. Candy", style = MaterialTheme.typography.titleSmall)
             PixelButton("Buy one: ${world.candyPrice} Poké", { if (store.worldBuyCandy()) model.effect(Sfx.CANDY) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = store.data.player.coins >= world.candyPrice, compact = true)
         }
     }
+    // Today's shelf first (it changes each day), then the stock that is always sold.
+    val day = store.shopDay
+    ShopShelf(model, "Today's shelf", app.pokeplan.world.KecleonShop.shelf(day))
+    ShopShelf(model, "Always in stock", app.pokeplan.world.KecleonShop.fixed)
         }
         TownPage.SWAP -> {
             WorldBanner("square", "Croagunk Swap Shop", "Berry for berry", height = 150.dp)
@@ -1100,5 +1104,26 @@ private fun ArchiveRow(title: String, detail: String, moment: app.pokeplan.world
             Text(detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
         PixelIconButton("play", "Watch $title again", { model.cutscene = Cutscene.World(moment) })
+    }
+}
+
+/** A shelf of the Kecleon Shop: each item with its icon, how many the Bag holds, and its price. */
+@Composable
+private fun ShopShelf(model: AppModel, title: String, offers: List<app.pokeplan.world.ShopOffer>) {
+    val store = model.store
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            offers.forEach { o ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    app.pokeplan.ui.ItemIcon(o.itemId, size = app.pokeplan.ui.theme.Sizes.Icon)
+                    Column(Modifier.weight(1f)) {
+                        Text((if (o.count > 1) "${o.count} " else "") + Items.name(o.itemId), style = MaterialTheme.typography.bodyLarge)
+                        Text("In the Bag: ${model.data.player.inventory[o.itemId]}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
+                    PixelButton("${o.price} Poké", { if (store.worldBuy(o.itemId)) model.effect(Sfx.CONFIRM) }, color = Module.WORLD.look.accent, enabled = model.data.player.coins >= o.price, compact = true)
+                }
+            }
+        }
     }
 }
