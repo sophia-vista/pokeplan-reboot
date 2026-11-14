@@ -1,13 +1,13 @@
 ---
 name: design-references
-description: Ideas from 16 design-reference sites (navigation, calls to action, empty states, micro-interactions, lists, component libraries), translated from websites to PokéPlan's app screens and filtered through its rules (real game assets only, gentle by design, Reduce motion), with an avoid list of trends that clash. Use before designing or restyling a screen, tab, menu, empty or error state, reward moment, onboarding step or micro-interaction in composeApp or the widgets, or when someone asks what a reference site suggests.
+description: Ideas from 16 design-reference sites (navigation, calls to action, empty states, micro-interactions, lists, component libraries), translated from websites to PokéLife's app screens and filtered through its rules (real game assets only, gentle by design, Reduce motion), with an avoid list of trends that clash. Use before designing or restyling a screen, tab, menu, empty or error state, reward moment, onboarding step or micro-interaction in composeApp or the widgets, or when someone asks what a reference site suggests.
 ---
 
 # Design references
 
-What 16 reference sites show, sorted into what fits PokéPlan and what doesn't. Captured on 23 and 24 October 2026
+What 16 reference sites show, sorted into what fits PokéLife and what doesn't. Captured on 23 and 24 October 2026
 from each site's home page only. The galleries change daily, so a named example may be gone; the site name is there
-so you can look the pattern up again. They are websites and PokéPlan is an app, so every idea below is already
+so you can look the pattern up again. They are websites and PokéLife is an app, so every idea below is already
 translated to a screen, a tab or a moment in the app.
 
 **Order of authority:** `CLAUDE.md`, `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` (sections 5.1 and 12A) and the
@@ -108,7 +108,7 @@ Antler and KARO (huge type).
 
 **Not that**
 - 3D, product screenshots, rotating words, autoplay video, dark glow, an email field on the first screen (the app
-  starts as a guest).
+  has no accounts).
 
 ## Primary actions and reward moments (cta.gallery)
 Seen: categories Button, Call-to-Buy, Download, Form, Modal / Pop-up, Navigation, Newsletter, Pricing. Examples:
@@ -155,7 +155,7 @@ Language, Unified Login Field, Avoid Browser Default Back Behavior, Clicking the
 Hold to Reveal Shortcut Hint.
 
 **Take this**
-- Nothing jumps: a button keeps its size while its label changes (Saving…, Synced), rows keep their height when a
+- Nothing jumps: a button keeps its size while its label changes (Saving…, Saved), rows keep their height when a
   badge appears, a finished task leaves the list and the gap closes smoothly (uiarc.dev "An inbox that makes room").
 - Hold to Confirm for the few things that can't be undone: transferring a Pokémon, deleting data. Never for
   finishing a task, which gets the 10 second Undo instead (uiarc.dev "Confirm morph: asks in place, with undo").
@@ -196,7 +196,7 @@ baby tracking with nap predictions).
 - Loose collage layouts for lists people scan, chips and tag clouds for every filter, sticker badges on sprites.
 
 ## Component libraries (ideas only)
-None of their code ports: they are React with Tailwind and Motion (beui.dev also React Native), and PokéPlan is
+None of their code ports: they are React with Tailwind and Motion (beui.dev also React Native), and PokéLife is
 Kotlin with Compose Multiplatform. Take the idea, rebuild it with our theme and components, give it a Reduce motion
 version, and never copy code. If something must be copied, read the project's own LICENSE file, keep its notice,
 and ask the owner first.
@@ -224,8 +224,8 @@ Where each idea belongs in the app. "Exists" means it is already built; use the 
 | One field, one button | cta.gallery (plnty) | | Quick-add | | Nickname | Trainer name | |
 | One primary action per screen | cta.gallery (Augustus) | One step per region | Add task | Start | | | Focus |
 | Small sprite, short line, one action | 404s.design (Kobbe) | | Empty lists | | Empty party, PC | Offline | Empty |
-| Speak in the game's terms | 404s.design (WithUPI) | | | Failed session | | Sync errors | |
-| Nothing jumps | interior.dev | | Task done | Timer | Rows | Sync button | |
+| Speak in the game's terms | 404s.design (WithUPI) | | | Failed session | | | |
+| Nothing jumps | interior.dev | | Task done | Timer | Rows | | |
 | Hold to confirm, only if irreversible | interior.dev | | | | Transfer | Delete data | |
 | Undo in place | uiarc.dev (Confirm morph) | Task done | Task done | | | | |
 | Numbers that count | uiarc.dev | Counters | Reward sheet | Hatch summary | EXP | | |

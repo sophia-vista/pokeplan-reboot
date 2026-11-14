@@ -5,7 +5,7 @@ description: The original Android Java app in legacy-android/ (Firebase, activit
 
 # legacy-android
 
-The original app from the MOBDEVE pair project, kept as the reference for the old rules. It is no longer developed; the rules of the rewrite live in `docs/design.md`.
+The original app from the MOBDEVE pair project, kept as the reference for the old rules. It is no longer developed; the rewrite's rules are set in `docs/pokelife/`, and `docs/design.md` records what its code does today.
 
 ## Layout
 - `legacy-android/`: the original Android app (Gradle project). Single module `app`, package `com.mobdeve.s11.pokeplan`, Java 8, `minSdk 21` / `targetSdk 30`, view binding on, Android Gradle Plugin 7.0.2 with Gradle 7.0.2 (old: build with JDK 11, not 17 or newer).

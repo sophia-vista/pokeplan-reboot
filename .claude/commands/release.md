@@ -44,7 +44,7 @@ command's. Then run `.claude/hooks/in-flight.sh` and take the next number no in-
 
 ## 3. The version
 
-Write the new number to `VERSION` only, as PR #316 did (0.179.0 to 0.180.0). Leave the Gradle files alone, and leave the
+Write the new number to `VERSION` only. Leave the Gradle files alone, and leave the
 `*(X.Y.Z)*` marks in `docs/design.md`, which belong to the PR that built the feature.
 
 ## 4. The changelog entry
