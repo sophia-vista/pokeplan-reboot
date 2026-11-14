@@ -1,0 +1,13 @@
+item	column	sky_item	sprite	palette
+berry-spicy	0	Cheri Berry	2	6
+berry-sour	1	Sitrus Berry	2	3
+berry-sweet	2	Pecha Berry	2	4
+berry-dry	3	Chesto Berry	2	2
+berry-bitter	4	Rawst Berry	2	12
+hp-up	5	Protein	12	1
+protein	6	Protein	12	1
+iron	7	Iron	12	1
+calcium	8	Calcium	12	1
+zinc	9	Zinc	12	1
+carbos	10	Protein	12	1
+poke	11	Poké	6	3
