@@ -424,7 +424,7 @@ class ScreenshotTest {
     /**
      * REP-053 chunk 2 (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md section 7): the scale test for the modules' places. One
      * Hoenn Secret Base room (the Tree layout: floor and walls from the pokeemerald tileset), six Secret Base decorations and six
-     * SpriteCollab Pokémon standing in it, shown in a dialogue box at a phone's 1080 px width, at 2x and 3x, in both palettes
+     * SpriteCollab Pokémon standing in it, shown in a dialogue box at a phone's 1080 px width, at 2x, 3x and 4x, in both palettes
      * (`secretbase-2x-light.png` and so on). A test render, not a shipped screen.
      */
     @Test
@@ -448,7 +448,7 @@ class ScreenshotTest {
                 HoennRoom.Mon(258, 88, 104),  // Mudkip, on the mat
             ),
         ).toComposeImageBitmap()
-        listOf(2, 3).forEach { scale ->
+        listOf(2, 3, 4).forEach { scale ->
             listOf(false, true).forEach { dark ->
                 render("secretbase-${scale}x-${if (dark) "dark" else "light"}", frames = 3, width = 1080, height = 900, density = 3f) {
                     PixelTheme(dark) {
