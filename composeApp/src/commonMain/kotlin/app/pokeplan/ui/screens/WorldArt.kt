@@ -74,7 +74,7 @@ private val worldArt = BitmapCache(CacheBudget.WORLD_ART)
  * picture sits centred inside it.
  */
 @Composable
-internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boolean = false, top: Boolean = false) {
+internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boolean = false, top: Boolean = false, anchorY: Float? = null) {
     val image by produceState(worldArt[name], name) {
         // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = worldArt[name]
@@ -94,10 +94,12 @@ internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boo
         val srcH = if (h > size.height) (size.height / scale).toInt().coerceAtMost(picture.height) else picture.height
         val dstW = (srcW * scale).toInt()
         val dstH = (srcH * scale).toInt()
+        // Which part of a cropped picture shows: [anchorY] 0 the top, 1 the bottom, 0.5 the middle (else [top] picks the top or the bottom).
+        val ay = anchorY ?: if (top) 0f else 1f
         drawImage(
             picture,
-            srcOffset = IntOffset((picture.width - srcW) / 2, if (top) 0 else picture.height - srcH), srcSize = IntSize(srcW, srcH),
-            dstOffset = IntOffset(((size.width - dstW) / 2).toInt(), if (crop) (if (top) 0 else (size.height - dstH).toInt()) else ((size.height - dstH) / 2).toInt()), dstSize = IntSize(dstW, dstH),
+            srcOffset = IntOffset((picture.width - srcW) / 2, ((picture.height - srcH) * ay).toInt()), srcSize = IntSize(srcW, srcH),
+            dstOffset = IntOffset(((size.width - dstW) / 2).toInt(), if (crop) ((size.height - dstH) * ay).toInt() else ((size.height - dstH) / 2).toInt()), dstSize = IntSize(dstW, dstH),
             filterQuality = if (scale >= 1f) FilterQuality.None else FilterQuality.Medium,
         )
     }
@@ -166,11 +168,11 @@ internal fun dungeonEntrance(dungeonId: String): String? = when (dungeonId) {
     else -> null
 }
 
-/** [name] (a ground map) as a framed strip showing the top of the picture, where a dungeon's entrance and sky are. */
+/** [name] (a ground map) as a framed strip showing the middle of the picture, where a dungeon's entrance is. */
 @Composable
-internal fun EntranceStrip(name: String, height: Dp = 96.dp) {
+internal fun EntranceStrip(name: String, height: Dp = 120.dp) {
     Box(Modifier.fillMaxWidth().height(height).border(Sizes.Line, Pixel.Ink).clipToBounds()) {
-        WorldPicture(name, Modifier.fillMaxSize(), crop = true, top = false)
+        WorldPicture(name, Modifier.fillMaxSize(), crop = true, anchorY = 0.5f)
     }
 }
 
