@@ -168,10 +168,13 @@ internal fun Town(
             val (perScreen, rows) = FloorGeometry.size(screenPx, heightPx, pixel)
             val tilePx = (TILE * pixel).toFloat()
             val floor = remember(scene, day, layoutRoll, screens, home, perScreen, rows, avoid.isEmpty()) {
+                // A square is under a widget if any of it is: a find at a widget's edge would be half hidden.
                 DungeonFloor.build(screens, perScreen, rows, TownTiles.seed(scene, day, layoutRoll), home, TownTiles.organic(scene)) { c ->
-                    val sx = (c.x + 0.5f) * tilePx / screenPx
-                    val sy = (c.y + 0.5f) * tilePx / heightPx
-                    avoidLatest.any { r -> sx >= r.left && sx <= r.right && sy >= r.top && sy <= r.bottom }
+                    val l = c.x * tilePx / screenPx
+                    val r = (c.x + 1) * tilePx / screenPx
+                    val t = c.y * tilePx / heightPx
+                    val b = (c.y + 1) * tilePx / heightPx
+                    avoidLatest.any { w -> l < w.right && w.left < r && t < w.bottom && w.top < b }
                 }
             }
             remember(floor, screenPx, heightPx, pixel) { FloorGeometry.of(floor, pixel, screenPx, heightPx) }

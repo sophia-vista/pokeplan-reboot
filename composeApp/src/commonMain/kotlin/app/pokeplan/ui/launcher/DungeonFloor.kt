@@ -169,42 +169,40 @@ class DungeonFloor(
             fun set(c: Cell, t: TownCell) { if (c.x in 1 until cols - 1 && c.y in 1 until rows - 1) cells[c.y * cols + c.x] = t }
             fun at(c: Cell) = if (c.x in 0 until cols && c.y in 0 until rows) cells[c.y * cols + c.x] else TownCell.WALL
 
-            // Sectors: two across a page, three down (four on a tall screen), a room in most, as on the games' floors.
-            val across = screens * 2
-            val down = if (rows >= 30) 4 else 3
-            val sw = cols / across.toFloat()
-            val sh = (rows - 2) / down.toFloat()
-            val rooms = arrayOfNulls<Room>(across * down)
-            val hubs = arrayOfNulls<Cell>(across * down)
-            for (sy in 0 until down) for (sx in 0 until across) {
-                val x0 = (sx * sw).toInt() + 1
-                val x1 = ((sx + 1) * sw).toInt() - 1
-                val y0 = 1 + (sy * sh).toInt() + 1
-                val y1 = 1 + ((sy + 1) * sh).toInt() - 1
-                val i = sy * across + sx
-                val roomy = random.nextInt(100) < 80 && x1 - x0 >= 3 && y1 - y0 >= 3
-                if (!roomy) {
-                    hubs[i] = Cell(random.nextInt(x0, max(x0 + 1, x1)), random.nextInt(y0, max(y0 + 1, y1)))
-                    continue
+            // Rooms: two columns a page, two rooms in each (three on a tall screen), big, as on the games' floors; now and then one as wide as the
+            // page (owner, 14 November 2026: bigger rooms). A room may sit anywhere down its column, and of a few tries the one that shows the most
+            // floor no widget covers wins, so the rooms fill the open bands between the widgets. Rooms keep two squares of wall between them.
+            val columns = screens * 2
+            val cw = cols / columns.toFloat()
+            val perColumn = if (rows >= 36) 3 else 2
+            val made = ArrayList<Room>()
+            fun clear(r: Room) = made.none { o -> r.x - 2 < o.x + o.w && o.x - 2 < r.x + r.w && r.y - 2 < o.y + o.h && o.y - 2 < r.y + r.h }
+            for (column in 0 until columns) {
+                val wide = column % 2 == 0 && random.nextInt(100) < 30
+                if (column % 2 == 1 && made.any { it.w > cw * 1.5f && it.x < (column * cw).toInt() && it.x + it.w > (column * cw).toInt() + 1 } && random.nextBoolean()) continue
+                val x0 = (column * cw).toInt() + 1
+                val x1 = (((column + if (wide) 2 else 1) * cw).toInt() - 1).coerceAtMost(cols - 2)
+                repeat(if (wide) perColumn - 1 else perColumn) {
+                    var best: Room? = null
+                    var bestScore = Float.NEGATIVE_INFINITY
+                    repeat(30) {
+                        val aw = x1 - x0
+                        val w = random.nextInt(max(3, (aw * 0.7f).toInt()), max(4, aw + 1))
+                        val h = random.nextInt(4, max(5, min(rows / perColumn - 3, 10) + 1))
+                        val x = random.nextInt(x0, max(x0 + 1, x1 - w + 1))
+                        val y = random.nextInt(2, max(3, rows - 2 - h))
+                        val r = Room(x, y, min(w, cols - 1 - x), min(h, rows - 1 - y))
+                        if (r.w < 3 || r.h < 3 || !clear(r)) return@repeat
+                        val covered = r.cells.count(soft)
+                        val score = (r.cells.size - covered) - 0.4f * covered + random.nextFloat() * 4f
+                        if (score > bestScore) { best = r; bestScore = score }
+                    }
+                    best?.let { r -> made += r; r.cells.forEach { set(it, TownCell.GROUND) } }
                 }
-                // A few tries, keeping the one that widgets cover least.
-                var best: Room? = null
-                var bestCover = Int.MAX_VALUE
-                repeat(14) {
-                    val w = random.nextInt(3, max(4, min(x1 - x0, 8) + 1))
-                    val h = random.nextInt(3, max(4, min(y1 - y0, 7) + 1))
-                    val x = random.nextInt(x0, max(x0 + 1, x1 - w + 1))
-                    val y = random.nextInt(y0, max(y0 + 1, y1 - h + 1))
-                    val r = Room(x, y, min(w, x1 - x), min(h, y1 - y))
-                    val cover = r.cells.count(soft)
-                    if (cover < bestCover) { best = r; bestCover = cover }
-                }
-                rooms[i] = best
-                hubs[i] = best!!.let { Cell(it.x + it.w / 2, it.y + it.h / 2) }
-                best!!.cells.forEach { set(it, TownCell.GROUND) }
             }
+            if (made.isEmpty()) Room(2, 2, min(6, cols - 4), min(5, rows - 4)).let { r -> made += r; r.cells.forEach { set(it, TownCell.GROUND) } }
 
-            // Corridors: a random tree over the sectors (so every room is reached), and a few more links for loops.
+            // Corridors: the shortest links that join every room (so all of the floor is one piece), and a few more for loops.
             fun corridor(a: Cell, b: Cell) {
                 val bend = if (random.nextBoolean()) Cell(b.x, a.y) else Cell(a.x, b.y)
                 for (leg in listOf(a to bend, bend to b)) {
@@ -217,24 +215,20 @@ class DungeonFloor(
                     }
                 }
             }
-            val linked = HashSet<Int>()
-            val stack = ArrayDeque<Int>()
-            val start = random.nextInt(across * down)
-            linked += start; stack += start
-            fun neighbours(i: Int) = listOfNotNull(
-                (i - 1).takeIf { i % across > 0 }, (i + 1).takeIf { i % across < across - 1 },
-                (i - across).takeIf { it >= 0 }, (i + across).takeIf { it < across * down },
-            )
-            while (stack.isNotEmpty()) {
-                val i = stack.last()
-                val next = neighbours(i).filter { it !in linked }.shuffled(random).firstOrNull()
-                if (next == null) { stack.removeLast(); continue }
-                corridor(hubs[i]!!, hubs[next]!!)
-                linked += next; stack += next
+            fun door(r: Room) = Cell(random.nextInt(r.x, r.x + r.w), random.nextInt(r.y, r.y + r.h))
+            fun gap(a: Room, b: Room) = abs((a.x + a.w / 2) - (b.x + b.w / 2)) + abs((a.y + a.h / 2) - (b.y + b.h / 2))
+            val joined = arrayListOf(made.first())
+            val left = made.drop(1).toMutableList()
+            while (left.isNotEmpty()) {
+                var pair: Pair<Room, Room>? = null
+                for (a in joined) for (b in left) if (pair == null || gap(a, b) < gap(pair.first, pair.second)) pair = a to b
+                val (a, b) = pair!!
+                corridor(door(a), door(b))
+                joined += b; left -= b
             }
-            repeat(across * down / 4) {
-                val i = random.nextInt(across * down)
-                neighbours(i).randomOrNull(random)?.let { corridor(hubs[i]!!, hubs[it]!!) }
+            repeat(max(1, made.size / 4)) {
+                val a = made.random(random)
+                made.filter { it != a }.minByOrNull { gap(a, it) + random.nextInt(8) }?.let { corridor(door(a), door(it)) }
             }
 
             // With only the 3 x 3 block a wall must be two squares thick: a wall with floor on both sides becomes floor.
@@ -253,7 +247,6 @@ class DungeonFloor(
             }
 
             // Water: a pond in some big rooms, kept off the room's edge so the room stays one piece; with the full tile set, lakes in the walls too.
-            val made = rooms.filterNotNull()
             for (r in made) {
                 if (r.w < 6 || r.h < 5 || random.nextInt(100) >= 35) continue
                 val pw = random.nextInt(2, r.w - 3)

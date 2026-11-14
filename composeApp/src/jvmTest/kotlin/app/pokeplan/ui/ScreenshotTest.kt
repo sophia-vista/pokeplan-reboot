@@ -1515,6 +1515,8 @@ class ScreenshotTest {
     fun launcherSettingsAndEmoji() {
         val model = AppModel(started())
         render("launcher-settings") { PixelTheme { app.pokeplan.ui.launcher.LauncherSettings(model, app.pokeplan.ui.launcher.LauncherPrefs(), {}, false, 2, 2, fakeHost, {}, {}, {}, {}, {}) } }
+        // On a dungeon town the Town section offers another floor for today (LAUNCHER.md 4.5).
+        render("launcher-settings-floor") { PixelTheme { app.pokeplan.ui.launcher.LauncherSettings(model, app.pokeplan.ui.launcher.LauncherPrefs(scene = "crystal-cave"), {}, false, 2, 2, fakeHost, {}, {}, {}, {}, {}) } }
         render("launcher-emoji", height = 700) {
             PixelTheme {
                 Box(Modifier.fillMaxSize().background(Pixel.Night).padding(16.dp)) {
