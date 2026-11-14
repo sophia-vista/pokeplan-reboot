@@ -35,7 +35,14 @@ interface TextFileChooser {
 }
 
 /** What the phone lets the Huawei Health reader do right now, rechecked on every look (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
-data class HuaweiReaderState(val installed: Boolean, val screenReading: Boolean, val notificationReading: Boolean, val walking: Boolean)
+data class HuaweiReaderState(
+    val installed: Boolean,
+    val screenReading: Boolean,
+    val notificationReading: Boolean,
+    val walking: Boolean,
+    /** Whether screen reading can be turned on for one read without Android's settings (WRITE_SECURE_SETTINGS granted over adb). */
+    val canSwitchItself: Boolean = false,
+)
 
 /**
  * Reading Huawei Health on the phone, probe stage (INTEGRATIONS_AND_PRIVACY.md 5.2.2): an accessibility service for `com.huawei.health` only and a notification
@@ -49,8 +56,14 @@ interface HuaweiReader {
 
     fun clear()
 
-    /** Opens Huawei Health, scrolls its first page to the end capturing each step, and comes back. [done] gets null, or what stopped it in words, on the main thread. */
+    /**
+     * Opens Huawei Health, walks it (INTEGRATIONS_AND_PRIVACY.md 5.2.2, rule 3) and comes back; screen reading is turned on first when [HuaweiReaderState.canSwitchItself]
+     * and is off again afterwards. [done] gets null, or what stopped it in words, on the main thread.
+     */
     fun walk(done: (String?) -> Unit)
+
+    /** Turns screen reading off now (it also turns itself off after every read). */
+    fun turnOff()
 
     /** Android's Accessibility settings, where the player turns screen reading on. */
     fun openScreenReadingSettings()

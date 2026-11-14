@@ -4,6 +4,8 @@
     <uses-feature android:name="android.hardware.location" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Heal's Huawei Health reader: only if the player grants it over adb (pm grant), screen reading is switched on for one read and off after (INTEGRATIONS_AND_PRIVACY.md 5.2.2). -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" xmlns:tools="http://schemas.android.com/tools" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- The step counter, for the evolutions done by walking (Pawmo, Bramblin, Rellor); asked for only when one is started. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
