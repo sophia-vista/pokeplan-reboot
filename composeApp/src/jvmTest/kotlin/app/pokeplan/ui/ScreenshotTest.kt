@@ -568,11 +568,11 @@ class ScreenshotTest {
         return store
     }
 
-    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, fontScale: Float = 1f, height: Int = 1080, everyone: Boolean = false, setup: (GameStore) -> Unit = {}) {
+    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, fontScale: Float = 1f, height: Int = 1080, everyone: Boolean = false, dark: Boolean = false, setup: (GameStore) -> Unit = {}) {
         val store = storeWithTeam(hatched).also(setup)
         val model = AppModel(store)
         render(name, fontScale = fontScale, height = height) {
-            PixelTheme {
+            PixelTheme(dark = dark) {
                 Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                     app.pokeplan.ui.screens.CollectionScreen(model, section, if (open) store.data.player.buddyId else null, startPcEveryone = everyone)
                 }
@@ -883,6 +883,9 @@ class ScreenshotTest {
     /** "Show all Pokémon": the buddy and the party join the PC's, each tile naming its place. */
     @Test
     fun collectionPcEveryone() = collection("collection-pc-everyone", 1, hatched = 8, height = 1400, everyone = true)
+
+    @Test
+    fun collectionPcEveryoneDark() = collection("collection-pc-everyone-dark", 1, hatched = 8, height = 1400, everyone = true, dark = true)
 
     /** More than one box of Pokémon: names under the sprites and the Previous / Next bar. */
     @Test
