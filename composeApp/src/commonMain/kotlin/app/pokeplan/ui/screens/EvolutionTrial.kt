@@ -61,7 +61,7 @@ internal fun DeviceTrial(model: AppModel, p: OwnedPokemon, option: EvolutionOpti
                     if (held >= UPSIDE_DOWN_MILLIS) { finished = true; done() }
                 } else { since = null; progress = 0f }
             }
-            if (stop == null) message = "This phone has no motion sensor, so ${p.nickname} cannot do this here."
+            if (stop == null) message = "This phone has no motion sensor."
             onDispose { stop?.invoke() }
         }
         DeviceAction.SPIN -> DisposableEffect(p.id, feed) {
@@ -82,7 +82,7 @@ internal fun DeviceTrial(model: AppModel, p: OwnedPokemon, option: EvolutionOpti
                 progress = (turned / FULL_TURN).toFloat().coerceAtMost(1f)
                 if (turned >= FULL_TURN) { finished = true; done() }
             }
-            if (stop == null) message = "This phone has no gyroscope, so ${p.nickname} cannot do this here."
+            if (stop == null) message = "This phone has no gyroscope."
             onDispose { stop?.invoke() }
         }
         DeviceAction.STEPS -> DisposableEffect(p.id, feed) {
@@ -106,7 +106,8 @@ internal fun DeviceTrial(model: AppModel, p: OwnedPokemon, option: EvolutionOpti
         PixelBar(progress, Modifier.fillMaxWidth(), Pixel.Green)
         if (action == DeviceAction.STEPS) {
             val walked = model.data.stepWalks[p.id]?.walked ?: 0
-            Text("$walked of ${EvolutionTrials.STEPS} steps. A World expedition of ${app.pokeplan.world.EvolutionTrialSites.WALK_FLOORS} floors with ${p.nickname} on the team also counts.", style = soft, color = Pixel.InkSoft)
+            Text("$walked of ${EvolutionTrials.STEPS} steps", style = soft, color = Pixel.InkSoft)
+            Text("Or ${app.pokeplan.world.EvolutionTrialSites.WALK_FLOORS} World floors on a team", style = soft, color = Pixel.InkSoft)
         }
         message?.let { Text(it, style = soft, color = Pixel.InkSoft) }
     }

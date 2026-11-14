@@ -7,10 +7,10 @@ import app.pokeplan.core.dex.PokemonType
 /** Something the phone itself does for an evolution (docs/design.md, "Evolution"): no battle needed, the player does it with the phone in hand. */
 enum class DeviceAction(val label: String, val howTo: String) {
     /** Inkay into Malamar: the games turn the console upside down. */
-    UPSIDE_DOWN("Turn the phone upside down", "Hold the phone upside down for a moment"),
+    UPSIDE_DOWN("Turn the phone upside down", "Hold the phone upside down"),
 
     /** Milcery into Alcremie: the player spins on the spot. */
-    SPIN("Spin around", "Hold the phone flat and turn around once, quickly"),
+    SPIN("Spin around", "Turn around once, phone held flat"),
 
     /** Pawmo, Bramblin and Rellor: walk with it in the Let's Go mode. */
     STEPS("Walk ${EvolutionTrials.STEPS} steps", "Walk ${EvolutionTrials.STEPS} steps with the phone"),
