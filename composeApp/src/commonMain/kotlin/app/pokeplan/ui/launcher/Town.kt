@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.ui.Animation
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.animations
 import app.pokeplan.ui.loadedAnimations
@@ -182,6 +183,8 @@ internal fun Town(
             remember(floor, screenPx, heightPx, pixel) { FloorGeometry.of(floor, pixel, screenPx, heightPx) }
         }
         val life = remember { TownLife() }
+        // How big each Pokémon is drawn (its sprite's frame), so a big one is given more room than a small one.
+        life.sheets = sheets
         val pickups = remember { FloorPickups() }
         // Reading the counters makes a collected find disappear at once.
         val finds = if (geo == null) emptyList() else remember(data.counters, day) { model.store.townFinds() }
@@ -301,6 +304,7 @@ private fun Resident(
 ) {
     // Where it starts is its own and the same every time (the floor stays put); what it does next is never the same twice, or every Pokémon would
     // act out the same script at the same moments each time the town starts walking again.
+    life.sizes[mon.id] = life.sheets?.get(mon.form.id)?.let { it.width to it.height } ?: TownLife.MEDIAN
     val startRandom = remember(mon.id) { Random(mon.id.hashCode()) }
     val random = remember(mon.id) { Random(Random.nextLong()) }
     val mover = remember(mon.form.id) { moverOf(mon) }
@@ -316,7 +320,7 @@ private fun Resident(
         val start = when {
             // On a floor an arriving Guardian comes up the stairs; the rest start on a square of their own.
             geo != null && entering -> geo.spotOf(geo.floor.stairs)
-            geo != null -> geo.restingCell(startRandom, mover, apart = life.claimedOn(geo.floor)).let { c -> life.claims[mon.id] = c; geo.spotOf(c) }
+            geo != null -> geo.restingCell(startRandom, mover, crowded = life.crowded(geo, mon.id, life.claimedOn(geo.floor))).let { c -> life.claims[mon.id] = c; geo.spotOf(c) }
             entering -> TownBehavior.entrance(startRandom, home)
             else -> Offset(startRandom.nextFloat() * screens, startRandom.nextFloat())
         }
@@ -448,7 +452,7 @@ private fun Resident(
                 feel(StatusKind.ALERT, 500)
                 delay(400)
                 fade.animateTo(0f, tween(260))
-                spot.snapTo(g.spotOf(g.restingCell(random, mover, apart = life.occupiedCells(g, mon.id))))
+                spot.snapTo(g.spotOf(g.restingCell(random, mover, crowded = life.crowded(g, mon.id))))
                 fade.animateTo(1f, tween(260))
                 feel(StatusKind.QUESTION, 1_400)
             }
@@ -479,7 +483,7 @@ private fun Resident(
     /** Walks the floor towards [target]: to the nearest free square it can stop on, along a path over the floor; a trap on the way stops it there. */
     suspend fun roamFloor(g: FloorGeometry, target: Offset, speed: Float = pace) {
         val others = life.occupiedCells(g, mon.id)
-        val goal = g.nearestResting(g.cellOf(Offset(target.x.coerceIn(0f, screens - 0.01f), target.y.coerceIn(0f, 0.999f))), mover, others) ?: return
+        val goal = g.nearestResting(g.cellOf(Offset(target.x.coerceIn(0f, screens - 0.01f), target.y.coerceIn(0f, 0.999f))), mover, others, life.crowded(g, mon.id)) ?: return
         // Where it is heading is taken too, so two Pokémon do not choose the same spot while both are still walking to it.
         life.goals[mon.id] = goal
         try {
@@ -657,19 +661,55 @@ internal class TownLife {
     /** The traps found on today's floor (a Pokémon stepped on them): shown from then on. */
     val revealed = mutableStateMapOf<Cell, Boolean>()
 
-    /** The square each one is walking to, and where each was set down on the floor: nobody picks a spot beside another's (a Pokémon is wider than a square). */
+    /** The square each one is walking to, and where each was set down on the floor. */
     val goals = mutableMapOf<String, Cell>()
     val claims = mutableMapOf<String, Cell>()
     private var claimedFloor: Any? = null
 
-    /** The squares others stand on, are heading for or started on, on [g]'s floor, other than [self]'s. */
+    /** The sprite sheets (each form's frame size), and how big each Pokémon is drawn here: its frame's width and height in art pixels. */
+    var sheets: Map<Int, Animation>? = null
+    val sizes = mutableMapOf<String, Pair<Int, Int>>()
+
+    /** The squares others stand on or are heading for on [g]'s floor, other than [self]'s. */
     fun occupiedCells(g: FloorGeometry, self: String): Set<Cell> =
         spots.filterKeys { it != self }.values.map { g.cellOf(it()) }.toSet() + goals.filterKeys { it != self }.values
 
     /** The squares already claimed on [floor] (the claims of an earlier floor are dropped). */
-    fun claimedOn(floor: Any): List<Cell> {
+    fun claimedOn(floor: Any): Map<String, Cell> {
         if (claimedFloor !== floor) { claims.clear(); claimedFloor = floor }
-        return claims.values.toList()
+        return claims.toMap()
+    }
+
+    /**
+     * Whether [self] standing on a square would overlap another Pokémon: where each other one stands, is heading for or (not yet placed) was set
+     * down, and how big the two are drawn, so a Wailord is given more room than a Pidgey. Sprites meet edge to edge at a square's width, so the
+     * gap is the two half-widths (and half-heights, a little less since the one behind is only partly covered) and a quarter of a square.
+     */
+    fun crowded(g: FloorGeometry, self: String, claimed: Map<String, Cell> = claims): (Cell) -> Boolean {
+        val others = buildList {
+            spots.forEach { (id, s) -> if (id != self) add(id to g.cellOf(s())) }
+            goals.forEach { (id, c) -> if (id != self) add(id to c) }
+            claimed.forEach { (id, c) -> if (id != self && id !in spots) add(id to c) }
+        }
+        return { c -> others.any { (id, at) -> overlap(self, c, id, at) } }
+    }
+
+    /**
+     * Whether the Pokémon [a] on [at] and [b] on [to] would cover each other. Across, their half-widths and a quarter of a square; down, a Pokémon
+     * stands on its feet and its body rises above them, so each covers the squares behind it (the top of the screen) by most of its height and the
+     * ones in front of it by none: a Wailord hides what stands behind it, not what stands before it.
+     */
+    fun overlap(a: String, at: Cell, b: String, to: Cell): Boolean {
+        val (wa, ha) = sizes[a] ?: MEDIAN
+        val (wb, hb) = sizes[b] ?: MEDIAN
+        val gapX = (wa + wb) / 48f + 0.25f
+        val dy = (at.y - to.y).toFloat()
+        return abs(at.x - to.x) < gapX && dy > -(0.6f * hb / 24f + 0.25f) && dy < 0.6f * ha / 24f + 0.25f
+    }
+
+    companion object {
+        /** A typical Pokémon's frame (width, height in art pixels), for one whose sheet is not read yet. */
+        val MEDIAN = 23 to 27
     }
 }
 

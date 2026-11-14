@@ -115,20 +115,28 @@ class DungeonFloorTest {
     }
 
     @Test
-    fun aSpotIsChosenAwayFromOthersWhenThereIsRoom() {
+    fun aSpotIsChosenAwayFromOthersAndBigOnesGetMoreRoom() {
         val f = floor(5)
         val geo = FloorGeometry.of(f, 1, f.cols * 24f, f.rows * 24f)
-        val taken = setOf(f.stairs.let { Cell(it.x + 2, it.y) })
-        val rest = f.restingCells(Mover.WALKER).first()
-        val got = assertNotNull(geo.nearestResting(rest, Mover.WALKER, setOf(rest)))
-        assertTrue(maxOf(kotlin.math.abs(got.x - rest.x), kotlin.math.abs(got.y - rest.y)) >= 2, "not beside $rest: $got")
-        // Starting squares keep apart too.
+        val life = TownLife()
+        life.sizes["small"] = 23 to 27
+        life.sizes["other"] = 23 to 27
+        life.sizes["big"] = 80 to 70
+        // Two ordinary Pokémon overlap on the same row within a square or two, but not a row apart; a big one needs about three squares across.
+        assertTrue(life.overlap("small", Cell(5, 5), "other", Cell(6, 5)))
+        assertTrue(!life.overlap("small", Cell(5, 5), "other", Cell(7, 5)))
+        assertTrue(!life.overlap("small", Cell(5, 5), "other", Cell(5, 6)))
+        assertTrue(life.overlap("big", Cell(5, 5), "small", Cell(7, 5)))
+        assertTrue(life.overlap("big", Cell(5, 5), "small", Cell(5, 4)), "a big one hides the one right behind it")
+        assertTrue(!life.overlap("big", Cell(5, 5), "small", Cell(5, 7)), "but not the one in front")
+        assertTrue(!life.overlap("big", Cell(5, 5), "small", Cell(9, 5)))
+        // Starting squares keep apart, a big one included.
         val random = kotlin.random.Random(3)
-        val placed = ArrayList<Cell>()
-        repeat(12) { placed += geo.restingCell(random, Mover.WALKER, apart = placed) }
-        for (i in placed.indices) for (j in i + 1 until placed.size)
-            assertTrue(maxOf(kotlin.math.abs(placed[i].x - placed[j].x), kotlin.math.abs(placed[i].y - placed[j].y)) >= 2, "${placed[i]} and ${placed[j]} overlap")
-        assertTrue(taken.isNotEmpty())
+        val claimed = LinkedHashMap<String, Cell>()
+        val ids = listOf("big") + (1..10).map { "p$it" }
+        ids.forEach { life.sizes.putIfAbsent(it, 23 to 27) }
+        for (id in ids) claimed[id] = geo.restingCell(random, Mover.WALKER, crowded = life.crowded(geo, id, claimed.toMap()))
+        for (a in ids) for (b in ids) if (a < b) assertTrue(!life.overlap(a, claimed.getValue(a), b, claimed.getValue(b)), "$a and $b overlap")
     }
 
     @Test
