@@ -11,7 +11,7 @@ The art for the modules' places is fetched, and a test room shows how it looks w
 
 - **Hoenn art (`assets/hoenn/`, 1.3 MB):** `tools/sprites/fetch_pret.py` (stdlib, pinned commit, skips existing files, `manifest.tsv` receipt) fetches from pret/pokeemerald the 43 Secret Base decoration sprites, the Secret Base tilesets (primary and the cave, shrub and tree ones, with their palettes and metatiles), the 24 room layouts and the 32 Berry tree sheets.
 - **PokeAPI extras:** `fetch_items.py extras` adds 74 Berry and 31 Mail icons to `assets/items` (not bundled until a screen uses them) and the 77 badges to `assets/badges`.
-- **Scale test:** `ScreenshotTest.secretBaseRoom` draws a Secret Base room (floor and walls from the tileset and the game's layout, six decorations, six SpriteCollab Pokémon) in a dialogue box at 2x, 3x and 4x in both palettes. It is a test render only; the owner decides the scale and whether the mix is right before the room is built (chunk 3).
+- **Scale test:** `ScreenshotTest.secretBaseRoom` draws a Secret Base room (floor and walls from the tileset and the game's layout, six decorations, six SpriteCollab Pokémon) in a dialogue box at 2x to 5x, flush with the frame, in both palettes. It is a test render only; the owner decides the scale and whether the mix is right before the room is built (chunk 3).
 
 ## 0.192.0
 
