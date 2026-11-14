@@ -49,7 +49,10 @@ SAME = ['ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax-band',
         'oaks-parcel', 'timer-ball', 'premier-ball', 'friend-ball',
         # Module cards: Heal's Today, Activity and Hydration.
         'potion', 'x-speed', 'fresh-water',
-        'everstone', 'oval-stone', 'razor-claw', 'razor-fang', 'strawberry-sweet', 'gimmighoul-coin']
+        'everstone', 'oval-stone', 'razor-claw', 'razor-fang', 'strawberry-sweet', 'gimmighoul-coin',
+        # What a Pokémon holds to evolve (the Kecleon Shop's shelf), taken from the evolution data's held items.
+        'deep-sea-scale', 'deep-sea-tooth', 'dragon-scale', 'dubious-disc', 'electirizer', 'kings-rock', 'magmarizer', 'metal-coat', 'prism-scale',
+        'protector', 'reaper-cloth', 'sachet', 'up-grade', 'whipped-dream']
 
 
 def read_csv(name):

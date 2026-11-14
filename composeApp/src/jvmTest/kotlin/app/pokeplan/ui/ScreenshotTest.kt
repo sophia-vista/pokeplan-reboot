@@ -16,6 +16,8 @@ import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
@@ -295,9 +297,9 @@ class ScreenshotTest {
     fun worldShops() {
         val model = AppModel(started())
         model.worldSection = app.pokeplan.ui.screens.WorldSection.TOWN
-        for (page in listOf("CAFE", "KECLEON", "SWAP")) {
+        for (page in listOf("CAFE", "KECLEON", "SWAP")) for (dark in listOf(false, true)) {
             app.pokeplan.ui.screens.townPageToOpen = page
-            render("world-shop-${page.lowercase()}", height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+            render("world-shop-${page.lowercase()}${if (dark) "-dark" else ""}", height = 1500) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
         }
         app.pokeplan.ui.screens.townPageToOpen = null
     }
@@ -316,6 +318,23 @@ class ScreenshotTest {
         model.worldSection = app.pokeplan.ui.screens.WorldSection.MISSIONS
         for ((name, scale) in listOf("world-board" to 1f, "world-board-xl" to 1.3f)) {
             render(name, height = 1700, fontScale = scale) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        }
+    }
+
+    /** A rescue notice on the job board: the lost Pokémon's face beside the game's call for help, in both palettes. */
+    @Test
+    fun worldRescueNotice() {
+        val jobs = app.pokeplan.world.Missions.all.filter { it.rescued != null }.take(3)
+        for (dark in listOf(false, true)) {
+            render("world-rescue-notice${if (dark) "-dark" else ""}", height = 640) {
+                PixelTheme(dark) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            jobs.forEach { m -> app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.screens.RescueCall(m) } }
+                        }
+                    }
+                }
+            }
         }
     }
 
