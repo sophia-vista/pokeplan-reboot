@@ -87,9 +87,26 @@ Not possible with real art: Amity Square, the Sinnoh Underground, Join Avenue, t
 3. P8 (Pokémon Center for HEAL) and P3 (Day Care for PLAN), which reuse the room tool from step 1.
 4. A6 and P12 (Mom and the Department Store) once decorations exist; A5 at any time.
 
-## 6. Questions for the owner
+## 6. Decisions
 
-Answered by rule 4.0 (14 November 2026): places in modules are mainline rooms, not Mystery Dungeon maps; the banks and the Friend Areas stay with WORLD.
+- *(Owner, 14 November 2026)* Art: rule 4.0 of `ASSETS_AND_AUDIO.md`. Places in modules are mainline rooms; the Mystery Dungeon banks and Friend Areas stay with WORLD.
+- *(Owner, 14 November 2026)* **Decorations are earned three ways**: from BASE upkeep, bought with Poké at the Department Store (P12), and as Mom's gifts for MINT actions (A6).
+- *(Default applied, not answered)* Order of work: section 5.
 
-1. **How are decorations earned?** A: from BASE upkeep only. B: upkeep, plus bought with Poké at the Department Store (P12). C: B plus Mom's gifts for MINT actions (A6). *Recommended: C, since it ties MINT and BASE together and gives Poké a sink.*
-2. **Which first?** A: the order in section 5. B: Secret Base only. C: another pick. *Recommended: A.*
+Still not decided: every number (how many chores a decoration takes, prices, how often Mom sends one), and whether each idea beyond A1 to A3 is wanted at all. An idea is approved only when it is written into its owning module file.
+
+## 7. Build plan (chunks for the next sessions)
+
+One chunk per session, in this order. Each starts with `.claude/hooks/claim.sh "REP-053 <chunk>"` and ends by updating this section's Status column and the REP-053 row. **A chunk that adds a rule writes it into the owning spec first** (`MODULES/HOME.md` for BASE, `MODULES/PLAN.md`, `MODULES/MINT.md`), with its numbers marked *(tune)*, and asks the owner the numbered questions before building. Chunks 1 and 2 add no rule and can be built straight away.
+
+| # | Chunk | What to do | Done when | Status |
+|---|---|---|---|---|
+| 1 | Fetch the art | `tools/sprites/fetch_pret.py` in the style of `fetch_rescue_maps.py` (stdlib Python, pinned commits, skips existing files, writes a `manifest.tsv`): from `pret/pokeemerald`, `graphics/decorations/*.png` and their `.pal` where a sprite is indexed, `data/tilesets/primary/secret_base` and `data/tilesets/secondary/secret_base/*`, `graphics/object_events/pics/berry_trees/*.png`, into `assets/hoenn/` (`decorations/`, `secret-base/`, `berry-trees/`). Extend `fetch_items.py` (or a sibling) for every `*-berry.png` and `*-mail.png` into `assets/items`, and PokeAPI `sprites/badges/` into `assets/badges/`. Add each to `docs/assets.md` and the `game-assets` skill. Check the PNGs open with correct colours (pret PNGs are indexed; some need their `.pal`). | The files are in `assets/` with manifests and sources listed. No app code | Planned |
+| 2 | Test render | A `ScreenshotTest` case (not a shipped screen) that draws one Secret Base room: a floor and walls from the tileset, six decorations, and six SpriteCollab Pokémon (`assets/pmd`) standing in it, in both palettes and at two integer scales for the room (2x and 3x). Send both PNGs to the owner and ask which scale reads right and whether the mix is acceptable. Room layout: read `data/layouts/SecretBase_*/map.bin` and the metatiles from pokeemerald, or lay the floor out in code from the tiles if that is much simpler; say which was done | The owner has seen the render and answered | Planned |
+| 3 | Secret Base room (A1, P1) | Spec in `MODULES/HOME.md` first: what a decoration is, the three ways it is earned (section 6), the room grid, that the room shows Base's party and is not a place. Then `base-core` (decorations owned and placed, pure rules, tests), `BaseStore` in `app-core` (earning through the existing chore and maintenance payments; a new reward needs `RewardRules.VERSION` and `docs/economy.md`), the tables in `data/` (a numbered `.sqm` migration and `databases/N.db`), and the screen in `composeApp` (`screens/Base.kt`) as a new menu card | Spec approved, `:base-core:jvmTest :app-core:jvmTest :data:jvmTest` green, screenshots in both palettes | Blocked on 2 |
+| 4 | Berry plots (A2) | Spec in `MODULES/HOME.md`: plots, real-hour growth, no wilting, berries to the Bag. Check `docs/economy.md` for what berries already do and where they come from, so the plot does not flood it; re-run `:plan-core:simulateEconomy` if a number changes what is paid | As 3 | After 3 |
+| 5 | Badges for goals (A3, P4) | Spec in `MODULES/PLAN.md`: a goal's milestones (`plan-core` `Goal.kt`) show as badges, a finished goal is a Hall of Fame row with the Plan party of that moment. Display only unless the owner asks for a reward | As 3, without `base-core` | After 1 |
+| 6 | Department Store and Mom (P12, A6) | Spec in `MODULES/MINT.md` and `HOME.md`: the shop sells decorations for Poké; Mom's jar fills from the two paid MINT actions (counted, never amounts; `MintEvent` stays as it is) and sends a decoration | As 3 | After 3 |
+| 7 | The other places (P3 Day Care, P8 Pokémon Center, P6 hot spring, P13 Union Room) | Each is a room drawn with chunk 2's tool, behind its module's existing screen. One at a time, each asked of the owner first | Per place | After 3 |
+
+Not scheduled: A4 Mail, A5 Gimmighoul coins, A7 cooking, A8 Pokétch, A9 Stroll, A10 sleeping party. Ask the owner before starting any of them.
