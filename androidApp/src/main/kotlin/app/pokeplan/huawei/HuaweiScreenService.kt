@@ -219,7 +219,7 @@ class HuaweiScreenService : AccessibilityService() {
         const val TIMEOUT_MS = 90_000L
         const val MAX_TRIES = 4
         const val MAX_SCROLLS = 12
-        const val DETAIL_SCROLLS = 4
+        const val DETAIL_SCROLLS = 6
         const val MAX_NODES = 400
         const val MAX_DEPTH = 40
         const val MAX_CHARS = 200

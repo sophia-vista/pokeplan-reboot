@@ -23,14 +23,16 @@ object HydrationReminders {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
         manager.createNotificationChannel(NotificationChannel(Channels.HEAL_HYDRATION, "Heal reminders", NotificationManager.IMPORTANCE_LOW))
         val id = notificationId(ref)
+        // The same notification carries Heal's other reminder, to read Huawei Health (INTEGRATIONS_AND_PRIVACY.md 5.2.2): words that say nothing about health either.
+        val huawei = ref == app.pokeplan.app.HuaweiReadReminder.REF
         val open = PendingIntent.getActivity(
             context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.HEAL.name),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val notification = Notification.Builder(context, Channels.HEAL_HYDRATION)
-            .setSmallIcon(notificationIcon(context, "fresh-water"))
+            .setSmallIcon(notificationIcon(context, if (huawei) "oaks-parcel" else "fresh-water"))
             .setContentTitle(title)
-            .setContentText("Only if you would like one.")
+            .setContentText(if (huawei) "Heal → Connections → Read Huawei Health" else "Only if you would like one.")
             .setCategory(Notification.CATEGORY_REMINDER)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .setContentIntent(open)

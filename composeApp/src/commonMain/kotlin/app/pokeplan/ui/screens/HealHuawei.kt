@@ -22,6 +22,7 @@ import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.HuaweiReader
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.theme.ListRow
+import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelTitle
@@ -40,6 +41,9 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
     var note by remember { mutableStateOf<String?>(null) }
     var showing by remember { mutableStateOf(startShowing) }
     val clipboard = LocalClipboardManager.current
+    val heal = model.heal
+    val settings = model.healData.settings
+    var dismissed by remember { mutableStateOf(0) } // the number of pages seen when the player said Not now
     // Rechecked every second while the page is open: both readers are switched in Android's settings, and pages arrive while Huawei Health is in front.
     LaunchedEffect(reader) { while (true) { state = reader.state(); seen = reader.seen(); delay(1_000) } }
 
@@ -69,6 +73,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                     state = state.copy(walking = true)
                     reader.walk { problem ->
                         seen = reader.seen(); state = reader.state()
+                        heal.markHuaweiRead()
                         val added = (seen.screens.size - before).coerceAtLeast(0)
                         note = problem ?: if (added == 0) "No new pages" else "$added new ${if (added == 1) "page" else "pages"}" // copy-ok: result
                     }
@@ -76,8 +81,24 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                 if (state.screenReading && !state.walking) PixelButton("Turn off screen reading", { reader.turnOff() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 Text("Off after each read, for banking apps", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
+            // What the pages hold as Heal records, previewed before anything is saved (HEAL.md 10.3); Huawei sessions pay like ones logged by hand.
+            val read = remember(seen) { heal.readHuawei(seen) }
+            val plan = remember(read, model.healData) { heal.previewImport(read) }
+            if (!plan.isEmpty && dismissed != seen.screens.size) ImportPreview(plan,
+                onAdd = { val p = heal.importFromProvider(read); note = "Added ${count(p.candidates.size, "record")}" }, // copy-ok: result
+                onCancel = { dismissed = seen.screens.size })
+            if (state.installed) {
+                PixelTitle("Remind me to read")
+                val every = settings.huaweiEveryDays
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    TabButton("Off", every == null, { heal.setHuaweiReminder(null, settings.huaweiRemindAt) }, Modifier.weight(1f))
+                    TabButton("Nightly", every == 1, { heal.setHuaweiReminder(1, settings.huaweiRemindAt) }, Modifier.weight(1f))
+                    TabButton("Weekly", every == 7, { heal.setHuaweiReminder(7, settings.huaweiRemindAt) }, Modifier.weight(1f))
+                }
+                if (every != null) PixelTimeField(settings.huaweiRemindAt, { t -> t?.let { heal.setHuaweiReminder(every, it) } }, ModuleAccent.HEAL.accent, label = "At")
+            }
             if (!seen.isEmpty) {
-                StatusLine("Seen, not saved", "${count(seen.screens.size, "page")}, ${count(seen.notifications.size, "notification")}")
+                StatusLine("Seen", "${count(seen.screens.size, "page")}, ${count(seen.notifications.size, "notification")}")
                 if (showing) seen.screens.forEach { s ->
                     ListRow {
                         Text(s.title.ifBlank { "Page" }, style = MaterialTheme.typography.bodyLarge)
@@ -91,7 +112,10 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                     }
                 }
                 PixelButton(if (showing) "Hide what it saw" else "Show what it saw", { showing = !showing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                PixelButton("Copy, numbers hidden", { clipboard.setText(AnnotatedString(seen.sample(AppVersion.NAME))); note = "Copied with every number hidden" }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true) // copy-ok: result
+                PixelButton("Save, numbers hidden", {
+                    val text = seen.sample(AppVersion.NAME)
+                    note = model.files?.save("pokelife-huawei-probe.txt", text) ?: run { clipboard.setText(AnnotatedString(text)); "Copied with every number hidden" } // copy-ok: result
+                }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 PixelButton("Clear", { reader.clear(); seen = reader.seen(); showing = false; note = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
             }
             note?.let { Report(model, it) }

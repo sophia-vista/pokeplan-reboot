@@ -22,6 +22,11 @@ data class HydrationReminder(val time: LocalTime, val day: LocalDate, val atMill
     }
 }
 
+/** The reminder to read Huawei Health (INTEGRATIONS_AND_PRIVACY.md 5.2.2): one at a time, on the day it is due. */
+data class HuaweiReadReminder(val day: LocalDate, val atMillis: Long) {
+    companion object { const val REF = "hw-read" }
+}
+
 /**
  * HEAL's hydration reminders (HEAL.md section 13): **off until the player adds a time** (up to [app.pokeplan.heal.HealSettings.MAX_REMINDERS] a day),
  * low-frequency, never repeated, and silent once the player's own target for the day is met. Nothing is said about what or how much to drink. Delivery follows
@@ -49,6 +54,31 @@ object HealReminders {
         return HydrationReminder(time, day, ReminderPolicy.deliverAt(request, quiet, zone, focus))
     }
 
+    /** The day reading Huawei Health is next due: [HealSettings.huaweiEveryDays] after the last read (today when never read), or null when the reminder is off. */
+    fun huaweiDueDay(heal: HealData, today: LocalDate, zone: TimeZone): LocalDate? {
+        val every = heal.settings.huaweiEveryDays ?: return null
+        val last = heal.settings.huaweiLastReadMillis.takeIf { it > 0 }?.toLocalDateTime(zone)?.date ?: return today
+        return maxOf(today, last.plus(DatePeriod(days = every)))
+    }
+
+    /** The next Huawei reading reminder after [nowMillis], or null. A day whose time has passed moves to the next day. */
+    fun huaweiUpcoming(heal: HealData, app: AppData, nowMillis: Long, zone: TimeZone): HuaweiReadReminder? {
+        val today = nowMillis.toLocalDateTime(zone).date
+        var day = huaweiDueDay(heal, today, zone) ?: return null
+        if (LocalDateTime(day, heal.settings.huaweiRemindAt).toEpochMillis(zone) <= nowMillis) day = day.plus(DatePeriod(days = 1))
+        val session = app.focus?.takeIf { !it.isFinished }
+        val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
+        val at = LocalDateTime(day, heal.settings.huaweiRemindAt).toEpochMillis(zone)
+        val request = ReminderRequest(ReminderModule.HEAL, HuaweiReadReminder.REF, "huawei", at, occurrence = day.toString())
+        return HuaweiReadReminder(day, ReminderPolicy.deliverAt(request, app.settings.quietHours, zone, focus))
+    }
+
+    /** Whether the reminder to read Huawei Health on [day] should still show: it is on, and Huawei Health has not been read since it became due. */
+    fun huaweiStillWanted(heal: HealData, day: LocalDate, today: LocalDate, zone: TimeZone): Boolean {
+        val due = huaweiDueDay(heal, today, zone) ?: return false
+        return day >= due
+    }
+
     /** Whether the reminder at [time] on [day] should still show: it is one the player set, and (for today) their own target is not met. */
     fun stillWanted(heal: HealData, time: LocalTime, day: LocalDate, today: LocalDate): Boolean {
         if (time !in heal.settings.hydrationReminders) return false
@@ -65,10 +95,16 @@ class HealReminderAdapter(
 ) : ReminderSourceAdapter {
     override val module = ReminderModule.HEAL
 
-    override fun requests(nowMillis: Long, zone: TimeZone): List<ReminderRequest> =
-        HealReminders.upcoming(heal(), app(), nowMillis, zone).map {
+    private var zone: TimeZone = TimeZone.currentSystemDefault()
+
+    override fun requests(nowMillis: Long, zone: TimeZone): List<ReminderRequest> {
+        this.zone = zone
+        return HealReminders.upcoming(heal(), app(), nowMillis, zone).map {
             ReminderRequest(module, it.ref, "hydration", it.atMillis, occurrence = it.day.toString())
-        }
+        } + listOfNotNull(HealReminders.huaweiUpcoming(heal(), app(), nowMillis, zone)?.let {
+            ReminderRequest(module, HuaweiReadReminder.REF, "huawei", it.atMillis, occurrence = it.day.toString())
+        })
+    }
 
     private fun time(ref: String): LocalTime? {
         if (!ref.startsWith("hyd-") || ref.length != 8) return null
@@ -78,11 +114,13 @@ class HealReminderAdapter(
     }
 
     override fun isStillWanted(request: ReminderRequest): Boolean = runCatching {
+        if (request.sourceRef == HuaweiReadReminder.REF) return HealReminders.huaweiStillWanted(heal(), LocalDate.parse(request.occurrence), today(), zone)
         HealReminders.stillWanted(heal(), time(request.sourceRef) ?: return false, LocalDate.parse(request.occurrence), today())
     }.getOrDefault(false)
 
     /** The same words for every reminder: no drink, no amount, no target. */
-    override fun present(request: ReminderRequest): NudgeText? = NudgeText("A moment for a drink?", "")
+    override fun present(request: ReminderRequest): NudgeText? =
+        if (request.sourceRef == HuaweiReadReminder.REF) NudgeText("Time to read Huawei Health", "") else NudgeText("A moment for a drink?", "")
 
     /** Only a snooze is offered, and the router handles it without touching a record; "done" is not an action of this source. */
     override fun execute(request: ReminderRequest, action: String): Boolean = false
