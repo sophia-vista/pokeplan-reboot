@@ -77,6 +77,16 @@ An asset resolver accepts canonical identity plus role/context and returns a res
 
 ## 4. Source hierarchy and fallback policy
 
+### 4.0 Which art goes where *(owner, 14 November 2026)*
+
+Three general rules. Where a line elsewhere in this file or in a module file disagrees, these win.
+
+1. **Pokémon sprites and portraits are Mystery Dungeon (PMD SpriteCollab) first, everywhere in the app.** The fallback is a mainline sprite in the **Generation 5 (Black/White) style**.
+2. **Mystery Dungeon concepts and tilesets belong to WORLD and the launcher only**: its places (the team base, Friend Areas, Pelipper Post Office, the guild, Treasure Town's shops and bank, the dojo), its dungeon tiles and its ground maps. A life module does not borrow them.
+3. **The modules (PLAN, CARE, HEAL, MINT, BASE, LINK, GEAR) use mainline assets** for everything that is not a Pokémon sprite or portrait: places, rooms, furniture, items, icons. Mostly Generation 3, or whatever else fits the 2D pixel look. 3D-era art does not.
+
+To check against these (not decided here): `tools/sprites/fetch.py` takes PokeAPI's default sprite folder, which is Black/White art only up to #649 and later-game renders after it, so the fallback for newer species is not in the Generation 5 style yet (Showdown's `gen5` set is one candidate source); and any module screen that shows a Mystery Dungeon map, tileset or item icon today.
+
 ### 4.1 Pokémon art
 
 Use this ordered selection policy:
@@ -84,7 +94,7 @@ Use this ordered selection policy:
 1. **Exact PMD SpriteCollab asset** for the requested species, form, shiny state, role and animation.
 2. **Compatible PMD base-species asset** only when the form's visible distinction does not make the substitution misleading. This is an explicit per-form compatibility decision, never a global assumption.
 3. **Permitted Pokémon Ranger asset** where a suitable asset has actually been sourced and its individual rights are cleared. Ranger is a potential fallback family, not part of the inspected 0.123.0 asset inventory.
-4. **Permitted mainline/PokeAPI or Pokémon Showdown still asset** for the same species/form where available and legally usable for the intended distribution.
+4. **Permitted mainline/PokeAPI or Pokémon Showdown still asset in the Generation 5 style (4.0)** for the same species/form where available and legally usable for the intended distribution.
 5. **Existing compatible PMD static frame** from the same Pokémon/form, held without invented movement, where the requested use allows a still.
 6. **Text-only or neutral UI fallback**: species/form name, accessible label, empty portrait slot omitted, or a standard module/item icon. Do not substitute unrelated Pokémon art.
 
