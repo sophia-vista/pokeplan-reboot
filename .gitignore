@@ -10,3 +10,4 @@ tools/species/cache
 # Claude Code agent worktrees (local only)
 .claude/worktrees/
 tools/sprites/cache-rescue-maps
+tools/sprites/cache-pret

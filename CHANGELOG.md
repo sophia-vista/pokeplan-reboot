@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.194.0
+
+The art for the modules' places is fetched, and a test room shows how it looks with the Mystery Dungeon sprites (REP-053 chunks 1 and 2, owner, 14 November 2026). No app change: nothing here is bundled or shown yet.
+
+- **Hoenn art (`assets/hoenn/`, 1.3 MB):** `tools/sprites/fetch_pret.py` (stdlib, pinned commit, skips existing files, `manifest.tsv` receipt) fetches from pret/pokeemerald the 43 Secret Base decoration sprites, the Secret Base tilesets (primary and the cave, shrub and tree ones, with their palettes and metatiles), the 24 room layouts and the 32 Berry tree sheets.
+- **PokeAPI extras:** `fetch_items.py extras` adds 74 Berry and 31 Mail icons to `assets/items` (not bundled until a screen uses them) and the 77 badges to `assets/badges`.
+- **Scale test:** `ScreenshotTest.secretBaseRoom` draws a Secret Base room (floor and walls from the tileset and the game's layout, six decorations, six SpriteCollab Pokémon) in a dialogue box at 2x to 5x, flush with the frame, in both palettes. It is a test render only. The owner chose 5x (4x below about 1000 px), flush with the frame, and accepted the Gen 3 room with Mystery Dungeon Pokémon; chunk 3 builds the room.
+
 ## 0.193.0
 
 Launcher spacing now counts how big each Pokémon is (owner, 14 November 2026).

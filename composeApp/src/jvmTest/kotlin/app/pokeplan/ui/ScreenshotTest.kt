@@ -8,6 +8,9 @@ import app.pokeplan.ui.launcher.limits
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.theme.dialogueBox
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
@@ -415,6 +418,53 @@ class ScreenshotTest {
         val model = AppModel(store)
         render("large-text-planner", fontScale = 1.8f) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { run { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        }
+    }
+
+    /**
+     * REP-053 chunk 2 (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md section 7): the scale test for the modules' places. One
+     * Hoenn Secret Base room (the Tree layout: floor and walls from the pokeemerald tileset), six Secret Base decorations and six
+     * SpriteCollab Pokémon standing in it, shown in a dialogue box at a phone's 1080 px width, at 2x to 5x, flush with the frame (8 dp at the sides, 6 dp above and below, so no gap), in both palettes
+     * (`secretbase-2x-light.png` and so on). A test render, not a shipped screen.
+     */
+    @Test
+    fun secretBaseRoom() {
+        val room = HoennRoom.room(
+            HoennRoom.floor("SecretBase_Tree1", "tree", 11, 9),
+            listOf(
+                HoennRoom.Placed("thunder_mat", 88, 102),
+                HoennRoom.Placed("lapras_doll", 70, 56),
+                HoennRoom.Placed("snorlax_doll", 104, 56),
+                HoennRoom.Placed("red_plant", 140, 56),
+                HoennRoom.Placed("pretty_desk", 142, 110),
+                HoennRoom.Placed("tropical_plant", 36, 112),
+            ),
+            listOf(
+                HoennRoom.Mon(25, 52, 86),    // Pikachu
+                HoennRoom.Mon(133, 92, 80),   // Eevee
+                HoennRoom.Mon(255, 128, 88),  // Torchic
+                HoennRoom.Mon(197, 62, 118),  // Umbreon
+                HoennRoom.Mon(448, 112, 118), // Lucario
+                HoennRoom.Mon(258, 88, 104),  // Mudkip, on the mat
+            ),
+        ).toComposeImageBitmap()
+        listOf(2, 3, 4, 5).forEach { scale ->
+            listOf(false, true).forEach { dark ->
+                render("secretbase-${scale}x-${if (dark) "dark" else "light"}", frames = 3, width = 1080, height = 900, density = 3f) {
+                    PixelTheme(dark) {
+                        Box(Modifier.fillMaxSize()) {
+                            DayBackground(12, 0, dark = dark)
+                            Box(Modifier.align(androidx.compose.ui.Alignment.Center).dialogueBox().padding(horizontal = 8.dp, vertical = 6.dp)) {
+                                androidx.compose.foundation.Image(
+                                    room, null,
+                                    Modifier.size((room.width * scale / 3f).dp, (room.height * scale / 3f).dp),
+                                    filterQuality = androidx.compose.ui.graphics.FilterQuality.None,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
