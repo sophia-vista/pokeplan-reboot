@@ -159,6 +159,7 @@ private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Un
             PlanSection.TARGETS -> FrequencyView(model)
             PlanSection.CALENDAR -> { DayView(model, pendingIds, startWeek); CalendarSettings(model) }
             PlanSection.ALL -> AllTasksView(model, live, card, onAdd = { model.addTaskRequested = true; toToday() })
+            PlanSection.OUTSTANDING -> OutstandingView(model, live, taskCards(model, host, showList = false), onAdd = { model.addTaskRequested = true; toToday() })
             PlanSection.INBOX -> {
                 QuickAddBox(model, AddTo.INBOX)
                 val shown = TaskViews.inbox(live)

@@ -52,7 +52,7 @@ class RecurringReminderTest {
         assertTrue(s.makeRepeating(task.id, Repeat.Monthly(1, MonthlyRule.DayOfMonth(19))))
         val november = LocalDateTime(2026, 11, 19, 17, 0).toEpochMillis(utc)
         assertTrue(november !in s.upcomingReminders().map { it.atMillis }, "19 November is beyond the 14 day horizon on 19 October")
-        clock.advanceDays(10)
+        clock.advanceDays(20)
         s.refresh()
         assertTrue(november in s.upcomingReminders().map { it.atMillis }, "after refresh() the instance and its reminder exist")
     }

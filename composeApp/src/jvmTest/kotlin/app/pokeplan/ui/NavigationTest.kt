@@ -34,6 +34,13 @@ class NavigationTest {
     }
 
     @Test
+    fun outstandingIsPlansLastSectionSoNothingShifts() {
+        assertEquals(PlanSection.OUTSTANDING, PlanSection.entries.last())
+        assertEquals(PlanSection.OUTSTANDING, PlanSection.valueOf("OUTSTANDING"))
+        assertNull(PlanSection.OUTSTANDING.parent)
+    }
+
+    @Test
     fun theNamesWidgetsAndShortcutsSendResolveToPlaces() {
         // The Android side looks a place up by its name; every name it uses must exist.
         listOf("PLANNER", "FOCUS", "CARE", "HEAL", "MINT", "BASE", "LINK", "WORLD", "ME", "HOME", "COLLECTION", "GEAR").forEach { name ->

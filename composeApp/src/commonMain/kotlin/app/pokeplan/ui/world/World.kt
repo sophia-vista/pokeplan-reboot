@@ -699,9 +699,6 @@ private fun WorldTeamsView(model: AppModel) {
     val fallback = app.pokeplan.world.WorldGuide.primaryAction(world, model.worldLayer).dungeonId?.let { Dungeons.byId(it) } ?: enterable.firstOrNull() ?: Dungeons.all.first()
     world.slots().forEach { team ->
         var editing by remember(team.id) { mutableStateOf(false) }
-        var advice by remember(team.id, team.members) { mutableStateOf<app.pokeplan.world.TeamRecommendation?>(null) }
-        var search by remember(team.id) { mutableStateOf("") }
-        var picked by remember(team.id, team.members) { mutableStateOf(team.members) }
         val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
         val outAt = team.expedition?.let { Dungeons.byId(it.dungeonId) }
         val chosen = outAt ?: model.worldTeamDungeon?.let { Dungeons.byId(it) } ?: fallback
@@ -738,63 +735,7 @@ private fun WorldTeamsView(model: AppModel) {
                 } else {
                     PixelButton(if (editing) "Close" else "Choose the team", { editing = !editing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     if (editing) {
-                        FieldLabel("Suit the team to")
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            (enterable + chosen).distinctBy { it.id }.forEach { d ->
-                                PixelButton(d.name, { model.worldTeamDungeon = d.id; advice = null }, color = if (d.id == chosen.id) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
-                            }
-                        }
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) { chosen.favored.forEach { TypePlate(it, width = 56.dp) } }
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelButton("Recommend team", { advice = store.worldRecommend(chosen.id, team.id)?.also { picked = it.ids } }, Modifier.weight(1f), Module.WORLD.look.accent, compact = true)
-                            PixelButton("Replace team", { if (store.worldReplaceTeam(team.id, chosen.id)) editing = false }, Modifier.weight(1f), Pixel.InkSoft, enabled = team.expedition == null, compact = true)
-                        }
-                        if (advice?.noMatch == true) Text("No one free likes ${chosen.name}: the strongest instead.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
-                        FieldLabel("Up to ${WorldTeam.MAX_MEMBERS} Pokémon")
-                        PixelField(search, { search = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Search the PC")
-                        // The chosen slots stay on top; then the PC with the types the place favours first (the 20 strongest, or, searching, the whole PC by name).
-                        val idle = store.worldIdle()
-                        val query = search.trim()
-                        val pool = if (query.isEmpty()) idle.take(20) else idle.filter { it.nickname.contains(query, ignoreCase = true) || it.species.name.contains(query, ignoreCase = true) }
-                        val slots = (picked.mapNotNull { id -> roster.firstOrNull { it.id == id } } + roster.filter { it.id in team.members })
-                        val shown = (slots + pool.sortedByDescending { app.pokeplan.world.TeamAdvice.matching(chosen, it).isNotEmpty() }).distinctBy { it.id }
-                        shown.forEach { p ->
-                            val reason = advice?.picks?.firstOrNull { it.pokemon.id == p.id }?.takeIf { p.id in picked }?.reason
-                            ChoiceRow(selected = p.id in picked, onClick = { picked = if (p.id in picked) picked - p.id else if (picked.size < WorldTeam.MAX_MEMBERS) picked + p.id else picked }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
-                                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                                    Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
-                                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) { p.form.types.forEach { TypePlate(it, width = 48.dp) } }
-                                    if (reason != null) Text(reason, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                                }
-                            }
-                        }
-                        if (shown.isEmpty() || (query.isNotEmpty() && pool.isEmpty())) Text("No one found.", style = MaterialTheme.typography.bodyMedium)
-                        // A name, an accent colour and saved teams: put one together again in a tap.
-                        var name by remember(team.id, team.name) { mutableStateOf(team.name) }
-                        FieldLabel("Name (up to ${WorldTeam.NAME_MAX} letters)")
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelField(name, { name = it.take(WorldTeam.NAME_MAX) }, Modifier.weight(1f), singleLine = true, placeholder = "Team ${team.id}")
-                            PixelIconButton("check", "Save the name", { store.worldRenameTeam(team.id, name) }, Pixel.Green, enabled = name.trim() != team.name)
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            repeat(WorldTeam.ACCENTS) { i ->
-                                Box(
-                                    Modifier.size(Spacing.Target).clickable(role = Role.Button, onClickLabel = "Colour ${i + 1}") { store.worldRecolourTeam(team.id, i) }.padding(10.dp)
-                                        .background(teamAccent(i)).then(if (i == team.accent) Modifier.border(Sizes.Line, Pixel.Ink) else Modifier),
-                                )
-                            }
-                        }
-                        if (world.presets.isNotEmpty()) {
-                            FieldLabel("Saved teams")
-                            world.presets.forEach { pre ->
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                                    PixelButton("${pre.name} (${pre.members.size})", { if (store.worldApplyPreset(team.id, pre.name)) editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                                    PixelIconButton("trash", "Delete ${pre.name}", { store.worldDeletePreset(pre.name) })
-                                }
-                            }
-                        }
-                        if (team.members.isNotEmpty() && world.presets.size < WorldData.MAX_PRESETS + 1) PixelButton("Save this team as a preset", { store.worldSavePreset(team.id, team.title) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                        PixelButton("Save the team", { if (store.worldAssign(team.id, picked)) editing = false }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                        TeamEditor(model, team, chosen, enterable) { editing = false }
                     }
                 }
             }
@@ -802,6 +743,77 @@ private fun WorldTeamsView(model: AppModel) {
         if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
     }
     // Help: side paths (field moves, hazards), forks that wait 12 hours for an answer, and bountiful days are explained in Help.
+}
+
+/** The team editor: pick a dungeon, Recommend or Replace the team for it, or choose by hand (favoured types first; search reaches the whole PC). [initialAdvice] and [initialSearch] let a screenshot open it in a state. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, chosen: app.pokeplan.world.DungeonDef, enterable: List<app.pokeplan.world.DungeonDef>, initialAdvice: Boolean = false, initialSearch: String = "", onDone: () -> Unit) {
+    val store = model.store
+    val world = model.data.world
+    val roster = model.data.player.pokemon
+    var advice by remember(team.id, team.members) { mutableStateOf<app.pokeplan.world.TeamRecommendation?>(if (initialAdvice) store.worldRecommend(chosen.id, team.id) else null) }
+    var search by remember(team.id) { mutableStateOf(initialSearch) }
+    var picked by remember(team.id, team.members) { mutableStateOf(if (initialAdvice) advice?.ids ?: team.members else team.members) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        FieldLabel("Suit the team to")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            (enterable + chosen).distinctBy { it.id }.forEach { d ->
+                PixelButton(d.name, { model.worldTeamDungeon = d.id; advice = null }, color = if (d.id == chosen.id) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
+            }
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) { chosen.favored.forEach { TypePlate(it, width = 56.dp) } }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Recommend team", { advice = store.worldRecommend(chosen.id, team.id)?.also { picked = it.ids } }, Modifier.weight(1f), Module.WORLD.look.accent, compact = true)
+            PixelButton("Replace team", { if (store.worldReplaceTeam(team.id, chosen.id)) onDone() }, Modifier.weight(1f), Pixel.InkSoft, enabled = team.expedition == null, compact = true)
+        }
+        if (advice?.noMatch == true) Text("No one free likes ${chosen.name}: the strongest instead.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
+        FieldLabel("Up to ${WorldTeam.MAX_MEMBERS} Pokémon")
+        PixelField(search, { search = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Search the PC")
+        // The chosen slots stay on top; then the PC with the types the place favours first (the 20 strongest, or, searching, the whole PC by name).
+        val idle = store.worldIdle()
+        val query = search.trim()
+        val pool = if (query.isEmpty()) idle.take(20) else idle.filter { it.nickname.contains(query, ignoreCase = true) || it.species.name.contains(query, ignoreCase = true) }
+        val slots = (picked.mapNotNull { id -> roster.firstOrNull { it.id == id } } + roster.filter { it.id in team.members })
+        val shown = (slots + pool.sortedByDescending { app.pokeplan.world.TeamAdvice.matching(chosen, it).isNotEmpty() }).distinctBy { it.id }
+        shown.forEach { p ->
+            val reason = advice?.picks?.firstOrNull { it.pokemon.id == p.id }?.takeIf { p.id in picked }?.reason
+            ChoiceRow(selected = p.id in picked, onClick = { picked = if (p.id in picked) picked - p.id else if (picked.size < WorldTeam.MAX_MEMBERS) picked + p.id else picked }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) { p.form.types.forEach { TypePlate(it, width = 48.dp) } }
+                    if (reason != null) Text(reason, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+            }
+        }
+        if (shown.isEmpty() || (query.isNotEmpty() && pool.isEmpty())) Text("No one found.", style = MaterialTheme.typography.bodyMedium)
+        // A name, an accent colour and saved teams: put one together again in a tap.
+        var name by remember(team.id, team.name) { mutableStateOf(team.name) }
+        FieldLabel("Name (up to ${WorldTeam.NAME_MAX} letters)")
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelField(name, { name = it.take(WorldTeam.NAME_MAX) }, Modifier.weight(1f), singleLine = true, placeholder = "Team ${team.id}")
+            PixelIconButton("check", "Save the name", { store.worldRenameTeam(team.id, name) }, Pixel.Green, enabled = name.trim() != team.name)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            repeat(WorldTeam.ACCENTS) { i ->
+                Box(
+                    Modifier.size(Spacing.Target).clickable(role = Role.Button, onClickLabel = "Colour ${i + 1}") { store.worldRecolourTeam(team.id, i) }.padding(10.dp)
+                        .background(teamAccent(i)).then(if (i == team.accent) Modifier.border(Sizes.Line, Pixel.Ink) else Modifier),
+                )
+            }
+        }
+        if (world.presets.isNotEmpty()) {
+            FieldLabel("Saved teams")
+            world.presets.forEach { pre ->
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    PixelButton("${pre.name} (${pre.members.size})", { if (store.worldApplyPreset(team.id, pre.name)) onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelIconButton("trash", "Delete ${pre.name}", { store.worldDeletePreset(pre.name) })
+                }
+            }
+        }
+        if (team.members.isNotEmpty() && world.presets.size < WorldData.MAX_PRESETS + 1) PixelButton("Save this team as a preset", { store.worldSavePreset(team.id, team.title) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        PixelButton("Save the team", { if (store.worldAssign(team.id, picked)) onDone() }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+    }
 }
 
 // ----- Camp -----------------------------------------------------------------------------------------------------------

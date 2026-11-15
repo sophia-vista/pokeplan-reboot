@@ -246,6 +246,44 @@ class ScreenshotTest {
         }
     }
 
+    /** REP-057: Outstanding (three lists, the longest name, a long title) and empty, and the editor with Monthly chosen. */
+    @Test
+    fun outstandingAndMonthlyRepeat() {
+        val store = started()
+        val longest = "Groceries and household shopping run"
+        val a = store.addList(longest, app.pokeplan.plan.TaskList.COLORS[2], "sweet-apple")!!
+        val b = store.addList("Thesis", app.pokeplan.plan.TaskList.COLORS[5], "journal")!!
+        store.addList("Garden", app.pokeplan.plan.TaskList.COLORS[1], "journal")
+        store.addTask("Call the bank", Rank.C)
+        store.addTask("Oat milk", Rank.E, listId = a.id)
+        store.addTask("Collect the parcel from the neighbour who signed for it while we were away on the long trip", Rank.D, listId = a.id)
+        store.addTask("Draft chapter two", Rank.B, listId = b.id, planned = store.today)
+        val model = AppModel(store)
+        listOf(false, true).forEach { dark ->
+            val n = if (dark) "dark" else "light"
+            render("outstanding-$n", height = 1500, frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.OUTSTANDING, {}, {}, {}) } }
+            }
+        }
+        val empty = AppModel(started())
+        listOf(false, true).forEach { dark ->
+            render("outstanding-empty-${if (dark) "dark" else "light"}", frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(empty, app.pokeplan.ui.screens.PlanSection.OUTSTANDING, {}, {}, {}) } }
+            }
+        }
+        val rent = store.addTask("Pay the rent", Rank.C, planned = store.today)
+        store.makeRepeating(rent.id, app.pokeplan.plan.Repeat.Monthly(2, app.pokeplan.plan.MonthlyRule.DayOfMonth(31)))
+        listOf(false, true).forEach { dark ->
+            render("task-repeat-monthly-${if (dark) "dark" else "light"}", height = 1100, frames = 8) {
+                PixelTheme(dark) {
+                    androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                        app.pokeplan.ui.plan.RepeatRow(model, store.data.tasks.first { it.id == rent.id })
+                    }
+                }
+            }
+        }
+    }
+
     /** The exact-entry fields (typed date, time, length, moment), in both palettes. */
     @Test
     fun exactFields() {
