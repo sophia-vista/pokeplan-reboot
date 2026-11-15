@@ -13,6 +13,12 @@ The art for the modules' places is fetched, and a test room shows how it looks w
 - **PokeAPI extras:** `fetch_items.py extras` adds 74 Berry and 31 Mail icons to `assets/items` (not bundled until a screen uses them) and the 77 badges to `assets/badges`.
 - **Scale test:** `ScreenshotTest.secretBaseRoom` draws a Secret Base room (floor and walls from the tileset and the game's layout, six decorations, six SpriteCollab Pokémon) in a dialogue box at 2x to 5x, flush with the frame, in both palettes. It is a test render only. The owner chose 5x (4x below about 1000 px), flush with the frame, and accepted the Gen 3 room with Mystery Dungeon Pokémon; chunk 3 builds the room.
 
+## 0.193.0
+
+Launcher spacing now counts how big each Pokémon is (owner, 14 November 2026).
+
+- A Pokémon's room on the dungeon floor follows the size of its sprite: a Wailord or a Moltres is given about three squares across, an ordinary Pokémon two, and a big one hides what stands right behind it (towards the top of the screen), not what stands before it. Where they start, where they choose to stand and where two are heading all use it.
+
 ## 0.192.0
 
 More of Explorers of Sky in World: lost Pokémon's calls, recruits' words and dungeon entrances (owner, 14 November 2026).
