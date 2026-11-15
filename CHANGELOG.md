@@ -13,7 +13,7 @@ Tier 2 starts: the backup leaves the phone, and a damaged database no longer qui
 - **A damaged database with no backup asks first** (REP-026 c): the old `save.json` and `care.json` are only as new as the cutover, so they are no longer imported silently. A choice screen shows before anything opens: "Use the older data" or "Start fresh". The damaged file is kept aside either way, widgets, reminders and the backup job wait for the answer, and the answer survives a restart.
 - **Screenshots of the 0.198.0 UI** (Tier 1 follow-up): looked at in both palettes: Credits, Care Skip and Yesterday, Bills "Paid, record it", the hold-to-confirm key (and its Reduce motion version), Plan's Duplicate row, and this version's new screens. One clipped label found and fixed ("Restore the newest" became "Restore copy"). New `ScreenshotTest` cases keep them (`interact` taps a screen before it is drawn).
 - Tests: `OffPhoneBackupTest`, `OffPhoneTest`, and four recovery tests in `LiveStoreTest`.
-- **Known, not new:** `LiveStoreTest.everyFixtureIsCarriedOverIntoTheDatabaseUnchanged` fails on `main` too (the heavy fixture's `caught` list comes back sorted); left for its own fix.
+- **Known, not new:** `LiveStoreTest.everyFixtureIsCarriedOverIntoTheDatabaseUnchanged` failed intermittently (twice here, once on a clean `main` worktree, then passed in the gate run): the heavy fixture's `caught` list came back sorted, so an order-sensitive comparison looks flaky. Left for its own fix.
 
 ## 0.198.0
 

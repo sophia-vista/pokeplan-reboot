@@ -14,7 +14,7 @@ Ranking rule: **value** first (the Bible's module priorities: PLAN, CARE and WOR
 - **Automatic backup off the phone** (REP-034): built to `DATA_AND_MIGRATIONS.md` 10.7 (folder picked once, passphrase, daily verified copies, newest 7, quiet note when old, restore from the folder). Not run on a device.
 - **Corrupt database with no backup** (REP-026 c): a choice screen before any store opens; the old files are no longer imported silently.
 - **Screenshots** of the 0.198.0 UI looked at in both palettes; one clipped label fixed.
-- Found and left: `LiveStoreTest.everyFixtureIsCarriedOverIntoTheDatabaseUnchanged` fails on `main` (the heavy fixture's `caught` list order).
+- Found and left: `LiveStoreTest.everyFixtureIsCarriedOverIntoTheDatabaseUnchanged` is intermittent (it failed on `main` and here, then passed): the heavy fixture's `caught` list order. Worth its own small fix (compare `caught` as a set, or find why the order changes).
 
 ### Done on 15 November 2026 (0.198.0): the Tier 1 quick wins
 

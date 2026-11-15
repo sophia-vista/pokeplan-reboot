@@ -36,12 +36,10 @@ fun RecoveryChoice(olderFromMillis: Long?, onOlder: () -> Unit, onFresh: () -> U
             TextBox(Modifier.padding(Spacing.L)) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                     PixelTitle("Your data could not be opened")
-                    Text("The file that holds it was damaged and there is no backup to put back. The damaged file is kept either way.", style = MaterialTheme.typography.bodyMedium)
-                    Text(
-                        if (olderFromMillis != null) "Older files from ${date(olderFromMillis)} are still on this phone. They do not have anything done since."
-                        else "Older files are still on this phone. They do not have anything done since.",
-                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                    )
+                    Text("It was damaged and no backup exists.", style = MaterialTheme.typography.bodyMedium)
+                    Text(if (olderFromMillis != null) "Older files from ${date(olderFromMillis)} are here." else "Older files are here.", style = MaterialTheme.typography.bodyMedium)
+                    Text("They miss everything done since.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    Text("Nothing is deleted either way.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     PixelButton("Use the older data", onOlder, Modifier.fillMaxWidth(), Pixel.Warning)
                     PixelButton("Start fresh", onFresh, Modifier.fillMaxWidth(), Pixel.Danger)
                 }

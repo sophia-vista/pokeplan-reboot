@@ -294,7 +294,7 @@ internal fun OffPhoneSection(backups: app.pokeplan.ui.BackupAccess, nowMillis: L
         )
         val stale = last == null || nowMillis - last > 3 * 24 * 60 * 60 * 1000L
         current.problem?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) } // copy-ok: warning or legal
-            ?: if (stale && last != null) Text("No copy has reached the folder for ${((nowMillis - last) / (24 * 60 * 60 * 1000L))} days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) else Unit
+            ?: if (stale && last != null) Text("No copy for ${((nowMillis - last) / (24 * 60 * 60 * 1000L))} days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) else Unit
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelButton("Copy now", { busy = true; backups.backUpOffPhoneNow(::done) }, Modifier.weight(1f), Pixel.Tone, enabled = !busy, compact = true)
             PixelButton("Restore copy", { backups.chooseOffPhoneCopy(onStaged) }, Modifier.weight(1f), Pixel.Warning, enabled = !busy, compact = true)
