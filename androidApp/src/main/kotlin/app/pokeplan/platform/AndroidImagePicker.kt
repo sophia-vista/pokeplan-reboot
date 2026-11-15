@@ -69,9 +69,9 @@ class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser
 
     private companion object {
         const val MAX_INPUT = 20 * 1024 * 1024
-        const val DECODE_SIDE = 1200
-        const val MAX_PNG = 64000
-        val SIDES = intArrayOf(600, 480, 360, 240)
+        const val DECODE_SIDE = 2400
+        const val MAX_PNG = 192000
+        val SIDES = intArrayOf(1080, 900, 720, 540, 360)
         const val NOT_A_PICTURE = "That file is not a picture."
     }
 }
