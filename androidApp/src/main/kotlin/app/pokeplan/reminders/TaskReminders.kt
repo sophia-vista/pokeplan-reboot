@@ -13,7 +13,7 @@ import app.pokeplan.app.ReminderRequest
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.Place
-import app.pokeplan.ui.screens.clock
+import app.pokeplan.ui.plan.clock
 import app.pokeplan.ui.screens.short
 import kotlinx.datetime.TimeZone
 

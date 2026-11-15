@@ -26,6 +26,7 @@ import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
 import kotlinx.datetime.LocalDate
+import app.pokeplan.ui.pokemon.label
 
 // The small parts the record-keeping modules (Home, Link, Mint) share. A part that needs the module's colour takes it as [accent].
 

@@ -12,10 +12,10 @@ import androidx.compose.ui.unit.Density
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.MemoryStorage
-import app.pokeplan.ui.screens.CareSection
+import app.pokeplan.ui.care.CareSection
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PlanSection
-import app.pokeplan.ui.screens.WorldSection
+import app.pokeplan.ui.world.WorldSection
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
 import org.jetbrains.skia.EncodedImageFormat
@@ -111,10 +111,10 @@ class BackChainTest {
 
     @Test
     fun pokemonSectionsGoBackToThePokemonMenu() {
-        val menu = model().let { m -> var h: List<Int> = emptyList(); scene({ app.pokeplan.ui.screens.CollectionScreen(m, startSection = -1) }) { s -> s.settle(); h = s.header() }; h }
+        val menu = model().let { m -> var h: List<Int> = emptyList(); scene({ app.pokeplan.ui.pokemon.CollectionScreen(m, startSection = -1) }) { s -> s.settle(); h = s.header() }; h }
         for (i in 0..4) {
             val m = model()
-            scene({ app.pokeplan.ui.screens.CollectionScreen(m, startSection = i) }) { s ->
+            scene({ app.pokeplan.ui.pokemon.CollectionScreen(m, startSection = i) }) { s ->
                 s.settle()
                 val inside = s.header()
                 assertTrue(inside != menu, "section $i shows its own header")

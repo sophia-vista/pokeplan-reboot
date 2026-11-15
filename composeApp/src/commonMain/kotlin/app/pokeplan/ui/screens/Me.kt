@@ -29,6 +29,7 @@ import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
+import app.pokeplan.ui.pokemon.label
 
 /** Me holds only what every module shares; Plan's Growth, Goals and Review are in Modules, Plan. */
 private enum class MeSection(val label: String, val icon: String) {

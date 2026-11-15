@@ -83,6 +83,10 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.StatChip
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.title
+import app.pokeplan.ui.care.CareSection
+import app.pokeplan.ui.care.MoodKeys
+import app.pokeplan.ui.plan.taskMeta
+import app.pokeplan.ui.pokemon.label
 
 /**
  * Home is the world at a glance (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): the trainer, every region with its lead and its one most

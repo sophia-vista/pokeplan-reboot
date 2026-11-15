@@ -3,7 +3,7 @@ package app.pokeplan.ui
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.MemoryStorage
-import app.pokeplan.ui.screens.CareSection
+import app.pokeplan.ui.care.CareSection
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PlanSection
 import kotlin.test.Test
@@ -45,7 +45,7 @@ class NavigationTest {
     fun openingAModuleTwiceKeepsItsPlaceAndHomeLeavesTheModulesAlone() {
         val m = model()
         m.open(Place.WORLD, true)
-        m.worldSection = app.pokeplan.ui.screens.WorldSection.MAP
+        m.worldSection = app.pokeplan.ui.world.WorldSection.MAP
         m.open(Place.HOME, true)
         assertEquals(Module.WORLD, m.module, "going Home does not close the module that is open")
     }

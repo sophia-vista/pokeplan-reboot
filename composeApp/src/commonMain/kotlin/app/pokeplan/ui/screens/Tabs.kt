@@ -33,6 +33,7 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
 import app.pokeplan.ui.theme.KeyLabel
 import app.pokeplan.ui.theme.PixelKey
+import app.pokeplan.ui.pokemon.label
 
 /** A filter or choice key (the planner's views, pickers): the selected one is filled, the others outlined. Same states as every key. */
 @Composable

@@ -78,7 +78,7 @@ import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.Task
 import app.pokeplan.ui.Place
-import app.pokeplan.ui.screens.clock
+import app.pokeplan.ui.plan.clock
 import app.pokeplan.careStore
 import app.pokeplan.widgetStore
 import kotlinx.coroutines.delay

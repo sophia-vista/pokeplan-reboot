@@ -58,6 +58,7 @@ import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
+import app.pokeplan.ui.pokemon.label
 
 @Composable
 internal fun SettingsView(model: AppModel) {
