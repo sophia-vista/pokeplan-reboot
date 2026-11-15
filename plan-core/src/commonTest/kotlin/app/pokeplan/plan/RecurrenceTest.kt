@@ -45,6 +45,18 @@ class RecurrenceTest {
     }
 
     @Test
+    fun day31NeverSkipsAMonthWhateverTheStartDay() {
+        // Picked from the editor on the 15th: 31 in every month, clamped to the 30th/28th/29th, never skipped.
+        val r = Recurrence(Repeat.Monthly(1, MonthlyRule.DayOfMonth(31)), d(2027, 1, 15))
+        assertEquals(listOf(d(2027, 1, 31), d(2027, 2, 28), d(2027, 3, 31), d(2027, 4, 30)), dates(r, d(2027, 1, 1), d(2027, 4, 30)))
+        assertEquals(listOf(d(2028, 2, 29)), dates(Recurrence(Repeat.Monthly(1, MonthlyRule.DayOfMonth(30)), d(2028, 1, 31)), d(2028, 2, 1), d(2028, 2, 29)))
+        val everyTwo = Recurrence(Repeat.Monthly(2, MonthlyRule.DayOfMonth(31)), d(2027, 1, 15))
+        assertEquals(listOf(d(2027, 1, 31), d(2027, 3, 31), d(2027, 5, 31)), dates(everyTwo, d(2027, 1, 1), d(2027, 6, 30)))
+        val last = Recurrence(Repeat.Monthly(1, MonthlyRule.LastDay), d(2027, 1, 15))
+        assertEquals(listOf(d(2027, 1, 31), d(2027, 2, 28), d(2027, 3, 31), d(2027, 4, 30)), dates(last, d(2027, 1, 1), d(2027, 4, 30)))
+    }
+
+    @Test
     fun monthlyByWeekday() {
         val second = Recurrence(Repeat.Monthly(1, MonthlyRule.NthWeekday(2, DayOfWeek.TUESDAY)), d(2026, 10, 1))
         assertEquals(listOf(d(2026, 10, 13), d(2026, 11, 10)), dates(second, d(2026, 10, 1), d(2026, 11, 30)))

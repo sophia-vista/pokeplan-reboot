@@ -63,9 +63,12 @@ class AndroidHuaweiReader(private val activity: ComponentActivity) : HuaweiReade
         waitForIt()
     }
 
-    override fun openScreenReadingSettings() = open(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+    override fun openScreenReadingSettings() { open(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
 
-    override fun openNotificationSettings() = open(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+    override fun openNotificationSettings() { open(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+
+    /** Call when the app comes to the front: asks Android to bind the step-notification listener again when access is granted. */
+    fun sync() { HuaweiComponents.rebind(activity) }
 
     override fun openAppInfo() = open(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${activity.packageName}")))
 

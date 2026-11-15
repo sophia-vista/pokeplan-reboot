@@ -326,6 +326,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        app.pokeplan.huawei.AndroidHuaweiReader(this).sync() // rebinds the step-notification listener when granted (REP-055)
         // The first resume follows onCreate, which has just read the save.
         if (created) resumes.tryEmit(Unit)
         created = true

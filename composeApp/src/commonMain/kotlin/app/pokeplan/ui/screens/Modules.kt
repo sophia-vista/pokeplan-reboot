@@ -59,7 +59,8 @@ enum class Module(val label: String, val icon: String, val look: RegionLook) {
  */
 enum class PlanSection(val label: String, val icon: String) {
     INBOX("Inbox", "seal-bag"), UPCOMING("Upcoming", "timer-ball"), LISTS("Lists", "journal"), CALENDAR("Calendar", "town-map"), FOCUS("Focus", "mystery-egg"), MORE("More", "storage-key"),
-    PROGRESS("Progress", "exp-share"), GOALS("Goals", "star-piece"), TARGETS("Targets", "heart-scale"), ALL("All tasks", "scope-lens");
+    PROGRESS("Progress", "exp-share"), GOALS("Goals", "star-piece"), TARGETS("Targets", "heart-scale"), ALL("All tasks", "scope-lens"),
+    OUTSTANDING("Outstanding", "journal");
 
     /** The section Back returns to: More for the places it holds, Today (null) for the rest. */
     val parent: PlanSection? get() = if (this in MORE_HOLDS) MORE else null
@@ -183,6 +184,7 @@ private fun PlanToday(model: AppModel, focusTab: Boolean, onBack: () -> Unit, op
                 listOfNotNull(
                     MenuEntry(PlanSection.INBOX.name, PlanSection.INBOX.icon, PlanSection.INBOX.label, tint = ModuleAccent.PLAN.accent, count = count(TaskViews.inbox(live).size)),
                     MenuEntry(PlanSection.UPCOMING.name, PlanSection.UPCOMING.icon, PlanSection.UPCOMING.label, tint = ModuleAccent.PLAN.accent, count = count(TaskViews.upcoming(live, store.now).size)),
+                    MenuEntry(PlanSection.OUTSTANDING.name, PlanSection.OUTSTANDING.icon, PlanSection.OUTSTANDING.label, tint = ModuleAccent.PLAN.accent, count = count(live.count { it.isOpen })),
                     MenuEntry(PlanSection.LISTS.name, PlanSection.LISTS.icon, PlanSection.LISTS.label, tint = ModuleAccent.PLAN.accent, count = count(store.activeLists.size)),
                     MenuEntry(PlanSection.CALENDAR.name, PlanSection.CALENDAR.icon, PlanSection.CALENDAR.label, tint = ModuleAccent.PLAN.accent),
                     if (!focusTab) null else MenuEntry(PlanSection.FOCUS.name, PlanSection.FOCUS.icon, PlanSection.FOCUS.label, badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent, count = if (session != null) "on" else ""),

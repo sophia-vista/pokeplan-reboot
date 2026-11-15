@@ -95,6 +95,7 @@ import app.pokeplan.ui.screens.LocalBuddy
 import app.pokeplan.ui.screens.LocalReduceMotion
 import app.pokeplan.ui.screens.NextUp
 import app.pokeplan.ui.screens.PixelDateField
+import app.pokeplan.ui.screens.TypedValueField
 import app.pokeplan.ui.screens.PixelDatePicker
 import app.pokeplan.ui.screens.PixelDateTimeField
 import app.pokeplan.ui.screens.PixelDurationField
@@ -158,6 +159,7 @@ private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Un
             PlanSection.TARGETS -> FrequencyView(model)
             PlanSection.CALENDAR -> { DayView(model, pendingIds, startWeek); CalendarSettings(model) }
             PlanSection.ALL -> AllTasksView(model, live, card, onAdd = { model.addTaskRequested = true; toToday() })
+            PlanSection.OUTSTANDING -> OutstandingView(model, live, taskCards(model, host, showList = false), onAdd = { model.addTaskRequested = true; toToday() })
             PlanSection.INBOX -> {
                 QuickAddBox(model, AddTo.INBOX)
                 val shown = TaskViews.inbox(live)
@@ -365,7 +367,7 @@ internal enum class RepeatKind(val label: String) {
             repeat is Repeat.Daily && repeat.every == 1 -> DAILY
             repeat is Repeat.Weekly && repeat.every == 1 && repeat.days == WORKDAYS -> WEEKDAYS
             repeat is Repeat.Weekly -> WEEKLY
-            repeat is Repeat.Monthly && repeat.every == 1 -> MONTHLY
+            repeat is Repeat.Monthly && (repeat.rule is MonthlyRule.DayOfMonth || repeat.rule is MonthlyRule.LastDay) -> MONTHLY
             repeat is Repeat.Yearly && repeat.every == 1 -> YEARLY
             else -> CUSTOM
         }
@@ -761,6 +763,11 @@ internal fun RepeatRow(model: AppModel, task: Task) {
     if (kind == RepeatKind.CUSTOM && recurrence != null) {
         Text("Repeats ${recurrence.repeat.words(recurrence.start)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
+    val monthly = recurrence?.repeat as? Repeat.Monthly
+    if (kind == RepeatKind.MONTHLY && monthly != null) {
+        MonthlyPicker(monthly) { store.makeRepeating(task.id, it) }
+        return
+    }
     val weekly = recurrence?.repeat as? Repeat.Weekly ?: return
     if (kind != RepeatKind.WEEKLY) return
     FieldLabel("Every")
@@ -781,6 +788,26 @@ internal fun RepeatRow(model: AppModel, task: Task) {
             }, Modifier.semantics { contentDescription = fullDayName(d) })
         }
     }
+}
+
+/** A monthly repeat's day of the month (typed, 1 to 31; a short month uses its last day) or the last day, and every how many months. */
+@Composable
+internal fun MonthlyPicker(monthly: Repeat.Monthly, onChange: (Repeat.Monthly) -> Unit) {
+    FieldLabel("Every")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        listOf(1, 2, 3, 6).forEach { n ->
+            TabButton(if (n == 1) "Month" else "$n months", monthly.every == n, { if (monthly.every != n) onChange(monthly.copy(every = n)) })
+        }
+    }
+    FieldLabel("On")
+    val day = (monthly.rule as? MonthlyRule.DayOfMonth)?.day
+    TypedValueField(
+        day, { d -> if (d != null) onChange(monthly.copy(rule = MonthlyRule.DayOfMonth(d))) },
+        { it.trim().toIntOrNull() }, { it.toString() },
+        placeholder = "Day of the month", takes = "A day from 1 to 31",
+        reject = { if (it !in 1..31) "A day from 1 to 31" else null },
+    )
+    TabButton("Last day", monthly.rule is MonthlyRule.LastDay, { if (monthly.rule !is MonthlyRule.LastDay) onChange(monthly.copy(rule = MonthlyRule.LastDay)) })
 }
 
 private fun fullDayName(d: DayOfWeek) = d.name.lowercase().replaceFirstChar { it.uppercase() }

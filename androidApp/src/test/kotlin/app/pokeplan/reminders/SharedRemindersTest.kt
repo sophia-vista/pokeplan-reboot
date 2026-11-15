@@ -17,6 +17,7 @@ import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.plan.toLocalDateTime
+import app.pokeplan.saveStorage
 import app.pokeplan.widgetStore
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DateTimeUnit
@@ -190,6 +191,18 @@ class SharedRemindersTest : AndroidTestBase() {
         SharedReminders.reschedule(context)
         context.sendBroadcast(alarmsFor(task.id).single().intent)
         awaitUntil("the reminder is shown") { shadowOf(Looper.getMainLooper()).idle(); notificationFor(task.id) != null }
+    }
+
+    @Test fun aRepeatingTasksNextInstanceIsPlannedEvenIfTheAppWasNotOpened() {
+        // A monthly task whose instance for the day after tomorrow was never made (the app has not opened since): the scheduler makes it and sets its alarm.
+        val store = widgetStore(context)
+        val day = minutesFromNow(0).date.plus(2, DateTimeUnit.DAY)
+        val seriesId = "series-1"
+        val template = Task(id = seriesId, seriesId = seriesId, title = title, createdAtMillis = 1, due = LocalDateTime(day, LocalTime(18, 0)), reminders = listOf(ReminderOffset.AtTime))
+        val series = app.pokeplan.app.TaskSeries(template, app.pokeplan.plan.Recurrence(app.pokeplan.plan.Repeat.Monthly(1, app.pokeplan.plan.MonthlyRule.DayOfMonth(day.day)), day))
+        saveStorage(context).save(app.pokeplan.app.GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data.copy(series = listOf(series), tasks = emptyList())))
+        SharedReminders.reschedule(context)
+        assertEquals(1, alarmsFor("$seriesId-$day").size, "the next occurrence has its alarm")
     }
 
     private fun broadcast(action: String) {
