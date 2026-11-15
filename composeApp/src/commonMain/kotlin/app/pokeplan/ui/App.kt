@@ -280,6 +280,9 @@ class AppModel(
     var playTarget: String? by mutableStateOf(null)
     var worldSection: WorldSection? by mutableStateOf(null)
 
+    /** The dungeon the World team editor is choosing a team for (UI only, not saved; null = the team's own, else the next one to explore). */
+    var worldTeamDungeon: String? by mutableStateOf(null)
+
     /** The layer of the World map on show (the home map or Kanto). */
     var worldLayer: app.pokeplan.world.WorldLayer by mutableStateOf(app.pokeplan.world.WorldLayer.RESCUE)
 
