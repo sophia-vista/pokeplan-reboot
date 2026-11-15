@@ -413,11 +413,10 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     var group by remember(a.id) { mutableStateOf(a.group) }
     var suffix by remember(a.id) { mutableStateOf(a.suffix) }
     var card by remember(a.id) { mutableStateOf(a.card) }
-    var receiveShown by remember(a.id) { mutableStateOf(!a.receiveHidden) }
     var refused by remember(a.id) { mutableStateOf<String?>(null) }
     var removingQr by remember(a.id) { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
-        if (!editing && !asking && !a.receiveHidden && (model.images != null || a.receiveQr.isNotEmpty())) ReceiveMoney(model, a, removingQr, { removingQr = it }, { refused = it })
+        if (!editing && !asking && a.receiveQr.isNotEmpty()) ReceiveMoney(model, a) { refused = it }
         if (editing) {
             val locked = mint.hasHistory(a.id)
             val minor = Money.parse(opening.ifBlank { "0" }, currency)
@@ -435,14 +434,14 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
             CardColorPicker(card) { card = it }
-            ToggleRow("Receive money", receiveShown) { receiveShown = it }
+            if (model.images != null) ReceiveMoneyEdit(model, a, removingQr, { removingQr = it }) { refused = it }
             PixelField(institution, { institution = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Bank or provider", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
             PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     if (minor == null) refused = "Check the balance."
-                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card, receiveHidden = !receiveShown))
+                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card))
                         .let { if (it.record != null) { editing = false; refused = null; onDone() } else refused = it.refused }
                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank(), compact = true)
                 PixelButton("Cancel", { editing = false; refused = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -465,12 +464,10 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     }
 }
 
-/** "Receive money": the account's own QR code (a picture the user chose), shown large so another phone can scan it. Stays on this phone like the rest of Mint. */
+/** "Receive money": the account's own picture (a QR code or a whole wallet screenshot), shown whole so another phone can scan it. Drawn only when there is one; it is added, replaced and removed in the account's Edit form. Stays on this phone like the rest of Mint. */
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
-private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean, setRemoving: (Boolean) -> Unit, problem: (String?) -> Unit) {
-    val mint = model.mint
-    val chooser = model.images
+private fun ReceiveMoney(model: AppModel, a: FinancialAccount, problem: (String?) -> Unit) {
     val hide = model.mintData.settings.hideValues
     val bitmap = remember(a.receiveQr) { if (a.receiveQr.isEmpty()) null else runCatching { Base64.decode(a.receiveQr).decodeToImageBitmap() }.getOrNull() }
     var full by remember { mutableStateOf(false) }
@@ -487,41 +484,49 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
             }))
         }
     }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), horizontalAlignment = Alignment.CenterHorizontally) {
+            PixelTitle("Receive money", Modifier.fillMaxWidth())
+            val desc = if (hide) "Receive money QR code for ${a.name}, hidden" else "Receive money QR code for ${a.name}"
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                if (hide) Box(Modifier.fillMaxWidth(0.7f).aspectRatio(1f).clip(PixelShape).background(Pixel.Border).semantics { contentDescription = desc }, contentAlignment = Alignment.Center) {
+                    Text("Hidden", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
+                }
+                else if (bitmap != null) Image(
+                    bitmap, desc,
+                    Modifier.fillMaxWidth().aspectRatio(bitmap.width.toFloat() / bitmap.height)
+                        .clickable(role = Role.Button, onClickLabel = "Open receive money QR code full screen") { full = true },
+                    contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
+                )
+                else Text("Could not show it", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            if (!hide && bitmap != null) PixelButton("Open", { full = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+        }
+    }
+}
+
+/** The Edit form's "Receive money" section: add, replace or remove the picture. It saves at once, not with Save. */
+@OptIn(ExperimentalEncodingApi::class)
+@Composable
+private fun ReceiveMoneyEdit(model: AppModel, a: FinancialAccount, removing: Boolean, setRemoving: (Boolean) -> Unit, problem: (String?) -> Unit) {
+    val mint = model.mint
+    val bitmap = remember(a.receiveQr) { if (a.receiveQr.isEmpty()) null else runCatching { Base64.decode(a.receiveQr).decodeToImageBitmap() }.getOrNull() }
     fun choose() {
-        chooser?.choose { png, why ->
+        model.images?.choose { png, why ->
             if (png == null) { problem(why); return@choose }
             val out = mint.setReceiveQr(a.id, Base64.encode(png))
             problem(if (out.record == null) (out.refused ?: "That picture could not be saved.") else null)
         }
     }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), horizontalAlignment = Alignment.CenterHorizontally) {
-            PixelTitle("Receive money", Modifier.fillMaxWidth())
-            if (a.receiveQr.isEmpty()) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    if (chooser != null) PixelButton("Add QR code", { choose() }, Modifier.weight(2f), ModuleAccent.MINT.accent, compact = true)
-                    PixelButton("Hide", { mint.updateAccount(a.copy(receiveHidden = true)) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                }
-            } else {
-                val desc = if (hide) "Receive money QR code for ${a.name}, hidden" else "Receive money QR code for ${a.name}"
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    if (hide) Box(Modifier.fillMaxWidth(0.7f).aspectRatio(1f).clip(PixelShape).background(Pixel.Border).semantics { contentDescription = desc }, contentAlignment = Alignment.Center) {
-                        Text("Hidden", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
-                    }
-                    else if (bitmap != null) Image(
-                        bitmap, desc,
-                        Modifier.fillMaxWidth().aspectRatio(bitmap.width.toFloat() / bitmap.height)
-                            .clickable(role = Role.Button, onClickLabel = "Open receive money QR code full screen") { full = true },
-                        contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
-                    )
-                    else Text("Could not show it", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                }
-                if (removing) Confirm("Remove this QR code?", "Remove", onConfirm = { mint.setReceiveQr(a.id, ""); setRemoving(false) }, onKeep = { setRemoving(false) })
-                else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    if (!hide && bitmap != null) PixelButton("Open", { full = true }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
-                    if (chooser != null) PixelButton("Replace", { choose() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    PixelButton("Remove", { setRemoving(true) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        FieldLabel("Receive money")
+        if (a.receiveQr.isEmpty()) PixelButton("Add QR code", { choose() }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+        else {
+            if (bitmap != null) Image(bitmap, "Receive money QR code for ${a.name}", Modifier.fillMaxWidth(0.4f).aspectRatio(bitmap.width.toFloat() / bitmap.height), contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap))
+            if (removing) Confirm("Remove this QR code?", "Remove", onConfirm = { mint.setReceiveQr(a.id, ""); setRemoving(false) }, onKeep = { setRemoving(false) })
+            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Replace", { choose() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Remove", { setRemoving(true) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
     }

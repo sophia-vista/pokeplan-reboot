@@ -1696,11 +1696,19 @@ class ScreenshotTest {
                 PixelTheme(dark = dark) { app.pokeplan.ui.mint.QrFullScreen("Daily account", image, {}, {}) }
             }
         }
-        val acc = AppModel(storeWithTeam()).let { m -> m to m.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000).record!! }
+        val acc = AppModel(storeWithTeam(), images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} }).let { m -> m to m.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000).record!! }
         val enc = { b: org.jetbrains.skia.Image -> kotlin.io.encoding.Base64.encode(b.encodeToData(org.jetbrains.skia.EncodedImageFormat.PNG)!!.bytes) }
         acc.first.mint.setReceiveQr(acc.second.id, enc(surface.makeImageSnapshot()))
         render("mint-account-qr-portrait", height = 2000, minBytes = 3_000) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(acc.first, acc.first.mintData.accounts.first()) {} } }
+        }
+        render("mint-account-edit-qr", height = 2000, minBytes = 3_000) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(acc.first, acc.first.mintData.accounts.first(), startEditing = true) {} } }
+        }
+        val bare = AppModel(storeWithTeam(), images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} })
+        bare.mint.addAccount("Spare wallet", app.pokeplan.mint.AccountType.CASH, "PHP", 10_000)
+        render("mint-account-edit-noqr", height = 1700, minBytes = 3_000) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(bare, bare.mintData.accounts.first(), startEditing = true) {} } }
         }
     }
 
