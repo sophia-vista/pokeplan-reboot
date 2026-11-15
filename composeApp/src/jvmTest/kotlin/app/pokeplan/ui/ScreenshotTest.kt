@@ -1744,6 +1744,24 @@ class ScreenshotTest {
         }
     }
 
+    /** Installments already owed: the "Already owed" mode with three months, a fee, and the options hint when an account has no plans. */
+    @Test
+    fun mintExistingInstallments() {
+        for (dark in listOf(false, true)) {
+            val model = AppModel(storeWithTeam())
+            val later = model.mint.addAccount("SPayLater", app.pokeplan.mint.AccountType.PAY_LATER, "PHP", 0, limitMinor = 300_000_000, dueDay = 5).record!!
+            val suffix = if (dark) "-dark" else ""
+            render("mint-existing-installments$suffix", height = 2100, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.theme.TextBox {
+                    app.pokeplan.ui.mint.NewPurchaseForm(model, later, startExisting = true, existingAmounts = listOf("1234567.89", "1234567.89", "999999.99"), existingFees = listOf("", "12345.67", "")) {}
+                } } }
+            }
+            render("mint-existing-hint$suffix", height = 700, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first { it.id == later.id }) {} } }
+            }
+        }
+    }
+
     /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
     @Test
     fun mintQrFullScreen() {

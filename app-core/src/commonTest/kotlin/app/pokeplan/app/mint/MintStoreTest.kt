@@ -718,4 +718,30 @@ class MintStoreTest {
         assertNull(m.addExistingPlan(later, "x", listOf(app.pokeplan.mint.Installment(0, LocalDate(2026, 12, 1), 0))).record)
         assertNull(m.addExistingPlan(later, "x", rows.reversed()).record)
     }
+
+    @Test
+    fun anEstimatedTwiceAMonthSalaryIsRecordedAtTheRealAmountOnItsScheduledDay() {
+        val s = setup()
+        val m = s.mint
+        val acct = assertNotNull(m.addAccount("Payroll", AccountType.BANK, "PHP", 0).record).id
+        val pay = assertNotNull(m.addBill("Salary", "PHP", Frequency.SEMI_MONTHLY, LocalDate(2026, 11, 15), 2_500_000, "cat-salary", acct, income = true, days = listOf(30, 15), workday = true, estimate = true).record)
+        assertEquals(emptyList(), pay.days) // 15 and 30 is the default and is not stored
+        assertTrue(pay.estimate && pay.workday && pay.income)
+        // Nothing posts by itself: the income appears only when it is confirmed, at the real amount (not the estimate).
+        assertTrue(m.data.transactions.isEmpty())
+        val tx = assertNotNull(m.settleAndRecord(pay.id, LocalDate(2026, 11, 15), 2_431_550, paidDay = LocalDate(2026, 11, 13)).record)
+        assertEquals(TxType.INCOME, tx.type)
+        assertEquals(2_431_550L, tx.amountMinor)
+        assertEquals(LocalDate(2026, 11, 13), tx.day)
+        assertEquals(OccurrenceState.PAID, MintRules.occurrence(m.data, pay, LocalDate(2026, 11, 15), m.today).state)
+        // Days off are settings: add one, turn one built-in day off; changing a schedule after payments is refused.
+        m.setDayOff(LocalDate(2026, 12, 15), true)
+        assertEquals(LocalDate(2026, 12, 14), MintRules.payDay(m.data, pay, LocalDate(2026, 12, 15)))
+        m.setHolidayCounted(LocalDate(2026, 11, 30), false)
+        assertEquals(LocalDate(2026, 11, 30), MintRules.payDay(m.data, pay, LocalDate(2026, 11, 30)))
+        m.setBuiltInHolidays(false)
+        assertEquals(LocalDate(2026, 12, 30), MintRules.payDay(m.data, pay, LocalDate(2026, 12, 30)))
+        assertNull(m.updateBill(pay.copy(days = listOf(10, 25))).record)
+        assertNotNull(m.updateBill(pay.copy(estimate = false, workday = false)).record)
+    }
 }

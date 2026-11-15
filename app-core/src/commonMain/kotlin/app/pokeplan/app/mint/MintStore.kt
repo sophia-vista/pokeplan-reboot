@@ -361,11 +361,15 @@ class MintStore(
 
     // --- bills -------------------------------------------------------------------------------------------------------
 
-    fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null, income: Boolean = false): Logged<Bill> {
+    /** The days of a twice-a-month bill: 1 to 31, distinct, sorted, at most four; empty (15 and 30) for any other frequency or none given (MINT.md 8.3B). */
+    private fun cleanDays(frequency: Frequency, days: List<Int>): List<Int> =
+        if (frequency != Frequency.SEMI_MONTHLY) emptyList() else days.filter { it in 1..31 }.distinct().sorted().take(4).let { if (it == listOf(15, 30)) emptyList() else it }
+
+    fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null, income: Boolean = false, days: List<Int> = emptyList(), workday: Boolean = false, estimate: Boolean = false): Logged<Bill> {
         if (name.isBlank()) return Logged(null, "Give the bill a name.")
         (MintRules.checkCurrency(currency) as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (expectedMinor != null) (MintRules.checkAmount(expectedMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val bill = Bill(newId(), name.trim().take(MintRules.NAME_MAX), currency, frequency, firstDue, expectedMinor, categoryId, accountId, createdMillis = nowMillis, income = income)
+        val bill = Bill(newId(), name.trim().take(MintRules.NAME_MAX), currency, frequency, firstDue, expectedMinor, categoryId, accountId, createdMillis = nowMillis, income = income, days = cleanDays(frequency, days), workday = workday, estimate = estimate)
         update { it.copy(bills = it.bills + bill) }
         return Logged(bill)
     }
@@ -378,9 +382,10 @@ class MintStore(
         val old = data.bills.firstOrNull { it.id == b.id } ?: return Logged(null, "That bill is gone.")
         if (b.name.isBlank()) return Logged(null, "Give the bill a name.")
         b.expectedMinor?.let { m -> (MintRules.checkAmount(m) as? Check.Refused)?.let { return Logged(null, it.reason) } }
-        val rescheduled = b.firstDue != old.firstDue || b.frequency != old.frequency
+        val days = cleanDays(b.frequency, b.days)
+        val rescheduled = b.firstDue != old.firstDue || b.frequency != old.frequency || days != old.days
         if (rescheduled && data.billPayments.any { it.billId == old.id }) return Logged(null, "Payments are recorded for this bill, so its schedule cannot change. Pause it and add a new bill.")
-        val next = old.copy(name = b.name.trim().take(MintRules.NAME_MAX), expectedMinor = b.expectedMinor, categoryId = b.categoryId, accountId = b.accountId, firstDue = b.firstDue, frequency = b.frequency)
+        val next = old.copy(name = b.name.trim().take(MintRules.NAME_MAX), expectedMinor = b.expectedMinor, categoryId = b.categoryId, accountId = b.accountId, firstDue = b.firstDue, frequency = b.frequency, days = days, workday = b.workday, estimate = b.estimate)
         update { d -> d.copy(bills = d.bills.map { if (it.id == b.id) next else it }) }
         return Logged(next)
     }
@@ -638,6 +643,15 @@ class MintStore(
 
     /** Turns the optional access gate on or off. The caller has already proved the phone can ask for its screen lock; the gate holds no key and no password. */
     fun setGate(on: Boolean) = settings { it.copy(gate = on) }
+
+    /** Whether the built-in Philippine holidays count as days off for paydays (MINT.md 8.3B). */
+    fun setBuiltInHolidays(on: Boolean) = settings { it.copy(builtInHolidays = on) }
+
+    /** Counts or stops counting one built-in holiday (for example one that was not observed that year). */
+    fun setHolidayCounted(day: LocalDate, counted: Boolean) = settings { it.copy(holidaysIgnored = if (counted) it.holidaysIgnored - day else (it.holidaysIgnored + day).distinct().sorted()) }
+
+    /** Adds or removes a day off of the player's own (Eid, a proclaimed day); at most 200. */
+    fun setDayOff(day: LocalDate, off: Boolean) = settings { it.copy(daysOff = if (off) (it.daysOff + day).distinct().sorted().takeLast(200) else it.daysOff - day) }
 
     fun setCurrency(code: String) = settings { if (MintRules.checkCurrency(code.trim().uppercase()) is Check.Ok) it.copy(currency = code.trim().uppercase()) else it }
 

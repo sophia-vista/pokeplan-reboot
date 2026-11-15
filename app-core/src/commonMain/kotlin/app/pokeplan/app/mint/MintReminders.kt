@@ -43,7 +43,7 @@ object MintReminders {
         val to = today.plus(lead + DAYS_AHEAD, DateTimeUnit.DAY)
         return mint.bills.filter { it.remind }.flatMap { bill ->
             MintRules.occurrences(mint, bill, today, to, today).filter { it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }.map { o ->
-                val day = o.dueDay.minus(lead, DateTimeUnit.DAY)
+                val day = o.payDay.minus(lead, DateTimeUnit.DAY)
                 val at = LocalDateTime(day, LocalTime(settings.billReminderHour.coerceIn(0, 23), 0)).toEpochMillis(zone)
                 val request = ReminderRequest(ReminderModule.MINT, bill.id, KIND, at, occurrence = o.dueDay.toString())
                 BillReminder(bill.id, o.dueDay, ReminderPolicy.deliverAt(request, app.settings.quietHours, zone, focus))
