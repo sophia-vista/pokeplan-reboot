@@ -73,4 +73,46 @@ class GoalTest {
         val g = GoalRules.completeMilestone(goal(0), "m0", day, 0).goal
         assertFailsWith<IllegalStateException> { GoalRules.completeMilestone(g, "m0", day, 0) }
     }
+
+    @Test
+    fun theBadgeCaseHasOneSlotPerMilestoneFilledWhenDone() {
+        val g = GoalRules.completeMilestone(goal(0, 0, 0), "m1", day, 0).goal
+        val case = GoalRules.badgeCase(g)
+        assertEquals(listOf(false, true, false), case.map { it.earned })
+        val set = GoalRules.badgeSet("g")
+        assertEquals(listOf(1, 2, 3).map { set * 8 + it }, case.map { it.badgeId })
+    }
+
+    @Test
+    fun badgesRepeatAfterEightAndStayInTheirSet() {
+        val ids = (0..9).map { GoalRules.badgeId("some-goal", it) }
+        assertEquals(ids[0], ids[8])
+        assertTrue(ids.all { it in 1..GoalRules.BADGE_SETS * GoalRules.BADGES_PER_SET })
+        assertEquals(1, ids.map { (it - 1) / 8 }.toSet().size, "one set for one goal")
+        assertEquals(GoalRules.badgeSet("some-goal"), GoalRules.badgeSet("some-goal"))
+    }
+
+    @Test
+    fun aGoalWithNoMilestonesHasOneSlot() {
+        assertEquals(1, GoalRules.badgeCase(goal()).size)
+    }
+
+    @Test
+    fun theHallOfFameKeepsThePartyOfTheDayTheGoalFinished() {
+        val first = listOf(GoalPartyMember(25, 12), GoalPartyMember(4, 30, shiny = true))
+        val finished = GoalRules.completeMilestone(goal(0), "m0", day, 0, first).goal
+        assertEquals(first, finished.hallOfFameParty)
+        // Reopening and finishing again with a different party records the later day's party.
+        val reopened = GoalRules.reopenMilestone(finished, "m0")
+        val second = listOf(GoalPartyMember(1, 5))
+        assertEquals(second, GoalRules.completeMilestone(reopened, "m0", 2 * day, 0, second).goal.hallOfFameParty)
+    }
+
+    @Test
+    fun hallOfFameListsFinishedGoalsNewestFirst() {
+        val a = GoalRules.completeMilestone(goal(0), "m0", day, 0).goal.copy(id = "a")
+        val b = GoalRules.completeMilestone(goal(0), "m0", 3 * day, 0).goal.copy(id = "b")
+        val open = goal(0).copy(id = "c")
+        assertEquals(listOf("b", "a"), GoalRules.hallOfFame(listOf(a, open, b)).map { it.id })
+    }
 }
