@@ -50,6 +50,7 @@ import app.pokeplan.platform.AndroidFileSaver
 import app.pokeplan.platform.AndroidHaptics
 import app.pokeplan.platform.AndroidPhoneState
 import app.pokeplan.platform.AndroidSensorFeed
+import app.pokeplan.platform.AndroidImagePicker
 import app.pokeplan.platform.AndroidTextFiles
 import app.pokeplan.platform.AndroidTorch
 import app.pokeplan.platform.androidGearServices
@@ -110,13 +111,14 @@ class MainActivity : ComponentActivity() {
         // Heal's Health Connect and Mint's statement file picker: both register their result launchers here, before the activity starts.
         val health = AndroidHealthConnect(this)
         val textFiles = AndroidTextFiles(this)
+        val images = AndroidImagePicker(this)
         // A widget can open the app on a place ("FOCUS" for the Start focus widget).
         val first = launchFrom(intent)
         val place = first.place ?: Place.HOME
         setContent {
             App(
                 storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), baseStorage = baseStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
             )
         }
     }
