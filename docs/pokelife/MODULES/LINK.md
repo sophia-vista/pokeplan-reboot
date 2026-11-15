@@ -405,7 +405,7 @@ Existing code is evidence, not authority. LINK reuses the shared module shell, l
 
 ## 12. Remaining work
 
-Phases 1 to 5, 7 and 8 of the former plan (domain and persistence, manual contacts, notes and search, dates, follow-ups and reminders, Postcard Trail, polish) are built; see section 15. What remains is the optional device-contact import (phase 6): explicit permission flow and import preview, user-selected import, duplicate reconciliation and field provenance, re-import and permission-revocation behavior. **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
+Phases 1 to 5, 7 and 8 of the former plan (domain and persistence, manual contacts, notes and search, dates, follow-ups and reminders, Postcard Trail, polish) are built; see section 15. The optional device-contact import (phase 6) is built in its first slice (section 15). What remains: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), upcoming dates on the launcher, sealing Link's rows, and the open question of "keep in touch" (D8). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
 
 ---
 
@@ -455,7 +455,7 @@ This document is the single detailed requirements source for LINK. Product-wide 
 
 ## 15. As built: the manual slice
 
-*Compiled for Android; not yet run on a device. No device-contact import or widget exists.*
+*Compiled for Android; not yet run on a device. No widget exists.*
 
 A menu with an overview on top and four destinations. **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form.
 
@@ -470,7 +470,9 @@ A menu with an overview on top and four destinations. **Overview**: only what ne
 
 **Reminders (5), built:** off until the user turns Link's reminders on, then per date (the day of, or 1, 3 or 7 days before) and per follow-up (on its day); one nudge each, generic lock-screen text, quiet hours and focus sessions respected; a follow-up handed to Plan is Plan's to remind about.
 
-**Not built, not offered:** importing device contacts and the Contacts permission (6.1), a link from HOME to a contact, contact source mapping and provenance, widgets, and a passphrase-sealed backup.
+**Contacts import (0.201.0), as built:** Android only (`ContactSource`, null elsewhere so the button is not offered; `AndroidContacts` reads names, phones, emails, companies and birthdays in one query). People → "Import contacts" says what is read, then asks `READ_CONTACTS`; denied, manual use is untouched. A pick list (search, 40 at a time, nothing preselected) marks rows New, Already in Link (same `Person.sourceId`) or Maybe already in Link (name, a phone or an email; starts unselected, and when picked fills only the matched person's empty fields). A reminder is chosen (No, On the day, 1, 3 or a week before; no default), then "Import N" makes one save, one result line and Undo. A birthday becomes a Birthday date unless the person has one; a second import changes nothing; empty phone, email and organization are filled, nothing is overwritten. Contacts with no name are counted and shown. Nothing is paid and nothing reaches `LinkEvent`. **Reminder in one step:** the Add-a-date form has "Remind me" keys, and the first reminder turns Link's reminders on. Known gap: the notification permission is asked only when a reminder is within 4 days.
+
+**Not built, not offered:** a chooser for changed fields on re-import, a link from HOME to a contact, upcoming dates on the launcher, widgets, sealing Link's rows and a passphrase-sealed backup. Data: `Person.sourceId` (the contact's lookup key, default empty) lives in the person's JSON, so there is no schema step.
 
 ## Shared Pokémon ecosystem contract
 
