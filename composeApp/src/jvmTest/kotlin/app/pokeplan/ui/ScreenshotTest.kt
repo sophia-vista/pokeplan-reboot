@@ -1627,6 +1627,25 @@ class ScreenshotTest {
         m.mint.settle(bill.id, bill.firstDue, app.pokeplan.mint.SettleStatus.PAID, 149_900)
     })
 
+    /** An account with a receive-money QR open in its options (a synthetic 1x1 PNG stands in for a real code), and a recurring income bill. */
+    @Test
+    fun mintReceiveQrAndIncomeBill() {
+        val png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg=="
+        for (dark in listOf(false, true)) {
+            val store = storeWithTeam()
+            store.markRewardsSeen()
+            val model = AppModel(store, images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} })
+            val acc = model.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000).record!!
+            model.mint.setReceiveQr(acc.id, png)
+            render("mint-account-qr${if (dark) "-dark" else ""}", height = 1100, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first()) {} } }
+            }
+        }
+        mint("mint-bills-income", app.pokeplan.ui.mint.MintSection.BILLS, height = 2200, settings = { m ->
+            m.mint.addBill("Salary", "PHP", app.pokeplan.mint.Frequency.MONTHLY, m.store.today, 3_500_000, categoryId = "cat-salary", income = true)
+        })
+    }
+
     /** An expedition box at several points of its scroll: a bay's rim must close at the bottom and the frame corner stays whole (owner: "this L seems to be missing something"). */
     @Test
     fun tileBoxCorners() {
