@@ -1656,6 +1656,14 @@ class ScreenshotTest {
         }
     }
 
+    /** The card colour picker with Custom open and a long (fully typed) hex, both palettes. */
+    @Test
+    fun mintCardColorPicker() {
+        for (dark in listOf(false, true)) render("mint-card-colour-picker${if (dark) "-dark" else ""}", height = 700, minBytes = 3_000) {
+            PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.CardColorPicker("#A98CF0") {} } }
+        }
+    }
+
     /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
     @Test
     fun mintQrFullScreen() {

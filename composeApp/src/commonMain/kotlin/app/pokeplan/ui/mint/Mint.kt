@@ -304,7 +304,7 @@ private fun AccountsView(model: AppModel) {
                     onClick = { open = if (open == a.id) null else a.id }, onClickLabel = "Show options",
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Box(Modifier.size(10.dp).background(cardColor(CardStyle.of(a.card))))
+                        Box(Modifier.size(10.dp).background(accountColor(a.card)))
                         Text(a.name, style = MaterialTheme.typography.bodyLarge)
                     }
                     val meta = listOfNotNull(
@@ -339,7 +339,7 @@ private fun AccountsView(model: AppModel) {
                 opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
                 label = if (type.liability) "Amount owed now" else "Balance now", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
-            CardStylePicker(card) { card = it }
+            CardColorPicker(card) { card = it }
             PixelButton(if (more) "Fewer options" else "Group and last digits", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
                 PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
@@ -357,7 +357,7 @@ private fun AccountsView(model: AppModel) {
 
 /** The colour of a card style in the current palette. Cosmetic: nothing reads it but the picker and the account list. */
 @Composable
-private fun cardColor(style: CardStyle): Color = when (style) {
+internal fun cardColor(style: CardStyle): Color = when (style) {
     CardStyle.PLAIN -> Pixel.InkSoft
     CardStyle.BLUE -> Pixel.Blue
     CardStyle.GREEN -> Pixel.Green
@@ -366,17 +366,6 @@ private fun cardColor(style: CardStyle): Color = when (style) {
     CardStyle.SLATE -> Pixel.Ink
 }
 
-/** The card-style picker: one key per style in its own colour. It changes how the account looks and nothing else. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun CardStylePicker(selected: String, onPick: (String) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-    FieldLabel("Card style")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        CardStyle.entries.forEach { c -> TabButton(c.label, c.id == CardStyle.of(selected).id, { onPick(c.id) }, key = cardColor(c)) }
-    }
-    }
-}
 
 /** What each account type means, behind the "?" on the new-account form and written once (MINT.md 4.1, REP-056). */
 private val accountTypeNotes = listOf(
@@ -424,10 +413,11 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     var group by remember(a.id) { mutableStateOf(a.group) }
     var suffix by remember(a.id) { mutableStateOf(a.suffix) }
     var card by remember(a.id) { mutableStateOf(a.card) }
+    var receiveShown by remember(a.id) { mutableStateOf(!a.receiveHidden) }
     var refused by remember(a.id) { mutableStateOf<String?>(null) }
     var removingQr by remember(a.id) { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
-        if (!editing && !asking && (model.images != null || a.receiveQr.isNotEmpty())) ReceiveMoney(model, a, removingQr, { removingQr = it }, { refused = it })
+        if (!editing && !asking && !a.receiveHidden && (model.images != null || a.receiveQr.isNotEmpty())) ReceiveMoney(model, a, removingQr, { removingQr = it }, { refused = it })
         if (editing) {
             val locked = mint.hasHistory(a.id)
             val minor = Money.parse(opening.ifBlank { "0" }, currency)
@@ -444,14 +434,15 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 label = if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking", singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
-            CardStylePicker(card) { card = it }
+            CardColorPicker(card) { card = it }
+            ToggleRow("Receive money", receiveShown) { receiveShown = it }
             PixelField(institution, { institution = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Bank or provider", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
             PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     if (minor == null) refused = "Check the balance."
-                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card))
+                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card, receiveHidden = !receiveShown))
                         .let { if (it.record != null) { editing = false; refused = null; onDone() } else refused = it.refused }
                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank(), compact = true)
                 PixelButton("Cancel", { editing = false; refused = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -492,7 +483,7 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
         Dialog({ full = false }, DialogProperties(usePlatformDefaultWidth = false)) {
             BackHandler(true) { full = false }
             QrFullScreen(a.name, bitmap, { full = false }, if (viewer == null) null else ({
-                problem(runCatching { viewer.share(Base64.decode(a.receiveQr), "receive-qr.png") }.getOrDefault("That picture could not be shared."))
+                problem(runCatching { Base64.decode(a.receiveQr).let { b -> viewer.share(b, receiveName(b)) } }.getOrDefault("That picture could not be shared."))
             }))
         }
     }
@@ -507,7 +498,10 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), horizontalAlignment = Alignment.CenterHorizontally) {
             PixelTitle("Receive money", Modifier.fillMaxWidth())
             if (a.receiveQr.isEmpty()) {
-                PixelButton("Add QR code", { choose() }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    if (chooser != null) PixelButton("Add QR code", { choose() }, Modifier.weight(2f), ModuleAccent.MINT.accent, compact = true)
+                    PixelButton("Hide", { mint.updateAccount(a.copy(receiveHidden = true)) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
             } else {
                 val desc = if (hide) "Receive money QR code for ${a.name}, hidden" else "Receive money QR code for ${a.name}"
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -531,6 +525,13 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
             }
         }
     }
+}
+
+/** The share file name by the picture's own format: PNG, JPEG (FF D8 FF) or WebP (RIFF....WEBP). */
+private fun receiveName(b: ByteArray): String = when {
+    b.size > 3 && b[0] == 0xFF.toByte() && b[1] == 0xD8.toByte() && b[2] == 0xFF.toByte() -> "receive-qr.jpg"
+    b.size > 12 && b[0] == 'R'.code.toByte() && b[1] == 'I'.code.toByte() && b[8] == 'W'.code.toByte() && b[9] == 'E'.code.toByte() -> "receive-qr.webp"
+    else -> "receive-qr.png"
 }
 
 /** A bare, roughly square QR is upscaled, so keep its modules crisp; a tall wallet screenshot is shrunk, so smooth it. */
