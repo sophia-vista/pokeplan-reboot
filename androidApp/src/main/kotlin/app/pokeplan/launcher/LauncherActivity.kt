@@ -437,7 +437,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 /** Tells a hosted widget the room it has: the size-list call from Android 12 on (the four-number one is deprecated there), the old one below it. */
 private fun android.appwidget.AppWidgetHostView.tellSize(minW: Int, minH: Int, maxW: Int, maxH: Int) {
     if (android.os.Build.VERSION.SDK_INT >= 31) {
-        updateAppWidgetSize(null, listOf(android.util.SizeF(minW.toFloat(), minH.toFloat()), android.util.SizeF(maxW.toFloat(), maxH.toFloat())))
+        updateAppWidgetSize(android.os.Bundle(), listOf(android.util.SizeF(minW.toFloat(), minH.toFloat()), android.util.SizeF(maxW.toFloat(), maxH.toFloat())))
     } else {
         @Suppress("DEPRECATION")
         updateAppWidgetSize(null, minW, minH, maxW, maxH)
