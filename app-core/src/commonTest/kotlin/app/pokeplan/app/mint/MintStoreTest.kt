@@ -441,6 +441,12 @@ class MintStoreTest {
         assertEquals(before, MintRules.balances(s.mint.data).single().postedMinor)
         // A style this build does not know is dropped to the plain card, never kept as free text.
         assertEquals("", assertNotNull(s.mint.addAccount("Odd", AccountType.CASH, "PHP", card = "neon-pink").record).card)
+        // A custom colour is kept as capitals #RRGGBB; text that is not a colour is dropped to the plain card.
+        assertEquals("#3A7BD5", assertNotNull(s.mint.addAccount("Mine", AccountType.CASH, "PHP", card = "#3a7bd5").record).card)
+        assertEquals("", assertNotNull(s.mint.addAccount("Bad", AccountType.CASH, "PHP", card = "#12345").record).card)
+        assertEquals("", assertNotNull(s.mint.addAccount("Bad2", AccountType.CASH, "PHP", card = "#GGGGGG").record).card)
+        assertEquals(0x3A7BD5, app.pokeplan.mint.CardStyle.customRgb("#3A7BD5"))
+        assertNull(app.pokeplan.mint.CardStyle.customRgb("blue"))
     }
 
     @Test
@@ -473,7 +479,11 @@ class MintStoreTest {
         assertEquals(png, assertNotNull(s.mint.updateAccount(s.mint.data.accounts.single().copy(name = "GCash 2")).record).receiveQr)
         assertEquals(168_880L, MintRules.balances(s.mint.data).single().postedMinor)
         // Not a PNG, too big, text that is not base64, and a missing account are all refused and change nothing.
-        assertNull(s.mint.setReceiveQr(acct.id, "/9j/4AAQSkZJRg").record)
+        assertNull(s.mint.setReceiveQr(acct.id, "R0lGODlhAQABAAAAACw=").record)
+        // A JPEG or WebP screenshot is kept as it is.
+        assertNotNull(s.mint.setReceiveQr(acct.id, "/9j/4AAQSkZJRgABAQ==").record)
+        assertNotNull(s.mint.setReceiveQr(acct.id, "UklGRiQAAABXRUJQ").record)
+        assertNotNull(s.mint.setReceiveQr(acct.id, png).record)
         assertNull(s.mint.setReceiveQr(acct.id, MintRules.PNG_BASE64_PREFIX + "A".repeat(MintRules.QR_MAX_CHARS)).record)
         assertNull(s.mint.setReceiveQr(acct.id, MintRules.PNG_BASE64_PREFIX + "<script>").record)
         assertNull(s.mint.setReceiveQr("nobody", png).record)

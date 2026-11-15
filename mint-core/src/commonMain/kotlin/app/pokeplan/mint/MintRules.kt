@@ -30,19 +30,33 @@ data class Available(val currency: String, val liquidMinor: Long, val billsMinor
  */
 object MintRules {
     const val NAME_MAX = 40
-    /** The most characters of base64 an account's receive-money QR image may take (about 64 KB of PNG), MINT.md 4.2. */
-    const val QR_MAX_CHARS = 88_000
+    /** The most characters of base64 an account's receive-money picture may take (about 1 MB as picked), MINT.md 4.2. */
+    const val QR_MAX_CHARS = 1_400_000
 
-    /** Whether [base64] can be kept as an account's QR: empty (none) or standard base64 of a PNG, small enough. Nothing is decoded or read for its contents. */
+    /** Whether [base64] can be kept as an account's receive-money picture: empty (none) or standard base64 of a PNG, JPEG or WebP, small enough. Never decoded or read for its contents. */
     fun checkReceiveQr(base64: String): Check = when {
         base64.isEmpty() -> Check.Ok
-        base64.length > QR_MAX_CHARS -> Check.Refused("That image is too big. Pick one under 64 KB.")
-        !base64.startsWith(PNG_BASE64_PREFIX) || !base64.all { it.isLetterOrDigit() && it.code < 128 || it == '+' || it == '/' || it == '=' } -> Check.Refused("That is not a picture Mint can keep.")
+        base64.length > QR_MAX_CHARS -> Check.Refused("That picture is too big to keep (1 MB at most).")
+        IMAGE_BASE64_PREFIXES.none { base64.startsWith(it) } || !base64.all { it.isLetterOrDigit() && it.code < 128 || it == '+' || it == '/' || it == '=' } -> Check.Refused("That is not a picture Mint can keep.")
         else -> Check.Ok
     }
 
-    /** The first characters of any base64-encoded PNG (its 8-byte signature). */
+    /** The first characters of a base64-encoded PNG (its 8-byte signature). */
     const val PNG_BASE64_PREFIX = "iVBORw0KGgo"
+
+    /** The picture kinds an account may keep: PNG, JPEG and WebP (RIFF), by their signatures in base64. */
+    val IMAGE_BASE64_PREFIXES = listOf(PNG_BASE64_PREFIX, "/9j/", "UklGR")
+
+    /**
+     * The saved form of an account card colour (MINT.md 4.2): one of the [CardStyle] ids, or a custom colour as `#RRGGBB` in capitals; anything else is the plain card.
+     * Cosmetic only.
+     */
+    fun cardId(raw: String): String {
+        val t = raw.trim()
+        if (t.length == 7 && t[0] == '#' && t.drop(1).all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) return t.uppercase()
+        return CardStyle.of(t).id
+    }
+
     const val NOTE_MAX = 500
     const val SUFFIX_MAX = 4
 

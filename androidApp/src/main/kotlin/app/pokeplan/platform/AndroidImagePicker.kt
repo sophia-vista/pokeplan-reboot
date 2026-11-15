@@ -18,7 +18,7 @@ fun fitSides(w: Int, h: Int, max: Int): Pair<Int, Int> {
 }
 
 /**
- * Lets the player pick one picture through Android's Photo Picker (no storage permission), shrinks it and hands back PNG bytes small enough to keep.
+ * Lets the player pick one picture through Android's Photo Picker (no storage permission) and hands the picture back **as picked** (PNG, JPEG or WebP up to 1 MB: a whole wallet screenshot is kept untouched); only a bigger or other kind of picture is re-encoded as a PNG, shrunk step by step until it fits.
  * The launcher is registered in `onCreate`.
  */
 class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser {
@@ -49,6 +49,7 @@ class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null to NOT_A_PICTURE
+        if (bytes.size <= KEEP_BYTES && isKeepableImage(bytes)) return bytes to null
         var sample = 1
         while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= DECODE_SIDE) sample *= 2
         val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
@@ -62,16 +63,23 @@ class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser
             if (out.size() <= MAX_PNG) { found = out.toByteArray(); break }
         }
         if (found != null) found to null
-        else null to "That picture is too detailed to keep. Crop it to just the QR code and try again."
+        else null to "That picture is too big to keep. Take a smaller screenshot or crop it and try again."
     } catch (e: Exception) {
         null to "That picture could not be read."
     }
 
     private companion object {
         const val MAX_INPUT = 20 * 1024 * 1024
-        const val DECODE_SIDE = 1200
-        const val MAX_PNG = 64000
-        val SIDES = intArrayOf(600, 480, 360, 240)
+        const val DECODE_SIDE = 3200
+        const val KEEP_BYTES = 1_000_000
+        const val MAX_PNG = 1_000_000
+        val SIDES = intArrayOf(2400, 1800, 1440, 1080, 720)
         const val NOT_A_PICTURE = "That file is not a picture."
     }
+}
+
+/** Whether [bytes] start like a PNG, a JPEG or a WebP, the three kinds an account may keep as picked (MINT.md 4.2). */
+internal fun isKeepableImage(bytes: ByteArray): Boolean {
+    fun at(i: Int, vararg v: Int) = bytes.size >= i + v.size && v.indices.all { (bytes[i + it].toInt() and 0xFF) == v[it] }
+    return at(0, 0x89, 0x50, 0x4E, 0x47) || at(0, 0xFF, 0xD8, 0xFF) || (at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50))
 }
