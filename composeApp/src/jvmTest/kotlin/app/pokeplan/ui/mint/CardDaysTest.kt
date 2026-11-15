@@ -21,3 +21,17 @@ class CardDaysTest {
         assertEquals("31", dayInput("45"))
     }
 }
+
+class PercentTest {
+    @Test
+    fun percentsBecomeBasisPoints() {
+        assertEquals(150, percentToBasisPoints("1.5"))
+        assertEquals(150, percentToBasisPoints("1,5"))
+        assertEquals(200, percentToBasisPoints("2"))
+        assertEquals(25, percentToBasisPoints("0.25"))
+        assertEquals(5, percentToBasisPoints(".05"))
+        assertEquals(null, percentToBasisPoints(""))
+        assertEquals(null, percentToBasisPoints("1.234"))
+        assertEquals(null, percentToBasisPoints("1.2.3"))
+    }
+}
