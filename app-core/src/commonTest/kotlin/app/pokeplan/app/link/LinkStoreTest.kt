@@ -74,6 +74,84 @@ class LinkStoreTest {
 
     private val secrets = listOf("Zorblax Quux", "+63 917 000 1234", "zorblax@example.com", "Quuxville", "zorblax-tag", "Zorblax-note-77", "Zorblax-follow-55", "Zorblax-date-9")
 
+    // --- importing contacts (LINK.md 6.1) ------------------------------------------------------------------------------------------
+
+    private fun card(id: String, name: String, phone: String = "", email: String = "", org: String = "", b: app.pokeplan.link.ContactBirthday? = null) =
+        app.pokeplan.link.ContactCard(id, name, listOfNotNull(phone.ifBlank { null }), listOfNotNull(email.ifBlank { null }), org, b)
+
+    @Test
+    fun importingMakesPeopleAndBirthdaysWithTheReminderChosenAndPaysNothing() {
+        val s = setup()
+        val result = s.link.importContacts(
+            listOf(
+                app.pokeplan.link.ImportPick(card("k1", "Ana Cruz", "0917 123 4567", "ana@x.com", "Acme", app.pokeplan.link.ContactBirthday(3, 14, 1990))),
+                app.pokeplan.link.ImportPick(card("k2", "Ben", b = app.pokeplan.link.ContactBirthday(2, 29))),
+                app.pokeplan.link.ImportPick(card("k3", "Cy")),
+            ),
+            remindDays = 1,
+        )
+        assertEquals(app.pokeplan.link.ImportResult(added = 3, linked = 0, birthdays = 2, skipped = 0), result)
+        assertEquals(listOf("Ana Cruz", "Ben", "Cy"), s.link.data.people.map { it.name })
+        assertEquals("k1", s.link.data.people[0].sourceId)
+        assertEquals("Acme", s.link.data.people[0].organization)
+        assertEquals(listOf(1, 1), s.link.data.dates.map { it.remindDays })
+        assertTrue(s.link.data.settings.reminders, "choosing a reminder turns Link's reminders on")
+        assertTrue(s.spy.events.isEmpty() && s.candies == 0, "importing is never a reward")
+    }
+
+    @Test
+    fun noReminderChoiceLeavesRemindersOffAndASecondImportChangesNothing() {
+        val s = setup()
+        val pick = app.pokeplan.link.ImportPick(card("k1", "Ana", b = app.pokeplan.link.ContactBirthday(3, 14)))
+        s.link.importContacts(listOf(pick))
+        assertFalse(s.link.data.settings.reminders)
+        assertNull(s.link.data.dates.single().remindDays)
+        val before = s.link.data
+        val again = s.link.importContacts(listOf(pick))
+        assertEquals(before, s.link.data, "a second import of the same contact is a no-op")
+        assertEquals(app.pokeplan.link.ImportResult(skipped = 1), again)
+    }
+
+    @Test
+    fun linkingFillsEmptyFieldsOnlyAndNeverAddsASecondBirthday() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana", phone = "111", category = "Friend").record)
+        s.link.addDate(DateKind.BIRTHDAY, "Ana's birthday", 5, 6, personId = ana.id)
+        val result = s.link.importContacts(
+            listOf(app.pokeplan.link.ImportPick(card("k1", "Ana C.", "999", "ana@x.com", b = app.pokeplan.link.ContactBirthday(3, 14)), linkTo = ana.id)),
+            remindDays = 0,
+        )
+        assertEquals(app.pokeplan.link.ImportResult(added = 0, linked = 1, birthdays = 0, skipped = 0), result)
+        val p = s.link.data.people.single()
+        assertEquals("Ana", p.name); assertEquals("111", p.phone); assertEquals("Friend", p.category)
+        assertEquals("ana@x.com", p.email); assertEquals("k1", p.sourceId)
+        assertEquals(1, s.link.data.dates.size, "she already had a birthday")
+        assertEquals(5, s.link.data.dates.single().month)
+        assertFalse(s.link.data.settings.reminders, "no birthday was added, so nothing asked for a reminder")
+    }
+
+    @Test
+    fun linkingToAPersonWhoIsGoneIsSkippedAndAnImportCanBeUndone() {
+        val s = setup()
+        val snapshot = s.link.data
+        val r = s.link.importContacts(listOf(app.pokeplan.link.ImportPick(card("k1", "Ana"), linkTo = "missing"), app.pokeplan.link.ImportPick(card("k2", "Ben"))))
+        assertEquals(1, r.added); assertEquals(1, r.skipped)
+        s.link.restore(snapshot)
+        assertTrue(s.link.data.people.isEmpty())
+    }
+
+    @Test
+    fun addingADateCanAskForItsReminderInTheSameStep() {
+        val s = setup()
+        assertFalse(s.link.data.settings.reminders)
+        s.link.addDate(DateKind.CUSTOM, "Moving day", 5, 6)
+        assertFalse(s.link.data.settings.reminders)
+        val d = assertNotNull(s.link.addDate(DateKind.BIRTHDAY, "Birthday", 3, 4, remindDays = 3).record)
+        assertEquals(3, d.remindDays)
+        assertTrue(s.link.data.settings.reminders)
+        assertNull(assertNotNull(s.link.addDate(DateKind.CUSTOM, "X", 1, 2, remindDays = 5).record).remindDays, "only the presets are accepted")
+    }
+
     // --- people ------------------------------------------------------------------------------------------------------------------
 
     @Test

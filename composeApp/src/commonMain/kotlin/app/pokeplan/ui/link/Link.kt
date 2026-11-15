@@ -292,6 +292,12 @@ private fun PeopleView(model: AppModel) {
     var openId by remember { mutableStateOf(jump?.id) }
     var message by remember { mutableStateOf<String?>(null) }
     var shown by remember { mutableStateOf(DIRECTORY_PAGE) }
+    var importing by remember { mutableStateOf(false) }
+    val contacts = model.contacts
+    if (importing && contacts != null) {
+        TextBox { ContactImportView(model, contacts) { importing = false } }
+        return
+    }
     val people = link.directory(query, category, null, favorites, sort)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -302,6 +308,7 @@ private fun PeopleView(model: AppModel) {
                     if (out.record == null) message = out.refused else { name = ""; message = null; openId = out.record!!.id; model.haptic() }
                 }, color = accent, enabled = name.isNotBlank())
             }
+            if (contacts != null) PixelButton("Import contacts", { importing = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             message?.let { Report(model, it, NoticeTone.WARNING) }
             val similar = if (name.isBlank()) emptyList() else link.possibleDuplicates(name)
             if (similar.isNotEmpty()) Text("Already in your list: ${similar.joinToString { LinkRules.displayName(it) }}. You can still add another.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
@@ -564,6 +571,7 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
     var note by remember(key) { mutableStateOf(initial?.note.orEmpty()) }
     var message by remember(key) { mutableStateOf<String?>(null) }
     var asking by remember(key) { mutableStateOf(false) }
+    var remind by remember(key) { mutableStateOf<Int?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (asking && initial != null) {
             Confirm("Delete this date?", "Delete", onConfirm = { link.deleteDate(initial.id); onDone() }, onKeep = { asking = false })
@@ -587,26 +595,25 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
         ToggleRow("Every year", annual) { annual = it }
         PersonPicker(data.people, personId) { personId = it }
         PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", singleLine = true, keyboardOptions = sentenceKeys)
-        if (initial != null && data.settings.reminders) {
-            val saved = data.dates.firstOrNull { it.id == initial.id }?.remindDays
-            SectionLabel("Remind me")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("No", saved == null, { link.setDateRemind(initial.id, null) })
-                LinkRules.REMIND_PRESETS.forEach { n -> Chip(remindLabel(n), saved == n, { link.setDateRemind(initial.id, n) }) }
-            }
+        // A reminder is asked for here, in the same step: the first one turns Link's reminders on (LINK.md 5). A new date keeps its choice until it is saved.
+        val saved = if (initial != null) data.dates.firstOrNull { it.id == initial.id }?.remindDays else remind
+        SectionLabel("Remind me")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Chip("No", saved == null, { if (initial != null) link.setDateRemind(initial.id, null) else remind = null })
+            LinkRules.REMIND_PRESETS.forEach { n -> Chip(remindLabel(n), saved == n, { if (initial != null) link.setDateRemind(initial.id, n) else remind = n }) }
         }
         Actions {
             PixelButton(if (initial == null) "Add" else "Save", {
                 val m = month.toIntOrNull(); val d = day.toIntOrNull()
                 if (m == null || d == null) message = "Write the day and the month as numbers." // copy-ok: result
                 else {
-                    val out = if (initial == null) link.addDate(kind, title, m, d, year.toIntOrNull(), annual, personId, note)
+                    val out = if (initial == null) link.addDate(kind, title, m, d, year.toIntOrNull(), annual, personId, note, remind)
                     else link.updateDate(initial.copy(kind = kind, title = title, month = m, day = d, year = year.toIntOrNull(), annual = annual, personId = personId, note = note))
                     if (out.record == null) message = out.refused ?: "That could not be saved."
                     else {
                         message = null; model.haptic()
                         // Added from a profile, it closes; added from the Dates list, the form clears for the next one.
-                        if (initial == null && presetPerson == null) { title = ""; month = ""; day = ""; year = ""; note = ""; personId = null } else onDone()
+                        if (initial == null && presetPerson == null) { title = ""; month = ""; day = ""; year = ""; note = ""; personId = null; remind = null } else onDone()
                     }
                 }
             }, Modifier.weight(1f), accent, enabled = title.isNotBlank() && month.isNotBlank() && day.isNotBlank(), compact = true)
@@ -680,7 +687,7 @@ private fun FollowUpsView(model: AppModel) {
     }
 }
 
-private fun remindLabel(days: Int) = when (days) { 0 -> "On the day"; 1 -> "1 day before"; 7 -> "A week before"; else -> "$days days before" }
+internal fun remindLabel(days: Int) = when (days) { 0 -> "On the day"; 1 -> "1 day before"; 7 -> "A week before"; else -> "$days days before" }
 
 @Composable
 private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {

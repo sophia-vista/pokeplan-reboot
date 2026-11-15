@@ -26,6 +26,11 @@ data class Person(
     val favorite: Boolean = false,
     val createdMillis: Long = 0,
     val updatedMillis: Long = 0,
+    /**
+     * Where an imported person came from (LINK.md 6.1): the phone contact's lookup key, kept only so a later import can tell it has seen this contact.
+     * Empty for a person the user typed. The phone's address book is never LINK's source of truth, and this never leaves LINK.
+     */
+    val sourceId: String = "",
 )
 
 /** A dated line of context about a person (LINK.md 2.2). Private to LINK: it never leaves in a notification or an event. */
