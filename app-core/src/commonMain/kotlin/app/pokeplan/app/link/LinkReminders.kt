@@ -35,7 +35,7 @@ enum class LinkReminderKind(val key: String) {
 data class LinkReminder(val kind: LinkReminderKind, val recordId: String, val occurrence: String, val atMillis: Long)
 
 /**
- * LINK's reminders (LINK.md section 5), through the shared scheduler. **All off until the user turns them on**, first for Link as a whole and then for each
+ * LINK's reminders (LINK.md section 5), through the shared scheduler. **All off until the user asks for one**: turning Link's switch on, or choosing a reminder on a date (which turns the switch on), and then for each
  * important date (the day of, or 1, 3 or 7 days before) and each follow-up (on its day), so a contact list never turns into a stream of notices. Each asks once
  * and never repeats; a date that has passed, a follow-up that is overdue, done, cancelled, edited so the day moved, or deleted asks nothing more, and no backlog
  * is rebuilt. A follow-up handed to Plan is no longer Link's to remind about (Plan is its source). Delivery follows the shared [ReminderPolicy] (the global quiet

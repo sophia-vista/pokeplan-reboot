@@ -18,6 +18,8 @@
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <queries><intent><action android:name="android.intent.action.SET_ALARM" /></intent></queries>
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <!-- LINK's optional contact import reads names, phones, emails, organizations and birthdays, only when the person asks. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- The launcher's Uninstall action (Android 9 and later ask for it). -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
