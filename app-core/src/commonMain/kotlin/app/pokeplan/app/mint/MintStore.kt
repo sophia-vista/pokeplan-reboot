@@ -116,6 +116,23 @@ class MintStore(
         return Logged(next)
     }
 
+    /**
+     * Puts the accounts named in [orderedIds] in that order, in the slots those accounts already hold in the list (the others stay where they are), so a group or an
+     * account can be moved without touching the rest. The Accounts list shows the list's order (MINT.md 4.3). Refused (false) when an id is unknown or repeated.
+     */
+    fun arrangeAccounts(orderedIds: List<String>): Boolean {
+        if (orderedIds.toSet().size != orderedIds.size) return false
+        val slots = data.accounts.withIndex().filter { it.value.id in orderedIds }.map { it.index }
+        if (slots.size != orderedIds.size) return false
+        val byId = data.accounts.associateBy { it.id }
+        update { d ->
+            val next = d.accounts.toMutableList()
+            slots.forEachIndexed { i, slot -> next[slot] = byId.getValue(orderedIds[i]) }
+            d.copy(accounts = next)
+        }
+        return true
+    }
+
     /** Whether [id] has records that depend on its currency: a transaction, a reconciliation or a bill paid from it. */
     fun hasHistory(id: String): Boolean =
         data.transactions.any { it.accountId == id || it.toAccountId == id } || data.reconciliations.any { it.accountId == id } || data.bills.any { it.accountId == id }
@@ -132,7 +149,7 @@ class MintStore(
         (MintRules.checkAccount(a.name, currency, a.openingMinor, a.suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val next = old.copy(
             name = a.name.trim(), institution = a.institution.trim().take(MintRules.NAME_MAX), suffix = a.suffix.trim(), group = a.group.trim().take(MintRules.NAME_MAX),
-            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = MintRules.cardId(a.card),
+            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = MintRules.cardId(a.card), hideFromTotal = a.hideFromTotal, appPackage = MintRules.cleanPackage(a.appPackage),
         )
         update { d -> d.copy(accounts = d.accounts.map { if (it.id == a.id) next else it }) }
         return Logged(next)

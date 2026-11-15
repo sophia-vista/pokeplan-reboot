@@ -41,6 +41,14 @@ object MintRules {
         else -> Check.Ok
     }
 
+    /** The most characters of an app package name an account may keep (MINT.md 4.3C), and what one may contain: letters, digits, dots and underscores. */
+    const val PACKAGE_MAX = 150
+
+    fun cleanPackage(raw: String): String {
+        val t = raw.trim()
+        return if (t.length in 3..PACKAGE_MAX && t.contains('.') && t.all { it.isLetterOrDigit() && it.code < 128 || it == '.' || it == '_' }) t else ""
+    }
+
     /** The first characters of a base64-encoded PNG (its 8-byte signature). */
     const val PNG_BASE64_PREFIX = "iVBORw0KGgo"
 
@@ -146,7 +154,7 @@ object MintRules {
     fun netPosition(data: MintData): Map<String, Long> {
         val result = linkedMapOf<String, Long>()
         for (b in balances(data)) {
-            if (b.account.status != AccountStatus.ACTIVE) continue
+            if (b.account.status != AccountStatus.ACTIVE || b.account.hideFromTotal) continue
             val signed = if (b.account.type.liability) -b.postedMinor else b.postedMinor
             result[b.account.currency] = (result[b.account.currency] ?: 0L) + signed
         }
@@ -155,7 +163,7 @@ object MintRules {
 
     /** Money in liquid accounts of [currency], less the bills with a known amount still unpaid in the next [withinDays] days. Credit limits never count. */
     fun available(data: MintData, currency: String, today: LocalDate, withinDays: Int = 14): Available {
-        val liquid = balances(data).filter { it.account.status == AccountStatus.ACTIVE && it.account.type.liquid && it.account.currency == currency }.sumOf { it.postedMinor }
+        val liquid = balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal && it.account.type.liquid && it.account.currency == currency }.sumOf { it.postedMinor }
         val due = upcoming(data, today, withinDays).filter { it.bill.currency == currency && it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
         val bills = due.sumOf { it.remainingMinor ?: 0L }
         return Available(currency, liquid, bills, due.size, liquid - bills)

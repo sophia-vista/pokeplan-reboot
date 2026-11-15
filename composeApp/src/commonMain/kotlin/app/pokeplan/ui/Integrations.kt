@@ -55,6 +55,22 @@ interface ImageViewer {
     fun share(png: ByteArray, name: String): String
 }
 
+/** An app installed on the phone that can be opened from its launcher: the name the player sees and its package. */
+data class InstalledApp(val label: String, val packageName: String)
+
+/**
+ * Starting an account's own wallet or bank app (MINT.md 4.3C). [installed] lists the apps with a launcher entry, by name, for the player to pick one in an account's
+ * Edit form (read on the phone only, never sent anywhere); [label] is the name of one package, or null when it is not installed (then the Open button is hidden);
+ * [open] starts it and nothing else. Only the Android app provides one.
+ */
+interface AppLauncher {
+    fun installed(): List<InstalledApp>
+
+    fun label(packageName: String): String?
+
+    fun open(packageName: String): Boolean
+}
+
 /** What the phone lets the Huawei Health reader do right now, rechecked on every look (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
 data class HuaweiReaderState(
     val installed: Boolean,

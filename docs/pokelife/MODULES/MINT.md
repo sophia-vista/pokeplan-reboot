@@ -170,6 +170,16 @@ Users may organize accounts into groups such as:
 
 Groups are organizational only. They do not own balances and must never duplicate an account's value.
 
+**Built as (owner, 15 November 2026).** A group is the account's optional `group` label (kept as text, no separate record). The Accounts list shows the accounts **under their group's heading**, in the order of the list, with the group's **subtotal** beside the heading (assets less liabilities, per currency, counting only the accounts that count in totals, 4.3B); accounts without a group sit under a plain "Other" heading, shown only when some account has a group. **Arrange** is a mode of the Accounts list (an "Arrange" button, "Done" to leave): every group heading and every account gets move up and move down, a group moves as a block, and an account moves within its group (to put it in another group, edit its Group). The order is the order of the accounts list, so it is saved and backed up with the accounts, changes no balance and pays nothing.
+
+### 4.3B Hide from total
+
+A per-account switch, **Hide from total** (`FinancialAccount.hideFromTotal`, default off; owner, 15 November 2026), for an account the player does not want counted in the overview (money set aside, someone else's, a credit line they ignore). A hidden account still shows its own balance and records everywhere, can be reconciled and used in transfers, and is marked "not in total" on its row; it is left out of **net position**, **available money**, and the group subtotals. It changes no record and pays nothing.
+
+### 4.3C Open the wallet's own app
+
+Optional `FinancialAccount.appPackage` (the Android package name of the account's own app, such as the e-wallet or bank). In the account's Edit form (Android only) the player picks the app from the apps installed on the phone (name only, listed on the phone, never sent anywhere; the manifest already holds `QUERY_ALL_PACKAGES` for the launcher, personal use), and the account's options then show **Open <app name>**, which starts that app and nothing else. Only the package name is saved; it is not a credential and carries no token. An app that is no longer installed hides the button.
+
 ### 4.4 Balance model and freshness
 
 A balance is a value observed or recorded at a particular time, not an eternal property of an account.

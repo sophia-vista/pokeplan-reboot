@@ -491,4 +491,28 @@ class MintStoreTest {
         // Empty removes it.
         assertEquals("", assertNotNull(s.mint.setReceiveQr(acct.id, "").record).receiveQr)
     }
+
+    @Test
+    fun accountsCanBeArrangedHiddenFromTotalAndGetTheirOwnApp() {
+        val s = setup()
+        val a = assertNotNull(s.mint.addAccount("A", AccountType.BANK, "PHP", 100_000, group = "Daily").record)
+        val b = assertNotNull(s.mint.addAccount("B", AccountType.EWALLET, "PHP", 50_000, group = "Daily").record)
+        val c = assertNotNull(s.mint.addAccount("C", AccountType.BANK, "PHP", 20_000, group = "Savings").record)
+        // Arrange: the named accounts swap places; one that is not named keeps its slot.
+        assertTrue(s.mint.arrangeAccounts(listOf(c.id, a.id)))
+        assertEquals(listOf("C", "B", "A"), s.mint.data.accounts.map { it.name })
+        assertFalse(s.mint.arrangeAccounts(listOf(a.id, a.id)))
+        assertFalse(s.mint.arrangeAccounts(listOf(a.id, "nobody")))
+        assertEquals(listOf("C", "B", "A"), s.mint.data.accounts.map { it.name })
+        // Hide from total: the balance stays on the account but net position and available money leave it out.
+        assertEquals(170_000L, MintRules.netPosition(s.mint.data)["PHP"])
+        val hid = assertNotNull(s.mint.updateAccount(s.mint.data.accounts.single { it.id == c.id }.copy(hideFromTotal = true)).record)
+        assertTrue(hid.hideFromTotal)
+        assertEquals(150_000L, MintRules.netPosition(s.mint.data)["PHP"])
+        assertEquals(150_000L, MintRules.available(s.mint.data, "PHP", LocalDate(2026, 11, 7)).liquidMinor)
+        assertEquals(20_000L, MintRules.balances(s.mint.data).single { it.account.id == c.id }.postedMinor)
+        // The account's own app: a package name only; anything else is dropped.
+        assertEquals("com.example.wallet", assertNotNull(s.mint.updateAccount(s.mint.data.accounts.single { it.id == a.id }.copy(appPackage = " com.example.wallet ")).record).appPackage)
+        assertEquals("", assertNotNull(s.mint.updateAccount(s.mint.data.accounts.single { it.id == a.id }.copy(appPackage = "rm -rf /")).record).appPackage)
+    }
 }
