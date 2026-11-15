@@ -304,6 +304,7 @@ private fun Resident(
 ) {
     // Where it starts is its own and the same every time (the floor stays put); what it does next is never the same twice, or every Pokémon would
     // act out the same script at the same moments each time the town starts walking again.
+    life.movers[mon.id] = moverOf(mon)
     life.sizes[mon.id] = life.sheets?.get(mon.form.id)?.let { it.width to it.height } ?: TownLife.MEDIAN
     val startRandom = remember(mon.id) { Random(mon.id.hashCode()) }
     val random = remember(mon.id) { Random(Random.nextLong()) }
@@ -349,7 +350,10 @@ private fun Resident(
     var gathered by remember(mon.id) { mutableIntStateOf(gather) }
     var entered by remember(mon.id) { mutableStateOf(!entering) }
     val scope = rememberCoroutineScope()
-    SideEffect { life.spots[mon.id] = { spot.value } }
+    SideEffect {
+        life.spots[mon.id] = { spot.value }
+        if (asleep || napping) life.sleeping += mon.id else life.sleeping -= mon.id
+    }
     val avoidNow by rememberUpdatedState(avoid)
     val taps = remember(mon.id) { mutableListOf<TimeMark>() }
     /** A short feeling over its head, if nothing else holds it now. */
@@ -470,9 +474,16 @@ private fun Resident(
             FloorTrap.POISON -> { afflict(Condition.POISONED); hopping = true; hopKey++; feel(StatusKind.SWEAT, 1_000) }
             FloorTrap.SLUMBER -> { napping = true; delay(3_500); napping = false; hopping = true; hopKey++ }
             FloorTrap.GUST -> {
+                // Blown away as in the games: in a random direction, in a straight line, until it meets a wall or another Pokémon (at most GUST_RANGE squares).
                 feel(StatusKind.ALERT, 900)
                 hopping = true; hopKey++
-                spot.animateTo(g.spotOf(walked[maxOf(0, walked.size - 6)]), tween(420))
+                val (dx, dy) = GUST_DIRECTIONS.random(random)
+                val landing = g.floor.blownTo(at, dx, dy, mover, life.standing(g, mon.id))
+                if (landing != at) {
+                    facingLeft = dx < 0
+                    val squares = maxOf(abs(landing.x - at.x), abs(landing.y - at.y))
+                    spot.animateTo(g.spotOf(landing), tween(squares * 70 + 250, easing = LinearEasing))
+                }
             }
             FloorTrap.SLOW -> { slowUntil = TimeSource.Monotonic.markNow() + 20.seconds; feel(StatusKind.SWEAT, 1_400) }
             FloorTrap.TRIP -> { hopping = true; hopKey++; feel(StatusKind.SWEAT, 1_200) }
@@ -480,8 +491,24 @@ private fun Resident(
         }
     }
 
+    /**
+     * Swaps places with [other], standing in the square this one is about to step into: it is sent to the square this one is on, as the games' team
+     * members trade places. False if it cannot be (asleep, already stopped for a meeting, or it cannot stand on this square).
+     */
+    fun swapWith(g: FloorGeometry, other: String): Boolean {
+        if (other in life.sleeping || other in life.holds) return false
+        val here = g.cellOf(spot.value)
+        if (!g.floor.canStand(here, life.movers[other] ?: Mover.WALKER)) return false
+        val theirs = life.spots[other]?.invoke()?.let { g.cellOf(it) } ?: return false
+        val hold = Hold(null, faceLeft = theirs.x > here.x, approach = g.spotOf(here))
+        life.holds[other] = hold
+        // It walks over (the town's hold takes it there), then is let go.
+        scope.launch { delay(900); if (life.holds[other] === hold) life.holds.remove(other) }
+        return true
+    }
+
     /** Walks the floor towards [target]: to the nearest free square it can stop on, along a path over the floor; a trap on the way stops it there. */
-    suspend fun roamFloor(g: FloorGeometry, target: Offset, speed: Float = pace) {
+    suspend fun roamFloor(g: FloorGeometry, target: Offset, speed: Float = pace, tries: Int = 0) {
         val others = life.occupiedCells(g, mon.id)
         val goal = g.nearestResting(g.cellOf(Offset(target.x.coerceIn(0f, screens - 0.01f), target.y.coerceIn(0f, 0.999f))), mover, others, life.crowded(g, mon.id)) ?: return
         // Where it is heading is taken too, so two Pokémon do not choose the same spot while both are still walking to it.
@@ -489,24 +516,33 @@ private fun Resident(
         try {
             // They step round the traps they know about (found ones and the Wonder Tile) when they can; any trap stepped on springs, as in the games.
             val known = life.revealed.keys + g.floor.traps.filterValues { it == FloorTrap.WONDER }.keys
+            // The others are walls: it goes round them, and only where there is no way round (a corridor with someone in it) does it go through, swapping places as the games' team does.
+            val standing = life.standing(g, mon.id)
             // Worked out off the main thread: two dozen Pokémon setting off together when the home screen comes back must not hold up its first frames.
             val from = g.cellOf(spot.value)
-            val way = withContext(Dispatchers.Default) { g.floor.path(from, goal, mover, known) } ?: return
+            val way = withContext(Dispatchers.Default) { g.floor.path(from, goal, mover, known, standing) ?: g.floor.path(from, goal, mover, known) } ?: return
             val hit = way.drop(1).indexOfFirst { it in g.floor.traps }
             val walked = if (hit >= 0) way.take(hit + 2) else way
-            // A find on the way is a stop of its own: it picks it up as it steps onto it, not at the end of the run.
-            val stops = g.floor.turns(walked).toSet() + walked.filter { it in life.finds }
-            for (c in walked.drop(1).filter { it in stops }) {
+            // One square at a time (the same steady walk, in one tween after another), so who is in the way is looked at before each step.
+            for (c in walked.drop(1)) {
                 // Confused, it sometimes stumbles one square to the side, then finds its way again from there.
-                if (ailment == Condition.CONFUSED && random.nextInt(100) < 35) {
+                if (ailment == Condition.CONFUSED && random.nextInt(100) < 8) {
                     val here = g.cellOf(spot.value)
-                    val aside = (-1..1).flatMap { dy -> (-1..1).map { dx -> Cell(here.x + dx, here.y + dy) } }.filter { it != here && it != c && g.floor.canRoam(it, mover) && it !in g.floor.traps }
+                    val taken = life.standing(g, mon.id)
+                    val aside = (-1..1).flatMap { dy -> (-1..1).map { dx -> Cell(here.x + dx, here.y + dy) } }.filter { it != here && it != c && g.floor.canRoam(it, mover) && it !in g.floor.traps && it !in taken }
                     aside.randomOrNull(random)?.let { to ->
                         stepTo(g, g.spotOf(to), speed)
                         facingLeft = random.nextBoolean(); walk = null
                         delay(250)
                         return roamFloor(g, g.spotOf(goal), speed)
                     }
+                }
+                val there = life.occupantOf(g, c, mon.id)
+                if (there != null && !swapWith(g, there)) {
+                    // Whoever it is cannot be passed (asleep, in a meeting, or it could not stand where this one does): wait a moment, then look for another way.
+                    walk = null
+                    delay(500)
+                    if (life.occupantOf(g, c, mon.id) != null) { if (tries < 2) return roamFloor(g, g.spotOf(goal), speed, tries + 1) else return }
                 }
                 stepTo(g, g.spotOf(c), speed)
                 life.finds[c]?.let { i ->
@@ -627,6 +663,9 @@ private fun Resident(
     }
 }
 
+/** The eight directions a Gust Trap can blow a Pokémon. */
+private val GUST_DIRECTIONS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1, 1 to 1, 1 to -1, -1 to 1, -1 to -1)
+
 /** How far above its feet an icon sits, in art pixels (a Pokémon is about this tall); a bigger icon sits a little higher. */
 private const val ICON_RISE = 22
 
@@ -665,6 +704,16 @@ internal class TownLife {
     val goals = mutableMapOf<String, Cell>()
     val claims = mutableMapOf<String, Cell>()
     private var claimedFloor: Any? = null
+
+    /** How each one gets about, and who is lying asleep: a Pokémon is a wall to the others, but one that is awake and can stand where the other is swaps places. */
+    val movers = mutableMapOf<String, Mover>()
+    val sleeping = mutableSetOf<String>()
+
+    /** The Pokémon other than [self] standing on [c] (or caught between it and the next square), if any. */
+    fun occupantOf(g: FloorGeometry, c: Cell, self: String): String? = spots.entries.firstOrNull { (id, s) -> id != self && g.cellOf(s()) == c }?.key
+
+    /** The squares others stand on right now (walls to a walking Pokémon). */
+    fun standing(g: FloorGeometry, self: String): Set<Cell> = spots.entries.filter { it.key != self }.map { g.cellOf(it.value()) }.toSet()
 
     /** The sprite sheets (each form's frame size), and how big each Pokémon is drawn here: its frame's width and height in art pixels. */
     var sheets: Map<Int, Animation>? = null

@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.195.0
+
+The launcher's Gust Trap and its crowd, from phone testing (owner, 15 November 2026).
+
+- **Gust Trap:** it now blows the Pokémon away as the games' blown-away effect does: in a random direction, in a straight line, until it meets a wall or another Pokémon (at most ten squares), landing on the last square it can rest on. (It used to push it back along the way it came by six squares.)
+- **Pokémon are walls to each other:** a walking Pokémon goes round the others instead of through them, one square at a time, looking at who is in the way before each step. Where there is no way round (a corridor with someone in it) it swaps places with them, as the games' team does: the other walks to the square it left. A sleeping Pokémon, or one stopped for a meeting, is never swapped with; it waits a moment and finds another way.
+
 ## 0.194.0
 
 The art for the modules' places is fetched, and a test room shows how it looks with the Mystery Dungeon sprites (REP-053 chunks 1 and 2, owner, 14 November 2026). No app change: nothing here is bundled or shown yet.
