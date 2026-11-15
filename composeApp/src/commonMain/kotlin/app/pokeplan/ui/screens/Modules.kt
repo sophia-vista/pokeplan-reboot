@@ -12,7 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
+import app.pokeplan.ui.BackHandler
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.plan.TaskViews
 import app.pokeplan.ui.AppModel
