@@ -395,7 +395,7 @@ class MintStore(
     fun deleteBill(id: String) = update { d -> d.copy(bills = d.bills.filterNot { it.id == id }, billPayments = d.billPayments.filterNot { it.billId == id }) }
 
     /**
-     * Settles one occurrence: paid, partly paid or skipped. **It creates no transaction** (MINT.md section 8.2); [txId] only links one the user chose.
+     * Settles one occurrence: paid, partly paid or skipped. For an estimated bill (`Bill.estimate`, MINT.md 8.3B) the amount is only a guess, so any amount settles it as paid. **It creates no transaction** (MINT.md section 8.2); [txId] only links one the user chose.
      * Settling again replaces the earlier settlement, so a mistake can be put right. A part payment that covers the whole expected amount is saved as paid.
      */
     fun settle(billId: String, dueDay: LocalDate, status: SettleStatus, paidMinor: Long = 0, txId: String? = null, paidDay: LocalDate = today): Boolean {
@@ -404,7 +404,7 @@ class MintStore(
         if (status != SettleStatus.SKIPPED && MintRules.checkAmount(paidMinor) is Check.Refused) return false
         val amount = if (status == SettleStatus.SKIPPED) 0L else paidMinor
         val full = bill.expectedMinor
-        val settled = if (status == SettleStatus.PARTIAL && full != null && amount >= full) SettleStatus.PAID else status
+        val settled = if (status == SettleStatus.PARTIAL && full != null && (amount >= full || bill.estimate)) SettleStatus.PAID else status
         val p = BillPayment(newId(), bill.id, dueDay, settled, amount, paidDay, txId, nowMillis)
         update { d -> d.copy(billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay } + p) }
         return true
@@ -424,7 +424,7 @@ class MintStore(
         if (account.currency != bill.currency) return Logged(null, "That account is in ${account.currency}, the bill in ${bill.currency}.")
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val full = bill.expectedMinor
-        val payment = BillPayment(newId(), bill.id, dueDay, SettleStatus.PAID.takeIf { full == null || paidMinor >= full } ?: SettleStatus.PARTIAL, paidMinor, paidDay, tx.id, nowMillis)
+        val payment = BillPayment(newId(), bill.id, dueDay, SettleStatus.PAID.takeIf { bill.estimate || full == null || paidMinor >= full } ?: SettleStatus.PARTIAL, paidMinor, paidDay, tx.id, nowMillis)
         update { d -> d.copy(transactions = d.transactions + tx, billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay } + payment) }
         return Logged(tx)
     }

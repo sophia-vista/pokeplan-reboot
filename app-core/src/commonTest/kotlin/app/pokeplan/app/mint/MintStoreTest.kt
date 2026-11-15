@@ -727,6 +727,7 @@ class MintStoreTest {
         val pay = assertNotNull(m.addBill("Salary", "PHP", Frequency.SEMI_MONTHLY, LocalDate(2026, 11, 15), 2_500_000, "cat-salary", acct, income = true, days = listOf(30, 15), workday = true, estimate = true).record)
         assertEquals(emptyList(), pay.days) // 15 and 30 is the default and is not stored
         assertTrue(pay.estimate && pay.workday && pay.income)
+        s.clock.advanceDays(7) // Saturday 14 November: the 15th is paid on Friday the 13th, which has passed
         // Nothing posts by itself: the income appears only when it is confirmed, at the real amount (not the estimate).
         assertTrue(m.data.transactions.isEmpty())
         val tx = assertNotNull(m.settleAndRecord(pay.id, LocalDate(2026, 11, 15), 2_431_550, paidDay = LocalDate(2026, 11, 13)).record)
