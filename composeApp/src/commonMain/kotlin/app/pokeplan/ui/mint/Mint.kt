@@ -699,6 +699,9 @@ private fun BillsView(model: AppModel) {
     var manage by remember { mutableStateOf(false) }
     var showSettled by remember { mutableStateOf(false) }
     var adding by remember { mutableStateOf(false) }
+    // "Paid, record it": the occurrence whose small account picker is open, and the account chosen (the bill's own until another is tapped).
+    var recordKey by remember { mutableStateOf<String?>(null) }
+    var recordAccount by remember { mutableStateOf<String?>(null) }
     // Settling takes the occurrence off the list, so every settlement offers an undo.
     fun settle(o: Occurrence, status: SettleStatus, paid: Long, label: String) {
         val before = model.mintData
@@ -715,7 +718,6 @@ private fun BillsView(model: AppModel) {
                 OccurrenceRow(model, o, openKey == key) { openKey = if (openKey == key) null else key; partial = o.payment?.paidMinor?.let { Money.plain(it, o.bill.currency) }.orEmpty(); paidOn = null }
                 if (openKey == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
                     val full = o.remainingMinor ?: o.bill.expectedMinor
-                    // Help: marking a bill paid does not add a transaction; add one in Activity if the money should leave an account.
                     if (full == null) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount paid", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     else PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Paid so far", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     SectionLabel("Settled on")
@@ -728,6 +730,26 @@ private fun BillsView(model: AppModel) {
                         if (full != null) PixelButton("Part", { Money.parse(partial, o.bill.currency)?.let { settle(o, SettleStatus.PARTIAL, it, "Part paid") } }, Modifier.weight(1f), Pixel.InkSoft, enabled = Money.parse(partial, o.bill.currency) != null, compact = true)
                         PixelButton("Skip", { settle(o, SettleStatus.SKIPPED, 0, "Skipped") }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         if (o.payment != null) PixelButton("Undo", { mint.unsettle(o.bill.id, o.dueDay); openKey = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                    // Marking paid makes no transaction by itself; this path also writes the expense, linked to the bill, on the account chosen here.
+                    val accounts = data.accounts.filter { it.status == AccountStatus.ACTIVE && it.currency == o.bill.currency }
+                    val amountToRecord = if (full == null) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
+                    if (accounts.isNotEmpty()) {
+                        if (recordKey != key) PixelButton("Paid, record it", { recordKey = key; recordAccount = o.bill.accountId?.takeIf { id -> accounts.any { it.id == id } } ?: accounts.first().id }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = amountToRecord != null, compact = true)
+                        else {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                                accounts.forEach { a -> Chip(a.name, a.id == recordAccount, { recordAccount = a.id }) }
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                                PixelButton("Record", {
+                                    val before = model.mintData
+                                    val out = amountToRecord?.let { mint.settleAndRecord(o.bill.id, o.dueDay, it, recordAccount, paidOn ?: today) }
+                                    if (out?.record != null) { paidOn = null; openKey = null; recordKey = null; model.effect(Sfx.CANDY); model.offerUndo("Paid and recorded: ${o.bill.name}") { mint.restore(before) } }
+                                    else model.say(out?.refused ?: "Check the amount.")
+                                }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = amountToRecord != null && recordAccount != null, compact = true)
+                                PixelButton("Cancel", { recordKey = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            }
+                        }
                     }
                 }
             }
@@ -861,7 +883,7 @@ private fun MintReviewView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("This month")
-            if (data.transactions.none { it.day >= from && it.day < end && it.currency == currency }) Text("Nothing recorded in $currency yet.", style = MaterialTheme.typography.bodyLarge)
+            if (data.transactions.none { it.day >= from && it.day < end && it.currency == currency }) Text("Nothing recorded in ${Money.label(currency)} yet.", style = MaterialTheme.typography.bodyLarge)
             else {
                 MintValueRow("Money in", mint.show(earned, currency))
                 MintValueRow("Spent", mint.show(spent.coerceAtLeast(0), currency))

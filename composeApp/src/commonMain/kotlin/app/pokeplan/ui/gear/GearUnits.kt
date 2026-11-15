@@ -83,7 +83,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
                 UnitCatalog.categories.forEach { c -> TabButton(c.label, c.id == categoryId, { choose(c.id) }) }
             }
             if (category.note.isNotEmpty()) Text(category.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            PixelField(text, { text = it.take(30); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Amount (or a sum)")
+            PixelField(text, { text = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Amount (or a sum)")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 OptionPicker("From", category.units.map { "${it.symbol} (${it.name})" }, fromIndex, Modifier.weight(1f), short = category.units.map { it.symbol }) { fromIndex = it }
                 OptionPicker("To", category.units.map { "${it.symbol} (${it.name})" }, toIndex, Modifier.weight(1f), short = category.units.map { it.symbol }) { toIndex = it }

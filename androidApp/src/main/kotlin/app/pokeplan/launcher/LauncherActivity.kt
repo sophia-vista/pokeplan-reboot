@@ -385,8 +385,8 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
                 modifier = modifier,
                 // Told again whenever the room changes, so a resized or re-laid-out widget never keeps a stale size.
                 update = { view ->
-                    if (onGrid) view.updateAppWidgetSize(null, widthDp, heightDp, widthDp, heightDp)
-                    else view.updateAppWidgetSize(null, spec.minWidthDp, spec.minHeightDp, spec.minWidthDp * 2, height)
+                    if (onGrid) view.tellSize(widthDp, heightDp, widthDp, heightDp)
+                    else view.tellSize(spec.minWidthDp, spec.minHeightDp, spec.minWidthDp * 2, height)
                 },
             )
         }
@@ -431,5 +431,15 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         const val PREFS_PENDING_WIDGET = "pendingWidget"
         const val WIDGET_HOST_ID = 4242
         const val CONFIGURE_WIDGET = 4243
+    }
+}
+
+/** Tells a hosted widget the room it has: the size-list call from Android 12 on (the four-number one is deprecated there), the old one below it. */
+private fun android.appwidget.AppWidgetHostView.tellSize(minW: Int, minH: Int, maxW: Int, maxH: Int) {
+    if (android.os.Build.VERSION.SDK_INT >= 31) {
+        updateAppWidgetSize(null, listOf(android.util.SizeF(minW.toFloat(), minH.toFloat()), android.util.SizeF(maxW.toFloat(), maxH.toFloat())))
+    } else {
+        @Suppress("DEPRECATION")
+        updateAppWidgetSize(null, minW, minH, maxW, maxH)
     }
 }

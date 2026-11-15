@@ -82,7 +82,10 @@ import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 import kotlinx.datetime.LocalTime
 import kotlin.math.roundToInt
 import app.pokeplan.ui.plan.EmptyState
@@ -170,7 +173,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                 )
             } else TextBox {
                 Column {
-                    SectionLabel("Today", icon = CareSection.ROUTINES.icon)
+                    SectionLabel("$done of ${today.size} today", icon = CareSection.ROUTINES.icon)
                     today.forEachIndexed { i, r ->
                         if (i > 0) HorizontalDivider(color = Pixel.Border)
                         RoutineLine(model, r)
@@ -282,7 +285,7 @@ private fun VisitorsCard(model: AppModel) {
                         Text(
                             listOfNotNull(
                                 if (Visitors.friend(v)) "ready to be a friend" else if (v.progress == 0) "Just arrived" else "${v.progress} of ${Visitors.FRIEND_PROGRESS} warm",
-                                if (resting) "resting, ready for a visit later" else null,
+                                if (resting) "ready about " + ExactInput.formatMinuteOfDay(v.restUntilMillis.toLocalDateTime(TimeZone.currentSystemDefault()).let { it.hour * 60 + it.minute }) else null,
                             ).joinToString(", "),
                             style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                         )
@@ -345,12 +348,17 @@ private fun MetAlbum(model: AppModel) {
 
 // ----- Routines -------------------------------------------------------------------------------------------------------
 
-/** One routine line: its check key first, then its title and one quiet line (time and days). Rows of a list sit in one box. */
+/**
+ * One routine line: its check key first, then its title and one quiet line (time and days), and a Skip key for a routine still to do today.
+ * [day] is the day it is ticked for (today, or yesterday: that only records it). Rows of a list sit in one box.
+ */
 @Composable
-private fun RoutineLine(model: AppModel, routine: Routine, onOpen: (() -> Unit)? = null) {
+private fun RoutineLine(model: AppModel, routine: Routine, day: LocalDate = model.care.today, onOpen: (() -> Unit)? = null) {
     val care = model.care
-    val doneToday = routine.doneOn(care.today)
-    val due = routine.isDueOn(care.today)
+    val isToday = day == care.today
+    val done = routine.doneOn(day)
+    val skipped = routine.skippedOn(day)
+    val due = routine.isDueOn(day)
     Row(
         Modifier.fillMaxWidth()
             .let { if (onOpen != null) it.clickable(onClickLabel = "Show options", role = Role.Button, onClick = onOpen) else it }
@@ -359,16 +367,21 @@ private fun RoutineLine(model: AppModel, routine: Routine, onOpen: (() -> Unit)?
     ) {
         when {
             routine.archived || !due -> Unit
-            doneToday -> PixelIconButton("undo", "Undo", { care.undoRoutine(routine.id) }, Pixel.InkSoft)
-            else -> PixelIconButton("check", "Done", { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(routine.id) })
+            done -> PixelIconButton("undo", "Undo", { care.undoRoutine(routine.id, day) }, Pixel.InkSoft)
+            skipped -> PixelIconButton("undo", "Bring back", { care.unskipRoutine(routine.id, day) }, Pixel.InkSoft)
+            else -> PixelIconButton("check", "Done", { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(routine.id, day) })
         }
         Column(Modifier.weight(1f)) {
             Text(routine.title, style = MaterialTheme.typography.bodyLarge)
             Text(
-                listOfNotNull(if (doneToday) "Done today" else null, routine.time?.let { clock(it) }, routineDays(routine.days)).joinToString(", "),
+                listOfNotNull(
+                    if (done) (if (isToday) "Done today" else "Done") else if (skipped) "Skipped" else null,
+                    routine.time?.let { clock(it) }, routineDays(routine.days),
+                ).joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
+        if (isToday && due && !done && !skipped && !routine.archived) PixelButton("Skip", { care.skipRoutine(routine.id) }, color = Pixel.InkSoft, compact = true)
     }
 }
 
@@ -391,6 +404,8 @@ private fun RoutinesView(model: AppModel) {
     var time by remember { mutableStateOf<LocalTime?>(null) }
     var days by remember { mutableStateOf(emptySet<DayOfWeek>()) }
     var open by remember { mutableStateOf<String?>(null) }
+    var yesterday by remember { mutableStateOf(false) }
+    val shownDay = if (yesterday) care.today.minus(DatePeriod(days = 1)) else care.today
     fun add() {
         if (title.isBlank()) return
         care.addRoutine(title, time, days)
@@ -419,9 +434,16 @@ private fun RoutinesView(model: AppModel) {
     val sorted = active.sortedWith(compareBy(nullsLast()) { it.time })
     if (sorted.isNotEmpty()) TextBox {
         Column {
+            // Yesterday can be ticked too, for a day that slipped by; it only records the routine, it never pays.
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                TabButton("Today", !yesterday, { yesterday = false }, Modifier.weight(1f))
+                TabButton("Yesterday", yesterday, { yesterday = true }, Modifier.weight(1f))
+            }
+            val (done, planned) = care.routineCount(shownDay)
+            if (planned > 0) SectionLabel(if (yesterday) "$done of $planned yesterday" else "$done of $planned today")
             sorted.forEachIndexed { i, r ->
                 if (i > 0) HorizontalDivider(color = Pixel.Border)
-                RoutineLine(model, r) { open = if (open == r.id) null else r.id }
+                RoutineLine(model, r, shownDay) { open = if (open == r.id) null else r.id }
                 if (open == r.id) RoutineOptions(model, r, framed = false) { open = null }
             }
         }
@@ -621,6 +643,8 @@ private fun DiaryView(model: AppModel) {
     var skills by remember(saved?.id, cardDay) { mutableStateOf(saved?.skills ?: if (cardDay == care.today) care.practisedToday() else emptySet()) }
     var note by remember(saved?.id, cardDay) { mutableStateOf(saved?.note ?: "") }
     var newUrge by remember { mutableStateOf("") }
+    var editingUrges by remember { mutableStateOf(false) }
+    var stopping by remember { mutableStateOf<String?>(null) }
     var allSkills by remember { mutableStateOf(false) }
     var done by remember { mutableStateOf(false) }
 
@@ -644,7 +668,6 @@ private fun DiaryView(model: AppModel) {
             val tracked = data.settings.urges
             tracked.forEach { u ->
                 Rating(u, urges[u]) { v -> urges = if (v == null) urges - u else urges + (u to v); done = false }
-                PixelButton("Stop tracking", { care.changeSettings { s -> s.copy(urges = s.urges - u) }; urges = urges - u }, color = Pixel.InkSoft, compact = true)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 fun add() {
@@ -659,6 +682,20 @@ private fun DiaryView(model: AppModel) {
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
                 PixelIconButton("plus", "Add", ::add, Pixel.InkSoft, enabled = newUrge.isNotBlank())
+            }
+            if (tracked.isNotEmpty()) PixelButton(if (editingUrges) "Done" else "Edit urges", { editingUrges = !editingUrges; stopping = null }, color = Pixel.InkSoft, compact = true)
+            // Taking an urge off the card is rare and asks first; the cards already saved keep it.
+            if (editingUrges) tracked.forEach { u ->
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    if (stopping == u) {
+                        Text("Stop tracking $u?", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                        PixelButton("Stop tracking", { care.changeSettings { s -> s.copy(urges = s.urges - u) }; urges = urges - u; stopping = null }, color = Pixel.Danger, compact = true)
+                        PixelButton("Keep", { stopping = null }, color = Pixel.InkSoft, compact = true)
+                    } else {
+                        Text(u, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                        PixelIconButton("trash", "Stop tracking $u", { stopping = u }, Pixel.InkSoft)
+                    }
+                }
             }
         }
     }

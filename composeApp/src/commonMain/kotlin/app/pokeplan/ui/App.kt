@@ -240,6 +240,9 @@ class AppModel(
     /** A task just deleted, which the undo bar can bring back for a few seconds. */
     var deletedTask: Task? by mutableStateOf(null)
 
+    /** The unsent words in each quick-add box (by where it files), kept while the player visits another screen and comes back; in memory only. */
+    val quickAddDrafts = mutableMapOf<String, String>()
+
     /** Anything else just deleted (a budget, a bill, a drink): the undo bar shows it for a few seconds and [UndoItem.undo] puts it back. */
     var undoItem: app.pokeplan.ui.screens.UndoItem? by mutableStateOf(null)
 

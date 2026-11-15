@@ -55,6 +55,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.HoldToConfirm
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.quietClickable
@@ -396,7 +397,7 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     Text("Send ${p.nickname} away for ${quote.rareCandies} Exp. Candies and ${quote.coins} Poké?", style = MaterialTheme.typography.bodyLarge) // copy-ok: confirmation
                     quote.warnings.forEach { Text(it, style = soft, color = Pixel.Red) }
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        PixelButton("Transfer", { if (store.transfer(p.id)) { model.effect(Sfx.ESCAPE); back() } }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                        HoldToConfirm("Hold to transfer", { if (store.transfer(p.id)) { model.effect(Sfx.ESCAPE); back() } }, Modifier.weight(1f))
                         PixelButton("Keep ${p.nickname}", { confirm = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }

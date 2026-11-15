@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.HoldToConfirm
 import app.pokeplan.ui.theme.PixelSlider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -286,7 +287,7 @@ private fun DataCard(model: AppModel) {
                 "device" -> {
                     Text("Erase this device? Everything here is removed and the app starts over: tasks, Pokémon, settings, and every Care, Heal, Mint and Base record, with the daily backups. A copy you saved as a file is not touched. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        PixelIconButton("trash", "Erase", { store.eraseDevice(); model.care.erase(); model.heal.eraseAll(); model.mint.eraseAll(); model.base.eraseAll(); note = model.backups?.eraseLeftovers()?.ifBlank { null }; asking = null }, Pixel.Danger)
+                        HoldToConfirm("Hold to erase", { store.eraseDevice(); model.care.erase(); model.heal.eraseAll(); model.mint.eraseAll(); model.base.eraseAll(); note = model.backups?.eraseLeftovers()?.ifBlank { null }; asking = null }, Modifier.weight(1f))
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
@@ -327,6 +328,9 @@ private fun AboutCard() {
                 "A private fan project. Pokémon names, sprites and sounds belong to Nintendo, Game Freak and The Pokémon Company.", // copy-ok: warning or legal
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
+            var credits by remember { mutableStateOf(false) }
+            PixelButton(if (credits) "Hide credits" else "Credits", { credits = !credits }, Modifier.fillMaxWidth())
+            if (credits) CreditsList()
         }
     }
 }

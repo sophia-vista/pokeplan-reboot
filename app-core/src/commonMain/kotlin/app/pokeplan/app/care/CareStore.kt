@@ -33,6 +33,7 @@ import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.plan.toLocalDateTime
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
@@ -109,17 +110,34 @@ class CareStore(
 
     fun deleteRoutine(id: String) = update { d -> d.copy(routines = d.routines.filterNot { it.id == id }) }
 
-    /** Today's routines, the ones with a time first, in time order. */
-    fun todayRoutines(): List<Routine> =
-        data.routines.filter { it.isDueOn(today) }.sortedWith(compareBy(nullsLast()) { it.time })
+    /** Today's routines (not the ones skipped today), the ones with a time first, in time order. */
+    fun todayRoutines(): List<Routine> = routinesOn(today)
+
+    /** The routines planned for [day] (due and not skipped), the ones with a time first, in time order. */
+    fun routinesOn(day: LocalDate): List<Routine> =
+        data.routines.filter { it.plannedOn(day) }.sortedWith(compareBy(nullsLast()) { it.time })
+
+    /** How many of [day]'s planned routines are done, and how many are planned: the "2 of 5 today" count. */
+    fun routineCount(day: LocalDate = today): Pair<Int, Int> = routinesOn(day).let { list -> list.count { it.doneOn(day) } to list.size }
+
+    /** Whether [day] is one a routine can be ticked for: today, or yesterday. */
+    private fun tickable(day: LocalDate): Boolean = day == today || day == today.minus(DatePeriod(days = 1))
 
     /**
      * Ticks a routine off for today. The first tick of the day pays, up to [CareRules.ROUTINES_PAID_PER_DAY] routines a
      * day; ticking again after an undo never pays twice. Returns what it earned (empty when nothing).
+     *
+     * For yesterday ([forDay]) it only records the completion: nothing pays and no rhythm is counted for a day that is over.
+     * Any other day is ignored.
      */
-    fun completeRoutine(id: String): List<Reward> {
+    fun completeRoutine(id: String, forDay: LocalDate = today): List<Reward> {
+        if (!tickable(forDay)) return emptyList()
         val routine = data.routines.first { it.id == id }
-        if (routine.doneOn(today)) return emptyList()
+        if (routine.doneOn(forDay)) return emptyList()
+        if (forDay != today) {
+            update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.complete(forDay) else it }) }
+            return emptyList()
+        }
         val canPay = routine.paysOn(today) && CareRules.routinesPaidOn(data, today) < CareRules.ROUTINES_PAID_PER_DAY
         update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.complete(today) else it }) }
         val rewards = if (canPay) pay(CareKind.ROUTINE) else null
@@ -127,7 +145,20 @@ class CareStore(
         return rewards.orEmpty() + rhythm()
     }
 
-    fun undoRoutine(id: String) = update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.undo(today) else it }) }
+    fun undoRoutine(id: String, forDay: LocalDate = today) {
+        if (!tickable(forDay)) return
+        update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.undo(forDay) else it }) }
+    }
+
+    /** Sets a routine aside for [forDay] (today by default): no reward, no mark, it leaves the day's list. A done routine is left as it is. */
+    fun skipRoutine(id: String, forDay: LocalDate = today) {
+        if (!tickable(forDay)) return
+        update { d -> d.copy(routines = d.routines.map { if (it.id == id && !it.doneOn(forDay)) it.skip(forDay) else it }) }
+    }
+
+    /** Takes a routine back onto the day's list. */
+    fun unskipRoutine(id: String, forDay: LocalDate = today) =
+        update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.unskip(forDay) else it }) }
 
     // --- calm breaks --------------------------------------------------------------------------------------------------
 

@@ -82,7 +82,7 @@ private fun ConvertCard(ids: List<String>, today: LocalDate, onUse: () -> Unit) 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("Convert a time")
-            PixelField(text, { text = it.take(5); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Time at home", placeholder = "21:30")
+            PixelField(text, { text = it.take(5) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Time at home", placeholder = "21:30")
             if (h != null && h in 0..23 && m in 0..59) {
                 // Today's date, so the answer follows the summer time in force now.
                 val base = LocalDateTime(today.year, today.monthNumber, today.dayOfMonth, h, m)
@@ -104,14 +104,14 @@ private fun DateCard(today: LocalDate, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("Date sums")
-            PixelField(a, { a = it.take(10); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "A date", placeholder = "2027-02-14")
+            PixelField(a, { a = it.take(10) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "A date", placeholder = "2027-02-14")
             if (date != null) {
                 val d = WorldClock.daysBetween(today, date)
                 Text(
                     when { d == 0 -> "That is today."; d > 0 -> "$d days from today (${d / 7} weeks and ${d % 7} days)."; else -> "${-d} days ago." } + " Day ${WorldClock.dayOfYear(date)} of the year, a ${date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }}.", // copy-ok: result
                     style = MaterialTheme.typography.bodyLarge,
                 )
-                PixelField(days, { days = it.take(5); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = "Add days to it (or minus)")
+                PixelField(days, { days = it.take(5) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = "Add days to it (or minus)")
                 days.trim().toIntOrNull()?.takeIf { it in -36500..36500 }?.let { n -> WorldClock.addDays(date, n).let { Text("$n days from then: $it, a ${it.dayOfWeek.name.lowercase().replaceFirstChar { c -> c.uppercase() }}.", style = MaterialTheme.typography.bodyLarge) } }
             } else if (a.isNotBlank()) Text("Type the date as year-month-day, like 2027-02-14.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }

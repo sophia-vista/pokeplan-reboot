@@ -184,7 +184,7 @@ class CareExtrasTest {
         // The next day it pays again; ignoring a Pokémon costs nothing (no state changes without play).
         s.clock.advanceDays(1)
         assertNotNull(s.care.playWith(id, favourite).second)
-        assertTrue(RewardEngine.CARE_EGG_POINTS.containsKey(app.pokeplan.core.reward.CareKind.PLAY))
+        assertEquals(0, RewardEngine.CARE_EGG_POINTS.getValue(app.pokeplan.core.reward.CareKind.PLAY))
     }
 
     @Test

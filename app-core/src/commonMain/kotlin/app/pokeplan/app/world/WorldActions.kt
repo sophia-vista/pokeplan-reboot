@@ -176,8 +176,11 @@ fun GameStore.worldSettle(): WorldReport? {
 private fun GameStore.worldGuardian() {
     val w = data.world
     if (!w.guardianDone || w.guardianGranted) return
-    update { it.copy(world = it.world.copy(guardianGranted = true)) }
-    grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, GameStore.WORLD_SOURCE, form = app.pokeplan.world.Story.GUARDIAN_FORM)
+    // The flag and the Pokémon are one write that re-checks the flag under the store's lock, so the widget and the app cannot both grant it.
+    update { d ->
+        if (!d.world.guardianDone || d.world.guardianGranted) d
+        else grantIn(d.copy(world = d.world.copy(guardianGranted = true)), app.pokeplan.world.Story.GUARDIAN_SPECIES, GameStore.WORLD_SOURCE, form = app.pokeplan.world.Story.GUARDIAN_FORM).first
+    }
 }
 
 /**
@@ -187,12 +190,18 @@ private fun GameStore.worldGuardian() {
  */
 private fun GameStore.worldLegends() {
     for (quest in app.pokeplan.world.Legends.ready(data.world)) {
-        update { it.copy(world = it.world.copy(legends = it.world.legends + quest.id)) }
         // Every legendary also has a quest in the Plan side's quest list (Quests): a Pokémon already owned from there is not given twice,
         // and the quest still counts as done in World, so its boost for the layer applies either way.
         // Dialga is the exception: Primal Dialga (the home Guardian) is a form of its own, so owning it does not stand in for Sinnoh's Dialga.
         val own = app.pokeplan.core.dex.Dex.defaultForm(quest.speciesId).identifier
-        if (data.player.pokemon.none { it.speciesId == quest.speciesId && it.form.identifier == own }) grantPokemon(quest.speciesId, GameStore.WORLD_SOURCE)
+        // One write that re-checks the quest under the store's lock, like the Guardian above.
+        update { d ->
+            if (quest.id in d.world.legends) d
+            else {
+                val marked = d.copy(world = d.world.copy(legends = d.world.legends + quest.id))
+                if (marked.player.pokemon.none { it.speciesId == quest.speciesId && it.form.identifier == own }) grantIn(marked, quest.speciesId, GameStore.WORLD_SOURCE).first else marked
+            }
+        }
     }
 }
 
@@ -356,8 +365,12 @@ fun GameStore.worldRecall(team: Int) {
 /** Recruits the find at [index] into the shared collection: the same persistent Pokémon as any other (docs/pokelife/MODULES/WORLD.md section 14). Null when there is none. */
 fun GameStore.worldRecruit(index: Int): OwnedPokemon? {
     val find = data.world.finds.getOrNull(index) ?: return null
-    val mon = grantPokemon(find.speciesId, GameStore.WORLD_SOURCE, Origin.How.WORLD)
-    update { it.copy(world = it.world.withoutFind(index)) }
+    // Taking the find off the list and granting the Pokémon are one write, so an interruption between them cannot leave a Pokémon both joined and still waiting.
+    var mon: OwnedPokemon? = null
+    update { d ->
+        if (d.world.finds.getOrNull(index)?.speciesId != find.speciesId) d
+        else grantIn(d.copy(world = d.world.withoutFind(index)), find.speciesId, GameStore.WORLD_SOURCE, Origin.How.WORLD).also { mon = it.second }.first
+    }
     return mon
 }
 

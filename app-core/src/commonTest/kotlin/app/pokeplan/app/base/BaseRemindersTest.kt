@@ -44,13 +44,16 @@ class BaseRemindersTest {
     private fun Setup.upcoming() = BaseReminders.upcoming(home.data, game.data, clock.nowMillis(), utc)
     private fun at(y: Int, m: Int, d: Int, h: Int = 9) = LocalDateTime(y, m, d, h, 0).toInstant(utc).toEpochMilliseconds()
 
-    @Test fun `nothing asks until Home and the record are both turned on`() {
+    @Test fun `nothing asks until Home and the record are both turned on, and the first chore reminder turns Home on`() {
         val s = setup()
         val chore = s.home.addChore("Vacuum", Recurrence(RepeatKind.WEEKLY), LocalDate(2026, 11, 8)).record!!
         assertTrue(s.upcoming().isEmpty())
-        s.home.setChoreRemind(chore.id, true)
-        assertTrue(s.upcoming().isEmpty(), "the master switch is still off")
+        assertFalse(s.home.data.settings.reminders)
         s.home.setReminders(true)
+        assertTrue(s.upcoming().isEmpty(), "the chore's own reminder is still off")
+        s.home.setReminders(false)
+        s.home.setChoreRemind(chore.id, true)
+        assertTrue(s.home.data.settings.reminders, "the first reminder set turns the switch on")
         val r = s.upcoming().single()
         assertEquals(BaseReminderKind.CHORE, r.kind)
         assertEquals(at(2026, 11, 8), r.atMillis)

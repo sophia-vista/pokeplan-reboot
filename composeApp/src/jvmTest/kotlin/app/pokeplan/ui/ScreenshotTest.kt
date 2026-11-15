@@ -110,7 +110,7 @@ class ScreenshotTest {
         // Something kept in each tool so its screen shows more than the empty state.
         store.gearFavorite(app.pokeplan.core.pokemon.GearTool.CALCULATOR, true)
         store.gearUsed(app.pokeplan.core.pokemon.GearTool.UNITS)
-        store.changeGear { it.copy(calcHistoryOn = true, calcHistory = listOf("2 + 3 × 4 = 14", "200 + 10% = 220"), pickerWeights = mapOf("Sushi" to 3), pickerHistoryOn = true, pickerHistory = listOf("Tacos"), diceHistory = listOf("2d6+3: 4 + 5 + 3 = 12"), unitFavorites = listOf("length:mi>km")) }
+        store.changeGear { it.copy(calcHistoryOn = true, calcHistory = listOf("2 + 3 × 4 = 14", "200 + 10% = 220"), pickerWeights = mapOf("Sushi" to 3), pickerHistoryOn = true, pickerHistory = listOf("Tacos"), diceHistoryOn = true, diceHistory = listOf("2d6+3: 4 + 5 + 3 = 12"), unitFavorites = listOf("length:mi>km")) }
         store.timerStart(store.timerAdd("Tea", 180_000)!!.id)
         store.timerAdd("Eggs", 600_000)
         store.stopwatchStart(); millisNow(5_000); store.stopwatchLap(); millisNow(7_300); store.stopwatchLap(); millisNow(2_000)

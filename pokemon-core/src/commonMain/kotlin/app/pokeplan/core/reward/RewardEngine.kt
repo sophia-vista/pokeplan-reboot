@@ -483,7 +483,7 @@ object RewardEngine {
     const val CARE_POINTS = 1
 
     /** Rare Candies for each Care moment. *(tune)* */
-    val CARE_CANDIES: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 3, CareKind.CALM_BREAK to 4, CareKind.SKILL to 4, CareKind.WEEKLY_RHYTHM to 15, CareKind.PLAY to 1)
+    val CARE_CANDIES: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 3, CareKind.CALM_BREAK to 4, CareKind.SKILL to 4, CareKind.WEEKLY_RHYTHM to 15, CareKind.PLAY to 0)
 
     /**
      * Care's Egg meter, kept by the app (it never reaches the server): each Care moment adds its points, and a full meter

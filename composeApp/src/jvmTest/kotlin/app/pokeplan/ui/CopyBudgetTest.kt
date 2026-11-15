@@ -15,7 +15,7 @@ class CopyBudgetTest {
     private val root = File("src/commonMain/kotlin/app/pokeplan/ui/screens")
 
     /** Files that are reading, not screens. */
-    private val reading = setOf("Help.kt", "WhatsNew.kt", "StoryPlayer.kt", "StoryCues.kt", "Cutscenes.kt", "Onboarding.kt", "SkyBarks.kt")
+    private val reading = setOf("Help.kt", "WhatsNew.kt", "StoryPlayer.kt", "StoryCues.kt", "Cutscenes.kt", "Onboarding.kt", "SkyBarks.kt", "Credits.kt")
 
     /** A line holding one of these answers the user or a screen reader, and may say a sentence. */
     private val answers = listOf(

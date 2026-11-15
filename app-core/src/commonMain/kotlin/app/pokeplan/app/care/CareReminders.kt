@@ -37,7 +37,7 @@ object CareReminders {
         val today = nowMillis.toLocalDateTime(zone).date
         return (0..DAYS_AHEAD).flatMap { offset ->
             val day = today.plus(DatePeriod(days = offset))
-            care.routines.filter { it.time != null && it.isDueOn(day) && !it.doneOn(day) }.map { r -> reminder(r, day, app.settings.quietHours, zone, focus) }
+            care.routines.filter { it.time != null && it.plannedOn(day) && !it.doneOn(day) }.map { r -> reminder(r, day, app.settings.quietHours, zone, focus) }
         }.filter { it.atMillis > nowMillis }.sortedBy { it.atMillis }
     }
 
@@ -51,6 +51,6 @@ object CareReminders {
     fun stillWanted(care: CareData, app: AppData, routineId: String, day: LocalDate): Boolean {
         if (!app.settings.careModule || !care.settings.reminders) return false
         val r = care.routines.firstOrNull { it.id == routineId } ?: return false
-        return r.isDueOn(day) && !r.doneOn(day)
+        return r.plannedOn(day) && !r.doneOn(day)
     }
 }
