@@ -7,7 +7,7 @@ description: Ideas from 16 design-reference sites (navigation, calls to action, 
 
 What 16 reference sites show, sorted into what fits PokéLife and what doesn't. Captured on 23 and 24 October 2026
 from each site's home page only. The galleries change daily, so a named example may be gone; the site name is there
-so you can look the pattern up again. They are websites and PokéLife is an app, so every idea below is already
+so you can look the pattern up again. They are websites and PokéLife is an app, so every idea in the reference files is already
 translated to a screen, a tab or a moment in the app.
 
 **Order of authority:** `CLAUDE.md`, `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` (sections 5.1 and 12A) and the
@@ -22,7 +22,7 @@ days (403, "Performing security verification"); rareui.com showed a Vercel secur
 them by hand if you need them.
 
 ## How to use it
-1. Find the part of the app you're designing below. Read "take this" and "not that".
+1. Find the part of the app you're designing in the index table below, then open that reference file. Read "take this" and "not that".
 2. Check the avoid list. If the idea is on it, drop it.
 3. Build it from what exists: colours and sizes from `Pixel` and `Spacing` in `theme/PixelTheme.kt`; `TextBox`,
    `PixelButton`, `GameBox`, `ExpBar` there; `ScreenHeader`, `SectionLabel`, `StatChip`, `ListRow`, `RankBadge` in

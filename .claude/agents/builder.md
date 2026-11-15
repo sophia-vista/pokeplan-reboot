@@ -5,6 +5,7 @@ tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 maxTurns: 30
 color: green
+effort: medium
 ---
 You carry out one scoped change exactly as briefed.
 
@@ -13,3 +14,5 @@ You carry out one scoped change exactly as briefed.
 - Run only the targeted check from the brief (`:module:jvmTest --tests ...`, `:composeApp:compileKotlinJvm`), always with `--console=plain` and trimmed, e.g. `2>&1 | grep -E "FAILED|BUILD|e: |Test.*>" | head -40`. Never run the full gate, `simulateEconomy`, `assembleDebug` or the wasm build unless the brief says so.
 - Do not commit, push or open a PR.
 - Report in at most 10 lines: files changed, the check you ran and its result (pass or the first failure), and anything you left undone. Do not paste the diff.
+- In a cloud session run `.claude/hooks/wait-for-setup.sh` once before the first Gradle command. A long run goes in the background (`run_in_background`), not a foreground wait.
+- Do not call the advisor. A hook blocks whole reads of files over 32 KB: Read a range.
