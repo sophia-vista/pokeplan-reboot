@@ -221,8 +221,9 @@ class MintTablesTest {
         val mint = mintOn(s, game())
         mint.fill()
         val exported = obj(MintExport.json(mint.data, setOf(MintKinds.ACCOUNTS)))
-        assertEquals(setOf("format", "unit", "accounts"), exported.keys)
+        assertEquals(setOf("format", "unit", "accounts", "plans"), exported.keys)
         assertEquals(2, (exported["accounts"] as JsonArray).size)
+        // The accounts kind carries the installment plans that belong to them (MINT.md 5.6A).
         assertEquals(obj(s.mintTables.readKind("accounts").let { """{"a":$it}""" })["a"], exported["accounts"], "the table family and the export agree")
     }
 
