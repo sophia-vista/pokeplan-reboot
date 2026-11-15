@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import app.pokeplan.ui.theme.FieldLabel
 import androidx.compose.foundation.layout.size
@@ -32,6 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.Category
+import app.pokeplan.ui.BadgeImage
+import app.pokeplan.ui.Sprite
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.plan.Insights
 import app.pokeplan.plan.Goal
 import app.pokeplan.plan.GoalRules
@@ -173,6 +178,7 @@ private fun GoalsSummary(model: AppModel) {
 
 // ----- Goals ----------------------------------------------------------------------------------------------------------
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun GoalsView(model: AppModel) {
     val store = model.store
@@ -209,49 +215,83 @@ internal fun GoalsView(model: AppModel) {
             }
         }
     }
-    // Help: goals are bigger aims; break one into small milestones and each finished one earns a Super Candy.
-    model.data.goals.forEach { g ->
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                var editing by remember(g.id) { mutableStateOf(false) }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    Text(g.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-                    PixelIconButton("pencil", if (editing) "Close edit" else "Edit goal", { editing = !editing }, Pixel.InkSoft)
-                }
-                if (editing) GoalEditor(model, g) { editing = false }
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Box(Modifier.size(10.dp).background(categoryColor(g.category), PixelShape))
-                    Text(
-                        listOfNotNull(g.category.label, g.targetDate?.let { "aiming for ${it.short()}" }).joinToString(", "),
-                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                    )
-                }
-                // The words beside the bar say how close the goal is; the nearer it looks, the likelier it gets finished.
-                // A goal with no milestones counts the tasks linked to it (from a task's Edit tab) instead.
-                val linked = model.data.tasks.filter { it.id in g.linkedTaskIds && it.state != TaskState.DELETED && it.state != TaskState.WONT_DO }
-                val progress = if (g.milestones.isEmpty() && linked.isNotEmpty()) "${linked.count { it.state == TaskState.DONE }} of ${linked.size} tasks"
-                    else "${g.milestones.count { it.isDone }} of ${g.milestones.size} milestones"
-                PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Tone, label = progress)
-                g.milestones.forEach { m ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                        Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
-                        // Unticking keeps "paid", so ticking again pays nothing more.
-                        if (m.isDone) PixelIconButton("undo", "Untick ${m.title}", { store.reopenMilestone(g.id, m.id) }, Pixel.InkSoft)
-                        else PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
-                    }
-                }
-                var step by remember(g.id) { mutableStateOf("") }
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelField(
-                        step, { step = it }, Modifier.weight(1f), singleLine = true,
-                        placeholder = "Add a milestone",
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addMilestone(g.id, step); step = "" } }),
-                    )
-                    PixelIconButton("plus", "Add", { store.addMilestone(g.id, step); step = "" }, Pixel.InkSoft, enabled = step.isNotBlank())
+    // Goals are bigger aims; break one into small milestones and each finished one earns a Super Candy and a badge for its case.
+    val (done, open) = model.data.goals.partition { it.completedAtMillis != null }
+    open.forEach { g -> GoalCard(model, g) }
+    // The Hall of Fame: finished goals, newest first, each with the Plan party of the day it was finished.
+    if (done.isNotEmpty()) {
+        TextBox { PixelTitle("Hall of Fame") }
+        GoalRules.hallOfFame(done).forEach { g -> GoalCard(model, g) }
+    }
+}
+
+/** One goal: title, area, progress, its badge case, its milestones and (once finished) the Plan party of that day. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun GoalCard(model: AppModel, g: Goal) {
+    val store = model.store
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            var editing by remember(g.id) { mutableStateOf(false) }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                Text(g.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                PixelIconButton("pencil", if (editing) "Close edit" else "Edit goal", { editing = !editing }, Pixel.InkSoft)
+            }
+            if (editing) GoalEditor(model, g) { editing = false }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Box(Modifier.size(10.dp).background(categoryColor(g.category), PixelShape))
+                Text(
+                    listOfNotNull(g.category.label, g.targetDate?.let { "aiming for ${it.short()}" }).joinToString(", "),
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+            }
+            // The words beside the bar say how close the goal is; the nearer it looks, the likelier it gets finished.
+            // A goal with no milestones counts the tasks linked to it (from a task's Edit tab) instead.
+            val linked = model.data.tasks.filter { it.id in g.linkedTaskIds && it.state != TaskState.DELETED && it.state != TaskState.WONT_DO }
+            val progress = if (g.milestones.isEmpty() && linked.isNotEmpty()) "${linked.count { it.state == TaskState.DONE }} of ${linked.size} tasks"
+                else "${g.milestones.count { it.isDone }} of ${g.milestones.size} milestones"
+            PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Tone, label = progress)
+            BadgeCase(g)
+            g.completedAtMillis?.let { done ->
+                val day = store.dayOf(done).dayMonth()
+                Text(if (g.hallOfFameParty.isEmpty()) "Finished $day" else "Finished $day, with", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    g.hallOfFameParty.forEach { Sprite(it.formId, it.shiny, "Level ${it.level} Pokémon", size = Sizes.SpriteS) }
                 }
             }
+            g.milestones.forEach { m ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
+                    // Unticking keeps "paid", so ticking again pays nothing more.
+                    if (m.isDone) PixelIconButton("undo", "Untick ${m.title}", { store.reopenMilestone(g.id, m.id) }, Pixel.InkSoft)
+                    else PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
+                }
+            }
+            var step by remember(g.id) { mutableStateOf("") }
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(
+                    step, { step = it }, Modifier.weight(1f), singleLine = true,
+                    placeholder = "Add a milestone",
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addMilestone(g.id, step); step = "" } }),
+                )
+                PixelIconButton("plus", "Add", { store.addMilestone(g.id, step); step = "" }, Pixel.InkSoft, enabled = step.isNotBlank())
+            }
         }
+    }
+}
+
+/** A goal's badge case: one Gym badge per milestone, in colour once the milestone is done and a flat shape until then. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun BadgeCase(g: Goal) {
+    val slots = GoalRules.badgeCase(g)
+    val earned = slots.count { it.earned }
+    FlowRow(
+        Modifier.semantics { contentDescription = "Badges: $earned of ${slots.size}" },
+        horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS),
+    ) {
+        slots.forEach { BadgeImage(it.badgeId, size = Sizes.Icon, silhouette = if (it.earned) null else Pixel.InkSoft.copy(alpha = 0.35f)) }
     }
 }
 

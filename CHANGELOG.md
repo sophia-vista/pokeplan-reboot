@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.197.0
+
+Plan's goal badges and Hall of Fame (REP-053 chunk 5; spec `MODULES/PLAN.md` 9.1, owner took the four defaults on 15 November 2026). Display only: nothing new is paid, so `RewardRules.VERSION` is unchanged.
+
+- **Badge case:** every goal card shows one Gym badge per milestone, in colour once the milestone is done and a flat shape until then (unticking empties it). A goal is given one set of eight (Kanto, Johto, Hoenn, Sinnoh or Unova) by its id, and the pictures repeat after eight milestones.
+- **Hall of Fame:** a finished goal moves under a "Hall of Fame" box at the foot of Goals, newest first, with its case, the day it was finished and the Plan party of that day (lead first), kept on the goal (`Goal.hallOfFameParty`, no schema step).
+- Gym badge pictures 1 to 40 are bundled (`assets/badges`). Tests: `GoalTest`, `GoalHallOfFameTest`; screenshot `planGoalsBadges`.
+
 ## 0.196.0
 
 Base's Secret Base room (REP-053 chunk 3; spec `MODULES/BASE.md` 9.5, owner's answers 15 November 2026).

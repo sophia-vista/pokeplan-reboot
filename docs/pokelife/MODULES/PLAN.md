@@ -277,6 +277,16 @@ Goals: ID, title, optional description, created date, optional target date, stat
 
 Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not generate *task* rewards. **Owner decision, 8 November 2026: the current payout stays**: a goal milestone reached pays a Super Candy, and a finished goal pays a bonus item (`Goal.kt`; `docs/design.md`). Goal completion is still to be made deliberate (see the implementation guide).
 
+### 9.1 Goal badges and the Hall of Fame (owner, 15 November 2026; REP-053 chunk 5)
+
+**Display only: nothing here pays, and `RewardRules.VERSION` does not change.** The Super Candy for a milestone and the bonus item for a finished goal stay as they are (section 9).
+
+- **Badge case.** Every goal has a case with one slot for each milestone (a goal with no milestones has one). A finished milestone fills its slot with a Gym badge picture in colour; an unfinished one shows the same picture as a flat shape. Unticking a milestone empties its slot again.
+- **Which picture.** A goal is given one set of eight Gym badges by its id (Kanto, Johto, Hoenn, Sinnoh or Unova: `assets/badges` 1 to 8, 9 to 16, 17 to 24, 25 to 32, 33 to 40), so it never changes and the player chooses nothing. Milestone 1 takes the set's first badge, milestone 2 the second, and so on, repeating after eight (`GoalRules.badgeSet`, `badgeId`, `badgeCase`).
+- **Hall of Fame.** A goal whose milestones are all done is listed under a "Hall of Fame" box at the foot of the Goals view, newest first, with its case, the day it was finished and the Plan party of that day (lead first, at most six: form, level and shiny, saved on the goal as `hallOfFameParty`; JSON in `plan_goal`, so no schema step; a goal finished before 0.197.0 shows no party). Finishing it again after adding a milestone and ticking it records the later day's party. Its milestones can still be unticked, which returns it to the open goals.
+- **Where.** On each goal card and in the Goals view; there is no new menu card.
+- **Not built:** a Trainer Card in Me (P16) that shows the badges, and a Hall of Fame room scene (P4). Both come after this.
+
 Project progress derives only from relevant tasks/milestones. Archived tasks are not incomplete work; unrelated tasks do not affect progress. User may complete/on-hold a project independently of task count.
 
 ## 10. Visual presentation

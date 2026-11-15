@@ -56,6 +56,27 @@ fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, de
     }
 }
 
+/** A Gym badge picture (`assets/badges/N.png`, PokeAPI/sprites); with a [silhouette] colour it is drawn as a flat shape, for a slot not yet earned. */
+@Composable
+fun BadgeImage(badgeId: Int, modifier: Modifier = Modifier, size: Dp = 32.dp, description: String? = null, silhouette: Color? = null) {
+    val path = "files/badges/$badgeId.png"
+    val bitmap by produceState(cache[path], path) {
+        value = cache[path]
+        if (value == null) {
+            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
+            cache[path] = value
+        }
+    }
+    Box(modifier.size(size)) {
+        bitmap?.let {
+            Image(
+                it, description, Modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None,
+                colorFilter = silhouette?.let { c -> ColorFilter.tint(c, BlendMode.SrcIn) },
+            )
+        }
+    }
+}
+
 /**
  * A simple control glyph from Pixelarticons (MIT, assets/pixelarticons; arrows, edit, copy, trash...), tinted with [tint].
  * Pokémon item icons stay the main icons ([ItemIcon]); these stand in for words on small controls.

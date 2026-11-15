@@ -1077,6 +1077,23 @@ class ScreenshotTest {
     @Test
     fun planGoals() = modules("plan-goals", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.GOALS)
 
+    /** The goal badge case (a long goal with part of its badges earned, more than eight) and the Hall of Fame (a finished goal with its party), in both palettes. */
+    @Test
+    fun planGoalsBadges() = listOf(false, true).forEach { dark ->
+        val store = storeWithTeam()
+        val long = store.addGoal("Learn guitar")
+        (1..10).forEach { store.addMilestone(long.id, "Chord $it") }
+        val finished = store.addGoal("Run a 10k")
+        listOf("Run 5 km", "Run 10 km").forEach { store.addMilestone(finished.id, it) }
+        clock.millis += 2 * 24 * 60 * 60_000L
+        store.data.goals.first { it.id == long.id }.milestones.take(6).forEach { store.completeMilestone(long.id, it.id) }
+        store.data.goals.first { it.id == finished.id }.milestones.forEach { store.completeMilestone(finished.id, it.id) }
+        val model = AppModel(store).also { it.module = app.pokeplan.ui.screens.Module.PLAN; it.planSection = app.pokeplan.ui.screens.PlanSection.GOALS }
+        render("plan-goals-badges-${if (dark) "dark" else "light"}", height = 2400) {
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } }
+        }
+    }
+
     @Test
     fun planMore() = modules("plan-more", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.MORE)
 

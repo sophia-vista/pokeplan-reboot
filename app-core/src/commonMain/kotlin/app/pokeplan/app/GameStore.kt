@@ -67,6 +67,7 @@ import app.pokeplan.plan.FocusRules
 import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.Goal
 import app.pokeplan.plan.Insights
+import app.pokeplan.plan.GoalPartyMember
 import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Habit
 import app.pokeplan.plan.EventRepeat
@@ -1144,7 +1145,10 @@ class GameStore(
     fun completeMilestone(goalId: String, milestoneId: String): MilestoneResult {
         val goal = data.goals.first { it.id == goalId }
         val paidToday = Counters.MILESTONES.get(data.counters, today)
-        val result = GoalRules.completeMilestone(goal, milestoneId, nowMillis, paidToday)
+        val party = data.player.pokemon.filter { it.inParty && it.partyId == PartyIds.PLAN }
+            .sortedBy { if (it.id == data.player.planLeadId) 0 else 1 }.take(OwnedPokemon.PARTY_SIZE)
+            .map { GoalPartyMember(it.form.id, it.level, it.isShiny) }
+        val result = GoalRules.completeMilestone(goal, milestoneId, nowMillis, paidToday, party)
         update { d ->
             var next = d.copy(goals = d.goals.map { if (it.id == goalId) result.goal else it })
             val gifts = buildList {
