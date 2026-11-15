@@ -1288,6 +1288,8 @@ private fun AreasBox(model: AppModel) {
                     onClick = { openId = if (openId == a.id) null else a.id; renaming = a.name; asking = null }, onClickLabel = if (openId == a.id) "Hide options" else "Show options",
                     trail = {
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelIconButton("pencil", "Rename ${a.name}", { if (openId == a.id && asking == null) openId = null else { openId = a.id; renaming = a.name; asking = null } }, Pixel.Tone)
+                            PixelIconButton("trash", "Delete ${a.name}", { openId = a.id; asking = a.id }, Pixel.InkSoft)
                             PixelIconButton("arrow-up", "Move ${a.name} up", { home.moveArea(a.id, true) }, enabled = i > 0)
                             PixelIconButton("arrow-down", "Move ${a.name} down", { home.moveArea(a.id, false) }, enabled = i < data.areas.lastIndex)
                         }
@@ -1302,7 +1304,6 @@ private fun AreasBox(model: AppModel) {
                         }
                         Actions {
                             PixelButton(if (a.archived) "Restore" else "Archive", { home.setAreaArchived(a.id, !a.archived); openId = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                            PixelButton("Delete", { asking = a.id }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
                     }
                 }

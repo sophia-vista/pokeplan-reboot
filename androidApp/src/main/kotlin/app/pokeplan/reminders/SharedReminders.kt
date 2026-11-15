@@ -73,6 +73,9 @@ object SharedReminders {
 
     private fun live(context: Context): Live {
         val game = widgetStore(context)
+        // A repeating task's next instances (and so their reminders) are made only by refresh(), which the app runs when it opens. Run it here too, so the
+        // nightly refresh and every fired alarm plan the next bill or chore even when the app has not been opened for weeks.
+        game.refresh()
         val care = careStore(context, game)
         val heal = healStore(context, game)
         val mint = mintStore(context, game)
