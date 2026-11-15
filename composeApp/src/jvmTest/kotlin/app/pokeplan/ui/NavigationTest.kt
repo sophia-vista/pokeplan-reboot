@@ -37,7 +37,7 @@ class NavigationTest {
     fun outstandingIsPlansLastSectionSoNothingShifts() {
         assertEquals(PlanSection.OUTSTANDING, PlanSection.entries.last())
         assertEquals(PlanSection.OUTSTANDING, PlanSection.valueOf("OUTSTANDING"))
-        assertNull(PlanSection.OUTSTANDING.parent)
+        assertEquals(PlanSection.MORE, PlanSection.OUTSTANDING.parent, "Outstanding sits in More now, so Back returns there")
     }
 
     @Test
