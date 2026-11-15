@@ -669,4 +669,53 @@ class MintStoreTest {
         assertTrue(m.data.transactions.all { it.planId == null })
         assertTrue(m.data.plans.isEmpty())
     }
+
+    @Test
+    fun installmentsAlreadyOwedMakeAScheduleWithoutSpendingAndAddToTheStartingBalance() {
+        val s = setup()
+        val m = s.mint
+        val wallet = assertNotNull(m.addAccount("GCash", AccountType.EWALLET, "PHP", 100_000).record).id
+        val later = assertNotNull(m.addAccount("SPayLater", AccountType.PAY_LATER, "PHP", 0, limitMinor = 300_000).record).id
+        val nov = LocalDate(2026, 11, 1)
+        val dec = LocalDate(2026, 12, 1)
+        val rows = listOf(
+            app.pokeplan.mint.Installment(0, LocalDate(2026, 11, 20), 50_000),
+            app.pokeplan.mint.Installment(0, LocalDate(2026, 12, 20), 50_000, 500),
+            app.pokeplan.mint.Installment(0, LocalDate(2027, 1, 20), 30_000),
+        )
+        fun owed() = MintRules.balances(m.data).single { it.account.id == later }.postedMinor
+        val plan = assertNotNull(m.addExistingPlan(later, "Old SPayLater", rows).record)
+        assertNull(plan.purchaseTxId)
+        assertEquals(130_000L, plan.totalMinor)
+        assertEquals(listOf(1, 2, 3), plan.installments.map { it.no })
+        // Owed rises by what the schedule asks; nothing is spending, no record exists.
+        assertEquals(130_000L, owed())
+        assertEquals(0L, MintRules.spent(m.data, nov, dec, "PHP"))
+        assertTrue(m.data.transactions.isEmpty())
+        assertEquals(-130_000L, MintRules.netPosition(m.data)["PHP"]!! - 100_000L)
+        assertEquals(130_500L, m.planView(plan.id)!!.remainingMinor) // the second month's fee is still to come
+        // Pay the first month from the wallet: a transfer, owed falls by that amount, still no spending.
+        assertNotNull(m.payPlan(plan.id, 50_000, wallet).record)
+        assertEquals(80_000L, owed())
+        assertEquals(0L, MintRules.spent(m.data, nov, dec, "PHP"))
+        assertEquals(InstallmentState.PAID, m.planView(plan.id)!!.installments[0].state)
+        // The second month's fee is recorded when billed and is the only spending; it is owed on top.
+        assertNotNull(m.billInstallmentFee(plan.id, 2).record)
+        assertEquals(500L, MintRules.spent(m.data, nov, dec, "PHP"))
+        assertEquals(80_500L, owed())
+        // Leaving the opening balance alone (the player typed the total there already) adds nothing; a refund and a delete work on it.
+        val card = assertNotNull(m.addAccount("Visa", AccountType.CREDIT_CARD, "PHP", 40_000).record).id
+        val plan2 = assertNotNull(m.addExistingPlan(card, "Visa plan", listOf(app.pokeplan.mint.Installment(0, LocalDate(2026, 12, 5), 40_000)), addToStartingBalance = false).record)
+        assertEquals(40_000L, MintRules.balances(m.data).single { it.account.id == card }.postedMinor)
+        assertNotNull(m.refundPlan(plan2.id, 10_000).record)
+        assertEquals(30_000L, MintRules.balances(m.data).single { it.account.id == card }.postedMinor)
+        assertEquals(30_000L, m.planView(plan2.id)!!.remainingMinor)
+        m.deletePlan(plan2.id)
+        assertEquals(30_000L, MintRules.balances(m.data).single { it.account.id == card }.postedMinor)
+        // Refusals: a wallet, no rows, a zero amount, out of order.
+        assertNull(m.addExistingPlan(wallet, "x", rows).record)
+        assertNull(m.addExistingPlan(later, "x", emptyList()).record)
+        assertNull(m.addExistingPlan(later, "x", listOf(app.pokeplan.mint.Installment(0, LocalDate(2026, 12, 1), 0))).record)
+        assertNull(m.addExistingPlan(later, "x", rows.reversed()).record)
+    }
 }

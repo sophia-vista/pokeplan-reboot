@@ -315,7 +315,7 @@ class MintStore(
     private fun setStatus(id: String, status: TxStatus) = update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) it.copy(status = status) else it }) }
 
     /** The installment plan whose purchase record is [id], if any: that record cannot be deleted or voided while the plan exists (MINT.md 5.6A). */
-    fun planOfPurchase(id: String): InstallmentPlan? = data.plans.firstOrNull { it.purchaseTxId == id }
+    fun planOfPurchase(id: String): InstallmentPlan? = data.plans.firstOrNull { it.purchaseTxId != null && it.purchaseTxId == id }
 
     fun deleteTransaction(id: String): Boolean {
         if (planOfPurchase(id) != null) return false
@@ -462,6 +462,25 @@ class MintStore(
     }
 
     /**
+     * Installments already owed (MINT.md 5.6A): a plan with no purchase record for a schedule that was running before tracking began. [rows] are the upcoming
+     * installments (due day, amount still owed, optional fee, in due-day order). Nothing is recorded as spending. With [addToStartingBalance] the account's
+     * starting balance owed (opening balance) rises by what the schedule asks, so the outstanding equals it; leave it off when the opening balance already holds that.
+     */
+    fun addExistingPlan(accountId: String, name: String, rows: List<app.pokeplan.mint.Installment>, addToStartingBalance: Boolean = true, feeKind: FeeKind = FeeKind.FEE): Logged<InstallmentPlan> {
+        val account = creditAccount(accountId) ?: return Logged(null, "Choose a credit card or pay later account that is open.")
+        if (name.isBlank()) return Logged(null, "Give the installments a name.")
+        if (feeKind == FeeKind.LATE) return Logged(null, "Choose fee or interest.")
+        (Installments.checkExisting(account.type, rows) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val total = rows.sumOf { it.principalMinor }
+        val opening = if (addToStartingBalance) account.openingMinor + total else account.openingMinor
+        if (opening > app.pokeplan.mint.Money.MAX_MINOR) return Logged(null, "That total looks wrong.")
+        val numbered = rows.mapIndexed { i, r -> r.copy(no = i + 1) }
+        val plan = InstallmentPlan(newId(), account.id, name.trim().take(MintRules.NAME_MAX), account.currency, null, total, numbered.first().dueDay, PlanEvery.MONTH, feeKind, numbered, nowMillis)
+        update { d -> d.copy(plans = d.plans + plan, accounts = d.accounts.map { if (it.id == account.id) it.copy(openingMinor = opening) else it }) }
+        return Logged(plan)
+    }
+
+    /**
      * A repayment toward a plan (MINT.md 5.6A): one **transfer** from [fromAccountId] (the payment source) to the plan's account, so cash and the outstanding fall
      * together and nothing is spent. Any amount up to what is still owed (a partial or an early payment); it is applied to the earliest installment first. Every
      * installment it reaches whose fee is not yet recorded gets that fee recorded, dated [day], so the outstanding carries it before it is paid off.
@@ -522,7 +541,7 @@ class MintStore(
         if (day > today) return Logged(null, "A refund cannot be dated in the future.")
         (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (amountMinor > plan.totalMinor - view.refundedMinor) return Logged(null, "That is more than the purchase less what was refunded.")
-        val purchase = data.transactions.firstOrNull { it.id == plan.purchaseTxId }
+        val purchase = plan.purchaseTxId?.let { id -> data.transactions.firstOrNull { it.id == id } }
         val tx = Transaction(newId(), TxType.REFUND, amountMinor, plan.currency, atMillis(day), day, plan.accountId, categoryId = purchase?.categoryId, payee = plan.name.take(MintRules.NAME_MAX * 2), refundOf = plan.purchaseTxId, createdMillis = nowMillis, planId = planId)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }

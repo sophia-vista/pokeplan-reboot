@@ -28,7 +28,8 @@ data class InstallmentPlan(
     val accountId: String,
     val name: String,
     val currency: String,
-    val purchaseTxId: String,
+    /** The one `EXPENSE` of the purchase; null for a schedule entered as already owed (MINT.md 5.6A): the purchase happened before tracking and is not spending. */
+    val purchaseTxId: String? = null,
     val totalMinor: Long,
     val startDay: LocalDate,
     val every: PlanEvery,
@@ -129,6 +130,16 @@ object Installments {
             }
         }
         return List(count) { Installment(it + 1, dueOn(firstDue, every, it), principal[it], fees[it]) }
+    }
+
+    /** Rows for an existing schedule: each a due day, an amount still owed (above zero) and a fee (not negative), in due-day order, 1 to [MAX_COUNT] of them. */
+    fun checkExisting(type: AccountType, rows: List<Installment>): Check {
+        if (!allowedFor(type)) return Check.Refused("Installments belong to a credit card or a pay later account.")
+        if (rows.isEmpty() || rows.size > MAX_COUNT) return Check.Refused("Add 1 to $MAX_COUNT installments.")
+        if (rows.any { it.principalMinor <= 0 || it.principalMinor > Money.MAX_MINOR }) return Check.Refused("Each installment needs an amount above zero.")
+        if (rows.any { it.feeMinor < 0 || it.feeMinor > Money.MAX_MINOR }) return Check.Refused("That fee looks wrong.")
+        if (rows.zipWithNext().any { (a, b) -> a.dueDay > b.dueDay }) return Check.Refused("Put the installments in order of their due day.")
+        return if (rows.sumOf { it.principalMinor } > Money.MAX_MINOR) Check.Refused("That total looks wrong.") else Check.Ok
     }
 
     fun checkRequest(type: AccountType, totalMinor: Long, count: Int, fee: FeeRule): Check = when {
