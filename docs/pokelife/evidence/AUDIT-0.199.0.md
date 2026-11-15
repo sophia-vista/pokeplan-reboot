@@ -10,24 +10,31 @@ PokéLife should not get smaller; it should get easier to start. The owner uses 
 
 So: keep all eight modules and their depth, make each one useful after one small action, reveal structure later, and fix the one concrete flaw in the best-liked loop (WORLD team choice). Local-only, no accounts, no telemetry and private content staying in its module are unchanged.
 
-## 2. Corrections to the first draft
+## 2. What the source changes
 
-The draft's evidence labels were honest about not having source. With source, these claims change:
+Two different things were found, and they must not be mixed up. **Existing in code is not the same as working for the owner**: where the audit asked for something that exists, the owner's experience (sections 4) is still the evidence, and the fix is the screen, not the feature.
+
+### 2.1 The draft was factually wrong (corrected)
 
 | First draft said | Source says | Where |
 |---|---|---|
-| The public name is HOME and the implementation uses `base`, a naming drift to review | **BASE is the name** (renamed from HOME on 13 November 2026). Code, labels (`Modules.kt`), the launcher destination and the docs agree; "Home" is only the launcher's first page. No review needed | `CLAUDE.md`, `PartySwitcher.kt:57` |
-| The implementation guide's baseline is 0.123.0 and the source is unavailable (P0) | The guide's section 3.2 was rewritten at 0.197.0 (0.198.0); the source tree is this repository; `VERSION` and `CHANGELOG.md` say 0.199.0 | backlog, 0.198.0 |
-| Which store is authoritative, SQLite or the JSON stores, is unknown | On Android the SQLite database is authoritative since 0.129.0 (`LiveDocuments` splits the save into per-module tables); desktop and web keep JSON stores as dev conveniences. Retiring the remaining JSON documents and file fallbacks is **REP-020** (Tier 4). Migration, backup, restore and the corrupt-database choice have tests (`LiveStoreTest`) and 0.199.0 added backup off the phone | `DATA_AND_MIGRATIONS.md` 4.5, 7.3.0 |
-| HEAL nutrition may exist under other names | **Not built.** `heal-core` has no meal, food or nutrient model; the word appears only in `HealImport.kt`. REP-040 already puts nutrition last | backlog REP-040 |
-| Huawei import is an import path through `HealStore` | It is an **on-phone reader**: an accessibility service for `com.huawei.health` (it turns itself off after every walk, because banking apps refuse to open while it is on) and a notification listener that drops every other app's notifications on arrival. Unofficial and fragile by owner decision, 14 November 2026 | `INTEGRATIONS_AND_PRIVACY.md` 5.2.2, `huawei/*.kt` |
-| Add a title-only quick capture on Today, Inbox and list screens | **Built:** a quick-add box on Today, the Inbox and each list; "Added to ..." feedback and a kept draft since 0.198.0 | `plan/Planner.kt:162`, `plan/Lists.kt:111` |
-| Add Person should ask only for a name | **Built:** one name field and Add, then the profile opens | `link/Link.kt:298` |
-| Group and last digits should not be asked in account set-up | **Partly built:** they sit behind a "Group and last digits" key; name, type, currency and opening balance are still on the first screen | `mint/Mint.kt:298-313` |
-| Add favourites, recents and search to GEAR | **Built** (`ToolCatalog.search(query, favorites, recents)`, a star on every tool, unit-pair favourites). What is missing is a GEAR launcher widget: the five widgets are Buddy, Care, Focus, Today and World | `gear/Gear.kt:85-156`, `res/xml/widget_*.xml` |
-| WORLD needs "Send my strongest" | **Built** (Tiny Woods shortcut, the dungeon page and the Today action), with six presets and a per-team suitability line ("a floor takes about N min; k of n like this place"). Not built: a recommendation that ranks by type, a poor-match mark, a one-action replace; the manual list is simply the **20 strongest idle** Pokémon | `world/World.kt:202,325,331,729` |
+| The public name is HOME and the implementation uses `base`, a naming drift | **BASE is the name** (renamed from HOME on 13 November 2026); code, labels and docs agree. "Home" is only the launcher's first page | `CLAUDE.md`, `PartySwitcher.kt:57` |
+| The guide's baseline is 0.123.0 and the source is unavailable | Guide section 3.2 was rewritten at 0.197.0; the source is this repository at 0.199.0 | backlog, 0.198.0 |
+| Which store is authoritative is unknown | On Android SQLite is authoritative since 0.129.0 (`LiveDocuments`); JSON stores are desktop/web dev conveniences; retiring the leftovers is REP-020 | `DATA_AND_MIGRATIONS.md` 4.5, 7.3.0 |
+| HEAL nutrition may exist under other names | **Not built**: `heal-core` has no meal, food or nutrient model (the word appears only in `HealImport.kt`); REP-040 puts it last | backlog REP-040 |
+| Huawei is an import path through `HealStore` | It is an on-phone reader: an accessibility service for `com.huawei.health` that turns itself off after every walk, and a notification listener that drops other apps' notifications on arrival. Unofficial and fragile by owner decision | `INTEGRATIONS_AND_PRIVACY.md` 5.2.2 |
 
-Not verifiable from code, still open: that the screenshots the draft cites match 0.199.0, that CARE and LINK feel cluttered or scattered, and anything about timing or feel on the phone.
+### 2.2 It exists, and the owner still has the problem (not closed)
+
+These are **not** "already built, skip". Each is something the owner called tedious, awkward, cluttered, forgotten or hard to find, in a build where the code for it already existed. The open question is why it still fails for them, which the code cannot say; it needs the phone and the owner's eyes.
+
+| Feature in the code | What the owner says (section 4) | What to look at |
+|---|---|---|
+| PLAN quick-add box on Today, Inbox and lists (`plan/Planner.kt:162`, `Lists.kt:111`) | Quick tasks are still forgotten before they are entered; recurrence set-up is boring; the screen feels cluttered | Whether the box is where the thought happens (launcher shortcut, a widget, a notification), not whether it exists |
+| LINK name-only Add Person (`link/Link.kt:298`) | Adding people feels strange and awkward; information feels scattered | The step after Add: the profile that opens, and what is on it |
+| MINT account form: group and last digits behind a key (`mint/Mint.kt:298-313`) | Laborious and barebones; account types and the other features are unclear | Name, type, currency and opening balance are still all on the first screen, and no type is explained |
+| GEAR favourites, recents, search (`gear/Gear.kt:85-156`) | Only the two converters are useful; the rest are poorly designed, niche or inaccessible | Reaching the two converters in one tap from Home (no GEAR widget exists: the five are Buddy, Care, Focus, Today, World) |
+| WORLD "Send my strongest", six presets, a suitability line (`world/World.kt:202,325,331`) | Convenient, but the saved team stays poorly suited and the owner removes members by hand and scrolls about 20 | The manual list is the 20 strongest idle (`World.kt:729`), with no type ordering |
 
 ## 3. New evidence: battery usage of the app
 
@@ -44,53 +51,68 @@ Candidate causes, each checked only in code, none measured:
 
 How to settle it with one phone session, no new code: `adb shell dumpsys batterystats --charged app.pokeplan` and `adb shell dumpsys activity services app.pokeplan` (which services are bound, and since when), then repeat with Notification access for PokéLife switched off for a day and compare the Background figure. Tracked as REP-055.
 
-## 4. Module findings
+## 4. Module findings: what the owner says, what is there, what is open
 
-The recommendations of the first draft that are **not already built** (section 2) are listed here, each with its backlog home. "Existing" means a row already carries it; do not open a second one.
+Each module has three lines. **The owner says** is the interview as the audit reported it, in its own words as far as they survive (I did not see the raw interview; add anything missing). **In the code** is what 0.199.0 has. **Open** is what the owner's experience says still needs work. "Existing" means a backlog row already carries it.
 
 ### The first-use rule, and a conflict to settle
 
-The audit asks for contextual explanations and one-tap examples in MINT, BASE, CARE and HEAL. The owner's bar of 12 November (`UI-REVIEW-0.172.0.md` section 2, `DESIGN_SYSTEM.md` 5.1 and 12A) says no caption that restates what is on screen, no helper text, empty states are a title and one action. Both are right, so the way to meet both is:
+The audit asks for contextual explanations and one-tap examples in MINT, BASE, CARE and HEAL. The owner's bar of 12 November (`UI-REVIEW-0.172.0.md` section 2, `DESIGN_SYSTEM.md` 5.1 and 12A) says no caption that restates what is on screen, no helper text, empty states are a title and one action. Both hold, so:
 
-- **Examples** are the field's placeholder and, where useful, a row of tappable example chips that fill the field ("Detergent", "Clean AC filter"). They are not a sentence under a title.
+- **Examples** are the field's placeholder and, where useful, tappable example chips that fill it ("Detergent", "Clean AC filter"). Not a sentence under a title.
 - **Definitions** (account types, chore versus maintenance, supply versus asset) sit behind one small info key that opens a short dialogue, and are written once in Help.
-- **The first record needs the least**: a name, plus one more field only where the module cannot work without it (an amount for an expense).
-- **Every module's first-use screen gets one concrete next action**, not a tour.
+- **The first record needs the least**: a name, plus one more field only where the module cannot work without it.
+- **Every first-use screen has one concrete next action**, not a tour.
 
 This is REP-056.
 
 ### PLAN (P1)
-Owner use: tasks, custom lists as workstreams (`Work`, `Resto`), focus sessions; Google Calendar stays the event source (read-only), because of its maps and event screen. Capture is built (section 2). Open: a short default editor with "More options" for time, recurrence, reminders, tags and subtasks (check what the editor shows now); reusable recurrence presets and "every N weeks"; an **Outstanding** view across lists. Home: REP-030 depth and REP-035 (Tier 2 item 18); labels and saved filters still need a spec.
+**The owner says:** uses tasks, custom lists and focus sessions. The lists are workstreams (`Work`, `Resto`), not shopping lists. Google Calendar stays the event source because its maps and event screen are useful, and the calendar widget shows it. Quick tasks are forgotten before they are entered. Recurrence set-up is boring and the interface feels cluttered. Likes precision (scheduling, frequency, tags, lists, customisation) but wants sensible defaults and low upkeep.
+**In the code:** quick-add box on Today, Inbox and lists, with "Added to ..." feedback and a kept draft; recurrence and frequency targets; tags and lists.
+**Open:** capture that happens where the thought does (launcher shortcut, widget); a short default editor with the rest under "More options" (check what it shows now); reusable recurrence presets; one **Outstanding** view across Work and Resto; do not push the owner to move calendar events into PLAN. Existing: REP-030 depth and REP-035 (Tier 2 item 18); labels and saved filters need a spec.
 
 ### CARE (P1)
-Owner use: breathing and skills are used on demand; routines, journal and mood are forgotten; Pokémon care and its rewards motivate. Open: a landing built around one Today action with Calm one tap away; a quiet "not logged today" mark on Reflect with no nagging; skills searchable with recents. Do not read missed routines as a wish to drop routines. Home: REP-036 (Tier 3 item 25: Reflect destination, grounding tool, diary reminder).
+**The owner says:** routines were added but are not followed; journal and mood are forgotten; breathing is useful; skills are valuable when needed; the UI feels cluttered; Pokémon care and its rewards motivate.
+**In the code:** routines with Skip and Yesterday, Calm, Diary and Journal, Skills, the Meadow visitor loop (0.198.0 small fixes, not checked on a device).
+**Open:** a landing built around one Today action; Calm one tap away; a quiet "not logged today" mark on Reflect with no nagging; skills searchable with recents. A missed routine does not mean the owner wants routines gone. Existing: REP-036 (Tier 3 item 25).
 
 ### HEAL (P1)
-Owner use: the Huawei reader is the strength; hydration, nutrition and weight are logged only when remembered. Open: persistent quick-add for hydration, weight and workout with presets and "repeat last"; choose which metrics show on Today; show each metric's state (read, entered by hand, stale, unavailable, none yet) and never a missing value as zero. **Nutrition is not built** (section 2) and must not be advertised until meal entry, saved foods and history exist. Home: REP-040 (Tier 2 item 15 is medication first), REP-046 for the Huawei captures.
+**The owner says:** the Huawei reader is a major strength; records whatever data is available; hydration, nutrition and weight depend on remembering; wants one view with dashboard, trends, records, goals and insights.
+**In the code:** the Huawei reader and Health Connect reads, activity, sleep, hydration and measurements. **Nutrition is not built** (section 2.1).
+**Open:** persistent quick add for hydration, weight and workout with presets and "repeat last"; choose which metrics show on Today; show each metric's state (read, entered by hand, stale, unavailable, none yet) and never a missing value as zero; do not advertise nutrition. Existing: REP-040 (Tier 2 item 15 is medication first), REP-046.
 
 ### MINT (P1, the first-use blocker)
-Owner use: accounts not set up; account types and the other features are unclear; wants a consolidated view, expenses, budgets, bills, savings goals, net worth, nicer card visuals (the Agila card idea); asked about stock advice and timing. Open: account creation as "where is this money?" with the type defined in one info dialogue (e-wallet, digital bank, cash, credit card = money owed, loan = liability); a card-style picker that is cosmetic only and never changes accounting; a first run that ends on a useful overview after one account and a transaction or two; expense capture as amount, account, category; a short worked example for Budgets, Bills, Reconciliation, Statement import, Savings targets and Reports. **Stock recommendations and buy/sell timing stay out of scope** (`MINT.md`; the Bible excludes financial advice); a read-only holdings record would need an explicit scope change. Home: REP-039 (Tier 2 item 16 is recurrence first) and REP-056 for the first run.
+**The owner says:** account set-up is laborious and barebones; dislikes adding accounts by hand but understands bank links may not exist; the account types and the purpose of the other features are unclear; the card visuals could be better (the Agila card idea appeals); wants consolidated accounts, safe-to-spend, expenses, budgets, bills, savings goals and net worth; asked about stock advice and buy/sell timing but sees it may be too complex.
+**In the code:** accounts, transactions, budgets, bills, imports, reconciliation; group and last digits behind a key.
+**Open:** account creation as "where is this money?" with each type defined in one info dialogue (e-wallet, digital bank, cash, credit card = money owed, loan = liability); a cosmetic card-style picker that never changes accounting; a first run that ends on a useful overview after one account and a transaction or two; expense as amount, account, category; a worked example for Budgets, Bills, Reconciliation, Statement import, Savings targets and Reports. **Stock advice and timing stay out of scope** (`MINT.md`, the Bible); a read-only holdings record would need an explicit scope change. Existing: REP-039 (Tier 2 item 16 is recurrence first).
 
 ### BASE (P1, medium)
-Owner use: not started because set-up looks long; chores versus maintenance unclear; Supplies and Reference unclear; the real use is **condo upkeep**, plus occasional jobs at another home. Open: name-only quick add for each kind; example chips; the one-line meaning of chore, maintenance, supply, asset and reference behind an info key; one default place and a second added later; "buy an air conditioner" stays a PLAN task and the installed unit may then become a BASE asset with warranty and upkeep, the payment being MINT's. Home: REP-029 (decisions D3), REP-041 (Tier 3 item 28), REP-056.
+**The owner says:** not used because set-up seems tedious; chores versus maintenance is unclear; Supplies is "mysterious"; Notes/Reference feels random. The real use is condo upkeep, with occasional jobs at another home (for example buying an air conditioner).
+**In the code:** areas, assets, chores, references, restocks, schedules, supplies, warranties and maintenance completion.
+**Open:** name-only quick add for each kind; example chips; what chore, maintenance, supply, asset and reference mean behind an info key; one default place with a second added later (D10); "buy an air conditioner" stays a PLAN task, the installed unit may become a BASE asset with warranty and upkeep, and the payment is MINT's; "Reference" as a clear destination. Existing: REP-029 (D3), REP-041.
 
 ### LINK (P2)
-Owner use: nearly unused; adding people feels strange; information feels scattered. Add Person is already name-only. Open: **walk the real profile and create flows on the phone first** (the draft's restructuring advice was written without that), then one profile that holds overview, notes, dates and follow-ups; one search over people, notes, dates and follow-ups; follow-ups title-only. Contacts import with the birthday reminder is REP-043 (Tier 2 item 14, the adoption blocker). D8 stands: no "keep in touch every N weeks".
+**The owner says:** mostly unused; adding people feels strange and awkward; information feels scattered across the module.
+**In the code:** a directory, a profile, name-only Add Person.
+**Open:** **walk the real profile and create flows on the phone first**, because the code already does the name-only step and the feeling remains; then one profile holding overview, notes, dates and follow-ups; one search across them; title-only follow-ups. Contacts import with the birthday reminder is REP-043 (Tier 2 item 14, the adoption blocker). D8 stands.
 
 ### GEAR (P2)
-Owner use: the unit and currency converters; the other tools feel niche or hard to reach. Built: favourites, recents, search. Open: Currency and Unit Converter pinned as the top quick tools; a **GEAR launcher widget** for one or more favourite tools (D9); tool and drop-or-merge decisions are D2 and REP-042.
+**The owner says:** the unit and currency converters are useful; the other tools feel poorly designed, too niche or inaccessible; suggested launcher widgets or a separate drawer.
+**In the code:** favourites, recents, search; 18 tools; no GEAR widget.
+**Open:** the two converters one tap from Home (D9); each remaining tool judged on its own design, not only reachability; D2 and REP-042 decide which tools to drop or merge.
 
 ### WORLD (P1, the clearest flaw in the best loop)
-Owner use: collect, choose quests, send a team, leave. "Send my strongest" is used. Each dungeon favours types; the previous team stays selected even when it suits the new dungeon badly, so the owner removes members by hand and scrolls about 20 Pokémon. **When picking by hand, type suitability comes before strength.** Roster growth comes from recruiting and other modules; duplicates are worth keeping because they transfer for Candy and Poké. Speed-up minigames are wanted but are not a priority. Quest choice weighs reward, difficulty, type match and progression.
-
-Specified in `WORLD.md` 2.3 (this audit): Recommend team for the chosen dungeon, ranked by type suitability first and strength within it, with a one-line reason per pick and a stated fallback when nothing matches; the saved team stays but is marked a poor match when the dungeon changes; Replace team in one action; the picker shows matching types first with type chips and search; every member can be overridden. The ranking sits in the recommendation layer. The expedition formula (`WORLD.md` 3.2) is unchanged; any change to it is simulated first (`simulateWorldEconomy`). Home: REP-054.
+**The owner says:** the loop is collect finished rewards, choose quests, send a team, leave until the next result. "Send my strongest" is convenient. Each dungeon favours types, but the previous team stays selected, so the owner removes members one by one and scrolls about 20 Pokémon. **When picking by hand, type suitability comes before strength.** The roster is small now; recruitment and other modules will grow it. Quest choice weighs rewards, difficulty, type match and progression. Recruitment is fine; duplicates matter because they transfer for Candy and Poké. Speed-up minigames are welcome but not a priority. Rewards and recruitment are what keep the owner progressing.
+**In the code:** Send my strongest, six presets, a suitability line per team; the manual list is the 20 strongest idle.
+**Open:** specified in `WORLD.md` 2.3 (this audit): Recommend team ranked by type first, a poor-match mark, Replace team, a type-first picker. The expedition formula (3.2) is unchanged and any change is simulated first. REP-054.
 
 ### Launcher and rewards
-Keep the PMD town calm and alive (roaming, touch response, landmarks, shortcuts); do not add permanent dashboard cards over it; stable positions and predictable lifecycle first. Rewards stay bounded and for validated completion, never for sensitive content, and quantities are not raised to prop up an unused feature: fix the entry flow first. One collection, one Bag, one Poké, idempotent settlement (all specified). The battery figures of section 3 belong to this heading.
+**The owner says:** the PMD-style town coming to life on the phone is a main reason for using the app; rewards motivate, most clearly for easy actions (a five-minute Focus session, caring for Pokémon).
+**Open:** keep the town calm and alive; no permanent dashboard cards over it; stable positions and predictable lifecycle first. Rewards stay bounded and for validated completion, never for sensitive content, and are not raised to prop up an unused feature: fix the entry flow first. The battery figures of section 3 belong here.
 
 ## 5. Cross-cutting
 
-- **Persistence.** Answered in section 2. The open piece is REP-020, and nothing old is deleted until the migration, backup, restore and rollback tests pass.
+- **Persistence.** Answered in section 2.1. The open piece is REP-020, and nothing old is deleted until the migration, backup, restore and rollback tests pass.
 - **Source of truth.** The ownership rules the draft restated (BASE owns chores, MINT owns payment state, LINK owns a follow-up until converted, HEAL owns physical health, CARE owns mood) are already `DATA_AND_MIGRATIONS.md` section 5; no change.
 - **Permissions.** The 0.199.0 manifest declares network, network state, vibration, activity recognition, fine and coarse location, microphone, notifications, set-alarm, calendar read, boot, exact alarms, package deletion and install queries (`QUERY_ALL_PACKAGES`), `WRITE_SECURE_SETTINGS`, and Health Connect reads for exercise, sleep, weight, body fat and hydration, plus the two Huawei services. `INTEGRATIONS_AND_PRIVACY.md` 4.2 is the permission matrix, 4.3 the manifest audit from 0.123.0 (remove what is unjustified) and 5.2.2 the Huawei reader; the public-release policy question for `QUERY_ALL_PACKAGES` was dropped with REP-047. Whether the 4.3 removals were all done, and whether each declared permission still has a use at 0.199.0, has not been checked here.
 - **Testing.** The suite exists (`jvmTest`, the Robolectric Android tests of REP-033, the screenshot tests). No result from this audit; nothing here is called tested or device-verified.
