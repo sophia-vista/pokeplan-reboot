@@ -7,9 +7,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import app.pokeplan.data.BackupBundle
 import app.pokeplan.data.DataStore
 import app.pokeplan.data.LiveDocuments
+import app.pokeplan.data.PassphraseSealer
 import app.pokeplan.data.Pbkdf2Sealer
 import app.pokeplan.ui.BackupAccess
 import app.pokeplan.ui.BackupEntry
+import app.pokeplan.ui.OffPhoneState
 import app.pokeplan.ui.StagedBackup
 
 /**
@@ -42,10 +44,59 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
             }
         }.getOrNull()
         if (text == null) { done(null, "That file is too big to be a backup, or could not be read."); return@registerForActivityResult }
+        stage(text, done)
+    }
+
+    /** Checks [text] whole; a file that passes is held for [applyChosen]. */
+    private fun stage(text: String, done: (StagedBackup?, String?) -> Unit) {
         when (val result = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)) {
             is BackupBundle.Staged.Ready -> { staged = result; done(StagedBackup(result.createdAtMillis, result.documents.keys.sorted(), result.needsPassphrase), null) }
             is BackupBundle.Staged.Refused -> done(null, result.reason)
         }
+    }
+
+    // The folder for the copies off the phone (REP-034): picked once, kept by Android until the player stops.
+    private var passphraseForFolder: String? = null
+    private var onFolder: ((String) -> Unit)? = null
+
+    private val pickFolder = activity.registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
+        val pass = passphraseForFolder; val done = onFolder; passphraseForFolder = null; onFolder = null
+        if (done == null) return@registerForActivityResult
+        if (uri == null || pass == null) { done("No folder was chosen."); return@registerForActivityResult }
+        runCatching {
+            activity.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }.onFailure { done("That folder cannot be kept for later. Choose another one."); return@registerForActivityResult }
+        val previous = OffPhone.treeOf(activity)
+        Thread {
+            // Stretching the passphrase twice takes a moment on a phone: off the main thread.
+            val note = if (!OffPhone.configure(activity, uri, pass)) "This phone could not keep the passphrase safely, so the copies were not set up." else OffPhone.run(activity, force = true)
+            if (previous != null && previous != uri) runCatching { activity.contentResolver.releasePersistableUriPermission(previous, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION) }
+            activity.runOnUiThread { done(note) }
+        }.start()
+    }
+
+    override val hasOffPhone: Boolean get() = true
+
+    override fun offPhone(): OffPhoneState? = OffPhone.status(activity)?.let { OffPhoneState(it.folderName, it.lastMillis, it.problem) }
+
+    override fun setUpOffPhone(passphrase: String, onDone: (String) -> Unit) {
+        PassphraseSealer.refusal(passphrase)?.let { return onDone(it) }
+        passphraseForFolder = passphrase; onFolder = onDone
+        pickFolder.launch(null)
+    }
+
+    override fun backUpOffPhoneNow(onDone: (String) -> Unit) {
+        Thread { val note = OffPhone.run(activity, force = true); activity.runOnUiThread { onDone(note) } }.start()
+    }
+
+    override fun stopOffPhone(): String { OffPhone.forget(activity); return "Stopped. The copies already in the folder stay there." }
+
+    override fun chooseOffPhoneCopy(onChosen: (StagedBackup?, String?) -> Unit) {
+        staged = null
+        Thread {
+            val (text, why) = OffPhone.newestCopy(activity)
+            activity.runOnUiThread { if (text == null) onChosen(null, why) else stage(text, onChosen) }
+        }.start()
     }
 
     private val store: DataStore? get() = LiveStore.get(activity)

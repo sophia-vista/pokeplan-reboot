@@ -81,7 +81,7 @@ internal val helpTopics = listOf(
             HelpItem("Which widgets are there?", "Today shows your tasks for the day with a tick and a quick add. Buddy shows your buddy in its place: tap it to pet, or use the berry button. Focus starts a session and shows the countdown while one runs."),
             HelpItem("The widget did not update.", "Open the app once; it brings the widgets up to date. If a widget still looks stale, remove it and add it again."),
             HelpItem("How do I turn sound, vibration or animations off?", "Me, then Settings: the sliders turn cries and effects down, Vibration turns it off, and Reduce motion stops the animations."),
-            HelpItem("Is my progress saved?", "Yes, on this phone, in its own database, and a backup copy is kept once a day. There are no accounts and nothing is sent anywhere. Export my data under Settings, Your data makes a copy you can keep."),
+            HelpItem("Is my progress saved?", "Yes, on this phone, in its own database, and a backup copy is kept once a day. There are no accounts and nothing is sent anywhere. Export my data under Settings, Your data makes a copy you can keep, and Settings, Backups can copy it every day to a folder you choose, such as one a cloud app syncs."),
         ),
     ),
 )

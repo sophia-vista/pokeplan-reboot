@@ -33,6 +33,15 @@ object KeystoreBackupKey {
     fun cipher(): AesGcmCipher = KeystoreKeys.cipher("pokelife.backup.v1", "pokelife-backup")
 }
 
+/**
+ * The key that seals the passphrase of the backup off the phone (REP-034) where the app keeps it, so the daily job can seal Mint and Heal without asking. Its own
+ * AES-256-GCM key in the Android Keystore, non-exportable, and it never leaves this phone: a lost or wiped phone loses it, and the player's own memory of the
+ * passphrase is what opens the copies then.
+ */
+object KeystoreOffPhoneKey {
+    fun cipher(): AesGcmCipher = KeystoreKeys.cipher("pokelife.offphone.v1", "pokelife-offphone")
+}
+
 internal object KeystoreKeys {
     fun cipher(alias: String, context: String): AesGcmCipher {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }

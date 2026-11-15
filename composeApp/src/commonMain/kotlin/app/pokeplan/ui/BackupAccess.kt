@@ -6,6 +6,9 @@ data class BackupEntry(val millis: Long, val bytes: Long)
 /** A backup file the player chose, already read and checked whole: what it would put back. Nothing has changed yet. */
 data class StagedBackup(val createdAtMillis: Long, val documents: List<String>, val needsPassphrase: Boolean = false)
 
+/** The automatic copy to a folder the player chose (REP-034): which folder, when the last good copy was made, and the last thing that went wrong, if anything. */
+data class OffPhoneState(val folderName: String, val lastCopyMillis: Long?, val problem: String?)
+
 /**
  * Backups of the player's data, where the platform has them (Android). The app keeps its own daily backups; the player can also save one as a
  * file anywhere (the phone's file picker) and restore from one. Restoring is always staged and undoable: the file is checked whole first, then
@@ -44,4 +47,25 @@ interface BackupAccess {
 
     /** Puts the chosen file back (what it replaces is kept aside); [passphrase] opens a portable Mint and Heal. [onDone] gets a short note; a wrong passphrase changes nothing. */
     fun applyChosen(passphrase: String? = null, onDone: (String) -> Unit)
+
+    /** Automatic copies to a folder (Android only): true where the platform offers them. */
+    val hasOffPhone: Boolean get() = false
+
+    /** The automatic copy to a folder, or null when it is not set up. */
+    fun offPhone(): OffPhoneState? = null
+
+    /**
+     * Sets the copies up: opens the phone's folder picker, then keeps the folder and the [passphrase] (sealed on this phone only; Mint and Heal in every copy are sealed
+     * under it) and makes the first copy. [onDone] gets a short note. The passphrase is what opens the copies on another phone, so the screen says to remember it.
+     */
+    fun setUpOffPhone(passphrase: String, onDone: (String) -> Unit) = onDone("")
+
+    /** Makes a copy to the folder now. [onDone] gets a short note. */
+    fun backUpOffPhoneNow(onDone: (String) -> Unit) = onDone("")
+
+    /** Stops the copies and forgets the folder and passphrase on this phone; what is already in the folder stays. */
+    fun stopOffPhone(): String = ""
+
+    /** Reads and checks the newest copy in the folder, like [chooseFile]; [applyChosen] then puts it back. Nothing changes yet. */
+    fun chooseOffPhoneCopy(onChosen: (StagedBackup?, String?) -> Unit) = onChosen(null, "")
 }
