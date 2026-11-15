@@ -250,7 +250,62 @@ private fun BackupsCard(model: AppModel) {
                     PixelButton("Cancel", { chosen = null; pass = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
+            if (backups.hasOffPhone) OffPhoneSection(backups, nowMillis = model.store.nowMillis,
+                onNote = { note = it; entries = backups.automatic() }, onStaged = { staged, why -> chosen = staged; note = why; asking = null; pass = "" })
             note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+        }
+    }
+}
+
+/**
+ * Backup off the phone (REP-034): set up once with a folder and a passphrase, then a copy goes there by itself every day. Needs the passphrase to be typed twice, because
+ * a copy that cannot be opened is worse than none. A quiet line says so when the last copy is more than three days old.
+ */
+@Composable
+internal fun OffPhoneSection(backups: app.pokeplan.ui.BackupAccess, nowMillis: Long, onNote: (String) -> Unit, onStaged: (app.pokeplan.ui.StagedBackup?, String?) -> Unit, startSetting: Boolean = false) {
+    var state by remember { mutableStateOf(backups.offPhone()) }
+    var setting by remember { mutableStateOf(startSetting) }
+    var pass by remember { mutableStateOf("") }
+    var again by remember { mutableStateOf("") }
+    var shown by remember { mutableStateOf(false) }
+    var busy by remember { mutableStateOf(false) }
+    var stopping by remember { mutableStateOf(false) }
+    val hide = if (shown) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation()
+    fun done(text: String) { busy = false; state = backups.offPhone(); onNote(text) }
+    val current = state
+    if (current == null || setting) {
+        PixelButton(if (setting) "Not now" else "Back up off this phone", { setting = !setting; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        if (setting) {
+            // Help: a copy goes to a folder you choose, such as one a cloud app syncs. Mint and Heal in it are sealed under this passphrase, which opens them on any phone and is kept nowhere else; if it is forgotten they cannot be opened.
+            PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase (at least ${backups.minPassphrase} characters)", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
+            PixelField(again, { again = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase again", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                error = if (again.isNotEmpty() && again != pass) "The two do not match." else null)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Choose the folder", { busy = true; backups.setUpOffPhone(pass) { setting = false; pass = ""; again = ""; done(it) } }, Modifier.weight(1f), Pixel.Tone,
+                    enabled = !busy && pass.length >= backups.minPassphrase && pass == again, compact = true)
+                PixelButton(if (shown) "Hide" else "Show", { shown = !shown }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            }
+        }
+    } else {
+        val last = current.lastCopyMillis
+        Text(
+            "Copies go to ${current.folderName}" + (last?.let { ", last one ${backupLabel(it)}" } ?: ", none yet"),
+            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+        )
+        val stale = last == null || nowMillis - last > 3 * 24 * 60 * 60 * 1000L
+        current.problem?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) } // copy-ok: warning or legal
+            ?: if (stale && last != null) Text("No copy for ${((nowMillis - last) / (24 * 60 * 60 * 1000L))} days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) else Unit
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Copy now", { busy = true; backups.backUpOffPhoneNow(::done) }, Modifier.weight(1f), Pixel.Tone, enabled = !busy, compact = true)
+            PixelButton("Restore copy", { backups.chooseOffPhoneCopy(onStaged) }, Modifier.weight(1f), Pixel.Warning, enabled = !busy, compact = true)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Change folder", { setting = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton(if (stopping) "Keep copying" else "Stop", { stopping = !stopping }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        if (stopping) {
+            Text("Stop copying to ${current.folderName}? The copies already there stay.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
+            PixelButton("Stop copying", { stopping = false; onNote(backups.stopOffPhone()); state = backups.offPhone() }, Modifier.fillMaxWidth(), Pixel.Warning, compact = true)
         }
     }
 }

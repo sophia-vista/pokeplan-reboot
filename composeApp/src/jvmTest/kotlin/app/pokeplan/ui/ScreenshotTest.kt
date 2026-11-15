@@ -58,7 +58,7 @@ import app.pokeplan.app.world.worldStart
  */
 @OptIn(ExperimentalComposeUiApi::class)
 class ScreenshotTest {
-    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, height: Int = 1080, width: Int = 540, density: Float = 1.5f, minBytes: Int = 5_000, content: @Composable () -> Unit) {
+    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, height: Int = 1080, width: Int = 540, density: Float = 1.5f, minBytes: Int = 5_000, interact: (ImageComposeScene) -> Unit = {}, content: @Composable () -> Unit) {
         val scene = ImageComposeScene(width = width, height = height, density = Density(density, fontScale)) { content() }
         var nanos = 0L
         // Sprites load asynchronously, so draw a few frames with a short wait between them.
@@ -67,6 +67,9 @@ class ScreenshotTest {
             nanos += 50_000_000
             Thread.sleep(20)
         }
+        // A tap on the finished screen (pixels), then a few more frames, to show the state it leads to.
+        interact(scene)
+        repeat(10) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(20) }
         val bytes = scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes
         File("build/screenshots/$name.png").apply { parentFile.mkdirs() }.writeBytes(bytes)
         assertTrue(bytes.size > minBytes, "$name drew almost nothing")
@@ -1106,23 +1109,24 @@ class ScreenshotTest {
     fun planMore() = modules("plan-more", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.MORE)
 
     /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
-    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f) {
+    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
         val model = AppModel(store)
         val care = model.care
         val water = care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0))
-        care.addRoutine("Stretch for five minutes")
+        val stretch = care.addRoutine("Stretch for five minutes")
         care.addRoutine("Wind down without the phone", kotlinx.datetime.LocalTime(22, 0))
         care.completeRoutine(water.id)
+        if (skipOne) care.skipRoutine(stretch.id)
         care.practiseSkill("stop")
         care.saveDiary(mapOf(app.pokeplan.care.Emotion.JOY to 3, app.pokeplan.care.Emotion.FEAR to 2), skills = setOf("stop"), note = "A calm morning")
         care.write("Tea with a friend after work.", tags = setOf("People"))
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
         if (visiting) care.visitors().first().let { v -> care.startVisit(v.speciesId); care.visitAct(app.pokeplan.care.CareAction.WORDS) }
-        render(name, fontScale = fontScale, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height, interact = interact) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     /** The Heal module with a little logged (an activity, drinks, a night, a weight and a goal), Field Research on, open on [section] (null for its menu). */
@@ -1187,7 +1191,7 @@ class ScreenshotTest {
     }
 
     /** The Mint module with a little recorded (two accounts, a card, spending, a budget, a bill and a reconciliation), open on [section] (null for its menu). Synthetic amounts only. */
-    private fun mint(name: String, section: app.pokeplan.ui.mint.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false, settings: ((AppModel) -> Unit)? = null, gate: Boolean = false) {
+    private fun mint(name: String, section: app.pokeplan.ui.mint.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false, settings: ((AppModel) -> Unit)? = null, gate: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(mintParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.MINT) }
@@ -1213,7 +1217,7 @@ class ScreenshotTest {
         model.module = app.pokeplan.ui.screens.Module.MINT
         model.mintSection = section
         // The lock is a title and two keys: little to draw.
-        render(name, fontScale = fontScale, height = height, minBytes = if (gate && section == null) 3_000 else 5_000) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height, minBytes = if (gate && section == null) 3_000 else 5_000, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     @Test
@@ -1992,5 +1996,93 @@ class ScreenshotTest {
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         render("wide-home-medium", width = 900, height = 700, density = 1f) { App(storage, focusTab = true) }
         render("wide-home-expanded", width = 1280, height = 800, density = 1f) { App(storage, focusTab = true) }
+    }
+
+    // ---- The 0.198.0/0.199.0 follow-up: one screenshot per new state, both palettes (CLAUDE.md design rules). ----
+
+    /** Care's Routines with one routine skipped for the day (Today tab). */
+    @Test
+    fun careRoutinesSkipped() = listOf(false, true).forEach { dark -> care("care-routines-skipped-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.ROUTINES, height = 1500, dark = dark, skipOne = true) }
+
+    /** Care's Routines on the Yesterday tab (a tap on the tab). */
+    @Test
+    fun careRoutinesYesterday() = listOf(false, true).forEach { dark ->
+        care("care-routines-yesterday-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.ROUTINES, height = 1000, dark = dark, skipOne = true, interact = { scene ->
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(374f, 429f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(374f, 429f))
+        })
+    }
+
+    /** A bill opened (a tap on its row): "Paid, record it" and the rest of its keys, in both palettes. */
+    @Test
+    fun mintBillOpened() = listOf(false, true).forEach { dark ->
+        mint("mint-bill-open-${if (dark) "dark" else "light"}", app.pokeplan.ui.mint.MintSection.BILLS, height = 1400, dark = dark, interact = { scene ->
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(130f, 195f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(130f, 195f))
+        })
+    }
+
+    /** The two ways a hold-to-confirm key shows: the filling key, and the Reduce motion one before and after its first tap. */
+    @Test
+    fun holdToConfirmKeys() = listOf(false, true).forEach { dark ->
+        render("hold-key-${if (dark) "dark" else "light"}", height = 700, minBytes = 1_000, interact = { scene -> scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(270f, 200f)); scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(270f, 200f)) }) {
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.theme.TextBox {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    app.pokeplan.ui.theme.HoldToConfirm("Hold to erase this device", {})
+                    androidx.compose.runtime.CompositionLocalProvider(app.pokeplan.ui.screens.LocalReduceMotion provides true) { app.pokeplan.ui.theme.HoldToConfirm("Hold to erase this device", {}) }
+                }
+            } } }
+        }
+    }
+
+    /** A task's Edit tab, which ends with Won't do, Duplicate and Delete in one row. */
+    @Test
+    fun planTaskEditTab() = listOf(false, true).forEach { dark ->
+        val store = started()
+        val task = store.addTask("Write the longest title a person might give a single small task today")
+        val model = AppModel(store)
+        render("plan-task-edit-${if (dark) "dark" else "light"}", height = 1500) {
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.plan.TaskCard(model, store.data.tasks.first { it.id == task.id }, null, true, {}, {}, startTab = app.pokeplan.ui.plan.CardTab.EDIT) } }
+        }
+    }
+
+    private class FakeBackups(val off: OffPhoneState?) : BackupAccess {
+        override val hasOffPhone get() = true
+        override fun offPhone() = off
+        override fun automatic() = emptyList<BackupEntry>()
+        override fun lowStorage() = false
+        override fun backupNow() = ""
+        override fun restoreAutomatic(millis: Long) = ""
+        override fun saveCopy(millis: Long?, passphrase: String?, onDone: (String) -> Unit) {}
+        override fun chooseFile(onChosen: (StagedBackup?, String?) -> Unit) {}
+        override fun applyChosen(passphrase: String?, onDone: (String) -> Unit) {}
+    }
+
+    /** Backup off the phone: not set up, the setup form, a healthy copy, an old copy, and a folder that is gone. */
+    @Test
+    fun offPhoneBackupCard() = listOf(false, true).forEach { dark ->
+        val now = clock.nowMillis()
+        val day = 24 * 60 * 60 * 1000L
+        val states = listOf(
+            "not set up" to Pair<OffPhoneState?, Boolean>(null, false), "setup form" to Pair<OffPhoneState?, Boolean>(null, true),
+            "healthy" to Pair<OffPhoneState?, Boolean>(OffPhoneState("Google Drive: PokeLife backups", now - day / 2, null), false),
+            "old" to Pair<OffPhoneState?, Boolean>(OffPhoneState("Google Drive: PokeLife backups", now - 5 * day, null), false),
+            "problem" to Pair<OffPhoneState?, Boolean>(OffPhoneState("Google Drive: PokeLife backups", now - 5 * day, "The folder is not available any more. Choose it again."), false),
+        )
+        render("offphone-card-${if (dark) "dark" else "light"}", height = 2600) {
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    states.forEach { (_, st) -> app.pokeplan.ui.theme.TextBox { Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) { app.pokeplan.ui.screens.OffPhoneSection(FakeBackups(st.first), now, {}, { _, _ -> }, startSetting = st.second) } } }
+                }
+            } }
+        }
+    }
+
+    /** The choice after a damaged database with no backup. */
+    @Test
+    fun recoveryChoiceScreen() = listOf(false, true).forEach { dark ->
+        render("recovery-choice-${if (dark) "dark" else "light"}", height = 1000) {
+            app.pokeplan.ui.screens.RecoveryChoice(clock.nowMillis() - 40L * 24 * 60 * 60 * 1000, {}, {}, darkTheme = dark)
+        }
     }
 }

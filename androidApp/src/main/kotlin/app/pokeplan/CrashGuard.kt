@@ -62,6 +62,6 @@ class PokeLifeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         CrashGuard.install(this)
-        try { BackupWorker.schedule(this) } catch (e: Exception) { /* WorkManager could not start: the app still backs up when it opens */ }
+        try { BackupWorker.schedule(this); OffPhone.schedule(this) } catch (e: Exception) { /* WorkManager could not start: the app still backs up when it opens */ }
     }
 }
