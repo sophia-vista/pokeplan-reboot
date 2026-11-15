@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.205.0
+
+MINT receive-money QR full screen and share (owner request, built on 0.204.0). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. Not run on a device.
+
+- **Full screen:** tapping the receive-money QR, or the new Open button, opens `QrFullScreen` (`ui/mint/Mint.kt`): white page, the account name above, the image at its own aspect ratio as large as fits, Close and Share at the bottom; Back closes it. On Android the screen goes to full brightness and stays on while open (`ImageViewer.bright`, `AndroidImageViewer`: the window's own brightness override, no permission, undone on close). Share (`ImageViewer.share`) writes `receive-qr.png` to the cache `exports/` folder and opens the share sheet through the existing FileProvider; the file name never carries the account's name. Both are off while "hide values" is on. New interface `ImageViewer` in `ui/Integrations.kt`, param `imageViewer` of `App()` and `AppModel`.
+- **Whole screenshot kept:** the picker shrinks to at most 1080 px and 192 KB (`MintRules.QR_MAX_CHARS` 262,144 characters; was 600 px / 64 KB, too small to scan a QR inside a screenshot), and the Receive money box draws the image at its own ratio, at most 420 dp high.
+- **Fix:** the account actions row (Edit, Archive, Close, Delete) clipped "Archive" on a phone; now two rows of two.
+- **Open:** brightness, the share sheet and the dialog's edge-to-edge look are not run on a device (the common `DialogProperties` has no `decorFitsSystemWindows`, so system bars may stay visible). A crop step in the picker is a possible later improvement.
+- **Docs:** `MINT.md` 4.2 and 22B; `code-map.md`; `IMPLEMENTATION_BACKLOG.md` REP-039.
+
 ## 0.204.1
 
 Navigation refinement of REP-067 (rule in `FEATURES/DESIGN_SYSTEM.md` 6.7, "Moving between modules and sections"). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. Not run on a device.
