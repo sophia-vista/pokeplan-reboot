@@ -1133,6 +1133,20 @@ class ScreenshotTest {
     @Test
     fun planMenu() = modules("plan", app.pokeplan.ui.screens.Module.PLAN)
 
+    /** The Sections sheet of a module (Heal here): rows in one dialogue box, over the module's page. */
+    @Test
+    fun sectionsSheet() = meStore("sections-sheet", prepare = { it.module = app.pokeplan.ui.screens.Module.HEAL }) { model ->
+        app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
+        val rows = app.pokeplan.ui.heal.HealSection.entries.map { app.pokeplan.ui.screens.MenuEntry(it.name, it.icon, it.label) }
+        app.pokeplan.ui.screens.NavSheet("Heal", {}) { app.pokeplan.ui.screens.MenuRows(rows) {} }
+    }
+
+    /** The Modules switcher with a "Jump to" search for the sheet's fixed names, on the Modules tab itself. */
+    @Test
+    fun modulesJump() = meStore("modules-jump", prepare = { it.module = null }) { model ->
+        app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
+    }
+
     /** Plan's whole page, for comparing with Care's: the buddy's scene, the party with its perks, today and the sections. */
     @Test
     fun planMenuFull() = meStore("plan-full", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3200) { model ->

@@ -100,25 +100,29 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
  */
 @Composable
 fun MenuList(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
+    app.pokeplan.ui.theme.TextBox { MenuRows(entries, onOpen) }
+}
+
+/** The rows of [MenuList] without a box of their own, for a sheet that is already one box (no box in a box). */
+@Composable
+fun MenuRows(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
     val ui = app.pokeplan.ui.LocalUiSound.current
-    app.pokeplan.ui.theme.TextBox {
-        Column {
-            entries.forEachIndexed { i, e ->
-                if (i > 0) androidx.compose.material3.HorizontalDivider(color = Pixel.Border)
-                Row(
-                    Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min)
-                        .clickable(role = Role.Button, enabled = !e.pending) { ui(e.sound); onOpen(e.key) }
-                        .semantics(mergeDescendants = true) { contentDescription = listOf(e.title, e.count).filter { it.isNotEmpty() }.joinToString(", ") }
-                        .padding(vertical = Spacing.M),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
-                ) {
-                    ItemIcon(e.icon, size = Sizes.Icon, description = null)
-                    Text(e.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                    if (e.badge > 0) Box(Modifier.size(22.dp).background(Pixel.Red, DialogueShape), contentAlignment = Alignment.Center) {
-                        Text("${e.badge}", style = MaterialTheme.typography.labelMedium, color = Color.White)
-                    }
-                    if (e.count.isNotEmpty()) Text(e.count, style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
+    Column {
+        entries.forEachIndexed { i, e ->
+            if (i > 0) androidx.compose.material3.HorizontalDivider(color = Pixel.Border)
+            Row(
+                Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+                    .clickable(role = Role.Button, enabled = !e.pending) { ui(e.sound); onOpen(e.key) }
+                    .semantics(mergeDescendants = true) { contentDescription = listOf(e.title, e.count).filter { it.isNotEmpty() }.joinToString(", ") }
+                    .padding(vertical = Spacing.M),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+            ) {
+                ItemIcon(e.icon, size = Sizes.Icon, description = null)
+                Text(e.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                if (e.badge > 0) Box(Modifier.size(22.dp).background(Pixel.Red, DialogueShape), contentAlignment = Alignment.Center) {
+                    Text("${e.badge}", style = MaterialTheme.typography.labelMedium, color = Color.White)
                 }
+                if (e.count.isNotEmpty()) Text(e.count, style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
             }
         }
     }

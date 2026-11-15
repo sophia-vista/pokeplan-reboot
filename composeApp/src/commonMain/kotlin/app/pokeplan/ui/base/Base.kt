@@ -87,6 +87,7 @@ import app.pokeplan.ui.screens.DateField
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
+import app.pokeplan.ui.screens.ModuleNavKeys
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.ModuleTabs
@@ -200,8 +201,16 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val today = model.store.today
     val tint = ModuleAccent.BASE.accent
     val overview = BaseRules.overview(data, today)
+    val sections = listOf(
+        MenuEntry(BaseSection.CHORES.name, BaseSection.CHORES.icon, "Chores", if (data.chores.isEmpty()) "add one" else "${overview.chores.size} to do today", tint = tint),
+        MenuEntry(BaseSection.SUPPLIES.name, BaseSection.SUPPLIES.icon, "Supplies", if (data.supplies.isEmpty()) "add one" else "${overview.low.size} low", tint = tint),
+        MenuEntry(BaseSection.MAINTENANCE.name, BaseSection.MAINTENANCE.icon, "Maintenance", if (data.schedules.isEmpty() && data.assets.isEmpty()) "add one" else "${overview.maintenance.size} due or soon", tint = tint),
+        MenuEntry(BaseSection.NOTES.name, BaseSection.NOTES.icon, "Notes", if (data.references.isEmpty()) "add one" else "${data.references.size} notes", tint = tint),
+        MenuEntry(BaseSection.ROOM.name, BaseSection.ROOM.icon, "Room", "${data.room.size} placed", tint = tint),
+        MenuEntry(BaseSection.SETTINGS.name, BaseSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
+    )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.BASE.label, onBack = onBack, color = Module.BASE.look.header)
+        ScreenHeader(Module.BASE.label, onBack = onBack, color = Module.BASE.look.header, footer = { ModuleNavKeys(model, Module.BASE, sections) { key -> model.baseSection = BaseSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -210,16 +219,6 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             FirstRecordEgg(model, Tutorials.BASE_TIDY, data.chores.size + data.supplies.size + data.assets.size)
             BaseSearch(model)
             BaseOverview(model, overview)
-            MenuGrid(
-                listOf(
-                    MenuEntry(BaseSection.CHORES.name, BaseSection.CHORES.icon, "Chores", if (data.chores.isEmpty()) "add one" else "${overview.chores.size} to do today", tint = tint),
-                    MenuEntry(BaseSection.SUPPLIES.name, BaseSection.SUPPLIES.icon, "Supplies", if (data.supplies.isEmpty()) "add one" else "${overview.low.size} low", tint = tint),
-                    MenuEntry(BaseSection.MAINTENANCE.name, BaseSection.MAINTENANCE.icon, "Maintenance", if (data.schedules.isEmpty() && data.assets.isEmpty()) "add one" else "${overview.maintenance.size} due or soon", tint = tint),
-                    MenuEntry(BaseSection.NOTES.name, BaseSection.NOTES.icon, "Notes", if (data.references.isEmpty()) "add one" else "${data.references.size} notes", tint = tint),
-                    MenuEntry(BaseSection.ROOM.name, BaseSection.ROOM.icon, "Room", "${data.room.size} placed", tint = tint),
-                    MenuEntry(BaseSection.SETTINGS.name, BaseSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
-                ),
-            ) { key -> model.baseSection = BaseSection.valueOf(key) }
             BasePartyPanel(model, openPokemon)
         }
     }
