@@ -4,7 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import app.pokeplan.mint.CardStyle
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.defaultMinSize
@@ -258,6 +263,7 @@ private fun AccountsView(model: AppModel) {
     var more by remember { mutableStateOf(false) }
     var suffix by remember { mutableStateOf("") }
     var group by remember { mutableStateOf("") }
+    var card by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
     var open by remember { mutableStateOf<String?>(null) }
     var adding by remember { mutableStateOf(data.accounts.isEmpty()) }
@@ -267,10 +273,10 @@ private fun AccountsView(model: AppModel) {
         val minor = if (opening.isBlank()) 0L else Money.parse(opening, currency)
         if (minor == null) { message = "Check the opening balance." to NoticeTone.WARNING; return }
         val first = data.accounts.none { it.status == AccountStatus.ACTIVE }
-        val out = mint.addAccount(name, type, currency, minor, suffix = suffix, group = group)
+        val out = mint.addAccount(name, type, currency, minor, suffix = suffix, group = group, card = card)
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else {
-            message = null; name = ""; opening = ""; suffix = ""; group = ""; more = false; adding = false; model.haptic()
+            message = null; name = ""; opening = ""; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
             // The first account ends on the overview, where Expense is the one next action (REP-056).
             if (first) model.mintSection = null
         }
@@ -286,7 +292,10 @@ private fun AccountsView(model: AppModel) {
                     trail = { Text(mint.show(b.postedMinor, a.currency), style = MaterialTheme.typography.titleSmall) },
                     onClick = { open = if (open == a.id) null else a.id }, onClickLabel = "Show options",
                 ) {
-                    Text(a.name, style = MaterialTheme.typography.bodyLarge)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        if (a.card.isNotEmpty()) Box(Modifier.size(10.dp).background(cardColor(CardStyle.of(a.card))))
+                        Text(a.name, style = MaterialTheme.typography.bodyLarge)
+                    }
                     val meta = listOfNotNull(
                         if (a.suffix.isNotEmpty()) "···${a.suffix}" else a.type.label,
                         a.status.name.lowercase().takeIf { a.status != AccountStatus.ACTIVE },
@@ -319,6 +328,7 @@ private fun AccountsView(model: AppModel) {
                 opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
                 label = if (type.liability) "Amount owed now" else "Balance now", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
+            CardStylePicker(card) { card = it }
             PixelButton(if (more) "Fewer options" else "Group and last digits", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
                 PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
@@ -331,6 +341,26 @@ private fun AccountsView(model: AppModel) {
             }
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
+    }
+}
+
+/** The colour of a card style in the current palette. Cosmetic: nothing reads it but the picker and the account list. */
+@Composable
+private fun cardColor(style: CardStyle): Color = when (style) {
+    CardStyle.PLAIN -> Pixel.InkSoft
+    CardStyle.BLUE -> Pixel.Blue
+    CardStyle.GREEN -> Pixel.Green
+    CardStyle.GOLD -> Pixel.Warning
+    CardStyle.VIOLET -> if (Pixel.dark) Color(0xFFA98CF0) else Color(0xFF6E45C2)
+    CardStyle.SLATE -> Pixel.Ink
+}
+
+/** The card-style picker: one key per style in its own colour. It changes how the account looks and nothing else. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CardStylePicker(selected: String, onPick: (String) -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        CardStyle.entries.forEach { c -> TabButton(c.label, c.id == CardStyle.of(selected).id, { onPick(c.id) }, key = cardColor(c)) }
     }
 }
 
@@ -379,6 +409,7 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     var institution by remember(a.id) { mutableStateOf(a.institution) }
     var group by remember(a.id) { mutableStateOf(a.group) }
     var suffix by remember(a.id) { mutableStateOf(a.suffix) }
+    var card by remember(a.id) { mutableStateOf(a.card) }
     var refused by remember(a.id) { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (editing) {
@@ -397,13 +428,14 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 label = if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking", singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
+            CardStylePicker(card) { card = it }
             PixelField(institution, { institution = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Bank or provider", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
             PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     if (minor == null) refused = "Check the balance."
-                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix))
+                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card))
                         .let { if (it.record != null) { editing = false; refused = null; onDone() } else refused = it.refused }
                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank(), compact = true)
                 PixelButton("Cancel", { editing = false; refused = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
