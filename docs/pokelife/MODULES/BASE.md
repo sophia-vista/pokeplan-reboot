@@ -48,7 +48,7 @@ Initial HOME does not include:
 - Automatic monitoring of the physical home.
 - Full shopping, procurement or price-comparison workflows.
 - Financial accounting, payments or transaction ownership.
-- General project management or a second task manager.
+- General project management or a second task manager. (A **household project** (4.4A) is one lightweight record for a planned purchase or improvement, not project management.)
 - A general-purpose notes/wiki application.
 - Barcode-driven automation as a release dependency.
 
@@ -65,6 +65,7 @@ The initial scope is one personal household and one local user. Areas are option
 | General tasks, projects and focus | PLAN | Optional linked task; never a duplicate chore |
 | Shared reminder scheduling/delivery | `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture` | HOME supplies source-aware requests |
 | Purchases, bills and transactions | MINT | HOME may link only through explicit references; no financial copy |
+| Household projects (a planned purchase or improvement, 4.4A) | HOME | Owns the project record and its rough budget as the player's own note; the purchase itself is a MINT transaction, linked by reference only |
 | Contact records and relationship context | LINK | Optional service-provider reference through LINK ownership |
 | Generic calculators/converters | GEAR | May be reused; HOME owns household meaning and labels |
 | Pokémon, Bag, currency and reward ledger | Shared Pokémon/economy services | HOME emits eligible activity events only |
@@ -223,6 +224,17 @@ An asset may have:
 - Zero or more maintenance schedules and maintenance records.
 
 Asset identity must use stable IDs. A user can edit, archive or delete an asset. Deleting an asset must clearly explain the effect on associated records and attachments; prefer archive where history should be retained. Do not require purchase price or seller details.
+
+### 4.4A Household projects (owner, 15 November 2026; backlog REP-061)
+
+*Why.* The owner's irregular household jobs, such as buying an air conditioner for a room, are neither chores, maintenance nor supplies, and the owner has no place for them. This is the one addition; it does not make HOME a project manager.
+
+A household project is one record: a name (the only required field), an optional area, an optional rough budget (a figure the player types, never a MINT balance or a copy of a transaction), an optional target date, a status (Thinking, Planned, Done, Dropped) and a private note. It may carry the same optional reference to a MINT transaction that an asset has (2.2), set by the player and never copied.
+
+- **Becoming an asset.** Marking a project Done offers "Add as an asset" once, prefilled with the name, area and purchase date; declining leaves the project as a record. An asset created this way may offer a maintenance schedule (4.5) in the same step, optional.
+- **No sub-structure.** No milestones, dependencies, sub-projects or percent complete. A project that needs steps is a PLAN list or task, linked as in 2.1.
+- **Two homes.** A project may name a place (one is created on first use, D10 in the backlog); places stay optional and adding one never blocks a project.
+- **Privacy and rewards.** Names, budgets and notes follow section 8. A project emits no reward event of its own; finishing the linked maintenance or chore does, as before.
 
 ### 4.5 Maintenance
 
