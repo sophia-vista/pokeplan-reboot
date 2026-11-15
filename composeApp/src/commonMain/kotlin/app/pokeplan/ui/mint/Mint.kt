@@ -97,6 +97,7 @@ import app.pokeplan.ui.screens.Confirm
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
+import app.pokeplan.ui.screens.ModuleNavKeys
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.PixelDateField
@@ -184,8 +185,18 @@ private fun MintPage(model: AppModel, section: MintSection?, openPokemon: (Strin
 private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.mintData
     val imports = data.transactions.mapNotNull { it.importBatch }.toSet().size
+    val sections = listOf(
+        MenuEntry(MintSection.ACCOUNTS.name, MintSection.ACCOUNTS.icon, "Accounts", if (data.accounts.isEmpty()) "add one" else "${data.accounts.count { it.status == AccountStatus.ACTIVE }} open", tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.ACTIVITY.name, MintSection.ACTIVITY.icon, "Activity", if (data.transactions.isEmpty()) "add a purchase" else "${data.transactions.size} records", tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.BUDGETS.name, MintSection.BUDGETS.icon, "Budgets", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) "optional" else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} active", tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.BILLS.name, MintSection.BILLS.icon, "Bills and income", billsDetail(model), tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
+    ) + listOfNotNull(
+        MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },
+        MenuEntry(MintSection.SETTINGS.name, MintSection.SETTINGS.icon, "Settings", "Ledger Research, privacy, your data", tint = Pixel.InkSoft),
+    )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.MINT.label, onBack = onBack, color = Module.MINT.look.header)
+        ScreenHeader(Module.MINT.label, onBack = onBack, color = Module.MINT.look.header, footer = { ModuleNavKeys(model, Module.MINT, sections) { key -> model.mintStartType = null; model.mintSection = MintSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -193,18 +204,6 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             ModuleLeadStage(model, Module.MINT, model.data.player.mintLead, model.store.moduleEvent(app.pokeplan.app.GameStore.MINT_LOG_PREFIX), openPokemon = openPokemon)
             FirstRecordEgg(model, Tutorials.MINT_TALLY, data.accounts.size + data.transactions.size)
             OverviewCard(model)
-            MenuGrid(
-                listOf(
-                    MenuEntry(MintSection.ACCOUNTS.name, MintSection.ACCOUNTS.icon, "Accounts", if (data.accounts.isEmpty()) "add one" else "${data.accounts.count { it.status == AccountStatus.ACTIVE }} open", tint = ModuleAccent.MINT.accent),
-                    MenuEntry(MintSection.ACTIVITY.name, MintSection.ACTIVITY.icon, "Activity", if (data.transactions.isEmpty()) "add a purchase" else "${data.transactions.size} records", tint = ModuleAccent.MINT.accent),
-                    MenuEntry(MintSection.BUDGETS.name, MintSection.BUDGETS.icon, "Budgets", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) "optional" else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} active", tint = ModuleAccent.MINT.accent),
-                    MenuEntry(MintSection.BILLS.name, MintSection.BILLS.icon, "Bills and income", billsDetail(model), tint = ModuleAccent.MINT.accent),
-                    MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
-                ) + listOfNotNull(
-                    MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },
-                    MenuEntry(MintSection.SETTINGS.name, MintSection.SETTINGS.icon, "Settings", "Ledger Research, privacy, your data", tint = Pixel.InkSoft),
-                ),
-            ) { key -> model.mintStartType = null; model.mintSection = MintSection.valueOf(key) }
             MintPartyPanel(model, openPokemon)
         }
     }

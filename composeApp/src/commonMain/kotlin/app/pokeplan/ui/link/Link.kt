@@ -73,6 +73,7 @@ import app.pokeplan.ui.screens.DateField
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
+import app.pokeplan.ui.screens.ModuleNavKeys
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.ModuleTabs
@@ -160,8 +161,14 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val today = model.store.today
     val tint = ModuleAccent.LINK.accent
     val open = LinkRules.open(data, today)
+    val sections = listOf(
+        MenuEntry(LinkSection.PEOPLE.name, LinkSection.PEOPLE.icon, "People", if (data.people.isEmpty()) "add one" else "${data.people.size} people", tint = tint),
+        MenuEntry(LinkSection.DATES.name, LinkSection.DATES.icon, "Dates", if (data.dates.isEmpty()) "add one" else "${LinkRules.upcoming(data, today).size} soon", tint = tint),
+        MenuEntry(LinkSection.FOLLOW_UPS.name, LinkSection.FOLLOW_UPS.icon, "Follow-ups", if (data.followUps.isEmpty()) "add one" else "${open.size} open", tint = tint),
+        MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft),
+    )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header)
+        ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, footer = { ModuleNavKeys(model, Module.LINK, sections) { key -> model.linkSection = LinkSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -170,14 +177,6 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             FirstRecordEgg(model, Tutorials.LINK_POSTCARD, data.people.size + data.dates.size + data.followUps.size)
             LinkSearch(model)
             LinkOverview(model)
-            MenuGrid(
-                listOf(
-                    MenuEntry(LinkSection.PEOPLE.name, LinkSection.PEOPLE.icon, "People", if (data.people.isEmpty()) "add one" else "${data.people.size} people", tint = tint),
-                    MenuEntry(LinkSection.DATES.name, LinkSection.DATES.icon, "Dates", if (data.dates.isEmpty()) "add one" else "${LinkRules.upcoming(data, today).size} soon", tint = tint),
-                    MenuEntry(LinkSection.FOLLOW_UPS.name, LinkSection.FOLLOW_UPS.icon, "Follow-ups", if (data.followUps.isEmpty()) "add one" else "${open.size} open", tint = tint),
-                    MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft),
-                ),
-            ) { key -> model.linkSection = LinkSection.valueOf(key) }
             LinkPartyPanel(model, openPokemon)
         }
     }

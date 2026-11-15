@@ -5,13 +5,24 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.203.0
+## 0.204.0
 
 MINT receive-money QR and recurring income (REP-039, first slice, and an owner request). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. None of it was run on a device.
 
 - **Receive QR:** an account can keep one image of its receive-money QR code (`FinancialAccount.receiveQr`, base64 PNG, at most `MintRules.QR_MAX_CHARS` = 88,000 characters, about 64 KB, checked by `MintRules.checkReceiveQr`; set with `MintStore.setReceiveQr`). It lives inside the account's existing sealed `mint_account` JSON row. It is picked with Android's Photo Picker (`ImageChooser` in `Integrations.kt`, `images` parameter of `App()`; `AndroidImagePicker` shrinks it to at most 600 px and 64 KB). The account options show a "Receive money" box (Replace, Remove; hidden when "hide values" is on; "Add QR code" on Android only). Never uploaded or read.
 - **Recurring income:** `Bill.income` (JSON default false). "Received, record it" writes an income transaction through `settleAndRecord`; nothing is ever posted automatically. The Bills screen is now "Bills and income" with a "Bill to pay / Income expected" choice and an income-category picker; the direction is fixed when the entry is created.
 - **Docs:** `MINT.md` 4.2, 8.3A, 13.4, new 22B; `IMPLEMENTATION_BACKLOG.md` REP-039 and priority row 16; `code-map.md`. Still open in REP-039: savings targets, rollover, splits, refunds, charts, other attachments, widget, custom recurrence, spotting subscriptions.
+
+## 0.203.0
+
+Navigation: one less level inside the Modules tab (REP-067; rule in `FEATURES/DESIGN_SYSTEM.md` 6.7, "Moving between modules and sections"). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration.
+
+- **Owner's decisions (15 November 2026):** Home's module cards open the daily view in one tap (already so, no change); a "Sections" key in each module's header opens the section list; a "Modules" key opens a switcher sheet; Gear is a labelled key in the Modules header, not a card.
+- **Sheets:** `screens/ModuleNav.kt` holds `ModuleNavKeys`, `NavSheet` (bottom sheet in a Dialog: one opaque dialogue box, scrim, Close key), `JumpSearch` and `LocalFocusTab`. Plan, Care, Heal, Mint, Base, Link and World no longer draw their inline card grid or row menu; the list moved into the Sections sheet. World's Settings button is a sheet row.
+- **Jump to:** a field on top of the Modules tab searches the fixed names of every module and section (`jumpTargets`, `jumpMatches`) and opens the match.
+- **Plan cut to five rows:** Inbox, Upcoming, Lists, Focus, More. `PlanSection.OUTSTANDING` joined `MORE_HOLDS` (Back from it goes to More); Calendar left the menu and still opens from Upcoming's Calendar key.
+- Code: `MenuRows` in `screens/Menu.kt` (the rows of `MenuList` without its box).
+- Tests: `NavigationTest` (OUTSTANDING.parent); screenshots `sectionsSheet` and `modulesJump`.
 
 ## 0.202.1
 

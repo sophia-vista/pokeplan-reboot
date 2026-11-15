@@ -831,7 +831,7 @@ Product-wide MINT purpose and constraints: `../PRODUCT_BIBLE.md`. Visual languag
 
 ## 22B. As built: receive QR and recurring income
 
-*Not run on a device (0.203.0, REP-039 first slice and an owner request, 15 November 2026). No schema change, no migration, `RewardRules.VERSION` unchanged (nothing pays differently).*
+*Not run on a device (0.204.0, REP-039 first slice and an owner request, 15 November 2026). No schema change, no migration, `RewardRules.VERSION` unchanged (nothing pays differently).*
 
 **Receive-money QR (4.2).** `FinancialAccount.receiveQr` holds one image as base64 PNG, at most `MintRules.QR_MAX_CHARS` (88,000 characters, about 64 KB; `MintRules.checkReceiveQr`), set with `MintStore.setReceiveQr`. It sits inside the account's existing sealed `mint_account` JSON row. The image is chosen with Android's Photo Picker through the `ImageChooser` interface (`App()` parameter `images`); `AndroidImagePicker` shrinks it to at most 600 px and 64 KB. The account options show a "Receive money" box (Replace, Remove; hidden when "hide values" is on); "Add QR code" is offered on Android only. The image is never uploaded and never read or decoded for its content. It is the one attachment built.
 
