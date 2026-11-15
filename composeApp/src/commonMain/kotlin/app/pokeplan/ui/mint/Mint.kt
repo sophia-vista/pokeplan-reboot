@@ -272,6 +272,8 @@ private fun AccountsView(model: AppModel) {
     var currency by remember { mutableStateOf(data.settings.currency) }
     var opening by remember { mutableStateOf("") }
     var limit by remember { mutableStateOf("") }
+    var statementDay by remember { mutableStateOf("") }
+    var dueDay by remember { mutableStateOf("") }
     var more by remember { mutableStateOf(false) }
     var suffix by remember { mutableStateOf("") }
     var group by remember { mutableStateOf("") }
@@ -287,10 +289,10 @@ private fun AccountsView(model: AppModel) {
         val limitMinor = if (type == AccountType.CREDIT_CARD && limit.isNotBlank()) Money.parse(limit, currency) else 0L
         if (limitMinor == null) { message = "Check the credit limit." to NoticeTone.WARNING; return }
         val first = data.accounts.none { it.status == AccountStatus.ACTIVE }
-        val out = mint.addAccount(name, type, currency, minor, suffix = suffix, group = group, card = card, limitMinor = limitMinor)
+        val out = mint.addAccount(name, type, currency, minor, suffix = suffix, group = group, card = card, limitMinor = limitMinor, statementDay = if (type == AccountType.CREDIT_CARD) statementDay.toIntOrNull() ?: 0 else 0, dueDay = if (type == AccountType.CREDIT_CARD) dueDay.toIntOrNull() ?: 0 else 0)
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else {
-            message = null; name = ""; opening = ""; limit = ""; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
+            message = null; name = ""; opening = ""; limit = ""; statementDay = ""; dueDay = ""; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
             // The first account ends on the overview, where Expense is the one next action (REP-056).
             if (first) model.mintSection = null
         }
@@ -321,6 +323,10 @@ private fun AccountsView(model: AppModel) {
                 limit, { limit = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
                 label = "Credit limit", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
+            if (type == AccountType.CREDIT_CARD) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelField(statementDay, { statementDay = dayInput(it) }, Modifier.weight(1f), label = "Statement day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                PixelField(dueDay, { dueDay = dayInput(it) }, Modifier.weight(1f), label = "Due day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            }
             CardColorPicker(card) { card = it }
             PixelButton(if (more) "Fewer options" else "Group and last digits", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
@@ -391,6 +397,8 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     var type by remember(a.id) { mutableStateOf(a.type) }
     var currency by remember(a.id) { mutableStateOf(a.currency) }
     var opening by remember(a.id) { mutableStateOf(Money.plain(a.openingMinor, a.currency)) }
+    var statementDay by remember(a.id) { mutableStateOf(if (a.statementDay > 0) a.statementDay.toString() else "") }
+    var dueDay by remember(a.id) { mutableStateOf(if (a.dueDay > 0) a.dueDay.toString() else "") }
     var limit by remember(a.id) { mutableStateOf(if (a.limitMinor > 0) Money.plain(a.limitMinor, a.currency) else "") }
     var institution by remember(a.id) { mutableStateOf(a.institution) }
     var group by remember(a.id) { mutableStateOf(a.group) }
@@ -422,6 +430,10 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 limit, { limit = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
                 label = "Credit limit", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
+            if (type == AccountType.CREDIT_CARD) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelField(statementDay, { statementDay = dayInput(it) }, Modifier.weight(1f), label = "Statement day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                PixelField(dueDay, { dueDay = dayInput(it) }, Modifier.weight(1f), label = "Due day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            }
             CardColorPicker(card) { card = it }
             if (model.images != null) ReceiveMoneyEdit(model, a, removingQr, { removingQr = it }) { refused = it }
             ToggleRow("Hide from total", hideTotal) { hideTotal = it }
@@ -434,7 +446,7 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                     val limitMinor = if (type == AccountType.CREDIT_CARD && limit.isNotBlank()) Money.parse(limit, currency) else 0L
                     if (minor == null) refused = "Check the balance."
                     else if (limitMinor == null) refused = "Check the credit limit."
-                    else mint.updateAccount(a.copy(limitMinor = limitMinor, name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card, hideFromTotal = hideTotal, appPackage = appPackage))
+                    else mint.updateAccount(a.copy(limitMinor = limitMinor, statementDay = if (type == AccountType.CREDIT_CARD) statementDay.toIntOrNull() ?: 0 else 0, dueDay = if (type == AccountType.CREDIT_CARD) dueDay.toIntOrNull() ?: 0 else 0, name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card, hideFromTotal = hideTotal, appPackage = appPackage))
                         .let { if (it.record != null) { editing = false; refused = null; onDone() } else refused = it.refused }
                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank(), compact = true)
                 PixelButton("Cancel", { editing = false; refused = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -443,12 +455,18 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             Confirm("Delete this account? Only an account with no records can be deleted.", "Delete", onConfirm = { refused = mint.deleteAccount(a.id); asking = false; if (refused == null) onDone() }, onKeep = { asking = false })
         } else Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             val owed = MintRules.balances(model.mintData).firstOrNull { it.account.id == a.id }?.postedMinor ?: 0L
-            MintRules.leftToSpend(a, owed)?.let { left ->
-                Text(
-                    if (owed > a.limitMinor) "Over the limit by ${mint.show(owed - a.limitMinor, a.currency)}"
-                    else "Used ${mint.show(owed, a.currency)} of ${mint.show(a.limitMinor, a.currency)} · ${mint.show(left, a.currency)} left to spend",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
+            if (a.type == AccountType.CREDIT_CARD) {
+                val soft = MaterialTheme.typography.bodyMedium
+                Text("Owed ${mint.show(owed, a.currency)}", style = soft, color = Pixel.InkSoft)
+                MintRules.leftToSpend(a, owed)?.let { left ->
+                    Text(
+                        if (owed > a.limitMinor) "Over the limit by ${mint.show(owed - a.limitMinor, a.currency)}"
+                        else "Used ${mint.show(owed, a.currency)} of ${mint.show(a.limitMinor, a.currency)} · ${mint.show(left, a.currency)} left to spend",
+                        style = soft, color = Pixel.InkSoft,
+                    )
+                }
+                dayLine("Statement", a.statementDay, model.store.today)?.let { Text(it, style = soft, color = Pixel.InkSoft) }
+                dayLine("Due", a.dueDay, model.store.today)?.let { Text(it, style = soft, color = Pixel.InkSoft) }
             }
             val launcher = model.appLauncher
             val appLabel = if (a.appPackage.isNotEmpty()) launcher?.label(a.appPackage) else null

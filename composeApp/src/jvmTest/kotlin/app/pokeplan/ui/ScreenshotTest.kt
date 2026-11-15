@@ -1683,7 +1683,7 @@ class ScreenshotTest {
             model.mint.updateAccount(shared.copy(hideFromTotal = true))
             model.mint.addAccount("Emergency fund", app.pokeplan.mint.AccountType.BANK, "PHP", 8_000_000, group = long)
             model.mint.addAccount("Dollar savings", app.pokeplan.mint.AccountType.BANK, "USD", 150_000, group = long)
-            val card = model.mint.addAccount("Credit card", app.pokeplan.mint.AccountType.CREDIT_CARD, "PHP", 123_456_789, group = "Cards", limitMinor = 200_000_000).record!!
+            val card = model.mint.addAccount("Credit card", app.pokeplan.mint.AccountType.CREDIT_CARD, "PHP", 123_456_789, group = "Cards", limitMinor = 200_000_000, statementDay = 22, dueDay = 11).record!!
             model.mint.addAccount("Wallet", app.pokeplan.mint.AccountType.CASH, "PHP", 45_000)
             model.mint.updateAccount(gcash.copy(appPackage = "com.globe.gcash.android", hideFromTotal = true))
             val suffix = if (dark) "-dark" else ""
@@ -1697,8 +1697,11 @@ class ScreenshotTest {
             render("mint-account-edit-app$suffix", height = 2100, minBytes = 3_000) {
                 PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, g, startEditing = true) {} } }
             }
-            render("mint-account-card-limit$suffix", height = 500, minBytes = 1_500) {
+            render("mint-account-card-limit$suffix", height = 650, minBytes = 1_500) {
                 PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first { it.id == card.id }) {} } }
+            }
+            render("mint-account-card-edit$suffix", height = 2300, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first { it.id == card.id }, startEditing = true) {} } }
             }
             render("mint-account-open-app$suffix", height = 400, minBytes = 1_500) {
                 PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, g) {} } }
