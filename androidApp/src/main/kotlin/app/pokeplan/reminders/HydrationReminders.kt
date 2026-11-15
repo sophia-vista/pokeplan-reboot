@@ -7,12 +7,12 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import app.pokeplan.MainActivity
-import app.pokeplan.app.ReminderActions
-import app.pokeplan.app.ReminderRequest
+import app.pokeplan.app.reminders.ReminderActions
+import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.ui.Place
 
 /**
- * How a Heal hydration reminder looks as a notification (the rules are in [app.pokeplan.app.HealReminders]). It says the same thing every time: no drink, no amount, no
+ * How a Heal hydration reminder looks as a notification (the rules are in [app.pokeplan.app.heal.HealReminders]). It says the same thing every time: no drink, no amount, no
  * target, nothing about the person's health, and the full text is also its lock-screen text, so there is nothing more private to hide. One button: "In 30 min". There is no
  * "done": a reminder is not a record and pays nothing. Scheduling and the button's routing are in the shared reminder feature ([SharedReminders]).
  */
@@ -24,7 +24,7 @@ object HydrationReminders {
         manager.createNotificationChannel(NotificationChannel(Channels.HEAL_HYDRATION, "Heal reminders", NotificationManager.IMPORTANCE_LOW))
         val id = notificationId(ref)
         // The same notification carries Heal's other reminder, to read Huawei Health (INTEGRATIONS_AND_PRIVACY.md 5.2.2): words that say nothing about health either.
-        val huawei = ref == app.pokeplan.app.HuaweiReadReminder.REF
+        val huawei = ref == app.pokeplan.app.heal.HuaweiReadReminder.REF
         val open = PendingIntent.getActivity(
             context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.HEAL.name),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,

@@ -46,7 +46,7 @@ enum class RegionLook(val scene: String, private val module: ModuleAccent) {
     /** The Mint module (docs/pokelife MODULES/MINT.md): a quiet cave of ore, and ochre. A utility surface: the scene is only a backdrop and never sits behind a figure. */
     MINT(BuddyScene.MINT, ModuleAccent.MINT),
 
-    /** The Home module (docs/pokelife MODULES/HOME.md): the town, and green. A utility surface: the scene is only a quiet backdrop. */
+    /** The Home module (docs/pokelife MODULES/BASE.md): the town, and green. A utility surface: the scene is only a quiet backdrop. */
     BASE(BuddyScene.BASE, ModuleAccent.BASE),
 
     /** The Link module (docs/pokelife MODULES/LINK.md): a route for the postcard trail, and blue. A utility surface: the scene is only a quiet backdrop. */

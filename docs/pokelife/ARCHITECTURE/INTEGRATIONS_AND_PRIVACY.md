@@ -559,7 +559,7 @@ HEAL, MINT, HOME and LINK used the shared contract from their first reminder. Th
 - **Nightly refresh.** The planner looks a bounded horizon ahead and was otherwise re-run only when the app opened or an alarm fired, so one inexact alarm a night at 04:00 local (`setAndAllowWhileIdle`, `ACTION_REFRESH`) plans everything again.
 - **Snoozes per module:** PLAN 10 min / 1 h / tomorrow (and its own repeat, bounded to 3); CARE 30 min; HEAL uses CARE's. A snooze survives a reboot because it is stored.
 - **Stay in `AppAlerts` on purpose:** focus halfway/end alerts (the session's own feedback), World jobs and GEAR timers (user-started timers, not reminders on a source record). The streak reminder and weekly recap are PLAN nudges on the shared scheduler (`PlanReminderAdapter` kinds `streak` and `recap`): a streak request for each of the next three days at the chosen hour, the recap for the next Sunday at 18:00; a request inside quiet hours is not made, and `isStillWanted` drops one whose day has gone by, so a nudge held until morning is dropped instead of nagging. No repeats, no actions.
-- **HOME and LINK reminders** are off by default, switched on per record behind a module master switch, with a lock-screen text that never names a record. A request holds an opaque record id, the kind and a day; unlocked text names a record only by the user's choice. A request that fires after the date it was made for has passed is stale and dropped. Notification actions never change a record except a chore's or follow-up's own completion ("Done"), which pays once like ticking it in the module; maintenance, restocking and warranties have no such action. Details are in `MODULES/HOME.md` and `MODULES/LINK.md`.
+- **HOME and LINK reminders** are off by default, switched on per record behind a module master switch, with a lock-screen text that never names a record. A request holds an opaque record id, the kind and a day; unlocked text names a record only by the user's choice. A request that fires after the date it was made for has passed is stale and dropped. Notification actions never change a record except a chore's or follow-up's own completion ("Done"), which pays once like ticking it in the module; maintenance, restocking and warranties have no such action. Details are in `MODULES/BASE.md` and `MODULES/LINK.md`.
 - **Not run on a device:** the alarms, notifications and buttons themselves. Phone checks: a routine a few minutes ahead notifies, Done ticks it and "In 30 min" returns it; a snooze survives a restart; a reminder during a focus session waits for its end; a 23:00 routine comes at 07:00; notifications posted by an older version still react to their buttons.
 
 ### 9.12 Testing and acceptance criteria
@@ -609,7 +609,7 @@ HEAL, MINT, HOME and LINK used the shared contract from their first reminder. Th
 
 - `../MODULES/PLAN.md` defines which PLAN records request reminders and how PLAN task/event actions behave.
 - `../MODULES/CARE.md` defines optional routine and Diary Card reminder preferences and CARE action semantics.
-- `../MODULES/HOME.md` defines HOME-owned chore, maintenance, low-stock and warranty reminder sources and their module-specific action semantics.
+- `../MODULES/BASE.md` defines HOME-owned chore, maintenance, low-stock and warranty reminder sources and their module-specific action semantics.
 - `../MODULES/LINK.md` may define important-date/follow-up reminder sources when LINK is specified.
 - `../MODULES/HEAL.md` defines optional medication, appointment, hydration and health-goal reminder sources and HEAL-specific action semantics. Medication details and instructions remain in HEAL and are not copied into shared scheduler storage.
 - `../MODULES/MINT.md` defines bill-occurrence reminder preferences and MINT-owned navigation/action semantics. Shared reminder metadata and lock-screen text must not contain amounts, account details, provider names or payment status; a reminder action does not mark a bill paid.
@@ -927,7 +927,7 @@ Phase 3's Health Connect adapter and import preview, provenance, deduplication, 
 | `../MODULES/CARE.md` | Private CARE records and permitted non-sensitive activity metadata |
 | `../MODULES/HEAL.md` | Health records, Health Connect/Huawei feasibility, imports and Field Research boundary |
 | `../MODULES/MINT.md` | Philippine financial records, provider investigation, statement imports and Ledger Research boundary |
-| `../MODULES/HOME.md` | Household records, optional location use and Habitat Discovery boundary |
+| `../MODULES/BASE.md` | Household records, optional location use and Habitat Discovery boundary |
 | `../MODULES/LINK.md` | Contact import, relationship privacy and Postcard Trail boundary |
 | `../MODULES/GEAR.md` | Sensor, location, microphone, camera, Bluetooth and device utility behavior |
 | `../MODULES/WORLD.md` | Game progression and strict isolation from private module records |

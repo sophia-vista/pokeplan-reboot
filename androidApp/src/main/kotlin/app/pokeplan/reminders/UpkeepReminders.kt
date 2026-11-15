@@ -7,13 +7,13 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import app.pokeplan.MainActivity
-import app.pokeplan.app.BaseReminderKind
-import app.pokeplan.app.ReminderActions
-import app.pokeplan.app.ReminderRequest
+import app.pokeplan.app.base.BaseReminderKind
+import app.pokeplan.app.reminders.ReminderActions
+import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.ui.Place
 
 /**
- * How a Home reminder looks as a notification (the rules are in [app.pokeplan.app.BaseReminders]; HOME.md section 6). The lock screen shows the same words for
+ * How a Home reminder looks as a notification (the rules are in [app.pokeplan.app.base.BaseReminders]; BASE.md section 6). The lock screen shows the same words for
  * every record whatever the user allowed (the kind only: "A chore is due"); the full text, which names the chore, supply or job only when the user said so, shows
  * after unlocking. There is never a quantity, a serial number or a note. It opens Home. A chore's notification has "Done" (the chore's own completion) and every kind
  * has "Tomorrow"; a reminder never marks maintenance done, restocks a supply or changes a warranty.
@@ -27,7 +27,7 @@ object UpkeepReminders {
         manager.createNotificationChannel(NotificationChannel(Channels.HOME_UPKEEP, "Base reminders", NotificationManager.IMPORTANCE_LOW).apply { lockscreenVisibility = Notification.VISIBILITY_PRIVATE })
         val id = notificationId(request.sourceRef, request.kind)
         val open = PendingIntent.getActivity(
-            context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.HOUSEHOLD.name),
+            context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.BASE.name),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val generic = Notification.Builder(context, Channels.HOME_UPKEEP).setSmallIcon(notificationIcon(context, "chipped-pot")).setContentTitle(kind.publicText).build()

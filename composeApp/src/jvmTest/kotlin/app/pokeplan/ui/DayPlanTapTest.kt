@@ -8,9 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.unit.Density
-import app.pokeplan.app.Clock
+import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.MemoryStorage
+import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
 import org.jetbrains.skia.EncodedImageFormat
@@ -30,7 +30,7 @@ class DayPlanTapTest {
         store.addTask("Reply to mail", app.pokeplan.plan.Rank.E, planned = store.today)
         val model = AppModel(store)
         val scene = ImageComposeScene(width = 540, height = 2400, density = Density(1.5f, 1f)) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanView(model, app.pokeplan.ui.screens.PlanSection.CALENDAR, {}, {}, {}) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.CALENDAR, {}, {}, {}) } }
         }
         var nanos = 0L
         fun settle(n: Int = 30) = repeat(n) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(8) }

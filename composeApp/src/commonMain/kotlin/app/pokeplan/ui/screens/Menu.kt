@@ -57,6 +57,7 @@ import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
+import app.pokeplan.ui.pokemon.label
 
 /** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
 /** One card of a menu. [detail] is no longer drawn (the owner wants every card the same: icon and title only); it is kept as what a screen reader says after the title. */

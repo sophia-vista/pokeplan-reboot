@@ -23,6 +23,8 @@ import app.pokeplan.app.ExactInput
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.plan.monthGrid
+import app.pokeplan.ui.pokemon.label
 
 /**
  * One date field for every module (design review, 11 November 2026): the days people reach for as keys ([presets], days back from

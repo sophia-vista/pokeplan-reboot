@@ -1,8 +1,8 @@
 package app.pokeplan.ui
 
-import app.pokeplan.ui.screens.SkyBarks
-import app.pokeplan.ui.screens.SkyJobs
-import app.pokeplan.ui.screens.dungeonEntrance
+import app.pokeplan.ui.world.SkyBarks
+import app.pokeplan.ui.world.SkyJobs
+import app.pokeplan.ui.world.dungeonEntrance
 import app.pokeplan.world.Dungeons
 import app.pokeplan.world.Missions
 import java.io.File

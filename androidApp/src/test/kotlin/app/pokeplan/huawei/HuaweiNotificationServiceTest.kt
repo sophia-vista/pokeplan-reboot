@@ -4,7 +4,7 @@ import android.app.Notification
 import android.os.Process
 import android.service.notification.StatusBarNotification
 import androidx.test.core.app.ApplicationProvider
-import app.pokeplan.app.HuaweiHealth
+import app.pokeplan.app.heal.HuaweiHealth
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

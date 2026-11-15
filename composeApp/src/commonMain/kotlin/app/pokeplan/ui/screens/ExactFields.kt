@@ -26,6 +26,8 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.toInstant
+import app.pokeplan.ui.plan.clock
+import app.pokeplan.ui.pokemon.label
 
 /**
  * A text box that holds a typed value (a date, a time, a length); when it loses focus it rewrites what was typed in the one

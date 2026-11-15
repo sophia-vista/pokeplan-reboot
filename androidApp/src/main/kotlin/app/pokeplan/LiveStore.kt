@@ -2,9 +2,9 @@ package app.pokeplan
 
 import android.content.Context
 import android.util.Log
-import app.pokeplan.app.FileStorage
+import app.pokeplan.app.storage.FileStorage
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.Storage
+import app.pokeplan.app.storage.Storage
 import app.pokeplan.data.AndroidDatabase
 import app.pokeplan.data.DataStore
 import app.pokeplan.data.KeystoreBackupKey

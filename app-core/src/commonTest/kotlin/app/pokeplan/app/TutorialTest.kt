@@ -10,6 +10,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import app.pokeplan.app.storage.Clock
+import app.pokeplan.app.storage.MemoryStorage
 
 /** Each module's first-run tutorial gives one Pokémon through its own method, once (POKEMON_ECOSYSTEM.md section 10.2.1). */
 class TutorialTest {

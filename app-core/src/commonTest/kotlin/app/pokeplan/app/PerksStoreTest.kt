@@ -22,6 +22,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import app.pokeplan.app.storage.Clock
+import app.pokeplan.app.storage.MemoryStorage
 
 class PerksStoreTest {
     private class FakeClock(var millis: Long) : Clock {

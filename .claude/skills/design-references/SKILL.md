@@ -26,7 +26,7 @@ them by hand if you need them.
 2. Check the avoid list. If the idea is on it, drop it.
 3. Build it from what exists: colours and sizes from `Pixel` and `Spacing` in `theme/PixelTheme.kt`; `TextBox`,
    `PixelButton`, `GameBox`, `ExpBar` there; `ScreenHeader`, `SectionLabel`, `StatChip`, `ListRow`, `RankBadge` in
-   `theme/Widgets.kt`; `MenuGrid` and `SectionScaffold` in `screens/Menu.kt`; `EmptyState` in `screens/Planner.kt`;
+   `theme/ThemeWidgets.kt`; `MenuGrid` and `SectionScaffold` in `screens/Menu.kt`; `EmptyState` in `plan/Planner.kt`;
    `RewardBox` and `UndoBar` in `screens/Components.kt`. No one-off colours or sizes.
 4. Check it in `ScreenshotTest` (light and dark, and at a large font scale), with Reduce motion on, and at a narrow
    phone width.

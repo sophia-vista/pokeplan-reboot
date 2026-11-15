@@ -7,26 +7,26 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import app.pokeplan.LiveStore
-import app.pokeplan.app.ActionResult
-import app.pokeplan.app.CareReminderAdapter
-import app.pokeplan.app.HealReminderAdapter
-import app.pokeplan.app.BaseReminderAdapter
-import app.pokeplan.app.LinkReminderAdapter
+import app.pokeplan.app.reminders.ActionResult
+import app.pokeplan.app.reminders.CareReminderAdapter
+import app.pokeplan.app.heal.HealReminderAdapter
+import app.pokeplan.app.base.BaseReminderAdapter
+import app.pokeplan.app.link.LinkReminderAdapter
 import app.pokeplan.linkStore
-import app.pokeplan.app.MintReminderAdapter
+import app.pokeplan.app.mint.MintReminderAdapter
 import app.pokeplan.baseStore
 import app.pokeplan.mintStore
 import app.pokeplan.healStore
-import app.pokeplan.app.FireDecision
-import app.pokeplan.app.FocusWindow
-import app.pokeplan.app.Nudges
-import app.pokeplan.app.PlanReminderAdapter
+import app.pokeplan.app.reminders.FireDecision
+import app.pokeplan.app.reminders.FocusWindow
+import app.pokeplan.app.plan.Nudges
+import app.pokeplan.app.reminders.PlanReminderAdapter
 import app.pokeplan.ui.Place
-import app.pokeplan.app.ReminderActions
-import app.pokeplan.app.ReminderCoordinator
-import app.pokeplan.app.ReminderModule
-import app.pokeplan.app.ReminderRequest
-import app.pokeplan.app.ReminderSnooze
+import app.pokeplan.app.reminders.ReminderActions
+import app.pokeplan.app.reminders.ReminderCoordinator
+import app.pokeplan.app.reminders.ReminderModule
+import app.pokeplan.app.reminders.ReminderRequest
+import app.pokeplan.app.reminders.ReminderSnooze
 import app.pokeplan.careStore
 import app.pokeplan.data.HeldReminder
 import app.pokeplan.data.ReminderRepository
@@ -175,13 +175,13 @@ object SharedReminders {
         putExtra(X_MODULE, r.module.name).putExtra(X_REF, r.sourceRef).putExtra(X_KIND, r.kind).putExtra(X_OCC, r.occurrence).putExtra(X_AT, r.atMillis)
 
     private fun Intent.request(): ReminderRequest? = ReminderRequest(
-        module = getStringExtra(X_MODULE)?.let { m -> ReminderModule.entries.firstOrNull { it.name == m } } ?: return null,
+        module = getStringExtra(X_MODULE)?.let { m -> ReminderModule.parse(m) } ?: return null,
         sourceRef = getStringExtra(X_REF) ?: return null, kind = getStringExtra(X_KIND) ?: return null,
         atMillis = getLongExtra(X_AT, 0L), occurrence = getStringExtra(X_OCC).orEmpty(),
     )
 
     private fun HeldReminder.toRequest() = ReminderRequest(
-        ReminderModule.entries.first { it.name == module }, sourceRef, kind, atMillis, occurrence = occurrence,
+        ReminderModule.parse(module) ?: ReminderModule.PLAN, sourceRef, kind, atMillis, occurrence = occurrence,
     )
 
     private fun ReminderRequest.hold(reason: String) = HeldReminder(id, module.name, sourceRef, kind, occurrence, atMillis, reason)
@@ -241,7 +241,7 @@ object SharedReminders {
             ReminderModule.CARE -> RoutineReminders.show(context, request.sourceRef, title, LocalDate.parse(request.occurrence), request)
             ReminderModule.HEAL -> HydrationReminders.show(context, request.sourceRef, title, request)
             ReminderModule.MINT -> BillReminders.show(context, request.sourceRef, title, request)
-            ReminderModule.HOME -> UpkeepReminders.show(context, request, title)
+            ReminderModule.BASE -> UpkeepReminders.show(context, request, title)
             ReminderModule.LINK -> LinkNotices.show(context, request, title)
             else -> Unit
         }
@@ -280,7 +280,7 @@ object SharedReminders {
             ReminderModule.CARE -> RoutineReminders.notificationId(request.sourceRef)
             ReminderModule.HEAL -> HydrationReminders.notificationId(request.sourceRef)
             ReminderModule.MINT -> BillReminders.notificationId(request.sourceRef)
-            ReminderModule.HOME -> UpkeepReminders.notificationId(request.sourceRef, request.kind)
+            ReminderModule.BASE -> UpkeepReminders.notificationId(request.sourceRef, request.kind)
             ReminderModule.LINK -> LinkNotices.notificationId(request.sourceRef, request.kind)
             else -> return
         }

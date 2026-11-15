@@ -1,17 +1,16 @@
 package app.pokeplan
 
 import android.content.Context
-import app.pokeplan.app.CareStore
-import app.pokeplan.app.Clock
+import app.pokeplan.app.care.CareStore
+import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.HealStore
-import app.pokeplan.app.BaseLinkOwner
-import app.pokeplan.app.BaseStore
-import app.pokeplan.app.LinkStore
-import app.pokeplan.app.MintStore
-import app.pokeplan.app.MemoryStorage
-import app.pokeplan.app.Storage
-
+import app.pokeplan.app.heal.HealStore
+import app.pokeplan.app.plan.BaseLinkOwner
+import app.pokeplan.app.base.BaseStore
+import app.pokeplan.app.link.LinkStore
+import app.pokeplan.app.mint.MintStore
+import app.pokeplan.app.storage.MemoryStorage
+import app.pokeplan.app.storage.Storage
 /**
  * The save is one document in the app's private database; the app and the widgets share it (see [LiveStore]). Before the
  * first start of a build with the database, and only if it can never be opened, it is the file `save.json`.

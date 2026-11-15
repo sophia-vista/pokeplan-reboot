@@ -8,8 +8,8 @@ import android.content.Intent
 import android.os.Looper
 import app.pokeplan.AndroidTestBase
 import app.pokeplan.LiveStore
-import app.pokeplan.app.PlanReminderAdapter
-import app.pokeplan.app.ReminderRequest
+import app.pokeplan.app.reminders.PlanReminderAdapter
+import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.plan.QuietHours
 import app.pokeplan.plan.ReminderOffset
 import app.pokeplan.plan.Reminders

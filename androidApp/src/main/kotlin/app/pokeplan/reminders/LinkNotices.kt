@@ -7,14 +7,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import app.pokeplan.MainActivity
-import app.pokeplan.app.LinkReminderKind
-import app.pokeplan.app.LinkReminders
-import app.pokeplan.app.ReminderActions
-import app.pokeplan.app.ReminderRequest
+import app.pokeplan.app.link.LinkReminderKind
+import app.pokeplan.app.link.LinkReminders
+import app.pokeplan.app.reminders.ReminderActions
+import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.ui.Place
 
 /**
- * How a Link reminder looks as a notification (the rules are in [app.pokeplan.app.LinkReminders]; LINK.md section 5). The lock screen always says the same
+ * How a Link reminder looks as a notification (the rules are in [app.pokeplan.app.link.LinkReminders]; LINK.md section 5). The lock screen always says the same
  * generic words ("You have an upcoming reminder"); the date's or follow-up's own title shows after unlocking only when the user allowed it, and never a person,
  * a note or a date's type. It opens Link. A follow-up's notification has "Done" (the follow-up's own completion) and every kind has "Tomorrow"; dismissing one
  * changes no record and costs nothing.

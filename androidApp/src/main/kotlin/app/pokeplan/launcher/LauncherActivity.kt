@@ -24,8 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.lifecycleScope
-import app.pokeplan.AndroidCryPlayer
-import app.pokeplan.AndroidHaptics
+import app.pokeplan.platform.AndroidCryPlayer
+import app.pokeplan.platform.AndroidHaptics
 import app.pokeplan.MainActivity
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
@@ -112,7 +112,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
             return
         }
         prefs = LauncherPrefs.decode(getSharedPreferences(PREFS, MODE_PRIVATE).getString(PREFS_KEY, null))
-        model = AppModel(store, cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), calendars = app.pokeplan.AndroidCalendars(this))
+        model = AppModel(store, cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), calendars = app.pokeplan.platform.AndroidCalendars(this))
         launcherApps.registerCallback(packageChanges)
         releaseUnusedWidgetId()
         reloadApps()

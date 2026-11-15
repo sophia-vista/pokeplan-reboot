@@ -1,9 +1,9 @@
 package app.pokeplan.ui
 
-import app.pokeplan.app.Clock
+import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.MemoryStorage
-import app.pokeplan.ui.screens.CareSection
+import app.pokeplan.app.storage.MemoryStorage
+import app.pokeplan.ui.care.CareSection
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PlanSection
 import kotlin.test.Test
@@ -26,7 +26,7 @@ class NavigationTest {
         model().apply { open(Place.CARE, true); assertEquals(Module.CARE, module); assertNull(careSection) }
         model().apply { open(Place.HEAL, true); assertEquals(Module.HEAL, module); assertNull(healSection) }
         model().apply { open(Place.MINT, true); assertEquals(Module.MINT, module); assertNull(mintSection) }
-        model().apply { open(Place.HOUSEHOLD, true); assertEquals(Module.HOME, module); assertNull(baseSection) }
+        model().apply { open(Place.BASE, true); assertEquals(Module.BASE, module); assertNull(baseSection) }
         model().apply { open(Place.LINK, true); assertEquals(Module.LINK, module); assertNull(linkSection) }
         model().apply { open(Place.WORLD, true); assertEquals(Module.WORLD, module); assertNull(worldSection) }
         model().apply { open(Place.PARTY, true); assertTrue(openParty) }
@@ -36,7 +36,7 @@ class NavigationTest {
     @Test
     fun theNamesWidgetsAndShortcutsSendResolveToPlaces() {
         // The Android side looks a place up by its name; every name it uses must exist.
-        listOf("PLANNER", "FOCUS", "CARE", "HEAL", "MINT", "HOUSEHOLD", "LINK", "WORLD", "ME", "HOME", "COLLECTION", "GEAR").forEach { name ->
+        listOf("PLANNER", "FOCUS", "CARE", "HEAL", "MINT", "BASE", "LINK", "WORLD", "ME", "HOME", "COLLECTION", "GEAR").forEach { name ->
             assertTrue(Place.entries.any { it.name == name }, "$name is a place")
         }
     }
@@ -45,7 +45,7 @@ class NavigationTest {
     fun openingAModuleTwiceKeepsItsPlaceAndHomeLeavesTheModulesAlone() {
         val m = model()
         m.open(Place.WORLD, true)
-        m.worldSection = app.pokeplan.ui.screens.WorldSection.MAP
+        m.worldSection = app.pokeplan.ui.world.WorldSection.MAP
         m.open(Place.HOME, true)
         assertEquals(Module.WORLD, m.module, "going Home does not close the module that is open")
     }

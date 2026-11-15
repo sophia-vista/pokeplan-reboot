@@ -11,6 +11,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
+import app.pokeplan.ui.pokemon.label
 
 /**
  * One integration as INTEGRATIONS_AND_PRIVACY.md section 14 asks: what it does, its class (official API, Android platform, user-assisted import, unsupported),

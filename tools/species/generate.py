@@ -29,7 +29,7 @@ FILES = ['pokemon', 'pokemon_species', 'pokemon_species_names', 'pokemon_stats',
 OUT_DIR = os.path.join(ROOT, 'pokemon-core/src/commonMain/resources/dex')
 # Module regions, hand-curated (docs/region-curation-prompt.md): Region entry -> list file. A missing file is a region
 # not curated yet, which gets no row (an empty dex). A species is in at most one module region.
-MODULE_REGIONS = {'PLAN': 'plan', 'CARE': 'care', 'HEAL': 'heal', 'MINT': 'mint', 'HOUSEHOLD': 'household', 'LINK': 'link'}
+MODULE_REGIONS = {'PLAN': 'plan', 'CARE': 'care', 'HEAL': 'heal', 'MINT': 'mint', 'BASE': 'base', 'LINK': 'link'}
 REGION_LIST_DIR = os.path.join(ROOT, 'tools/species/regions')
 KIND_RANK = {'LEVEL': 0, 'STONE': 1, 'FRIENDSHIP': 2, 'LEVEL_TIME': 3, 'GENDER': 4, 'TRADE': 5, 'RANDOM': 6, 'TRIAL': 7}
 

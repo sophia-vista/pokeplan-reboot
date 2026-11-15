@@ -26,6 +26,8 @@ import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.TextBox
+import app.pokeplan.ui.plan.EmptyState
+import app.pokeplan.ui.pokemon.label
 
 @Composable
 internal fun QuestsView(model: AppModel) {

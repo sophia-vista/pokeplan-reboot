@@ -59,6 +59,10 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
+import app.pokeplan.ui.pokemon.label
+import app.pokeplan.ui.world.StoryPlayer
+import app.pokeplan.app.world.worldMoment
+import app.pokeplan.app.world.worldMomentSeen
 
 /** A moment that takes the whole screen for a few seconds, the way the games stop for it: an egg hatching, an evolution. */
 sealed interface Cutscene {

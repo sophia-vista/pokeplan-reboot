@@ -11,3 +11,6 @@ tools/species/cache
 .claude/worktrees/
 tools/sprites/cache-rescue-maps
 tools/sprites/cache-pret
+
+__pycache__/
+*.pyc

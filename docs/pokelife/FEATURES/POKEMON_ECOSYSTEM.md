@@ -1068,7 +1068,7 @@ Do not start Tier 2/3 before Tier 0 inventory, transaction, persistence and migr
 | `MODULES/CARE.md` | Care Play, visitor befriending, Care Eggs and CARE privacy boundary |
 | `MODULES/HEAL.md` | Field Research triggers and health-data exclusions |
 | `MODULES/MINT.md` | Ledger Research triggers and financial-data exclusions |
-| `MODULES/HOME.md` | Habitat Discovery triggers and household-data exclusions |
+| `MODULES/BASE.md` | Habitat Discovery triggers and household-data exclusions |
 | `MODULES/LINK.md` | Postcard Trail triggers and contact-data exclusions |
 | `MODULES/GEAR.md` | Helper Pokémon visual-only rule; no acquisition or rewards |
 | `MODULES/WORLD.md` | WORLD expeditions, Finds, recruitment, story, Exploration Rank and team assignment |
