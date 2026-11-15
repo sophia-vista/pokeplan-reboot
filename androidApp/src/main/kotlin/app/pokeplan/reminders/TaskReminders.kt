@@ -8,12 +8,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import app.pokeplan.MainActivity
-import app.pokeplan.app.ReminderActions
-import app.pokeplan.app.ReminderRequest
+import app.pokeplan.app.reminders.ReminderActions
+import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.Place
-import app.pokeplan.ui.screens.clock
+import app.pokeplan.ui.plan.clock
 import app.pokeplan.ui.screens.short
 import kotlinx.datetime.TimeZone
 

@@ -67,7 +67,7 @@ object Decorations {
 
     fun get(id: String): Decoration? = byId[id]
 
-    /** Points a paid moment adds to the Decoration meter (HOME.md 9.5.4): a chore done 1, a piece of maintenance done 2. *(tune)* */
+    /** Points a paid moment adds to the Decoration meter (BASE.md 9.5.4): a chore done 1, a piece of maintenance done 2. *(tune)* */
     const val CHORE_POINTS = 1
     const val MAINTENANCE_POINTS = 2
 
@@ -130,7 +130,7 @@ object RoomGrid {
 @Serializable
 data class Placement(val id: String, val x: Int, val y: Int)
 
-/** The room's looks (HOME.md 9.5.3): which Hoenn layout and tileset draws it. The look follows Base's lead and is never stored. */
+/** The room's looks (BASE.md 9.5.3): which Hoenn layout and tileset draws it. The look follows Base's lead and is never stored. */
 enum class RoomLook(val label: String, val layout: String, val tileset: String) {
     TREE("Tree", "SecretBase_Tree1", "tree"),
     SHRUB("Shrub", "SecretBase_Shrub1", "shrub"),
@@ -153,7 +153,7 @@ enum class RoomLook(val label: String, val layout: String, val tileset: String) 
     }
 }
 
-/** The rules for placing decorations (HOME.md 9.5.5). Each returns the new placements, or why not; nothing here costs anything or loses a decoration. */
+/** The rules for placing decorations (BASE.md 9.5.5). Each returns the new placements, or why not; nothing here costs anything or loses a decoration. */
 object Room {
     sealed interface Result {
         data class Done(val placed: List<Placement>) : Result

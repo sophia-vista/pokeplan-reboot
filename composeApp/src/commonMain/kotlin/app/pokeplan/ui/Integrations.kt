@@ -52,7 +52,7 @@ interface HuaweiReader {
     fun state(): HuaweiReaderState
 
     /** Everything captured since the last [clear]. */
-    fun seen(): app.pokeplan.app.HuaweiSeen
+    fun seen(): app.pokeplan.app.heal.HuaweiSeen
 
     fun clear()
 

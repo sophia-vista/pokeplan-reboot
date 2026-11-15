@@ -1,6 +1,6 @@
 package app.pokeplan.ui
 
-import app.pokeplan.ui.screens.StoryCues
+import app.pokeplan.ui.world.StoryCues
 import app.pokeplan.world.story.Expression
 import app.pokeplan.world.story.SceneEvent
 import app.pokeplan.world.story.StoryCatalog

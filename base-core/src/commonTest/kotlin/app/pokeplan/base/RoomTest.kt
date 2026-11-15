@@ -7,7 +7,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** The Secret Base room (HOME.md 9.5): catalogue, grid, looks, the meter and the placing rules. */
+/** The Secret Base room (BASE.md 9.5): catalogue, grid, looks, the meter and the placing rules. */
 class RoomTest {
     private fun done(r: Room.Result) = assertIs<Room.Result.Done>(r).placed
 

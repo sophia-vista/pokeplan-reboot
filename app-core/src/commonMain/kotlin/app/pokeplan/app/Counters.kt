@@ -83,7 +83,7 @@ internal object Counters {
     /** Points towards the next Habitat Egg. It carries over from day to day. */
     const val HOME_EGG_METER = "home-egg-meter"
 
-    /** Points towards the next Secret Base decoration (HOME.md 9.5.4). It carries over from day to day. */
+    /** Points towards the next Secret Base decoration (BASE.md 9.5.4). It carries over from day to day. */
     const val HOME_DECOR_METER = "home-decor-meter"
 
     private val link = LinkMoment.entries.associateWith { PeriodCounter("link-${it.name}-") }

@@ -2,7 +2,7 @@ package app.pokeplan.ui
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import app.pokeplan.app.FileStorage
+import app.pokeplan.app.storage.FileStorage
 import java.io.File
 
 /** Writes the data export to the Downloads folder (the home folder if there is none). */

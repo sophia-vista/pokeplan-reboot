@@ -1,4 +1,4 @@
-# PokéPlan design
+# PokéLife design (rules the code implements)
 
 > **Retired (0.130.0, REP-012):** Supabase, accounts, cloud sync, the friends board and gifts, the server reward function and the JavaScript build were removed. Wherever this document describes them, read it as history; `docs/pokelife/` is the current plan.
 

@@ -7,9 +7,9 @@ import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import app.pokeplan.app.HuaweiHealth
-import app.pokeplan.app.ScreenCapture
-import app.pokeplan.app.ScreenNode
+import app.pokeplan.app.heal.HuaweiHealth
+import app.pokeplan.app.heal.ScreenCapture
+import app.pokeplan.app.heal.ScreenNode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

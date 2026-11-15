@@ -114,7 +114,7 @@ class HatchRulesTest {
         val patrons = mapOf(
             Region.PLAN to listOf("Uxie", "Mesprit", "Azelf"), Region.CARE to listOf("Cresselia", "Shaymin"),
             Region.HEAL to listOf("Raikou", "Entei", "Suicune"), Region.MINT to listOf("Diancie", "Melmetal"),
-            Region.HOUSEHOLD to listOf("Tapu Bulu", "Ogerpon"), Region.LINK to listOf("Latias", "Latios"),
+            Region.BASE to listOf("Tapu Bulu", "Ogerpon"), Region.LINK to listOf("Latias", "Latios"),
         )
         for (region in modules) {
             val dex = Dex.regionDex(region)

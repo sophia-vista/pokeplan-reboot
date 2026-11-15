@@ -132,7 +132,7 @@ sealed interface Reward {
     @Serializable
     @SerialName("poke")
     data class Poke(val amount: Int) : Reward
-    /** A Secret Base decoration (`app.pokeplan.base.Decorations`, HOME.md 9.5), found by Base's upkeep. Only its id: the catalogue lives in base-core. */
+    /** A Secret Base decoration (`app.pokeplan.base.Decorations`, BASE.md 9.5), found by Base's upkeep. Only its id: the catalogue lives in base-core. */
     @Serializable
     @SerialName("decoration")
     data class Decoration(val decorationId: String) : Reward
@@ -274,7 +274,7 @@ data class MintEvent(
 }
 
 /**
- * What a HOME moment was (docs/pokelife `MODULES/HOME.md` section 9). Only finished work counts: a chore done, or a piece of maintenance done.
+ * What a HOME moment was (docs/pokelife `MODULES/BASE.md` section 9). Only finished work counts: a chore done, or a piece of maintenance done.
  * Creating or editing a record, a quantity, a warranty, a note, a restocking entry or a reminder is never an event (section 9.2).
  */
 @Serializable
@@ -284,7 +284,7 @@ enum class BaseKind {
 }
 
 /**
- * The whole of what HOME tells the shared world (HOME.md section 9.4): a stable event [id] (so a replay is recognised and never pays twice), the
+ * The whole of what HOME tells the shared world (BASE.md section 9.4): a stable event [id] (so a replay is recognised and never pays twice), the
  * source [module], an opaque record reference [ref], the broad [kind] and the [nowMillis] it happened. No title, area, supply, asset, serial,
  * cost, note or attachment.
  */
@@ -911,8 +911,8 @@ object RewardEngine {
     fun homeEgg(state: PlayerState, newPokemonId: String, nowMillis: Long, rng: Random): Outcome {
         val known = state.caught + state.pokemon.map { it.speciesId }
         var rarity = Egg.rates(TASK_EGG_MINUTES, false).roll(rng)
-        while (rarity.ordinal > 0 && HatchRules.pool(Region.HOUSEHOLD, rarity).isEmpty()) rarity = Rarity.entries[rarity.ordinal - 1]
-        val option = HatchRules.rollWeighted(Region.HOUSEHOLD, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
+        while (rarity.ordinal > 0 && HatchRules.pool(Region.BASE, rarity).isEmpty()) rarity = Rarity.entries[rarity.ordinal - 1]
+        val option = HatchRules.rollWeighted(Region.BASE, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
         val size = state.partyOf(PartyIds.BASE).size
         val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.BASE)
         val lead = state.baseLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has (chosen or implicit: its first member) keeps leading; a newcomer only leads an empty party

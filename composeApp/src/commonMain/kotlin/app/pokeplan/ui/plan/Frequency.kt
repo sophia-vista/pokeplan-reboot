@@ -1,0 +1,223 @@
+package app.pokeplan.ui.plan
+
+import app.pokeplan.ui.Sfx
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import app.pokeplan.plan.Category
+import app.pokeplan.plan.HabitTarget
+import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.theme.ListRow
+import app.pokeplan.ui.theme.FieldLabel
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
+import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
+import app.pokeplan.ui.theme.RankBadge
+import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.theme.TextBox
+import app.pokeplan.ui.theme.title
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.minus
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import app.pokeplan.ui.pokemon.label
+import app.pokeplan.ui.screens.PixelDateField
+import app.pokeplan.ui.screens.PlanSection
+import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.TaskTitleLine
+import app.pokeplan.ui.screens.dayNames
+import app.pokeplan.ui.screens.label
+import app.pokeplan.ui.screens.short
+
+/** Per-week and per-month habits count weeks and months, the others days. */
+private fun streakUnit(target: HabitTarget): String = when (target) {
+    is HabitTarget.PerWeek -> " weeks"
+    is HabitTarget.PerMonth -> " months"
+    else -> ""
+}
+
+/** How often a habit is meant to happen, in the words of the picker. */
+internal enum class HabitKind(val label: String) { DAILY("Every day"), WEEKDAYS("Chosen days"), PER_WEEK("Times a week"), PER_MONTH("Times a month") }
+
+private val WEEK = DayOfWeek.entries
+
+/** "Every day", "Mon Wed Fri", "3 times a week", "10 times a month". */
+internal fun habitTargetLabel(target: HabitTarget): String = when (target) {
+    HabitTarget.Daily -> "Every day"
+    is HabitTarget.Weekdays -> if (target.days.size == 7) "Every day" else WEEK.filter { it in target.days }.joinToString(" ") { dayNames[it.ordinal] }
+    is HabitTarget.PerWeek -> if (target.times == 1) "Once a week" else "${target.times} times a week"
+    is HabitTarget.PerMonth -> if (target.times == 1) "Once a month" else "${target.times} times a month"
+}
+
+private fun targetOf(kind: HabitKind, days: Set<DayOfWeek>, times: Int): HabitTarget = when (kind) {
+    HabitKind.DAILY -> HabitTarget.Daily
+    HabitKind.WEEKDAYS -> HabitTarget.Weekdays(days)
+    HabitKind.PER_WEEK -> HabitTarget.PerWeek(times.coerceIn(1, 7))
+    HabitKind.PER_MONTH -> HabitTarget.PerMonth(times.coerceIn(1, 31))
+}
+
+private fun kindOf(target: HabitTarget): HabitKind = when (target) {
+    HabitTarget.Daily -> HabitKind.DAILY
+    is HabitTarget.Weekdays -> HabitKind.WEEKDAYS
+    is HabitTarget.PerWeek -> HabitKind.PER_WEEK
+    is HabitTarget.PerMonth -> HabitKind.PER_MONTH
+}
+
+/** How often a target is meant to happen, and its kind: the same picker for a new target and for editing one. */
+@Composable
+private fun TargetOptions(
+    kind: HabitKind, onKind: (HabitKind) -> Unit, days: Set<DayOfWeek>, onDays: (Set<DayOfWeek>) -> Unit,
+    times: Int, onTimes: (Int) -> Unit, category: Category, onCategory: (Category) -> Unit,
+) {
+    FieldLabel("How often")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        HabitKind.entries.forEach { k ->
+            TabButton(k.label, kind == k, {
+                onKind(k)
+                // The count means something different for a week and a month, so start each at a usual number.
+                if (k == HabitKind.PER_WEEK) onTimes(times.coerceIn(1, 7))
+                if (k == HabitKind.PER_MONTH && times <= 7) onTimes(10)
+            })
+        }
+    }
+    if (kind == HabitKind.WEEKDAYS) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            WEEK.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { onDays(if (d in days) days - d else days + d) }) }
+        }
+        if (days.isEmpty()) Text("Choose at least one day.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    }
+    if (kind == HabitKind.PER_WEEK || kind == HabitKind.PER_MONTH) {
+        val max = if (kind == HabitKind.PER_WEEK) 7 else 31
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelButton("-", { onTimes((times - 1).coerceAtLeast(1)) }, color = Pixel.InkSoft, compact = true)
+            Text(habitTargetLabel(targetOf(kind, days, times)), style = MaterialTheme.typography.bodyLarge)
+            PixelButton("+", { onTimes((times + 1).coerceAtMost(max)) }, color = Pixel.InkSoft, compact = true)
+        }
+    }
+    FieldLabel("Category")
+    CategoryChips(category) { onCategory(it ?: category) }
+}
+
+@Composable
+internal fun FrequencyView(model: AppModel) {
+    val store = model.store
+    var title by remember { mutableStateOf("") }
+    var more by remember { mutableStateOf(false) }
+    var kind by remember { mutableStateOf(HabitKind.DAILY) }
+    var days by remember { mutableStateOf(setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
+    var times by remember { mutableStateOf(3) }
+    var category by remember { mutableStateOf(Category.HEALTH) }
+    fun target(): HabitTarget = targetOf(kind, days, times)
+    val ready = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty())
+    fun add() {
+        if (!ready) return
+        store.addFrequencyTask(title, target(), category = category)
+        title = ""; more = false; kind = HabitKind.DAILY; category = Category.HEALTH
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(
+                    title, { title = it }, Modifier.weight(1f), singleLine = true,
+                    placeholder = "New target",
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { add() }),
+                )
+                PixelIconButton("plus", "Add", ::add, app.pokeplan.ui.theme.ModuleAccent.PLAN.accent, enabled = ready)
+            }
+            PixelButton(if (more) "Fewer options" else "How often, and what kind", { more = !more }, color = Pixel.InkSoft, compact = true)
+            if (more) {
+                TargetOptions(kind, { kind = it }, days, { days = it }, times, { times = it }, category, { category = it })
+            }
+        }
+    }
+    val targets = model.data.series.filter { it.isFrequency }
+    if (targets.isEmpty()) EmptyState("No targets yet", icon = PlanSection.TARGETS.icon, addAbove = "Add a target")
+    var editing by remember { mutableStateOf<String?>(null) }
+    targets.forEach { h ->
+        val target = h.target ?: return@forEach
+        val doneToday = store.today in h.completions
+        val progress = store.frequencyProgress(h)
+        ListRow(
+            lead = {
+                if (doneToday) PixelIconButton("undo", "Undo", { store.undoFrequencyTask(h.template.id) }, Pixel.InkSoft)
+                else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
+            },
+            trail = { PixelIconButton("pencil", "Edit ${h.template.title}", { editing = if (editing == h.template.id) null else h.template.id }, Pixel.Tone) },
+        ) {
+            TaskTitleLine(h.template, MaterialTheme.typography.bodyLarge)
+            // Progress in the period comes first; the streak is secondary and only shown once there is one (PLAN.md section 5.4).
+            val streak = store.frequencyStreak(h)
+            Text(
+                listOfNotNull(
+                    progress?.label(), habitTargetLabel(target), h.template.category.label,
+                    if (streak >= 2) "streak $streak${streakUnit(target)}" else null,
+                ).joinToString(", "),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        if (editing == h.template.id) TargetEditor(model, h) { editing = null }
+        // Any earlier day can be marked or taken back. It counts toward the target and the streak, and never pays.
+        var other by remember(h.template.id) { mutableStateOf(false) }
+        var day by remember(h.template.id) { mutableStateOf(store.today.minus(DatePeriod(days = 1))) }
+        PixelButton(if (other) "Close" else "Another day", { other = !other }, color = Pixel.InkSoft, compact = true)
+        if (other) {
+            PixelDateField(day, store.today, Pixel.Tone, { it?.let { d -> day = d } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = store.today)
+            val done = day in h.completions
+            PixelButton(
+                if (done) "Take back ${day.short()}" else "Mark ${day.short()} done",
+                { if (done) store.undoFrequencyTask(h.template.id, day) else store.completeFrequencyTask(h.template.id, day) },
+                Modifier.fillMaxWidth(), if (done) Pixel.InkSoft else Pixel.Tone, compact = true,
+            )
+        }
+    }
+}
+
+/** Edits a target: its words, how often, rank and category, and removing it (with an undo). Its history is kept. */
+@Composable
+private fun TargetEditor(model: AppModel, h: app.pokeplan.app.TaskSeries, onClose: () -> Unit) {
+    val store = model.store
+    val id = h.template.id
+    var title by remember(id) { mutableStateOf(h.template.title) }
+    var rank by remember(id) { mutableStateOf(h.template.rank) }
+    var kind by remember(id) { mutableStateOf(h.target?.let(::kindOf) ?: HabitKind.DAILY) }
+    var days by remember(id) { mutableStateOf((h.target as? HabitTarget.Weekdays)?.days ?: setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
+    var times by remember(id) { mutableStateOf((h.target as? HabitTarget.PerWeek)?.times ?: (h.target as? HabitTarget.PerMonth)?.times ?: 3) }
+    var category by remember(id) { mutableStateOf(h.template.category) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Title")
+            DifficultyPicker(rank) { rank = it }
+            TargetOptions(kind, { kind = it }, days, { days = it }, times, { times = it }, category, { category = it })
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Save", {
+                    store.editFrequencyTask(id, title, targetOf(kind, days, times), rank, category)
+                    onClose()
+                }, Modifier.weight(1f), enabled = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty()))
+                PixelIconButton("trash", "Delete ${h.template.title}", {
+                    val before = model.data.series
+                    store.deleteFrequencyTask(id)
+                    onClose()
+                    model.offerUndo("Deleted: ${h.template.title}") { store.restoreSeries(before) }
+                }, Pixel.InkSoft)
+            }
+        }
+    }
+}

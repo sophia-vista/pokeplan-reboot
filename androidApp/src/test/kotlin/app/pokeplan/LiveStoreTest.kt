@@ -1,9 +1,9 @@
 package app.pokeplan
 
-import app.pokeplan.app.CareStore
-import app.pokeplan.app.Clock
+import app.pokeplan.app.care.CareStore
+import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.MemoryStorage
+import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.data.AndroidDatabase
 import app.pokeplan.heal.ActivityType
 import app.pokeplan.mint.AccountType

@@ -733,7 +733,7 @@ Do not broaden module implementation while the data foundation or migration gate
 
 - Product-wide local-first/no-account direction, module map, privacy principles, and decision precedence: `../PRODUCT_BIBLE.md`.
 - Implementation status, 0.123.0 audit, and delivery sequence: `../IMPLEMENTATION_GUIDE.md`.
-- Module-specific canonical records and workflows: `../MODULES/PLAN.md`, `CARE.md`, `HEAL.md`, `MINT.md`, `HOME.md`, `LINK.md`, `GEAR.md`, and `WORLD.md`.
+- Module-specific canonical records and workflows: `../MODULES/PLAN.md`, `CARE.md`, `HEAL.md`, `MINT.md`, `BASE.md`, `LINK.md`, `GEAR.md`, and `WORLD.md`.
 - Shared Pokémon identity, acquisition, collection, evolution, Bag, and reward semantics: `../FEATURES/POKEMON_ECOSYSTEM.md`.
 - Shared reminder scheduling, policy, delivery, action routing, and recovery: Section 9 of `INTEGRATIONS_AND_PRIVACY.md`.
 - PMD dialogue-box geometry, components, accessibility, and visual states: `../FEATURES/DESIGN_SYSTEM.md`.

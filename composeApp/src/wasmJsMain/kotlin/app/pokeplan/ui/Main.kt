@@ -2,7 +2,7 @@ package app.pokeplan.ui
 
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
-import app.pokeplan.app.Storage
+import app.pokeplan.app.storage.Storage
 import kotlinx.browser.localStorage
 
 /** The save lives in the browser's local storage, under [key] (Care keeps its own). */

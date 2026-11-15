@@ -1,6 +1,6 @@
 package app.pokeplan.ui
 
-import app.pokeplan.ui.screens.WorldSection
+import app.pokeplan.ui.world.WorldSection
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import app.pokeplan.ui.theme.Spacing
@@ -42,30 +42,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.AppData
-import app.pokeplan.app.CareStore
-import app.pokeplan.app.HealStore
-import app.pokeplan.app.BaseLinkOwner
-import app.pokeplan.app.BaseStore
-import app.pokeplan.app.LinkStore
-import app.pokeplan.app.MintStore
+import app.pokeplan.app.care.CareStore
+import app.pokeplan.app.heal.HealStore
+import app.pokeplan.app.plan.BaseLinkOwner
+import app.pokeplan.app.base.BaseStore
+import app.pokeplan.app.link.LinkStore
+import app.pokeplan.app.mint.MintStore
 import app.pokeplan.base.BaseData
 import app.pokeplan.link.LinkData
-import app.pokeplan.ui.screens.BaseSection
-import app.pokeplan.ui.screens.LinkSection
+import app.pokeplan.ui.base.BaseSection
+import app.pokeplan.ui.link.LinkSection
 import app.pokeplan.mint.MintData
-import app.pokeplan.ui.screens.MintSection
+import app.pokeplan.ui.mint.MintSection
 import app.pokeplan.heal.HealData
-import app.pokeplan.ui.screens.HealSection
-import app.pokeplan.app.Clock
-import app.pokeplan.app.MemoryStorage
+import app.pokeplan.ui.heal.HealSection
+import app.pokeplan.app.storage.Clock
+import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.care.CareData
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.Storage
-import app.pokeplan.ui.screens.CareSection
-import app.pokeplan.ui.screens.CollectionScreen
+import app.pokeplan.app.storage.Storage
+import app.pokeplan.ui.care.CareSection
+import app.pokeplan.ui.pokemon.CollectionScreen
 import app.pokeplan.ui.screens.Cutscene
 import app.pokeplan.ui.screens.CutsceneHost
-import app.pokeplan.ui.screens.FocusWatch
+import app.pokeplan.ui.plan.FocusWatch
 import app.pokeplan.ui.screens.HomeScreen
 import app.pokeplan.ui.screens.MeScreen
 import app.pokeplan.ui.screens.Module
@@ -99,7 +99,7 @@ enum class Tab(val label: String, val icon: String) {
  * it ("PLANNER", "FOCUS", "CARE"), so the names stay as they are.
  */
 enum class Place(val tab: Tab) {
-    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES), HEAL(Tab.MODULES), MINT(Tab.MODULES), HOUSEHOLD(Tab.MODULES), LINK(Tab.MODULES), GEAR(Tab.HOME), WORLD(Tab.MODULES),
+    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES), HEAL(Tab.MODULES), MINT(Tab.MODULES), BASE(Tab.MODULES), LINK(Tab.MODULES), GEAR(Tab.HOME), WORLD(Tab.MODULES),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -323,7 +323,7 @@ class AppModel(
             Place.CARE -> { module = Module.CARE; careSection = null }
             Place.HEAL -> { module = Module.HEAL; healSection = null }
             Place.MINT -> { module = Module.MINT; mintSection = null }
-            Place.HOUSEHOLD -> { module = Module.HOME; baseSection = null }
+            Place.BASE -> { module = Module.BASE; baseSection = null }
             Place.LINK -> { module = Module.LINK; linkSection = null }
             Place.PARTY -> openParty = true
             Place.GEAR -> gearOpen = true
@@ -542,7 +542,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         // The Pokégear covers whichever tab is open until it is closed.
                         if (model.gearOpen) Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                             androidx.compose.runtime.CompositionLocalProvider(app.pokeplan.ui.theme.LocalFrameTone provides app.pokeplan.ui.theme.frameToneOf(app.pokeplan.ui.theme.ModuleAccent.GEAR.accent)) {
-                                app.pokeplan.ui.screens.GearScreen(model) { model.gearOpen = false }
+                                app.pokeplan.ui.gear.GearScreen(model) { model.gearOpen = false }
                             }
                         }
                     }

@@ -75,12 +75,12 @@ class BaseRewardTest {
 
     @Test
     fun theHomeRegionHasEveryRarityToHatch() {
-        for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.HOUSEHOLD, r).isNotEmpty(), "no $r in the Home Region")
+        for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.BASE, r).isNotEmpty(), "no $r in the Home Region")
     }
 
     @Test
     fun theTutorialEggLeadsBasesPartyAndAddsNoMeter() {
-        val out = RewardEngine.tutorialEgg(PlayerState(), Region.HOUSEHOLD, PartyIds.BASE, "t1", 1_000L, Random(3))
+        val out = RewardEngine.tutorialEgg(PlayerState(), Region.BASE, PartyIds.BASE, "t1", 1_000L, Random(3))
         assertEquals("t1", out.state.baseLead!!.id)
         assertEquals(0, out.state.trainerPoints)
         assertNull(out.state.careLeadId)

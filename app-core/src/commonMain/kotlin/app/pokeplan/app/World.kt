@@ -34,7 +34,7 @@ interface World {
      */
     fun base(event: BaseEvent): List<Reward>? = null
 
-    /** The Secret Base decorations the player owns (HOME.md 9.5): what Base's room may place. Empty for a store that does not know the game (a widget). */
+    /** The Secret Base decorations the player owns (BASE.md 9.5): what Base's room may place. Empty for a store that does not know the game (a widget). */
     fun ownedDecorations(): Set<String> = emptySet()
 
     /**

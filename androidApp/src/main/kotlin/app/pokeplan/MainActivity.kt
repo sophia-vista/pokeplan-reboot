@@ -13,15 +13,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import app.pokeplan.app.AppData
-import app.pokeplan.app.CareReminders
-import app.pokeplan.app.HealReminders
+import app.pokeplan.app.care.CareReminders
+import app.pokeplan.app.heal.HealReminders
 import app.pokeplan.heal.HealData
 import app.pokeplan.mint.MintData
-import app.pokeplan.app.BaseReminders
-import app.pokeplan.app.MintReminders
+import app.pokeplan.app.base.BaseReminders
+import app.pokeplan.app.mint.MintReminders
 import app.pokeplan.base.BaseData
 import app.pokeplan.link.LinkData
-import app.pokeplan.app.LinkReminders
+import app.pokeplan.app.link.LinkReminders
 import app.pokeplan.app.upcomingReminders
 import app.pokeplan.care.CareData
 import app.pokeplan.core.pokemon.ItemCategory
@@ -39,6 +39,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
+import app.pokeplan.health.AndroidHealthConnect
+import app.pokeplan.platform.AccelerometerMotion
+import app.pokeplan.platform.AndroidCalendars
+import app.pokeplan.platform.AndroidCapabilities
+import app.pokeplan.platform.AndroidCryPlayer
+import app.pokeplan.platform.AndroidDeviceGate
+import app.pokeplan.platform.AndroidFileSaver
+import app.pokeplan.platform.AndroidHaptics
+import app.pokeplan.platform.AndroidPhoneState
+import app.pokeplan.platform.AndroidSensorFeed
+import app.pokeplan.platform.AndroidTextFiles
+import app.pokeplan.platform.AndroidTorch
+import app.pokeplan.platform.androidGearServices
 
 class MainActivity : ComponentActivity() {
     /** Fires when the app comes back to the front: a widget may have changed the save meanwhile. */

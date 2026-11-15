@@ -24,13 +24,33 @@ import app.pokeplan.ui.theme.RegionLook
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.base.BaseScreen
+import app.pokeplan.ui.base.baseSubtitle
+import app.pokeplan.ui.care.CareScreen
+import app.pokeplan.ui.heal.HealScreen
+import app.pokeplan.ui.heal.healSubtitle
+import app.pokeplan.ui.link.LinkScreen
+import app.pokeplan.ui.link.linkSubtitle
+import app.pokeplan.ui.mint.MintScreen
+import app.pokeplan.ui.mint.mintSubtitle
+import app.pokeplan.ui.plan.AddTo
+import app.pokeplan.ui.plan.FocusScreen
+import app.pokeplan.ui.plan.GoalsView
+import app.pokeplan.ui.plan.PlanView
+import app.pokeplan.ui.plan.ProgressView
+import app.pokeplan.ui.plan.QuickAddBox
+import app.pokeplan.ui.plan.TodayList
+import app.pokeplan.ui.plan.planTasks
+import app.pokeplan.ui.pokemon.PlanPartyPanel
+import app.pokeplan.ui.pokemon.label
+import app.pokeplan.ui.world.WorldScreen
 
 /**
  * The life modules (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md), each a section of the Modules tab. Each one is a different part of
  * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
  */
 enum class Module(val label: String, val icon: String, val look: RegionLook) {
-    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), HOME("Base", "chipped-pot", RegionLook.BASE), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
+    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), BASE("Base", "chipped-pot", RegionLook.BASE), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
 }
 
 /**
@@ -65,7 +85,7 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
             Module.CARE -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.CARE.look.accent)) { ModuleGate(model, Module.CARE) { CareScreen(model, openPokemon) } }
             Module.HEAL -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.HEAL.look.accent)) { ModuleGate(model, Module.HEAL) { HealScreen(model, openPokemon) } }
             Module.MINT -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.MINT.look.accent)) { MintScreen(model, openPokemon) }
-            Module.HOME -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.HOME.look.accent)) { ModuleGate(model, Module.HOME) { BaseScreen(model, openPokemon) } }
+            Module.BASE -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.BASE.look.accent)) { ModuleGate(model, Module.BASE) { BaseScreen(model, openPokemon) } }
             Module.LINK -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.LINK.look.accent)) { ModuleGate(model, Module.LINK) { LinkScreen(model, openPokemon) } }
             Module.WORLD -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.WORLD.look.accent)) { WorldScreen(model, openPokemon) }
             null -> ModulesMenu(model)
@@ -96,7 +116,7 @@ private fun ModulesMenu(model: AppModel) {
                     MenuEntry("GEAR", "explorer-kit", "Gear", tint = ModuleAccent.GEAR.accent, wide = true, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.MINT.name, Module.MINT.icon, Module.MINT.label, mintSubtitle(model), tint = ModuleAccent.MINT.accent, sound = Sfx.DOOR_ENTER),
-                    MenuEntry(Module.HOME.name, Module.HOME.icon, Module.HOME.label, baseSubtitle(model), tint = ModuleAccent.BASE.accent, sound = Sfx.DOOR_ENTER),
+                    MenuEntry(Module.BASE.name, Module.BASE.icon, Module.BASE.label, baseSubtitle(model), tint = ModuleAccent.BASE.accent, sound = Sfx.DOOR_ENTER),
                     if (!model.data.settings.careModule) null else MenuEntry(
                         Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = ModuleAccent.CARE.accent,
                     ),
