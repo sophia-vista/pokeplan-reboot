@@ -693,7 +693,7 @@ class BaseStoreTest {
     @Test
     fun areaRenameAndDeleteKeepRecords() {
         val s = setup()
-        val a = assertNotNull(s.home.addArea("Balcony"))
+        val a = assertNotNull(s.home.addArea("Wine cellar"))
         val c = assertNotNull(s.home.addChore("Sweep", areaId = a.id).record)
         s.home.renameArea(a.id, "Terrace")
         assertEquals("Terrace", s.home.data.areas.first { it.id == a.id }.name)
