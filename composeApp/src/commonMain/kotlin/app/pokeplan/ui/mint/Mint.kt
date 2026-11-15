@@ -271,6 +271,7 @@ private fun AccountsView(model: AppModel) {
     var type by remember { mutableStateOf(AccountType.BANK) }
     var currency by remember { mutableStateOf(data.settings.currency) }
     var opening by remember { mutableStateOf("") }
+    var limit by remember { mutableStateOf("") }
     var more by remember { mutableStateOf(false) }
     var suffix by remember { mutableStateOf("") }
     var group by remember { mutableStateOf("") }
@@ -283,11 +284,13 @@ private fun AccountsView(model: AppModel) {
     fun save() {
         val minor = if (opening.isBlank()) 0L else Money.parse(opening, currency)
         if (minor == null) { message = "Check the opening balance." to NoticeTone.WARNING; return }
+        val limitMinor = if (type == AccountType.CREDIT_CARD && limit.isNotBlank()) Money.parse(limit, currency) else 0L
+        if (limitMinor == null) { message = "Check the credit limit." to NoticeTone.WARNING; return }
         val first = data.accounts.none { it.status == AccountStatus.ACTIVE }
-        val out = mint.addAccount(name, type, currency, minor, suffix = suffix, group = group, card = card)
+        val out = mint.addAccount(name, type, currency, minor, suffix = suffix, group = group, card = card, limitMinor = limitMinor)
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else {
-            message = null; name = ""; opening = ""; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
+            message = null; name = ""; opening = ""; limit = ""; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
             // The first account ends on the overview, where Expense is the one next action (REP-056).
             if (first) model.mintSection = null
         }
@@ -312,7 +315,11 @@ private fun AccountsView(model: AppModel) {
             }
             PixelField(
                 opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
-                label = if (type.liability) "Amount owed now" else "Balance now", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                label = if (type == AccountType.CREDIT_CARD) "Starting balance owed" else if (type.liability) "Amount owed now" else "Balance now", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            )
+            if (type == AccountType.CREDIT_CARD) PixelField(
+                limit, { limit = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
+                label = "Credit limit", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
             CardColorPicker(card) { card = it }
             PixelButton(if (more) "Fewer options" else "Group and last digits", { more = !more }, color = Pixel.InkSoft, compact = true)
@@ -384,6 +391,7 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     var type by remember(a.id) { mutableStateOf(a.type) }
     var currency by remember(a.id) { mutableStateOf(a.currency) }
     var opening by remember(a.id) { mutableStateOf(Money.plain(a.openingMinor, a.currency)) }
+    var limit by remember(a.id) { mutableStateOf(if (a.limitMinor > 0) Money.plain(a.limitMinor, a.currency) else "") }
     var institution by remember(a.id) { mutableStateOf(a.institution) }
     var group by remember(a.id) { mutableStateOf(a.group) }
     var suffix by remember(a.id) { mutableStateOf(a.suffix) }
@@ -407,8 +415,12 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             }
             PixelField(
                 opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
-                label = if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking", singleLine = true,
+                label = if (type == AccountType.CREDIT_CARD) "Starting balance owed" else if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking", singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            )
+            if (type == AccountType.CREDIT_CARD) PixelField(
+                limit, { limit = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
+                label = "Credit limit", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
             CardColorPicker(card) { card = it }
             if (model.images != null) ReceiveMoneyEdit(model, a, removingQr, { removingQr = it }) { refused = it }
@@ -419,8 +431,10 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
+                    val limitMinor = if (type == AccountType.CREDIT_CARD && limit.isNotBlank()) Money.parse(limit, currency) else 0L
                     if (minor == null) refused = "Check the balance."
-                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card, hideFromTotal = hideTotal, appPackage = appPackage))
+                    else if (limitMinor == null) refused = "Check the credit limit."
+                    else mint.updateAccount(a.copy(limitMinor = limitMinor, name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card, hideFromTotal = hideTotal, appPackage = appPackage))
                         .let { if (it.record != null) { editing = false; refused = null; onDone() } else refused = it.refused }
                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank(), compact = true)
                 PixelButton("Cancel", { editing = false; refused = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -428,6 +442,14 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
         } else if (asking) {
             Confirm("Delete this account? Only an account with no records can be deleted.", "Delete", onConfirm = { refused = mint.deleteAccount(a.id); asking = false; if (refused == null) onDone() }, onKeep = { asking = false })
         } else Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            val owed = MintRules.balances(model.mintData).firstOrNull { it.account.id == a.id }?.postedMinor ?: 0L
+            MintRules.leftToSpend(a, owed)?.let { left ->
+                Text(
+                    if (owed > a.limitMinor) "Over the limit by ${mint.show(owed - a.limitMinor, a.currency)}"
+                    else "Used ${mint.show(owed, a.currency)} of ${mint.show(a.limitMinor, a.currency)} · ${mint.show(left, a.currency)} left to spend",
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+            }
             val launcher = model.appLauncher
             val appLabel = if (a.appPackage.isNotEmpty()) launcher?.label(a.appPackage) else null
             if (launcher != null && appLabel != null) PixelButton(

@@ -146,7 +146,7 @@ private fun AccountRow(
             Text(a.name, style = MaterialTheme.typography.bodyLarge)
         }
         val meta = listOfNotNull(
-            if (a.suffix.isNotEmpty()) "···${a.suffix}" else a.type.label,
+            (if (a.suffix.isNotEmpty()) "···${a.suffix}" else a.type.label) + (MintRules.leftToSpend(a, b.postedMinor)?.let { " · ${mint.show(it, a.currency)} left" } ?: ""),
             a.status.name.lowercase().takeIf { a.status != AccountStatus.ACTIVE },
             "pending ${mint.show(b.pendingMinor, a.currency)}".takeIf { b.pendingMinor != 0L },
             "not in total".takeIf { a.hideFromTotal },

@@ -534,4 +534,23 @@ class MintStoreTest {
         assertEquals(0L, assertNotNull(s.mint.updateAccount(card.copy(limitMinor = 0)).record).limitMinor)
         assertNull(MintRules.leftToSpend(s.mint.data.accounts.single(), 1))
     }
+
+    @Test
+    fun aCreditCardKeepsStatementAndDueDaysAndFindsTheNextOne() {
+        val s = setup()
+        val card = assertNotNull(s.mint.addAccount("Maya Black", AccountType.CREDIT_CARD, "PHP", 12_000, limitMinor = 50_000, statementDay = 15, dueDay = 31).record)
+        assertEquals(15, card.statementDay)
+        assertEquals(31, card.dueDay)
+        assertNull(s.mint.addAccount("X", AccountType.CREDIT_CARD, "PHP", dueDay = 32).record)
+        assertNull(s.mint.addAccount("Wallet", AccountType.EWALLET, "PHP", statementDay = 5).record)
+        assertEquals(10, assertNotNull(s.mint.updateAccount(card.copy(dueDay = 10)).record).dueDay)
+        assertEquals(0, assertNotNull(s.mint.updateAccount(card.copy(statementDay = 0, dueDay = 0)).record).dueDay)
+        // The next day on or after today; a day the month lacks falls on its last day; none is null.
+        assertEquals(LocalDate(2026, 11, 15), MintRules.nextOnDay(15, LocalDate(2026, 11, 15)))
+        assertEquals(LocalDate(2026, 12, 5), MintRules.nextOnDay(5, LocalDate(2026, 11, 15)))
+        assertEquals(LocalDate(2026, 11, 30), MintRules.nextOnDay(31, LocalDate(2026, 11, 15)))
+        assertEquals(LocalDate(2027, 2, 28), MintRules.nextOnDay(31, LocalDate(2027, 2, 1)))
+        assertEquals(LocalDate(2027, 1, 20), MintRules.nextOnDay(20, LocalDate(2026, 12, 31)))
+        assertNull(MintRules.nextOnDay(0, LocalDate(2026, 11, 15)))
+    }
 }

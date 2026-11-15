@@ -87,6 +87,27 @@ object MintRules {
         else -> Check.Ok
     }
 
+    /** A statement or due day is 0 (none) or 1 to 31, and only a credit card keeps one (MINT.md 4.3D). */
+    fun checkCardDay(type: AccountType, day: Int): Check = when {
+        day == 0 -> Check.Ok
+        type != AccountType.CREDIT_CARD -> Check.Refused("Only a credit card has a statement or due day.")
+        day !in 1..31 -> Check.Refused("Choose a day from 1 to 31.")
+        else -> Check.Ok
+    }
+
+    /** The next date on or after [today] that falls on [day] of a month, a day the month lacks falling on its last day; null for day 0 (none). */
+    fun nextOnDay(day: Int, today: LocalDate): LocalDate? {
+        if (day !in 1..31) return null
+        fun inMonth(y: Int, m: Int): LocalDate {
+            val last = LocalDate(y, m, 1).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1)).dayOfMonth
+            return LocalDate(y, m, minOf(day, last))
+        }
+        val here = inMonth(today.year, today.monthNumber)
+        if (here >= today) return here
+        val next = LocalDate(today.year, today.monthNumber, 1).plus(DatePeriod(months = 1))
+        return inMonth(next.year, next.monthNumber)
+    }
+
     /** What is left to spend on a card with a limit: the limit less what is owed, never below zero; null when the account has no limit. */
     fun leftToSpend(account: FinancialAccount, owedMinor: Long): Long? = account.limitMinor.takeIf { it > 0 }?.let { (it - owedMinor).coerceAtLeast(0) }
 

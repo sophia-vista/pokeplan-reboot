@@ -51,6 +51,9 @@ data class FinancialAccount(
     val appPackage: String = "",
     /** A credit card's limit in minor units of [currency] (MINT.md 4.3D); 0 is none. Information only: never an asset, never cash, in no total. */
     val limitMinor: Long = 0,
+    /** A credit card's statement day and payment due day of the month, 1 to 31; 0 is none (MINT.md 4.3D). Information only: no reminder or record is made from them. */
+    val statementDay: Int = 0,
+    val dueDay: Int = 0,
 )
 
 /**
