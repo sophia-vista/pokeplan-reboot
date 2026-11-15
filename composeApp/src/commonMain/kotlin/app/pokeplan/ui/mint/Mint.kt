@@ -18,6 +18,7 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.pokeplan.mint.CardStyle
@@ -509,14 +510,17 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
             if (a.receiveQr.isEmpty()) {
                 PixelButton("Add QR code", { choose() }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
             } else {
-                Box(
-                    Modifier.fillMaxWidth(0.7f).aspectRatio(1f).clip(PixelShape).background(if (hide) Pixel.Border else Color.White)
-                        .then(if (!hide && bitmap != null) Modifier.clickable(role = Role.Button, onClickLabel = "Open receive money QR code full screen") { full = true } else Modifier)
-                        .semantics { contentDescription = if (hide) "Receive money QR code for ${a.name}, hidden" else "Receive money QR code for ${a.name}" },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (hide) Text("Hidden", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
-                    else if (bitmap != null) Image(bitmap, null, Modifier.fillMaxSize().padding(Spacing.S), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None)
+                val desc = if (hide) "Receive money QR code for ${a.name}, hidden" else "Receive money QR code for ${a.name}"
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    if (hide) Box(Modifier.fillMaxWidth(0.7f).aspectRatio(1f).clip(PixelShape).background(Pixel.Border).semantics { contentDescription = desc }, contentAlignment = Alignment.Center) {
+                        Text("Hidden", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
+                    }
+                    else if (bitmap != null) Image(
+                        bitmap, desc,
+                        Modifier.heightIn(max = 420.dp).aspectRatio(bitmap.width.toFloat() / bitmap.height)
+                            .clickable(role = Role.Button, onClickLabel = "Open receive money QR code full screen") { full = true },
+                        contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
+                    )
                     else Text("Could not show it", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
                 if (removing) Confirm("Remove this QR code?", "Remove", onConfirm = { mint.setReceiveQr(a.id, ""); setRemoving(false) }, onKeep = { setRemoving(false) })
@@ -530,7 +534,11 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
     }
 }
 
-/** The receive-money QR on a plain white page, as large as fits, so another phone can scan it. Close and (when the platform can) Share sit at the bottom. */
+/** A bare, roughly square QR is upscaled, so keep its modules crisp; a tall wallet screenshot is shrunk, so smooth it. */
+private fun qrFilter(b: androidx.compose.ui.graphics.ImageBitmap) =
+    if (b.width.toFloat() / b.height in 0.9f..1.1f) FilterQuality.None else FilterQuality.Medium
+
+/** The receive-money image (a bare QR or a whole wallet screenshot) on a plain white page, fitted at its own aspect ratio and as large as fits, so another phone can scan it. Close and (when the platform can) Share sit at the bottom. */
 @Composable
 internal fun QrFullScreen(name: String, bitmap: androidx.compose.ui.graphics.ImageBitmap, onClose: () -> Unit, onShare: (() -> Unit)?) {
     Column(Modifier.fillMaxSize().background(Color.White).padding(Spacing.L), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -538,7 +546,7 @@ internal fun QrFullScreen(name: String, bitmap: androidx.compose.ui.graphics.Ima
         Box(Modifier.weight(1f).fillMaxWidth().padding(vertical = Spacing.M), contentAlignment = Alignment.Center) {
             Image(
                 bitmap, "Receive money QR code for $name", Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit, filterQuality = FilterQuality.None,
+                contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
             )
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {

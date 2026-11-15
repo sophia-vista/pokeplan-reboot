@@ -1651,7 +1651,7 @@ class ScreenshotTest {
     fun mintAccountActionsNarrowLargeFont() {
         val model = AppModel(storeWithTeam())
         val acc = model.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000).record!!
-        render("mint-account-actions-narrow", height = 700, width = 540, fontScale = 1.3f) {
+        render("mint-account-actions-narrow", height = 300, width = 540, fontScale = 1.3f, minBytes = 1_500) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first { it.id == acc.id }) {} } }
         }
     }
@@ -1668,14 +1668,31 @@ class ScreenshotTest {
             val y = i / side / scale - quiet
             if (qr.dark(x, y)) 0xFF000000.toInt() else 0xFFFFFFFF.toInt()
         }
-        val image = org.jetbrains.skia.Bitmap().apply {
+        val skia = org.jetbrains.skia.Bitmap().apply {
             allocPixels(org.jetbrains.skia.ImageInfo.makeN32(side, side, org.jetbrains.skia.ColorAlphaType.PREMUL))
             installPixels(java.nio.ByteBuffer.allocate(px.size * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).also { b -> px.forEach { b.putInt(it) } }.array())
-        }.let { org.jetbrains.skia.Image.makeFromBitmap(it).toComposeImageBitmap() }
-        for (dark in listOf(false, true)) {
-            render("mint-qr-fullscreen${if (dark) "-dark" else ""}", minBytes = 3_000) {
+        }.let { org.jetbrains.skia.Image.makeFromBitmap(it) }
+        val square = skia.toComposeImageBitmap()
+        // Fixture only: a tall wallet-style screenshot (1:2.2), a blue card holding the real QR on white.
+        val w = 540; val h = 1188
+        val surface = org.jetbrains.skia.Surface.makeRasterN32Premul(w, h)
+        surface.canvas.apply {
+            clear(0xFFFFFFFF.toInt())
+            drawRRect(org.jetbrains.skia.RRect.makeXYWH(30f, 200f, w - 60f, 700f, 40f), org.jetbrains.skia.Paint().apply { color = 0xFF1F6FD6.toInt() })
+            drawRect(org.jetbrains.skia.Rect.makeXYWH(80f, 300f, w - 160f, w - 160f), org.jetbrains.skia.Paint().apply { color = 0xFFFFFFFF.toInt() })
+            drawImageRect(skia, org.jetbrains.skia.Rect.makeXYWH(90f, 310f, w - 180f, w - 180f))
+        }
+        val portrait = surface.makeImageSnapshot().toComposeImageBitmap()
+        for ((shape, image) in listOf("square" to square, "portrait" to portrait)) for (dark in listOf(false, true)) {
+            render("mint-qr-fullscreen-$shape${if (dark) "-dark" else ""}", minBytes = 3_000) {
                 PixelTheme(dark = dark) { app.pokeplan.ui.mint.QrFullScreen("Daily account", image, {}, {}) }
             }
+        }
+        val acc = AppModel(storeWithTeam()).let { m -> m to m.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000).record!! }
+        val enc = { b: org.jetbrains.skia.Image -> kotlin.io.encoding.Base64.encode(b.encodeToData(org.jetbrains.skia.EncodedImageFormat.PNG)!!.bytes) }
+        acc.first.mint.setReceiveQr(acc.second.id, enc(surface.makeImageSnapshot()))
+        render("mint-account-qr-portrait", height = 1500, minBytes = 3_000) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(acc.first, acc.first.mintData.accounts.first()) {} } }
         }
     }
 
