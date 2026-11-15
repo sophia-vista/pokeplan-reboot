@@ -883,27 +883,35 @@ private fun BudgetsView(model: AppModel) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun BillsView(model: AppModel) {
+internal fun BillsView(model: AppModel, startAdding: Boolean = false, startIncome: Boolean = false, startFrequency: Frequency = Frequency.MONTHLY, startManage: Boolean = false) {
     val mint = model.mint
     val data = model.mintData
     val today = model.store.today
     var name by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
-    var frequency by remember { mutableStateOf(Frequency.MONTHLY) }
+    var frequency by remember { mutableStateOf(startFrequency) }
+    var day1 by remember { mutableStateOf("15") }
+    var day2 by remember { mutableStateOf("30") }
+    var workday by remember { mutableStateOf(false) }
+    var estimate by remember { mutableStateOf(false) }
     var firstDue by remember { mutableStateOf<LocalDate?>(null) }
     var editId by remember { mutableStateOf<String?>(null) }
     var editName by remember { mutableStateOf("") }
     var editAmount by remember { mutableStateOf("") }
     var editFirst by remember { mutableStateOf<LocalDate?>(null) }
     var editFrequency by remember { mutableStateOf(Frequency.MONTHLY) }
+    var editDay1 by remember { mutableStateOf("15") }
+    var editDay2 by remember { mutableStateOf("30") }
+    var editWorkday by remember { mutableStateOf(false) }
+    var editEstimate by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var openKey by remember { mutableStateOf<String?>(null) }
     var partial by remember { mutableStateOf("") }
     var paidOn by remember { mutableStateOf<LocalDate?>(null) }
-    var manage by remember { mutableStateOf(false) }
+    var manage by remember { mutableStateOf(startManage) }
     var showSettled by remember { mutableStateOf(false) }
-    var adding by remember { mutableStateOf(false) }
-    var incomeNew by remember { mutableStateOf(false) }
+    var adding by remember { mutableStateOf(startAdding) }
+    var incomeNew by remember { mutableStateOf(startIncome) }
     var incomeCategory by remember { mutableStateOf<String?>(null) }
     // "Paid, record it": the occurrence whose small account picker is open, and the account chosen (the bill's own until another is tapped).
     var recordKey by remember { mutableStateOf<String?>(null) }
@@ -911,7 +919,7 @@ private fun BillsView(model: AppModel) {
     // Settling takes the occurrence off the list, so every settlement offers an undo.
     fun settle(o: Occurrence, status: SettleStatus, paid: Long, label: String) {
         val before = model.mintData
-        if (mint.settle(o.bill.id, o.dueDay, status, paid, paidDay = paidOn ?: today)) { paidOn = null; openKey = null; model.offerUndo("$label: ${o.bill.name}") { mint.restore(before) } }
+        if (mint.settle(o.bill.id, o.dueDay, status, paid, paidDay = paidOn ?: defaultReceivedDay(o, today))) { paidOn = null; openKey = null; model.offerUndo("$label: ${o.bill.name}") { mint.restore(before) } }
     }
     val currency = data.settings.currency
     // Only the next unsettled date of each bill.
@@ -921,26 +929,29 @@ private fun BillsView(model: AppModel) {
             upcoming.forEachIndexed { i, o ->
                 if (i > 0) HorizontalDivider(color = Pixel.Border)
                 val key = o.bill.id + o.dueDay
-                OccurrenceRow(model, o, openKey == key) { openKey = if (openKey == key) null else key; partial = o.payment?.paidMinor?.let { Money.plain(it, o.bill.currency) }.orEmpty(); paidOn = null }
+                OccurrenceRow(model, o, openKey == key) { openKey = if (openKey == key) null else key; partial = (o.payment?.paidMinor ?: o.bill.expectedMinor.takeIf { o.bill.estimate })?.let { Money.plain(it, o.bill.currency) }.orEmpty(); paidOn = null }
                 if (openKey == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
                     val full = o.remainingMinor ?: o.bill.expectedMinor
                     val inc = o.bill.income
-                    if (full == null) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = if (inc) "Amount received" else "Amount paid", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    val est = o.bill.estimate
+                    val anyAmount = full == null || est
+                    if (est) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = (if (inc) "Amount received" else "Amount paid") + (o.bill.expectedMinor?.let { " (estimate ${mint.show(it, o.bill.currency)})" } ?: ""), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    else if (full == null) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = if (inc) "Amount received" else "Amount paid", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     else PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = if (inc) "Received so far" else "Paid so far", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     SectionLabel(if (inc) "Received on" else "Settled on")
-                    PixelDateField(paidOn ?: today, today, ModuleAccent.MINT.accent, { paidOn = it }, presets = listOf("Today" to 0, "Yesterday" to -1), max = today)
+                    PixelDateField(paidOn ?: defaultReceivedDay(o, today), today, ModuleAccent.MINT.accent, { paidOn = it }, presets = listOf("Today" to 0, "Yesterday" to -1), max = today)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         PixelButton(if (inc) "Received" else "Paid", {
-                            val paid = if (full == null) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
+                            val paid = if (anyAmount) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
                             if (paid != null) { settle(o, SettleStatus.PAID, paid, if (inc) "Received" else "Paid"); model.effect(Sfx.CANDY) }
-                        }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = full != null || Money.parse(partial, o.bill.currency) != null, compact = true)
-                        if (full != null) PixelButton(if (inc) "Part received" else "Part", { Money.parse(partial, o.bill.currency)?.let { settle(o, SettleStatus.PARTIAL, it, if (inc) "Part received" else "Part paid") } }, Modifier.weight(1f), Pixel.InkSoft, enabled = Money.parse(partial, o.bill.currency) != null, compact = true)
+                        }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = !anyAmount || Money.parse(partial, o.bill.currency) != null, compact = true)
+                        if (full != null && !est) PixelButton(if (inc) "Part received" else "Part", { Money.parse(partial, o.bill.currency)?.let { settle(o, SettleStatus.PARTIAL, it, if (inc) "Part received" else "Part paid") } }, Modifier.weight(1f), Pixel.InkSoft, enabled = Money.parse(partial, o.bill.currency) != null, compact = true)
                         PixelButton("Skip", { settle(o, SettleStatus.SKIPPED, 0, "Skipped") }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         if (o.payment != null) PixelButton("Undo", { mint.unsettle(o.bill.id, o.dueDay); openKey = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                     // Marking paid makes no transaction by itself; this path also writes the expense, linked to the bill, on the account chosen here.
                     val accounts = data.accounts.filter { it.status == AccountStatus.ACTIVE && it.currency == o.bill.currency }
-                    val amountToRecord = if (full == null) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
+                    val amountToRecord = if (anyAmount) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
                     if (accounts.isNotEmpty()) {
                         if (recordKey != key) PixelButton(if (inc) "Received, record it" else "Paid, record it", { recordKey = key; recordAccount = o.bill.accountId?.takeIf { id -> accounts.any { it.id == id } } ?: accounts.first().id }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = amountToRecord != null, compact = true)
                         else {
@@ -950,7 +961,7 @@ private fun BillsView(model: AppModel) {
                             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                 PixelButton("Record", {
                                     val before = model.mintData
-                                    val out = amountToRecord?.let { mint.settleAndRecord(o.bill.id, o.dueDay, it, recordAccount, paidOn ?: today) }
+                                    val out = amountToRecord?.let { mint.settleAndRecord(o.bill.id, o.dueDay, it, recordAccount, paidOn ?: defaultReceivedDay(o, today)) }
                                     if (out?.record != null) { paidOn = null; openKey = null; recordKey = null; model.effect(Sfx.CANDY); model.offerUndo((if (inc) "Received and recorded: " else "Paid and recorded: ") + o.bill.name) { mint.restore(before) } }
                                     else model.say(out?.refused ?: "Check the amount.")
                                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = amountToRecord != null && recordAccount != null, compact = true)
@@ -1010,15 +1021,21 @@ private fun BillsView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Frequency.entries.forEach { f -> Chip(f.label, f == frequency, { frequency = f }) }
             }
-            SectionLabel("First due")
+            if (frequency == Frequency.SEMI_MONTHLY) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelField(day1, { day1 = dayInput(it) }, Modifier.weight(1f), label = "Day 1", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                PixelField(day2, { day2 = dayInput(it) }, Modifier.weight(1f), label = "Day 2", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            }
+            SectionLabel(if (frequency == Frequency.SEMI_MONTHLY) "First payday" else "First due")
             PixelDateField(firstDue ?: today, today, ModuleAccent.MINT.accent, { firstDue = it }, presets = listOf("Today" to 0, "In a week" to 7, "In a month" to 30))
+            ToggleRow("Move to a working day", workday, detail = "Paid on the nearest weekday on or before, skipping holidays") { workday = it }
+            if (incomeNew) ToggleRow("Estimated amount", estimate, detail = "You enter the real amount when it arrives") { estimate = it }
             PixelButton("Save", {
                 val minor = if (amount.isBlank()) null else Money.parse(amount, currency)
                 if (amount.isNotBlank() && minor == null) message = "Check the amount."
                 else {
-                    val out = mint.addBill(name, currency, frequency, firstDue ?: today, minor, categoryId = incomeCategory.takeIf { incomeNew }, income = incomeNew)
+                    val out = mint.addBill(name, currency, frequency, firstDue ?: today, minor, categoryId = incomeCategory.takeIf { incomeNew }, income = incomeNew, days = if (frequency == Frequency.SEMI_MONTHLY) listOf(day1.toIntOrNull() ?: 15, day2.toIntOrNull() ?: 30) else emptyList(), workday = workday, estimate = estimate && incomeNew)
                     message = out.refused
-                    if (out.record != null) { name = ""; amount = ""; firstDue = null; incomeCategory = null; adding = false; model.haptic() }
+                    if (out.record != null) { name = ""; amount = ""; firstDue = null; incomeCategory = null; workday = false; estimate = false; adding = false; model.haptic() }
                 }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = name.isNotBlank())
             message?.let { Report(model, it, NoticeTone.WARNING) }
@@ -1030,11 +1047,15 @@ private fun BillsView(model: AppModel) {
             if (manage) data.bills.forEachIndexed { i, b ->
                 if (i > 0) HorizontalDivider(color = Pixel.Border)
                 MintLine(
-                    trail = { Text(b.expectedMinor?.let { mint.show(it, b.currency) } ?: "varies", style = MaterialTheme.typography.titleSmall) },
-                    onClick = { editId = if (editId == b.id) null else b.id; editName = b.name; editAmount = b.expectedMinor?.let { Money.plain(it, b.currency) }.orEmpty(); editFirst = b.firstDue; editFrequency = b.frequency }, onClickLabel = "Edit",
+                    trail = { Text(b.expectedMinor?.let { (if (b.estimate) "≈ " else "") + mint.show(it, b.currency) } ?: "varies", style = MaterialTheme.typography.titleSmall) },
+                    onClick = { editId = if (editId == b.id) null else b.id; editName = b.name; editAmount = b.expectedMinor?.let { Money.plain(it, b.currency) }.orEmpty(); editFirst = b.firstDue; editFrequency = b.frequency; MintRules.semiDays(b).let { d -> editDay1 = d.getOrElse(0) { 15 }.toString(); editDay2 = d.getOrElse(1) { 30 }.toString() }; editWorkday = b.workday; editEstimate = b.estimate }, onClickLabel = "Edit",
                 ) {
                     Text(b.name, style = MaterialTheme.typography.bodyLarge)
                     Text("${if (b.income) "income · " else ""}${b.frequency.label.lowercase()}${if (b.status != PlanStatus.ACTIVE) " · ${b.status.name.lowercase()}" else ""}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    if (b.frequency == Frequency.SEMI_MONTHLY || b.workday) {
+                        val next = MintRules.upcoming(data, today, 60).filter { it.bill.id == b.id }.take(4)
+                        if (next.isNotEmpty()) Text("Next: " + next.joinToString(" · ") { it.payDay.short() }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
                 }
                 if (editId == b.id) {
                     // The name and the amount can change (rent goes up). The first due day and how often can change until a payment is
@@ -1048,10 +1069,16 @@ private fun BillsView(model: AppModel) {
                             Frequency.entries.forEach { f -> Chip(f.label, f == editFrequency, { editFrequency = f }) }
                         }
                         SectionLabel("First due")
+                        if (editFrequency == Frequency.SEMI_MONTHLY) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            PixelField(editDay1, { editDay1 = dayInput(it) }, Modifier.weight(1f), label = "Day 1", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                            PixelField(editDay2, { editDay2 = dayInput(it) }, Modifier.weight(1f), label = "Day 2", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        }
                         PixelDateField(editFirst ?: b.firstDue, today, ModuleAccent.MINT.accent, { editFirst = it }, presets = listOf("Today" to 0, "In a week" to 7, "In a month" to 30))
                     }
+                    ToggleRow("Move to a working day", editWorkday, detail = "Paid on the nearest weekday on or before, skipping holidays") { editWorkday = it }
+                    if (b.income) ToggleRow("Estimated amount", editEstimate, detail = "You enter the real amount when it arrives") { editEstimate = it }
                     // Help: the schedule is fixed once payments are recorded; to change it, pause this bill and add a new one.
-                    PixelButton("Save", { if (mint.updateBill(b.copy(name = editName, expectedMinor = minor, firstDue = editFirst ?: b.firstDue, frequency = editFrequency)).let { r -> message = r.refused; r.record != null }) editId = null }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = editName.isNotBlank() && (editAmount.isBlank() || minor != null), compact = true)
+                    PixelButton("Save", { if (mint.updateBill(b.copy(name = editName, expectedMinor = minor, firstDue = editFirst ?: b.firstDue, frequency = editFrequency, days = if (editFrequency == Frequency.SEMI_MONTHLY) listOf(editDay1.toIntOrNull() ?: 15, editDay2.toIntOrNull() ?: 30) else b.days, workday = editWorkday, estimate = editEstimate && b.income)).let { r -> message = r.refused; r.record != null }) editId = null }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = editName.isNotBlank() && (editAmount.isBlank() || minor != null), compact = true)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton(if (b.status == PlanStatus.PAUSED) "Resume" else "Pause", { mint.setBillStatus(b.id, if (b.status == PlanStatus.PAUSED) PlanStatus.ACTIVE else PlanStatus.PAUSED) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -1063,16 +1090,21 @@ private fun BillsView(model: AppModel) {
     }
 }
 
+/** The "Received on" date a settlement starts with: an income's own payday once it has come, otherwise today. */
+private fun defaultReceivedDay(o: Occurrence, today: LocalDate): LocalDate = if (o.bill.income && o.payDay <= today) o.payDay else today
+
 @Composable
 private fun OccurrenceRow(model: AppModel, o: Occurrence, open: Boolean, paid: Boolean = false, onClick: () -> Unit) {
     // A settled occurrence shows what was paid; one still to settle shows what is left.
     val amount = if (paid) o.payment?.paidMinor?.takeIf { o.state != OccurrenceState.SKIPPED } else o.remainingMinor ?: o.bill.expectedMinor
     val today = model.store.today
+    // An estimated amount reads "≈" after its sign.
+    fun shown(m: Long) = (if (o.bill.income) "+" else "") + (if (o.bill.estimate && !paid) "≈ " else "") + model.mint.show(m, o.bill.currency)
     MintLine(
         trail = {
             // A bill still to settle shows when it is due at the right; a settled one shows what was paid.
             Text(
-                if (paid) amount?.let { (if (o.bill.income) "+" else "") + model.mint.show(it, o.bill.currency) }.orEmpty() else if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(),
+                if (paid) amount?.let { shown(it) }.orEmpty() else if (o.payDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.payDay.short(),
                 style = MaterialTheme.typography.titleSmall,
             )
         },
@@ -1080,8 +1112,9 @@ private fun OccurrenceRow(model: AppModel, o: Occurrence, open: Boolean, paid: B
     ) {
         Text(o.bill.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
         val stateLabel = if (o.bill.income && o.state == OccurrenceState.PAID) "Received" else o.state.label
-        val line = if (paid) "$stateLabel · ${o.dueDay.short()}" else amount?.let { (if (o.bill.income) "+" else "") + model.mint.show(it, o.bill.currency) } ?: "varies"
+        val line = if (paid) "$stateLabel · ${o.payDay.short()}" else amount?.let { shown(it) } ?: "varies"
         Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        if (o.payDay != o.dueDay) Text("${o.payDay.short()} · for the ${ordinal(o.dueDay.dayOfMonth)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
 }
 
@@ -1207,6 +1240,7 @@ private fun MintSettingsView(model: AppModel) {
             }
         }
     }
+    PaydaysAndHolidays(model)
     CategoriesBox(model)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {

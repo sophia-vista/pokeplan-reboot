@@ -269,8 +269,26 @@ object MintRules {
                 val year = first.year + index
                 LocalDate(year, first.monthNumber, minOf(first.dayOfMonth, daysInMonth(year, first.monthNumber)))
             }
+            Frequency.SEMI_MONTHLY -> {
+                val days = semiDays(bill)
+                fun at(k: Int): LocalDate {
+                    val total = first.year * 12 + (first.monthNumber - 1) + k / days.size
+                    val year = total.floorDiv(12)
+                    val month = total.mod(12) + 1
+                    return LocalDate(year, month, minOf(days[k % days.size], daysInMonth(year, month)))
+                }
+                // The dates of the first month that come before the first due day are not part of the schedule.
+                val skip = (0 until days.size).count { at(it) < first }
+                at(index + skip)
+            }
         }
     }
+
+    /** The days of the month of a twice-a-month bill: its own, sorted and distinct (1 to 31), or 15 and 30. */
+    fun semiDays(bill: Bill): List<Int> = bill.days.filter { it in 1..31 }.distinct().sorted().take(4).ifEmpty { listOf(15, 30) }
+
+    /** The date an occurrence really falls on: [due] itself, or the nearest working day on or before it when the bill asks (MINT.md 8.3B). */
+    fun payDay(data: MintData, bill: Bill, due: LocalDate): LocalDate = if (bill.workday) Payday.onOrBefore(due, data.settings) else due
 
     /** Occurrences of [bill] due in `[from, to]`, in order. A paused or archived bill makes none; settled history is read from [MintData.billPayments]. */
     fun occurrences(data: MintData, bill: Bill, from: LocalDate, to: LocalDate, today: LocalDate): List<Occurrence> {
@@ -279,8 +297,9 @@ object MintRules {
         var index = 0
         while (index <= MAX_OCCURRENCES) {
             val due = dueDay(bill, index)
-            if (due > to) break
-            if (due >= from) out += occurrence(data, bill, due, today)
+            if (due > to.plus(7, DateTimeUnit.DAY)) break
+            val pay = payDay(data, bill, due)
+            if ((due >= from && due <= to) || (pay >= from && pay <= to)) out += occurrence(data, bill, due, today)
             if (bill.frequency == Frequency.ONCE) break
             index++
         }
@@ -289,13 +308,14 @@ object MintRules {
 
     fun occurrence(data: MintData, bill: Bill, due: LocalDate, today: LocalDate): Occurrence {
         val payment = data.billPayments.firstOrNull { it.billId == bill.id && it.dueDay == due }
+        val pay = payDay(data, bill, due)
         val state = when (payment?.status) {
             SettleStatus.PAID -> OccurrenceState.PAID
             SettleStatus.PARTIAL -> OccurrenceState.PARTIAL
             SettleStatus.SKIPPED -> OccurrenceState.SKIPPED
-            null -> when { due < today -> OccurrenceState.OVERDUE; due == today -> OccurrenceState.DUE; else -> OccurrenceState.UPCOMING }
+            null -> when { pay < today -> OccurrenceState.OVERDUE; pay == today -> OccurrenceState.DUE; else -> OccurrenceState.UPCOMING }
         }
-        return Occurrence(bill, due, state, payment)
+        return Occurrence(bill, due, state, payment, pay)
     }
 
     /** How far back an unsettled occurrence is still shown as overdue; older ones are history, not a standing reproach. */
@@ -306,7 +326,7 @@ object MintRules {
     fun upcoming(data: MintData, today: LocalDate, withinDays: Int = 30): List<Occurrence> =
         data.bills.flatMap { occurrences(data, it, today.minus(DatePeriod(days = OVERDUE_DAYS)), today.plus(withinDays, DateTimeUnit.DAY), today) }
             .filter { it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
-            .sortedBy { it.dueDay }
+            .sortedBy { it.payDay }
 
     /**
      * Occurrences settled as paid or skipped and due in the last [OVERDUE_DAYS] days or ahead, latest first: the ones [upcoming] leaves out, so a wrong
@@ -316,7 +336,7 @@ object MintRules {
         val from = today.minus(DatePeriod(days = OVERDUE_DAYS))
         return data.billPayments.filter { it.dueDay >= from && it.status != SettleStatus.PARTIAL }
             .mapNotNull { p -> data.bills.firstOrNull { it.id == p.billId }?.let { occurrence(data, it, p.dueDay, today) } }
-            .sortedByDescending { it.dueDay }
+            .sortedByDescending { it.payDay }
     }
 
     // --- reconciliation ----------------------------------------------------------------------------------------------------

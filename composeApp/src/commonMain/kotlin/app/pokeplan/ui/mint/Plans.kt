@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,6 +51,8 @@ import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelField
+import app.pokeplan.ui.theme.PixelIconButton
+import app.pokeplan.ui.theme.ToggleRow
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
@@ -94,9 +97,10 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
     var open by remember(a.id) { mutableStateOf<String?>(null) }
     var finished by remember(a.id) { mutableStateOf(false) }
     var buying by remember(a.id) { mutableStateOf(false) }
+    var existing by remember(a.id) { mutableStateOf(false) }
     if (buying) Dialog({ buying = false }, DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize().padding(Spacing.L), contentAlignment = Alignment.Center) {
-            TextBox { Column(Modifier.verticalScroll(rememberScrollState())) { NewPurchaseForm(model, a) { buying = false } } }
+            TextBox { Column(Modifier.verticalScroll(rememberScrollState())) { NewPurchaseForm(model, a, startExisting = existing) { buying = false } } }
         }
     }
     TextBox {
@@ -120,7 +124,8 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
                 MintLine(onClick = { finished = !finished }, onClickLabel = if (finished) "Hide finished plans" else "Show finished plans") { Text("Finished (${done.size})", style = MaterialTheme.typography.bodyLarge) }
                 if (finished) done.forEach { PlanRow(model, it, open == it.plan.id, { open = if (open == it.plan.id) null else it.plan.id }, problem) }
             }
-            PixelButton("New installment purchase", { buying = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+            PixelButton("New installment purchase", { existing = false; buying = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+            if (plans.isEmpty()) PixelButton("Already owe installments? Add them", { existing = true; buying = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }
 }
@@ -132,6 +137,7 @@ private fun PlanRow(model: AppModel, v: PlanView, open: Boolean, toggle: () -> U
     HorizontalDivider(color = Pixel.Border)
     MintLine(onClick = toggle, onClickLabel = if (open) "Hide plan" else "Show plan") {
         Text(v.plan.name, style = MaterialTheme.typography.bodyLarge)
+        if (v.plan.purchaseTxId == null) Text("Existing schedule", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         Text(
             if (v.finished) "Paid" else "${v.installments.count { it.state == InstallmentState.PAID }} of ${v.installments.size} paid · ${mint.show(v.remainingMinor, cur)}",
             style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
@@ -248,7 +254,23 @@ private enum class FeeChoice(val label: String) { NONE("None"), PER("Per install
 /** The new installment purchase form (MINT.md 5.6A): the purchase, how it is split, an optional fee or interest, and the live schedule it will get. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun NewPurchaseForm(model: AppModel, a: FinancialAccount, startName: String = "", startAmount: String = "", startCount: String = "3", startFee: String = "", onClose: () -> Unit) {
+internal fun NewPurchaseForm(
+    model: AppModel, a: FinancialAccount, startName: String = "", startAmount: String = "", startCount: String = "3", startFee: String = "", startExisting: Boolean = false,
+    existingAmounts: List<String> = listOf(""), existingFees: List<String> = listOf(""), onClose: () -> Unit,
+) {
+    var existing by remember { mutableStateOf(startExisting) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Chip("New purchase", !existing) { existing = false }
+            Chip("Already owed", existing) { existing = true }
+        }
+        if (existing) ExistingScheduleForm(model, a, existingAmounts, existingFees, onClose) else PurchaseFields(model, a, startName, startAmount, startCount, startFee, onClose)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PurchaseFields(model: AppModel, a: FinancialAccount, startName: String, startAmount: String, startCount: String, startFee: String, onClose: () -> Unit) {
     val mint = model.mint
     val today = model.store.today
     val cur = a.currency
@@ -349,4 +371,73 @@ private fun ScheduleTable(model: AppModel, rows: List<app.pokeplan.mint.Installm
     val p = rows.sumOf { it.principalMinor }
     val f = rows.sumOf { it.feeMinor }
     line(listOf("", "Total", mint.show(p, cur), mint.show(f, cur), mint.show(p + f, cur)), bold = true)
+}
+
+private data class OweRow(val due: LocalDate, val amount: String = "", val fee: String = "", val feeOpen: Boolean = false)
+
+/** Installments already owed (MINT.md 5.6A): a schedule without a purchase, for what was bought before tracking began. */
+@Composable
+private fun ExistingScheduleForm(model: AppModel, a: FinancialAccount, amounts: List<String>, fees: List<String>, onClose: () -> Unit) {
+    val mint = model.mint
+    val today = model.store.today
+    val cur = a.currency
+    val first = MintRules.nextOnDay(a.dueDay, today) ?: Installments.dueOn(today, PlanEvery.MONTH, 1)
+    var name by remember { mutableStateOf("Existing installments") }
+    val rows = remember {
+        mutableStateListOf<OweRow>().also { l ->
+            amounts.forEachIndexed { i, amt -> l.add(OweRow(Installments.dueOn(first, PlanEvery.MONTH, i), amt, fees.getOrElse(i) { "" }, fees.getOrElse(i) { "" }.isNotEmpty())) }
+        }
+    }
+    var interest by remember { mutableStateOf(false) }
+    var addTo by remember { mutableStateOf(true) }
+    var refused by remember { mutableStateOf<String?>(null) }
+    val principal = rows.map { Money.parse(it.amount, cur)?.takeIf { m -> m > 0 } }
+    val total = principal.filterNotNull().sum()
+    val months = principal.count { it != null }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true)
+        rows.forEachIndexed { i, r ->
+            HorizontalDivider(color = Pixel.Border)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { PixelDateField(r.due, today, ModuleAccent.MINT.accent, { d -> if (d != null) rows[i] = rows[i].copy(due = d) }, presets = emptyList()) }
+                if (rows.size > 1) PixelIconButton("close", "Remove month ${i + 1}", { rows.removeAt(i) }, Pixel.InkSoft)
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                PixelField(r.amount, { rows[i] = rows[i].copy(amount = money(it)) }, Modifier.weight(1f), label = "Amount owed", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                if (r.feeOpen) PixelField(r.fee, { rows[i] = rows[i].copy(fee = money(it)) }, Modifier.weight(1f), label = "Fee on top", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                else PixelButton("Fee", { rows[i] = rows[i].copy(feeOpen = true) }, color = Pixel.InkSoft, compact = true)
+            }
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            if (rows.size < Installments.MAX_COUNT) PixelButton("Add month", { rows.add(OweRow(Installments.dueOn(rows.last().due, PlanEvery.MONTH, 1))) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton("Next 3 months", {
+                val head = rows.first()
+                rows.clear()
+                repeat(3) { n -> rows.add(OweRow(Installments.dueOn(head.due, PlanEvery.MONTH, n), head.amount, if (n == 0) head.fee else "", head.feeOpen && n == 0)) }
+            }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        if (rows.any { it.fee.isNotBlank() }) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Chip("Fee", !interest) { interest = false }
+            Chip("Interest", interest) { interest = true }
+        }
+        ToggleRow("Add to starting balance owed", addTo, detail = "The account owes ${mint.show(total, cur)} more. Turn off if you already entered what you owe as the starting balance.") { addTo = it }
+        Text("Total ${mint.show(total, cur)} over $months ${if (months == 1) "month" else "months"}", style = MaterialTheme.typography.titleSmall)
+        Text("Not spending: these were bought before you started tracking.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        refused?.let { Report(model, it, NoticeTone.WARNING) }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Add schedule", {
+                var bad = false
+                val list = rows.mapNotNull { r ->
+                    val p = Money.parse(r.amount, cur)?.takeIf { it > 0 } ?: return@mapNotNull null
+                    val f = if (r.fee.isBlank()) 0L else Money.parse(r.fee, cur)
+                    if (f == null) { bad = true; return@mapNotNull null }
+                    app.pokeplan.mint.Installment(0, r.due, p, f)
+                }
+                if (bad) refused = "Check the fee."
+                else if (list.isEmpty()) refused = "Enter what is owed for at least one month."
+                else mint.addExistingPlan(a.id, name, list, addTo, if (interest) FeeKind.INTEREST else FeeKind.FEE).let { if (it.record != null) onClose() else refused = it.refused }
+            }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true, enabled = name.isNotBlank() && months > 0)
+            PixelButton("Cancel", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+    }
 }

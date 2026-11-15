@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.208.0
+
+MINT existing installments and paydays (owner requests, 15 November 2026, REP-039 neighbourhood; `MINT.md` 5.6A, 8.3B, 22E). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change and no migration: every new field is JSON with a default in the sealed rows; plans stay in `mint_state`.
+
+- **Existing installments:** `MintStore.addExistingPlan` makes an `InstallmentPlan` with `purchaseTxId = null` for a schedule running before tracking: no purchase record, not spending; the amounts owed are added to the account's starting balance owed unless turned off; then Pay, Bill it, Late fee, Edit, Refund and Delete work as for any plan. `Installments.checkExisting`. The New installment purchase dialog has "New purchase" and "Already owed" chips, rows (due date, amount owed, optional fee), "Add month", "Next 3 months", an "Add to starting balance owed" toggle and a live total; the hint "Already owe installments? Add them" sits in the Credit line box of an account with no plans; such plans show "Existing schedule".
+- **Paydays:** `Frequency.SEMI_MONTHLY` ("Twice a month", `Bill.days` default 15 and 30, a missing day is the month's last); `Bill.workday` moves a due day to the nearest working day on or before (not a weekend, not a counted holiday); `Occurrence.payDay` (really due) versus `dueDay` (scheduled, the settlement key, so changing a holiday never orphans a payment); reminders use `payDay`.
+- **Estimated income:** `Bill.estimate` shows the amount as "≈", the real amount is always entered, any amount settles it as paid, Part is hidden; rows read "+≈ ₱X" with "Fri 13 Nov · for the 15th".
+- **Holidays:** `PhHolidays` (fixed holidays, Holy Week from Easter, Heroes Day) and `Payday` in mint-core `Payday.kt`; `MintSettings.builtInHolidays`, `holidaysIgnored`, `daysOff` with `setBuiltInHolidays`, `setHolidayCounted`, `setDayOff`; "Paydays and holidays" box in Mint settings (`ui/mint/Paydays.kt`). The list is a starting point, not an official calendar.
+- **Open:** reminders from installment due days, other countries' holiday calendars, a range for an estimate. Not run on a device: all the new screens.
+- **Docs:** `MINT.md` 5.6A, 8.3B and 22E; `code-map.md`; `IMPLEMENTATION_BACKLOG.md` REP-039.
+
 ## 0.207.0
 
 MINT pay later and installment plans (owner request, 15 November 2026, REP-039 neighbourhood; `MINT.md` 4.1, 5.6A, 22D). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change and no migration: plans are JSON in the sealed `mint_state` row. Not run on a device.

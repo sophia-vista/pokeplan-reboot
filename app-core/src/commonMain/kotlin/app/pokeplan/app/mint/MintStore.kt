@@ -315,7 +315,7 @@ class MintStore(
     private fun setStatus(id: String, status: TxStatus) = update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) it.copy(status = status) else it }) }
 
     /** The installment plan whose purchase record is [id], if any: that record cannot be deleted or voided while the plan exists (MINT.md 5.6A). */
-    fun planOfPurchase(id: String): InstallmentPlan? = data.plans.firstOrNull { it.purchaseTxId == id }
+    fun planOfPurchase(id: String): InstallmentPlan? = data.plans.firstOrNull { it.purchaseTxId != null && it.purchaseTxId == id }
 
     fun deleteTransaction(id: String): Boolean {
         if (planOfPurchase(id) != null) return false
@@ -361,11 +361,15 @@ class MintStore(
 
     // --- bills -------------------------------------------------------------------------------------------------------
 
-    fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null, income: Boolean = false): Logged<Bill> {
+    /** The days of a twice-a-month bill: 1 to 31, distinct, sorted, at most four; empty (15 and 30) for any other frequency or none given (MINT.md 8.3B). */
+    private fun cleanDays(frequency: Frequency, days: List<Int>): List<Int> =
+        if (frequency != Frequency.SEMI_MONTHLY) emptyList() else days.filter { it in 1..31 }.distinct().sorted().take(4).let { if (it == listOf(15, 30)) emptyList() else it }
+
+    fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null, income: Boolean = false, days: List<Int> = emptyList(), workday: Boolean = false, estimate: Boolean = false): Logged<Bill> {
         if (name.isBlank()) return Logged(null, "Give the bill a name.")
         (MintRules.checkCurrency(currency) as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (expectedMinor != null) (MintRules.checkAmount(expectedMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val bill = Bill(newId(), name.trim().take(MintRules.NAME_MAX), currency, frequency, firstDue, expectedMinor, categoryId, accountId, createdMillis = nowMillis, income = income)
+        val bill = Bill(newId(), name.trim().take(MintRules.NAME_MAX), currency, frequency, firstDue, expectedMinor, categoryId, accountId, createdMillis = nowMillis, income = income, days = cleanDays(frequency, days), workday = workday, estimate = estimate)
         update { it.copy(bills = it.bills + bill) }
         return Logged(bill)
     }
@@ -378,9 +382,10 @@ class MintStore(
         val old = data.bills.firstOrNull { it.id == b.id } ?: return Logged(null, "That bill is gone.")
         if (b.name.isBlank()) return Logged(null, "Give the bill a name.")
         b.expectedMinor?.let { m -> (MintRules.checkAmount(m) as? Check.Refused)?.let { return Logged(null, it.reason) } }
-        val rescheduled = b.firstDue != old.firstDue || b.frequency != old.frequency
+        val days = cleanDays(b.frequency, b.days)
+        val rescheduled = b.firstDue != old.firstDue || b.frequency != old.frequency || days != old.days
         if (rescheduled && data.billPayments.any { it.billId == old.id }) return Logged(null, "Payments are recorded for this bill, so its schedule cannot change. Pause it and add a new bill.")
-        val next = old.copy(name = b.name.trim().take(MintRules.NAME_MAX), expectedMinor = b.expectedMinor, categoryId = b.categoryId, accountId = b.accountId, firstDue = b.firstDue, frequency = b.frequency)
+        val next = old.copy(name = b.name.trim().take(MintRules.NAME_MAX), expectedMinor = b.expectedMinor, categoryId = b.categoryId, accountId = b.accountId, firstDue = b.firstDue, frequency = b.frequency, days = days, workday = b.workday, estimate = b.estimate)
         update { d -> d.copy(bills = d.bills.map { if (it.id == b.id) next else it }) }
         return Logged(next)
     }
@@ -390,7 +395,7 @@ class MintStore(
     fun deleteBill(id: String) = update { d -> d.copy(bills = d.bills.filterNot { it.id == id }, billPayments = d.billPayments.filterNot { it.billId == id }) }
 
     /**
-     * Settles one occurrence: paid, partly paid or skipped. **It creates no transaction** (MINT.md section 8.2); [txId] only links one the user chose.
+     * Settles one occurrence: paid, partly paid or skipped. For an estimated bill (`Bill.estimate`, MINT.md 8.3B) the amount is only a guess, so any amount settles it as paid. **It creates no transaction** (MINT.md section 8.2); [txId] only links one the user chose.
      * Settling again replaces the earlier settlement, so a mistake can be put right. A part payment that covers the whole expected amount is saved as paid.
      */
     fun settle(billId: String, dueDay: LocalDate, status: SettleStatus, paidMinor: Long = 0, txId: String? = null, paidDay: LocalDate = today): Boolean {
@@ -399,7 +404,7 @@ class MintStore(
         if (status != SettleStatus.SKIPPED && MintRules.checkAmount(paidMinor) is Check.Refused) return false
         val amount = if (status == SettleStatus.SKIPPED) 0L else paidMinor
         val full = bill.expectedMinor
-        val settled = if (status == SettleStatus.PARTIAL && full != null && amount >= full) SettleStatus.PAID else status
+        val settled = if (status == SettleStatus.PARTIAL && full != null && (amount >= full || bill.estimate)) SettleStatus.PAID else status
         val p = BillPayment(newId(), bill.id, dueDay, settled, amount, paidDay, txId, nowMillis)
         update { d -> d.copy(billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay } + p) }
         return true
@@ -419,7 +424,7 @@ class MintStore(
         if (account.currency != bill.currency) return Logged(null, "That account is in ${account.currency}, the bill in ${bill.currency}.")
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val full = bill.expectedMinor
-        val payment = BillPayment(newId(), bill.id, dueDay, SettleStatus.PAID.takeIf { full == null || paidMinor >= full } ?: SettleStatus.PARTIAL, paidMinor, paidDay, tx.id, nowMillis)
+        val payment = BillPayment(newId(), bill.id, dueDay, SettleStatus.PAID.takeIf { bill.estimate || full == null || paidMinor >= full } ?: SettleStatus.PARTIAL, paidMinor, paidDay, tx.id, nowMillis)
         update { d -> d.copy(transactions = d.transactions + tx, billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay } + payment) }
         return Logged(tx)
     }
@@ -458,6 +463,25 @@ class MintStore(
         val planId = newId()
         val plan = InstallmentPlan(planId, account.id, name.trim().take(MintRules.NAME_MAX), account.currency, txId, totalMinor, day, every, feeKind, Installments.generate(totalMinor, count, every, firstDue, fee), nowMillis)
         update { it.copy(transactions = it.transactions + tx.copy(planId = planId), plans = it.plans + plan) }
+        return Logged(plan)
+    }
+
+    /**
+     * Installments already owed (MINT.md 5.6A): a plan with no purchase record for a schedule that was running before tracking began. [rows] are the upcoming
+     * installments (due day, amount still owed, optional fee, in due-day order). Nothing is recorded as spending. With [addToStartingBalance] the account's
+     * starting balance owed (opening balance) rises by what the schedule asks, so the outstanding equals it; leave it off when the opening balance already holds that.
+     */
+    fun addExistingPlan(accountId: String, name: String, rows: List<app.pokeplan.mint.Installment>, addToStartingBalance: Boolean = true, feeKind: FeeKind = FeeKind.FEE): Logged<InstallmentPlan> {
+        val account = creditAccount(accountId) ?: return Logged(null, "Choose a credit card or pay later account that is open.")
+        if (name.isBlank()) return Logged(null, "Give the installments a name.")
+        if (feeKind == FeeKind.LATE) return Logged(null, "Choose fee or interest.")
+        (Installments.checkExisting(account.type, rows) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val total = rows.sumOf { it.principalMinor }
+        val opening = if (addToStartingBalance) account.openingMinor + total else account.openingMinor
+        if (opening > app.pokeplan.mint.Money.MAX_MINOR) return Logged(null, "That total looks wrong.")
+        val numbered = rows.mapIndexed { i, r -> r.copy(no = i + 1) }
+        val plan = InstallmentPlan(newId(), account.id, name.trim().take(MintRules.NAME_MAX), account.currency, null, total, numbered.first().dueDay, PlanEvery.MONTH, feeKind, numbered, nowMillis)
+        update { d -> d.copy(plans = d.plans + plan, accounts = d.accounts.map { if (it.id == account.id) it.copy(openingMinor = opening) else it }) }
         return Logged(plan)
     }
 
@@ -522,7 +546,7 @@ class MintStore(
         if (day > today) return Logged(null, "A refund cannot be dated in the future.")
         (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (amountMinor > plan.totalMinor - view.refundedMinor) return Logged(null, "That is more than the purchase less what was refunded.")
-        val purchase = data.transactions.firstOrNull { it.id == plan.purchaseTxId }
+        val purchase = plan.purchaseTxId?.let { id -> data.transactions.firstOrNull { it.id == id } }
         val tx = Transaction(newId(), TxType.REFUND, amountMinor, plan.currency, atMillis(day), day, plan.accountId, categoryId = purchase?.categoryId, payee = plan.name.take(MintRules.NAME_MAX * 2), refundOf = plan.purchaseTxId, createdMillis = nowMillis, planId = planId)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }
@@ -619,6 +643,15 @@ class MintStore(
 
     /** Turns the optional access gate on or off. The caller has already proved the phone can ask for its screen lock; the gate holds no key and no password. */
     fun setGate(on: Boolean) = settings { it.copy(gate = on) }
+
+    /** Whether the built-in Philippine holidays count as days off for paydays (MINT.md 8.3B). */
+    fun setBuiltInHolidays(on: Boolean) = settings { it.copy(builtInHolidays = on) }
+
+    /** Counts or stops counting one built-in holiday (for example one that was not observed that year). */
+    fun setHolidayCounted(day: LocalDate, counted: Boolean) = settings { it.copy(holidaysIgnored = if (counted) it.holidaysIgnored - day else (it.holidaysIgnored + day).distinct().sorted()) }
+
+    /** Adds or removes a day off of the player's own (Eid, a proclaimed day); at most 200. */
+    fun setDayOff(day: LocalDate, off: Boolean) = settings { it.copy(daysOff = if (off) (it.daysOff + day).distinct().sorted().takeLast(200) else it.daysOff - day) }
 
     fun setCurrency(code: String) = settings { if (MintRules.checkCurrency(code.trim().uppercase()) is Check.Ok) it.copy(currency = code.trim().uppercase()) else it }
 

@@ -669,4 +669,80 @@ class MintStoreTest {
         assertTrue(m.data.transactions.all { it.planId == null })
         assertTrue(m.data.plans.isEmpty())
     }
+
+    @Test
+    fun installmentsAlreadyOwedMakeAScheduleWithoutSpendingAndAddToTheStartingBalance() {
+        val s = setup()
+        val m = s.mint
+        val wallet = assertNotNull(m.addAccount("GCash", AccountType.EWALLET, "PHP", 100_000).record).id
+        val later = assertNotNull(m.addAccount("SPayLater", AccountType.PAY_LATER, "PHP", 0, limitMinor = 300_000).record).id
+        val nov = LocalDate(2026, 11, 1)
+        val dec = LocalDate(2026, 12, 1)
+        val rows = listOf(
+            app.pokeplan.mint.Installment(0, LocalDate(2026, 11, 20), 50_000),
+            app.pokeplan.mint.Installment(0, LocalDate(2026, 12, 20), 50_000, 500),
+            app.pokeplan.mint.Installment(0, LocalDate(2027, 1, 20), 30_000),
+        )
+        fun owed() = MintRules.balances(m.data).single { it.account.id == later }.postedMinor
+        val plan = assertNotNull(m.addExistingPlan(later, "Old SPayLater", rows).record)
+        assertNull(plan.purchaseTxId)
+        assertEquals(130_000L, plan.totalMinor)
+        assertEquals(listOf(1, 2, 3), plan.installments.map { it.no })
+        // Owed rises by what the schedule asks; nothing is spending, no record exists.
+        assertEquals(130_000L, owed())
+        assertEquals(0L, MintRules.spent(m.data, nov, dec, "PHP"))
+        assertTrue(m.data.transactions.isEmpty())
+        assertEquals(-130_000L, MintRules.netPosition(m.data)["PHP"]!! - 100_000L)
+        assertEquals(130_500L, m.planView(plan.id)!!.remainingMinor) // the second month's fee is still to come
+        // Pay the first month from the wallet: a transfer, owed falls by that amount, still no spending.
+        assertNotNull(m.payPlan(plan.id, 50_000, wallet).record)
+        assertEquals(80_000L, owed())
+        assertEquals(0L, MintRules.spent(m.data, nov, dec, "PHP"))
+        assertEquals(InstallmentState.PAID, m.planView(plan.id)!!.installments[0].state)
+        // The second month's fee is recorded when billed and is the only spending; it is owed on top.
+        assertNotNull(m.billInstallmentFee(plan.id, 2).record)
+        assertEquals(500L, MintRules.spent(m.data, nov, dec, "PHP"))
+        assertEquals(80_500L, owed())
+        // Leaving the opening balance alone (the player typed the total there already) adds nothing; a refund and a delete work on it.
+        val card = assertNotNull(m.addAccount("Visa", AccountType.CREDIT_CARD, "PHP", 40_000).record).id
+        val plan2 = assertNotNull(m.addExistingPlan(card, "Visa plan", listOf(app.pokeplan.mint.Installment(0, LocalDate(2026, 12, 5), 40_000)), addToStartingBalance = false).record)
+        assertEquals(40_000L, MintRules.balances(m.data).single { it.account.id == card }.postedMinor)
+        assertNotNull(m.refundPlan(plan2.id, 10_000).record)
+        assertEquals(30_000L, MintRules.balances(m.data).single { it.account.id == card }.postedMinor)
+        assertEquals(30_000L, m.planView(plan2.id)!!.remainingMinor)
+        m.deletePlan(plan2.id)
+        assertEquals(30_000L, MintRules.balances(m.data).single { it.account.id == card }.postedMinor)
+        // Refusals: a wallet, no rows, a zero amount, out of order.
+        assertNull(m.addExistingPlan(wallet, "x", rows).record)
+        assertNull(m.addExistingPlan(later, "x", emptyList()).record)
+        assertNull(m.addExistingPlan(later, "x", listOf(app.pokeplan.mint.Installment(0, LocalDate(2026, 12, 1), 0))).record)
+        assertNull(m.addExistingPlan(later, "x", rows.reversed()).record)
+    }
+
+    @Test
+    fun anEstimatedTwiceAMonthSalaryIsRecordedAtTheRealAmountOnItsScheduledDay() {
+        val s = setup()
+        val m = s.mint
+        val acct = assertNotNull(m.addAccount("Payroll", AccountType.BANK, "PHP", 0).record).id
+        val pay = assertNotNull(m.addBill("Salary", "PHP", Frequency.SEMI_MONTHLY, LocalDate(2026, 11, 15), 2_500_000, "cat-salary", acct, income = true, days = listOf(30, 15), workday = true, estimate = true).record)
+        assertEquals(emptyList(), pay.days) // 15 and 30 is the default and is not stored
+        assertTrue(pay.estimate && pay.workday && pay.income)
+        s.clock.advanceDays(7) // Saturday 14 November: the 15th is paid on Friday the 13th, which has passed
+        // Nothing posts by itself: the income appears only when it is confirmed, at the real amount (not the estimate).
+        assertTrue(m.data.transactions.isEmpty())
+        val tx = assertNotNull(m.settleAndRecord(pay.id, LocalDate(2026, 11, 15), 2_431_550, paidDay = LocalDate(2026, 11, 13)).record)
+        assertEquals(TxType.INCOME, tx.type)
+        assertEquals(2_431_550L, tx.amountMinor)
+        assertEquals(LocalDate(2026, 11, 13), tx.day)
+        assertEquals(OccurrenceState.PAID, MintRules.occurrence(m.data, pay, LocalDate(2026, 11, 15), m.today).state)
+        // Days off are settings: add one, turn one built-in day off; changing a schedule after payments is refused.
+        m.setDayOff(LocalDate(2026, 12, 15), true)
+        assertEquals(LocalDate(2026, 12, 14), MintRules.payDay(m.data, pay, LocalDate(2026, 12, 15)))
+        m.setHolidayCounted(LocalDate(2026, 11, 30), false)
+        assertEquals(LocalDate(2026, 11, 30), MintRules.payDay(m.data, pay, LocalDate(2026, 11, 30)))
+        m.setBuiltInHolidays(false)
+        assertEquals(LocalDate(2026, 12, 30), MintRules.payDay(m.data, pay, LocalDate(2026, 12, 30)))
+        assertNull(m.updateBill(pay.copy(days = listOf(10, 25))).record)
+        assertNotNull(m.updateBill(pay.copy(estimate = false, workday = false)).record)
+    }
 }

@@ -158,7 +158,7 @@ data class Budget(
 )
 
 @Serializable
-enum class Frequency(val label: String) { ONCE("One time"), WEEKLY("Every week"), MONTHLY("Every month"), YEARLY("Every year") }
+enum class Frequency(val label: String) { ONCE("One time"), WEEKLY("Every week"), MONTHLY("Every month"), YEARLY("Every year"), SEMI_MONTHLY("Twice a month") }
 
 /** A bill (MINT.md section 8), or a recurring income when [income] (8.3A): what is expected and when. Its occurrences are derived from [firstDue] and [frequency]; only settled ones are stored. */
 @Serializable
@@ -178,6 +178,12 @@ data class Bill(
     val remind: Boolean = true,
     /** A recurring income (a salary, an allowance) rather than something to pay (MINT.md 8.3A): same schedule, and "Received, record it" writes an income. */
     val income: Boolean = false,
+    /** For [Frequency.SEMI_MONTHLY] the days of the month it falls on (for example 15 and 30; a day a month lacks is its last day); empty reads as 15 and 30 (MINT.md 8.3B). */
+    val days: List<Int> = emptyList(),
+    /** Moves each date to the nearest working day on or before it: not a weekend, not a holiday the player counts (MINT.md 8.3B). */
+    val workday: Boolean = false,
+    /** The expected amount is an estimate, not final: shown with "about", and the real amount is always entered when it is recorded. */
+    val estimate: Boolean = false,
 )
 
 /** What the user settled for one occurrence. Marking an occurrence paid never creates a transaction; [txId] only links one the user chose. */
@@ -199,7 +205,8 @@ data class BillPayment(
 /** The state of one occurrence for today: derived, except the three the user settled. */
 enum class OccurrenceState(val label: String) { UPCOMING("Upcoming"), DUE("Due today"), OVERDUE("Overdue"), PARTIAL("Partly paid"), PAID("Paid"), SKIPPED("Skipped") }
 
-data class Occurrence(val bill: Bill, val dueDay: LocalDate, val state: OccurrenceState, val payment: BillPayment?) {
+/** [dueDay] is the scheduled date and what a settlement is keyed by; [payDay] is the date it is really due or paid, moved to a working day when the bill asks (MINT.md 8.3B). */
+data class Occurrence(val bill: Bill, val dueDay: LocalDate, val state: OccurrenceState, val payment: BillPayment?, val payDay: LocalDate = dueDay) {
     /** What is still to pay: the expected amount less what was paid, or null when the bill's amount is variable. */
     val remainingMinor: Long? get() = bill.expectedMinor?.let { (it - (payment?.paidMinor ?: 0)).coerceAtLeast(0) }
 }
@@ -244,6 +251,11 @@ data class MintSettings(
     val billReminderNames: Boolean = false,
     /** The optional gate (MINT.md 13.2): Mint asks the phone's own screen lock before it shows anything. Only a preference; no key depends on it. */
     val gate: Boolean = false,
+    /** Whether the built-in Philippine holidays count as days off for paydays (MINT.md 8.3B). */
+    val builtInHolidays: Boolean = true,
+    /** Built-in holidays the player turned off, and days off they added (Eid, a proclaimed day). */
+    val holidaysIgnored: List<LocalDate> = emptyList(),
+    val daysOff: List<LocalDate> = emptyList(),
 )
 
 /**

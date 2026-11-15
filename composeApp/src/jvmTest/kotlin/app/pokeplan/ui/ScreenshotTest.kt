@@ -1744,6 +1744,45 @@ class ScreenshotTest {
         }
     }
 
+    /** Installments already owed: the "Already owed" mode with three months, a fee, and the options hint when an account has no plans. */
+    @Test
+    fun mintExistingInstallments() {
+        for (dark in listOf(false, true)) {
+            val model = AppModel(storeWithTeam())
+            val later = model.mint.addAccount("SPayLater", app.pokeplan.mint.AccountType.PAY_LATER, "PHP", 0, limitMinor = 300_000_000, dueDay = 5).record!!
+            val suffix = if (dark) "-dark" else ""
+            render("mint-existing-installments$suffix", height = 2100, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.theme.TextBox {
+                    app.pokeplan.ui.mint.NewPurchaseForm(model, later, startExisting = true, existingAmounts = listOf("1234567.89", "1234567.89", "999999.99"), existingFees = listOf("", "12345.67", "")) {}
+                } } }
+            }
+            render("mint-existing-hint$suffix", height = 700, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first { it.id == later.id }) {} } }
+            }
+        }
+    }
+
+    /** Twice-a-month estimated income on working days: the Bills list with its paydays, the add form with both toggles, and the Paydays and holidays box. */
+    @Test
+    fun mintPaydays() {
+        for (dark in listOf(false, true)) {
+            val suffix = if (dark) "-dark" else ""
+            val model = AppModel(storeWithTeam())
+            model.mint.addBill("Salary", "PHP", app.pokeplan.mint.Frequency.SEMI_MONTHLY, kotlinx.datetime.LocalDate(2026, 11, 15), 2_500_000, income = true, days = listOf(15, 30), workday = true, estimate = true)
+            model.mint.setDayOff(kotlinx.datetime.LocalDate(2026, 12, 24), true)
+            render("mint-paydays-bills$suffix", height = 900, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.mint.BillsView(model, startManage = true) } } }
+            }
+            val fresh = AppModel(storeWithTeam())
+            for ((tag, scale) in listOf("" to 1f, "-large" to 1.3f)) render("mint-paydays-add$tag$suffix", height = 1900, fontScale = scale, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.mint.BillsView(fresh, startAdding = true, startIncome = true, startFrequency = app.pokeplan.mint.Frequency.SEMI_MONTHLY) } } }
+            }
+            render("mint-paydays-holidays$suffix", height = 2300, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.PaydaysAndHolidays(model) } }
+            }
+        }
+    }
+
     /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
     @Test
     fun mintQrFullScreen() {
