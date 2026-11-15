@@ -1664,6 +1664,45 @@ class ScreenshotTest {
         }
     }
 
+    /** Grouped accounts with subtotals, Arrange mode, the Edit form with Hide from total and an app, and Open GCash in the options. */
+    @Test
+    fun mintAccountGroupsArrangeAndApp() {
+        val launcher = object : app.pokeplan.ui.AppLauncher {
+            val apps = listOf(app.pokeplan.ui.InstalledApp("GCash", "com.globe.gcash.android"), app.pokeplan.ui.InstalledApp("Maya", "com.paymaya"))
+            override fun installed() = apps
+            override fun label(packageName: String) = apps.firstOrNull { it.packageName == packageName }?.label
+            override fun open(packageName: String) = true
+        }
+        val long = "Savings, investments and goals for later"
+        check(long.length == 40)
+        for (dark in listOf(false, true)) {
+            val model = AppModel(storeWithTeam(), appLauncher = launcher)
+            model.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, group = "Daily spending")
+            val gcash = model.mint.addAccount("GCash", app.pokeplan.mint.AccountType.EWALLET, "PHP", 120_000, group = "Daily spending").record!!
+            val shared = model.mint.addAccount("Shared family fund", app.pokeplan.mint.AccountType.BANK, "PHP", 900_000, group = "Daily spending").record!!
+            model.mint.updateAccount(shared.copy(hideFromTotal = true))
+            model.mint.addAccount("Emergency fund", app.pokeplan.mint.AccountType.BANK, "PHP", 8_000_000, group = long)
+            model.mint.addAccount("Dollar savings", app.pokeplan.mint.AccountType.BANK, "USD", 150_000, group = long)
+            model.mint.addAccount("Credit card", app.pokeplan.mint.AccountType.CREDIT_CARD, "PHP", 320_000, group = "Cards")
+            model.mint.addAccount("Wallet", app.pokeplan.mint.AccountType.CASH, "PHP", 45_000)
+            model.mint.updateAccount(gcash.copy(appPackage = "com.globe.gcash.android", hideFromTotal = true))
+            val suffix = if (dark) "-dark" else ""
+            render("mint-accounts-grouped$suffix", height = 1300, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountList(model, null) {} } }
+            }
+            render("mint-accounts-arrange$suffix", height = 1500, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountList(model, null, startArranging = true) {} } }
+            }
+            val g = model.mintData.accounts.first { it.id == gcash.id }
+            render("mint-account-edit-app$suffix", height = 2100, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, g, startEditing = true) {} } }
+            }
+            render("mint-account-open-app$suffix", height = 400, minBytes = 1_500) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, g) {} } }
+            }
+        }
+    }
+
     /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
     @Test
     fun mintQrFullScreen() {

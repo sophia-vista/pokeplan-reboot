@@ -176,6 +176,10 @@ Groups are organizational only. They do not own balances and must never duplicat
 
 A per-account switch, **Hide from total** (`FinancialAccount.hideFromTotal`, default off; owner, 15 November 2026), for an account the player does not want counted in the overview (money set aside, someone else's, a credit line they ignore). A hidden account still shows its own balance and records everywhere, can be reconciled and used in transfers, and is marked "not in total" on its row; it is left out of **net position**, **available money**, and the group subtotals. It changes no record and pays nothing.
 
+### 4.3D Credit card starting balance and limit
+
+For a **credit card** (owner, 15 November 2026) the opening balance field reads **Starting balance owed** (what is already owed when the card is added; it was always the opening balance, a liability's balance is what is owed) and the card gets an optional **Credit limit** (`FinancialAccount.limitMinor`, in the account's currency, `0` is none, never negative, only for a credit card). With a limit the card's row and options show **used of limit** (the amount owed against the limit) and **left to spend** (limit less owed, never below zero; owing more than the limit shows 0 left and the amount over). It is information only: a limit is never an asset, never cash, never in net position or available money (4.5), and it changes no record and pays nothing. A limit can be edited at any time; the starting balance stays editable as the opening balance (4.2).
+
 ### 4.3C Open the wallet's own app
 
 Optional `FinancialAccount.appPackage` (the Android package name of the account's own app, such as the e-wallet or bank). In the account's Edit form (Android only) the player picks the app from the apps installed on the phone (name only, listed on the phone, never sent anywhere; the manifest already holds `QUERY_ALL_PACKAGES` for the launcher, personal use), and the account's options then show **Open <app name>**, which starts that app and nothing else. Only the package name is saved; it is not a credential and carries no token. An app that is no longer installed hides the button.

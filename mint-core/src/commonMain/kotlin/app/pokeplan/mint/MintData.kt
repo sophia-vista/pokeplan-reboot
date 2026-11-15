@@ -49,6 +49,8 @@ data class FinancialAccount(
     val hideFromTotal: Boolean = false,
     /** The Android package of the account's own app (MINT.md 4.3C), picked from the installed apps; empty is none. Only a package name, never a credential. */
     val appPackage: String = "",
+    /** A credit card's limit in minor units of [currency] (MINT.md 4.3D); 0 is none. Information only: never an asset, never cash, in no total. */
+    val limitMinor: Long = 0,
 )
 
 /**

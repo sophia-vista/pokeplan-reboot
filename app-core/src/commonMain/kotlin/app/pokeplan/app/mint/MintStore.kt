@@ -96,10 +96,11 @@ class MintStore(
 
     // --- accounts ----------------------------------------------------------------------------------------------------
 
-    fun addAccount(name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "", group: String = "", card: String = ""): Logged<FinancialAccount> {
+    fun addAccount(name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "", group: String = "", card: String = "", limitMinor: Long = 0): Logged<FinancialAccount> {
         val code = currency.trim().uppercase()
         (MintRules.checkAccount(name, code, openingMinor, suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val account = FinancialAccount(newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX), createdMillis = nowMillis, card = MintRules.cardId(card))
+        (MintRules.checkLimit(type, limitMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val account = FinancialAccount(newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX), createdMillis = nowMillis, card = MintRules.cardId(card), limitMinor = limitMinor)
         update { it.copy(accounts = it.accounts + account) }
         return Logged(account)
     }
@@ -147,9 +148,11 @@ class MintStore(
         val old = data.accounts.firstOrNull { it.id == a.id } ?: return Logged(null, "That account is gone.")
         val currency = if (a.currency == old.currency || hasHistory(old.id)) old.currency else a.currency.trim().uppercase()
         (MintRules.checkAccount(a.name, currency, a.openingMinor, a.suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val newType = if (a.type.liability == old.type.liability) a.type else old.type
+        (MintRules.checkLimit(newType, a.limitMinor) as? Check.Refused)?.let { if (newType == AccountType.CREDIT_CARD) return Logged(null, it.reason) }
         val next = old.copy(
             name = a.name.trim(), institution = a.institution.trim().take(MintRules.NAME_MAX), suffix = a.suffix.trim(), group = a.group.trim().take(MintRules.NAME_MAX),
-            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = MintRules.cardId(a.card), hideFromTotal = a.hideFromTotal, appPackage = MintRules.cleanPackage(a.appPackage),
+            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = MintRules.cardId(a.card), hideFromTotal = a.hideFromTotal, appPackage = MintRules.cleanPackage(a.appPackage), limitMinor = if (newType == AccountType.CREDIT_CARD) a.limitMinor else 0,
         )
         update { d -> d.copy(accounts = d.accounts.map { if (it.id == a.id) next else it }) }
         return Logged(next)

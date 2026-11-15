@@ -292,32 +292,7 @@ private fun AccountsView(model: AppModel) {
             if (first) model.mintSection = null
         }
     }
-    val balances = MintRules.balances(data)
-    val shown = balances.filter { it.account.status == AccountStatus.ACTIVE } + balances.filter { it.account.status != AccountStatus.ACTIVE }
-    if (shown.isNotEmpty()) TextBox {
-        Column {
-            shown.forEachIndexed { i, b ->
-                val a = b.account
-                if (i > 0) HorizontalDivider(color = Pixel.Border)
-                MintLine(
-                    trail = { Text(mint.show(b.postedMinor, a.currency), style = MaterialTheme.typography.titleSmall) },
-                    onClick = { open = if (open == a.id) null else a.id }, onClickLabel = "Show options",
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Box(Modifier.size(10.dp).background(accountColor(a.card)))
-                        Text(a.name, style = MaterialTheme.typography.bodyLarge)
-                    }
-                    val meta = listOfNotNull(
-                        if (a.suffix.isNotEmpty()) "···${a.suffix}" else a.type.label,
-                        a.status.name.lowercase().takeIf { a.status != AccountStatus.ACTIVE },
-                        "pending ${mint.show(b.pendingMinor, a.currency)}".takeIf { b.pendingMinor != 0L },
-                    ).joinToString(" · ")
-                    Text(meta, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                }
-                if (open == a.id) AccountOptions(model, a) { open = null }
-            }
-        }
-    }
+    AccountList(model, open) { open = it }
     if (!adding) {
         PixelButton("Add account", { adding = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
         return
@@ -413,6 +388,8 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     var group by remember(a.id) { mutableStateOf(a.group) }
     var suffix by remember(a.id) { mutableStateOf(a.suffix) }
     var card by remember(a.id) { mutableStateOf(a.card) }
+    var hideTotal by remember(a.id) { mutableStateOf(a.hideFromTotal) }
+    var appPackage by remember(a.id) { mutableStateOf(a.appPackage) }
     var refused by remember(a.id) { mutableStateOf<String?>(null) }
     var removingQr by remember(a.id) { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
@@ -435,13 +412,15 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             )
             CardColorPicker(card) { card = it }
             if (model.images != null) ReceiveMoneyEdit(model, a, removingQr, { removingQr = it }) { refused = it }
+            ToggleRow("Hide from total", hideTotal) { hideTotal = it }
+            model.appLauncher?.let { AppPick(it, appPackage) { appPackage = it } }
             PixelField(institution, { institution = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Bank or provider", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
             PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     if (minor == null) refused = "Check the balance."
-                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card))
+                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card, hideFromTotal = hideTotal, appPackage = appPackage))
                         .let { if (it.record != null) { editing = false; refused = null; onDone() } else refused = it.refused }
                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank(), compact = true)
                 PixelButton("Cancel", { editing = false; refused = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -449,6 +428,12 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
         } else if (asking) {
             Confirm("Delete this account? Only an account with no records can be deleted.", "Delete", onConfirm = { refused = mint.deleteAccount(a.id); asking = false; if (refused == null) onDone() }, onKeep = { asking = false })
         } else Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            val launcher = model.appLauncher
+            val appLabel = if (a.appPackage.isNotEmpty()) launcher?.label(a.appPackage) else null
+            if (launcher != null && appLabel != null) PixelButton(
+                "Open ${if (appLabel.length > 14) appLabel.take(13) + "…" else appLabel}",
+                { if (!launcher.open(a.appPackage)) refused = "That app could not be opened." }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true,
+            )
             // Two rows of two, so the longest label ("Archive") is never clipped at a large font.
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

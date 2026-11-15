@@ -515,4 +515,23 @@ class MintStoreTest {
         assertEquals("com.example.wallet", assertNotNull(s.mint.updateAccount(s.mint.data.accounts.single { it.id == a.id }.copy(appPackage = " com.example.wallet ")).record).appPackage)
         assertEquals("", assertNotNull(s.mint.updateAccount(s.mint.data.accounts.single { it.id == a.id }.copy(appPackage = "rm -rf /")).record).appPackage)
     }
+
+    @Test
+    fun aCreditCardKeepsAStartingBalanceOwedAndALimitThatIsInformationOnly() {
+        val s = setup()
+        val card = assertNotNull(s.mint.addAccount("Maya Black", AccountType.CREDIT_CARD, "PHP", 12_000, limitMinor = 50_000).record)
+        assertEquals(50_000L, card.limitMinor)
+        val owed = MintRules.balances(s.mint.data).single().postedMinor
+        assertEquals(12_000L, owed)
+        assertEquals(38_000L, MintRules.leftToSpend(card, owed))
+        assertEquals(0L, MintRules.leftToSpend(card, 60_000)) // over the limit shows nothing left
+        // A limit is no asset and no cash: net position is minus what is owed, and a limit is in no total.
+        assertEquals(-12_000L, MintRules.netPosition(s.mint.data)["PHP"])
+        // Only a credit card has one, never a negative one; an edit keeps it and can clear it.
+        assertNull(s.mint.addAccount("Wallet", AccountType.EWALLET, "PHP", limitMinor = 100).record)
+        assertNull(s.mint.addAccount("Bad", AccountType.CREDIT_CARD, "PHP", limitMinor = -5).record)
+        assertEquals(20_000L, assertNotNull(s.mint.updateAccount(card.copy(limitMinor = 20_000)).record).limitMinor)
+        assertEquals(0L, assertNotNull(s.mint.updateAccount(card.copy(limitMinor = 0)).record).limitMinor)
+        assertNull(MintRules.leftToSpend(s.mint.data.accounts.single(), 1))
+    }
 }

@@ -79,6 +79,17 @@ object MintRules {
     fun checkCurrency(code: String): Check =
         if (code.length == 3 && code.all { it in 'A'..'Z' }) Check.Ok else Check.Refused("A currency is three capital letters, like PHP.")
 
+    /** A credit limit is kept only for a credit card, never negative and within the money range; 0 is none (MINT.md 4.3D). */
+    fun checkLimit(type: AccountType, limitMinor: Long): Check = when {
+        limitMinor == 0L -> Check.Ok
+        type != AccountType.CREDIT_CARD -> Check.Refused("Only a credit card has a limit.")
+        limitMinor < 0 || limitMinor > Money.MAX_MINOR -> Check.Refused("That limit looks wrong.")
+        else -> Check.Ok
+    }
+
+    /** What is left to spend on a card with a limit: the limit less what is owed, never below zero; null when the account has no limit. */
+    fun leftToSpend(account: FinancialAccount, owedMinor: Long): Long? = account.limitMinor.takeIf { it > 0 }?.let { (it - owedMinor).coerceAtLeast(0) }
+
     fun checkAccount(name: String, currency: String, openingMinor: Long, suffix: String): Check = when {
         name.isBlank() -> Check.Refused("Give the account a name.")
         name.trim().length > NAME_MAX -> Check.Refused("Keep the name under $NAME_MAX letters.")
