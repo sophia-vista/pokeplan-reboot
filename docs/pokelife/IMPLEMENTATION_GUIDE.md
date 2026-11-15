@@ -111,17 +111,9 @@ Status words follow section 2.2. Built from a static audit of every module and f
 | 7 | Gear loans | **Retire** | Done |
 | 8 | Manifest | **Backup closed; permissions OK for now** | Declared permissions stay in pending item 9 |
 
-### Pending items (ordered by value)
+### Pending items
 
-1. **Device acceptance for everything since the database cutover**: recovery cases, Mint's Keystore key, access gate, bill reminders and portable backup, the module tables, arrival scenes, reminders, and a visual review of every new screen in both palettes and at 130% text. Closes Gates B and C and starts D.
-2. **WORLD content and structure**: branching in Johto, Hoenn and Sinnoh, the other Mythical episodes, then Unova onward and the Ranger regions; Exploration XP and rank as the shared record.
-3. **PLAN completion**: Projects, priority, Archived state, recurrence scopes, event reminders, deliberate goal completion, targets in Today (REP-030 holds the review items).
-4. **LINK**: device-contact import and a UI for handing a follow-up to Plan; this also unblocks Home's service-provider link.
-5. **CARE completion**: routine Skip, Diary reminder, Reflect destination, per-visitor individuality, privacy and process-death tests (REP-030).
-6. **Typed repositories per module**, the outbox consumer and the removal of the single-`AppData` view; the backup archive (DATA_AND_MIGRATIONS.md 10.2 to 10.4) with whole-bundle encryption and post-restore reconciliation.
-7. **Open module scope**: HEAL (workouts, nutrition, records, Huawei, History), MINT (providers, splits, rollover, savings, foreign currency, reports), HOME (search filters, attachments, widgets, imports), GEAR (REP-028), Launcher (its row).
-8. **Shared Pokémon expansion** (P2): **Mega and Dynamax integrated (owner decision 5)**: a source for Mega Stones (to be designed), the Mega form shown for a focus session, the Dynamax Band given a use; then the owned-record provenance layer (original nature, Ball, moveset, Ribbons and Marks, history) with a migration, then moves and mastery, a larger held-item catalog, then the WORLD systems that depend on them.
-9. **Release hardening** (sequence 12): the manifest, the asset registry, rights status and credits screen (REP-015), sound clean-ups (REP-016, REP-017), the protected release key (REP-005), real screenshot comparison, an androidApp test source set, lint and static analysis, a release-variant compile, and a device suite.
+Retired as a separate list on 15 November 2026: it duplicated the backlog and had fallen behind the code (priority, the Plan structure, the Secret Base room and the module-package split had all moved on). The order of work, with value and effort for each item, is the **Priority board** at the top of `IMPLEMENTATION_BACKLOG.md`. Device acceptance (the old item 1) is now REP-033 (automated) plus the device checks in the board's last tier.
 
 ## 4. Architecture dependencies and blocking work
 
