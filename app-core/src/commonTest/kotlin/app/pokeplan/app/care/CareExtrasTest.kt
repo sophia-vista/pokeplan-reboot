@@ -172,7 +172,7 @@ class CareExtrasTest {
         assertNotNull(paid, "the first time with a Pokémon today pays")
         assertTrue(s.game.data.player.buddy!!.friendship > friendshipBefore, "the Pokémon played with takes the friendship")
         assertEquals(setOf(primary), s.care.discoveredLikes(id))
-        assertTrue(s.game.careEggMeter() > eggMeterBefore || s.game.data.player.pokemon.size > 1, "and counts towards Care's Egg")
+        assertEquals(eggMeterBefore, s.game.careEggMeter(), "but fills no point of Care's Egg meter (rules version 29)")
         // Repeating is free and unlimited, and pays nothing more.
         val coins = s.game.data.player.coins
         repeat(20) { assertNull(s.care.playWith(id, favourite).second) }
