@@ -508,7 +508,7 @@ class BaseStoreTest {
         assertEquals(setOf("format", "unit", "areas", "assets", "schedules", "maintenance", "warranties"), keys(assets))
         assertTrue("SN-ZORBLAX-0042" in assets && "Zorblax-9000 sweep" !in assets)
         val all = s.home.export()
-        assertEquals(setOf("format", "unit", "areas", "chores", "entries", "supplies", "adjustments", "restock", "assets", "schedules", "maintenance", "warranties", "references"), keys(all))
+        assertEquals(setOf("format", "unit", "areas", "chores", "entries", "supplies", "adjustments", "restock", "assets", "schedules", "maintenance", "warranties", "references", "room"), keys(all))
         assertTrue("settings" !in all && "pokemon" !in all.lowercase() && "Sophia" !in all)
         assertEquals(setOf("format", "unit"), keys(s.home.export(emptySet())))
     }

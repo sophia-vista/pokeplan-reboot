@@ -107,7 +107,7 @@ import app.pokeplan.ui.screens.short
  */
 enum class BaseSection(val label: String, val icon: String) {
     CHORES("Chores", "cracked-pot"), SUPPLIES("Supplies", "seal-bag"), MAINTENANCE("Maintenance", "iron"), NOTES("Notes", "oaks-letter"),
-    SETTINGS("Settings", "storage-key"),
+    ROOM("Room", "star-piece"), SETTINGS("Settings", "storage-key"),
 }
 
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.BASE.accent
@@ -177,6 +177,7 @@ private fun BasePage(model: AppModel, section: BaseSection?, openPokemon: (Strin
             BaseSection.SUPPLIES -> SuppliesView(model)
             BaseSection.MAINTENANCE -> MaintenanceView(model)
             BaseSection.NOTES -> NotesView(model)
+            BaseSection.ROOM -> RoomView(model)
             BaseSection.SETTINGS -> BaseSettingsView(model)
         }
     }
@@ -206,6 +207,7 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(BaseSection.SUPPLIES.name, BaseSection.SUPPLIES.icon, "Supplies", if (data.supplies.isEmpty()) "add one" else "${overview.low.size} low", tint = tint),
                     MenuEntry(BaseSection.MAINTENANCE.name, BaseSection.MAINTENANCE.icon, "Maintenance", if (data.schedules.isEmpty() && data.assets.isEmpty()) "add one" else "${overview.maintenance.size} due or soon", tint = tint),
                     MenuEntry(BaseSection.NOTES.name, BaseSection.NOTES.icon, "Notes", if (data.references.isEmpty()) "add one" else "${data.references.size} notes", tint = tint),
+                    MenuEntry(BaseSection.ROOM.name, BaseSection.ROOM.icon, "Room", "${data.room.size} placed", tint = tint),
                     MenuEntry(BaseSection.SETTINGS.name, BaseSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.baseSection = BaseSection.valueOf(key) }
