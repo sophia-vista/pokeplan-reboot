@@ -20,7 +20,7 @@ data class AccountBalance(val account: FinancialAccount, val postedMinor: Long, 
 data class BudgetProgress(val budget: Budget, val start: LocalDate, val endExclusive: LocalDate, val spentMinor: Long, val remainingMinor: Long, val percent: Int?)
 
 /** The estimate of what can be spent, with its basis shown (MINT.md section 4.5): liquid accounts less bills still to pay soon. Never a guarantee. */
-data class Available(val currency: String, val liquidMinor: Long, val billsMinor: Long, val billsCount: Int, val availableMinor: Long)
+data class Available(val currency: String, val liquidMinor: Long, val billsMinor: Long, val billsCount: Int, val availableMinor: Long, val installmentsMinor: Long = 0, val installmentsCount: Int = 0)
 
 /**
  * MINT's rules, all pure. Principles (MINT.md sections 1.1, 5, 15.2): **exact arithmetic** (minor units), **one canonical owner** of each fact
@@ -79,18 +79,18 @@ object MintRules {
     fun checkCurrency(code: String): Check =
         if (code.length == 3 && code.all { it in 'A'..'Z' }) Check.Ok else Check.Refused("A currency is three capital letters, like PHP.")
 
-    /** A credit limit is kept only for a credit card, never negative and within the money range; 0 is none (MINT.md 4.3D). */
+    /** A credit limit is kept only for a credit card or a pay later account, never negative and within the money range; 0 is none (MINT.md 4.3D). */
     fun checkLimit(type: AccountType, limitMinor: Long): Check = when {
         limitMinor == 0L -> Check.Ok
-        type != AccountType.CREDIT_CARD -> Check.Refused("Only a credit card has a limit.")
+        !Installments.allowedFor(type) -> Check.Refused("Only a credit card or a pay later account has a limit.")
         limitMinor < 0 || limitMinor > Money.MAX_MINOR -> Check.Refused("That limit looks wrong.")
         else -> Check.Ok
     }
 
-    /** A statement or due day is 0 (none) or 1 to 31, and only a credit card keeps one (MINT.md 4.3D). */
+    /** A statement or due day is 0 (none) or 1 to 31, and only a credit card or pay later account keeps one (MINT.md 4.3D). */
     fun checkCardDay(type: AccountType, day: Int): Check = when {
         day == 0 -> Check.Ok
-        type != AccountType.CREDIT_CARD -> Check.Refused("Only a credit card has a statement or due day.")
+        !Installments.allowedFor(type) -> Check.Refused("Only a credit card or a pay later account has a statement or due day.")
         day !in 1..31 -> Check.Refused("Choose a day from 1 to 31.")
         else -> Check.Ok
     }
@@ -198,7 +198,8 @@ object MintRules {
         val liquid = balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal && it.account.type.liquid && it.account.currency == currency }.sumOf { it.postedMinor }
         val due = upcoming(data, today, withinDays).filter { it.bill.currency == currency && it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
         val bills = due.sumOf { it.remainingMinor ?: 0L }
-        return Available(currency, liquid, bills, due.size, liquid - bills)
+        val (plans, plansCount) = Installments.dueWithin(data, currency, today, withinDays)
+        return Available(currency, liquid, bills, due.size, liquid - bills - plans, plans, plansCount)
     }
 
     // --- spending, cash flow and budgets -----------------------------------------------------------------------------------

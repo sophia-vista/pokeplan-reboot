@@ -553,4 +553,115 @@ class MintStoreTest {
         assertEquals(LocalDate(2027, 1, 20), MintRules.nextOnDay(20, LocalDate(2026, 12, 31)))
         assertNull(MintRules.nextOnDay(0, LocalDate(2026, 11, 15)))
     }
+
+    @Test
+    fun aPayLaterPurchaseWithInstallmentsFlowsThroughSpendingCashFlowAndNetWorthWithoutDoubleCounting() {
+        val s = setup()
+        val m = s.mint
+        val wallet = assertNotNull(m.addAccount("GCash", AccountType.EWALLET, "PHP", 100_000).record).id
+        val later = assertNotNull(m.addAccount("SPayLater", AccountType.PAY_LATER, "PHP", 0, limitMinor = 300_000, statementDay = 20, dueDay = 5).record)
+        val nov = LocalDate(2026, 11, 1)
+        val dec = LocalDate(2026, 12, 1)
+        fun net() = MintRules.netPosition(m.data)["PHP"]!!
+        fun owed() = MintRules.balances(m.data).single { it.account.id == later.id }.postedMinor
+        fun spent() = MintRules.spent(m.data, nov, dec, "PHP")
+        fun cash() = Installments.cashFlow(m.data, nov, dec, "PHP")
+
+        // The purchase: one expense at the full price; the liability rises; no cash moves.
+        val plan = assertNotNull(m.addPlanPurchase(later.id, "Headphones", 120_000, null, 3, PlanEvery.MONTH, LocalDate(2026, 12, 1), FeeRule.RatePerPeriod(200)).record)
+        assertEquals(listOf(40_000L, 40_000L, 40_000L), plan.installments.map { it.principalMinor })
+        assertEquals(listOf(2_400L, 1_600L, 800L), plan.installments.map { it.feeMinor })
+        assertEquals(120_000L, owed())
+        assertEquals(120_000L, spent())
+        assertEquals(0L, cash().outflowMinor)
+        assertEquals(-20_000L, net())
+        assertEquals(180_000L, MintRules.leftToSpend(m.data.accounts.single { it.id == later.id }, owed()))
+        assertEquals(1, m.data.transactions.count { it.type == TxType.EXPENSE })
+        // What is coming due reduces available money like a bill.
+        val avail = MintRules.available(m.data, "PHP", m.today, 30)
+        assertEquals(42_400L, avail.installmentsMinor)
+        assertEquals(100_000L - 42_400L, avail.availableMinor)
+
+        // Early payment of the first installment from the wallet: a transfer, plus its fee recorded; no second expense.
+        val p1 = assertNotNull(m.payPlan(plan.id, 42_400, wallet).record)
+        assertEquals(TxType.TRANSFER, p1.type)
+        assertEquals(wallet, p1.accountId)
+        assertEquals(later.id, p1.toAccountId)
+        assertEquals(1, m.data.transactions.count { it.type == TxType.EXPENSE })
+        assertEquals(2_400L, m.data.transactions.single { it.type == TxType.FEE }.amountMinor)
+        assertEquals(80_000L, owed())
+        assertEquals(122_400L, spent())
+        assertEquals(42_400L, cash().outflowMinor)
+        assertEquals(-22_400L, net())
+        assertEquals(InstallmentState.PAID, m.planView(plan.id)!!.installments[0].state)
+
+        // A partial payment lands on the next installment; its fee is recorded and the rest stays due.
+        assertNotNull(m.payPlan(plan.id, 10_000, wallet).record)
+        val v = m.planView(plan.id)!!
+        assertEquals(InstallmentState.PARTIAL, v.installments[1].state)
+        assertEquals(31_600L, v.installments[1].remainingMinor)
+        assertEquals(71_600L, owed())
+        assertEquals(-24_000L, net())
+
+        // More than is left is refused; so is paying from a credit account.
+        assertNull(m.payPlan(plan.id, 1_000_000, wallet).record)
+        assertNull(m.payPlan(plan.id, 100, later.id).record)
+
+        // A late fee is owed with its installment and counts in spending as a fee, not as the purchase.
+        assertNotNull(m.addLateFee(plan.id, 2, 500).record)
+        assertEquals(72_100L, owed())
+        assertEquals(124_500L, spent())
+        assertEquals(500L, m.creditActivity(later.id, nov, dec).lateFeesMinor)
+
+        // A refund cancels the last unpaid installment, lowers the outstanding and lowers spending.
+        assertNotNull(m.refundPlan(plan.id, 40_000).record)
+        assertEquals(32_100L, owed())
+        assertEquals(84_500L, spent())
+        val r = m.planView(plan.id)!!
+        assertEquals(InstallmentState.CANCELLED, r.installments[2].state)
+        assertEquals(32_100L, r.remainingMinor) // the plan and the ledger agree
+        assertNull(m.refundPlan(plan.id, 90_000).record)
+
+        // Paying the rest closes the plan and the liability.
+        assertNotNull(m.payPlan(plan.id, 32_100, wallet).record)
+        assertEquals(0L, owed())
+        assertTrue(m.planView(plan.id)!!.finished)
+        val act = m.creditActivity(later.id, nov, dec)
+        assertEquals(120_000L, act.purchasesMinor)
+        assertEquals(40_000L, act.refundsMinor)
+        assertEquals(42_400L + 10_000L + 32_100L, act.repaymentsMinor)
+        // The purchase record cannot be deleted or voided while its plan exists.
+        val purchase = m.data.transactions.single { it.type == TxType.EXPENSE }
+        assertFalse(m.deleteTransaction(purchase.id))
+        m.setTransactionStatus(purchase.id, TxStatus.VOIDED)
+        assertEquals(TxStatus.POSTED, m.data.transactions.single { it.id == purchase.id }.status)
+        assertNull(m.updateTransaction(purchase.copy(amountMinor = 1)).record)
+    }
+
+    @Test
+    fun voidingARepaymentReopensTheInstallmentAndAnInstallmentCanBeBilledAndEdited() {
+        val s = setup()
+        val m = s.mint
+        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.EWALLET, "PHP", 100_000).record).id
+        val card = assertNotNull(m.addAccount("Visa", AccountType.CREDIT_CARD, "PHP").record).id
+        val plan = assertNotNull(m.addPlanPurchase(card, "Phone", 60_000, null, 2, PlanEvery.MONTH, LocalDate(2026, 12, 1), FeeRule.PerInstallment(300), FeeKind.INTEREST).record)
+        // Bill it: the fee is recorded as interest, once.
+        val fee = assertNotNull(m.billInstallmentFee(plan.id, 1).record)
+        assertEquals(FeeKind.INTEREST, fee.feeKind)
+        assertNull(m.billInstallmentFee(plan.id, 1).record)
+        assertEquals(30_300L, m.planView(plan.id)!!.installments[0].remainingMinor)
+        // A recorded fee or a payment locks that installment; an unpaid one can move its day and fee.
+        assertFalse(m.updateInstallment(plan.id, 1, LocalDate(2026, 12, 2), 0))
+        assertTrue(m.updateInstallment(plan.id, 2, LocalDate(2027, 1, 5), 100))
+        val pay = assertNotNull(m.payPlan(plan.id, 30_300, wallet).record)
+        assertEquals(InstallmentState.PAID, m.planView(plan.id)!!.installments[0].state)
+        m.setTransactionStatus(pay.id, TxStatus.VOIDED)
+        assertEquals(InstallmentState.UPCOMING, m.planView(plan.id)!!.installments[0].state)
+        // Deleting the plan keeps every record, unlinked.
+        val before = m.data.transactions.size
+        m.deletePlan(plan.id)
+        assertEquals(before, m.data.transactions.size)
+        assertTrue(m.data.transactions.all { it.planId == null })
+        assertTrue(m.data.plans.isEmpty())
+    }
 }
