@@ -4,6 +4,8 @@ This folder is the **source of truth** for what PokéLife is and what to build (
 
 This README is orientation only; it specifies nothing.
 
+`evidence/` holds dated reviews and audits (the UI review at 0.172.0; the owner's interview of 15 November 2026 and the feature and personal-use audit at 0.199.0 built on it). They are evidence, not authority: what they decided is in the specifications and the backlog.
+
 ## How it relates to the repository's older documents
 
 Precedence follows the Product Bible (section 10). The older documents in `docs/` are **evidence of current behaviour, not authority**. Where one disagrees with this folder, this folder wins.
