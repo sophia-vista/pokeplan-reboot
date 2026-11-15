@@ -8,6 +8,7 @@ release always has the newest merge).
 ## 0.195.1
 
 - **Repo tidy and the last HOME names:** `Module.BASE`, `Place.BASE`, `Region.BASE` and `ReminderModule.BASE` replace `HOME` and `HOUSEHOLD` in code. Saves are unchanged: `Region.BASE` is still saved as `"HOUSEHOLD"`, a screen lock saved as `"HOME"` is kept as `"BASE"`, and a reminder stored as `"HOME"` is read as Base. `docs/pokelife/MODULES/HOME.md` is now `BASE.md`, `tools/species/regions/household.txt` is `base.txt`, and the README lists every module and folder. The four tracked `__pycache__` files are removed and ignored.
+- **Modular layout (no behaviour change):** the UI screens are packaged by module (`ui.plan`, `ui.care`, `ui.heal`, `ui.mint`, `ui.base`, `ui.link`, `ui.world`, `ui.gear`, `ui.pokemon`; shared ones stay in `ui.screens`), `app-core` by module (`app.base`, `app.care`, `app.heal` with the Huawei parsing, `app.link`, `app.mint`, `app.world`, `app.gear`, `app.plan`, `app.reminders`, `app.storage`), and the Android platform files into `platform/` and `health/`. World's and Gear's actions moved out of `GameStore.kt` (2,340 to 1,937 lines) into `WorldActions.kt` and `GearActions.kt` as extension functions. The three `Widgets.kt` files are now `ThemeWidgets.kt`, `LauncherWidgets.kt` and `GlanceWidgets.kt`. No saved name changed: serialized classes did not move, and the manifest classes and `BackupWorker` stayed where they were.
 
 ## 0.195.0
 
