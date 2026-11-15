@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.199.0
+
+Tier 2 starts: the backup leaves the phone, and a damaged database no longer quietly brings back old files. `RewardRules.VERSION` is unchanged (nothing pays differently).
+
+- **Automatic backup off the phone** (REP-034; spec `DATA_AND_MIGRATIONS.md` 10.7): Settings → Backups → "Back up off this phone". The player types a passphrase twice and picks a folder once (a folder a cloud app syncs, for example); a daily job then writes one verified backup file there, with Mint and Heal sealed under the passphrase because the Keystore keys do not travel. The newest 7 stay, only files with the app's own names are ever touched, a copy that fails or cannot be read back is removed and earlier ones are never altered. The card shows the folder and the last copy, says quietly when the last copy is over 3 days old, and offers Copy now, Restore copy (stages the newest in the folder; the usual preview, passphrase and undo apply), Change folder and Stop. The passphrase is kept on the phone only, sealed with its own Keystore key. Not run on a device.
+- **A damaged database with no backup asks first** (REP-026 c): the old `save.json` and `care.json` are only as new as the cutover, so they are no longer imported silently. A choice screen shows before anything opens: "Use the older data" or "Start fresh". The damaged file is kept aside either way, widgets, reminders and the backup job wait for the answer, and the answer survives a restart.
+- **Screenshots of the 0.198.0 UI** (Tier 1 follow-up): looked at in both palettes: Credits, Care Skip and Yesterday, Bills "Paid, record it", the hold-to-confirm key (and its Reduce motion version), Plan's Duplicate row, and this version's new screens. One clipped label found and fixed ("Restore the newest" became "Restore copy"). New `ScreenshotTest` cases keep them (`interact` taps a screen before it is drawn).
+- Tests: `OffPhoneBackupTest`, `OffPhoneTest`, and four recovery tests in `LiveStoreTest`.
+- **Known, not new:** `LiveStoreTest.everyFixtureIsCarriedOverIntoTheDatabaseUnchanged` fails on `main` too (the heavy fixture's `caught` list comes back sorted); left for its own fix.
+
 ## 0.198.0
 
 The quick wins from the re-ordered backlog (`docs/pokelife/IMPLEMENTATION_BACKLOG.md`, Priority board tier 1). `RewardRules.VERSION` 29.
