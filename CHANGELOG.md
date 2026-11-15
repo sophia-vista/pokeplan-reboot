@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.193.0
+
+Launcher spacing now counts how big each Pokémon is (owner, 14 November 2026).
+
+- A Pokémon's room on the dungeon floor follows the size of its sprite: a Wailord or a Moltres is given about three squares across, an ordinary Pokémon two, and a big one hides what stands right behind it (towards the top of the screen), not what stands before it. Where they start, where they choose to stand and where two are heading all use it.
+
 ## 0.192.0
 
 More of Explorers of Sky in World: lost Pokémon's calls, recruits' words and dungeon entrances (owner, 14 November 2026).

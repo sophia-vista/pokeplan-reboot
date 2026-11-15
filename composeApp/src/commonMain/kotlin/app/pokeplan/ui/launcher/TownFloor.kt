@@ -97,21 +97,21 @@ internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val scr
     )
 
     /**
-     * A square [mover] can stop on and walk away from, at random from [random], on page [page] if it has one, and not beside any square in
-     * [apart] (so two Pokémon do not start on top of each other) if there is room for that.
+     * A square [mover] can stop on and walk away from, at random from [random], on page [page] if it has one, and not [crowded] (a square where
+     * it would overlap another Pokémon) if there is room for that.
      */
-    fun restingCell(random: Random, mover: Mover, page: Int? = null, apart: Collection<Cell> = emptyList()): Cell {
+    fun restingCell(random: Random, mover: Mover, page: Int? = null, crowded: (Cell) -> Boolean = { false }): Cell {
         val all = floor.restingCells(mover)
         val on = (if (page == null) all else all.filter { it.x * tilePx / screenPx >= page && it.x * tilePx / screenPx < page + 1 }).ifEmpty { all }
-        val spaced = on.filter { c -> apart.none { near(c, it) } }
+        val spaced = on.filter { !crowded(it) }
         return (spaced.ifEmpty { on }.ifEmpty { listOf(floor.stairs) }).random(random)
     }
 
     /**
-     * The square nearest [wanted] that [mover] can stop on and nobody stands on ([taken]), searching outwards: first one that is not beside
-     * a taken square either ([room]), so two Pokémon never stand overlapping, then, if the floor is that full, any free one.
+     * The square nearest [wanted] that [mover] can stop on and nobody stands on ([taken]), searching outwards: first one that is not [crowded]
+     * (so two Pokémon never stand overlapping), then, if the floor is that full, any free one.
      */
-    fun nearestResting(wanted: Cell, mover: Mover, taken: Set<Cell>, room: Boolean = true): Cell? {
+    fun nearestResting(wanted: Cell, mover: Mover, taken: Set<Cell>, crowded: (Cell) -> Boolean = { false }): Cell? {
         fun search(blocked: (Cell) -> Boolean): Cell? {
             for (r in 0..12) {
                 val ring = (-r..r).flatMap { dy -> (-r..r).map { dx -> Cell(wanted.x + dx, wanted.y + dy) } }.filter { maxOf(kotlin.math.abs(it.x - wanted.x), kotlin.math.abs(it.y - wanted.y)) == r }
@@ -119,11 +119,8 @@ internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val scr
             }
             return null
         }
-        return (if (room) search { c -> taken.any { near(c, it) } } else null) ?: search { it in taken }
+        return search { it in taken || crowded(it) } ?: search { it in taken }
     }
-
-    /** Whether two squares touch (a Pokémon is wider than its square, so neighbours would overlap). */
-    private fun near(a: Cell, b: Cell) = kotlin.math.abs(a.x - b.x) <= 1 && kotlin.math.abs(a.y - b.y) <= 1
 
     companion object {
         /** The feet stand this far down a square (0 its top, 1 its bottom). */
