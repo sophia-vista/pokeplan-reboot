@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.207.0
+
+MINT pay later and installment plans (owner request, 15 November 2026, REP-039 neighbourhood; `MINT.md` 4.1, 5.6A, 22D). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change and no migration: plans are JSON in the sealed `mint_state` row. Not run on a device.
+
+- **Pay later account:** `AccountType.PAY_LATER` (SPayLater and other BNPL lines) is a credit liability like a card; both share limit, statement day and due day (`Installments.allowedFor`), and available credit is the limit less what is owed.
+- **Installment plan:** `InstallmentPlan` (mint-core `Installments.kt`, `MintData.plans`): schedule from price, count 1 to 36, every week, 2 weeks or month (month-end clamp from the first day); fee rule none, per installment, total, or a rate per period on the unpaid principal (basis points, half up), as fee or interest; principal split exact.
+- **Records:** the purchase is one expense at full price; a repayment is a transfer from the payment source to the credit account (not spending); fee, interest and late fee are FEE records with `Transaction.feeKind` (`FeeKind`), recorded when billed or reached by a payment; a refund is a REFUND linked to the purchase that cancels unpaid installments from the last backwards; `Transaction.planId/planNo`. Paid state is derived (repayments applied in date order to the earliest installment, early and part payments), never stored, so voiding a repayment reopens it. The purchase record cannot be deleted, voided or edited while the plan exists; deleting a plan keeps its records, unlinked.
+- **MintStore:** `addPlanPurchase`, `payPlan`, `billInstallmentFee`, `addLateFee`, `refundPlan`, `updateInstallment`, `deletePlan`, `planView(s)`, `creditActivity`; `deleteTransaction` now returns a Boolean.
+- **Reports:** spending counts the purchase once plus fees, interest and late fees, never repayments; new `Installments.cashFlow` (liquid accounts: a repayment is cash out, a credit purchase is not cash flow); net position is unchanged by repayments; `MintRules.available` also subtracts installments due within the window (`Available.installmentsMinor/Count`). Export and erase: plans travel with the accounts kind, and erasing accounts or transactions clears them.
+- **UI (`ui/mint/Plans.kt`):** pay later in the type picker and its "?" help; a Credit line box in the account options (limit, owed, available credit, the month's activity) with the plan list and "New installment purchase" (live schedule preview); plan options (schedule with states, Pay with a source account, Bill it, Late fee, Edit, Refund, Delete); Activity shows "Plan: name" and the fee kind; Overview "Installments due"; Review "Cash flow".
+- **Open:** reminders from installment due days, interest accrued automatically (the player or the schedule gives each fee), multi-currency plans, per-installment grace periods, statement-balance and minimum-payment tracking, a plan editor beyond due day and fee. Not run on a device.
+
 ## 0.206.0
 
 MINT accounts upgrade (owner requests, 15 November 2026, REP-039 neighbourhood). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration: every new field is JSON with a default in the sealed account row. Not run on a device.

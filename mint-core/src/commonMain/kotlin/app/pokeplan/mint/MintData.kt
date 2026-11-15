@@ -14,6 +14,7 @@ enum class AccountType(val label: String, val liability: Boolean = false, val li
     DIGITAL_BANK("Digital bank"),
     CASH("Cash"),
     CREDIT_CARD("Credit card", liability = true, liquid = false),
+    PAY_LATER("Pay later (BNPL)", liability = true, liquid = false),
     LOAN("Loan", liability = true, liquid = false),
     OTHER_ASSET("Other asset", liquid = false),
     OTHER_LIABILITY("Other liability", liability = true, liquid = false),
@@ -127,6 +128,12 @@ data class Transaction(
     val importLabel: String = "",
     val fingerprint: String? = null,
     val unreviewed: Boolean = false,
+    /** The installment plan this record belongs to (MINT.md 5.6A): its purchase, a repayment (a transfer to the plan's account), a fee or late fee, or a refund. */
+    val planId: String? = null,
+    /** Which installment of the plan a fee or late fee is for (null for the purchase, a repayment or a refund). */
+    val planNo: Int? = null,
+    /** Only for [TxType.FEE]: a plain fee, interest or a late fee. Null reads as a plain fee. */
+    val feeKind: FeeKind? = null,
 )
 
 @Serializable
@@ -253,6 +260,8 @@ data class MintData(
     val billPayments: List<BillPayment> = emptyList(),
     val reconciliations: List<Reconciliation> = emptyList(),
     val reviews: List<ReviewRecord> = emptyList(),
+    /** Installment plans (MINT.md 5.6A). Kept as one sealed list in `mint_state`, not a table of their own. */
+    val plans: List<InstallmentPlan> = emptyList(),
     val settings: MintSettings = MintSettings(),
 )
 

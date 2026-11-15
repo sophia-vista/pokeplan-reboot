@@ -10,7 +10,9 @@ import app.pokeplan.app.mint.MintStore
 import app.pokeplan.app.storage.Storage
 import app.pokeplan.mint.AccountType
 import app.pokeplan.mint.BudgetPeriod
+import app.pokeplan.mint.FeeRule
 import app.pokeplan.mint.Frequency
+import app.pokeplan.mint.PlanEvery
 import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.TxType
 import kotlinx.datetime.LocalDate
@@ -219,8 +221,9 @@ class MintTablesTest {
         val mint = mintOn(s, game())
         mint.fill()
         val exported = obj(MintExport.json(mint.data, setOf(MintKinds.ACCOUNTS)))
-        assertEquals(setOf("format", "unit", "accounts"), exported.keys)
+        assertEquals(setOf("format", "unit", "accounts", "plans"), exported.keys)
         assertEquals(2, (exported["accounts"] as JsonArray).size)
+        // The accounts kind carries the installment plans that belong to them (MINT.md 5.6A).
         assertEquals(obj(s.mintTables.readKind("accounts").let { """{"a":$it}""" })["a"], exported["accounts"], "the table family and the export agree")
     }
 
@@ -323,5 +326,28 @@ class MintTablesTest {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
         assertFailsWith<IllegalStateException> { s.live.moveMintToTables(2) }
         assertFalse(s.mintTables.isActive())
+    }
+
+    @Test
+    fun installmentPlansRideInTheSealedStateRowAndComeBackExactlyWithoutANewTable() {
+        val f = File.createTempFile("mint", ".db").also { it.delete(); it.deleteOnExit() }
+        val g = game()
+        val before: app.pokeplan.mint.MintData
+        JvmDatabase.open(f.path).also { it.mintCipher = cipher() }.let { s ->
+            s.live.activate(null, null, 1); s.live.moveMintToTables(2)
+            val mint = mintOn(s, g)
+            val wallet = assertNotNull(mint.addAccount("GCash", AccountType.EWALLET, "PHP", 100_000).record).id
+            val later = assertNotNull(mint.addAccount("SPayLater", AccountType.PAY_LATER, "PHP", limitMinor = 300_000, statementDay = 20, dueDay = 5).record).id
+            val plan = assertNotNull(mint.addPlanPurchase(later, "Headphones", 120_000, null, 3, PlanEvery.MONTH, LocalDate(2026, 12, 1), FeeRule.RatePerPeriod(200)).record)
+            assertNotNull(mint.payPlan(plan.id, 42_400, wallet).record)
+            before = mint.data
+            assertEquals(1, before.plans.size)
+            s.close()
+        }
+        val again = JvmDatabase.open(f.path).also { it.mintCipher = cipher() }
+        assertTrue(again.integrityIssues().isEmpty())
+        assertEquals(before, mintOn(again, g).data, "the plan, its schedule and its linked records are back field for field")
+        // The plan list is in the sealed state row: nothing readable in the file.
+        assertFalse(f.readBytes().toString(Charsets.ISO_8859_1).contains("Headphones"), "the plan is sealed")
     }
 }

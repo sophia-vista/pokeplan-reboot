@@ -1709,6 +1709,41 @@ class ScreenshotTest {
         }
     }
 
+    /** A pay later account: credit line, plans, the new purchase form with a preview, and one plan with every installment state. */
+    @Test
+    fun mintPayLaterPlans() {
+        for (dark in listOf(false, true)) {
+            val model = AppModel(storeWithTeam())
+            val m = model.mint
+            val today = model.store.today
+            fun ago(days: Int) = kotlinx.datetime.LocalDate.fromEpochDays(today.toEpochDays() - days)
+            fun ahead(days: Int) = kotlinx.datetime.LocalDate.fromEpochDays(today.toEpochDays() + days)
+            val wallet = m.addAccount("GCash", app.pokeplan.mint.AccountType.EWALLET, "PHP", 500_000).record!!
+            val later = m.addAccount("SPayLater", app.pokeplan.mint.AccountType.PAY_LATER, "PHP", 0, limitMinor = 3_000_000, statementDay = 20, dueDay = 5).record!!
+            // A finished plan.
+            val old = m.addPlanPurchase(later.id, "Old phone", 40_000, null, 2, app.pokeplan.mint.PlanEvery.MONTH, ago(120), day = ago(150)).record!!
+            m.payPlan(old.id, 40_000, wallet.id, ago(100))
+            // This month's purchase with interest, the first installment paid early.
+            val phones = m.addPlanPurchase(later.id, "Headphones", 120_000, null, 3, app.pokeplan.mint.PlanEvery.MONTH, ahead(20), app.pokeplan.mint.FeeRule.RatePerPeriod(200), app.pokeplan.mint.FeeKind.INTEREST).record!!
+            m.payPlan(phones.id, 20_000, wallet.id)
+            // One plan in every state: paid, partly paid, overdue, upcoming, cancelled.
+            val laptop = m.addPlanPurchase(later.id, "Laptop sleeve and mouse", 100_000, null, 5, app.pokeplan.mint.PlanEvery.MONTH, ago(65), day = ago(100)).record!!
+            m.payPlan(laptop.id, 30_000, wallet.id, ago(60))
+            m.refundPlan(laptop.id, 20_000)
+            m.addLateFee(laptop.id, 3, 5_000)
+            val suffix = if (dark) "-dark" else ""
+            render("mint-paylater-options$suffix", height = 1500, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first { it.id == later.id }) {} } }
+            }
+            render("mint-plan-form$suffix", height = 3500, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.mint.NewPurchaseForm(model, model.mintData.accounts.first { it.id == later.id }, "Standing fan", "12345.67", "12", "1.5") {} } } }
+            }
+            render("mint-plan-options$suffix", height = 2000, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.mint.PlanOptions(model, laptop.id) {} } } }
+            }
+        }
+    }
+
     /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
     @Test
     fun mintQrFullScreen() {
