@@ -1762,6 +1762,27 @@ class ScreenshotTest {
         }
     }
 
+    /** Twice-a-month estimated income on working days: the Bills list with its paydays, the add form with both toggles, and the Paydays and holidays box. */
+    @Test
+    fun mintPaydays() {
+        for (dark in listOf(false, true)) {
+            val suffix = if (dark) "-dark" else ""
+            val model = AppModel(storeWithTeam())
+            model.mint.addBill("Salary", "PHP", app.pokeplan.mint.Frequency.SEMI_MONTHLY, kotlinx.datetime.LocalDate(2026, 11, 15), 2_500_000, income = true, days = listOf(15, 30), workday = true, estimate = true)
+            model.mint.setDayOff(kotlinx.datetime.LocalDate(2026, 12, 24), true)
+            render("mint-paydays-bills$suffix", height = 900, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.mint.BillsView(model, startManage = true) } } }
+            }
+            val fresh = AppModel(storeWithTeam())
+            for ((tag, scale) in listOf("" to 1f, "-large" to 1.3f)) render("mint-paydays-add$tag$suffix", height = 1900, fontScale = scale, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.mint.BillsView(fresh, startAdding = true, startIncome = true, startFrequency = app.pokeplan.mint.Frequency.SEMI_MONTHLY) } } }
+            }
+            render("mint-paydays-holidays$suffix", height = 2300, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.PaydaysAndHolidays(model) } }
+            }
+        }
+    }
+
     /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
     @Test
     fun mintQrFullScreen() {
