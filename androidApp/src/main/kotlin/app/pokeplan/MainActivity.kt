@@ -39,6 +39,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
+import app.pokeplan.health.AndroidHealthConnect
+import app.pokeplan.platform.AccelerometerMotion
+import app.pokeplan.platform.AndroidCalendars
+import app.pokeplan.platform.AndroidCapabilities
+import app.pokeplan.platform.AndroidCryPlayer
+import app.pokeplan.platform.AndroidDeviceGate
+import app.pokeplan.platform.AndroidFileSaver
+import app.pokeplan.platform.AndroidHaptics
+import app.pokeplan.platform.AndroidPhoneState
+import app.pokeplan.platform.AndroidSensorFeed
+import app.pokeplan.platform.AndroidTextFiles
+import app.pokeplan.platform.AndroidTorch
+import app.pokeplan.platform.androidGearServices
 
 class MainActivity : ComponentActivity() {
     /** Fires when the app comes back to the front: a widget may have changed the save meanwhile. */

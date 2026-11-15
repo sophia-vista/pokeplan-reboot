@@ -1,4 +1,4 @@
-package app.pokeplan
+package app.pokeplan.health
 
 import android.content.Intent
 import android.util.Log

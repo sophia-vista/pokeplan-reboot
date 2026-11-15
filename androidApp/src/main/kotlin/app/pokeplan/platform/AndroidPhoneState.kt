@@ -1,4 +1,4 @@
-package app.pokeplan
+package app.pokeplan.platform
 
 import android.app.KeyguardManager
 import android.content.Context

@@ -1,4 +1,4 @@
-package app.pokeplan
+package app.pokeplan.platform
 
 import android.net.Uri
 import android.provider.OpenableColumns

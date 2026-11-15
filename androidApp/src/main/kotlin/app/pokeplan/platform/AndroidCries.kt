@@ -1,4 +1,4 @@
-package app.pokeplan
+package app.pokeplan.platform
 
 import android.content.Context
 import android.media.AudioAttributes

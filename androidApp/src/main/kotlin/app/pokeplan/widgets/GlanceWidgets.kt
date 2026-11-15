@@ -65,7 +65,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import app.pokeplan.AndroidCryPlayer
+import app.pokeplan.platform.AndroidCryPlayer
 import app.pokeplan.R
 import app.pokeplan.MainActivity
 import app.pokeplan.app.BuddyReaction
@@ -335,7 +335,7 @@ class PetAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val store = widgetStore(context)
         store.pet()
-        if (store.data.settings.haptics) app.pokeplan.AndroidHaptics(context).tick()
+        if (store.data.settings.haptics) app.pokeplan.platform.AndroidHaptics(context).tick()
         // The callback stays alive while the hearts show (settleLater), long enough for the cry to play out.
         store.data.player.buddy?.takeIf { store.data.settings.criesLevel > 0f }?.let { AndroidCryPlayer(context).play(it.speciesId, store.data.settings.criesLevel) }
         BuddyTalk.show(context, store.data.player.buddy?.let { BuddyReaction.pet(it, store.now.hour, avoid = BuddyTalk.last(context)) } ?: ReactionIcon.HEART)
