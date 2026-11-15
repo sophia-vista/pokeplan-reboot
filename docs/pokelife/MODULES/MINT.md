@@ -147,10 +147,12 @@ A `FinancialAccount` may include:
 - Current locally recorded balance.
 - Optional masked account suffix or user-defined identifier.
 - Optional account group.
-- Optional color/icon from the shared component system.
+- Optional color/icon from the shared component system. Built as a card style (`FinancialAccount.card`, 0.200.0): six cosmetic styles (Plain, Blue, Green, Gold, Violet, Slate), saved as ids with the colours chosen in the UI; an unknown id reads and saves as plain. It never changes a balance, rule or report, and needs no schema change (the field is inside the account's sealed row, default empty).
 - Connection/source reference, if applicable.
 - Status: active, archived or closed.
 - Created/updated timestamps.
+
+First run: the new-account form is titled "Where is this money?", the name field shows "GCash" as a placeholder, a "?" key opens one dialogue defining the eight account types, and saving the first account returns to the Mint overview, where Expense, Income and Transfer are the next actions.
 
 Never request or store full card numbers, CVV, banking passwords, PINs or OTPs. Account identifiers are optional; masked suffixes should be sufficient for recognition.
 

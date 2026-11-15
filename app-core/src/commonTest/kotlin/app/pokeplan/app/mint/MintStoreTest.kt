@@ -429,4 +429,17 @@ class MintStoreTest {
         // No account at all (the bill has none, none chosen) is a refusal.
         assertNull(s.mint.settleAndRecord(b2.id, LocalDate(2026, 12, 10), 30_000).record)
     }
+
+    @Test
+    fun aCardStyleIsCosmeticAndAnUnknownOneReadsAsPlain() {
+        val s = setup()
+        val a = assertNotNull(s.mint.addAccount("Wallet", AccountType.EWALLET, "PHP", 5_000, card = "blue").record)
+        assertEquals("blue", a.card)
+        val before = MintRules.balances(s.mint.data).single().postedMinor
+        val edited = assertNotNull(s.mint.updateAccount(a.copy(card = "violet")).record)
+        assertEquals("violet", edited.card)
+        assertEquals(before, MintRules.balances(s.mint.data).single().postedMinor)
+        // A style this build does not know is dropped to the plain card, never kept as free text.
+        assertEquals("", assertNotNull(s.mint.addAccount("Odd", AccountType.CASH, "PHP", card = "neon-pink").record).card)
+    }
 }

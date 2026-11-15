@@ -10,6 +10,7 @@ import app.pokeplan.mint.Budget
 import app.pokeplan.mint.BudgetPeriod
 import app.pokeplan.mint.Category
 import app.pokeplan.mint.CategoryKind
+import app.pokeplan.mint.CardStyle
 import app.pokeplan.mint.Check
 import app.pokeplan.mint.FinancialAccount
 import app.pokeplan.mint.Frequency
@@ -95,10 +96,10 @@ class MintStore(
 
     // --- accounts ----------------------------------------------------------------------------------------------------
 
-    fun addAccount(name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "", group: String = ""): Logged<FinancialAccount> {
+    fun addAccount(name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "", group: String = "", card: String = ""): Logged<FinancialAccount> {
         val code = currency.trim().uppercase()
         (MintRules.checkAccount(name, code, openingMinor, suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val account = FinancialAccount(newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX), createdMillis = nowMillis)
+        val account = FinancialAccount(newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX), createdMillis = nowMillis, card = CardStyle.of(card).id)
         update { it.copy(accounts = it.accounts + account) }
         return Logged(account)
     }
@@ -119,7 +120,7 @@ class MintStore(
         (MintRules.checkAccount(a.name, currency, a.openingMinor, a.suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val next = old.copy(
             name = a.name.trim(), institution = a.institution.trim().take(MintRules.NAME_MAX), suffix = a.suffix.trim(), group = a.group.trim().take(MintRules.NAME_MAX),
-            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency,
+            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = CardStyle.of(a.card).id,
         )
         update { d -> d.copy(accounts = d.accounts.map { if (it.id == a.id) next else it }) }
         return Logged(next)

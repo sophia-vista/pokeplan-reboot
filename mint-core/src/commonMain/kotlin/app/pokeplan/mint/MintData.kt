@@ -39,7 +39,21 @@ data class FinancialAccount(
     val group: String = "",
     val status: AccountStatus = AccountStatus.ACTIVE,
     val createdMillis: Long = 0,
+    /** A [CardStyle] id: how the account's card looks. Cosmetic only; it never changes a balance, a rule or a report. Empty is the plain card. */
+    val card: String = "",
 )
+
+/**
+ * The look of an account's card (REP-056, cosmetic). The ids are saved; the colour for each is chosen in the UI, so a palette change never touches the data.
+ * An unknown id (from a newer build) reads as [PLAIN].
+ */
+enum class CardStyle(val id: String, val label: String) {
+    PLAIN("", "Plain"), BLUE("blue", "Blue"), GREEN("green", "Green"), GOLD("gold", "Gold"), VIOLET("violet", "Violet"), SLATE("slate", "Slate");
+
+    companion object {
+        fun of(id: String): CardStyle = entries.firstOrNull { it.id == id } ?: PLAIN
+    }
+}
 
 @Serializable
 enum class CategoryKind { EXPENSE, INCOME }
