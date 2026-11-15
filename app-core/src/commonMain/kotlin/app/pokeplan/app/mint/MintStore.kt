@@ -96,10 +96,13 @@ class MintStore(
 
     // --- accounts ----------------------------------------------------------------------------------------------------
 
-    fun addAccount(name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "", group: String = "", card: String = ""): Logged<FinancialAccount> {
+    fun addAccount(name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "", group: String = "", card: String = "", limitMinor: Long = 0, statementDay: Int = 0, dueDay: Int = 0): Logged<FinancialAccount> {
         val code = currency.trim().uppercase()
         (MintRules.checkAccount(name, code, openingMinor, suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val account = FinancialAccount(newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX), createdMillis = nowMillis, card = MintRules.cardId(card))
+        (MintRules.checkLimit(type, limitMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (MintRules.checkCardDay(type, statementDay) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (MintRules.checkCardDay(type, dueDay) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val account = FinancialAccount(newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX), createdMillis = nowMillis, card = MintRules.cardId(card), limitMinor = limitMinor, statementDay = statementDay, dueDay = dueDay)
         update { it.copy(accounts = it.accounts + account) }
         return Logged(account)
     }
@@ -116,6 +119,23 @@ class MintStore(
         return Logged(next)
     }
 
+    /**
+     * Puts the accounts named in [orderedIds] in that order, in the slots those accounts already hold in the list (the others stay where they are), so a group or an
+     * account can be moved without touching the rest. The Accounts list shows the list's order (MINT.md 4.3). Refused (false) when an id is unknown or repeated.
+     */
+    fun arrangeAccounts(orderedIds: List<String>): Boolean {
+        if (orderedIds.toSet().size != orderedIds.size) return false
+        val slots = data.accounts.withIndex().filter { it.value.id in orderedIds }.map { it.index }
+        if (slots.size != orderedIds.size) return false
+        val byId = data.accounts.associateBy { it.id }
+        update { d ->
+            val next = d.accounts.toMutableList()
+            slots.forEachIndexed { i, slot -> next[slot] = byId.getValue(orderedIds[i]) }
+            d.copy(accounts = next)
+        }
+        return true
+    }
+
     /** Whether [id] has records that depend on its currency: a transaction, a reconciliation or a bill paid from it. */
     fun hasHistory(id: String): Boolean =
         data.transactions.any { it.accountId == id || it.toAccountId == id } || data.reconciliations.any { it.accountId == id } || data.bills.any { it.accountId == id }
@@ -130,9 +150,12 @@ class MintStore(
         val old = data.accounts.firstOrNull { it.id == a.id } ?: return Logged(null, "That account is gone.")
         val currency = if (a.currency == old.currency || hasHistory(old.id)) old.currency else a.currency.trim().uppercase()
         (MintRules.checkAccount(a.name, currency, a.openingMinor, a.suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val newType = if (a.type.liability == old.type.liability) a.type else old.type
+        (MintRules.checkLimit(newType, a.limitMinor) as? Check.Refused)?.let { if (newType == AccountType.CREDIT_CARD) return Logged(null, it.reason) }
+        if (newType == AccountType.CREDIT_CARD) listOf(a.statementDay, a.dueDay).forEach { d -> (MintRules.checkCardDay(newType, d) as? Check.Refused)?.let { return Logged(null, it.reason) } }
         val next = old.copy(
             name = a.name.trim(), institution = a.institution.trim().take(MintRules.NAME_MAX), suffix = a.suffix.trim(), group = a.group.trim().take(MintRules.NAME_MAX),
-            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = MintRules.cardId(a.card),
+            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = MintRules.cardId(a.card), hideFromTotal = a.hideFromTotal, appPackage = MintRules.cleanPackage(a.appPackage), limitMinor = if (newType == AccountType.CREDIT_CARD) a.limitMinor else 0, statementDay = if (newType == AccountType.CREDIT_CARD) a.statementDay else 0, dueDay = if (newType == AccountType.CREDIT_CARD) a.dueDay else 0,
         )
         update { d -> d.copy(accounts = d.accounts.map { if (it.id == a.id) next else it }) }
         return Logged(next)

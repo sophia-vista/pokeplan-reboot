@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.206.0
+
+MINT accounts upgrade (owner requests, 15 November 2026, REP-039 neighbourhood). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration: every new field is JSON with a default in the sealed account row. Not run on a device.
+
+- **Groups:** the Accounts list shows accounts under their `group` label as headings with a per-currency subtotal (assets less liabilities of active, counted accounts) and an "Other" heading for ungrouped ones when any group exists (`ui/mint/AccountList.kt`).
+- **Arrange:** an Arrange/Done button; groups move as blocks and accounts within their group with up and down. `MintStore.arrangeAccounts(orderedIds)` reorders the ids in their existing slots (the saved order).
+- **Hide from total:** `FinancialAccount.hideFromTotal` (switch in Edit): the account keeps its balance and records, is marked "not in total", and is left out of `MintRules.netPosition`, `available` and group subtotals.
+- **Open the wallet's app:** `FinancialAccount.appPackage` (package name only), chosen from installed apps (name search) in Edit, Android only; "Open <app>" on the account options. New `AppLauncher`/`InstalledApp` in `Integrations.kt` (`appLauncher` param of `App()`) and `AndroidAppLauncher` (queryIntentActivities MAIN/LAUNCHER; the manifest already holds QUERY_ALL_PACKAGES, personal use).
+- **Credit card (MINT.md 4.3D):** the opening field reads "Starting balance owed"; optional `limitMinor`, `statementDay`, `dueDay` (1 to 31, 0 none; short months clamp via `MintRules.nextOnDay`); the row shows "Credit card · ₱X left", the options show Owed, used of limit and left to spend (or over the limit by), statement and due days with days to go (`ui/mint/CardDays.kt`). `MintRules.checkLimit`, `checkCardDay`, `leftToSpend`. Information only: no reminder, bill or record is made from them and the limit is in no total.
+- **Open:** custom group records and group renaming, reminders from card statement or due days, per-card minimum payment tracking. Not run on a device: the installed-app list, opening an app, the arrange feel (the Photo Picker and the rest are from 0.205.0).
+- **Docs:** `MINT.md` 4.3, 4.3B to 4.3D, 22 and 22C; `code-map.md`; `IMPLEMENTATION_BACKLOG.md` REP-039.
+
 ## 0.205.0
 
 MINT receive-money QR full screen and share (owner request, built on 0.204.0). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. Not run on a device.

@@ -45,6 +45,15 @@ data class FinancialAccount(
      * The account's own "scan to send money to me" QR (MINT.md 4.2, 15 November 2026): one picture (PNG, JPEG or WebP, usually the wallet's whole screenshot), base64, at most [MintRules.QR_MAX_CHARS] characters, kept as picked. It lives in this sealed row, is never uploaded or read for its contents, and changes no balance. Empty is none.
      */
     val receiveQr: String = "",
+    /** Left out of net position, available money and group subtotals (MINT.md 4.3B). It still shows its own balance and records; changes no record. */
+    val hideFromTotal: Boolean = false,
+    /** The Android package of the account's own app (MINT.md 4.3C), picked from the installed apps; empty is none. Only a package name, never a credential. */
+    val appPackage: String = "",
+    /** A credit card's limit in minor units of [currency] (MINT.md 4.3D); 0 is none. Information only: never an asset, never cash, in no total. */
+    val limitMinor: Long = 0,
+    /** A credit card's statement day and payment due day of the month, 1 to 31; 0 is none (MINT.md 4.3D). Information only: no reminder or record is made from them. */
+    val statementDay: Int = 0,
+    val dueDay: Int = 0,
 )
 
 /**

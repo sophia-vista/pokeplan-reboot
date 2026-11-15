@@ -41,6 +41,14 @@ object MintRules {
         else -> Check.Ok
     }
 
+    /** The most characters of an app package name an account may keep (MINT.md 4.3C), and what one may contain: letters, digits, dots and underscores. */
+    const val PACKAGE_MAX = 150
+
+    fun cleanPackage(raw: String): String {
+        val t = raw.trim()
+        return if (t.length in 3..PACKAGE_MAX && t.contains('.') && t.all { it.isLetterOrDigit() && it.code < 128 || it == '.' || it == '_' }) t else ""
+    }
+
     /** The first characters of a base64-encoded PNG (its 8-byte signature). */
     const val PNG_BASE64_PREFIX = "iVBORw0KGgo"
 
@@ -70,6 +78,38 @@ object MintRules {
 
     fun checkCurrency(code: String): Check =
         if (code.length == 3 && code.all { it in 'A'..'Z' }) Check.Ok else Check.Refused("A currency is three capital letters, like PHP.")
+
+    /** A credit limit is kept only for a credit card, never negative and within the money range; 0 is none (MINT.md 4.3D). */
+    fun checkLimit(type: AccountType, limitMinor: Long): Check = when {
+        limitMinor == 0L -> Check.Ok
+        type != AccountType.CREDIT_CARD -> Check.Refused("Only a credit card has a limit.")
+        limitMinor < 0 || limitMinor > Money.MAX_MINOR -> Check.Refused("That limit looks wrong.")
+        else -> Check.Ok
+    }
+
+    /** A statement or due day is 0 (none) or 1 to 31, and only a credit card keeps one (MINT.md 4.3D). */
+    fun checkCardDay(type: AccountType, day: Int): Check = when {
+        day == 0 -> Check.Ok
+        type != AccountType.CREDIT_CARD -> Check.Refused("Only a credit card has a statement or due day.")
+        day !in 1..31 -> Check.Refused("Choose a day from 1 to 31.")
+        else -> Check.Ok
+    }
+
+    /** The next date on or after [today] that falls on [day] of a month, a day the month lacks falling on its last day; null for day 0 (none). */
+    fun nextOnDay(day: Int, today: LocalDate): LocalDate? {
+        if (day !in 1..31) return null
+        fun inMonth(y: Int, m: Int): LocalDate {
+            val last = LocalDate(y, m, 1).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1)).dayOfMonth
+            return LocalDate(y, m, minOf(day, last))
+        }
+        val here = inMonth(today.year, today.monthNumber)
+        if (here >= today) return here
+        val next = LocalDate(today.year, today.monthNumber, 1).plus(DatePeriod(months = 1))
+        return inMonth(next.year, next.monthNumber)
+    }
+
+    /** What is left to spend on a card with a limit: the limit less what is owed, never below zero; null when the account has no limit. */
+    fun leftToSpend(account: FinancialAccount, owedMinor: Long): Long? = account.limitMinor.takeIf { it > 0 }?.let { (it - owedMinor).coerceAtLeast(0) }
 
     fun checkAccount(name: String, currency: String, openingMinor: Long, suffix: String): Check = when {
         name.isBlank() -> Check.Refused("Give the account a name.")
@@ -146,7 +186,7 @@ object MintRules {
     fun netPosition(data: MintData): Map<String, Long> {
         val result = linkedMapOf<String, Long>()
         for (b in balances(data)) {
-            if (b.account.status != AccountStatus.ACTIVE) continue
+            if (b.account.status != AccountStatus.ACTIVE || b.account.hideFromTotal) continue
             val signed = if (b.account.type.liability) -b.postedMinor else b.postedMinor
             result[b.account.currency] = (result[b.account.currency] ?: 0L) + signed
         }
@@ -155,7 +195,7 @@ object MintRules {
 
     /** Money in liquid accounts of [currency], less the bills with a known amount still unpaid in the next [withinDays] days. Credit limits never count. */
     fun available(data: MintData, currency: String, today: LocalDate, withinDays: Int = 14): Available {
-        val liquid = balances(data).filter { it.account.status == AccountStatus.ACTIVE && it.account.type.liquid && it.account.currency == currency }.sumOf { it.postedMinor }
+        val liquid = balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal && it.account.type.liquid && it.account.currency == currency }.sumOf { it.postedMinor }
         val due = upcoming(data, today, withinDays).filter { it.bill.currency == currency && it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
         val bills = due.sumOf { it.remainingMinor ?: 0L }
         return Available(currency, liquid, bills, due.size, liquid - bills)
