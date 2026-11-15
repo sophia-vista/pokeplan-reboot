@@ -49,6 +49,7 @@ class BaseTablesTest {
         "maintenance":[{"id":"mr1","title":"Descale","assetId":"a1","scheduleId":"m1","day":"2026-09-01","cost":"12","atMillis":3,"paid":true}],
         "warranties":[{"id":"w1","assetId":"a1","provider":"Acme","startDay":"2024-03-01","expiryDay":"2027-03-01","reference":"WARR-9","createdMillis":4}],
         "references":[{"id":"n1","title":"Boiler","text":"Reset: hold 5 s","areaId":"ar1","assetId":"a1","createdMillis":5,"updatedMillis":5}],
+        "room":[{"id":"snorlax_doll","x":4,"y":4}],
         "settings":{"progression":true,"tutorialSeen":true,"units":["kg","pcs"],"hidden":["supplies"]},
         "future":{"x":1}
     }""".trimIndent()
@@ -131,7 +132,7 @@ class BaseTablesTest {
         assertEquals(saveBefore, s.live.read("save"), "the game's save is untouched")
         assertEquals("[]", s.baseTables.readKind("supplies"))
         assertTrue(s.baseTables.readKind("assets").contains("SN-123"))
-        assertEquals(listOf("areas", "chores", "entries", "supplies", "adjustments", "restock", "assets", "schedules", "maintenance", "warranties", "references"), BaseTables.KINDS)
+        assertEquals(listOf("areas", "chores", "entries", "supplies", "adjustments", "restock", "assets", "schedules", "maintenance", "warranties", "references", "room"), BaseTables.KINDS)
         assertFailsWith<IllegalStateException> { s.baseTables.erase("nonsense") }
         s.baseTables.clear()
         assertEquals(0L, tables.sumOf { count(s, it) } + count(s, "home_state"))

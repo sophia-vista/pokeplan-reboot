@@ -202,15 +202,23 @@ object Room {
     }
 
     /**
-     * Where [count] Pokémon stand: the floor cells with no standing decoration (a mat does not block), in a fixed order from the back of the room to
-     * the front, left to right, spread out so they do not crowd one corner. Never stored, so the scene looks the same each time it opens.
+     * Where [count] Pokémon stand: the floor cells with no standing decoration (a mat does not block). Each takes its own spot of [SPOTS], spread over the
+     * floor, or the free cell nearest to it when a decoration stands there; past six they take the free cells in order. Never stored, so the scene looks
+     * the same each time it opens.
      */
     fun standingCells(placed: List<Placement>, count: Int): List<Cell> {
         if (count <= 0) return emptyList()
         val blocked = placed.filter { p -> Decorations.get(p.id)?.flat == false }.map { Cell(it.x, it.y) }.toSet()
         val free = RoomGrid.CELLS.filter { it !in blocked }
-        if (free.size <= count) return free.take(count)
-        // Take evenly spaced cells of the free list, so a small party spreads over the floor.
-        return List(count) { i -> free[(i * 2 + 1) * free.size / (count * 2)] }
+        val out = mutableListOf<Cell>()
+        for (i in 0 until minOf(count, free.size)) {
+            val spot = SPOTS.getOrNull(i)
+            val left = free.filter { it !in out }
+            out += if (spot == null) left.first() else left.minBy { kotlin.math.abs(it.x - spot.x) + kotlin.math.abs(it.y - spot.y) }
+        }
+        return out
     }
+
+    /** The spots six Pokémon prefer: back left, back right, the middle, front left and right, spread over the floor. */
+    private val SPOTS = listOf(Cell(3, 4), Cell(6, 3), Cell(8, 5), Cell(4, 6), Cell(6, 6), Cell(2, 5))
 }

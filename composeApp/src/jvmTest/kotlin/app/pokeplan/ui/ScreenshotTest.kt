@@ -1207,6 +1207,70 @@ class ScreenshotTest {
         render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
+    /**
+     * Base's Secret Base room (HOME.md 9.5) on a 360 dp phone (1080 px wide, 5x) or a 320 dp one ([narrow], 4x): the six Pokémon of its party, [look] picked by its
+     * lead's type, and some decorations placed. With [arrange] the dots and the box show, with [held] selected.
+     */
+    private fun baseRoom(name: String, dark: Boolean = false, arrange: Boolean = false, held: String? = null, narrow: Boolean = false, furnished: Boolean = true, party: Int = 6) {
+        val store = storeWithTeam(hatched = 7)
+        store.markRewardsSeen()
+        val mons = store.data.player.pokemon.filter { it.id != store.data.player.buddyId }
+        mons.take(party).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.BASE) }
+        val model = AppModel(store)
+        if (furnished) {
+            listOf("lapras_doll", "pretty_desk", "red_plant", "tropical_plant", "blue_tent", "surf_mat", "sand_ornament", "slide", "red_brick").forEach { store.grantDecoration(it) }
+            listOf(
+                Triple("thunder_mat", 5, 5), Triple("snorlax_doll", 4, 3), Triple("lapras_doll", 6, 3), Triple("red_plant", 8, 3), Triple("pretty_desk", 8, 6),
+                Triple("tropical_plant", 2, 5), Triple("big_plant", 1, 3), Triple("blue_tent", 2, 4),
+            ).forEach { (id, x, y) -> model.base.placeDecoration(id, x, y) }
+        }
+        render(name, frames = 3, width = if (narrow) 960 else 1080, height = if (arrange) 2000 else 1700, density = 3f) {
+            PixelTheme(dark = dark) {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                    androidx.compose.foundation.layout.Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                        app.pokeplan.ui.screens.RoomView(model, startArranging = arrange, startHeld = held)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun baseRoomLightAndDark() {
+        baseRoom("home-room")
+        baseRoom("home-room-dark", dark = true)
+    }
+
+    @Test
+    fun baseRoomArranging() {
+        baseRoom("home-room-arrange", arrange = true, held = "pretty_desk")
+        baseRoom("home-room-arrange-box", arrange = true, held = "blue_tent", dark = true)
+    }
+
+    @Test
+    fun baseRoomOnANarrowPhoneAndEmpty() {
+        baseRoom("home-room-narrow", narrow = true)
+        baseRoom("home-room-empty", furnished = false, party = 0)
+    }
+
+    /** One room of each look (tree and shrub, then the four caves), empty with three Pokémon, three to a picture. */
+    @Test
+    fun baseRoomLooks() {
+        val store = storeWithTeam(hatched = 7)
+        val party = store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(3)
+        app.pokeplan.base.RoomLook.entries.chunked(3).forEachIndexed { n, looks ->
+            render("home-room-looks-${n + 1}", frames = 3, width = 1080, height = 2300, density = 3f) {
+                PixelTheme(dark = false) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                        androidx.compose.foundation.layout.Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                            looks.forEach { app.pokeplan.ui.screens.RoomPicture(it, emptyList(), party) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Test
     fun baseMenu() = household("home-menu", null, height = 2600, homeParty = 3)
 
@@ -1219,7 +1283,7 @@ class ScreenshotTest {
     /** Every Home section at the system's text at 130%: nothing clipped or pushed out of its box. */
     @Test
     fun largeTextHousehold() {
-        app.pokeplan.ui.screens.BaseSection.entries.forEach { household("home-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
+        app.pokeplan.ui.screens.BaseSection.entries.filter { it != app.pokeplan.ui.screens.BaseSection.ROOM }.forEach { household("home-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
     }
 
     @Test

@@ -479,6 +479,16 @@ class GameStore(
 
     override fun ownedDecorations(): Set<String> = data.decorations.toSet()
 
+    /**
+     * Adds [id] to the decorations the player owns (a gift or a purchase: the Department Store and Mom's gifts, HOME.md 9.5.4); false when it is not in the
+     * catalogue or already owned (one of each). It costs and pays nothing here.
+     */
+    fun grantDecoration(id: String): Boolean {
+        if (Decorations.get(id) == null || id in data.decorations) return false
+        update { d -> d.copy(decorations = d.decorations + id) }
+        return true
+    }
+
     /** Points towards the next Secret Base decoration, out of [Decorations.METER_SIZE]. */
     fun decorationMeter(): Int = data.counters[Counters.HOME_DECOR_METER] ?: 0
 
