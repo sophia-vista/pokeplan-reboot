@@ -7,7 +7,7 @@ description: Ideas from 16 design-reference sites (navigation, calls to action, 
 
 What 16 reference sites show, sorted into what fits PokéLife and what doesn't. Captured on 23 and 24 October 2026
 from each site's home page only. The galleries change daily, so a named example may be gone; the site name is there
-so you can look the pattern up again. They are websites and PokéLife is an app, so every idea below is already
+so you can look the pattern up again. They are websites and PokéLife is an app, so every idea in the reference files is already
 translated to a screen, a tab or a moment in the app.
 
 **Order of authority:** `CLAUDE.md`, `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` (sections 5.1 and 12A) and the
@@ -22,7 +22,7 @@ days (403, "Performing security verification"); rareui.com showed a Vercel secur
 them by hand if you need them.
 
 ## How to use it
-1. Find the part of the app you're designing below. Read "take this" and "not that".
+1. Find the part of the app you're designing in the index table below, then open that reference file. Read "take this" and "not that".
 2. Check the avoid list. If the idea is on it, drop it.
 3. Build it from what exists: colours and sizes from `Pixel` and `Spacing` in `theme/PixelTheme.kt`; `TextBox`,
    `PixelButton`, `GameBox`, `ExpBar` there; `ScreenHeader`, `SectionLabel`, `StatChip`, `ListRow`, `RankBadge` in
@@ -72,167 +72,16 @@ Trends seen across these sites that clash with the rules. Don't bring them in, e
 - **Shape morphs** that move the content you're reading: a panel that grows into the next view with a blur
   cross-fade (beui.dev Morphing Modal, Dynamic Island; uiarc.dev Share sheet, Morph select).
 
-## Navigation (navbar.gallery)
-Seen: categories Static, Dropdown, Mega Menu, Side Bar, Search Bar, Announcement, Full Screen, Breadcrumbs. Examples:
-Chesapeake Plywood (a dark static bar with dropdown carets), Velt (a dark mega menu with icons in three columns),
-Clonix (a dark full-screen menu of large words), Aveon (a cream side panel of plain stacked words beside a
-full-height photo), Orchid (a floating pill nav over a blurred colour background).
+## Which reference to open
+Open only the file for the kind of screen you are designing; each holds "Take this" and "Not that" per site.
 
-**Take this**
-- Static: the four bottom tabs, each an icon and a label, the selected one filled (DESIGN_SYSTEM.md 5.5). Nothing nested.
-- Clonix's full-screen list of large words is close to our section menus: `MenuGrid`'s big cards with real item
-  icons, one tap to a section, Back to return.
-- Breadcrumbs, made small: `SectionScaffold`'s title and Back, and the system back gesture, always.
-- Side Bar: on wide desktop and web windows (dev conveniences only; Android is the product) a labelled side rail can
-  stand in for the bottom tabs (same four sections, same order). Phones keep the bottom tabs.
-- Announcement: one slim, dismissible line for something that really changed (What's new, tomorrow's spotlight
-  type). One at a time, never stacked.
-- Search Bar: only where lists get long (Planner All, Pokédex), at the top of that list, never in the tab bar.
-
-**Not that**
-- Dropdown carets, mega menus, hamburgers, floating pill navs, a filled "Sign in" button in a header.
-
-## Home and onboarding (supahero.io)
-Seen: Dream Design Laboratory (a full-bleed photo of plants against glass, small nav, almost no text), Lando Norris
-(a large portrait cut-out), Treize grammes (a serif headline in its own column beside a 3D toggle), Dribbble (a centred
-headline, one line and one button), Better Stack (dark glow, email field, logo strip), Anubi and eddie (3D), Red
-Antler and KARO (huge type).
-
-**Take this**
-- The picture carries the screen, with very little text (Dream Design Laboratory, Lando Norris). Ours: the buddy,
-  large and animated in its scene (`BuddyStage`), level and progress small in a corner.
-- Text in its own space beside or under the picture, never over it (Treize grammes). Over a scene, use a panel
-  (`TextBox`) rather than bare text.
-- One headline, one line, one button (Dribbble). Ours: the title screen and each onboarding step: one question,
-  sensible default already chosen, one PixelButton.
-
-**Not that**
-- 3D, product screenshots, rotating words, autoplay video, dark glow, an email field on the first screen (the app
-  has no accounts).
-
-## Primary actions and reward moments (cta.gallery)
-Seen: categories Button, Call-to-Buy, Download, Form, Modal / Pop-up, Navigation, Newsletter, Pricing. Examples:
-plnty ("Claim your handle" with one input), Augustus ("START BUILDING", lots of white space, one small action),
-Get-ripe (a condensed headline over a real photo, on cream), Kronborg (a repeating discount pattern), Aya (a loud
-poster), Tines and Numa (giant headlines with 3D objects).
-
-**Take this**
-- One action per screen that matters, as a `PixelButton`: Start focus, Add task, Hatch. Everything else is a plain
-  row or a secondary button (DESIGN_SYSTEM.md 5.7, Surfaces and depth).
-- plnty's single field with one button: naming the trainer, quick-add's title field, a nickname. The rest of the
-  form waits behind "more" (design.md, Planner).
-- Augustus's white space: a reward sheet shows what was earned (`RewardBox`, real item icons), one line, one Done.
-
-**Not that**
-- Pricing tables and upgrade prompts in the core loop, discount or countdown patterns, newsletter forms, modals that
-  interrupt a task, two equal buttons side by side.
-
-## Empty, error and offline states (404s.design)
-Seen: filters by style (3D, Bold, Brutalist, Colorful, Dark, Editorial, Glitchy, Hand-drawn, Illustrative, Large
-Type, Light, Minimal, Photographic, Playful, Retro, Typographic) and interaction (Animated, Custom Cursor, Game,
-Hover Effects, Interactive, Scroll-driven). Examples: Kobbe (a small drawing, a short line, a couple of links),
-WithUPI ("This page didn't go through.", in the product's own terms), Tribe AI ("This page lost its momentum."),
-Ethan+ AI ("Nothing at this address."), Sruthi (tic-tac-toe), Ente (a game), UPCLOSE and BOC Studio (giant "404").
-
-**Take this**
-- Retro, Playful, Light and Minimal are our register; Illustrative only with real sprites and item icons.
-- Kobbe's shape: one small real sprite or item icon, a short title, one line, at most one action. Ours: `EmptyState`
-  ("The PC is empty", then what fills it).
-- Speak in the game's own terms (WithUPI, Tribe AI): the party, the PC, the Bag, an egg. Say what still works, e.g.
-  that progress is kept on the device while offline, and never blame the person.
-- Every list has an empty, a loading and an error state (DESIGN_SYSTEM.md 6.10).
-
-**Not that**
-- Games inside an error screen, glitch effects, giant numerals, dark dead ends with no way back.
-
-## Micro-interactions (interior.dev, detail.design)
-interior.dev: "Software feels cheap in the half-second after a click." Loading Button ("The label changes. The button
-stays put."), Hold to Confirm ("A moment to change your mind."), Tooltip Group ("A little patience. Then no
-waiting."), Slider Detents ("Stops you can feel."), Segmented Control ("The selection travels. Nothing jumps."), Like
-Burst ("Even a second tap is considered."). detail.design: categories Design, Interactivity, Motion, Copywriting,
-Accessibility, Easter Egg; entries Smarter Word Break, Name-Derived Placeholder, Adaptive Text Color, Respect Platform
-Language, Unified Login Field, Avoid Browser Default Back Behavior, Clicking the Input Label Focuses the Input Field,
-Hold to Reveal Shortcut Hint.
-
-**Take this**
-- Nothing jumps: a button keeps its size while its label changes (Saving…, Saved), rows keep their height when a
-  badge appears, a finished task leaves the list and the gap closes smoothly (uiarc.dev "An inbox that makes room").
-- Hold to Confirm for the few things that can't be undone: transferring a Pokémon, deleting data. Never for
-  finishing a task, which gets the 10 second Undo instead (uiarc.dev "Confirm morph: asks in place, with undo").
-- Slider Detents for the custom focus length: stops at 15, 25, 45 and 60 with a soft haptic (`Haptics.kt`, off with
-  the setting).
-- Like Burst's care for the second tap: petting reacts every time, but the friendship cap is shown calmly once
-  reached, never as an error.
-- Numbers that count to their new value (uiarc.dev "Numbers that move when they change"): candy, coins and EXP after
-  a reward. Instant with Reduce motion; screen readers get the final number once.
-- Name-Derived Placeholder: placeholders echo what the person already gave (a nickname field shows the species name,
-  a subtask field mentions the task).
-- Clicking the label focuses the input: a settings row toggles from anywhere on the row, not just the switch.
-- Respect Platform Language and back behaviour: "tap" on phones, "click" on desktop; the system back gesture always
-  closes the sheet or section first (`SectionScaffold` already does this).
-- Smarter Word Break: long task names and nicknames wrap or end with an ellipsis, never push a button off screen.
-- Adaptive Text Color is the problem of text on pictures: put text on a panel instead.
-
-**Not that**
-- Easter eggs that hide features, hold-to-reveal hints on phones (most people are on phones; a keyboard hint is fine
-  on desktop only), tooltips as the only way to learn a control.
-
-## Lists and collections (minimal.gallery, a1.gallery, seesaw.website)
-Seen: minimal.gallery (categories include App, Games & gaming, Pets, Software). a1.gallery (categories Productivity
-and Education among many; Jeffrey Stubbs: an exhibition index, a plain numbered list of titles, places and years;
-Sophie Sato: images of different sizes placed loosely; Decimals: a soft serif on a pale ground). seesaw.website
-(categories include Productivity; each entry a thumbnail, a name and one quiet grey line; Dial, a time tracker; Gaia,
-baby tracking with nap predictions).
-
-**Take this**
-- The index list (Jeffrey Stubbs): plain rows, aligned numbers, dividers, no card per row. Ours: the Pokédex (number,
-  sprite, name) and the Planner lists (`ListRow`).
-- Thumbnail, name and one quiet line (seesaw.website): a Pokémon row is its sprite, its name, and one line in
-  `InkSoft` (level, type); a task row is the title and one line (rank, due).
-- Calm grounds and generous spacing (Decimals, minimal.gallery): the `Spacing` scale, few borders.
-- Browse the App, Games & gaming and Productivity categories on these galleries for neighbours.
-
-**Not that**
-- Loose collage layouts for lists people scan, chips and tag clouds for every filter, sticker badges on sprites.
-
-## Component libraries (ideas only)
-None of their code ports: they are React with Tailwind and Motion (beui.dev also React Native), and PokéLife is
-Kotlin with Compose Multiplatform. Take the idea, rebuild it with our theme and components, give it a Reduce motion
-version, and never copy code. If something must be copied, read the project's own LICENSE file, keep its notice,
-and ask the owner first.
-
-| Site | What it is | Licence, as its home page put it | Idea to take |
-| --- | --- | --- | --- |
-| interior.dev | React micro-interactions | MIT | Loading button, hold to confirm, slider detents, nothing jumps |
-| uiarc.dev | React library with blocks; Pro is paid | Not stated; Pro paid | Numbers that count, confirm in place with undo, a list that closes the gap |
-| beui.dev | React and React Native animated components; Pro tier | Permissive, keep the copyright notice | Swipeable list (only with a visible tap alternative), toast stack for several rewards at once, a spring-pressed button |
-| obsidianui.dev | React and Tailwind components | MIT (footer) | None: marquees and galleries |
-| rareui.com | Animated React components | "Open-source", licence not named | None |
-| cuedesign.space | Paid component library with AI prompts | Cue Kit MIT; the rest paid | None: trend-led sections |
-| feralui.dev | Physics-driven React elements | Not stated | None: physics clashes |
-
-## Pattern map
-Where each idea belongs in the app. "Exists" means it is already built; use the idea only to check or tune it.
-
-| Pattern | Source | Home | Planner | Focus | Pokémon | Me | Widgets |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Labelled tabs, nothing nested | navbar.gallery (Static) | Exists | Exists | Exists | Exists | Exists | |
-| Big cards that open a section | navbar.gallery (Clonix) | | Exists | | Exists | Exists | |
-| Side rail on wide windows | navbar.gallery (Side Bar) | Desktop | Desktop | | Desktop | Desktop | |
-| The picture carries the screen | supahero.io (Dream Design Laboratory) | Region leads | | Egg | Detail sprite | | Buddy |
-| Text on a panel, never on the picture | supahero.io (Treize grammes) | Level corner | | | | | Buddy |
-| One field, one button | cta.gallery (plnty) | | Quick-add | | Nickname | Trainer name | |
-| One primary action per screen | cta.gallery (Augustus) | One step per region | Add task | Start | | | Focus |
-| Small sprite, short line, one action | 404s.design (Kobbe) | | Empty lists | | Empty party, PC | Offline | Empty |
-| Speak in the game's terms | 404s.design (WithUPI) | | | Failed session | | | |
-| Nothing jumps | interior.dev | | Task done | Timer | Rows | | |
-| Hold to confirm, only if irreversible | interior.dev | | | | Transfer | Delete data | |
-| Undo in place | uiarc.dev (Confirm morph) | Task done | Task done | | | | |
-| Numbers that count | uiarc.dev | Counters | Reward sheet | Hatch summary | EXP | | |
-| Detents | interior.dev (Slider Detents) | | | Custom length | | | |
-| Index list with aligned numbers | a1.gallery (Jeffrey Stubbs) | | All, Upcoming | | Pokédex | History | |
-| Thumbnail, name, one quiet line | seesaw.website | Recently | Rows | | Party, PC | | Tasks |
-| Placeholder from what's known | detail.design | | Subtasks | | Nickname | | |
+| Designing or asking about | Open |
+| --- | --- |
+| Bottom tabs, a module's section menu, breadcrumbs, search, a side rail, an announcement line, the title screen, onboarding steps, what the picture carries | `references/navigation-and-home.md` |
+| A primary button, a quick-add field, a reward sheet, anything that asks for one decision | `references/calls-to-action.md` |
+| An empty, error or offline state; loading and saving feedback, confirm and undo, detents, counting numbers, placeholders, long text | `references/empty-states-and-micro-interactions.md` |
+| A list, the Pokédex, a Pokémon or task row, a collection; or a question about a component library (licence, what to take) | `references/lists-and-components.md` |
+| Where an idea already lives in the app (Home, Planner, Focus, Pokémon, Me, widgets) and what already exists | `references/pattern-map.md` |
 
 ## Before you ship a design
 - Every colour and size comes from `Pixel` and `Spacing`; every picture is a real asset; nothing on the avoid list.

@@ -33,7 +33,7 @@ while read -r ref; do
   areas=$(git diff --name-only "$(git merge-base origin/main "$ref")" "$ref" 2>/dev/null | awk -F/ 'NF>1{print $1}' | sort | uniq -c | sort -rn | head -4 | awk '{printf "%s ", $2}')
   hay="$b $subjects $areas"
   if [ -n "$TOPIC" ] && ! printf '%s' "$hay" | grep -qi -- "$TOPIC"; then continue; fi
-  [ "$SHOWN" -lt 12 ] || continue
+  [ "$SHOWN" -lt 5 ] || continue
   SHOWN=$((SHOWN + 1))
   ver=$(git show "$ref:VERSION" 2>/dev/null | head -1)
   age=$(( ( $(date +%s) - ts ) / 3600 ))
