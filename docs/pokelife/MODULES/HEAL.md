@@ -86,6 +86,12 @@ Today should answer: what information is available, what has been recorded, and 
 
 History is a consolidated, searchable timeline with filters for activity, workouts, nutrition, sleep, measurements and health records. Individual domains retain their focused histories. Trends use appropriate time ranges and clear units, with textual summaries and accessible data labels. Do not create a large analytics dashboard or imply causation from correlations.
 
+### 2.4 Plain-language insights (owner, 15 November 2026; backlog REP-064)
+
+*Why.* The owner wants HEAL to give a dashboard, trends, a place to record, goals and "recommendations or insights based on my data". The spec already excludes diagnosis and prescription; this section says what an insight is.
+
+An insight is one factual sentence about the player's own logged data, shown beside the trend it describes, with its period and its source: "Weight is 0.4 kg lower than four weeks ago (7 readings)", "Hydration reached your target on 4 of the last 7 days". It states what the data shows and how much data there is; it never says what the player should do, never grades a day, never names a cause and never appears when the data is too thin to say anything. *(Default applied: the owner asked for "recommendations or insights"; this section gives insights only. A recommendation would need its own decision.)* (unknown and missing days are stated, not counted as zero). Insights are off for a metric the player has hidden (2.2), are computed on the phone and are never sent anywhere (section 14).
+
 ## 3. Activity tracking
 
 Support activity and movement records including:
@@ -154,6 +160,19 @@ Nutrition supports practical food and fluid logging with clear data provenance. 
 Support calories, protein, carbohydrates, fat, fiber, sugar, sodium and other nutrients when a source provides them. Every value must retain its source and whether it is verified database information, provider information, an estimate or user-entered. Missing nutrients are unknown, not zero. Portion scaling must preserve the underlying per-serving basis and unit conversion rules.
 
 Food lookup may use an offline saved-food list first. Online database search and barcode lookup are later optional enhancements; neither may be required for core logging. Food database integration must be evaluated for licensing, availability, regional coverage, attribution and long-term maintenance before adoption.
+
+### 5.2A Fast and accurate nutrition entry (owner, 15 November 2026; backlog REP-060)
+
+*Why.* The owner logs hydration, nutrition and weight only when they remember, wants nutrition to be **comprehensive**, and wants entry that is both **easy and accurate**. Huawei Health has some nutrition entry that the owner finds "limited" (what is limited is not known yet: **open question**, ask on the phone). This supersedes the audit's "nutrition stays unbuilt and unadvertised" and the backlog's "nutrition last" (REP-040) as to priority: nutrition is wanted, and is now built to the standard below. **Default applied** (not the owner's words): it follows the medication log (Tier 2 item 15), because the owner did not say it comes first.
+
+Easy means few taps for the ordinary case; accurate means a value the player can trust and trace. Both are required, and where they pull apart the source label settles it (5.2).
+
+- **Fewest taps.** The first screen of a new entry shows **recent and frequent foods and meals** (5.1), each logged in one tap at its last portion, then a search box, then "Add a food". A portion is a stepper with the unit's usual steps and a typed override; the meal group is pre-chosen from the time of day and changed in one tap. Repeating a previous meal is one action.
+- **Accurate by default.** Every nutrient shows its source chip (verified database, provider, estimate, typed by you). A food from a database keeps the per-serving basis it came with; scaling never rounds the stored basis. Unknown nutrients read "unknown", never zero, and a meal with an unknown part says its total is incomplete.
+- **Comprehensive.** Calories, protein, carbohydrate, fat, fibre, sugar and sodium first (5.2); further nutrients where a source supplies them; custom foods, saved meals and a recipe made of saved foods. Hydration shares the same quick surface (5.4).
+- **Food data source: an owner decision (D12 in the backlog), not made here.** Offline saved foods always work (5.2). Accurate lookup for packaged and local foods needs a data source, which this spec does not name: licensing, regional coverage (the owner's region), attribution, upkeep and what leaves the phone must be checked first. A **barcode lookup sends only the barcode**; a **text search sends what the player is eating** and so needs the explicit, documented, user-authorised purpose rule of the privacy architecture (rule 3 of the privacy architecture's principles, `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md`), off until chosen. Neither may be required for core logging.
+- **Layout.** A dialogue box per group (Recent, Search, Today's meals), pixel-drawn controls only, the source chip and the "unknown" state shown on the entry itself and not in a caption, and one next action on the empty state (design rules: `../FEATURES/DESIGN_SYSTEM.md` 5.1 and 12A). Look at a real screenshot in both palettes at 1.3x text with the longest food name before calling it done.
+- **No pressure.** The section 5 rules stand: no calorie-restriction default, no grades or red and green, no streak for logging, no mandatory prompts (reminders off by default, section 13).
 
 ### 5.3 Nutrition goals
 

@@ -122,6 +122,16 @@ Use one flexible grouping model with two presentations: a **List** is a collecti
 
 Project capabilities: name, optional description, optional icon/color, status (active/on hold/completed/archived), start date and optional target date, task collection, optional milestones, and progress derived from relevant tasks/milestones. Exclude complex dependencies, Gantt charts, resource allocation, and enterprise workflow features from initial release.
 
+### 3.5A List kinds, the resetting checklist and a reminder without a due date (owner, 15 November 2026; backlog REP-058)
+
+*Why.* The owner used TickTick for groceries, learning and certification tracking as well as tasks, and asked for "reminders and checklist" with precise date and time control that is still highly customisable. A list is not always a collection of dated tasks.
+
+- **List kind.** A list has a kind, chosen when it is created and changeable later without losing items: **Tasks** (the default, today's behaviour), **Checklist** (items to tick off and reset) or **Tracker** (a long-running list whose items are things to learn, earn or finish, such as a certification path, shown with a count and no due date). The kind changes the list's presentation and defaults only; every item is still a task on the same engine (3.5).
+- **Resetting checklist.** A Checklist's items reset at its occurrence boundary (a recurring checklist, 5.1), so a grocery run or a weekly cleaning round starts clean. Items left unticked at reset are recorded as not done in the history with no penalty, no streak loss and no reward effect (5.4). Ticking items never completes the parent on its own (4.5); the list shows derived progress and offers "Done".
+- **A reminder without a due date.** A task may carry a reminder time with no due date: a nudge. It shows on Today at that time, never becomes overdue, and clears when done or dismissed. It uses the shared reminder contract (7) like any other.
+- **Precision stays.** Date, time, recurrence and reminder controls keep their precision; the default editor shows the basic fields and the rest sit under "More options" (REP-057). Nothing here removes a control.
+- **Not in this section.** Checklists that mirror Google Calendar (8.1 stays read-only) and grocery prices or shopping workflows.
+
 ### 3.6 Goals and milestones
 
 Use `Goal → Milestones → Tasks`. A goal describes an outcome; a milestone is a meaningful checkpoint; a task is actionable work. A task may link to a goal/milestone but remains a normal PLAN task.
