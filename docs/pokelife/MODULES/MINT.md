@@ -130,6 +130,7 @@ Provide a global MINT privacy toggle to hide monetary values across every MINT d
 - Digital bank account.
 - Cash wallet or physical cash.
 - Credit card.
+- **Pay later** (buy now, pay later: SPayLater, Atome, Tabby-style and other BNPL lines; owner, 15 November 2026): a credit **liability**, never a wallet (5.6A).
 - Loan or other liability.
 - Other user-defined asset or liability account.
 
@@ -294,6 +295,27 @@ Transfers between different currencies preserve source amount, destination amoun
 ### 5.6 Credit cards and liabilities
 
 A card purchase increases the card's outstanding liability and records the purchase expense once. Paying the card reduces the associated bank/cash asset and the card liability; it is a transfer/settlement, not a second expense. Fees and interest are separate expense transactions. Card limit, outstanding balance, statement balance and payment due amount must not be conflated.
+
+### 5.6A Credit lines, pay later and installment plans (owner, 15 November 2026)
+
+A **Pay later** account (`AccountType.PAY_LATER`, such as SPayLater) is a credit line like a credit card: a liability whose balance is **what is owed** (outstanding), never cash and never liquid. A credit card and a pay-later account both have the optional credit limit, statement day and due day of 4.3D; **available credit** is limit less outstanding (never below 0) and, like every limit, is in no total. Further services (Atome, a store card, another card) are just more accounts of these two types, so nothing here is specific to one provider.
+
+**How each event is recorded (one record each, never two for one event)**
+- **Purchase:** one `EXPENSE` on the credit account at the **full price**, on the purchase day, in its category; the outstanding rises by the price. It counts in spending once, on the purchase day, whether or not it is paid in installments (5.6, invariant 4).
+- **Repayment:** a `TRANSFER` from a source account (a wallet, bank or cash account the player names: the **payment source**) to the credit account. The source's cash falls, the outstanding falls, nothing is spent and no second expense exists. It may be any amount, a **partial** payment or an **early** one.
+- **Fee, interest, late fee:** a separate `FEE` record on the credit account (`Transaction.feeKind` `FEE`, `INTEREST` or `LATE`), which raises the outstanding and counts in spending as a fee or interest, never as the purchase. A fee is recorded **when its installment is billed** (the player taps "Bill it" on the due installment) **or when a payment reaches that installment**, whichever is first, dated that day (owner decision: not all fees up front). A late fee is recorded when the player adds it.
+- **Refund:** a `REFUND` on the credit account (linked to the purchase), which lowers the outstanding and lowers spending; on a plan it cancels the **unpaid installments from the last one backwards** (a cancelled installment owes no principal and no fee).
+
+**Installment plan** (`InstallmentPlan`, saved with the other Mint records as the `plans` list; owner decision: it rides in the sealed `mint_state` table, so no migration). A plan belongs to one credit account and holds: the purchase record, the price, the first and every later due day, and the generated **schedule** of installments (`no`, due day, principal, fee). Generating the schedule is automatic from the price, the number of installments (1 to 36), the interval (every week, every 2 weeks, every month) and the first due day: the principal is split evenly (the leftover minor units go one each to the first installments, so the sum is exact); the fee is none, a fixed amount per installment, a total spread evenly, or a **rate per period on the principal still unpaid** (basis points, rounded half up); a monthly due day that a month lacks falls on its last day. The player can edit the due day and fee of an installment that is unpaid and whose fee is not yet recorded; paid history is never rewritten (8.3). Everything else is **derived, not stored**: what each installment still owes is its principal plus its fee plus its late fees, less the plan's repayments (the `TRANSFER`s linked to the plan, counted in date order and applied to the earliest installment first, the overflow to the next, so an early payment pays the next one); the states are Upcoming, Due, Overdue, Partly paid, Paid and Cancelled. Voiding or deleting a repayment therefore reopens the installment by itself. A plan may be deleted: its records stay (unlinked), and its purchase record cannot be deleted while the plan exists.
+
+**What it does to the reports (one rule each, tested)**
+- **Spending** (7.1) = posted `EXPENSE` and `FEE` less `REFUND`, on any account: the purchase once, plus fees, interest and late fees; a repayment never counts.
+- **Cash flow** is what really moves through the **liquid** accounts (wallets, banks, cash): income in, expenses and fees paid from them out, and **a repayment to a credit account is cash out** (the cash really leaves); a purchase on credit is not cash flow until it is repaid; a transfer between two liquid accounts is neither.
+- **Net position** (assets less liabilities): a purchase on credit lowers it at once by the price (the liability), a fee lowers it by the fee, a repayment changes it by nothing (cash and liability fall together), a refund raises it.
+- **Available money** (3.2, 4.5) also subtracts the installments due within the window (14 days, overdue ones included) with the unpaid bills.
+- **Credit activity** of an account over a period: purchases, fees, interest, late fees, refunds and repayments, so the statement can be read without mixing the limit, the outstanding, the statement balance and the payment due (5.6).
+
+Information only for reminders: no reminder is made from an installment in this version (open item).
 
 ### 5.7 Splits, duplicates and edits
 
