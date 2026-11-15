@@ -261,7 +261,8 @@ class MainActivity : ComponentActivity() {
     private fun linkChanged(data: LinkData) {
         val app = appData ?: return
         val upcoming = LinkReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
-        if (upcoming.isNotEmpty()) askForNotifications()
+        // Ask as soon as any reminder is set, not only when one falls in the next few days: a birthday chosen months ahead must still be able to notify.
+        if (upcoming.isNotEmpty() || (data.settings.reminders && (data.dates.any { it.remindDays != null } || data.followUps.any { it.remind }))) askForNotifications()
         val signature = upcoming.map { Triple(it.recordId, it.kind, it.atMillis) }.hashCode()
         if (linkSignature == null) { linkSignature = signature; if (upcoming.isEmpty()) return }
         else if (signature == linkSignature) return

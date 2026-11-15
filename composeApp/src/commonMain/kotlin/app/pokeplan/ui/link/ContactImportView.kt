@@ -68,22 +68,25 @@ private fun resultLine(r: ImportResult): String = listOfNotNull(
 /**
  * LINK's optional import from the phone's contacts (LINK.md 3.5 and 6.1), in four steps on one screen: say what is read, ask the permission only now, let the
  * user pick and see which contacts are new or may already be here, then write the picks in one save with an Undo. Nothing is picked for the user, a contact that
- * may already be here only fills that person's empty fields, and a birthday carries its reminder when the user chose one. Denying the permission leaves LINK as it was.
+ * may already be here is a new person unless the user marks it "Same as" one of the matches, and then only that person's empty fields are filled, and a birthday carries its reminder when the user chose one. Denying the permission leaves LINK as it was.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: () -> Unit) {
     val accent = ModuleAccent.LINK.accent
     var stage by remember { mutableStateOf(if (source.permitted()) Stage.PICK else Stage.ASK) }
-    var cards by remember { mutableStateOf<List<app.pokeplan.link.ContactCard>?>(null) }
     var picked by remember { mutableStateOf(setOf<String>()) }
     var query by remember { mutableStateOf("") }
     var shown by remember { mutableStateOf(IMPORT_PAGE) }
     var remind by remember { mutableStateOf<Int?>(null) }
     var result by remember { mutableStateOf<ImportResult?>(null) }
+    // A contact that may already be here is a new person unless the user says it is the same one (nothing merges by itself).
+    var sameAs by remember { mutableStateOf(mapOf<String, String>()) }
+    var plan by remember { mutableStateOf<app.pokeplan.link.ImportPlan?>(null) }
 
+    // The address book and the matching against Link both run off the main thread: a large book is not a freeze.
     LaunchedEffect(stage) {
-        if (stage == Stage.PICK && cards == null) cards = withContext(Dispatchers.Default) { source.contacts() }
+        if (stage == Stage.PICK && plan == null) plan = withContext(Dispatchers.Default) { model.link.planImport(source.contacts()) }
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -101,12 +104,11 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
                 }
             }
             Stage.PICK -> {
-                val all = cards
-                if (all == null) {
+                val plan = plan
+                if (plan == null) {
                     Text("Reading contacts", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     return@Column
                 }
-                val plan = remember(all, model.linkData.people) { model.link.planImport(all) }
                 val q = query.trim().lowercase()
                 val rows = plan.rows.filter { q.isEmpty() || it.card.name.lowercase().contains(q) || it.card.organization.lowercase().contains(q) }
                 val chosen = plan.rows.filter { it.key() in picked }
@@ -130,6 +132,12 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
                         onClick = { picked = if (on) picked - row.key() else picked + row.key() }, onClickLabel = if (on) "Leave out ${row.card.name}" else "Pick ${row.card.name}",
                         trail = { PixelToggle(on) },
                     )
+                    if (on && row.kind == ImportKind.MAYBE) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            row.matches.forEach { m -> TabButton("Same as ${LinkRules.displayName(m)}", sameAs[row.key()] == m.id, { sameAs = sameAs + (row.key() to m.id) }, key = accent) }
+                            TabButton("New person", row.key() !in sameAs, { sameAs = sameAs - row.key() }, key = accent)
+                        }
+                    }
                 }
                 if (rows.size > shown) PixelButton("Show ${minOf(IMPORT_PAGE, rows.size - shown)} more of ${rows.size - shown}", { shown += IMPORT_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 if (rows.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -143,7 +151,11 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
                 Actions {
                     PixelButton(if (chosen.isEmpty()) "Import" else "Import ${chosen.size}", {
                         val before = model.linkData
-                        val picks = chosen.map { ImportPick(it.card, linkTo = it.matches.firstOrNull()?.id.takeIf { _ -> it.kind != ImportKind.NEW }) }
+                        val picks = chosen.map { ImportPick(it.card, linkTo = when (it.kind) {
+                            ImportKind.NEW -> null
+                            ImportKind.KNOWN -> it.matches.firstOrNull()?.id
+                            ImportKind.MAYBE -> sameAs[it.key()]
+                        }) }
                         val out = model.link.importContacts(picks, remind)
                         result = out; model.haptic(); stage = Stage.DONE
                         if (out.added + out.linked + out.birthdays > 0) model.offerUndo("Imported contacts") { model.link.restore(before) }

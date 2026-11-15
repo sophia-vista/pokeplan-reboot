@@ -327,7 +327,7 @@ class LinkStore(
         name.trim().take(LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || n.lowercase() in LinkRules.categories(LinkData(settings = s)).map { it.lowercase() }) s else s.copy(categories = s.categories + n) }
     }
 
-    // --- reminders (LINK.md 5): all off until the user turns them on, per record ---------------------------------------------------
+    // --- reminders (LINK.md 5): all off until the user asks for one (a date's first chosen reminder turns the master switch on), per record ---------------------------------------------------
 
     /** The master switch. On, a date or follow-up still asks only when its own reminder is on. Neither pays nor changes a record. */
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }

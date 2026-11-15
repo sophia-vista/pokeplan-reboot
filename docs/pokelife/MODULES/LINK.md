@@ -249,7 +249,7 @@ LINK owns:
 - What opening a reminder should navigate to.
 - Whether a reminder is enabled, snoozed or dismissed at the LINK source level.
 
-Suggested date presets may include the day of, one day before, three days before and one week before. These are user choices, not mandatory defaults. Follow-up reminders are opt-in. Avoid duplicate reminders when a follow-up has been converted to a PLAN task; PLAN becomes the reminder source after conversion.
+**Choosing a reminder is the opt-in (as built, 0.201.0):** the first reminder chosen on a date, in the Add-a-date form, in an edit or in the contacts import, turns Link's master reminder switch on; nothing is on before that, and Settings can turn them all off again. Suggested date presets may include the day of, one day before, three days before and one week before. These are user choices, not mandatory defaults. Follow-up reminders are opt-in. Avoid duplicate reminders when a follow-up has been converted to a PLAN task; PLAN becomes the reminder source after conversion.
 
 Notification privacy:
 - Generic lock-screen text by default, such as “You have an upcoming reminder.”
@@ -468,7 +468,7 @@ A menu with an overview on top and four destinations. **Overview**: only what ne
 
 **Data (section 4).** `link_*` tables: `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Home.
 
-**Reminders (5), built:** off until the user turns Link's reminders on, then per date (the day of, or 1, 3 or 7 days before) and per follow-up (on its day); one nudge each, generic lock-screen text, quiet hours and focus sessions respected; a follow-up handed to Plan is Plan's to remind about.
+**Reminders (5), built:** off until the user turns Link's reminders on, or chooses the first reminder on a date (which turns them on), then per date (the day of, or 1, 3 or 7 days before) and per follow-up (on its day); one nudge each, generic lock-screen text, quiet hours and focus sessions respected; a follow-up handed to Plan is Plan's to remind about.
 
 **Contacts import (0.201.0), as built:** Android only (`ContactSource`, null elsewhere so the button is not offered; `AndroidContacts` reads names, phones, emails, companies and birthdays in one query). People → "Import contacts" says what is read, then asks `READ_CONTACTS`; denied, manual use is untouched. A pick list (search, 40 at a time, nothing preselected) marks rows New, Already in Link (same `Person.sourceId`) or Maybe already in Link (name, a phone or an email; starts unselected, and when picked fills only the matched person's empty fields). A reminder is chosen (No, On the day, 1, 3 or a week before; no default), then "Import N" makes one save, one result line and Undo. A birthday becomes a Birthday date unless the person has one; a second import changes nothing; empty phone, email and organization are filled, nothing is overwritten. Contacts with no name are counted and shown. Nothing is paid and nothing reaches `LinkEvent`. **Reminder in one step:** the Add-a-date form has "Remind me" keys, and the first reminder turns Link's reminders on. Known gap: the notification permission is asked only when a reminder is within 4 days.
 

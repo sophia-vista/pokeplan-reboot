@@ -1336,11 +1336,11 @@ class ScreenshotTest {
     }
 
     /** The Link module with a little recorded (two people, a note, two dates, follow-ups), open on [section] (null for its menu). Synthetic text only. */
-    private fun link(name: String, section: app.pokeplan.ui.link.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, prepare: (AppModel) -> Unit = {}, interact: (androidx.compose.ui.ImageComposeScene) -> Unit = {}) {
+    private fun link(name: String, section: app.pokeplan.ui.link.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, prepare: (AppModel) -> Unit = {}, interact: (androidx.compose.ui.ImageComposeScene) -> Unit = {}, contacts: ContactSource? = null) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(linkParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.LINK) }
-        val model = AppModel(store)
+        val model = AppModel(store, contacts = contacts)
         if (!empty) {
             val link = model.link
             val today = model.store.today
@@ -1408,6 +1408,25 @@ class ScreenshotTest {
                 }
             }
         }
+        // Picked rows (a "maybe" with its Same as keys), the reminder keys, then the result line: taps on the rows, the key and Import.
+        val source = fake(true)
+        for ((tag, scale) in listOf("picked" to 1f, "picked-xl" to 1.3f)) {
+            val model = AppModel(storeWithTeam(), contacts = source)
+            model.link.addPerson("Carla M.", phone = "02 8123 4567")
+            model.link.addPerson("Carla Mendoza Jr.", phone = "02 8123 4567")
+            model.link.importContacts(listOf(app.pokeplan.link.ImportPick(app.pokeplan.link.ContactCard("c", "Ben"))))
+            render("link-import-$tag", height = 2000, fontScale = scale, interact = { scene ->
+                fun tap(x: Float, y: Float) {
+                    scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(x, y))
+                    scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(x, y))
+                }
+                tap(135f, 231f) // Pick 3 new
+                tap(300f, 805f) // the maybe row: its Same as keys open
+            }) {
+                PixelTheme(dark = false) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.ContactImportView(model, source) {} } } } }
+            }
+        }
+        link("link-people-import", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1300, contacts = source)
         for (dark in listOf(false, true)) link("link-dates-remind${if (dark) "-dark" else ""}", app.pokeplan.ui.link.LinkSection.DATES, height = 2100, dark = dark, interact = { scene ->
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(268f, 443f))
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(268f, 443f))

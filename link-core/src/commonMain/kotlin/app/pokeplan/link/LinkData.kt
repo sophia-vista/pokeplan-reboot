@@ -99,7 +99,7 @@ data class LinkSettings(
     val tutorialSeen: Boolean = false,
     /** Relationship words the user added beside the starting ones. */
     val categories: List<String> = emptyList(),
-    /** The master switch for Link's reminders (LINK.md 5): **off**, and even on a date or follow-up asks only when the user turned its own reminder on. */
+    /** The master switch for Link's reminders (LINK.md 5): **off** until the user switches it on or chooses the first reminder on a date (which switches it on), and even then a date or follow-up asks only when its own reminder is on. */
     val reminders: Boolean = false,
     /** The hour (0 to 23) a reminder goes off on its day. */
     val reminderHour: Int = 9,
