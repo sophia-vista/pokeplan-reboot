@@ -12,6 +12,9 @@ import app.pokeplan.app.heal.NotificationCapture
 class HuaweiNotificationService : NotificationListenerService() {
     override fun onListenerConnected() {
         runCatching { activeNotifications }.getOrNull()?.forEach { take(it) }
+        // Steps only count up through the day, so the latest notification is all the app needs: let go now and stay out of the resident list (REP-055).
+        // The app asks Android to bind again when it comes to the front (HuaweiComponents.rebind).
+        runCatching { requestUnbind() }
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) = take(sbn)

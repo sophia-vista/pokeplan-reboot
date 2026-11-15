@@ -246,6 +246,46 @@ class ScreenshotTest {
         }
     }
 
+    /** REP-057: Outstanding (three lists, the longest name, a long title) and empty, and the editor with Monthly chosen. */
+    @Test
+    fun outstandingAndMonthlyRepeat() {
+        val store = started()
+        val longest = "Groceries and household shopping run"
+        val a = store.addList(longest, app.pokeplan.plan.TaskList.COLORS[2], "sweet-apple")!!
+        val b = store.addList("Thesis", app.pokeplan.plan.TaskList.COLORS[5], "journal")!!
+        store.addList("Garden", app.pokeplan.plan.TaskList.COLORS[1], "journal")
+        store.addTask("Call the bank", Rank.C)
+        store.addTask("Oat milk", Rank.E, listId = a.id)
+        store.addTask("Collect the parcel from the neighbour who signed for it while we were away on the long trip", Rank.D, listId = a.id)
+        store.addTask("Draft chapter two", Rank.B, listId = b.id, planned = store.today)
+        val model = AppModel(store)
+        listOf(false, true).forEach { dark ->
+            val n = if (dark) "dark" else "light"
+            render("outstanding-$n", height = 1500, frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.OUTSTANDING, {}, {}, {}) } }
+            }
+        }
+        val emptyStore = started()
+        emptyStore.data.tasks.filter { it.deletedAtMillis == null }.forEach { emptyStore.deleteTask(it.id) }
+        val empty = AppModel(emptyStore)
+        listOf(false, true).forEach { dark ->
+            render("outstanding-empty-${if (dark) "dark" else "light"}", frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(empty, app.pokeplan.ui.screens.PlanSection.OUTSTANDING, {}, {}, {}) } }
+            }
+        }
+        val rent = store.addTask("Pay the rent", Rank.C, planned = store.today)
+        store.makeRepeating(rent.id, app.pokeplan.plan.Repeat.Monthly(2, app.pokeplan.plan.MonthlyRule.DayOfMonth(31)))
+        listOf(false, true).forEach { dark ->
+            render("task-repeat-monthly-${if (dark) "dark" else "light"}", height = 1100, frames = 8) {
+                PixelTheme(dark) {
+                    androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                        app.pokeplan.ui.plan.RepeatRow(model, store.data.tasks.first { it.id == rent.id })
+                    }
+                }
+            }
+        }
+    }
+
     /** The exact-entry fields (typed date, time, length, moment), in both palettes. */
     @Test
     fun exactFields() {
@@ -310,6 +350,31 @@ class ScreenshotTest {
         app.pokeplan.ui.world.WorldSection.entries.forEach { section ->
             model.worldSection = section
             render("world-xl-${section.name.lowercase()}", fontScale = 1.3f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
+        }
+    }
+
+    /** WORLD team editor (REP-054): a recommendation with reasons, a search, and the poor-match mark, with the longest dungeon name, both palettes. */
+    @Test
+    fun worldTeamAdvice() {
+        val store = started()
+        listOf(373, 212, 130, 25, 74, 10).forEach { store.grantPokemon(it, "test") }
+        val ids = store.data.player.pokemon.map { it.id }
+        val model = AppModel(store)
+        model.worldLayer = app.pokeplan.world.WorldLayer.SINNOH
+        model.worldTeamDungeon = "victory-road-sinnoh"
+        val dungeon = app.pokeplan.world.Dungeons.byId("victory-road-sinnoh")!!
+        val team = app.pokeplan.world.WorldTeam(1)
+        listOf(false, true).forEach { dark ->
+            val tag = if (dark) "dark" else "light"
+            render("world-team-advice-$tag", height = 2200, frames = 8) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(12.dp)) { app.pokeplan.ui.world.TeamEditor(model, team, dungeon, listOf(dungeon), initialAdvice = true) {} } } } }
+            render("world-team-search-$tag", height = 1800, frames = 8) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(12.dp)) { app.pokeplan.ui.world.TeamEditor(model, team, dungeon, listOf(dungeon), initialSearch = "a") {} } } } }
+        }
+        // A saved team that is a poor match for the chosen dungeon carries the mark beside its name.
+        val poor = ids.filter { id -> store.data.player.pokemon.first { it.id == id }.let { app.pokeplan.world.TeamAdvice.matching(dungeon, it).isEmpty() } }.take(2)
+        store.worldAssign(1, poor)
+        model.worldSection = app.pokeplan.ui.world.WorldSection.TEAMS
+        listOf(false, true).forEach { dark ->
+            render("world-team-poor-${if (dark) "dark" else "light"}", frames = 8) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
         }
     }
 
@@ -1226,7 +1291,7 @@ class ScreenshotTest {
     }
 
     /** The Home module with a little recorded (chores, supplies, an appliance with a warranty and a service, a note), open on [section] (null for its menu). Synthetic text only. */
-    private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false) {
+    private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, width: Int = 540) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(homeParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.BASE) }
@@ -1248,7 +1313,7 @@ class ScreenshotTest {
         }
         model.module = app.pokeplan.ui.screens.Module.BASE
         model.baseSection = section
-        render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height, width = width) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     /**
@@ -1313,6 +1378,33 @@ class ScreenshotTest {
                 }
             }
         }
+    }
+
+    /** BASE Areas box (rename and delete keys on each row), narrowest layout, longest name, in both palettes; [open] a row for rename, [ask] its delete confirm. */
+    private fun baseAreas(name: String, open: Boolean, ask: Boolean) = listOf(false, true).forEach { dark ->
+        val model = AppModel(started())
+        val long = model.base.addArea("W".repeat(app.pokeplan.base.BaseRules.TITLE_MAX))!!
+        val id = if (open) long.id else null
+        render("$name-${if (dark) "dark" else "light"}", height = if (open) 1900 else 1300, width = 480, density = 1.5f) {
+            PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(8.dp)) { app.pokeplan.ui.base.AreasBox(model, id, ask) } }
+        }
+    }
+
+    @Test
+    fun baseAreasControls() = baseAreas("base-areas", open = false, ask = false)
+
+    @Test
+    fun baseAreasRename() = baseAreas("base-areas-rename", open = true, ask = false)
+
+    @Test
+    fun baseAreasDelete() = baseAreas("base-areas-delete", open = true, ask = true)
+
+    /** The empty add boxes with their example chips, on a 320 dp phone, in both palettes. */
+    @Test
+    fun baseExampleChips() = listOf(false, true).forEach { dark ->
+        val d = if (dark) "dark" else "light"
+        household("base-examples-chores-$d", app.pokeplan.ui.base.BaseSection.CHORES, height = 1100, empty = true, dark = dark, width = 480)
+        household("base-examples-maintenance-$d", app.pokeplan.ui.base.BaseSection.MAINTENANCE, height = 1100, empty = true, dark = dark, width = 480)
     }
 
     @Test

@@ -660,4 +660,45 @@ class BaseStoreTest {
         s.home.complete(d.id)
         assertEquals(listOf(d.id), s.home.data.entries.map { it.choreId }, "the old entry is gone, the new one is kept")
     }
+
+    @Test
+    fun maintenanceByNameOnlyStartsOneIntervalAheadAndIsNotOverdue() {
+        val s = setup()
+        val once = assertNotNull(s.home.addSchedule("Test smoke alarm", null).record)
+        assertEquals(today.plus(7, kotlinx.datetime.DateTimeUnit.DAY), once.nextDue)
+        val monthly = assertNotNull(s.home.addSchedule("Change the aircon filter", null, Recurrence(RepeatKind.MONTHLY, 2)).record)
+        assertEquals(LocalDate(2027, 1, 7), monthly.nextDue)
+        assertEquals(monthly.nextDue, monthly.firstDue)
+        assertFalse(monthly.remind)
+        val weekly = assertNotNull(s.home.addSchedule("Descale the kettle", null, Recurrence(RepeatKind.WEEKLY)).record)
+        assertEquals(LocalDate(2026, 11, 14), weekly.nextDue)
+        s.home.data.schedules.forEach { assertTrue(BaseRules.scheduleView(it, today).state != app.pokeplan.base.DueState.OVERDUE && BaseRules.scheduleView(it, today).state != app.pokeplan.base.DueState.DUE) }
+        assertTrue(BaseRules.overview(s.home.data, today).maintenance.none { it.state == app.pokeplan.base.DueState.OVERDUE || it.state == app.pokeplan.base.DueState.DUE })
+        // Even with a reminder asked for, nothing fires now: the first one is after today.
+        s.home.setScheduleRemind(weekly.id, true)
+        val ups = BaseReminders.upcoming(s.home.data, s.game.data, saturday, utc)
+        assertTrue(ups.all { it.atMillis > saturday })
+        assertFalse(s.home.data.schedules.any { it.nextDue <= today })
+    }
+
+    @Test
+    fun explicitFirstDueIsKeptAndChoreByTitleStillWorks() {
+        val s = setup()
+        assertEquals(today, assertNotNull(s.home.addSchedule("Filter", today).record).nextDue)
+        assertNotNull(s.home.addChore("Take out the trash").record)
+        assertEquals(BaseRules.STARTING_AREAS, s.home.data.areas.map { it.name })
+        assertFalse(s.home.data.areas.any { it.name == "Condo" })
+    }
+
+    @Test
+    fun areaRenameAndDeleteKeepRecords() {
+        val s = setup()
+        val a = assertNotNull(s.home.addArea("Wine cellar"))
+        val c = assertNotNull(s.home.addChore("Sweep", areaId = a.id).record)
+        s.home.renameArea(a.id, "Terrace")
+        assertEquals("Terrace", s.home.data.areas.first { it.id == a.id }.name)
+        s.home.deleteArea(a.id)
+        assertTrue(s.home.data.areas.none { it.id == a.id })
+        assertNotNull(s.home.data.chores.firstOrNull { it.id == c.id })
+    }
 }

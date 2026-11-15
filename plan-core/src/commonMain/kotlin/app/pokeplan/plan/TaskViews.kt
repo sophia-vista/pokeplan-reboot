@@ -21,6 +21,21 @@ object TaskViews {
     /** Open tasks filed in the list [listId]. */
     fun inList(tasks: List<Task>, listId: String): List<Task> = open(tasks).filter { it.listId == listId }
 
+    /** One group of [outstanding]: the tasks of the list [listId], or of the Inbox (no list) when null. */
+    data class OutstandingGroup(val listId: String?, val tasks: List<Task>)
+
+    /**
+     * Every open task across the lists, grouped by list: the Inbox group first (tasks in no list, or in a list that is no longer in [listOrder]),
+     * then the lists in [listOrder]. [filter] narrows by search, category, list and difficulty; its status is ignored (only open tasks).
+     * Within a group the filter's order applies (by day, undated last). Empty groups are left out.
+     */
+    fun outstanding(tasks: List<Task>, listOrder: List<String>, filter: TaskFilter = TaskFilter()): List<OutstandingGroup> {
+        val found = filter.copy(status = TaskFilter.Status.OPEN).apply(tasks)
+        val known = listOrder.toSet()
+        val byList = found.groupBy { t -> t.listId?.takeIf { it in known } }
+        return (listOf<String?>(null) + listOrder).mapNotNull { id -> byList[id]?.let { OutstandingGroup(id, it) } }
+    }
+
     /** Where a task falls in a list's view, soonest first. */
     enum class When(val label: String) { BEFORE("From before"), TODAY("Today"), TOMORROW("Tomorrow"), WEEK("Next 7 days"), LATER("Later"), NO_DATE("No date") }
 

@@ -31,8 +31,10 @@ import app.pokeplan.base.StockAdjustment
 import app.pokeplan.base.Supply
 import app.pokeplan.base.Warranty
 import app.pokeplan.plan.toLocalDateTime
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -365,12 +367,25 @@ class BaseStore(
     // --- maintenance -------------------------------------------------------------------------------------------------------
 
     /** A schedule for an item or for the household. Making one never pays; only doing the work does. */
-    fun addSchedule(title: String, firstDue: LocalDate, recurrence: Recurrence = Recurrence(), policy: SchedulePolicy = SchedulePolicy.FIXED, assetId: String? = null, instructions: String = ""): Logged<MaintenanceSchedule> {
+    fun addSchedule(title: String, firstDue: LocalDate?, recurrence: Recurrence = Recurrence(), policy: SchedulePolicy = SchedulePolicy.FIXED, assetId: String? = null, instructions: String = ""): Logged<MaintenanceSchedule> {
         (BaseRules.checkTitle(title, "maintenance") as? Check.Refused)?.let { return Logged(null, it.reason) }
-        (BaseRules.checkRecurrence(recurrence, firstDue) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val s = MaintenanceSchedule(newId(), title.trim(), assetId, instructions.trim().take(BaseRules.TEXT_MAX), recurrence, policy, firstDue, firstDue, createdMillis = nowMillis)
+        val first = firstDue ?: defaultFirstDue(recurrence)
+        (BaseRules.checkRecurrence(recurrence, first) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val s = MaintenanceSchedule(newId(), title.trim(), assetId, instructions.trim().take(BaseRules.TEXT_MAX), recurrence, policy, first, first, createdMillis = nowMillis)
         update { it.copy(schedules = it.schedules + s) }
         return Logged(s)
+    }
+
+    /** The first due date of a schedule added by name only: today plus one interval (a week for a one-time one), so it never starts due or overdue. */
+    private fun defaultFirstDue(r: Recurrence): LocalDate {
+        val n = maxOf(1, r.every)
+        return when (r.kind) {
+            RepeatKind.ONCE -> today.plus(7, DateTimeUnit.DAY)
+            RepeatKind.DAILY -> today.plus(n, DateTimeUnit.DAY)
+            RepeatKind.WEEKLY -> today.plus(n, DateTimeUnit.WEEK)
+            RepeatKind.MONTHLY -> today.plus(n, DateTimeUnit.MONTH)
+            RepeatKind.YEARLY -> today.plus(n, DateTimeUnit.YEAR)
+        }
     }
 
     /**

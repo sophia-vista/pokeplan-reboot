@@ -339,4 +339,33 @@ class WorldStoreTest {
         assertTrue(team.members.all { id -> store.data.player.pokemon.any { it.id == id } })
         assertTrue(store.worldQuickSend("tiny-woods").not() || store.data.world.team(2) != null)
     }
+
+    @Test
+    fun recommendOffersOnlyThePcAndTheTeamsOwnMembersNeverTheBuddyAPartyOrAGuardian() {
+        val store = store()
+        val spare = store.grantPokemon(10, "test")
+        val mewtwo = store.grantPokemon(150, "test")
+        assertTrue(store.slotGuardian(mewtwo.id, "plan"))
+        val ids = assertNotNull(store.worldRecommend("tiny-woods", 1)).ids
+        assertTrue(spare.id in ids)
+        assertFalse(mewtwo.id in ids, "a slotted Guardian is not offered")
+        assertTrue(ids.all { id -> app.pokeplan.app.Places.of(store.data, id) == Place.Pc }, "only the PC is offered")
+        assertNull(store.worldRecommend("no-such-dungeon", 1))
+    }
+
+    @Test
+    fun replaceTeamTakesThePicksFromTheirPlacesAndRefusesWhileTheTeamIsOut() {
+        val store = store()
+        val a = store.grantPokemon(10, "test")
+        val b = store.grantPokemon(43, "test")
+        assertTrue(store.worldAssign(1, listOf(a.id)))
+        assertTrue(store.worldReplaceTeam(1, "tiny-woods"))
+        val members = store.data.world.team(1)!!.members
+        assertTrue(a.id in members && b.id in members)
+        members.forEach { assertEquals(Place.WorldTeam(1), app.pokeplan.app.Places.of(store.data, it)) }
+        assertTrue(store.worldStart(1, "tiny-woods"))
+        assertFalse(store.worldReplaceTeam(1, "tiny-woods"), "refused while out")
+        assertEquals(members, store.data.world.team(1)!!.members)
+        assertFalse(store.worldReplaceTeam(1, "no-such-dungeon"))
+    }
 }

@@ -481,3 +481,23 @@ fun GameStore.worldOpenTreasure(tier: Int): Map<String, Int> {
     }
     return found
 }
+
+/**
+ * The team [TeamAdvice] would put on World team [team] for [dungeonId]: chosen from the idle PC Pokémon and the team's own members, never the
+ * buddy, a party, a Guardian slot or another place. Null for an unknown dungeon or team.
+ */
+fun GameStore.worldRecommend(dungeonId: String, team: Int? = null): app.pokeplan.world.TeamRecommendation? {
+    val dungeon = app.pokeplan.world.Dungeons.byId(dungeonId) ?: return null
+    val own = team?.let { data.world.team(it) }?.members.orEmpty().mapNotNull { id -> data.player.pokemon.firstOrNull { it.id == id } }
+    return app.pokeplan.world.TeamAdvice.recommend(dungeon, (own + worldIdle()).distinctBy { it.id })
+}
+
+/** "Replace team": puts the recommended team for [dungeonId] on World team [team] in one action (through [worldAssign], so each pick leaves its old place). False while the team is out, or when there is nobody. */
+fun GameStore.worldReplaceTeam(team: Int, dungeonId: String): Boolean {
+    worldSettle()
+    val slot = data.world.team(team) ?: return false
+    if (slot.expedition != null) return false
+    val ids = worldRecommend(dungeonId, team)?.ids.orEmpty()
+    if (ids.isEmpty()) return false
+    return worldAssign(team, ids)
+}

@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.202.0
+
+WORLD team choice, PLAN Outstanding and monthly repeat, BASE first use, and a Huawei listener battery change (REP-054, REP-055, REP-056 BASE part, REP-057). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. None of it was run on a device.
+
+- **WORLD (REP-054):** the Teams editor has dungeon chips, "Recommend team" and "Replace team" keys, a poor-match alert on a saved team for the chosen dungeon, a search over the whole PC, the chosen slots on top, favoured types first and type plates. Ranking: favoured type, then contribution, level, id, with one reason line per pick and "strongest instead" when nobody matches (`TeamAdvice` in world-core; poor match is under 33% matching). `worldRecommend` and `worldReplaceTeam` in app-core (the replace goes through `worldAssign`, so the one-place rule applies, and it refuses while the team is out). No stored data and no formula change (`WORLD.md` 3.2); "Send my strongest" is unchanged.
+- **Battery (REP-055, code side):** `HuaweiNotificationService` unbinds after reading the active notification and rebinds when the app comes to the front (`HuaweiComponents.sync`); both Huawei services (listener, accessibility) start `android:enabled="false"` and are enabled only when switched on in Android's settings or when setup starts. Cost: step notifications posted while the app is closed are read at the next rebind only. The rest of the scan found nothing else wasteful (launcher loops stop with the screen, the tick clock does not save, widgets 30 min, backup daily). To confirm on the phone: the Background figure after a day.
+- **BASE (REP-056):** maintenance saves with a name only (first due is today plus one interval, one-time is today plus 7 days, so it is not overdue on the day); three tappable example chips under the chore, supply, maintenance, asset and note add fields while their list is empty; each Area row has a pencil (rename, Archive/Restore, Move up/down) and a bin (the existing confirm). Known leftover: the Chores tab label "Upcoming" is clipped as "Upcom..." at 320 dp.
+- **PLAN (REP-057):** an Outstanding section (`PlanSection.OUTSTANDING`, last in the enum): all open tasks across lists, Inbox first then lists in order, with the shared filter panel (`TaskViews.outstanding` in plan-core); its menu card reuses the Lists icon. A monthly repeat day picker in the task editor (every 1, 2, 3 or 6 months, day 1 to 31 or Last day; day 31 clamps in short months, tested).
+- **Fix:** a repeating task's next instance (and so its reminder) was only created when the app was opened (`GameStore.refresh`), so a monthly bill reminder could be missed. Android reminder planning now refreshes first (`SharedReminders.live()`), with a Robolectric test.
+- **Removed:** the debug "DB check" launcher icon and `DeviceSelfCheck` (owner's request, 15 November 2026).
+- **Not built:** tags and saved recurrence presets (need a migration and a spec); quick-add (needs a look on the phone). **Found, not fixed:** `RepeatMode.AFTER_COMPLETION` has no caller outside tests.
+- **Defaults applied:** D10 is moot (no place was ever required, no "Condo" area is created, `STARTING_AREAS` unchanged); tags and presets deferred; listener unbinding chosen.
+
 ## 0.201.0
 
 LINK can import the phone's contacts, and a reminder is chosen when a date is made (REP-043, first slice; spec `MODULES/LINK.md` 3.5, 6.1). Nothing pays and nothing reaches `LinkEvent`, so `RewardRules.VERSION` is unchanged.

@@ -130,6 +130,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override fun onStart() {
         super.onStart()
         active = true
+        app.pokeplan.huawei.HuaweiComponents.rebind(this) // the step-notification listener unbinds after each read (REP-055)
         if (safeMode) return
         try { widgetHost.startListening() } catch (e: Exception) { /* a widget host that cannot listen just shows what it has */ }
     }
