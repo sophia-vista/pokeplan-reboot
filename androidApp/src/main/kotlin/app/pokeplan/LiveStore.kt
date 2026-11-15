@@ -53,8 +53,9 @@ class DatabaseStorage(private val live: LiveDocuments, private val name: String)
  * written once a day (`backups/`).
  *
  * If the database cannot be used the app never loses data silently: a corrupt file is moved aside whole and the newest
- * backup is restored, else the untouched legacy files are used; a database written by a newer build is left alone. Only
- * while the database has never been active do the files stay the live store, so the two are never both written.
+ * backup is restored; with no backup the player is asked (REP-026 c, [recoveryPending]) whether to use the old files, which are as old as the
+ * cutover to the database, or to start fresh; a database written by a newer build is left alone. Only while the database has never been
+ * active do the files stay the live store, so the two are never both written.
  */
 object LiveStore {
     private const val TAG = "LiveStore"
@@ -74,6 +75,9 @@ object LiveStore {
         if (gaveUp) return null
         val app = context.applicationContext
         val now = System.currentTimeMillis()
+        // A damaged database with no backup waits for the player's answer: nothing opens, widgets and receivers get no store until it is given.
+        val choice = recoveryFlag(app)
+        if (choice == Recovery.PENDING) return null
         // Every file of a daily backup is sealed with a Keystore key (and no backup is taken without it). 20 hours, not 24, so the daily job never skips a day by being a little late.
         val backups = LiveBackup(
             File(app.filesDir, "backups"), everyMillis = 20 * 60 * 60 * 1000L,
@@ -81,9 +85,9 @@ object LiveStore {
             requireSeal = true, offsetMillis = { java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()).toLong() },
         )
         return try {
-            val s = openOrRecover(app, backups, now)
+            val s = openOrRecover(app, backups, now, choice)
             s.live.normalizer = GameStore::normalizeDocument
-            s.live.activate(read(app, "save.json"), read(app, "care.json"), now)
+            s.live.activate(legacy(app, choice, "save.json"), legacy(app, choice, "care.json"), now)
             File(app.filesDir, ACTIVE_FLAG).writeText("database") // from now on the files are never the live store again
             // Care's records move from their document row into Care's tables, once (REP-014). If it cannot (the read-back differed),
             // nothing changed and the document row stays the live Care save; it is tried again at the next start.
@@ -95,19 +99,19 @@ object LiveStore {
             // forgets what the clear rows left in the file. With no key the rows are used in clear for that run and sealed at the next start that has it; once sealed, no key means no access.
             useKeys(s)
             runCatching {
-                read(app, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
+                legacy(app, choice, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
                 s.live.moveHealToTables(now)
             }.onFailure { Log.w(TAG, "Heal tables not active this run: ${it.javaClass.simpleName}") }
             val healSealedNow = runCatching { s.healTables.seal(now).also { if (it) s.healTables.scrub() } }
                 .onFailure { Log.w(TAG, "Heal rows not sealed this run: ${it.javaClass.simpleName}") }.getOrDefault(false)
             // HOME lives in its own tables from the start (schema 9), like HEAL and unsealed. A home.json written while the database could not be opened is taken in once.
             runCatching {
-                read(app, "home.json")?.let { legacy -> if (!s.baseTables.isActive() && s.live.read("home") == null) s.live.write("home", legacy, now) }
+                legacy(app, choice, "home.json")?.let { legacy -> if (!s.baseTables.isActive() && s.live.read("home") == null) s.live.write("home", legacy, now) }
                 s.live.moveBaseToTables(now)
             }.onFailure { Log.w(TAG, "Base tables not active this run: ${it.javaClass.simpleName}") }
             // LINK lives in its own tables from the start (schema 10), like HOME and unsealed. A link.json written while the database could not be opened is taken in once.
             runCatching {
-                read(app, "link.json")?.let { legacy -> if (!s.linkTables.isActive() && s.live.read("link") == null) s.live.write("link", legacy, now) }
+                legacy(app, choice, "link.json")?.let { legacy -> if (!s.linkTables.isActive() && s.live.read("link") == null) s.live.write("link", legacy, now) }
                 s.live.moveLinkToTables(now)
             }.onFailure { Log.w(TAG, "Link tables not active this run: ${it.javaClass.simpleName}") }
             // MINT lives in its own tables from the start (schema 8), every row sealed with a key that lives in the Android Keystore. If the Keystore cannot give
@@ -122,7 +126,11 @@ object LiveStore {
             runCatching { backups.takeIfDue(s.live, now) }.onFailure { Log.w(TAG, "backup failed: ${it.javaClass.simpleName}") }
             backupStore = backups
             store = s
+            if (choice != null) File(app.filesDir, RECOVERY_FLAG).delete() // the answer has been used
             s
+        } catch (e: RecoveryPending) {
+            Log.w(TAG, "the database was damaged and there is no backup: waiting for the player's choice")
+            null
         } catch (t: Throwable) {
             // No document text in the log (privacy): only what failed.
             Log.e(TAG, "the database is not used this run: ${t.javaClass.simpleName}")
@@ -166,7 +174,43 @@ object LiveStore {
 
     private fun read(context: Context, file: String): String? = File(context.filesDir, file).takeIf { it.exists() }?.readText()
 
-    private fun openOrRecover(context: Context, backups: LiveBackup, now: Long): DataStore {
+    /** An old file, unless the player chose to start fresh. */
+    private fun legacy(context: Context, choice: Recovery?, file: String): String? = if (choice == Recovery.FRESH) null else read(context, file)
+
+    /** What a damaged database with no backup is waiting for or has been told (REP-026 c): a one-word file, so the answer survives a restart. */
+    private enum class Recovery(val word: String) { PENDING("pending"), OLDER("older"), FRESH("fresh") }
+
+    private fun recoveryFlag(context: Context): Recovery? =
+        File(context.filesDir, RECOVERY_FLAG).takeIf { it.exists() }?.readText()?.trim()?.let { w -> Recovery.entries.firstOrNull { it.word == w } }
+
+    private const val RECOVERY_FLAG = "recovery.choice"
+
+    /** The database was damaged and nothing was restored: [get] gives no store until [resolveRecovery]. */
+    private class RecoveryPending : RuntimeException()
+
+    /**
+     * True when the player must decide before anything opens (REP-026 c): the database was damaged, there is no backup to put back, and the old
+     * `save.json` and `care.json` are still on the phone but are only as new as the cutover to the database. Opens the database to find out, so call
+     * it before any store is built; it costs nothing when all is well.
+     */
+    fun recoveryPending(context: Context): Boolean { get(context); return recoveryFlag(context.applicationContext) == Recovery.PENDING }
+
+    /** When the old files were last written, for the choice screen to say how old they are. */
+    fun olderFilesMillis(context: Context): Long? =
+        listOf("save.json", "care.json").mapNotNull { File(context.applicationContext.filesDir, it).takeIf(File::exists)?.lastModified() }.maxOrNull()
+
+    /**
+     * The player's answer: [useOlder] opens the database from the old files; otherwise it starts empty. The damaged database stays aside either way,
+     * and the old files are never deleted here. Saved first, then used by the next [get].
+     */
+    @Synchronized
+    fun resolveRecovery(context: Context, useOlder: Boolean) {
+        val app = context.applicationContext
+        if (recoveryFlag(app) != Recovery.PENDING) return
+        File(app.filesDir, RECOVERY_FLAG).writeText((if (useOlder) Recovery.OLDER else Recovery.FRESH).word)
+    }
+
+    private fun openOrRecover(context: Context, backups: LiveBackup, now: Long, choice: Recovery?): DataStore {
         val first = runCatching { AndroidDatabase.open(context).also { check(it.integrityIssues().isEmpty()) { "integrity" } } }
         first.getOrNull()?.let { return it }
         val error = first.exceptionOrNull()!!
@@ -183,6 +227,11 @@ object LiveStore {
         if (backups.restoreNewest(fresh.live, now)) {
             fresh.live.activate(null, null, now) // the restore is the live data; set the marker without reading the stale files
             Log.w(TAG, "the database was damaged; the newest backup was restored")
+        } else if (choice == null && File(context.filesDir, ACTIVE_FLAG).exists() && listOf("save.json", "care.json").any { File(context.filesDir, it).exists() }) {
+            // Nothing to restore. The old files are as old as the cutover, so using them silently would undo everything since: ask first.
+            File(context.filesDir, RECOVERY_FLAG).writeText(Recovery.PENDING.word)
+            runCatching { fresh.close() }
+            throw RecoveryPending()
         }
         return fresh
     }

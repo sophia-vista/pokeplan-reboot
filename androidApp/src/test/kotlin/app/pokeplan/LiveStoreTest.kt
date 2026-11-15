@@ -76,6 +76,68 @@ class LiveStoreTest : AndroidTestBase() {
         assertEquals("Kept by the backup", restored?.title)
     }
 
+    /** The state REP-026 c is about: the database was live, the old files are left from the cutover, the database is then damaged, and no backup exists. */
+    private fun damagedWithNoBackupAndOldFiles(): String {
+        widgetStore(context).addTask("Done since the cutover")
+        processDeath()
+        File(files, "backups").deleteRecursively()
+        val old = fixture("main-typical-week.json")
+        File(files, "save.json").writeText(old)
+        val db = context.getDatabasePath(AndroidDatabase.FILE_NAME)
+        listOf("-wal", "-shm").forEach { File(db.path + it).delete() }
+        db.writeBytes(ByteArray(8192) { (it * 31).toByte() })
+        return old
+    }
+
+    @Test fun aDamagedDatabaseWithNoBackupAsksBeforeUsingTheOldFiles() {
+        val old = damagedWithNoBackupAndOldFiles()
+        assertTrue(LiveStore.recoveryPending(context), "the player is asked")
+        assertNull(LiveStore.get(context), "nothing opens while the question is open")
+        assertFailsWith<IllegalStateException> { saveStorage(context).load() } // widgets and receivers wait
+        assertEquals(old, File(files, "save.json").readText(), "the old file is untouched")
+        val db = context.getDatabasePath(AndroidDatabase.FILE_NAME)
+        assertEquals(1, db.parentFile!!.listFiles()!!.count { it.name.startsWith(AndroidDatabase.FILE_NAME + ".corrupt-") }, "the damaged file is kept aside")
+        processDeath() // the question survives a restart
+        assertTrue(LiveStore.recoveryPending(context))
+    }
+
+    @Test fun usingTheOlderDataOpensTheDatabaseFromTheOldFiles() {
+        val old = damagedWithNoBackupAndOldFiles()
+        assertTrue(LiveStore.recoveryPending(context))
+        LiveStore.resolveRecovery(context, useOlder = true)
+        val expected = GameStore(MemoryStorage(old), clock).data.timeless()
+        assertEquals(expected, widgetStore(context).data.timeless())
+        assertFalse(LiveStore.recoveryPending(context), "answered")
+        assertFalse(File(files, "recovery.choice").exists(), "the answer is used once")
+        processDeath()
+        assertTrue(widgetStore(context).data.tasks.none { it.title == "Done since the cutover" })
+    }
+
+    @Test fun startingFreshOpensAnEmptyDatabaseAndKeepsTheOldFilesAndTheDamagedFile() {
+        val old = damagedWithNoBackupAndOldFiles()
+        assertTrue(LiveStore.recoveryPending(context))
+        LiveStore.resolveRecovery(context, useOlder = false)
+        val data = widgetStore(context).data
+        assertTrue(data.tasks.isEmpty(), "nothing from the old files")
+        assertEquals(old, File(files, "save.json").readText(), "the old files are kept")
+        val db = context.getDatabasePath(AndroidDatabase.FILE_NAME)
+        assertEquals(1, db.parentFile!!.listFiles()!!.count { it.name.startsWith(AndroidDatabase.FILE_NAME + ".corrupt-") })
+        processDeath()
+        assertFalse(LiveStore.recoveryPending(context))
+        assertTrue(widgetStore(context).data.tasks.isEmpty(), "and it stays fresh after a restart")
+    }
+
+    @Test fun aDamagedDatabaseWithNoBackupAndNoOldFilesJustStartsAgain() {
+        widgetStore(context).addTask("Gone")
+        processDeath()
+        File(files, "backups").deleteRecursively()
+        val db = context.getDatabasePath(AndroidDatabase.FILE_NAME)
+        listOf("-wal", "-shm").forEach { File(db.path + it).delete() }
+        db.writeBytes(ByteArray(8192) { (it * 31).toByte() })
+        assertFalse(LiveStore.recoveryPending(context), "there is nothing to choose between")
+        assertNotNull(LiveStore.get(context))
+    }
+
     @Test fun aDatabaseFromANewerBuildIsLeftAloneAndNothingIsWritten() {
         widgetStore(context).addTask("Written by this build")
         processDeath()

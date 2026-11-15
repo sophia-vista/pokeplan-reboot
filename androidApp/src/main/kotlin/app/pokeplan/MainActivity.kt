@@ -83,6 +83,17 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         window.isNavigationBarContrastEnforced = false
+        // A damaged database with no backup: ask before any store opens (REP-026 c). The answer is saved and the activity starts over.
+        if (LiveStore.recoveryPending(this)) {
+            setContent {
+                app.pokeplan.ui.screens.RecoveryChoice(
+                    olderFromMillis = LiveStore.olderFilesMillis(this),
+                    onOlder = { LiveStore.resolveRecovery(this, useOlder = true); recreate() },
+                    onFresh = { LiveStore.resolveRecovery(this, useOlder = false); recreate() },
+                )
+            }
+            return
+        }
         val storage = saveStorage(this)
         val motion = AccelerometerMotion(this)
         val calendars = AndroidCalendars(this)
