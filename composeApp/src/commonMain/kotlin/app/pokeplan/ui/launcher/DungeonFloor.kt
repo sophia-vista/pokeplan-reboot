@@ -122,9 +122,10 @@ class DungeonFloor(
     /**
      * The shortest way from [from] to [to] for [mover], in eight directions without cutting a wall's corner, a square under a widget costing
      * [SOFT_COST] times as much (so a path goes round one when it can), and so does a trap in [known] (a Pokémon steps round a trap it knows is
-     * there, but walks into one when there is no other way); null if there is none. Both ends are included.
+     * there, but walks into one when there is no other way); null if there is none. A square in [blocked] (where another Pokémon stands) is not
+     * walked through, as if it were a wall. Both ends are included.
      */
-    fun path(from: Cell, to: Cell, mover: Mover, known: Set<Cell> = emptySet()): List<Cell>? {
+    fun path(from: Cell, to: Cell, mover: Mover, known: Set<Cell> = emptySet(), blocked: Set<Cell> = emptySet()): List<Cell>? {
         if (!canStand(to, mover) || !inside(from)) return null
         if (from == to) return listOf(from)
         val n = cols * rows
@@ -145,7 +146,7 @@ class DungeonFloor(
                 if (dx == 0 && dy == 0) continue
                 val next = Cell(c.x + dx, c.y + dy)
                 // The start may be off the floor (a wall a ghost rests in): leaving it is always allowed.
-                if (!canStand(next, mover)) continue
+                if (!canStand(next, mover) || (next in blocked && next != to)) continue
                 if (dx != 0 && dy != 0 && (!canStand(Cell(c.x + dx, c.y), mover) || !canStand(Cell(c.x, c.y + dy), mover))) continue
                 val step = (if (dx != 0 && dy != 0) 1.414f else 1f) * (if (isSoft(next) || next in known) SOFT_COST else 1f) *
                     (if (map.at(next.x, next.y) == TownCell.WALL) 1.5f else 1f)
@@ -162,6 +163,24 @@ class DungeonFloor(
         var at = id(to)
         while (at != -1) { way += Cell(at % cols, at / cols); at = came[at] }
         return way.asReversed()
+    }
+
+    /**
+     * Where a Pokémon blown from [from] ends up by a Gust Trap: it flies in a straight line in direction ([dx], [dy]) until the next square is a wall
+     * (or water it cannot cross), a square in [blocked] (another Pokémon) or [max] squares have passed, as a blown-away Pokémon does in the
+     * games, and lands on the last square along the way that it can rest on (not a trap, the stairs or under a widget); [from] if there is none.
+     */
+    fun blownTo(from: Cell, dx: Int, dy: Int, mover: Mover, blocked: Set<Cell> = emptySet(), max: Int = GUST_RANGE): Cell {
+        var at = from
+        var landing = from
+        repeat(max) {
+            val next = Cell(at.x + dx, at.y + dy)
+            if (!canStand(next, mover) || next in blocked) return landing
+            if (dx != 0 && dy != 0 && (!canStand(Cell(at.x + dx, at.y), mover) || !canStand(Cell(at.x, at.y + dy), mover))) return landing
+            at = next
+            if (canRest(at, mover) && at in region(mover)) landing = at
+        }
+        return landing
     }
 
     /** [way] with only its turns kept (and both ends): one stroll per straight run. */
@@ -194,6 +213,9 @@ class DungeonFloor(
     companion object {
         /** How much more a square under a widget costs to walk through. */
         const val SOFT_COST = 8f
+
+        /** How far a Gust Trap blows a Pokémon at most, in squares. *(tune)* */
+        const val GUST_RANGE = 10
 
         /** How many traps a floor hides (and a Wonder Tile half the time). *(tune)* */
         const val TRAPS = 4

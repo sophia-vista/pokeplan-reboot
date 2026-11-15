@@ -145,4 +145,36 @@ class DungeonFloorTest {
         assertTrue(FloorTrap.POISON in kinds && FloorTrap.SPIN in kinds, "poison and confusion traps turn up: $kinds")
         Condition.entries.forEach { assertTrue(it.seconds in 10..120 && it.pace in 0.3f..1f, "$it wears off in a while") }
     }
+
+    @Test
+    fun aPokemonIsAWallToThePathsOfOthersAndAGustBlowsInALineToTheWall() {
+        val f = floor(9)
+        val m = Mover.WALKER
+        val cells = f.restingCells(m)
+        val from = cells.first()
+        val to = cells.last()
+        val way = assertNotNull(f.path(from, to, m))
+        if (way.size > 3) {
+            val middle = way[way.size / 2]
+            val around = f.path(from, to, m, blocked = setOf(middle))
+            // Either a way round, or none (a corridor with someone in it); never through the one standing there.
+            assertTrue(around == null || middle !in around, "walked through $middle")
+        }
+        // A Gust Trap blows in a straight line until a wall, at most GUST_RANGE squares, and lands where it can rest.
+        for ((dx, dy) in listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1, 1 to 1, -1 to -1)) {
+            val landing = f.blownTo(from, dx, dy, m)
+            val steps = maxOf(kotlin.math.abs(landing.x - from.x), kotlin.math.abs(landing.y - from.y))
+            assertTrue(steps <= DungeonFloor.GUST_RANGE)
+            assertEquals(from.x + dx * steps, landing.x); assertEquals(from.y + dy * steps, landing.y)
+            assertTrue(landing == from || f.canRest(landing, m))
+            // Another Pokémon in the way stops it short; a wall stops it where the floor ends.
+            if (steps > 0) assertEquals(from, f.blownTo(from, dx, dy, m, blocked = setOf(Cell(from.x + dx, from.y + dy))))
+            if (steps < DungeonFloor.GUST_RANGE && steps > 0) {
+                var c = landing
+                var ended = false
+                repeat(DungeonFloor.GUST_RANGE) { if (!ended) { c = Cell(c.x + dx, c.y + dy); if (!f.canStand(c, m)) ended = true } }
+                assertTrue(ended || f.blownTo(landing, dx, dy, m) == landing || steps >= DungeonFloor.GUST_RANGE - 1, "stopped short of a wall in ($dx, $dy)")
+            }
+        }
+    }
 }
