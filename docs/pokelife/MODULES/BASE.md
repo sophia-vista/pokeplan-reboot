@@ -91,6 +91,7 @@ Use a compact navigation structure with five primary destinations, plus a focuse
 3. **Inventory** — supplies, durable items, quantities and restocking.
 4. **Maintenance** — assets, maintenance records, schedules and warranties.
 5. **Reference** — searchable household notes and practical information.
+6. **Room** — the Secret Base room, a view of Base's party among earned decorations (section 9.5, proposed; a menu card, not a tab).
 
 Search is available from the HOME shell and covers all HOME-owned record types. Settings remain a secondary destination, not a primary tab.
 
@@ -450,6 +451,51 @@ The shared reward boundary may receive only minimum metadata such as:
 
 Do not send chore titles, room/area names, inventory names or quantities, asset identities, serial numbers, purchase costs, maintenance notes, warranty data, reference text, filenames or attachment contents to WORLD or the reward presentation layer. Prefer evaluation inside HOME/reward boundary and expose only a generic reward result to WORLD. Reward events must be idempotent; edits, deletions, undo/redo and migration must not replay paid events.
 
+### 9.5 The Secret Base room *(owner answered Q1 to Q7, 15 November 2026, REP-053 A1/P1; every number is a *(tune)* starting value)*
+
+Art, scale and how decorations are earned were decided in `../FEATURES/POKEMON_PLACES_IDEAS.md` section 6; this section is the rule they need. It adds one card, **Room**, to Base's menu (a sixth destination beside the five in section 3, opening on the menu of cards, not a tab).
+
+**9.5.1 What the room is.** A Hoenn Secret Base room (Pokémon Emerald art, `assets/hoenn/`) that shows **Base's party** standing among the decorations the player has placed. It is a view, never a place: the room has no slots and no capacity, assigns nothing and moves nothing, so a Pokémon is in Base's party exactly as before and "one place only" (`../FEATURES/POKEMON_ECOSYSTEM.md` 2.2) is untouched. An empty party is an empty furnished room. The room has **no upkeep**: nothing wilts, gathers dust, gets hungry or asks for a visit, and a room left alone for a year looks as it did. It works fully with Habitat Discovery off (the player can still place what they own; only earning stops). Pokémon are the PMD sprites (their Idle animation, a still frame under Reduce motion) at the same pixel size as the room. The room is drawn at 5x on a phone and 4x under about 1000 px, flush with the dialogue frame (owner, 15 November 2026).
+
+**9.5.2 A decoration.** A cosmetic object with a stable id (its Emerald file name, e.g. `snorlax_doll`), a name and a kind, a 24 px sprite (`assets/hoenn/decorations/`, palette colour 0 see-through). It has **no effect**: no bonus, no stat, no sale value, no use anywhere else; it is neither money nor a Bag item. It takes **one cell** (the sprite is drawn centred on the cell with its feet on the cell's bottom edge); a **mat** lies on the floor under whatever stands on it, every other decoration stands. The catalogue is the 42 sprites (`put_away_cursor.png` is a menu cursor, not a decoration):
+
+| Kind | Decorations |
+|---|---|
+| Dolls (10) | Blastoise, Charizard, Lapras, Regice, Regirock, Registeel, Rhydon, Snorlax, Venusaur, Wailmer |
+| Mats (7) | Attract, Fire Blast, Fissure, Powder Snow, Spikes, Surf, Thunder |
+| Desks (7) | Brick, Camp, Comfort, Hard, Heavy, Pretty, Ragged |
+| Plants (6) | Big, Colorful, Gorgeous, Red, Tropical, Pretty Flowers |
+| Tents (2) | Blue, Red |
+| Bricks (3) | Blue, Red, Yellow |
+| Ornaments (2) | Glass, Sand |
+| Others (5) | Breakable Door, Slide, Solid Board, Stand, Tire |
+
+**9.5.3 The room: grid and looks.**
+- **Grid.** The cells every size-1 Hoenn layout can walk on (the `SecretBase_*1` maps, 11 x 9 metatiles of 16 px; a cell is walkable where its collision bits in `map.bin` are 0 in all six): **44 cells**, rows of 3, 5, 8, 8, 8, 7 and 5 starting at row 1 (a generated table, checked by a test). Decorations sit on grid cells, at most **one per cell**, with no limit besides the cells. Because the grid is common to every look, a change of look never moves or loses a decoration.
+- **Looks (three room types, cave in four colours).** The look is derived from the **primary type of Base's lead** and is not stored (there is no choosing a look). With no lead the room is Shrub.
+
+| Look | Types |
+|---|---|
+| Tree | Grass, Bug, Flying |
+| Shrub | Normal, Fairy, Psychic |
+| Red cave | Fire, Fighting, Dragon |
+| Brown cave | Rock, Ground, Steel |
+| Blue cave | Water, Ice, Ghost |
+| Yellow cave | Electric, Dark, Poison |
+
+- **Size.** Only the size-1 layout of each look is used (11 x 9); the three larger layouts of each look (`layouts.tsv`) stay unused (the room does not grow).
+- **Where the Pokémon stand.** Base's party, in party order, on cells that hold no standing decoration: each of the first six has its own spot spread over the floor (back left, back right, middle, front left and right), or the free cell nearest to it when a decoration stands there, so the scene looks the same each time it opens. A mat does not block a cell. Their places are never stored.
+
+**9.5.4 Earning (BASE upkeep).** A **Decoration meter** fills from the payments Habitat Discovery already makes, under the same switch, the same daily caps and the same idempotent event id: a chore done adds **1 point**, a piece of maintenance done **2**. At **5 points** *(tune; the owner chose 5, the Habitat Egg meter's size)* the meter pays **one decoration** and carries the rest over. Which one: **a random decoration the player does not own yet**, drawn from the event id so a replay, restore or undo-and-redo gives the same one and pays once (one of each: a decoration is owned at most once). Once all 42 are owned the meter stops filling. At the daily caps (5 chores and 2 maintenance = 9 points) a day earns **at most two**, and a household doing 3 chores a day finds one about every two days (all 42 in about 10 weeks). Nothing is taken back by an undo, as for every Habitat Discovery payment. Creating, editing, skipping, quantities and the rest still pay nothing (9.2). A decoration reaches the player with a short line on the payment's result, never a dialogue to get past. The other two ways of getting one (bought at the Department Store, Mom's gifts, chunks 6 and A6) put a decoration into the same owned set and are specified with MINT; the order of the three never matters. A new save starts with **three** decorations (a doll, a mat and a plant: `snorlax_doll`, `thunder_mat`, `big_plant`), granted once and never again.
+
+**9.5.5 Placing and removing.** *Arrange* is a mode of the Room screen. A tray lists the decorations the player owns and has not placed ("in the box"); tapping one and then an empty cell places it; tapping a placed one picks it up (into the box) or moves it to another empty cell. Placing, moving and removing cost nothing, can be repeated without limit, are one undo-able step each, and never lose or sell a decoration; a decoration can be placed only if it is owned and unplaced, on an empty grid cell (rules, not screens, refuse the rest). There is one room per save. Changing the party or the lead never changes what is placed.
+
+**9.5.6 Data and privacy.** *Owned decorations and the meter* are shared Pokémon-side state like the Bag and the Egg meters (three sources write to the owned set; the Bag's rules for a reward apply): `RewardRules.VERSION` 28 and `docs/economy.md` list the new reward when it is built. *Placement* is Base's own record: `home_room` rows (decoration id, cell), in Base's export and erase (`BaseKinds`), in the daily backup. A decoration id is public game content, so the reward event stays what 9.4 says (no household word), and nothing about a chore, an asset or an area reaches the room. Not sealed (the room is not private).
+
+**9.5.7 Not in this section.** Berry plots, badges, Department Store and Mom (their sections in MINT.md), the other places, Mail and Gimmighoul coins, rooms of the larger sizes, and any second room.
+
+**Acceptance.** The room shows exactly Base's party and nothing assigns or moves a Pokémon; the look follows the lead's type and every one of the 44 cells is placeable in every look; place, move and remove are rules in `base-core` with tests (owned and unplaced, empty cell, a cell outside the grid, a repeat); the meter pays once per event id however often an occurrence is undone and redone, honours the daily caps and the Habitat Discovery switch, and never pays a decoration already owned; a save from before this section opens with an empty room and the starter decorations; screenshots in both palettes for an empty room, a furnished room, the tray and a look of each type.
+
 ## 10. Offline behavior and lifecycle
 
 Core HOME is fully functional offline.
@@ -611,7 +657,9 @@ This module document owns HOME-specific rules only. Shared feature documents rem
 - A payment is candies, a little friendship for Home's lead, a trainer point and points towards a **Habitat Egg** (chore 1, maintenance 2; 5 fill the meter), hatched into Home's party from the **Home Region** (`tools/species/regions/household.txt`). Home's party perks (Candy finder: Grass, Normal, Bug, Ground, Fire, Water; Friendship gain: Fairy, Flying, Ice, Electric, Psychic, Ghost; capped at +25% a bucket) change only what Habitat Discovery pays. A new Pokémon settles into the habitat from above (`Acquisition.HABITAT`, the town scene).
 - **First-run tutorial** (POKEMON_ECOSYSTEM.md 10.2.1): a 5-second tidy gives one Home Region Pokémon into Home's party, leading it, once per save.
 
-**Data (section 5).** `home_*` tables: `home_area`, `home_chore`, `home_entry`, `home_supply`, `home_adjustment`, `home_restock`, `home_asset`, `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference` (each row `key, position, day, json`) and `home_state` (settings); `BaseTables` reads, exports or erases one family alone. Home is in the daily backup and the backup bundle. Not sealed: no encryption decision exists for Home (Mint's was the owner's); household content follows the shared data-security policy and can be sealed the same way later.
+**Secret Base room (section 9.5), as built (0.196.0).** A **Room** card in Base's menu: Base's party (PMD Idle animations, still under Reduce motion) stands in the Hoenn size-1 room of the lead's type, flush in the dialogue frame at a whole-number scale (5x on a phone, 4x narrower, 1x at least). **Arrange** shows a dot on every empty cell of the 44 and a box of the owned decorations not placed: tap one in the box, then a cell, to place it; tap a placed one to pick it up, then another cell to move it or *Put away*; each step has an undo. Earning is as 9.5.4 (meter in `Counters.HOME_DECOR_METER`, 5 points, chore 1, maintenance 2, one of each, three starters once). Rules and tests are in `base-core` (`Room.kt`, `RoomTest`), the store side in `BaseStore` (`placeDecoration`, `moveDecoration`, `removeDecoration`) and `GameStore` (`base`, `grantDecoration`, `ownedDecorations`). A decoration paid shows as a line in the payment's reward text. *Not built:* choosing a cell without touching the picture for a screen reader (the box and the buttons are labelled; the cells are not), the Department Store and Mom's gifts (REP-053 chunk 6, which add through `GameStore.grantDecoration`).
+
+**Data (section 5).** `home_*` tables: `home_area`, `home_chore`, `home_entry`, `home_supply`, `home_adjustment`, `home_restock`, `home_asset`, `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference`, `home_room` (each row `key, position, day, json`; `home_room` is the Secret Base room's placements, schema 12) and `home_state` (settings); `BaseTables` reads, exports or erases one family alone. Home is in the daily backup and the backup bundle. Not sealed: no encryption decision exists for Home (Mint's was the owner's); household content follows the shared data-security policy and can be sealed the same way later.
 
 **Linked PLAN tasks (2.1), as built.** Chore → "Show in Plan" makes one PLAN task per chore, a projection of its current occurrence (`TaskLink(HOME_CHORE, chore id, occurrence)`): the title and day follow the chore, a repeating chore's task moves on to the next occurrence, and a deleted chore takes its projection with it (restorable). Completing, reopening or "won't do" in PLAN run `BaseStore.complete`, `undo` and `skip` (`BaseLinkOwner`), so HOME records the one completion and pays Habitat Discovery once; PLAN pays nothing for a task another module owns (no task reward, no steps reward), and a linked task cannot repeat by itself. "Remove from Plan" deletes only the projection. A store that does not know Home (a widget) leaves a linked task untouched. There is no "convert to a PLAN-owned task" action.
 

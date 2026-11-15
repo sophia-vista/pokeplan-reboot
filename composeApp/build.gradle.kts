@@ -31,6 +31,7 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     from(rootProject.file("assets/types")) { include("*.png"); into("files/types") }
     // The Berry and Mail icons (REP-053) are fetched but not used by any screen yet, so they are not bundled.
     from(rootProject.file("assets/items")) { include("*.png"); exclude("*-berry.png", "*-mail.png"); into("files/items") }
+    from(rootProject.file("assets/hoenn/room")) { include("*.png", "decorations/*.png"); into("files/hoenn") }
     from(rootProject.file("assets/pixelarticons")) { include("*.png"); into("files/pixelarticons") }
     // The Black/White animations are read only for a form SpriteCollab has no sprite for (the Mystery Dungeon sheet wins), so only those are bundled.
     val pmdForms = rootProject.file("assets/pmd/pmd.tsv").readLines().filter { it.isNotBlank() }.map { it.substringBefore('\t') }.toSet()

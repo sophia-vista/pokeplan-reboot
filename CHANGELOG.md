@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.196.0
+
+Base's Secret Base room (REP-053 chunk 3; spec `MODULES/BASE.md` 9.5, owner's answers 15 November 2026).
+
+- **Room:** a new card in Base's menu. Base's party stands in a Hoenn Secret Base room (Pokémon Emerald art) among the decorations you place. The lead's primary type picks the look: tree, shrub, or a red, brown, blue or yellow cave. It is only a view of the party: nothing is assigned to it, nothing wilts or asks for a visit. It is drawn at 5x on a phone, 4x when narrower, flush in its frame.
+- **Arrange:** a dot on every empty square of the 44, and a box of the decorations you own and have not placed. Tap one, then a square; tap a placed one to move it or put it away. Free, any number of times, and each step has an undo.
+- **Decorations:** 42 cosmetic objects (dolls, mats, desks, plants, tents, bricks, ornaments and a few others). Habitat Discovery's payments fill a **Decoration meter** (a chore 1 point, maintenance 2, under the same daily caps and switch); at 5 points you find one you do not own yet (one of each, so all 42 take about 10 weeks of regular chores). A new save, and a save from before the room, is given three: a Snorlax Doll, a Thunder Mat and a Big Plant.
+- **Rules version 28** (`docs/economy.md`): the new reward; nothing a rule paid before changed. Schema 12 adds `home_room` (the placements). The art is composed by `tools/sprites/compose_secret_base.py` into `assets/hoenn/room/` and bundled (208 KB).
+
 ## 0.195.1
 
 - **Repo tidy and the last HOME names:** `Module.BASE`, `Place.BASE`, `Region.BASE` and `ReminderModule.BASE` replace `HOME` and `HOUSEHOLD` in code. Saves are unchanged: `Region.BASE` is still saved as `"HOUSEHOLD"`, a screen lock saved as `"HOME"` is kept as `"BASE"`, and a reminder stored as `"HOME"` is read as Base. `docs/pokelife/MODULES/HOME.md` is now `BASE.md`, `tools/species/regions/household.txt` is `base.txt`, and the README lists every module and folder. The four tracked `__pycache__` files are removed and ignored.

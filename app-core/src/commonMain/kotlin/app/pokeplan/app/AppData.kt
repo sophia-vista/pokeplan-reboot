@@ -131,6 +131,13 @@ data class AppData(
      * only the event's opaque id and reference, the broad kind and the amounts.
      */
     val ledgerNotes: List<LedgerNote> = emptyList(),
+    /**
+     * The Secret Base decorations the player owns (`app.pokeplan.base.Decorations`, BASE.md 9.5), each at most once, in the order they came. Shared state like the Bag:
+     * Base's upkeep, the Department Store and Mom's gifts all add to it; where they are placed is Base's own record (`BaseData.room`).
+     */
+    val decorations: List<String> = emptyList(),
+    /** Whether the three starter decorations were given (once per save, a save from before the room included). */
+    val decorationStarters: Boolean = false,
 ) {
     companion object {
         const val SCHEMA = 1
