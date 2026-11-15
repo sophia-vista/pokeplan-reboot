@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -33,8 +35,8 @@ import app.pokeplan.ui.care.CareSection
 import app.pokeplan.ui.heal.HealSection
 import app.pokeplan.ui.link.LinkSection
 import app.pokeplan.ui.mint.MintSection
+import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.KeyLabel
-import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelField
@@ -92,15 +94,21 @@ private fun moduleEntries(model: AppModel, current: Module?): List<MenuEntry> = 
 fun NavSheet(title: String, onClose: () -> Unit, content: @Composable () -> Unit) {
     Dialog(onClose, DialogProperties(usePlatformDefaultWidth = false)) {
         Box(
-            Modifier.fillMaxSize().clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClose),
+            Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClose),
             contentAlignment = Alignment.BottomCenter,
         ) {
+            // An opaque page colour under the box: the dialogue box alone lets the page behind show through the rows.
             Box(Modifier.widthIn(max = 640.dp).padding(Spacing.L).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}) {
-                TextBox {
-                    Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelTitle(title)
-                        content()
-                        PixelButton("Close", onClose, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                Box(Modifier.background(Pixel.Paper, DialogueShape)) {
+                    TextBox {
+                        Column(Modifier.heightIn(max = 560.dp), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            // Title and rows scroll; the Close key stays in view under them.
+                            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                                PixelTitle(title)
+                                content()
+                            }
+                            PixelButton("Close", onClose, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                        }
                     }
                 }
             }
