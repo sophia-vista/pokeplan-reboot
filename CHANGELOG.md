@@ -15,6 +15,14 @@ LINK can import the phone's contacts, and a reminder is chosen when a date is ma
 - Tests: `ContactImportTest`, new `LinkStoreTest` cases, `LinkRemindersTest` updated; screenshot `linkContactImport`.
 - **Not built:** a chooser for changed fields on re-import, upcoming dates on the launcher (REP-022), sealing Link's rows, D8. Not run on a device; the contacts query has no Robolectric test. **Known gap:** the notification permission is asked only when a reminder falls within the 4-day window, so a birthday months away does not ask yet.
 
+## 0.200.0
+
+MINT first use and a cosmetic card style (REP-056, MINT part). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration.
+
+- **"Where is this money?"**: the new-account form has that title, a "GCash" placeholder in the name field, and a "?" key that opens one dialogue defining the eight account types (written once, in code). Saving the first account returns to the Mint overview, where Expense, Income and Transfer are the next actions.
+- **Card style**: `FinancialAccount.card` with `CardStyle` (Plain, Blue, Green, Gold, Violet, Slate). Ids are saved and colours are chosen in the UI, so a palette change never touches data; an unknown id reads and saves as plain. `MintStore.addAccount` and `updateAccount` keep it; the add and edit forms have a picker of coloured keys, and the account list shows a small colour square before the name (the soft ink colour for Plain, so names line up). It never changes a balance, rule or report. The field lives inside each account's existing sealed JSON row with an empty default, so old rows read as plain.
+- Test: `MintStoreTest.aCardStyleIsCosmeticAndAnUnknownOneReadsAsPlain`. Not run on a device.
+
 ## 0.199.0
 
 Tier 2 starts: the backup leaves the phone, and a damaged database no longer quietly brings back old files. `RewardRules.VERSION` is unchanged (nothing pays differently).

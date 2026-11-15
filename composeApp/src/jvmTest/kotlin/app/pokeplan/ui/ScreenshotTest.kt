@@ -1198,8 +1198,8 @@ class ScreenshotTest {
         val model = AppModel(store, gate = if (gate) object : app.pokeplan.ui.DeviceGate { override fun available() = true; override fun authenticate(onResult: (Boolean) -> Unit) {}; override fun leftAt() = 0L } else null)
         if (!empty) {
             val mint = model.mint
-            val bank = mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending").record!!
-            val wallet = mint.addAccount("E-wallet", app.pokeplan.mint.AccountType.EWALLET, "PHP", 350_000).record!!
+            val bank = mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending", card = "blue").record!!
+            val wallet = mint.addAccount("E-wallet", app.pokeplan.mint.AccountType.EWALLET, "PHP", 350_000, card = "gold").record!!
             val card = mint.addAccount("Credit card", app.pokeplan.mint.AccountType.CREDIT_CARD, "PHP", 0).record!!
             mint.record(app.pokeplan.mint.TxType.INCOME, 3_500_000, bank.id, categoryId = "cat-salary", payee = "Salary")
             mint.record(app.pokeplan.mint.TxType.EXPENSE, 184_550, bank.id, categoryId = "cat-food", payee = "Wet market")
@@ -1436,6 +1436,14 @@ class ScreenshotTest {
     fun mintActivityAndAccounts() {
         mint("mint-activity", app.pokeplan.ui.mint.MintSection.ACTIVITY, height = 2800)
         mint("mint-accounts", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2200)
+    }
+
+    /** The first account: "Where is this money?", the name example and the card-style picker, in both palettes and at 130% text (REP-056). */
+    @Test
+    fun mintFirstAccount() {
+        mint("mint-first-account", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2200, empty = true)
+        mint("mint-first-account-dark", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2200, empty = true, dark = true)
+        mint("mint-first-account-xl", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2800, empty = true, fontScale = 1.3f)
     }
 
     /** The optional access gate (locked card) and Mint's settings with bill reminders on and the gate offered. */
