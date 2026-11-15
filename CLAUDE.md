@@ -71,6 +71,7 @@ Sessions start from "continue with the next chunk", so two can pick the same one
 
 ## Working rules (from the 12 November 2026 session review)
 - **Asking the owner for a decision:** write each question as a standalone item: what it is (the screen or feature, in plain words, no shorthand from earlier in the session), why it matters in one sentence, two or three lettered options, and your recommendation. Number them so one reply ("1A 2C") answers all. For one the owner leaves unanswered, use the recommendation and say so in the PR body under "Defaults applied". Gather every open question into one list before building, not one at a time.
+- **Standing request from the owner (15 November 2026): when a session's work is done, load the `ship-pr` skill and open the PR and merge it, without waiting to be told.** This is the owner's explicit, lasting ask, so it satisfies a cloud session's default "open a PR only when asked"; the owner has had to repeat it every session. Ask first only for something risky (a schema migration, a store cutover, sealed Heal or Mint data) or when the gate fails.
 - **Gate, merge, scope:** while working run only targeted tests; run the full `./gradlew jvmTest compileKotlinWasmJs` once on the merged head just before the PR. "Merge" means all of it: commit, push, merge `main` in (next free `VERSION`), gate, open the PR, merge it when clean, say what merged. One PR per session, a commit per item; split off a separate PR only for something risky or urgent. Full text: `ship-pr` skill.
 
 ## Sessions and handoff
