@@ -1226,7 +1226,7 @@ class ScreenshotTest {
     }
 
     /** The Home module with a little recorded (chores, supplies, an appliance with a warranty and a service, a note), open on [section] (null for its menu). Synthetic text only. */
-    private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false) {
+    private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, width: Int = 540) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(homeParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.BASE) }
@@ -1314,6 +1314,25 @@ class ScreenshotTest {
             }
         }
     }
+
+    /** BASE Areas box (rename and delete keys on each row), narrowest layout, longest name, in both palettes; [open] a row for rename, [ask] its delete confirm. */
+    private fun baseAreas(name: String, open: Boolean, ask: Boolean) = listOf(false, true).forEach { dark ->
+        val model = AppModel(started())
+        val long = model.base.addArea("W".repeat(app.pokeplan.base.BaseRules.TITLE_MAX))!!
+        val id = if (open) long.id else null
+        render("$name-${if (dark) "dark" else "light"}", height = 1500, width = 480, density = 1.5f) {
+            PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(8.dp)) { app.pokeplan.ui.base.AreasBox(model, id, ask) } }
+        }
+    }
+
+    @Test
+    fun baseAreasControls() = baseAreas("base-areas", open = false, ask = false)
+
+    @Test
+    fun baseAreasRename() = baseAreas("base-areas-rename", open = true, ask = false)
+
+    @Test
+    fun baseAreasDelete() = baseAreas("base-areas-delete", open = true, ask = true)
 
     @Test
     fun baseMenu() = household("home-menu", null, height = 2600, homeParty = 3)

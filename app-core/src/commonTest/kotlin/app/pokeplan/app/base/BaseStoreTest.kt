@@ -689,4 +689,16 @@ class BaseStoreTest {
         assertEquals(BaseRules.STARTING_AREAS, s.home.data.areas.map { it.name })
         assertFalse(s.home.data.areas.any { it.name == "Condo" })
     }
+
+    @Test
+    fun areaRenameAndDeleteKeepRecords() {
+        val s = setup()
+        val a = assertNotNull(s.home.addArea("Balcony"))
+        val c = assertNotNull(s.home.addChore("Sweep", areaId = a.id).record)
+        s.home.renameArea(a.id, "Terrace")
+        assertEquals("Terrace", s.home.data.areas.first { it.id == a.id }.name)
+        s.home.deleteArea(a.id)
+        assertTrue(s.home.data.areas.none { it.id == a.id })
+        assertNotNull(s.home.data.chores.firstOrNull { it.id == c.id })
+    }
 }

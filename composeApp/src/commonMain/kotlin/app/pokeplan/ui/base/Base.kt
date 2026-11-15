@@ -117,6 +117,15 @@ private val decimalKeys = KeyboardOptions(keyboardType = KeyboardType.Decimal)
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
 
+/** Three tappable examples that fill an empty add field (the placeholder stays); shown only while the list and the field are empty. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ExampleChips(examples: List<String>, onPick: (String) -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        examples.forEach { e -> Chip(e, false, { onPick(e) }) }
+    }
+}
+
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
@@ -558,6 +567,7 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
             PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a chore", singleLine = true, keyboardOptions = wordKeys)
             PixelButton("Add", ::save, color = accent, enabled = title.isNotBlank())
         } else PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Chore", singleLine = true, keyboardOptions = wordKeys)
+        if (adding && data.chores.isEmpty() && title.isEmpty()) ExampleChips(listOf("Wipe the kitchen counter", "Take out the trash", "Water the plants")) { title = it }
         if (adding) PixelButton(if (more) "Fewer options" else "Repeat and details", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
             SectionLabel("Repeat")
@@ -748,6 +758,7 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
             PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a supply", singleLine = true, keyboardOptions = wordKeys)
             PixelButton("Add", ::save, color = accent, enabled = name.isNotBlank())
         } else PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Supply", singleLine = true, keyboardOptions = wordKeys)
+        if (adding && data.supplies.isEmpty() && name.isEmpty()) ExampleChips(listOf("Dish soap", "Light bulbs", "Trash bags")) { name = it }
         if (adding) PixelButton(if (more) "Fewer options" else "Quantity and details", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
             if (adding) PixelField(quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Quantity, blank if unknown", singleLine = true, keyboardOptions = decimalKeys)
@@ -900,7 +911,7 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
     val today = model.store.today
     val adding = initial == null
     var title by remember { mutableStateOf(initial?.title.orEmpty()) }
-    var due by remember { mutableStateOf<LocalDate?>(initial?.nextDue ?: today) }
+    var due by remember { mutableStateOf<LocalDate?>(initial?.nextDue) }
     var repeat by remember { mutableStateOf(initial?.recurrence ?: Recurrence()) }
     var policy by remember { mutableStateOf(initial?.policy ?: SchedulePolicy.FIXED) }
     var assetId by remember { mutableStateOf(initial?.assetId) }
@@ -908,23 +919,22 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
     var more by remember { mutableStateOf(!adding) }
     var message by remember { mutableStateOf<String?>(null) }
     fun save() {
-        val day = due
-        if (day == null) { message = "Choose the first date."; return }
-        val out = if (initial == null) home.addSchedule(title, day, repeat, policy, assetId, instructions)
-        else home.updateSchedule(initial.copy(title = title, nextDue = day, recurrence = repeat, policy = policy, assetId = assetId, instructions = instructions))
+        val out = if (initial == null) home.addSchedule(title, due, repeat, policy, assetId, instructions)
+        else home.updateSchedule(initial.copy(title = title, nextDue = due ?: initial.nextDue, recurrence = repeat, policy = policy, assetId = assetId, instructions = instructions))
         if (out.record == null) { message = out.refused ?: "That could not be saved."; return }
         message = null
-        if (adding) { title = ""; due = today; repeat = Recurrence(); policy = SchedulePolicy.FIXED; assetId = null; instructions = ""; more = false; model.haptic() }
+        if (adding) { title = ""; due = null; repeat = Recurrence(); policy = SchedulePolicy.FIXED; assetId = null; instructions = ""; more = false; model.haptic() }
         onDone()
     }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add maintenance", singleLine = true, keyboardOptions = wordKeys)
-            PixelButton("Add", ::save, color = accent, enabled = title.isNotBlank() && due != null)
+            PixelButton("Add", ::save, color = accent, enabled = title.isNotBlank())
         } else PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Maintenance", singleLine = true, keyboardOptions = wordKeys)
+        if (adding && data.schedules.isEmpty() && title.isEmpty()) ExampleChips(listOf("Change the aircon filter", "Test smoke alarm", "Descale the kettle")) { title = it }
         if (adding) PixelButton(if (more) "Fewer options" else "Date, repeat and item", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
-            DateField(if (adding) "First due" else "Next due", due, { due = it }, today, accent)
+            DateField(if (adding) "First due, optional" else "Next due", due, { due = it }, today, accent, optional = adding)
             SectionLabel("Repeat")
             RepeatEditor(repeat) { repeat = it }
             if (repeat.kind != RepeatKind.ONCE) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -1111,6 +1121,7 @@ private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCa
             PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add an item", singleLine = true, keyboardOptions = wordKeys)
             PixelButton("Add", ::save, color = accent, enabled = name.isNotBlank())
         } else PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Item", singleLine = true, keyboardOptions = wordKeys)
+        if (adding && data.assets.isEmpty() && name.isEmpty()) ExampleChips(listOf("Rice cooker", "Washing machine", "Bike")) { name = it }
         if (adding) PixelButton(if (more) "Fewer options" else "Brand, model and more", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
             PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
@@ -1153,7 +1164,8 @@ private fun NotesView(model: AppModel) {
                 }, color = accent, enabled = title.isNotBlank())
             }
             message?.let { Report(model, it, NoticeTone.WARNING) }
-            if (notes.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (data.references.isEmpty() && title.isEmpty()) ExampleChips(listOf("Landlord contact", "Wi-Fi password", "Condo admin hours")) { title = it }
+            if (notes.isEmpty() && data.references.isNotEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             notes.forEachIndexed { i, n ->
                 if (i > 0) Rule()
                 RecordRow(
@@ -1271,13 +1283,13 @@ private fun BaseSettingsView(model: AppModel) {
 }
 
 @Composable
-private fun AreasBox(model: AppModel) {
+internal fun AreasBox(model: AppModel, startOpen: String? = null, startAsking: Boolean = false) {
     val home = model.base
     val data = model.baseData
     var name by remember { mutableStateOf("") }
-    var openId by remember { mutableStateOf<String?>(null) }
-    var renaming by remember { mutableStateOf("") }
-    var asking by remember { mutableStateOf<String?>(null) }
+    var openId by remember { mutableStateOf(startOpen) }
+    var renaming by remember { mutableStateOf(data.areas.firstOrNull { it.id == startOpen }?.name.orEmpty()) }
+    var asking by remember { mutableStateOf(if (startAsking) startOpen else null) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Areas")
