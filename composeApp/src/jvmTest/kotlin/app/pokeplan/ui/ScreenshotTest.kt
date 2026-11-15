@@ -1311,7 +1311,7 @@ class ScreenshotTest {
         }
         model.module = app.pokeplan.ui.screens.Module.BASE
         model.baseSection = section
-        render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height, width = width) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     /**
@@ -1383,7 +1383,7 @@ class ScreenshotTest {
         val model = AppModel(started())
         val long = model.base.addArea("W".repeat(app.pokeplan.base.BaseRules.TITLE_MAX))!!
         val id = if (open) long.id else null
-        render("$name-${if (dark) "dark" else "light"}", height = 1500, width = 480, density = 1.5f) {
+        render("$name-${if (dark) "dark" else "light"}", height = if (open) 1900 else 1300, width = 480, density = 1.5f) {
             PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(8.dp)) { app.pokeplan.ui.base.AreasBox(model, id, ask) } }
         }
     }
@@ -1396,6 +1396,14 @@ class ScreenshotTest {
 
     @Test
     fun baseAreasDelete() = baseAreas("base-areas-delete", open = true, ask = true)
+
+    /** The empty add boxes with their example chips, on a 320 dp phone, in both palettes. */
+    @Test
+    fun baseExampleChips() = listOf(false, true).forEach { dark ->
+        val d = if (dark) "dark" else "light"
+        household("base-examples-chores-$d", app.pokeplan.ui.base.BaseSection.CHORES, height = 1100, empty = true, dark = dark, width = 480)
+        household("base-examples-maintenance-$d", app.pokeplan.ui.base.BaseSection.MAINTENANCE, height = 1100, empty = true, dark = dark, width = 480)
+    }
 
     @Test
     fun baseMenu() = household("home-menu", null, height = 2600, homeParty = 3)

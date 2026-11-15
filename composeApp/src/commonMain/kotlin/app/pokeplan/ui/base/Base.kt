@@ -1302,8 +1302,6 @@ internal fun AreasBox(model: AppModel, startOpen: String? = null, startAsking: B
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             PixelIconButton("pencil", "Rename ${a.name}", { if (openId == a.id && asking == null) openId = null else { openId = a.id; renaming = a.name; asking = null } }, Pixel.Tone)
                             PixelIconButton("trash", "Delete ${a.name}", { openId = a.id; asking = a.id }, Pixel.InkSoft)
-                            PixelIconButton("arrow-up", "Move ${a.name} up", { home.moveArea(a.id, true) }, enabled = i > 0)
-                            PixelIconButton("arrow-down", "Move ${a.name} down", { home.moveArea(a.id, false) }, enabled = i < data.areas.lastIndex)
                         }
                     },
                 )
@@ -1313,6 +1311,10 @@ internal fun AreasBox(model: AppModel, startOpen: String? = null, startAsking: B
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             PixelField(renaming, { renaming = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Name", singleLine = true, keyboardOptions = wordKeys)
                             PixelButton("Rename", { home.renameArea(a.id, renaming) }, color = accent, enabled = renaming.isNotBlank() && renaming.trim() != a.name, compact = true)
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelIconButton("arrow-up", "Move ${a.name} up", { home.moveArea(a.id, true) }, enabled = i > 0)
+                            PixelIconButton("arrow-down", "Move ${a.name} down", { home.moveArea(a.id, false) }, enabled = i < data.areas.lastIndex)
                         }
                         Actions {
                             PixelButton(if (a.archived) "Restore" else "Archive", { home.setAreaArchived(a.id, !a.archived); openId = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
