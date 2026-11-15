@@ -45,8 +45,6 @@ data class FinancialAccount(
      * The account's own "scan to send money to me" QR (MINT.md 4.2, 15 November 2026): one picture (PNG, JPEG or WebP, usually the wallet's whole screenshot), base64, at most [MintRules.QR_MAX_CHARS] characters, kept as picked. It lives in this sealed row, is never uploaded or read for its contents, and changes no balance. Empty is none.
      */
     val receiveQr: String = "",
-    /** The player turned the "Receive money" box off for this account (not every account has a QR). Cosmetic: it keeps any picture already stored. */
-    val receiveHidden: Boolean = false,
 )
 
 /**

@@ -447,12 +447,6 @@ class MintStoreTest {
         assertEquals("", assertNotNull(s.mint.addAccount("Bad2", AccountType.CASH, "PHP", card = "#GGGGGG").record).card)
         assertEquals(0x3A7BD5, app.pokeplan.mint.CardStyle.customRgb("#3A7BD5"))
         assertNull(app.pokeplan.mint.CardStyle.customRgb("blue"))
-        // Hiding the Receive money box is a flag on the account and keeps a stored picture.
-        val keep = assertNotNull(s.mint.addAccount("Keep", AccountType.EWALLET, "PHP").record)
-        assertNotNull(s.mint.setReceiveQr(keep.id, MintRules.PNG_BASE64_PREFIX + "AAAA").record)
-        val hidden = assertNotNull(s.mint.updateAccount(s.mint.data.accounts.single { it.id == keep.id }.copy(receiveHidden = true)).record)
-        assertTrue(hidden.receiveHidden)
-        assertEquals(MintRules.PNG_BASE64_PREFIX + "AAAA", hidden.receiveQr)
     }
 
     @Test
