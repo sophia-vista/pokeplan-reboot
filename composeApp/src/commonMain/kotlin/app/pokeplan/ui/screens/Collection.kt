@@ -121,7 +121,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 Section.PARTY -> {
                     // One region's party at a time behind tabs (a page of every module's party was a very long scroll), as the games' party screen:
                     // its six places in two rows, a tap opens the Pokémon, and the perks fold away until asked for.
-                    val regions = listOfNotNull(Region.PLAN, Region.CARE.takeIf { model.data.settings.careModule }, Region.HEAL, Region.MINT, Region.HOUSEHOLD, Region.LINK)
+                    val regions = listOfNotNull(Region.PLAN, Region.CARE.takeIf { model.data.settings.careModule }, Region.HEAL, Region.MINT, Region.BASE, Region.LINK)
                     var shown by remember { mutableStateOf(Region.PLAN) }
                     val current = shown.takeIf { it in regions } ?: Region.PLAN
                     val at = regions.indexOf(current)
@@ -169,18 +169,18 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
 }
 
 private fun partyOf(player: app.pokeplan.core.reward.PlayerState, region: Region): List<OwnedPokemon> = when (region) {
-    Region.CARE -> player.partyOf(PartyIds.CARE); Region.HEAL -> player.partyOf(PartyIds.HEAL); Region.MINT -> player.partyOf(PartyIds.MINT); Region.HOUSEHOLD -> player.partyOf(PartyIds.BASE); Region.LINK -> player.partyOf(PartyIds.LINK); else -> player.party
+    Region.CARE -> player.partyOf(PartyIds.CARE); Region.HEAL -> player.partyOf(PartyIds.HEAL); Region.MINT -> player.partyOf(PartyIds.MINT); Region.BASE -> player.partyOf(PartyIds.BASE); Region.LINK -> player.partyOf(PartyIds.LINK); else -> player.party
 }
 
 private fun leadOf(player: app.pokeplan.core.reward.PlayerState, region: Region): OwnedPokemon? = when (region) {
-    Region.CARE -> player.careLead; Region.HEAL -> player.healLead; Region.MINT -> player.mintLead; Region.HOUSEHOLD -> player.baseLead; Region.LINK -> player.linkLead; else -> player.planLead
+    Region.CARE -> player.careLead; Region.HEAL -> player.healLead; Region.MINT -> player.mintLead; Region.BASE -> player.baseLead; Region.LINK -> player.linkLead; else -> player.planLead
 }
 
-private fun accentOf(region: Region) = when (region) { Region.CARE -> RegionLook.CARE; Region.HEAL -> RegionLook.HEAL; Region.MINT -> RegionLook.MINT; Region.HOUSEHOLD -> RegionLook.BASE; Region.LINK -> RegionLook.LINK; else -> RegionLook.PLAN }.accent
+private fun accentOf(region: Region) = when (region) { Region.CARE -> RegionLook.CARE; Region.HEAL -> RegionLook.HEAL; Region.MINT -> RegionLook.MINT; Region.BASE -> RegionLook.BASE; Region.LINK -> RegionLook.LINK; else -> RegionLook.PLAN }.accent
 
 @Composable
 private fun PerksOf(model: AppModel, region: Region) = when (region) {
-    Region.CARE -> CarePerksCard(model); Region.HEAL -> HealPerksCard(model); Region.MINT -> MintPerksCard(model); Region.HOUSEHOLD -> BasePerksCard(model); Region.LINK -> LinkPerksCard(model); else -> PartyPerksCard(model)
+    Region.CARE -> CarePerksCard(model); Region.HEAL -> HealPerksCard(model); Region.MINT -> MintPerksCard(model); Region.BASE -> BasePerksCard(model); Region.LINK -> LinkPerksCard(model); else -> PartyPerksCard(model)
 }
 
 /** One region's party: its six places (a tap opens one), and its perks behind one button. */

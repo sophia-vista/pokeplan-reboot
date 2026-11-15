@@ -26,7 +26,7 @@ class NavigationTest {
         model().apply { open(Place.CARE, true); assertEquals(Module.CARE, module); assertNull(careSection) }
         model().apply { open(Place.HEAL, true); assertEquals(Module.HEAL, module); assertNull(healSection) }
         model().apply { open(Place.MINT, true); assertEquals(Module.MINT, module); assertNull(mintSection) }
-        model().apply { open(Place.HOUSEHOLD, true); assertEquals(Module.HOME, module); assertNull(baseSection) }
+        model().apply { open(Place.BASE, true); assertEquals(Module.BASE, module); assertNull(baseSection) }
         model().apply { open(Place.LINK, true); assertEquals(Module.LINK, module); assertNull(linkSection) }
         model().apply { open(Place.WORLD, true); assertEquals(Module.WORLD, module); assertNull(worldSection) }
         model().apply { open(Place.PARTY, true); assertTrue(openParty) }
@@ -36,7 +36,7 @@ class NavigationTest {
     @Test
     fun theNamesWidgetsAndShortcutsSendResolveToPlaces() {
         // The Android side looks a place up by its name; every name it uses must exist.
-        listOf("PLANNER", "FOCUS", "CARE", "HEAL", "MINT", "HOUSEHOLD", "LINK", "WORLD", "ME", "HOME", "COLLECTION", "GEAR").forEach { name ->
+        listOf("PLANNER", "FOCUS", "CARE", "HEAL", "MINT", "BASE", "LINK", "WORLD", "ME", "HOME", "COLLECTION", "GEAR").forEach { name ->
             assertTrue(Place.entries.any { it.name == name }, "$name is a place")
         }
     }

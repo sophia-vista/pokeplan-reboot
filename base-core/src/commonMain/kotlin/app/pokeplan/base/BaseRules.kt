@@ -14,7 +14,7 @@ sealed interface Check {
 }
 
 /**
- * Repeating dates (HOME.md 4.2 and 4.5): pure, deterministic and free of the clock, so the same chore gives the same occurrences after a restart
+ * Repeating dates (BASE.md 4.2 and 4.5): pure, deterministic and free of the clock, so the same chore gives the same occurrences after a restart
  * or a change of time zone. Everything is counted from the first date, never from "today".
  */
 object Schedules {
@@ -128,13 +128,13 @@ sealed interface RestockLine {
     data class Manual(val entry: RestockEntry, val supply: Supply?) : RestockLine
 }
 
-/** What the overview shows: only what needs attention (HOME.md 3.1), never a count of everything. */
+/** What the overview shows: only what needs attention (BASE.md 3.1), never a count of everything. */
 data class Overview(val chores: List<ChoreView>, val maintenance: List<ScheduleView>, val low: List<Supply>, val warranties: List<Warranty>) {
     val needsAttention: Boolean get() = chores.isNotEmpty() || maintenance.isNotEmpty() || low.isNotEmpty() || warranties.isNotEmpty()
 }
 
 /**
- * HOME's rules, all pure. Principles (HOME.md 1, 4, 5.1): **nothing is judged** (a missed chore is shown, never counted against anyone, and an old
+ * HOME's rules, all pure. Principles (BASE.md 1, 4, 5.1): **nothing is judged** (a missed chore is shown, never counted against anyone, and an old
  * backlog is never listed), **unknown is not zero**, **derived facts are not stored** (overdue, low, due soon come from the records and the date),
  * and **only done work can earn** (what pays is decided here and carries no household word).
  */
@@ -144,7 +144,7 @@ object BaseRules {
     const val TEXT_MAX = 8000
     const val EVERY_MAX = 99
 
-    /** How many stock adjustments the document keeps (HOME.md 4.3: lightweight, bounded). */
+    /** How many stock adjustments the document keeps (BASE.md 4.3: lightweight, bounded). */
     const val ADJUSTMENTS_KEPT = 300
 
     /** A warranty is "ending soon" this many days before its end date. */
@@ -153,7 +153,7 @@ object BaseRules {
     /** Maintenance shows as "soon" this many days ahead. */
     const val MAINTENANCE_SOON_DAYS = 14
 
-    /** Chores paid in a day, so splitting one job into many small ones can not farm Habitat Discovery (HOME.md 9.2). *(tune)* */
+    /** Chores paid in a day, so splitting one job into many small ones can not farm Habitat Discovery (BASE.md 9.2). *(tune)* */
     const val CHORES_PAID_PER_DAY = 5
 
     /** Pieces of maintenance paid in a day. *(tune)* */
@@ -205,7 +205,7 @@ object BaseRules {
 
     /**
      * Where [chore] stands on [today]. For a repeating chore only the latest occurrence up to today is considered, so a month away leaves one overdue
-     * chore, not thirty (HOME.md 4.2); one the user did, skipped or put off is read from its entry; an occurrence done early counts too.
+     * chore, not thirty (BASE.md 4.2); one the user did, skipped or put off is read from its entry; an occurrence done early counts too.
      */
     fun view(data: BaseData, chore: Chore, today: LocalDate): ChoreView = view(chore, data.entries.filter { it.choreId == chore.id }, today)
 
@@ -256,7 +256,7 @@ object BaseRules {
     /** Chores that need a look today: overdue or due. */
     fun attention(views: List<ChoreView>): List<ChoreView> = views.filter { it.state == ChoreState.OVERDUE || it.state == ChoreState.DUE }
 
-    /** What was done, skipped or put off, newest first (HOME.md 4.2 History). Chores that were later archived keep their history. */
+    /** What was done, skipped or put off, newest first (BASE.md 4.2 History). Chores that were later archived keep their history. */
     fun history(data: BaseData, choreId: String? = null): List<ChoreEntry> =
         data.entries.filter { choreId == null || it.choreId == choreId }.sortedWith(compareByDescending<ChoreEntry> { it.atMillis }.thenByDescending { it.dueDay })
 
@@ -269,7 +269,7 @@ object BaseRules {
     fun lowSupplies(data: BaseData, includeQuieted: Boolean = false): List<Supply> =
         data.supplies.filter { isLow(it) && (includeQuieted || !it.lowDismissed) }.sortedBy { it.name.lowercase() }
 
-    /** The restocking list: every low supply, then what was written in by hand (HOME.md 4.3). It is not a purchase, a task or a transaction. */
+    /** The restocking list: every low supply, then what was written in by hand (BASE.md 4.3). It is not a purchase, a task or a transaction. */
     fun restockList(data: BaseData): List<RestockLine> =
         lowSupplies(data, includeQuieted = true).map { RestockLine.Low(it) } +
             data.restock.map { e -> RestockLine.Manual(e, e.supplyId?.let { id -> data.supplies.firstOrNull { it.id == id } }) }
@@ -293,7 +293,7 @@ object BaseRules {
         data.schedules.filter { it.status != RecordStatus.ARCHIVED }.map { scheduleView(it, today) }.sortedWith(compareBy<ScheduleView> { it.state == DueState.PAUSED }.thenBy { it.schedule.nextDue })
 
     /**
-     * The schedule after a piece of maintenance was done on [doneDay] (HOME.md 4.5). A one-time schedule is finished (archived). A calendar schedule
+     * The schedule after a piece of maintenance was done on [doneDay] (BASE.md 4.5). A one-time schedule is finished (archived). A calendar schedule
      * moves to its next date after the later of the due date and the day it was done, so a late service never leaves a backlog; one set to count
      * "after it is done" starts again from that day. Past records are never touched.
      */
@@ -330,7 +330,7 @@ object BaseRules {
         warranties = data.warranties.filter { warrantyState(it, today) == WarrantyState.ENDING },
     )
 
-    // --- Habitat Discovery: what may pay (HOME.md section 9) ---------------------------------------------------------------
+    // --- Habitat Discovery: what may pay (BASE.md section 9) ---------------------------------------------------------------
 
     /** Whether a chore done on [day] may be paid: Habitat Discovery is on and the day's share is not used. The game checks once per occurrence too. */
     fun chorePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression && data.entries.count { it.paid && it.day == day } < CHORES_PAID_PER_DAY

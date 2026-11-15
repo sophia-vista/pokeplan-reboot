@@ -30,7 +30,7 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
 /** The modules whose records are private and that can ask for the phone's screen lock from Settings (Mint has its own switch, in its settings, and the same door). */
-internal val gateableModules = listOf(Module.CARE, Module.HEAL, Module.HOME, Module.LINK)
+internal val gateableModules = listOf(Module.CARE, Module.HEAL, Module.BASE, Module.LINK)
 
 private fun locked(model: AppModel, gate: DeviceGate, key: String, now: Long): Boolean {
     val unlocked = model.moduleUnlockedAt[key] ?: 0L

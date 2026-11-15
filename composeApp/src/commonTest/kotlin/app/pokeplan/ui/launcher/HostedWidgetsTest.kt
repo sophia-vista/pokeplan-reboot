@@ -95,7 +95,7 @@ class LauncherSearchTest {
     fun findsModulesByNameAndKeywordNamesFirst() {
         assertEquals(listOf(Place.MINT), LauncherSearch.find("mint").map { it.place })
         assertEquals(Place.HEAL, LauncherSearch.find("sleep").single().place)
-        assertEquals(Place.HOUSEHOLD, LauncherSearch.find("chores").single().place)
+        assertEquals(Place.BASE, LauncherSearch.find("chores").single().place)
         // Accents and case are ignored, as for apps.
         assertTrue(LauncherSearch.find("POKÉMON").any { it.place == Place.COLLECTION })
         // A name that starts with the query comes before one that only has it in a keyword.

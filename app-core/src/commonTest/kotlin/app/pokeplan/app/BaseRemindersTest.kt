@@ -164,6 +164,13 @@ class BaseRemindersTest {
         s.home.setScheduleRemind(sch.id, true)
         val m = adapter.requests(s.clock.nowMillis(), utc).first { it.kind == "maintenance" }
         assertEquals(ActionResult.NOT_ALLOWED, router.handle(m, ReminderActions.DONE))
-        assertNotNull(ReminderSnooze.untilMillis(ReminderModule.HOME, ReminderActions.TOMORROW, s.clock.nowMillis(), utc))
+        assertNotNull(ReminderSnooze.untilMillis(ReminderModule.BASE, ReminderActions.TOMORROW, s.clock.nowMillis(), utc))
+    }
+
+    @Test fun `a reminder stored under the old module name HOME is read as BASE`() {
+        assertEquals(ReminderModule.BASE, ReminderModule.parse("HOME"))
+        assertEquals(ReminderModule.BASE, ReminderModule.parse("BASE"))
+        assertEquals(ReminderModule.MINT, ReminderModule.parse("MINT"))
+        assertNull(ReminderModule.parse("NOPE"))
     }
 }

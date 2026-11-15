@@ -47,11 +47,11 @@ import app.pokeplan.ui.theme.TextBox
 
 /** The party id (`PartyIds`) of a module's region: where its party, its lead and its Guardian are kept. */
 internal fun partyIdOf(region: Region): String = when (region) {
-    Region.CARE -> PartyIds.CARE; Region.HEAL -> PartyIds.HEAL; Region.MINT -> PartyIds.MINT; Region.HOUSEHOLD -> PartyIds.BASE; Region.LINK -> PartyIds.LINK; else -> PartyIds.PLAN
+    Region.CARE -> PartyIds.CARE; Region.HEAL -> PartyIds.HEAL; Region.MINT -> PartyIds.MINT; Region.BASE -> PartyIds.BASE; Region.LINK -> PartyIds.LINK; else -> PartyIds.PLAN
 }
 
 /** A module's short name: "Plan", "Care", "Heal", "Mint", "Base" or "Link". */
-internal fun moduleName(region: Region): String = if (region == Region.HOUSEHOLD) "Base" else region.label.removeSuffix(" Region")
+internal fun moduleName(region: Region): String = if (region == Region.BASE) "Base" else region.label.removeSuffix(" Region")
 
 /** A module's short name from its party id, for the detail page and the Guardian lists. */
 internal fun moduleNameOf(partyId: String): String = partyId.replaceFirstChar { it.uppercase() }

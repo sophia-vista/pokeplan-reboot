@@ -175,13 +175,13 @@ object SharedReminders {
         putExtra(X_MODULE, r.module.name).putExtra(X_REF, r.sourceRef).putExtra(X_KIND, r.kind).putExtra(X_OCC, r.occurrence).putExtra(X_AT, r.atMillis)
 
     private fun Intent.request(): ReminderRequest? = ReminderRequest(
-        module = getStringExtra(X_MODULE)?.let { m -> ReminderModule.entries.firstOrNull { it.name == m } } ?: return null,
+        module = getStringExtra(X_MODULE)?.let { m -> ReminderModule.parse(m) } ?: return null,
         sourceRef = getStringExtra(X_REF) ?: return null, kind = getStringExtra(X_KIND) ?: return null,
         atMillis = getLongExtra(X_AT, 0L), occurrence = getStringExtra(X_OCC).orEmpty(),
     )
 
     private fun HeldReminder.toRequest() = ReminderRequest(
-        ReminderModule.entries.first { it.name == module }, sourceRef, kind, atMillis, occurrence = occurrence,
+        ReminderModule.parse(module) ?: ReminderModule.PLAN, sourceRef, kind, atMillis, occurrence = occurrence,
     )
 
     private fun ReminderRequest.hold(reason: String) = HeldReminder(id, module.name, sourceRef, kind, occurrence, atMillis, reason)
@@ -241,7 +241,7 @@ object SharedReminders {
             ReminderModule.CARE -> RoutineReminders.show(context, request.sourceRef, title, LocalDate.parse(request.occurrence), request)
             ReminderModule.HEAL -> HydrationReminders.show(context, request.sourceRef, title, request)
             ReminderModule.MINT -> BillReminders.show(context, request.sourceRef, title, request)
-            ReminderModule.HOME -> UpkeepReminders.show(context, request, title)
+            ReminderModule.BASE -> UpkeepReminders.show(context, request, title)
             ReminderModule.LINK -> LinkNotices.show(context, request, title)
             else -> Unit
         }
@@ -280,7 +280,7 @@ object SharedReminders {
             ReminderModule.CARE -> RoutineReminders.notificationId(request.sourceRef)
             ReminderModule.HEAL -> HydrationReminders.notificationId(request.sourceRef)
             ReminderModule.MINT -> BillReminders.notificationId(request.sourceRef)
-            ReminderModule.HOME -> UpkeepReminders.notificationId(request.sourceRef, request.kind)
+            ReminderModule.BASE -> UpkeepReminders.notificationId(request.sourceRef, request.kind)
             ReminderModule.LINK -> LinkNotices.notificationId(request.sourceRef, request.kind)
             else -> return
         }

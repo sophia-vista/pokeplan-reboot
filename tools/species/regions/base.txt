@@ -1,4 +1,4 @@
-# The Home Region (Region.HOUSEHOLD, the household module's Habitat Discovery): Pokémon of the kitchen, pantry, closet,
+# The Base Region (Region.BASE, the Base module's Habitat Discovery): Pokémon of the kitchen, pantry, closet,
 # garden and hearth: Fire (the stove), Grass (the garden), Ice (the fridge), Fairy (sweets), Ghost (appliances and the old
 # house), Poison (the bin) and pets. Starts with the Johto starters. Patron: Ogerpon (the masks, the hearth), last in the list,
 # after Tapu Bulu. Super Rare lines: Gible and Larvitar (they dig out a home).

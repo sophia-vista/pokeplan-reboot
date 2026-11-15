@@ -451,7 +451,7 @@ Phases 1 to 5, 7 and 8 of the former plan (domain and persistence, manual contac
 
 ## 14. Documentation alignment
 
-This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion target: `PLAN.md`; HOME may reference a LINK-owned service contact: `HOME.md`; shared reminders and permissions: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; shared persistence, encryption boundary, export, backup and migration: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy: `../FEATURES/POKEMON_ECOSYSTEM.md`.
+This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion target: `PLAN.md`; HOME may reference a LINK-owned service contact: `BASE.md`; shared reminders and permissions: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; shared persistence, encryption boundary, export, backup and migration: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy: `../FEATURES/POKEMON_ECOSYSTEM.md`.
 
 ## 15. As built: the manual slice
 

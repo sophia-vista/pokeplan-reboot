@@ -99,7 +99,7 @@ enum class Tab(val label: String, val icon: String) {
  * it ("PLANNER", "FOCUS", "CARE"), so the names stay as they are.
  */
 enum class Place(val tab: Tab) {
-    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES), HEAL(Tab.MODULES), MINT(Tab.MODULES), HOUSEHOLD(Tab.MODULES), LINK(Tab.MODULES), GEAR(Tab.HOME), WORLD(Tab.MODULES),
+    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES), HEAL(Tab.MODULES), MINT(Tab.MODULES), BASE(Tab.MODULES), LINK(Tab.MODULES), GEAR(Tab.HOME), WORLD(Tab.MODULES),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -323,7 +323,7 @@ class AppModel(
             Place.CARE -> { module = Module.CARE; careSection = null }
             Place.HEAL -> { module = Module.HEAL; healSection = null }
             Place.MINT -> { module = Module.MINT; mintSection = null }
-            Place.HOUSEHOLD -> { module = Module.HOME; baseSection = null }
+            Place.BASE -> { module = Module.BASE; baseSection = null }
             Place.LINK -> { module = Module.LINK; linkSection = null }
             Place.PARTY -> openParty = true
             Place.GEAR -> gearOpen = true

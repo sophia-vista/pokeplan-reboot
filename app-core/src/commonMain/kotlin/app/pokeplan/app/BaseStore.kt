@@ -36,7 +36,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlin.random.Random
 
 /**
- * The Home module on this device (docs/pokelife `MODULES/HOME.md`): its own save in its own [storage], apart from every other module's, kept by
+ * The Home module on this device (docs/pokelife `MODULES/BASE.md`): its own save in its own [storage], apart from every other module's, kept by
  * `BaseTables` in the live database. Everything in it is private: it reaches the shared world only through [world], with a [BaseEvent] that carries a
  * stable id, the module, an opaque record reference, the broad kind and the time, and **never** a title, an area, a supply, an asset, a serial, a cost
  * or a note.
@@ -92,7 +92,7 @@ class BaseStore(
         if (n.isNotEmpty()) update { d -> d.copy(areas = d.areas.map { if (it.id == id) it.copy(name = n) else it }) }
     }
 
-    /** Archiving hides an area from the pickers; every record that names it keeps it (HOME.md 4.1). */
+    /** Archiving hides an area from the pickers; every record that names it keeps it (BASE.md 4.1). */
     fun setAreaArchived(id: String, archived: Boolean) = update { d -> d.copy(areas = d.areas.map { if (it.id == id) it.copy(archived = archived) else it }) }
 
     /** Moves an area one place up or down the list. */
@@ -117,7 +117,7 @@ class BaseStore(
 
     /**
      * Saves a chore. A repeating chore with no first date starts today; a one-time chore with none is a "whenever" chore. Nothing here pays: making a
-     * list of chores is never a reward (HOME.md 9.2).
+     * list of chores is never a reward (BASE.md 9.2).
      */
     fun addChore(
         title: String, recurrence: Recurrence = Recurrence(), firstDue: LocalDate? = null, instructions: String = "", areaId: String? = null,
@@ -132,7 +132,7 @@ class BaseStore(
 
     /**
      * Changes a chore's words, area, category, minutes, repeat and first date. Entries are never touched, so what was done stays done: a new repeat only
-     * decides which occurrences come next (HOME.md 4.2: editing never rewrites completed history).
+     * decides which occurrences come next (BASE.md 4.2: editing never rewrites completed history).
      */
     fun updateChore(c: Chore): Logged<Chore> {
         val old = data.chores.firstOrNull { it.id == c.id } ?: return Logged(null, "That chore is gone.")
@@ -166,7 +166,7 @@ class BaseStore(
     private fun putEntry(e: ChoreEntry) = update { d -> d.copy(entries = d.entries.filterNot { it.choreId == e.choreId && it.dueDay == e.dueDay } + e) }
 
     /**
-     * Marks the chore's current occurrence done (one action, HOME.md 4.2), with an optional [note]. An occurrence not yet due counts too ("done early").
+     * Marks the chore's current occurrence done (one action, BASE.md 4.2), with an optional [note]. An occurrence not yet due counts too ("done early").
      * Pays Habitat Discovery when it is on and the day's share is not used; the same occurrence pays once, however often it is undone and done again.
      */
     fun complete(choreId: String, note: String = ""): Logged<ChoreEntry> {
@@ -179,7 +179,7 @@ class BaseStore(
         return Logged(data.entries.first { it.id == entry.id }, rewards = rewards.orEmpty())
     }
 
-    /** Skips the current occurrence: it leaves the due list and the schedule goes on (HOME.md 4.2). Nothing is paid. */
+    /** Skips the current occurrence: it leaves the due list and the schedule goes on (BASE.md 4.2). Nothing is paid. */
     fun skip(choreId: String, note: String = ""): Boolean {
         val (chore, occurrence) = openOccurrence(choreId) ?: return false
         putEntry(ChoreEntry(newId(), chore.id, occurrence, EntryStatus.SKIPPED, today, nowMillis, note.trim().take(BaseRules.NOTE_MAX)))
@@ -234,7 +234,7 @@ class BaseStore(
 
     /**
      * Adds ([deltaMilli] above zero) or takes away (below zero) from the quantity. A quantity that is unknown can not be changed by a difference, and one
-     * that would go below zero is refused, so the entry is put right instead of silently clamped (HOME.md 4.3). Returns the reason, or null.
+     * that would go below zero is refused, so the entry is put right instead of silently clamped (BASE.md 4.3). Returns the reason, or null.
      */
     fun adjust(id: String, deltaMilli: Long, reason: String = ""): String? {
         val s = data.supplies.firstOrNull { it.id == id } ?: return "That supply is gone."
@@ -300,7 +300,7 @@ class BaseStore(
 
     /**
      * Deletes an item and its warranties. Its maintenance schedules, records and the notes that named it stay, as general household records
-     * (HOME.md 4.4); archive an item to keep everything together.
+     * (BASE.md 4.4); archive an item to keep everything together.
      */
     fun deleteAsset(id: String) = update { d ->
         d.copy(
@@ -362,7 +362,7 @@ class BaseStore(
     fun deleteSchedule(id: String) = update { d -> d.copy(schedules = d.schedules.filterNot { it.id == id }, maintenance = d.maintenance.map { if (it.scheduleId == id) it.copy(scheduleId = null) else it }) }
 
     /**
-     * Records the schedule's work as done on [day] (default today) and moves it on by its policy (HOME.md 4.5). Pays Habitat Discovery when it is on and the
+     * Records the schedule's work as done on [day] (default today) and moves it on by its policy (BASE.md 4.5). Pays Habitat Discovery when it is on and the
      * day's share is not used; the same due date of the same schedule pays once. [cost] is informational text: it becomes no transaction.
      */
     fun completeMaintenance(scheduleId: String, notes: String = "", cost: String = "", day: LocalDate = today): Logged<MaintenanceRecord> {
@@ -440,7 +440,7 @@ class BaseStore(
     /** Folds an Overview section away or brings it back ("chores", "maintenance", "supplies"). */
     fun setSectionHidden(section: String, hidden: Boolean) = settings { s -> s.copy(hidden = if (hidden) (s.hidden + section).distinct() else s.hidden - section) }
 
-    // --- reminders (HOME.md 6): all off until the user turns them on, per record --------------------------------------------------
+    // --- reminders (BASE.md 6): all off until the user turns them on, per record --------------------------------------------------
 
     /** The master switch. On, a record still asks only when its own reminder is on. Neither pays nor changes a record. */
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }

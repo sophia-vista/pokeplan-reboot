@@ -1,10 +1,10 @@
-# PokéLife — HOME Module Specification
+# PokéLife — BASE Module Specification
 
 **Version:** 1.0  
 **Status:** Approved product specification  
-**Module:** HOME  
+**Module:** BASE (called HOME until 13 November 2026; the text below still says HOME in places)  
 **Scope:** Personal household management  
-**Shown as:** **Base** (owner's final choice, 13 November 2026, replacing "Nest"; after Hoenn's Secret Bases): the app shows this module as "Base" (its menu card, header, party, perks and region, "Base Region") so "Home" is only the first tab. Code uses `Base*` names (`base-core`, `app.pokeplan.base`); stored ids, tables and saves keep HOME (Product Bible section 3).
+**Shown as:** **Base** (owner's final choice, 13 November 2026, replacing "Nest"; after Hoenn's Secret Bases): the app shows this module as "Base" (its menu card, header, party, perks and region, "Base Region") so "Home" is only the first tab. Code uses `Base*` names (`base-core`, `app.pokeplan.base`); stored ids, tables and saves keep HOME (Product Bible section 3), except the enum constants `Module.BASE`, `Place.BASE`, `Region.BASE` (saved as `"HOUSEHOLD"`) and `ReminderModule.BASE` (a stored `"HOME"` is read as BASE).
 **Last updated:** 5 November 2026
 
 > This document is the single source of truth for HOME-specific product behavior, data ownership, workflows, progression, privacy adaptations, implementation direction and acceptance criteria. Product-wide rules remain in the Product Bible; shared reminder behavior, visual components, data lifecycle and Pokémon/economy services remain in their respective shared specifications. Do not duplicate those systems here.

@@ -7,7 +7,12 @@ import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.TimeZone
 
 /** The modules that may ask for a reminder (INTEGRATIONS_AND_PRIVACY.md, section 9.1). */
-enum class ReminderModule { PLAN, CARE, HEAL, MINT, HOME, LINK }
+enum class ReminderModule { PLAN, CARE, HEAL, MINT, BASE, LINK;
+    companion object {
+        /** The module a stored name means (a held reminder or an alarm written before the 13 November 2026 rename says "HOME"), or null. */
+        fun parse(name: String?): ReminderModule? = if (name == "HOME") BASE else entries.firstOrNull { it.name == name }
+    }
+}
 
 /**
  * One reminder a module asks for (section 9.2.2). It holds only what scheduling needs: an opaque [sourceRef] (never a title,

@@ -927,7 +927,7 @@ class ScreenshotTest {
         val model = AppModel(store)
         for (dark in listOf(false, true)) {
             val tag = if (dark) "dark" else "light"
-            for (module in listOf(app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.Module.HEAL, app.pokeplan.ui.screens.Module.MINT, app.pokeplan.ui.screens.Module.HOME, app.pokeplan.ui.screens.Module.LINK, app.pokeplan.ui.screens.Module.WORLD)) {
+            for (module in listOf(app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.Module.HEAL, app.pokeplan.ui.screens.Module.MINT, app.pokeplan.ui.screens.Module.BASE, app.pokeplan.ui.screens.Module.LINK, app.pokeplan.ui.screens.Module.WORLD)) {
                 model.module = module
                 render("lead-$tag-${module.name.lowercase()}", height = 1500) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
             }
@@ -1202,7 +1202,7 @@ class ScreenshotTest {
             home.addReference("Router settings", "Reset button is behind the shelf.")
             store.markRewardsSeen()
         }
-        model.module = app.pokeplan.ui.screens.Module.HOME
+        model.module = app.pokeplan.ui.screens.Module.BASE
         model.baseSection = section
         render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }

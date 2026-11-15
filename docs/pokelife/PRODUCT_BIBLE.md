@@ -43,7 +43,7 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 - **English only.** No localisation.
 - **A watch is wanted** if one can be supported: a feasibility check first, against the owner's actual watch (the Huawei Watch Fit 4 Pro, which is not Wear OS; `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` section 5.2), with the phone's notification actions on the watch as the baseline.
 - **Lean tests.** A test exists to guard something that matters: a rule that pays, moves or changes a Pokémon, privacy and sealing, saving, migration and recovery, and the Android behaviour REP-033 covers. No test for a constant, a label or copy, a feature that was removed, or the absence of something removed, and no copy of a test per module when the modules share the code path. A test that no longer guards anything is deleted with the code it tested.
-- **HOME is renamed BASE**, after Hoenn's Secret Bases (the module's look and words borrow from them; its scene is a secret base under the trees). "Home" now means only the Home tab. WORLD's destination that was called Base is now **Town**. Code follows the new name (`base-core`, `app.pokeplan.base`, `Base*`); stored names stay as they were (the `home_*` tables, save keys, ledger ids, and the `Region.HOUSEHOLD`, `Module.HOME`, `Place.HOUSEHOLD` and `ReminderModule.HOME` constants), so no migration is needed. `MODULES/HOME.md` keeps its file name until the docs reset (REP-032).
+- **HOME is renamed BASE**, after Hoenn's Secret Bases (the module's look and words borrow from them; its scene is a secret base under the trees). "Home" now means only the Home tab. WORLD's destination that was called Base is now **Town**. Code follows the new name (`base-core`, `app.pokeplan.base`, `Base*`); stored names stay as they were (the `home_*` tables, save keys, ledger ids, and the `Region.HOUSEHOLD`, `Module.HOME`, `Place.HOUSEHOLD` and `ReminderModule.HOME` constants), so no migration is needed. `MODULES/BASE.md` keeps its file name until the docs reset (REP-032).
 
 ## 4. Canonical module map and ownership
 
@@ -175,7 +175,7 @@ docs/pokelife/
     CARE.md
     HEAL.md
     MINT.md
-    HOME.md
+    BASE.md
     LINK.md
     GEAR.md
     WORLD.md

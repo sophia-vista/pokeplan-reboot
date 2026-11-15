@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.195.1
+
+- **Repo tidy and the last HOME names:** `Module.BASE`, `Place.BASE`, `Region.BASE` and `ReminderModule.BASE` replace `HOME` and `HOUSEHOLD` in code. Saves are unchanged: `Region.BASE` is still saved as `"HOUSEHOLD"`, a screen lock saved as `"HOME"` is kept as `"BASE"`, and a reminder stored as `"HOME"` is read as Base. `docs/pokelife/MODULES/HOME.md` is now `BASE.md`, `tools/species/regions/household.txt` is `base.txt`, and the README lists every module and folder. The four tracked `__pycache__` files are removed and ignored.
+
 ## 0.195.0
 
 The launcher's Gust Trap and its crowd, from phone testing (owner, 15 November 2026).

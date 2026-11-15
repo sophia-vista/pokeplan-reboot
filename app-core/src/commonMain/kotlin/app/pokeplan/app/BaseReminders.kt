@@ -15,7 +15,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
-/** The four things Home may remind about (HOME.md 6). The names are stable: they are part of a reminder's id. */
+/** The four things Home may remind about (BASE.md 6). The names are stable: they are part of a reminder's id. */
 enum class BaseReminderKind(val key: String, val publicText: String) {
     CHORE("chore", "A chore is due"),
     MAINTENANCE("maintenance", "Some upkeep is coming up"),
@@ -32,7 +32,7 @@ enum class BaseReminderKind(val key: String, val publicText: String) {
 data class BaseReminder(val kind: BaseReminderKind, val recordId: String, val occurrence: String, val atMillis: Long)
 
 /**
- * HOME's reminders (HOME.md section 6), through the shared scheduler: **all off until the user turns them on**, first for Home as a whole and then for each
+ * HOME's reminders (BASE.md section 6), through the shared scheduler: **all off until the user turns them on**, first for Home as a whole and then for each
  * chore, maintenance schedule, supply and warranty, so there is never a default reminder for every chore or every low supply. Each asks once, never repeats and
  * never nags: an overdue chore, a missed service or a supply that stayed low asks nothing more, and no backlog is rebuilt. A source that is done, skipped, paused,
  * archived, edited so the day moved, or deleted stops asking (the request is checked again when it goes off). Delivery follows the shared [ReminderPolicy] (the
@@ -74,7 +74,7 @@ object BaseReminders {
             }
         }
         return found.map { r ->
-            val request = ReminderRequest(ReminderModule.HOME, r.recordId, r.kind.key, r.atMillis, occurrence = r.occurrence)
+            val request = ReminderRequest(ReminderModule.BASE, r.recordId, r.kind.key, r.atMillis, occurrence = r.occurrence)
             r.copy(atMillis = ReminderPolicy.deliverAt(request, app.settings.quietHours, zone, focus))
         }.filter { it.atMillis > nowMillis && it.atMillis <= limit }.sortedBy { it.atMillis }
     }
@@ -137,7 +137,7 @@ class BaseReminderAdapter(
     private val today: () -> LocalDate,
     private val completeChore: (choreId: String) -> Boolean,
 ) : ReminderSourceAdapter {
-    override val module = ReminderModule.HOME
+    override val module = ReminderModule.BASE
 
     override fun requests(nowMillis: Long, zone: TimeZone): List<ReminderRequest> =
         BaseReminders.upcoming(home(), app(), nowMillis, zone).map { ReminderRequest(module, it.recordId, it.kind.key, it.atMillis, occurrence = it.occurrence) }

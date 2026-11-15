@@ -581,7 +581,7 @@ class BaseStoreTest {
         val egg = rewards.filterIsInstance<Reward.Hatched>().single().pokemon
         assertEquals(egg.id, s.game.data.player.partyOf(PartyIds.BASE).single().id)
         assertEquals(Place.Party(PartyIds.BASE), s.game.placeOf(egg.id))
-        assertEquals(Region.HOUSEHOLD, s.game.data.origins[egg.id]?.region)
+        assertEquals(Region.BASE, s.game.data.origins[egg.id]?.region)
         assertEquals(Origin.How.HABITAT_EGG, s.game.data.origins[egg.id]?.how)
         assertEquals(egg.id, s.game.data.player.baseLead?.id)
         assertEquals(0, s.game.homeEggMeter())
@@ -613,7 +613,7 @@ class BaseStoreTest {
         }
         val egg = s.game.data.player.partyOf(PartyIds.BASE).single()
         assertEquals(Origin.How.HABITAT_EGG, s.game.data.origins[egg.id]?.how)
-        assertEquals(Region.HOUSEHOLD, s.game.data.origins[egg.id]?.region)
+        assertEquals(Region.BASE, s.game.data.origins[egg.id]?.region)
         assertEquals(egg.id, s.game.data.player.baseLead?.id)
         assertEquals(0, s.game.homeEggMeter(), "the meter wraps")
         s.clock.advanceDays(1)

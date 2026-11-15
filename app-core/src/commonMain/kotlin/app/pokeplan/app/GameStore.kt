@@ -147,12 +147,16 @@ class GameStore(
 
     /** One change at a time: [SavedDocument.update] holds the document's lock from reading `before` to the save, so two threads never start from the same one. */
     private fun update(change: (AppData) -> AppData) = document.update { before ->
-        var after = foldPoke(before, change(before))
+        var after = renameBaseLock(foldPoke(before, change(before)))
         // A shiny stays in the Shiny Dex, and a form in the form dex, even if the Pokémon is transferred later.
         val shinyNow = after.player.pokemon.filter { it.isShiny }.map { it.speciesId }.toSet()
         if (!after.shinySpecies.containsAll(shinyNow)) after = after.copy(shinySpecies = after.shinySpecies + shinyNow)
         FormDex.record(after)
     }
+
+    /** A screen lock saved under the module's old name ("HOME", before the 13 November 2026 rename to Base) is kept under "BASE". */
+    private fun renameBaseLock(d: AppData): AppData =
+        if ("HOME" !in d.settings.lockedModules) d else d.copy(settings = d.settings.copy(lockedModules = d.settings.lockedModules - "HOME" + "BASE"))
 
     /**
      * One Poké balance (`PlayerState.coins`), written by the ledger (the live save turns a change of it into a ledger event, REP-014).
@@ -268,7 +272,7 @@ class GameStore(
             Tutorials.CARE_BREATH -> Triple(Region.CARE, PartyIds.CARE, Origin.How.CARE_EGG)
             Tutorials.HEAL_WALK -> Triple(Region.HEAL, PartyIds.HEAL, Origin.How.FIELD_EGG)
             Tutorials.MINT_TALLY -> Triple(Region.MINT, PartyIds.MINT, Origin.How.LEDGER_EGG)
-            Tutorials.BASE_TIDY -> Triple(Region.HOUSEHOLD, PartyIds.BASE, Origin.How.HABITAT_EGG)
+            Tutorials.BASE_TIDY -> Triple(Region.BASE, PartyIds.BASE, Origin.How.HABITAT_EGG)
             Tutorials.LINK_POSTCARD -> Triple(Region.LINK, PartyIds.LINK, Origin.How.POSTCARD_EGG)
             else -> return null
         }
@@ -416,7 +420,7 @@ class GameStore(
     }
 
     /**
-     * Pays a HOME moment into the shared world (Habitat Discovery, HOME.md section 9): once per event id whatever HOME does with its records (so an undo
+     * Pays a HOME moment into the shared world (Habitat Discovery, BASE.md section 9): once per event id whatever HOME does with its records (so an undo
      * and a second completion of the same chore pay once), at most [BASE_CAPS] of each kind a day, and a full Habitat Discovery meter finds a Habitat
      * Egg on top. The log says only "Home" and the kind of moment. Nothing about a chore, an area, a supply or an asset exists in the event to be read here.
      */
@@ -431,7 +435,7 @@ class GameStore(
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.HOME_EGG_METER to meter % RewardEngine.HOME_EGG_METER_SIZE)
-            noted(d, log(BASE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, basePaid = (d.basePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.HOUSEHOLD)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
+            noted(d, log(BASE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, basePaid = (d.basePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.BASE)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
     }
@@ -616,7 +620,7 @@ class GameStore(
     fun linkedTask(kind: LinkKind, ref: String): Task? = data.tasks.firstOrNull { it.link?.kind == kind && it.link?.ref == ref && it.state != TaskState.DELETED }
 
     /**
-     * Makes the responsibility of a HOME chore visible in PLAN, by the user's choice (HOME.md 2.1). The task is a projection: its words and day come from the
+     * Makes the responsibility of a HOME chore visible in PLAN, by the user's choice (BASE.md 2.1). The task is a projection: its words and day come from the
      * chore, completing it completes the chore in HOME (which pays once) and PLAN pays nothing. One task per chore: asking again gives the same task. Null when
      * the chore is gone or has nothing waiting.
      */
@@ -656,7 +660,7 @@ class GameStore(
     }
 
     /**
-     * Ends a link by the user's choice. A HOME projection is removed (it can be restored like any deleted task; the chore is untouched, HOME.md 2.1). A converted
+     * Ends a link by the user's choice. A HOME projection is removed (it can be restored like any deleted task; the chore is untouched, BASE.md 2.1). A converted
      * follow-up stays a normal PLAN task, now without the reference (what it paid stays paid, so it never pays twice).
      */
     fun unlinkTask(taskId: String) {

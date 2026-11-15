@@ -38,7 +38,7 @@ object ReminderSnooze {
         }
         ReminderModule.CARE, ReminderModule.HEAL -> if (action == ReminderActions.SNOOZE_30 || action == ReminderActions.SNOOZE) nowMillis + 30 * MINUTE else null
         // A bill, a household or a connection reminder is not a minute-by-minute matter: its one snooze is until tomorrow morning, and nothing overdue repeats by itself.
-        ReminderModule.MINT, ReminderModule.HOME, ReminderModule.LINK -> if (action == ReminderActions.TOMORROW) app.pokeplan.plan.Reminders.snoozedTo(nowMillis.toLocalDateTime(zone), app.pokeplan.plan.Snooze.TOMORROW, zone).toEpochMillis(zone) else null
+        ReminderModule.MINT, ReminderModule.BASE, ReminderModule.LINK -> if (action == ReminderActions.TOMORROW) app.pokeplan.plan.Reminders.snoozedTo(nowMillis.toLocalDateTime(zone), app.pokeplan.plan.Snooze.TOMORROW, zone).toEpochMillis(zone) else null
         else -> null
     }
 }

@@ -44,7 +44,7 @@ interface LinkOwner {
 }
 
 /**
- * HOME's side of the link (HOME.md 2.1): the chore is HOME's, its schedule, occurrences and history stay in HOME, and a linked task is a reference by the chore's
+ * HOME's side of the link (BASE.md 2.1): the chore is HOME's, its schedule, occurrences and history stay in HOME, and a linked task is a reference by the chore's
  * id. Completing it from PLAN runs [BaseStore.complete], the one completion, which pays Habitat Discovery once for that occurrence however it is ticked.
  */
 class BaseLinkOwner(private val home: BaseStore) : LinkOwner {

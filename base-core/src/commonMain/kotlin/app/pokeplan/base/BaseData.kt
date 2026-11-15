@@ -4,7 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 /**
- * Everything HOME keeps is a household record (docs/pokelife `MODULES/HOME.md` section 5): areas, chores and what was done about them, supplies,
+ * Everything HOME keeps is a household record (docs/pokelife `MODULES/BASE.md` section 5): areas, chores and what was done about them, supplies,
  * assets, maintenance, warranties and reference notes. Derived facts (a chore is overdue, a supply is low, a service is due) are never stored: they
  * are worked out from these records and the date, by [BaseRules].
  */
@@ -14,7 +14,7 @@ enum class RepeatKind(val label: String, val unit: String) {
 }
 
 /**
- * How a chore or a maintenance schedule repeats, from its first date (HOME.md 4.2): daily, on chosen weekdays, weekly, monthly or yearly, every
+ * How a chore or a maintenance schedule repeats, from its first date (BASE.md 4.2): daily, on chosen weekdays, weekly, monthly or yearly, every
  * [every] units. Nothing cron-like; a month shorter than the first date's day uses its last day. [weekdays] are ISO numbers (1 Monday to 7 Sunday)
  * and only mean something for [RepeatKind.WEEKLY]; empty means the weekday of the first date.
  */
@@ -24,12 +24,12 @@ data class Recurrence(val kind: RepeatKind = RepeatKind.ONCE, val every: Int = 1
 @Serializable
 enum class RecordStatus { ACTIVE, PAUSED, ARCHIVED }
 
-/** An optional label for where something is (HOME.md 4.1), never a hierarchy. Archiving keeps every record that names it. */
+/** An optional label for where something is (BASE.md 4.1), never a hierarchy. Archiving keeps every record that names it. */
 @Serializable
 data class BaseArea(val id: String, val name: String, val archived: Boolean = false)
 
 /**
- * A household responsibility (HOME.md 4.2). Only the title is required. [firstDue] is the date of the first occurrence (null: an unscheduled chore
+ * A household responsibility (BASE.md 4.2). Only the title is required. [firstDue] is the date of the first occurrence (null: an unscheduled chore
  * that is done once whenever); a repeating chore needs one. What happened to each occurrence is in [ChoreEntry], so editing a chore never rewrites history.
  */
 @Serializable
@@ -45,7 +45,7 @@ data class Chore(
     val status: RecordStatus = RecordStatus.ACTIVE,
     val createdMillis: Long = 0,
     val updatedMillis: Long = 0,
-    /** Asks the shared reminders for a nudge on the day each occurrence is due. Off until the user turns it on for this chore (HOME.md 6). */
+    /** Asks the shared reminders for a nudge on the day each occurrence is due. Off until the user turns it on for this chore (BASE.md 6). */
     val remind: Boolean = false,
 )
 
@@ -79,7 +79,7 @@ enum class ChoreState(val label: String) { OVERDUE("Overdue"), DUE("Due today"),
 data class ChoreView(val chore: Chore, val state: ChoreState, val occurrence: LocalDate?, val dueDay: LocalDate?, val entry: ChoreEntry?)
 
 /**
- * A consumable (HOME.md 4.3). [quantityMilli] is in thousandths of the [unit] (so 1.5 kg is 1500 and a count of 3 is 3000: no floating point), or
+ * A consumable (BASE.md 4.3). [quantityMilli] is in thousandths of the [unit] (so 1.5 kg is 1500 and a count of 3 is 3000: no floating point), or
  * null when unknown, which is **not** zero and is never low. [lowMilli] is the optional threshold; with none nothing is inferred. [lowDismissed]
  * quiets the current low-stock notice and is cleared by the next quantity change.
  */
@@ -101,7 +101,7 @@ data class Supply(
     val remind: Boolean = false,
 )
 
-/** A light record of one change of quantity (HOME.md 4.3), bounded by [BaseRules.ADJUSTMENTS_KEPT]. Not a consumption ledger. */
+/** A light record of one change of quantity (BASE.md 4.3), bounded by [BaseRules.ADJUSTMENTS_KEPT]. Not a consumption ledger. */
 @Serializable
 data class StockAdjustment(val id: String, val supplyId: String, val beforeMilli: Long?, val afterMilli: Long?, val reason: String = "", val atMillis: Long = 0)
 
@@ -110,7 +110,7 @@ data class StockAdjustment(val id: String, val supplyId: String, val beforeMilli
 data class RestockEntry(val id: String, val name: String, val supplyId: String? = null, val createdMillis: Long = 0)
 
 /**
- * A durable thing in the household (HOME.md 4.4): an appliance, a piece of furniture, a tool. Assets are HOME's durable inventory and its maintenance
+ * A durable thing in the household (BASE.md 4.4): an appliance, a piece of furniture, a tool. Assets are HOME's durable inventory and its maintenance
  * subjects at once, so a thing has one identity. The [serial] is sensitive reference data and never leaves HOME. Cost and price are not kept here.
  */
 @Serializable
@@ -133,7 +133,7 @@ data class Asset(
 enum class SchedulePolicy(val label: String) { FIXED("On the calendar"), AFTER_DONE("After it is done") }
 
 /**
- * A recurring (or one-time) piece of maintenance (HOME.md 4.5), for an asset or for the household in general. [nextDue] is where the schedule stands;
+ * A recurring (or one-time) piece of maintenance (BASE.md 4.5), for an asset or for the household in general. [nextDue] is where the schedule stands;
  * finishing it records a [MaintenanceRecord] and moves [nextDue] by the [policy] without rewriting any past record.
  */
 @Serializable
@@ -153,7 +153,7 @@ data class MaintenanceSchedule(
     val remind: Boolean = false,
 )
 
-/** One piece of maintenance that was done. [cost] is informational text and never an accounting record or a transaction (HOME.md 4.5). */
+/** One piece of maintenance that was done. [cost] is informational text and never an accounting record or a transaction (BASE.md 4.5). */
 @Serializable
 data class MaintenanceRecord(
     val id: String,
@@ -167,7 +167,7 @@ data class MaintenanceRecord(
     val paid: Boolean = false,
 )
 
-/** Warranty details the user typed in (HOME.md 4.6). Expiry is informational; nothing is inferred and expired ones are kept. */
+/** Warranty details the user typed in (BASE.md 4.6). Expiry is informational; nothing is inferred and expired ones are kept. */
 @Serializable
 data class Warranty(
     val id: String,
@@ -183,7 +183,7 @@ data class Warranty(
     val remind: Boolean = false,
 )
 
-/** A household note (HOME.md 4.7): a title, some text, and optionally an area or an asset. Not a wiki. */
+/** A household note (BASE.md 4.7): a title, some text, and optionally an area or an asset. Not a wiki. */
 @Serializable
 data class Reference(
     val id: String,
@@ -209,7 +209,7 @@ data class BaseSettings(
     val hidden: List<String> = emptyList(),
     /** Whether the starting areas were offered once (so deleting them all does not bring them back). */
     val areasSeeded: Boolean = false,
-    /** The master switch for Home's reminders (HOME.md 6): **off**, and even on a record still asks only when the user turned that record's own reminder on. */
+    /** The master switch for Home's reminders (BASE.md 6): **off**, and even on a record still asks only when the user turned that record's own reminder on. */
     val reminders: Boolean = false,
     /** The hour (0 to 23) a reminder goes off on its day. */
     val reminderHour: Int = 9,

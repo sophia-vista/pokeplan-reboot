@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
 /**
- * HOME's records in their own tables from the start (schema version 9, REP-014; docs/pokelife `MODULES/HOME.md` and
+ * HOME's records in their own tables from the start (schema version 9, REP-014; docs/pokelife `MODULES/BASE.md` and
  * `ARCHITECTURE/DATA_AND_MIGRATIONS.md` section 7.4). HOME, like HEAL, never had a document row: the app reads and writes it as one JSON document,
  * `BaseData`, so the rules stay pure and tested, and this class is what stands under it, as [HealTables] stands under Heal's. Nothing is sealed (that is Mint's alone).
  *

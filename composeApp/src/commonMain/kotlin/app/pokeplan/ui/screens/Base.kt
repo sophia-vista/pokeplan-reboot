@@ -81,8 +81,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
 /**
- * The household module's screens (docs/pokelife `MODULES/HOME.md`): chores, supplies, maintenance with the belongings it is done on, reference
- * notes, and settings. Utility presentation (HOME.md section 11): a few panels, plain rows with a 48 dp target, no box per record. Nothing here
+ * The household module's screens (docs/pokelife `MODULES/BASE.md`): chores, supplies, maintenance with the belongings it is done on, reference
+ * notes, and settings. Utility presentation (BASE.md section 11): a few panels, plain rows with a 48 dp target, no box per record. Nothing here
  * judges: overdue is a word, never a failure, and no screen shows money.
  */
 enum class BaseSection(val label: String, val icon: String) {
@@ -151,7 +151,7 @@ private fun BasePage(model: AppModel, section: BaseSection?, openPokemon: (Strin
         BaseMenu(model, toModules, openPokemon)
         return
     }
-    SectionScaffold(section.label, null, onBack = { model.baseSection = null }, icon = section.icon, color = Module.HOME.look.header) {
+    SectionScaffold(section.label, null, onBack = { model.baseSection = null }, icon = section.icon, color = Module.BASE.look.header) {
         when (section) {
             BaseSection.CHORES -> ChoresView(model)
             BaseSection.SUPPLIES -> SuppliesView(model)
@@ -171,12 +171,12 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val tint = ModuleAccent.BASE.accent
     val overview = BaseRules.overview(data, today)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.HOME.label, onBack = onBack, color = Module.HOME.look.header)
+        ScreenHeader(Module.BASE.label, onBack = onBack, color = Module.BASE.look.header)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            ModuleLeadStage(model, Module.HOME, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.BASE_LOG_PREFIX), openPokemon = openPokemon)
+            ModuleLeadStage(model, Module.BASE, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.BASE_LOG_PREFIX), openPokemon = openPokemon)
             FirstRecordEgg(model, Tutorials.BASE_TIDY, data.chores.size + data.supplies.size + data.assets.size)
             BaseSearch(model)
             BaseOverview(model, overview)
@@ -196,7 +196,7 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
 
 // ----- Overview ---------------------------------------------------------------------------------------------------------------
 
-/** Only what needs attention (HOME.md 3.1): chores due or overdue, maintenance due or soon, low supplies and warranties ending soon; never a count of everything. */
+/** Only what needs attention (BASE.md 3.1): chores due or overdue, maintenance due or soon, low supplies and warranties ending soon; never a count of everything. */
 @Composable
 private fun BaseOverview(model: AppModel, o: Overview) {
     val data = model.baseData
@@ -489,7 +489,7 @@ private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone
             if (v.state == ChoreState.PAUSED) PixelButton("Resume", { home.setChoreStatus(id, RecordStatus.ACTIVE); onDone() }, Modifier.weight(1f), accent, compact = true)
             else PixelButton("Pause", { home.setChoreStatus(id, RecordStatus.PAUSED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        // Making the responsibility visible in Plan is the user's choice and never moves the chore: Home still completes and pays it (HOME.md 2.1).
+        // Making the responsibility visible in Plan is the user's choice and never moves the chore: Home still completes and pays it (BASE.md 2.1).
         val linked = model.data.tasks.any { it.link?.kind == LinkKind.HOME_CHORE && it.link?.ref == id && it.state != TaskState.DELETED }
         if (linked || (waiting && v.chore.status == RecordStatus.ACTIVE)) Actions {
             if (linked) PixelButton("Remove from Plan", { model.store.data.tasks.firstOrNull { it.link?.ref == id && it.state != TaskState.DELETED }?.let { t -> model.store.unlinkTask(t.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
