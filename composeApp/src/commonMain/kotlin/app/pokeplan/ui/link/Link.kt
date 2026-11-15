@@ -73,7 +73,7 @@ import app.pokeplan.ui.screens.DateField
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
-import app.pokeplan.ui.screens.ModuleNavKeys
+import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.ModuleTabs
@@ -168,7 +168,7 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft),
     )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, footer = { ModuleNavKeys(model, Module.LINK, sections) { key -> model.linkSection = LinkSection.valueOf(key) } })
+        ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, trailing = { SectionsKey(Module.LINK.label, sections) { key -> model.linkSection = LinkSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),

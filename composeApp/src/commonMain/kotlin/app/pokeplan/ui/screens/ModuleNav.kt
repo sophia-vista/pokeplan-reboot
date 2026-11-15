@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -48,9 +47,10 @@ import app.pokeplan.ui.world.WorldSection
 
 /*
  * Moving around inside the Modules tab (docs/pokelife/FEATURES/DESIGN_SYSTEM.md 6.7, REP-067):
- *  - a module's page is its daily view; its sections wait behind the labelled "Sections" key in its header, in a sheet of rows;
- *  - the labelled "Modules" key opens a sheet to switch to another module in one tap, with a "Jump to" search for any section;
- *  - the Modules tab carries the same search above its list.
+ *  - a module's page is its daily view, right under a one-row header (Back, the title, a small "Sections" key);
+ *  - the "Sections" key opens a sheet of compact rows, one per section;
+ *  - the bottom Modules tab switches module (tapping it again returns to the list), so the page carries no module switcher;
+ *  - the Modules tab carries a "Jump to" field that opens any section by its fixed name.
  * Nothing here reads a figure, a name or a private word: the search only knows the fixed names of the sections.
  */
 
@@ -58,33 +58,17 @@ import app.pokeplan.ui.world.WorldSection
 val LocalFocusTab = staticCompositionLocalOf { true }
 
 /**
- * The two keys at the foot of a module's header: **Sections** opens [sections] as rows, **Modules** switches module. [onSection]
- * is given the key of the tapped row.
+ * The small key at the end of a module header's one row: **Sections** opens [sections] as rows in a sheet titled [title]. [onSection]
+ * is given the key of the tapped row. Quiet on purpose (the page under the header is the point); a screen reader hears "Sections".
  */
 @Composable
-fun ModuleNavKeys(model: AppModel, module: Module, sections: List<MenuEntry>, onSection: (String) -> Unit) {
-    var showSections by remember { mutableStateOf(false) }
-    var showModules by remember { mutableStateOf(false) }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelKey({ showSections = true }, key = Pixel.InkSoft, compact = true) { look -> KeyLabel("Sections", look) }
-        PixelKey({ showModules = true }, key = Pixel.InkSoft, compact = true) { look -> KeyLabel("Modules", look) }
-    }
-    if (showSections) NavSheet(module.label, { showSections = false }) {
-        MenuRows(sections) { key -> showSections = false; onSection(key) }
-    }
-    if (showModules) NavSheet("Modules", { showModules = false }) {
-        JumpSearch(model, boxed = false, onDone = { showModules = false })
-        MenuRows(moduleEntries(model, module)) { key ->
-            showModules = false
-            if (key != module.name) model.open(Place.valueOf(key), true)
-        }
+fun SectionsKey(title: String, sections: List<MenuEntry>, onSection: (String) -> Unit) {
+    var show by remember { mutableStateOf(false) }
+    PixelKey({ show = true }, key = Pixel.InkSoft, compact = true, horizontal = Spacing.S) { look -> KeyLabel("Sections", look) }
+    if (show) NavSheet(title, { show = false }) {
+        MenuRows(sections) { key -> show = false; onSection(key) }
     }
 }
-
-/** The modules in the order of the accent rainbow, the open one marked; Care only while it is switched on in Settings. */
-private fun moduleEntries(model: AppModel, current: Module?): List<MenuEntry> = listOf(Module.PLAN, Module.MINT, Module.BASE, Module.CARE, Module.HEAL, Module.LINK, Module.WORLD)
-    .filter { it != Module.CARE || model.data.settings.careModule }
-    .map { m -> MenuEntry(m.name, m.icon, m.label, count = if (m == current) "open" else "") }
 
 /**
  * A sheet that rises from the bottom over the page: one dialogue box with a title, [content] and a Close key. A tap outside it, or
@@ -150,11 +134,11 @@ internal fun jumpMatches(targets: List<JumpTarget>, query: String, limit: Int = 
 }
 
 /**
- * "Jump to": a field that opens any module or section by name, for when the way is known and the taps are not wanted. With [boxed]
- * false the rows draw without a box of their own, for use inside a sheet. [onDone] runs after a row is chosen.
+ * "Jump to": a field that opens any module or section by name, for when the way is known and the taps are not wanted. [onDone] runs
+ * after a row is chosen.
  */
 @Composable
-fun JumpSearch(model: AppModel, boxed: Boolean = true, onDone: () -> Unit = {}) {
+fun JumpSearch(model: AppModel, onDone: () -> Unit = {}) {
     val focus = LocalFocusTab.current
     var query by remember { mutableStateOf("") }
     val found = remember(query, model.data.settings.careModule, focus) { jumpMatches(jumpTargets(model, focus), query) }
@@ -166,5 +150,5 @@ fun JumpSearch(model: AppModel, boxed: Boolean = true, onDone: () -> Unit = {}) 
     }
     val rows = found.mapIndexed { i, t -> MenuEntry(i.toString(), t.icon, t.title, count = t.area) }
     val open: (String) -> Unit = { key -> found[key.toInt()].go(); onDone() }
-    if (boxed) MenuList(rows, open) else MenuRows(rows, open)
+    MenuList(rows, open)
 }

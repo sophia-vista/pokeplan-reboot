@@ -114,10 +114,10 @@ private fun ModulesMenu(model: AppModel) {
         ) {
             val routines = model.care.todayRoutines()
             val routinesLeft = routines.count { !it.doneOn(model.care.today) }
-            // Gear is the key in the header (a tool drawer, not a life module). The modules follow in the order of the accent rainbow
-            // (ModuleAccent), World last; "Jump to" opens any section by name.
+            // Gear is the key in the header (a tool drawer, not a life module). The modules follow as compact rows in the order of the
+            // accent rainbow (ModuleAccent), World last; "Jump to" opens any section by name.
             JumpSearch(model)
-            MenuGrid(
+            MenuList(
                 listOfNotNull(
                     MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.MINT.name, Module.MINT.icon, Module.MINT.label, mintSubtitle(model), tint = ModuleAccent.MINT.accent, sound = Sfx.DOOR_ENTER),
@@ -127,7 +127,7 @@ private fun ModulesMenu(model: AppModel) {
                     ),
                     MenuEntry(Module.HEAL.name, Module.HEAL.icon, Module.HEAL.label, healSubtitle(model), tint = ModuleAccent.HEAL.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.LINK.name, Module.LINK.icon, Module.LINK.label, linkSubtitle(model), tint = ModuleAccent.LINK.accent, sound = Sfx.DOOR_ENTER),
-                    MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = ModuleAccent.WORLD.accent, wide = true, sound = Sfx.DOOR_ENTER),
+                    MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = ModuleAccent.WORLD.accent, sound = Sfx.DOOR_ENTER),
                 ),
             ) { key -> model.module = Module.valueOf(key) }
         }
@@ -182,7 +182,7 @@ private fun PlanToday(model: AppModel, focusTab: Boolean, onBack: () -> Unit, op
             MenuEntry(PlanSection.MORE.name, PlanSection.MORE.icon, PlanSection.MORE.label, badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent),
     )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.PLAN.label, onBack = onBack, color = Module.PLAN.look.header, footer = { ModuleNavKeys(model, Module.PLAN, sections, { key -> model.planSection = PlanSection.valueOf(key) }) })
+        ScreenHeader(Module.PLAN.label, onBack = onBack, color = Module.PLAN.look.header, trailing = { SectionsKey(Module.PLAN.label, sections, { key -> model.planSection = PlanSection.valueOf(key) }) })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),

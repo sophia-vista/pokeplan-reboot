@@ -72,7 +72,7 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
-import app.pokeplan.ui.screens.ModuleNavKeys
+import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.PixelDatePicker
@@ -146,7 +146,7 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
     )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.HEAL.label, onBack = onBack, color = Module.HEAL.look.header, footer = { ModuleNavKeys(model, Module.HEAL, sections) { key -> model.healSection = HealSection.valueOf(key) } })
+        ScreenHeader(Module.HEAL.label, onBack = onBack, color = Module.HEAL.look.header, trailing = { SectionsKey(Module.HEAL.label, sections) { key -> model.healSection = HealSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),

@@ -85,7 +85,7 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.Cutscene
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
-import app.pokeplan.ui.screens.ModuleNavKeys
+import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.MenuList
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
@@ -195,7 +195,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
         MenuEntry(WorldSection.SETTINGS.name, WorldSection.SETTINGS.icon, WorldSection.SETTINGS.label, tint = Pixel.InkSoft),
     )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.WORLD.label, onBack = onBack, color = Module.WORLD.look.header, footer = { ModuleNavKeys(model, Module.WORLD, sections) { key -> model.worldSection = WorldSection.valueOf(key) } })
+        ScreenHeader(Module.WORLD.label, onBack = onBack, color = Module.WORLD.look.header, trailing = { SectionsKey(Module.WORLD.label, sections) { key -> model.worldSection = WorldSection.valueOf(key) } })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             // The order of the page: where you are and the one thing worth doing (the region, its chapter, the next step), what the teams
             // are doing and brought back, then the places to go. Rank sits in one quiet strip. The first time, one card says what World is.
