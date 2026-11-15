@@ -501,6 +501,11 @@ fun App(
 private val EXPANDED_WIDTH = 840.dp
 private val CONTENT_MAX_WIDTH = 640.dp
 
+/** Tapping the Modules tab while it is already open returns to the list of modules, the way a bottom tab usually does. */
+private fun backToModuleList(model: AppModel, tapped: Tab, current: Tab) {
+    if (tapped == Tab.MODULES && current == Tab.MODULES) model.module = null
+}
+
 @Composable
 private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches: Flow<AppLaunch>?) {
     var selected by rememberSaveable { mutableStateOf(start.tab.name) }
@@ -573,7 +578,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.navigationBars)).padding(horizontal = Spacing.S, vertical = Spacing.M),
                     verticalArrangement = Arrangement.spacedBy(Spacing.S),
                 ) {
-                    Tab.entries.forEach { t -> NavButton(t.label, t.icon, selected = t == tab, onClick = { selected = t.name }, modifier = Modifier.fillMaxWidth()) }
+                    Tab.entries.forEach { t -> NavButton(t.label, t.icon, selected = t == tab, onClick = { backToModuleList(model, t, tab); selected = t.name }, modifier = Modifier.fillMaxWidth()) }
                 }
             }
             page(Modifier.weight(1f).fillMaxHeight())
@@ -586,7 +591,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
                     ) {
                         Tab.entries.forEach { t ->
-                            NavButton(t.label, t.icon, selected = t == tab, onClick = { selected = t.name }, modifier = Modifier.weight(1f))
+                            NavButton(t.label, t.icon, selected = t == tab, onClick = { backToModuleList(model, t, tab); selected = t.name }, modifier = Modifier.weight(1f))
                         }
                     }
                 }

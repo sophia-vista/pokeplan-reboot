@@ -96,7 +96,7 @@ import app.pokeplan.ui.screens.BuddyStage
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
-import app.pokeplan.ui.screens.ModuleNavKeys
+import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PixelDateField
 import app.pokeplan.ui.screens.PixelMomentField
@@ -169,7 +169,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = ModuleAccent.CARE.accent),
     )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.CARE.label, onBack = onBack, color = Module.CARE.look.header, footer = { ModuleNavKeys(model, Module.CARE, sections) { key -> model.careSection = CareSection.valueOf(key) } })
+        ScreenHeader(Module.CARE.label, onBack = onBack, color = Module.CARE.look.header, trailing = { SectionsKey(Module.CARE.label, sections) { key -> model.careSection = CareSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),

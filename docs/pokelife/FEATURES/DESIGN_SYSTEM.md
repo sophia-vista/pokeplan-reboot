@@ -219,11 +219,11 @@ The following are canonical component families. Implement shared variants rather
 - Selected state is clear in both themes and not communicated by color alone.
 - Do not make the global module navigation look like a row of speech bubbles. The shared visual language can be expressed through outline, corner and selection treatment.
 - Preserve standard Android back behavior and clear current-location indication.
-- **Moving between modules and sections (owner, 15 November 2026, REP-067).** The four bottom tabs stay the only global navigation; a phone gets no side drawer (its edge swipe is the system Back gesture, and a drawer hides what the tabs show). Depth is cut inside the Modules tab instead:
-  - **A module opens on its daily view**, not on a menu of cards. Home's region cards and its "also today" rows open that view in one tap.
-  - **Sections sit behind a labelled "Sections" key** in the module header, which opens a bottom sheet of rows (icon, title, count; one dialogue box, no box in a box). The inline card grid and rows are gone from module pages. Plan keeps five rows (Inbox, Upcoming, Lists, Focus, More); More holds Outstanding, Progress, Goals, Targets and All tasks, and Calendar opens from Upcoming.
-  - **A labelled "Modules" key** beside it opens a sheet that switches to another module in one tap (the open one marked), with the "Jump to" field below. No caret and no hamburger.
-  - **"Jump to"** is a plain search field (on the Modules tab and in the switcher sheet) that opens any module or section by its fixed name. It reads no record, name or amount, so it is safe for Heal and Mint.
+- **Moving between modules and sections (owner, 15 November 2026, REP-067; refined the same day).** The four bottom tabs stay the only global navigation; a phone gets no side drawer (its edge swipe is the system Back gesture, and a drawer hides what the tabs show). Depth is cut inside the Modules tab instead:
+  - **A module opens on its daily view**, not on a menu of cards, and **its content starts directly under a one-row header**: a compact Back key, the title, and one small, quiet "Sections" key at the end of the same row. No second row of keys. Home's region cards and its "also today" rows open that view in one tap.
+  - **Sections sit behind that small labelled "Sections" key**, which opens a bottom sheet of compact horizontal rows (icon, title, count or badge; one dialogue box, no box in a box). The inline card grid and rows are gone from module pages. Plan keeps five rows (Inbox, Upcoming, Lists, Focus, More); More holds Outstanding, Progress, Goals, Targets and All tasks, and Calendar opens from Upcoming.
+  - **No module switcher on a module page.** The bottom Modules tab already switches module; tapping it again while it is open returns to the list of modules. A switcher key would only repeat it.
+  - **The Modules list is compact rows** (icon, title, badge) in the rainbow order, not large square cards, with a **"Jump to"** field above it: a plain search that opens any module or section by its fixed name (it reads no record, name or amount, so it is safe for Heal and Mint).
   - **Gear is not a life module.** It sits as a labelled "Gear" key in the Modules header (and in Jump to), outside the module list.
 
 ### 6.8 Dialogs, sheets and confirmation prompts

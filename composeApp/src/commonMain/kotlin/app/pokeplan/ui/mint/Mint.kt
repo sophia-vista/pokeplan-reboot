@@ -97,7 +97,7 @@ import app.pokeplan.ui.screens.Confirm
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
-import app.pokeplan.ui.screens.ModuleNavKeys
+import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.PixelDateField
@@ -196,7 +196,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(MintSection.SETTINGS.name, MintSection.SETTINGS.icon, "Settings", "Ledger Research, privacy, your data", tint = Pixel.InkSoft),
     )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.MINT.label, onBack = onBack, color = Module.MINT.look.header, footer = { ModuleNavKeys(model, Module.MINT, sections) { key -> model.mintStartType = null; model.mintSection = MintSection.valueOf(key) } })
+        ScreenHeader(Module.MINT.label, onBack = onBack, color = Module.MINT.look.header, trailing = { SectionsKey(Module.MINT.label, sections) { key -> model.mintStartType = null; model.mintSection = MintSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),

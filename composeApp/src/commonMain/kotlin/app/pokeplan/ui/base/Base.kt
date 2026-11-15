@@ -87,7 +87,7 @@ import app.pokeplan.ui.screens.DateField
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
-import app.pokeplan.ui.screens.ModuleNavKeys
+import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.ModuleTabs
@@ -210,7 +210,7 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(BaseSection.SETTINGS.name, BaseSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
     )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.BASE.label, onBack = onBack, color = Module.BASE.look.header, footer = { ModuleNavKeys(model, Module.BASE, sections) { key -> model.baseSection = BaseSection.valueOf(key) } })
+        ScreenHeader(Module.BASE.label, onBack = onBack, color = Module.BASE.look.header, trailing = { SectionsKey(Module.BASE.label, sections) { key -> model.baseSection = BaseSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),

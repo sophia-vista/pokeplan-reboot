@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.204.1
+
+Navigation refinement of REP-067 (rule in `FEATURES/DESIGN_SYSTEM.md` 6.7, "Moving between modules and sections"). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. Not run on a device.
+
+- **One-row header:** a module page header is now one row (compact Back, the title, one small "Sections" key via `SectionsKey` in `screens/ModuleNav.kt`), so the module's content starts right under it.
+- **Modules key dropped:** the second header row, `ModuleNavKeys`, the module switcher sheet and `JumpSearch`'s boxed option are gone. Tapping the bottom Modules tab again while a module is open returns to the module list (`backToModuleList` in `App.kt`).
+- **Modules list:** compact rows (`MenuList`) instead of large square cards, with the Jump to field above and the Gear key in the header.
+
 ## 0.204.0
 
 MINT receive-money QR and recurring income (REP-039, first slice, and an owner request). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. None of it was run on a device.
