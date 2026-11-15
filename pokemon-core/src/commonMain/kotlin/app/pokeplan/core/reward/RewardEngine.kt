@@ -132,6 +132,10 @@ sealed interface Reward {
     @Serializable
     @SerialName("poke")
     data class Poke(val amount: Int) : Reward
+    /** A Secret Base decoration (`app.pokeplan.base.Decorations`, HOME.md 9.5), found by Base's upkeep. Only its id: the catalogue lives in base-core. */
+    @Serializable
+    @SerialName("decoration")
+    data class Decoration(val decorationId: String) : Reward
 }
 
 @Serializable

@@ -45,6 +45,7 @@ import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.HealKind
 import app.pokeplan.core.reward.BaseEvent
+import app.pokeplan.base.Decorations
 import app.pokeplan.core.reward.BaseKind
 import app.pokeplan.core.reward.LinkEvent
 import app.pokeplan.core.reward.LinkMoment
@@ -203,7 +204,11 @@ class GameStore(
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(Places::guardiansToModules).let(::mergeHabits)
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(Places::guardiansToModules).let(::mergeHabits).let(::startDecorations)
+
+    /** The three starter decorations (HOME.md 9.5.4), once per save: a new save, and a save from before the room. */
+    private fun startDecorations(d: AppData): AppData =
+        if (d.decorationStarters) d else d.copy(decorationStarters = true, decorations = d.decorations + Decorations.STARTERS.filter { it !in d.decorations })
 
     /**
      * Saves from before the Pokémon roles were split (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) used the buddy as
@@ -295,11 +300,11 @@ class GameStore(
             id = newId(), title = "Finish your first task", rank = Rank.E, planned = today, tutorial = true, createdAtMillis = nowMillis,
         )
         update {
-            it.copy(
+            startDecorations(it.copy(
                 trainerName = trainerName.trim().ifEmpty { "Trainer" }, onboarded = true,
                 player = it.player.copy(pokemon = listOf(starter), buddyId = starter.id, rolesVersion = ROLES_VERSION, caught = setOf(starter.speciesId)),
                 placesVersion = Places.VERSION, tasks = listOf(first), origins = mapOf(starter.id to Origin(Origin.How.STARTER)),
-            )
+            ))
         }
     }
 
@@ -428,10 +433,13 @@ class GameStore(
         val outcome = RewardEngine.base(data.player, event, rng)
         val meter = homeEggMeter() + RewardEngine.HOME_EGG_POINTS.getValue(event.kind)
         val egg = if (meter >= RewardEngine.HOME_EGG_METER_SIZE) RewardEngine.homeEgg(outcome.state, newId(), nowMillis, rng) else null
-        val rewards = outcome.rewards + egg?.rewards.orEmpty()
+        // The Decoration meter (HOME.md 9.5.4): the same payment adds points, and a full meter finds one decoration the player does not own yet.
+        val step = Decorations.advance(decorationMeter(), if (event.kind == BaseKind.CHORE) Decorations.CHORE_POINTS else Decorations.MAINTENANCE_POINTS, Decorations.missing(data.decorations).isEmpty())
+        val decoration = if (step.found) Decorations.pick(data.decorations, event.id) else null
+        val rewards = outcome.rewards + egg?.rewards.orEmpty() + listOfNotNull(decoration?.let { Reward.Decoration(it.id) })
         update { d ->
-            val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.HOME_EGG_METER to meter % RewardEngine.HOME_EGG_METER_SIZE)
-            noted(d, log(BASE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, basePaid = (d.basePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.HOUSEHOLD)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
+            val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.HOME_EGG_METER to meter % RewardEngine.HOME_EGG_METER_SIZE) + (Counters.HOME_DECOR_METER to step.points)
+            noted(d, log(BASE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, decorations = d.decorations + listOfNotNull(decoration?.id), basePaid = (d.basePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.HOUSEHOLD)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
     }
@@ -468,6 +476,11 @@ class GameStore(
         update { d -> d.copy(player = d.player.copy(linkLeadId = id)) }
         return true
     }
+
+    override fun ownedDecorations(): Set<String> = data.decorations.toSet()
+
+    /** Points towards the next Secret Base decoration, out of [Decorations.METER_SIZE]. */
+    fun decorationMeter(): Int = data.counters[Counters.HOME_DECOR_METER] ?: 0
 
     /** Points towards the next Habitat Egg, out of [RewardEngine.HOME_EGG_METER_SIZE]. */
     fun homeEggMeter(): Int = data.counters[Counters.HOME_EGG_METER] ?: 0

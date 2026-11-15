@@ -34,6 +34,9 @@ interface World {
      */
     fun base(event: BaseEvent): List<Reward>? = null
 
+    /** The Secret Base decorations the player owns (HOME.md 9.5): what Base's room may place. Empty for a store that does not know the game (a widget). */
+    fun ownedDecorations(): Set<String> = emptySet()
+
     /**
      * Pays a LINK moment (Postcard Trail) from the minimal event; null when nothing was paid (not started, already paid, or today's share is used).
      * The world learns nothing but the event's id, module, opaque reference, kind, time and policy: no person, number, note, date or follow-up words.

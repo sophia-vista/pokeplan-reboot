@@ -174,4 +174,5 @@ fun Reward.iconItem(): String? = when (this) {
     is Reward.Evs -> "protein"
     is Reward.Friendship -> "friend-ball"
     is Reward.Hatched -> null
+    is Reward.Decoration -> null // drawn with its own sprite (BaseRoom.kt), not a Bag icon
 }

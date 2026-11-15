@@ -13,7 +13,7 @@ import kotlinx.serialization.json.contentOrNull
  * `BaseData`, so the rules stay pure and tested, and this class is what stands under it, as [HealTables] stands under Heal's. Nothing is sealed (that is Mint's alone).
  *
  * **One table family per kind of record** (`home_area`, `home_chore`, `home_entry`, `home_supply`, `home_adjustment`, `home_restock`, `home_asset`,
- * `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference`, plus `home_state` for the settings), so a kind can be read ([readKind]), exported or
+ * `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference`, `home_room` (the Secret Base room's placements, schema 12), plus `home_state` for the settings), so a kind can be read ([readKind]), exported or
  * erased ([erase]) on its own; erasing HOME ([clear]) touches nothing outside the `home_*` tables: not the Pokémon, the Bag, the ledger, Plan, Care or Heal.
  *
  * It works on the JSON, not on `BaseData`, so `:data` stays independent of the module and a field it has never heard of (a newer build's) lands in
@@ -125,6 +125,7 @@ class BaseTables(private val store: DataStore) {
             Slice("maintenance", "home_maintenance", "day"),
             Slice("warranties", "home_warranty", "expiryDay"),
             Slice("references", "home_reference", "day"),
+            Slice("room", "home_room", "day"),
         )
 
         /** The document fields that are a kind of private record, each with its own table family. */

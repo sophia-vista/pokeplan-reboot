@@ -23,7 +23,7 @@ class BaseTablesTest {
 
     private val tables = listOf(
         "home_area", "home_chore", "home_entry", "home_supply", "home_adjustment", "home_restock",
-        "home_asset", "home_schedule", "home_maintenance", "home_warranty", "home_reference",
+        "home_asset", "home_schedule", "home_maintenance", "home_warranty", "home_reference", "home_room",
     )
 
     private fun countWrites(s: DataStore) {
@@ -182,7 +182,7 @@ class BaseTablesTest {
         val text = BackupBundle.encode(docs, DataStore.SCHEMA_VERSION, 7)
         val staged = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && staged.documents.keys == setOf("save", "home"))
-        assertEquals(11, DataStore.SCHEMA_VERSION)
+        assertEquals(12, DataStore.SCHEMA_VERSION)
         val bad = BackupBundle.encode(mapOf("save" to "{}"), 9, 7).replace("\"save\"", "\"household\"")
         assertTrue(BackupBundle.stage(bad, 9) is BackupBundle.Staged.Refused)
     }

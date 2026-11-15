@@ -13,6 +13,9 @@ import app.pokeplan.base.EntryStatus
 import app.pokeplan.base.BaseArea
 import app.pokeplan.base.BaseData
 import app.pokeplan.base.BaseKinds
+import app.pokeplan.base.Decoration
+import app.pokeplan.base.Placement
+import app.pokeplan.base.Room
 import app.pokeplan.base.BaseRules
 import app.pokeplan.base.BaseSettings
 import app.pokeplan.base.MaintenanceRecord
@@ -76,6 +79,28 @@ class BaseStore(
 
     private fun pay(kind: BaseKind, id: String, ref: String): List<Reward>? =
         if (!data.settings.progression) null else world.base(BaseEvent("home:${kind.name.lowercase()}:$id", kind, nowMillis, ref))
+
+    // --- the Secret Base room (HOME.md 9.5) ----------------------------------------------------------------------------------
+
+    /** What stands on the room's floor, from decorations the player owns. */
+    val room: List<Placement> get() = data.room.filter { it.id in world.ownedDecorations() }
+
+    /** The decorations owned and not placed (the box), in catalogue order. */
+    fun inBox(): List<Decoration> = Room.inBox(world.ownedDecorations(), data.room)
+
+    private fun arrange(result: Room.Result): String? = when (result) {
+        is Room.Result.Done -> { update { it.copy(room = result.placed) }; null }
+        is Room.Result.Refused -> result.reason
+    }
+
+    /** Puts an owned decoration in the box on an empty cell; null when done, else why not. Free, and never pays. */
+    fun placeDecoration(id: String, x: Int, y: Int): String? = arrange(Room.place(world.ownedDecorations(), data.room, id, x, y))
+
+    /** Moves a placed decoration to another empty cell; null when done, else why not. */
+    fun moveDecoration(id: String, x: Int, y: Int): String? = arrange(Room.move(data.room, id, x, y))
+
+    /** Takes a decoration off the floor into the box. It is never lost. */
+    fun removeDecoration(id: String): String? = arrange(Room.remove(data.room, id))
 
     // --- areas -------------------------------------------------------------------------------------------------------------
 
@@ -482,10 +507,10 @@ class BaseStore(
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
         /** A document that was never offered the starting areas gets them once, with stable ids, so a fresh install can file a chore at once. */
-        internal fun tidy(d: BaseData): BaseData = if (d.settings.areasSeeded) d else d.copy(
+        internal fun tidy(d: BaseData): BaseData = (if (d.room.isEmpty()) d else d.copy(room = Room.tidy(d.room.map { it.id }, d.room))).let { d -> if (d.settings.areasSeeded) d else d.copy(
             areas = d.areas + BaseRules.STARTING_AREAS.map { name -> BaseArea("area-" + name.lowercase().replace(' ', '-'), name) }.filter { s -> d.areas.none { it.id == s.id } },
             settings = d.settings.copy(areasSeeded = true),
-        )
+        ) }
 
         /** "1.5" as thousandths (see [Quantity]); a convenience for screens. */
         fun milli(text: String): Long? = Quantity.parse(text)
@@ -502,6 +527,7 @@ object BaseExport {
         BaseKinds.SUPPLIES to listOf("supplies", "adjustments", "restock"),
         BaseKinds.ASSETS to listOf("assets", "schedules", "maintenance", "warranties"),
         BaseKinds.REFERENCES to listOf("references"),
+        BaseKinds.ROOM to listOf("room"),
     )
 
     fun json(data: BaseData, kinds: Set<BaseKinds>): String {
@@ -522,5 +548,6 @@ object BaseExport {
             references = d.references.map { it.copy(assetId = null) },
         )
         BaseKinds.REFERENCES -> d.copy(references = emptyList())
+        BaseKinds.ROOM -> d.copy(room = emptyList())
     }
 }

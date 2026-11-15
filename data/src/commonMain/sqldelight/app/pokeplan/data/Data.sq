@@ -749,6 +749,15 @@ CREATE TABLE home_reference (
     json TEXT NOT NULL
 );
 
+-- HOME's Secret Base room (version 12, REP-053, HOME.md 9.5): one row per placed decoration (key = the decoration's id, the record as JSON in `json`).
+-- Not private and not sealed. Which decorations are owned lives in the game save, not here.
+CREATE TABLE home_room (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
 CREATE TABLE home_state (
     key TEXT NOT NULL PRIMARY KEY,
     json TEXT NOT NULL

@@ -236,6 +236,8 @@ data class BaseData(
     val warranties: List<Warranty> = emptyList(),
     val references: List<Reference> = emptyList(),
     val settings: BaseSettings = BaseSettings(),
+    /** The Secret Base room's decorations on the floor (HOME.md 9.5). Which decorations the player owns is shared state, in the game save. */
+    val room: List<Placement> = emptyList(),
 )
 
 /** The kinds of private record, each kept in its own table family (`home_area`, ...); the names are stable. */
@@ -245,4 +247,5 @@ enum class BaseKinds(val label: String) {
     SUPPLIES("Supplies and the restocking list"),
     ASSETS("Belongings, maintenance and warranties"),
     REFERENCES("Reference notes"),
+    ROOM("Secret Base room"),
 }
