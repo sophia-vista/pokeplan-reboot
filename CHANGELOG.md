@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.201.0
+
+LINK can import the phone's contacts, and a reminder is chosen when a date is made (REP-043, first slice; spec `MODULES/LINK.md` 3.5, 6.1). Nothing pays and nothing reaches `LinkEvent`, so `RewardRules.VERSION` is unchanged.
+
+- **Import contacts** (Android only): People → "Import contacts" explains what is read (names, phones, emails, companies, birthdays) and only then asks for the new `READ_CONTACTS` permission (nothing else). If it is denied, Link works as before. The list has search, shows 40 at a time and preselects nothing; rows are New, Already in Link (matched by the contact's lookup key) or Maybe already in Link (same name, phone or email; unselected, and if picked it fills the matched person's empty fields only). Then a reminder (No, On the day, 1, 3 or a week before; no default), "Import N", one result line and Undo. Contacts without a name are counted and shown. A birthday becomes a Birthday date unless the person has one; a second import changes nothing. Nothing is overwritten.
+- **Reminder in one step:** the Add-a-date form has "Remind me" keys, and the first reminder turns Link's reminders switch on (like Base).
+- Code: `ContactImport` and `Person.sourceId` (link-core, no schema step), `LinkStore.planImport`/`importContacts`/`addDate(..., remindDays)`, `ContactSource` (`AppModel.contacts`, null on desktop, web and launcher) with `AndroidContacts`, `ui/link/ContactImportView.kt`.
+- Tests: `ContactImportTest`, new `LinkStoreTest` cases, `LinkRemindersTest` updated; screenshot `linkContactImport`.
+- **Not built:** a chooser for changed fields on re-import, upcoming dates on the launcher (REP-022), sealing Link's rows, D8. Not run on a device; the contacts query has no Robolectric test. **Known gap:** the notification permission is asked only when a reminder falls within the 4-day window, so a birthday months away does not ask yet.
+
 ## 0.200.0
 
 MINT first use and a cosmetic card style (REP-056, MINT part). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration.

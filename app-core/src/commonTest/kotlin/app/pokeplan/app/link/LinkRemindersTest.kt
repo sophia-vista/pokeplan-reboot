@@ -47,7 +47,10 @@ class LinkRemindersTest {
     @Test fun `nothing asks until Link and the record are both turned on`() {
         val s = setup()
         val date = s.link.addDate(DateKind.BIRTHDAY, "Mum", 11, 9).record!!
+        assertTrue(s.upcoming().isEmpty(), "no reminder was chosen")
         s.link.setDateRemind(date.id, 1)
+        assertTrue(s.link.data.settings.reminders, "choosing a reminder turns Link's reminders on")
+        s.link.setReminders(false)
         assertTrue(s.upcoming().isEmpty(), "the master switch is off")
         s.link.setReminders(true)
         val r = s.upcoming().single()
