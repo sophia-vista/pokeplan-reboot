@@ -1691,7 +1691,7 @@ class ScreenshotTest {
         val acc = AppModel(storeWithTeam()).let { m -> m to m.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000).record!! }
         val enc = { b: org.jetbrains.skia.Image -> kotlin.io.encoding.Base64.encode(b.encodeToData(org.jetbrains.skia.EncodedImageFormat.PNG)!!.bytes) }
         acc.first.mint.setReceiveQr(acc.second.id, enc(surface.makeImageSnapshot()))
-        render("mint-account-qr-portrait", height = 1500, minBytes = 3_000) {
+        render("mint-account-qr-portrait", height = 2000, minBytes = 3_000) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(acc.first, acc.first.mintData.accounts.first()) {} } }
         }
     }

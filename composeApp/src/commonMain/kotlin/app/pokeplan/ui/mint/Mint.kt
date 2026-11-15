@@ -18,7 +18,6 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.pokeplan.mint.CardStyle
@@ -517,7 +516,7 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
                     }
                     else if (bitmap != null) Image(
                         bitmap, desc,
-                        Modifier.heightIn(max = 420.dp).aspectRatio(bitmap.width.toFloat() / bitmap.height)
+                        Modifier.fillMaxWidth().aspectRatio(bitmap.width.toFloat() / bitmap.height)
                             .clickable(role = Role.Button, onClickLabel = "Open receive money QR code full screen") { full = true },
                         contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
                     )
@@ -541,17 +540,24 @@ private fun qrFilter(b: androidx.compose.ui.graphics.ImageBitmap) =
 /** The receive-money image (a bare QR or a whole wallet screenshot) on a plain white page, fitted at its own aspect ratio and as large as fits, so another phone can scan it. Close and (when the platform can) Share sit at the bottom. */
 @Composable
 internal fun QrFullScreen(name: String, bitmap: androidx.compose.ui.graphics.ImageBitmap, onClose: () -> Unit, onShare: (() -> Unit)?) {
-    Column(Modifier.fillMaxSize().background(Color.White).padding(Spacing.L), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(name, Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, color = Color.Black, maxLines = 1, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-        Box(Modifier.weight(1f).fillMaxWidth().padding(vertical = Spacing.M), contentAlignment = Alignment.Center) {
-            Image(
-                bitmap, "Receive money QR code for $name", Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
-            )
+    // The whole image, edge to edge at its own ratio: fitted when it fits the screen, otherwise full width and scrollable (never shrunk).
+    // The Close/Share bar sits below the image area, so nothing covers the image.
+    Column(Modifier.fillMaxSize().background(Color.White)) {
+        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            val ratio = bitmap.width.toFloat() / bitmap.height
+            val fits = maxWidth / ratio <= maxHeight
+            val desc = "Receive money QR code for $name"
+            if (fits) Image(bitmap, desc, Modifier.fillMaxSize(), contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap))
+            else Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                Image(bitmap, desc, Modifier.fillMaxWidth().aspectRatio(ratio), contentScale = ContentScale.FillWidth, filterQuality = qrFilter(bitmap))
+            }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Close", onClose, Modifier.weight(1f), Pixel.InkSoft)
-            if (onShare != null) PixelButton("Share", onShare, Modifier.weight(1f), ModuleAccent.MINT.accent)
+        Row(
+            Modifier.fillMaxWidth().background(Pixel.Paper).padding(horizontal = Spacing.M, vertical = Spacing.S),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically,
+        ) {
+            PixelButton("Close", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            if (onShare != null) PixelButton("Share", onShare, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
         }
     }
 }

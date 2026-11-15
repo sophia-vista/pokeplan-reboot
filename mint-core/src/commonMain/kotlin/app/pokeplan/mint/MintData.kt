@@ -39,13 +39,14 @@ data class FinancialAccount(
     val group: String = "",
     val status: AccountStatus = AccountStatus.ACTIVE,
     val createdMillis: Long = 0,
-    /** A [CardStyle] id: how the account's card looks. Cosmetic only; it never changes a balance, a rule or a report. Empty is the plain card. */
+    /** A [CardStyle] id or a custom colour `#RRGGBB` (see [MintRules.cardId]): how the account's card looks. Cosmetic only; it never changes a balance, a rule or a report. Empty is the plain card. */
     val card: String = "",
     /**
-     * The account's own "scan to send money to me" QR (MINT.md 4.2, 15 November 2026): one small PNG, base64, at most [MintRules.QR_MAX_CHARS] characters, picked and
-     * shrunk on the phone. It lives in this sealed row, is never uploaded or read for its contents, and changes no balance. Empty is none.
+     * The account's own "scan to send money to me" QR (MINT.md 4.2, 15 November 2026): one picture (PNG, JPEG or WebP, usually the wallet's whole screenshot), base64, at most [MintRules.QR_MAX_CHARS] characters, kept as picked. It lives in this sealed row, is never uploaded or read for its contents, and changes no balance. Empty is none.
      */
     val receiveQr: String = "",
+    /** The player turned the "Receive money" box off for this account (not every account has a QR). Cosmetic: it keeps any picture already stored. */
+    val receiveHidden: Boolean = false,
 )
 
 /**
@@ -57,6 +58,9 @@ enum class CardStyle(val id: String, val label: String) {
 
     companion object {
         fun of(id: String): CardStyle = entries.firstOrNull { it.id == id } ?: PLAIN
+
+        /** The 0xRRGGBB of a custom card colour `#RRGGBB`, or null when [card] is not one (a style id or empty). */
+        fun customRgb(card: String): Int? = if (card.length == 7 && card[0] == '#') card.drop(1).toIntOrNull(16) else null
     }
 }
 

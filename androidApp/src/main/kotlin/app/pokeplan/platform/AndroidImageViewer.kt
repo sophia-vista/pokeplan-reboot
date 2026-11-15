@@ -28,7 +28,7 @@ class AndroidImageViewer(private val activity: ComponentActivity) : ImageViewer 
         dir.listFiles()?.forEach { it.delete() }
         val file = File(dir, File(name).name.ifBlank { "receive-qr.png" }).apply { writeBytes(png) }
         val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.files", file)
-        val send = Intent(Intent.ACTION_SEND).setType("image/png").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        val send = Intent(Intent.ACTION_SEND).setType(when (name.substringAfterLast('.').lowercase()) { "jpg", "jpeg" -> "image/jpeg"; "webp" -> "image/webp"; else -> "image/png" }).putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         activity.startActivity(Intent.createChooser(send, "Share this QR code"))
         "Choose where to send it."
     } catch (e: Exception) {
