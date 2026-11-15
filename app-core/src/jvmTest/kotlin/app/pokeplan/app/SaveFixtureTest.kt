@@ -9,6 +9,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.datetime.TimeZone
+import app.pokeplan.app.care.CareStore
+import app.pokeplan.app.storage.Clock
+import app.pokeplan.app.storage.MemoryStorage
 
 /**
  * Real saves written by version 0.123.0 (docs/pokelife, REP-003), kept so the next storage layer can be tested against
@@ -18,7 +21,7 @@ import kotlinx.datetime.TimeZone
  * the version that wrote them): `POKEPLAN_WRITE_FIXTURES=1 ./gradlew :app-core:jvmTest --tests "*SaveFixtureTest*"`.
  */
 class SaveFixtureTest {
-    private class Clock(var millis: Long) : app.pokeplan.app.Clock { override fun nowMillis() = millis }
+    private class Clock(var millis: Long) : app.pokeplan.app.storage.Clock { override fun nowMillis() = millis }
 
     private val folder = File("src/jvmTest/resources/fixtures/0.123.0")
     private val day = 24 * 60 * 60 * 1000L

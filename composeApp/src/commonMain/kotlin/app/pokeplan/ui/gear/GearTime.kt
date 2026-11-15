@@ -22,7 +22,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import app.pokeplan.app.ExactInput
 import app.pokeplan.app.GearTimer
-import app.pokeplan.app.GearTimers
+import app.pokeplan.app.gear.GearTimers
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.gear.QUICK_TIMER_MINUTES
 import app.pokeplan.ui.gear.formatStopwatch

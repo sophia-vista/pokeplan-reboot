@@ -1008,7 +1008,7 @@ private fun MintSettingsView(model: AppModel) {
 
 /** A name field and an Add key for a new category of [kind]; [onAdded] gets it (the entry form selects it). */
 @Composable
-private fun NewCategoryRow(mint: app.pokeplan.app.MintStore, kind: CategoryKind, onAdded: (app.pokeplan.mint.Category) -> Unit) {
+private fun NewCategoryRow(mint: app.pokeplan.app.mint.MintStore, kind: CategoryKind, onAdded: (app.pokeplan.mint.Category) -> Unit) {
     var name by remember { mutableStateOf("") }
     var refused by remember { mutableStateOf(false) }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {

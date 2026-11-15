@@ -10,10 +10,10 @@ import android.content.Context
 import android.content.Intent
 import app.pokeplan.MainActivity
 import app.pokeplan.app.AppData
-import app.pokeplan.app.FocusAlert
-import app.pokeplan.app.GearTimers
-import app.pokeplan.app.Nudges
-import app.pokeplan.app.WorldAlerts
+import app.pokeplan.app.plan.FocusAlert
+import app.pokeplan.app.gear.GearTimers
+import app.pokeplan.app.plan.Nudges
+import app.pokeplan.app.world.WorldAlerts
 import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.Phase
 import app.pokeplan.ui.Place

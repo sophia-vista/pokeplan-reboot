@@ -7,13 +7,13 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import app.pokeplan.MainActivity
-import app.pokeplan.app.ReminderActions
-import app.pokeplan.app.ReminderRequest
+import app.pokeplan.app.reminders.ReminderActions
+import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.ui.Place
 import kotlinx.datetime.LocalDate
 
 /**
- * How a Care routine reminder looks as a notification (the rules are in [app.pokeplan.app.CareReminders]): Done and "In 30
+ * How a Care routine reminder looks as a notification (the rules are in [app.pokeplan.app.care.CareReminders]): Done and "In 30
  * min". Scheduling and the buttons' routing are in the shared reminder feature ([SharedReminders]).
  */
 object RoutineReminders {

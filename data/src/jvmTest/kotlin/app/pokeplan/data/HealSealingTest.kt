@@ -2,11 +2,11 @@ package app.pokeplan.data
 
 import app.cash.sqldelight.db.QueryResult
 import app.pokeplan.app.AppData
-import app.pokeplan.app.Clock
+import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.HealStore
-import app.pokeplan.app.MemoryStorage
-import app.pokeplan.app.Storage
+import app.pokeplan.app.heal.HealStore
+import app.pokeplan.app.storage.MemoryStorage
+import app.pokeplan.app.storage.Storage
 import app.pokeplan.heal.ActivityType
 import app.pokeplan.heal.MeasureType
 import kotlinx.datetime.TimeZone

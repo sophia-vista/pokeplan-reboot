@@ -1,10 +1,9 @@
 package app.pokeplan.huawei
 
-import app.pokeplan.app.HuaweiProbe
-import app.pokeplan.app.HuaweiSeen
-import app.pokeplan.app.NotificationCapture
-import app.pokeplan.app.ScreenCapture
-
+import app.pokeplan.app.heal.HuaweiProbe
+import app.pokeplan.app.heal.HuaweiSeen
+import app.pokeplan.app.heal.NotificationCapture
+import app.pokeplan.app.heal.ScreenCapture
 /**
  * What the Huawei Health readers saw, in this process's memory only (INTEGRATIONS_AND_PRIVACY.md 5.2.2, probe stage): never written to disk, never logged,
  * gone when the app's process ends. The two services and the app run in one process, so they share it.

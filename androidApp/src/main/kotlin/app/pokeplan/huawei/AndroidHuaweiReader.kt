@@ -10,8 +10,8 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.core.app.NotificationManagerCompat
-import app.pokeplan.app.HuaweiHealth
-import app.pokeplan.app.HuaweiSeen
+import app.pokeplan.app.heal.HuaweiHealth
+import app.pokeplan.app.heal.HuaweiSeen
 import app.pokeplan.ui.HuaweiReader
 import app.pokeplan.ui.HuaweiReaderState
 

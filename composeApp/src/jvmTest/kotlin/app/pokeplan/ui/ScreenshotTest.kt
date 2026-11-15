@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import app.pokeplan.app.Clock
+import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.MemoryStorage
+import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.plan.Rank
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
@@ -1308,7 +1308,7 @@ class ScreenshotTest {
     /** Heal's Huawei Health probe: both readers off, then on with pages and a step notification seen and shown (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
     @Test
     fun healHuaweiProbe() {
-        class Fake(val on: Boolean, val seen: app.pokeplan.app.HuaweiSeen) : HuaweiReader {
+        class Fake(val on: Boolean, val seen: app.pokeplan.app.heal.HuaweiSeen) : HuaweiReader {
             override fun state() = HuaweiReaderState(installed = true, screenReading = on, notificationReading = on, walking = false)
             override fun seen() = seen
             override fun clear() {}
@@ -1318,22 +1318,22 @@ class ScreenshotTest {
             override fun openNotificationSettings() {}
             override fun openAppInfo() {}
         }
-        val page = app.pokeplan.app.ScreenCapture(1, "MainActivity", listOf(
-            app.pokeplan.app.ScreenNode("Health", viewId = "com.huawei.health:id/title", type = "TextView", depth = 1),
-            app.pokeplan.app.ScreenNode("12,045", "Steps 12045 of 10000", "com.huawei.health:id/tv_step_value", "TextView", 3, clickable = true),
-            app.pokeplan.app.ScreenNode("Sleep  7 h 12 min", viewId = "com.huawei.health:id/sleep_card", type = "LinearLayout", depth = 3, clickable = true),
-            app.pokeplan.app.ScreenNode(viewId = "com.huawei.health:id/recycler", type = "RecyclerView", depth = 2, scrollable = true),
+        val page = app.pokeplan.app.heal.ScreenCapture(1, "MainActivity", listOf(
+            app.pokeplan.app.heal.ScreenNode("Health", viewId = "com.huawei.health:id/title", type = "TextView", depth = 1),
+            app.pokeplan.app.heal.ScreenNode("12,045", "Steps 12045 of 10000", "com.huawei.health:id/tv_step_value", "TextView", 3, clickable = true),
+            app.pokeplan.app.heal.ScreenNode("Sleep  7 h 12 min", viewId = "com.huawei.health:id/sleep_card", type = "LinearLayout", depth = 3, clickable = true),
+            app.pokeplan.app.heal.ScreenNode(viewId = "com.huawei.health:id/recycler", type = "RecyclerView", depth = 2, scrollable = true),
         ))
-        fun hw(id: String, text: String) = app.pokeplan.app.ScreenNode(text, viewId = "com.huawei.health:id/hw_show_health_running_history_child_item_$id")
-        val sessions = app.pokeplan.app.ScreenCapture(2, "SportHistoryActivity", listOf(
+        fun hw(id: String, text: String) = app.pokeplan.app.heal.ScreenNode(text, viewId = "com.huawei.health:id/hw_show_health_running_history_child_item_$id")
+        val sessions = app.pokeplan.app.heal.ScreenCapture(2, "SportHistoryActivity", listOf(
             hw("chief_sport_type_text", "Outdoor walk"), hw("date", "January 3"), hw("left_date_text", "5:40 PM"), hw("chief_sport_data_text", "3.10"),
             hw("chief_sport_data_unit", "km"), hw("center_text", "00:41:05"),
         ))
-        val seen = app.pokeplan.app.HuaweiSeen(listOf(page, sessions), listOf(app.pokeplan.app.NotificationCapture(2, "12,045 steps", "Goal 10,000 steps · 8.2 km")))
+        val seen = app.pokeplan.app.heal.HuaweiSeen(listOf(page, sessions), listOf(app.pokeplan.app.heal.NotificationCapture(2, "12,045 steps", "Goal 10,000 steps · 8.2 km")))
         listOf(false, true).forEach { dark ->
             val model = AppModel(storeWithTeam())
             render("heal-huawei-off${if (dark) "-dark" else ""}", height = 700) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
-                androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.heal.HuaweiProbeBox(model, Fake(false, app.pokeplan.app.HuaweiSeen())) } } } }
+                androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.heal.HuaweiProbeBox(model, Fake(false, app.pokeplan.app.heal.HuaweiSeen())) } } } }
             render("heal-huawei-seen${if (dark) "-dark" else ""}", height = 2000) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.heal.HuaweiProbeBox(model, Fake(true, seen), startShowing = true) } } } }
         }

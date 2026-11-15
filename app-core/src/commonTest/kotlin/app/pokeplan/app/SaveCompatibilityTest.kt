@@ -12,10 +12,12 @@ import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
+import app.pokeplan.app.storage.Clock
+import app.pokeplan.app.storage.MemoryStorage
 
 /** An old save must still load when the app has grown new saved fields, and the stored names must not move. */
 class SaveCompatibilityTest {
-    private class Clock(var millis: Long = 1_700_000_000_000L) : app.pokeplan.app.Clock { override fun nowMillis() = millis }
+    private class Clock(var millis: Long = 1_700_000_000_000L) : app.pokeplan.app.storage.Clock { override fun nowMillis() = millis }
 
     private fun store(storage: MemoryStorage = MemoryStorage()) = GameStore(storage, Clock(), kotlinx.datetime.TimeZone.UTC, Random(5)).also { if (storage.load() == null) it.start("Sophia", 25) }
 

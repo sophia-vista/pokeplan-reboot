@@ -8,6 +8,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import app.pokeplan.app.storage.Clock
+import app.pokeplan.app.storage.MemoryStorage
 
 /** One Pokémon, one place (POKEMON_ECOSYSTEM.md section 2.2, owner decision 7 November 2026). */
 class PlacesTest {

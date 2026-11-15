@@ -5,10 +5,9 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import app.pokeplan.app.ReminderActions
-import app.pokeplan.app.ReminderModule
-import app.pokeplan.app.ReminderRequest
-
+import app.pokeplan.app.reminders.ReminderActions
+import app.pokeplan.app.reminders.ReminderModule
+import app.pokeplan.app.reminders.ReminderRequest
 /**
  * The migration from the old Plan and Care alarms to the shared reminder feature (INTEGRATIONS_AND_PRIVACY.md section 9.11).
  * The old alarms are cancelled only after [SharedReminders.reschedule] has set the new ones, once (a marker keeps the step

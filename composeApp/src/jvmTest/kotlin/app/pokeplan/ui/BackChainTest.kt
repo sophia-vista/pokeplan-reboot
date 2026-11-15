@@ -9,9 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.unit.Density
-import app.pokeplan.app.Clock
+import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.GameStore
-import app.pokeplan.app.MemoryStorage
+import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.ui.care.CareSection
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PlanSection

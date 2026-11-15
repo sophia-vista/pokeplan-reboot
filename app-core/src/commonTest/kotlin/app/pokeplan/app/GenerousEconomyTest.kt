@@ -14,6 +14,8 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import app.pokeplan.app.storage.Clock
+import app.pokeplan.app.storage.MemoryStorage
 
 /** Rules version 12: Care Eggs, Care's candies and the coin shop. */
 class GenerousEconomyTest {
