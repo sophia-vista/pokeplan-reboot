@@ -66,7 +66,7 @@ enum class PlanSection(val label: String, val icon: String) {
     val parent: PlanSection? get() = if (this in MORE_HOLDS) MORE else null
 
     companion object {
-        val MORE_HOLDS = setOf(PROGRESS, GOALS, TARGETS, ALL)
+        val MORE_HOLDS = setOf(PROGRESS, GOALS, TARGETS, ALL, OUTSTANDING)
         /** Today's icon, for its empty state. */
         const val TODAY_ICON = "oaks-parcel"
     }
@@ -80,6 +80,7 @@ enum class PlanSection(val label: String, val icon: String) {
 fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
     // Care switched off in Settings hides it; what it saved is kept.
     val open = model.module?.takeIf { it != Module.CARE || model.data.settings.careModule }
+    androidx.compose.runtime.CompositionLocalProvider(LocalFocusTab provides focusTab) {
     ScreenSwitch(open, depth = { if (it == null) 0 else 1 }) { page ->
         when (page) {
             Module.PLAN -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.PLAN.look.accent)) { PlanScreen(model, focusTab, openPokemon) }
@@ -92,6 +93,7 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
             null -> ModulesMenu(model)
         }
     }
+    }
 }
 
 @Composable
@@ -103,18 +105,20 @@ private fun ModulesMenu(model: AppModel) {
     model.linkData // and Link
     val today = model.store.todayTasks().size
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Modules", icon = "explorer-kit")
+        ScreenHeader("Modules", icon = "explorer-kit", trailing = {
+            app.pokeplan.ui.theme.PixelKey({ model.gearOpen = true }, key = Pixel.InkSoft, compact = true, sound = Sfx.DOOR_ENTER) { look -> app.pokeplan.ui.theme.KeyLabel("Gear", look) }
+        })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             val routines = model.care.todayRoutines()
             val routinesLeft = routines.count { !it.doneOn(model.care.today) }
-            // Pokégear first and World last, the six between in the order of the accent rainbow (ModuleAccent). A module that is not built
-            // yet is a quiet placeholder in its own colour, so the list shows where it will sit.
+            // Gear is the key in the header (a tool drawer, not a life module). The modules follow in the order of the accent rainbow
+            // (ModuleAccent), World last; "Jump to" opens any section by name.
+            JumpSearch(model)
             MenuGrid(
                 listOfNotNull(
-                    MenuEntry("GEAR", "explorer-kit", "Gear", tint = ModuleAccent.GEAR.accent, wide = true, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.MINT.name, Module.MINT.icon, Module.MINT.label, mintSubtitle(model), tint = ModuleAccent.MINT.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.BASE.name, Module.BASE.icon, Module.BASE.label, baseSubtitle(model), tint = ModuleAccent.BASE.accent, sound = Sfx.DOOR_ENTER),
@@ -125,7 +129,7 @@ private fun ModulesMenu(model: AppModel) {
                     MenuEntry(Module.LINK.name, Module.LINK.icon, Module.LINK.label, linkSubtitle(model), tint = ModuleAccent.LINK.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = ModuleAccent.WORLD.accent, wide = true, sound = Sfx.DOOR_ENTER),
                 ),
-            ) { key -> if (key == "GEAR") model.gearOpen = true else model.module = Module.valueOf(key) }
+            ) { key -> model.module = Module.valueOf(key) }
         }
     }
 }
@@ -161,7 +165,7 @@ private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, 
 
 /**
  * Plan's own page is its Today (PLAN.md section 3.1): its lead in Plan's town, quick add, the day's tasks and targets, then one
- * menu of rows with counts (Inbox, Upcoming, Lists, Calendar, Focus, More) and the party as one row.
+ * menu of rows with counts behind the header's Sections key (Inbox, Upcoming, Lists, Focus, More) and the party as one row.
  */
 @Composable
 private fun PlanToday(model: AppModel, focusTab: Boolean, onBack: () -> Unit, openPokemon: (String) -> Unit) {
@@ -169,8 +173,16 @@ private fun PlanToday(model: AppModel, focusTab: Boolean, onBack: () -> Unit, op
     val store = model.store
     val session = data.focus
     val live = planTasks(model)
+    fun count(n: Int) = if (n > 0) "$n" else ""
+    val sections = listOfNotNull(
+            MenuEntry(PlanSection.INBOX.name, PlanSection.INBOX.icon, PlanSection.INBOX.label, tint = ModuleAccent.PLAN.accent, count = count(TaskViews.inbox(live).size)),
+            MenuEntry(PlanSection.UPCOMING.name, PlanSection.UPCOMING.icon, PlanSection.UPCOMING.label, tint = ModuleAccent.PLAN.accent, count = count(TaskViews.upcoming(live, store.now).size)),
+            MenuEntry(PlanSection.LISTS.name, PlanSection.LISTS.icon, PlanSection.LISTS.label, tint = ModuleAccent.PLAN.accent, count = count(store.activeLists.size)),
+            if (!focusTab) null else MenuEntry(PlanSection.FOCUS.name, PlanSection.FOCUS.icon, PlanSection.FOCUS.label, badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent, count = if (session != null) "on" else ""),
+            MenuEntry(PlanSection.MORE.name, PlanSection.MORE.icon, PlanSection.MORE.label, badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent),
+    )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.PLAN.label, onBack = onBack, color = Module.PLAN.look.header)
+        ScreenHeader(Module.PLAN.label, onBack = onBack, color = Module.PLAN.look.header, footer = { ModuleNavKeys(model, Module.PLAN, sections, { key -> model.planSection = PlanSection.valueOf(key) }) })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -179,18 +191,6 @@ private fun PlanToday(model: AppModel, focusTab: Boolean, onBack: () -> Unit, op
             FirstRecordEgg(model, app.pokeplan.app.Tutorials.PLAN_FOCUS, model.data.tasks.count { it.completedAtMillis != null })
             QuickAddBox(model, AddTo.TODAY)
             TodayList(model, onFocus = if (!focusTab) null else ({ t -> model.focusTaskId = t.id; model.planSection = PlanSection.FOCUS }))
-            fun count(n: Int) = if (n > 0) "$n" else ""
-            MenuList(
-                listOfNotNull(
-                    MenuEntry(PlanSection.INBOX.name, PlanSection.INBOX.icon, PlanSection.INBOX.label, tint = ModuleAccent.PLAN.accent, count = count(TaskViews.inbox(live).size)),
-                    MenuEntry(PlanSection.UPCOMING.name, PlanSection.UPCOMING.icon, PlanSection.UPCOMING.label, tint = ModuleAccent.PLAN.accent, count = count(TaskViews.upcoming(live, store.now).size)),
-                    MenuEntry(PlanSection.OUTSTANDING.name, PlanSection.OUTSTANDING.icon, PlanSection.OUTSTANDING.label, tint = ModuleAccent.PLAN.accent, count = count(live.count { it.isOpen })),
-                    MenuEntry(PlanSection.LISTS.name, PlanSection.LISTS.icon, PlanSection.LISTS.label, tint = ModuleAccent.PLAN.accent, count = count(store.activeLists.size)),
-                    MenuEntry(PlanSection.CALENDAR.name, PlanSection.CALENDAR.icon, PlanSection.CALENDAR.label, tint = ModuleAccent.PLAN.accent),
-                    if (!focusTab) null else MenuEntry(PlanSection.FOCUS.name, PlanSection.FOCUS.icon, PlanSection.FOCUS.label, badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent, count = if (session != null) "on" else ""),
-                    MenuEntry(PlanSection.MORE.name, PlanSection.MORE.icon, PlanSection.MORE.label, badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent),
-                ),
-            ) { key -> model.planSection = PlanSection.valueOf(key) }
             PlanPartyPanel(model, openPokemon)
         }
     }
@@ -204,6 +204,7 @@ private fun PlanMoreMenu(model: AppModel) {
     val targets = store.frequencyTasks()
     MenuList(
         listOfNotNull(
+            MenuEntry(PlanSection.OUTSTANDING.name, PlanSection.OUTSTANDING.icon, PlanSection.OUTSTANDING.label, tint = ModuleAccent.PLAN.accent, count = planTasks(model).count { it.isOpen }.let { if (it > 0) "$it" else "" }),
             MenuEntry(PlanSection.PROGRESS.name, PlanSection.PROGRESS.icon, PlanSection.PROGRESS.label, badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent, count = if (store.canReview()) "review" else ""),
             if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, PlanSection.GOALS.label, tint = ModuleAccent.PLAN.accent, count = if (data.goals.isEmpty()) "" else "${data.goals.size}"),
             MenuEntry(PlanSection.TARGETS.name, PlanSection.TARGETS.icon, PlanSection.TARGETS.label, tint = ModuleAccent.PLAN.accent, count = if (targets.isEmpty()) "" else "${targets.count { store.today in it.completions }}/${targets.size}"),

@@ -96,6 +96,7 @@ import app.pokeplan.ui.screens.BuddyStage
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
+import app.pokeplan.ui.screens.ModuleNavKeys
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PixelDateField
 import app.pokeplan.ui.screens.PixelMomentField
@@ -157,8 +158,18 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val done = today.count { it.doneOn(model.care.today) }
     val diarySaved = model.care.diaryToday() != null
     val practised = model.care.practisedToday().size
+    val sections = listOf(
+        MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = ModuleAccent.CARE.accent),
+        MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm break", "a minute to breathe", tint = ModuleAccent.CARE.accent),
+        MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = ModuleAccent.CARE.accent),
+        MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = ModuleAccent.CARE.accent),
+        MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = ModuleAccent.CARE.accent),
+        MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = ModuleAccent.CARE.accent),
+        MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = ModuleAccent.CARE.accent),
+        MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = ModuleAccent.CARE.accent),
+    )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.CARE.label, onBack = onBack, color = Module.CARE.look.header)
+        ScreenHeader(Module.CARE.label, onBack = onBack, color = Module.CARE.look.header, footer = { ModuleNavKeys(model, Module.CARE, sections) { key -> model.careSection = CareSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -182,18 +193,6 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             }
             MoodRow(model)
             CareEggMeter(model)
-            MenuGrid(
-                listOf(
-                    MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = ModuleAccent.CARE.accent),
-                    MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm break", "a minute to breathe", tint = ModuleAccent.CARE.accent),
-                    MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = ModuleAccent.CARE.accent),
-                    MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = ModuleAccent.CARE.accent),
-                    MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = ModuleAccent.CARE.accent),
-                    MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = ModuleAccent.CARE.accent),
-                    MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = ModuleAccent.CARE.accent),
-                    MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = ModuleAccent.CARE.accent),
-                ),
-            ) { key -> model.careSection = CareSection.valueOf(key) }
             VisitorsCard(model)
             CarePartyPanel(model, openPokemon)
         }

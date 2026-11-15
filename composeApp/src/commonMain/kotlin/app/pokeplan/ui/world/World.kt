@@ -85,6 +85,7 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.Cutscene
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
+import app.pokeplan.ui.screens.ModuleNavKeys
 import app.pokeplan.ui.screens.MenuList
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
@@ -185,8 +186,16 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
 private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val world = model.data.world
     val out = world.teams.count { it.expedition != null }
+    val sections = listOf(
+        MenuEntry(WorldSection.TOWN.name, WorldSection.TOWN.icon, WorldSection.TOWN.label, if (world.finds.isEmpty()) "Camp level ${world.facilityLevel(Facility.CAMP)}" else "${world.finds.size} to meet", badge = world.researchReady().size + world.finds.size, tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.ARCHIVE.name, WorldSection.ARCHIVE.icon, WorldSection.ARCHIVE.label, "${world.discovered.size} species met", tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.SETTINGS.name, WorldSection.SETTINGS.icon, WorldSection.SETTINGS.label, tint = Pixel.InkSoft),
+    )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.WORLD.label, onBack = onBack, color = Module.WORLD.look.header)
+        ScreenHeader(Module.WORLD.label, onBack = onBack, color = Module.WORLD.look.header, footer = { ModuleNavKeys(model, Module.WORLD, sections) { key -> model.worldSection = WorldSection.valueOf(key) } })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             // The order of the page: where you are and the one thing worth doing (the region, its chapter, the next step), what the teams
             // are doing and brought back, then the places to go. Rank sits in one quiet strip. The first time, one card says what World is.
@@ -210,16 +219,6 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
                 ExpeditionOverview(model)
             }
             // The five destinations, big (WORLD.md section 2); Settings is the one small button.
-            MenuGrid(
-                listOf(
-                    MenuEntry(WorldSection.TOWN.name, WorldSection.TOWN.icon, WorldSection.TOWN.label, if (world.finds.isEmpty()) "Camp level ${world.facilityLevel(Facility.CAMP)}" else "${world.finds.size} to meet", badge = world.researchReady().size + world.finds.size, tint = ModuleAccent.WORLD.accent),
-                    MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = ModuleAccent.WORLD.accent),
-                    MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = ModuleAccent.WORLD.accent),
-                    MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = ModuleAccent.WORLD.accent),
-                    MenuEntry(WorldSection.ARCHIVE.name, WorldSection.ARCHIVE.icon, WorldSection.ARCHIVE.label, "${world.discovered.size} species met", tint = ModuleAccent.WORLD.accent),
-                ),
-            ) { key -> model.worldSection = WorldSection.valueOf(key) }
-            PixelButton(WorldSection.SETTINGS.label, { model.worldSection = WorldSection.SETTINGS }, color = ModuleAccent.WORLD.accent, compact = true)
         }
     }
 }

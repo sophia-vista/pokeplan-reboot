@@ -72,6 +72,7 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
+import app.pokeplan.ui.screens.ModuleNavKeys
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.PixelDatePicker
@@ -134,8 +135,18 @@ private fun HealPage(model: AppModel, section: HealSection?, openPokemon: (Strin
 @Composable
 private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.healData
+    val sections = listOf(
+        MenuEntry(HealSection.ACTIVITY.name, HealSection.ACTIVITY.icon, "Activity", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.HYDRATION.name, HealSection.HYDRATION.icon, "Hydration", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.SLEEP.name, HealSection.SLEEP.icon, "Sleep", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.BODY.name, HealSection.BODY.icon, "Body", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.READINGS.name, HealSection.READINGS.icon, "Readings", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.CONNECTIONS.name, HealSection.CONNECTIONS.icon, "Connections", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
+    )
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.HEAL.label, onBack = onBack, color = Module.HEAL.look.header)
+        ScreenHeader(Module.HEAL.label, onBack = onBack, color = Module.HEAL.look.header, footer = { ModuleNavKeys(model, Module.HEAL, sections) { key -> model.healSection = HealSection.valueOf(key) } })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -143,18 +154,6 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             ModuleLeadStage(model, Module.HEAL, model.data.player.healLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HEAL_LOG_PREFIX), openPokemon = openPokemon)
             FirstRecordEgg(model, Tutorials.HEAL_WALK, data.activities.size + data.hydration.size + data.sleep.size)
             TodayCard(model)
-            MenuGrid(
-                listOf(
-                    MenuEntry(HealSection.ACTIVITY.name, HealSection.ACTIVITY.icon, "Activity", tint = ModuleAccent.HEAL.accent),
-                    MenuEntry(HealSection.HYDRATION.name, HealSection.HYDRATION.icon, "Hydration", tint = ModuleAccent.HEAL.accent),
-                    MenuEntry(HealSection.SLEEP.name, HealSection.SLEEP.icon, "Sleep", tint = ModuleAccent.HEAL.accent),
-                    MenuEntry(HealSection.BODY.name, HealSection.BODY.icon, "Body", tint = ModuleAccent.HEAL.accent),
-                    MenuEntry(HealSection.READINGS.name, HealSection.READINGS.icon, "Readings", tint = ModuleAccent.HEAL.accent),
-                    MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", tint = ModuleAccent.HEAL.accent),
-                    MenuEntry(HealSection.CONNECTIONS.name, HealSection.CONNECTIONS.icon, "Connections", tint = ModuleAccent.HEAL.accent),
-                    MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
-                ),
-            ) { key -> model.healSection = HealSection.valueOf(key) }
             HealPartyPanel(model, openPokemon)
         }
     }
