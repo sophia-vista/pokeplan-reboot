@@ -351,6 +351,31 @@ class ScreenshotTest {
         }
     }
 
+    /** WORLD team editor (REP-054): a recommendation with reasons, a search, and the poor-match mark, with the longest dungeon name, both palettes. */
+    @Test
+    fun worldTeamAdvice() {
+        val store = started()
+        listOf(373, 212, 130, 25, 74, 10).forEach { store.grantPokemon(it, "test") }
+        val ids = store.data.player.pokemon.map { it.id }
+        val model = AppModel(store)
+        model.worldLayer = app.pokeplan.world.WorldLayer.SINNOH
+        model.worldTeamDungeon = "victory-road-sinnoh"
+        val dungeon = app.pokeplan.world.Dungeons.byId("victory-road-sinnoh")!!
+        val team = app.pokeplan.world.WorldTeam(1)
+        listOf(false, true).forEach { dark ->
+            val tag = if (dark) "dark" else "light"
+            render("world-team-advice-$tag", height = 2200, frames = 8) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(12.dp)) { app.pokeplan.ui.world.TeamEditor(model, team, dungeon, listOf(dungeon), initialAdvice = true) {} } } } }
+            render("world-team-search-$tag", height = 1800, frames = 8) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(12.dp)) { app.pokeplan.ui.world.TeamEditor(model, team, dungeon, listOf(dungeon), initialSearch = "a") {} } } } }
+        }
+        // A saved team that is a poor match for the chosen dungeon carries the mark beside its name.
+        val poor = ids.filter { id -> store.data.player.pokemon.first { it.id == id }.let { app.pokeplan.world.TeamAdvice.matching(dungeon, it).isEmpty() } }.take(2)
+        store.worldAssign(1, poor)
+        model.worldSection = app.pokeplan.ui.world.WorldSection.TEAMS
+        listOf(false, true).forEach { dark ->
+            render("world-team-poor-${if (dark) "dark" else "light"}", frames = 8) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
+        }
+    }
+
     /** The Town's shop pages with their keepers (the café, Kecleon, the Swap Shop), and the Records page's adventure log. */
     @Test
     fun worldShops() {
