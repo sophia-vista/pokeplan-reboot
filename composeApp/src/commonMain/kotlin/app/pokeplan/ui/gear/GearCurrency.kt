@@ -102,7 +102,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                     Text(Currencies.label(code) + if (code == home) " (home)" else "", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelField(
-                            shown, { active = code; text = it.take(20); onUse() }, Modifier.weight(1f), singleLine = true,
+                            shown, { active = code; text = it.take(20) }, Modifier.weight(1f), singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                         )
                         if (i > 0 && code != home) PixelIconButton("arrow-up", "Move $code up", { saveBoard(rows.filter { it != home }.toMutableList().also { l -> val at = l.indexOf(code); if (at > 0) { l.removeAt(at); l.add(at - 1, code) } }) }, Pixel.InkSoft)

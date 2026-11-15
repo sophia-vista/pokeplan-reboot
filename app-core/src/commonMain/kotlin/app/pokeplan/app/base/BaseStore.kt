@@ -194,7 +194,7 @@ class BaseStore(
         return chore to (v.occurrence ?: today)
     }
 
-    private fun putEntry(e: ChoreEntry) = update { d -> d.copy(entries = d.entries.filterNot { it.choreId == e.choreId && it.dueDay == e.dueDay } + e) }
+    private fun putEntry(e: ChoreEntry) = update { d -> d.copy(entries = BaseRules.trimEntries(d.entries.filterNot { it.choreId == e.choreId && it.dueDay == e.dueDay } + e, today)) }
 
     /**
      * Marks the chore's current occurrence done (one action, BASE.md 4.2), with an optional [note]. An occurrence not yet due counts too ("done early").
@@ -485,7 +485,10 @@ class BaseStore(
     /** Lets a notification name the chore, supply or work once the phone is unlocked; the lock screen never does. */
     fun setReminderNames(on: Boolean) = settings { it.copy(reminderNames = on) }
 
-    fun setChoreRemind(id: String, on: Boolean) = update { d -> d.copy(chores = d.chores.map { if (it.id == id) it.copy(remind = on) else it }) }
+    /** Turns a chore's own reminder on or off. The first reminder set also turns Base's reminder switch (Base → Settings → Reminders) on, so "Remind me" is always offered (REP-029 a). */
+    fun setChoreRemind(id: String, on: Boolean) = update { d ->
+        d.copy(chores = d.chores.map { if (it.id == id) it.copy(remind = on) else it }, settings = if (on && !d.settings.reminders) d.settings.copy(reminders = true) else d.settings)
+    }
 
     fun setScheduleRemind(id: String, on: Boolean) = update { d -> d.copy(schedules = d.schedules.map { if (it.id == id) it.copy(remind = on) else it }) }
 

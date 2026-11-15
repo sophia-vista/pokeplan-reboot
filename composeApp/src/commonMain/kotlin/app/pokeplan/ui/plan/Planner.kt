@@ -379,10 +379,20 @@ internal fun repeatsMarker(store: GameStore, task: Task): String? =
 /** The most of a shared text that is typed into quick add. */
 private const val QUICK_ADD_SHARED_MAX = 200
 
+/** Makes an open copy of [task] (same words, list and steps, nothing paid) and says so; hidden for a task another module owns. */
+@Composable
+private fun DuplicateButton(model: AppModel, task: Task) {
+    if (task.link != null) return
+    PixelButton("Duplicate", { if (model.store.duplicateTask(task.id) != null) model.say("Copy added.") }, color = Pixel.InkSoft, compact = true)
+}
+
 /** Add a task with just a title; the chips pick a day and "More options" adds difficulty. "Call mum tomorrow 5pm 30m" is understood too. */
 @Composable
 internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) {
-    var text by remember { mutableStateOf("") }
+    val draftKey = "$addTo:${listId.orEmpty()}"
+    var text by remember { mutableStateOf(model.quickAddDrafts[draftKey].orEmpty()) }
+    // The unsent words outlive the screen: leaving for another tab and coming back finds them again.
+    LaunchedEffect(text) { if (text.isEmpty()) model.quickAddDrafts.remove(draftKey) else model.quickAddDrafts[draftKey] = text }
     var rank by remember { mutableStateOf(Rank.C) }
     // The day chosen with a key; with none ([day] null and not [noDate]) the day is what the text says or the view's default.
     var day by remember { mutableStateOf<LocalDate?>(null) }
@@ -426,6 +436,14 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             )
             // A repeating task starts on its day (today when it has none) and the next ones are made ahead.
             repeat.toRepeat(made.planned ?: model.store.today)?.let { model.store.makeRepeating(made.id, it) }
+            // Where it went: its list, else its day, else the Inbox.
+            val filed = made.listId?.let { id -> model.data.lists.firstOrNull { it.id == id }?.name }
+            model.say("Added to " + when {
+                filed != null -> filed
+                made.planned == model.store.today -> "Today"
+                made.planned != null -> made.planned!!.short()
+                else -> "Inbox"
+            })
             text = ""; day = null; noDate = false; picking = false; more = false; repeat = RepeatKind.NEVER
         }
     }
@@ -434,7 +452,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(
                     text, { text = it }, Modifier.weight(1f).focusRequester(focus), singleLine = true,
-                    placeholder = "Add a task",
+                    placeholder = "Buy milk tomorrow #Home",
                     // The keyboard's own key adds the task, so the thumb need not travel to the button.
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
@@ -525,6 +543,7 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
                         // A finished task can be reopened or deleted (the undo bar brings a deleted one back for a while).
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             PixelButton("Reopen", { store.reopen(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            DuplicateButton(model, task)
                             PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
                         }
                     }
@@ -699,6 +718,7 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
         HorizontalDivider(color = Pixel.Border)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            DuplicateButton(model, task)
             PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
         }
     }

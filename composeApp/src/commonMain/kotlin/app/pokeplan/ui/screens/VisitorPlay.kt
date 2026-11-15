@@ -400,7 +400,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
                 val chosen = doing == given
                 TabButton(given.label(), chosen, { doing = if (chosen) null else given; swept = 0f }, enabled = given !in visit.actions)
             }
-            PixelIconButton("check", "Leave the visit", { leave() }, Pixel.InkSoft)
+            PixelButton("Leave the visit", { leave() }, color = Pixel.InkSoft, compact = true)
         } else {
             Play.entries.forEach { kind ->
                 TabButton(kind.label, play == kind, { play = if (play == kind) null else kind })

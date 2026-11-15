@@ -44,7 +44,7 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
     fun bad(i: Int): Boolean = values[i].isNotBlank() && num(i) == null
     @Composable
     fun field(i: Int, label: String, hint: String? = null) {
-        PixelField(values[i], { v -> values = values.toMutableList().also { it[i] = v.take(14) }; onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = label, placeholder = hint, error = if (bad(i)) NOT_A_NUMBER else null)
+        PixelField(values[i], { v -> values = values.toMutableList().also { it[i] = v.take(14) } }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = label, placeholder = hint, error = if (bad(i)) NOT_A_NUMBER else null)
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

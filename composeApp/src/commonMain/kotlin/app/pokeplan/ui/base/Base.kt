@@ -517,7 +517,7 @@ private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone
             if (linked) PixelButton("Remove from Plan", { model.store.data.tasks.firstOrNull { it.link?.ref == id && it.state != TaskState.DELETED }?.let { t -> model.store.unlinkTask(t.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             else PixelButton("Show in Plan", { model.store.linkChore(id) }, Modifier.weight(1f), accent, compact = true)
         }
-        if (model.baseData.settings.reminders && v.chore.status == RecordStatus.ACTIVE) Actions {
+        if (v.chore.status == RecordStatus.ACTIVE) Actions {
             PixelButton(if (v.chore.remind) "Reminder on" else "Remind me", { home.setChoreRemind(id, !v.chore.remind) }, Modifier.weight(1f), if (v.chore.remind) accent else Pixel.InkSoft, compact = true)
         }
         Actions {

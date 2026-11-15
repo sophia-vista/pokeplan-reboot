@@ -728,25 +728,22 @@ class BaseRulesTest {
     // --- Habitat Discovery: what may pay -------------------------------------------------------------------------------
 
     @Test
-    fun choresPayUntilTheDaysShareIsUsed() {
-        fun paid(n: Int, day: String = "2026-11-07") = (1..n).map { entry("p$it$day", "c", "2026-11-01", day = day, paid = true) }
-        assertTrue(BaseRules.chorePays(BaseData(), today))
-        assertTrue(BaseRules.chorePays(BaseData(entries = paid(BaseRules.CHORES_PAID_PER_DAY - 1)), today))
-        assertFalse(BaseRules.chorePays(BaseData(entries = paid(BaseRules.CHORES_PAID_PER_DAY)), today))
-        assertFalse(BaseRules.chorePays(BaseData(entries = paid(BaseRules.CHORES_PAID_PER_DAY + 2)), today))
-        // another day's payouts, and entries that were not paid, do not count
-        val other = paid(BaseRules.CHORES_PAID_PER_DAY, "2026-11-06") + (1..9).map { entry("u$it", "c", "2026-11-01", day = "2026-11-07", paid = false) }
-        assertTrue(BaseRules.chorePays(BaseData(entries = other), today))
-        assertFalse(BaseRules.chorePays(BaseData(entries = other), d("2026-11-06")))
+    fun theDailyShareIsCountedByTheGameNotByTheRules() {
+        // the cap lives once (GameStore.BASE_CAPS, tested in BaseStoreTest); the rules only ask whether Habitat Discovery is on
+        val many = (1..BaseRules.CHORES_PAID_PER_DAY + 2).map { entry("p$it", "c", "2026-11-01", day = "2026-11-07", paid = true) }
+        assertTrue(BaseRules.chorePays(BaseData(entries = many), today))
+        assertTrue(BaseRules.maintenancePays(BaseData(), today))
     }
 
     @Test
-    fun maintenancePaysUntilTheDaysShareIsUsed() {
-        fun paid(n: Int, day: String = "2026-11-07") = (1..n).map { MaintenanceRecord("m$it$day", "t", day = d(day), paid = true) }
-        assertTrue(BaseRules.maintenancePays(BaseData(), today))
-        assertTrue(BaseRules.maintenancePays(BaseData(maintenance = paid(BaseRules.MAINTENANCE_PAID_PER_DAY - 1)), today))
-        assertFalse(BaseRules.maintenancePays(BaseData(maintenance = paid(BaseRules.MAINTENANCE_PAID_PER_DAY)), today))
-        assertTrue(BaseRules.maintenancePays(BaseData(maintenance = paid(BaseRules.MAINTENANCE_PAID_PER_DAY, "2026-11-06") + MaintenanceRecord("u", "t", day = today)), today))
+    fun historyOlderThanFourHundredDaysIsDropped() {
+        val old = entry("old", "c", "2025-09-01", day = "2025-09-01")
+        val edge = entry("edge", "c", "2025-10-12", day = "2025-10-12")
+        val recent = entry("new", "c", "2026-11-01", day = "2026-11-01")
+        val kept = BaseRules.trimEntries(listOf(old, edge, recent), today)
+        assertEquals(listOf("edge", "new"), kept.map { it.id })
+        val same = listOf(edge, recent)
+        assertTrue(BaseRules.trimEntries(same, today) === same)
     }
 
     @Test

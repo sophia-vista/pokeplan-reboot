@@ -260,6 +260,8 @@ data class GearData(
     val pickerHistory: List<String> = emptyList(),
     val pickerHistoryOn: Boolean = false,
     val diceHistory: List<String> = emptyList(),
+    /** Whether the Dice keep their last rolls, like [pickerHistoryOn] and [calcHistoryOn]. Saved, so the switch survives a restart. */
+    val diceHistoryOn: Boolean = false,
     /** The screen light: colour name, brightness 0.1 to 1. */
     val lightColor: String = "white",
     val lightBrightness: Float = 1f,

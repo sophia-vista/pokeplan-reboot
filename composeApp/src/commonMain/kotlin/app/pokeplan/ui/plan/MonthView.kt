@@ -205,9 +205,12 @@ private fun MonthWeek(
                 else MonthLabel(b.item, place, pick)
             }
             hidden.forEachIndexed { i, n ->
+                // The rest of the day's things: a "+n" that opens the day (its agenda lists all of them).
                 if (n > 0) Text(
-                    "+$n", Modifier.offset(x = column * i, y = lane * lanes).width(column), style = MonthTextStyle,
-                    color = Pixel.InkSoft, textAlign = TextAlign.Center, maxLines = 1,
+                    "+$n", Modifier.offset(x = column * i, y = lane * lanes).width(column).height(MonthBarHeight)
+                        .clickable(role = Role.Button, onClickLabel = "Show ${week[i].short()}") { choose(week[i]) }
+                        .semantics { contentDescription = "$n more on ${week[i].short()}" },
+                    style = MonthTextStyle, color = Pixel.InkSoft, textAlign = TextAlign.Center, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -224,7 +227,7 @@ private fun MonthLabel(item: MonthItem, modifier: Modifier, pick: (String) -> Un
         modifier.height(MonthBarHeight).clip(shape).background(item.color.copy(alpha = 0.2f), shape)
             .then(if (own) Modifier.clickable(role = Role.Button, onClickLabel = "Edit ${item.title}") { pick(item.id) } else Modifier)
             .padding(horizontal = 3.dp),
-        style = MonthTextStyle, color = Pixel.Ink, maxLines = 1, softWrap = false, overflow = TextOverflow.Clip,
+        style = MonthTextStyle, color = Pixel.Ink, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
     )
 }
 

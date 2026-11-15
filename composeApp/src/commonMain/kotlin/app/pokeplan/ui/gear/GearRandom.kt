@@ -152,7 +152,7 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
     var dice by remember { mutableStateOf("2d6") }
     var rolled by remember { mutableStateOf<String?>(null) }
     var count by remember { mutableStateOf(1) }
-    var historyOn by remember { mutableStateOf(gear.diceHistory.isNotEmpty()) }
+    val historyOn = gear.diceHistoryOn
     val reduce = model.data.settings.reduceMotion
     val scope = rememberCoroutineScope()
     fun roll(spec: String) {
@@ -197,7 +197,7 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
                 PixelButton("Roll", { roll(dice) }, Modifier.weight(0.5f), Pixel.Tone, compact = true)
             }
             rolled?.let { Text(it, Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.titleMedium) }
-            PixelButton(if (historyOn) "Keeping the last rolls" else "Not keeping the last rolls", { historyOn = !historyOn; if (!historyOn) store.changeGear { it.copy(diceHistory = emptyList()) } }, Modifier.fillMaxWidth(), if (historyOn) Pixel.Green else Pixel.InkSoft, compact = true)
+            PixelButton(if (historyOn) "Keeping the last rolls" else "Not keeping the last rolls", { store.changeGear { it.copy(diceHistoryOn = !it.diceHistoryOn, diceHistory = if (it.diceHistoryOn) emptyList() else it.diceHistory) } }, Modifier.fillMaxWidth(), if (historyOn) Pixel.Green else Pixel.InkSoft, compact = true)
             if (historyOn) gear.diceHistory.take(8).forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
         }
     }

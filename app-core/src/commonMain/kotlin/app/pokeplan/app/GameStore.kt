@@ -645,6 +645,21 @@ class GameStore(
 
     fun updateTask(task: Task) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == task.id) task else it }) }
 
+    /**
+     * A copy of the task as a new open one: same words, list, difficulty, days, estimate, reminders and steps (unticked and unpaid), but no series, link,
+     * focus time or completion. Pays nothing; the copy earns its reward on its own, once. Null for a task that is gone or is owned by another module.
+     */
+    fun duplicateTask(id: String): Task? {
+        val src = data.tasks.firstOrNull { it.id == id && it.state != TaskState.DELETED && it.link == null } ?: return null
+        val copy = src.copy(
+            id = newId(), seriesId = null, tutorial = false, state = TaskState.OPEN, createdAtMillis = nowMillis, completedAtMillis = null,
+            deletedAtMillis = null, focusedMinutes = 0, paid = false, link = null,
+            subtasks = src.subtasks.map { it.copy(id = newId(), done = false, paid = false, createdAtMillis = nowMillis) },
+        )
+        update { it.copy(tasks = it.tasks + copy) }
+        return copy
+    }
+
     // --- links to other modules (PRODUCT_BIBLE.md section 4) -------------------------------------------------------------------
 
     private val linkOwners = mutableMapOf<LinkKind, LinkOwner>()
@@ -1559,13 +1574,21 @@ class GameStore(
 
     /** Gives the player a Pokémon outright (a quest reward). It goes to the Guardian collection if it is a legendary or mythical. */
     fun grantPokemon(speciesId: Int, source: String, how: Origin.How = Origin.How.QUEST, form: String? = null): OwnedPokemon {
+        var granted: OwnedPokemon? = null
+        update { d -> grantIn(d, speciesId, source, how, form).also { granted = it.second }.first }
+        return granted!!
+    }
+
+    /**
+     * [grantPokemon] as a step of a larger [update], so a "grant once" flag and the Pokémon are one write: the widget and the app can both reach
+     * a grant, and whichever second finds the flag set grants nothing (WorldActions' Guardian and legends).
+     */
+    internal fun grantIn(d: AppData, speciesId: Int, source: String, how: Origin.How = Origin.How.QUEST, form: String? = null): Pair<AppData, OwnedPokemon> {
         val option = HatchOption(speciesId, form ?: Dex.defaultForm(speciesId).identifier)
         val p = Hatching.create(newId(), option, OwnedPokemon.PARTY_SIZE, nowMillis, 60, rng).copy(inParty = false)
-        update { d ->
-            log(source, listOf(Reward.Hatched(p, fromTask = false)),
-                d.copy(player = d.player.copy(pokemon = d.player.pokemon + p, caught = d.player.caught + p.speciesId)), origin = Origin(how))
-        }
-        return p
+        val after = log(source, listOf(Reward.Hatched(p, fromTask = false)),
+            d.copy(player = d.player.copy(pokemon = d.player.pokemon + p, caught = d.player.caught + p.speciesId)), origin = Origin(how))
+        return after to p
     }
 
     /** Feeds up to [count] Rare Candies. Returns how many were used. */

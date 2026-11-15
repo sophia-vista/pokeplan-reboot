@@ -5,6 +5,20 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.198.0
+
+The quick wins from the re-ordered backlog (`docs/pokelife/IMPLEMENTATION_BACKLOG.md`, Priority board tier 1). `RewardRules.VERSION` 29.
+
+- **Care Play no longer fills Care's Egg meter** (owner's call D1, 15 November 2026: it was the cheapest egg in the app). It still pays its friendship step and Rare Candy. Rules version 29 (`docs/economy.md`).
+- **Care:** a routine can be skipped for the day (no reward, no guilt text, undoable; kept in the routine's own JSON, no schema step); the Today box and the Routines list say "2 of 5 today"; Routines has Today and Yesterday tabs (yesterday records the tick and pays nothing); Stop tracking an urge sits behind a confirm and out of the daily form; a resting visitor shows "ready about HH:MM"; "Leave the visit" is a labelled key.
+- **Plan:** "Added to ..." says where a quick-added task went; the quick-add box shows an example and keeps its unsent text; a task can be duplicated (a fresh copy, nothing paid); Month cells end a label with an ellipsis and "+n" opens the day.
+- **Base:** "Remind me" is always offered on a chore and the first one turns Base reminders on; chore history is trimmed at 400 days; the daily cap is counted once.
+- **Gear:** the helper reacts to real actions, not every keystroke; the dice history switch is saved.
+- **Mint:** "Paid, record it" on a bill creates its transaction (`billId` is now set); the empty-state line shows ₱.
+- **Safety:** the Guardian, the World legends and a recruited find are each granted in one write that re-checks its flag, and the Guardian is also granted when a settle climbs no floor; Transfer and Erase this device are hold-to-confirm (two taps with Reduce motion).
+- **Credits:** Settings → About → Credits lists the art, sound and font sources and their licences.
+- **Cleanup and docs:** the unused launcher `Calculator` is gone; the hosted widget size uses the Android 12 call; `IMPLEMENTATION_GUIDE.md` section 3.2 and `GEAR.md` section 15 are brought up to date; the backlog has a Priority board.
+
 ## 0.197.0
 
 Plan's goal badges and Hall of Fame (REP-053 chunk 5; spec `MODULES/PLAN.md` 9.1, owner took the four defaults on 15 November 2026). Display only: nothing new is paid, so `RewardRules.VERSION` is unchanged.
