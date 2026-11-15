@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.203.0
+
+MINT receive-money QR and recurring income (REP-039, first slice, and an owner request). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. None of it was run on a device.
+
+- **Receive QR:** an account can keep one image of its receive-money QR code (`FinancialAccount.receiveQr`, base64 PNG, at most `MintRules.QR_MAX_CHARS` = 88,000 characters, about 64 KB, checked by `MintRules.checkReceiveQr`; set with `MintStore.setReceiveQr`). It lives inside the account's existing sealed `mint_account` JSON row. It is picked with Android's Photo Picker (`ImageChooser` in `Integrations.kt`, `images` parameter of `App()`; `AndroidImagePicker` shrinks it to at most 600 px and 64 KB). The account options show a "Receive money" box (Replace, Remove; hidden when "hide values" is on; "Add QR code" on Android only). Never uploaded or read.
+- **Recurring income:** `Bill.income` (JSON default false). "Received, record it" writes an income transaction through `settleAndRecord`; nothing is ever posted automatically. The Bills screen is now "Bills and income" with a "Bill to pay / Income expected" choice and an income-category picker; the direction is fixed when the entry is created.
+- **Docs:** `MINT.md` 4.2, 8.3A, 13.4, new 22B; `IMPLEMENTATION_BACKLOG.md` REP-039 and priority row 16; `code-map.md`. Still open in REP-039: savings targets, rollover, splits, refunds, charts, other attachments, widget, custom recurrence, spotting subscriptions.
+
 ## 0.202.0
 
 WORLD team choice, PLAN Outstanding and monthly repeat, BASE first use, and a Huawei listener battery change (REP-054, REP-055, REP-056 BASE part, REP-057). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. None of it was run on a device.
