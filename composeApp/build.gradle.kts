@@ -126,6 +126,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.compose.get()}")
+            implementation("org.jetbrains.androidx.navigationevent:navigationevent-compose:1.1.0")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
