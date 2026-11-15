@@ -13,6 +13,12 @@ MINT receive-money QR and recurring income (REP-039, first slice, and an owner r
 - **Recurring income:** `Bill.income` (JSON default false). "Received, record it" writes an income transaction through `settleAndRecord`; nothing is ever posted automatically. The Bills screen is now "Bills and income" with a "Bill to pay / Income expected" choice and an income-category picker; the direction is fixed when the entry is created.
 - **Docs:** `MINT.md` 4.2, 8.3A, 13.4, new 22B; `IMPLEMENTATION_BACKLOG.md` REP-039 and priority row 16; `code-map.md`. Still open in REP-039: savings targets, rollover, splits, refunds, charts, other attachments, widget, custom recurrence, spotting subscriptions.
 
+## 0.202.1
+
+Fix: the 16 call sites of Compose's deprecated `androidx.compose.ui.backhandler.BackHandler` now use one app wrapper (REP-048 leftover). No behaviour change, and nothing pays, so `RewardRules.VERSION` is unchanged.
+
+- **One `BackHandler`:** `app.pokeplan.ui.BackHandler(enabled, onBack)` (`composeApp/src/commonMain/kotlin/app/pokeplan/ui/BackHandler.kt`) is built on `NavigationBackHandler` from the new explicit dependency `org.jetbrains.androidx.navigationevent:navigationevent-compose:1.1.0`. Base, Care, Heal, Link, Mint, World (3), Pokédex, the launcher (2), Cutscenes, Modules (2), Menu and ModuleGate call it; no `BackHandler` warning is left in the compile log.
+
 ## 0.202.0
 
 WORLD team choice, PLAN Outstanding and monthly repeat, BASE first use, and a Huawei listener battery change (REP-054, REP-055, REP-056 BASE part, REP-057). `RewardRules.VERSION` is unchanged (nothing pays differently). No schema change and no migration. None of it was run on a device.
