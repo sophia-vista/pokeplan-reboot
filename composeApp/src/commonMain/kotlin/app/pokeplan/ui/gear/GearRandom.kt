@@ -47,6 +47,8 @@ import kotlin.random.Random
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
+import app.pokeplan.app.gear.changeGear
+import app.pokeplan.app.gear.setPickerOptions
 
 /**
  * The Picker: a list you keep on this phone, each option with a weight (1 to 10), edited in place and moved up or down; pick one or several without

@@ -40,6 +40,19 @@ import app.pokeplan.ui.plan.duration
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TypedValueField
 import app.pokeplan.ui.screens.label
+import app.pokeplan.app.gear.stopwatchLap
+import app.pokeplan.app.gear.stopwatchPause
+import app.pokeplan.app.gear.stopwatchReset
+import app.pokeplan.app.gear.stopwatchStart
+import app.pokeplan.app.gear.timerAdd
+import app.pokeplan.app.gear.timerAddTime
+import app.pokeplan.app.gear.timerEdit
+import app.pokeplan.app.gear.timerPause
+import app.pokeplan.app.gear.timerRemove
+import app.pokeplan.app.gear.timerReset
+import app.pokeplan.app.gear.timerStart
+import app.pokeplan.app.gear.timersDismissFinished
+import app.pokeplan.app.gear.timersTick
 
 /**
  * The Pokégear timers: several at once, each named, started from a quick duration or your own. They keep running when the app is closed (the

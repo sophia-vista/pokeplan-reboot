@@ -10,6 +10,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
+import app.pokeplan.app.gear.assignGearHelper
 
 /** One Pokémon, one place (POKEMON_ECOSYSTEM.md section 2.2, owner decision 7 November 2026). */
 class PlacesTest {

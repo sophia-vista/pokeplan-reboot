@@ -90,6 +90,9 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
+import app.pokeplan.app.world.worldEpisodeDone
+import app.pokeplan.app.world.worldSceneDone
+import app.pokeplan.app.world.worldStoryProgress
 
 /** Columns across a stage or dungeon scene; rows are six. */
 private const val GRID_COLUMNS = 10

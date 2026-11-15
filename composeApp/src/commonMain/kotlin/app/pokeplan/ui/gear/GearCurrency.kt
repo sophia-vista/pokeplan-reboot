@@ -37,6 +37,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
+import app.pokeplan.app.gear.changeGear
+import app.pokeplan.app.gear.saveGearRates
 
 /**
  * The currency converter: a row for each currency you watch (your home currency first, the Philippine peso until you change it), each one an

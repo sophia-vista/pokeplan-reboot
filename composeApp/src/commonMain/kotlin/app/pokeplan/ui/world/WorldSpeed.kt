@@ -29,6 +29,8 @@ import app.pokeplan.world.WorldSim
 import app.pokeplan.ui.plan.duration
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
+import app.pokeplan.app.world.worldReport
+import app.pokeplan.app.world.worldReportDismiss
 
 /** A number with one decimal ("152.4"), without `String.format`, which the web build does not have. */
 internal fun oneDecimal(x: Double): String = (kotlin.math.round(x * 10) / 10.0).toString()

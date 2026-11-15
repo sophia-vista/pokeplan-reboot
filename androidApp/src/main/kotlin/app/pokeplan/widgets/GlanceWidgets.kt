@@ -85,6 +85,7 @@ import kotlinx.coroutines.delay
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import app.pokeplan.app.world.worldSettle
 
 private val red = Color(0xFFE84436)
 private val paper = Color(0xFFF7F5F0)

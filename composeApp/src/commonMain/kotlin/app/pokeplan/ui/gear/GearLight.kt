@@ -37,6 +37,7 @@ import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
+import app.pokeplan.app.gear.changeGear
 
 /**
  * The flashlight: the phone's torch where there is one (its state is the hardware's, so another app switching it shows here), and a screen light

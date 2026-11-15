@@ -34,6 +34,7 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
+import app.pokeplan.app.gear.changeGear
 
 /**
  * The unit converter: search a unit or a kind of measure by name, symbol or alias (a slip of a letter is forgiven), pick the kind from the chips

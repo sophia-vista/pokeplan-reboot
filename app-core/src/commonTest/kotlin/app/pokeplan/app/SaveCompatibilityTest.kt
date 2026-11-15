@@ -14,6 +14,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
+import app.pokeplan.app.world.worldAssign
+import app.pokeplan.app.world.worldSettle
+import app.pokeplan.app.world.worldStart
 
 /** An old save must still load when the app has grown new saved fields, and the stored names must not move. */
 class SaveCompatibilityTest {

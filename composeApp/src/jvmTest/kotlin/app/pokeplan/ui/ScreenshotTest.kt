@@ -36,6 +36,21 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.plus
 import kotlinx.datetime.minus
 import kotlin.test.assertTrue
+import app.pokeplan.app.gear.assignGearHelper
+import app.pokeplan.app.gear.changeGear
+import app.pokeplan.app.gear.gearFavorite
+import app.pokeplan.app.gear.gearUsed
+import app.pokeplan.app.gear.saveGearRates
+import app.pokeplan.app.gear.setPickerOptions
+import app.pokeplan.app.gear.stopwatchLap
+import app.pokeplan.app.gear.stopwatchStart
+import app.pokeplan.app.gear.timerAdd
+import app.pokeplan.app.gear.timerStart
+import app.pokeplan.app.world.worldAssign
+import app.pokeplan.app.world.worldEpisodeDone
+import app.pokeplan.app.world.worldRecruit
+import app.pokeplan.app.world.worldSettle
+import app.pokeplan.app.world.worldStart
 
 /**
  * Draws screens offscreen and writes PNGs to composeApp/build/screenshots, so they can be looked at without a device.

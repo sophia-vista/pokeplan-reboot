@@ -32,6 +32,7 @@ import kotlinx.datetime.LocalDateTime
 import app.pokeplan.ui.plan.clock
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
+import app.pokeplan.app.gear.changeGear
 
 /** The World clock: the time in the places you chose (the first is home), a time converted between them, and two date sums. The list stays on this phone. */
 @OptIn(ExperimentalLayoutApi::class)

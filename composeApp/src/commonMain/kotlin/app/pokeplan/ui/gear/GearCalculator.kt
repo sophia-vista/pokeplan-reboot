@@ -31,6 +31,7 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
+import app.pokeplan.app.gear.changeGear
 
 /**
  * The Pokégear calculator: one expression with the usual order of operations (`2 + 3 × 4` is 14), brackets, percentages, a scientific panel,

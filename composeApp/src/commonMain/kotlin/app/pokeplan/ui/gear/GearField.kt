@@ -53,6 +53,7 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
+import app.pokeplan.app.gear.changeGear
 
 
 /** Waypoints: mark where the phone is (one reading, asked for when you press the button; nothing is tracked) and see how far and which way each saved place is. */

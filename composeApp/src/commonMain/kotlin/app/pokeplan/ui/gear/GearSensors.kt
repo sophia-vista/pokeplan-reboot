@@ -34,6 +34,7 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
+import app.pokeplan.app.gear.changeGear
 
 /** What a sensor tool says when this phone cannot do it: never a made-up reading. */
 @Composable

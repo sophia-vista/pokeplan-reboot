@@ -14,6 +14,8 @@ import app.pokeplan.app.Place
 import app.pokeplan.app.Places
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
+import app.pokeplan.app.world.worldAssign
+import app.pokeplan.app.world.worldStart
 
 class GearTest {
     private class FixedClock : Clock { override fun nowMillis() = 1_700_000_000_000L }

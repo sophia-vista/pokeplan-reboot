@@ -30,6 +30,9 @@ import kotlin.test.assertTrue
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.app.storage.Storage
+import app.pokeplan.app.world.worldAssign
+import app.pokeplan.app.world.worldBuy
+import app.pokeplan.app.world.worldStart
 
 class GameStoreTest {
     private class FakeClock(var millis: Long) : Clock {

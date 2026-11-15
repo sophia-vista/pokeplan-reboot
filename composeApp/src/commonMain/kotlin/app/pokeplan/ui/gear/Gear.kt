@@ -50,6 +50,12 @@ import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
+import app.pokeplan.app.gear.assignGearHelper
+import app.pokeplan.app.gear.clearGearHelper
+import app.pokeplan.app.gear.gearCandidates
+import app.pokeplan.app.gear.gearFavorite
+import app.pokeplan.app.gear.gearHelper
+import app.pokeplan.app.gear.gearUsed
 
 /**
  * Gear (docs/pokelife/MODULES/GEAR.md): a hub of handy tools. Every tool works from the first day; a helper Pokémon (one of the
