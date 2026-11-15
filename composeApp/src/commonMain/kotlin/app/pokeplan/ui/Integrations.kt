@@ -34,6 +34,15 @@ interface TextFileChooser {
     fun choose(done: (name: String?, text: String?, problem: String?) -> Unit)
 }
 
+/**
+ * Lets the player pick one image (an account's receive-money QR, MINT.md 4.2) through the phone's own photo picker. The picture is shrunk here to at most 600 px and
+ * [app.pokeplan.mint.MintRules.QR_MAX_CHARS] of base64, and handed back as PNG bytes; it is not kept anywhere else. [done] gets the PNG, or null and a reason in words
+ * (null and null when the player cancelled).
+ */
+interface ImageChooser {
+    fun choose(done: (png: ByteArray?, problem: String?) -> Unit)
+}
+
 /** What the phone lets the Huawei Health reader do right now, rechecked on every look (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
 data class HuaweiReaderState(
     val installed: Boolean,

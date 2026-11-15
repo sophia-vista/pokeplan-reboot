@@ -41,6 +41,11 @@ data class FinancialAccount(
     val createdMillis: Long = 0,
     /** A [CardStyle] id: how the account's card looks. Cosmetic only; it never changes a balance, a rule or a report. Empty is the plain card. */
     val card: String = "",
+    /**
+     * The account's own "scan to send money to me" QR (MINT.md 4.2, 15 November 2026): one small PNG, base64, at most [MintRules.QR_MAX_CHARS] characters, picked and
+     * shrunk on the phone. It lives in this sealed row, is never uploaded or read for its contents, and changes no balance. Empty is none.
+     */
+    val receiveQr: String = "",
 )
 
 /**
@@ -137,7 +142,7 @@ data class Budget(
 @Serializable
 enum class Frequency(val label: String) { ONCE("One time"), WEEKLY("Every week"), MONTHLY("Every month"), YEARLY("Every year") }
 
-/** A bill (MINT.md section 8): what is expected and when. Its occurrences are derived from [firstDue] and [frequency]; only settled ones are stored. */
+/** A bill (MINT.md section 8), or a recurring income when [income] (8.3A): what is expected and when. Its occurrences are derived from [firstDue] and [frequency]; only settled ones are stored. */
 @Serializable
 data class Bill(
     val id: String,
@@ -153,6 +158,8 @@ data class Bill(
     val createdMillis: Long = 0,
     /** Whether this bill may ask for a reminder at all (it still needs [MintSettings.billReminders]); the user can switch one bill off. */
     val remind: Boolean = true,
+    /** A recurring income (a salary, an allowance) rather than something to pay (MINT.md 8.3A): same schedule, and "Received, record it" writes an income. */
+    val income: Boolean = false,
 )
 
 /** What the user settled for one occurrence. Marking an occurrence paid never creates a transaction; [txId] only links one the user chose. */

@@ -148,6 +148,7 @@ A `FinancialAccount` may include:
 - Optional masked account suffix or user-defined identifier.
 - Optional account group.
 - Optional color/icon from the shared component system. Built as a card style (`FinancialAccount.card`, 0.200.0): six cosmetic styles (Plain, Blue, Green, Gold, Violet, Slate), saved as ids with the colours chosen in the UI; an unknown id reads and saves as plain. It never changes a balance, rule or report, and needs no schema change (the field is inside the account's sealed row, default empty).
+- Optional **receive-money QR image** (owner, 15 November 2026: a wallet's own "scan to send money to me" code, such as a GCash InstaPay QR). One small PNG per account, picked with Android's Photo Picker, shrunk on the phone to at most 600 px and 64 KB, and kept as base64 inside the account's own sealed row (`FinancialAccount.receiveQr`): no new table, no file outside the sealed store, so it is covered by the sealing, the lock gate, backup and delete like any other account field. Shown on the account's card as "Receive money" with Replace and Remove. It is never uploaded, never read for its contents, never appears in a reward event, a notification, a widget or a log, and "hide values" covers it. Cosmetic and a convenience only: it changes no balance, rule or report. A QR is a payment address, so it is not a card number, CVV or password (section 4.2 last paragraph), but the user is told it is private.
 - Connection/source reference, if applicable.
 - Status: active, archived or closed.
 - Created/updated timestamps.
@@ -388,6 +389,15 @@ A settled occurrence (paid or skipped) stays reachable for 60 days after its due
 
 Support weekly, monthly, yearly and custom schedules where the recurrence engine can handle them reliably. Define behavior for end-of-month dates, leap years, time-zone changes, paused recurrence and edited future occurrences. Never rewrite historical bill occurrences when a future schedule changes.
 
+### 8.3A Recurring income and expenses (owner, 15 November 2026, REP-039 first slice)
+
+A salary, allowance or subscription that repeats is a **recurring entry**, and it uses the same schedule, occurrences and lifecycle as a bill (8.1 to 8.3): a `Bill` has a direction, `income = false` for something to pay and `income = true` for money expected in. Nothing new is stored and nothing is posted by itself:
+- **Due item you confirm.** On the due day an occurrence is Due (and Overdue after), exactly as for a bill. "Paid, record it" (bill) or "Received, record it" (income) asks for the account and the real amount (the expected amount is the default), then writes the transaction (an expense for a bill, an income for a recurring income) and links it both ways in one save. The app never posts a transaction on its own, including when it was closed on the due day, because a wrong amount must never post silently.
+- **Skip** and **Mark settled without a transaction** work as for a bill; skipping never deletes the schedule. A partly received amount keeps the remainder due (8.2).
+- An income's category is an income category and its transaction is an income, so it counts as money received (7.1) and never as a refund. The direction cannot be changed once an occurrence is settled, as the schedule cannot (8.3).
+- Weekly, monthly and yearly only; month-end and leap-day follow the bill rule (a 31st falls on the last day of a shorter month, 29 February on 28 February in a common year). Custom schedules are not built.
+- A reminder (section 12) says only that something is coming up, for an income as for a bill, and never an amount.
+
 ### 8.4 PLAN relationship
 
 MINT owns bill records, occurrences and payment state. A user may create/link a PLAN task such as “Pay internet bill.” The link stores references only. PLAN task completion does not confirm payment. MINT's payment confirmation does not require a PLAN task. Avoid duplicate reminders for the same obligation unless the user deliberately enables both and understands the distinction.
@@ -538,7 +548,7 @@ Follow shared data lifecycle specifications for encryption, backup, restore, mig
 
 ### 13.4 Attachments
 
-Receipt/document attachments are private MINT data. Use the shared attachment/storage policy, avoid embedding sensitive metadata in filenames, and ensure export/backup/delete operations include attachment references and bytes according to the user's selection.
+The one attachment built is an account's receive-money QR image (4.2), kept inside the account's sealed row because it is small (at most 64 KB); a receipt attachment (5.2) is not built and, being larger, would be a sealed file in app-private storage with a metadata table (DATA_AND_MIGRATIONS.md). Receipt/document attachments are private MINT data. Use the shared attachment/storage policy, avoid embedding sensitive metadata in filenames, and ensure export/backup/delete operations include attachment references and bytes according to the user's selection.
 
 ## 14. Offline behavior and reliability
 

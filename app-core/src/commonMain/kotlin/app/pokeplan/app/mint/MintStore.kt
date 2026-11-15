@@ -104,6 +104,18 @@ class MintStore(
         return Logged(account)
     }
 
+    /**
+     * Keeps [base64Png] as the account's receive-money QR image, or removes it when empty (MINT.md 4.2). The caller has already shrunk the picture; it is checked
+     * for size and PNG form only, never decoded or read. Works on an archived account too; nothing else about the account changes and nothing leaves Mint.
+     */
+    fun setReceiveQr(accountId: String, base64Png: String): Logged<FinancialAccount> {
+        val old = data.accounts.firstOrNull { it.id == accountId } ?: return Logged(null, "That account is gone.")
+        (MintRules.checkReceiveQr(base64Png) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val next = old.copy(receiveQr = base64Png)
+        update { d -> d.copy(accounts = d.accounts.map { if (it.id == accountId) next else it }) }
+        return Logged(next)
+    }
+
     /** Whether [id] has records that depend on its currency: a transaction, a reconciliation or a bill paid from it. */
     fun hasHistory(id: String): Boolean =
         data.transactions.any { it.accountId == id || it.toAccountId == id } || data.reconciliations.any { it.accountId == id } || data.bills.any { it.accountId == id }
@@ -305,11 +317,11 @@ class MintStore(
 
     // --- bills -------------------------------------------------------------------------------------------------------
 
-    fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null): Logged<Bill> {
+    fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null, income: Boolean = false): Logged<Bill> {
         if (name.isBlank()) return Logged(null, "Give the bill a name.")
         (MintRules.checkCurrency(currency) as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (expectedMinor != null) (MintRules.checkAmount(expectedMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val bill = Bill(newId(), name.trim().take(MintRules.NAME_MAX), currency, frequency, firstDue, expectedMinor, categoryId, accountId, createdMillis = nowMillis)
+        val bill = Bill(newId(), name.trim().take(MintRules.NAME_MAX), currency, frequency, firstDue, expectedMinor, categoryId, accountId, createdMillis = nowMillis, income = income)
         update { it.copy(bills = it.bills + bill) }
         return Logged(bill)
     }
@@ -359,7 +371,7 @@ class MintStore(
         if (paidDay > today) return Logged(null, "A payment cannot be dated in the future.")
         val account = data.accounts.firstOrNull { it.id == (accountId ?: bill.accountId) } ?: return Logged(null, "Choose an account.")
         val at = if (paidDay == today) nowMillis else paidDay.atStartOfDayIn(zone).toEpochMilliseconds() + 12 * 3_600_000L
-        val tx = Transaction(newId(), TxType.EXPENSE, paidMinor, account.currency, at, paidDay, account.id, categoryId = bill.categoryId, payee = bill.name.take(MintRules.NAME_MAX * 2), billId = bill.id, billDueDay = dueDay, createdMillis = nowMillis)
+        val tx = Transaction(newId(), if (bill.income) TxType.INCOME else TxType.EXPENSE, paidMinor, account.currency, at, paidDay, account.id, categoryId = bill.categoryId, payee = bill.name.take(MintRules.NAME_MAX * 2), billId = bill.id, billDueDay = dueDay, createdMillis = nowMillis)
         if (account.currency != bill.currency) return Logged(null, "That account is in ${account.currency}, the bill in ${bill.currency}.")
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val full = bill.expectedMinor

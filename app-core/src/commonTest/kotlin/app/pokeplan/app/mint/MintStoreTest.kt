@@ -442,4 +442,43 @@ class MintStoreTest {
         // A style this build does not know is dropped to the plain card, never kept as free text.
         assertEquals("", assertNotNull(s.mint.addAccount("Odd", AccountType.CASH, "PHP", card = "neon-pink").record).card)
     }
+
+    @Test
+    fun aRecurringIncomeIsRecordedAsIncomeWhenConfirmedAndNeverOnItsOwn() {
+        val s = setup()
+        val acct = assertNotNull(s.mint.addAccount("Savings", AccountType.BANK, "PHP", 0).record).id
+        val due = LocalDate(2026, 11, 7)
+        val salary = assertNotNull(s.mint.addBill("Salary", "PHP", Frequency.MONTHLY, due, 2_500_000, "cat-salary", acct, income = true).record)
+        assertTrue(salary.income)
+        // Nothing is posted by the due day itself.
+        assertTrue(s.mint.data.transactions.isEmpty())
+        val tx = assertNotNull(s.mint.settleAndRecord(salary.id, due, 2_500_000).record)
+        assertEquals(TxType.INCOME, tx.type)
+        assertEquals(salary.id, tx.billId)
+        assertEquals(2_500_000L, MintRules.balances(s.mint.data).single().postedMinor)
+        // A bill still writes an expense, and editing a schedule's text never flips its direction.
+        val bill = assertNotNull(s.mint.addBill("Water", "PHP", Frequency.MONTHLY, due, 50_000, accountId = acct).record)
+        assertEquals(TxType.EXPENSE, assertNotNull(s.mint.settleAndRecord(bill.id, due, 50_000).record).type)
+        assertTrue(assertNotNull(s.mint.updateBill(salary.copy(name = "Pay", income = false)).record).income)
+    }
+
+    @Test
+    fun anAccountKeepsOneSmallPngAsItsReceiveQrAndOnlyThat() {
+        val s = setup()
+        val acct = assertNotNull(s.mint.addAccount("GCash", AccountType.EWALLET, "PHP", 168_880).record)
+        assertEquals("", acct.receiveQr)
+        val png = MintRules.PNG_BASE64_PREFIX + "AAAA"
+        assertEquals(png, assertNotNull(s.mint.setReceiveQr(acct.id, png).record).receiveQr)
+        // Editing the account keeps the picture, and it changes no balance.
+        assertEquals(png, assertNotNull(s.mint.updateAccount(s.mint.data.accounts.single().copy(name = "GCash 2")).record).receiveQr)
+        assertEquals(168_880L, MintRules.balances(s.mint.data).single().postedMinor)
+        // Not a PNG, too big, text that is not base64, and a missing account are all refused and change nothing.
+        assertNull(s.mint.setReceiveQr(acct.id, "/9j/4AAQSkZJRg").record)
+        assertNull(s.mint.setReceiveQr(acct.id, MintRules.PNG_BASE64_PREFIX + "A".repeat(MintRules.QR_MAX_CHARS)).record)
+        assertNull(s.mint.setReceiveQr(acct.id, MintRules.PNG_BASE64_PREFIX + "<script>").record)
+        assertNull(s.mint.setReceiveQr("nobody", png).record)
+        assertEquals(png, s.mint.data.accounts.single().receiveQr)
+        // Empty removes it.
+        assertEquals("", assertNotNull(s.mint.setReceiveQr(acct.id, "").record).receiveQr)
+    }
 }

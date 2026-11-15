@@ -30,6 +30,19 @@ data class Available(val currency: String, val liquidMinor: Long, val billsMinor
  */
 object MintRules {
     const val NAME_MAX = 40
+    /** The most characters of base64 an account's receive-money QR image may take (about 64 KB of PNG), MINT.md 4.2. */
+    const val QR_MAX_CHARS = 88_000
+
+    /** Whether [base64] can be kept as an account's QR: empty (none) or standard base64 of a PNG, small enough. Nothing is decoded or read for its contents. */
+    fun checkReceiveQr(base64: String): Check = when {
+        base64.isEmpty() -> Check.Ok
+        base64.length > QR_MAX_CHARS -> Check.Refused("That image is too big. Pick one under 64 KB.")
+        !base64.startsWith(PNG_BASE64_PREFIX) || !base64.all { it.isLetterOrDigit() && it.code < 128 || it == '+' || it == '/' || it == '=' } -> Check.Refused("That is not a picture Mint can keep.")
+        else -> Check.Ok
+    }
+
+    /** The first characters of any base64-encoded PNG (its 8-byte signature). */
+    const val PNG_BASE64_PREFIX = "iVBORw0KGgo"
     const val NOTE_MAX = 500
     const val SUFFIX_MAX = 4
 
