@@ -1094,6 +1094,14 @@ class ScreenshotTest {
         }
     }
 
+    /** Settings → About's credit list (Credits.kt), the longest line of it, in both palettes. */
+    @Test
+    fun aboutCredits() = listOf(false, true).forEach { dark ->
+        render("about-credits-${if (dark) "dark" else "light"}", height = 1800) {
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.screens.CreditsList() } } }
+        }
+    }
+
     @Test
     fun planMore() = modules("plan-more", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.MORE)
 
