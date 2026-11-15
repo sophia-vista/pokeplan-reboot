@@ -26,15 +26,26 @@ data class Routine(
     /** The last day a completion paid, kept apart from [completions] so undoing and ticking again never pays twice. */
     val paidOn: LocalDate? = null,
     val archived: Boolean = false,
+    /** Days it was set aside on purpose: no reward, no mark against anyone, it just leaves that day's list. Undoable. */
+    val skipped: Set<LocalDate> = emptySet(),
 ) {
     fun isDueOn(date: LocalDate): Boolean = !archived && date >= createdOn && (days.isEmpty() || date.dayOfWeek in days)
+
+    fun skippedOn(date: LocalDate): Boolean = date in skipped
+
+    /** Meant for [date] and not set aside: what the day's list and its "done of planned" count hold. */
+    fun plannedOn(date: LocalDate): Boolean = isDueOn(date) && date !in skipped
 
     fun doneOn(date: LocalDate): Boolean = date in completions
 
     /** Whether a completion on [date] can pay: the first of the day, even after an undo. The daily cap is checked apart. */
     fun paysOn(date: LocalDate): Boolean = date !in completions && date != paidOn
 
-    fun complete(date: LocalDate): Routine = copy(completions = completions + date)
+    fun complete(date: LocalDate): Routine = copy(completions = completions + date, skipped = skipped - date)
+
+    fun skip(date: LocalDate): Routine = copy(skipped = skipped + date, completions = completions - date)
+
+    fun unskip(date: LocalDate): Routine = copy(skipped = skipped - date)
 
     fun paid(date: LocalDate): Routine = copy(paidOn = date)
 

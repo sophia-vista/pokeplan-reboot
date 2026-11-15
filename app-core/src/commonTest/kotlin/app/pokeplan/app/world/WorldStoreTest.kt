@@ -149,6 +149,35 @@ class WorldStoreTest {
     }
 
     @Test
+    fun theGuardianIsGrantedOnceHoweverOftenTheWorldSettles() {
+        val storage = MemoryStorage()
+        val first = GameStore(storage, Clock(), TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }
+        val json = kotlinx.serialization.json.Json { encodeDefaults = true; ignoreUnknownKeys = true }
+        storage.text = json.encodeToString(AppData.serializer(), first.data.copy(world = app.pokeplan.world.WorldData(guardianDone = true)))
+        val store = GameStore(storage, Clock(), TimeZone.UTC, Random(5))
+        fun guardians() = store.data.player.pokemon.count { it.speciesId == app.pokeplan.world.Story.GUARDIAN_SPECIES && it.formIdentifier == app.pokeplan.world.Story.GUARDIAN_FORM }
+        store.worldSettle()
+        store.worldSettle()
+        assertEquals(1, guardians())
+        assertTrue(store.data.world.guardianGranted)
+    }
+
+    @Test
+    fun aFindCanBeRecruitedOnlyOnceAndLeavesTheList() {
+        val storage = MemoryStorage()
+        val first = GameStore(storage, Clock(), TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }
+        val find = app.pokeplan.world.Find(speciesId = 25, dungeonId = "tiny-woods", floor = 1, at = 0L)
+        val json = kotlinx.serialization.json.Json { encodeDefaults = true; ignoreUnknownKeys = true }
+        storage.text = json.encodeToString(AppData.serializer(), first.data.copy(world = app.pokeplan.world.WorldData(finds = listOf(find))))
+        val store = GameStore(storage, Clock(), TimeZone.UTC, Random(5))
+        val before = store.data.player.pokemon.size
+        assertNotNull(store.worldRecruit(0))
+        assertNull(store.worldRecruit(0), "the find is gone, so a second tap recruits no one")
+        assertEquals(before + 1, store.data.player.pokemon.size)
+        assertTrue(store.data.world.finds.isEmpty())
+    }
+
+    @Test
     fun aLegendAlreadyOwnedFromAPlanQuestIsNotGivenTwiceButStillCounts() {
         val storage = MemoryStorage()
         val first = GameStore(storage, Clock(), TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }

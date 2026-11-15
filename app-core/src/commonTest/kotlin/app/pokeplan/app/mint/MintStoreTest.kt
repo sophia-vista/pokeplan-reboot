@@ -395,4 +395,38 @@ class MintStoreTest {
         assertNull(s.mint.updateBill(fixed.copy(firstDue = LocalDate(2026, 12, 1))).record, "settled occurrences are never rewritten")
         assertNotNull(s.mint.updateBill(fixed.copy(name = "Flat rent")).record)
     }
+
+    @Test
+    fun paidRecordItWritesTheLinkedExpenseAndSettlesTheBillInOneStep() {
+        val s = setup()
+        val acct = assertNotNull(s.mint.addAccount("Savings", AccountType.BANK, "PHP", 100_000).record).id
+        val other = assertNotNull(s.mint.addAccount("Wallet", AccountType.CASH, "PHP", 5_000).record).id
+        val due = LocalDate(2026, 11, 10)
+        val bill = assertNotNull(s.mint.addBill("Internet", "PHP", Frequency.MONTHLY, due, 150_000, accountId = acct).record)
+        // The bill's own account is the default.
+        val tx = assertNotNull(s.mint.settleAndRecord(bill.id, due, 150_000).record)
+        assertEquals(acct, tx.accountId)
+        assertEquals(TxType.EXPENSE, tx.type)
+        assertEquals(bill.id, tx.billId)
+        assertEquals(due, tx.billDueDay)
+        val payment = s.mint.data.billPayments.single()
+        assertEquals(SettleStatus.PAID, payment.status)
+        assertEquals(tx.id, payment.txId)
+        assertEquals(100_000 - 150_000, MintRules.balance(s.mint.data, s.mint.data.accounts.first { it.id == acct }).postedMinor, "balance fell by the bill")
+        // Another account can be chosen, a part payment stays partial, a settling again replaces the first, and a refused amount writes nothing.
+        val before = s.mint.data
+        assertNull(s.mint.settleAndRecord(bill.id, due, 0, other).record)
+        assertEquals(before, s.mint.data)
+        assertNull(s.mint.settleAndRecord(bill.id, due, 100, "nobody").record)
+        val later = assertNotNull(s.mint.settleAndRecord(bill.id, due, 50_000, other).record)
+        assertEquals(other, later.accountId)
+        assertEquals(SettleStatus.PARTIAL, s.mint.data.billPayments.single().status)
+        // Settling without recording still works and makes no transaction.
+        val b2 = assertNotNull(s.mint.addBill("Water", "PHP", Frequency.MONTHLY, due, 30_000).record)
+        val txs = s.mint.data.transactions.size
+        assertTrue(s.mint.settle(b2.id, due, SettleStatus.PAID, 30_000))
+        assertEquals(txs, s.mint.data.transactions.size)
+        // No account at all (the bill has none, none chosen) is a refusal.
+        assertNull(s.mint.settleAndRecord(b2.id, LocalDate(2026, 12, 10), 30_000).record)
+    }
 }

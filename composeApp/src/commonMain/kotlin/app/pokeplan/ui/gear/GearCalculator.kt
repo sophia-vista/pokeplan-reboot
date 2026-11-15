@@ -54,7 +54,8 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
     val live = if (expr.isBlank()) null else CalcEngine.evaluate(expr, gear.calcDegrees)
     val liveValue = (live as? CalcResult.Value)
 
-    fun edit(text: String) { expr = text.take(200); answered = false; showError = false; onUse() }
+    /** Typing in the field is not an action that moves the helper (GEAR.md 6); the Del key is. */
+    fun edit(text: String) { expr = text.take(200); answered = false; showError = false }
     // After an answer, a digit or function starts a new sum, while an operator carries on from the answer.
     fun key(token: String, startsNew: Boolean = false) {
         expr = (if (answered && startsNew) "" else expr) + token
@@ -88,7 +89,7 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
                 labels.forEach { (label, action) -> PixelButton(label, action, Modifier.weight(1f), if (label in accent) Pixel.Tone else Pixel.InkSoft, compact = true) }
             }
             val ops = setOf("÷", "×", "−", "+", "=")
-            keys("C" to { expr = ""; answered = false; showError = false }, "Del" to { edit(expr.dropLast(1)) }, "(" to { key("(", true) }, ")" to { key(")") }, accent = ops)
+            keys("C" to { expr = ""; answered = false; showError = false }, "Del" to { edit(expr.dropLast(1)); onUse() }, "(" to { key("(", true) }, ")" to { key(")") }, accent = ops)
             keys("7" to { key("7", true) }, "8" to { key("8", true) }, "9" to { key("9", true) }, "÷" to { key("÷") }, accent = ops)
             keys("4" to { key("4", true) }, "5" to { key("5", true) }, "6" to { key("6", true) }, "×" to { key("×") }, accent = ops)
             keys("1" to { key("1", true) }, "2" to { key("2", true) }, "3" to { key("3", true) }, "−" to { key("−") }, accent = ops)

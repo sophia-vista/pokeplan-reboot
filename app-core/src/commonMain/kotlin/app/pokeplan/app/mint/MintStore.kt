@@ -348,6 +348,25 @@ class MintStore(
         return true
     }
 
+    /**
+     * "Paid, record it" (MINT.md section 8.2): settles one occurrence as paid **and** writes the matching expense, linked both ways (the transaction's
+     * `billId` and due day, the payment's `txId`), in one save. The account is [accountId] or else the bill's own; the amount is [paidMinor]. Nothing is
+     * written when the bill or account is missing or closed, the currencies differ, or the amount is refused. A bill settled without this still works.
+     */
+    fun settleAndRecord(billId: String, dueDay: LocalDate, paidMinor: Long, accountId: String? = null, paidDay: LocalDate = today): Logged<Transaction> {
+        val bill = data.bills.firstOrNull { it.id == billId } ?: return Logged(null, "That bill is gone.")
+        if (paidDay > today) return Logged(null, "A payment cannot be dated in the future.")
+        val account = data.accounts.firstOrNull { it.id == (accountId ?: bill.accountId) } ?: return Logged(null, "Choose an account.")
+        val at = if (paidDay == today) nowMillis else paidDay.atStartOfDayIn(zone).toEpochMilliseconds() + 12 * 3_600_000L
+        val tx = Transaction(newId(), TxType.EXPENSE, paidMinor, account.currency, at, paidDay, account.id, categoryId = bill.categoryId, payee = bill.name.take(MintRules.NAME_MAX * 2), billId = bill.id, billDueDay = dueDay, createdMillis = nowMillis)
+        if (account.currency != bill.currency) return Logged(null, "That account is in ${account.currency}, the bill in ${bill.currency}.")
+        (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val full = bill.expectedMinor
+        val payment = BillPayment(newId(), bill.id, dueDay, SettleStatus.PAID.takeIf { full == null || paidMinor >= full } ?: SettleStatus.PARTIAL, paidMinor, paidDay, tx.id, nowMillis)
+        update { d -> d.copy(transactions = d.transactions + tx, billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay } + payment) }
+        return Logged(tx)
+    }
+
     /** Takes a settlement back, so the occurrence is upcoming, due or overdue again. */
     fun unsettle(billId: String, dueDay: LocalDate) = update { d -> d.copy(billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay }) }
 

@@ -332,11 +332,25 @@ object BaseRules {
 
     // --- Habitat Discovery: what may pay (BASE.md section 9) ---------------------------------------------------------------
 
-    /** Whether a chore done on [day] may be paid: Habitat Discovery is on and the day's share is not used. The game checks once per occurrence too. */
-    fun chorePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression && data.entries.count { it.paid && it.day == day } < CHORES_PAID_PER_DAY
+    /**
+     * Whether a chore done on [day] may be sent to the game: Habitat Discovery is on. The daily share ([CHORES_PAID_PER_DAY]) is counted once, by the game
+     * (`GameStore.BASE_CAPS`, which reads the constant), because the history is trimmed and a deleted chore takes its entries with it.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun chorePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression
 
-    /** Whether a piece of maintenance done on [day] may be paid, on the same terms. */
-    fun maintenancePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression && data.maintenance.count { it.paid && it.day == day } < MAINTENANCE_PAID_PER_DAY
+    /** Whether a piece of maintenance done on [day] may be sent to the game, on the same terms ([MAINTENANCE_PAID_PER_DAY] is counted by the game). */
+    @Suppress("UNUSED_PARAMETER")
+    fun maintenancePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression
+
+    /** Chore history kept: entries older than this many days are dropped when one is added (BASE.md 4.2). History shows only the newest 60. */
+    const val ENTRY_KEEP_DAYS = 400
+
+    /** [entries] without those done more than [ENTRY_KEEP_DAYS] before [today]. */
+    fun trimEntries(entries: List<ChoreEntry>, today: LocalDate): List<ChoreEntry> {
+        val cutoff = today.minus(ENTRY_KEEP_DAYS, DateTimeUnit.DAY)
+        return if (entries.any { it.day < cutoff }) entries.filter { it.day >= cutoff } else entries
+    }
 
     // --- search ---------------------------------------------------------------------------------------------------------------
 

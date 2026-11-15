@@ -41,6 +41,7 @@ class MintRulesTest {
         assertEquals("\u20B10.05", Money.format(5, "PHP"))
         assertEquals("JPY 1,250", Money.format(1250, "JPY"))
         assertEquals("-\u20B11.00", Money.format(-100, "PHP"))
+        assertEquals("\u20B1", Money.label("PHP")); assertEquals("USD", Money.label("USD"))
         assertEquals("\u20B1••••", Money.format(125050, "PHP", hidden = true))
         assertEquals("1250.50", Money.plain(125050, "PHP"))
     }

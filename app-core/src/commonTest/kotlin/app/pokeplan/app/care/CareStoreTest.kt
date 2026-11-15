@@ -556,4 +556,71 @@ class CareStoreTest {
         s.care.editEntry(e.id, "x", atMillis = s.clock.millis + 86_400_000L)
         assertEquals(s.clock.millis, s.care.data.journal.single().atMillis, "never dated to a moment still to come")
     }
+
+    @Test
+    fun aSkippedRoutineLeavesTodayWithoutPayingAndCanBeBroughtBack() {
+        val s = setup()
+        s.giveCareLead()
+        val water = s.care.addRoutine("Drink water")
+        val stretch = s.care.addRoutine("Stretch")
+        val before = s.points
+        s.care.skipRoutine(water.id)
+        assertEquals(listOf(stretch.id), s.care.todayRoutines().map { it.id }, "it leaves Today's list")
+        assertEquals(0 to 1, s.care.routineCount(), "and the count is of what is planned")
+        assertEquals(before, s.points, "skipping pays nothing")
+        assertTrue(s.care.data.routines.first { it.id == water.id }.skippedOn(s.care.today))
+
+        val again = CareStore(s.storage, s.clock, s.game, utc, rng = Random(3))
+        assertTrue(again.data.routines.first { it.id == water.id }.skippedOn(again.today), "it is saved")
+
+        s.care.unskipRoutine(water.id)
+        assertEquals(2, s.care.todayRoutines().size, "undoing the skip puts it back")
+        assertTrue(s.care.completeRoutine(water.id).any { it is Reward.Friendship }, "and it can still pay")
+    }
+
+    @Test
+    fun skippingNeverUndoesADoneRoutineAndTickingASkippedOneClearsTheSkip() {
+        val s = setup()
+        val water = s.care.addRoutine("Drink water")
+        s.care.completeRoutine(water.id)
+        s.care.skipRoutine(water.id)
+        assertFalse(s.care.data.routines.single().skippedOn(s.care.today), "a done routine cannot be skipped")
+        s.care.undoRoutine(water.id)
+        s.care.skipRoutine(water.id)
+        s.care.completeRoutine(water.id)
+        val r = s.care.data.routines.single()
+        assertTrue(r.doneOn(s.care.today) && !r.skippedOn(s.care.today))
+        assertEquals(1 to 1, s.care.routineCount())
+    }
+
+    @Test
+    fun aSkippedRoutineGetsNoReminder() {
+        val s = setup()
+        val water = s.care.addRoutine("Drink water", time = LocalTime(18, 0))
+        s.care.skipRoutine(water.id)
+        assertFalse(CareReminders.stillWanted(s.care.data, s.game.data, water.id, s.care.today))
+    }
+
+    @Test
+    fun yesterdayCanBeTickedAndUntickedButNeverPays() {
+        val s = setup()
+        s.giveCareLead()
+        val water = s.care.addRoutine("Drink water")
+        s.clock.advanceDays(1)
+        val yesterday = s.care.today.minus(kotlinx.datetime.DatePeriod(days = 1))
+        val before = s.points
+        assertTrue(s.care.completeRoutine(water.id, yesterday).isEmpty())
+        assertTrue(s.care.data.routines.single().doneOn(yesterday))
+        assertEquals(before, s.points, "recording yesterday pays nothing")
+        assertEquals(null, s.care.data.routines.single().paidOn)
+        assertEquals(0 to 1, s.care.routineCount(), "and today is untouched")
+        assertEquals(1 to 1, s.care.routineCount(yesterday), "yesterday's own count is done of planned")
+
+        s.care.undoRoutine(water.id, yesterday)
+        assertFalse(s.care.data.routines.single().doneOn(yesterday))
+
+        assertTrue(s.care.completeRoutine(water.id).any { it is Reward.Friendship }, "today still pays after yesterday was ticked")
+        s.care.completeRoutine(water.id, s.care.today.minus(kotlinx.datetime.DatePeriod(days = 2)))
+        assertFalse(s.care.data.routines.single().doneOn(s.care.today.minus(kotlinx.datetime.DatePeriod(days = 2))), "only today and yesterday can be ticked")
+    }
 }

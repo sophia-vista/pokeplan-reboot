@@ -179,7 +179,7 @@ class BaseStoreTest {
         assertEquals(List(BaseRules.CHORES_PAID_PER_DAY) { true } + false, results.map { assertNotNull(it.record).paid })
         assertTrue(results.last().rewards.isEmpty())
         assertEquals(6, s.home.data.entries.count { it.status == EntryStatus.DONE })
-        assertEquals(BaseRules.CHORES_PAID_PER_DAY, s.spy.events.size, "no event for the unpaid sixth")
+        assertEquals(6, s.spy.events.size, "the game counts the day's share once (BASE_CAPS) and turns the sixth down")
         assertTrue(ids.all { s.home.choreView(it)!!.state == ChoreState.DONE })
     }
 
@@ -430,7 +430,7 @@ class BaseStoreTest {
         assertTrue(a.paid); assertNull(a.scheduleId); assertEquals("Zorblax-cost-4500", a.cost)
         assertTrue(assertNotNull(s.home.logMaintenance("Fixed the tap").record).paid)
         assertFalse(assertNotNull(s.home.logMaintenance("Fixed the lamp").record).paid, "past the day's share")
-        assertEquals(BaseRules.MAINTENANCE_PAID_PER_DAY, s.spy.events.size)
+        assertEquals(3, s.spy.events.size, "the game turns the third down")
         assertNotNull(s.home.logMaintenance(" ").refused)
         s.clock.advanceDays(1)
         assertTrue(assertNotNull(s.home.logMaintenance("Fixed the fan").record).paid, "the next day pays again")
@@ -647,5 +647,17 @@ class BaseStoreTest {
         assertEquals(r.paid, moved.paid, "a correction never pays and never takes back")
         assertNotNull(s.home.updateMaintenanceRecord(r.copy(day = today.plus(kotlinx.datetime.DatePeriod(days = 1)))).refused)
         assertNotNull(s.home.updateMaintenanceRecord(r.copy(title = " ")).refused)
+    }
+
+    @Test
+    fun choreHistoryOlderThanAYearIsDroppedWhenSomethingNewIsAdded() {
+        val s = setup()
+        val c = s.chore("Dishes")
+        s.home.complete(c.id)
+        assertEquals(1, s.home.data.entries.size)
+        s.clock.advanceDays(BaseRules.ENTRY_KEEP_DAYS + 1)
+        val d = s.chore("Bins")
+        s.home.complete(d.id)
+        assertEquals(listOf(d.id), s.home.data.entries.map { it.choreId }, "the old entry is gone, the new one is kept")
     }
 }

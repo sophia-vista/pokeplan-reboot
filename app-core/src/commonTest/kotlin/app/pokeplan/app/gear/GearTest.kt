@@ -109,4 +109,15 @@ class GearTest {
         assertFalse(store.assignGearHelper(GearTool.FLASHLIGHT, out))
         assertFalse(store.sendToPc(out))
     }
+
+    @Test
+    fun theDiceHistorySwitchIsSavedLikeTheOtherTwo() {
+        val storage = MemoryStorage()
+        val first = GameStore(storage, FixedClock(), TimeZone.UTC, Random(3)).also { it.start("Sophia", 25) }
+        assertFalse(first.data.gear.diceHistoryOn)
+        first.changeGear { it.copy(diceHistoryOn = true, diceHistory = listOf("2d6: 3 + 4 = 7")) }
+        val again = GameStore(storage, FixedClock(), TimeZone.UTC, Random(3))
+        assertTrue(again.data.gear.diceHistoryOn)
+        assertEquals(listOf("2d6: 3 + 4 = 7"), again.data.gear.diceHistory)
+    }
 }

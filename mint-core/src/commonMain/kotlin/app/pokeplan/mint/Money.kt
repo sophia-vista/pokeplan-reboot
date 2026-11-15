@@ -69,6 +69,9 @@ object Money {
         return (if (negative) "-" else "") + (if (currency == PESO_CODE) PESO else "$currency ") + "$whole$fraction"
     }
 
+    /** How a currency is named in a sentence: `₱` for the peso (the stored code stays PHP), the code for any other. */
+    fun label(currency: String): String = if (currency == PESO_CODE) PESO else currency
+
     /** The plain number for an edit field: `1250.50`, no separators and no code. */
     fun plain(minor: Long, currency: String): String {
         val scale = scale(currency)
