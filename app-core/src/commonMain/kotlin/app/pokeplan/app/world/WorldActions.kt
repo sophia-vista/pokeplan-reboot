@@ -148,6 +148,7 @@ fun GameStore.worldSettle(): WorldReport? {
     if (report.isEmpty) {
         // A clock set back moves a team's settle point to now without any floor (WORLD.md 3.1): keep that, or the team waits for the clock to catch up.
         if (report.data.teams != before.teams) update { it.copy(world = it.world.copy(teams = report.data.teams)) }
+        worldGuardian()
         worldLegends()
         return null
     }
