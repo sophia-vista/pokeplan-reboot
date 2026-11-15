@@ -458,16 +458,17 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             }
         } else if (asking) {
             Confirm("Delete this account? Only an account with no records can be deleted.", "Delete", onConfirm = { refused = mint.deleteAccount(a.id); asking = false; if (refused == null) onDone() }, onKeep = { asking = false })
-        } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            when (a.status) {
-                AccountStatus.ACTIVE -> {
-                    PixelButton("Archive", { mint.setAccountStatus(a.id, AccountStatus.ARCHIVED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    PixelButton("Close", { mint.setAccountStatus(a.id, AccountStatus.CLOSED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                }
-                else -> PixelButton("Reopen", { mint.setAccountStatus(a.id, AccountStatus.ACTIVE); onDone() }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+        } else Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            // Two rows of two, so the longest label ("Archive") is never clipped at a large font.
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                if (a.status == AccountStatus.ACTIVE) PixelButton("Archive", { mint.setAccountStatus(a.id, AccountStatus.ARCHIVED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                else PixelButton("Reopen", { mint.setAccountStatus(a.id, AccountStatus.ACTIVE); onDone() }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
             }
-            PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                if (a.status == AccountStatus.ACTIVE) PixelButton("Close", { mint.setAccountStatus(a.id, AccountStatus.CLOSED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            }
         }
         refused?.let { Report(model, it, NoticeTone.WARNING) }
     }
@@ -481,6 +482,20 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
     val chooser = model.images
     val hide = model.mintData.settings.hideValues
     val bitmap = remember(a.receiveQr) { if (a.receiveQr.isEmpty()) null else runCatching { Base64.decode(a.receiveQr).decodeToImageBitmap() }.getOrNull() }
+    var full by remember { mutableStateOf(false) }
+    if (full && !hide && bitmap != null) {
+        val viewer = model.imageViewer
+        DisposableEffect(Unit) {
+            viewer?.bright(true)
+            onDispose { viewer?.bright(false) }
+        }
+        Dialog({ full = false }, DialogProperties(usePlatformDefaultWidth = false)) {
+            BackHandler(true) { full = false }
+            QrFullScreen(a.name, bitmap, { full = false }, if (viewer == null) null else ({
+                problem(runCatching { viewer.share(Base64.decode(a.receiveQr), "receive-qr.png") }.getOrDefault("That picture could not be shared."))
+            }))
+        }
+    }
     fun choose() {
         chooser?.choose { png, why ->
             if (png == null) { problem(why); return@choose }
@@ -496,6 +511,7 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
             } else {
                 Box(
                     Modifier.fillMaxWidth(0.7f).aspectRatio(1f).clip(PixelShape).background(if (hide) Pixel.Border else Color.White)
+                        .then(if (!hide && bitmap != null) Modifier.clickable(role = Role.Button, onClickLabel = "Open receive money QR code full screen") { full = true } else Modifier)
                         .semantics { contentDescription = if (hide) "Receive money QR code for ${a.name}, hidden" else "Receive money QR code for ${a.name}" },
                     contentAlignment = Alignment.Center,
                 ) {
@@ -505,10 +521,29 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, removing: Boolean
                 }
                 if (removing) Confirm("Remove this QR code?", "Remove", onConfirm = { mint.setReceiveQr(a.id, ""); setRemoving(false) }, onKeep = { setRemoving(false) })
                 else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    if (!hide && bitmap != null) PixelButton("Open", { full = true }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
                     if (chooser != null) PixelButton("Replace", { choose() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     PixelButton("Remove", { setRemoving(true) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
+        }
+    }
+}
+
+/** The receive-money QR on a plain white page, as large as fits, so another phone can scan it. Close and (when the platform can) Share sit at the bottom. */
+@Composable
+internal fun QrFullScreen(name: String, bitmap: androidx.compose.ui.graphics.ImageBitmap, onClose: () -> Unit, onShare: (() -> Unit)?) {
+    Column(Modifier.fillMaxSize().background(Color.White).padding(Spacing.L), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(name, Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, color = Color.Black, maxLines = 1, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Box(Modifier.weight(1f).fillMaxWidth().padding(vertical = Spacing.M), contentAlignment = Alignment.Center) {
+            Image(
+                bitmap, "Receive money QR code for $name", Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit, filterQuality = FilterQuality.None,
+            )
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Close", onClose, Modifier.weight(1f), Pixel.InkSoft)
+            if (onShare != null) PixelButton("Share", onShare, Modifier.weight(1f), ModuleAccent.MINT.accent)
         }
     }
 }

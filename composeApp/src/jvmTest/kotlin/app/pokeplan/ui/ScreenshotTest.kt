@@ -1646,6 +1646,39 @@ class ScreenshotTest {
         })
     }
 
+    /** Account actions at the longest state: ~360 dp wide (540 px at 1.5) and font scale 1.3, no label clipped. */
+    @Test
+    fun mintAccountActionsNarrowLargeFont() {
+        val model = AppModel(storeWithTeam())
+        val acc = model.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000).record!!
+        render("mint-account-actions-narrow", height = 700, width = 540, fontScale = 1.3f) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first { it.id == acc.id }) {} } }
+        }
+    }
+
+    /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
+    @Test
+    fun mintQrFullScreen() {
+        val qr = app.pokeplan.ui.gear.QrCode.encode("https://example.com/pay/daily-account-4821")!!
+        val quiet = 4
+        val scale = 400 / (qr.size + 2 * quiet)
+        val side = (qr.size + 2 * quiet) * scale
+        val px = IntArray(side * side) { i ->
+            val x = i % side / scale - quiet
+            val y = i / side / scale - quiet
+            if (qr.dark(x, y)) 0xFF000000.toInt() else 0xFFFFFFFF.toInt()
+        }
+        val image = org.jetbrains.skia.Bitmap().apply {
+            allocPixels(org.jetbrains.skia.ImageInfo.makeN32(side, side, org.jetbrains.skia.ColorAlphaType.PREMUL))
+            installPixels(java.nio.ByteBuffer.allocate(px.size * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).also { b -> px.forEach { b.putInt(it) } }.array())
+        }.let { org.jetbrains.skia.Image.makeFromBitmap(it).toComposeImageBitmap() }
+        for (dark in listOf(false, true)) {
+            render("mint-qr-fullscreen${if (dark) "-dark" else ""}", minBytes = 3_000) {
+                PixelTheme(dark = dark) { app.pokeplan.ui.mint.QrFullScreen("Daily account", image, {}, {}) }
+            }
+        }
+    }
+
     /** An expedition box at several points of its scroll: a bay's rim must close at the bottom and the frame corner stays whole (owner: "this L seems to be missing something"). */
     @Test
     fun tileBoxCorners() {
