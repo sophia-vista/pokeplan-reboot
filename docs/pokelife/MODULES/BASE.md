@@ -233,7 +233,7 @@ A household project is one record: a name (the only required field), an optional
 
 - **Becoming an asset.** Marking a project Done offers "Add as an asset" once, prefilled with the name, area and purchase date; declining leaves the project as a record. An asset created this way may offer a maintenance schedule (4.5) in the same step, optional.
 - **No sub-structure.** No milestones, dependencies, sub-projects or percent complete. A project that needs steps is a PLAN list or task, linked as in 2.1.
-- **Two homes.** A project may name a place (one is created on first use, D10 in the backlog); places stay optional and adding one never blocks a project.
+- **Areas, not properties.** A project may name an optional area (4.1) and never needs one. It does not add a second property (1.2 stands): an occasional job at the owner's other home is a project with a note saying where.
 - **Privacy and rewards.** Names, budgets and notes follow section 8. A project emits no reward event of its own; finishing the linked maintenance or chore does, as before.
 
 ### 4.5 Maintenance
