@@ -3,7 +3,7 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.OwnedPokemon
 
-/** One pick of [TeamAdvice.recommend]: who, and the one-line [reason] (the favoured type it matches, else "strongest left"). */
+/** One pick of [TeamAdvice.recommend]: who, and the one-line [reason] (the favoured type it matches, else "Strongest left"). */
 data class TeamPick(val pokemon: OwnedPokemon, val reason: String, val matches: Boolean)
 
 /** The advice: the [picks] in order, and [noMatch] when nobody among the candidates has a type [dungeon] favours (then the picks are plain strength). */
@@ -30,7 +30,7 @@ object TeamAdvice {
         ).take(size.coerceAtLeast(0))
         val picks = ranked.map { p ->
             val types = matching(dungeon, p)
-            TeamPick(p, if (types.isEmpty()) "strongest left" else "${types.first().label} suits ${dungeon.name}", types.isNotEmpty())
+            TeamPick(p, if (types.isEmpty()) "Strongest left" else "${types.first().label} suits ${dungeon.name}", types.isNotEmpty())
         }
         return TeamRecommendation(picks, noMatch = candidates.none { matching(dungeon, it).isNotEmpty() })
     }

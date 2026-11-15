@@ -1,6 +1,7 @@
 package app.pokeplan.huawei
 
 import android.content.Context
+import android.provider.Settings
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -8,25 +9,19 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-/** REP-055: the two reader services are components that are enabled only while the reader is switched on or being set up. */
+/** REP-055: the listener is rebound only while notification access is granted; the components themselves are never disabled. */
 @RunWith(RobolectricTestRunner::class)
 class HuaweiComponentsTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
-    @Test fun setupEnablesThenSyncDisablesWhenNotSwitchedOn() {
-        HuaweiComponents.enableScreen(context)
-        HuaweiComponents.enableNotification(context)
-        assertTrue(HuaweiComponents.screenEnabled(context))
-        assertTrue(HuaweiComponents.notificationEnabled(context))
-        // Nothing is switched on in Android's settings: both go back to disabled.
-        HuaweiComponents.sync(context)
-        assertFalse(HuaweiComponents.screenEnabled(context))
-        assertFalse(HuaweiComponents.notificationEnabled(context))
+    @Test fun noRebindWhenAccessIsNotGranted() {
+        Settings.Secure.putString(context.contentResolver, "enabled_notification_listeners", "")
+        assertFalse(HuaweiComponents.rebind(context))
     }
 
-    @Test fun syncKeepsScreenReaderWhenItCanSwitchItself() {
-        HuaweiComponents.sync(context, canSwitch = true)
-        assertTrue(HuaweiComponents.screenEnabled(context))
-        assertFalse(HuaweiComponents.notificationEnabled(context))
+    @Test fun rebindWhenAccessIsGranted() {
+        val me = android.content.ComponentName(context, HuaweiNotificationService::class.java).flattenToString()
+        Settings.Secure.putString(context.contentResolver, "enabled_notification_listeners", me)
+        assertTrue(HuaweiComponents.rebind(context))
     }
 }

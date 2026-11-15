@@ -27,7 +27,7 @@ class TeamAdviceTest {
         assertEquals(listOf("c", "d").toSet(), advice.picks.take(2).map { it.pokemon.id }.toSet())
         assertTrue(advice.picks.take(2).all { it.matches && "suits" in it.reason })
         assertEquals("a", advice.picks[2].pokemon.id)
-        assertEquals("strongest left", advice.picks[2].reason)
+        assertEquals("Strongest left", advice.picks[2].reason)
         assertFalse(advice.noMatch)
     }
 

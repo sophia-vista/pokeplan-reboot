@@ -48,7 +48,6 @@ class AndroidHuaweiReader(private val activity: ComponentActivity) : HuaweiReade
 
     override fun walk(done: (String?) -> Unit) {
         HuaweiCapture.screen?.let { return it.walk(done) }
-        if (canSwitch()) HuaweiComponents.enableScreen(activity)
         if (!canSwitch() || !switchOn()) return done("Turn on screen reading first") // copy-ok: result
         // Android binds the service a moment after the setting changes: wait for it (up to about 3 seconds), then walk; the walk turns it off again.
         val main = Handler(Looper.getMainLooper())
@@ -64,13 +63,12 @@ class AndroidHuaweiReader(private val activity: ComponentActivity) : HuaweiReade
         waitForIt()
     }
 
-    /** Enables the components that are not enabled yet, so they appear in Android's lists; [HuaweiComponents.sync] disables them again when they are not switched on. */
-    override fun openScreenReadingSettings() { HuaweiComponents.enableScreen(activity); open(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+    override fun openScreenReadingSettings() { open(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
 
-    override fun openNotificationSettings() { HuaweiComponents.enableNotification(activity); open(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+    override fun openNotificationSettings() { open(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
 
-    /** Call when the app comes to the front: components follow what is switched on in Android's settings. */
-    fun sync() = HuaweiComponents.sync(activity, canSwitch())
+    /** Call when the app comes to the front: asks Android to bind the step-notification listener again when access is granted. */
+    fun sync() { HuaweiComponents.rebind(activity) }
 
     override fun openAppInfo() = open(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${activity.packageName}")))
 

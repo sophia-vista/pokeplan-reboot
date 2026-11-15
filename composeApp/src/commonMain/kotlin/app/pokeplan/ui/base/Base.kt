@@ -430,7 +430,7 @@ private fun ChoresView(model: AppModel) {
     TextBox { ChoreForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            ModuleTabs(listOf("Due", "Upcoming", "History"), tab, accent) { tab = it; openId = null }
+            ModuleTabs(listOf("Due", "Later", "History"), tab, accent) { tab = it; openId = null }
             val usedAreas = data.areas.filter { a -> !a.archived && data.chores.any { it.areaId == a.id } }
             if (usedAreas.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Chip("All areas", area == null, { area = null })
@@ -804,7 +804,7 @@ private fun MaintenanceView(model: AppModel) {
     if (tab == 1) TextBox { AssetForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            ModuleTabs(listOf("Upcoming", "Items", "History"), tab, accent) { tab = it; openId = null }
+            ModuleTabs(listOf("Later", "Items", "History"), tab, accent) { tab = it; openId = null }
             when (tab) {
                 0 -> {
                     if (views.isEmpty()) PixelTitle("No maintenance yet")

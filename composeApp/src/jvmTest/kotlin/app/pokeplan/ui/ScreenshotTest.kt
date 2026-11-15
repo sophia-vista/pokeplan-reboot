@@ -265,7 +265,9 @@ class ScreenshotTest {
                 PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.OUTSTANDING, {}, {}, {}) } }
             }
         }
-        val empty = AppModel(started())
+        val emptyStore = started()
+        emptyStore.data.tasks.filter { it.deletedAtMillis == null }.forEach { emptyStore.deleteTask(it.id) }
+        val empty = AppModel(emptyStore)
         listOf(false, true).forEach { dark ->
             render("outstanding-empty-${if (dark) "dark" else "light"}", frames = 8) {
                 PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(empty, app.pokeplan.ui.screens.PlanSection.OUTSTANDING, {}, {}, {}) } }
