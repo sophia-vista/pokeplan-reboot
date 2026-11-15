@@ -43,6 +43,7 @@ import app.pokeplan.health.AndroidHealthConnect
 import app.pokeplan.platform.AccelerometerMotion
 import app.pokeplan.platform.AndroidCalendars
 import app.pokeplan.platform.AndroidCapabilities
+import app.pokeplan.platform.AndroidContacts
 import app.pokeplan.platform.AndroidCryPlayer
 import app.pokeplan.platform.AndroidDeviceGate
 import app.pokeplan.platform.AndroidFileSaver
@@ -97,6 +98,7 @@ class MainActivity : ComponentActivity() {
         val storage = saveStorage(this)
         val motion = AccelerometerMotion(this)
         val calendars = AndroidCalendars(this)
+        val contacts = AndroidContacts(this)
         // The field tools' location, microphone, network and scanner (their permission launchers are registered here, before the activity starts).
         val gearServices = androidGearServices(this)
         // The sensors (the step counter's permission launcher is registered here, before the activity starts).
@@ -114,7 +116,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), baseStorage = baseStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this), onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
             )
         }
     }
@@ -259,7 +261,8 @@ class MainActivity : ComponentActivity() {
     private fun linkChanged(data: LinkData) {
         val app = appData ?: return
         val upcoming = LinkReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
-        if (upcoming.isNotEmpty()) askForNotifications()
+        // Ask as soon as any reminder is set, not only when one falls in the next few days: a birthday chosen months ahead must still be able to notify.
+        if (upcoming.isNotEmpty() || (data.settings.reminders && (data.dates.any { it.remindDays != null } || data.followUps.any { it.remind }))) askForNotifications()
         val signature = upcoming.map { Triple(it.recordId, it.kind, it.atMillis) }.hashCode()
         if (linkSignature == null) { linkSignature = signature; if (upcoming.isEmpty()) return }
         else if (signature == linkSignature) return

@@ -26,6 +26,11 @@ data class Person(
     val favorite: Boolean = false,
     val createdMillis: Long = 0,
     val updatedMillis: Long = 0,
+    /**
+     * Where an imported person came from (LINK.md 6.1): the phone contact's lookup key, kept only so a later import can tell it has seen this contact.
+     * Empty for a person the user typed. The phone's address book is never LINK's source of truth, and this never leaves LINK.
+     */
+    val sourceId: String = "",
 )
 
 /** A dated line of context about a person (LINK.md 2.2). Private to LINK: it never leaves in a notification or an event. */
@@ -94,7 +99,7 @@ data class LinkSettings(
     val tutorialSeen: Boolean = false,
     /** Relationship words the user added beside the starting ones. */
     val categories: List<String> = emptyList(),
-    /** The master switch for Link's reminders (LINK.md 5): **off**, and even on a date or follow-up asks only when the user turned its own reminder on. */
+    /** The master switch for Link's reminders (LINK.md 5): **off** until the user switches it on or chooses the first reminder on a date (which switches it on), and even then a date or follow-up asks only when its own reminder is on. */
     val reminders: Boolean = false,
     /** The hour (0 to 23) a reminder goes off on its day. */
     val reminderHour: Int = 9,

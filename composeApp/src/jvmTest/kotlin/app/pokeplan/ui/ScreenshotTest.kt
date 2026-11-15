@@ -1261,8 +1261,8 @@ class ScreenshotTest {
         val model = AppModel(store, gate = if (gate) object : app.pokeplan.ui.DeviceGate { override fun available() = true; override fun authenticate(onResult: (Boolean) -> Unit) {}; override fun leftAt() = 0L } else null)
         if (!empty) {
             val mint = model.mint
-            val bank = mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending").record!!
-            val wallet = mint.addAccount("E-wallet", app.pokeplan.mint.AccountType.EWALLET, "PHP", 350_000).record!!
+            val bank = mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending", card = "blue").record!!
+            val wallet = mint.addAccount("E-wallet", app.pokeplan.mint.AccountType.EWALLET, "PHP", 350_000, card = "gold").record!!
             val card = mint.addAccount("Credit card", app.pokeplan.mint.AccountType.CREDIT_CARD, "PHP", 0).record!!
             mint.record(app.pokeplan.mint.TxType.INCOME, 3_500_000, bank.id, categoryId = "cat-salary", payee = "Salary")
             mint.record(app.pokeplan.mint.TxType.EXPENSE, 184_550, bank.id, categoryId = "cat-food", payee = "Wet market")
@@ -1426,11 +1426,11 @@ class ScreenshotTest {
     }
 
     /** The Link module with a little recorded (two people, a note, two dates, follow-ups), open on [section] (null for its menu). Synthetic text only. */
-    private fun link(name: String, section: app.pokeplan.ui.link.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, prepare: (AppModel) -> Unit = {}) {
+    private fun link(name: String, section: app.pokeplan.ui.link.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, prepare: (AppModel) -> Unit = {}, interact: (androidx.compose.ui.ImageComposeScene) -> Unit = {}, contacts: ContactSource? = null) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(linkParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.LINK) }
-        val model = AppModel(store)
+        val model = AppModel(store, contacts = contacts)
         if (!empty) {
             val link = model.link
             val today = model.store.today
@@ -1447,7 +1447,7 @@ class ScreenshotTest {
         prepare(model)
         model.module = app.pokeplan.ui.screens.Module.LINK
         model.linkSection = section
-        render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     @Test
@@ -1469,6 +1469,58 @@ class ScreenshotTest {
         }
         link("link-settings-reminders", app.pokeplan.ui.link.LinkSection.SETTINGS, height = 2600, prepare = on)
         link("link-settings-reminders-dark", app.pokeplan.ui.link.LinkSection.SETTINGS, height = 2600, dark = true, prepare = on)
+    }
+
+    /** Link's contact import with a fake address book: asking first, then the pick list (new, already here, maybe, the longest name), light and dark, and the Dates form with its reminder keys. */
+    @Test
+    fun linkContactImport() {
+        fun fake(allowed: Boolean) = object : ContactSource {
+            override fun permitted() = allowed
+            override fun requestPermission(done: (Boolean) -> Unit) = done(allowed)
+            override fun contacts() = listOf(
+                app.pokeplan.link.ContactCard("a", "Ana Reyes", listOf("0917 123 4567"), emptyList(), "Choir", app.pokeplan.link.ContactBirthday(3, 14, 1994)),
+                app.pokeplan.link.ContactCard("b", "Maria Clara Delos Santos-Villanueva de la Cruz-Fernandez", listOf("+63 917 555 0100"), emptyList(), "Barangay Health Centre", app.pokeplan.link.ContactBirthday(2, 29)),
+                app.pokeplan.link.ContactCard("c", "Ben Cruz"),
+                app.pokeplan.link.ContactCard("d", "Carla Mendoza", listOf("02 8123 4567")),
+                app.pokeplan.link.ContactCard("e", "Dan"),
+            )
+        }
+        for (dark in listOf(false, true)) {
+            for ((tag, allowed) in listOf("ask" to false, "pick" to true)) {
+                val store = storeWithTeam()
+                val source = fake(allowed)
+                val model = AppModel(store, contacts = source)
+                model.link.addPerson("Ana Reyes", organization = "Choir")
+                model.link.addPerson("Carla M.", phone = "02 8123 4567")
+                model.link.importContacts(listOf(app.pokeplan.link.ImportPick(app.pokeplan.link.ContactCard("c", "Ben"))))
+                render("link-import-$tag${if (dark) "-dark" else ""}", height = 1700) {
+                    PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.ContactImportView(model, source) {} } } } }
+                }
+            }
+        }
+        // Picked rows (a "maybe" with its Same as keys), the reminder keys, then the result line: taps on the rows, the key and Import.
+        val source = fake(true)
+        for ((tag, scale) in listOf("picked" to 1f, "picked-xl" to 1.3f)) {
+            val model = AppModel(storeWithTeam(), contacts = source)
+            model.link.addPerson("Carla M.", phone = "02 8123 4567")
+            model.link.addPerson("Carla Mendoza Jr.", phone = "02 8123 4567")
+            model.link.importContacts(listOf(app.pokeplan.link.ImportPick(app.pokeplan.link.ContactCard("c", "Ben"))))
+            render("link-import-$tag", height = 2000, fontScale = scale, interact = { scene ->
+                fun tap(x: Float, y: Float) {
+                    scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(x, y))
+                    scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(x, y))
+                }
+                tap(135f, 231f) // Pick 3 new
+                tap(300f, 805f) // the maybe row: its Same as keys open
+            }) {
+                PixelTheme(dark = false) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.ContactImportView(model, source) {} } } } }
+            }
+        }
+        link("link-people-import", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1300, contacts = source)
+        for (dark in listOf(false, true)) link("link-dates-remind${if (dark) "-dark" else ""}", app.pokeplan.ui.link.LinkSection.DATES, height = 2100, dark = dark, interact = { scene ->
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(268f, 443f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(268f, 443f))
+        })
     }
 
     /** Every Link section at the system's text at 130%: nothing clipped or pushed out of its box. */
@@ -1493,6 +1545,14 @@ class ScreenshotTest {
     fun mintActivityAndAccounts() {
         mint("mint-activity", app.pokeplan.ui.mint.MintSection.ACTIVITY, height = 2800)
         mint("mint-accounts", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2200)
+    }
+
+    /** The first account: "Where is this money?", the name example and the card-style picker, in both palettes and at 130% text (REP-056). */
+    @Test
+    fun mintFirstAccount() {
+        mint("mint-first-account", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2200, empty = true)
+        mint("mint-first-account-dark", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2200, empty = true, dark = true)
+        mint("mint-first-account-xl", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2800, empty = true, fontScale = 1.3f)
     }
 
     /** The optional access gate (locked card) and Mint's settings with bill reminders on and the gate offered. */

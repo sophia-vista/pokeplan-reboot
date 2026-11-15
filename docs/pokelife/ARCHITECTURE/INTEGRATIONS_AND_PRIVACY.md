@@ -125,7 +125,7 @@ Never repeatedly prompt after denial. Do not use a permission rationale to press
 | Background location | `ACCESS_BACKGROUND_LOCATION` | Not supported by the baseline product |
 | Microphone | `RECORD_AUDIO` | Only when starting an audio measurement/recording tool; no background capture |
 | Camera | Camera permission only for an implemented direct-camera workflow | Prefer system camera intents or scanner APIs where practical; request at capture time |
-| Contacts | `READ_CONTACTS` or platform contact picker | Only when user explicitly invokes LINK import; prefer picker-based selection |
+| Contacts | `READ_CONTACTS` or platform contact picker | Only when user explicitly invokes LINK import; prefer picker-based selection. Built (0.201.0): `READ_CONTACTS`, asked at "Import contacts" after the list of what is read, nothing else |
 | Photos/media | Android Photo Picker | Use selected-item access; no broad media permission for ordinary import |
 | Documents | Storage Access Framework (SAF) | User selects a file/folder; avoid broad storage access |
 | Bluetooth | Version-appropriate Bluetooth permissions | Only for a verified direct device integration; not needed merely because a watch exists |

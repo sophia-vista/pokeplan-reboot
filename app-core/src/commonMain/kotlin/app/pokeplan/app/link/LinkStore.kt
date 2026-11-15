@@ -147,10 +147,15 @@ class LinkStore(
 
     // --- important dates ---------------------------------------------------------------------------------------------------
 
-    fun addDate(kind: DateKind, title: String, month: Int, day: Int, year: Int? = null, annual: Boolean = true, personId: String? = null, note: String = ""): Logged<ImportantDate> {
-        val d = ImportantDate(newId(), kind, title.trim(), month, day, year, annual, personId?.takeIf { id -> data.people.any { it.id == id } }, note.trim(), nowMillis)
+    /**
+     * Saves a date. [remindDays] (one of [LinkRules.REMIND_PRESETS]) asks for its reminder in the same step, and turns Link's master switch on if it was off,
+     * so choosing a reminder is never a second trip to Settings. Null leaves the reminder off (LINK.md 5).
+     */
+    fun addDate(kind: DateKind, title: String, month: Int, day: Int, year: Int? = null, annual: Boolean = true, personId: String? = null, note: String = "", remindDays: Int? = null): Logged<ImportantDate> {
+        val remind = remindDays?.takeIf { it in LinkRules.REMIND_PRESETS }
+        val d = ImportantDate(newId(), kind, title.trim(), month, day, year, annual, personId?.takeIf { id -> data.people.any { it.id == id } }, note.trim(), nowMillis, remind)
         (LinkRules.checkDate(d) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        update { it.copy(dates = it.dates + d) }
+        update { it.copy(dates = it.dates + d, settings = if (remind != null) it.settings.copy(reminders = true) else it.settings) }
         return Logged(d)
     }
 
@@ -170,6 +175,50 @@ class LinkStore(
     fun upcoming(withinDays: Int = LinkRules.DATES_SOON_DAYS) = LinkRules.upcoming(data, today, withinDays)
 
     fun allDates() = LinkRules.allDates(data, today)
+
+    // --- importing contacts (LINK.md 3.5 and 6.1) -------------------------------------------------------------------------------
+
+    /** The preview for [cards] the phone offered: which are new, which were imported before, which may be someone already here. Writes nothing. */
+    fun planImport(cards: List<app.pokeplan.link.ContactCard>) = app.pokeplan.link.ContactImport.plan(data, cards)
+
+    /**
+     * Writes the [picks] the user confirmed in **one** save, so a single [restore] of the snapshot taken before it is the Undo. A pick with `linkTo` attaches
+     * the contact to that person and fills only their empty fields; otherwise a new person is made. A contact's birthday becomes a Birthday date for that
+     * person unless they already have one, with the reminder [remindDays] when chosen (turning Link's reminders on). Importing never pays, replaces a
+     * field the user wrote, or runs by itself, and a second import of the same picks changes nothing.
+     */
+    fun importContacts(picks: List<app.pokeplan.link.ImportPick>, remindDays: Int? = null): app.pokeplan.link.ImportResult {
+        val remind = remindDays?.takeIf { it in LinkRules.REMIND_PRESETS }
+        var added = 0; var linked = 0; var birthdays = 0; var skipped = 0
+        update { d0 ->
+            added = 0; linked = 0; birthdays = 0; skipped = 0 // the change may run again on a clash; count each run afresh
+            var d = d0
+            for (pick in picks) {
+                val c = pick.card
+                val existing = (pick.linkTo ?: d.people.firstOrNull { c.sourceId.isNotBlank() && it.sourceId == c.sourceId }?.id)?.let { id -> d.people.firstOrNull { it.id == id } }
+                if (pick.linkTo != null && existing == null) { skipped++; continue }
+                val person = if (existing != null) {
+                    val filled = app.pokeplan.link.ContactImport.fill(existing, c, nowMillis)
+                    if ((LinkRules.checkPerson(filled) as? Check.Refused) != null) { skipped++; continue }
+                    if (filled != existing) { d = d.copy(people = d.people.map { if (it.id == existing.id) filled else it }); linked++ } else skipped++
+                    filled
+                } else {
+                    val p = app.pokeplan.link.ContactImport.newPerson(c, newId(), nowMillis)
+                    if ((LinkRules.checkPerson(p) as? Check.Refused) != null) { skipped++; continue }
+                    d = d.copy(people = d.people + p); added++
+                    p
+                }
+                val b = c.birthday
+                if (b != null && d.dates.none { it.personId == person.id && it.kind == DateKind.BIRTHDAY }) {
+                    val date = ImportantDate(newId(), DateKind.BIRTHDAY, "Birthday", b.month, b.day, b.year, true, person.id, "", nowMillis, remind)
+                    if (LinkRules.checkDate(date) == Check.Ok) { d = d.copy(dates = d.dates + date); birthdays++ }
+                }
+            }
+            if (remind != null && birthdays > 0) d = d.copy(settings = d.settings.copy(reminders = true))
+            d
+        }
+        return app.pokeplan.link.ImportResult(added, linked, birthdays, skipped)
+    }
 
     // --- follow-ups --------------------------------------------------------------------------------------------------------
 
@@ -278,7 +327,7 @@ class LinkStore(
         name.trim().take(LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || n.lowercase() in LinkRules.categories(LinkData(settings = s)).map { it.lowercase() }) s else s.copy(categories = s.categories + n) }
     }
 
-    // --- reminders (LINK.md 5): all off until the user turns them on, per record ---------------------------------------------------
+    // --- reminders (LINK.md 5): all off until the user asks for one (a date's first chosen reminder turns the master switch on), per record ---------------------------------------------------
 
     /** The master switch. On, a date or follow-up still asks only when its own reminder is on. Neither pays nor changes a record. */
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
@@ -288,10 +337,11 @@ class LinkStore(
     /** Lets a notification say which date or follow-up once the phone is unlocked; the lock screen never does. */
     fun setReminderNames(on: Boolean) = settings { it.copy(reminderNames = on) }
 
-    /** Reminds [days] before the date ([LinkRules.REMIND_PRESETS]; anything else is ignored), or not at all for null. */
+    /** Reminds [days] before the date ([LinkRules.REMIND_PRESETS]; anything else is ignored), or not at all for null. A reminder chosen turns Link's reminders on. */
     fun setDateRemind(id: String, days: Int?) {
         if (days != null && days !in LinkRules.REMIND_PRESETS) return
-        update { d -> d.copy(dates = d.dates.map { if (it.id == id) it.copy(remindDays = days) else it }) }
+        // Choosing a reminder is enough: the first one turns the master switch on, so it is never a second trip to Settings.
+        update { d -> d.copy(dates = d.dates.map { if (it.id == id) it.copy(remindDays = days) else it }, settings = if (days != null) d.settings.copy(reminders = true) else d.settings) }
     }
 
     /** Reminds on the follow-up's day. A follow-up handed to Plan cannot: Plan is its reminder source from then on. */
