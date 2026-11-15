@@ -63,6 +63,7 @@ import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.DeviceGate
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
@@ -293,7 +294,7 @@ private fun AccountsView(model: AppModel) {
                     onClick = { open = if (open == a.id) null else a.id }, onClickLabel = "Show options",
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        if (a.card.isNotEmpty()) Box(Modifier.size(10.dp).background(cardColor(CardStyle.of(a.card))))
+                        Box(Modifier.size(10.dp).background(cardColor(CardStyle.of(a.card))))
                         Text(a.name, style = MaterialTheme.typography.bodyLarge)
                     }
                     val meta = listOfNotNull(
@@ -359,8 +360,11 @@ private fun cardColor(style: CardStyle): Color = when (style) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CardStylePicker(selected: String, onPick: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+    FieldLabel("Card style")
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         CardStyle.entries.forEach { c -> TabButton(c.label, c.id == CardStyle.of(selected).id, { onPick(c.id) }, key = cardColor(c)) }
+    }
     }
 }
 
