@@ -2,7 +2,7 @@
 
 15 November 2026. **Evidence, not authority** (Product Bible section 10): the rules live in the specifications and the work in `IMPLEMENTATION_BACKLOG.md`. Rows REP-054 to REP-056 and decisions D9 and D10 there come from this audit.
 
-**What it is.** An audit of the 0.199.0 APK (SHA-256 `42064dee…6f69`, 24 DEX files, 29,993 entries), the owner's interview about how they use each module, the owner's screenshots, and one battery screen (section 3). The first draft was written from the APK's class metadata and the documents alone. This version reconciles it with the source at 0.199.0 (`main` at `f957b6f1`) by reading the code. **Nothing was built or run, no test was run, and no device was used**; "built" below means the code is there, not that it works.
+**What it is.** An audit of the 0.199.0 APK (SHA-256 `42064dee…6f69`, 24 DEX files, 29,993 entries) against the owner's interview (filed whole as `INTERVIEW-2026-11-15.md`; that file is the primary record of how the owner feels about each module, and where this one condenses it, it wins), the owner's screenshots of MINT's forms, and one battery screen (section 3). The interview says it is not a code audit or a usability test, and this one is not a usability test either. The first draft was written from the APK's class metadata and the documents alone. This version reconciles it with the source at 0.199.0 (`main` at `f957b6f1`) by reading the code. **Nothing was built or run, no test was run, and no device was used**; "built" below means the code is there, not that it works.
 
 ## 1. Verdict
 
@@ -66,10 +66,11 @@ The audit asks for contextual explanations and one-tap examples in MINT, BASE, C
 
 This is REP-056.
 
-### PLAN (P1)
-**The owner says:** uses tasks, custom lists and focus sessions. The lists are workstreams (`Work`, `Resto`), not shopping lists. Google Calendar stays the event source because its maps and event screen are useful, and the calendar widget shows it. Quick tasks are forgotten before they are entered. Recurrence set-up is boring and the interface feels cluttered. Likes precision (scheduling, frequency, tags, lists, customisation) but wants sensible defaults and low upkeep.
-**In the code:** quick-add box on Today, Inbox and lists, with "Added to ..." feedback and a kept draft; recurrence and frequency targets; tags and lists.
-**Open:** capture that happens where the thought does (launcher shortcut, widget); a short default editor with the rest under "More options" (check what it shows now); reusable recurrence presets; one **Outstanding** view across Work and Resto; do not push the owner to move calendar events into PLAN. Existing: REP-030 depth and REP-035 (Tier 2 item 18); labels and saved filters need a spec.
+### PLAN (P1; the owner's priority 2)
+**The owner says:** uses tasks, custom lists, focus sessions and the calendar widget. Does **not** report regular use of Inbox, Upcoming, recurring tasks or Goals and Milestones. The lists are workstreams, used to see what is **outstanding** rather than to plan today: **Work** (the job) and **Resto** (Balai Yllana: publications, R&D research, website upkeep). Used TickTick before, for tasks but also groceries, learning and certification tracking, and still values reminders, checklists, precise date and time, flexible recurrence and customisation; its recurring reminders are still what the owner uses for **bill payments and household chores**. Three reasons PLAN is not used more: quick tasks are forgotten because they never get captured; setting up recurrence is tedious; the UI feels cluttered. Focus is used partly because the reward makes focusing easier.
+**Boundaries the owner set:** Google Calendar stays the event and schedule tool (maps, attachments, and a visual record of WFH/RTO and whether the owner is at the condo or at home); Samsung Notes stays the quick-note tool; PokéLife fills gaps and does not force a move.
+**In the code:** the quick-add box on Today, the Inbox and lists, with "Added to ..." feedback and a kept draft; and three ways in from outside the app: the `add_task` launcher shortcut, a Quick Settings tile and a widget button, which open the app on the add-task screen (`QuickTiles.kt`, `shortcuts.xml`, `GlanceWidgets.kt:226`). Recurrence, frequency targets, tags and lists exist.
+**Open:** the owner forgets in spite of those entry points, so the question is whether they are found and used, and whether they land on a title-only box (not checked); a short default editor with the rest under "More options"; reusable recurrence presets; one **Outstanding** view across Work and Resto; and the recurring bills and chores now living in TickTick, which PLAN, MINT bills (REP-039) and BASE chores can only win over if recurrence setup is quick. Existing: REP-030 depth and REP-035 (Tier 2 item 18); the capture, outstanding and recurrence slice is REP-057.
 
 ### CARE (P1)
 **The owner says:** routines were added but are not followed; journal and mood are forgotten; breathing is useful; skills are valuable when needed; the UI feels cluttered; Pokémon care and its rewards motivate.
@@ -77,14 +78,14 @@ This is REP-056.
 **Open:** a landing built around one Today action; Calm one tap away; a quiet "not logged today" mark on Reflect with no nagging; skills searchable with recents. A missed routine does not mean the owner wants routines gone. Existing: REP-036 (Tier 3 item 25).
 
 ### HEAL (P1)
-**The owner says:** the Huawei reader is a major strength; records whatever data is available; hydration, nutrition and weight depend on remembering; wants one view with dashboard, trends, records, goals and insights.
+**The owner says:** the Huawei reader is a major strength; records whatever data is available; hydration, nutrition and weight depend on remembering; wants one place for a dashboard of current health and activity, trends over time, a place to record, goals and progress, and recommendations or insights from the data. Hydration, nutrition and weight depend on remembering; the owner says so explicitly, and a gap in manual data is not a lack of interest in those features.
 **In the code:** the Huawei reader and Health Connect reads, activity, sleep, hydration and measurements. **Nutrition is not built** (section 2.1).
 **Open:** persistent quick add for hydration, weight and workout with presets and "repeat last"; choose which metrics show on Today; show each metric's state (read, entered by hand, stale, unavailable, none yet) and never a missing value as zero; do not advertise nutrition. Existing: REP-040 (Tier 2 item 15 is medication first), REP-046.
 
 ### MINT (P1, the first-use blocker)
-**The owner says:** account set-up is laborious and barebones; dislikes adding accounts by hand but understands bank links may not exist; the account types and the purpose of the other features are unclear; the card visuals could be better (the Agila card idea appeals); wants consolidated accounts, safe-to-spend, expenses, budgets, bills, savings goals and net worth; asked about stock advice and buy/sell timing but sees it may be too complex.
+**The owner says:** set-up is not finished: it is cumbersome and the module feels barebones, and no regular workflow exists yet. Money Manager did not stick; Agila was used and its card-template idea is liked. Adding accounts feels like a lot; manual set-up is disliked, though the owner understands banking apps may offer no import like Huawei Health. The account types are not understood, the card visuals could be better, and the other features are not understood. The activity form (expense, income, transfer, refund, fee/interest, balance adjustment; account, category, date/time, payee/note) has not yet been tried long enough to say whether it is convenient. Wants all of: money across banks, e-wallets and cash in one place; how much is safe to spend; expenses and spending; bills and payment schedules; savings and goals; net worth; and help with stocks, what to invest in and when to sell, which the owner sees may be too complex. MINT should be a comprehensive finance hub, not an expense tracker.
 **In the code:** accounts, transactions, budgets, bills, imports, reconciliation; group and last digits behind a key.
-**Open:** account creation as "where is this money?" with each type defined in one info dialogue (e-wallet, digital bank, cash, credit card = money owed, loan = liability); a cosmetic card-style picker that never changes accounting; a first run that ends on a useful overview after one account and a transaction or two; expense as amount, account, category; a worked example for Budgets, Bills, Reconciliation, Statement import, Savings targets and Reports. **Stock advice and timing stay out of scope** (`MINT.md`, the Bible); a read-only holdings record would need an explicit scope change. Existing: REP-039 (Tier 2 item 16 is recurrence first).
+**Open:** account creation as "where is this money?" with each type defined in one info dialogue (e-wallet, digital bank, cash, credit card = money owed, loan = liability); a cosmetic card-style picker that never changes accounting; a first run that ends on a useful overview after one account and a transaction or two; expense as amount, account, category; a worked example for Budgets, Bills, Reconciliation, Statement import, Savings targets and Reports. **Stock advice and sell timing stay out of scope** (`MINT.md`, the Bible), and the interview itself calls portfolio tracking and research "more tractable starting points" than personal buy/sell instructions; whether a read-only holdings record becomes a later scope is D11. Existing: REP-039 (Tier 2 item 16 is recurrence first).
 
 ### BASE (P1, medium)
 **The owner says:** not used because set-up seems tedious; chores versus maintenance is unclear; Supplies is "mysterious"; Notes/Reference feels random. The real use is condo upkeep, with occasional jobs at another home (for example buying an air conditioner).
@@ -110,6 +111,23 @@ This is REP-056.
 **The owner says:** the PMD-style town coming to life on the phone is a main reason for using the app; rewards motivate, most clearly for easy actions (a five-minute Focus session, caring for Pokémon).
 **Open:** keep the town calm and alive; no permanent dashboard cards over it; stable positions and predictable lifecycle first. Rewards stay bounded and for validated completion, never for sensitive content, and are not raised to prop up an unused feature: fix the entry flow first. The battery figures of section 3 belong here.
 
+## 4A. The owner's own priority order, and how the backlog compares
+
+From the interview (section 11 there), which is a UX proposal from reported friction and value, not an effort estimate. The cross-cutting rule is that the launcher, animations, interactions and Pokémon progression are improved throughout and never deferred until the utilities are done.
+
+| Owner's order | Area | Backlog now |
+|---|---|---|
+| 1 | WORLD team selection | REP-054, Tier 1 (matches) |
+| 2 | PLAN quick capture and recurrence | REP-057 (new); before this the backlog had only PLAN depth (priority, bulk actions) at Tier 2 item 18 |
+| 3 | MINT onboarding and explanation | REP-056; MINT recurrence is Tier 2 item 16 |
+| 4 | CARE information architecture | REP-056 and REP-036 |
+| 5 | HEAL manual entry | REP-056 and REP-040 (medication first) |
+| 6 | BASE (HOME) feature clarity and progressive set-up | REP-056, D10 |
+| 7 | LINK person creation and profile | REP-056 (walkthrough first) and REP-043 |
+| 8 | GEAR access | D9 |
+
+The first draft of this audit ranked LINK and GEAR together at P2, which agrees; it put CARE and HEAL above MINT, which the owner's order does not.
+
 ## 5. Cross-cutting
 
 - **Persistence.** Answered in section 2.1. The open piece is REP-020, and nothing old is deleted until the migration, backup, restore and rollback tests pass.
@@ -123,7 +141,9 @@ This is REP-056.
 |---|---|
 | WORLD recommend team, poor-match mark, replace team, type-first picker | **REP-054**, Tier 1 |
 | Why the app counts as running 6 h 9 m with the screen off | **REP-055**, Tier 1 (one `adb` session) |
+| PLAN capture, Outstanding view, recurrence presets (the owner's priority 2) | **REP-057**, Tier 2 |
 | First-use paths and the examples-without-captions rule (MINT, BASE, CARE, HEAL, LINK) | **REP-056**, Tier 2 |
+| A read-only portfolio record in MINT | D11, no work until answered |
 | GEAR launcher widget | D9, then REP-022 |
 | Default place for BASE | D10, then REP-056 |
 | LINK contacts import; HEAL medication; MINT recurrence; PLAN depth; Seal Care's journal | Existing Tier 2 items 14 to 18 |
