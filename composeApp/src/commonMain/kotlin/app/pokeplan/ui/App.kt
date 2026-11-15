@@ -145,6 +145,8 @@ class AppModel(
     val contacts: ContactSource? = null,
     /** Picks and shrinks one image for MINT's account QR; null where there is none (desktop, web), and then the QR is not offered. */
     val images: ImageChooser? = null,
+    /** Full brightness and the share sheet for MINT's big QR; null where there is none (desktop, web), and then the QR is shown without them. */
+    val imageViewer: ImageViewer? = null,
 ) {
     /** When each module behind the screen lock was last opened with it and last left (millis), by module name; see `ScreenLockGate` in screens/ModuleGate.kt. */
     val moduleUnlockedAt: MutableMap<String, Long> = mutableMapOf()
@@ -400,6 +402,7 @@ fun App(
     huawei: HuaweiReader? = null,
     contacts: ContactSource? = null,
     images: ImageChooser? = null,
+    imageViewer: ImageViewer? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called after every change to Care's save (the Android app keeps routine reminders and the Care widget up to date). */
@@ -423,7 +426,7 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val base = BaseStore(baseStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }

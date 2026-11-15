@@ -43,6 +43,18 @@ interface ImageChooser {
     fun choose(done: (png: ByteArray?, problem: String?) -> Unit)
 }
 
+/**
+ * Showing and sharing a picture that is already kept (an account's receive-money QR, MINT.md 4.2): [bright] raises the screen to full brightness and keeps it on while
+ * the big QR is open (off again when it closes; it asks for no permission and changes no setting), and [share] hands the PNG to the phone's own share sheet as a file
+ * named [name], so the player chooses where it goes. Nothing is sent anywhere by the app itself. Only the Android app provides one.
+ */
+interface ImageViewer {
+    fun bright(on: Boolean)
+
+    /** Returns a short note on what happened, or an error in words. */
+    fun share(png: ByteArray, name: String): String
+}
+
 /** What the phone lets the Huawei Health reader do right now, rechecked on every look (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
 data class HuaweiReaderState(
     val installed: Boolean,
