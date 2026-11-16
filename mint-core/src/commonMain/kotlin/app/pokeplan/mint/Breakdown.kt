@@ -28,9 +28,14 @@ data class OverviewBreakdown(
     val creditLines: List<CreditLineInfo>,
 )
 
-fun MintRules.breakdown(data: MintData, currency: String, today: LocalDate, withinDays: Int = 14): OverviewBreakdown {
+fun MintRules.breakdown(data: MintData, currency: String, today: LocalDate, withinDays: Int = OverviewCounts.days(data, today)): OverviewBreakdown {
     val rows = balances(data).filter { it.account.status == AccountStatus.ACTIVE && it.account.currency == currency }
-    fun line(b: AccountBalance) = BreakdownLine(b.account.id, b.account.name, b.account.group, b.postedMinor, !b.account.hideFromTotal)
+    // A liability shows what the Overview counts of it, so the lines add up to the net position (3.2B).
+    fun line(b: AccountBalance) = BreakdownLine(
+        b.account.id, b.account.name, b.account.group,
+        if (b.account.type.liability) OverviewCounts.liabilityCounted(data, b.account, b.postedMinor, today) else b.postedMinor,
+        !b.account.hideFromTotal,
+    )
     val assets = rows.filter { !it.account.type.liability }.map(::line)
     val liabilities = rows.filter { it.account.type.liability }.map(::line)
     val assetsSum = assets.filter { it.counted }.sumOf { it.balanceMinor }

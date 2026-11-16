@@ -37,7 +37,7 @@ internal fun OverviewBreakdownBox(model: AppModel, startCurrency: String, onClos
     val mint = model.mint
     val data = model.mintData
     val today = model.store.today
-    val currencies = MintRules.netPosition(data).keys.toList().ifEmpty { listOf(startCurrency) }
+    val currencies = MintRules.netPosition(data, today).keys.toList().ifEmpty { listOf(startCurrency) }
     var cur by remember { mutableStateOf(startCurrency) }
     val b = MintRules.breakdown(data, cur, today)
     @Composable
@@ -72,6 +72,27 @@ internal fun OverviewBreakdownBox(model: AppModel, startCurrency: String, onClos
                 }
             }
             PixelButton("Close", onClose, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+        }
+    }
+}
+
+/** Mint Settings: what the Overview and the Mint widgets count (MINT.md 3.2B). */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun OverviewCountsBox(model: AppModel) {
+    val mint = model.mint
+    val settings = model.mintData.settings
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Overview counts")
+            SectionLabel("Bills and installments due")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                app.pokeplan.mint.OverviewWindow.entries.forEach { w -> TabButton(w.label, w == settings.overviewWindow, { mint.setOverviewWindow(w) }, key = ModuleAccent.MINT.accent) }
+            }
+            SectionLabel("Pay later in net position")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                app.pokeplan.mint.PayLaterCount.entries.forEach { c -> TabButton(c.label, c == settings.overviewPayLater, { mint.setOverviewPayLater(c) }, key = ModuleAccent.MINT.accent) }
+            }
         }
     }
 }

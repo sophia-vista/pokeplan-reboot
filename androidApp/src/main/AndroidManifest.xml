@@ -140,6 +140,14 @@
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_world" />
         </receiver>
+        <receiver android:name=".widgets.MintWidgetReceiver" android:exported="true">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_mint" />
+        </receiver>
+        <receiver android:name=".widgets.MintDueWidgetReceiver" android:exported="true">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_mint_due" />
+        </receiver>
         <!-- Quick Settings tiles: they only open the app on one screen. -->
         <service android:name=".AddTaskTile" android:exported="true" android:label="Add task" android:icon="@drawable/ic_tile_check" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>

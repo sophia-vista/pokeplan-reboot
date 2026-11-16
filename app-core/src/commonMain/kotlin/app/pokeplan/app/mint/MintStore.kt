@@ -626,6 +626,12 @@ class MintStore(
     /** Hides every amount across Mint (MINT.md section 3.3). */
     fun setHideValues(on: Boolean) = settings { it.copy(hideValues = on) }
 
+    /** How far ahead the Overview and the widgets look for what is due (MINT.md 3.2B). */
+    fun setOverviewWindow(window: app.pokeplan.mint.OverviewWindow) = settings { it.copy(overviewWindow = window) }
+
+    /** How much of a Pay later account the Overview's net position counts (MINT.md 3.2B). */
+    fun setOverviewPayLater(count: app.pokeplan.mint.PayLaterCount) = settings { it.copy(overviewPayLater = count) }
+
     /** Turns bill reminders on or off (MINT.md section 12). Off by default; turning them off never touches a bill. */
     fun setBillReminders(on: Boolean) = settings { it.copy(billReminders = on) }
 

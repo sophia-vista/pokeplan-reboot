@@ -47,6 +47,7 @@ import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ColumnScope
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.RowScope
@@ -80,6 +81,8 @@ import app.pokeplan.plan.Task
 import app.pokeplan.ui.Place
 import app.pokeplan.ui.plan.clock
 import app.pokeplan.careStore
+import app.pokeplan.mint.summary
+import app.pokeplan.mintStore
 import app.pokeplan.widgetStore
 import kotlinx.coroutines.delay
 import java.time.Instant
@@ -134,7 +137,7 @@ private fun TickButton(description: String, done: Boolean = false, onClick: Acti
 
 /** Brings every widget up to date; called when the app is left and after a tap on a widget. */
 suspend fun updateWidgets(context: Context) {
-    for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget(), CareWidget(), WorldWidget())) {
+    for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget(), CareWidget(), WorldWidget(), MintWidget(), MintDueWidget())) {
         val stamp = System.currentTimeMillis()
         for (id in GlanceAppWidgetManager(context).getGlanceIds(widget.javaClass)) {
             updateAppWidgetState(context, id) { it[RefreshKey] = stamp }
@@ -696,6 +699,139 @@ private fun WorldContent(context: Context, state: WorldState, header: Bitmap?) {
                 if (state.jobsReady > 0) "${state.jobsReady} job${if (state.jobsReady == 1) "" else "s"} to claim" else null,
             )
             if (extra.isNotEmpty()) Text(extra.joinToString(", "), GlanceModifier.padding(top = 4.dp), style = TextStyle(color = ColorProvider(teal), fontSize = 13.sp, fontWeight = FontWeight.Bold))
+        }
+    }
+}
+
+
+// ----- Mint: the overview and what is due ---------------------------------------------------------------------------------
+
+private val gold = Color(0xFF8A6700)
+
+/**
+ * What a Mint widget shows. [summary] is null when there is nothing to show: Mint has no account yet, or its records cannot be read. [locked] is the
+ * screen-lock gate (MINT.md 13.2): a widget cannot ask for the lock, so with the gate on it shows no figure at all. [hidden] is "hide amounts" (3.3): the
+ * layout, the dates and the counts stay, every amount is dots.
+ */
+private data class MintState(
+    val started: Boolean, val locked: Boolean, val hidden: Boolean, val summary: app.pokeplan.mint.OverviewSummary?,
+    val windowLabel: String, val today: kotlinx.datetime.LocalDate,
+)
+
+private fun loadMint(context: Context): Pair<MintState, Bitmap?> {
+    val game = widgetStore(context)
+    val data = mintStore(context, game).data
+    val today = game.today
+    val d = density(context)
+    val header = WidgetArt.scene(context, BuddyScene.MINT, BuddyScene.darkness(game.now.hour, game.now.minute), (420 * d).toInt(), (44 * d).toInt(), 20 * d, roundBottom = false)
+    val locked = data.settings.gate
+    val summary = if (locked || data.accounts.none { it.status == app.pokeplan.mint.AccountStatus.ACTIVE }) null else app.pokeplan.mint.OverviewCounts.summary(data, today, limit = 8)
+    return MintState(game.data.onboarded, locked, data.settings.hideValues, summary, data.settings.overviewWindow.label, today) to header
+}
+
+private fun money(state: MintState, minor: Long): String = app.pokeplan.mint.Money.format(minor, state.summary?.currency ?: "PHP", state.hidden)
+
+private fun dueDay(state: MintState, item: app.pokeplan.mint.DueItem): String = when {
+    item.overdue -> "Overdue"
+    item.day == state.today -> "Today"
+    else -> "${item.day.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${item.day.day}"
+}
+
+/** The Mint overview: available money, net position and what is due in the window the player chose in Mint Settings. */
+class MintWidget : GlanceAppWidget() {
+    override suspend fun provideGlance(context: Context, id: GlanceId) =
+        provideFresh(context, id, { loadMint(context) }) { (state, header) -> MintOverviewContent(context, state, header) }
+}
+
+class MintWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = MintWidget()
+}
+
+/** The next bills and installments due, soonest first. */
+class MintDueWidget : GlanceAppWidget() {
+    override suspend fun provideGlance(context: Context, id: GlanceId) =
+        provideFresh(context, id, { loadMint(context) }) { (state, header) -> MintDueContent(context, state, header) }
+}
+
+class MintDueWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = MintDueWidget()
+}
+
+/** The words a Mint widget shows instead of figures, or null when it has figures to show. */
+private fun mintNotice(state: MintState): String? = when {
+    !state.started -> "Open PokéLife to start"
+    state.locked -> "Locked. Open Mint to see your money."
+    state.summary == null -> "Add an account in Mint to see your overview."
+    else -> null
+}
+
+@Composable
+private fun MintFrame(context: Context, state: MintState, header: Bitmap?, title: String, content: @Composable ColumnScope.() -> Unit) {
+    val open = openApp(context, Place.MINT.name)
+    Column(GlanceModifier.fillMaxSize().background(paper).cornerRadius(20.dp)) {
+        WidgetHeader(header, gold, open) {
+            Text(
+                title, GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 4.dp),
+                style = TextStyle(color = ColorProvider(gold), fontSize = 15.sp, fontWeight = FontWeight.Bold),
+            )
+            Spacer(GlanceModifier.defaultWeight())
+            if (mintNotice(state) == null) Text(
+                state.windowLabel, GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
+                style = TextStyle(color = ColorProvider(ink), fontSize = 12.sp, fontWeight = FontWeight.Medium),
+            )
+        }
+        Column(GlanceModifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp).clickable(open), content = content)
+    }
+}
+
+@Composable
+private fun MintOverviewContent(context: Context, state: MintState, header: Bitmap?) {
+    MintFrame(context, state, header, "Mint") {
+        val notice = mintNotice(state)
+        val s = state.summary
+        if (notice != null || s == null) {
+            Text(notice ?: "", style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp))
+            return@MintFrame
+        }
+        Text("Available", style = TextStyle(color = ColorProvider(soft), fontSize = 12.sp))
+        Text(money(state, s.availableMinor), style = TextStyle(color = ColorProvider(ink), fontSize = 24.sp, fontWeight = FontWeight.Bold), maxLines = 1)
+        Spacer(GlanceModifier.height(4.dp))
+        Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Net position", GlanceModifier.defaultWeight(), style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp))
+            Text(money(state, s.netMinor), style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium), maxLines = 1)
+        }
+        Row(GlanceModifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(if (s.dueCount == 0) "Nothing due" else "Due (${s.dueCount})", GlanceModifier.defaultWeight(), style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp))
+            if (s.dueCount > 0) Text(money(state, s.dueMinor), style = TextStyle(color = ColorProvider(gold), fontSize = 13.sp, fontWeight = FontWeight.Bold), maxLines = 1)
+        }
+    }
+}
+
+@Composable
+private fun MintDueContent(context: Context, state: MintState, header: Bitmap?) {
+    MintFrame(context, state, header, "Mint due") {
+        val notice = mintNotice(state)
+        val s = state.summary
+        if (notice != null || s == null) {
+            Text(notice ?: "", style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp))
+            return@MintFrame
+        }
+        if (s.next.isEmpty()) {
+            Text("Nothing due. ${state.windowLabel}.", style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp))
+            return@MintFrame
+        }
+        LazyColumn {
+            items(s.next, itemId = { (it.name + it.day).hashCode().toLong() }) { item ->
+                Row(GlanceModifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(item.name, GlanceModifier.defaultWeight(), style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp), maxLines = 1)
+                    Spacer(GlanceModifier.width(6.dp))
+                    Text(
+                        dueDay(state, item), style = TextStyle(color = ColorProvider(if (item.overdue) Color(0xFFB42332) else soft), fontSize = 12.sp),
+                        maxLines = 1,
+                    )
+                    item.amountMinor?.let { Text("  " + money(state, it), style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium), maxLines = 1) }
+                }
+            }
         }
     }
 }
