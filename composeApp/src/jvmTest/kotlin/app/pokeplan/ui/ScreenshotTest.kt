@@ -1783,6 +1783,50 @@ class ScreenshotTest {
         }
     }
 
+    /** BNPL entry points: the Activity form with installments and "Pay for", the Bills installments box, and the Overview with its breakdown. */
+    @Test
+    fun mintInstallmentEntryPoints() {
+        fun ago(today: kotlinx.datetime.LocalDate, d: Int) = kotlinx.datetime.LocalDate.fromEpochDays(today.toEpochDays() - d)
+        fun ahead(today: kotlinx.datetime.LocalDate, d: Int) = kotlinx.datetime.LocalDate.fromEpochDays(today.toEpochDays() + d)
+        for (dark in listOf(false, true)) {
+            val suffix = if (dark) "-dark" else ""
+            // Activity: a pay later account first, the installments switch on.
+            val a = AppModel(storeWithTeam())
+            a.mint.addAccount("SPayLater", app.pokeplan.mint.AccountType.PAY_LATER, "PHP", 0, limitMinor = 3_000_000)
+            a.mint.addAccount("GCash", app.pokeplan.mint.AccountType.EWALLET, "PHP", 500_000)
+            a.mintStartType = app.pokeplan.mint.TxType.EXPENSE
+            render("mint-activity-installments$suffix", height = 3100, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.mint.ActivityView(a, startInstallments = true, startAmount = "12345.67", startPayee = "Standing fan") } } }
+            }
+            // The rest share one set of accounts and plans.
+            val m = AppModel(storeWithTeam())
+            val today = m.store.today
+            val wallet = m.mint.addAccount("GCash", app.pokeplan.mint.AccountType.EWALLET, "PHP", 500_000, group = "Daily").record!!
+            val later = m.mint.addAccount("SPayLater", app.pokeplan.mint.AccountType.PAY_LATER, "PHP", 0, limitMinor = 3_000_000, group = "Credit").record!!
+            val card = m.mint.addAccount("Credit card", app.pokeplan.mint.AccountType.CREDIT_CARD, "PHP", 150_000, group = "Credit").record!!
+            m.mint.addAccount("Savings", app.pokeplan.mint.AccountType.BANK, "PHP", 8_000_000, group = "Daily")
+            val hiddenAcc = m.mint.addAccount("Shared fund", app.pokeplan.mint.AccountType.BANK, "PHP", 900_000).record!!
+            m.mint.updateAccount(hiddenAcc.copy(hideFromTotal = true))
+            m.mint.addPlanPurchase(later.id, "Headphones", 120_000, null, 3, app.pokeplan.mint.PlanEvery.MONTH, ago(today, 3), day = ago(today, 33))
+            m.mint.addPlanPurchase(card.id, "Phone case and charger", 90_000, null, 3, app.pokeplan.mint.PlanEvery.MONTH, ahead(today, 9))
+            m.mint.addBill("Rent", "PHP", app.pokeplan.mint.Frequency.MONTHLY, ahead(today, 5), 800_000)
+            m.mintStartType = app.pokeplan.mint.TxType.TRANSFER
+            render("mint-activity-payfor$suffix", height = 1800, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.mint.ActivityView(m) } } }
+            }
+            render("mint-bills-installments$suffix", height = 1900, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.mint.BillsView(m, openInstallments = true) } } }
+            }
+            render("mint-overview-breakdown$suffix", height = 2300, minBytes = 3_000) {
+                PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                    app.pokeplan.ui.mint.OverviewCard(m)
+                    app.pokeplan.ui.mint.OverviewBreakdownBox(m, "PHP") {}
+                } } }
+            }
+        }
+        mint("mint-account-types-large", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 1900, fontScale = 1.3f, empty = true)
+    }
+
     /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
     @Test
     fun mintQrFullScreen() {
