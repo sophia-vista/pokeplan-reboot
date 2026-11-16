@@ -70,6 +70,14 @@ import app.pokeplan.ui.plan.duration
 import app.pokeplan.ui.pokemon.HealPartyPanel
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.FirstRecordEgg
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormDisclosure
+import app.pokeplan.ui.screens.FormDivider
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.FormLabel
+import app.pokeplan.ui.screens.FormSave
+import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
 import app.pokeplan.ui.screens.SectionsKey
@@ -241,21 +249,23 @@ private fun ActivityView(model: AppModel) {
         else { message = null; model.say("Saved."); note = ""; distance = ""; more = false; endedAt = null; model.haptic(); model.effect(Sfx.HEAL) }
     }
     // Help: Field Research only finds Pokémon from sessions of HealRules.RESEARCH_MIN_MINUTES or more (and only while it is on in Settings).
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("What did you do?")
-            PixelDropdown(ActivityType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.fillMaxWidth())
-            PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60))
-            PixelButton(if (more) "Fewer options" else "Distance and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) {
-                PixelMomentField(endedAt ?: model.store.nowMillis, { endedAt = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It ended")
-                PixelField(
-                    distance, { distance = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(7) }, Modifier.fillMaxWidth(), label = "Distance (km)", singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                )
-                PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+    FormBox {
+        FormStack {
+            FormGroup {
+                PixelDropdown(ActivityType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.fillMaxWidth(), label = "What did you do?")
+                PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60))
             }
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = (minutes ?: 0) > 0)
+            FormDisclosure("Additional details", more, { more = !more }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelMomentField(endedAt ?: model.store.nowMillis, { endedAt = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It ended")
+                    PixelField(
+                        distance, { distance = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(7) }, Modifier.fillMaxWidth(), label = "Distance (km)", singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    )
+                    PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+                }
+            }
+            FormSave("Save", ::save, ModuleAccent.HEAL.accent, enabled = (minutes ?: 0) > 0)
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -296,9 +306,9 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
     var error by remember(a.id) { mutableStateOf<String?>(null) }
     Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         if (editing) {
-            PixelDropdown(ActivityType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.fillMaxWidth())
+            PixelDropdown(ActivityType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.fillMaxWidth(), label = "Activity")
             PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60))
-            PixelMomentField(started, { started = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It started", nowKey = false)
+            PixelMomentField(started, { started = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It started")
             error?.let { Report(model, it, NoticeTone.WARNING) }
             PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -338,31 +348,37 @@ private fun HydrationView(model: AppModel) {
         if (out.record != null) { model.haptic(); model.effect(Sfx.HEAL); custom = "" }
     }
     val total = HealRules.hydrationOn(data, day)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle(if (day == today) "Today" else day.short())
-            Text(if (total == null) "—" else ml(total), style = MaterialTheme.typography.titleSmall)
-            data.settings.hydrationTargetMl?.let { target ->
-                PixelBar(((total ?: 0).toFloat() / target).coerceIn(0f, 1f), color = Pixel.Tone, label = "Your own target: ${ml(target)}")
+    FormBox {
+        FormStack {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelTitle(if (day == today) "Today" else day.short())
+                Text(if (total == null) "—" else ml(total), style = MaterialTheme.typography.titleSmall)
+                data.settings.hydrationTargetMl?.let { target ->
+                    PixelBar(((total ?: 0).toFloat() / target).coerceIn(0f, 1f), color = Pixel.Tone, label = "Your own target: ${ml(target)}")
+                }
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf(150, 250, 330, 500).forEach { v -> PixelButton("+$v ml", { add(v) }, color = Pixel.Tone, compact = true) }
+            FormGroup {
+                FormLabel("Add a drink")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    listOf(150, 250, 330, 500).forEach { v -> PixelButton("+$v ml", { add(v) }, color = Pixel.Tone, compact = true) }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                    PixelField(
+                        custom, { custom = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), singleLine = true, label = "Another amount (ml)",
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    )
+                    PixelButton("Add", { custom.toIntOrNull()?.let(::add) }, color = Pixel.Tone, enabled = custom.toIntOrNull() != null, compact = true)
+                }
+                message?.let { Report(model, it, NoticeTone.WARNING) }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(
-                    custom, { custom = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), singleLine = true, placeholder = "Another amount (ml)",
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-                PixelButton("Add", { custom.toIntOrNull()?.let(::add) }, color = Pixel.Tone, enabled = custom.toIntOrNull() != null, compact = true)
-            }
-            message?.let { Report(model, it, NoticeTone.WARNING) }
-            PixelButton(if (timing) "Now" else "Another day or time", { timing = !timing; if (!timing) { day = today; time = null } }, color = Pixel.InkSoft, compact = true)
-            if (timing) {
-                PixelDatePicker(day, today, ModuleAccent.HEAL.accent, { day = it })
-                PixelTimeField(
-                    time, { time = it }, ModuleAccent.HEAL.accent, label = "At", noneLabel = if (day == today) "Now" else "Noon",
-                    reject = { t -> if (day == today && t > model.store.nowMillis.localTime()) "That time has not happened yet" else null },
-                )
+            FormDisclosure("Additional details", timing, { timing = !timing; if (!timing) { day = today; time = null } }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelDatePicker(day, today, ModuleAccent.HEAL.accent, { day = it })
+                    PixelTimeField(
+                        time, { time = it }, ModuleAccent.HEAL.accent, label = "At", noneLabel = if (day == today) "Now" else "Noon",
+                        reject = { t -> if (day == today && t > model.store.nowMillis.localTime()) "That time has not happened yet" else null },
+                    )
+                }
             }
         }
     }
@@ -410,7 +426,7 @@ private fun DrinkRow(model: AppModel, d: HydrationEntry) {
     if (editing) Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         PixelField(ml, { ml = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Amount (ml)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
         PixelField(name, { name = it.take(60) }, Modifier.fillMaxWidth(), label = "What was it?", singleLine = true)
-        PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When", nowKey = false)
+        PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When")
         error?.let { Report(model, it, NoticeTone.WARNING) }
         PixelButton("Save", {
             val out = heal.updateDrink(d.copy(ml = ml.toIntOrNull() ?: 0, drink = name, atMillis = at))
@@ -439,26 +455,26 @@ private fun SleepView(model: AppModel) {
         val out = heal.logSleep(asleep, woke)
         message = if (out.record == null) (out.refused ?: "That could not be saved.") to NoticeTone.WARNING else { model.effect(Sfx.HEAL); model.say("Saved."); null }
     }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("A night")
-            PixelMomentField(asleep, { asleep = it }, nowMillis, ModuleAccent.HEAL.accent, label = "Fell asleep", nowKey = false, dayPresets = listOf("Today" to 0, "Yesterday" to -1))
-            PixelMomentField(woke, { woke = it }, nowMillis, ModuleAccent.HEAL.accent, label = "Woke up", nowKey = false)
-            Text(
-                if (woke > asleep) "Slept for ${HealRules.duration(((woke - asleep) / 60_000L).toInt())}." else "Waking up has to be after falling asleep.", // copy-ok: result
-                style = MaterialTheme.typography.bodyLarge, color = if (woke > asleep) Pixel.Ink else Pixel.Danger,
-            )
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = woke > asleep)
+    FormBox {
+        FormStack {
+            FormGroup {
+                PixelMomentField(asleep, { asleep = it }, nowMillis, ModuleAccent.HEAL.accent, label = "Fell asleep", dayPresets = listOf("Today" to 0, "Yesterday" to -1))
+                PixelMomentField(woke, { woke = it }, nowMillis, ModuleAccent.HEAL.accent, label = "Woke up")
+                Text(
+                    if (woke > asleep) "Slept for ${HealRules.duration(((woke - asleep) / 60_000L).toInt())}." else "Waking up has to be after falling asleep.", // copy-ok: result
+                    style = MaterialTheme.typography.bodyLarge, color = if (woke > asleep) Pixel.Ink else Pixel.Danger,
+                )
+            }
+            FormSave("Save", ::save, ModuleAccent.HEAL.accent, enabled = woke > asleep)
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
     model.phone?.takeIf { it.canSetAlarm }?.let { phone ->
         var alarm by remember { mutableStateOf(LocalTime(7, 0)) }
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                PixelTitle("Wake-up alarm")
-                PixelTimeField(alarm, { it?.let { t -> alarm = t } }, ModuleAccent.HEAL.accent, label = "Ring at")
-                PixelButton("Set the alarm", { phone.setAlarm(alarm.hour, alarm.minute, "PokéLife") }, Modifier.fillMaxWidth(), Pixel.Tone)
+        FormBox {
+            FormStack {
+                PixelTimeField(alarm, { it?.let { t -> alarm = t } }, ModuleAccent.HEAL.accent, label = "Wake-up alarm: ring at")
+                FormSave("Set the alarm", { phone.setAlarm(alarm.hour, alarm.minute, "PokéLife") }, ModuleAccent.HEAL.accent)
             }
         }
     }
@@ -496,8 +512,8 @@ private fun NightRow(model: AppModel, s: SleepRecord) {
         Text("${clockText(s.startMillis.localTime())} to ${clockText(s.endMillis.localTime())}, woke ${s.day.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
     if (editing) Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelMomentField(asleep, { asleep = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "Fell asleep", nowKey = false)
-        PixelMomentField(woke, { woke = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "Woke up", nowKey = false)
+        PixelMomentField(asleep, { asleep = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "Fell asleep")
+        PixelMomentField(woke, { woke = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "Woke up")
         PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
         error?.let { Report(model, it, NoticeTone.WARNING) }
         PixelButton("Save", {
@@ -538,20 +554,23 @@ private fun BodyView(model: AppModel) {
         }
         if (out?.record != null) { value = ""; label = ""; at = null; model.say("Saved.") }
     }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("A measurement")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                MeasureType.entries.forEach { t -> TabButton(t.label, t == type, { pick(t) }) }
+    FormBox {
+        FormStack {
+            FormGroup {
+                PixelChoice(MeasureType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) pick(t) }, label = "What did you measure?", key = ModuleAccent.HEAL.accent)
+                if (type == MeasureType.OTHER) PixelField(label, { label = it.take(40) }, Modifier.fillMaxWidth(), label = "What is it?", singleLine = true)
             }
-            if (type == MeasureType.OTHER) PixelField(label, { label = it.take(40) }, Modifier.fillMaxWidth(), label = "What is it?", singleLine = true)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(value, { value = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, Modifier.weight(1f), placeholder = "Value", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                PixelField(
+                    value, { value = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, Modifier.weight(1f), label = "Value", placeholder = "0", singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true,
+                )
                 if (type.units.size > 1) type.units.forEach { u -> TabButton(u, u == unit, { unit = u }) }
                 else if (type.units.first().isNotEmpty()) Text(type.units.first(), style = MaterialTheme.typography.bodyLarge)
             }
+            FormDivider()
             PixelMomentField(at ?: model.store.nowMillis, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When")
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = value.isNotBlank())
+            FormSave("Save", ::save, ModuleAccent.HEAL.accent, enabled = value.isNotBlank())
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -642,7 +661,7 @@ private fun MeasurementRow(model: AppModel, m: Measurement) {
             PixelField(value, { value = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, Modifier.weight(1f), label = "Value", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             if (m.type.units.size > 1) m.type.units.forEach { u -> TabButton(u, u == unit, { unit = u }) }
         }
-        PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When", nowKey = false)
+        PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When")
         error?.let { Report(model, it, NoticeTone.WARNING) }
         PixelButton("Save", {
             val v = value.replace(',', '.').toDoubleOrNull()
@@ -693,14 +712,15 @@ private fun GoalsHealView(model: AppModel) {
         }
         if (!adding) PixelButton("New goal", { adding = true }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
     }
-    if (adding) TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("New goal")
-            PixelDropdown(GoalKind.entries.toList(), kind, { it?.title ?: "" }, { k -> if (k != null) kind = k }, Modifier.fillMaxWidth())
-            PixelField(target, { target = it.filter(Char::isDigit).take(5) }, Modifier.fillMaxWidth(), label = "Target (${kind.unit})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+    if (adding) FormBox {
+        FormStack {
+            FormGroup {
+                PixelDropdown(GoalKind.entries.toList(), kind, { it?.title ?: "" }, { k -> if (k != null) kind = k }, Modifier.fillMaxWidth(), label = "New goal")
+                PixelField(target, { target = it.filter(Char::isDigit).take(5) }, Modifier.fillMaxWidth(), label = "Target (${kind.unit})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = ""; adding = false } }, Modifier.weight(1f), Pixel.Tone, enabled = HealRules.goalTargetOk(kind, target.toIntOrNull() ?: 0))
                 PixelButton("Cancel", { adding = false; target = "" }, Modifier.weight(1f), Pixel.InkSoft)
+                FormSave("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = ""; adding = false } }, ModuleAccent.HEAL.accent, Modifier.weight(1f), enabled = HealRules.goalTargetOk(kind, target.toIntOrNull() ?: 0))
             }
         }
     }
@@ -739,8 +759,8 @@ private fun HealSettingsView(model: AppModel) {
             }
             PixelTitle("Reminders")
             settings.hydrationReminders.forEach { t ->
-                Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelTimeField(t, { nt -> nt?.let { heal.setHydrationReminders(settings.hydrationReminders - t + it) } }, ModuleAccent.HEAL.accent, Modifier.weight(1f))
+                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelTimeField(t, { nt -> nt?.let { heal.setHydrationReminders(settings.hydrationReminders - t + it) } }, ModuleAccent.HEAL.accent, Modifier.weight(1f), label = "Reminder")
                     PixelButton("Remove", { heal.setHydrationReminders(settings.hydrationReminders - t) }, color = Pixel.InkSoft, compact = true)
                 }
             }
@@ -753,11 +773,7 @@ private fun HealSettingsView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Units")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                TabButton("kg", settings.weightUnit == "kg", { heal.setWeightUnit("kg") }, Modifier.weight(1f))
-                TabButton("lb", settings.weightUnit == "lb", { heal.setWeightUnit("lb") }, Modifier.weight(1f))
-            }
+            PixelChoice(listOf("kg", "lb"), settings.weightUnit, { it ?: "" }, { u -> if (u != null) heal.setWeightUnit(u) }, label = "Weight unit", key = ModuleAccent.HEAL.accent)
         }
     }
     TextBox {

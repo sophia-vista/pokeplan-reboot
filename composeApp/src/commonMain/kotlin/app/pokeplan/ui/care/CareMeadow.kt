@@ -235,7 +235,6 @@ internal fun PlayView(model: AppModel, initial: String?) {
                 PixelButton(if (inviting) "Done" else "Someone else", { inviting = !inviting }, color = Pixel.InkSoft, compact = true)
             }
             if (inviting) {
-                SectionLabel("Invite from your collection")
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     val buddyId = model.data.player.buddyId
                     // Anyone you own, the buddy first, then by friendship; "Show more" reaches the rest (a visitor is visited in the Meadow, not here).
@@ -243,7 +242,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
                     PixelDropdown(
                         ordered.take(invited), ordered.firstOrNull { it.id == chosen }, { it?.nickname ?: "" },
                         { p -> if (p != null) { chosen = p.id; inviting = false; activity = null; result = null } },
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth(), label = "Invite from your collection",
                     )
                     if (ordered.size > invited) PixelButton("Show more", { invited += 24 }, color = Pixel.InkSoft, compact = true)
                 }
@@ -255,7 +254,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
                     PixelDropdown(
                         PlayActivity.entries.toList(), suggested, { it?.label ?: "" },
                         { a -> if (a != null) { activity = a; taps = 0; result = null } },
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth(), label = "Play",
                     )
                     PixelButton("Surprise me", { activity = care.surprise(pokemon.id); taps = 0; result = null }, color = Pixel.Tone, compact = true)
                 }
