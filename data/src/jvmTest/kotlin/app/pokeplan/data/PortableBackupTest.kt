@@ -76,7 +76,8 @@ class PortableBackupTest {
         assertTrue(PassphraseSealer.isSealed(portable.getValue("mint")))
         val file = BackupBundle.encode(portable, DataStore.SCHEMA_VERSION, 9)
         for (secret in listOf("Savings", "Wallet", "100000")) assertFalse(secret in file, "the file holds $secret in clear")
-        for (secret in listOf("Savings", "Wallet", "100000", "PHP")) assertFalse(secret in portable.getValue("mint"), "Mint's part holds $secret in clear")
+        // "PHP" is checked with its JSON quotes: three letters can turn up by chance in any base64 text, quotes cannot.
+        for (secret in listOf("Savings", "Wallet", "100000", "\"PHP\"")) assertFalse(secret in portable.getValue("mint"), "Mint's part holds $secret in clear")
 
         val ready = assertIs<BackupBundle.Staged.Ready>(BackupBundle.stage(file, DataStore.SCHEMA_VERSION))
         assertTrue(ready.needsPassphrase)

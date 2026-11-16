@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.209.0
+
+MINT installments from Activity and Bills, installment reminders, overview breakdown (owner requests, 16 November 2026, REP-039 neighbourhood; `MINT.md` 3.2A, 4.1, 5.6A, 22F). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change and no migration.
+
+- **Entry points:** for credit cards and pay later accounts (`Installments.allowedFor`), the Activity add form has a "Pay in installments" toggle on an expense to a credit account (name required, shared `InstallmentTerms`, live schedule; Save calls `addPlanPurchase`); a transfer to a credit account shows "Pay for" chips (No plan, each unpaid plan) and Save calls `payPlan`; transfers into a liability are titled "Repayment". The Bills and income list has an "Installments due" box (due within 30 days or overdue; rows expand to Pay and Bill it via the shared `PayArea`); the menu detail counts them.
+- **Reminders:** with bill reminders on, an unpaid installment asks for one reminder like a bill (`MintReminders.installmentRef` "plan:<planId>:<no>", `parseInstallmentRef`; `stillWanted` and `text` handle them; same generic words, name only if allowed, never an amount).
+- **Overview:** quick hide (eye or eye-off button in the Overview box title row, toggling the hide-values setting); tapping the box opens the "Overview breakdown" dialog (`ui/mint/Overview.kt`, from `MintRules.breakdown` in `Breakdown.kt` returning `OverviewBreakdown`): net position by account (assets, liabilities, "Not in total" for hidden accounts), available money (liquid less bills due and installments due) and credit lines (limit, owed, left).
+- **Fix:** the account type label is "Pay later" (was "Pay later (BNPL)"). Cause of the bold "BNPL": the pixel button font lacks the glyphs "·" and "(", so a chip label containing them fell back to a bold font; the new chips avoid them and the "?" definition keeps "(BNPL)" as plain body text.
+- **Open:** other glyph fallbacks of the pixel font ("·", "(" and similar in chip labels elsewhere in the app may still draw bold), widgets for Mint. Not run on a device: all the new screens.
+- **Docs:** `MINT.md` 22F (and 22D/22E "not built" lines); `code-map.md`; `IMPLEMENTATION_BACKLOG.md` REP-039.
+
 ## 0.208.0
 
 MINT existing installments and paydays (owner requests, 15 November 2026, REP-039 neighbourhood; `MINT.md` 5.6A, 8.3B, 22E). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change and no migration: every new field is JSON with a default in the sealed rows; plans stay in `mint_state`.
