@@ -31,7 +31,7 @@ import app.pokeplan.ui.theme.ToggleRow
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.plan.EmptyState
 import app.pokeplan.ui.pokemon.label
-import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.shortDate
 
@@ -63,12 +63,7 @@ internal fun MintImportView(model: AppModel) {
     // Help: pick the account, then a CSV from your bank or e-wallet app; it is read on this phone, once, and not kept. Mint never asks for a password, PIN or code.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            if (accounts.size > 1) accounts.chunked(2).forEach { pair ->
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    pair.forEach { a -> TabButton(a.name, chosen?.id == a.id, { accountId = a.id }, Modifier.weight(1f), key = ModuleAccent.MINT.accent) }
-                    if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-                }
-            }
+            if (accounts.size > 1) PixelDropdown(accounts.map { it.id }, chosen?.id, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) accountId = id }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
             PixelButton(if (text == null) "Import a CSV" else "Choose another file", {
                 chooser.choose { name, body, problem ->
                     if (body == null) note = problem ?: "That file could not be read."
@@ -103,9 +98,7 @@ internal fun MintImportView(model: AppModel) {
                     }
                     Picker("Bank's reference", header, cols.reference) { columns = cols.copy(reference = it) }
                     SectionLabel("Dates are written")
-                    StatementImport.DateOrder.entries.forEach { o ->
-                        TabButton("${o.label}, like ${o.example}", read.order == o, { order = o }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
-                    }
+                    PixelDropdown(StatementImport.DateOrder.entries.toList(), read.order, { o -> o?.let { "${it.label}, like ${it.example}" } ?: "" }, { o -> if (o != null) order = o }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
                     if (!read.orderCertain) Notice("This file's dates could be read either way. Check the preview below before you add anything.", tone = NoticeTone.WARNING) // copy-ok: result
                 }
             }

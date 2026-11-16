@@ -102,6 +102,7 @@ import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.PixelDateField
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.PixelMomentField
 import app.pokeplan.ui.screens.ScreenLockGate
 import app.pokeplan.ui.screens.ScreenSwitch
@@ -322,12 +323,8 @@ private fun AccountsView(model: AppModel) {
                 PixelButton("?", { typesInfo = true }, color = Pixel.InkSoft, compact = true)
             }
             PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", placeholder = "GCash", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                AccountType.entries.forEach { t -> Chip(t.label, t == type, { type = t }) }
-            }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Money.common.take(6).forEach { c -> Chip(c, c == currency, { currency = c }) }
-            }
+            PixelDropdown(AccountType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.fillMaxWidth(), key = accent)
+            PixelDropdown(Money.common.take(6), currency, { it ?: "" }, { c -> if (c != null) currency = c }, Modifier.fillMaxWidth(), key = accent)
             PixelField(
                 opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
                 label = if (Installments.allowedFor(type)) "Starting balance owed" else if (type.liability) "Amount owed now" else "Balance now", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -428,13 +425,13 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             val locked = mint.hasHistory(a.id)
             val minor = Money.parse(opening.ifBlank { "0" }, currency)
             PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                AccountType.entries.filter { it.liability == a.type.liability }.forEach { t -> Chip(t.label, t == type, { type = t }) }
-            }
+            PixelDropdown(AccountType.entries.filter { it.liability == a.type.liability }, type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.fillMaxWidth(), key = accent)
             // Help: the currency stays once the account has records.
-            if (!locked) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Money.common.take(6).forEach { c -> Chip(c, c == currency, { if (c != currency) { opening = Money.parse(opening.ifBlank { "0" }, currency)?.let { m -> Money.plain(m, c) } ?: opening; currency = c } }) }
-            }
+            if (!locked) PixelDropdown(
+                Money.common.take(6), currency, { it ?: "" },
+                { c -> if (c != null && c != currency) { opening = Money.parse(opening.ifBlank { "0" }, currency)?.let { m -> Money.plain(m, c) } ?: opening; currency = c } },
+                Modifier.fillMaxWidth(), key = accent,
+            )
             PixelField(
                 opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
                 label = if (Installments.allowedFor(type)) "Starting balance owed" else if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking", singleLine = true,
@@ -617,7 +614,6 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var payAt by remember { mutableStateOf<Long?>(null) }
     var more by remember { mutableStateOf(false) }
     var addingCategory by remember { mutableStateOf(false) }
-    var allCategories by remember { mutableStateOf(false) }
     var showFilter by remember { mutableStateOf(false) }
     var payee by remember { mutableStateOf(startPayee) }
     var note by remember { mutableStateOf("") }
@@ -671,25 +667,24 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                 amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                quickTypes.forEach { t -> Chip(t.label, t == type, { type = t; categoryId = null; allCategories = false; planId = null }) }
-            }
+            PixelDropdown(quickTypes, type, { it?.label ?: "" }, { t -> if (t != null) { type = t; categoryId = null; planId = null } }, Modifier.fillMaxWidth(), key = accent)
             SectionLabel(if (type == TxType.TRANSFER) "From" else "Account")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                open.forEach { a -> Chip(a.name, a.id == from?.id, { accountId = a.id; if (toId == a.id) toId = null }) }
-            }
+            PixelDropdown(open.map { it.id }, from?.id, { id -> open.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) { accountId = id; if (toId == id) toId = null } }, Modifier.fillMaxWidth(), key = accent)
             if (type == TxType.TRANSFER) {
                 SectionLabel("To")
                 if (targets.isEmpty()) Text("Add a second account in the same currency.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    targets.forEach { a -> Chip(a.name, a.id == to?.id, { toId = a.id; planId = null }) }
-                }
+                if (targets.isNotEmpty()) PixelDropdown(targets.map { it.id }, to?.id, { id -> targets.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) { toId = id; planId = null } }, Modifier.fillMaxWidth(), key = accent)
                 if (plansOwed.isNotEmpty()) {
                     SectionLabel("Pay for")
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Chip("No plan", payPlanView == null, { planId = null })
-                        plansOwed.forEach { v -> Chip("${v.plan.name}, next ${Money.plain(v.next!!.remainingMinor, v.plan.currency)}", v.plan.id == payPlanView?.plan?.id, { planId = v.plan.id; amount = Money.plain(v.next!!.remainingMinor, v.plan.currency) }) }
-                    }
+                    PixelDropdown(
+                        listOf<String?>(null) + plansOwed.map { it.plan.id }, payPlanView?.plan?.id,
+                        { id -> plansOwed.firstOrNull { it.plan.id == id }?.let { v -> "${v.plan.name}, next ${Money.plain(v.next!!.remainingMinor, v.plan.currency)}" } ?: "No plan" },
+                        { id ->
+                            val v = plansOwed.firstOrNull { it.plan.id == id }
+                            if (v == null) planId = null else { planId = v.plan.id; amount = Money.plain(v.next!!.remainingMinor, v.plan.currency) }
+                        },
+                        Modifier.fillMaxWidth(), key = accent,
+                    )
                 }
             } else if (type == TxType.ADJUSTMENT) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -698,14 +693,16 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             } else {
                 val kind = if (type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
                 val usable = data.categories.filter { it.kind == kind && !it.archived }
-                // The few used last come first; "More" opens the whole list.
+                // The few used last come first, then the rest.
                 val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
-                val top = (recent + usable).distinct().take(4).let { t -> usable.firstOrNull { it.id == categoryId }?.let { c -> if (c in t) t else t + c } ?: t }
-                val shownCategories = if (allCategories) usable else top
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    shownCategories.forEach { c -> Chip(c.name, c.id == categoryId, { categoryId = if (categoryId == c.id) null else c.id }) }
-                    if (usable.size > top.size || allCategories) Chip(if (allCategories) "Fewer" else "More", false, { allCategories = !allCategories })
-                    if (allCategories) Chip(if (addingCategory) "Cancel" else "New", addingCategory, { addingCategory = !addingCategory })
+                val ordered = (recent + usable).distinct()
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    PixelDropdown(
+                        listOf<String?>(null) + ordered.map { it.id }, categoryId,
+                        { id -> ordered.firstOrNull { it.id == id }?.name ?: "None" }, { id -> categoryId = id },
+                        Modifier.weight(1f), key = accent,
+                    )
+                    PixelButton(if (addingCategory) "Cancel" else "New", { addingCategory = !addingCategory }, color = Pixel.InkSoft, compact = true)
                 }
                 if (addingCategory) NewCategoryRow(mint, kind) { categoryId = it.id; addingCategory = false }
             }
@@ -731,10 +728,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                 PixelField(query, { query = it.take(40); limit = PAGE }, Modifier.weight(1f), placeholder = "Search", singleLine = true)
                 PixelButton(filter?.label ?: "Filter", { showFilter = !showFilter }, color = Pixel.InkSoft, compact = true)
             }
-            if (showFilter) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("All", filter == null, { filter = null })
-                quickTypes.forEach { t -> Chip(t.label, filter == t, { filter = if (filter == t) null else t }) }
-            }
+            if (showFilter) PixelDropdown(listOf<TxType?>(null) + quickTypes, filter, { it?.label ?: "All" }, { filter = it }, Modifier.fillMaxWidth(), key = accent)
             if (found.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Column {
                 found.take(limit).forEachIndexed { i, t ->
@@ -795,17 +789,13 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
             val accounts = model.mintData.accounts.filter { (it.status == AccountStatus.ACTIVE && it.currency == t.currency) || it.id == t.accountId }
             if (accounts.size > 1 && t.type != TxType.TRANSFER) {
                 SectionLabel("Account")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    accounts.forEach { a -> Chip(a.name, a.id == accountId, { accountId = a.id }) }
-                }
+                PixelDropdown(accounts.map { it.id }, accountId, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) accountId = id }, Modifier.fillMaxWidth(), key = accent)
             }
             if (t.type != TxType.TRANSFER && t.type != TxType.ADJUSTMENT) {
                 SectionLabel("Category")
                 val kind = if (t.type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Chip("None", categoryId == null, { categoryId = null })
-                    model.mintData.categories.filter { it.kind == kind && (!it.archived || it.id == t.categoryId) }.forEach { c -> Chip(c.name, c.id == categoryId, { categoryId = c.id }) }
-                }
+                val pickable = model.mintData.categories.filter { it.kind == kind && (!it.archived || it.id == t.categoryId) }
+                PixelDropdown(listOf<String?>(null) + pickable.map { it.id }, categoryId, { id -> pickable.firstOrNull { it.id == id }?.name ?: "None" }, { categoryId = it }, Modifier.fillMaxWidth(), key = accent)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
@@ -902,10 +892,8 @@ private fun BudgetsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("New budget")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("Everything", categoryId == null, { categoryId = null })
-                data.categories.filter { it.kind == CategoryKind.EXPENSE && !it.archived }.forEach { c -> Chip(c.name, c.id == categoryId, { categoryId = c.id }) }
-            }
+            val budgetCategories = data.categories.filter { it.kind == CategoryKind.EXPENSE && !it.archived }
+            PixelDropdown(listOf<String?>(null) + budgetCategories.map { it.id }, categoryId, { id -> budgetCategories.firstOrNull { it.id == id }?.name ?: "Everything" }, { categoryId = it }, Modifier.fillMaxWidth(), key = accent)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 BudgetPeriod.entries.forEach { p -> Chip(p.label, p == period, { period = p }, Modifier.weight(1f)) }
             }
@@ -997,9 +985,7 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                     if (accounts.isNotEmpty()) {
                         if (recordKey != key) PixelButton(if (inc) "Received, record it" else "Paid, record it", { recordKey = key; recordAccount = o.bill.accountId?.takeIf { id -> accounts.any { it.id == id } } ?: accounts.first().id }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = amountToRecord != null, compact = true)
                         else {
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                                accounts.forEach { a -> Chip(a.name, a.id == recordAccount, { recordAccount = a.id }) }
-                            }
+                            PixelDropdown(accounts.map { it.id }, recordAccount, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) recordAccount = id }, Modifier.fillMaxWidth(), key = accent)
                             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                 PixelButton("Record", {
                                     val before = model.mintData
@@ -1058,12 +1044,11 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
             }
             PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
             PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = if (incomeNew) "Expected amount" else "Amount", placeholder = "Varies", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-            if (incomeNew) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                data.categories.filter { it.kind == CategoryKind.INCOME && !it.archived }.forEach { c -> Chip(c.name, c.id == incomeCategory, { incomeCategory = if (incomeCategory == c.id) null else c.id }) }
+            if (incomeNew) {
+                val incomeCategories = data.categories.filter { it.kind == CategoryKind.INCOME && !it.archived }
+                PixelDropdown(listOf<String?>(null) + incomeCategories.map { it.id }, incomeCategory, { id -> incomeCategories.firstOrNull { it.id == id }?.name ?: "None" }, { incomeCategory = it }, Modifier.fillMaxWidth(), key = accent)
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Frequency.entries.forEach { f -> Chip(f.label, f == frequency, { frequency = f }) }
-            }
+            PixelDropdown(Frequency.entries.toList(), frequency, { it?.label ?: "" }, { f -> if (f != null) frequency = f }, Modifier.fillMaxWidth(), key = accent)
             if (frequency == Frequency.SEMI_MONTHLY) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelField(day1, { day1 = dayInput(it) }, Modifier.weight(1f), label = "Day 1", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                 PixelField(day2, { day2 = dayInput(it) }, Modifier.weight(1f), label = "Day 2", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
@@ -1108,9 +1093,7 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                     PixelField(editName, { editName = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                     PixelField(editAmount, { editAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", placeholder = "Varies", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     if (scheduleOpen) {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            Frequency.entries.forEach { f -> Chip(f.label, f == editFrequency, { editFrequency = f }) }
-                        }
+                        PixelDropdown(Frequency.entries.toList(), editFrequency, { it?.label ?: "" }, { f -> if (f != null) editFrequency = f }, Modifier.fillMaxWidth(), key = accent)
                         SectionLabel("First due")
                         if (editFrequency == Frequency.SEMI_MONTHLY) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             PixelField(editDay1, { editDay1 = dayInput(it) }, Modifier.weight(1f), label = "Day 1", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
@@ -1218,9 +1201,7 @@ private fun ReconcileCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Reconcile an account")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                open.forEach { a -> Chip(a.name, a.id == account.id, { accountId = a.id; difference = null; message = null }) }
-            }
+            PixelDropdown(open.map { it.id }, account.id, { id -> open.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) { accountId = id; difference = null; message = null } }, Modifier.fillMaxWidth(), key = accent)
             MintValueRow("In Mint", mint.show(book, account.currency))
             PixelField(
                 statement, { statement = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); difference = null }, Modifier.fillMaxWidth(),
@@ -1297,9 +1278,7 @@ private fun MintSettingsView(model: AppModel) {
                 }
             }
             PixelTitle("Currency")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Money.common.forEach { c -> Chip(c, c == settings.currency, { mint.setCurrency(c) }) }
-            }
+            PixelDropdown(Money.common, settings.currency, { it ?: "" }, { c -> if (c != null) mint.setCurrency(c) }, Modifier.fillMaxWidth(), key = accent)
         }
     }
     TextBox {
