@@ -15,6 +15,7 @@ import app.pokeplan.mint.Installments
 import app.pokeplan.mint.PlanEvery
 import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.MintRules
+import app.pokeplan.mint.breakdown
 import app.pokeplan.mint.OccurrenceState
 import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.SettleStatus
@@ -744,5 +745,57 @@ class MintStoreTest {
         assertEquals(LocalDate(2026, 12, 30), MintRules.payDay(m.data, pay, LocalDate(2026, 12, 30)))
         assertNull(m.updateBill(pay.copy(days = listOf(10, 25))).record)
         assertNotNull(m.updateBill(pay.copy(estimate = false, workday = false)).record)
+    }
+
+    @Test
+    fun anUnpaidInstallmentAsksForOneReminderLikeABillAndStopsWhenPaid() {
+        val s = setup()
+        val m = s.mint
+        val wallet = assertNotNull(m.addAccount("GCash", AccountType.EWALLET, "PHP", 500_000).record).id
+        val later = assertNotNull(m.addAccount("SPayLater", AccountType.PAY_LATER, "PHP").record).id
+        val plan = assertNotNull(m.addPlanPurchase(later, "Headphones", 120_000, null, 3, PlanEvery.MONTH, LocalDate(2026, 11, 9)).record)
+        val app = s.game.data
+        val zone = TimeZone.UTC
+        val none = MintReminders.upcoming(m.data, app, s.clock.nowMillis(), zone)
+        assertTrue(none.isEmpty(), "reminders are off until the player turns them on")
+        m.setBillReminders(true)
+        val due = MintReminders.upcoming(m.data, app, s.clock.nowMillis(), zone)
+        assertEquals(1, due.size)
+        val ref = MintReminders.installmentRef(plan.id, 1)
+        assertEquals(ref, due.single().billId)
+        assertEquals(plan.id to 1, MintReminders.parseInstallmentRef(ref))
+        assertTrue(MintReminders.stillWanted(m.data, ref, LocalDate(2026, 11, 9), m.today))
+        // The words are the same generic ones unless the player allowed names; never an amount.
+        assertEquals("A bill is coming up", MintReminders.text(m.data, ref).title)
+        m.setBillReminderNames(true)
+        assertEquals("Headphones is coming up", MintReminders.text(m.data, ref).title)
+        // Paid: no longer wanted.
+        assertNotNull(m.payPlan(plan.id, 40_000, wallet).record)
+        assertFalse(MintReminders.stillWanted(m.data, ref, LocalDate(2026, 11, 9), m.today))
+        assertFalse(MintReminders.stillWanted(m.data, "plan:nobody:1", LocalDate(2026, 11, 9), m.today))
+    }
+
+    @Test
+    fun theOverviewBreakdownAddsUpToNetPositionAndAvailableMoney() {
+        val s = setup()
+        val m = s.mint
+        val wallet = assertNotNull(m.addAccount("GCash", AccountType.EWALLET, "PHP", 100_000, group = "Daily").record).id
+        val saving = assertNotNull(m.addAccount("Savings", AccountType.BANK, "PHP", 50_000).record)
+        val later = assertNotNull(m.addAccount("SPayLater", AccountType.PAY_LATER, "PHP", 0, limitMinor = 300_000).record).id
+        assertNotNull(m.updateAccount(saving.copy(hideFromTotal = true)))
+        assertNotNull(m.addPlanPurchase(later, "Headphones", 120_000, null, 3, PlanEvery.MONTH, LocalDate(2026, 11, 20)).record)
+        val d = MintRules.breakdown(m.data, "PHP", m.today)
+        assertEquals(listOf("GCash", "Savings"), d.assets.map { it.name })
+        assertEquals(listOf(true, false), d.assets.map { it.counted })
+        assertEquals(100_000L, d.assetsMinor) // the hidden savings are left out
+        assertEquals(120_000L, d.liabilitiesMinor)
+        assertEquals(MintRules.netPosition(m.data)["PHP"], d.netMinor)
+        assertEquals(-20_000L, d.netMinor)
+        assertEquals(MintRules.available(m.data, "PHP", m.today).availableMinor, d.availableMinor)
+        assertEquals(40_000L, d.installmentsMinor)
+        assertEquals(100_000L - 40_000L, d.availableMinor)
+        assertEquals(1, d.creditLines.size)
+        assertEquals(180_000L, d.creditLines.single().leftMinor)
+        assertEquals(wallet, d.assets.first().accountId)
     }
 }

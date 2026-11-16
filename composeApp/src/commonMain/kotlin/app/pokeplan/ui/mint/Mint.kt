@@ -212,8 +212,8 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
 
 private fun billsDetail(model: AppModel): String {
     val today = model.store.today
-    val open = MintRules.upcoming(model.mintData, today, 7)
-    return if (model.mintData.bills.isEmpty()) "optional" else if (open.isEmpty()) "none due soon" else "${open.size} to settle"
+    val open = MintRules.upcoming(model.mintData, today, 7).size + dueInstallments(model, 7).size
+    return if (model.mintData.bills.isEmpty() && model.mintData.plans.isEmpty()) "optional" else if (open == 0) "none due soon" else "$open to settle"
 }
 
 // ----- Overview ---------------------------------------------------------------------------------------------------------
@@ -223,7 +223,7 @@ private fun billsDetail(model: AppModel): String {
  * three quick actions. With no account yet it is one title and one action.
  */
 @Composable
-private fun OverviewCard(model: AppModel) {
+internal fun OverviewCard(model: AppModel) {
     val data = model.mintData
     val mint = model.mint
     val today = model.store.today
@@ -242,9 +242,19 @@ private fun OverviewCard(model: AppModel) {
     // One bill's next date is enough here.
     val upcoming = MintRules.upcoming(data, today, 14).distinctBy { it.bill.id }.take(3)
     val leadsWithAvailable = available.liquidMinor != 0L || available.billsCount > 0
+    var breakdown by remember { mutableStateOf(false) }
+    if (breakdown) Dialog({ breakdown = false }, DialogProperties(usePlatformDefaultWidth = false)) {
+        BackHandler(true) { breakdown = false }
+        Box(Modifier.fillMaxSize().padding(Spacing.L), contentAlignment = Alignment.Center) { OverviewBreakdownBox(model, currency) { breakdown = false } }
+    }
+    val hidden = data.settings.hideValues
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Overview")
+        // The whole box opens the breakdown; the buttons inside keep their own taps.
+        Column(Modifier.clickable(onClickLabel = "Tap for the breakdown", role = Role.Button) { breakdown = true }, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { PixelTitle("Overview") }
+                app.pokeplan.ui.theme.PixelIconButton(if (hidden) "eye-off" else "eye", if (hidden) "Show values" else "Hide values", { mint.setHideValues(!hidden) }, Pixel.InkSoft)
+            }
             if (leadsWithAvailable) {
                 Text(mint.show(available.availableMinor, currency), style = MaterialTheme.typography.titleLarge)
                 position.forEach { (cur, minor) -> MintValueRow("Net position", mint.show(minor, cur), soft = true) }
@@ -364,7 +374,7 @@ private val accountTypeNotes = listOf(
     AccountType.DIGITAL_BANK to "A bank that lives in an app.",
     AccountType.CASH to "Notes and coins you carry or keep at home.",
     AccountType.CREDIT_CARD to "Money you owe. The balance is what you owe.",
-    AccountType.PAY_LATER to "Money you owe a buy-now-pay-later service such as SPayLater. It is a credit line, not a wallet; you repay it in installments.",
+    AccountType.PAY_LATER to "Money you owe a buy-now-pay-later service such as SPayLater (BNPL). It is a credit line, not a wallet; you repay it in installments.",
     AccountType.LOAN to "Money you owe and pay back over time.",
     AccountType.OTHER_ASSET to "Anything else you own that has a value.",
     AccountType.OTHER_LIABILITY to "Anything else you owe.",
@@ -592,12 +602,12 @@ private val quickTypes = listOf(TxType.EXPENSE, TxType.INCOME, TxType.TRANSFER, 
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ActivityView(model: AppModel) {
+internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, startAmount: String = "", startPayee: String = "") {
     val mint = model.mint
     val data = model.mintData
     val open = data.accounts.filter { it.status == AccountStatus.ACTIVE }
     var type by remember { mutableStateOf(model.mintStartType ?: TxType.EXPENSE) }
-    var amount by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf(startAmount) }
     var accountId by remember { mutableStateOf<String?>(null) }
     var toId by remember { mutableStateOf<String?>(null) }
     var categoryId by remember { mutableStateOf<String?>(null) }
@@ -608,11 +618,14 @@ private fun ActivityView(model: AppModel) {
     var addingCategory by remember { mutableStateOf(false) }
     var allCategories by remember { mutableStateOf(false) }
     var showFilter by remember { mutableStateOf(false) }
-    var payee by remember { mutableStateOf("") }
+    var payee by remember { mutableStateOf(startPayee) }
     var note by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
     var query by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf<TxType?>(null) }
+    var inInstallments by remember { mutableStateOf(startInstallments) }
+    val terms = remember { TermsState() }
+    var planId by remember { mutableStateOf<String?>(null) }
     var openId by remember { mutableStateOf<String?>(null) }
     val from = open.firstOrNull { it.id == accountId } ?: open.firstOrNull()
     val currency = from?.currency ?: data.settings.currency
@@ -624,10 +637,26 @@ private fun ActivityView(model: AppModel) {
         EmptyState("Add an account first", icon = "member-card", action = "Add account" to { model.mintSection = MintSection.ACCOUNTS })
         return
     }
+    val plansOwed = if (type == TxType.TRANSFER && to != null && Installments.allowedFor(to.type)) mint.planViews().filter { it.plan.accountId == to.id && it.next != null } else emptyList()
+    val payPlanView = plansOwed.firstOrNull { it.plan.id == planId }
+    val installmentMode = type == TxType.EXPENSE && inInstallments && from != null && Installments.allowedFor(from.type)
     fun save() {
         val minor = Money.parse(amount, currency)
         if (minor == null) { message = "Check the amount." to NoticeTone.WARNING; return }
         val at = payAt ?: model.store.nowMillis
+        val day = at.toLocalDateTime(zone).date
+        if (installmentMode) {
+            val refused = createPlanPurchase(mint, from!!, payee, minor, categoryId, day, terms)
+            if (refused != null) message = refused to NoticeTone.WARNING
+            else { message = null; model.say("Saved."); payAt = null; amount = ""; payee = ""; note = ""; more = false; inInstallments = false; model.haptic() }
+            return
+        }
+        if (payPlanView != null && from != null) {
+            val out = mint.payPlan(payPlanView.plan.id, minor, from.id, day)
+            if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
+            else { message = null; model.say("Saved."); payAt = null; amount = ""; planId = null; model.haptic() }
+            return
+        }
         val out = mint.record(
             type, minor, from!!.id, toAccountId = if (type == TxType.TRANSFER) to?.id else null,
             categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT }, payee = payee, note = note, atMillis = at, up = up,
@@ -642,7 +671,7 @@ private fun ActivityView(model: AppModel) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                quickTypes.forEach { t -> Chip(t.label, t == type, { type = t; categoryId = null; allCategories = false }) }
+                quickTypes.forEach { t -> Chip(t.label, t == type, { type = t; categoryId = null; allCategories = false; planId = null }) }
             }
             SectionLabel(if (type == TxType.TRANSFER) "From" else "Account")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -652,7 +681,14 @@ private fun ActivityView(model: AppModel) {
                 SectionLabel("To")
                 if (targets.isEmpty()) Text("Add a second account in the same currency.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    targets.forEach { a -> Chip(a.name, a.id == to?.id, { toId = a.id }) }
+                    targets.forEach { a -> Chip(a.name, a.id == to?.id, { toId = a.id; planId = null }) }
+                }
+                if (plansOwed.isNotEmpty()) {
+                    SectionLabel("Pay for")
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Chip("No plan", payPlanView == null, { planId = null })
+                        plansOwed.forEach { v -> Chip("${v.plan.name}, next ${Money.plain(v.next!!.remainingMinor, v.plan.currency)}", v.plan.id == payPlanView?.plan?.id, { planId = v.plan.id; amount = Money.plain(v.next!!.remainingMinor, v.plan.currency) }) }
+                    }
                 }
             } else if (type == TxType.ADJUSTMENT) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -673,12 +709,16 @@ private fun ActivityView(model: AppModel) {
                 if (addingCategory) NewCategoryRow(mint, kind) { categoryId = it.id; addingCategory = false }
             }
             PixelMomentField(payAt ?: model.store.nowMillis, { payAt = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
-            PixelButton(if (more) "Fewer options" else "Payee and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) {
+            if (type == TxType.EXPENSE && from != null && Installments.allowedFor(from.type)) ToggleRow("Pay in installments", inInstallments) { inInstallments = it }
+            if (installmentMode) {
+                PixelField(payee, { payee = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+                InstallmentTerms(model, from!!, terms, Money.parse(amount, currency), (payAt ?: model.store.nowMillis).toLocalDateTime(zone).date)
+            } else PixelButton(if (more) "Fewer options" else "Payee and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
+            if (more && !installmentMode) {
                 PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                 PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             }
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = amount.isNotBlank())
+            PixelButton("Save", ::save, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = amount.isNotBlank() && (!installmentMode || payee.isNotBlank()))
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -721,7 +761,8 @@ private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onCli
     val account = data.accounts.firstOrNull { it.id == t.accountId }?.name.orEmpty()
     val to = data.accounts.firstOrNull { it.id == t.toAccountId }?.name
     val plan = t.planId?.let { id -> data.plans.firstOrNull { it.id == id }?.name }
-    val title = t.payee.ifBlank { category ?: (if (t.type == TxType.FEE) t.feeKind?.label else null) ?: t.type.label }
+    val repayment = t.type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == t.toAccountId }?.type?.liability == true
+    val title = t.payee.ifBlank { category ?: (if (t.type == TxType.FEE) t.feeKind?.label else null) ?: (if (repayment) "Repayment" else t.type.label) }
     val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }, plan?.let { "Plan: $it" }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
     MintLine(
         trail = { Text(t.signed() + model.mint.show(t.amountMinor, t.currency), style = MaterialTheme.typography.titleSmall) },
@@ -883,7 +924,7 @@ private fun BudgetsView(model: AppModel) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun BillsView(model: AppModel, startAdding: Boolean = false, startIncome: Boolean = false, startFrequency: Frequency = Frequency.MONTHLY, startManage: Boolean = false) {
+internal fun BillsView(model: AppModel, openInstallments: Boolean = false, startAdding: Boolean = false, startIncome: Boolean = false, startFrequency: Frequency = Frequency.MONTHLY, startManage: Boolean = false) {
     val mint = model.mint
     val data = model.mintData
     val today = model.store.today
@@ -973,6 +1014,7 @@ internal fun BillsView(model: AppModel, startAdding: Boolean = false, startIncom
             }
         }
     }
+    InstallmentsDueBox(model, openInstallments)
     // Paid and skipped occurrences leave the list above; they stay here for a while, so a wrong amount or a slip can be settled again or taken back.
     val settled = MintRules.settled(data, today)
     if (settled.isNotEmpty()) TextBox {

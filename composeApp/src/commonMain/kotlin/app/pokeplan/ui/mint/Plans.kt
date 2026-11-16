@@ -149,6 +149,37 @@ private fun PlanRow(model: AppModel, v: PlanView, open: Boolean, toggle: () -> U
     if (open) PlanOptions(model, v.plan.id, problem)
 }
 
+/** Pay toward a plan: the amount (the next installment's remaining by default), where from, the day, and the Pay button. Early or part payments go to the earliest installment first. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun PayArea(model: AppModel, v: PlanView, defaultMinor: Long, resetKey: Any, onResult: (String?) -> Unit) {
+    val mint = model.mint
+    val today = model.store.today
+    val planId = v.plan.id
+    val cur = v.plan.currency
+    val sources = model.mintData.accounts.filter { it.status == AccountStatus.ACTIVE && !it.type.liability && it.currency == cur }
+    var amount by remember(planId, resetKey, defaultMinor) { mutableStateOf(Money.plain(defaultMinor, cur)) }
+    var from by remember(planId) { mutableStateOf(sources.firstOrNull()?.id) }
+    var payDay by remember(planId) { mutableStateOf(today) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        SectionLabel("Pay")
+        PixelField(amount, { amount = money(it) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+        if (sources.isNotEmpty()) {
+            SectionLabel("Pay from")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                sources.forEach { s -> Chip(s.name, s.id == from) { from = s.id } }
+            }
+        }
+        PixelDateField(payDay, today, ModuleAccent.MINT.accent, { payDay = it ?: today }, max = today)
+        Text("Early or part payments go to the earliest installment first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        PixelButton("Pay", {
+            val m = Money.parse(amount, cur)
+            val src = from
+            onResult(if (m == null) "Check the amount." else if (src == null) "Choose where to pay from." else mint.payPlan(planId, m, src, payDay).note())
+        }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true, enabled = amount.isNotBlank() && from != null)
+    }
+}
+
 /** One plan's schedule with each installment's state, the payments so far, and the actions: pay, bill a fee, add a late fee, edit, refund, delete. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -159,10 +190,6 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
     val v = mint.planView(planId) ?: return
     val cur = v.plan.currency
     val next = v.next
-    var amount by remember(planId, next?.no, next?.remainingMinor) { mutableStateOf(next?.let { Money.plain(it.remainingMinor, cur) } ?: "") }
-    val sources = data.accounts.filter { it.status == AccountStatus.ACTIVE && !it.type.liability && it.currency == cur }
-    var from by remember(planId) { mutableStateOf(sources.firstOrNull()?.id) }
-    var payDay by remember(planId) { mutableStateOf(today) }
     var action by remember(planId) { mutableStateOf<Pair<Int, String>?>(null) }
     var late by remember(planId) { mutableStateOf("") }
     var editDue by remember(planId) { mutableStateOf(today) }
@@ -207,22 +234,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
         }
         if (next != null) {
             HorizontalDivider(color = Pixel.Border)
-            SectionLabel("Pay")
-            PixelField(amount, { amount = money(it) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-            if (sources.isNotEmpty()) {
-                SectionLabel("Pay from")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    sources.forEach { s -> Chip(s.name, s.id == from) { from = s.id } }
-                }
-            }
-            PixelDateField(payDay, today, ModuleAccent.MINT.accent, { payDay = it ?: today }, max = today)
-            Text("Early or part payments go to the earliest installment first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            PixelButton("Pay", {
-                val m = Money.parse(amount, cur)
-                val src = from
-                refused = if (m == null) "Check the amount." else if (src == null) "Choose where to pay from." else mint.payPlan(planId, m, src, payDay).note()
-                problem(refused)
-            }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true, enabled = amount.isNotBlank() && from != null)
+            PayArea(model, v, next.remainingMinor, next.no) { refused = it; problem(it) }
         }
         val history = data.transactions.filter { it.planId == planId && it.type == TxType.TRANSFER }.sortedByDescending { it.atMillis }
         if (history.isNotEmpty()) {
@@ -249,7 +261,26 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
     }
 }
 
-private enum class FeeChoice(val label: String) { NONE("None"), PER("Per installment"), TOTAL("Total"), RATE("% per period") }
+internal enum class FeeChoice(val label: String) { NONE("None"), PER("Per installment"), TOTAL("Total"), RATE("Rate per period") }
+
+/** How an installment purchase is split: how many, how often, when the first falls due, and the fee or interest. Shared by the purchase form and the Activity form. */
+internal class TermsState(count: String = "3", fee: String = "") {
+    var countText by mutableStateOf(count)
+    var every by mutableStateOf(PlanEvery.MONTH)
+    var firstOverride by mutableStateOf<LocalDate?>(null)
+    var choice by mutableStateOf(if (fee.isEmpty()) FeeChoice.NONE else FeeChoice.RATE)
+    var feeText by mutableStateOf(fee)
+    var interest by mutableStateOf(false)
+    val count: Int? get() = countText.toIntOrNull()?.takeIf { it in 1..Installments.MAX_COUNT }
+    val kind: FeeKind get() = if (interest) FeeKind.INTEREST else FeeKind.FEE
+    fun firstDue(date: LocalDate): LocalDate = firstOverride ?: Installments.dueOn(date, every, 1)
+    fun fee(cur: String): FeeRule? = when (choice) {
+        FeeChoice.NONE -> FeeRule.None
+        FeeChoice.PER -> Money.parse(feeText, cur)?.let { FeeRule.PerInstallment(it) }
+        FeeChoice.TOTAL -> Money.parse(feeText, cur)?.let { FeeRule.Total(it) }
+        FeeChoice.RATE -> percentToBasisPoints(feeText)?.let { FeeRule.RatePerPeriod(it) }
+    }
+}
 
 /** The new installment purchase form (MINT.md 5.6A): the purchase, how it is split, an optional fee or interest, and the live schedule it will get. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -278,23 +309,9 @@ private fun PurchaseFields(model: AppModel, a: FinancialAccount, startName: Stri
     var amount by remember { mutableStateOf(startAmount) }
     var categoryId by remember { mutableStateOf<String?>(null) }
     var date by remember { mutableStateOf(today) }
-    var countText by remember { mutableStateOf(startCount) }
-    var every by remember { mutableStateOf(PlanEvery.MONTH) }
-    var firstOverride by remember { mutableStateOf<LocalDate?>(null) }
-    var choice by remember { mutableStateOf(if (startFee.isEmpty()) FeeChoice.NONE else FeeChoice.RATE) }
-    var feeText by remember { mutableStateOf(startFee) }
-    var interest by remember { mutableStateOf(false) }
+    val terms = remember { TermsState(startCount, startFee) }
     var refused by remember { mutableStateOf<String?>(null) }
     val total = Money.parse(amount, cur)?.takeIf { it > 0 }
-    val count = countText.toIntOrNull()?.takeIf { it in 1..Installments.MAX_COUNT }
-    val firstDue = firstOverride ?: Installments.dueOn(date, every, 1)
-    val fee: FeeRule? = when (choice) {
-        FeeChoice.NONE -> FeeRule.None
-        FeeChoice.PER -> Money.parse(feeText, cur)?.let { FeeRule.PerInstallment(it) }
-        FeeChoice.TOTAL -> Money.parse(feeText, cur)?.let { FeeRule.Total(it) }
-        FeeChoice.RATE -> percentToBasisPoints(feeText)?.let { FeeRule.RatePerPeriod(it) }
-    }
-    val schedule = if (total != null && count != null && fee != null && Installments.checkRequest(a.type, total, count, fee) == app.pokeplan.mint.Check.Ok) Installments.generate(total, count, every, firstDue, fee) else null
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelTitle("New installment purchase")
         PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true)
@@ -306,30 +323,63 @@ private fun PurchaseFields(model: AppModel, a: FinancialAccount, startName: Stri
         }
         SectionLabel("Date")
         PixelDateField(date, today, ModuleAccent.MINT.accent, { date = it ?: today }, max = today)
+        InstallmentTerms(model, a, terms, total, date)
+        refused?.let { Report(model, it, NoticeTone.WARNING) }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Create", {
+                refused = createPlanPurchase(mint, a, name, total, categoryId, date, terms)
+                if (refused == null) onClose()
+            }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true, enabled = name.isNotBlank())
+            PixelButton("Cancel", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+    }
+}
+
+/** Saves an installment purchase from the form values; returns the reason it was refused, or null once it is saved. */
+internal fun createPlanPurchase(mint: app.pokeplan.app.mint.MintStore, a: FinancialAccount, name: String, total: Long?, categoryId: String?, date: LocalDate, t: TermsState): String? {
+    val count = t.count
+    val fee = t.fee(a.currency)
+    return if (total == null) "Check the amount."
+    else if (count == null) "Choose 1 to ${Installments.MAX_COUNT} installments."
+    else if (fee == null) "Check the fee."
+    else mint.addPlanPurchase(a.id, name, total, categoryId, count, t.every, t.firstDue(date), fee, t.kind, date).let { if (it.record != null) null else (it.refused ?: "That could not be saved.") }
+}
+
+/** The terms of an installment purchase: how many, how often, the first due date, a fee or interest, the live schedule, and the one caption. [total] and [date] come from the form around it. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun InstallmentTerms(model: AppModel, a: FinancialAccount, t: TermsState, total: Long?, date: LocalDate) {
+    val today = model.store.today
+    val cur = a.currency
+    val count = t.count
+    val fee = t.fee(cur)
+    val firstDue = t.firstDue(date)
+    val schedule = if (total != null && total > 0 && count != null && fee != null && Installments.checkRequest(a.type, total, count, fee) == app.pokeplan.mint.Check.Ok) Installments.generate(total, count, t.every, firstDue, fee) else null
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         SectionLabel("Installments")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            listOf(1, 3, 6, 9, 12, 18, 24).forEach { n -> Chip("$n", count == n) { countText = "$n" } }
+            listOf(1, 3, 6, 9, 12, 18, 24).forEach { n -> Chip("$n", count == n) { t.countText = "$n" } }
         }
-        PixelField(countText, { countText = it.filter(Char::isDigit).take(2) }, Modifier.fillMaxWidth(), label = "Or any number, 1 to ${Installments.MAX_COUNT}", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+        PixelField(t.countText, { t.countText = it.filter(Char::isDigit).take(2) }, Modifier.fillMaxWidth(), label = "Or any number, 1 to ${Installments.MAX_COUNT}", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
         SectionLabel("Every")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PlanEvery.entries.forEach { e -> Chip(e.label, e == every) { every = e } }
+            PlanEvery.entries.forEach { e -> Chip(e.label, e == t.every) { t.every = e } }
         }
         SectionLabel("First due")
-        PixelDateField(firstDue, today, ModuleAccent.MINT.accent, { firstOverride = it }, min = date)
+        PixelDateField(firstDue, today, ModuleAccent.MINT.accent, { t.firstOverride = it }, min = date)
         SectionLabel("Fee")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FeeChoice.entries.forEach { c -> Chip(c.label, c == choice) { choice = c } }
+            FeeChoice.entries.forEach { c -> Chip(c.label, c == t.choice) { t.choice = c } }
         }
-        if (choice != FeeChoice.NONE) {
+        if (t.choice != FeeChoice.NONE) {
             PixelField(
-                feeText, { feeText = if (choice == FeeChoice.RATE) it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) else money(it) }, Modifier.fillMaxWidth(),
-                label = when (choice) { FeeChoice.PER -> "Fee on each installment"; FeeChoice.TOTAL -> "Total fee"; else -> "Percent each period" }, singleLine = true,
+                t.feeText, { t.feeText = if (t.choice == FeeChoice.RATE) it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) else money(it) }, Modifier.fillMaxWidth(),
+                label = when (t.choice) { FeeChoice.PER -> "Fee on each installment"; FeeChoice.TOTAL -> "Total fee"; else -> "Percent each period" }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("Fee", !interest) { interest = false }
-                Chip("Interest", interest) { interest = true }
+                Chip("Fee", !t.interest) { t.interest = false }
+                Chip("Interest", t.interest) { t.interest = true }
             }
         }
         if (schedule != null) {
@@ -337,16 +387,6 @@ private fun PurchaseFields(model: AppModel, a: FinancialAccount, startName: Stri
             ScheduleTable(model, schedule, cur)
         }
         Text("Counts once as spending today; repayments are not spending.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        refused?.let { Report(model, it, NoticeTone.WARNING) }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Create", {
-                if (total == null) refused = "Check the amount."
-                else if (count == null) refused = "Choose 1 to ${Installments.MAX_COUNT} installments."
-                else if (fee == null) refused = "Check the fee."
-                else mint.addPlanPurchase(a.id, name, total, categoryId, count, every, firstDue, fee, if (interest) FeeKind.INTEREST else FeeKind.FEE, date).let { if (it.record != null) onClose() else refused = it.refused }
-            }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true, enabled = name.isNotBlank())
-            PixelButton("Cancel", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-        }
     }
 }
 
@@ -438,6 +478,52 @@ private fun ExistingScheduleForm(model: AppModel, a: FinancialAccount, amounts: 
                 else mint.addExistingPlan(a.id, name, list, addTo, if (interest) FeeKind.INTEREST else FeeKind.FEE).let { if (it.record != null) onClose() else refused = it.refused }
             }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true, enabled = name.isNotBlank() && months > 0)
             PixelButton("Cancel", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+    }
+}
+
+/** One installment still owed and due within a window (or overdue), with its plan. */
+internal class DueInstallment(val view: PlanView, val installment: app.pokeplan.mint.InstallmentView)
+
+/** The installments of every plan with something still owed, due within [withinDays] or overdue, soonest first (MINT.md 5.6A). */
+internal fun dueInstallments(model: AppModel, withinDays: Int): List<DueInstallment> {
+    val limit = kotlinx.datetime.LocalDate.fromEpochDays(model.store.today.toEpochDays() + withinDays)
+    return model.mint.planViews().flatMap { v ->
+        v.installments.filter { it.remainingMinor > 0 && it.state != InstallmentState.PAID && it.state != InstallmentState.CANCELLED && it.dueDay <= limit }.map { DueInstallment(v, it) }
+    }.sortedBy { it.installment.dueDay }
+}
+
+/** The "Installments due" box of the Bills screen: each row opens to pay it or bill its fee. */
+@Composable
+internal fun InstallmentsDueBox(model: AppModel, startOpenFirst: Boolean = false) {
+    val mint = model.mint
+    val due = dueInstallments(model, 30)
+    if (due.isEmpty()) return
+    var open by remember { mutableStateOf<String?>(if (startOpenFirst) due.first().view.plan.id + due.first().installment.no else null) }
+    var refused by remember { mutableStateOf<String?>(null) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Installments due")
+            due.forEachIndexed { i, d ->
+                val inst = d.installment
+                val cur = d.view.plan.currency
+                val key = d.view.plan.id + inst.no
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                MintLine(
+                    onClick = { open = if (open == key) null else key },
+                    onClickLabel = if (open == key) "Hide options" else "Show options",
+                    trail = { Text(mint.show(inst.remainingMinor, cur), style = MaterialTheme.typography.titleSmall) },
+                ) {
+                    Text(d.view.plan.name, style = MaterialTheme.typography.bodyLarge)
+                    Text("${inst.dueDay.compact()} · installment ${inst.no} of ${d.view.installments.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    if (inst.state == InstallmentState.OVERDUE || inst.state == InstallmentState.PARTIAL) Text(inst.state.label, style = MaterialTheme.typography.bodyMedium, color = if (inst.state == InstallmentState.OVERDUE) Pixel.Warning else Pixel.InkSoft)
+                }
+                if (open == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
+                    if (inst.feeMinor > 0 && !inst.feeRecorded) PixelButton("Bill it", { refused = mint.billInstallmentFee(d.view.plan.id, inst.no).note() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                    PayArea(model, d.view, inst.remainingMinor, inst.no) { refused = it }
+                }
+            }
+            refused?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
 }

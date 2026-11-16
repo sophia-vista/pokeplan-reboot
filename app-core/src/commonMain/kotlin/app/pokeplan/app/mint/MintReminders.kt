@@ -1,5 +1,7 @@
 package app.pokeplan.app.mint
 
+import app.pokeplan.mint.InstallmentState
+import app.pokeplan.mint.Installments
 import app.pokeplan.mint.MintData
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.OccurrenceState
@@ -41,19 +43,45 @@ object MintReminders {
         val lead = settings.billReminderDays.coerceIn(0, MintStore.MAX_REMIND_DAYS)
         // A due day this far ahead can have its reminder inside the days the scheduler looks at.
         val to = today.plus(lead + DAYS_AHEAD, DateTimeUnit.DAY)
-        return mint.bills.filter { it.remind }.flatMap { bill ->
+        val installments = Installments.views(mint, today).flatMap { view ->
+            view.installments.filter { it.remainingMinor > 0 && it.state != InstallmentState.CANCELLED && it.state != InstallmentState.PAID && it.dueDay >= today && it.dueDay <= to }.map { i ->
+                val day = i.dueDay.minus(lead, DateTimeUnit.DAY)
+                val at = LocalDateTime(day, LocalTime(settings.billReminderHour.coerceIn(0, 23), 0)).toEpochMillis(zone)
+                val ref = installmentRef(view.plan.id, i.no)
+                val request = ReminderRequest(ReminderModule.MINT, ref, KIND, at, occurrence = i.dueDay.toString())
+                BillReminder(ref, i.dueDay, ReminderPolicy.deliverAt(request, app.settings.quietHours, zone, focus))
+            }
+        }
+        return (installments + mint.bills.filter { it.remind }.flatMap { bill ->
             MintRules.occurrences(mint, bill, today, to, today).filter { it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }.map { o ->
                 val day = o.payDay.minus(lead, DateTimeUnit.DAY)
                 val at = LocalDateTime(day, LocalTime(settings.billReminderHour.coerceIn(0, 23), 0)).toEpochMillis(zone)
                 val request = ReminderRequest(ReminderModule.MINT, bill.id, KIND, at, occurrence = o.dueDay.toString())
                 BillReminder(bill.id, o.dueDay, ReminderPolicy.deliverAt(request, app.settings.quietHours, zone, focus))
             }
-        }.filter { it.atMillis > nowMillis }.sortedBy { it.atMillis }
+        }).filter { it.atMillis > nowMillis }.sortedBy { it.atMillis }
+    }
+
+    /** The reminder reference of one installment of a plan (an opaque id, never a name or an amount). */
+    fun installmentRef(planId: String, no: Int): String = "plan:$planId:$no"
+
+    /** The plan and installment number of a reference made by [installmentRef], or null for a bill's id. */
+    fun parseInstallmentRef(ref: String): Pair<String, Int>? {
+        if (!ref.startsWith("plan:")) return null
+        val rest = ref.removePrefix("plan:")
+        val at = rest.lastIndexOf(':')
+        val no = rest.substring(at + 1).toIntOrNull() ?: return null
+        return if (at > 0) rest.substring(0, at) to no else null
     }
 
     /** Whether the reminder for [billId]'s occurrence due on [due] should still show: reminders are on, the bill is active and asks, and the occurrence is not settled. */
     fun stillWanted(mint: MintData, billId: String, due: LocalDate, today: LocalDate): Boolean {
         if (!mint.settings.billReminders) return false
+        parseInstallmentRef(billId)?.let { (planId, no) ->
+            val plan = mint.plans.firstOrNull { it.id == planId } ?: return false
+            val i = Installments.view(mint, plan, today).installments.firstOrNull { it.no == no } ?: return false
+            return i.dueDay == due && i.remainingMinor > 0 && i.state != InstallmentState.CANCELLED && i.state != InstallmentState.PAID
+        }
         val bill = mint.bills.firstOrNull { it.id == billId }?.takeIf { it.remind } ?: return false
         val o = MintRules.occurrences(mint, bill, due, due, today).firstOrNull() ?: return false
         return o.state != OccurrenceState.PAID && o.state != OccurrenceState.SKIPPED
@@ -61,7 +89,8 @@ object MintReminders {
 
     /** What a notification says: the same words for every bill, or the bill's own name when the user allowed it. Never an amount. */
     fun text(mint: MintData, billId: String): NudgeText {
-        val name = mint.bills.firstOrNull { it.id == billId }?.name?.takeIf { mint.settings.billReminderNames && it.isNotBlank() }
+        val name = (parseInstallmentRef(billId)?.let { (planId, _) -> mint.plans.firstOrNull { it.id == planId }?.name } ?: mint.bills.firstOrNull { it.id == billId }?.name)
+            ?.takeIf { mint.settings.billReminderNames && it.isNotBlank() }
         return NudgeText(if (name != null) "$name is coming up" else "A bill is coming up", "")
     }
 
