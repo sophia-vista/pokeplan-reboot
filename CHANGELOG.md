@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.212.0
+
+Forms follow eight principles (owner request, 16 November 2026; rule in `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` 6.4A): prioritize, group, label, consolidate, progressively disclose, standardize, respect mobile space, preserve PMD context. `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change. Not run on a device.
+
+- **New form kit** (`composeApp` `screens/Form.kt`): `FormBox`, `FormStack`, `FormGroup`, `FormLabel`, `FormDivider`, `PixelChoice`, `FormDisclosure`, `FormSave`; `PixelField` gains `large` and `prefix`. Every field label is now one small soft style (no bold section titles used as captions).
+- **Mint Add transaction is the reference:** amount first and large, transaction type as a segmented Expense / Income / Transfer, labelled Account and Category dropdowns, When, then one "Additional details" row (other kinds of entry such as refund, fee, balance adjustment; payee; note; pay in installments) and one Save.
+- **Applied to** the forms of Mint (accounts, transactions, budgets, bills, reconcile, pay-later plans, import), Plan (task card, repeat, events, goals, lists), Care (routines, diary, journal, calm break), Heal (activity, hydration, sleep, body, goals), Base (assets, supplies, chores, maintenance, warranty, notes), Link (people, dates, follow-ups, import), and the search and name fields of Pokémon, World and Gear.
+- **Removed:** the "Now" key beside time fields; the "New category" key in Add transaction (categories are made in Mint Settings); the "Fewer options" / "Payee and a note" buttons (replaced by Additional details).
+- **Pay-later installment terms:** the preset list and "Or any number" are one numeric field.
+
 ## 0.211.0
 
 Dropdowns for long single-choice rows (owner request, 16 November 2026; rule in `docs/pokelife/FEATURES/DESIGN_SYSTEM.md`). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change. Not run on a device.

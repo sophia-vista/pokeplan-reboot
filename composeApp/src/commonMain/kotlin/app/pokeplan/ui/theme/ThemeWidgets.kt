@@ -304,5 +304,6 @@ fun ChoiceRow(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modif
 /** The small name over a group of controls inside a card ("Move to", "Remind me"), so each group reads as one chunk. */
 @Composable
 fun FieldLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, modifier.padding(top = Spacing.XS), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.InkSoft)
+    // One label voice for every field (the same as PixelField's own): small and soft, not bold.
+    Text(text, modifier, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }

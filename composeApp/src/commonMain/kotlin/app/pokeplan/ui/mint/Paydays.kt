@@ -19,7 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import app.pokeplan.mint.Payday
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.screens.FormSave
 import app.pokeplan.ui.screens.PixelDateField
+import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.short
 import app.pokeplan.ui.theme.ModuleAccent
@@ -57,9 +59,9 @@ internal fun PaydaysAndHolidays(model: AppModel) {
                     }) { Text(day.short(), style = MaterialTheme.typography.bodyLarge) }
                 }
             }
-            SectionLabel("Your days off")
+            FieldLabel("Add a day off")
             PixelDateField(newOff, today, ModuleAccent.MINT.accent, { newOff = it ?: newOff }, presets = emptyList())
-            PixelButton("Add", { mint.setDayOff(newOff, true) }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true, enabled = newOff !in settings.daysOff)
+            FormSave("Add", { mint.setDayOff(newOff, true) }, ModuleAccent.MINT.accent, enabled = newOff !in settings.daysOff)
             settings.daysOff.forEach { d ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
                     Text(d.short() + if (d.year != today.year) " ${d.year}" else "", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)

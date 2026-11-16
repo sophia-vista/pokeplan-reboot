@@ -67,6 +67,7 @@ import app.pokeplan.ui.screens.QuestsView
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.FormLabel
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
@@ -218,20 +219,18 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
     Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelField(
             view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
-            placeholder = "Search by name",
+            label = "Search by name",
         )
         ToggleRow("Show all Pokémon", view.everyone) { change(view.copy(everyone = it, where = null)) }
         var open by remember { mutableStateOf(false) }
         // Quiet: the boxes are the page, the controls only help find one.
         PixelButton(if (open) "Hide sort and filters" else "Sort and filters", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         if (open) {
-            SectionLabel("Sort by")
-            PixelDropdown(PcSort.entries, view.sort, { it?.label ?: "" }, { s -> if (s != null) change(view.copy(sort = s)) }, Modifier.fillMaxWidth())
+            PixelDropdown(PcSort.entries, view.sort, { it?.label ?: "" }, { s -> if (s != null) change(view.copy(sort = s)) }, Modifier.fillMaxWidth(), label = "Sort by")
             if (view.everyone) {
-                SectionLabel("Where")
-                PixelDropdown(listOf<PcPlace?>(null) + PcPlace.entries, view.where, { it?.label ?: "All" }, { change(view.copy(where = it)) }, Modifier.fillMaxWidth())
+                PixelDropdown(listOf<PcPlace?>(null) + PcPlace.entries, view.where, { it?.label ?: "All" }, { change(view.copy(where = it)) }, Modifier.fillMaxWidth(), label = "Where")
             }
-            SectionLabel("Show")
+            FormLabel("Show")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 TabButton("Shiny", view.shinyOnly, { change(view.copy(shinyOnly = !view.shinyOnly)) })
                 TabButton("Starred", view.starredOnly, { change(view.copy(starredOnly = !view.starredOnly)) })

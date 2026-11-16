@@ -766,7 +766,7 @@ internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, cho
         }
         if (advice?.noMatch == true) Text("No one free likes ${chosen.name}: the strongest instead.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
         FieldLabel("Up to ${WorldTeam.MAX_MEMBERS} Pokémon")
-        PixelField(search, { search = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Search the PC")
+        PixelField(search, { search = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search the PC")
         // The chosen slots stay on top; then the PC with the types the place favours first (the 20 strongest, or, searching, the whole PC by name).
         val idle = store.worldIdle()
         val query = search.trim()
@@ -786,9 +786,8 @@ internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, cho
         if (shown.isEmpty() || (query.isNotEmpty() && pool.isEmpty())) Text("No one found.", style = MaterialTheme.typography.bodyMedium)
         // A name, an accent colour and saved teams: put one together again in a tap.
         var name by remember(team.id, team.name) { mutableStateOf(team.name) }
-        FieldLabel("Name (up to ${WorldTeam.NAME_MAX} letters)")
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(name, { name = it.take(WorldTeam.NAME_MAX) }, Modifier.weight(1f), singleLine = true, placeholder = "Team ${team.id}")
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+            PixelField(name, { name = it.take(WorldTeam.NAME_MAX) }, Modifier.weight(1f), singleLine = true, label = "Name (up to ${WorldTeam.NAME_MAX} letters)", placeholder = "Team ${team.id}")
             PixelIconButton("check", "Save the name", { store.worldRenameTeam(team.id, name) }, Pixel.Green, enabled = name.trim() != team.name)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {

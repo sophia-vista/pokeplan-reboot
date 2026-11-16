@@ -94,6 +94,14 @@ import app.pokeplan.ui.pokemon.CarePartyPanel
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.BuddyStage
 import app.pokeplan.ui.screens.FirstRecordEgg
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormDisclosure
+import app.pokeplan.ui.screens.FormDivider
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.FormLabel
+import app.pokeplan.ui.screens.FormSave
+import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
 import app.pokeplan.ui.screens.SectionsKey
@@ -412,19 +420,15 @@ private fun RoutinesView(model: AppModel) {
         title = ""; more = false; time = null; days = emptySet()
     }
 
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(
-                    title, { title = it.take(60) }, Modifier.weight(1f), singleLine = true,
-                    placeholder = "New routine",
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { add() }),
-                )
-                PixelIconButton("plus", "Add", ::add, enabled = title.isNotBlank())
-            }
-            PixelButton(if (more) "Fewer options" else "A time, and which days", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) RoutineFields(time, { time = it }, days, { days = it })
+    FormBox {
+        FormStack {
+            PixelField(
+                title, { title = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true, label = "New routine",
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { add() }),
+            )
+            FormDisclosure("Additional details", more, { more = !more }) { RoutineFields(time, { time = it }, days, { days = it }) }
+            FormSave("Add routine", ::add, ModuleAccent.CARE.accent, enabled = title.isNotBlank())
         }
     }
 
@@ -466,11 +470,13 @@ private fun RoutinesView(model: AppModel) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RoutineFields(time: LocalTime?, onTime: (LocalTime?) -> Unit, days: Set<DayOfWeek>, onDays: (Set<DayOfWeek>) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelTimeField(time, onTime, ModuleAccent.CARE.accent, label = "Time", noneLabel = "No time")
-        PixelTitle("Days")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            DayOfWeek.entries.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { onDays(if (d in days) days - d else days + d) }) }
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            FormLabel("Days")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                DayOfWeek.entries.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { onDays(if (d in days) days - d else days + d) }) }
+            }
         }
     }
 }
@@ -485,10 +491,9 @@ internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boo
     var days by remember(routine.id) { mutableStateOf(routine.days) }
     if (editing) {
         val body: @Composable () -> Unit = {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                PixelTitle("Edit routine")
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelField(
-                    title, { title = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true,
+                    title, { title = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true, label = "Edit routine",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                 )
                 RoutineFields(time, { time = it }, days, { days = it })
@@ -577,12 +582,10 @@ private fun CalmBreakView(model: AppModel) {
     }
     if (start == null) {
         result?.let { line -> TextBox { Text(line, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) } }
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    listOf(60, 120).forEach { s -> TabButton(if (s == 60) "1 minute" else "2 minutes", seconds == s, { seconds = s }, Modifier.weight(1f)) }
-                }
-                PixelButton("Start", { result = null; waking = false; model.haptic(); model.effect(Sfx.CALM_BREAK_START); startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Tone)
+        FormBox {
+            FormStack {
+                PixelChoice(listOf(60, 120), seconds, { if (it == 60) "1 minute" else "2 minutes" }, { s -> if (s != null) seconds = s }, label = "How long", key = ModuleAccent.CARE.accent)
+                FormSave("Start", { result = null; waking = false; model.haptic(); model.effect(Sfx.CALM_BREAK_START); startedAt = model.now }, ModuleAccent.CARE.accent)
                 // Help: up to CareRules.BREAKS_PAID_PER_DAY calm breaks a day earn friendship and a berry.
             }
         }
@@ -622,7 +625,7 @@ private fun BreathCircle(inhale: Boolean, still: Boolean) {
 @Composable
 private fun Rating(label: String, value: Int?, onChange: (Int?) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-        Text(label, style = MaterialTheme.typography.bodyLarge)
+        FormLabel(label)
         Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             (0..5).forEach { n -> TabButton("$n", value == n, { onChange(if (value == n) null else n) }, Modifier.weight(1f)) }
         }
@@ -648,76 +651,73 @@ private fun DiaryView(model: AppModel) {
     var allSkills by remember { mutableStateOf(false) }
     var done by remember { mutableStateOf(false) }
 
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Which day?")
-            PixelDateField(cardDay, care.today, ModuleAccent.CARE.accent, { it?.let { d -> cardDay = d; done = false } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = care.today)
-        }
-    }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Feelings")
-            Emotion.entries.forEach { e ->
-                Rating(e.label, feelings[e]) { v -> feelings = if (v == null) feelings - e else feelings + (e to v); done = false }
+    var moreCard by remember { mutableStateOf(false) }
+    val tracked = data.settings.urges
+    val dayWord = if (cardDay == care.today) "today's" else "the ${cardDay.short()}"
+    FormBox {
+        FormStack {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                FormLabel("Which day?")
+                PixelDateField(cardDay, care.today, ModuleAccent.CARE.accent, { it?.let { d -> cardDay = d; done = false } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = care.today)
             }
-        }
-    }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Urges")
-            val tracked = data.settings.urges
-            tracked.forEach { u ->
-                Rating(u, urges[u]) { v -> urges = if (v == null) urges - u else urges + (u to v); done = false }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                fun add() {
-                    val u = newUrge.trim()
-                    if (u.isNotEmpty() && u !in tracked) care.changeSettings { s -> s.copy(urges = s.urges + u) }
-                    newUrge = ""
+            FormGroup(title = "Feelings") {
+                Emotion.entries.forEach { e ->
+                    Rating(e.label, feelings[e]) { v -> feelings = if (v == null) feelings - e else feelings + (e to v); done = false }
                 }
-                PixelField(
-                    newUrge, { newUrge = it.take(40) }, Modifier.weight(1f), singleLine = true,
-                    placeholder = "Track an urge",
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { add() }),
-                )
-                PixelIconButton("plus", "Add", ::add, Pixel.InkSoft, enabled = newUrge.isNotBlank())
             }
-            if (tracked.isNotEmpty()) PixelButton(if (editingUrges) "Done" else "Edit urges", { editingUrges = !editingUrges; stopping = null }, color = Pixel.InkSoft, compact = true)
-            // Taking an urge off the card is rare and asks first; the cards already saved keep it.
-            if (editingUrges) tracked.forEach { u ->
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    if (stopping == u) {
-                        Text("Stop tracking $u?", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                        PixelButton("Stop tracking", { care.changeSettings { s -> s.copy(urges = s.urges - u) }; urges = urges - u; stopping = null }, color = Pixel.Danger, compact = true)
-                        PixelButton("Keep", { stopping = null }, color = Pixel.InkSoft, compact = true)
-                    } else {
-                        Text(u, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                        PixelIconButton("trash", "Stop tracking $u", { stopping = u }, Pixel.InkSoft)
+            if (tracked.isNotEmpty()) FormGroup(title = "Urges") {
+                tracked.forEach { u ->
+                    Rating(u, urges[u]) { v -> urges = if (v == null) urges - u else urges + (u to v); done = false }
+                }
+            }
+            FormGroup {
+                FormLabel("Skills you used")
+                val shown = if (allSkills) Skills.all else Skills.all.filter { it.id in skills || it.id in care.practisedToday() }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    shown.forEach { k -> TabButton(k.name, k.id in skills, { skills = if (k.id in skills) skills - k.id else skills + k.id; done = false }) }
+                    TabButton(if (allSkills) "Fewer skills" else "All skills", allSkills, { allSkills = !allSkills })
+                }
+            }
+            FormDisclosure("Additional details", moreCard || note.isNotBlank(), { moreCard = !moreCard }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelField(
+                        note, { note = it.take(500); done = false }, Modifier.fillMaxWidth(), label = "Note",
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                    )
+                    fun add() {
+                        val u = newUrge.trim()
+                        if (u.isNotEmpty() && u !in tracked) care.changeSettings { s -> s.copy(urges = s.urges + u) }
+                        newUrge = ""
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                        PixelField(
+                            newUrge, { newUrge = it.take(40) }, Modifier.weight(1f), singleLine = true, label = "Track an urge",
+                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = { add() }),
+                        )
+                        PixelIconButton("plus", "Add", ::add, Pixel.InkSoft, enabled = newUrge.isNotBlank())
+                    }
+                    if (tracked.isNotEmpty()) PixelButton(if (editingUrges) "Done" else "Edit urges", { editingUrges = !editingUrges; stopping = null }, color = Pixel.InkSoft, compact = true)
+                    // Taking an urge off the card is rare and asks first; the cards already saved keep it.
+                    if (editingUrges) tracked.forEach { u ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            if (stopping == u) {
+                                Text("Stop tracking $u?", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                                PixelButton("Stop tracking", { care.changeSettings { s -> s.copy(urges = s.urges - u) }; urges = urges - u; stopping = null }, color = Pixel.Danger, compact = true)
+                                PixelButton("Keep", { stopping = null }, color = Pixel.InkSoft, compact = true)
+                            } else {
+                                Text(u, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                                PixelIconButton("trash", "Stop tracking $u", { stopping = u }, Pixel.InkSoft)
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Skills you used")
-            val shown = if (allSkills) Skills.all else Skills.all.filter { it.id in skills || it.id in care.practisedToday() }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                shown.forEach { k -> TabButton(k.name, k.id in skills, { skills = if (k.id in skills) skills - k.id else skills + k.id; done = false }) }
-            }
-            PixelButton(if (allSkills) "Fewer skills" else "All skills", { allSkills = !allSkills }, color = Pixel.InkSoft, compact = true)
-            PixelField(
-                note, { note = it.take(500); done = false }, Modifier.fillMaxWidth(),
-                placeholder = "A note, if you like",
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+            FormSave(
+                if (saved == null) "Save $dayWord card" else "Update $dayWord card",
+                { care.saveDiary(feelings, urges, skills, note, cardDay); model.effect(Sfx.SELECT); done = true }, ModuleAccent.CARE.accent,
+                enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank(),
             )
-            val dayWord = if (cardDay == care.today) "today's" else "the ${cardDay.short()}"
-            PixelButton(if (saved == null) "Save $dayWord card" else "Update $dayWord card", {
-                care.saveDiary(feelings, urges, skills, note, cardDay)
-                model.effect(Sfx.SELECT)
-                done = true
-            }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent, enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank())
             if (done) Text("Saved", style = MaterialTheme.typography.bodyMedium, color = Pixel.Tone, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
     }
@@ -818,28 +818,35 @@ private fun JournalView(model: AppModel) {
             }
         }
     }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+    var moreEntry by remember { mutableStateOf(false) }
+    FormBox {
+        FormStack {
             val asked = answering?.let { Prompts.byId(it) }
             if (asked != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(asked.text, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 PixelButton("Not this", { answering = null }, color = Pixel.InkSoft, compact = true)
             }
             PixelField(
-                text, { text = it.take(5_000) }, Modifier.fillMaxWidth(), minLines = 4,
+                text, { text = it.take(5_000) }, Modifier.fillMaxWidth(), minLines = 4, label = "Entry",
                 placeholder = "Write anything",
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                JOURNAL_TAGS.forEach { t -> TabButton(t, t in tags, { tags = if (t in tags) tags - t else tags + t }) }
+            FormDisclosure("Additional details", moreEntry || tags.isNotEmpty() || writtenAt != null, { moreEntry = !moreEntry }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                        FormLabel("Tags")
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            JOURNAL_TAGS.forEach { t -> TabButton(t, t in tags, { tags = if (t in tags) tags - t else tags + t }) }
+                        }
+                    }
+                    PixelMomentField(writtenAt ?: model.store.nowMillis, { writtenAt = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written")
+                }
             }
-            PixelMomentField(writtenAt ?: model.store.nowMillis, { writtenAt = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written")
-            PixelButton("Save entry", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = text.isNotBlank())
+            FormSave("Save entry", ::save, ModuleAccent.CARE.accent, enabled = text.isNotBlank())
         }
     }
     if (data.journal.size > 3) PixelField(
-        query, { query = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true,
-        placeholder = "Search the journal",
+        query, { query = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search the journal",
     )
     var shown by remember { mutableStateOf(30) }
     val found = care.searchJournal(query)
@@ -869,16 +876,21 @@ private fun JournalEditor(model: AppModel, e: JournalEntry, onDone: () -> Unit) 
     var text by remember(e.id) { mutableStateOf(e.text) }
     var at by remember(e.id) { mutableStateOf(e.atMillis) }
     var tags by remember(e.id) { mutableStateOf(e.tags) }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+    FormBox {
+        FormStack {
             PixelField(text, { text = it.take(5_000) }, Modifier.fillMaxWidth(), minLines = 4, label = "Entry", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                JOURNAL_TAGS.forEach { t -> TabButton(t, t in tags, { tags = if (t in tags) tags - t else tags + t }) }
+            FormGroup {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    FormLabel("Tags")
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        JOURNAL_TAGS.forEach { t -> TabButton(t, t in tags, { tags = if (t in tags) tags - t else tags + t }) }
+                    }
+                }
+                PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written")
             }
-            PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written", nowKey = false)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Save", { model.care.editEntry(e.id, text, at, tags); model.say("Saved."); onDone() }, Modifier.weight(1f), Pixel.Tone, enabled = text.isNotBlank(), compact = true)
-                PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft)
+                FormSave("Save", { model.care.editEntry(e.id, text, at, tags); model.say("Saved."); onDone() }, ModuleAccent.CARE.accent, Modifier.weight(1f), enabled = text.isNotBlank())
             }
         }
     }
@@ -928,7 +940,7 @@ private fun TrendsView(model: AppModel) {
                 Text("No ratings yet", style = MaterialTheme.typography.bodyLarge)
                 return@Column
             }
-            PixelDropdown(Emotion.entries.toList(), emotion, { it?.label ?: "" }, { e -> if (e != null) emotion = e }, Modifier.fillMaxWidth())
+            PixelDropdown(Emotion.entries.toList(), emotion, { it?.label ?: "" }, { e -> if (e != null) emotion = e }, Modifier.fillMaxWidth(), label = "Feeling")
             weeks.asReversed().filter { it.averages[emotion] != null }.forEach { w ->
                 val avg = w.averages[emotion]
                 val label = if (avg == null) "not rated" else "${emotion.label} ${(avg * 10).roundToInt() / 10.0} of 5, ${w.cards} card${if (w.cards == 1) "" else "s"}"
@@ -974,9 +986,9 @@ internal fun MoodKeys(chosen: Int?, onPick: (Int?) -> Unit) {
 @Composable
 private fun MoodRow(model: AppModel) {
     model.careData // redraw when Care changes
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("How is today?")
+    FormBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            FormLabel("How is today?")
             MoodKeys(model.care.diaryToday()?.mood) { model.care.setMood(it); model.haptic() }
         }
     }

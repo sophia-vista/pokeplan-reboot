@@ -84,6 +84,13 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.Actions
 import app.pokeplan.ui.screens.Confirm
 import app.pokeplan.ui.screens.DateField
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormDisclosure
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.FormLabel
+import app.pokeplan.ui.screens.FormSave
+import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
@@ -360,20 +367,29 @@ private fun scheduleLine(data: app.pokeplan.base.BaseData, v: app.pokeplan.base.
     return listOfNotNull(when_, data.assets.firstOrNull { it.id == s.assetId }?.name, repeatText(s.recurrence).takeIf { it.isNotEmpty() }).joinToString(" · ")
 }
 
+/** The one full-width save of a form ([addLabel] when adding, "Save" when editing) and, when editing, a quiet Cancel under it. */
+@Composable
+private fun FormActions(adding: Boolean, addLabel: String, enabled: Boolean, onSave: () -> Unit, onCancel: (() -> Unit)?) {
+    FormSave(if (adding) addLabel else "Save", onSave, accent, enabled = enabled)
+    if (!adding && onCancel != null) PixelButton("Cancel", onCancel, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RepeatEditor(r: Recurrence, onChange: (Recurrence) -> Unit) {
     var every by remember { mutableStateOf(r.every.toString()) }
     LaunchedEffect(r.every) { if ((every.toIntOrNull() ?: 1) != r.every) every = r.every.toString() }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        RepeatKind.entries.forEach { k -> Chip(k.label, k == r.kind, { onChange(r.copy(kind = k, weekdays = if (k == RepeatKind.WEEKLY) r.weekdays else emptyList())) }) }
-    }
+    PixelChoice(
+        RepeatKind.entries.toList(), r.kind, { it?.label ?: "" }, { k -> if (k != null) onChange(r.copy(kind = k, weekdays = if (k == RepeatKind.WEEKLY) r.weekdays else emptyList())) },
+        label = "Repeat", key = accent,
+    )
     if (r.kind != RepeatKind.ONCE) {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            Text("Every", style = MaterialTheme.typography.bodyLarge)
+            Text("Every", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             PixelField(every, { t -> every = t.filter(Char::isDigit).take(2); onChange(r.copy(every = (every.toIntOrNull() ?: 1).coerceIn(1, BaseRules.EVERY_MAX))) }, Modifier.width(88.dp), singleLine = true, keyboardOptions = numberKeys)
             Text(r.kind.unit + if (r.every == 1) "" else "s", style = MaterialTheme.typography.bodyLarge)
         }
+        if (r.kind == RepeatKind.WEEKLY) FormLabel("On")
         if (r.kind == RepeatKind.WEEKLY) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             (1..7).forEach { d -> Chip(dayNames[d - 1], d in r.weekdays, { onChange(r.copy(weekdays = if (d in r.weekdays) r.weekdays - d else (r.weekdays + d).sorted())) }) }
         }
@@ -385,8 +401,7 @@ private fun RepeatEditor(r: Recurrence, onChange: (Recurrence) -> Unit) {
 private fun AreaChips(areas: List<BaseArea>, selected: String?, onPick: (String?) -> Unit) {
     val shown = areas.filter { !it.archived || it.id == selected }
     if (shown.isEmpty()) return
-    SectionLabel("Area")
-    PixelDropdown(listOf<String?>(null) + shown.map { it.id }, selected, { id -> shown.firstOrNull { it.id == id }?.name ?: "None" }, onPick, Modifier.fillMaxWidth(), key = accent)
+    PixelDropdown(listOf<String?>(null) + shown.map { it.id }, selected, { id -> shown.firstOrNull { it.id == id }?.name ?: "None" }, onPick, Modifier.fillMaxWidth(), key = accent, label = "Area")
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -394,8 +409,7 @@ private fun AreaChips(areas: List<BaseArea>, selected: String?, onPick: (String?
 private fun AssetChips(assets: List<Asset>, selected: String?, onPick: (String?) -> Unit) {
     val shown = assets.filter { !it.archived || it.id == selected }
     if (shown.isEmpty()) return
-    SectionLabel("Item")
-    PixelDropdown(listOf<String?>(null) + shown.map { it.id }, selected, { id -> shown.firstOrNull { it.id == id }?.name ?: "None" }, onPick, Modifier.fillMaxWidth(), key = accent)
+    PixelDropdown(listOf<String?>(null) + shown.map { it.id }, selected, { id -> shown.firstOrNull { it.id == id }?.name ?: "None" }, onPick, Modifier.fillMaxWidth(), key = accent, label = "Item")
 }
 
 // ----- Chores -----------------------------------------------------------------------------------------------------------------
@@ -421,7 +435,7 @@ private fun ChoresView(model: AppModel) {
     val due = shown.filter { inDueTab(it, today) }
     val upcoming = shown.filter { v -> v !in due && !((v.state == ChoreState.DONE || v.state == ChoreState.SKIPPED) && v.chore.recurrence.kind == RepeatKind.ONCE) }
     val archived = data.chores.filter { it.status == RecordStatus.ARCHIVED }
-    TextBox { ChoreForm(model, null, onDone = {}) }
+    FormBox { ChoreForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ModuleTabs(listOf("Due", "Later", "History"), tab, accent) { tab = it; openId = null }
@@ -498,7 +512,7 @@ private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone
         }
         if (v.chore.instructions.isNotBlank()) Text(v.chore.instructions, style = MaterialTheme.typography.bodyLarge)
         if (waiting) {
-            SectionLabel("Put off")
+            FormLabel("Put off")
             Actions {
                 listOf(1 to "Tomorrow", 3 to "In 3 days", 7 to "Next week").forEach { (d, l) ->
                     PixelButton(l, { home.defer(id, today.plus(d, DateTimeUnit.DAY)); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -553,26 +567,22 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
         if (adding) { title = ""; repeat = Recurrence(); first = null; areaId = null; category = ""; minutes = ""; instructions = ""; more = false; model.haptic() }
         onDone()
     }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a chore", singleLine = true, keyboardOptions = wordKeys)
-            PixelButton("Add", ::save, color = accent, enabled = title.isNotBlank())
-        } else PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Chore", singleLine = true, keyboardOptions = wordKeys)
-        if (adding && data.chores.isEmpty() && title.isEmpty()) ExampleChips(listOf("Wipe the kitchen counter", "Take out the trash", "Water the plants")) { title = it }
-        if (adding) PixelButton(if (more) "Fewer options" else "Repeat and details", { more = !more }, color = Pixel.InkSoft, compact = true)
-        if (more) {
-            SectionLabel("Repeat")
-            RepeatEditor(repeat) { repeat = it }
-            DateField(if (repeat.kind == RepeatKind.ONCE) "Date, optional" else "First date", first, { first = it }, today, accent, optional = repeat.kind == RepeatKind.ONCE)
-            AreaChips(data.areas, areaId) { areaId = it }
-            PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
-            PixelField(minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes, optional", singleLine = true, keyboardOptions = numberKeys)
-            PixelField(instructions, { instructions = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
+    FormStack {
+        FormGroup {
+            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Chore", placeholder = if (adding) "Add a chore" else null, singleLine = true, keyboardOptions = wordKeys)
+            if (adding && data.chores.isEmpty() && title.isEmpty()) ExampleChips(listOf("Wipe the kitchen counter", "Take out the trash", "Water the plants")) { title = it }
         }
-        if (!adding) Actions {
-            PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = title.isNotBlank(), compact = true)
-            PixelButton("Cancel", { onCancel?.invoke() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                RepeatEditor(repeat) { repeat = it }
+                DateField(if (repeat.kind == RepeatKind.ONCE) "Date, optional" else "First date", first, { first = it }, today, accent, optional = repeat.kind == RepeatKind.ONCE)
+                AreaChips(data.areas, areaId) { areaId = it }
+                PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
+                PixelField(minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes, optional", singleLine = true, keyboardOptions = numberKeys)
+                PixelField(instructions, { instructions = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
+            }
         }
+        FormActions(adding, "Add", title.isNotBlank(), ::save, onCancel)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -591,7 +601,7 @@ private fun SuppliesView(model: AppModel) {
     val active = data.supplies.filter { !it.archived }.sortedBy { it.name.lowercase() }
     val low = BaseRules.lowSupplies(data, includeQuieted = true)
     val archived = data.supplies.filter { it.archived }
-    TextBox { SupplyForm(model, null, onDone = {}) }
+    FormBox { SupplyForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ModuleTabs(listOf("All", "Low", "Restock"), tab, accent) { tab = it; openId = null }
@@ -639,10 +649,10 @@ private fun SupplyOptions(model: AppModel, s: Supply, onDone: () -> Unit) {
             Confirm("Delete this supply and its restocking entries?", "Delete", onConfirm = { home.deleteSupply(s.id); onDone() }, onKeep = { asking = false })
             return@Column
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
             PixelIconButton("minus", "One less ${s.name}", { refused = home.adjust(s.id, -1000) })
             PixelIconButton("plus", "One more ${s.name}", { refused = home.adjust(s.id, 1000) }, accent)
-            PixelField(setText, { setText = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.weight(1f), placeholder = "Quantity, blank for unknown", singleLine = true, keyboardOptions = decimalKeys)
+            PixelField(setText, { setText = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.weight(1f), label = "Quantity, blank for unknown", singleLine = true, keyboardOptions = decimalKeys)
             PixelButton("Set", {
                 val milli = if (setText.isBlank()) null else Quantity.parse(setText)
                 if (setText.isNotBlank() && milli == null) refused = "Check the quantity."
@@ -709,8 +719,8 @@ private fun RestockTab(model: AppModel, focus: String?) {
             }
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add to the list", singleLine = true, keyboardOptions = wordKeys)
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+        PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), label = "Add to the list", singleLine = true, keyboardOptions = wordKeys)
         PixelButton("Add", { if (home.addRestock(name) != null) name = "" }, color = accent, enabled = name.isNotBlank())
     }
     refused?.let { Report(model, it, NoticeTone.WARNING) }
@@ -744,30 +754,26 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
         if (adding) { name = ""; unit = ""; quantity = ""; low = ""; category = ""; areaId = null; notes = ""; more = false; model.haptic() }
         onDone()
     }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a supply", singleLine = true, keyboardOptions = wordKeys)
-            PixelButton("Add", ::save, color = accent, enabled = name.isNotBlank())
-        } else PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Supply", singleLine = true, keyboardOptions = wordKeys)
-        if (adding && data.supplies.isEmpty() && name.isEmpty()) ExampleChips(listOf("Dish soap", "Light bulbs", "Trash bags")) { name = it }
-        if (adding) PixelButton(if (more) "Fewer options" else "Quantity and details", { more = !more }, color = Pixel.InkSoft, compact = true)
-        if (more) {
+    FormStack {
+        FormGroup {
+            PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Supply", placeholder = if (adding) "Add a supply" else null, singleLine = true, keyboardOptions = wordKeys)
+            if (adding && data.supplies.isEmpty() && name.isEmpty()) ExampleChips(listOf("Dish soap", "Light bulbs", "Trash bags")) { name = it }
             if (adding) PixelField(quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Quantity, blank if unknown", singleLine = true, keyboardOptions = decimalKeys)
-            SectionLabel("Unit")
-            PixelDropdown(listOf<String?>(null) + (data.settings.units + unit).filter { it.isNotBlank() }.distinct(), unit.ifEmpty { null }, { it ?: "None" }, { unit = it ?: "" }, Modifier.fillMaxWidth(), key = accent)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(newUnit, { newUnit = it.take(16) }, Modifier.weight(1f), placeholder = "Another unit", singleLine = true)
-                PixelButton("Add unit", { home.addUnit(newUnit); if (newUnit.isNotBlank()) { unit = newUnit.trim(); newUnit = "" } }, color = Pixel.InkSoft, enabled = newUnit.isNotBlank(), compact = true)
+        }
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                PixelDropdown(listOf<String?>(null) + (data.settings.units + unit).filter { it.isNotBlank() }.distinct(), unit.ifEmpty { null }, { it ?: "None" }, { unit = it ?: "" }, Modifier.fillMaxWidth(), key = accent, label = "Unit")
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                    PixelField(newUnit, { newUnit = it.take(16) }, Modifier.weight(1f), label = "Another unit", singleLine = true)
+                    PixelButton("Add unit", { home.addUnit(newUnit); if (newUnit.isNotBlank()) { unit = newUnit.trim(); newUnit = "" } }, color = Pixel.InkSoft, enabled = newUnit.isNotBlank(), compact = true)
+                }
+                PixelField(low, { low = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Low at or under, blank for none", singleLine = true, keyboardOptions = decimalKeys)
+                AreaChips(data.areas, areaId) { areaId = it }
+                PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
+                PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
             }
-            PixelField(low, { low = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Low at or under, blank for none", singleLine = true, keyboardOptions = decimalKeys)
-            AreaChips(data.areas, areaId) { areaId = it }
-            PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
-            PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
         }
-        if (!adding) Actions {
-            PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = name.isNotBlank(), compact = true)
-            PixelButton("Cancel", { onCancel?.invoke() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-        }
+        FormActions(adding, "Add", name.isNotBlank(), ::save, onCancel)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -788,8 +794,8 @@ private fun MaintenanceView(model: AppModel) {
     val history = BaseRules.maintenanceHistory(data).take(60)
     val assets = data.assets.filter { !it.archived }
     val archivedAssets = data.assets.filter { it.archived }
-    if (tab == 0) TextBox { ScheduleForm(model, null, onDone = {}) }
-    if (tab == 1) TextBox { AssetForm(model, null, onDone = {}) }
+    if (tab == 0) FormBox { ScheduleForm(model, null, onDone = {}) }
+    if (tab == 1) FormBox { AssetForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ModuleTabs(listOf("Later", "Items", "History"), tab, accent) { tab = it; openId = null }
@@ -914,27 +920,21 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
         if (adding) { title = ""; due = null; repeat = Recurrence(); policy = SchedulePolicy.FIXED; assetId = null; instructions = ""; more = false; model.haptic() }
         onDone()
     }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add maintenance", singleLine = true, keyboardOptions = wordKeys)
-            PixelButton("Add", ::save, color = accent, enabled = title.isNotBlank())
-        } else PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Maintenance", singleLine = true, keyboardOptions = wordKeys)
-        if (adding && data.schedules.isEmpty() && title.isEmpty()) ExampleChips(listOf("Change the aircon filter", "Test smoke alarm", "Descale the kettle")) { title = it }
-        if (adding) PixelButton(if (more) "Fewer options" else "Date, repeat and item", { more = !more }, color = Pixel.InkSoft, compact = true)
-        if (more) {
-            DateField(if (adding) "First due, optional" else "Next due", due, { due = it }, today, accent, optional = adding)
-            SectionLabel("Repeat")
-            RepeatEditor(repeat) { repeat = it }
-            if (repeat.kind != RepeatKind.ONCE) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                SchedulePolicy.entries.forEach { p -> Chip(p.label, p == policy, { policy = p }) }
+    FormStack {
+        FormGroup {
+            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Maintenance", placeholder = if (adding) "Add maintenance" else null, singleLine = true, keyboardOptions = wordKeys)
+            if (adding && data.schedules.isEmpty() && title.isEmpty()) ExampleChips(listOf("Change the aircon filter", "Test smoke alarm", "Descale the kettle")) { title = it }
+        }
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                DateField(if (adding) "First due, optional" else "Next due", due, { due = it }, today, accent, optional = adding)
+                RepeatEditor(repeat) { repeat = it }
+                if (repeat.kind != RepeatKind.ONCE) PixelChoice(SchedulePolicy.entries.toList(), policy, { it?.label ?: "" }, { p -> if (p != null) policy = p }, label = "Next date counts from", key = accent)
+                AssetChips(data.assets, assetId) { assetId = it }
+                PixelField(instructions, { instructions = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
             }
-            AssetChips(data.assets, assetId) { assetId = it }
-            PixelField(instructions, { instructions = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
         }
-        if (!adding) Actions {
-            PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = title.isNotBlank() && due != null, compact = true)
-            PixelButton("Cancel", { onCancel?.invoke() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-        }
+        FormActions(adding, "Add", title.isNotBlank() && (adding || due != null), ::save, onCancel)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -949,23 +949,27 @@ private fun MaintenanceRecordForm(model: AppModel, r: MaintenanceRecord, onDone:
     var notes by remember(r.id) { mutableStateOf(r.notes) }
     var cost by remember(r.id) { mutableStateOf(r.cost) }
     var message by remember(r.id) { mutableStateOf<String?>(null) }
-    Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
-        DateField("Day", day, { day = it }, today, accent, past = true)
-        AssetChips(model.baseData.assets, assetId) { assetId = it }
-        PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
-        PixelField(cost, { cost = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
-        Actions {
-            PixelButton("Save", {
-                val d = day
-                if (d == null) message = "Choose the day."
-                else {
-                    val out = model.base.updateMaintenanceRecord(r.copy(title = title, day = d, assetId = assetId, notes = notes, cost = cost))
-                    if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
-                }
-            }, Modifier.weight(1f), accent, enabled = title.isNotBlank() && day != null, compact = true)
-            PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+    var more by remember(r.id) { mutableStateOf(r.notes.isNotBlank() || r.cost.isNotBlank()) }
+    FormStack(Modifier.padding(bottom = Spacing.S)) {
+        FormGroup {
+            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
+            DateField("Day", day, { day = it }, today, accent, past = true)
+            AssetChips(model.baseData.assets, assetId) { assetId = it }
         }
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
+                PixelField(cost, { cost = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
+            }
+        }
+        FormActions(false, "Save", title.isNotBlank() && day != null, {
+            val d = day
+            if (d == null) message = "Choose the day."
+            else {
+                val out = model.base.updateMaintenanceRecord(r.copy(title = title, day = d, assetId = assetId, notes = notes, cost = cost))
+                if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
+            }
+        }, onDone)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -981,13 +985,20 @@ private fun LogWorkForm(model: AppModel, onDone: () -> Unit) {
     var notes by remember { mutableStateOf("") }
     var cost by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<String?>(null) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
-        DateField("Day", day, { day = it }, today, accent, past = true)
-        AssetChips(data.assets, assetId) { assetId = it }
-        PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
-        PixelField(cost, { cost = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
-        PixelButton("Save", {
+    var more by remember { mutableStateOf(false) }
+    FormStack {
+        FormGroup {
+            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
+            DateField("Day", day, { day = it }, today, accent, past = true)
+            AssetChips(data.assets, assetId) { assetId = it }
+        }
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
+                PixelField(cost, { cost = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
+            }
+        }
+        FormSave("Save", {
             val d = day
             if (d == null) message = "Choose the day."
             else {
@@ -995,7 +1006,7 @@ private fun LogWorkForm(model: AppModel, onDone: () -> Unit) {
                 if (out.record == null) message = out.refused ?: "That could not be saved."
                 else { model.haptic(); onDone() }
             }
-        }, Modifier.fillMaxWidth(), accent, enabled = title.isNotBlank() && day != null)
+        }, accent, enabled = title.isNotBlank() && day != null)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -1062,20 +1073,24 @@ private fun WarrantyForm(model: AppModel, assetId: String, initial: Warranty?, o
     var end by remember { mutableStateOf(initial?.expiryDay) }
     var reference by remember { mutableStateOf(initial?.reference.orEmpty()) }
     var message by remember { mutableStateOf<String?>(null) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(provider, { provider = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Provider", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(coverage, { coverage = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Coverage, optional", keyboardOptions = sentenceKeys)
-        DateField("Starts, optional", start, { start = it }, today, accent, optional = true, past = true)
-        DateField("Ends, optional", end, { end = it }, today, accent, optional = true)
-        PixelField(reference, { reference = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Reference, optional", singleLine = true)
-        Actions {
-            PixelButton("Save", {
-                val out = if (initial == null) model.base.addWarranty(assetId, provider, coverage, start, end, reference)
-                else model.base.updateWarranty(initial.copy(provider = provider, coverage = coverage, startDay = start, expiryDay = end, reference = reference))
-                if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
-            }, Modifier.weight(1f), accent, compact = true)
-            PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+    var more by remember { mutableStateOf(initial != null && (initial.coverage.isNotBlank() || initial.startDay != null || initial.reference.isNotBlank())) }
+    FormStack {
+        FormGroup {
+            PixelField(provider, { provider = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Provider", singleLine = true, keyboardOptions = wordKeys)
+            DateField("Ends, optional", end, { end = it }, today, accent, optional = true)
         }
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                PixelField(coverage, { coverage = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Coverage, optional", keyboardOptions = sentenceKeys)
+                DateField("Starts, optional", start, { start = it }, today, accent, optional = true, past = true)
+                PixelField(reference, { reference = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Reference, optional", singleLine = true)
+            }
+        }
+        FormActions(false, "Save", true, {
+            val out = if (initial == null) model.base.addWarranty(assetId, provider, coverage, start, end, reference)
+            else model.base.updateWarranty(initial.copy(provider = provider, coverage = coverage, startDay = start, expiryDay = end, reference = reference))
+            if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
+        }, onDone)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -1104,26 +1119,25 @@ private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCa
         if (adding) { name = ""; category = ""; brand = ""; modelName = ""; serial = ""; bought = null; areaId = null; notes = ""; more = false; model.haptic() }
         onDone()
     }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add an item", singleLine = true, keyboardOptions = wordKeys)
-            PixelButton("Add", ::save, color = accent, enabled = name.isNotBlank())
-        } else PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Item", singleLine = true, keyboardOptions = wordKeys)
-        if (adding && data.assets.isEmpty() && name.isEmpty()) ExampleChips(listOf("Rice cooker", "Washing machine", "Bike")) { name = it }
-        if (adding) PixelButton(if (more) "Fewer options" else "Brand, model and more", { more = !more }, color = Pixel.InkSoft, compact = true)
-        if (more) {
-            PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
-            PixelField(brand, { brand = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Brand, optional", singleLine = true, keyboardOptions = wordKeys)
-            PixelField(modelName, { modelName = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Model, optional", singleLine = true)
-            PixelField(serial, { serial = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Serial number, optional", singleLine = true)
-            DateField("Bought, optional", bought, { bought = it }, today, accent, optional = true, past = true)
-            AreaChips(data.areas, areaId) { areaId = it }
-            PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
+    FormStack {
+        FormGroup {
+            PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Item", placeholder = if (adding) "Add an item" else null, singleLine = true, keyboardOptions = wordKeys)
+            if (adding && data.assets.isEmpty() && name.isEmpty()) ExampleChips(listOf("Rice cooker", "Washing machine", "Bike")) { name = it }
         }
-        if (!adding) Actions {
-            PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = name.isNotBlank(), compact = true)
-            PixelButton("Cancel", { onCancel?.invoke() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelField(brand, { brand = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), label = "Brand, optional", singleLine = true, keyboardOptions = wordKeys)
+                    PixelField(modelName, { modelName = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), label = "Model, optional", singleLine = true)
+                }
+                PixelField(serial, { serial = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Serial number, optional", singleLine = true)
+                DateField("Bought, optional", bought, { bought = it }, today, accent, optional = true, past = true)
+                AreaChips(data.areas, areaId) { areaId = it }
+                PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
+            }
         }
+        FormActions(adding, "Add", name.isNotBlank(), ::save, onCancel)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -1144,12 +1158,12 @@ private fun NotesView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             if (data.references.isNotEmpty()) PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search notes", singleLine = true)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a note", singleLine = true, keyboardOptions = sentenceKeys)
-                PixelButton("Add", {
+            FormGroup {
+                PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Note", placeholder = "Add a note", singleLine = true, keyboardOptions = sentenceKeys)
+                FormSave("Add", {
                     val out = home.addReference(title)
                     if (out.record == null) message = out.refused else { title = ""; message = null; openId = out.record!!.id; model.haptic() }
-                }, color = accent, enabled = title.isNotBlank())
+                }, accent, enabled = title.isNotBlank())
             }
             message?.let { Report(model, it, NoticeTone.WARNING) }
             if (data.references.isEmpty() && title.isEmpty()) ExampleChips(listOf("Landlord contact", "Wi-Fi password", "Condo admin hours")) { title = it }
@@ -1177,21 +1191,28 @@ private fun NoteEditor(model: AppModel, n: Reference, onDone: () -> Unit) {
     var assetId by remember(n.id) { mutableStateOf(n.assetId) }
     var asking by remember(n.id) { mutableStateOf(false) }
     var message by remember(n.id) { mutableStateOf<String?>(null) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.padding(bottom = Spacing.S)) {
+    var more by remember(n.id) { mutableStateOf(n.category.isNotBlank() || n.areaId != null || n.assetId != null) }
+    FormStack(Modifier.padding(bottom = Spacing.S)) {
         if (asking) {
             Confirm("Delete this note?", "Delete", onConfirm = { home.deleteReference(n.id); onDone() }, onKeep = { asking = false })
-            return@Column
+            return@FormStack
         }
-        PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
-        PixelField(text, { text = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Note", minLines = 5, keyboardOptions = sentenceKeys)
-        PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
-        AreaChips(data.areas, areaId) { areaId = it }
-        AssetChips(data.assets, assetId) { assetId = it }
+        FormGroup {
+            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
+            PixelField(text, { text = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Note", minLines = 5, keyboardOptions = sentenceKeys)
+        }
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
+                AreaChips(data.areas, areaId) { areaId = it }
+                AssetChips(data.assets, assetId) { assetId = it }
+            }
+        }
+        FormSave("Save", {
+            val out = home.updateReference(n.copy(title = title, text = text, category = category, areaId = areaId, assetId = assetId))
+            if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
+        }, accent, enabled = title.isNotBlank())
         Actions {
-            PixelButton("Save", {
-                val out = home.updateReference(n.copy(title = title, text = text, category = category, areaId = areaId, assetId = assetId))
-                if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
-            }, Modifier.weight(1f), accent, enabled = title.isNotBlank(), compact = true)
             PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
@@ -1222,18 +1243,11 @@ private fun BaseSettingsView(model: AppModel) {
             PixelTitle("Reminders")
             ToggleRow("Remind me about the home", settings.reminders) { home.setReminders(it) }
             if (settings.reminders) {
-                SectionLabel("At")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    listOf(8, 9, 12, 18, 20).forEach { h -> Chip("${h.toString().padStart(2, '0')}:00", h == settings.reminderHour, { home.setReminderHour(h) }) }
-                }
-                SectionLabel("Maintenance")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    listOf(0 to "On the day", 1 to "1 day before", 3 to "3 days before", 7 to "A week before").forEach { (d, l) -> Chip(l, d == settings.maintenanceLeadDays, { home.setMaintenanceLeadDays(d) }) }
-                }
-                SectionLabel("Warranties")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    listOf(7 to "A week before", 14 to "2 weeks", 30 to "A month", 60 to "2 months").forEach { (d, l) -> Chip(l, d == settings.warrantyLeadDays, { home.setWarrantyLeadDays(d) }) }
-                }
+                PixelChoice(listOf(8, 9, 12, 18, 20), settings.reminderHour, { "${it.toString().padStart(2, '0')}:00" }, { h -> if (h != null) home.setReminderHour(h) }, label = "At", key = accent)
+                val maintenanceLeads = listOf(0 to "On the day", 1 to "1 day before", 3 to "3 days before", 7 to "A week before")
+                PixelChoice(maintenanceLeads.map { it.first }, settings.maintenanceLeadDays, { d -> maintenanceLeads.firstOrNull { it.first == d }?.second ?: "" }, { d -> if (d != null) home.setMaintenanceLeadDays(d) }, label = "Maintenance", key = accent)
+                val warrantyLeads = listOf(7 to "A week before", 14 to "2 weeks", 30 to "A month", 60 to "2 months")
+                PixelChoice(warrantyLeads.map { it.first }, settings.warrantyLeadDays, { d -> warrantyLeads.firstOrNull { it.first == d }?.second ?: "" }, { d -> if (d != null) home.setWarrantyLeadDays(d) }, label = "Warranties", key = accent)
                 ToggleRow("Name it", settings.reminderNames) { home.setReminderNames(it) }
             }
         }
@@ -1296,8 +1310,8 @@ internal fun AreasBox(model: AppModel, startOpen: String? = null, startAsking: B
                 if (openId == a.id) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
                     if (asking == a.id) Confirm("Delete this area? What names it stays, with no area.", "Delete", onConfirm = { home.deleteArea(a.id); openId = null; asking = null }, onKeep = { asking = null })
                     else {
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelField(renaming, { renaming = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Name", singleLine = true, keyboardOptions = wordKeys)
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                            PixelField(renaming, { renaming = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), label = "Name", singleLine = true, keyboardOptions = wordKeys)
                             PixelButton("Rename", { home.renameArea(a.id, renaming) }, color = accent, enabled = renaming.isNotBlank() && renaming.trim() != a.name, compact = true)
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -1310,9 +1324,9 @@ internal fun AreasBox(model: AppModel, startOpen: String? = null, startAsking: B
                     }
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add an area", singleLine = true, keyboardOptions = wordKeys)
-                PixelButton("Add", { if (home.addArea(name) != null) name = "" }, color = accent, enabled = name.isNotBlank())
+            FormGroup {
+                PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Area", placeholder = "Add an area", singleLine = true, keyboardOptions = wordKeys)
+                FormSave("Add", { if (home.addArea(name) != null) name = "" }, accent, enabled = name.isNotBlank())
             }
         }
     }

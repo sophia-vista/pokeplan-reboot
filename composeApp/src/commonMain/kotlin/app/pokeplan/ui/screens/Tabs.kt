@@ -62,8 +62,15 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
 @Composable
 fun <T> PixelDropdown(
     options: List<T?>, selected: T?, text: (T?) -> String, onSelect: (T?) -> Unit, modifier: Modifier = Modifier,
-    key: Color = LocalFrameTone.current?.band ?: Pixel.Blue, placeholder: String = "Choose", enabled: Boolean = true,
+    key: Color = LocalFrameTone.current?.band ?: Pixel.Blue, placeholder: String = "Choose", enabled: Boolean = true, label: String? = null,
 ) {
+    if (label != null) {
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            FormLabel(label)
+            PixelDropdown(options, selected, text, onSelect, Modifier.fillMaxWidth(), key, placeholder, enabled)
+        }
+        return
+    }
     var open by remember { mutableStateOf(false) }
     var anchor by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
     val density = androidx.compose.ui.platform.LocalDensity.current
