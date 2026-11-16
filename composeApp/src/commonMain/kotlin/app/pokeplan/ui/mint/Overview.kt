@@ -48,7 +48,7 @@ internal fun OverviewBreakdownBox(model: AppModel, startCurrency: String, onClos
     TextBox {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Overview breakdown")
-            if (currencies.size > 1) PixelDropdown(currencies, cur, { it ?: "" }, { c -> if (c != null) cur = c }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
+            if (currencies.size > 1) PixelDropdown(currencies, cur, { it ?: "" }, { c -> if (c != null) cur = c }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent, label = "Currency")
             SectionLabel("Net position")
             if (b.assets.isNotEmpty()) { Text("Assets", style = MaterialTheme.typography.titleSmall); lines(b.assets) }
             if (b.liabilities.isNotEmpty()) { Text("Liabilities", style = MaterialTheme.typography.titleSmall); lines(b.liabilities) }
@@ -83,10 +83,8 @@ internal fun OverviewCountsBox(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Overview counts")
-            SectionLabel("Bills and installments due")
-            PixelDropdown(app.pokeplan.mint.OverviewWindow.entries.toList(), settings.overviewWindow, { it?.label ?: "" }, { w -> if (w != null) mint.setOverviewWindow(w) }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
-            SectionLabel("Pay later in net position")
-            PixelDropdown(app.pokeplan.mint.PayLaterCount.entries.toList(), settings.overviewPayLater, { it?.label ?: "" }, { c -> if (c != null) mint.setOverviewPayLater(c) }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
+            PixelDropdown(app.pokeplan.mint.OverviewWindow.entries.toList(), settings.overviewWindow, { it?.label ?: "" }, { w -> if (w != null) mint.setOverviewWindow(w) }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent, label = "Bills and installments due")
+            PixelDropdown(app.pokeplan.mint.PayLaterCount.entries.toList(), settings.overviewPayLater, { it?.label ?: "" }, { c -> if (c != null) mint.setOverviewPayLater(c) }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent, label = "Pay later in net position")
         }
     }
 }

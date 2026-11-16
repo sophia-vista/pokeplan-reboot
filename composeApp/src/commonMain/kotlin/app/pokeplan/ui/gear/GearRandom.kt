@@ -192,8 +192,8 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 listOf(1, 2, 3, 4).forEach { n -> PixelButton("x$n", { count = n }, Modifier.weight(1f), if (count == n) Pixel.Tone else Pixel.InkSoft, compact = true) }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelField(dice, { dice = it.take(14) }, Modifier.weight(1f), singleLine = true, placeholder = "Your own (2d6+3)")
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.Bottom) {
+                PixelField(dice, { dice = it.take(14) }, Modifier.weight(1f), singleLine = true, label = "Your own (2d6+3)")
                 PixelButton("Roll", { roll(dice) }, Modifier.weight(0.5f), Pixel.Tone, compact = true)
             }
             rolled?.let { Text(it, Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.titleMedium) }

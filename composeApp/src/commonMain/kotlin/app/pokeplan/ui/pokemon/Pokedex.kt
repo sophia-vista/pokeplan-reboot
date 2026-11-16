@@ -128,7 +128,7 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
     }
     PixelField(
         view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
-        placeholder = "Search by name or number",
+        label = "Search by name or number",
     )
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }

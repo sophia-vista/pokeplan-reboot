@@ -175,11 +175,11 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
                 }
                 if (!renaming) PixelButton("Rename", { renaming = true }, color = Pixel.InkSoft, compact = true)
             }
-            if (renaming) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            if (renaming) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
                 val save = { store.rename(p.id, nickname); renaming = false }
                 PixelField(
                     nickname, { nickname = it.take(20) }, Modifier.weight(1f), singleLine = true,
-                    placeholder = p.species.name,
+                    label = "Nickname", placeholder = p.species.name,
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
                     keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { save() }),
                 )

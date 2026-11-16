@@ -99,8 +99,8 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (editing == w.id) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                        PixelField(editText, { editText = it.take(24) }, Modifier.weight(1f), singleLine = true, placeholder = "Name")
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                        PixelField(editText, { editText = it.take(24) }, Modifier.weight(1f), singleLine = true, label = "Name")
                         PixelIconButton("check", "Save the name", { store.changeGear { g -> g.copy(waypoints = g.waypoints.map { if (it.id == w.id) it.copy(name = editText.trim().ifEmpty { it.name }) else it }) }; editing = null })
                     }
                 } else Text(w.name, style = MaterialTheme.typography.titleSmall)
