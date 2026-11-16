@@ -51,7 +51,7 @@ fun linkStorage(context: Context): Storage = LiveStore.storage(context, "link", 
 
 /**
  * The Mint module's own save (private financial records), apart from every other module's: its own tables in the database, created there from the start
- * with every row sealed by a Keystore key (`KeystoreMintKey`); there is no file fallback. No widget, notification or reminder reads it.
+ * with every row sealed by a Keystore key (`KeystoreMintKey`); there is no file fallback. Bill reminders and the two Mint widgets read it, read-only (MINT.md 3.2B).
  */
 fun mintStorage(context: Context): Storage {
     val s = LiveStore.get(context)

@@ -256,6 +256,10 @@ data class MintSettings(
     /** Built-in holidays the player turned off, and days off they added (Eid, a proclaimed day). */
     val holidaysIgnored: List<LocalDate> = emptyList(),
     val daysOff: List<LocalDate> = emptyList(),
+    /** How far ahead the Overview and the widgets look for what is due (MINT.md 3.2B). */
+    val overviewWindow: OverviewWindow = OverviewWindow.DAYS_14,
+    /** How much of a Pay later account the Overview's net position counts (MINT.md 3.2B). */
+    val overviewPayLater: PayLaterCount = PayLaterCount.WHOLE,
 )
 
 /**

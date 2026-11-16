@@ -183,11 +183,13 @@ object MintRules {
     }
 
     /** Assets less liabilities, per currency, over active accounts. Never converted across currencies: each currency has its own line. */
-    fun netPosition(data: MintData): Map<String, Long> {
+    fun netPosition(data: MintData, today: LocalDate? = null): Map<String, Long> {
         val result = linkedMapOf<String, Long>()
         for (b in balances(data)) {
             if (b.account.status != AccountStatus.ACTIVE || b.account.hideFromTotal) continue
-            val signed = if (b.account.type.liability) -b.postedMinor else b.postedMinor
+            // With a day given, a Pay later account counts as Mint Settings says (3.2B); without one, in full.
+            val owed = if (b.account.type.liability && today != null) OverviewCounts.liabilityCounted(data, b.account, b.postedMinor, today) else b.postedMinor
+            val signed = if (b.account.type.liability) -owed else owed
             result[b.account.currency] = (result[b.account.currency] ?: 0L) + signed
         }
         return result

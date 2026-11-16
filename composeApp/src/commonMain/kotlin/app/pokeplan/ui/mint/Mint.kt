@@ -236,11 +236,12 @@ internal fun OverviewCard(model: AppModel) {
         }
         return
     }
-    val position = MintRules.netPosition(data)
+    val position = MintRules.netPosition(data, today)
     val currency = data.settings.currency
-    val available = MintRules.available(data, currency, today)
+    val days = app.pokeplan.mint.OverviewCounts.days(data, today)
+    val available = MintRules.available(data, currency, today, days)
     // One bill's next date is enough here.
-    val upcoming = MintRules.upcoming(data, today, 14).distinctBy { it.bill.id }.take(3)
+    val upcoming = MintRules.upcoming(data, today, days).distinctBy { it.bill.id }.take(3)
     val leadsWithAvailable = available.liquidMinor != 0L || available.billsCount > 0
     var breakdown by remember { mutableStateOf(false) }
     if (breakdown) Dialog({ breakdown = false }, DialogProperties(usePlatformDefaultWidth = false)) {
@@ -1282,6 +1283,7 @@ private fun MintSettingsView(model: AppModel) {
             }
         }
     }
+    OverviewCountsBox(model)
     PaydaysAndHolidays(model)
     CategoriesBox(model)
     TextBox {

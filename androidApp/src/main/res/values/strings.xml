@@ -3,6 +3,8 @@
     <string name="widget_today_description">Today\'s tasks. Tap the tick to finish one.</string>
     <string name="widget_buddy_description">Your buddy on a wallpaper. Tap it to pet it, tap the berry to feed it.</string>
     <string name="widget_world_description">Where your World expedition teams are, what is waiting to be recruited, and jobs to claim. Tap to open World.</string>
+    <string name="widget_mint_description">Mint overview: available money, net position and what is due soon. Follows Hide amounts and the screen lock. Tap to open Mint.</string>
+    <string name="widget_mint_due_description">The next bills and installments due in Mint. Follows Hide amounts and the screen lock. Tap to open Mint.</string>
     <string name="widget_care_description">Today\'s Care routines. Tap the tick when one is done.</string>
     <string name="widget_focus_description">Start a focus session and hatch an egg; shows the running session.</string>
     <string name="shortcut_add_task">Add task</string>
