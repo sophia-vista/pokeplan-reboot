@@ -19,7 +19,6 @@ import app.pokeplan.mint.StatementImport
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import androidx.compose.material3.HorizontalDivider
-import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
@@ -31,6 +30,10 @@ import app.pokeplan.ui.theme.ToggleRow
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.plan.EmptyState
 import app.pokeplan.ui.pokemon.label
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.FormSave
+import app.pokeplan.ui.screens.FormStack
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.shortDate
@@ -61,9 +64,9 @@ internal fun MintImportView(model: AppModel) {
         return
     }
     // Help: pick the account, then a CSV from your bank or e-wallet app; it is read on this phone, once, and not kept. Mint never asks for a password, PIN or code.
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            if (accounts.size > 1) PixelDropdown(accounts.map { it.id }, chosen?.id, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) accountId = id }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
+    FormBox {
+        FormStack {
+            if (accounts.size > 1) PixelDropdown(accounts.map { it.id }, chosen?.id, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) accountId = id }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent, label = "Account")
             PixelButton(if (text == null) "Import a CSV" else "Choose another file", {
                 chooser.choose { name, body, problem ->
                     if (body == null) note = problem ?: "That file could not be read."
@@ -82,9 +85,10 @@ internal fun MintImportView(model: AppModel) {
         } else {
             val header = read.table.first()
             val cols = read.columns
-            TextBox {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            FormBox {
+                FormStack {
                     PixelTitle("Check the columns")
+                    FormGroup {
                     Picker("Date", header, cols.date) { columns = cols.copy(date = it) }
                     Picker("What it was", header, cols.description) { columns = cols.copy(description = it) }
                     if (cols.debit == null && cols.credit == null) {
@@ -97,8 +101,8 @@ internal fun MintImportView(model: AppModel) {
                         PixelButton("It has one amount column", { columns = cols.copy(debit = null, credit = null, amount = StatementImport.guess(header).amount ?: 0.coerceAtMost(header.lastIndex)) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     }
                     Picker("Bank's reference", header, cols.reference) { columns = cols.copy(reference = it) }
-                    SectionLabel("Dates are written")
-                    PixelDropdown(StatementImport.DateOrder.entries.toList(), read.order, { o -> o?.let { "${it.label}, like ${it.example}" } ?: "" }, { o -> if (o != null) order = o }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
+                    PixelDropdown(StatementImport.DateOrder.entries.toList(), read.order, { o -> o?.let { "${it.label}, like ${it.example}" } ?: "" }, { o -> if (o != null) order = o }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent, label = "Dates are written")
+                    }
                     if (!read.orderCertain) Notice("This file's dates could be read either way. Check the preview below before you add anything.", tone = NoticeTone.WARNING) // copy-ok: result
                 }
             }
@@ -135,13 +139,11 @@ internal fun MintImportView(model: AppModel) {
                         }
                         if (preview.rows.size > 60) Text("+${preview.rows.size - 60} more", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         // Help: imported records are marked as imported, start unreviewed and never earn a find; reconciling still uses the records you wrote.
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelButton(if (keep.isEmpty()) "Nothing to add" else "Add ${keep.size}", {
-                                note = mint.importStatement(preview, keep, fileName.ifBlank { "statement.csv" }).note
-                                text = null
-                            }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = keep.isNotEmpty(), compact = true)
-                            PixelButton("Cancel", { text = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                        }
+                        FormSave(if (keep.isEmpty()) "Nothing to add" else "Add ${keep.size}", {
+                            note = mint.importStatement(preview, keep, fileName.ifBlank { "statement.csv" }).note
+                            text = null
+                        }, ModuleAccent.MINT.accent, enabled = keep.isNotEmpty())
+                        PixelButton("Cancel", { text = null }, Modifier.fillMaxWidth(), Pixel.InkSoft)
                     }
                 }
             }
@@ -176,9 +178,11 @@ internal fun MintImportView(model: AppModel) {
 
 }
 
-/** Cycles through the file's columns, then "none". */
+/** One dropdown over the file's columns, then "none". */
 @Composable
 private fun Picker(label: String, header: List<String>, value: Int?, onChange: (Int?) -> Unit) {
-    val shown = value?.let { header.getOrNull(it)?.ifBlank { "Column ${it + 1}" } } ?: "none"
-    PixelButton("$label: $shown", { onChange(when { value == null -> 0; value + 1 > header.lastIndex -> null; else -> value + 1 }) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    PixelDropdown(
+        listOf<Int?>(null) + header.indices.toList(), value, { i -> if (i == null) "none" else header.getOrNull(i)?.ifBlank { "Column ${i + 1}" } ?: "Column ${i + 1}" }, onChange,
+        Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent, label = label,
+    )
 }

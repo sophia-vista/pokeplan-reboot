@@ -24,6 +24,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ContactSource
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.screens.Actions
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.RecordRow
 import app.pokeplan.ui.screens.Rule
@@ -118,7 +119,7 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
                     Actions { PixelButton("Close", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true) }
                     return@Column
                 }
-                PixelField(query, { query = it.take(40); shown = IMPORT_PAGE }, Modifier.fillMaxWidth(), placeholder = "Search contacts", singleLine = true)
+                PixelField(query, { query = it.take(40); shown = IMPORT_PAGE }, Modifier.fillMaxWidth(), label = "Search contacts", singleLine = true)
                 val news = plan.rows.filter { it.kind == ImportKind.NEW }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     if (news.isNotEmpty()) PixelButton("Pick ${news.size} new", { picked = picked + news.map { it.key() } }, color = accent, compact = true)
@@ -146,11 +147,7 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
                 if (rows.size > shown) PixelButton("Show ${minOf(IMPORT_PAGE, rows.size - shown)} more of ${rows.size - shown}", { shown += IMPORT_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 if (rows.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 if (chosen.any { it.card.birthday != null }) {
-                    SectionLabel("Remind me of birthdays")
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        TabButton("No", remind == null, { remind = null }, key = accent)
-                        LinkRules.REMIND_PRESETS.forEach { n -> TabButton(remindLabel(n), remind == n, { remind = n }, key = accent) }
-                    }
+                    PixelChoice(listOf<Int?>(null) + LinkRules.REMIND_PRESETS, remind, { n -> if (n == null) "No" else remindLabel(n) }, { remind = it }, label = "Remind me of birthdays", key = accent)
                 }
                 Actions {
                     PixelButton(if (chosen.isEmpty()) "Import" else "Import ${chosen.size}", {

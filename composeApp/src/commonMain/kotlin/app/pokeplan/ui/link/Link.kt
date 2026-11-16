@@ -82,6 +82,12 @@ import app.pokeplan.ui.screens.RecordRow
 import app.pokeplan.ui.screens.Rule
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormDisclosure
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.FormSave
+import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
@@ -301,12 +307,12 @@ private fun PeopleView(model: AppModel) {
     val people = link.directory(query, category, null, favorites, sort)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(name, { name = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a person", singleLine = true, keyboardOptions = wordKeys)
-                PixelButton("Add", {
+            FormGroup {
+                PixelField(name, { name = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Person", placeholder = "Add a person", singleLine = true, keyboardOptions = wordKeys)
+                FormSave("Add", {
                     val out = link.addPerson(name)
                     if (out.record == null) message = out.refused else { name = ""; message = null; openId = out.record!!.id; model.haptic() }
-                }, color = accent, enabled = name.isNotBlank())
+                }, accent, enabled = name.isNotBlank())
             }
             if (contacts != null) PixelButton("Import contacts", { importing = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             message?.let { Report(model, it, NoticeTone.WARNING) }
@@ -425,12 +431,12 @@ private fun PersonNotes(model: AppModel, p: Person) {
     var message by remember(p.id) { mutableStateOf<String?>(null) }
     var editing by remember(p.id) { mutableStateOf<String?>(null) }
     var draft by remember(p.id) { mutableStateOf("") }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        PixelField(text, { text = it.take(LinkRules.NOTE_MAX) }, Modifier.weight(1f), placeholder = "Add a note", keyboardOptions = sentenceKeys)
-        PixelButton("Add", {
+    FormGroup {
+        PixelField(text, { text = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", placeholder = "Add a note", keyboardOptions = sentenceKeys)
+        FormSave("Add", {
             val out = link.addNote(p.id, text)
             if (out.record == null) message = out.refused else { text = ""; message = null; model.haptic() }
-        }, color = accent, enabled = text.isNotBlank())
+        }, accent, enabled = text.isNotBlank())
     }
     message?.let { Report(model, it, NoticeTone.WARNING) }
     val notes = link.notesOf(p.id)
@@ -461,11 +467,11 @@ private fun PersonFollowUps(model: AppModel, p: Person) {
     var title by remember(p.id) { mutableStateOf("") }
     var due by remember(p.id) { mutableStateOf<LocalDate?>(null) }
     var openId by remember(p.id) { mutableStateOf<String?>(null) }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
-        PixelButton("Add", { if (link.addFollowUp(title, p.id, due).record != null) { title = ""; due = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
+    FormGroup {
+        PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Follow-up", placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
+        DateField("Day", due, { due = it }, today, accent, optional = true)
+        FormSave("Add", { if (link.addFollowUp(title, p.id, due).record != null) { title = ""; due = null; model.haptic() } }, accent, enabled = title.isNotBlank())
     }
-    DateField("Day", due, { due = it }, today, accent, optional = true)
     val open = link.openFollowUps(p.id)
     val history = link.followUpHistory(p.id).take(10)
     if (open.isEmpty() && history.isEmpty()) Text("Nothing to follow up.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -500,32 +506,41 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
     var newCategory by remember(p.id) { mutableStateOf("") }
     var message by remember(p.id) { mutableStateOf<String?>(null) }
     val similar = link.possibleDuplicates(name, phone, email, exceptId = p.id)
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(name, { name = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(preferred, { preferred = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Called", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(phone, { phone = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Phone", singleLine = true, keyboardOptions = phoneKeys)
-        PixelField(email, { email = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Email", singleLine = true, keyboardOptions = emailKeys)
-        PixelField(organization, { organization = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Organization", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(role, { role = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Role", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(address, { address = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Address", singleLine = true, keyboardOptions = wordKeys)
-        val categoryList = LinkRules.categories(data)
-        PixelDropdown(
-            listOf<String?>(null) + categoryList, if (category.isBlank()) null else (categoryList.firstOrNull { it.equals(category, ignoreCase = true) } ?: category),
-            { it ?: "No category" }, { category = it ?: "" }, Modifier.fillMaxWidth(), key = accent,
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(newCategory, { newCategory = it.take(LinkRules.TAG_MAX) }, Modifier.weight(1f), placeholder = "New category", singleLine = true, keyboardOptions = wordKeys)
-            PixelButton("Add", { link.addCategory(newCategory); category = newCategory.trim(); newCategory = "" }, color = accent, enabled = newCategory.isNotBlank())
+    var more by remember(p.id) { mutableStateOf(listOf(organization, role, address, tags, p.preferred).any { it.isNotBlank() }) }
+    FormStack {
+        FormGroup {
+            PixelField(name, { name = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = wordKeys)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelField(phone, { phone = it.take(LinkRules.FIELD_MAX) }, Modifier.weight(1f), label = "Phone", singleLine = true, keyboardOptions = phoneKeys)
+                PixelField(email, { email = it.take(LinkRules.FIELD_MAX) }, Modifier.weight(1f), label = "Email", singleLine = true, keyboardOptions = emailKeys)
+            }
+            val categoryList = LinkRules.categories(data)
+            PixelDropdown(
+                listOf<String?>(null) + categoryList, if (category.isBlank()) null else (categoryList.firstOrNull { it.equals(category, ignoreCase = true) } ?: category),
+                { it ?: "No category" }, { category = it ?: "" }, Modifier.fillMaxWidth(), key = accent, label = "Category",
+            )
         }
-        PixelField(tags, { tags = it.take(120) }, Modifier.fillMaxWidth(), label = "Tags, separated by commas", singleLine = true)
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                PixelField(preferred, { preferred = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Called", singleLine = true, keyboardOptions = wordKeys)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelField(organization, { organization = it.take(LinkRules.FIELD_MAX) }, Modifier.weight(1f), label = "Organization", singleLine = true, keyboardOptions = wordKeys)
+                    PixelField(role, { role = it.take(LinkRules.FIELD_MAX) }, Modifier.weight(1f), label = "Role", singleLine = true, keyboardOptions = wordKeys)
+                }
+                PixelField(address, { address = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Address", singleLine = true, keyboardOptions = wordKeys)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                    PixelField(newCategory, { newCategory = it.take(LinkRules.TAG_MAX) }, Modifier.weight(1f), label = "New category", singleLine = true, keyboardOptions = wordKeys)
+                    PixelButton("Add", { link.addCategory(newCategory); category = newCategory.trim(); newCategory = "" }, color = accent, enabled = newCategory.isNotBlank())
+                }
+                PixelField(tags, { tags = it.take(120) }, Modifier.fillMaxWidth(), label = "Tags, separated by commas", singleLine = true)
+            }
+        }
         if (similar.isNotEmpty()) Text("This may be ${similar.joinToString(" or ") { LinkRules.displayName(it) }}, already in your list. Nothing is merged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
-        Actions {
-            PixelButton("Save", {
-                val out = link.updatePerson(p.copy(name = name, preferred = preferred, phone = phone, email = email, organization = organization, role = role, address = address, category = category, tags = LinkRules.tags(tags)))
-                if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
-            }, Modifier.weight(1f), accent, enabled = name.isNotBlank(), compact = true)
-            PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-        }
+        FormSave("Save", {
+            val out = link.updatePerson(p.copy(name = name, preferred = preferred, phone = phone, email = email, organization = organization, role = role, address = address, category = category, tags = LinkRules.tags(tags)))
+            if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
+        }, accent, enabled = name.isNotBlank())
+        PixelButton("Cancel", onDone, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -553,7 +568,7 @@ private fun DatesView(model: AppModel) {
             }
         }
     }
-    if (adding) TextBox { DateForm(model, null, onDone = { adding = false }) }
+    if (adding) FormBox { DateForm(model, null, onDone = { adding = false }) }
     else PixelButton("Add a date", { adding = true }, Modifier.fillMaxWidth(), compact = true)
 }
 
@@ -574,55 +589,56 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
     var message by remember(key) { mutableStateOf<String?>(null) }
     var asking by remember(key) { mutableStateOf(false) }
     var remind by remember(key) { mutableStateOf<Int?>(null) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+    var more by remember(key) { mutableStateOf(initial != null) }
+    FormStack {
         if (asking && initial != null) {
             Confirm("Delete this date?", "Delete", onConfirm = { link.deleteDate(initial.id); onDone() }, onKeep = { asking = false })
-            return@Column
+            return@FormStack
         }
         if (initial == null) PixelTitle("Add a date")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            DateKind.entries.forEach { k -> Chip(k.label, kind == k, { kind = k; if (title.isBlank() || DateKind.entries.any { it.label == title }) title = k.label }) }
+        FormGroup {
+            PixelChoice(DateKind.entries.toList(), kind, { it?.label ?: "" }, { k -> if (k != null) { kind = k; if (title.isBlank() || DateKind.entries.any { it.label == title }) title = k.label } }, label = "Kind", key = accent)
+            PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
+            // The month is a key, not a number to type; the day and the year (which may be unknown) stay short fields.
+            val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelDropdown((1..12).toList(), month.toIntOrNull(), { m -> if (m == null) "" else monthNames[m - 1] }, { m -> if (m != null) month = m.toString() }, Modifier.weight(1.2f), key = accent, label = "Month")
+                PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(0.8f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
+                PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
+            }
         }
-        PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
-        // The month is a key, not a number to type; the day and the year (which may be unknown) stay short fields.
-        SectionLabel("Month")
-        val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-        PixelDropdown((1..12).toList(), month.toIntOrNull(), { m -> if (m == null) "" else monthNames[m - 1] }, { m -> if (m != null) month = m.toString() }, Modifier.fillMaxWidth(), key = accent)
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
-            PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                // Help: a 29 February is kept on 28 February in years without one.
+                ToggleRow("Every year", annual) { annual = it }
+                PersonPicker(data.people, personId) { personId = it }
+                PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", singleLine = true, keyboardOptions = sentenceKeys)
+                // A reminder is asked for here, in the same step: the first one turns Link's reminders on (LINK.md 5). A new date keeps its choice until it is saved.
+                val saved = if (initial != null) data.dates.firstOrNull { it.id == initial.id }?.remindDays else remind
+                PixelChoice(
+                    listOf<Int?>(null) + LinkRules.REMIND_PRESETS, saved, { n -> if (n == null) "No" else remindLabel(n) },
+                    { n -> if (initial != null) link.setDateRemind(initial.id, n) else remind = n }, label = "Remind me", key = accent,
+                )
+            }
         }
-        // Help: a 29 February is kept on 28 February in years without one.
-        ToggleRow("Every year", annual) { annual = it }
-        PersonPicker(data.people, personId) { personId = it }
-        PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", singleLine = true, keyboardOptions = sentenceKeys)
-        // A reminder is asked for here, in the same step: the first one turns Link's reminders on (LINK.md 5). A new date keeps its choice until it is saved.
-        val saved = if (initial != null) data.dates.firstOrNull { it.id == initial.id }?.remindDays else remind
-        SectionLabel("Remind me")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Chip("No", saved == null, { if (initial != null) link.setDateRemind(initial.id, null) else remind = null })
-            LinkRules.REMIND_PRESETS.forEach { n -> Chip(remindLabel(n), saved == n, { if (initial != null) link.setDateRemind(initial.id, n) else remind = n }) }
-        }
-        Actions {
-            PixelButton(if (initial == null) "Add" else "Save", {
-                val m = month.toIntOrNull(); val d = day.toIntOrNull()
-                if (m == null || d == null) message = "Write the day and the month as numbers." // copy-ok: result
+        FormSave(if (initial == null) "Add" else "Save", {
+            val m = month.toIntOrNull(); val d = day.toIntOrNull()
+            if (m == null || d == null) message = "Write the day and the month as numbers." // copy-ok: result
+            else {
+                val out = if (initial == null) link.addDate(kind, title, m, d, year.toIntOrNull(), annual, personId, note, remind)
+                else link.updateDate(initial.copy(kind = kind, title = title, month = m, day = d, year = year.toIntOrNull(), annual = annual, personId = personId, note = note))
+                if (out.record == null) message = out.refused ?: "That could not be saved."
                 else {
-                    val out = if (initial == null) link.addDate(kind, title, m, d, year.toIntOrNull(), annual, personId, note, remind)
-                    else link.updateDate(initial.copy(kind = kind, title = title, month = m, day = d, year = year.toIntOrNull(), annual = annual, personId = personId, note = note))
-                    if (out.record == null) message = out.refused ?: "That could not be saved."
-                    else {
-                        message = null; model.haptic()
-                        // Added from a profile, it closes; added from the Dates list, the form clears for the next one.
-                        if (initial == null && presetPerson == null) { title = ""; month = ""; day = ""; year = ""; note = ""; personId = null; remind = null } else onDone()
-                    }
+                    message = null; model.haptic()
+                    // Added from a profile, it closes; added from the Dates list, the form clears for the next one.
+                    if (initial == null && presetPerson == null) { title = ""; month = ""; day = ""; year = ""; note = ""; personId = null; remind = null } else onDone()
                 }
-            }, Modifier.weight(1f), accent, enabled = title.isNotBlank() && month.isNotBlank() && day.isNotBlank(), compact = true)
-            if (initial != null) {
-                PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            } else if (presetPerson != null) PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-        }
+            }
+        }, accent, enabled = title.isNotBlank() && month.isNotBlank() && day.isNotBlank())
+        if (initial != null) Actions {
+            PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        } else if (presetPerson != null) PixelButton("Cancel", onDone, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
@@ -657,13 +673,13 @@ private fun FollowUpsView(model: AppModel) {
     var title by remember { mutableStateOf("") }
     var newDue by remember { mutableStateOf<LocalDate?>(null) }
     var openId by remember { mutableStateOf(jump?.id) }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
-                PixelButton("Add", { if (link.addFollowUp(title, null, newDue).record != null) { title = ""; newDue = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
+    FormBox {
+        FormStack {
+            FormGroup {
+                PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Follow-up", placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
+                DateField("Day", newDue, { newDue = it }, today, accent, optional = true)
             }
-            DateField("Day", newDue, { newDue = it }, today, accent, optional = true)
+            FormSave("Add", { if (link.addFollowUp(title, null, newDue).record != null) { title = ""; newDue = null; model.haptic() } }, accent, enabled = title.isNotBlank())
         }
     }
     TextBox {
@@ -700,20 +716,27 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
     var personId by remember(f.id) { mutableStateOf(f.personId) }
     var asking by remember(f.id) { mutableStateOf(false) }
     var message by remember(f.id) { mutableStateOf<String?>(null) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.padding(bottom = Spacing.S)) {
+    var more by remember(f.id) { mutableStateOf(f.note.isNotBlank() || f.personId != null) }
+    FormStack(Modifier.padding(bottom = Spacing.S)) {
         if (asking) {
             Confirm("Delete this follow-up?", "Delete", onConfirm = { link.deleteFollowUp(f.id); onDone() }, onKeep = { asking = false })
-            return@Column
+            return@FormStack
         }
-        PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
-        DateField("Day", due, { due = it }, model.store.today, accent, optional = true)
-        PersonPicker(data.people, personId) { personId = it }
-        PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", minLines = 2, keyboardOptions = sentenceKeys)
+        FormGroup {
+            PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
+            DateField("Day", due, { due = it }, model.store.today, accent, optional = true)
+        }
+        FormDisclosure("Additional details", more, { more = !more }) {
+            FormGroup {
+                PersonPicker(data.people, personId) { personId = it }
+                PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", minLines = 2, keyboardOptions = sentenceKeys)
+            }
+        }
+        FormSave("Save", {
+            val out = link.updateFollowUp(f.copy(title = title, due = due, note = note, personId = personId))
+            if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
+        }, accent, enabled = title.isNotBlank())
         Actions {
-            PixelButton("Save", {
-                val out = link.updateFollowUp(f.copy(title = title, due = due, note = note, personId = personId))
-                if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
-            }, Modifier.weight(1f), accent, enabled = title.isNotBlank(), compact = true)
             if (f.status == FollowUpStatus.OPEN && planTask(model, f) == null) PixelButton("Cancel it", { link.cancel(f.id); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
@@ -753,10 +776,7 @@ private fun LinkSettingsView(model: AppModel) {
             PixelTitle("Reminders")
             ToggleRow("Remind me about dates and follow-ups", data.settings.reminders) { link.setReminders(it) }
             if (data.settings.reminders) {
-                SectionLabel("At")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    listOf(8, 9, 12, 18, 20).forEach { h -> Chip("${h.toString().padStart(2, '0')}:00", h == data.settings.reminderHour, { link.setReminderHour(h) }) }
-                }
+                PixelChoice(listOf(8, 9, 12, 18, 20), data.settings.reminderHour, { "${it.toString().padStart(2, '0')}:00" }, { h -> if (h != null) link.setReminderHour(h) }, label = "At", key = accent)
                 ToggleRow("Name it", data.settings.reminderNames) { link.setReminderNames(it) }
             }
         }
