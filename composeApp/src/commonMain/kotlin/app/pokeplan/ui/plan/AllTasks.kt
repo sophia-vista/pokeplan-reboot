@@ -32,6 +32,7 @@ import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.LocalDate
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 
 /** Rows shown at most; a search or a filter narrows the rest down. */
@@ -69,10 +70,11 @@ internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskF
                 CategoryChips(filter.category, allowNone = true) { onChange(filter.copy(category = it)) }
                 if (lists.isNotEmpty()) {
                     FieldLabel("List")
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        val choices = listOf("Inbox" to TaskFilter.INBOX) + lists.map { it.name to it.id }
-                        choices.forEach { (name, id) -> TabButton(name, filter.listId == id, { onChange(filter.copy(listId = if (filter.listId == id) null else id)) }) }
-                    }
+                    PixelDropdown(
+                        listOf<String?>(null, TaskFilter.INBOX) + lists.map { it.id }, filter.listId,
+                        { id -> when (id) { null -> "All"; TaskFilter.INBOX -> "Inbox"; else -> lists.firstOrNull { it.id == id }?.name ?: "" } },
+                        { onChange(filter.copy(listId = it)) }, Modifier.fillMaxWidth(),
+                    )
                 }
                 FieldLabel("Difficulty")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = Alignment.CenterVertically) {
