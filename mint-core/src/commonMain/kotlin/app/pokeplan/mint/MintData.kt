@@ -14,7 +14,7 @@ enum class AccountType(val label: String, val liability: Boolean = false, val li
     DIGITAL_BANK("Digital bank"),
     CASH("Cash"),
     CREDIT_CARD("Credit card", liability = true, liquid = false),
-    PAY_LATER("Pay later (BNPL)", liability = true, liquid = false),
+    PAY_LATER("Pay later", liability = true, liquid = false),
     LOAN("Loan", liability = true, liquid = false),
     OTHER_ASSET("Other asset", liquid = false),
     OTHER_LIABILITY("Other liability", liability = true, liquid = false),

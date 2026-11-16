@@ -112,6 +112,10 @@ Show information in this order, adapting to available data:
 
 Avoid displaying every metric simultaneously. Empty states should offer the next useful action, not a tour of every feature.
 
+### 3.2A Overview breakdown and quick hide (owner, 15 November 2026)
+
+The Overview box on the main Mint screen has a **quick hide** button (an eye) in its title row that turns "hide values" (3.3) on and off in one tap, from the same setting as Settings, so every amount in Mint follows it at once. **Tapping the Overview box** opens its **breakdown** for the Overview's currency, so each figure can be traced to its parts: **net position** = assets less liabilities, listed account by account (name, group, balance) under Assets and Liabilities, with accounts hidden from the total (4.3B) shown apart as "Not in total" and left out of the sums; then **available money** = liquid accounts less bills due and **installments due** within 14 days (the counts shown), with the credit lines' limits, owed and available credit as information below it (a limit is in no total). Every amount goes through the same hide setting. The breakdown is read-only, derives everything from the records (`MintRules.breakdown`) and stores nothing.
+
 ### 3.3 Financial value privacy
 
 Provide a global MINT privacy toggle to hide monetary values across every MINT destination, widgets and supported MINT surfaces. When hidden:
@@ -130,7 +134,7 @@ Provide a global MINT privacy toggle to hide monetary values across every MINT d
 - Digital bank account.
 - Cash wallet or physical cash.
 - Credit card.
-- **Pay later** (buy now, pay later: SPayLater, Atome, Tabby-style and other BNPL lines; owner, 15 November 2026): a credit **liability**, never a wallet (5.6A).
+- **Pay later** (labelled "Pay later"; buy now, pay later: SPayLater, Atome, Tabby-style and other BNPL lines; owner, 15 November 2026): a credit **liability**, never a wallet (5.6A).
 - Loan or other liability.
 - Other user-defined asset or liability account.
 
@@ -317,7 +321,7 @@ A **Pay later** account (`AccountType.PAY_LATER`, such as SPayLater) is a credit
 
 **Installments already owed (owner, 15 November 2026).** When the player starts tracking a pay-later or card account that already has installments running (for example the next three months of SPayLater), they add them as an **existing schedule**: the player enters, for each upcoming installment, its due day, the amount still owed (principal) and optionally a fee on top. It makes a plan **with no purchase record** (`InstallmentPlan.purchaseTxId` is null; the price is the sum of the amounts) because the purchase happened before tracking: it is **not spending** and nothing is recorded as an expense. What is owed is added to the account's **starting balance owed** (the opening balance, 4.2) so the outstanding equals what the schedule asks; the form says so, and offers to leave the opening balance alone for a player who already typed the whole owed amount there. From then on the plan behaves like any other: Pay (a transfer from the payment source), Bill it, Late fee, Edit, Refund and Delete work the same, and a fee is recorded when billed or reached by a payment (so a fee on top is not in the starting balance). Deleting such a plan removes only the schedule; the opening balance stays as it is.
 
-Information only for reminders: no reminder is made from an installment in this version (open item).
+**Installment reminders** (owner, 15 November 2026): with bill reminders on (12) an unpaid installment with something still owed asks for one reminder like a bill occurrence, on the installment's due day less the lead, at the chosen hour; it stops when the installment is paid, cancelled or its plan is deleted, never repeats for an overdue one, and uses the same words and name setting as a bill (never an amount, an account or a merchant).
 
 ### 5.7 Splits, duplicates and edits
 
