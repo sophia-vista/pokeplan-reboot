@@ -143,12 +143,12 @@ fun PixelDateTimeField(
 
 /**
  * One moment on the phone's clock, typed or picked as a day and a time (an activity's end, a night's wake-up, a drink). The
- * day is never after today and, unless [future] is true, the time is never later than [nowMillis]. [nowKey] adds a "Now" key.
+ * day is never after today and, unless [future] is true, the time is never later than [nowMillis].
  */
 @Composable
 fun PixelMomentField(
     millis: Long, onChange: (Long) -> Unit, nowMillis: Long, accent: Color, modifier: Modifier = Modifier, label: String? = null,
-    zone: kotlinx.datetime.TimeZone = kotlinx.datetime.TimeZone.currentSystemDefault(), future: Boolean = false, nowKey: Boolean = true,
+    zone: kotlinx.datetime.TimeZone = kotlinx.datetime.TimeZone.currentSystemDefault(), future: Boolean = false,
     dayPresets: List<Pair<String, Int>> = listOf("Today" to 0, "Yesterday" to -1),
 ) {
     val at = millis.toLocalDateTime(zone)
@@ -164,6 +164,5 @@ fun PixelMomentField(
             at.time, { t -> t?.let { onChange(moment(at.date, it)) } }, accent,
             reject = { t -> if (!future && at.date == now.date && t > now.time) "That time has not happened yet" else null },
         )
-        if (nowKey) PixelButton("Now", { onChange(nowMillis - nowMillis % 60_000L) }, color = Pixel.InkSoft, compact = true)
     }
 }

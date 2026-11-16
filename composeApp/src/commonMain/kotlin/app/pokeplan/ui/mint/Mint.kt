@@ -103,6 +103,13 @@ import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.PixelDateField
 import app.pokeplan.ui.screens.PixelDropdown
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormDisclosure
+import app.pokeplan.ui.screens.FormDivider
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.FormSave
+import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.PixelMomentField
 import app.pokeplan.ui.screens.ScreenLockGate
 import app.pokeplan.ui.screens.ScreenSwitch
@@ -596,6 +603,7 @@ internal fun QrFullScreen(name: String, bitmap: androidx.compose.ui.graphics.Ima
 /** How many records the Activity list shows at a time; "Show more" adds another page. */
 private const val PAGE = 50
 
+private val mainTypes = listOf(TxType.EXPENSE, TxType.INCOME, TxType.TRANSFER)
 private val quickTypes = listOf(TxType.EXPENSE, TxType.INCOME, TxType.TRANSFER, TxType.REFUND, TxType.FEE, TxType.ADJUSTMENT)
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -613,7 +621,6 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     // null: it happened just now (read when Save is pressed).
     var payAt by remember { mutableStateOf<Long?>(null) }
     var more by remember { mutableStateOf(false) }
-    var addingCategory by remember { mutableStateOf(false) }
     var showFilter by remember { mutableStateOf(false) }
     var payee by remember { mutableStateOf(startPayee) }
     var note by remember { mutableStateOf("") }
@@ -661,62 +668,70 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else { message = null; model.say("Saved."); payAt = null; amount = ""; payee = ""; note = ""; more = false; model.haptic() }
     }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+    val otherTypes = quickTypes.filter { it !in mainTypes }
+    FormBox {
+        FormStack {
+            // The figure first and largest, then the form's groups: what it is, where it goes, when, and the rest behind one row.
             PixelField(
                 amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = currency, placeholder = "0.00",
             )
-            PixelDropdown(quickTypes, type, { it?.label ?: "" }, { t -> if (t != null) { type = t; categoryId = null; planId = null } }, Modifier.fillMaxWidth(), key = accent)
-            SectionLabel(if (type == TxType.TRANSFER) "From" else "Account")
-            PixelDropdown(open.map { it.id }, from?.id, { id -> open.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) { accountId = id; if (toId == id) toId = null } }, Modifier.fillMaxWidth(), key = accent)
-            if (type == TxType.TRANSFER) {
-                SectionLabel("To")
-                if (targets.isEmpty()) Text("Add a second account in the same currency.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
-                if (targets.isNotEmpty()) PixelDropdown(targets.map { it.id }, to?.id, { id -> targets.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) { toId = id; planId = null } }, Modifier.fillMaxWidth(), key = accent)
-                if (plansOwed.isNotEmpty()) {
-                    SectionLabel("Pay for")
-                    PixelDropdown(
+            FormDivider()
+            FormGroup {
+                PixelChoice(mainTypes, type.takeIf { it in mainTypes }, { it?.label ?: "" }, { t -> if (t != null) { type = t; categoryId = null; planId = null } }, label = "Transaction type", key = accent)
+                PixelDropdown(
+                    open.map { it.id }, from?.id, { id -> open.firstOrNull { it.id == id }?.name ?: "" },
+                    { id -> if (id != null) { accountId = id; if (toId == id) toId = null } }, Modifier.fillMaxWidth(), key = accent, label = if (type == TxType.TRANSFER) "From" else "Account",
+                )
+                if (type == TxType.TRANSFER) {
+                    if (targets.isEmpty()) Text("Add a second account in the same currency.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
+                    if (targets.isNotEmpty()) PixelDropdown(
+                        targets.map { it.id }, to?.id, { id -> targets.firstOrNull { it.id == id }?.name ?: "" },
+                        { id -> if (id != null) { toId = id; planId = null } }, Modifier.fillMaxWidth(), key = accent, label = "To",
+                    )
+                    if (plansOwed.isNotEmpty()) PixelDropdown(
                         listOf<String?>(null) + plansOwed.map { it.plan.id }, payPlanView?.plan?.id,
                         { id -> plansOwed.firstOrNull { it.plan.id == id }?.let { v -> "${v.plan.name}, next ${Money.plain(v.next!!.remainingMinor, v.plan.currency)}" } ?: "No plan" },
                         { id ->
                             val v = plansOwed.firstOrNull { it.plan.id == id }
                             if (v == null) planId = null else { planId = v.plan.id; amount = Money.plain(v.next!!.remainingMinor, v.plan.currency) }
                         },
-                        Modifier.fillMaxWidth(), key = accent,
+                        Modifier.fillMaxWidth(), key = accent, label = "Pay for",
                     )
-                }
-            } else if (type == TxType.ADJUSTMENT) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    Chip("Balance goes up", up, { up = true }, Modifier.weight(1f)); Chip("Balance goes down", !up, { up = false }, Modifier.weight(1f))
-                }
-            } else {
-                val kind = if (type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
-                val usable = data.categories.filter { it.kind == kind && !it.archived }
-                // The few used last come first, then the rest.
-                val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
-                val ordered = (recent + usable).distinct()
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                } else if (type == TxType.ADJUSTMENT) {
+                    PixelChoice(listOf(true, false), up, { if (it == true) "Balance goes up" else "Balance goes down" }, { if (it != null) up = it }, label = "Change", key = accent)
+                } else {
+                    val kind = if (type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
+                    val usable = data.categories.filter { it.kind == kind && !it.archived }
+                    // The few used last come first, then the rest.
+                    val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
+                    val ordered = (recent + usable).distinct()
                     PixelDropdown(
                         listOf<String?>(null) + ordered.map { it.id }, categoryId,
                         { id -> ordered.firstOrNull { it.id == id }?.name ?: "None" }, { id -> categoryId = id },
-                        Modifier.weight(1f), key = accent,
+                        Modifier.fillMaxWidth(), key = accent, label = "Category",
                     )
-                    PixelButton(if (addingCategory) "Cancel" else "New", { addingCategory = !addingCategory }, color = Pixel.InkSoft, compact = true)
                 }
-                if (addingCategory) NewCategoryRow(mint, kind) { categoryId = it.id; addingCategory = false }
             }
             PixelMomentField(payAt ?: model.store.nowMillis, { payAt = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
-            if (type == TxType.EXPENSE && from != null && Installments.allowedFor(from.type)) ToggleRow("Pay in installments", inInstallments) { inInstallments = it }
-            if (installmentMode) {
-                PixelField(payee, { payee = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-                InstallmentTerms(model, from!!, terms, Money.parse(amount, currency), (payAt ?: model.store.nowMillis).toLocalDateTime(zone).date)
-            } else PixelButton(if (more) "Fewer options" else "Payee and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more && !installmentMode) {
-                PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-                PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+            FormDisclosure("Additional details", more || installmentMode, { more = !more }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelDropdown(
+                        listOf<TxType?>(null) + otherTypes, type.takeIf { it in otherTypes }, { it?.label ?: "Expense, income or transfer" },
+                        { t -> if (t != null) { type = t; categoryId = null; planId = null } else if (type in otherTypes) { type = TxType.EXPENSE; categoryId = null; planId = null } },
+                        Modifier.fillMaxWidth(), key = accent, label = "Other kind of entry",
+                    )
+                    if (type == TxType.EXPENSE && from != null && Installments.allowedFor(from.type)) ToggleRow("Pay in installments", inInstallments) { inInstallments = it; if (it) more = true }
+                    if (installmentMode) {
+                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+                        InstallmentTerms(model, from!!, terms, Money.parse(amount, currency), (payAt ?: model.store.nowMillis).toLocalDateTime(zone).date)
+                    } else {
+                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+                        PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+                    }
+                }
             }
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = amount.isNotBlank() && (!installmentMode || payee.isNotBlank()))
+            FormSave("Save", ::save, ModuleAccent.MINT.accent, enabled = amount.isNotBlank() && (!installmentMode || payee.isNotBlank()))
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -785,7 +800,7 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
             PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true)
             PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
-            PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When", nowKey = false)
+            PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
             val accounts = model.mintData.accounts.filter { (it.status == AccountStatus.ACTIVE && it.currency == t.currency) || it.id == t.accountId }
             if (accounts.size > 1 && t.type != TxType.TRANSFER) {
                 SectionLabel("Account")

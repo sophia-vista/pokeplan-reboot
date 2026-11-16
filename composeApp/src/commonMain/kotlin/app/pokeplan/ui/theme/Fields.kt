@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -60,6 +61,9 @@ fun PixelField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    /** The one figure a form is about (an amount): larger letters and a taller field, with [prefix] (a currency sign) in front. */
+    large: Boolean = false,
+    prefix: String? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -70,7 +74,7 @@ fun PixelField(
         !enabled -> Pixel.Border.copy(alpha = 0.5f)
         else -> Pixel.Border
     }
-    val body = MaterialTheme.typography.bodyLarge.copy(color = if (enabled) Pixel.Ink else off, baselineShift = androidx.compose.ui.text.style.BaselineShift.None)
+    val body = (if (large) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyLarge).copy(color = if (enabled) Pixel.Ink else off, baselineShift = androidx.compose.ui.text.style.BaselineShift.None)
     val soft = MaterialTheme.typography.bodyMedium
     Column(modifier.semantics { if (error != null) error(error) }, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         if (label != null) Text(label, style = soft, color = if (error != null) Pixel.Danger else Pixel.InkSoft)
@@ -85,8 +89,13 @@ fun PixelField(
                 Box(Modifier.defaultMinSize(minHeight = Spacing.Target).padding(horizontal = Spacing.M, vertical = Spacing.S), contentAlignment = Alignment.CenterStart) {
                     // A text field draws its own text, which ignores the style's baseline shift, so the same lift is made here.
                     Box(Modifier.offset(y = (-2.25).dp)) {
-                        if (value.isEmpty() && placeholder != null) Text(placeholder, style = body.copy(color = Pixel.InkSoft))
-                        inner()
+                        if (prefix != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            Text(prefix, style = body.copy(color = Pixel.InkSoft))
+                            Box { if (value.isEmpty() && placeholder != null) Text(placeholder, style = body.copy(color = Pixel.InkSoft)); inner() }
+                        } else {
+                            if (value.isEmpty() && placeholder != null) Text(placeholder, style = body.copy(color = Pixel.InkSoft))
+                            inner()
+                        }
                     }
                 }
             },

@@ -202,6 +202,19 @@ The following are canonical component families. Implement shared variants rather
 - Do not use dialogue-box framing to make fields cramped; writing and data entry need comfortable content width.
 - **Exact entry (owner, 12 November 2026: "I am a very exact person"):** every date, time of day and length can be typed, never only picked from keys or nudged by a stepper. A date field (`PixelDateField`) is quick keys, a month to tap *and* a text box taking `2026-11-07`, `7/11/2026` (day first, four-digit year) or `7 Nov 2026`; a time field (`PixelTimeField`) takes `9`, `930`, `21:05`, `9:30 pm`, `noon`; a length field (`PixelDurationField`) takes `45`, `1h30`, `1:30`; a moment (`PixelMomentField`) is a day and a time. Each reads back what it understood ("Thu 12 Nov 2026", "9:30 am", "1 h 30 min") and says what it takes when the text is not yet a value; a valid value is applied at once, so Save always reads what is on the screen. The rules are `ExactInput` in app-core (tested once, every spelling). A number that could be read two ways is never guessed. Whatever a record's date or time is when it is made, it can be corrected afterwards; a correction never pays and never takes back (rewards follow the first save).
 
+### 6.4A Forms (owner, 16 November 2026)
+
+Every form is built from the form kit (`screens/Form.kt`) and follows eight principles; the reference is Mint's Add transaction (`ActivityView`).
+
+1. **Prioritize:** the figure or name the form is about comes first and is the largest (`PixelField(large = true, prefix = ...)` for an amount), above a thin `FormDivider`.
+2. **Group:** related fields sit in a `FormGroup` ([Spacing.S] apart); groups are [Spacing.L] apart in a `FormStack`. No stray key hangs alone on a line.
+3. **Label:** every field, dropdown and choice has one small soft label above it (`FieldLabel` / `FormLabel`, the same voice as `PixelField`'s). Section titles in the big font are for sections of a screen, not for a field.
+4. **Consolidate:** one control per decision. One of a few is a `PixelChoice` (a segmented row for up to four labels of nine letters or fewer, else a `PixelDropdown`); a second control that does the same thing (a toggle beside a dropdown, a "more" key beside a list) is merged into the first.
+5. **Progressively disclose:** optional and advanced fields (payee, note, rare kinds, a second way to enter) sit behind one `FormDisclosure` row ("Additional details", a chevron), closed until asked for or until what the form holds needs them.
+6. **Standardize:** 48 dp fields, keys and dropdowns; one label style; one gap; one full-width `FormSave` at the bottom in the module's colour.
+7. **Respect mobile space:** a form is a column of 48 dp rows, with segmented and inline pairs (a time and its "Now") sharing a line instead of stacking big square controls; `FormBox` keeps the dialogue frame but with 16 dp inside it, not 24.
+8. **Preserve context:** the frame, stair corners, pixel fonts and module colour stay; framing never costs a field its width.
+
 ### 6.5 Lists and list rows
 
 - Shared `ListRow`, `SettingRow`, `TaskRow`, `DataRow` and `SelectableRow` patterns.
