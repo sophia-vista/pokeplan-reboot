@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.210.0
+
+MINT widgets and overview counts (owner requests, 16 November 2026, REP-039; `MINT.md` 3.2B, 22G). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change and no migration: the new settings are JSON with defaults in the sealed records, so the old behaviour stays until changed. Not run on a device.
+
+- **Widgets:** two Glance widgets in `widgets/GlanceWidgets.kt`. "Mint" shows available money, net position, and the due total and count; "Mint due" lists the next bills and installments. Both follow Hide amounts (dots; counts and dates stay) and the screen-lock gate (the widget says "Locked" and shows no figure), read the sealed Mint records read-only and refresh in `updateWidgets`.
+- **Overview counts:** a new Mint Settings box "Overview counts" with two choices. Bills and installments due window: next 14 days (default), next 30 days, rest of this month, until end of next month. "Pay later in net position": whole balance (default), only what is due in the window, not counted; credit cards always count in full. So a whole pay later balance need not show in the Overview.
+- **Code:** `mint-core` `OverviewCounts.kt` (`OverviewWindow`, `PayLaterCount`, `OverviewCounts`, `OverviewSummary`); `MintRules.netPosition(data, today)` and `breakdown` use it; `MintSettings.overviewWindow/overviewPayLater`; `MintStore.setOverviewWindow/setOverviewPayLater`; `OverviewCountsBox` in `ui/mint/Overview.kt`.
+
 ## 0.209.0
 
 MINT installments from Activity and Bills, installment reminders, overview breakdown (owner requests, 16 November 2026, REP-039 neighbourhood; `MINT.md` 3.2A, 4.1, 5.6A, 22F). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change and no migration.
