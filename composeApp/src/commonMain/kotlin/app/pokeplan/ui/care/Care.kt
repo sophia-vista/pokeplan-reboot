@@ -99,6 +99,7 @@ import app.pokeplan.ui.screens.MenuGrid
 import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PixelDateField
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.PixelMomentField
 import app.pokeplan.ui.screens.PixelTimeField
 import app.pokeplan.ui.screens.ScreenSwitch
@@ -927,10 +928,7 @@ private fun TrendsView(model: AppModel) {
                 Text("No ratings yet", style = MaterialTheme.typography.bodyLarge)
                 return@Column
             }
-            @OptIn(ExperimentalLayoutApi::class)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Emotion.entries.forEach { e -> TabButton(e.label, e == emotion, { emotion = e }) }
-            }
+            PixelDropdown(Emotion.entries.toList(), emotion, { it?.label ?: "" }, { e -> if (e != null) emotion = e }, Modifier.fillMaxWidth())
             weeks.asReversed().filter { it.averages[emotion] != null }.forEach { w ->
                 val avg = w.averages[emotion]
                 val label = if (avg == null) "not rated" else "${emotion.label} ${(avg * 10).roundToInt() / 10.0} of 5, ${w.cards} card${if (w.cards == 1) "" else "s"}"

@@ -91,6 +91,7 @@ import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.ModuleTabs
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.RecordRow
 import app.pokeplan.ui.screens.Rule
 import app.pokeplan.ui.screens.ScreenSwitch
@@ -385,10 +386,7 @@ private fun AreaChips(areas: List<BaseArea>, selected: String?, onPick: (String?
     val shown = areas.filter { !it.archived || it.id == selected }
     if (shown.isEmpty()) return
     SectionLabel("Area")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Chip("None", selected == null, { onPick(null) })
-        shown.forEach { a -> Chip(a.name, a.id == selected, { onPick(a.id) }) }
-    }
+    PixelDropdown(listOf<String?>(null) + shown.map { it.id }, selected, { id -> shown.firstOrNull { it.id == id }?.name ?: "None" }, onPick, Modifier.fillMaxWidth(), key = accent)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -397,10 +395,7 @@ private fun AssetChips(assets: List<Asset>, selected: String?, onPick: (String?)
     val shown = assets.filter { !it.archived || it.id == selected }
     if (shown.isEmpty()) return
     SectionLabel("Item")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Chip("None", selected == null, { onPick(null) })
-        shown.forEach { a -> Chip(a.name, a.id == selected, { onPick(a.id) }) }
-    }
+    PixelDropdown(listOf<String?>(null) + shown.map { it.id }, selected, { id -> shown.firstOrNull { it.id == id }?.name ?: "None" }, onPick, Modifier.fillMaxWidth(), key = accent)
 }
 
 // ----- Chores -----------------------------------------------------------------------------------------------------------------
@@ -431,10 +426,7 @@ private fun ChoresView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ModuleTabs(listOf("Due", "Later", "History"), tab, accent) { tab = it; openId = null }
             val usedAreas = data.areas.filter { a -> !a.archived && data.chores.any { it.areaId == a.id } }
-            if (usedAreas.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("All areas", area == null, { area = null })
-                usedAreas.forEach { a -> Chip(a.name, area == a.id, { area = if (area == a.id) null else a.id }) }
-            }
+            if (usedAreas.isNotEmpty()) PixelDropdown(listOf<String?>(null) + usedAreas.map { it.id }, area, { id -> usedAreas.firstOrNull { it.id == id }?.name ?: "All areas" }, { area = it }, Modifier.fillMaxWidth(), key = accent)
             when (tab) {
                 0, 1 -> {
                     val rows = if (tab == 0) due else upcoming
@@ -762,10 +754,7 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
         if (more) {
             if (adding) PixelField(quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Quantity, blank if unknown", singleLine = true, keyboardOptions = decimalKeys)
             SectionLabel("Unit")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("None", unit.isEmpty(), { unit = "" })
-                (data.settings.units + unit).filter { it.isNotBlank() }.distinct().forEach { u -> Chip(u, u == unit, { unit = u }) }
-            }
+            PixelDropdown(listOf<String?>(null) + (data.settings.units + unit).filter { it.isNotBlank() }.distinct(), unit.ifEmpty { null }, { it ?: "None" }, { unit = it ?: "" }, Modifier.fillMaxWidth(), key = accent)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(newUnit, { newUnit = it.take(16) }, Modifier.weight(1f), placeholder = "Another unit", singleLine = true)
                 PixelButton("Add unit", { home.addUnit(newUnit); if (newUnit.isNotBlank()) { unit = newUnit.trim(); newUnit = "" } }, color = Pixel.InkSoft, enabled = newUnit.isNotBlank(), compact = true)

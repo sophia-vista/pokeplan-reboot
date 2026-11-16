@@ -24,6 +24,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ContactSource
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.screens.Actions
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.RecordRow
 import app.pokeplan.ui.screens.Rule
 import app.pokeplan.ui.screens.TabButton
@@ -133,10 +134,13 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
                         trail = { PixelToggle(on) },
                     )
                     if (on && row.kind == ImportKind.MAYBE) {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            row.matches.forEach { m -> TabButton("Same as ${LinkRules.displayName(m)}", sameAs[row.key()] == m.id, { sameAs = sameAs + (row.key() to m.id) }, key = accent) }
-                            TabButton("New person", row.key() !in sameAs, { sameAs = sameAs - row.key() }, key = accent)
-                        }
+                        val matchIds = row.matches.map { it.id }
+                        PixelDropdown(
+                            listOf(null) + matchIds, sameAs[row.key()],
+                            { id -> row.matches.firstOrNull { it.id == id }?.let { "Same as ${LinkRules.displayName(it)}" } ?: "New person" },
+                            { id -> sameAs = if (id == null) sameAs - row.key() else sameAs + (row.key() to id) },
+                            Modifier.fillMaxWidth(), key = accent,
+                        )
                     }
                 }
                 if (rows.size > shown) PixelButton("Show ${minOf(IMPORT_PAGE, rows.size - shown)} more of ${rows.size - shown}", { shown += IMPORT_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

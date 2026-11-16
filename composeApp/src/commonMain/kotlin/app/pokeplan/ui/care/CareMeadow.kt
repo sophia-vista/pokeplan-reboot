@@ -48,7 +48,7 @@ import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.PixelTitle
-import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import app.pokeplan.ui.plan.EmptyState
@@ -236,13 +236,15 @@ internal fun PlayView(model: AppModel, initial: String?) {
             }
             if (inviting) {
                 SectionLabel("Invite from your collection")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     val buddyId = model.data.player.buddyId
                     // Anyone you own, the buddy first, then by friendship; "Show more" reaches the rest (a visitor is visited in the Meadow, not here).
                     val ordered = (listOfNotNull(all.firstOrNull { it.id == buddyId }) + all.sortedByDescending { it.friendship }).distinctBy { it.id }
-                    ordered.take(invited).forEach { p ->
-                        TabButton(p.nickname, p.id == chosen, { chosen = p.id; inviting = false; activity = null; result = null })
-                    }
+                    PixelDropdown(
+                        ordered.take(invited), ordered.firstOrNull { it.id == chosen }, { it?.nickname ?: "" },
+                        { p -> if (p != null) { chosen = p.id; inviting = false; activity = null; result = null } },
+                        Modifier.fillMaxWidth(),
+                    )
                     if (ordered.size > invited) PixelButton("Show more", { invited += 24 }, color = Pixel.InkSoft, compact = true)
                 }
             }
@@ -250,7 +252,11 @@ internal fun PlayView(model: AppModel, initial: String?) {
             if (running == null) {
                 val suggested = care.suggestion(pokemon.id)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PlayActivity.entries.forEach { a -> TabButton(a.label, a == suggested, { activity = a; taps = 0; result = null }) }
+                    PixelDropdown(
+                        PlayActivity.entries.toList(), suggested, { it?.label ?: "" },
+                        { a -> if (a != null) { activity = a; taps = 0; result = null } },
+                        Modifier.fillMaxWidth(),
+                    )
                     PixelButton("Surprise me", { activity = care.surprise(pokemon.id); taps = 0; result = null }, color = Pixel.Tone, compact = true)
                 }
             } else {
