@@ -1975,6 +1975,8 @@ class ScreenshotTest {
                 app.pokeplan.ui.screens.TabButton("Open", false, {}); app.pokeplan.ui.screens.TabButton("Done", true, {}); app.pokeplan.ui.screens.TabButton("Any", false, {}, enabled = false)
                 app.pokeplan.ui.plan.ArrowButton("‹", "Back", true) {}; app.pokeplan.ui.plan.ArrowButton("›", "Next", false) {}
             }
+            app.pokeplan.ui.screens.PixelDropdown(listOf<String?>(null, "Weekly", "Monthly"), null, { it ?: "All" }, {})
+            app.pokeplan.ui.screens.PixelDropdown(listOf<String?>("Groceries and household supplies for the month"), "Groceries and household supplies for the month", { it ?: "" }, {})
             app.pokeplan.ui.plan.CategoryChips(app.pokeplan.plan.Category.entries[1]) {}
             app.pokeplan.ui.plan.Segmented(listOf("Day", "Week", "Month"), 1) {}
             Text("Rows", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
