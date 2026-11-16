@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.211.0
+
+Dropdowns for long single-choice rows (owner request, 16 November 2026; rule in `docs/pokelife/FEATURES/DESIGN_SYSTEM.md`). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change. Not run on a device.
+
+- **New `PixelDropdown`** (`composeApp` `screens/Tabs.kt`): one key showing the choice and a chevron; it opens a stair-cornered scrolling list as wide as the key, the chosen row ticked. An All/None pill becomes the first entry.
+- **Converted** (single-choice pill rows that could grow or run long): Plan (task list filter, move to list, goal link), World (job regions, Notebook layers, journal kinds), Pokémon (PC sort and Where, Pokédex region/National and generation), Gear (tool categories, converter categories, QR repair level, everyday sums), Care (emotion, invite Pokémon, play activity), Heal (activity type, goal kind), Base (areas, assets, chores area filter, supply unit), Link (people category filter and picker, month, "Same as" in contact import), Mint (account type, currencies, accounts, categories, plans, frequency, budgets, filters, overview, import).
+- **Kept as pills:** 2 to 4 short options, multi-select toggles, date and time presets, view tabs.
+- **Behaviour change:** the Base chores area filter and the Mint income category no longer clear by tapping the active one again; choose All areas / None. Mint's category chips lost their More/Fewer toggle: every category is in the list, with New beside it.
+
 ## 0.210.1
 
 Fix (owner report, 16 November 2026): a recurring income (a salary, `Bill.income`) was counted as a bill to pay. `MintRules.available` took it off available money as a "bill due", which the longer Overview windows of 0.210.0 made much worse (a monthly salary inside "until the end of next month" cut available money by its amount); the Overview's upcoming list, the Mint widgets' due total, count and list, and Home's "bills to settle" count included it too. Income is now left out of all of them (it stays on the Bills and income screen as money expected, and is posted only when received, as before). `OverviewCountsTest` covers it. Bill reminders still include income bills the player has not switched off. No schema change, no reward change.
