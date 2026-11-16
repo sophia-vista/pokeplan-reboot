@@ -105,6 +105,10 @@ import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.PixelDropdown
+import app.pokeplan.ui.screens.FormDisclosure
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.TaskTitleLine
 import app.pokeplan.ui.screens.dayNames
 import app.pokeplan.ui.screens.label
@@ -335,7 +339,7 @@ fun EmptyState(
 @Composable
 fun DifficultyPicker(selected: Rank, onSelect: (Rank) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-        Text("How hard does it feel?", style = MaterialTheme.typography.bodyLarge)
+        FieldLabel("How hard does it feel?")
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Rank.entries.forEach { r -> RankBadge(r, selected = r == selected, onClick = { onSelect(r) }) }
         }
@@ -488,10 +492,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
                 DifficultyPicker(rank) { rank = it }
-                FieldLabel("Repeat")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    RepeatKind.PICKABLE.forEach { k -> TabButton(k.label, repeat == k, { repeat = k }) }
-                }
+                PixelChoice(RepeatKind.PICKABLE.toList(), repeat, { it?.label ?: "" }, { k -> if (k != null) repeat = k }, label = "Repeat")
             }
         }
     }
@@ -589,11 +590,10 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
             Text("Moved from ${from.short()}: this one only.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
         if (store.activeLists.isNotEmpty()) {
-            FieldLabel("List")
             PixelDropdown(
                 listOf<String?>(null) + store.activeLists.map { it.id }, task.listId,
                 { id -> if (id == null) "Inbox" else store.activeLists.firstOrNull { it.id == id }?.name ?: "" },
-                { store.moveToList(task.id, it) }, Modifier.fillMaxWidth(),
+                { store.moveToList(task.id, it) }, Modifier.fillMaxWidth(), label = "List",
             )
         }
         var more by remember(task.id) { mutableStateOf(false) }
@@ -688,23 +688,31 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
     var dueDay by remember(task.id) { mutableStateOf(task.due?.date) }
     // A deadline keeps its time of day; with none typed it is the end of that day (23:59).
     var dueTime by remember(task.id) { mutableStateOf(task.due?.time?.takeIf { it != LocalTime(23, 59) }) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Title")
-        PixelField(
-            notes, { notes = it }, Modifier.fillMaxWidth(), minLines = 2, maxLines = 6, placeholder = "Notes",
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-        )
-        DifficultyPicker(rank) { rank = it }
-        FieldLabel("Category")
-        CategoryChips(category) { category = it ?: category }
-        GoalChoice(model, task)
-        // A deadline is not the day you plan to do it (that is "Move to"); with no time it is the end of that day, 23:59.
-        PixelDateTimeField(
-            dueDay, dueTime, store.today, Pixel.Tone, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
-            noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
-            dayPresets = PlanDays.presets(store.today), pickLabel = "Pick a day",
-        )
-        PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Tone, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
+    var detailsOpen by remember(task.id) { mutableStateOf(task.notes.isNotBlank() || task.due != null || task.estimateMinutes != null || store.goalOf(task.id) != null) }
+    FormStack {
+        // The words first, then how hard and what kind; the rest waits behind one row.
+        FormGroup {
+            PixelField(title, { title = it }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, placeholder = "Title")
+            DifficultyPicker(rank) { rank = it }
+            FieldLabel("Category")
+            CategoryChips(category) { category = it ?: category }
+        }
+        FormDisclosure("Additional details", detailsOpen, { detailsOpen = !detailsOpen }) {
+            FormGroup {
+                PixelField(
+                    notes, { notes = it }, Modifier.fillMaxWidth(), label = "Notes", minLines = 2, maxLines = 6, placeholder = "Notes",
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                )
+                GoalChoice(model, task)
+                // A deadline is not the day you plan to do it (that is "Move to"); with no time it is the end of that day, 23:59.
+                PixelDateTimeField(
+                    dueDay, dueTime, store.today, Pixel.Tone, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
+                    noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
+                    dayPresets = PlanDays.presets(store.today), pickLabel = "Pick a day",
+                )
+                PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Tone, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
+            }
+        }
         // Edits are saved as they are made (a short pause after typing, and when the tab closes), so nothing is lost by switching tabs.
         val commit by rememberUpdatedState {
             val live = store.data.tasks.firstOrNull { it.id == task.id }
@@ -735,11 +743,10 @@ private fun GoalChoice(model: AppModel, task: Task) {
     val linked = store.goalOf(task.id)
     val goals = model.data.goals.filter { it.completedAtMillis == null || it.id == linked?.id }
     if (goals.isEmpty()) return
-    FieldLabel("Goal")
     PixelDropdown(
         listOf<String?>(null) + goals.map { it.id }, linked?.id,
         { id -> if (id == null) "None" else goals.firstOrNull { it.id == id }?.title ?: "" },
-        { store.linkTaskToGoal(task.id, it) }, Modifier.fillMaxWidth(),
+        { store.linkTaskToGoal(task.id, it) }, Modifier.fillMaxWidth(), label = "Goal",
     )
 }
 
@@ -753,16 +760,12 @@ internal fun RepeatRow(model: AppModel, task: Task) {
     val series = store.seriesOf(task)
     val recurrence = series?.recurrence
     val kind = RepeatKind.of(recurrence?.repeat)
-    FieldLabel("Repeat")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        RepeatKind.PICKABLE.forEach { k ->
-            TabButton(k.label, kind == k, {
-                if (k == kind) return@TabButton
-                if (k == RepeatKind.NEVER) store.stopRepeating(task.id)
-                else k.toRepeat(recurrence?.start ?: task.planned ?: store.today)?.let { store.makeRepeating(task.id, it) }
-            })
+    PixelChoice(RepeatKind.PICKABLE.toList(), kind, { it?.label ?: "" }, { k ->
+        if (k != null && k != kind) {
+            if (k == RepeatKind.NEVER) store.stopRepeating(task.id)
+            else k.toRepeat(recurrence?.start ?: task.planned ?: store.today)?.let { store.makeRepeating(task.id, it) }
         }
-    }
+    }, label = "Repeat")
     if (kind == RepeatKind.CUSTOM && recurrence != null) {
         Text("Repeats ${recurrence.repeat.words(recurrence.start)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }

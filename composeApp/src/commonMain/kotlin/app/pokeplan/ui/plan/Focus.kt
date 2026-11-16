@@ -165,7 +165,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
 
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                PixelTitle("How long?")
+                app.pokeplan.ui.theme.FieldLabel("How long?")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     listOf(FocusRules.RETRY_MINUTES, 15, 25, 45, 60).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }, Modifier.weight(1f)) }
                 }

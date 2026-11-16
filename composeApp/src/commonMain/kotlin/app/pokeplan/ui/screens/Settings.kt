@@ -1,6 +1,7 @@
 package app.pokeplan.ui.screens
 
 import app.pokeplan.ui.theme.HoldToConfirm
+import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.PixelSlider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -74,7 +75,7 @@ internal fun SettingsView(model: AppModel) {
             GlyphTitle("Trainer name", "user")
             // Saved when the keyboard says Done and when the page is left; no separate key.
             PixelField(
-                name, { name = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true,
+                name, { name = it.take(24) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { saveName() }),
             )
@@ -87,6 +88,7 @@ internal fun SettingsView(model: AppModel) {
         ToggleRow("Vibration", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
     }
     SettingsGroup("Look", "sun") {
+        FieldLabel("Theme")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
         }

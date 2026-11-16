@@ -39,6 +39,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.PixelDateField
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.PlanSection
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.TaskTitleLine
@@ -86,17 +90,14 @@ private fun TargetOptions(
     kind: HabitKind, onKind: (HabitKind) -> Unit, days: Set<DayOfWeek>, onDays: (Set<DayOfWeek>) -> Unit,
     times: Int, onTimes: (Int) -> Unit, category: Category, onCategory: (Category) -> Unit,
 ) {
-    FieldLabel("How often")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        HabitKind.entries.forEach { k ->
-            TabButton(k.label, kind == k, {
-                onKind(k)
-                // The count means something different for a week and a month, so start each at a usual number.
-                if (k == HabitKind.PER_WEEK) onTimes(times.coerceIn(1, 7))
-                if (k == HabitKind.PER_MONTH && times <= 7) onTimes(10)
-            })
+    PixelChoice(HabitKind.entries.toList(), kind, { it?.label ?: "" }, { k ->
+        if (k != null) {
+            onKind(k)
+            // The count means something different for a week and a month, so start each at a usual number.
+            if (k == HabitKind.PER_WEEK) onTimes(times.coerceIn(1, 7))
+            if (k == HabitKind.PER_MONTH && times <= 7) onTimes(10)
         }
-    }
+    }, label = "How often")
     if (kind == HabitKind.WEEKDAYS) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             WEEK.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { onDays(if (d in days) days - d else days + d) }) }
@@ -201,11 +202,13 @@ private fun TargetEditor(model: AppModel, h: app.pokeplan.app.TaskSeries, onClos
     var days by remember(id) { mutableStateOf((h.target as? HabitTarget.Weekdays)?.days ?: setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
     var times by remember(id) { mutableStateOf((h.target as? HabitTarget.PerWeek)?.times ?: (h.target as? HabitTarget.PerMonth)?.times ?: 3) }
     var category by remember(id) { mutableStateOf(h.template.category) }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Title")
-            DifficultyPicker(rank) { rank = it }
-            TargetOptions(kind, { kind = it }, days, { days = it }, times, { times = it }, category, { category = it })
+    FormBox {
+        FormStack {
+            FormGroup {
+                PixelField(title, { title = it }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, placeholder = "Title")
+                DifficultyPicker(rank) { rank = it }
+                TargetOptions(kind, { kind = it }, days, { days = it }, times, { times = it }, category, { category = it })
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     store.editFrequencyTask(id, title, targetOf(kind, days, times), rank, category)

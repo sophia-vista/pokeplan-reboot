@@ -69,11 +69,10 @@ internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskF
                 FieldLabel("Category")
                 CategoryChips(filter.category, allowNone = true) { onChange(filter.copy(category = it)) }
                 if (lists.isNotEmpty()) {
-                    FieldLabel("List")
                     PixelDropdown(
                         listOf<String?>(null, TaskFilter.INBOX) + lists.map { it.id }, filter.listId,
                         { id -> when (id) { null -> "All"; TaskFilter.INBOX -> "Inbox"; else -> lists.firstOrNull { it.id == id }?.name ?: "" } },
-                        { onChange(filter.copy(listId = it)) }, Modifier.fillMaxWidth(),
+                        { onChange(filter.copy(listId = it)) }, Modifier.fillMaxWidth(), label = "List",
                     )
                 }
                 FieldLabel("Difficulty")

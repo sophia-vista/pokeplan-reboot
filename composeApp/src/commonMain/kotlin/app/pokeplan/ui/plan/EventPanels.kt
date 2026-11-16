@@ -59,6 +59,10 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.plus
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.PixelDateField
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormDisclosure
+import app.pokeplan.ui.screens.FormGroup
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.PixelDurationField
 import app.pokeplan.ui.screens.PixelTimeField
 import app.pokeplan.ui.screens.label
@@ -70,33 +74,46 @@ import app.pokeplan.ui.screens.short
 @Composable
 internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Unit, today: LocalDate = draft.day, cancel: () -> Unit) {
     val at = LocalTime(draft.start / 60, draft.start % 60)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    var more by remember { mutableStateOf(draft.repeat != null || draft.color != null) }
+    FormBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.L)) {
             PixelTitle("New event")
             PixelField(
-                draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "What",
+                draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, placeholder = "What",
             )
             Segmented(listOf("At a time", "All day"), if (draft.allDay) 1 else 0) { change(draft.copy(allDay = it == 1, lastDay = draft.day)) }
-            EventColors(draft.color) { change(draft.copy(color = it)) }
-            RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
+            val details: @Composable () -> Unit = {
+                FormDisclosure("Additional details", more, { more = !more }) {
+                    FormGroup {
+                        FieldLabel("Colour")
+                        EventColors(draft.color) { change(draft.copy(color = it)) }
+                        RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
+                    }
+                }
+            }
             if (draft.allDay) {
                 DaySpanPicker(draft.day, draft.lastDay, today, { change(draft.movedTo(it)) }) { change(draft.copy(lastDay = it)) }
+                details()
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("plus", "Add", add, Pixel.Tone, enabled = draft.title.isNotBlank())
                     PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
                 }
                 return@Column
             }
-            PixelDateField(draft.day, today, Pixel.Tone, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = PlanDays.presets(today), pickLabel = "Pick a day")
-            PixelTimeField(
-                at, { t -> t?.let { change(draft.copy(start = it.hour * 60 + it.minute).let { d -> d.copy(minutes = PlanEvent.fit(d.start, d.minutes)) }) } },
-                Pixel.Tone, label = "Starts",
-            )
-            PixelDurationField(
-                draft.minutes, { m -> m?.let { change(draft.copy(minutes = PlanEvent.fit(draft.start, it))) } }, Pixel.Tone, label = "Length",
-                presets = listOf(30, 60, 90, 120),
-                max = 24 * 60 - draft.start, min = 1,
-            )
+            FormGroup {
+                FieldLabel("Day")
+                PixelDateField(draft.day, today, Pixel.Tone, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = PlanDays.presets(today), pickLabel = "Pick a day")
+                PixelTimeField(
+                    at, { t -> t?.let { change(draft.copy(start = it.hour * 60 + it.minute).let { d -> d.copy(minutes = PlanEvent.fit(d.start, d.minutes)) }) } },
+                    Pixel.Tone, label = "Starts",
+                )
+                PixelDurationField(
+                    draft.minutes, { m -> m?.let { change(draft.copy(minutes = PlanEvent.fit(draft.start, it))) } }, Pixel.Tone, label = "Length",
+                    presets = listOf(30, 60, 90, 120),
+                    max = 24 * 60 - draft.start, min = 1,
+                )
+            }
+            details()
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelIconButton("plus", "Add", add, Pixel.Tone, enabled = draft.title.isNotBlank())
                 PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
@@ -118,11 +135,12 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
     var title by remember(PlanEvent.seriesOf(event.id)) { mutableStateOf(event.title) }
     val series = model.data.events.firstOrNull { it.id == PlanEvent.seriesOf(event.id) } ?: event
     val repeats = event.repeat != null
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    FormBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelField(
-                title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Event",
+                title, { title = it }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, placeholder = "Event",
             )
+            FieldLabel("Colour")
             EventColors(event.color) { store.updateEvent(event.id, color = it) }
             RepeatPicker(event.repeat) { store.updateEvent(event.id, title = title); follow(store.repeatEvent(event.id, it)) }
             if (repeats) RepeatEnd(series, event) { store.endEventOn(event.id, it) }
@@ -163,31 +181,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RepeatPicker(selected: EventRepeat?, pick: (EventRepeat?) -> Unit) {
-    val shape = PixelShape
-    Column {
-        FieldLabel("Repeats")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            (listOf<EventRepeat?>(null) + EventRepeat.entries).forEach { r ->
-                val on = r == selected
-                Box(
-                    Modifier
-                        .defaultMinSize(minHeight = Spacing.Target)
-                        .clip(shape)
-                        .background(if (on) Pixel.Tone.copy(alpha = 0.10f) else Pixel.Panel, shape)
-                        .border(if (on) 2.dp else 1.dp, if (on) Pixel.Tone else Pixel.Border, shape)
-                        .selectable(on, role = Role.RadioButton) { pick(r) }
-                        .padding(horizontal = Spacing.M),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        r?.label ?: "Once",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (on) FontWeight.Bold else FontWeight.Medium),
-                        color = if (on) Pixel.Ink else Pixel.InkSoft,
-                    )
-                }
-            }
-        }
-    }
+    PixelChoice(listOf<EventRepeat?>(null) + EventRepeat.entries, selected, { it?.label ?: "Once" }, pick, label = "Repeats")
 }
 
 /** How many occurrences Set an end keeps, counting the one shown. */
