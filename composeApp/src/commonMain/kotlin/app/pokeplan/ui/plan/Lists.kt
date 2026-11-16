@@ -52,6 +52,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import app.pokeplan.ui.screens.SectionScaffold
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormStack
 
 /** The colour names, for screen readers, in the order of [TaskList.COLORS]. */
 private val listColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Purple", "Pink", "Slate")
@@ -126,11 +128,11 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
     var color by remember { mutableStateOf(list?.color ?: TaskList.COLORS.first()) }
     var icon by remember { mutableStateOf(list?.icon ?: TaskList.ICONS.first()) }
     var category by remember { mutableStateOf(list?.category) }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+    FormBox {
+        FormStack {
             PixelField(
                 name, { name = it.take(TaskList.MAX_NAME) }, Modifier.fillMaxWidth(), singleLine = true,
-                placeholder = "List name",
+                label = "Name",
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
             )
             FieldLabel("Colour")

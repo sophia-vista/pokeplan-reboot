@@ -1,5 +1,9 @@
 package app.pokeplan.ui.plan
 
+import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.FormDisclosure
+import app.pokeplan.ui.screens.FormSave
+import app.pokeplan.ui.screens.FormStack
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.background
@@ -191,28 +195,27 @@ internal fun GoalsView(model: AppModel) {
         store.addGoal(title, category, targetDate)
         title = ""; more = false; category = Category.PERSONAL; targetDate = null
     }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(
-                    title, { title = it }, Modifier.weight(1f), singleLine = true,
-                    placeholder = "A goal, e.g. Learn guitar",
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { add() }),
-                )
-                PixelIconButton("plus", "Add", ::add, Pixel.InkSoft, enabled = title.isNotBlank())
+    FormBox {
+        FormStack {
+            PixelField(
+                title, { title = it }, Modifier.fillMaxWidth(), singleLine = true,
+                label = "Goal", placeholder = "e.g. Learn guitar",
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { add() }),
+            )
+            FormDisclosure("Additional details", more, { more = !more }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    FieldLabel("Category")
+                    CategoryChips(category) { category = it ?: category }
+                    // Optional, and only a date to aim for: nothing happens when it passes.
+                    FieldLabel("Target date")
+                    PixelDateField(
+                        targetDate, store.today, Pixel.Tone, { targetDate = it },
+                        presets = listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date",
+                    )
+                }
             }
-            PixelButton(if (more) "Fewer options" else "Category and target date", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) {
-                FieldLabel("Category")
-                CategoryChips(category) { category = it ?: category }
-                // Optional, and only a date to aim for: nothing happens when it passes.
-                FieldLabel("Target date")
-                PixelDateField(
-                    targetDate, store.today, Pixel.Tone, { targetDate = it },
-                    presets = listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date",
-                )
-            }
+            FormSave("Add goal", ::add, Pixel.InkSoft, enabled = title.isNotBlank())
         }
     }
     // Goals are bigger aims; break one into small milestones and each finished one earns a Super Candy and a badge for its case.
