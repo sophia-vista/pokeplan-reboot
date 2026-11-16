@@ -76,6 +76,7 @@ import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.PixelDatePicker
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.PixelDurationField
 import app.pokeplan.ui.screens.PixelMomentField
 import app.pokeplan.ui.screens.PixelTimeField
@@ -243,9 +244,7 @@ private fun ActivityView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("What did you do?")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                ActivityType.entries.forEach { t -> TabButton(t.label, t == type, { type = t }) }
-            }
+            PixelDropdown(ActivityType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.fillMaxWidth())
             PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60))
             PixelButton(if (more) "Fewer options" else "Distance and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
@@ -297,9 +296,7 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
     var error by remember(a.id) { mutableStateOf<String?>(null) }
     Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         if (editing) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                ActivityType.entries.forEach { t -> TabButton(t.label, t == type, { type = t }) }
-            }
+            PixelDropdown(ActivityType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.fillMaxWidth())
             PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60))
             PixelMomentField(started, { started = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It started", nowKey = false)
             error?.let { Report(model, it, NoticeTone.WARNING) }
@@ -699,9 +696,7 @@ private fun GoalsHealView(model: AppModel) {
     if (adding) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("New goal")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                GoalKind.entries.forEach { k -> TabButton(k.title, k == kind, { kind = k }) }
-            }
+            PixelDropdown(GoalKind.entries.toList(), kind, { it?.title ?: "" }, { k -> if (k != null) kind = k }, Modifier.fillMaxWidth())
             PixelField(target, { target = it.filter(Char::isDigit).take(5) }, Modifier.fillMaxWidth(), label = "Target (${kind.unit})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = ""; adding = false } }, Modifier.weight(1f), Pixel.Tone, enabled = HealRules.goalTargetOk(kind, target.toIntOrNull() ?: 0))

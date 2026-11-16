@@ -92,6 +92,7 @@ import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.WorldSettings
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
@@ -499,10 +500,7 @@ private fun WorldMissionsView(model: AppModel) {
     // Jobs are grouped by region: all of them, or one region's.
     var region by remember { mutableStateOf<app.pokeplan.world.WorldLayer?>(null) }
     val regions = available.map { Missions.layerOf(it.mission) }.distinct()
-    if (regions.size > 1) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        TabButton("All", region == null, { region = null })
-        regions.forEach { r -> TabButton(r.label, region == r, { region = r }) }
-    }
+    if (regions.size > 1) PixelDropdown(listOf<app.pokeplan.world.WorldLayer?>(null) + regions, region, { it?.label ?: "All" }, { region = it }, Modifier.fillMaxWidth())
     val offered = available.filter { region == null || Missions.layerOf(it.mission) == region }
     if (offered.isEmpty()) Text("Nothing new for your rank right now.", style = MaterialTheme.typography.bodyMedium)
     offered.forEach { entry ->
@@ -946,12 +944,11 @@ private fun NotebookCard(model: AppModel) {
     FieldLabel("Notebook")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                layers.forEach { l ->
-                    val (met, all) = app.pokeplan.world.Notebook.progress(l, world)
-                    TabButton("${l.label} $met/$all", layer == l, { layer = l })
-                }
-            }
+            PixelDropdown(
+                layers, layer,
+                { l -> if (l == null) "" else app.pokeplan.world.Notebook.progress(l, world).let { (met, all) -> "${l.label} $met/$all" } },
+                { l -> if (l != null) layer = l }, Modifier.fillMaxWidth(),
+            )
             val entries = app.pokeplan.world.Notebook.of(layer, world, owned)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 entries.forEach { e ->
@@ -1036,10 +1033,10 @@ private fun ExpeditionLogPage(world: WorldData) {
     var kind by remember { mutableStateOf<String?>(null) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                TabButton("All", kind == null, { kind = null })
-                JournalLine.KINDS.filter { k -> world.journal.any { it.kind == k } }.forEach { k -> TabButton(journalKindLabel(k), kind == k, { kind = k }) }
-            }
+            PixelDropdown(
+                listOf<String?>(null) + JournalLine.KINDS.filter { k -> world.journal.any { it.kind == k } }, kind,
+                { k -> if (k == null) "All" else journalKindLabel(k) }, { kind = it }, Modifier.fillMaxWidth(),
+            )
             val lines = world.journal.filter { kind == null || it.kind == kind }
             if (lines.isEmpty()) Text("Nothing of that kind yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             lines.takeLast(if (kind == null) 20 else 40).reversed().forEach { line ->

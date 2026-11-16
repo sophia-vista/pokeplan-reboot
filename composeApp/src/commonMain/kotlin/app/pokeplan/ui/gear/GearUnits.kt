@@ -32,6 +32,7 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 import app.pokeplan.app.gear.changeGear
@@ -79,9 +80,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
                 }
             }
             FieldLabel("What to measure")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                UnitCatalog.categories.forEach { c -> TabButton(c.label, c.id == categoryId, { choose(c.id) }) }
-            }
+            PixelDropdown(UnitCatalog.categories, UnitCatalog.categories.firstOrNull { it.id == categoryId }, { it?.label ?: "" }, { c -> if (c != null) choose(c.id) }, Modifier.fillMaxWidth())
             if (category.note.isNotEmpty()) Text(category.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             PixelField(text, { text = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Amount (or a sum)")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {

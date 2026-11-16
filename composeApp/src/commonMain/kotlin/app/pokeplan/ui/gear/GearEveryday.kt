@@ -25,6 +25,7 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 
 /** What a number field says when its text is not a number. */
@@ -48,9 +49,7 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Sum.entries.forEach { s -> TabButton(s.label, sum == s, { sum = s }) }
-            }
+            PixelDropdown(Sum.entries, sum, { it?.label ?: "" }, { s -> if (s != null) sum = s }, Modifier.fillMaxWidth())
             val answer: List<String>? = if (values.indices.any(::bad)) null else when (sum) {
                 Sum.TIP -> {
                     field(0, "Bill"); field(1, "Tip percent", "15"); field(2, "People", "1")

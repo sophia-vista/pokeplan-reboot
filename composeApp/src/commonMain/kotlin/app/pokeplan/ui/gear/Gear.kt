@@ -48,6 +48,7 @@ import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 import app.pokeplan.app.gear.assignGearHelper
@@ -94,10 +95,7 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
                     FieldLabel("Favourites")
                     MenuGrid(starred.map { entry(ToolCatalog.info(it)) }) { key -> open = GearTool.valueOf(key) }
                 }
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    TabButton("All", category == null, { category = null })
-                    ToolCategory.entries.forEach { c -> TabButton(c.label, category == c, { category = c }) }
-                }
+                PixelDropdown(listOf<ToolCategory?>(null) + ToolCategory.entries, category, { it?.label ?: "All" }, { category = it }, Modifier.fillMaxWidth())
                 MenuGrid(ToolCatalog.all.filter { category == null || it.category == category }.map { entry(it) }) { key -> open = GearTool.valueOf(key) }
             }
         }

@@ -21,7 +21,7 @@ import app.pokeplan.mint.BreakdownLine
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.breakdown
 import app.pokeplan.ui.AppModel
-import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
@@ -48,9 +48,7 @@ internal fun OverviewBreakdownBox(model: AppModel, startCurrency: String, onClos
     TextBox {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Overview breakdown")
-            if (currencies.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                currencies.forEach { c -> TabButton(c, c == cur, { cur = c }, key = ModuleAccent.MINT.accent) }
-            }
+            if (currencies.size > 1) PixelDropdown(currencies, cur, { it ?: "" }, { c -> if (c != null) cur = c }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
             SectionLabel("Net position")
             if (b.assets.isNotEmpty()) { Text("Assets", style = MaterialTheme.typography.titleSmall); lines(b.assets) }
             if (b.liabilities.isNotEmpty()) { Text("Liabilities", style = MaterialTheme.typography.titleSmall); lines(b.liabilities) }
@@ -86,13 +84,9 @@ internal fun OverviewCountsBox(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Overview counts")
             SectionLabel("Bills and installments due")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                app.pokeplan.mint.OverviewWindow.entries.forEach { w -> TabButton(w.label, w == settings.overviewWindow, { mint.setOverviewWindow(w) }, key = ModuleAccent.MINT.accent) }
-            }
+            PixelDropdown(app.pokeplan.mint.OverviewWindow.entries.toList(), settings.overviewWindow, { it?.label ?: "" }, { w -> if (w != null) mint.setOverviewWindow(w) }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
             SectionLabel("Pay later in net position")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                app.pokeplan.mint.PayLaterCount.entries.forEach { c -> TabButton(c.label, c == settings.overviewPayLater, { mint.setOverviewPayLater(c) }, key = ModuleAccent.MINT.accent) }
-            }
+            PixelDropdown(app.pokeplan.mint.PayLaterCount.entries.toList(), settings.overviewPayLater, { it?.label ?: "" }, { c -> if (c != null) mint.setOverviewPayLater(c) }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
         }
     }
 }

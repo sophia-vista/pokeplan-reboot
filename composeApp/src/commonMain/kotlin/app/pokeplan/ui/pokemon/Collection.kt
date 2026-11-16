@@ -67,6 +67,7 @@ import app.pokeplan.ui.screens.QuestsView
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
@@ -225,14 +226,10 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
         PixelButton(if (open) "Hide sort and filters" else "Sort and filters", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         if (open) {
             SectionLabel("Sort by")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PcSort.entries.forEach { TabButton(it.label, view.sort == it, { change(view.copy(sort = it)) }) }
-            }
+            PixelDropdown(PcSort.entries, view.sort, { it?.label ?: "" }, { s -> if (s != null) change(view.copy(sort = s)) }, Modifier.fillMaxWidth())
             if (view.everyone) {
                 SectionLabel("Where")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PcPlace.entries.forEach { w -> TabButton(w.label, view.where == w, { change(view.copy(where = if (view.where == w) null else w)) }) }
-                }
+                PixelDropdown(listOf<PcPlace?>(null) + PcPlace.entries, view.where, { it?.label ?: "All" }, { change(view.copy(where = it)) }, Modifier.fillMaxWidth())
             }
             SectionLabel("Show")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

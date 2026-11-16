@@ -104,6 +104,7 @@ import app.pokeplan.ui.screens.PlanSection
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.TaskTitleLine
 import app.pokeplan.ui.screens.dayNames
 import app.pokeplan.ui.screens.label
@@ -589,10 +590,11 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
         }
         if (store.activeLists.isNotEmpty()) {
             FieldLabel("List")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                TabButton("Inbox", task.listId == null, { store.moveToList(task.id, null) })
-                store.activeLists.forEach { l -> TabButton(l.name, task.listId == l.id, { store.moveToList(task.id, l.id) }) }
-            }
+            PixelDropdown(
+                listOf<String?>(null) + store.activeLists.map { it.id }, task.listId,
+                { id -> if (id == null) "Inbox" else store.activeLists.firstOrNull { it.id == id }?.name ?: "" },
+                { store.moveToList(task.id, it) }, Modifier.fillMaxWidth(),
+            )
         }
         var more by remember(task.id) { mutableStateOf(false) }
         Row(
@@ -734,10 +736,11 @@ private fun GoalChoice(model: AppModel, task: Task) {
     val goals = model.data.goals.filter { it.completedAtMillis == null || it.id == linked?.id }
     if (goals.isEmpty()) return
     FieldLabel("Goal")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        TabButton("None", linked == null, { store.linkTaskToGoal(task.id, null) })
-        goals.forEach { g -> TabButton(g.title, linked?.id == g.id, { store.linkTaskToGoal(task.id, g.id) }) }
-    }
+    PixelDropdown(
+        listOf<String?>(null) + goals.map { it.id }, linked?.id,
+        { id -> if (id == null) "None" else goals.firstOrNull { it.id == id }?.title ?: "" },
+        { store.linkTaskToGoal(task.id, it) }, Modifier.fillMaxWidth(),
+    )
 }
 
 /**

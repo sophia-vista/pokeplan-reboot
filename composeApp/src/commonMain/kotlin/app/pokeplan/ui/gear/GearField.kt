@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.TimeSource
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 import app.pokeplan.app.gear.changeGear
@@ -195,9 +196,11 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.S), horizontalAlignment = Alignment.CenterHorizontally) {
             PixelField(text, { text = it.take(400); onUse() }, Modifier.fillMaxWidth(), label = "Text or link for the code")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                QrCode.Level.entries.forEach { l -> TabButton(when (l) { QrCode.Level.L -> "Low repair"; QrCode.Level.M -> "Medium"; QrCode.Level.Q -> "High"; QrCode.Level.H -> "Highest" }, level == l, { level = l }) }
-            }
+            PixelDropdown(
+                QrCode.Level.entries, level,
+                { l -> when (l) { QrCode.Level.L -> "Low repair"; QrCode.Level.M -> "Medium"; QrCode.Level.Q -> "High"; QrCode.Level.H -> "Highest"; null -> "" } },
+                { l -> if (l != null) level = l }, Modifier.fillMaxWidth(),
+            )
             if (text.isNotEmpty() && code == null) Text("That is too long for a code at this level (${text.encodeToByteArray().size} bytes; the most is ${QrCode.capacity(level)}). Pick Low repair or shorten it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) // copy-ok: result
             code?.let { c ->
                 Canvas(Modifier.size(240.dp).background(Color.White)) {

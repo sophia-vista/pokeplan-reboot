@@ -45,6 +45,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.screens.Confirm
 import app.pokeplan.ui.screens.PixelDateField
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.NoticeTone
@@ -166,9 +167,7 @@ internal fun PayArea(model: AppModel, v: PlanView, defaultMinor: Long, resetKey:
         PixelField(amount, { amount = money(it) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
         if (sources.isNotEmpty()) {
             SectionLabel("Pay from")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                sources.forEach { s -> Chip(s.name, s.id == from) { from = s.id } }
-            }
+            PixelDropdown(sources.map { it.id }, from, { id -> sources.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) from = id }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
         }
         PixelDateField(payDay, today, ModuleAccent.MINT.accent, { payDay = it ?: today }, max = today)
         Text("Early or part payments go to the earliest installment first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -317,10 +316,8 @@ private fun PurchaseFields(model: AppModel, a: FinancialAccount, startName: Stri
         PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true)
         PixelField(amount, { amount = money(it) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
         SectionLabel("Category")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Chip("None", categoryId == null) { categoryId = null }
-            model.mintData.categories.filter { it.kind == CategoryKind.EXPENSE && !it.archived }.forEach { c -> Chip(c.name, c.id == categoryId) { categoryId = c.id } }
-        }
+        val expenseCategories = model.mintData.categories.filter { it.kind == CategoryKind.EXPENSE && !it.archived }
+        PixelDropdown(listOf<String?>(null) + expenseCategories.map { it.id }, categoryId, { id -> expenseCategories.firstOrNull { it.id == id }?.name ?: "None" }, { categoryId = it }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
         SectionLabel("Date")
         PixelDateField(date, today, ModuleAccent.MINT.accent, { date = it ?: today }, max = today)
         InstallmentTerms(model, a, terms, total, date)
@@ -357,20 +354,15 @@ internal fun InstallmentTerms(model: AppModel, a: FinancialAccount, t: TermsStat
     val schedule = if (total != null && total > 0 && count != null && fee != null && Installments.checkRequest(a.type, total, count, fee) == app.pokeplan.mint.Check.Ok) Installments.generate(total, count, t.every, firstDue, fee) else null
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         SectionLabel("Installments")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            listOf(1, 3, 6, 9, 12, 18, 24).forEach { n -> Chip("$n", count == n) { t.countText = "$n" } }
-        }
+        val countPresets = listOf(1, 3, 6, 9, 12, 18, 24)
+        PixelDropdown(countPresets, count?.takeIf { it in countPresets }, { it?.toString() ?: "" }, { n -> if (n != null) t.countText = "$n" }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
         PixelField(t.countText, { t.countText = it.filter(Char::isDigit).take(2) }, Modifier.fillMaxWidth(), label = "Or any number, 1 to ${Installments.MAX_COUNT}", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
         SectionLabel("Every")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PlanEvery.entries.forEach { e -> Chip(e.label, e == t.every) { t.every = e } }
-        }
+        PixelDropdown(PlanEvery.entries.toList(), t.every, { it?.label ?: "" }, { e -> if (e != null) t.every = e }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
         SectionLabel("First due")
         PixelDateField(firstDue, today, ModuleAccent.MINT.accent, { t.firstOverride = it }, min = date)
         SectionLabel("Fee")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FeeChoice.entries.forEach { c -> Chip(c.label, c == t.choice) { t.choice = c } }
-        }
+        PixelDropdown(FeeChoice.entries.toList(), t.choice, { it?.label ?: "" }, { c -> if (c != null) t.choice = c }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
         if (t.choice != FeeChoice.NONE) {
             PixelField(
                 t.feeText, { t.feeText = if (t.choice == FeeChoice.RATE) it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) else money(it) }, Modifier.fillMaxWidth(),

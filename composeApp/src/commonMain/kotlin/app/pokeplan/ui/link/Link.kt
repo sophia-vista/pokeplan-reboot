@@ -77,6 +77,7 @@ import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.ModuleTabs
+import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.RecordRow
 import app.pokeplan.ui.screens.Rule
 import app.pokeplan.ui.screens.ScreenSwitch
@@ -314,13 +315,14 @@ private fun PeopleView(model: AppModel) {
             if (data.people.isNotEmpty()) {
             PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search people", singleLine = true)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("All", category == null && !favorites, { category = null; favorites = false })
-                if (data.people.any { it.favorite }) Chip("Pinned", favorites, { favorites = !favorites; category = null })
-                LinkRules.categories(data).filter { c -> data.people.any { it.category.equals(c, ignoreCase = true) } }.forEach { c ->
-                    Chip(c, category == c, { category = if (category == c) null else c; favorites = false })
-                }
-            }
+            val pinnedKey = "\u0001pinned" // a key no category can equal
+            val filterKeys = listOf<String?>(null) + (if (data.people.any { it.favorite }) listOf(pinnedKey) else emptyList()) +
+                LinkRules.categories(data).filter { c -> data.people.any { it.category.equals(c, ignoreCase = true) } }
+            PixelDropdown(
+                filterKeys, if (favorites) pinnedKey else category, { k -> if (k == null) "All" else if (k == pinnedKey) "Pinned" else k },
+                { k -> if (k == pinnedKey) { favorites = true; category = null } else { category = k; favorites = false } },
+                Modifier.weight(1f), key = accent,
+            )
             PixelButton(if (sort == Sort.NAME) "By name" else "Recent", { sort = if (sort == Sort.NAME) Sort.RECENT else Sort.NAME }, color = Pixel.InkSoft, compact = true)
             }
             if (people.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -506,10 +508,11 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
         PixelField(organization, { organization = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Organization", singleLine = true, keyboardOptions = wordKeys)
         PixelField(role, { role = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Role", singleLine = true, keyboardOptions = wordKeys)
         PixelField(address, { address = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Address", singleLine = true, keyboardOptions = wordKeys)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Chip("No category", category.isBlank(), { category = "" })
-            LinkRules.categories(data).forEach { c -> Chip(c, category.equals(c, ignoreCase = true), { category = c }) }
-        }
+        val categoryList = LinkRules.categories(data)
+        PixelDropdown(
+            listOf<String?>(null) + categoryList, if (category.isBlank()) null else (categoryList.firstOrNull { it.equals(category, ignoreCase = true) } ?: category),
+            { it ?: "No category" }, { category = it ?: "" }, Modifier.fillMaxWidth(), key = accent,
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelField(newCategory, { newCategory = it.take(LinkRules.TAG_MAX) }, Modifier.weight(1f), placeholder = "New category", singleLine = true, keyboardOptions = wordKeys)
             PixelButton("Add", { link.addCategory(newCategory); category = newCategory.trim(); newCategory = "" }, color = accent, enabled = newCategory.isNotBlank())
@@ -583,9 +586,8 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
         PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
         // The month is a key, not a number to type; the day and the year (which may be unknown) stay short fields.
         SectionLabel("Month")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec").forEachIndexed { i, name -> Chip(name, month.toIntOrNull() == i + 1, { month = (i + 1).toString() }) }
-        }
+        val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        PixelDropdown((1..12).toList(), month.toIntOrNull(), { m -> if (m == null) "" else monthNames[m - 1] }, { m -> if (m != null) month = m.toString() }, Modifier.fillMaxWidth(), key = accent)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
             PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
