@@ -69,4 +69,16 @@ class OverviewCountsTest {
         val long = OverviewCounts.summary(data(OverviewWindow.NEXT_MONTH), today)
         assertEquals(60_000L + 500L * 2, long.dueMinor) // two installments and the bill on 18 Nov and 18 Dec
     }
+
+    @Test
+    fun aRecurringIncomeIsNeverTakenOffAvailableMoneyOrListedAsDue() {
+        val salary = Bill("b2", "Salary", "PHP", Frequency.MONTHLY, LocalDate(2026, 11, 20), expectedMinor = 20_000, accountId = "bank", income = true)
+        val d = data().let { it.copy(bills = it.bills + salary) }
+        val s = OverviewCounts.summary(d, today)
+        assertEquals(2, s.dueCount) // still just the Internet bill and the installment
+        assertEquals(30_500L, s.dueMinor)
+        assertEquals(100_000L - 30_500L, s.availableMinor)
+        assertEquals(listOf("Internet", "Phone"), s.next.map { it.name })
+        assertEquals(100_000L - 500L, MintRules.available(d.copy(plans = emptyList()), "PHP", today).availableMinor)
+    }
 }

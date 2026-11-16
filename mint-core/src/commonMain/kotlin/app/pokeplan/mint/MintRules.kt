@@ -195,10 +195,11 @@ object MintRules {
         return result
     }
 
-    /** Money in liquid accounts of [currency], less the bills with a known amount still unpaid in the next [withinDays] days. Credit limits never count. */
+    /** Money in liquid accounts of [currency], less the bills (not recurring income) with a known amount still unpaid in the next [withinDays] days. Credit limits never count. */
     fun available(data: MintData, currency: String, today: LocalDate, withinDays: Int = 14): Available {
         val liquid = balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal && it.account.type.liquid && it.account.currency == currency }.sumOf { it.postedMinor }
-        val due = upcoming(data, today, withinDays).filter { it.bill.currency == currency && it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
+        // A recurring income (a salary) is money expected, not a bill to pay: it is never taken off available money (8.3A).
+        val due = upcoming(data, today, withinDays).filter { !it.bill.income && it.bill.currency == currency && it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
         val bills = due.sumOf { it.remainingMinor ?: 0L }
         val (plans, plansCount) = Installments.dueWithin(data, currency, today, withinDays)
         return Available(currency, liquid, bills, due.size, liquid - bills - plans, plans, plansCount)

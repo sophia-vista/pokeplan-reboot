@@ -241,7 +241,7 @@ internal fun OverviewCard(model: AppModel) {
     val days = app.pokeplan.mint.OverviewCounts.days(data, today)
     val available = MintRules.available(data, currency, today, days)
     // One bill's next date is enough here.
-    val upcoming = MintRules.upcoming(data, today, days).distinctBy { it.bill.id }.take(3)
+    val upcoming = MintRules.upcoming(data, today, days).filter { !it.bill.income }.distinctBy { it.bill.id }.take(3)
     val leadsWithAvailable = available.liquidMinor != 0L || available.billsCount > 0
     var breakdown by remember { mutableStateOf(false) }
     if (breakdown) Dialog({ breakdown = false }, DialogProperties(usePlatformDefaultWidth = false)) {
