@@ -287,9 +287,9 @@ private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
     fun count(n: Int, one: String, many: String) = if (n == 1) "1 $one" else "$n $many"
     val rows = buildList<@Composable () -> Unit> {
         if (!model.mintData.settings.gate) {
-            val due = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, 0).count { it.state == app.pokeplan.mint.OccurrenceState.DUE || it.state == app.pokeplan.mint.OccurrenceState.OVERDUE }
+            val due = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, 0).count { !it.bill.income && (it.state == app.pokeplan.mint.OccurrenceState.DUE || it.state == app.pokeplan.mint.OccurrenceState.OVERDUE) }
             // Counts only, never a bill's name or amount: Home is on show to whoever holds the phone.
-            val soon = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, SOON_DAYS).count { it.state == app.pokeplan.mint.OccurrenceState.UPCOMING }
+            val soon = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, SOON_DAYS).count { !it.bill.income && it.state == app.pokeplan.mint.OccurrenceState.UPCOMING }
             if (due > 0) add { TodayRow(Module.MINT, "${count(due, "bill", "bills")} to settle") { go(Place.MINT) } }
             else if (soon > 0) add { TodayRow(Module.MINT, "${count(soon, "bill", "bills")} due in $SOON_DAYS days") { go(Place.MINT) } }
         }

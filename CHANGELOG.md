@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.210.1
+
+Fix (owner report, 16 November 2026): a recurring income (a salary, `Bill.income`) was counted as a bill to pay. `MintRules.available` took it off available money as a "bill due", which the longer Overview windows of 0.210.0 made much worse (a monthly salary inside "until the end of next month" cut available money by its amount); the Overview's upcoming list, the Mint widgets' due total, count and list, and Home's "bills to settle" count included it too. Income is now left out of all of them (it stays on the Bills and income screen as money expected, and is posted only when received, as before). `OverviewCountsTest` covers it. Bill reminders still include income bills the player has not switched off. No schema change, no reward change.
+
 ## 0.210.0
 
 MINT widgets and overview counts (owner requests, 16 November 2026, REP-039; `MINT.md` 3.2B, 22G). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change and no migration: the new settings are JSON with defaults in the sealed records, so the old behaviour stays until changed. Not run on a device.

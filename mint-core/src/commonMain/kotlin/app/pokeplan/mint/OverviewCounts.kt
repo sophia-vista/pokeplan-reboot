@@ -85,7 +85,7 @@ fun OverviewCounts.summary(data: MintData, today: LocalDate, limit: Int = 5): Ov
     val available = MintRules.available(data, currency, today, days)
     val net = MintRules.netPosition(data, today)[currency] ?: 0L
     val until = today.plus(DatePeriod(days = days))
-    val bills = MintRules.upcoming(data, today, days).filter { it.bill.currency == currency }.distinctBy { it.bill.id }
+    val bills = MintRules.upcoming(data, today, days).filter { !it.bill.income && it.bill.currency == currency }.distinctBy { it.bill.id }
         .map { DueItem(it.bill.name, it.payDay, it.state == OccurrenceState.OVERDUE, it.remainingMinor, installment = false) }
     val plans = Installments.views(data, today).filter { it.plan.currency == currency }.mapNotNull { v ->
         v.installments.filter { it.remainingMinor > 0 && it.dueDay <= until }.minByOrNull { it.dueDay }
