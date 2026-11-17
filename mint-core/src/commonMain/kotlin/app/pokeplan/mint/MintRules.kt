@@ -141,12 +141,13 @@ object MintRules {
             if (tx.planAllocations.isNotEmpty()) {
                 if (tx.planId != null) return Check.Refused("Choose one way to link this repayment.")
                 var allocated = 0L
-                val seen = mutableSetOf<String>()
+                val seen = mutableSetOf<Pair<String, Int?>>()
                 for (allocation in tx.planAllocations) {
-                    if (allocation.amountMinor <= 0 || allocation.amountMinor > tx.amountMinor - allocated || !seen.add(allocation.planId))
+                    if (allocation.amountMinor <= 0 || allocation.amountMinor > tx.amountMinor - allocated || !seen.add(allocation.planId to allocation.no))
                         return Check.Refused("That repayment allocation looks wrong.")
                     val plan = data.plans.firstOrNull { it.id == allocation.planId } ?: return Check.Refused("An installment plan is missing.")
                     if (plan.accountId != to.id) return Check.Refused("That plan belongs to another account.")
+                    if (allocation.no != null && plan.installments.none { it.no == allocation.no }) return Check.Refused("That installment is missing.")
                     allocated += allocation.amountMinor
                 }
             }

@@ -186,13 +186,24 @@ object Installments {
             if (principal[i] == 0L) fee[i] = 0
         }
         val late = plan.installments.map { inst -> linked.filter { it.type == TxType.FEE && it.feeKind == FeeKind.LATE && it.planNo == inst.no }.sumOf { it.amountMinor } }
-        var pool = linked.filter { it.type == TxType.TRANSFER && it.toAccountId == plan.accountId }
-            .sortedWith(compareBy({ it.atMillis }, { it.createdMillis }))
-            .sumOf { tx -> tx.planAllocations.firstOrNull { it.planId == plan.id }?.amountMinor ?: if (tx.planId == plan.id) tx.amountMinor else 0L }
+        // Repayments: money allocated to an installment goes there (up to what it asks); the rest, and a repayment linked to the whole plan, is applied earliest first.
+        val specific = mutableMapOf<Int, Long>()
+        var pool = 0L
+        for (tx in linked.filter { it.type == TxType.TRANSFER && it.toAccountId == plan.accountId }) {
+            val rows = tx.planAllocations.filter { it.planId == plan.id }
+            when {
+                rows.isNotEmpty() -> rows.forEach { row -> if (row.no != null) specific[row.no] = (specific[row.no] ?: 0L) + row.amountMinor else pool += row.amountMinor }
+                tx.planId == plan.id -> pool += tx.amountMinor
+            }
+        }
+        val dues = plan.installments.indices.map { principal[it] + fee[it] + late[it] }
+        val direct = plan.installments.mapIndexed { i, inst -> minOf(specific[inst.no] ?: 0L, dues[i]) }
+        pool += specific.values.sum() - direct.sum()
         val views = plan.installments.mapIndexed { i, inst ->
-            val due = principal[i] + fee[i] + late[i]
-            val paid = minOf(pool, due)
-            pool -= paid
+            val due = dues[i]
+            val extra = minOf(pool, due - direct[i])
+            pool -= extra
+            val paid = direct[i] + extra
             val state = when {
                 due == 0L -> InstallmentState.CANCELLED
                 paid >= due -> InstallmentState.PAID
@@ -206,32 +217,25 @@ object Installments {
         return PlanView(plan, views, refunded, pool)
     }
 
-    /** Allocates a repayment to the earliest outstanding plans first; excess remains an ordinary account repayment. */
-    fun allocatePayment(data: MintData, accountId: String, amountMinor: Long, today: LocalDate): List<PlanPaymentAllocation> {
-        require(amountMinor >= 0)
-        var left = amountMinor
-        return views(data, today)
-            .filter { it.plan.accountId == accountId && it.remainingMinor > 0 }
-            .sortedWith(compareBy<PlanView>({ it.next?.dueDay }, { it.plan.createdMillis }, { it.plan.id }))
-            .mapNotNull { view ->
-                val applied = minOf(left, view.remainingMinor)
-                left -= applied
-                PlanPaymentAllocation(view.plan.id, applied).takeIf { applied > 0 }
-            }
-    }
+    /** Allocates a repayment installment by installment in due order (the bill, not the purchase, comes first); see [MonthlyBills.allocate]. */
+    fun allocatePayment(data: MintData, accountId: String, amountMinor: Long, today: LocalDate, firstBill: BillMonth? = null): List<PlanPaymentAllocation> =
+        MonthlyBills.allocate(data, accountId, amountMinor, today, firstBill)
 
     fun views(data: MintData, today: LocalDate): List<PlanView> = data.plans.map { view(data, it, today) }
 
-    /** What the installments still unpaid and due on or before [today] plus [withinDays] ask in [currency] (overdue ones included). */
+    /**
+     * What the installments still unpaid and due on or before [today] plus [withinDays] ask in [currency] (overdue ones included), and how many **bills** that is:
+     * the installments of one account due in one month are one bill (MINT.md 5.6C).
+     */
     fun dueWithin(data: MintData, currency: String, today: LocalDate, withinDays: Int): Pair<Long, Int> {
         val until = today.plus(DatePeriod(days = withinDays))
         var sum = 0L
-        var n = 0
+        val bills = mutableSetOf<Pair<String, BillMonth>>()
         for (v in views(data, today)) {
             if (v.plan.currency != currency) continue
-            for (i in v.installments) if (i.remainingMinor > 0 && i.dueDay <= until) { sum += i.remainingMinor; n++ }
+            for (i in v.installments) if (i.remainingMinor > 0 && i.dueDay <= until) { sum += i.remainingMinor; bills += v.plan.accountId to BillMonth.of(i.dueDay) }
         }
-        return sum to n
+        return sum to bills.size
     }
 
     /** What an account's records did in `[from, endExclusive)` (MINT.md 5.6A), posted records only. */

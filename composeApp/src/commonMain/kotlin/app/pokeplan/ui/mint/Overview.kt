@@ -57,7 +57,7 @@ internal fun OverviewBreakdownBox(model: AppModel, startCurrency: String, onClos
             SectionLabel("Available money")
             MintValueRow("Liquid accounts", mint.show(b.liquidMinor, cur))
             MintValueRow("Bills due (${b.billsCount})", "−" + mint.show(b.billsMinor, cur), soft = true)
-            MintValueRow("Installments due (${b.installmentsCount})", "−" + mint.show(b.installmentsMinor, cur), soft = true)
+            MintValueRow("Credit bills due (${b.installmentsCount})", "−" + mint.show(b.installmentsMinor, cur), soft = true)
             HorizontalDivider(color = Pixel.Border)
             MintValueRow("Available", mint.show(b.availableMinor, cur))
             if (b.creditLines.isNotEmpty()) {

@@ -10,6 +10,7 @@ import app.pokeplan.mint.BudgetPeriod
 import app.pokeplan.mint.FeeKind
 import app.pokeplan.mint.FeeRule
 import app.pokeplan.mint.Frequency
+import app.pokeplan.mint.BillMonth
 import app.pokeplan.mint.InstallmentState
 import app.pokeplan.mint.Installments
 import app.pokeplan.mint.PlanEvery
@@ -901,7 +902,7 @@ class MintStoreTest {
     }
 
     @Test
-    fun anUnpaidInstallmentAsksForOneReminderLikeABillAndStopsWhenPaid() {
+    fun anUnpaidMonthlyBillAsksForOneReminderLikeABillAndStopsWhenPaid() {
         val s = setup()
         val m = s.mint
         val wallet = assertNotNull(m.addAccount("GCash", AccountType.EWALLET, "PHP", 500_000).record).id
@@ -914,18 +915,102 @@ class MintStoreTest {
         m.setBillReminders(true)
         val due = MintReminders.upcoming(m.data, app, s.clock.nowMillis(), zone)
         assertEquals(1, due.size)
-        val ref = MintReminders.installmentRef(plan.id, 1)
+        val ref = MintReminders.billRef(later, BillMonth(2026, 11))
         assertEquals(ref, due.single().billId)
-        assertEquals(plan.id to 1, MintReminders.parseInstallmentRef(ref))
+        assertEquals(later to BillMonth(2026, 11), MintReminders.parseBillRef(ref))
         assertTrue(MintReminders.stillWanted(m.data, ref, LocalDate(2026, 11, 9), m.today))
         // The words are the same generic ones unless the player allowed names; never an amount.
         assertEquals("A bill is coming up", MintReminders.text(m.data, ref).title)
         m.setBillReminderNames(true)
-        assertEquals("Headphones is coming up", MintReminders.text(m.data, ref).title)
+        assertEquals("SPayLater is coming up", MintReminders.text(m.data, ref).title)
         // Paid: no longer wanted.
         assertNotNull(m.payPlan(plan.id, 40_000, wallet).record)
         assertFalse(MintReminders.stillWanted(m.data, ref, LocalDate(2026, 11, 9), m.today))
         assertFalse(MintReminders.stillWanted(m.data, "plan:nobody:1", LocalDate(2026, 11, 9), m.today))
+        assertFalse(MintReminders.stillWanted(m.data, MintReminders.billRef("nobody", BillMonth(2026, 11)), LocalDate(2026, 11, 9), m.today))
+    }
+
+    private fun Setup.payLaterWithTwoPurchases(): Triple<String, String, Pair<app.pokeplan.mint.InstallmentPlan, app.pokeplan.mint.InstallmentPlan>> {
+        val wallet = assertNotNull(mint.addAccount("GCash", AccountType.EWALLET, "PHP", 500_000).record).id
+        val later = assertNotNull(mint.addAccount("SPayLater", AccountType.PAY_LATER, "PHP", statementDay = 5, dueDay = 15).record).id
+        // Today is 7 Nov: the purchase is on the 5 Dec statement and its first installment is due on the 15th, with no date typed.
+        val a = assertNotNull(mint.addPlanPurchase(later, "Headphones", 30_000, null, 3, PlanEvery.MONTH, null).record)
+        val b = assertNotNull(mint.addExistingPlan(
+            later, "Existing", listOf(app.pokeplan.mint.Installment(1, LocalDate(2026, 12, 16), 5_000), app.pokeplan.mint.Installment(2, LocalDate(2027, 1, 16), 5_000)),
+        ).record)
+        return Triple(wallet, later, a to b)
+    }
+
+    @Test
+    fun everyPurchaseDueInAMonthIsOneBillAndTheFirstDueDayComesFromTheAccount() {
+        val s = setup()
+        val (_, later, plans) = s.payLaterWithTwoPurchases()
+        assertEquals(listOf(LocalDate(2026, 12, 15), LocalDate(2027, 1, 15), LocalDate(2027, 2, 15)), plans.first.installments.map { it.dueDay })
+        val bills = s.mint.openBills(later)
+        assertEquals(listOf(BillMonth(2026, 12), BillMonth(2027, 1), BillMonth(2027, 2)), bills.map { it.month })
+        val december = bills.first()
+        assertEquals(15_000L, december.totalMinor)
+        assertEquals(LocalDate(2026, 12, 15), december.dueDay)
+        assertEquals(listOf("Headphones", "Existing"), december.lines.map { it.planName })
+        assertEquals(listOf(10_000L, 5_000L), december.lines.map { it.remainingMinor })
+        // The purchase is still inspectable on its own.
+        assertEquals(30_000L, s.mint.planView(plans.first.id)!!.remainingMinor)
+    }
+
+    @Test
+    fun purchasesInOneMonthShareOneReminder() {
+        val s = setup()
+        val later = assertNotNull(s.mint.addAccount("SPayLater", AccountType.PAY_LATER, "PHP").record).id
+        assertNotNull(s.mint.addPlanPurchase(later, "Headphones", 120_000, null, 3, PlanEvery.MONTH, LocalDate(2026, 11, 9)).record)
+        assertNotNull(s.mint.addPlanPurchase(later, "Desk lamp", 60_000, null, 3, PlanEvery.MONTH, LocalDate(2026, 11, 10)).record)
+        s.mint.setBillReminders(true)
+        val reminders = MintReminders.upcoming(s.mint.data, s.game.data, s.clock.nowMillis(), TimeZone.UTC)
+        assertEquals(listOf(MintReminders.billRef(later, BillMonth(2026, 11))), reminders.map { it.billId })
+        assertEquals(LocalDate(2026, 11, 9), reminders.single().dueDay)
+    }
+
+    @Test
+    fun payingABillSettlesItsMonthAcrossPurchasesBeforeAnyPurchaseGoesAhead() {
+        val s = setup()
+        val (wallet, later, plans) = s.payLaterWithTwoPurchases()
+        // The old plan-first order gave the headphones' January installment before the other purchase's December one.
+        val payment = assertNotNull(s.mint.payPlans(later, 15_000, wallet).record)
+        assertEquals(listOf(plans.first.id to 10_000L, plans.second.id to 5_000L), payment.planAllocations.map { it.planId to it.amountMinor })
+        assertEquals(listOf(BillMonth(2027, 1), BillMonth(2027, 2)), s.mint.openBills(later).map { it.month })
+        assertEquals(InstallmentState.PAID, s.mint.planView(plans.second.id)!!.installments[0].state)
+        // Nothing is left of December; paying it again is refused.
+        assertNotNull(s.mint.payBill(later, BillMonth(2026, 12), 100, wallet).refused)
+    }
+
+    @Test
+    fun payingALaterBillFirstFillsThatMonthThenSpillsForwardInDueOrder() {
+        val s = setup()
+        val (wallet, later, plans) = s.payLaterWithTwoPurchases()
+        val january = BillMonth(2027, 1)
+        val payment = assertNotNull(s.mint.payBill(later, january, 17_000, wallet).record)
+        // January's 15,000 first (the headphones, then the other), then 2,000 forward to December's earliest line.
+        assertEquals(
+            listOf(Triple(plans.first.id, 2, 10_000L), Triple(plans.second.id, 2, 5_000L), Triple(plans.first.id, 1, 2_000L)),
+            payment.planAllocations.map { Triple(it.planId, it.no, it.amountMinor) },
+        )
+        assertEquals(InstallmentState.PAID, s.mint.planView(plans.first.id)!!.installments[1].state)
+        assertEquals(InstallmentState.PARTIAL, s.mint.planView(plans.first.id)!!.installments[0].state)
+        assertEquals(15_000L - 2_000L, s.mint.openBills(later).first().remainingMinor)
+        assertTrue(s.mint.openBills(later).none { it.month == january })
+        // Voiding the payment reopens the bill by itself.
+        s.mint.setTransactionStatus(payment.id, TxStatus.VOIDED)
+        assertEquals(15_000L, s.mint.openBills(later).first { it.month == january }.remainingMinor)
+    }
+
+    @Test
+    fun alignmentMovesOnlyUnpaidMonthlyInstallmentsOntoTheAccountsDueDay() {
+        val s = setup()
+        val (wallet, later, plans) = s.payLaterWithTwoPurchases()
+        assertEquals(2, s.mint.alignInstallmentsToDueDay(later))
+        assertEquals(listOf(LocalDate(2026, 12, 15), LocalDate(2027, 1, 15)), s.mint.planView(plans.second.id)!!.installments.map { it.dueDay })
+        assertEquals(0, s.mint.alignInstallmentsToDueDay(later))
+        assertEquals(15_000L, s.mint.openBills(later).first().totalMinor)
+        assertNotNull(wallet)
     }
 
     @Test

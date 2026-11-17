@@ -29,6 +29,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.pokeplan.app.heal.Logged
 import app.pokeplan.mint.AccountStatus
+import app.pokeplan.mint.BillMonth
 import app.pokeplan.mint.BudgetPeriod
 import app.pokeplan.mint.CategoryKind
 import app.pokeplan.mint.FeeKind
@@ -38,6 +39,8 @@ import app.pokeplan.mint.InstallmentPlan
 import app.pokeplan.mint.InstallmentState
 import app.pokeplan.mint.Installments
 import app.pokeplan.mint.MintRules
+import app.pokeplan.mint.MonthlyBill
+import app.pokeplan.mint.MonthlyBills
 import app.pokeplan.mint.Money
 import app.pokeplan.mint.PlanEvery
 import app.pokeplan.mint.PlanView
@@ -104,6 +107,8 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
     var finished by remember(a.id) { mutableStateOf(false) }
     var buying by remember(a.id) { mutableStateOf(false) }
     var existing by remember(a.id) { mutableStateOf(false) }
+    var openBill by remember(a.id) { mutableStateOf<BillMonth?>(null) }
+    var allBills by remember(a.id) { mutableStateOf(false) }
     if (buying) Dialog({ buying = false }, DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize().padding(Spacing.L), contentAlignment = Alignment.Center) {
             FormBox { Column(Modifier.verticalScroll(rememberScrollState())) { NewPurchaseForm(model, a, startExisting = existing) { buying = false } } }
@@ -122,17 +127,26 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
                 .filter { it.second != 0L }.forEach { (label, minor) -> MintValueRow(label, mint.show(minor, a.currency), soft = true) }
             dayLine("Statement", a.statementDay, today)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             dayLine("Due", a.dueDay, today)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-            if (a.statementDay > 0 || a.dueDay > 0) Text("Account days are not reminders.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (plans.isNotEmpty()) Text("Plan reminders need Bill reminders on.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            val bills = mint.openBills(a.id)
+            if (plans.isNotEmpty() && !model.mintData.settings.billReminders) Text("Bill reminders are off.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (bills.isNotEmpty()) {
+                SectionLabel("Monthly bills")
+                val shown = if (allBills) bills else bills.take(BILLS_SHOWN)
+                shown.forEach { BillRow(model, it, openBill == it.month, { openBill = if (openBill == it.month) null else it.month }, problem) }
+                if (bills.size > BILLS_SHOWN) MintLine(onClick = { allBills = !allBills }, onClickLabel = if (allBills) "Show fewer months" else "Show later months") {
+                    Text(if (allBills) "Fewer months" else "Later months (${bills.size - BILLS_SHOWN})", style = MaterialTheme.typography.bodyLarge)
+                }
+                if (mint.misalignedInstallments(a.id) > 0) PixelButton("Use the ${ordinal(a.dueDay)} for every bill", { problem(null); mint.alignInstallmentsToDueDay(a.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            }
             val live = plans.filter { !it.finished }
             val done = plans.filter { it.finished }
-            if (plans.isNotEmpty()) SectionLabel("Installment plans")
+            if (plans.isNotEmpty()) SectionLabel("Purchases")
             live.forEach { PlanRow(model, it, open == it.plan.id, { open = if (open == it.plan.id) null else it.plan.id }, problem) }
             if (done.isNotEmpty()) {
                 MintLine(onClick = { finished = !finished }, onClickLabel = if (finished) "Hide finished plans" else "Show finished plans") { Text("Finished (${done.size})", style = MaterialTheme.typography.bodyLarge) }
                 if (finished) done.forEach { PlanRow(model, it, open == it.plan.id, { open = if (open == it.plan.id) null else it.plan.id }, problem) }
             }
-            PixelButton("Add plan", { existing = false; buying = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+            PixelButton("Add purchase", { existing = false; buying = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
         }
     }
 }
@@ -156,18 +170,64 @@ private fun PlanRow(model: AppModel, v: PlanView, open: Boolean, toggle: () -> U
     if (open) PlanOptions(model, v.plan.id, problem)
 }
 
+private const val BILLS_SHOWN = 3
+
+private fun BillMonth.label(): String = "${first.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} $year"
+
+/**
+ * One monthly bill of a credit account (MINT.md 5.6C): what falls due in the month across every purchase, its due day and what is left. It opens to the purchases
+ * that make it up (each opens its own plan to inspect or edit) and to the one place to pay it.
+ */
+@Composable
+internal fun BillRow(model: AppModel, bill: MonthlyBill, open: Boolean, toggle: () -> Unit, problem: (String?) -> Unit) {
+    val mint = model.mint
+    val cur = bill.currency
+    var inspect by remember(bill.accountId, bill.month) { mutableStateOf<String?>(null) }
+    HorizontalDivider(color = Pixel.Border)
+    MintLine(onClick = toggle, onClickLabel = if (open) "Hide bill" else "Show bill", trail = { Text(mint.show(bill.remainingMinor, cur), style = MaterialTheme.typography.titleSmall) }) {
+        Text(bill.month.label(), style = MaterialTheme.typography.bodyLarge)
+        Text(
+            listOf("Due ${bill.dueDay.compact()}", if (bill.lines.size == 1) "1 purchase" else "${bill.lines.size} purchases").joinToString(" · "),
+            style = MaterialTheme.typography.bodyMedium, color = if (bill.state == InstallmentState.OVERDUE) Pixel.Warning else Pixel.InkSoft,
+        )
+        if (bill.paidMinor > 0) Text("Paid ${mint.show(bill.paidMinor, cur)} of ${mint.show(bill.totalMinor, cur)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    }
+    if (open) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
+        bill.lines.forEach { l ->
+            MintLine(
+                onClick = { inspect = if (inspect == l.planId) null else l.planId }, onClickLabel = if (inspect == l.planId) "Hide purchase" else "Show purchase",
+                trail = { Text(mint.show(l.remainingMinor, cur), style = MaterialTheme.typography.bodyLarge) },
+            ) {
+                Text(l.planName, style = MaterialTheme.typography.bodyLarge)
+                Text("${l.no} of ${l.count}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            if (inspect == l.planId) PlanOptions(model, l.planId, problem)
+        }
+        HorizontalDivider(color = Pixel.Border)
+        PayForm(model, "${bill.accountId}${bill.month}", cur, bill.remainingMinor, bill.remainingMinor, caption = null, onResult = problem) { minor, source, day ->
+            mint.payBill(bill.accountId, bill.month, minor, source, day).note()
+        }
+    }
+}
+
 /** Pay toward a plan: the amount (the next installment's remaining by default), where from, the day, and the Pay button. Early or part payments go to the earliest installment first. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PayArea(model: AppModel, v: PlanView, defaultMinor: Long, resetKey: Any, onResult: (String?) -> Unit) {
-    val mint = model.mint
+    PayForm(model, v.plan.id, v.plan.currency, defaultMinor, resetKey, "Early or part payments go to the earliest installment first.", onResult) { minor, source, day ->
+        model.mint.payPlan(v.plan.id, minor, source, day).note()
+    }
+}
+
+/** The amount, payment source, day and Pay button shared by paying one plan and paying one monthly bill; [pay] returns the reason it was refused, or null when saved. */
+@Composable
+private fun PayForm(
+    model: AppModel, key: String, cur: String, defaultMinor: Long, resetKey: Any, caption: String?, onResult: (String?) -> Unit, pay: (Long, String, LocalDate) -> String?,
+) {
     val today = model.store.today
-    val planId = v.plan.id
-    val cur = v.plan.currency
     val sources = model.mintData.accounts.filter { it.status == AccountStatus.ACTIVE && !it.type.liability && it.currency == cur }
-    var amount by remember(planId, resetKey, defaultMinor) { mutableStateOf(Money.plain(defaultMinor, cur)) }
-    var from by remember(planId) { mutableStateOf(sources.firstOrNull()?.id) }
-    var payDay by remember(planId) { mutableStateOf(today) }
+    var amount by remember(key, resetKey, defaultMinor) { mutableStateOf(Money.plain(defaultMinor, cur)) }
+    var from by remember(key) { mutableStateOf(sources.firstOrNull()?.id) }
+    var payDay by remember(key) { mutableStateOf(today) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelField(
             amount, { amount = money(it) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -178,11 +238,11 @@ internal fun PayArea(model: AppModel, v: PlanView, defaultMinor: Long, resetKey:
         }
         FieldLabel("Paid on")
         PixelDateField(payDay, today, ModuleAccent.MINT.accent, { payDay = it ?: today }, max = today)
-        Text("Early or part payments go to the earliest installment first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        if (caption != null) Text(caption, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         FormSave("Pay", {
             val m = Money.parse(amount, cur)
             val src = from
-            onResult(if (m == null) "Check the amount." else if (src == null) "Choose where to pay from." else mint.payPlan(planId, m, src, payDay).note())
+            onResult(if (m == null) "Check the amount." else if (src == null) "Choose where to pay from." else pay(m, src, payDay))
         }, ModuleAccent.MINT.accent, enabled = amount.isNotBlank() && from != null)
     }
 }
@@ -223,7 +283,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
                     refused = if (total == null) "Check the amount."
                     else if (count == null) "Choose 1 to ${Installments.MAX_COUNT} installments."
                     else if (fee == null) "Check the fee."
-                    else mint.updatePlanTerms(planId, editName, total, count, editTerms.every, editTerms.firstDue(v.plan.startDay), fee, editTerms.kind).note()
+                    else mint.updatePlanTerms(planId, editName, total, count, editTerms.every, editTerms.firstDue(planAccount, v.plan.startDay), fee, editTerms.kind).note()
                     if (refused == null) editingPlan = false
                 }, ModuleAccent.MINT.accent, enabled = editName.isNotBlank())
                 PixelButton("Cancel", { editingPlan = false }, Modifier.fillMaxWidth(), Pixel.InkSoft)
@@ -334,7 +394,8 @@ internal class TermsState(count: String = "3", fee: String = "") {
     var interest by mutableStateOf(false)
     val count: Int? get() = countText.toIntOrNull()?.takeIf { it in 1..Installments.MAX_COUNT }
     val kind: FeeKind get() = if (interest) FeeKind.INTEREST else FeeKind.FEE
-    fun firstDue(date: LocalDate): LocalDate = firstOverride ?: Installments.dueOn(date, every, 1)
+    /** The first due day the player picked, else the one the account's statement and due days give (MINT.md 5.6C), else a step after [date]. */
+    fun firstDue(a: FinancialAccount, date: LocalDate): LocalDate = firstOverride ?: MonthlyBills.firstDue(a, date, every)
     fun fee(cur: String): FeeRule? = when (choice) {
         FeeChoice.NONE -> FeeRule.None
         FeeChoice.PER -> Money.parse(feeText, cur)?.let { FeeRule.PerInstallment(it) }
@@ -345,7 +406,7 @@ internal class TermsState(count: String = "3", fee: String = "") {
 
 private fun termsFor(plan: InstallmentPlan): TermsState = TermsState(plan.installments.size.toString()).apply {
     every = plan.every
-    firstOverride = plan.startDay
+    firstOverride = plan.installments.firstOrNull()?.dueDay ?: plan.startDay
     val rule = plan.feeRule ?: run {
         val fees = plan.installments.map { it.feeMinor }
         when {
@@ -432,7 +493,7 @@ internal fun createPlanPurchase(mint: app.pokeplan.app.mint.MintStore, a: Financ
     return if (total == null) "Check the amount."
     else if (count == null) "Choose 1 to ${Installments.MAX_COUNT} installments."
     else if (fee == null) "Check the fee."
-    else mint.addPlanPurchase(a.id, name, total, categoryId, count, t.every, t.firstDue(date), fee, t.kind, date).let { if (it.record != null) null else (it.refused ?: "That could not be saved.") }
+    else mint.addPlanPurchase(a.id, name, total, categoryId, count, t.every, t.firstDue(a, date), fee, t.kind, date).let { if (it.record != null) null else (it.refused ?: "That could not be saved.") }
 }
 
 /** The terms of an installment purchase: how many, how often, the first due date, a fee or interest, the live schedule, and the one caption. [total] and [date] come from the form around it. */
@@ -443,7 +504,7 @@ internal fun InstallmentTerms(model: AppModel, a: FinancialAccount, t: TermsStat
     val cur = a.currency
     val count = t.count
     val fee = t.fee(cur)
-    val firstDue = t.firstDue(date)
+    val firstDue = t.firstDue(a, date)
     val schedule = if (total != null && total > 0 && count != null && fee != null && Installments.checkRequest(a.type, total, count, fee) == app.pokeplan.mint.Check.Ok) Installments.generate(total, count, t.every, firstDue, fee) else null
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         // One control for the count (any number, 1 to the maximum), paired with how often it falls due.
@@ -559,45 +620,50 @@ private fun ExistingScheduleForm(model: AppModel, a: FinancialAccount, amounts: 
     }
 }
 
-/** One installment still owed and due within a window (or overdue), with its plan. */
-internal class DueInstallment(val view: PlanView, val installment: app.pokeplan.mint.InstallmentView)
+/** The monthly bill of a credit account that falls due within a window (or is overdue). */
+internal class DueBill(val account: FinancialAccount, val bill: MonthlyBill)
 
-/** The installments of every plan with something still owed, due within [withinDays] or overdue, soonest first (MINT.md 5.6A). */
-internal fun dueInstallments(model: AppModel, withinDays: Int): List<DueInstallment> {
+/** The monthly bills of every credit account with something still owed, due within [withinDays] or overdue, soonest first (MINT.md 5.6C). */
+internal fun dueBills(model: AppModel, withinDays: Int): List<DueBill> {
     val limit = kotlinx.datetime.LocalDate.fromEpochDays(model.store.today.toEpochDays() + withinDays)
-    return model.mint.planViews().flatMap { v ->
-        v.installments.filter { it.remainingMinor > 0 && it.state != InstallmentState.PAID && it.state != InstallmentState.CANCELLED && it.dueDay <= limit }.map { DueInstallment(v, it) }
-    }.sortedBy { it.installment.dueDay }
+    return model.mintData.accounts.filter { Installments.allowedFor(it.type) }
+        .flatMap { account -> model.mint.openBills(account.id).filter { it.dueDay <= limit }.map { DueBill(account, it) } }
+        .sortedBy { it.bill.dueDay }
 }
 
-/** The "Installments due" box of the Bills screen: each row opens to pay it or bill its fee. */
+/** The "Credit bills due" box of the Bills screen: one row per account and month, each opening to its purchases and to paying it. */
 @Composable
 internal fun InstallmentsDueBox(model: AppModel, startOpenFirst: Boolean = false) {
     val mint = model.mint
-    val due = dueInstallments(model, 30)
+    val due = dueBills(model, 30)
     if (due.isEmpty()) return
-    var open by remember { mutableStateOf<String?>(if (startOpenFirst) due.first().view.plan.id + due.first().installment.no else null) }
+    fun keyOf(d: DueBill) = d.account.id + d.bill.month
+    var open by remember { mutableStateOf<String?>(if (startOpenFirst) keyOf(due.first()) else null) }
     var refused by remember { mutableStateOf<String?>(null) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Installments due")
+            PixelTitle("Credit bills due")
             due.forEachIndexed { i, d ->
-                val inst = d.installment
-                val cur = d.view.plan.currency
-                val key = d.view.plan.id + inst.no
+                val key = keyOf(d)
                 if (i > 0) HorizontalDivider(color = Pixel.Border)
                 MintLine(
                     onClick = { open = if (open == key) null else key },
                     onClickLabel = if (open == key) "Hide options" else "Show options",
-                    trail = { Text(mint.show(inst.remainingMinor, cur), style = MaterialTheme.typography.titleSmall) },
+                    trail = { Text(mint.show(d.bill.remainingMinor, d.bill.currency), style = MaterialTheme.typography.titleSmall) },
                 ) {
-                    Text(d.view.plan.name, style = MaterialTheme.typography.bodyLarge)
-                    Text("${inst.dueDay.compact()} · installment ${inst.no} of ${d.view.installments.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    if (inst.state == InstallmentState.OVERDUE || inst.state == InstallmentState.PARTIAL) Text(inst.state.label, style = MaterialTheme.typography.bodyMedium, color = if (inst.state == InstallmentState.OVERDUE) Pixel.Warning else Pixel.InkSoft)
+                    Text(d.account.name, style = MaterialTheme.typography.bodyLarge)
+                    Text("${d.bill.dueDay.compact()} · ${if (d.bill.lines.size == 1) "1 purchase" else "${d.bill.lines.size} purchases"}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    if (d.bill.state == InstallmentState.OVERDUE || d.bill.state == InstallmentState.PARTIAL) {
+                        Text(d.bill.state.label, style = MaterialTheme.typography.bodyMedium, color = if (d.bill.state == InstallmentState.OVERDUE) Pixel.Warning else Pixel.InkSoft)
+                    }
                 }
                 if (open == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
-                    if (inst.feeMinor > 0 && !inst.feeRecorded) PixelButton("Bill it", { refused = mint.billInstallmentFee(d.view.plan.id, inst.no).note() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                    PayArea(model, d.view, inst.remainingMinor, inst.no) { refused = it }
+                    d.bill.lines.forEach { l ->
+                        MintValueRow("${l.planName} · ${l.no} of ${l.count}", mint.show(l.remainingMinor, d.bill.currency), soft = true)
+                    }
+                    PayForm(model, key, d.bill.currency, d.bill.remainingMinor, d.bill.remainingMinor, caption = null, onResult = { refused = it }) { minor, source, day ->
+                        mint.payBill(d.account.id, d.bill.month, minor, source, day).note()
+                    }
                 }
             }
             refused?.let { Report(model, it, NoticeTone.WARNING) }
