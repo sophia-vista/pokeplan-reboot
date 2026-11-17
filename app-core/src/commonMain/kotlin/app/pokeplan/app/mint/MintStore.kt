@@ -13,6 +13,7 @@ import app.pokeplan.mint.CategoryKind
 import app.pokeplan.mint.CardStyle
 import app.pokeplan.mint.Check
 import app.pokeplan.mint.CreditActivity
+import app.pokeplan.mint.CreditStatement
 import app.pokeplan.mint.FeeKind
 import app.pokeplan.mint.FeeRule
 import app.pokeplan.mint.InstallmentPlan
@@ -29,14 +30,18 @@ import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.Reconciliation
 import app.pokeplan.mint.ReviewRecord
 import app.pokeplan.mint.SettleStatus
+import app.pokeplan.mint.SavingsTarget
 import app.pokeplan.mint.StatementImport
 import app.pokeplan.mint.Transaction
+import app.pokeplan.mint.TransactionSplit
 import app.pokeplan.mint.TxSource
 import app.pokeplan.mint.TxStatus
 import app.pokeplan.mint.TxType
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.serialization.json.Json
@@ -103,13 +108,24 @@ class MintStore(
 
     // --- accounts ----------------------------------------------------------------------------------------------------
 
-    fun addAccount(name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "", group: String = "", card: String = "", limitMinor: Long = 0, statementDay: Int = 0, dueDay: Int = 0): Logged<FinancialAccount> {
+    fun addAccount(
+        name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "",
+        group: String = "", card: String = "", limitMinor: Long = 0, statementDay: Int = 0, dueDay: Int = 0,
+        annualAprBasisPoints: Int = 0, interestGraceDays: Int = 0,
+    ): Logged<FinancialAccount> {
         val code = currency.trim().uppercase()
         (MintRules.checkAccount(name, code, openingMinor, suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
         (MintRules.checkLimit(type, limitMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         (MintRules.checkCardDay(type, statementDay) as? Check.Refused)?.let { return Logged(null, it.reason) }
         (MintRules.checkCardDay(type, dueDay) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val account = FinancialAccount(newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX), createdMillis = nowMillis, card = MintRules.cardId(card), limitMinor = limitMinor, statementDay = statementDay, dueDay = dueDay)
+        if (annualAprBasisPoints !in 0..MintRules.MAX_APR_BASIS_POINTS) return Logged(null, "Enter an annual rate from 0 to 1000 percent.")
+        if (interestGraceDays !in 0..MintRules.MAX_GRACE_DAYS) return Logged(null, "Enter a grace period from 0 to ${MintRules.MAX_GRACE_DAYS} days.")
+        if (!Installments.allowedFor(type) && (annualAprBasisPoints != 0 || interestGraceDays != 0)) return Logged(null, "Interest estimates are for credit card and pay-later accounts.")
+        val account = FinancialAccount(
+            newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX),
+            createdMillis = nowMillis, card = MintRules.cardId(card), limitMinor = limitMinor, statementDay = statementDay, dueDay = dueDay,
+            annualAprBasisPoints = annualAprBasisPoints, interestGraceDays = interestGraceDays,
+        )
         update { it.copy(accounts = it.accounts + account) }
         return Logged(account)
     }
@@ -145,7 +161,8 @@ class MintStore(
 
     /** Whether [id] has records that depend on its currency: a transaction, a reconciliation or a bill paid from it. */
     fun hasHistory(id: String): Boolean =
-        data.transactions.any { it.accountId == id || it.toAccountId == id } || data.plans.any { it.accountId == id } || data.reconciliations.any { it.accountId == id } || data.bills.any { it.accountId == id }
+        data.transactions.any { it.accountId == id || it.toAccountId == id } || data.plans.any { it.accountId == id } ||
+            data.creditStatements.any { it.accountId == id } || data.reconciliations.any { it.accountId == id } || data.bills.any { it.accountId == id }
 
     /**
      * Edits an account: its name, type (only to another type on the same side, an asset stays an asset and a liability a liability), institution, group, last
@@ -155,14 +172,25 @@ class MintStore(
      */
     fun updateAccount(a: FinancialAccount): Logged<FinancialAccount> {
         val old = data.accounts.firstOrNull { it.id == a.id } ?: return Logged(null, "That account is gone.")
+        if ((data.plans.any { it.accountId == old.id } || data.creditStatements.any { it.accountId == old.id }) && !Installments.allowedFor(a.type))
+            return Logged(null, "This account has credit records. Keep it as a credit card or pay later account.")
+        if (a.annualAprBasisPoints !in 0..MintRules.MAX_APR_BASIS_POINTS) return Logged(null, "Enter an annual rate from 0 to 1000 percent.")
+        if (a.interestGraceDays !in 0..MintRules.MAX_GRACE_DAYS) return Logged(null, "Enter a grace period from 0 to ${MintRules.MAX_GRACE_DAYS} days.")
+        if (data.savingsTargets.any { it.status != PlanStatus.ARCHIVED && old.id in it.accountIds } &&
+            (a.currency.trim().uppercase() != old.currency || a.type != old.type))
+            return Logged(null, "This account is linked to a savings target. Remove it from the target before changing its type or currency.")
         val currency = if (a.currency == old.currency || hasHistory(old.id)) old.currency else a.currency.trim().uppercase()
         (MintRules.checkAccount(a.name, currency, a.openingMinor, a.suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val newType = if (a.type.liability == old.type.liability) a.type else old.type
+        if (!Installments.allowedFor(newType) && (a.annualAprBasisPoints != 0 || a.interestGraceDays != 0))
+            return Logged(null, "Interest estimates are for credit card and pay-later accounts.")
         (MintRules.checkLimit(newType, a.limitMinor) as? Check.Refused)?.let { if (Installments.allowedFor(newType)) return Logged(null, it.reason) }
         if (Installments.allowedFor(newType)) listOf(a.statementDay, a.dueDay).forEach { d -> (MintRules.checkCardDay(newType, d) as? Check.Refused)?.let { return Logged(null, it.reason) } }
         val next = old.copy(
             name = a.name.trim(), institution = a.institution.trim().take(MintRules.NAME_MAX), suffix = a.suffix.trim(), group = a.group.trim().take(MintRules.NAME_MAX),
             type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = MintRules.cardId(a.card), hideFromTotal = a.hideFromTotal, appPackage = MintRules.cleanPackage(a.appPackage), limitMinor = if (Installments.allowedFor(newType)) a.limitMinor else 0, statementDay = if (Installments.allowedFor(newType)) a.statementDay else 0, dueDay = if (Installments.allowedFor(newType)) a.dueDay else 0,
+            annualAprBasisPoints = if (Installments.allowedFor(newType)) a.annualAprBasisPoints else 0,
+            interestGraceDays = if (Installments.allowedFor(newType)) a.interestGraceDays else 0,
         )
         update { d -> d.copy(accounts = d.accounts.map { if (it.id == a.id) next else it }) }
         return Logged(next)
@@ -174,9 +202,16 @@ class MintStore(
 
     /** Deletes an account with no history; one with history is refused and should be archived instead (MINT.md section 4.6). Returns the reason, or null when deleted. */
     fun deleteAccount(id: String): String? {
-        if (data.transactions.any { it.accountId == id || it.toAccountId == id } || data.reconciliations.any { it.accountId == id })
-            return "This account has history. Archive it instead, or erase its transactions first."
-        update { d -> d.copy(accounts = d.accounts.filterNot { it.id == id }, bills = d.bills.map { if (it.accountId == id) it.copy(accountId = null) else it }) }
+        if (data.transactions.any { it.accountId == id || it.toAccountId == id } ||
+            data.reconciliations.any { it.accountId == id } ||
+            data.plans.any { it.accountId == id } || data.creditStatements.any { it.accountId == id } ||
+            data.savingsTargets.any { it.status != PlanStatus.ARCHIVED && id in it.accountIds })
+            return "This account has records, installment plans or an active savings target. Remove those links or archive it instead."
+        update { d -> d.copy(
+            accounts = d.accounts.filterNot { it.id == id },
+            bills = d.bills.map { if (it.accountId == id) it.copy(accountId = null) else it },
+            savingsTargets = d.savingsTargets.map { target -> target.copy(accountIds = target.accountIds.filterNot { it == id }) },
+        ) }
         return null
     }
 
@@ -199,7 +234,8 @@ class MintStore(
 
     /** Deletes a category nothing uses; one in use is refused and should be archived (MINT.md section 6: no history is lost). Returns the reason, or null. */
     fun deleteCategory(id: String): String? {
-        if (data.transactions.any { it.categoryId == id } || data.budgets.any { it.categoryId == id } || data.bills.any { it.categoryId == id })
+        if (data.transactions.any { it.categoryId == id || it.splits.any { split -> split.categoryId == id } } ||
+            data.budgets.any { it.categoryId == id } || data.bills.any { it.categoryId == id })
             return "Something uses this category. Archive it instead."
         update { d -> d.copy(categories = d.categories.filterNot { it.id == id }) }
         return null
@@ -213,10 +249,14 @@ class MintStore(
      */
     fun record(
         type: TxType, amountMinor: Long, accountId: String, toAccountId: String? = null, categoryId: String? = null, payee: String = "", note: String = "",
-        atMillis: Long = nowMillis, status: TxStatus = TxStatus.POSTED, up: Boolean = true, refundOf: String? = null,
+        atMillis: Long = nowMillis, status: TxStatus = TxStatus.POSTED, up: Boolean = true, refundOf: String? = null, splits: List<TransactionSplit> = emptyList(),
     ): Logged<Transaction> {
         val currency = data.accounts.firstOrNull { it.id == accountId }?.currency ?: return Logged(null, "Choose an account.")
-        val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis)
+        if (type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == toAccountId }?.let { target ->
+                Installments.allowedFor(target.type) && Installments.views(data, today).any { it.plan.accountId == target.id && it.remainingMinor > 0 }
+            } == true)
+            return Logged(null, "Repayments to this account must be allocated to its unpaid installment plans.")
+        val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }
         return Logged(tx)
@@ -225,15 +265,27 @@ class MintStore(
     /** Changes what was written down. The account's currency can not change under a record; a source of [TxSource.ADJUSTMENT] stays an adjustment. */
     fun updateTransaction(t: Transaction): Logged<Transaction> {
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
-        val next = t.copy(planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, source = old.source, createdMillis = old.createdMillis, importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint, day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX))
+        val next = t.copy(
+            planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, planAllocations = old.planAllocations,
+            creditStatementId = old.creditStatementId, source = old.source, createdMillis = old.createdMillis,
+            importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint,
+            day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
+        )
         // A record an installment plan counts on keeps its type, amount and accounts; the plan is what changes (MINT.md 5.6A).
-        if (old.planId != null && (next.type != old.type || next.amountMinor != old.amountMinor || next.accountId != old.accountId || next.toAccountId != old.toAccountId))
+        if ((old.planId != null || old.planAllocations.isNotEmpty()) && (next.type != old.type || next.amountMinor != old.amountMinor || next.accountId != old.accountId || next.toAccountId != old.toAccountId))
             return Logged(null, "This record belongs to an installment plan. Change the plan instead.")
         // Editing a record on an account that was since closed is allowed to keep its history readable; only the amount rules apply there.
         (MintRules.checkAmount(next.amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val open = data.copy(accounts = data.accounts.map { it.copy(status = AccountStatus.ACTIVE) })
         (MintRules.checkTransaction(open, next) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        update { d -> d.copy(transactions = d.transactions.map { if (it.id == t.id) next else it }) }
+        update { d ->
+            d.copy(
+                transactions = d.transactions.map { if (it.id == t.id) next else it },
+                plans = d.plans.map { plan ->
+                    if (plan.purchaseTxId == t.id && next.payee.isNotBlank()) plan.copy(name = next.payee.trim().take(MintRules.NAME_MAX)) else plan
+                },
+            )
+        }
         return Logged(next)
     }
 
@@ -310,7 +362,11 @@ class MintStore(
     }
 
     /** Pending, posted, excluded (kept in history, left out of spending) or voided (kept, counted nowhere). */
-    fun setTransactionStatus(id: String, status: TxStatus) { if (status == TxStatus.POSTED || planOfPurchase(id) == null) setStatus(id, status) }
+    fun setTransactionStatus(id: String, status: TxStatus): Boolean {
+        if (data.transactions.none { it.id == id } || (status != TxStatus.POSTED && planOfPurchase(id) != null)) return false
+        setStatus(id, status)
+        return true
+    }
 
     private fun setStatus(id: String, status: TxStatus) = update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) it.copy(status = status) else it }) }
 
@@ -328,6 +384,7 @@ class MintStore(
             transactions = d.transactions.filterNot { it.id == id },
             reconciliations = d.reconciliations.map { if (it.adjustmentTxId == id) it.copy(adjustmentTxId = null) else it },
             billPayments = d.billPayments.map { if (it.txId == id) it.copy(txId = null) else it },
+            creditStatements = d.creditStatements.map { if (it.estimatedInterestTxId == id) it.copy(estimatedInterestTxId = null) else it },
         )
     }
 
@@ -358,6 +415,52 @@ class MintStore(
     fun setBudgetStatus(id: String, status: PlanStatus) = update { d -> d.copy(budgets = d.budgets.map { if (it.id == id) it.copy(status = status) else it }) }
 
     fun deleteBudget(id: String) = update { d -> d.copy(budgets = d.budgets.filterNot { it.id == id }) }
+
+    fun addSavingsTarget(name: String, targetMinor: Long, currency: String, accountIds: List<String>, targetDay: LocalDate? = null): Logged<SavingsTarget> {
+        val cleanName = name.trim().take(MintRules.NAME_MAX)
+        if (cleanName.isBlank()) return Logged(null, "Give the savings target a name.")
+        (MintRules.checkAmount(targetMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (MintRules.checkCurrency(currency) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        checkSavingsAccounts(currency, accountIds)?.let { return Logged(null, it) }
+        val target = SavingsTarget(newId(), cleanName, targetMinor, currency, accountIds.distinct(), targetDay, createdMillis = nowMillis)
+        update { it.copy(savingsTargets = it.savingsTargets + target) }
+        return Logged(target)
+    }
+
+    fun updateSavingsTarget(target: SavingsTarget): Logged<SavingsTarget> {
+        val old = data.savingsTargets.firstOrNull { it.id == target.id } ?: return Logged(null, "That savings target is gone.")
+        val cleanName = target.name.trim().take(MintRules.NAME_MAX)
+        if (cleanName.isBlank()) return Logged(null, "Give the savings target a name.")
+        (MintRules.checkAmount(target.targetMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (MintRules.checkCurrency(target.currency) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        checkSavingsAccounts(target.currency, target.accountIds, target.id)?.let { return Logged(null, it) }
+        val next = old.copy(name = cleanName, targetMinor = target.targetMinor, accountIds = target.accountIds.distinct(), targetDay = target.targetDay)
+        update { d -> d.copy(savingsTargets = d.savingsTargets.map { if (it.id == target.id) next else it }) }
+        return Logged(next)
+    }
+
+    private fun checkSavingsAccounts(currency: String, ids: List<String>, exceptId: String? = null): String? {
+        val unique = ids.distinct()
+        if (unique.isEmpty()) return "Choose at least one account for this target."
+        if (unique.size != ids.size) return "An account is listed twice."
+        for (id in unique) {
+            val account = data.accounts.firstOrNull { it.id == id } ?: return "A linked account is gone."
+            if (account.type.liability || account.currency != currency) return "Choose asset accounts in $currency."
+            if (data.savingsTargets.any { it.id != exceptId && it.status != PlanStatus.ARCHIVED && id in it.accountIds })
+                return "An account can count toward only one active savings target."
+        }
+        return null
+    }
+
+    fun setSavingsTargetStatus(id: String, status: PlanStatus): String? {
+        val target = data.savingsTargets.firstOrNull { it.id == id } ?: return "That savings target is gone."
+        if (status != PlanStatus.ARCHIVED) checkSavingsAccounts(target.currency, target.accountIds, target.id)?.let { return it }
+        update { d -> d.copy(savingsTargets = d.savingsTargets.map { if (it.id == id) it.copy(status = status) else it }) }
+        return null
+    }
+
+    fun deleteSavingsTarget(id: String) =
+        update { d -> d.copy(savingsTargets = d.savingsTargets.filterNot { it.id == id }) }
 
     // --- bills -------------------------------------------------------------------------------------------------------
 
@@ -441,7 +544,13 @@ class MintStore(
 
     private fun atMillis(day: LocalDate): Long = if (day == today) nowMillis else day.atStartOfDayIn(zone).toEpochMilliseconds() + 12 * 3_600_000L
 
-    private fun creditAccount(id: String): FinancialAccount? = data.accounts.firstOrNull { it.id == id }?.takeIf { Installments.allowedFor(it.type) && it.status == AccountStatus.ACTIVE }
+    private fun creditAccount(id: String, allowInactive: Boolean = false): FinancialAccount? =
+        data.accounts.firstOrNull { it.id == id }?.takeIf { Installments.allowedFor(it.type) && (allowInactive || it.status == AccountStatus.ACTIVE) }
+
+    private fun checkPlanTransfer(data: MintData, tx: Transaction, destinationId: String): Check {
+        val paymentData = data.copy(accounts = data.accounts.map { if (it.id == destinationId) it.copy(status = AccountStatus.ACTIVE) else it })
+        return MintRules.checkTransaction(paymentData, tx)
+    }
 
     /**
      * A purchase paid later (MINT.md 5.6A): writes **one** expense at the full [totalMinor] on the credit account, on [day], and the plan with its generated schedule,
@@ -461,7 +570,10 @@ class MintStore(
         val tx = Transaction(txId, TxType.EXPENSE, totalMinor, account.currency, atMillis(day), day, account.id, categoryId = categoryId, payee = name.trim().take(MintRules.NAME_MAX * 2), createdMillis = nowMillis)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val planId = newId()
-        val plan = InstallmentPlan(planId, account.id, name.trim().take(MintRules.NAME_MAX), account.currency, txId, totalMinor, day, every, feeKind, Installments.generate(totalMinor, count, every, firstDue, fee), nowMillis)
+        val plan = InstallmentPlan(
+            planId, account.id, name.trim().take(MintRules.NAME_MAX), account.currency, txId, totalMinor, day, every, feeKind,
+            Installments.generate(totalMinor, count, every, firstDue, fee), nowMillis, feeRule = fee,
+        )
         update { it.copy(transactions = it.transactions + tx.copy(planId = planId), plans = it.plans + plan) }
         return Logged(plan)
     }
@@ -480,7 +592,10 @@ class MintStore(
         val opening = if (addToStartingBalance) account.openingMinor + total else account.openingMinor
         if (opening > app.pokeplan.mint.Money.MAX_MINOR) return Logged(null, "That total looks wrong.")
         val numbered = rows.mapIndexed { i, r -> r.copy(no = i + 1) }
-        val plan = InstallmentPlan(newId(), account.id, name.trim().take(MintRules.NAME_MAX), account.currency, null, total, numbered.first().dueDay, PlanEvery.MONTH, feeKind, numbered, nowMillis)
+        val plan = InstallmentPlan(
+            newId(), account.id, name.trim().take(MintRules.NAME_MAX), account.currency, null, total, numbered.first().dueDay,
+            PlanEvery.MONTH, feeKind, numbered, nowMillis, openingBalanceIncluded = addToStartingBalance,
+        )
         update { d -> d.copy(plans = d.plans + plan, accounts = d.accounts.map { if (it.id == account.id) it.copy(openingMinor = opening) else it }) }
         return Logged(plan)
     }
@@ -493,16 +608,41 @@ class MintStore(
     fun payPlan(planId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today): Logged<Transaction> {
         val view = planView(planId) ?: return Logged(null, "That plan is gone.")
         val plan = view.plan
-        val to = creditAccount(plan.accountId) ?: return Logged(null, "That account is not open.")
+        val to = creditAccount(plan.accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
         val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
         if (from.type.liability) return Logged(null, "Pay from a bank, wallet or cash account.")
         if (day > today) return Logged(null, "A payment cannot be dated in the future.")
         (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (amountMinor > view.remainingMinor) return Logged(null, "That is more than is left on this plan.")
         val tx = Transaction(newId(), TxType.TRANSFER, amountMinor, from.currency, atMillis(day), day, from.id, toAccountId = to.id, createdMillis = nowMillis, planId = planId)
-        (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (checkPlanTransfer(data, tx, to.id) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val after = Installments.view(data.copy(transactions = data.transactions + tx), plan, today)
         val fees = after.installments.filter { it.paidMinor > 0 && it.feeMinor > 0 && !it.feeRecorded }.map { feeRecord(plan, it.no, it.feeMinor, day, plan.feeKind) }
+        update { it.copy(transactions = it.transactions + tx + fees) }
+        return Logged(tx)
+    }
+
+    /** A repayment is allocated in due-date order across every unpaid plan on the credit account. */
+    fun payPlans(accountId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today): Logged<Transaction> {
+        val to = creditAccount(accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
+        val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
+        if (from.type.liability) return Logged(null, "Pay from a bank, wallet or cash account.")
+        if (day > today) return Logged(null, "A payment cannot be dated in the future.")
+        (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val allocations = Installments.allocatePayment(data, accountId, amountMinor, today)
+        if (allocations.isEmpty()) return Logged(null, "There are no unpaid plans on this account.")
+        val tx = Transaction(
+            id = newId(), type = TxType.TRANSFER, amountMinor = amountMinor, currency = from.currency, atMillis = atMillis(day), day = day,
+            accountId = from.id, toAccountId = to.id, createdMillis = nowMillis, planAllocations = allocations,
+        )
+        (checkPlanTransfer(data, tx, to.id) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val withPayment = data.copy(transactions = data.transactions + tx)
+        val fees = allocations.flatMap { allocation ->
+            val plan = data.plans.first { it.id == allocation.planId }
+            Installments.view(withPayment, plan, today).installments
+                .filter { it.paidMinor > 0 && it.feeMinor > 0 && !it.feeRecorded }
+                .map { feeRecord(plan, it.no, it.feeMinor, day, plan.feeKind) }
+        }
         update { it.copy(transactions = it.transactions + tx + fees) }
         return Logged(tx)
     }
@@ -558,22 +698,138 @@ class MintStore(
      * installments stay in order of due day.
      */
     fun updateInstallment(planId: String, no: Int, dueDay: LocalDate, feeMinor: Long): Boolean {
+        val installment = planView(planId)?.installments?.firstOrNull { it.no == no } ?: return false
+        return updateInstallment(planId, no, dueDay, installment.principalMinor, feeMinor)
+    }
+
+    fun updateInstallment(planId: String, no: Int, dueDay: LocalDate, principalMinor: Long, feeMinor: Long): Boolean {
         val view = planView(planId) ?: return false
         val inst = view.installments.firstOrNull { it.no == no } ?: return false
-        if (inst.paidMinor > 0 || inst.feeRecorded || feeMinor < 0 || feeMinor > app.pokeplan.mint.Money.MAX_MINOR) return false
-        val ordered = view.plan.installments.map { if (it.no == no) it.copy(dueDay = dueDay, feeMinor = feeMinor) else it }
+        if (inst.paidMinor > 0 || inst.feeRecorded || inst.lateMinor > 0 || view.refundedMinor > 0 ||
+            principalMinor < 0 || principalMinor > app.pokeplan.mint.Money.MAX_MINOR ||
+            feeMinor < 0 || feeMinor > app.pokeplan.mint.Money.MAX_MINOR) return false
+        val ordered = view.plan.installments.map { if (it.no == no) it.copy(dueDay = dueDay, principalMinor = principalMinor, feeMinor = feeMinor) else it }
         if (ordered.zipWithNext().any { (a, b) -> a.dueDay > b.dueDay }) return false
-        update { d -> d.copy(plans = d.plans.map { if (it.id == planId) it.copy(installments = ordered) else it }) }
+        val total = ordered.sumOf { it.principalMinor }
+        if (total <= 0 || total > app.pokeplan.mint.Money.MAX_MINOR) return false
+        val plan = view.plan.copy(totalMinor = total, installments = ordered, feeRule = null)
+        val purchase = plan.purchaseTxId?.let { id -> data.transactions.firstOrNull { it.id == id } }
+        val account = data.accounts.firstOrNull { it.id == plan.accountId } ?: return false
+        val opening = if (plan.openingBalanceIncluded) account.openingMinor + total - view.plan.totalMinor else account.openingMinor
+        if (opening !in 0..app.pokeplan.mint.Money.MAX_MINOR) return false
+        update { d ->
+            d.copy(
+                plans = d.plans.map { if (it.id == planId) plan else it },
+                transactions = d.transactions.map { tx -> if (tx.id == purchase?.id) tx.copy(amountMinor = total) else tx },
+                accounts = d.accounts.map { a -> if (a.id == account.id) a.copy(openingMinor = opening) else a },
+            )
+        }
         return true
+    }
+
+    fun updatePlanName(planId: String, name: String): Logged<InstallmentPlan> {
+        val plan = data.plans.firstOrNull { it.id == planId } ?: return Logged(null, "That plan is gone.")
+        val clean = name.trim().take(MintRules.NAME_MAX)
+        if (clean.isBlank()) return Logged(null, "Give the purchase or schedule a name.")
+        val updated = plan.copy(name = clean)
+        update { d ->
+            d.copy(
+                plans = d.plans.map { if (it.id == planId) updated else it },
+                transactions = d.transactions.map { tx -> if (tx.id == plan.purchaseTxId) tx.copy(payee = clean) else tx },
+            )
+        }
+        return Logged(updated)
+    }
+
+    fun canEditPlanTerms(planId: String): Boolean {
+        val plan = data.plans.firstOrNull { it.id == planId } ?: return false
+        return data.transactions.none { it.planId == planId && it.id != plan.purchaseTxId }
+    }
+
+    fun updatePlanTerms(
+        planId: String, name: String, totalMinor: Long, count: Int, every: PlanEvery, firstDue: LocalDate, fee: FeeRule, feeKind: FeeKind,
+    ): Logged<InstallmentPlan> {
+        val old = data.plans.firstOrNull { it.id == planId } ?: return Logged(null, "That plan is gone.")
+        if (!canEditPlanTerms(planId)) return Logged(null, "A payment, fee or refund has already changed this plan.")
+        val account = creditAccount(old.accountId) ?: return Logged(null, "That account is not open.")
+        val cleanName = name.trim().take(MintRules.NAME_MAX)
+        if (cleanName.isBlank()) return Logged(null, "Give the purchase or schedule a name.")
+        if (feeKind == FeeKind.LATE) return Logged(null, "Choose fee or interest.")
+        (Installments.checkRequest(account.type, totalMinor, count, fee) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val installments = Installments.generate(totalMinor, count, every, firstDue, fee)
+        val opening = if (old.openingBalanceIncluded) account.openingMinor + totalMinor - old.totalMinor else account.openingMinor
+        if (opening !in 0..app.pokeplan.mint.Money.MAX_MINOR) return Logged(null, "That opening balance looks wrong.")
+        val updated = old.copy(name = cleanName, totalMinor = totalMinor, startDay = firstDue, every = every, feeKind = feeKind, installments = installments, feeRule = fee)
+        val purchase = old.purchaseTxId?.let { id -> data.transactions.firstOrNull { it.id == id } }
+        if (old.purchaseTxId != null && purchase == null) return Logged(null, "The purchase record is missing.")
+        val changedPurchase = purchase?.copy(amountMinor = totalMinor, payee = cleanName)
+        if (changedPurchase != null) (MintRules.checkTransaction(data, changedPurchase) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { d ->
+            d.copy(
+                plans = d.plans.map { if (it.id == planId) updated else it },
+                transactions = if (changedPurchase == null) d.transactions else d.transactions.map { if (it.id == changedPurchase.id) changedPurchase else it },
+                accounts = d.accounts.map { a -> if (a.id == account.id) a.copy(openingMinor = opening) else a },
+            )
+        }
+        return Logged(updated)
     }
 
     /** Removes the plan and leaves every record it made (the purchase, fees, repayments, refunds) in place, unlinked; they are ordinary records again. */
     fun deletePlan(planId: String) = update { d ->
-        d.copy(plans = d.plans.filterNot { it.id == planId }, transactions = d.transactions.map { if (it.planId == planId) it.copy(planId = null, planNo = null) else it })
+        d.copy(
+            plans = d.plans.filterNot { it.id == planId },
+            transactions = d.transactions.map { transaction ->
+                val unlinked = if (transaction.planId == planId) transaction.copy(planId = null, planNo = null) else transaction
+                unlinked.copy(planAllocations = unlinked.planAllocations.filterNot { it.planId == planId })
+            },
+        )
     }
 
     /** What an account did over a period: purchases, fees, interest, late fees, refunds and repayments (MINT.md 5.6A). */
     fun creditActivity(accountId: String, from: LocalDate, endExclusive: LocalDate): CreditActivity = Installments.activity(data, accountId, from, endExclusive)
+
+    fun recordCreditStatement(
+        accountId: String, statementDay: LocalDate, statementBalanceMinor: Long, minimumPaymentMinor: Long, dueDay: LocalDate,
+    ): Logged<CreditStatement> {
+        val account = data.accounts.firstOrNull { it.id == accountId } ?: return Logged(null, "That account is gone.")
+        if (account.status != AccountStatus.ACTIVE) return Logged(null, "That account is not open.")
+        if (!Installments.allowedFor(account.type)) return Logged(null, "Choose a credit card or pay-later account.")
+        if (statementDay > today) return Logged(null, "A statement date cannot be in the future.")
+        if (dueDay <= statementDay) return Logged(null, "The payment due date must be after the statement date.")
+        if (statementBalanceMinor !in 0..app.pokeplan.mint.Money.MAX_MINOR || minimumPaymentMinor !in 0..app.pokeplan.mint.Money.MAX_MINOR)
+            return Logged(null, "Those statement amounts look wrong.")
+        if (minimumPaymentMinor > statementBalanceMinor) return Logged(null, "The minimum payment cannot be more than the statement balance.")
+        if (data.creditStatements.any { it.accountId == accountId && it.statementDay == statementDay })
+            return Logged(null, "A statement is already recorded for that date.")
+
+        val previous = data.creditStatements.filter { it.accountId == accountId && it.statementDay < statementDay }.maxByOrNull { it.statementDay }
+        val interestStart = previous?.dueDay?.plus(DatePeriod(days = account.interestGraceDays + 1))
+        val interestMinor = if (interestStart != null && interestStart <= statementDay)
+            MintRules.simpleInterestEstimate(data, account, interestStart, statementDay)
+        else 0L
+        val statementId = newId()
+        val interestId = newId().takeIf { interestMinor > 0 }
+        val statement = CreditStatement(
+            statementId, accountId, statementDay, statementBalanceMinor, minimumPaymentMinor, dueDay, interestId, nowMillis,
+        )
+        val interest = interestId?.let {
+            Transaction(
+                id = it, type = TxType.FEE, amountMinor = interestMinor, currency = account.currency,
+                atMillis = noonOf(statementDay), day = statementDay, accountId = accountId, payee = "Estimated interest",
+                note = "Simple daily APR/365 estimate; not a lender quote.", createdMillis = nowMillis,
+                feeKind = FeeKind.INTEREST, creditStatementId = statementId,
+            )
+        }
+        val withStatement = data.copy(creditStatements = data.creditStatements + statement)
+        interest?.let { tx -> (MintRules.checkTransaction(withStatement, tx) as? Check.Refused)?.let { return Logged(null, it.reason) } }
+        update { d ->
+            d.copy(
+                creditStatements = d.creditStatements + statement,
+                transactions = if (interest == null) d.transactions else d.transactions + interest,
+            )
+        }
+        return Logged(statement)
+    }
 
     // --- reconciliation and review (the only things that can pay) -----------------------------------------------------------
 
@@ -693,10 +949,10 @@ object MintExport {
     private val pretty = Json { encodeDefaults = true; prettyPrint = true }
 
     private val fields: Map<MintKinds, List<String>> = mapOf(
-        MintKinds.ACCOUNTS to listOf("accounts", "plans"),
+        MintKinds.ACCOUNTS to listOf("accounts", "plans", "creditStatements"),
         MintKinds.CATEGORIES to listOf("categories"),
-        MintKinds.TRANSACTIONS to listOf("transactions"),
-        MintKinds.BUDGETS to listOf("budgets"),
+        MintKinds.TRANSACTIONS to listOf("transactions", "creditStatements"),
+        MintKinds.BUDGETS to listOf("budgets", "savingsTargets"),
         MintKinds.BILLS to listOf("bills", "billPayments"),
         MintKinds.REVIEWS to listOf("reconciliations", "reviews"),
     )
@@ -708,10 +964,24 @@ object MintExport {
     }
 
     fun without(d: MintData, kind: MintKinds): MintData = when (kind) {
-        MintKinds.ACCOUNTS -> d.copy(accounts = emptyList(), plans = emptyList(), transactions = emptyList(), reconciliations = emptyList(), bills = d.bills.map { it.copy(accountId = null) })
-        MintKinds.CATEGORIES -> d.copy(categories = emptyList(), transactions = d.transactions.map { it.copy(categoryId = null) }, budgets = d.budgets.filter { it.categoryId == null }, bills = d.bills.map { it.copy(categoryId = null) })
-        MintKinds.TRANSACTIONS -> d.copy(transactions = emptyList(), plans = emptyList(), reconciliations = d.reconciliations.map { it.copy(adjustmentTxId = null) }, billPayments = d.billPayments.map { it.copy(txId = null) })
-        MintKinds.BUDGETS -> d.copy(budgets = emptyList())
+        MintKinds.ACCOUNTS -> d.copy(
+            accounts = emptyList(), plans = emptyList(), creditStatements = emptyList(), transactions = emptyList(), reconciliations = emptyList(),
+            bills = d.bills.map { it.copy(accountId = null) },
+            savingsTargets = d.savingsTargets.map { it.copy(accountIds = emptyList()) },
+        )
+        MintKinds.CATEGORIES -> d.copy(
+            categories = emptyList(),
+            transactions = d.transactions.map { it.copy(categoryId = null, splits = it.splits.map { split -> split.copy(categoryId = null) }) },
+            budgets = d.budgets.filter { it.categoryId == null },
+            bills = d.bills.map { it.copy(categoryId = null) },
+        )
+        MintKinds.TRANSACTIONS -> d.copy(
+            transactions = emptyList(), plans = emptyList(),
+            creditStatements = d.creditStatements.map { it.copy(estimatedInterestTxId = null) },
+            reconciliations = d.reconciliations.map { it.copy(adjustmentTxId = null) },
+            billPayments = d.billPayments.map { it.copy(txId = null) },
+        )
+        MintKinds.BUDGETS -> d.copy(budgets = emptyList(), savingsTargets = emptyList())
         MintKinds.BILLS -> d.copy(bills = emptyList(), billPayments = emptyList(), transactions = d.transactions.map { it.copy(billId = null, billDueDay = null) })
         MintKinds.REVIEWS -> d.copy(reconciliations = emptyList(), reviews = emptyList())
     }

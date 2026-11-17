@@ -55,6 +55,10 @@ data class FinancialAccount(
     /** A credit card's statement day and payment due day of the month, 1 to 31; 0 is none (MINT.md 4.3D). Information only: no reminder or record is made from them. */
     val statementDay: Int = 0,
     val dueDay: Int = 0,
+    /** Optional annual rate for simple estimated interest, in basis points; zero disables estimation. */
+    val annualAprBasisPoints: Int = 0,
+    /** Days after the latest statement's due date before estimated interest starts. */
+    val interestGraceDays: Int = 0,
 )
 
 /**
@@ -134,7 +138,21 @@ data class Transaction(
     val planNo: Int? = null,
     /** Only for [TxType.FEE]: a plain fee, interest or a late fee. Null reads as a plain fee. */
     val feeKind: FeeKind? = null,
+    /** A transfer may be allocated across several installment plans on its destination account. */
+    val planAllocations: List<PlanPaymentAllocation> = emptyList(),
+    /** Optional category allocation; when present, its parts must add up to this transaction's amount. */
+    val splits: List<TransactionSplit> = emptyList(),
+    /** The statement whose estimated interest this transaction records, null for ordinary fees. */
+    val creditStatementId: String? = null,
+    /** One optional receipt image as base64 PNG, kept inside this transaction's sealed record. */
+    val receiptImage: String = "",
 )
+
+@Serializable
+data class PlanPaymentAllocation(val planId: String, val amountMinor: Long)
+
+@Serializable
+data class TransactionSplit(val categoryId: String?, val amountMinor: Long)
 
 @Serializable
 enum class BudgetPeriod(val label: String) { WEEKLY("Weekly"), MONTHLY("Monthly") }
@@ -158,7 +176,31 @@ data class Budget(
 )
 
 @Serializable
-enum class Frequency(val label: String) { ONCE("One time"), WEEKLY("Every week"), MONTHLY("Every month"), YEARLY("Every year"), SEMI_MONTHLY("Twice a month") }
+data class SavingsTarget(
+    val id: String,
+    val name: String,
+    val targetMinor: Long,
+    val currency: String,
+    val accountIds: List<String>,
+    val targetDay: LocalDate? = null,
+    val status: PlanStatus = PlanStatus.ACTIVE,
+    val createdMillis: Long = 0,
+)
+
+@Serializable
+data class CreditStatement(
+    val id: String,
+    val accountId: String,
+    val statementDay: LocalDate,
+    val statementBalanceMinor: Long,
+    val minimumPaymentMinor: Long,
+    val dueDay: LocalDate,
+    val estimatedInterestTxId: String? = null,
+    val createdMillis: Long = 0,
+)
+
+@Serializable
+enum class Frequency(val label: String) { ONCE("One time"), WEEKLY("Every week"), MONTHLY("Every month"), SEMI_ANNUAL("Every six months"), YEARLY("Every year"), SEMI_MONTHLY("Twice a month") }
 
 /** A bill (MINT.md section 8), or a recurring income when [income] (8.3A): what is expected and when. Its occurrences are derived from [firstDue] and [frequency]; only settled ones are stored. */
 @Serializable
@@ -272,12 +314,14 @@ data class MintData(
     val categories: List<Category> = emptyList(),
     val transactions: List<Transaction> = emptyList(),
     val budgets: List<Budget> = emptyList(),
+    val savingsTargets: List<SavingsTarget> = emptyList(),
     val bills: List<Bill> = emptyList(),
     val billPayments: List<BillPayment> = emptyList(),
     val reconciliations: List<Reconciliation> = emptyList(),
     val reviews: List<ReviewRecord> = emptyList(),
     /** Installment plans (MINT.md 5.6A). Kept as one sealed list in `mint_state`, not a table of their own. */
     val plans: List<InstallmentPlan> = emptyList(),
+    val creditStatements: List<CreditStatement> = emptyList(),
     val settings: MintSettings = MintSettings(),
 )
 

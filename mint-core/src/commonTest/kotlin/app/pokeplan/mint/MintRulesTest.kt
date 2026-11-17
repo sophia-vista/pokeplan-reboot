@@ -179,6 +179,14 @@ class MintRulesTest {
     }
 
     @Test
+    fun aSixMonthBillKeepsItsOriginalDayWithoutDrifting() {
+        val b = bill(Frequency.SEMI_ANNUAL, LocalDate(2026, 8, 31))
+        assertEquals(LocalDate(2027, 2, 28), MintRules.dueDay(b, 1))
+        assertEquals(LocalDate(2027, 8, 31), MintRules.dueDay(b, 2))
+        assertEquals(LocalDate(2028, 2, 29), MintRules.dueDay(b, 3))
+    }
+
+    @Test
     fun aYearlyBillOnLeapDayIsDueOn28FebInOtherYears() {
         val b = bill(Frequency.YEARLY, LocalDate(2028, 2, 29))
         assertEquals(LocalDate(2029, 2, 28), MintRules.dueDay(b, 1)); assertEquals(LocalDate(2032, 2, 29), MintRules.dueDay(b, 4))

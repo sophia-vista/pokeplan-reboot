@@ -37,19 +37,28 @@ data class InstallmentPlan(
     val feeKind: FeeKind = FeeKind.FEE,
     val installments: List<Installment>,
     val createdMillis: Long = 0,
+    /** The rule used to generate future fees; null for an imported or manually edited schedule. */
+    val feeRule: FeeRule? = null,
+    /** Whether this existing schedule was added to the account's opening balance. */
+    val openingBalanceIncluded: Boolean = false,
 )
 
 /** How the fee of each installment is worked out when a schedule is generated. */
+@Serializable
 sealed interface FeeRule {
+    @Serializable
     data object None : FeeRule
 
     /** The same fee on every installment. */
+    @Serializable
     data class PerInstallment(val minor: Long) : FeeRule
 
     /** One total spread over the installments, the leftover minor units one each to the first. */
+    @Serializable
     data class Total(val minor: Long) : FeeRule
 
     /** [basisPoints] (1% is 100) of the principal still unpaid before each installment, rounded half up: interest that shrinks as the plan is paid. */
+    @Serializable
     data class RatePerPeriod(val basisPoints: Int) : FeeRule
 }
 
@@ -163,7 +172,7 @@ object Installments {
      * repayments (posted transfers linked to the plan) are applied in date order to the earliest installment first, the overflow to the next.
      */
     fun view(data: MintData, plan: InstallmentPlan, today: LocalDate): PlanView {
-        val linked = data.transactions.filter { it.planId == plan.id && counts(it) }
+        val linked = data.transactions.filter { it.planId == plan.id || it.planAllocations.any { allocation -> allocation.planId == plan.id } }.filter(::counts)
         val refunded = linked.filter { it.type == TxType.REFUND }.sumOf { it.amountMinor }
         // Refunds take principal off the last installments first.
         var toCancel = refunded
@@ -178,7 +187,8 @@ object Installments {
         }
         val late = plan.installments.map { inst -> linked.filter { it.type == TxType.FEE && it.feeKind == FeeKind.LATE && it.planNo == inst.no }.sumOf { it.amountMinor } }
         var pool = linked.filter { it.type == TxType.TRANSFER && it.toAccountId == plan.accountId }
-            .sortedWith(compareBy({ it.atMillis }, { it.createdMillis })).sumOf { it.amountMinor }
+            .sortedWith(compareBy({ it.atMillis }, { it.createdMillis }))
+            .sumOf { tx -> tx.planAllocations.firstOrNull { it.planId == plan.id }?.amountMinor ?: if (tx.planId == plan.id) tx.amountMinor else 0L }
         val views = plan.installments.mapIndexed { i, inst ->
             val due = principal[i] + fee[i] + late[i]
             val paid = minOf(pool, due)
@@ -194,6 +204,20 @@ object Installments {
             InstallmentView(inst.no, inst.dueDay, principal[i], fee[i], late[i], paid, state, feeRecorded(data, plan, inst.no))
         }
         return PlanView(plan, views, refunded, pool)
+    }
+
+    /** Allocates a repayment to the earliest outstanding plans first; excess remains an ordinary account repayment. */
+    fun allocatePayment(data: MintData, accountId: String, amountMinor: Long, today: LocalDate): List<PlanPaymentAllocation> {
+        require(amountMinor >= 0)
+        var left = amountMinor
+        return views(data, today)
+            .filter { it.plan.accountId == accountId && it.remainingMinor > 0 }
+            .sortedWith(compareBy<PlanView>({ it.next?.dueDay }, { it.plan.createdMillis }, { it.plan.id }))
+            .mapNotNull { view ->
+                val applied = minOf(left, view.remainingMinor)
+                left -= applied
+                PlanPaymentAllocation(view.plan.id, applied).takeIf { applied > 0 }
+            }
     }
 
     fun views(data: MintData, today: LocalDate): List<PlanView> = data.plans.map { view(data, it, today) }
