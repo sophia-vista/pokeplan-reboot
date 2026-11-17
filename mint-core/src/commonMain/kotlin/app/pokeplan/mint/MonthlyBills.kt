@@ -68,7 +68,7 @@ object MonthlyBills {
             }
         }
         val currency = data.accounts.firstOrNull { it.id == accountId }?.currency ?: views.firstOrNull()?.plan?.currency ?: return emptyList()
-        return lines.groupBy { BillMonth.of(it.dueDay) }.toSortedMap()
+        return lines.groupBy { BillMonth.of(it.dueDay) }.entries.sortedBy { it.key }
             .map { (month, list) -> MonthlyBill(accountId, currency, month, list.sortedWith(compareBy({ it.dueDay }, { it.planName }, { it.no }))) }
     }
 
