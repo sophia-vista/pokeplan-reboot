@@ -21,6 +21,7 @@ import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.SettleStatus
 import app.pokeplan.mint.TxStatus
 import app.pokeplan.mint.TxType
+import app.pokeplan.mint.TransactionSplit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
@@ -263,6 +264,70 @@ class MintStoreTest {
         assertEquals(2_500, p.spentMinor); assertEquals(25, p.percent)
         s.mint.setBudgetStatus(b.id, PlanStatus.PAUSED)
         assertEquals(PlanStatus.PAUSED, s.mint.data.budgets.single().status)
+    }
+
+    @Test
+    fun splitTransactionsReconcileExactlyAndFeedCategoryBudgets() {
+        val s = setup()
+        val m = s.mint
+        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.EWALLET, "PHP", 10_000).record).id
+        val food = m.data.categories.first { it.id == "cat-food" }
+        val health = m.data.categories.first { it.id == "cat-health" }
+        val tx = assertNotNull(m.record(
+            TxType.EXPENSE, 1_000, wallet, payee = "Market",
+            splits = listOf(TransactionSplit(food.id, 600), TransactionSplit(health.id, 400)),
+        ).record)
+
+        assertEquals(1_000L, MintRules.spent(m.data, LocalDate(2026, 11, 1), LocalDate(2026, 12, 1), "PHP"))
+        assertEquals(600L, MintRules.spent(m.data, LocalDate(2026, 11, 1), LocalDate(2026, 12, 1), "PHP", food.id))
+        assertEquals(400L, MintRules.spent(m.data, LocalDate(2026, 11, 1), LocalDate(2026, 12, 1), "PHP", health.id))
+        assertEquals(mapOf(food.id to 600L, health.id to 400L), MintRules.spendingByCategory(
+            m.data, LocalDate(2026, 11, 1), LocalDate(2026, 12, 1), "PHP",
+        ).associate { it.first!! to it.second })
+        assertNotNull(m.updateTransaction(tx.copy(splits = listOf(TransactionSplit(food.id, 999)))).refused)
+        assertNull(m.record(
+            TxType.EXPENSE, 1_000, wallet,
+            splits = listOf(TransactionSplit(food.id, 600), TransactionSplit(health.id, 300)),
+        ).record)
+    }
+
+    @Test
+    fun savingsTargetsUseChosenAccountBalancesWithoutDoubleCounting() {
+        val s = setup()
+        val m = s.mint
+        val first = assertNotNull(m.addAccount("Wallet", AccountType.EWALLET, "PHP", 80_000).record)
+        val second = assertNotNull(m.addAccount("Savings", AccountType.BANK, "PHP", 40_000).record)
+        val target = assertNotNull(m.addSavingsTarget("Emergency", 150_000, "PHP", listOf(first.id, second.id), LocalDate(2027, 12, 31)).record)
+
+        val progress = MintRules.savingsProgress(m.data, target)
+        assertEquals(120_000L, progress.savedMinor)
+        assertEquals(30_000L, progress.remainingMinor)
+        assertEquals(80, progress.percent)
+        assertNotNull(m.addSavingsTarget("Other", 50_000, "PHP", listOf(first.id)).refused)
+        assertNotNull(m.updateAccount(first.copy(type = AccountType.CREDIT_CARD)).refused)
+        assertNotNull(m.deleteAccount(first.id))
+
+        assertNull(m.setSavingsTargetStatus(target.id, PlanStatus.ARCHIVED))
+        assertEquals("USD", assertNotNull(m.updateAccount(first.copy(currency = "USD")).record).currency)
+        assertNotNull(m.setSavingsTargetStatus(target.id, PlanStatus.ACTIVE))
+        val export = m.export(setOf(MintKinds.BUDGETS))
+        assertTrue(export.contains("Emergency"))
+        m.erase(MintKinds.BUDGETS)
+        assertTrue(m.data.savingsTargets.isEmpty())
+    }
+
+    @Test
+    fun receiptImagesStayOnTheTransactionAndFollowItsExportAndDeleteLifecycle() {
+        val s = setup()
+        val m = s.mint
+        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.EWALLET, "PHP", 10_000).record).id
+        val tx = assertNotNull(m.record(TxType.EXPENSE, 1_000, wallet).record)
+        val receipt = MintRules.PNG_BASE64_PREFIX + "AAAA"
+
+        assertEquals(receipt, assertNotNull(m.updateTransaction(tx.copy(receiptImage = receipt)).record).receiptImage)
+        assertTrue(m.export(setOf(MintKinds.TRANSACTIONS)).contains(receipt))
+        assertTrue(m.deleteTransaction(tx.id))
+        assertTrue(m.data.transactions.isEmpty())
     }
 
     @Test
@@ -561,6 +626,37 @@ class MintStoreTest {
     }
 
     @Test
+    fun statementsTrackMinimumsAndPostOneGraceAdjustedDailyInterestEstimate() {
+        val s = setup()
+        val m = s.mint
+        val card = assertNotNull(m.addAccount(
+            "Visa", AccountType.CREDIT_CARD, "PHP", 100_000, annualAprBasisPoints = 3_650, interestGraceDays = 2,
+        ).record)
+        assertNull(m.addAccount(
+            "Cash", AccountType.CASH, "PHP", annualAprBasisPoints = 3_650,
+        ).record, "non-credit accounts cannot have an interest estimate")
+        s.clock.advanceDays(8)
+        val first = assertNotNull(m.recordCreditStatement(
+            card.id, LocalDate(2026, 11, 15), 100_000, 5_000, LocalDate(2026, 11, 25),
+        ).record)
+        assertNull(first.estimatedInterestTxId, "there is no prior statement period to estimate")
+
+        s.clock.advanceDays(16)
+        assertNotNull(m.record(TxType.EXPENSE, 10_000, card.id).record)
+        s.clock.advanceDays(14)
+        val second = assertNotNull(m.recordCreditStatement(
+            card.id, LocalDate(2026, 12, 15), 110_000, 5_500, LocalDate(2026, 12, 25),
+        ).record)
+        val interest = assertNotNull(m.data.transactions.firstOrNull { it.id == second.estimatedInterestTxId })
+        assertEquals(1_950L, interest.amountMinor)
+        assertEquals(FeeKind.INTEREST, interest.feeKind)
+        assertEquals("Simple daily APR/365 estimate; not a lender quote.", interest.note)
+        assertEquals(111_950L, MintRules.balance(m.data, card).postedMinor)
+        assertNotNull(m.recordCreditStatement(card.id, LocalDate(2026, 12, 15), 110_000, 5_500, LocalDate(2026, 12, 25)).refused)
+        assertNotNull(m.recordCreditStatement(card.id, LocalDate(2026, 12, 20), 110_000, 5_500, LocalDate(2026, 12, 25)).refused)
+    }
+
+    @Test
     fun aPayLaterPurchaseWithInstallmentsFlowsThroughSpendingCashFlowAndNetWorthWithoutDoubleCounting() {
         val s = setup()
         val m = s.mint
@@ -639,9 +735,37 @@ class MintStoreTest {
         // The purchase record cannot be deleted or voided while its plan exists.
         val purchase = m.data.transactions.single { it.type == TxType.EXPENSE }
         assertFalse(m.deleteTransaction(purchase.id))
-        m.setTransactionStatus(purchase.id, TxStatus.VOIDED)
+        assertFalse(m.setTransactionStatus(purchase.id, TxStatus.VOIDED))
+        assertFalse(m.setTransactionStatus(purchase.id, TxStatus.EXCLUDED))
         assertEquals(TxStatus.POSTED, m.data.transactions.single { it.id == purchase.id }.status)
         assertNull(m.updateTransaction(purchase.copy(amountMinor = 1)).record)
+        assertNull(m.updateTransaction(purchase.copy(accountId = wallet)).record)
+    }
+
+    @Test
+    fun payLaterRepaymentsAllocateAcrossPlansAndRemainPossibleAfterClosingTheAccount() {
+        val m = setup().mint
+        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.EWALLET, "PHP", 100_000).record).id
+        val later = assertNotNull(m.addAccount("Pay later", AccountType.PAY_LATER, "PHP").record)
+        val first = assertNotNull(m.addExistingPlan(
+            later.id, "First", listOf(app.pokeplan.mint.Installment(1, LocalDate(2026, 12, 1), 5_000)),
+        ).record)
+        val second = assertNotNull(m.addExistingPlan(
+            later.id, "Second", listOf(app.pokeplan.mint.Installment(1, LocalDate(2026, 12, 8), 8_000)),
+        ).record)
+
+        assertNotNull(m.record(TxType.TRANSFER, 7_000, wallet, later.id).refused)
+        assertNotNull(m.updateAccount(later.copy(type = AccountType.LOAN)).refused)
+        assertNotNull(m.deleteAccount(later.id))
+        m.setAccountStatus(later.id, AccountStatus.CLOSED)
+
+        val payment = assertNotNull(m.payPlans(later.id, 7_000, wallet).record)
+        assertEquals(
+            listOf(first.id to 5_000L, second.id to 2_000L),
+            payment.planAllocations.map { it.planId to it.amountMinor },
+        )
+        assertEquals(0L, m.planView(first.id)!!.remainingMinor)
+        assertEquals(6_000L, m.planView(second.id)!!.remainingMinor)
     }
 
     @Test
@@ -658,7 +782,9 @@ class MintStoreTest {
         assertEquals(30_300L, m.planView(plan.id)!!.installments[0].remainingMinor)
         // A recorded fee or a payment locks that installment; an unpaid one can move its day and fee.
         assertFalse(m.updateInstallment(plan.id, 1, LocalDate(2026, 12, 2), 0))
-        assertTrue(m.updateInstallment(plan.id, 2, LocalDate(2027, 1, 5), 100))
+        assertTrue(m.updateInstallment(plan.id, 2, LocalDate(2027, 1, 5), 29_800, 100))
+        assertEquals(59_800L, m.data.plans.single().totalMinor)
+        assertEquals(59_800L, m.data.transactions.single { it.id == plan.purchaseTxId }.amountMinor)
         val pay = assertNotNull(m.payPlan(plan.id, 30_300, wallet).record)
         assertEquals(InstallmentState.PAID, m.planView(plan.id)!!.installments[0].state)
         m.setTransactionStatus(pay.id, TxStatus.VOIDED)
@@ -669,6 +795,33 @@ class MintStoreTest {
         assertEquals(before, m.data.transactions.size)
         assertTrue(m.data.transactions.all { it.planId == null })
         assertTrue(m.data.plans.isEmpty())
+    }
+
+    @Test
+    fun anUntouchedPlanCanChangeItsNameAmountAndScheduleUntilARecordLocksIt() {
+        val s = setup()
+        val m = s.mint
+        val card = assertNotNull(m.addAccount("Visa", AccountType.CREDIT_CARD, "PHP").record).id
+        val plan = assertNotNull(m.addPlanPurchase(card, "Headphones", 60_000, null, 2, PlanEvery.MONTH, LocalDate(2026, 12, 1)).record)
+
+        assertTrue(m.canEditPlanTerms(plan.id))
+        val edited = assertNotNull(m.updatePlanTerms(
+            plan.id, "New phone", 90_000, 3, PlanEvery.WEEK, LocalDate(2026, 12, 10),
+            FeeRule.PerInstallment(200), FeeKind.FEE,
+        ).record)
+        assertEquals("New phone", edited.name)
+        assertEquals(90_000L, edited.totalMinor)
+        assertEquals(3, edited.installments.size)
+        assertEquals(PlanEvery.WEEK, edited.every)
+        assertEquals(LocalDate(2026, 12, 10), edited.startDay)
+        assertEquals(90_000L, m.data.transactions.single { it.id == plan.purchaseTxId }.amountMinor)
+
+        assertNotNull(m.billInstallmentFee(plan.id, 1).record)
+        assertFalse(m.canEditPlanTerms(plan.id))
+        assertNotNull(m.updatePlanTerms(
+            plan.id, "Locked", 80_000, 2, PlanEvery.MONTH, LocalDate(2027, 1, 1),
+            FeeRule.None, FeeKind.FEE,
+        ).refused)
     }
 
     @Test

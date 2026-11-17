@@ -66,6 +66,7 @@ import app.pokeplan.mint.OccurrenceState
 import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.SettleStatus
 import app.pokeplan.mint.Transaction
+import app.pokeplan.mint.TransactionSplit
 import app.pokeplan.mint.TxStatus
 import app.pokeplan.mint.TxType
 import app.pokeplan.plan.toLocalDateTime
@@ -89,8 +90,10 @@ import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.ToggleRow
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import app.pokeplan.ui.plan.EmptyState
 import app.pokeplan.ui.pokemon.MintPartyPanel
 import app.pokeplan.ui.pokemon.label
@@ -130,6 +133,11 @@ enum class MintSection(val label: String, val icon: String) {
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.MINT.accent
+private fun percentText(basisPoints: Int): String {
+    if (basisPoints == 0) return ""
+    val fraction = (basisPoints % 100).toString().padStart(2, '0').trimEnd('0')
+    return if (fraction.isEmpty()) (basisPoints / 100).toString() else "${basisPoints / 100}.$fraction"
+}
 
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
@@ -295,6 +303,8 @@ private fun AccountsView(model: AppModel) {
     var limit by remember { mutableStateOf("") }
     var statementDay by remember { mutableStateOf("") }
     var dueDay by remember { mutableStateOf("") }
+    var annualApr by remember { mutableStateOf("") }
+    var interestGraceDays by remember { mutableStateOf("0") }
     var more by remember { mutableStateOf(false) }
     var suffix by remember { mutableStateOf("") }
     var group by remember { mutableStateOf("") }
@@ -309,11 +319,20 @@ private fun AccountsView(model: AppModel) {
         if (minor == null) { message = "Check the opening balance." to NoticeTone.WARNING; return }
         val limitMinor = if (Installments.allowedFor(type) && limit.isNotBlank()) Money.parse(limit, currency) else 0L
         if (limitMinor == null) { message = "Check the credit limit." to NoticeTone.WARNING; return }
+        val aprBps = if (Installments.allowedFor(type) && annualApr.isNotBlank()) percentToBasisPoints(annualApr) else 0
+        if (aprBps == null) { message = "Check the annual rate." to NoticeTone.WARNING; return }
+        val grace = if (Installments.allowedFor(type)) interestGraceDays.toIntOrNull() ?: 0 else 0
+        if (grace !in 0..MintRules.MAX_GRACE_DAYS) { message = "Enter a grace period from 0 to ${MintRules.MAX_GRACE_DAYS} days." to NoticeTone.WARNING; return }
         val first = data.accounts.none { it.status == AccountStatus.ACTIVE }
-        val out = mint.addAccount(name, type, currency, minor, suffix = suffix, group = group, card = card, limitMinor = limitMinor, statementDay = if (Installments.allowedFor(type)) statementDay.toIntOrNull() ?: 0 else 0, dueDay = if (Installments.allowedFor(type)) dueDay.toIntOrNull() ?: 0 else 0)
+        val out = mint.addAccount(
+            name, type, currency, minor, suffix = suffix, group = group, card = card, limitMinor = limitMinor,
+            statementDay = if (Installments.allowedFor(type)) statementDay.toIntOrNull() ?: 0 else 0,
+            dueDay = if (Installments.allowedFor(type)) dueDay.toIntOrNull() ?: 0 else 0,
+            annualAprBasisPoints = aprBps, interestGraceDays = grace,
+        )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else {
-            message = null; name = ""; opening = ""; limit = ""; statementDay = ""; dueDay = ""; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
+            message = null; name = ""; opening = ""; limit = ""; statementDay = ""; dueDay = ""; annualApr = ""; interestGraceDays = "0"; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
             // The first account ends on the overview, where Expense is the one next action (REP-056).
             if (first) model.mintSection = null
         }
@@ -347,6 +366,17 @@ private fun AccountsView(model: AppModel) {
                 if (Installments.allowedFor(type)) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelField(statementDay, { statementDay = dayInput(it) }, Modifier.weight(1f), label = "Statement day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                     PixelField(dueDay, { dueDay = dayInput(it) }, Modifier.weight(1f), label = "Due day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                }
+                if (Installments.allowedFor(type)) {
+                    PixelField(
+                        annualApr, { annualApr = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) }, Modifier.fillMaxWidth(),
+                        label = "Annual rate for estimated interest (%)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    )
+                    PixelField(
+                        interestGraceDays, { interestGraceDays = it.filter(Char::isDigit).take(3) }, Modifier.fillMaxWidth(),
+                        label = "Grace period (days)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    )
+                    Text("Simple APR/365 estimate; not a lender quote.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
             }
             FormDisclosure("Additional details", more, { more = !more }) {
@@ -413,6 +443,8 @@ private fun AccountTypesInfo(onClose: () -> Unit) {
 @Composable
 internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: Boolean = false, onDone: () -> Unit) {
     val mint = model.mint
+    val hasPlans = model.mintData.plans.any { it.accountId == a.id }
+    val accountTypes = AccountType.entries.filter { it.liability == a.type.liability && (!hasPlans || Installments.allowedFor(it)) }
     var asking by remember(a.id) { mutableStateOf(false) }
     var editing by remember(a.id) { mutableStateOf(startEditing) }
     var name by remember(a.id) { mutableStateOf(a.name) }
@@ -421,6 +453,8 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     var opening by remember(a.id) { mutableStateOf(Money.plain(a.openingMinor, a.currency)) }
     var statementDay by remember(a.id) { mutableStateOf(if (a.statementDay > 0) a.statementDay.toString() else "") }
     var dueDay by remember(a.id) { mutableStateOf(if (a.dueDay > 0) a.dueDay.toString() else "") }
+    var annualApr by remember(a.id) { mutableStateOf(percentText(a.annualAprBasisPoints)) }
+    var interestGraceDays by remember(a.id) { mutableStateOf(a.interestGraceDays.toString()) }
     var limit by remember(a.id) { mutableStateOf(if (a.limitMinor > 0) Money.plain(a.limitMinor, a.currency) else "") }
     var institution by remember(a.id) { mutableStateOf(a.institution) }
     var group by remember(a.id) { mutableStateOf(a.group) }
@@ -440,7 +474,7 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                 FormGroup {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelDropdown(AccountType.entries.filter { it.liability == a.type.liability }, type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.weight(2f), key = accent, label = "Type")
+                        PixelDropdown(accountTypes, type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.weight(2f), key = accent, label = "Type")
                         // Help: the currency stays once the account has records.
                         if (!locked) PixelDropdown(
                             Money.common.take(6), currency, { it ?: "" },
@@ -461,6 +495,17 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                         PixelField(statementDay, { statementDay = dayInput(it) }, Modifier.weight(1f), label = "Statement day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                         PixelField(dueDay, { dueDay = dayInput(it) }, Modifier.weight(1f), label = "Due day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                     }
+                    if (Installments.allowedFor(type)) {
+                        PixelField(
+                            annualApr, { annualApr = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) }, Modifier.fillMaxWidth(),
+                            label = "Annual rate for estimated interest (%)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        )
+                        PixelField(
+                            interestGraceDays, { interestGraceDays = it.filter(Char::isDigit).take(3) }, Modifier.fillMaxWidth(),
+                            label = "Grace period (days)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        )
+                        Text("Simple APR/365 estimate; not a lender quote.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
                 }
                 ToggleRow("Hide from total", hideTotal) { hideTotal = it }
                 FormDisclosure("Additional details", moreEdit, { moreEdit = !moreEdit }) {
@@ -475,17 +520,31 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 }
                 FormSave("Save", {
                     val limitMinor = if (Installments.allowedFor(type) && limit.isNotBlank()) Money.parse(limit, currency) else 0L
+                    val aprBps = if (Installments.allowedFor(type) && annualApr.isNotBlank()) percentToBasisPoints(annualApr) else 0
+                    val grace = if (Installments.allowedFor(type)) interestGraceDays.toIntOrNull() ?: 0 else 0
                     if (minor == null) refused = "Check the balance."
                     else if (limitMinor == null) refused = "Check the credit limit."
-                    else mint.updateAccount(a.copy(limitMinor = limitMinor, statementDay = if (Installments.allowedFor(type)) statementDay.toIntOrNull() ?: 0 else 0, dueDay = if (Installments.allowedFor(type)) dueDay.toIntOrNull() ?: 0 else 0, name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix, card = card, hideFromTotal = hideTotal, appPackage = appPackage))
+                    else if (aprBps == null) refused = "Check the annual rate."
+                    else if (grace !in 0..MintRules.MAX_GRACE_DAYS) refused = "Enter a grace period from 0 to ${MintRules.MAX_GRACE_DAYS} days."
+                    else mint.updateAccount(a.copy(
+                        limitMinor = limitMinor, statementDay = if (Installments.allowedFor(type)) statementDay.toIntOrNull() ?: 0 else 0,
+                        dueDay = if (Installments.allowedFor(type)) dueDay.toIntOrNull() ?: 0 else 0,
+                        annualAprBasisPoints = aprBps, interestGraceDays = grace,
+                        name = name, type = type, currency = currency, openingMinor = minor,
+                        institution = institution, group = group, suffix = suffix, card = card,
+                        hideFromTotal = hideTotal, appPackage = appPackage,
+                    ))
                         .let { if (it.record != null) { editing = false; refused = null; onDone() } else refused = it.refused }
                 }, ModuleAccent.MINT.accent, enabled = name.isNotBlank())
                 PixelButton("Cancel", { editing = false; refused = null }, Modifier.fillMaxWidth(), Pixel.InkSoft)
             }
         } else if (asking) {
-            Confirm("Delete this account? Only an account with no records can be deleted.", "Delete", onConfirm = { refused = mint.deleteAccount(a.id); asking = false; if (refused == null) onDone() }, onKeep = { asking = false })
+            Confirm("Delete only works without records or installment plans.", "Delete", onConfirm = { refused = mint.deleteAccount(a.id); asking = false; if (refused == null) onDone() }, onKeep = { asking = false })
         } else Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            if (Installments.allowedFor(a.type)) CreditLine(model, a) { refused = it }
+            if (Installments.allowedFor(a.type)) {
+                CreditLine(model, a) { refused = it }
+                CreditStatements(model, a)
+            }
             val launcher = model.appLauncher
             val appLabel = if (a.appPackage.isNotEmpty()) launcher?.label(a.appPackage) else null
             if (launcher != null && appLabel != null) PixelButton(
@@ -504,6 +563,73 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             }
         }
         refused?.let { Report(model, it, NoticeTone.WARNING) }
+    }
+}
+
+@Composable
+private fun CreditStatements(model: AppModel, account: FinancialAccount) {
+    val mint = model.mint
+    val today = model.store.today
+    val records = model.mintData.creditStatements.filter { it.accountId == account.id }.sortedByDescending { it.statementDay }
+    var adding by remember(account.id) { mutableStateOf(false) }
+    var statementDay by remember(account.id) { mutableStateOf(today) }
+    var statementBalance by remember(account.id) { mutableStateOf("") }
+    var minimumPayment by remember(account.id) { mutableStateOf("") }
+    var dueDay by remember(account.id) { mutableStateOf(today.plus(DatePeriod(days = 14))) }
+    var message by remember(account.id) { mutableStateOf<String?>(null) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Statements")
+            Text("Reference only; balance unchanged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text("Interest estimated when you record a statement.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            records.forEach { statement ->
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Text(
+                        "${statement.statementDay.short()} · ${mint.show(statement.statementBalanceMinor, account.currency)} statement · ${mint.show(statement.minimumPaymentMinor, account.currency)} minimum",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Text(
+                        "Due ${statement.dueDay.short()}" +
+                            (if (statement.estimatedInterestTxId == null) "" else " · estimated interest recorded"),
+                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                    )
+                }
+            }
+            if (account.status == AccountStatus.ACTIVE) {
+                PixelButton(if (adding) "Cancel statement" else "Record statement", { adding = !adding; message = null }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+                if (adding) FormStack {
+                    FieldLabel("Statement date")
+                    PixelDateField(statementDay, today, ModuleAccent.MINT.accent, { statementDay = it ?: statementDay }, min = account.openingDay)
+                    PixelField(
+                        statementBalance, { statementBalance = money(it) }, Modifier.fillMaxWidth(), label = "Statement balance", singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = account.currency,
+                    )
+                    PixelField(
+                        minimumPayment, { minimumPayment = money(it) }, Modifier.fillMaxWidth(), label = "Minimum payment", singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = account.currency,
+                    )
+                    FieldLabel("Payment due date")
+                    PixelDateField(dueDay, today, ModuleAccent.MINT.accent, { dueDay = it ?: dueDay }, min = statementDay)
+                    message?.let { Report(model, it, NoticeTone.WARNING) }
+                    FormSave("Save statement", {
+                        val balance = Money.parse(statementBalance, account.currency)
+                        val minimum = Money.parse(minimumPayment, account.currency)
+                        if (balance == null || minimum == null) message = "Check both statement amounts."
+                        else {
+                            val result = mint.recordCreditStatement(account.id, statementDay, balance, minimum, dueDay)
+                            val saved = result.record
+                            message = result.refused
+                            if (saved != null) {
+                                adding = false
+                                statementBalance = ""
+                                minimumPayment = ""
+                                model.say(if (saved.estimatedInterestTxId == null) "Statement saved." else "Statement saved with an estimated interest record.")
+                            }
+                        }
+                    }, ModuleAccent.MINT.accent, enabled = Money.parse(statementBalance, account.currency) != null && Money.parse(minimumPayment, account.currency) != null)
+                }
+            }
+        }
     }
 }
 
@@ -618,6 +744,35 @@ private const val PAGE = 50
 
 private val mainTypes = listOf(TxType.EXPENSE, TxType.INCOME, TxType.TRANSFER)
 private val quickTypes = listOf(TxType.EXPENSE, TxType.INCOME, TxType.TRANSFER, TxType.REFUND, TxType.FEE, TxType.ADJUSTMENT)
+private data class SplitDraft(val categoryId: String? = null, val amount: String = "")
+
+@Composable
+private fun SplitFields(parts: List<SplitDraft>, currency: String, categories: List<Pair<String, String>>, onChange: (List<SplitDraft>) -> Unit) {
+    parts.forEachIndexed { index, part ->
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelField(
+                part.amount, { value -> onChange(parts.toMutableList().also { it[index] = part.copy(amount = money(value)) }) },
+                Modifier.weight(1f), label = "Part ${index + 1}", singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = currency,
+            )
+            PixelDropdown(
+                listOf<String?>(null) + categories.map { it.first }, part.categoryId,
+                { id -> categories.firstOrNull { it.first == id }?.second ?: "None" },
+                { id -> onChange(parts.toMutableList().also { it[index] = part.copy(categoryId = id) }) },
+                Modifier.weight(1f), key = accent, label = "Category",
+            )
+        }
+        if (parts.size > 2) PixelButton(
+            "Remove part ${index + 1}",
+            { onChange(parts.filterIndexed { partIndex, _ -> partIndex != index }) },
+            color = Pixel.InkSoft, compact = true,
+        )
+    }
+    if (parts.size < 8) PixelButton(
+        "Add split", { onChange(parts + SplitDraft()) },
+        Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true,
+    )
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -630,6 +785,8 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var accountId by remember { mutableStateOf<String?>(null) }
     var toId by remember { mutableStateOf<String?>(null) }
     var categoryId by remember { mutableStateOf<String?>(null) }
+    var splitEnabled by remember { mutableStateOf(false) }
+    var splitParts by remember { mutableStateOf(listOf(SplitDraft(), SplitDraft())) }
     var up by remember { mutableStateOf(true) }
     // null: it happened just now (read when Save is pressed).
     var payAt by remember { mutableStateOf<Long?>(null) }
@@ -642,7 +799,6 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var filter by remember { mutableStateOf<TxType?>(null) }
     var inInstallments by remember { mutableStateOf(startInstallments) }
     val terms = remember { TermsState() }
-    var planId by remember { mutableStateOf<String?>(null) }
     var openId by remember { mutableStateOf<String?>(null) }
     val from = open.firstOrNull { it.id == accountId } ?: open.firstOrNull()
     val currency = from?.currency ?: data.settings.currency
@@ -655,11 +811,17 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
         return
     }
     val plansOwed = if (type == TxType.TRANSFER && to != null && Installments.allowedFor(to.type)) mint.planViews().filter { it.plan.accountId == to.id && it.next != null } else emptyList()
-    val payPlanView = plansOwed.firstOrNull { it.plan.id == planId }
     val installmentMode = type == TxType.EXPENSE && inInstallments && from != null && Installments.allowedFor(from.type)
     fun save() {
         val minor = Money.parse(amount, currency)
         if (minor == null) { message = "Check the amount." to NoticeTone.WARNING; return }
+        val canSplitType = type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE)
+        val splits = if (splitEnabled && !installmentMode && canSplitType) {
+            val parsed = splitParts.map { part -> part to Money.parse(part.amount, currency) }
+            if (parsed.any { it.second == null }) { message = "Check each split amount." to NoticeTone.WARNING; return }
+            if (parsed.sumOf { it.second!! } != minor) { message = "Split amounts must add up to the transaction." to NoticeTone.WARNING; return }
+            parsed.map { (part, amount) -> TransactionSplit(part.categoryId, amount!!) }
+        } else emptyList()
         val at = payAt ?: model.store.nowMillis
         val day = at.toLocalDateTime(zone).date
         if (installmentMode) {
@@ -668,18 +830,19 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             else { message = null; model.say("Saved."); payAt = null; amount = ""; payee = ""; note = ""; more = false; inInstallments = false; model.haptic() }
             return
         }
-        if (payPlanView != null && from != null) {
-            val out = mint.payPlan(payPlanView.plan.id, minor, from.id, day)
+        if (plansOwed.isNotEmpty() && from != null && to != null) {
+            val out = mint.payPlans(to.id, minor, from.id, day)
             if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-            else { message = null; model.say("Saved."); payAt = null; amount = ""; planId = null; model.haptic() }
+            else { message = null; model.say("Saved."); payAt = null; amount = ""; model.haptic() }
             return
         }
         val out = mint.record(
             type, minor, from!!.id, toAccountId = if (type == TxType.TRANSFER) to?.id else null,
-            categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT }, payee = payee, note = note, atMillis = at, up = up,
+            categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT && splits.isEmpty() },
+            payee = payee, note = note, atMillis = at, up = up, splits = splits,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); payAt = null; amount = ""; payee = ""; note = ""; more = false; model.haptic() }
+        else { message = null; model.say("Saved."); payAt = null; amount = ""; payee = ""; note = ""; more = false; splitEnabled = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
     }
     val otherTypes = quickTypes.filter { it !in mainTypes }
     FormBox {
@@ -691,7 +854,13 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             )
             FormDivider()
             FormGroup {
-                PixelChoice(mainTypes, type.takeIf { it in mainTypes }, { it?.label ?: "" }, { t -> if (t != null) { type = t; categoryId = null; planId = null } }, label = "Transaction type", key = accent)
+                PixelChoice(mainTypes, type.takeIf { it in mainTypes }, { it?.label ?: "" }, { t ->
+                    if (t != null) {
+                        if (t != type) splitEnabled = false
+                        type = t
+                        categoryId = null
+                    }
+                }, label = "Transaction type", key = accent)
                 PixelDropdown(
                     open.map { it.id }, from?.id, { id -> open.firstOrNull { it.id == id }?.name ?: "" },
                     { id -> if (id != null) { accountId = id; if (toId == id) toId = null } }, Modifier.fillMaxWidth(), key = accent, label = if (type == TxType.TRANSFER) "From" else "Account",
@@ -700,17 +869,9 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                     if (targets.isEmpty()) Text("Add a second account in the same currency.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
                     if (targets.isNotEmpty()) PixelDropdown(
                         targets.map { it.id }, to?.id, { id -> targets.firstOrNull { it.id == id }?.name ?: "" },
-                        { id -> if (id != null) { toId = id; planId = null } }, Modifier.fillMaxWidth(), key = accent, label = "To",
+                        { id -> if (id != null) toId = id }, Modifier.fillMaxWidth(), key = accent, label = "To",
                     )
-                    if (plansOwed.isNotEmpty()) PixelDropdown(
-                        listOf<String?>(null) + plansOwed.map { it.plan.id }, payPlanView?.plan?.id,
-                        { id -> plansOwed.firstOrNull { it.plan.id == id }?.let { v -> "${v.plan.name}, next ${Money.plain(v.next!!.remainingMinor, v.plan.currency)}" } ?: "No plan" },
-                        { id ->
-                            val v = plansOwed.firstOrNull { it.plan.id == id }
-                            if (v == null) planId = null else { planId = v.plan.id; amount = Money.plain(v.next!!.remainingMinor, v.plan.currency) }
-                        },
-                        Modifier.fillMaxWidth(), key = accent, label = "Pay for",
-                    )
+                    if (plansOwed.isNotEmpty()) Text("Repayment fills earliest due plans first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 } else if (type == TxType.ADJUSTMENT) {
                     PixelChoice(listOf(true, false), up, { if (it == true) "Balance goes up" else "Balance goes down" }, { if (it != null) up = it }, label = "Change", key = accent)
                 } else {
@@ -719,11 +880,16 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                     // The few used last come first, then the rest.
                     val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
                     val ordered = (recent + usable).distinct()
-                    PixelDropdown(
+                    val canSplit = !installmentMode && type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE)
+                    if (canSplit) ToggleRow("Split across categories", splitEnabled) {
+                        splitEnabled = it
+                        if (it) categoryId = null
+                    }
+                    if (!splitEnabled || !canSplit) PixelDropdown(
                         listOf<String?>(null) + ordered.map { it.id }, categoryId,
                         { id -> ordered.firstOrNull { it.id == id }?.name ?: "None" }, { id -> categoryId = id },
                         Modifier.fillMaxWidth(), key = accent, label = "Category",
-                    )
+                    ) else SplitFields(splitParts, currency, ordered.map { it.id to it.name }) { splitParts = it }
                 }
             }
             PixelMomentField(payAt ?: model.store.nowMillis, { payAt = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
@@ -731,10 +897,22 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelDropdown(
                         listOf<TxType?>(null) + otherTypes, type.takeIf { it in otherTypes }, { it?.label ?: "Expense, income or transfer" },
-                        { t -> if (t != null) { type = t; categoryId = null; planId = null } else if (type in otherTypes) { type = TxType.EXPENSE; categoryId = null; planId = null } },
+                        { t ->
+                            if (t != null) {
+                                if (t != type) splitEnabled = false
+                                type = t
+                                categoryId = null
+                            } else if (type in otherTypes) {
+                                type = TxType.EXPENSE
+                                categoryId = null
+                            }
+                        },
                         Modifier.fillMaxWidth(), key = accent, label = "Other kind of entry",
                     )
-                    if (type == TxType.EXPENSE && from != null && Installments.allowedFor(from.type)) ToggleRow("Pay in installments", inInstallments) { inInstallments = it; if (it) more = true }
+                    if (type == TxType.EXPENSE && from != null && Installments.allowedFor(from.type)) ToggleRow("Pay in installments", inInstallments) {
+                        inInstallments = it
+                        if (it) { more = true; splitEnabled = false }
+                    }
                     if (installmentMode) {
                         PixelField(payee, { payee = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                         InstallmentTerms(model, from!!, terms, Money.parse(amount, currency), (payAt ?: model.store.nowMillis).toLocalDateTime(zone).date)
@@ -780,10 +958,14 @@ private fun Transaction.signed(): String = when (type) {
 @Composable
 private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onClick: () -> Unit) {
     val data = model.mintData
-    val category = data.categories.firstOrNull { it.id == t.categoryId }?.name
+    val category = if (t.splits.isNotEmpty()) "Split (${t.splits.size})" else data.categories.firstOrNull { it.id == t.categoryId }?.name
     val account = data.accounts.firstOrNull { it.id == t.accountId }?.name.orEmpty()
     val to = data.accounts.firstOrNull { it.id == t.toAccountId }?.name
-    val plan = t.planId?.let { id -> data.plans.firstOrNull { it.id == id }?.name }
+    val planNames = buildList {
+        t.planId?.let { id -> data.plans.firstOrNull { it.id == id }?.name?.let(::add) }
+        t.planAllocations.forEach { allocation -> data.plans.firstOrNull { it.id == allocation.planId }?.name?.let(::add) }
+    }.distinct()
+    val plan = planNames.joinToString(", ").takeIf { it.isNotEmpty() }
     val repayment = t.type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == t.toAccountId }?.type?.liability == true
     val title = t.payee.ifBlank { category ?: (if (t.type == TxType.FEE) t.feeKind?.label else null) ?: (if (repayment) "Repayment" else t.type.label) }
     val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }, plan?.let { "Plan: $it" }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
@@ -799,6 +981,7 @@ private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onCli
 @Composable
 private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Unit) {
     val mint = model.mint
+    val planPurchase = mint.planOfPurchase(t.id) != null
     var editing by remember(t.id) { mutableStateOf(false) }
     var asking by remember(t.id) { mutableStateOf(false) }
     var amount by remember(t.id) { mutableStateOf(Money.plain(t.amountMinor, t.currency)) }
@@ -807,25 +990,37 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
     var refused by remember(t.id) { mutableStateOf<String?>(null) }
     var at by remember(t.id) { mutableStateOf(t.atMillis) }
     var categoryId by remember(t.id) { mutableStateOf(t.categoryId) }
+    var splitEnabled by remember(t.id) { mutableStateOf(t.splits.isNotEmpty()) }
+    var splitParts by remember(t.id) {
+        mutableStateOf(t.splits.map { SplitDraft(it.categoryId, Money.plain(it.amountMinor, t.currency)) }.ifEmpty { listOf(SplitDraft(), SplitDraft()) })
+    }
     var accountId by remember(t.id) { mutableStateOf(t.accountId) }
     var moreTx by remember(t.id) { mutableStateOf(t.payee.isNotEmpty() || t.note.isNotEmpty()) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (editing) {
             val accounts = model.mintData.accounts.filter { (it.status == AccountStatus.ACTIVE && it.currency == t.currency) || it.id == t.accountId }
             FormStack {
-                PixelField(
+                if (planPurchase) Text("Change the purchase from its plan.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                else PixelField(
                     amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = t.currency, placeholder = "0.00",
                 )
                 FormDivider()
                 FormGroup {
-                    if (accounts.size > 1 && t.type != TxType.TRANSFER) {
+                    if (!planPurchase && accounts.size > 1 && t.type != TxType.TRANSFER) {
                         PixelDropdown(accounts.map { it.id }, accountId, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) accountId = id }, Modifier.fillMaxWidth(), key = accent, label = "Account")
                     }
                     if (t.type != TxType.TRANSFER && t.type != TxType.ADJUSTMENT) {
                         val kind = if (t.type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
-                        val pickable = model.mintData.categories.filter { it.kind == kind && (!it.archived || it.id == t.categoryId) }
-                        PixelDropdown(listOf<String?>(null) + pickable.map { it.id }, categoryId, { id -> pickable.firstOrNull { it.id == id }?.name ?: "None" }, { categoryId = it }, Modifier.fillMaxWidth(), key = accent, label = "Category")
+                        val pickable = model.mintData.categories.filter { it.kind == kind && (!it.archived || it.id == t.categoryId || t.splits.any { part -> part.categoryId == it.id }) }
+                        val canSplit = t.type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE)
+                        if (canSplit) ToggleRow("Split across categories", splitEnabled) {
+                            splitEnabled = it
+                            if (it) categoryId = null
+                        }
+                        if (!splitEnabled || !canSplit) {
+                            PixelDropdown(listOf<String?>(null) + pickable.map { it.id }, categoryId, { id -> pickable.firstOrNull { it.id == id }?.name ?: "None" }, { categoryId = it }, Modifier.fillMaxWidth(), key = accent, label = "Category")
+                        } else SplitFields(splitParts, t.currency, pickable.map { it.id to it.name }) { splitParts = it }
                     }
                 }
                 PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
@@ -836,36 +1031,148 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                     }
                 }
                 FormSave("Save", {
-                    val minor = Money.parse(amount, t.currency)
+                    val minor = if (planPurchase) t.amountMinor else Money.parse(amount, t.currency)
                     if (minor == null) refused = "Check the amount."
-                    else mint.updateTransaction(t.copy(amountMinor = minor, payee = payee, note = note, atMillis = at, accountId = accountId, categoryId = categoryId)).let { if (it.record != null) { editing = false; onDone() } else refused = it.refused }
+                    else {
+                        val splits = if (splitEnabled) {
+                            val parsed = splitParts.map { part -> part to Money.parse(part.amount, t.currency) }
+                            if (parsed.any { it.second == null }) { refused = "Check each split amount."; return@FormSave }
+                            if (parsed.sumOf { it.second!! } != minor) { refused = "Split amounts must add up to the transaction."; return@FormSave }
+                            parsed.map { (part, amount) -> TransactionSplit(part.categoryId, amount!!) }
+                        } else emptyList()
+                        mint.updateTransaction(t.copy(
+                            amountMinor = minor, payee = payee, note = note, atMillis = at, accountId = accountId,
+                            categoryId = categoryId.takeIf { splits.isEmpty() }, splits = splits,
+                        )).let { if (it.record != null) { editing = false; onDone() } else refused = it.refused }
+                    }
                 }, ModuleAccent.MINT.accent)
                 PixelButton("Cancel", { editing = false }, Modifier.fillMaxWidth(), Pixel.InkSoft)
             }
         } else if (asking) {
-            Confirm("Delete this record? Your balance changes with it.", "Delete", onConfirm = { val before = model.mintData; mint.deleteTransaction(t.id); onDone(); model.offerUndo("Deleted: record") { mint.restore(before) } }, onKeep = { asking = false })
+            Confirm("Delete this record? Your balance changes with it.", "Delete", onConfirm = {
+                val before = model.mintData
+                if (mint.deleteTransaction(t.id)) {
+                    onDone()
+                    model.offerUndo("Deleted: record") { mint.restore(before) }
+                } else refused = "A purchase with a plan cannot be deleted."
+                asking = false
+            }, onKeep = { asking = false })
         } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                val excluded = t.status == TxStatus.EXCLUDED
-                PixelButton(if (excluded) "Include" else "Exclude", { mint.setTransactionStatus(t.id, if (excluded) TxStatus.POSTED else TxStatus.EXCLUDED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            ReceiptAttachment(model, t) { image ->
+                val result = mint.updateTransaction(t.copy(receiptImage = image))
+                if (result.record != null) onDone() else refused = result.refused ?: "That receipt could not be saved."
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                when (t.status) {
-                    TxStatus.PENDING -> PixelButton("Mark posted", { mint.setTransactionStatus(t.id, TxStatus.POSTED); onDone() }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
-                    TxStatus.POSTED -> PixelButton("Mark pending", { mint.setTransactionStatus(t.id, TxStatus.PENDING); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    else -> {}
+            if (planPurchase) {
+                Text("Manage this purchase in its installment plan.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                PixelButton("Edit", { editing = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    val excluded = t.status == TxStatus.EXCLUDED
+                    PixelButton(if (excluded) "Include" else "Exclude", {
+                        if (mint.setTransactionStatus(t.id, if (excluded) TxStatus.POSTED else TxStatus.EXCLUDED)) onDone()
+                        else refused = "That record can no longer change status."
+                    }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
-                if (t.status == TxStatus.VOIDED) PixelButton("Restore", { mint.setTransactionStatus(t.id, TxStatus.POSTED); onDone() }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
-                else PixelButton("Void", { mint.setTransactionStatus(t.id, TxStatus.VOIDED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    when (t.status) {
+                        TxStatus.PENDING -> PixelButton("Mark posted", {
+                            if (mint.setTransactionStatus(t.id, TxStatus.POSTED)) onDone() else refused = "That record can no longer change status."
+                        }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                        TxStatus.POSTED -> PixelButton("Mark pending", {
+                            if (mint.setTransactionStatus(t.id, TxStatus.PENDING)) onDone() else refused = "That record can no longer change status."
+                        }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        else -> {}
+                    }
+                    if (t.status == TxStatus.VOIDED) PixelButton("Restore", {
+                        if (mint.setTransactionStatus(t.id, TxStatus.POSTED)) onDone() else refused = "That record can no longer change status."
+                    }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                    else PixelButton("Void", {
+                        if (mint.setTransactionStatus(t.id, TxStatus.VOIDED)) onDone() else refused = "That record can no longer change status."
+                    }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
             }
         }
         refused?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
+@OptIn(ExperimentalEncodingApi::class)
+@Composable
+private fun ReceiptAttachment(model: AppModel, transaction: Transaction, onChange: (String) -> Unit) {
+    val hide = model.mintData.settings.hideValues
+    val image = transaction.receiptImage
+    val bitmap = remember(image) { if (image.isEmpty()) null else runCatching { Base64.decode(image).decodeToImageBitmap() }.getOrNull() }
+    val viewer = model.imageViewer
+    var full by remember(transaction.id) { mutableStateOf(false) }
+    var removing by remember(transaction.id) { mutableStateOf(false) }
+    if (full && !hide && bitmap != null) {
+        DisposableEffect(Unit) {
+            viewer?.bright(true)
+            onDispose { viewer?.bright(false) }
+        }
+        Dialog({ full = false }, DialogProperties(usePlatformDefaultWidth = false)) {
+            BackHandler(true) { full = false }
+            QrFullScreen(
+                "Receipt", bitmap, { full = false },
+                if (viewer == null) null else ({
+                    runCatching { viewer.share(Base64.decode(image), "receipt.png") }
+                        .getOrDefault("That receipt could not be shared.")
+                }),
+            )
+        }
+    }
+    if (removing) Confirm(
+        "Remove the receipt image from this record?", "Remove",
+        onConfirm = { onChange(""); removing = false },
+        onKeep = { removing = false },
+    )
+    if (image.isNotEmpty() || (model.images != null && !hide)) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Receipt")
+            when {
+                hide && image.isNotEmpty() -> Text("Hidden", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                bitmap != null -> Image(
+                    bitmap, "Receipt image",
+                    Modifier.fillMaxWidth(0.45f).aspectRatio(bitmap.width.toFloat() / bitmap.height)
+                        .clickable(role = Role.Button, onClickLabel = "Open receipt image") { full = true },
+                    contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
+                )
+                image.isNotEmpty() -> Text("Could not show this receipt image.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            if (!hide && model.images != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton(if (image.isEmpty()) "Attach image" else "Replace", {
+                        model.images?.choose { png, problem ->
+                            if (png == null) model.say(problem ?: "That image could not be opened.")
+                            else onChange(Base64.encode(png))
+                        }
+                    }, Modifier.weight(1f), if (image.isEmpty()) ModuleAccent.MINT.accent else Pixel.InkSoft, compact = true)
+                    if (image.isNotEmpty()) PixelButton("Remove", { removing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    if (bitmap != null) PixelButton("Open", { full = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
+            }
+        }
+    }
+}
+
 // ----- Budgets ----------------------------------------------------------------------------------------------------------
+
+@Composable
+private fun SavingsAccountChoices(model: AppModel, currency: String, selected: List<String>, onSelected: (List<String>) -> Unit) {
+    val mint = model.mint
+    val accounts = model.mintData.accounts.filter {
+        it.id in selected || (it.currency == currency && !it.type.liability && it.status == AccountStatus.ACTIVE)
+    }
+    if (accounts.isEmpty()) Text("Add an open $currency asset account.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    accounts.forEach { account ->
+        val balance = MintRules.balance(model.mintData, account).postedMinor.coerceAtLeast(0)
+        ToggleRow("${account.name} · ${mint.show(balance, account.currency)}", account.id in selected) { checked ->
+            onSelected(if (checked) (selected + account.id).distinct() else selected.filterNot { it == account.id })
+        }
+    }
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -882,6 +1189,20 @@ private fun BudgetsView(model: AppModel) {
     var newPeriod by remember { mutableStateOf(BudgetPeriod.MONTHLY) }
     var editMessage by remember { mutableStateOf<String?>(null) }
     var adding by remember { mutableStateOf(false) }
+    var addingTarget by remember { mutableStateOf(false) }
+    var targetName by remember { mutableStateOf("") }
+    var targetAmount by remember { mutableStateOf("") }
+    var targetAccounts by remember { mutableStateOf(emptyList<String>()) }
+    var targetHasDay by remember { mutableStateOf(false) }
+    var targetDay by remember { mutableStateOf(today) }
+    var targetMessage by remember { mutableStateOf<String?>(null) }
+    var openTargetId by remember { mutableStateOf<String?>(null) }
+    var editTargetName by remember { mutableStateOf("") }
+    var editTargetAmount by remember { mutableStateOf("") }
+    var editTargetAccounts by remember { mutableStateOf(emptyList<String>()) }
+    var editTargetHasDay by remember { mutableStateOf(false) }
+    var editTargetDay by remember { mutableStateOf(today) }
+    var editTargetMessage by remember { mutableStateOf<String?>(null) }
     val currency = data.settings.currency
     val budgets = data.budgets.filter { it.status != PlanStatus.ARCHIVED }
     if (budgets.isNotEmpty()) TextBox {
@@ -921,16 +1242,96 @@ private fun BudgetsView(model: AppModel) {
                             PixelButton("Delete", { val before = model.mintData; mint.deleteBudget(b.id); openId = null; model.offerUndo("Deleted: budget") { mint.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
                         }
+                        val targets = data.savingsTargets.filter { it.status != PlanStatus.ARCHIVED }
+                        if (targets.isNotEmpty()) {
+                        TextBox {
+                            Column {
+                                PixelTitle("Savings targets")
+                                targets.forEachIndexed { index, target ->
+                                    if (index > 0) HorizontalDivider(color = Pixel.Border)
+                                    val progress = MintRules.savingsProgress(data, target)
+                                    Column(Modifier.padding(vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                                        MintLine(
+                                            trail = { Text(if (target.status == PlanStatus.PAUSED) "paused" else "${progress.percent}%") },
+                                            onClick = {
+                                                openTargetId = if (openTargetId == target.id) null else target.id
+                                                editTargetName = target.name
+                                                editTargetAmount = Money.plain(target.targetMinor, target.currency)
+                                                editTargetAccounts = target.accountIds
+                                                editTargetHasDay = target.targetDay != null
+                                                editTargetDay = target.targetDay ?: today
+                                                editTargetMessage = null
+                                            },
+                                            onClickLabel = "Show savings target options",
+                                        ) { Text(target.name, style = MaterialTheme.typography.bodyLarge) }
+                                        Text(
+                                            "${mint.show(progress.savedMinor, target.currency)} of ${mint.show(target.targetMinor, target.currency)}" +
+                                                (target.targetDay?.let { " · by ${it.short()}" } ?: ""),
+                                            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                                        )
+                                        PixelBar(progress.percent / 100f, color = ModuleAccent.MINT.accent, label = "${target.name}: ${progress.percent} percent saved")
+                                        if (openTargetId == target.id) {
+                                            FormStack {
+                                                PixelField(editTargetName, { editTargetName = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Target name", singleLine = true)
+                                                PixelField(
+                                                    editTargetAmount, { editTargetAmount = money(it) }, Modifier.fillMaxWidth(), label = "Target amount", singleLine = true,
+                                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = target.currency,
+                                                )
+                                                Text("Progress uses these balances.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                                                Text("One active target per account.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                                                SavingsAccountChoices(model, target.currency, editTargetAccounts) { editTargetAccounts = it }
+                                                ToggleRow("Set a target date", editTargetHasDay) { editTargetHasDay = it }
+                                                if (editTargetHasDay) PixelDateField(editTargetDay, today, ModuleAccent.MINT.accent, { editTargetDay = it ?: editTargetDay }, min = today)
+                                                FormSave("Save target", {
+                                                    val amountMinor = Money.parse(editTargetAmount, target.currency)
+                                                    val result = if (amountMinor == null) null else mint.updateSavingsTarget(
+                                                        target.copy(name = editTargetName, targetMinor = amountMinor, accountIds = editTargetAccounts, targetDay = editTargetDay.takeIf { editTargetHasDay }),
+                                                    )
+                                                    editTargetMessage = if (amountMinor == null) "Check the amount." else result?.refused
+                                                    if (result?.record != null) openTargetId = null
+                                                }, ModuleAccent.MINT.accent, enabled = editTargetName.isNotBlank() && Money.parse(editTargetAmount, target.currency) != null)
+                                                editTargetMessage?.let { Report(model, it, NoticeTone.WARNING) }
+                                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                                                    PixelButton(
+                                                        if (target.status == PlanStatus.PAUSED) "Resume" else "Pause",
+                                                        {
+                                                            editTargetMessage = mint.setSavingsTargetStatus(
+                                                                target.id, if (target.status == PlanStatus.PAUSED) PlanStatus.ACTIVE else PlanStatus.PAUSED,
+                                                            )
+                                                            if (editTargetMessage == null) openTargetId = null
+                                                        },
+                                                        Modifier.weight(1f), Pixel.InkSoft, compact = true,
+                                                    )
+                                                    PixelButton("Archive", {
+                                                        editTargetMessage = mint.setSavingsTargetStatus(target.id, PlanStatus.ARCHIVED)
+                                                        if (editTargetMessage == null) openTargetId = null
+                                                    }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                                                }
+                                                PixelButton("Delete target", {
+                                                    val before = model.mintData
+                                                    mint.deleteSavingsTarget(target.id)
+                                                    openTargetId = null
+                                                    model.offerUndo("Deleted: savings target") { mint.restore(before) }
+                                                }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        }
                     }
                 }
             }
         }
     }
     if (!adding) {
-        PixelButton("New budget", { adding = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
-        return
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelButton("New budget", { adding = true; addingTarget = false }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+            PixelButton("New savings target", { addingTarget = true; adding = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
     }
-    FormBox {
+    if (adding) FormBox {
         FormStack {
             PixelTitle("New budget")
             PixelField(
@@ -950,6 +1351,37 @@ private fun BudgetsView(model: AppModel) {
                 if (out?.record != null) { amount = ""; adding = false; model.haptic() }
             }, ModuleAccent.MINT.accent, enabled = amount.isNotBlank())
             message?.let { Report(model, it, NoticeTone.WARNING) }
+        }
+    }
+    if (addingTarget) FormBox {
+        FormStack {
+            PixelTitle("New savings target")
+            PixelField(targetName, { targetName = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Target name", singleLine = true)
+            PixelField(
+                targetAmount, { targetAmount = money(it) }, Modifier.fillMaxWidth(), label = "Target amount", singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = currency, placeholder = "0.00",
+            )
+            FormDivider()
+            Text("Progress uses chosen balances.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text("One active target per account.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            SavingsAccountChoices(model, currency, targetAccounts) { targetAccounts = it }
+            ToggleRow("Set a target date", targetHasDay) { targetHasDay = it }
+            if (targetHasDay) PixelDateField(targetDay, today, ModuleAccent.MINT.accent, { targetDay = it ?: targetDay }, min = today)
+            FormSave("Save target", {
+                val minor = Money.parse(targetAmount, currency)
+                val result = if (minor == null) null else mint.addSavingsTarget(targetName, minor, currency, targetAccounts, targetDay.takeIf { targetHasDay })
+                targetMessage = if (minor == null) "Check the amount." else result?.refused
+                if (result?.record != null) {
+                    targetName = ""
+                    targetAmount = ""
+                    targetAccounts = emptyList()
+                    targetHasDay = false
+                    addingTarget = false
+                    model.haptic()
+                }
+            }, ModuleAccent.MINT.accent, enabled = targetName.isNotBlank() && Money.parse(targetAmount, currency) != null)
+            targetMessage?.let { Report(model, it, NoticeTone.WARNING) }
+            PixelButton("Cancel", { addingTarget = false }, Modifier.fillMaxWidth(), Pixel.InkSoft)
         }
     }
 }
@@ -1026,6 +1458,8 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                         PixelButton("Skip", { settle(o, SettleStatus.SKIPPED, 0, "Skipped") }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         if (o.payment != null) PixelButton("Undo", { mint.unsettle(o.bill.id, o.dueDay); openKey = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
+                    Text("Paid/Received settles reminder only.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    Text("Record it to update balance.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     // Marking paid makes no transaction by itself; this path also writes the expense, linked to the bill, on the account chosen here.
                     val accounts = data.accounts.filter { it.status == AccountStatus.ACTIVE && it.currency == o.bill.currency }
                     val amountToRecord = if (anyAmount) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
@@ -1314,6 +1748,7 @@ private fun MintSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             ToggleRow("Bill reminders", settings.billReminders) { mint.setBillReminders(it) }
+            Text("Installment reminders follow plan dates.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (settings.billReminders) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     val early = listOf(0 to "On the day", 1 to "1 day before", 2 to "2 days before", 3 to "3 days before", 7 to "A week before")

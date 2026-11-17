@@ -18,6 +18,7 @@ data class AccountBalance(val account: FinancialAccount, val postedMinor: Long, 
 
 /** How much of a budget is used. [percent] is null when nothing is planned. Going over is information, never a failure. */
 data class BudgetProgress(val budget: Budget, val start: LocalDate, val endExclusive: LocalDate, val spentMinor: Long, val remainingMinor: Long, val percent: Int?)
+data class SavingsProgress(val target: SavingsTarget, val savedMinor: Long, val remainingMinor: Long, val percent: Int)
 
 /** The estimate of what can be spent, with its basis shown (MINT.md section 4.5): liquid accounts less bills still to pay soon. Never a guarantee. */
 data class Available(val currency: String, val liquidMinor: Long, val billsMinor: Long, val billsCount: Int, val availableMinor: Long, val installmentsMinor: Long = 0, val installmentsCount: Int = 0)
@@ -32,6 +33,8 @@ object MintRules {
     const val NAME_MAX = 40
     /** The most characters of base64 an account's receive-money picture may take (about 1 MB as picked), MINT.md 4.2. */
     const val QR_MAX_CHARS = 1_400_000
+    const val MAX_APR_BASIS_POINTS = 100_000
+    const val MAX_GRACE_DAYS = 365
 
     /** Whether [base64] can be kept as an account's receive-money picture: empty (none) or standard base64 of a PNG, JPEG or WebP, small enough. Never decoded or read for its contents. */
     fun checkReceiveQr(base64: String): Check = when {
@@ -124,6 +127,9 @@ object MintRules {
     fun checkTransaction(data: MintData, tx: Transaction): Check {
         (checkAmount(tx.amountMinor) as? Check.Refused)?.let { return it }
         if (tx.note.length > NOTE_MAX || tx.payee.length > NAME_MAX * 2) return Check.Refused("That text is too long.")
+        if (tx.receiptImage.isNotEmpty()) (checkReceiveQr(tx.receiptImage) as? Check.Refused)?.let {
+            return Check.Refused(it.reason.replace("picture", "receipt image"))
+        }
         val from = data.accounts.firstOrNull { it.id == tx.accountId } ?: return Check.Refused("Choose an account.")
         if (from.status != AccountStatus.ACTIVE) return Check.Refused("That account is not open.")
         if (from.currency != tx.currency) return Check.Refused("The amount has to be in the account's currency, ${from.currency}.")
@@ -132,11 +138,47 @@ object MintRules {
             if (to.id == from.id) return Check.Refused("Choose two different accounts.")
             if (to.status != AccountStatus.ACTIVE) return Check.Refused("That account is not open.")
             if (to.currency != from.currency) return Check.Refused("Transfers between currencies are not supported yet.")
+            if (tx.planAllocations.isNotEmpty()) {
+                if (tx.planId != null) return Check.Refused("Choose one way to link this repayment.")
+                var allocated = 0L
+                val seen = mutableSetOf<String>()
+                for (allocation in tx.planAllocations) {
+                    if (allocation.amountMinor <= 0 || allocation.amountMinor > tx.amountMinor - allocated || !seen.add(allocation.planId))
+                        return Check.Refused("That repayment allocation looks wrong.")
+                    val plan = data.plans.firstOrNull { it.id == allocation.planId } ?: return Check.Refused("An installment plan is missing.")
+                    if (plan.accountId != to.id) return Check.Refused("That plan belongs to another account.")
+                    allocated += allocation.amountMinor
+                }
+            }
         } else if (tx.toAccountId != null) return Check.Refused("Only a transfer has a second account.")
+        if (tx.planAllocations.isNotEmpty() && tx.type != TxType.TRANSFER)
+            return Check.Refused("Only a repayment can be allocated to installment plans.")
+        if (tx.creditStatementId != null &&
+            (tx.type != TxType.FEE || tx.feeKind != FeeKind.INTEREST || data.creditStatements.none { it.id == tx.creditStatementId }))
+            return Check.Refused("That estimated-interest record is not linked to a statement.")
         tx.categoryId?.let { id ->
             val c = data.categories.firstOrNull { it.id == id } ?: return Check.Refused("That category is gone.")
             val wanted = when (tx.type) { TxType.INCOME -> CategoryKind.INCOME; TxType.EXPENSE, TxType.FEE, TxType.REFUND -> CategoryKind.EXPENSE; else -> null }
             if (wanted != null && c.kind != wanted) return Check.Refused("That category does not fit ${tx.type.label.lowercase()}.")
+        }
+        if (tx.splits.isNotEmpty()) {
+            if (tx.type !in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE))
+                return Check.Refused("Only income, spending or refund records can be split.")
+            if (tx.categoryId != null || tx.splits.size < 2)
+                return Check.Refused("Choose at least two categories for a split.")
+            var splitTotal = 0L
+            val wanted = if (tx.type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
+            for (part in tx.splits) {
+                if (part.amountMinor <= 0 || part.amountMinor > tx.amountMinor - splitTotal)
+                    return Check.Refused("Split amounts must be positive and add up to the transaction.")
+                part.categoryId?.let { id ->
+                    val category = data.categories.firstOrNull { it.id == id } ?: return Check.Refused("A split category is gone.")
+                    if (category.kind != wanted) return Check.Refused("A split category does not fit ${tx.type.label.lowercase()}.")
+                }
+                splitTotal += part.amountMinor
+            }
+            if (splitTotal != tx.amountMinor)
+                return Check.Refused("Split amounts must add up to the transaction.")
         }
         return Check.Ok
     }
@@ -182,6 +224,39 @@ object MintRules {
         return data.accounts.map { AccountBalance(it, it.openingMinor + (posted[it.id] ?: 0L), pending[it.id] ?: 0L) }
     }
 
+    /** A simple daily APR/365 estimate in minor units, rounded half up once for the whole period. */
+    fun simpleInterestEstimate(data: MintData, account: FinancialAccount, from: LocalDate, through: LocalDate): Long {
+        val apr = account.annualAprBasisPoints
+        if (apr <= 0 || apr > MAX_APR_BASIS_POINTS || from > through || !account.type.liability) return 0
+        val denominator = 3_650_000L
+        val relevant = data.transactions.asSequence()
+            .filter { it.status == TxStatus.POSTED && it.day >= account.openingDay && it.day <= through }
+            .sortedBy { it.day }
+            .toList()
+        var balance = if (account.openingDay <= from) account.openingMinor else 0L
+        relevant.filter { it.day < from }.forEach { tx -> effect(tx, account)?.let { balance += it } }
+        var whole = 0L
+        var fraction = 0L
+        var day = from
+        var index = relevant.indexOfFirst { it.day >= from }.let { if (it < 0) relevant.size else it }
+        while (day <= through) {
+            if (day == account.openingDay && from < account.openingDay) balance = account.openingMinor
+            while (index < relevant.size && relevant[index].day == day) {
+                effect(relevant[index], account)?.let { balance += it }
+                index++
+            }
+            val owed = balance.coerceAtLeast(0)
+            val numerator = (owed / denominator) * apr + (owed % denominator) * apr
+            whole += numerator / denominator
+            fraction += numerator % denominator
+            whole += fraction / denominator
+            fraction %= denominator
+            day = day.plus(DatePeriod(days = 1))
+        }
+        val rounded = whole + if (fraction * 2 >= denominator) 1 else 0
+        return rounded.coerceAtMost(Money.MAX_MINOR)
+    }
+
     /** Assets less liabilities, per currency, over active accounts. Never converted across currencies: each currency has its own line. */
     fun netPosition(data: MintData, today: LocalDate? = null): Map<String, Long> {
         val result = linkedMapOf<String, Long>()
@@ -214,20 +289,33 @@ object MintRules {
      * is never spending; an excluded, voided or pending record is left out (MINT.md sections 5.4, 7.1). May be negative if refunds exceed spending.
      */
     fun spent(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String, categoryId: String? = null): Long =
-        data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive && (categoryId == null || it.categoryId == categoryId) }
-            .sumOf { when (it.type) { TxType.EXPENSE, TxType.FEE -> it.amountMinor; TxType.REFUND -> -it.amountMinor; else -> 0L } }
+        data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive }
+            .sumOf { tx ->
+                val direction = when (tx.type) { TxType.EXPENSE, TxType.FEE -> 1; TxType.REFUND -> -1; else -> 0 }
+                if (direction == 0) 0L
+                else {
+                    val amount = if (categoryId == null) tx.amountMinor
+                    else if (tx.splits.isNotEmpty()) tx.splits.filter { it.categoryId == categoryId }.sumOf { it.amountMinor }
+                    else if (tx.categoryId == categoryId) tx.amountMinor else 0L
+                    direction * amount
+                }
+            }
 
     /** Money received in the period (income only: a refund is not income, a transfer is not income). */
     fun earned(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): Long =
         data.transactions.filter { counts(it) && it.currency == currency && it.type == TxType.INCOME && it.day >= from && it.day < endExclusive }.sumOf { it.amountMinor }
 
     /** Spending by category over the period, largest first; records with no category are one line with a null id. */
-    fun spendingByCategory(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): List<Pair<String?, Long>> =
+    fun spendingByCategory(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): List<Pair<String?, Long>> {
+        val totals = mutableMapOf<String?, Long>()
         data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive && it.type in setOf(TxType.EXPENSE, TxType.FEE, TxType.REFUND) }
-            .groupBy { it.categoryId }
-            .mapValues { (_, list) -> list.sumOf { if (it.type == TxType.REFUND) -it.amountMinor else it.amountMinor } }
-            .filterValues { it != 0L }
-            .toList().sortedByDescending { it.second }
+            .forEach { tx ->
+                val direction = if (tx.type == TxType.REFUND) -1 else 1
+                val parts = tx.splits.ifEmpty { listOf(TransactionSplit(tx.categoryId, tx.amountMinor)) }
+                parts.forEach { part -> totals[part.categoryId] = (totals[part.categoryId] ?: 0L) + direction * part.amountMinor }
+            }
+        return totals.filterValues { it != 0L }.toList().sortedByDescending { it.second }
+    }
 
     fun monthStart(day: LocalDate): LocalDate = LocalDate(day.year, day.monthNumber, 1)
 
@@ -249,6 +337,16 @@ object MintRules {
         return BudgetProgress(budget, start, end, spent, budget.plannedMinor - spent, percent)
     }
 
+    fun savingsProgress(data: MintData, target: SavingsTarget): SavingsProgress {
+        val accounts = data.accounts.associateBy { it.id }
+        val saved = target.accountIds.distinct().fold(0L) { total, id ->
+            val account = accounts[id]
+            val balance = if (account != null && account.currency == target.currency && !account.type.liability) balance(data, account).postedMinor.coerceAtLeast(0) else 0L
+            total + minOf(balance, Money.MAX_MINOR - total)
+        }
+        return SavingsProgress(target, saved, (target.targetMinor - saved).coerceAtLeast(0), (saved * 100 / target.targetMinor).coerceAtMost(9_999).toInt())
+    }
+
     // --- bills -------------------------------------------------------------------------------------------------------------
 
     private fun daysInMonth(year: Int, month: Int): Int = LocalDate(year, month, 1).plus(1, DateTimeUnit.MONTH).minus(1, DateTimeUnit.DAY).dayOfMonth
@@ -264,6 +362,12 @@ object MintRules {
             Frequency.WEEKLY -> first.plus(7 * index, DateTimeUnit.DAY)
             Frequency.MONTHLY -> {
                 val total = first.year * 12 + (first.monthNumber - 1) + index
+                val year = total.floorDiv(12)
+                val month = total.mod(12) + 1
+                LocalDate(year, month, minOf(first.dayOfMonth, daysInMonth(year, month)))
+            }
+            Frequency.SEMI_ANNUAL -> {
+                val total = first.year * 12 + (first.monthNumber - 1) + 6 * index
                 val year = total.floorDiv(12)
                 val month = total.mod(12) + 1
                 LocalDate(year, month, minOf(first.dayOfMonth, daysInMonth(year, month)))
@@ -397,6 +501,7 @@ object MintRules {
     private fun matches(data: MintData, t: Transaction, q: String): Boolean =
         t.payee.lowercase().contains(q) || t.note.lowercase().contains(q) ||
             data.categories.firstOrNull { it.id == t.categoryId }?.name?.lowercase()?.contains(q) == true ||
+            t.splits.any { split -> data.categories.firstOrNull { it.id == split.categoryId }?.name?.lowercase()?.contains(q) == true } ||
             data.accounts.firstOrNull { it.id == t.accountId }?.name?.lowercase()?.contains(q) == true ||
             Money.plain(t.amountMinor, t.currency).contains(q.replace(",", ""))
 

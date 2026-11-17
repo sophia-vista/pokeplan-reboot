@@ -73,6 +73,7 @@ internal fun MintImportView(model: AppModel) {
                     else { text = body; fileName = name.orEmpty(); columns = null; order = null; flipped = emptySet(); note = null }
                 }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = chosen != null)
+            Text("CSV imports don't sync or match plans.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             note?.let { Report(model, it) }
         }
     }

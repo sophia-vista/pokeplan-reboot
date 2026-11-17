@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.213.0
+
+MINT BNPL correctness and daily-use improvements (REP-039). Adds installment repayment allocation across plans, guards linked purchases and pay-later accounts against destructive or unusable state, and allows eligible plan and installment edits. Adds savings targets, transaction category splits, one optional PNG receipt per transaction, statement/minimum-payment records with a clearly labelled simple APR/365 interest estimate, and every-six-month recurrence. Clarifies reminders, bill settlement, plan deletion and CSV-import limits. No SQLDelight schema change or reward change. Not run on a device.
+
 ## 0.212.0
 
 Forms follow eight principles (owner request, 16 November 2026; rule in `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` 6.4A): prioritize, group, label, consolidate, progressively disclose, standardize, respect mobile space, preserve PMD context. `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change. Not run on a device.
