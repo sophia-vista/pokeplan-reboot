@@ -275,7 +275,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
         when {
             editingPlan -> {
                 PixelField(editAmount, { editAmount = money(it) }, Modifier.fillMaxWidth(), label = "Purchase amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = cur)
-                InstallmentTerms(model, planAccount, editTerms, Money.parse(editAmount, cur), v.plan.startDay)
+                InstallmentTerms(model, planAccount, editTerms, Money.parse(editAmount, cur), data.transactions.firstOrNull { it.id == v.plan.purchaseTxId }?.day ?: v.plan.startDay)
                 FormSave("Save plan", {
                     val total = Money.parse(editAmount, cur)
                     val count = editTerms.count
@@ -283,7 +283,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
                     refused = if (total == null) "Check the amount."
                     else if (count == null) "Choose 1 to ${Installments.MAX_COUNT} installments."
                     else if (fee == null) "Check the fee."
-                    else mint.updatePlanTerms(planId, editName, total, count, editTerms.every, editTerms.firstDue(planAccount, v.plan.startDay), fee, editTerms.kind).note()
+                    else mint.updatePlanTerms(planId, editName, total, count, editTerms.every, editTerms.firstDue(planAccount, data.transactions.firstOrNull { it.id == v.plan.purchaseTxId }?.day ?: v.plan.startDay), fee, editTerms.kind).note()
                     if (refused == null) editingPlan = false
                 }, ModuleAccent.MINT.accent, enabled = editName.isNotBlank())
                 PixelButton("Cancel", { editingPlan = false }, Modifier.fillMaxWidth(), Pixel.InkSoft)

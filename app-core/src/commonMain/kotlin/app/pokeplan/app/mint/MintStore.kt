@@ -812,7 +812,7 @@ class MintStore(
         val installments = Installments.generate(totalMinor, count, every, firstDue, fee)
         val opening = if (old.openingBalanceIncluded) account.openingMinor + totalMinor - old.totalMinor else account.openingMinor
         if (opening !in 0..app.pokeplan.mint.Money.MAX_MINOR) return Logged(null, "That opening balance looks wrong.")
-        val updated = old.copy(name = cleanName, totalMinor = totalMinor, startDay = if (old.purchaseTxId != null) old.startDay else firstDue, every = every, feeKind = feeKind, installments = installments, feeRule = fee)
+        val updated = old.copy(name = cleanName, totalMinor = totalMinor, startDay = firstDue, every = every, feeKind = feeKind, installments = installments, feeRule = fee)
         val purchase = old.purchaseTxId?.let { id -> data.transactions.firstOrNull { it.id == id } }
         if (old.purchaseTxId != null && purchase == null) return Logged(null, "The purchase record is missing.")
         val changedPurchase = purchase?.copy(amountMinor = totalMinor, payee = cleanName)

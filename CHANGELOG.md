@@ -15,7 +15,7 @@ MINT BNPL redesign (owner, 17 November 2026; `MINT.md` 5.6C, REP-039): one month
 - **One reminder per bill** (`MintReminders.billRef`); old `plan:` refs are dropped when they fire; `installmentRef` is gone.
 - **Counts:** Overview, the Bills screen box (now "Credit bills due") and the due count count bills, not installments (`Installments.dueWithin` counts bills).
 - **UI:** in the Credit line box, Monthly bills come before Purchases, "Add plan" is now "Add purchase", and the two caption lines are replaced by one "Bill reminders are off."
-- **Fixed (review of 0.213.0):** editing a purchase plan's terms no longer resets its first due day to the purchase day (`termsFor` used `startDay`; `updatePlanTerms` kept overwriting `startDay` with the first due day).
+- **Fixed (review of 0.213.0):** editing a purchase plan's terms no longer resets its first due day to the purchase day (`termsFor` started from the plan's `startDay`, the purchase day, instead of its first installment).
 - **Files:** mint-core `MonthlyBills.kt` (new), `Installments.kt`, `MintData.kt`, `MintRules.kt`, `OverviewCounts.kt`; app-core `MintStore.kt`, `MintReminders.kt`; composeApp `ui/mint/Plans.kt`, `Mint.kt`, `Overview.kt`; tests `MonthlyBillsTest`, `MintStoreTest`, `ScreenshotTest` (mint-paylater-bill).
 
 ## 0.213.0
