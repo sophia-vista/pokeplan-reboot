@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.214.0
+
+MINT BNPL redesign (owner, 17 November 2026; `MINT.md` 5.6C, REP-039): one monthly bill per pay-later or card account. `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change: plans and transactions ride in the sealed `mint_state` JSON and old saves read unchanged. Not run on a device.
+
+- **Monthly bills:** one bill per account and month, derived from all its purchases (`MonthlyBills`, `BillMonth`, `BillLine`); the first due day comes from the account's statement and due day (`MonthlyBills.firstDue`).
+- **Payments** are allocated installment by installment in due order (`PlanPaymentAllocation.no`, a new optional field). `MintStore.payBill`, `openBills` and `bills` back "Pay" on a bill.
+- **"Use the 5th for every bill"** (`alignInstallmentsToDueDay`, `misalignedInstallments`) moves installments to the account's due day.
+- **One reminder per bill** (`MintReminders.billRef`); old `plan:` refs are dropped when they fire; `installmentRef` is gone.
+- **Counts:** Overview, the Bills screen box (now "Credit bills due") and the due count count bills, not installments (`Installments.dueWithin` counts bills).
+- **UI:** in the Credit line box, Monthly bills come before Purchases, "Add plan" is now "Add purchase", and the two caption lines are replaced by one "Bill reminders are off."
+- **Fixed (review of 0.213.0):** editing a purchase plan's terms no longer resets its first due day to the purchase day (`termsFor` started from the plan's `startDay`, the purchase day, instead of its first installment).
+- **Files:** mint-core `MonthlyBills.kt` (new), `Installments.kt`, `MintData.kt`, `MintRules.kt`, `OverviewCounts.kt`; app-core `MintStore.kt`, `MintReminders.kt`; composeApp `ui/mint/Plans.kt`, `Mint.kt`, `Overview.kt`; tests `MonthlyBillsTest`, `MintStoreTest`, `ScreenshotTest` (mint-paylater-bill).
+
 ## 0.213.0
 
 MINT BNPL correctness and daily-use improvements (REP-039). Adds installment repayment allocation across plans, guards linked purchases and pay-later accounts against destructive or unusable state, and allows eligible plan and installment edits. Adds savings targets, transaction category splits, one optional PNG receipt per transaction, statement/minimum-payment records with a clearly labelled simple APR/365 interest estimate, and every-six-month recurrence. Clarifies reminders, bill settlement, plan deletion and CSV-import limits. No SQLDelight schema change or reward change. Not run on a device.

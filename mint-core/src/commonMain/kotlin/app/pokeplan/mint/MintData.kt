@@ -148,8 +148,9 @@ data class Transaction(
     val receiptImage: String = "",
 )
 
+/** How much of a repayment went to a plan; with [no] it went to that installment (a monthly bill's line), without it to the plan's earliest installments first. */
 @Serializable
-data class PlanPaymentAllocation(val planId: String, val amountMinor: Long)
+data class PlanPaymentAllocation(val planId: String, val amountMinor: Long, val no: Int? = null)
 
 @Serializable
 data class TransactionSplit(val categoryId: String?, val amountMinor: Long)

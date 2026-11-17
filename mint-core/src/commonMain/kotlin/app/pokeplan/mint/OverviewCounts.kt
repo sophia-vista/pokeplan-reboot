@@ -62,12 +62,12 @@ object OverviewCounts {
     }
 }
 
-/** One thing that is due in the window: a bill's next occurrence or a plan's next unpaid installment. [amountMinor] is null for a bill whose amount varies. */
+/** One thing that is due in the window: a bill's next occurrence or a credit account's monthly bill. [amountMinor] is null for a bill whose amount varies. */
 data class DueItem(val name: String, val day: LocalDate, val overdue: Boolean, val amountMinor: Long?, val installment: Boolean)
 
 /**
  * What the Overview and the Mint widgets show (MINT.md 3.2B), derived from the records and the settings, stored nowhere. [dueMinor] and [dueCount] cover
- * everything due in the window; [next] is the soonest few, one line per bill or plan.
+ * everything due in the window; [next] is the soonest few, one line per bill or credit account's monthly bill.
  */
 data class OverviewSummary(
     val currency: String,
@@ -87,9 +87,12 @@ fun OverviewCounts.summary(data: MintData, today: LocalDate, limit: Int = 5): Ov
     val until = today.plus(DatePeriod(days = days))
     val bills = MintRules.upcoming(data, today, days).filter { !it.bill.income && it.bill.currency == currency }.distinctBy { it.bill.id }
         .map { DueItem(it.bill.name, it.payDay, it.state == OccurrenceState.OVERDUE, it.remainingMinor, installment = false) }
-    val plans = Installments.views(data, today).filter { it.plan.currency == currency }.mapNotNull { v ->
-        v.installments.filter { it.remainingMinor > 0 && it.dueDay <= until }.minByOrNull { it.dueDay }
-            ?.let { DueItem(v.plan.name, it.dueDay, it.dueDay < today, it.remainingMinor, installment = true) }
+    // One line per credit account's monthly bill (MINT.md 5.6C), not one per purchase: what falls due in the window, overdue months included.
+    val plans = data.accounts.filter { Installments.allowedFor(it.type) && it.currency == currency }.flatMap { account ->
+        MonthlyBills.open(data, account.id, today).mapNotNull { bill ->
+            val inWindow = bill.lines.filter { it.remainingMinor > 0 && it.dueDay <= until }
+            if (inWindow.isEmpty()) null else DueItem(account.name, inWindow.minOf { it.dueDay }, inWindow.any { it.dueDay < today }, inWindow.sumOf { it.remainingMinor }, installment = true)
+        }
     }
     return OverviewSummary(
         currency, available.availableMinor, net, available.billsMinor + available.installmentsMinor, available.billsCount + available.installmentsCount, days,

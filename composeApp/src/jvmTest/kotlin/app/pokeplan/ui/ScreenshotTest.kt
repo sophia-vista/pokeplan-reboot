@@ -1731,8 +1731,20 @@ class ScreenshotTest {
             m.payPlan(laptop.id, 30_000, wallet.id, ago(60))
             m.refundPlan(laptop.id, 20_000)
             m.addLateFee(laptop.id, 3, 5_000)
+            // A second purchase in the same month as the headphones: one monthly bill of two purchases.
+            m.addPlanPurchase(later.id, "Phone case", 45_000, null, 3, app.pokeplan.mint.PlanEvery.MONTH, ahead(20))
             val suffix = if (dark) "-dark" else ""
-            render("mint-paylater-options$suffix", height = 1500, minBytes = 3_000) {
+            render("mint-paylater-bill$suffix", height = 1300, minBytes = 3_000) {
+                PixelTheme(dark = dark) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                        app.pokeplan.ui.theme.TextBox {
+                            val bill = model.mint.openBills(later.id).first { it.lines.size > 1 }
+                            androidx.compose.foundation.layout.Column { app.pokeplan.ui.mint.BillRow(model, bill, true, {}, {}) }
+                        }
+                    }
+                }
+            }
+            render("mint-paylater-options$suffix", height = 1900, minBytes = 3_000) {
                 PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first { it.id == later.id }) {} } }
             }
             render("mint-plan-form$suffix", height = 3500, minBytes = 3_000) {

@@ -228,7 +228,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
 
 private fun billsDetail(model: AppModel): String {
     val today = model.store.today
-    val open = MintRules.upcoming(model.mintData, today, 7).size + dueInstallments(model, 7).size
+    val open = MintRules.upcoming(model.mintData, today, 7).size + dueBills(model, 7).size
     return if (model.mintData.bills.isEmpty() && model.mintData.plans.isEmpty()) "optional" else if (open == 0) "none due soon" else "$open to settle"
 }
 
@@ -275,7 +275,7 @@ internal fun OverviewCard(model: AppModel) {
             if (leadsWithAvailable) {
                 Text(mint.show(available.availableMinor, currency), style = MaterialTheme.typography.titleLarge)
                 position.forEach { (cur, minor) -> MintValueRow("Net position", mint.show(minor, cur), soft = true) }
-                if (available.installmentsCount > 0) MintValueRow("Installments due", "${mint.show(available.installmentsMinor, currency)} (${available.installmentsCount})", soft = true)
+                if (available.installmentsCount > 0) MintValueRow("Credit bills due", "${mint.show(available.installmentsMinor, currency)} (${available.installmentsCount})", soft = true)
             } else position.forEach { (cur, minor) -> Text(mint.show(minor, cur), style = MaterialTheme.typography.titleLarge) }
             upcoming.forEach { o ->
                 MintValueRow(o.bill.name, if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(), soft = true)

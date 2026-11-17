@@ -65,7 +65,7 @@ class OverviewCountsTest {
         assertEquals(2, short.dueCount) // the bill and the 20 Nov installment
         assertEquals(30_500L, short.dueMinor)
         assertEquals(100_000L - 30_500L, short.availableMinor)
-        assertEquals(listOf("Internet", "Phone"), short.next.map { it.name })
+        assertEquals(listOf("Internet", "later"), short.next.map { it.name })
         val long = OverviewCounts.summary(data(OverviewWindow.NEXT_MONTH), today)
         assertEquals(60_000L + 500L * 2, long.dueMinor) // two installments and the bill on 18 Nov and 18 Dec
     }
@@ -78,7 +78,7 @@ class OverviewCountsTest {
         assertEquals(2, s.dueCount) // still just the Internet bill and the installment
         assertEquals(30_500L, s.dueMinor)
         assertEquals(100_000L - 30_500L, s.availableMinor)
-        assertEquals(listOf("Internet", "Phone"), s.next.map { it.name })
+        assertEquals(listOf("Internet", "later"), s.next.map { it.name })
         assertEquals(100_000L - 500L, MintRules.available(d.copy(plans = emptyList()), "PHP", today).availableMinor)
     }
 }

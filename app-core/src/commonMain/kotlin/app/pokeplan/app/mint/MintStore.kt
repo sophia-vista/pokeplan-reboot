@@ -5,6 +5,7 @@ import app.pokeplan.core.reward.MintKind
 import app.pokeplan.mint.AccountStatus
 import app.pokeplan.mint.AccountType
 import app.pokeplan.mint.Bill
+import app.pokeplan.mint.BillMonth
 import app.pokeplan.mint.BillPayment
 import app.pokeplan.mint.Budget
 import app.pokeplan.mint.BudgetPeriod
@@ -26,6 +27,8 @@ import app.pokeplan.mint.MintData
 import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.MintSettings
+import app.pokeplan.mint.MonthlyBill
+import app.pokeplan.mint.MonthlyBills
 import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.Reconciliation
 import app.pokeplan.mint.ReviewRecord
@@ -555,10 +558,11 @@ class MintStore(
     /**
      * A purchase paid later (MINT.md 5.6A): writes **one** expense at the full [totalMinor] on the credit account, on [day], and the plan with its generated schedule,
      * in one save. The outstanding rises by the price, the purchase counts in spending once, and nothing is repaid yet. The fee of each installment is recorded
-     * later, when it is billed or reached by a payment. A limit is information only, so a purchase beyond it is still recorded.
+     * later, when it is billed or reached by a payment. A limit is information only, so a purchase beyond it is still recorded. A null [firstDue] is worked out
+     * from the account's statement and due days ([MonthlyBills.firstDue]) so the purchase lands on the account's next bill without the player typing a date.
      */
     fun addPlanPurchase(
-        accountId: String, name: String, totalMinor: Long, categoryId: String?, count: Int, every: PlanEvery, firstDue: LocalDate, fee: FeeRule = FeeRule.None,
+        accountId: String, name: String, totalMinor: Long, categoryId: String?, count: Int, every: PlanEvery, firstDue: LocalDate?, fee: FeeRule = FeeRule.None,
         feeKind: FeeKind = FeeKind.FEE, day: LocalDate = today,
     ): Logged<InstallmentPlan> {
         val account = creditAccount(accountId) ?: return Logged(null, "Choose a credit card or pay later account that is open.")
@@ -570,9 +574,10 @@ class MintStore(
         val tx = Transaction(txId, TxType.EXPENSE, totalMinor, account.currency, atMillis(day), day, account.id, categoryId = categoryId, payee = name.trim().take(MintRules.NAME_MAX * 2), createdMillis = nowMillis)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val planId = newId()
+        val first = firstDue ?: MonthlyBills.firstDue(account, day, every)
         val plan = InstallmentPlan(
             planId, account.id, name.trim().take(MintRules.NAME_MAX), account.currency, txId, totalMinor, day, every, feeKind,
-            Installments.generate(totalMinor, count, every, firstDue, fee), nowMillis, feeRule = fee,
+            Installments.generate(totalMinor, count, every, first, fee), nowMillis, feeRule = fee,
         )
         update { it.copy(transactions = it.transactions + tx.copy(planId = planId), plans = it.plans + plan) }
         return Logged(plan)
@@ -622,14 +627,32 @@ class MintStore(
         return Logged(tx)
     }
 
-    /** A repayment is allocated in due-date order across every unpaid plan on the credit account. */
-    fun payPlans(accountId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today): Logged<Transaction> {
+    /** The bills of a credit account that still have something owed, earliest month first (MINT.md 5.6C). */
+    fun openBills(accountId: String): List<MonthlyBill> = MonthlyBills.open(data, accountId, today)
+
+    /** Every bill of a credit account, paid months too. */
+    fun bills(accountId: String): List<MonthlyBill> = MonthlyBills.of(data, accountId, today)
+
+    /**
+     * A repayment of one monthly bill (MINT.md 5.6C): a transfer to the account allocated to that month's installments first; anything beyond the bill spills
+     * forward into the next bills, and anything beyond every scheduled balance is an ordinary repayment.
+     */
+    fun payBill(accountId: String, month: BillMonth, amountMinor: Long, fromAccountId: String, day: LocalDate = today): Logged<Transaction> {
+        if (openBills(accountId).none { it.month == month }) return Logged(null, "That bill has nothing left to pay.")
+        return payPlans(accountId, amountMinor, fromAccountId, day, month)
+    }
+
+    /**
+     * A repayment is allocated installment by installment in due-date order across every unpaid plan on the credit account, so it settles the earliest bill first
+     * (or [firstBill] first), never one purchase's whole schedule before another purchase's earlier month.
+     */
+    fun payPlans(accountId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today, firstBill: BillMonth? = null): Logged<Transaction> {
         val to = creditAccount(accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
         val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
         if (from.type.liability) return Logged(null, "Pay from a bank, wallet or cash account.")
         if (day > today) return Logged(null, "A payment cannot be dated in the future.")
         (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val allocations = Installments.allocatePayment(data, accountId, amountMinor, today)
+        val allocations = Installments.allocatePayment(data, accountId, amountMinor, today, firstBill)
         if (allocations.isEmpty()) return Logged(null, "There are no unpaid plans on this account.")
         val tx = Transaction(
             id = newId(), type = TxType.TRANSFER, amountMinor = amountMinor, currency = from.currency, atMillis = atMillis(day), day = day,
@@ -637,8 +660,8 @@ class MintStore(
         )
         (checkPlanTransfer(data, tx, to.id) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val withPayment = data.copy(transactions = data.transactions + tx)
-        val fees = allocations.flatMap { allocation ->
-            val plan = data.plans.first { it.id == allocation.planId }
+        val fees = allocations.map { it.planId }.distinct().flatMap { planId ->
+            val plan = data.plans.first { it.id == planId }
             Installments.view(withPayment, plan, today).installments
                 .filter { it.paidMinor > 0 && it.feeMinor > 0 && !it.feeRecorded }
                 .map { feeRecord(plan, it.no, it.feeMinor, day, plan.feeKind) }
@@ -725,6 +748,36 @@ class MintStore(
             )
         }
         return true
+    }
+
+    /** The plans of [accountId] with their unpaid monthly installments moved onto the account's due day, and how many moved (see [alignInstallmentsToDueDay]). */
+    private fun alignment(accountId: String): Pair<Map<String, InstallmentPlan>, Int> {
+        val account = creditAccount(accountId, allowInactive = true)?.takeIf { it.dueDay in 1..31 } ?: return emptyMap<String, InstallmentPlan>() to 0
+        var moved = 0
+        val changed = planViews().filter { it.plan.accountId == accountId && it.plan.every == PlanEvery.MONTH }.mapNotNull { v ->
+            val next = v.plan.installments.map { inst ->
+                val view = v.installments.first { it.no == inst.no }
+                val free = view.paidMinor == 0L && !view.feeRecorded && view.lateMinor == 0L
+                if (free) inst.copy(dueDay = MonthlyBills.onDueDay(account, inst.dueDay)) else inst
+            }
+            val count = next.indices.count { next[it].dueDay != v.plan.installments[it].dueDay }
+            if (count == 0 || next.zipWithNext().any { (a, b) -> a.dueDay > b.dueDay }) null else { moved += count; v.plan.copy(installments = next) }
+        }.associateBy { it.id }
+        return changed to moved
+    }
+
+    /** How many unpaid monthly installments are not on the account's due day. */
+    fun misalignedInstallments(accountId: String): Int = alignment(accountId).second
+
+    /**
+     * Moves the unpaid installments of the account's monthly plans onto the account's due day (MINT.md 5.6C), so one bill has one due day: the player sets that day
+     * once on the account and does not edit each purchase. A plan is left alone when an installment already paid, billed or fined in that month would end up after
+     * a moved one. Returns how many installments moved.
+     */
+    fun alignInstallmentsToDueDay(accountId: String): Int {
+        val (changed, moved) = alignment(accountId)
+        if (changed.isNotEmpty()) update { d -> d.copy(plans = d.plans.map { changed[it.id] ?: it }) }
+        return moved
     }
 
     fun updatePlanName(planId: String, name: String): Logged<InstallmentPlan> {
