@@ -72,7 +72,8 @@ object TaskViews {
     fun today(tasks: List<Task>, now: LocalDateTime): List<Task> {
         val day = now.date
         val overdue = overdue(tasks, now).toSet()
-        return open(tasks).filter { it in overdue || it.planned == day || it.due?.date == day }.sortedWith(order(now))
+        // A nudge (a reminder with no date) shows from its time and never counts as overdue.
+        return open(tasks).filter { it in overdue || it.planned == day || it.due?.date == day || (it.nudge != null && it.nudge <= now) }.sortedWith(order(now))
     }
 
     private fun timeOf(t: Task): LocalTime? = t.plannedTime ?: t.due?.time

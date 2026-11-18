@@ -99,9 +99,10 @@ object Reminders {
         restDays: Set<LocalDate> = emptySet(),
         focusEndMillis: Long? = null,
     ): List<DueReminder> = tasks.asSequence()
-        .filter { it.isOpen && it.reminders.isNotEmpty() }
+        .filter { it.isOpen && (it.reminders.isNotEmpty() || it.nudge != null) }
         .flatMap { task ->
-            fireTimes(task, task.reminders, zone, quiet).asSequence()
+            // The nudge is one more fire time, from its own moment instead of the task's date.
+            (fireTimes(task, task.reminders, zone, quiet) + listOfNotNull(task.nudge?.let { outOfQuietHours(it, quiet) })).sorted().asSequence()
                 .filter { it.date !in restDays }
                 .map { at ->
                     val millis = at.toEpochMillis(zone)

@@ -451,6 +451,11 @@ data class FocusEnd(
     val failReason: FailReason? = null,
     /** The session failed, but the buddy's Magic Guard kept its egg (so [completed] is true and [failReason] says why). */
     val guarded: Boolean = false,
+    /** The summary shown when the session ends (PLAN.md 6.1): minutes focused, minutes planned, the task it was for and whether it was Deep Focus. */
+    val minutes: Int = 0,
+    val plannedMinutes: Int = 0,
+    val taskId: String? = null,
+    val deepFocus: Boolean = false,
 )
 
 

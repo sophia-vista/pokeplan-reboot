@@ -58,6 +58,8 @@ import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.plan.Category
+import app.pokeplan.plan.ChecklistReset
+import app.pokeplan.plan.ListKind
 import app.pokeplan.plan.LinkKind
 import app.pokeplan.plan.TaskLink
 import app.pokeplan.plan.FailReason
@@ -752,12 +754,53 @@ class GameStore(
     /** The list named [name] (any case), for "#Groceries" in quick-add; null if there is none. */
     fun listNamed(name: String): TaskList? = activeLists.firstOrNull { it.name.equals(name.trim(), ignoreCase = true) }
 
-    /** Makes a list. A blank name is not a list. */
-    fun addList(name: String, color: Long = TaskList.COLORS.first(), icon: String = TaskList.ICONS.first(), category: Category? = null): TaskList? {
+    /**
+     * Makes a list. A blank name is not a list. [startFrom] is the id of a checklist whose saved template fills the new one with the same
+     * items, unticked (PLAN.md 3.5A); the new list is then a Checklist whatever [kind] says.
+     */
+    fun addList(
+        name: String, color: Long = TaskList.COLORS.first(), icon: String = TaskList.ICONS.first(), category: Category? = null,
+        kind: ListKind = ListKind.TASKS, startFrom: String? = null,
+    ): TaskList? {
         val clean = name.trim().take(TaskList.MAX_NAME).ifEmpty { return null }
-        val list = TaskList(newId(), clean, color, icon, category = category)
+        val items = startFrom?.let { id -> data.lists.firstOrNull { it.id == id }?.template }.orEmpty()
+        val list = TaskList(
+            newId(), clean, color, icon, category = category, kind = if (items.isEmpty()) kind else ListKind.CHECKLIST,
+            template = items, resetOn = today,
+        )
         update { it.copy(lists = it.lists + list) }
+        items.forEach { addTask(it, listId = list.id) }
         return list
+    }
+
+    /** Saves a checklist's current items (open or done, in the order they were made) as its template; none clears it. */
+    fun saveTemplate(listId: String) = update { d ->
+        val items = d.tasks.filter { it.listId == listId && it.state != TaskState.DELETED }.sortedBy { it.createdAtMillis }.map { it.title }.take(MAX_TEMPLATE_ITEMS)
+        d.copy(lists = d.lists.map { if (it.id == listId) it.copy(template = items) else it })
+    }
+
+    /**
+     * Resets the checklists whose boundary has passed: the finished items of a Checklist reopen (no penalty, no streak loss; a task already
+     * paid never pays again) and the day is kept so it happens once. Call when the app opens and when the date changes.
+     */
+    private fun resetChecklists() {
+        val weekStart = data.settings.weekStart
+        val due = data.lists.filter { l ->
+            val last = l.resetOn ?: return@filter false
+            l.kind == ListKind.CHECKLIST && when (l.reset) {
+                ChecklistReset.NEVER -> false
+                ChecklistReset.DAILY -> last < today
+                // A week boundary: the first day of the week at or after the last reset.
+                ChecklistReset.WEEKLY -> last < today && (0..6).any { back -> today.minus(DatePeriod(days = back)).let { it > last && it.dayOfWeek == weekStart } }
+            }
+        }.map { it.id }.toSet()
+        if (due.isEmpty()) return
+        update { d ->
+            d.copy(
+                lists = d.lists.map { if (it.id in due) it.copy(resetOn = today) else it },
+                tasks = d.tasks.map { t -> if (t.listId in due && t.state == TaskState.DONE) t.copy(state = TaskState.OPEN, completedAtMillis = null, subtasks = t.subtasks.map { it.copy(done = false) }) else t },
+            )
+        }
     }
 
     /** The category a new task in list [listId] starts with: the list's own, else Personal (the Inbox and a list with none). */
@@ -1029,6 +1072,7 @@ class GameStore(
     fun refresh() {
         val created = data.series.flatMap { s -> s.recurrence?.let { RecurringTasks.instancesToCreate(s.template, it, data.tasks, today, nowMillis) }.orEmpty() }
         if (created.isNotEmpty()) update { it.copy(tasks = it.tasks + created) }
+        resetChecklists()
         syncLinks()
     }
 
@@ -1420,7 +1464,7 @@ class GameStore(
                 update { d ->
                     noted(d, log("Focus: $minutes min", outcome.rewards, d.copy(
                         eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
-                        player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true),
+                        player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true, minutes = minutes, plannedMinutes = minutes, taskId = session.taskId, deepFocus = session.deepFocus),
                         focusHistory = d.focusHistory + session.record(minutes, completed = true),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
                     ), origin = Origin(Origin.How.FOCUS_EGG, event.region)), "plan:focus:${event.newPokemonId}", "PLAN", event.newPokemonId, "focus", nowMillis)
@@ -1433,7 +1477,7 @@ class GameStore(
                 update { d ->
                     d.copy(
                         eggTickets = d.eggTickets.spend(d.eggTickets.inSession, session.startedAtMillis, null),
-                        focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason),
+                        focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason, minutes = minutes, plannedMinutes = (session.durationMillis / 60_000L).toInt(), taskId = session.taskId, deepFocus = session.deepFocus),
                         focusHistory = d.focusHistory + session.record(minutes, completed = false),
                     )
                 }
@@ -1459,7 +1503,7 @@ class GameStore(
             noted(d, log("Magic Guard: $minutes min", outcome.rewards, d.copy(
                 eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                 player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null,
-                lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true),
+                lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true, minutes = minutes, plannedMinutes = (session.durationMillis / 60_000L).toInt(), taskId = session.taskId, deepFocus = session.deepFocus),
                 focusHistory = d.focusHistory + session.record(minutes, completed = false),
                 counters = Counters.MAGIC_GUARD.set(d.counters, weekStart, 1),
             ), origin = Origin(Origin.How.FOCUS_EGG, event.region)), "plan:focus:${event.newPokemonId}", "PLAN", event.newPokemonId, "magic-guard", nowMillis)
@@ -1861,6 +1905,9 @@ class GameStore(
     companion object {
         /** The version of the Pokémon-roles layout that [migrateRoles] brings a save to. */
         const val ROLES_VERSION = 1
+
+        /** The most items a checklist template keeps. */
+        const val MAX_TEMPLATE_ITEMS = 60
 
         /** The reward-log source of what World gives (a recruit, the Guardian): not an egg, so no hatch scene or hatch reaction. */
         const val WORLD_SOURCE = "World"

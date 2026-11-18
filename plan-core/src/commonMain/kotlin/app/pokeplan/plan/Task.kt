@@ -95,6 +95,8 @@ data class Task(
     val reminders: List<ReminderOffset> = emptyList(),
     /** The other module's record this task refers to, if any (see [TaskLink]). A task linked to a record its module owns never pays from PLAN. */
     val link: TaskLink? = null,
+    /** A reminder with no date on the task (PLAN.md 3.5A): shows on Today from this time, never overdue, fires once. Cleared when the task is done. */
+    val nudge: LocalDateTime? = null,
 ) {
     init {
         require(title.isNotBlank()) { "a task needs a title" }
