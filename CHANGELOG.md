@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.215.0
+
+PLAN module redesign (owner, 18 November 2026; `docs/pokelife/MODULES/PLAN.md` 3, 3.5A, 6.1, 8.1, 13; REP-058). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No SQL schema change: the new list and task fields are optional JSON fields in the `plan_list` and `plan_task` rows. Not run on a device.
+
+- **Plan's page** follows the standard module layout: lead, overview menu of Tasks / Calendar / Focus, action items (Inbox quick add, next task, waiting keys), party. A More key in the header holds Progress, Goals, Targets and Settings. `PlanSection` is now TASKS, CALENDAR, FOCUS, MORE, PROGRESS, GOALS, TARGETS, SETTINGS; Inbox, Upcoming, Lists, All tasks and Outstanding are no longer sections.
+- **One Tasks workspace** (`plan/Tasks.kt`): `AppModel.tasksView` is OPEN (default, grouped by list), TODAY, INBOX, UPCOMING or DONE; list chips and Manage lists sit inside it. `ListScreen`, `OutstandingView` and `AllTasksView` are removed; the filter box lost its List dropdown. Generic quick add on Plan's page creates Inbox tasks (`AddTo.INBOX`); the Today view adds to Today.
+- **Focus:** setup offers any open task (Today's first, plus "Another task" search); a session summary (`FocusEnd` gained `minutes`, `plannedMinutes`, `taskId`, `deepFocus`); a Recent list of the last 5 sessions.
+- **Task editor tabs** are Schedule (day, time, repeat, reminders), Details (title, category, notes, estimate, list, steps) and More (difficulty, goal, deadline, Won't do, Duplicate, Delete). A task with no day can carry a nudge (`Task.nudge`, "Remind me at"): it shows on Today from its time, is never overdue, and fires through `Reminders.upcoming`.
+- **plan-core / app-core:** `TaskList` gained `kind` (`ListKind` TASKS, CHECKLIST, TRACKER), `template`, `reset` (`ChecklistReset` NEVER, DAILY, WEEKLY) and `resetOn`. `GameStore.addList(kind, startFrom)`, `saveTemplate` and `resetChecklists` (run from `refresh()`; reopens done items, paid stays so nothing pays twice).
+- **Settings:** `PlanSettings` (Plan, More, Settings) holds Task reminders (with quiet hours), repeat until answered, focus halfway and end alerts and the device calendars picker. The week-start toggle moved to General settings. `CalendarSettings` is removed.
+- **Not done:** no priority field (the owner dropped Rank versus priority); external calendar import is only the calendar picker (no copy, no .ics); recurrence presets unchanged; the 10 second leave rule (6.3) kept; unticked checklist items at a reset are not written to a history (the spec says logged; follow-up).
+
 ## 0.214.0
 
 MINT BNPL redesign (owner, 17 November 2026; `MINT.md` 5.6C, REP-039): one monthly bill per pay-later or card account. `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No schema change: plans and transactions ride in the sealed `mint_state` JSON and old saves read unchanged. Not run on a device.
