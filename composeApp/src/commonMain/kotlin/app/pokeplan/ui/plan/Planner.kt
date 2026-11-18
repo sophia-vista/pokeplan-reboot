@@ -90,7 +90,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.datetime.minus
 import app.pokeplan.ui.pokemon.label
-import app.pokeplan.ui.screens.CalendarSettings
 import app.pokeplan.ui.screens.LocalBuddy
 import app.pokeplan.ui.screens.LocalReduceMotion
 import app.pokeplan.ui.screens.NextUp
@@ -134,62 +133,57 @@ internal fun planTasks(model: AppModel): List<Task> {
 }
 
 /**
- * One of Plan's task pages behind the Today menu (PLAN.md section 3): Inbox, Upcoming, Lists, Calendar, Targets and All tasks.
- * [open] goes to another section (Upcoming's Calendar key); [toToday] goes back to Today, where the quick-add box is.
+ * One of Plan's places behind its page (PLAN.md section 3): Tasks, Calendar, and from More the Targets and Settings. [open] goes to
+ * another section (Tasks' Calendar key); [onFocus] starts Focus on a task, and is null where there is no Focus (desktop and the web).
  */
 @Composable
-internal fun PlanView(model: AppModel, section: PlanSection, onBack: () -> Unit, open: (PlanSection) -> Unit, toToday: () -> Unit, startWeek: Boolean = false) =
-    app.pokeplan.ui.theme.ModuleTone(ModuleAccent.PLAN) { PlanViewBody(model, section, onBack, open, toToday, startWeek) }
+internal fun PlanView(model: AppModel, section: PlanSection, onBack: () -> Unit, open: (PlanSection) -> Unit, onFocus: ((Task) -> Unit)?, startWeek: Boolean = false) =
+    app.pokeplan.ui.theme.ModuleTone(ModuleAccent.PLAN) { PlanViewBody(model, section, onBack, open, onFocus, startWeek) }
 
 @Composable
-private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Unit, open: (PlanSection) -> Unit, toToday: () -> Unit, startWeek: Boolean) {
-    val host = remember { CardHost() }
-    val store = model.store
-    val live = planTasks(model)
-    if (section == PlanSection.LISTS) {
-        // A list slides in from the Lists page and back out; each keeps its scroll position.
-        var openList by remember { mutableStateOf<String?>(null) }
-        ScreenSwitch(openList, depth = { if (it == null) 0 else 1 }) { id ->
-            val list = id?.let { i -> model.data.lists.firstOrNull { it.id == i } }
-            if (list != null) ListScreen(model, list, TaskViews.inList(live, list.id), taskCards(model, host, showList = false)) { openList = null }
-            else SectionScaffold(section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header) { ListsSection(model, live) { openList = it } }
-        }
-        return
-    }
+private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Unit, open: (PlanSection) -> Unit, onFocus: ((Task) -> Unit)?, startWeek: Boolean) {
     val pendingIds = model.data.pending.map { it.original.id }.toSet()
-    val card = taskCards(model, host)
-    val calendarKey: (@Composable () -> Unit)? = if (section != PlanSection.UPCOMING) null else ({ PixelButton("Calendar", { open(PlanSection.CALENDAR) }, color = Pixel.InkSoft, compact = true) })
+    val calendarKey: (@Composable () -> Unit)? = if (section != PlanSection.TASKS) null else ({ PixelButton("Calendar", { open(PlanSection.CALENDAR) }, color = Pixel.InkSoft, compact = true) })
     SectionScaffold(section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header, trailing = calendarKey) {
         when (section) {
             PlanSection.TARGETS -> FrequencyView(model)
-            PlanSection.CALENDAR -> { DayView(model, pendingIds, startWeek); CalendarSettings(model) }
-            PlanSection.ALL -> AllTasksView(model, live, card, onAdd = { model.addTaskRequested = true; toToday() })
-            PlanSection.OUTSTANDING -> OutstandingView(model, live, taskCards(model, host, showList = false), onAdd = { model.addTaskRequested = true; toToday() })
-            PlanSection.INBOX -> {
-                QuickAddBox(model, AddTo.INBOX)
-                val shown = TaskViews.inbox(live)
-                if (shown.isEmpty()) EmptyState("The inbox is empty", icon = section.icon, addAbove = "Add a task")
-                else TaskGroup(null, shown.sortedByDescending { it.createdAtMillis }, card = card)
-            }
-            PlanSection.UPCOMING -> {
-                // By the day each task is on (Todoist's Upcoming), with no cap on how far ahead.
-                val shown = TaskViews.upcoming(live, store.now)
-                shown.groupBy { it.planned ?: it.due!!.date }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, dayOf = day, card = card) }
-                if (shown.isEmpty()) EmptyState("Nothing coming up", icon = section.icon, action = "Add a task" to { model.addTaskRequested = true; toToday() })
-            }
+            PlanSection.CALENDAR -> DayView(model, pendingIds, startWeek)
+            PlanSection.TASKS -> TasksWorkspace(model, onFocus)
+            PlanSection.SETTINGS -> app.pokeplan.ui.screens.PlanSettings(model)
             else -> {}
         }
     }
 }
 
-/** "Today", "Tomorrow", "Yesterday" or "Wed 28 Oct". */
-private fun dayName(model: AppModel, day: LocalDate): String {
-    val today = model.store.today
-    return when (day) {
-        today -> "Today"
-        today.plus(DatePeriod(days = 1)) -> "Tomorrow"
-        today.minus(DatePeriod(days = 1)) -> "Yesterday"
-        else -> day.short()
+/**
+ * What on Plan's page needs a look (PLAN.md section 3): quick add into the Inbox, the task to do next (with Focus on this and Pick for me),
+ * and one quiet key for each thing waiting: tasks from before, targets due today, the weekly review. Nothing shows for what is not there.
+ */
+@Composable
+internal fun PlanActionItems(model: AppModel, onFocus: ((Task) -> Unit)?) {
+    val store = model.store
+    val data = model.data
+    QuickAddBox(model, AddTo.INBOX)
+    val tasks = store.openTodayTasks()
+    val late = TaskViews.overdue(tasks, store.now).toSet()
+    val next = tasks.firstOrNull { it.id == data.pickedTaskId } ?: tasks.firstOrNull { it !in late && !TaskViews.isEvening(it) } ?: tasks.firstOrNull { it !in late } ?: tasks.firstOrNull()
+    if (next != null) NextUp(
+        task = next,
+        onDone = { model.completeTask(next.id) },
+        onFocus = onFocus?.let { f -> { f(next) } },
+        onChoose = if (tasks.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
+        picked = next.id == data.pickedTaskId,
+        day = store.today,
+    )
+    val targets = store.frequencyTasks().count { store.frequencyDueToday(it) }
+    val waiting = buildList<Pair<String, () -> Unit>> {
+        if (late.isNotEmpty()) add("${late.size} from before" to { model.tasksView = TasksView.TODAY; model.planSection = PlanSection.TASKS })
+        if (tasks.size - late.size > (if (next != null && next !in late) 1 else 0)) add("${tasks.size - late.size - (if (next != null && next !in late) 1 else 0)} more today" to { model.tasksView = TasksView.TODAY; model.planSection = PlanSection.TASKS })
+        if (targets > 0) add("$targets target${if (targets == 1) "" else "s"} today" to { model.planSection = PlanSection.TARGETS })
+        if (store.canReview()) add("Weekly review is ready" to { model.planSection = PlanSection.PROGRESS })
+    }
+    if (waiting.isNotEmpty()) androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        waiting.forEach { (label, go) -> PixelButton(label, go, color = Pixel.InkSoft, compact = true) }
     }
 }
 
@@ -216,8 +210,8 @@ internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?) {
         }
     }
     if (tasks.isEmpty() && targets.isEmpty()) {
-        if (done > 0) EmptyState("All clear for today", icon = PlanSection.TODAY_ICON, sleeper = true, action = "Add another" to { model.addTaskRequested = true })
-        else EmptyState("Nothing planned for today", icon = PlanSection.TODAY_ICON, sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
+        if (done > 0) EmptyState("All clear for today", icon = "oaks-parcel", sleeper = true, action = "Add another" to { model.addTaskRequested = true })
+        else EmptyState("Nothing planned for today", icon = "oaks-parcel", sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
     }
     // The picked task, else the first of today's own (an overdue one stays under "From before", with its Move to today).
     val late = TaskViews.overdue(tasks, store.now).toSet()
@@ -499,7 +493,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
 }
 
 @Composable
-internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit, showList: Boolean = true, startTab: CardTab = CardTab.WHEN) {
+internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit, showList: Boolean = true, startTab: CardTab = CardTab.SCHEDULE) {
     val store = model.store
     val list = task.listId?.let { id -> model.data.lists.firstOrNull { it.id == id } }
     Column {
@@ -556,9 +550,9 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
                             CardTab.entries.forEach { t -> TabButton(t.label, tab == t, { tab = t }, Modifier.weight(1f)) }
                         }
                         when (tab) {
-                            CardTab.WHEN -> TaskWhenTab(model, task)
-                            CardTab.STEPS -> TaskStepsTab(model, task)
-                            CardTab.EDIT -> TaskEditTab(model, task, onDeleted = onDeleted)
+                            CardTab.SCHEDULE -> TaskWhenTab(model, task)
+                            CardTab.DETAILS -> TaskEditTab(model, task, more = false, onDeleted = onDeleted)
+                            CardTab.MORE -> TaskEditTab(model, task, more = true, onDeleted = onDeleted)
                         }
                     }
                 }
@@ -567,18 +561,18 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
     }
 }
 
-internal enum class CardTab(val label: String) { WHEN("When"), STEPS("Steps"), EDIT("Edit") }
+internal enum class CardTab(val label: String) { SCHEDULE("Schedule"), DETAILS("Details"), MORE("More") }
 
 /**
- * When and where a task goes: the day and the list, then one "Time and repeat" row that says what is set and opens the time,
- * the reminders and the repeat (most tasks need none of them, so they stay folded).
+ * Schedule (PLAN.md 3.5A): the day, the time, whether it repeats and when to be reminded. Everything about when is on this one tab, so a
+ * task is dated, repeated and reminded without leaving it.
  */
 @Composable
 private fun TaskWhenTab(model: AppModel, task: Task) {
     val store = model.store
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         FieldLabel("Move to")
-        // Only the planned day goes with "No date"; a deadline is on the Edit tab and stays.
+        // Only the planned day goes with "No date"; a deadline is under More and stays.
         PixelDateField(
             task.planned, store.today, Pixel.Tone,
             { day -> store.updateTask(task.copy(planned = day, plannedTime = if (day == null) null else task.plannedTime)) },
@@ -589,40 +583,11 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
         task.instanceDay()?.takeIf { task.movedOccurrence }?.let { from ->
             Text("Moved from ${from.short()}: this one only.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
-        if (store.activeLists.isNotEmpty()) {
-            PixelDropdown(
-                listOf<String?>(null) + store.activeLists.map { it.id }, task.listId,
-                { id -> if (id == null) "Inbox" else store.activeLists.firstOrNull { it.id == id }?.name ?: "" },
-                { store.moveToList(task.id, it) }, Modifier.fillMaxWidth(), label = "List",
-            )
-        }
-        var more by remember(task.id) { mutableStateOf(false) }
-        Row(
-            Modifier.fillMaxWidth().clip(PixelShape)
-                .clickable(onClickLabel = if (more) "Hide time and repeat" else "Change time and repeat", role = Role.Button) { more = !more }
-                .defaultMinSize(minHeight = Spacing.Target).semantics(mergeDescendants = true) {},
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text("Time and repeat", style = MaterialTheme.typography.bodyLarge)
-                Text(timeAndRepeat(model, task), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            }
-            Text(if (more) "Hide" else "Change", style = MaterialTheme.typography.labelLarge, color = Pixel.Tone)
-        }
-        if (more) {
-            PlannedTime(model, task)
-            RemindMe(model, task)
-            RepeatRow(model, task)
-        }
+        PlannedTime(model, task)
+        RepeatRow(model, task)
+        RemindMe(model, task)
     }
 }
-
-/** What the folded "Time and repeat" row says: "Any time, no reminder, does not repeat" or "At 9:00, 1 reminder, repeats weekly". */
-private fun timeAndRepeat(model: AppModel, task: Task): String = listOf(
-    task.plannedTime?.let { "At ${clock(it)}" } ?: "Any time",
-    when (task.reminders.size) { 0 -> "no reminder"; 1 -> "1 reminder"; else -> "${task.reminders.size} reminders" },
-    repeatsMarker(model.store, task) ?: "does not repeat",
-).joinToString(", ")
 
 /** A task's difficulty as a small tag after its title: the letter in a thin frame, its meaning read out. */
 @Composable
@@ -638,7 +603,6 @@ private fun RankTag(rank: Rank) {
 private fun TaskStepsTab(model: AppModel, task: Task) {
     val store = model.store
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        if (task.notes.isNotBlank()) Text(task.notes, style = MaterialTheme.typography.bodyLarge)
         var editing by remember(task.id) { mutableStateOf<String?>(null) }
         task.subtasks.forEach { sub ->
             if (editing == sub.id && task.state == TaskState.OPEN) {
@@ -676,9 +640,12 @@ private fun TaskStepsTab(model: AppModel, task: Task) {
     }
 }
 
-/** A task's words, difficulty, category, deadline and estimate, saved as they are made. Won't do and Delete are here, apart from the day-to-day tabs. */
+/**
+ * Details (the words, category, notes, estimate, list and steps) or, with [more], More (difficulty, goal, deadline, Won't do, Duplicate and Delete).
+ * Edits are saved as they are made.
+ */
 @Composable
-private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
+private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: () -> Unit) {
     val store = model.store
     var title by remember(task.id) { mutableStateOf(task.title) }
     var rank by remember(task.id) { mutableStateOf(task.rank) }
@@ -688,29 +655,37 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
     var dueDay by remember(task.id) { mutableStateOf(task.due?.date) }
     // A deadline keeps its time of day; with none typed it is the end of that day (23:59).
     var dueTime by remember(task.id) { mutableStateOf(task.due?.time?.takeIf { it != LocalTime(23, 59) }) }
-    var detailsOpen by remember(task.id) { mutableStateOf(task.notes.isNotBlank() || task.due != null || task.estimateMinutes != null || store.goalOf(task.id) != null) }
     FormStack {
-        // The words first, then how hard and what kind; the rest waits behind one row.
-        FormGroup {
-            PixelField(title, { title = it }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, placeholder = "Title")
-            DifficultyPicker(rank) { rank = it }
-            FieldLabel("Category")
-            CategoryChips(category) { category = it ?: category }
-        }
-        FormDisclosure("Additional details", detailsOpen, { detailsOpen = !detailsOpen }) {
+        if (!more) {
             FormGroup {
+                PixelField(title, { title = it }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, placeholder = "Title")
+                FieldLabel("Category")
+                CategoryChips(category) { category = it ?: category }
                 PixelField(
                     notes, { notes = it }, Modifier.fillMaxWidth(), label = "Notes", minLines = 2, maxLines = 6, placeholder = "Notes",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 )
+                PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Tone, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
+                if (store.activeLists.isNotEmpty()) {
+                    PixelDropdown(
+                        listOf<String?>(null) + store.activeLists.map { it.id }, task.listId,
+                        { id -> if (id == null) "Inbox" else store.activeLists.firstOrNull { it.id == id }?.name ?: "" },
+                        { store.moveToList(task.id, it) }, Modifier.fillMaxWidth(), label = "List",
+                    )
+                }
+            }
+            FieldLabel("Steps")
+            TaskStepsTab(model, task)
+        } else {
+            FormGroup {
+                DifficultyPicker(rank) { rank = it }
                 GoalChoice(model, task)
-                // A deadline is not the day you plan to do it (that is "Move to"); with no time it is the end of that day, 23:59.
+                // A deadline is not the day you plan to do it (Schedule); with no time it is the end of that day, 23:59.
                 PixelDateTimeField(
                     dueDay, dueTime, store.today, Pixel.Tone, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
                     noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
                     dayPresets = PlanDays.presets(store.today), pickLabel = "Pick a day",
                 )
-                PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Tone, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
             }
         }
         // Edits are saved as they are made (a short pause after typing, and when the tab closes), so nothing is lost by switching tabs.
@@ -727,8 +702,7 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
         }
         LaunchedEffect(title, notes, rank, minutes, category, dueDay, dueTime) { kotlinx.coroutines.delay(600); commit() }
         DisposableEffect(task.id) { onDispose { commit() } }
-        HorizontalDivider(color = Pixel.Border)
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+        if (more) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             DuplicateButton(model, task)
             PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
@@ -846,7 +820,15 @@ internal fun RemindMe(model: AppModel, task: Task) {
     FieldLabel("Remind me")
     val base = Reminders.baseTime(task)
     if (base == null) {
-        Text("Give it a day first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        // No day: a nudge at a moment of its own (PLAN.md 3.5A). It shows on Today from then and never makes the task overdue.
+        val store = model.store
+        PixelDateTimeField(
+            task.nudge?.date, task.nudge?.time, store.today, Pixel.Tone,
+            { d, t -> store.updateTask(task.copy(nudge = d?.let { LocalDateTime(it, t ?: Reminders.DEFAULT_TIME) })) }, label = "At",
+            noDayLabel = "No reminder", timeNoneLabel = "9:00", timePresets = TIME_PRESETS,
+            dayPresets = PlanDays.presets(store.today), pickLabel = "Pick a day",
+        )
+        if (!store.data.settings.reminders) Text("Reminders are off in Plan's settings.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         return
     }
     val room = task.reminders.size < Reminders.MAX_PER_TASK
@@ -872,7 +854,7 @@ internal fun RemindMe(model: AppModel, task: Task) {
             }, color = Pixel.Tone, compact = true, enabled = minutes != null)
         }
     }
-    if (!model.store.data.settings.reminders) Text("Reminders are off in Settings.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    if (!model.store.data.settings.reminders) Text("Reminders are off in Plan's settings.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
 /** "Mon 19 Oct, 45 min, 1/3 steps, repeats weekly" ([repeats] is the marker for a repeating task); the date is left out when it is [day] (the day the list is grouped on). */
@@ -885,7 +867,7 @@ fun taskMeta(t: Task, day: LocalDate? = null, repeats: String? = null): String =
         t.focusedMinutes > 0 -> add("focused ${t.focusedMinutes} min")
         else -> t.estimateMinutes?.let { add("$it min") }
     }
-    if (t.reminders.isNotEmpty() && t.isOpen) add("reminder")
+    if ((t.reminders.isNotEmpty() || t.nudge != null) && t.isOpen) add("reminder")
     // A projection of a Home chore: Home completes it and pays it, Plan only shows it (PRODUCT_BIBLE.md section 4).
     if (t.ownedElsewhere) add("from Base")
     if (t.subtasks.isNotEmpty()) add("${t.subtasks.count { it.done }}/${t.subtasks.size} steps")

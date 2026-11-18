@@ -25,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskList
+import app.pokeplan.plan.ListKind
+import app.pokeplan.plan.ChecklistReset
+import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.FieldLabel
@@ -103,31 +106,23 @@ private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) ->
     }
 }
 
-/** One list: add straight into it, its tasks grouped by when they are, and Edit for its name, colour, icon and archive. */
-@Composable
-internal fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, back: () -> Unit) {
-    var editing by remember(list.id) { mutableStateOf(false) }
-    SectionScaffold(list.name, if (list.archived) "Archived list" else null, onBack = back, icon = list.icon, color = ModuleAccent.PLAN.header) {
-        if (editing) ListEditor(model, list) { kept -> editing = false; if (kept == null) back() }
-        else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)
-        if (!list.archived) QuickAddBox(model, AddTo.INBOX, listId = list.id)
-        WhenGroups(model, tasks, card)
-        if (tasks.isEmpty()) EmptyState("Nothing in ${list.name}", icon = list.icon, action = "Add a task" to { model.addTaskRequested = true })
-    }
-}
-
 /**
  * Makes a list ([list] null) or edits one: its name, one of eight colours, a real item icon and the category its new tasks start with; an existing list can also
  * be archived (hidden from the menu, tasks kept) or deleted (its tasks go back to the Inbox). [done] gets the list's id,
  * or null when it was deleted or nothing was made.
  */
 @Composable
-private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit) {
+internal fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit) {
     val store = model.store
     var name by remember { mutableStateOf(list?.name ?: "") }
     var color by remember { mutableStateOf(list?.color ?: TaskList.COLORS.first()) }
     var icon by remember { mutableStateOf(list?.icon ?: TaskList.ICONS.first()) }
     var category by remember { mutableStateOf(list?.category) }
+    var kind by remember { mutableStateOf(list?.kind ?: ListKind.TASKS) }
+    var reset by remember { mutableStateOf(list?.reset ?: ChecklistReset.NEVER) }
+    // A new checklist can start from the saved items of another (PLAN.md 3.5A).
+    var startFrom by remember { mutableStateOf<String?>(null) }
+    val templates = model.data.lists.filter { it.template.isNotEmpty() && it.id != list?.id }
     FormBox {
         FormStack {
             PixelField(
@@ -135,6 +130,18 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
                 label = "Name",
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
             )
+            PixelChoice(ListKind.entries.toList(), kind, { it?.label ?: "" }, { k -> if (k != null) kind = k }, label = "Kind")
+            if (kind == ListKind.CHECKLIST) {
+                PixelChoice(ChecklistReset.entries.toList(), reset, { it?.label ?: "" }, { r -> if (r != null) reset = r }, label = "Untick")
+                if (list == null && templates.isNotEmpty()) PixelChoice(
+                    listOf<String?>(null) + templates.map { it.id }, startFrom, { id -> templates.firstOrNull { it.id == id }?.let { "${it.name} (${it.template.size})" } ?: "Empty" },
+                    { startFrom = it }, label = "Start from",
+                )
+                if (list != null) PixelButton(
+                    if (list.template.isEmpty()) "Save items as template" else "Update template (${list.template.size})",
+                    { store.saveTemplate(list.id); model.say("Template saved.") }, color = Pixel.InkSoft, compact = true,
+                )
+            }
             FieldLabel("Colour")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 TaskList.COLORS.forEachIndexed { i, c ->
@@ -168,8 +175,8 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
             CategoryChips(category, allowNone = true) { category = it }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (list == null) "Make list" else "Save", {
-                    if (list == null) done(store.addList(name, color, icon, category)?.id)
-                    else { store.updateList(list.copy(name = name, color = color, icon = icon, category = category)); done(list.id) }
+                    if (list == null) done(store.addList(name, color, icon, category, kind, startFrom)?.let { made -> if (made.kind == ListKind.CHECKLIST && reset != ChecklistReset.NEVER) store.updateList(made.copy(reset = reset)); made.id })
+                    else { store.updateList(list.copy(name = name, color = color, icon = icon, category = category, kind = kind, reset = reset, resetOn = list.resetOn ?: model.store.today)); done(list.id) }
                 }, Modifier.weight(1f), enabled = name.isNotBlank(), compact = true)
                 PixelIconButton("close", "Cancel", { done(list?.id) }, Pixel.InkSoft)
             }

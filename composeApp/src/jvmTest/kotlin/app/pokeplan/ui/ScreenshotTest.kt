@@ -262,7 +262,7 @@ class ScreenshotTest {
         listOf(false, true).forEach { dark ->
             val n = if (dark) "dark" else "light"
             render("outstanding-$n", height = 1500, frames = 8) {
-                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.OUTSTANDING, {}, {}, {}) } }
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.OPEN; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
             }
         }
         val emptyStore = started()
@@ -270,7 +270,7 @@ class ScreenshotTest {
         val empty = AppModel(emptyStore)
         listOf(false, true).forEach { dark ->
             render("outstanding-empty-${if (dark) "dark" else "light"}", frames = 8) {
-                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(empty, app.pokeplan.ui.screens.PlanSection.OUTSTANDING, {}, {}, {}) } }
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { empty.tasksView = app.pokeplan.ui.plan.TasksView.OPEN; app.pokeplan.ui.plan.PlanView(empty, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
             }
         }
         val rent = store.addTask("Pay the rent", Rank.C, planned = store.today)
@@ -592,18 +592,18 @@ class ScreenshotTest {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { run { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
         }
         render("planner-soon") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.UPCOMING, {}, {}, {}) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.UPCOMING; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
         }
         render("planner-inbox") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.INBOX, {}, {}, {}) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.INBOX; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
         }
         render("planner-done") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.ALL, {}, {}, {}) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.DONE; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
         }
         // A repeating task shows "repeats weekly"; All tasks lists the open ones with the search and filter chips above.
         store.makeRepeating(store.data.tasks.first { it.title == "Pay the rent" }.id, app.pokeplan.plan.Repeat.Weekly())
         render("planner-all", height = 1700) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.ALL, {}, {}, {}) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.OPEN; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
         }
         render("planner-habits") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TARGETS, {}, {}, {}) } }
@@ -1034,7 +1034,7 @@ class ScreenshotTest {
             shot("plan") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("care") { model.module = app.pokeplan.ui.screens.Module.CARE; model.careSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("world") { app.pokeplan.ui.world.WorldScreen(model) }
-            shot("planner") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = app.pokeplan.ui.screens.PlanSection.INBOX; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("planner") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = app.pokeplan.ui.screens.PlanSection.TASKS; model.tasksView = app.pokeplan.ui.plan.TasksView.INBOX; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("heal") { model.module = app.pokeplan.ui.screens.Module.HEAL; model.healSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("gear") { app.pokeplan.ui.gear.GearScreen(model) {} }
         }
@@ -2470,7 +2470,7 @@ class ScreenshotTest {
         val task = store.addTask("Write the longest title a person might give a single small task today")
         val model = AppModel(store)
         render("plan-task-edit-${if (dark) "dark" else "light"}", height = 1500) {
-            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.plan.TaskCard(model, store.data.tasks.first { it.id == task.id }, null, true, {}, {}, startTab = app.pokeplan.ui.plan.CardTab.EDIT) } }
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.plan.TaskCard(model, store.data.tasks.first { it.id == task.id }, null, true, {}, {}, startTab = app.pokeplan.ui.plan.CardTab.DETAILS) } }
         }
     }
 

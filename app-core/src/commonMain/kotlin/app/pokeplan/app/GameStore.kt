@@ -1464,7 +1464,7 @@ class GameStore(
                 update { d ->
                     noted(d, log("Focus: $minutes min", outcome.rewards, d.copy(
                         eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
-                        player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true),
+                        player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true, minutes = minutes, plannedMinutes = minutes, taskId = session.taskId, deepFocus = session.deepFocus),
                         focusHistory = d.focusHistory + session.record(minutes, completed = true),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
                     ), origin = Origin(Origin.How.FOCUS_EGG, event.region)), "plan:focus:${event.newPokemonId}", "PLAN", event.newPokemonId, "focus", nowMillis)
@@ -1477,7 +1477,7 @@ class GameStore(
                 update { d ->
                     d.copy(
                         eggTickets = d.eggTickets.spend(d.eggTickets.inSession, session.startedAtMillis, null),
-                        focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason),
+                        focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason, minutes = minutes, plannedMinutes = (session.durationMillis / 60_000L).toInt(), taskId = session.taskId, deepFocus = session.deepFocus),
                         focusHistory = d.focusHistory + session.record(minutes, completed = false),
                     )
                 }
@@ -1503,7 +1503,7 @@ class GameStore(
             noted(d, log("Magic Guard: $minutes min", outcome.rewards, d.copy(
                 eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                 player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null,
-                lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true),
+                lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true, minutes = minutes, plannedMinutes = (session.durationMillis / 60_000L).toInt(), taskId = session.taskId, deepFocus = session.deepFocus),
                 focusHistory = d.focusHistory + session.record(minutes, completed = false),
                 counters = Counters.MAGIC_GUARD.set(d.counters, weekStart, 1),
             ), origin = Origin(Origin.How.FOCUS_EGG, event.region)), "plan:focus:${event.newPokemonId}", "PLAN", event.newPokemonId, "magic-guard", nowMillis)

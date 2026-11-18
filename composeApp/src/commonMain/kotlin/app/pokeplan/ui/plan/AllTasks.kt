@@ -35,17 +35,12 @@ import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 
-/** Rows shown at most; a search or a filter narrows the rest down. */
-private const val SHOWN = 60
-
 /**
- * The search box with its Filter panel (category, list, difficulty, and with [withStatus] the status and the Done preset), shared by All tasks and
- * Outstanding. Tap a chosen chip again to drop it.
+ * The search box with its Filter panel (category, difficulty, and with [withStatus] the status and the Done preset), shared by the Tasks workspace's Open and Done views. Tap a chosen chip again to drop it.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskFilter) -> Unit, withStatus: Boolean) {
-    val lists = model.store.activeLists
     var filtering by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -68,13 +63,6 @@ internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskF
                 }
                 FieldLabel("Category")
                 CategoryChips(filter.category, allowNone = true) { onChange(filter.copy(category = it)) }
-                if (lists.isNotEmpty()) {
-                    PixelDropdown(
-                        listOf<String?>(null, TaskFilter.INBOX) + lists.map { it.id }, filter.listId,
-                        { id -> when (id) { null -> "All"; TaskFilter.INBOX -> "Inbox"; else -> lists.firstOrNull { it.id == id }?.name ?: "" } },
-                        { onChange(filter.copy(listId = it)) }, Modifier.fillMaxWidth(), label = "List",
-                    )
-                }
                 FieldLabel("Difficulty")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = Alignment.CenterVertically) {
                     Rank.entries.forEach { r -> RankBadge(r, selected = filter.rank == r, onClick = { onChange(filter.copy(rank = if (filter.rank == r) null else r)) }) }
@@ -83,37 +71,4 @@ internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskF
             }
         }
     }
-}
-
-/** Every open task across the lists, grouped by list (the Inbox first, then the lists in their saved order), narrowed by the shared filter. */
-@Composable
-internal fun OutstandingView(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, onAdd: () -> Unit) {
-    var filter by remember { mutableStateOf(TaskFilter()) }
-    TaskFilterBox(model, filter, { filter = it }, withStatus = false)
-    val lists = model.store.activeLists
-    val groups = TaskViews.outstanding(tasks, lists.map { it.id }, filter)
-    if (groups.isEmpty()) EmptyState(
-        if (filter.isNarrowed) "Nothing matches" else "Nothing outstanding",
-        icon = "journal",
-        action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to onAdd,
-    ) else groups.forEach { g ->
-        TaskGroup(g.listId?.let { id -> lists.firstOrNull { it.id == id }?.name } ?: "Inbox", g.tasks, card = card)
-    }
-}
-
-/**
- * Every task in one place, for finding one: a search over title and notes, then filters by status, category, list and
- * rank (tap a chosen chip again to drop it). Open tasks are shown by default.
- */
-@Composable
-internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, onAdd: () -> Unit) {
-    var filter by remember { mutableStateOf(TaskFilter()) }
-    TaskFilterBox(model, filter, { filter = it }, withStatus = true)
-    val found = filter.apply(tasks)
-    if (found.size > SHOWN) Text("Showing the first $SHOWN of ${found.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-    if (found.isEmpty()) EmptyState(
-        if (filter.status == TaskFilter.Status.FINISHED && filter.copy(status = TaskFilter.Status.OPEN) == TaskFilter()) "Nothing finished yet" else if (filter.isNarrowed) "Nothing matches" else "No open tasks",
-        icon = "scope-lens",
-        action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to onAdd,
-    ) else TaskGroup(null, found.take(SHOWN), card = card)
 }

@@ -94,6 +94,7 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
     // The session's own sound when it ends: the success jingle (the egg's when it hatched), or the soft error.
     LaunchedEffect(end) { if (end != null) model.effect(if (!end.completed) Sfx.ERROR else if (model.data.rewardLog.lastOrNull()?.rewards?.any { it is Reward.Hatched } == true) Sfx.EGG_GET else Sfx.FOCUS_END) }
     if (end != null && !end.completed) FailedBox(model, end.failReason)
+    if (end != null) SessionSummary(model, end)
     if (end != null && end.completed) {
         // The hatch is the peak of the loop, so its end leads straight to the new Pokémon rather than to a bare OK.
         val hatched = model.data.rewardLog.asReversed().firstNotNullOfOrNull { e -> e.rewards.filterIsInstance<Reward.Hatched>().lastOrNull() }?.pokemon
@@ -107,6 +108,20 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
             } else {
                 PixelButton("OK", { model.store.dismissFocusEnd() }, Modifier.fillMaxWidth())
             }
+        }
+    }
+}
+
+/** What the session came to (PLAN.md 6.1): the minutes focused of the minutes planned, the task it was for, and Deep Focus. Written even when it was cut short. */
+@Composable
+private fun SessionSummary(model: AppModel, end: app.pokeplan.app.FocusEnd) {
+    if (end.plannedMinutes <= 0) return
+    val task = end.taskId?.let { id -> model.data.tasks.firstOrNull { it.id == id } }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            PixelTitle(if (end.completed) "${end.minutes} min focused" else "${end.minutes} of ${end.plannedMinutes} min focused")
+            if (task != null) Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (end.deepFocus) Text("Deep Focus", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -148,7 +163,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
     var minutes by remember { mutableStateOf(settings.defaultFocusMinutes) }
     var deep by remember { mutableStateOf(settings.deepFocus) }
     var taskId by remember { mutableStateOf(model.focusTaskId) }
-    val tasks = store.todayTasks()
+    val tasks = store.todayTasks().filter { it.id !in model.data.pending.map { p -> p.original.id } }
 
     // A slow, small wobble so the egg feels alive while you set up (still when Reduce motion is on).
     val idle = rememberInfiniteTransition()
@@ -179,12 +194,40 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         // Help: Deep Focus gives better eggs, and moving the phone ends the session.
         TextBox { ToggleRow("Deep Focus", deep) { deep = it } }
 
-        if (tasks.isNotEmpty()) {
+        // Today's tasks first; "Another task" searches every open task (a session can be for any of them).
+        val everyOpen = planTasks(model).filter { it.isOpen }
+        if (everyOpen.isNotEmpty()) {
+            var searching by remember { mutableStateOf(false) }
+            var query by remember { mutableStateOf("") }
+            val chosen = taskId?.let { id -> everyOpen.firstOrNull { it.id == id } }
+            val shown = tasks.take(4).let { first -> if (chosen != null && first.none { it.id == chosen.id }) listOf(chosen) + first.take(3) else first }
+            val found = if (!searching) emptyList() else everyOpen.filter { t -> query.lowercase().split(' ').filter { it.isNotEmpty() }.all { it in t.title.lowercase() } && shown.none { it.id == t.id } }.take(6)
             TextBox {
                 Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelTitle("Working on")
                     TaskChoice("Nothing in particular", null, taskId == null) { taskId = null }
-                    tasks.take(4).forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
+                    shown.forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
+                    if (everyOpen.size > shown.size) PixelButton(if (searching) "Hide search" else "Another task", { searching = !searching }, color = Pixel.InkSoft, compact = true)
+                    if (searching) {
+                        app.pokeplan.ui.theme.PixelField(query, { query = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Search open tasks")
+                        found.forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
+                    }
+                }
+            }
+        }
+
+        // The last few sessions, so what was focused on is not lost (PLAN.md 6.4).
+        val recent = model.data.focusHistory.takeLast(5).asReversed()
+        if (recent.isNotEmpty()) TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelTitle("Recent")
+                recent.forEach { r ->
+                    val title = r.taskId?.let { id -> model.data.tasks.firstOrNull { it.id == id }?.title }
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Text("${r.minutes} min", style = MaterialTheme.typography.bodyLarge)
+                        Text(title ?: "No task", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(if (r.completed) "Hatched" else "Stopped", style = MaterialTheme.typography.bodyMedium, color = if (r.completed) Pixel.Green else Pixel.InkSoft)
+                    }
                 }
             }
         }
@@ -195,7 +238,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
     Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelButton("Start $minutes min", {
             model.effect(Sfx.FOCUS_START)
-            // The length and Deep Focus chosen here become the usual ones (Plan has no settings page of its own).
+            // The length and Deep Focus chosen here become the usual ones for next time.
             if (settings.defaultFocusMinutes != minutes || settings.deepFocus != deep) store.changeSettings { it.copy(defaultFocusMinutes = minutes, deepFocus = deep) }
             store.startFocus(minutes, deep, taskId); store.dismissFocusEnd()
         }, Modifier.fillMaxWidth(), ModuleAccent.PLAN.accent)

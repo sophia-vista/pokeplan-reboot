@@ -101,6 +101,9 @@ internal fun SettingsView(model: AppModel) {
         if (choosing) app.pokeplan.ui.BackgroundChoices(settings.appBackground, store.now.hour, store.now.minute, Pixel.dark) { name -> store.changeSettings { s -> s.copy(appBackground = name) } }
         ToggleRow("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
+    SettingsGroup("Week", "calendar") {
+        ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
+    }
     SettingsGroup("Notifications", "bell") {
         model.phone?.let { phone ->
             // Read again when the player comes back from the phone's permission screen.
@@ -114,20 +117,6 @@ internal fun SettingsView(model: AppModel) {
         ToggleRow(
             "Routine reminders", model.careData.settings.reminders,
         ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
-        ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
-        if (settings.reminders) {
-            PixelTimeField(
-                settings.quietHours.start, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = it)) } } },
-                Pixel.Tone, label = "Quiet from",
-            )
-            PixelTimeField(
-                settings.quietHours.end, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = it)) } } },
-                Pixel.Tone, label = "Quiet until",
-            )
-            ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
-        }
-        ToggleRow("Focus halfway alert", settings.focusHalfway) { store.changeSettings { s -> s.copy(focusHalfway = it) } }
-        ToggleRow("Focus end alert", settings.focusEnd) { store.changeSettings { s -> s.copy(focusEnd = it) } }
         ToggleRow("World job alert", settings.worldJobAlerts) { store.changeSettings { s -> s.copy(worldJobAlerts = it) } }
         ToggleRow("Streak reminder", settings.streakReminder) { store.changeSettings { s -> s.copy(streakReminder = it) } }
         if (settings.streakReminder) {
@@ -162,7 +151,7 @@ private fun PrivacyCard(model: AppModel) {
 
 /** Which of the phone's calendars show on Planner → Calendar. Only where the platform can read them (Android). */
 @Composable
-private fun CalendarsCard(model: AppModel) {
+internal fun CalendarsCard(model: AppModel) {
     val source = model.calendars ?: return
     var permitted by remember { mutableStateOf(source.permitted()) }
     var calendars by remember { mutableStateOf<List<DeviceCalendar>?>(null) }
@@ -422,15 +411,30 @@ private fun Stepper(label: String, value: String, step: Int, change: (Int) -> Un
 /** An hour as the settings show it, "07:00". */
 private fun hourText(hour: Int) = "${hour.toString().padStart(2, '0')}:00"
 
-/** Plan's own settings (Modules, Plan, Settings): the focus defaults, the first day of the week and the phone's calendars. */
+/**
+ * Plan's own settings (Plan, More, Settings; PLAN.md section 13): its reminders (task reminders with the quiet hours they respect, repeat until
+ * answered, the focus alerts) and which of the phone's calendars appear. The week start is a General setting; the usual focus length and
+ * Deep Focus are what the last session was started with.
+ */
 @Composable
-internal fun CalendarSettings(model: AppModel) {
+internal fun PlanSettings(model: AppModel) {
     val store = model.store
     val settings = model.data.settings
-    // Plan's settings page is retired (PLAN.md section 3): the week start and the phone's calendars sit at the foot of the Calendar,
-    // and the usual focus length and Deep Focus are what the last session was started with.
-    SettingsGroup("Week", "calendar") {
-        ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
+    SettingsGroup("Reminders", "bell") {
+        ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
+        if (settings.reminders) {
+            PixelTimeField(
+                settings.quietHours.start, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = it)) } } },
+                Pixel.Tone, label = "Quiet from",
+            )
+            PixelTimeField(
+                settings.quietHours.end, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = it)) } } },
+                Pixel.Tone, label = "Quiet until",
+            )
+            ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
+        }
+        ToggleRow("Focus halfway alert", settings.focusHalfway) { store.changeSettings { s -> s.copy(focusHalfway = it) } }
+        ToggleRow("Focus end alert", settings.focusEnd) { store.changeSettings { s -> s.copy(focusEnd = it) } }
     }
     CalendarsCard(model)
 }
