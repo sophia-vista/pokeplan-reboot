@@ -69,19 +69,17 @@ CARE retains ownership of its routine and Diary Card reminder preferences and so
 
 Use a small, stable navigation structure. Avoid a separate destination for every feature.
 
-**As built (owner, 12 November 2026):** Modules → Plan **is** Today. Below today's work sits one menu of rows with counts: **Inbox**, **Upcoming**, **Lists**, **Calendar**, **Focus** and **More**. More holds the places visited less often: **Progress** (with the weekly review as a card when one is ready, and past reviews), **Goals**, **Targets** (frequency targets) and **All tasks** (search and filters, with a **Done** preset that shows finished and won't-do tasks). There is no Planner menu, no separate Review or Done destination and no Plan settings page: the usual focus length and Deep Focus are what the last session was started with (Focus setup), and the week start and calendars sit at the foot of the Calendar.
+**As built (owner, 18 November 2026; supersedes the 12 November layout):** Modules → Plan opens a page in the standard module layout: a short lead box, the overview of the three places (**Tasks**, **Calendar**, **Focus**, each with a count or state), the relevant action items (quick add to the Inbox, the task to do next, what is overdue, a weekly review when one is ready), and the party at the end. A **More** key in the lead box header holds the places visited less often: **Progress** (with the weekly review), **Goals**, **Targets** (frequency targets) and **Settings** (PLAN settings, 13).
 
-Primary destinations:
+Primary destinations (the owner uses only these three, so nothing else is a destination):
 
-1. **Today** — actionable view for the current day (the module's page).
-2. **Inbox** — captured and unprocessed tasks: no list and no date.
-3. **Upcoming** — future tasks and commitments, with no day cap; a Calendar key in its header.
-4. **Lists** — projects and task groupings.
-5. **Focus** — start and manage focus sessions.
-
-Calendar should be accessible from Today or Upcoming, not necessarily a permanent top-level destination. Goals and recurring-task management should be reachable through Lists or a compact planning-management area. Do not create primary destinations for a separate Habits area, CARE Routines, Goals, Calendar, and Tasks separately.
+1. **Tasks** — one workspace. It opens on **Open**: every open task grouped by list (the Inbox first). Views, as chips on the same page: **Today**, **Inbox**, **Upcoming** and **Done** (finished and won't-do tasks, latest first). Lists are chosen and managed here (a list chip row, "New list", edit, archive); there is no separate Lists, Outstanding or All tasks page.
+2. **Calendar** — the day, week and month views with PLAN events and the read-only device calendars (8); one tap from the page and from the Tasks header.
+3. **Focus** — start and manage focus sessions, for any open task or none (6).
 
 ### 3.1 Today
+
+*(A view inside Tasks and the action items on the module page since 18 November 2026; the rules below still describe its content.)*
 
 Today is the default landing view. It should answer what needs attention now without requiring the user to organize everything first.
 
@@ -129,6 +127,8 @@ Project capabilities: name, optional description, optional icon/color, status (a
 - **List kind.** A list has a kind, chosen when it is created and changeable later without losing items: **Tasks** (the default, today's behaviour), **Checklist** (items to tick off and reset) or **Tracker** (a long-running list whose items are things to learn, earn or finish, such as a certification path, shown with a count and no due date). The kind changes the list's presentation and defaults only; every item is still a task on the same engine (3.5).
 - **Resetting checklist.** A Checklist's items reset at its occurrence boundary (a recurring checklist, 5.1), so a grocery run or a weekly cleaning round starts clean. Items left unticked at reset are recorded as not done in the history with no penalty, no streak loss and no reward effect (5.4). Ticking items never completes the parent on its own (4.5); the list shows derived progress and offers "Done".
 - **A reminder without a due date.** A task may carry a reminder time with no due date: a nudge. It shows on Today at that time, never becomes overdue, and clears when done or dismissed. It uses the shared reminder contract (7) like any other.
+- **Checklist templates (18 November 2026).** A Checklist can keep its items as a template ("Save items as template"); "New checklist" then offers "Start from" any list that has one, which makes a new list with the same items, unticked. A template is part of the list (no separate screen) and carries no dates.
+- **The nudge (18 November 2026).** A reminder without a due date is set under More in the task editor as "Remind me at" a date and time. It never makes the task overdue and is cleared when the task is done.
 - **Precision stays.** Date, time, recurrence and reminder controls keep their precision; the default editor shows the basic fields and the rest sit under "More options" (REP-057). Nothing here removes a control.
 - **Not in this section.** Checklists that mirror Google Calendar (8.1 stays read-only) and grocery prices or shopping workflows.
 
@@ -235,6 +235,8 @@ Focus is a core PLAN capability. Audit and reuse reliable existing timer and lif
 
 ### 6.1 Session model
 
+*(18 November 2026.)* A session can be for **any open task**, not only Today's: the setup lists today's first, then a search over all open tasks. The last length and Deep Focus used are kept for next time. When a session ends or is cut short, a **summary** shows the time focused (counting only time spent), whether it finished, the task, and what it paid. An interrupted session (left, killed or restarted past the grace in 6.3) is still written to the history as not completed with its elapsed time, so nothing is lost.
+
 Support start, pause, resume, complete, cancel, optional linked task, optional duration, and session history. A session can start without a task.
 
 ### 6.2 Timer reliability
@@ -268,6 +270,8 @@ CARE routine and Diary Card reminders remain CARE-owned requests and preferences
 ## 8. Calendar integration
 
 ### 8.1 External calendars
+
+*(18 November 2026, owner.)* "Import" means choosing **which device calendars appear** in PLAN's Calendar; nothing is copied into PLAN, no task or PLAN event is made from an external event, and nothing is written back. PLAN tasks, PLAN events and external events each have their own look and label (not colour alone).
 
 Google/device calendar integration is read-only initially. PLAN may request permission, display external events, filter selected calendars, refresh data, and show provider details. It must not edit/delete/create external events, convert them automatically to PLAN tasks, or reward viewing/attending them.
 
@@ -384,12 +388,12 @@ Retries cannot pay twice. Undo/redo respects payment policy. Recurring occurrenc
 
 ## 13. Settings
 
-Keep settings short and grouped:
+PLAN has its own short settings page (More → Settings), grouped:
 
-- **Planning:** week start, default task behavior, optional default duration, default view.
-- **Reminders:** PLAN task/event reminders enabled and default timing. Global quiet hours, notification permissions, delivery, and focus deferral are managed by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
-- **Calendar:** external integration, selected calendars, display preferences.
-- **Focus:** default focus duration, optional break duration, optional session-end notification.
+- **Reminders:** task reminders on or off, repeat until answered, and the focus alerts (halfway and end). These moved here from General (18 November 2026). Global quiet hours, notification permissions, delivery and focus deferral are managed by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; the quiet-hours times are shown beside the reminder switch.
+- **Calendar:** which device calendars appear (8.1). Nothing is imported or written back.
+- **Focus:** the usual length and Deep Focus are what the last session was started with (6.1); no separate default is asked for.
+- **Week start** is a General setting (shared by every calendar in the app), not a PLAN one.
 - **Appearance:** follow PokéLife global appearance/accessibility; no duplicate PLAN theme controls.
 
 Do not duplicate shared reminder settings or behavior in PLAN.

@@ -18,6 +18,14 @@ data class TaskList(
     val archived: Boolean = false,
     /** The category a task added to this list starts with (null: Personal, as in the Inbox); changing it leaves the tasks already in it alone. */
     val category: Category? = null,
+    /** What the list is for (PLAN.md 3.5A): a normal list of tasks, a checklist to tick off and reset, or a tracker of things to finish over time. */
+    val kind: ListKind = ListKind.TASKS,
+    /** A checklist's saved items ("Save items as template"); "Start from" makes a new checklist with them. Part of the list, no dates. */
+    val template: List<String> = emptyList(),
+    /** How often a checklist's ticks reset (unticked items carry no penalty); only a [ListKind.CHECKLIST] uses it. */
+    val reset: ChecklistReset = ChecklistReset.NEVER,
+    /** The day the checklist was last reset (or made), so a reset happens once per boundary. */
+    val resetOn: kotlinx.datetime.LocalDate? = null,
 ) {
     companion object {
         /** Red, blue, green, amber, teal, purple, pink and slate. */
@@ -32,3 +40,15 @@ data class TaskList(
         const val MAX_NAME = 40
     }
 }
+
+/** The kinds of list. The kind changes presentation and defaults only; every item is a task on the same engine. */
+@Serializable
+enum class ListKind(val label: String, val hint: String) {
+    TASKS("Tasks", "dated work"),
+    CHECKLIST("Checklist", "tick off, then reset"),
+    TRACKER("Tracker", "a long-running count"),
+}
+
+/** When a checklist's ticks reset: never, each day, or each week (on [weekStart]). */
+@Serializable
+enum class ChecklistReset(val label: String) { NEVER("Never"), DAILY("Every day"), WEEKLY("Every week") }

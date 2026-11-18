@@ -139,7 +139,7 @@ class PlanReminderAdapter(
         val t = task(request) ?: return false
         return app().settings.reminders && when (request.kind) {
             KIND_REPEAT -> app().settings.repeatReminders
-            else -> t.reminders.isNotEmpty()
+            else -> t.reminders.isNotEmpty() || t.nudge != null
         }
     }
 
