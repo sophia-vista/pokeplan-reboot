@@ -205,9 +205,10 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
             PixelTitle("Quick actions")
             // Keys at their natural width that wrap at a large text size, so no label is cut.
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("Add routine", { model.careSection = CareSection.ROUTINES }, color = ModuleAccent.CARE.accent, compact = true)
-                PixelButton("Calm", { model.careSection = CareSection.CALM }, color = Pixel.InkSoft, compact = true)
+                // What people do often: a calm break, today's check-in, a journal entry. Adding a routine is set-up, so it lives in Routines.
+                PixelButton("Calm", { model.careSection = CareSection.CALM }, color = ModuleAccent.CARE.accent, compact = true)
                 PixelButton("Check in", { model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Write", { model.reflectJournal = true; model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
             }
         }
     }
@@ -217,7 +218,8 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
 /** Reflect: the diary card and the journal stay separate records and separate modes of one place (CARE.md 3.3); a half-written journal entry opens on the journal. */
 @Composable
 private fun ReflectView(model: AppModel) {
-    var journal by remember { mutableStateOf(model.journalDraft.isNotEmpty()) }
+    var journal by remember { mutableStateOf(model.reflectJournal || model.journalDraft.isNotEmpty()) }
+    LaunchedEffect(Unit) { model.reflectJournal = false }
     Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         TabButton("Diary card", !journal, { journal = false }, Modifier.weight(1f))
         TabButton("Journal", journal, { journal = true }, Modifier.weight(1f))
