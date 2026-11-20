@@ -285,6 +285,10 @@ class AppModel(
     /** The view open in Plan's Tasks workspace (Open by default). */
     var tasksView: app.pokeplan.ui.plan.TasksView by mutableStateOf(app.pokeplan.ui.plan.TasksView.TODAY)
 
+    /** The list Plan's Tasks are narrowed to (null: all), and whether the Lists row under the view pills is open (folded by default). */
+    var tasksListId: String? by mutableStateOf(null)
+    var tasksListsOpen: Boolean by mutableStateOf(false)
+
     /** The screen open inside Care (null shows Care's menu). */
     var careSection: CareSection? by mutableStateOf(null)
     /** The Pokémon the Meadow's panel sent to Care Play (opens it on them). */

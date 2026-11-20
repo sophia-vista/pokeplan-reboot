@@ -265,6 +265,17 @@ class ScreenshotTest {
                 PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
             }
         }
+        // The Lists row open (with the longest name), and folded with a list chosen.
+        listOf(false, true).forEach { dark ->
+            val n = if (dark) "dark" else "light"
+            render("tasks-lists-open-$n", height = 1300, frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; model.tasksListId = a.id; model.tasksListsOpen = true; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
+            }
+            render("tasks-list-chosen-$n", height = 900, frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; model.tasksListId = a.id; model.tasksListsOpen = false; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
+            }
+        }
+        model.tasksListId = null; model.tasksListsOpen = false
         val emptyStore = started()
         emptyStore.data.tasks.filter { it.deletedAtMillis == null }.forEach { emptyStore.deleteTask(it.id) }
         val empty = AppModel(emptyStore)

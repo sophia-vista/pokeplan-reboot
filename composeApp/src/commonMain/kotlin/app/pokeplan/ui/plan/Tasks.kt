@@ -61,12 +61,12 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
     val live = planTasks(model)
     val host = remember { CardHost() }
     val view = model.tasksView
-    var listId by remember { mutableStateOf<String?>(null) }
+    var listId by model::tasksListId
     var filter by remember { mutableStateOf(TaskFilter()) }
     var managing by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf(false) }
     // The lists stay folded until asked for; a chosen list shows by name in the folded row.
-    var listsOpen by remember { mutableStateOf(false) }
+    var listsOpen by model::tasksListsOpen
     val lists = store.activeLists
     val list = listId?.let { id -> lists.firstOrNull { it.id == id } }
     // A list that was archived or deleted is no longer the one chosen.
@@ -80,6 +80,7 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
         model, live, list, open = listsOpen, managing = managing, editing = editing,
         onToggle = { listsOpen = !listsOpen; if (!listsOpen) { managing = false; editing = false } },
         onChoose = { id -> listId = if (listId == id) null else id; editing = false },
+        onPick = { id -> listId = id; editing = false },
         onManage = { managing = !managing; editing = false },
         onEdit = { editing = it },
         onListGone = { listId = null; editing = false },
@@ -134,7 +135,7 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
 @Composable
 private fun ListsFold(
     model: AppModel, tasks: List<Task>, chosen: TaskList?, open: Boolean, managing: Boolean, editing: Boolean,
-    onToggle: () -> Unit, onChoose: (String) -> Unit, onManage: () -> Unit, onEdit: (Boolean) -> Unit, onListGone: () -> Unit,
+    onToggle: () -> Unit, onChoose: (String) -> Unit, onPick: (String) -> Unit, onManage: () -> Unit, onEdit: (Boolean) -> Unit, onListGone: () -> Unit,
 ) {
     val lists = model.store.activeLists
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -152,7 +153,7 @@ private fun ListsFold(
             if (open) PixelButton(if (managing) "Close" else "Manage", onManage, color = Pixel.InkSoft, compact = true)
         }
         if (open) {
-            if (managing) ListsSection(model, tasks) { id -> onChoose(id); onManage() }
+            if (managing) ListsSection(model, tasks) { id -> onPick(id); onManage() }
             else {
                 if (lists.isEmpty()) PixelButton("New list", onManage, color = Pixel.InkSoft, compact = true)
                 else ListRows(lists, tasks, selected = chosen?.id, open = onChoose)
