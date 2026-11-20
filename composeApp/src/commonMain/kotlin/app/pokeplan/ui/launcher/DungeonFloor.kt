@@ -81,9 +81,8 @@ class DungeonFloor(
     /** The room [c] is in, if any. */
     fun roomOf(c: Cell): Room? = rooms.firstOrNull { c in it }
 
-    /** Whether [mover] may stop on [c]: it can stand there, no widget covers it, and it is not the stairs or a trap (a ghost rests in a wall only beside the floor). */
-    fun canRest(c: Cell, mover: Mover): Boolean = canStand(c, mover) && !isSoft(c) && c != stairs && c !in traps &&
-        (map.at(c.x, c.y) != TownCell.WALL || isFloorNear(c))
+    /** Whether [mover] may stop on [c]: it can stand there, no widget covers it, it is not the stairs or a trap, and it is not a wall (a ghost passes through one, but never rests or sleeps in it). */
+    fun canRest(c: Cell, mover: Mover): Boolean = canStand(c, mover) && !isSoft(c) && c != stairs && c !in traps && map.at(c.x, c.y) != TownCell.WALL
 
     /**
      * Every square [mover] could stop on ([canRest]) and walk to from the stairs: a pocket it cannot get out of (a lake in the rock for a
@@ -116,8 +115,6 @@ class DungeonFloor(
         }
         seen
     }
-
-    private fun isFloorNear(c: Cell) = (-1..1).any { dy -> (-1..1).any { dx -> isFloor(Cell(c.x + dx, c.y + dy)) } }
 
     /**
      * The shortest way from [from] to [to] for [mover], in eight directions without cutting a wall's corner, a square under a widget costing

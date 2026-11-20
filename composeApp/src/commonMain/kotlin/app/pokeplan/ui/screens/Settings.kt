@@ -101,8 +101,15 @@ internal fun SettingsView(model: AppModel) {
         if (choosing) app.pokeplan.ui.BackgroundChoices(settings.appBackground, store.now.hour, store.now.minute, Pixel.dark) { name -> store.changeSettings { s -> s.copy(appBackground = name) } }
         ToggleRow("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
-    SettingsGroup("Week", "calendar") {
+    SettingsGroup("Date and time", "calendar") {
         ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
+        ToggleRow("12-hour clock (AM and PM)", settings.clock12Hour) { store.changeSettings { s -> s.copy(clock12Hour = it) } }
+        FieldLabel("Date format")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            app.pokeplan.ui.launcher.DateStyle.entries.forEach { style ->
+                TabButton(style.label, settings.dateFormat == style.name, { store.changeSettings { s -> s.copy(dateFormat = style.name) } })
+            }
+        }
     }
     SettingsGroup("Notifications", "bell") {
         model.phone?.let { phone ->
