@@ -6,5 +6,5 @@ package app.pokeplan.core.reward
  * `golden.json` with new outcomes under the old version. Every source, sink and cap is listed in docs/economy.md.
  */
 object RewardRules {
-    const val VERSION: Int = 30
+    const val VERSION: Int = 31
 }

@@ -58,6 +58,8 @@ object PlanCalendar {
                 color = color ?: e.color,
                 until = e.until?.plusDays(shift),
                 skipped = e.skipped.map { it.plusDays(shift) }.toSet(),
+                // A moved event keeps what it has paid: dragging a paid event to a later day must not pay it again.
+                paid = e.paid.map { it.plusDays(shift) }.toSet(),
             )
         }
         return Edit(changed, shown)

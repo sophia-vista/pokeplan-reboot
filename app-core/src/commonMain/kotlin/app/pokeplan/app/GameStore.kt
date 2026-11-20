@@ -55,7 +55,10 @@ import app.pokeplan.heal.HealRules
 import app.pokeplan.core.reward.EffortEvent
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
+import app.pokeplan.core.reward.DropTable
 import app.pokeplan.core.reward.Reward
+import app.pokeplan.core.reward.RewardFocus
+import app.pokeplan.plan.EventCompanions
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.ChecklistReset
@@ -367,12 +370,12 @@ class GameStore(
 
     fun markRewardsSeen() = update { d -> d.copy(rewardLog = d.rewardLog.map { it.copy(seen = true) }) }
 
-    private fun achieve(d: AppData, tier: Int, source: String, eventId: String, ref: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false): AppData {
+    private fun achieve(d: AppData, tier: Int, source: String, eventId: String, ref: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false, focus: RewardFocus = RewardFocus.EXP): AppData {
         val firstOfDay = streakDay !in d.activeDays
         val warmed = Counters.WARM.get(d.counters, streakDay)
         val event = AchievementEvent(
             tier = tier, region = d.settings.region.open, hourOfDay = now.hour, firstOfDay = firstOfDay, onTime = onTime,
-            focusedOnIt = focusedOnIt, picked = picked, friendshipTasksToday = warmed, newPokemonId = newId(), nowMillis = nowMillis,
+            focusedOnIt = focusedOnIt, picked = picked, friendshipTasksToday = warmed, newPokemonId = newId(), nowMillis = nowMillis, focus = focus,
         )
         val outcome = RewardEngine.achievement(d.player, event, rng)
         val counters = Counters.WARM.set(d.counters, streakDay, warmed + 1)
@@ -648,11 +651,14 @@ class GameStore(
         plannedTime: kotlinx.datetime.LocalTime? = null,
         /** Marks it for "This evening" whatever the time (quick add: "tonight"). */
         evening: Boolean = false,
+        /** What it pays most of; null takes the Settings default. */
+        reward: RewardFocus? = null,
     ): Task {
         val task = Task(
             id = newId(), title = title.trim(), notes = notes, rank = rank, category = category ?: defaultCategory(listId), planned = planned, due = due,
             plannedTime = plannedTime?.takeIf { planned != null }, evening = evening && planned != null,
             estimateMinutes = estimateMinutes, createdAtMillis = nowMillis, listId = listId?.takeIf { id -> data.lists.any { it.id == id } },
+            reward = reward ?: data.settings.defaultReward,
         )
         update { it.copy(tasks = it.tasks + task) }
         return task
@@ -1078,7 +1084,64 @@ class GameStore(
     fun tick() {
         sync()
         settlePending()
+        settleEvents()
         tickFocus()
+    }
+
+    /**
+     * Pays the companions of PLAN events whose occurrences have ended (PLAN.md 8.2): exp for the companion, once per occurrence, and maybe an item.
+     * Every owed occurrence is marked paid whatever came of it, so one whose companion left the party, could not take exp or hit the daily cap
+     * is not owed later. Oldest first, so the day's cap counts in the order things happened.
+     */
+    private fun settleEvents() {
+        val due = EventCompanions.due(data.events, now) { it.toEpochMillis(zone) }
+        if (due.isEmpty()) return
+        update { d ->
+            var next = d
+            for (x in due) {
+                next = next.copy(events = next.events.map { e -> if (e.id == x.eventId) e.copy(paid = e.paid + x.date) else e })
+                val pokemon = next.player.pokemon.firstOrNull { it.id == x.companionId }
+                if (pokemon == null || !pokemon.inParty || pokemon.partyId != PartyIds.PLAN || !pokemon.canFeed) continue
+                val used = Counters.EVENT_CANDIES.get(next.counters, x.date)
+                val candies = minOf(x.candies, EventCompanions.DAILY_CAP - used)
+                if (candies <= 0) continue
+                val partner = next.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
+                val grown = pokemon.gainXp(candies * CandyRules.XP_PER_CANDY, partner ?: pokemon.level)
+                val rewards = mutableListOf<Reward>(Reward.Exp(candies * CandyRules.XP_PER_CANDY, pokemon.nickname))
+                var inventory = next.player.inventory
+                var coins = next.player.coins
+                if (rng.nextDouble() * 100 < EventCompanions.ITEM_PERCENT) {
+                    val drop = DropTable.roll(rng)
+                    val (bag, extra) = inventory.addCapped(drop, 1)
+                    inventory = bag
+                    coins += extra
+                    rewards += Reward.ItemDrop(drop, 1)
+                }
+                val paid = next.copy(
+                    player = next.player.copy(pokemon = next.player.pokemon.map { if (it.id == pokemon.id) grown else it }, inventory = inventory, coins = coins),
+                    counters = Counters.EVENT_CANDIES.set(next.counters, x.date, used + candies),
+                )
+                next = noted(next, log("Event: ${x.title}", rewards, paid), "plan:event:${x.eventId}:${x.date}", "PLAN", x.eventId, "event", nowMillis)
+            }
+            next
+        }
+    }
+
+    /**
+     * Names the Pokémon [pokemonId] as the companion of event [id] (an occurrence names its series), or with null takes the companion away. Only a
+     * Pokémon of the PLAN party can be one, and naming the one it already has changes nothing. An occurrence pays only if it ends after the moment the
+     * companion was named, so naming one for an event in the past pays nothing.
+     */
+    fun setEventCompanion(id: String, pokemonId: String?) = update { d ->
+        val series = PlanEvent.seriesOf(id)
+        val valid = pokemonId == null || d.player.pokemon.any { it.id == pokemonId && it.inParty && it.partyId == PartyIds.PLAN }
+        if (!valid) d else d.copy(events = d.events.map { e ->
+            when {
+                e.id != series || e.companionId == pokemonId -> e
+                pokemonId == null -> e.copy(companionId = null, companionSince = 0L)
+                else -> e.copy(companionId = pokemonId, companionSince = nowMillis)
+            }
+        })
     }
 
     /** Creates recurring instances for the next days. Call when the app opens and when the date changes. */
@@ -1096,7 +1159,7 @@ class GameStore(
             var next = d.copy(pending = d.pending - due.toSet())
             for (p in due) {
                 val picked = p.done.id == next.pickedTaskId
-                if (p.pays) next = achieve(next, p.tier, "Task: ${p.done.title}", "plan:task:${p.done.id}:complete", p.done.id, p.onTime, p.focusedOnIt, picked)
+                if (p.pays) next = achieve(next, p.tier, "Task: ${p.done.title}", "plan:task:${p.done.id}:complete", p.done.id, p.onTime, p.focusedOnIt, picked, p.done.reward)
                 if (picked) next = next.copy(pickedTaskId = null)
             }
             next

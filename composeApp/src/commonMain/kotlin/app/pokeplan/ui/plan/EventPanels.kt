@@ -72,9 +72,9 @@ import app.pokeplan.ui.screens.short
 /** Setting up a new event: its title, all day or at a time, its colour, then when (its days, or tap an hour and nudge it), then Add. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Unit, today: LocalDate = draft.day, cancel: () -> Unit) {
+internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Unit, today: LocalDate = draft.day, party: List<app.pokeplan.core.pokemon.OwnedPokemon> = emptyList(), cancel: () -> Unit) {
     val at = LocalTime(draft.start / 60, draft.start % 60)
-    var more by remember { mutableStateOf(draft.repeat != null || draft.color != null) }
+    var more by remember { mutableStateOf(draft.repeat != null || draft.color != null || draft.companion != null) }
     FormBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.L)) {
             PixelTitle("New event")
@@ -88,6 +88,8 @@ internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Uni
                         FieldLabel("Colour")
                         EventColors(draft.color) { change(draft.copy(color = it)) }
                         RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
+                        // An all-day event has no length to pay for, so only a timed one takes a companion.
+                        if (!draft.allDay) CompanionPicker(party, draft.companion) { change(draft.copy(companion = it)) }
                     }
                 }
             }
@@ -144,6 +146,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
             EventColors(event.color) { store.updateEvent(event.id, color = it) }
             RepeatPicker(event.repeat) { store.updateEvent(event.id, title = title); follow(store.repeatEvent(event.id, it)) }
             if (repeats) RepeatEnd(series, event) { store.endEventOn(event.id, it) }
+            if (!event.allDay) CompanionPicker(model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN), series.companionId) { store.setEventCompanion(event.id, it) }
             val deletes: @Composable () -> Unit = {
                 if (repeats) {
                     PixelButton("Delete this one", { val before = model.data.events; store.deleteOccurrence(event.id); close(); model.offerUndo("Deleted: ${event.title}") { store.restoreEvents(before) } }, color = Pixel.Red, compact = true)
@@ -240,4 +243,17 @@ private fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, s
     PixelDateField(first, today, Pixel.Tone, { it?.let(setFirst) }, presets = PlanDays.presets(today), pickLabel = "Pick a day")
     FieldLabel("Ends")
     PixelDateField(last, today, Pixel.Tone, { it?.let(setLast) }, presets = emptyList(), min = first)
+}
+
+/**
+ * The companion of an event (PLAN.md 8.2): one Pokémon of the PLAN party, or none. After the event ends it gains exp, and may find an item.
+ * Nothing shows with no party to choose from.
+ */
+@Composable
+internal fun CompanionPicker(party: List<app.pokeplan.core.pokemon.OwnedPokemon>, chosen: String?, onChange: (String?) -> Unit) {
+    if (party.isEmpty()) return
+    PixelDropdown(
+        listOf<String?>(null) + party.map { it.id }, chosen?.takeIf { id -> party.any { it.id == id } },
+        { id -> party.firstOrNull { it.id == id }?.nickname ?: "None" }, onChange, Modifier.fillMaxWidth(), label = "Companion",
+    )
 }

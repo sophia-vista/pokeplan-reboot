@@ -36,6 +36,15 @@ data class PlanEvent(
     val repeat: EventRepeat? = null,
     val until: LocalDate? = null,
     val skipped: Set<LocalDate> = emptySet(),
+    /**
+     * The Pokémon of the PLAN party that keeps this event company (PLAN.md 8.2), or null. After an occurrence ends it gains exp and may find
+     * an item, once per occurrence ([paid] keeps the dates already paid), only if the occurrence ended after [companionSince].
+     */
+    val companionId: String? = null,
+    /** When the companion was named, in epoch milliseconds (0 with none): an occurrence that ended before it pays nothing. */
+    val companionSince: Long = 0L,
+    /** The start dates of the occurrences that have paid (or been ruled out), so none pays twice. */
+    val paid: Set<LocalDate> = emptySet(),
 ) {
     init {
         require(title.isNotBlank()) { "an event needs a title" }
