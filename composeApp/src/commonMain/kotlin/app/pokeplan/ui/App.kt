@@ -291,6 +291,8 @@ class AppModel(
 
     /** The place open inside Care (null is Today, the landing; Routines is a page under Today). */
     var careSection: CareSection? by mutableStateOf(null)
+    /** Set by Care's "Write" quick action: Reflect opens on the journal instead of the diary card (read once, then cleared). */
+    var reflectJournal: Boolean by mutableStateOf(false)
     var worldSection: WorldSection? by mutableStateOf(null)
 
     /** The dungeon the World team editor is choosing a team for (UI only, not saved; null = the team's own, else the next one to explore). */
