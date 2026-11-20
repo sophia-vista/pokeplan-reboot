@@ -37,11 +37,12 @@ CARE follows `../FEATURES/DESIGN_SYSTEM.md` and introduces no separate design la
 
 The CARE landing is a calm, action-oriented entry point. It must not compete with the Home dashboard or become a catalogue of every feature.
 
-Primary areas (**owner decision, 20 November 2026: exactly these four, as a row of four keys under the header on every Care screen, one tap apart; Care opens on Today, and Back from any other goes to Today**):
-1. **Today** — next useful action, today's routines (edited from here), concise completion progress, and the mood key.
-2. **Calm** — the breathing break and the skills library, together: quick grounding, breathing and coping tools.
-3. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
-4. **Dream** — the Pokémon interaction environment (5), where the visitors (6) and Care Play (4) now live too; it is a companion experience, not another task dashboard.
+Primary areas (**owner decision, 20 November 2026: exactly these five, as a row of five keys under the header on every Care screen, one tap apart; Care opens on Today, and Back from any other goes to Today**):
+1. **Today** — next useful action, today's routines, concise completion progress, and the mood key.
+2. **Routines** — add, edit, skip, archive and restore routines, and tick yesterday (3.1).
+3. **Calm** — the breathing break and the skills library, together: quick grounding, breathing and coping tools.
+4. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
+5. **Dream** — the Pokémon interaction environment (5), where the visitors (6) and Care Play (4) now live too; it is a companion experience, not another task dashboard.
 
 Prior diary cards and the journal archive are secondary destinations inside Reflect. (20 November 2026: Care trends moved to Me, next to Plan progress; Care's Sections key no longer has a Trends place.) Settings remain in CARE settings. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
 
