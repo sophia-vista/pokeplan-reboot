@@ -83,6 +83,8 @@ A profile is the central place for one person's LINK-owned information.
 - Completion history is shown as a factual record, not a score or streak.
 - A follow-up may be linked to a PLAN task when the user explicitly chooses to convert it.
 
+The profile also has a **Profile** tab after Overview (about, mind and stars: section 2.6).
+
 Do not display inferred relationship health, contact frequency, response time, or activity charts.
 
 ### 2.3 Important Dates
@@ -234,7 +236,7 @@ LINK owns the following canonical records:
 | Global Pokémon collection, Pokédex, Bag, Poké and reward ledger | Shared Pokémon/economy services | LINK emits eligible abstract progression events |
 | Journal, mood and self-care records | CARE | No access |
 | Health/activity/medical records | HEAL | No access |
-| Household and service records | HOME | May reference a LINK contact only through an explicit link |
+| Household and service records | BASE | May reference a LINK contact only through an explicit link |
 | Messaging/calls/social feeds | External apps | No ingestion or monitoring |
 
 LINK must not copy a PLAN task into a second independently editable task. A linked representation is a reference with clear navigation and status provenance.
@@ -473,22 +475,22 @@ Phases 1 to 5, 7 and 8 of the former plan (domain and persistence, manual contac
 
 ## 14. Documentation alignment
 
-This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion target: `PLAN.md`; HOME may reference a LINK-owned service contact: `BASE.md`; shared reminders and permissions: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; shared persistence, encryption boundary, export, backup and migration: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy: `../FEATURES/POKEMON_ECOSYSTEM.md`.
+This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion target: `PLAN.md`; BASE may reference a LINK-owned service contact: `BASE.md`; shared reminders and permissions: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; shared persistence, encryption boundary, export, backup and migration: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy: `../FEATURES/POKEMON_ECOSYSTEM.md`.
 
 ## 15. As built: the manual slice
 
 *Compiled for Android; not yet run on a device. No widget exists.*
 
-A menu with an overview on top and four destinations. **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form.
+A page with an overview on top and, behind the header's Sections key, four places (People, Dates, Follow-ups, Settings). **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Profile (2.6, from 0.223.0), Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form.
 
 **Postcard Trail (section 9), as built** *(numbers are *(tune)* starting values; `docs/economy.md`)*:
 - **On by default** (every acquisition method is), off in Settings without touching a record. Only one thing pays: a **follow-up finished** (2 Rare Candies; at most 3 paid a day). Adding or importing people, notes, dates, tags and favourites, editing, rescheduling, cancelling and reopening never pay.
 - **Idempotent by follow-up.** The event id is `link:followup:<follow-up id>`, the game remembers it (`AppData.linkPaid`, newest 1000) and the follow-up keeps `paid`, so reopening and finishing again, a restore or a replay pays once. Nothing is clawed back by a reopen.
 - **What leaves LINK** is exactly `LinkEvent`: id, module ("link"), an opaque `ref`, the broad kind (`followup_completed`), the time and the policy version. No name, number, email, organization, tag, note, date or follow-up title may reach the event, the shared save, the reward log or the shared tables.
 - A payment is candies, a little friendship for Link's lead, a trainer point and a point on the track; **3 points (three finished follow-ups) find a Postcard Egg** from the **Link Region** (`tools/species/regions/link.txt`) into Link's party. Link's party perks (Candy finder: Normal, Flying, Water, Grass, Bug, Ground; Friendship gain: Fairy, Fighting, Electric, Psychic, Fire, Dragon; capped at +25%) only change what Postcard Trail pays.
-- **First-run tutorial** (POKEMON_ECOSYSTEM.md 10.2.1): a 5-second postcard gives one Link Region Pokémon into Link's party, leading it, once per save. A new Pokémon arrives as "Postcard Trail delivered…" in a scene of its own (the route).
+- **First Pokémon** (POKEMON_ECOSYSTEM.md 10.2.1, owner, 13 November 2026, replacing the 5-second postcard): the first person, date or follow-up gives one Common egg of the Link Region that hatches into Link's party, leading it, once per save. A new Pokémon arrives as "Postcard Trail delivered…" in a scene of its own (the route).
 
-**Data (section 4).** `link_*` tables: `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Home.
+**Data (section 4).** `link_*` tables: `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Base.
 
 **Reminders (5), built:** off until the user turns Link's reminders on, or chooses the first reminder on a date (which turns them on), then per date (the day of, or 1, 3 or 7 days before) and per follow-up (on its day); one nudge each, generic lock-screen text, quiet hours and focus sessions respected; a follow-up handed to Plan is Plan's to remind about.
 
@@ -496,7 +498,7 @@ A menu with an overview on top and four destinations. **Overview**: only what ne
 
 **Profile, slambook and birth details (0.223.0), as built (section 2.6; not run on a device):** People → "Set up my profile" makes the Me card; every profile has a Profile tab (About, Mind, Stars) after Overview, so Notes is tab 3 and Follow-ups tab 4. `Person.isMe` and `Person.profile` live in the person's JSON (no schema step); `link-core`: `Profile`, `ProfileKit`, `Insights`, `Sky` (natal chart), `BaZi` and `BaZiTables` (Four Pillars, zodiac, Kua, Life Path), `Birthplaces`, `LoreWestern`, `LoreChinese`, `LorePersonality`; `LinkStore.createMe`, `updateProfile`, `setBirthday`. Verified against `ephem` (planets, Moon, ascendant) and `lunar_python` (pillars, New Year) in `BirthChartTest`. The birth date is the person's Birthday date. Nothing is paid and nothing reaches `LinkEvent`.
 
-**Not built, not offered:** a chooser for changed fields on re-import, a link from HOME to a contact, upcoming dates on the launcher, widgets, sealing Link's rows and a passphrase-sealed backup. Data: `Person.sourceId` (the contact's lookup key, default empty) lives in the person's JSON, so there is no schema step.
+**Not built, not offered:** a chooser for changed fields on re-import, a link from BASE to a contact, upcoming dates on the launcher, widgets, sealing Link's rows and a passphrase-sealed backup. Data: `Person.sourceId` (the contact's lookup key, default empty) lives in the person's JSON, so there is no schema step.
 
 ## Shared Pokémon ecosystem contract
 

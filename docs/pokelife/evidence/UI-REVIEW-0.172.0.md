@@ -3,7 +3,7 @@
 12 November 2026. Every screen the `ScreenshotTest` suite renders (432 PNGs: each module and section, first use, empty, dark and 1.3× text, the launcher, World and the cutscenes) was read against three references and the app's own rules:
 
 - [Laws of UX](https://lawsofux.com/) (30 laws), [UX Design Institute's 21 laws](https://www.uxdesigninstitute.com/blog/laws-of-ux/) (all also on Laws of UX) and [Laws of UI](https://www.uilaws.com/) (13; adds Symmetry, Rule of Thirds, White Space, Colour, Typography Hierarchy, Consistency, Contrast, Closure, Continuity).
-- `FEATURES/DESIGN_SYSTEM.md` 5.1 and 12A, and the [0.165.1 design review](DESIGN-REVIEW-0.165.1.md) with the owner's answers.
+- `FEATURES/DESIGN_SYSTEM.md` 5.1 and 12A, and the 0.165.1 design review with the owner's answers (not kept in the repository).
 - **The owner's bar (12 November 2026):** "as perfect as Linear's website or Apple Notes: simple purpose, simple architecture, simple design, simple implementation. Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout. Every decision should elevate UX, DX and AX at once, without breaking anything."
 
 Screenshot names below are the files `./gradlew :composeApp:jvmTest --tests "*ScreenshotTest*"` writes to `composeApp/build/screenshots/` (about 17 minutes). The screens were read at 0.172.0; 0.172.1 and 0.173.0 landed during the review, and where they already fix or plan a finding the row says so ("REP-030 D" and the like are the owner's own plans of 12 November). No code changed in this review.

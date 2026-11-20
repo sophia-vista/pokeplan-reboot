@@ -428,7 +428,7 @@ WORLD facilities may expose shops, training, item refinement/crafting, research 
 | CARE | Shared Pokémon and Bag berries may be used by CARE. CARE journal, mood, Diary Card and routine content never enters WORLD. |
 | HEAL | Field Research acquisitions enter shared collection. Health records, measurements, diet, sleep, symptoms and medical information never enter WORLD. |
 | MINT | No finance records, balances or transactions enter WORLD. |
-| HOME | No chores, inventory, maintenance or household notes enter WORLD. |
+| BASE | No chores, inventory, maintenance or household notes enter WORLD. |
 | LINK | No contact data, relationship notes or personal correspondence enter WORLD. |
 | GEAR | May provide navigation shortcuts only; utility use produces no WORLD progression/rewards. |
 | Launcher | Read-only projection of WORLD rank, team state, Finds and approved scene state; launcher does not own WORLD records. |
@@ -478,7 +478,7 @@ WORLD registers requests through the shared notification/reminder infrastructure
 
 ### 7.2 Widgets, launcher and deep links
 
-Preserve and improve the WORLD Android widget and launcher integration. Widget content may include rank, active teams/destinations, significant Finds and ready requests. It is a read-only projection and may deep-link to Base, Atlas, Expeditions, Guild or Finds. It must not duplicate WORLD persistence or reward logic.
+Preserve and improve the WORLD Android widget and launcher integration. Widget content may include rank, active teams/destinations, significant Finds and ready requests. It is a read-only projection and may deep-link to Town, Atlas, Expeditions, Guild or Finds. It must not duplicate WORLD persistence or reward logic.
 
 Deep links must validate that the referenced record still exists and route to a safe fallback if it has been removed or migrated. No sensitive module data appears in widget or launcher surfaces.
 
@@ -523,7 +523,7 @@ Accessibility and responsiveness:
 ## 9. Privacy, security and data lifecycle
 
 - WORLD stores only WORLD game records and opaque references to shared entities.
-- No health, financial, CARE, HOME or LINK record content is copied into WORLD logs, story flags, reward events, notifications, widget text or analytics.
+- No health, financial, CARE, BASE or LINK record content is copied into WORLD logs, story flags, reward events, notifications, widget text or analytics.
 - No account, cloud sync, telemetry or third-party transmission is required.
 - Notification text is concise and must not reveal unrelated private information.
 - Reward logs include game event provenance, not sensitive real-life source data.
@@ -534,6 +534,8 @@ Accessibility and responsiveness:
 ## 10. Existing implementation audit — baseline 0.123.0
 
 The supplied source archive contains a substantial WORLD foundation. The implementation direction is **reuse and refactor**, not a ground-up rewrite of the expedition engine.
+
+*Status note (20 November 2026): this audit is a dated record of 0.123.0. Since then the five destinations of section 2 are built (`WorldSection` in `ui/world/World.kt`) and settlement no longer polls (14.5); the items below that say "open" still stand. Section 14 is the current state.*
 
 ### 10.1 Reuse after review
 
@@ -669,7 +671,7 @@ WORLD work follows the dependency-first roadmap in the Implementation Guide. Do 
 
 ### Privacy, offline and reliability
 - [ ] WORLD works without account, network, location permission or external service.
-- [ ] No health, finance, CARE, HOME or LINK content enters WORLD records, logs, notifications or reward events.
+- [ ] No health, finance, CARE, BASE or LINK content enters WORLD records, logs, notifications or reward events.
 - [ ] Save migration and backup/restore preserve WORLD progress and do not replay rewards.
 - [ ] Repeated settlement and interrupted operations are idempotent.
 - [ ] Notifications are optional, rate-limited and use shared delivery/quiet-hours policy.
@@ -702,7 +704,7 @@ This file is the single WORLD requirements source. Do not maintain parallel WORL
 The rules the code implements today, which code comments cite as the World rules. Numbers are starting values *(tune)*; the year-long simulation is `./gradlew :world-core:simulateWorldEconomy` (writes `docs/world-economy-report.md`; re-run it after any World number changes), and every reward source is in `docs/economy.md`.
 
 ### 14.1 Layers and dungeons
-- A **layer** is data, not a new game: `WorldLayer` on `DungeonDef`. The layers are the two Mystery Dungeon arcs (Rescue Team, Explorers) and the mainline regions Kanto, Johto, Hoenn and Sinnoh. Each has its own map picture, markers, story chapters and Guardians; teams, rank, Poké, Bag and Camp are shared. One layer shows at a time behind a switch on the map screen.
+- A **layer** is data, not a new game: `WorldLayer` on `DungeonDef`. The layers are the two Mystery Dungeon arcs (Rescue Team, Explorers) and the mainline regions Kanto, Johto, Hoenn and Sinnoh, with Unova, Kalos, Alola, Galar, Paldea and Hisui added after them (14.7, decision 5; `WorldLayer`). Each has its own map picture, markers, story chapters and Guardians; teams, rank, Poké, Bag and Camp are shared. One layer shows at a time behind a switch on the map screen.
 - Every layer is open on the first day; each dungeon keeps its own rank gate (and a story-chapter gate within its layer: chapters open by rank and by how many different dungeons of that layer were cleared, so one cheap dungeon cannot be farmed; clears in one layer never advance another's).
 - A mainline layer's wild tables follow its regional dex, written by hand per dungeon from the species' habitats; its species are found only there. Finds are recruited, never hatched. Only Pokémon that can hatch are found: legendaries and mythicals never turn up as floor finds, they come from quests.
 - A dungeon has floors, a base floor time (30 minutes for the first up to 4 hours for the end of a story), a rank gate, favoured types, a wild table and milestone rewards (a berry at the middle floor; Rare Candies 1 to 8 and Poké 100 to 4,000 at the top). Clears are counted per dungeon.
@@ -754,7 +756,7 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 
 ### 14.7 Decisions on record (owner)
 1. The Mystery Dungeon world is a main map; regions are layers beside it; nothing existing is replaced.
-2. All mainline regions in game order, one layer each (Unova, Kalos, Alola, Galar, Paldea next), then Hisui as a historical layer (Arceus, and the items that unlock the Origin forms of Dialga, Palkia and Giratina), then the other Mystery Dungeon continents and spin-off settings (Ranger regions, Orre) one layer each. A region's extra areas are late dungeons of it; special spaces (Distortion Rift, Hyperspace Lumiose, Ultra Space, Area Zero) are Guardian-tier places in their region.
+2. All mainline regions in game order, one layer each (Unova, Kalos, Alola, Galar and Paldea are since built, see 5), then Hisui as a historical layer (Arceus, and the items that unlock the Origin forms of Dialga, Palkia and Giratina), then the other Mystery Dungeon continents and spin-off settings (Ranger regions, Orre) one layer each. A region's extra areas are late dungeons of it; special spaces (Distortion Rift, Hyperspace Lumiose, Ultra Space, Area Zero) are Guardian-tier places in their region.
 3. A region's Pokémon are found only in that region; official game map art for each.
 4. Main (box) legendaries are quests and Guardians of their region; side legendaries (Mew also as a Kanto quest, the beasts, Celebi, Latias and Latios, Jirachi, Deoxys, the regis and the like) are featured by modules, not regions. A Guardian helps other places depending on the module it is placed in.
 

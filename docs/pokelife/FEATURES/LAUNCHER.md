@@ -42,7 +42,7 @@ The launcher is not:
 
 ## 3. Existing launcher audit and preservation plan
 
-The 0.123.0 baseline contains a meaningful launcher prototype. The inspected implementation includes `LauncherActivity.kt`, `LauncherScreen.kt`, `GridPage.kt`, `WidgetGrid.kt`, `Widgets.kt` and `LauncherModel.kt`, alongside Android widget-hosting code under `androidApp/.../widgets/`.
+The 0.123.0 baseline contains a meaningful launcher prototype. The inspected implementation includes `LauncherActivity.kt`, `LauncherScreen.kt`, `GridPage.kt`, `WidgetGrid.kt`, `Widgets.kt` (now `LauncherWidgets.kt`) and `LauncherModel.kt`, alongside Android widget-hosting code under `androidApp/.../widgets/`.
 
 Existing capabilities to preserve where reliable:
 
@@ -125,7 +125,7 @@ Suggested landmark mapping (visual shortcuts only):
 | Care-associated environment | CARE |
 | Health-associated facility | HEAL |
 | Finance-associated facility | MINT |
-| Household facility | HOME |
+| Household facility | BASE |
 | Connection facility | LINK |
 | Utility/equipment area | GEAR |
 | Expedition/guild entrance | WORLD |
@@ -206,7 +206,7 @@ Support compact, medium and large layouts where meaningful, individual configura
 | Care | Selected check-in/routine status | Open CARE |
 | Health | Selected activity summary | Open HEAL |
 | Finance | Selected balance/summary | Open MINT |
-| Home | Selected household status | Open HOME |
+| Base | Selected household status | Open BASE |
 | Buddy | Selected Pokémon | Open collection |
 | Party | Active Pokémon | Open party |
 | World | Expedition status | Open/claim when supported |
@@ -362,7 +362,7 @@ No cloud account, remote server or internet connection is required to render the
 
 ### 15.1 Pokémon contract
 
-Read canonical species/form data, owned Pokémon instances, module-party references where explicitly requested, global buddy selection, favorites, display eligibility and asset references from `FEATURES/POKEMON_ECOSYSTEM.md`. Use owned instance IDs to identify individuals; species IDs alone cannot distinguish duplicates.
+Read canonical species/form data, owned Pokémon instances, module-party references where explicitly requested, global buddy selection, favorites, display eligibility and asset references from `POKEMON_ECOSYSTEM.md`. Use owned instance IDs to identify individuals; species IDs alone cannot distinguish duplicates.
 
 The launcher must not create owned Pokémon, award XP, change levels/evolution, deliver rewards (the one exception is the dungeon floor's daily finds, section 4.5, owner 14 November 2026), modify party/buddy selection independently or maintain affection. It only projects the shared data into the scene.
 
@@ -376,7 +376,7 @@ The launcher reads module-owned data through shared read models or application i
 | CARE | Non-sensitive check-in/routine status; open CARE; never expose private diary content by default |
 | HEAL | User-selected activity summary; open HEAL |
 | MINT | Privacy-controlled finance summary; hidden values respected; open MINT |
-| HOME | Selected household status and shortcuts; open HOME |
+| BASE | Selected household status and shortcuts; open BASE |
 | LINK | Selected connection shortcuts; open LINK |
 | GEAR | Favorite utilities; launch selected tool |
 | WORLD | Expedition status and permitted completion/claim actions through WORLD |

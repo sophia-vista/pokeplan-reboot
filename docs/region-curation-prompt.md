@@ -32,7 +32,7 @@ To refresh the candidates table after any rule change or curation: `./gradlew :p
 ## The prompt
 
 ~~~~text
-You are helping me curate one module region's dex for my app PokéLife, a productivity and self-improvement app: finishing a focus session hatches a Pokémon egg, and finishing tasks, habits and goals earns candies and items that level up and evolve my Pokémon. Each life module of the app (Plan for tasks and focus, Care for self-care, Heal for health and fitness, Mint for money, Base for the household, Link for relationships) has its own region: a dex of Pokémon to collect there, and a species belongs to exactly one region. has its own region: a themed dex that every player can collect. Help me decide exactly which Pokémon go in the region below. Work with me in rounds and do not rush to a final list.
+You are helping me curate one module region's dex for my app PokéLife, a productivity and self-improvement app: finishing a focus session hatches a Pokémon egg, and finishing tasks, habits and goals earns candies and items that level up and evolve my Pokémon. Each life module of the app (Plan for tasks and focus, Care for self-care, Heal for health and fitness, Mint for money, Base for the household, Link for relationships) has its own region: a dex of Pokémon to collect there, and a species belongs to exactly one region. Help me decide exactly which Pokémon go in the region below. Work with me in rounds and do not rush to a final list.
 
 I will attach a table of every Pokémon line that can hatch from an egg, with its rarity tier and the module region it is already in. Use the names exactly as written there.
 

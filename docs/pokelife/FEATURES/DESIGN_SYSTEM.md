@@ -37,7 +37,7 @@ There is one shared design system with different presentation intensity:
 
 ### 3.1 Utility presentation
 
-PLAN, CARE, HEAL, MINT, HOME, LINK and GEAR use compact, restrained PMD framing. Dialogue-box surfaces may contain a primary action, concise status, short prompt, summary or contextual interaction. Dense records and repeated data use efficient native-feeling rows, tables, timelines, calendars, charts and forms with selective PMD borders or panel framing.
+PLAN, CARE, HEAL, MINT, BASE, LINK and GEAR use compact, restrained PMD framing. Dialogue-box surfaces may contain a primary action, concise status, short prompt, summary or contextual interaction. Dense records and repeated data use efficient native-feeling rows, tables, timelines, calendars, charts and forms with selective PMD borders or panel framing.
 
 ### 3.2 World presentation
 
@@ -84,13 +84,13 @@ Colors are semantic, not decorative. Module/region accents may tint selected ele
 | 1 | GEAR (Pokégear) | rose | `#B83A4B` | `#F0707F` |
 | 2 | PLAN | orange | `#B35309` | `#EE9040` |
 | 3 | MINT | ochre | `#8A6700` | `#D4A82A` |
-| 4 | HOME | olive | `#4D7C0F` | `#8DB83A` |
+| 4 | BASE | olive | `#4D7C0F` | `#8DB83A` |
 | 5 | CARE | green | `#1E7F52` | `#34B07A` |
 | 6 | HEAL | teal | `#0F766E` | `#2DB5A8` |
 | 7 | LINK | blue | `#2C6CCC` | `#5B96EE` |
 | 8 | WORLD | violet | `#6D3FD6` | `#9B7BF0` |
 
-- MINT, HOME and LINK are reserved so the modules built later do not invent their own. An accent never stands for success, warning, error or money status; those keep the semantic tokens. Inside a module every menu card, frame and primary action uses that one accent (no rainbow of tiles inside a module); only quiet items such as Settings use the neutral ink.
+- Every module's accent is fixed in this table (all eight modules are built), so none invents its own. An accent never stands for success, warning, error or money status; those keep the semantic tokens. Inside a module every menu card, frame and primary action uses that one accent (no rainbow of tiles inside a module); only quiet items such as Settings use the neutral ink.
 - **Letters on a filled key** (pressed, selected) are white or the dark ink, whichever has the higher contrast with the fill (`keyLook`), so a mid-tone fill in the dark palette still reads at AA.
 - **Frames.** One frame per group: a dialogue box holds its rows without a box round each row, and a box is not put inside a box. **Every big section sits in a dialogue box** (a rank and XP strip, a list of teams, a settings group), never loose on the page background; only the header, a menu grid and a picture window stand outside one.
 - **Pixel parts, no rounding (8 November 2026).** Text fields, bars, toggles, sliders, cards, picture windows and the header bar use stair corners of whole 2 dp art pixels (`StairShape`: `DialogueShape`, `PixelShape`, `PixelDisc`), drawn in code. Material's rounded `OutlinedTextField`, `Switch` and `Slider` are not used: `PixelField` (outline like a key, a label above it or a placeholder inside, text centred in 48 dp), `PixelToggle`, `PixelSlider`, `PixelBar` and `ExpBar` replace them. A row that puts a field and keys side by side centres them on one line (`verticalAlignment = CenterVertically`); a label for such a field goes above the row, never inside the field.
@@ -236,7 +236,7 @@ Every form is built from the form kit (`screens/Form.kt`) and follows eight prin
 - Preserve standard Android back behavior and clear current-location indication.
 - **Moving between modules and sections (owner, 15 November 2026, REP-067; refined the same day).** The four bottom tabs stay the only global navigation; a phone gets no side drawer (its edge swipe is the system Back gesture, and a drawer hides what the tabs show). Depth is cut inside the Modules tab instead:
   - **A module opens on its daily view**, not on a menu of cards, and **its content starts directly under a one-row header**: a compact Back key, the title, and one small, quiet "Sections" key at the end of the same row. No second row of keys. Home's region cards and its "also today" rows open that view in one tap.
-  - **Sections sit behind that small labelled "Sections" key**, which opens a bottom sheet of compact horizontal rows (icon, title, count or badge; one dialogue box, no box in a box). The inline card grid and rows are gone from module pages. Plan keeps five rows (Inbox, Upcoming, Lists, Focus, More); More holds Outstanding, Progress, Goals, Targets and All tasks, and Calendar opens from Upcoming.
+  - **Sections sit behind that small labelled "Sections" key**, which opens a bottom sheet of compact horizontal rows (icon, title, count or badge; one dialogue box, no box in a box). The inline card grid and rows are gone from module pages. Plan's rows are Tasks, Calendar, Focus (phone only), Goals and Settings (`PlanSection`; PLAN.md section 3); Progress is in Me.
   - **No module switcher on a module page.** The bottom Modules tab already switches module; tapping it again while it is open returns to the list of modules. A switcher key would only repeat it.
   - **The Modules list is compact rows** (icon, title, badge) in the rainbow order, not large square cards, with a **"Jump to"** field above it: a plain search that opens any module or section by its fixed name (it reads no record, name or amount, so it is safe for Heal and Mint).
   - **Gear is not a life module.** It sits as a labelled "Gear" key in the Modules header (and in Jump to), outside the module list.
@@ -345,8 +345,6 @@ All module UI reviews must check:
 Condensed from the owner's `unslop-ui` reference (8 November 2026), for a native app. Slop is an unspecified default: the first thing that comes to mind, which every generated screen shares. A screen should read as if someone decided each thing on it.
 
 1. **A caption must say something the screen does not already show.** No sentence that restates the title, the visible state or the button's label; no reassurance ("Only you see this", "Nothing here earns anything", "No hurry"), no tutorial paragraph under a menu, no "Each module is one part of your day". If a rule matters it belongs in Help, once. An empty state is a short title and at most one action, not an explanation. A menu card is an icon and a title. **Sections that hold records are rows, not cards** (owner, 13 November 2026): an icon, a title and the count on one line, in one dialogue box (`MenuList`): the Planner's views, the Pokémon tab, World's Journal, Me. A module's landing page keeps its cards (`MenuGrid`).
-10. **One input per value.** A date is one row of keys (the typed box opens with the calendar); a time or a length is its keys and one typed box. No echo line in another format and no nudge keys; a typed value is rewritten in the app's own spelling when the box loses focus.
-11. **No sentence-length copy in the UI** outside Help, What's New and the story: `CopyBudgetTest` fails on a new one (a field error, a confirmation, an accessibility label and feedback through `say` are not counted).
 2. **No breadcrumb under a header** that repeats where the Back button goes; a header's second line is a fact (rank, a count that changes), not a label.
 3. **Specific copy, no clichés.** "Send a team into a dungeon", not "Unleash your team's potential". Say what the thing does in the words of the game.
 4. **No emoji as icons or bullets**; item icons and Pixelarticons glyphs only (a buddy's tap emote is the one game-style exception).
@@ -355,6 +353,8 @@ Condensed from the owner's `unslop-ui` reference (8 November 2026), for a native
 7. **Colours come from the tokens.** A new colour is a decision recorded in section 5.1 with its reason, not the next-most-likely hex; module accents follow the rainbow table, red is not chrome.
 8. **Text is centred by its letters, and that is measured, not eyeballed.** The Pokémon DP font sits low in its line box, so `PixelTheme` lifts every text style (`baselineShift`) and the dialogue bitmap font draws one art pixel lower (`PmdFont.BASELINE`); `TextCentreTest` renders keys, fields, badges and each text style and fails if the gap above the letters and below them differ by more than 1 dp. A new font, size or control gets a line in that test. Rank badges are rounded pixel squares (`DialogueShape`), never circles.
 9. **Layout quality is checked by eye on a real screenshot, in both palettes, on every change**: nothing clipped or overflowing, one spacing scale (`Spacing`), every row's contents on one centre line, edges aligned to the page gutter, one thing leading the eye per screen.
+10. **One input per value.** A date is one row of keys (the typed box opens with the calendar); a time or a length is its keys and one typed box. No echo line in another format and no nudge keys; a typed value is rewritten in the app's own spelling when the box loses focus.
+11. **No sentence-length copy in the UI** outside Help, What's New and the story: `CopyBudgetTest` fails on a new one (a field error, a confirmation, an accessibility label and feedback through `say` are not counted).
 
 ## 13. Change control
 

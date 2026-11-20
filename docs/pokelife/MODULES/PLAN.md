@@ -23,7 +23,7 @@ PLAN should not become a generic project-management suite. It owns:
 - Goals and milestones.
 - PLAN task/event reminder preferences and PLAN completion/progression events. Reminder scheduling and delivery follow `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
 
-PLAN does not own CARE self-care routines, Diary Cards, journal entries, mood/context records, or coping tools; HEAL activity, fitness, nutrition, sleep, or health measurements; MINT accounts, cards, e-wallets, transactions, budgets, or bills; HOME chores, maintenance, supplies, household inventory, or home records; LINK contacts, relationship notes, important dates, or follow-ups; GEAR utilities or device-tool records; WORLD expeditions, campaigns, dungeons, missions, recruitment, or settlement records; or external calendar records. PLAN may display linked summaries or create an explicitly requested PLAN task linked to another module's record, but must not create competing canonical copies.
+PLAN does not own CARE self-care routines, Diary Cards, journal entries, mood/context records, or coping tools; HEAL activity, fitness, nutrition, sleep, or health measurements; MINT accounts, cards, e-wallets, transactions, budgets, or bills; BASE chores, maintenance, supplies, household inventory, or home records; LINK contacts, relationship notes, important dates, or follow-ups; GEAR utilities or device-tool records; WORLD expeditions, campaigns, dungeons, missions, recruitment, or settlement records; or external calendar records. PLAN may display linked summaries or create an explicitly requested PLAN task linked to another module's record, but must not create competing canonical copies.
 
 ## 2. Architecture and ownership
 
@@ -41,7 +41,7 @@ PLAN does not own CARE self-care routines, Diary Cards, journal entries, mood/co
 | Goals and milestones | PLAN | Native |
 | HEAL activity and health records | HEAL | May link to a PLAN task only by explicit user action |
 | MINT financial records and bills | MINT | May link to a PLAN task only by explicit user action |
-| HOME chores, maintenance, supplies, and inventory | HOME | May link to a PLAN task only by explicit user action; no duplicate chore record |
+| BASE chores, maintenance, supplies, and inventory | BASE | May link to a PLAN task only by explicit user action; no duplicate chore record |
 | LINK contacts, important dates, and follow-ups | LINK | May link to a PLAN task only by explicit user action |
 | GEAR utility usage and device-tool state | GEAR | No planning record by default |
 | WORLD expedition and story progress | WORLD | No duplicate PLAN record |
@@ -51,7 +51,7 @@ Distinguish linked records, imported read-only external events, and PLAN-owned t
 
 ### 2.2 CARE routine ownership
 
-CARE retains its existing routine model and self-care-specific behavior: title, optional icon, optional time, daily/selected-weekday schedule, completion history, archived state, CARE-specific reward eligibility/payment history, CARE rhythm/trend calculations, local-first persistence, and optional cloud sync.
+CARE retains its existing routine model and self-care-specific behavior: title, optional icon, optional time, daily/selected-weekday schedule, completion history, archived state, CARE-specific reward eligibility/payment history, CARE rhythm/trend calculations, and local-only persistence.
 
 PLAN must not create a parallel task for each CARE routine. CARE routines may appear in a combined agenda/calendar as CARE-owned entries, clearly identified as such. Completing one from PLAN must route to CARE's canonical store and CARE reward logic.
 
@@ -174,7 +174,7 @@ As built (0.178.0): one set of day keys wherever a task or a Plan event gets a d
 
 ## 5. Recurring tasks and flexible frequency targets
 
-**Retired (owner, 20 November 2026):** frequency targets (the Targets screen, "N a week/month" rules and their own payout path) are scrapped. A saved target becomes an ordinary recurring task on load (`GameStore.convertTargets`, mapping in plan-core `TargetConversion`): Daily becomes daily; chosen weekdays become weekly on those days; N a week becomes weekly on N days spread from Monday (1 Mon; 2 Mon+Thu; 3 Mon+Wed+Fri; 7 daily); once a month becomes monthly on the day it began (max 28); N a month (N >= 2) becomes weekly on round(N*7/30, minimum 1) spread days. Id, title, rank, category, completion days and payment day are kept, nothing is paid by the conversion, and it is idempotent. New repeating tasks pay as ordinary tasks. The `target` field and `plan_series` rows stay for old saves; there is no migration. The target text below is history.
+**Retired (owner, 20 November 2026):** frequency targets (the Targets screen, "N a week/month" rules and their own payout path) are scrapped. A saved target becomes an ordinary recurring task on load (`GameStore.convertTargets`, mapping in plan-core `TargetConversion`): Daily becomes daily; chosen weekdays become weekly on those days; N a week becomes weekly on N days spread from Monday (1 Mon; 2 Mon+Thu; 3 Mon+Wed+Fri; 7 daily); once a month becomes monthly on the day it began (max 28); N a month (N >= 2) becomes weekly on round(N*7/30, minimum 1) spread days. Id, title, rank, completion days and payment day are kept, nothing is paid by the conversion, and it is idempotent. New repeating tasks pay as ordinary tasks. The `target` field and `plan_series` rows stay for old saves; there is no migration. The target text below is history.
 
 There is no separate PLAN Habits record type or primary Habits section. One recurring-task system supports both calendar recurrence and flexible frequency targets. It combines useful capabilities of existing `Recurrence` and `Habit` implementations without forcing users to choose between overlapping concepts.
 
@@ -233,7 +233,7 @@ Where safely supported, offer: this occurrence only; this and future occurrences
 
 ## 6. Focus
 
-> **First-run tutorial** (`FEATURES/POKEMON_ECOSYSTEM.md` section 10.2.1): until the player has done a focus session, the Planner offers a one-time 5-second demo that hatches one egg into Plan's party. It is not a focus session and leaves no record.
+> **First Pokémon** (`FEATURES/POKEMON_ECOSYSTEM.md` section 10.2.1; owner, 13 November 2026, replacing the 5-second demo): the first finished task gives one Common egg that hatches into Plan's party and leads it, once per save. It is not a task or focus reward and leaves no record of its own.
 
 Focus is a core PLAN capability. Audit and reuse reliable existing timer and lifecycle behavior.
 
@@ -356,11 +356,11 @@ Do not simply delete `Habit` and rename `Recurrence`. The unified model must pre
 
 Do not lose historical completion or reward data.
 
-**Habit merge (0.133.0):** a Habit is no longer a record. Old saves merge each habit once, paying nothing, into a recurring task with a frequency target (`TaskSeries.target`): same id, creation day, completion days and last paid day (`paidOn`); the originals stay in `legacyHabits` with the merge time (`habitsMergedAtMillis`). Mapping: Daily -> daily target; per week / per month -> weekly / monthly target (`completed / target`, `Frequency.progress`); **chosen weekdays stay a frequency target ("chosen days")**, not a calendar recurrence (a weekday recurrence would create a task per day, with different reward and overdue behaviour; this is the one documented exception to the table above); the forgiving streak is derived from the target's completions (`TaskSeries.asHabit().streak`), secondary, shown only from a streak of 2 after the period progress; one payment a day is `paidOn` plus the completion set, so undo and tick again the same day pays nothing. The Planner's Habits view is now **Targets** (e.g. `2 / 3 this week`). Limits (section 5.6): one completion per day per target, and an edit applies to the whole definition.
+**Habit merge (0.133.0):** a Habit is no longer a record. Old saves merge each habit once, paying nothing, into a recurring task with a frequency target (`TaskSeries.target`): same id, creation day, completion days and last paid day (`paidOn`); the originals stay in `legacyHabits` with the merge time (`habitsMergedAtMillis`). Mapping: Daily -> daily target; per week / per month -> weekly / monthly target (`completed / target`, `Frequency.progress`); **chosen weekdays stay a frequency target ("chosen days")**, not a calendar recurrence (a weekday recurrence would create a task per day, with different reward and overdue behaviour; this is the one documented exception to the table above); the forgiving streak is derived from the target's completions (`TaskSeries.asHabit().streak`), secondary, shown only from a streak of 2 after the period progress; one payment a day is `paidOn` plus the completion set, so undo and tick again the same day pays nothing. The Planner's Habits view became **Targets** (e.g. `2 / 3 this week`); *(superseded 20 November 2026: targets are converted to ordinary recurring tasks and the Targets screen is gone, section 5; this paragraph is history)*. Limits (section 5.6): one completion per day per target, and an edit applies to the whole definition.
 
 ### 11.3 CARE remains separate
 
-Do not move CARE routines into PLAN storage. Preserve CARE routine IDs, schedule fields, completion dates, payment history, archive state, save format/migration compatibility, and optional cloud-sync behavior. Shared reminder metadata does not replace CARE's canonical records.
+Do not move CARE routines into PLAN storage. Preserve CARE routine IDs, schedule fields, completion dates, payment history, archive state, and save format/migration compatibility. Shared reminder metadata does not replace CARE's canonical records.
 
 ### 11.4 Migration requirements
 
@@ -390,7 +390,7 @@ Do not reward opening PLAN, viewing/editing/creating an empty task, moving tasks
 
 ### 12.2 One action, one reward owner
 
-A real-world action has one canonical owner and one primary reward owner. CARE routine completion pays through CARE. PLAN recurring-task completion pays through PLAN. A HOME record linked to a PLAN task must not pay twice. A CARE record shown in PLAN remains a CARE action.
+A real-world action has one canonical owner and one primary reward owner. CARE routine completion pays through CARE. PLAN recurring-task completion pays through PLAN. A BASE record linked to a PLAN task must not pay twice. A CARE record shown in PLAN remains a CARE action.
 
 ### 12.3 Minimal event contract
 
@@ -398,14 +398,15 @@ Progression events contain only stable event ID, source module, opaque source re
 
 ### 12.4 Idempotency and non-punitive mechanics
 
-Retries cannot pay twice. Undo/redo respects payment policy. Recurring occurrences cannot duplicate events. Migration cannot replay historical rewards. Sync cannot duplicate rewards across devices. Do not introduce expiring opportunities, punitive streak resets, attendance pressure, login rewards, unfinished-task penalties, or artificial urgency.
+Retries cannot pay twice. Undo/redo respects payment policy. Recurring occurrences cannot duplicate events. Migration cannot replay historical rewards. Do not introduce expiring opportunities, punitive streak resets, attendance pressure, login rewards, unfinished-task penalties, or artificial urgency.
 
 ## 13. Settings
 
-PLAN has its own short settings page (More → Settings), grouped:
+PLAN has its own short settings page (the Sections key in the header → Settings), grouped:
 
 - **Alerts (20 November 2026):** repeat until answered and the focus alerts (halfway and end). The task-reminders switch and the quiet hours moved to Me, Settings, Notifications, with every module's reminders switch. **Lists:** made, edited, archived and deleted here (the Tasks screen only filters by them).
 - **Reminders (history):** task reminders on or off, repeat until answered, and the focus alerts (halfway and end) moved here from General (18 November 2026). Global quiet hours, notification permissions, delivery and focus deferral are managed by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; the quiet-hours times are shown beside the reminder switch.
+- **Rewards:** the reward focus a new task starts with ("New tasks pay most in", 12.1).
 - **Calendar:** which device calendars appear (8.1). Nothing is imported or written back.
 - **Focus:** the usual length and Deep Focus are what the last session was started with (6.1); no separate default is asked for.
 - **Week start** is a General setting (shared by every calendar in the app), not a PLAN one.
@@ -449,7 +450,7 @@ Before modifying code, inspect the current branch. Preserve and test: task creat
 - CARE routines are not duplicated as PLAN tasks.
 - CARE completion invokes CARE reward rules.
 - CARE trends/rhythm use canonical history.
-- CARE local-first and optional sync behavior remain intact.
+- CARE local-only behavior remains intact.
 
 ### Reminder integration
 

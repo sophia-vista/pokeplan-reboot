@@ -75,7 +75,7 @@ Diary entries, journal text, mood data, urges, therapy-related content, skills r
 
 ## 4. Care Play
 
-> **First-run tutorial** (`FEATURES/POKEMON_ECOSYSTEM.md` section 10.2.1): until the player has taken a calm break, Care offers a one-time 5-second breath that hatches one Care Egg into Care's party. It is not a calm break and leaves no record.
+> **First Pokémon** (`FEATURES/POKEMON_ECOSYSTEM.md` section 10.2.1; owner, 13 November 2026, replacing the 5-second breath): the first routine, calm break, skill, diary card or journal entry gives one Common egg of the Care Region that hatches into Care's party and leads it, once per save. It is not a calm break and leaves no record of its own.
 
 Care Play is the Pokémon relationship interaction system. It should feel like spending time with Pokémon, not maintaining virtual pets or completing chores.
 
@@ -169,7 +169,7 @@ Tap reactions can reflect simple states (sleeping, playful, relaxed, hungry when
 
 ### 5.4 Customization
 
-Dream customization is deferred and is not a current priority. Use the existing environment and assets. Do not implement furniture placement, decoration inventories, theme shops or a building system as part of the initial Meadow. Revisit only after core interactions and usability are complete.
+Dream customization is deferred and is not a current priority. Use the existing environment and assets. Do not implement furniture placement, decoration inventories, theme shops or a building system as part of the initial Dream. Revisit only after core interactions and usability are complete.
 
 ## 6. Visitor system
 
@@ -229,7 +229,7 @@ Rules:
 
 ### 6.6 Egg hatching and inheritance
 
-- **Owner decision, 8 November 2026: a visitor's egg hatches at once** (it does not wait in the Egg collection). The moment the visitor becomes a friend, a scene plays on Care's meadow: the visitor says goodbye, walks off and leaves an egg in the grass, and then the egg hatches (the shared hatching scene). The hatchling still uses the shared hatching and origin systems. This replaces the earlier wording that visitor eggs persist in the shared Egg collection.
+- **Owner decision, 8 November 2026: a visitor's egg hatches at once** (it does not wait in the Egg collection). The moment the visitor becomes a friend, a scene plays on Care's meadow (now Dream, 5): the visitor says goodbye, walks off and leaves an egg in the grass, and then the egg hatches (the shared hatching scene). The hatchling still uses the shared hatching and origin systems. This replaces the earlier wording that visitor eggs persist in the shared Egg collection.
 - No real-time countdown, expiry or forced hatching schedule.
 - Egg species is the visitor's first evolutionary stage.
 - Visitor eggs may lightly inherit selected characteristics from the visitor: personality/nature influence, potential stat strengths, and a rare special trait. There is no cosmetic variation (owner, 7 November 2026: scrapped).
@@ -251,13 +251,13 @@ Rules:
 
 The sections above say what visitors are; these are the numbers the code uses and the places it had to decide.
 
-- **Arrivals:** one visitor a day, and a second one 35% of days (the same for a device and day), independent of anything done in CARE. A device's first arrivals are two. A few days away are caught up, at most three days' worth at a time. Arrivals pause while the meadow (4) and the queue (6) are full, which keeps "never expires" from meaning "grows forever"; nobody already here is dropped or replaced. A species is never here twice.
+- **Arrivals:** one visitor a day, and a second one 35% of days (the same for a device and day), independent of anything done in CARE. A device's first arrivals are two. A few days away are caught up, at most three days' worth at a time. Arrivals pause while the meadow (four visitors, `Visitors.MAX_VISITORS`) and the queue (six, `Visitors.MAX_QUEUE`) are full, which keeps "never expires" from meaning "grows forever"; nobody already here is dropped or replaced. A species is never here twice.
 - **Slots:** the first four visitors by arrival are in the meadow, the rest are the queue in order. When one leaves (befriended or sent away) the next takes the place.
 - **Progress:** *warmth*, added at once by every interaction: its favourite 2, any other kind 1, each kind once a visit, a pat on its liked spot 1, noticing a small moment 1, its liked berry 4 (once per visitor). Sixteen makes a friend, which takes about two visits (a full visit is 6 to 11). It is never reset and never counts days. An old save's warm days become 4 each, so no visitor loses what it had.
 - **A visit** has no fixed length: it ends when all five kinds are done, when the visitor is warm enough, or when the player leaves, and what it warmed is kept either way. After a visit the visitor rests three hours before another visit counts (playing with it is always possible). There is no daily limit on visits; the pace of friends is set by arrivals.
 - **Friends the world cannot pay today** (its daily limit of friends, `GameStore.BEFRIEND_DAILY_CAP`): the visit ends, the visitor stays, ready, and its next visit makes it a friend.
 - **Dismissal:** asked once, keeps what the visitor earned (nothing already given is taken back), and the visitor is kept (the last twenty) so it can be asked back, to the end of the queue with its warmth.
-- **Reunions (6.7):** a befriended visitor is remembered (`CareData.friends`: species, form, visitor id, the day, whether it stayed). Once a day, with a 20% chance (the same for the same device and day), one friend may come back to say hello if none is waiting and it has not been back for 3 days. It holds no meadow place and does not count towards the 4 and 6, never expires, pays nothing and gives no egg or recruitment; greeting it says a line that remembers the day you became friends.
+- **Reunions (6.7):** a befriended visitor is remembered (`CareData.friends`: species, form, visitor id, the day, whether it stayed). Once a day, with a 20% chance (the same for the same device and day), one friend may come back to say hello if none is waiting and it has not been back for 3 days. It holds no meadow place and does not count towards the four and the six, never expires, pays nothing and gives no egg or recruitment; greeting it says a line that remembers the day you became friends.
 - **Egg inheritance (6.6):** an egg a friend leaves (not a visitor that stays) may take a temperament from it: the visitor's nature (40%), its strong stat raised to an IV of at least 24 (40%), and, rarely (5%), a second strong stat to at least 28 along with the other two. A visitor's nature and strong stat come from its id, so they are stable; what an egg takes comes from the visitor and the egg together, so it is the same on a retry. Shininess, ability, species and level are never touched. The hatchling's origin record (`Origin.visitor`: visitor, day, traits, a note such as "Left by a Pikachu you befriended; it took Jolly nature") is shown on its page.
 - **Care Play (4):** time with the buddy, a visitor or any owned Pokémon (invited without touching a party). Six activities map to the five kinds of care (grooming, toy play, a treat, cheering on, gentle touch, quiet time), each a short run of taps that can be stopped any time; suggested (never expires), browsed or "Surprise me". Every Pokémon has a primary and a secondary liked kind from its id, undiscovered until it shows them (a delighted or happy reaction records the kind; any other reaction is pleasant and records nothing). The first time with each Pokémon on a day pays `CareKind.PLAY` (1 friendship step to that Pokémon, 1 Rare Candy, 1 point on Care's Egg meter, at most 6 a day); repeats pay nothing and are unlimited.
 - **Dream (5):** one fixed scene (Care → Dream, with Spend time, the dreamers and the party below it): the buddy asleep in the middle and four visitor spots, no scrolling or roaming; tap is a reaction with a 0.9 s cooldown (a tap during it changes nothing and plays no cry), long press (or the "Details" accessibility action) opens a compact panel with identity, discovered likes and the way into Care Play; the queue and Care Egg progress sit small in the corners; a returning friend appears below with "Say hello". Tapping a sleeper wakes it for 2.5 s. Reduced motion stops the animations.
@@ -279,7 +279,7 @@ Implementation requirements:
 - Do not play a cry for every tap. Use sound selectively and respect sound/reduced-motion settings.
 - Preserve nearest-neighbor scaling, integer scaling where practical, stable sprite anchors and consistent pixel grid.
 - Reuse the existing visitor scene, five interaction categories, sprite reactions, berry handling and sound mappings where they pass review. Audit sound mappings by listening rather than assuming enum names are correct.
-- Do not create new backgrounds or decoration packs for the initial Meadow. Existing world/scene/tileset assets are sufficient to prototype; customization is deferred.
+- Do not create new backgrounds or decoration packs for the initial Dream. Existing world/scene/tileset assets are sufficient to prototype; customization is deferred.
 - Track source, author, license, attribution, modification and distribution permissions for every asset. Existing asset audit notes include non-commercial/private-use restrictions for some sources; do not assume that current assets are cleared for public or commercial distribution.
 
 ## 8. Current implementation reuse and refactor direction
@@ -338,9 +338,6 @@ Use stable IDs and idempotent reward events. Do not derive rewards from private 
 
 ## 11. Explicit non-goals
 
-## Shared data architecture
-CARE owns its routines, diary cards, journal entries, check-ins and completion history. Shared persistence, transaction boundaries, backup/restore, deletion, migration and recovery follow `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; CARE must not create a parallel save store or expose private reflection content through generic events.
-
 - Free-roaming Pokémon in the Care Garden (free roaming belongs to the launcher).
 - A pet-needs simulator: hunger, fatigue, boredom, neglect or maintenance.
 - Visitor attendance streaks, expiring invitations, automatic departure or relationship decay.
@@ -348,9 +345,12 @@ CARE owns its routines, diary cards, journal entries, check-ins and completion h
 - CARE module XP or a new CARE currency.
 - Content-derived rewards from mood, diary, journal or therapy-related records.
 - General Pokémon breeding or breeding optimization.
-- Meadow furniture placement, decoration inventory, theme shop or customization in the current priority scope.
+- Dream furniture placement, decoration inventory, theme shop or customization in the current priority scope.
 - A separate visitor egg/hatching implementation.
 - A separate keepsake inventory or album.
+
+## Shared data architecture
+CARE owns its routines, diary cards, journal entries, check-ins and completion history. Shared persistence, transaction boundaries, backup/restore, deletion, migration and recovery follow `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; CARE must not create a parallel save store or expose private reflection content through generic events.
 
 ## Shared Pokémon ecosystem contract
 

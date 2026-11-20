@@ -1,7 +1,7 @@
 # PokéLife Product Bible
 
 **Status:** Authoritative product-wide specification  
-**Last reconciled:** 11 November 2026
+**Last reconciled:** 13 November 2026 (the newest decisions below are those of that date; later decisions live in their owning module and feature documents)
 
 > This document records product-wide decisions and boundaries. It is not an implementation-status report. Detailed behavior belongs in the canonical module, feature, and architecture specifications listed below.
 
@@ -43,7 +43,7 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 - **English only.** No localisation.
 - **A watch is wanted** if one can be supported: a feasibility check first, against the owner's actual watch (the Huawei Watch Fit 4 Pro, which is not Wear OS; `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` section 5.2), with the phone's notification actions on the watch as the baseline.
 - **Lean tests.** A test exists to guard something that matters: a rule that pays, moves or changes a Pokémon, privacy and sealing, saving, migration and recovery, and the Android behaviour REP-033 covers. No test for a constant, a label or copy, a feature that was removed, or the absence of something removed, and no copy of a test per module when the modules share the code path. A test that no longer guards anything is deleted with the code it tested.
-- **HOME is renamed BASE**, after Hoenn's Secret Bases (the module's look and words borrow from them; its scene is a secret base under the trees). "Home" now means only the Home tab. WORLD's destination that was called Base is now **Town**. Code follows the new name (`base-core`, `app.pokeplan.base`, `Base*`); stored names stay as they were (the `home_*` tables, save keys, ledger ids, and the `Region.HOUSEHOLD`, `Module.HOME`, `Place.HOUSEHOLD` and `ReminderModule.HOME` constants), so no migration is needed. `MODULES/BASE.md` keeps its file name until the docs reset (REP-032).
+- **HOME is renamed BASE**, after Hoenn's Secret Bases (the module's look and words borrow from them; its scene is a secret base under the trees). "Home" now means only the Home tab. WORLD's destination that was called Base is now **Town**. Code follows the new name (`base-core`, `app.pokeplan.base`, `Base*`); stored names stay as they were (the `home_*` tables, save keys, ledger ids, and the `Region.HOUSEHOLD`, `Module.HOME`, `Place.HOUSEHOLD` and `ReminderModule.HOME` constants), so no migration is needed. The module's specification is `MODULES/BASE.md`.
 
 ## 4. Canonical module map and ownership
 
@@ -79,7 +79,7 @@ These docs replace the older module plans (owner decision, 6 November 2026): Hea
 Product-wide invariants:
 
 - One canonical owned instance per Pokémon; parties and WORLD teams reference owned IDs and never create copies.
-- Four independent Pokémon roles (owner decision, 6 November 2026; detail in `FEATURES/POKEMON_ECOSYSTEM.md` section 2.2): the **global buddy** (the main companion, cosmetic); a **module party** per applicable life module, **one lead plus five members, whose bonuses apply only to that module**; **WORLD expedition teams**; and **GEAR helpers** (visual only, tool and menu icons).
+- A Pokémon is in **one place only** (owner decisions of 6, 7 and 8 November 2026; detail in `FEATURES/POKEMON_ECOSYSTEM.md` section 2.2): the **global buddy** (the main companion, cosmetic); a **module party** per applicable life module, **one lead plus five members, whose bonuses apply only to that module**; a module's **Guardian slot**; a **WORLD expedition team**; a **GEAR helper** (visual only, tool and menu icons); or the **PC**. Every assignment takes the Pokémon from its old place.
 - One Bag and one universal currency: Poké. Legacy PLAN Coins and WORLD Poké migrate 1:1 into shared Poké, with source values retained in migration audit metadata.
 - Held items are persistent, reusable, non-consumable equipment and never lifetime single-use: equipping or triggering an effect never consumes, charges, breaks or removes the item; encounter-scoped trigger limits reset for later eligible encounters. Runtime effect state is separate from inventory. Consumables such as evolution stones and vitamins use explicit atomic consumption rules.
 - Every obtainable item has a documented acquisition source and enters the shared Bag through the shared reward/inventory ledger; no module mutates inventory directly.
@@ -191,3 +191,5 @@ docs/pokelife/
 ```
 
 Each document under this directory is a canonical authority for its stated domain. The Pokémon ecosystem specification now includes the formerly separate expansion catalogue and mechanics. Shared reminder policy is consolidated into Section 9 of `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md`. The implementation backlog remains a separate, traceable delivery artifact and does not define product behavior. `TEST_STRATEGY.md` is the authoritative cross-layer testing strategy.
+
+Also in the folder: `evidence/` (dated reviews and audits, evidence only) and `FEATURES/POKEMON_PLACES_IDEAS.md` (proposals for what Pokémon do inside the modules, tracked as REP-053; an idea binds only once it is written into the owning module or ecosystem file).

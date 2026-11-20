@@ -1,6 +1,6 @@
 # Pokémon influence in the modules: ideas and places (proposals)
 
-**Status:** proposals only, written 14 November 2026 from the owner's question "further Pokémon integration ideas for the modules, like Secret Bases for BASE". **Nothing here is decided or specified.** An idea becomes a rule only when the owner approves it and it is written into the owning module file (`MODULES/*.md`) or `POKEMON_ECOSYSTEM.md`. Backlog: REP-053.
+**Status:** proposals only, written 14 November 2026 from the owner's question "further Pokémon integration ideas for the modules, like Secret Bases for BASE". **An idea is not a rule.** It becomes one only when the owner approves it and it is written into the owning module file (`MODULES/*.md`) or `POKEMON_ECOSYSTEM.md`. Backlog: REP-053. **Shipped so far (20 November 2026):** A1/P1 the Secret Base room (0.196.0, `MODULES/BASE.md` 9.5) and A3/P4 goal badges and the Hall of Fame (0.197.0, `MODULES/PLAN.md` 9.1); the art fetch and the test render (section 7, chunks 1 and 2, 0.194.0). Everything else below is still a proposal.
 
 Each module already has its own way to get Pokémon (Focus and Task Eggs, Care Play, Field Research, Ledger Research, Habitat Discovery, Postcard Trail, Exploration Finds). This file is about what Pokémon and the games' world do in a module *after* that.
 
@@ -9,7 +9,7 @@ Each module already has its own way to get Pokémon (Focus and Task Eggs, Care P
 - **One place only** (`POKEMON_ECOSYSTEM.md` 2.2): a place below shows the module's own party. It is never a new slot a Pokémon is assigned to.
 - **No upkeep loop** (8.4): nothing wilts, decays, gets hungry or asks to be visited.
 - **Privacy** (13): a life module still pays through a minimal event with no figure, name or private word. MINT ideas count actions, never amounts.
-- **GEAR stays visual** (GEAR.md 23): no progression, items or rewards.
+- **GEAR stays visual** (GEAR.md section 6): no progression, items or rewards.
 - **Real assets only**: every idea names its source in section 2. An idea with no pixel art is dropped or changed, not drawn.
 - **Which art goes where** (`ASSETS_AND_AUDIO.md` 4.0, owner, 14 November 2026): Pokémon sprites and portraits are Mystery Dungeon first; Mystery Dungeon places and tilesets are for WORLD and the launcher only; a module's places, rooms and items are mainline art, mostly Generation 3. The tables below follow it.
 - Already specified elsewhere, so not repeated here: adapted abilities (Pickup, Honey Gather...), special evolutions done with the phone or the step counter, Ribbons and Marks, held items (`POKEMON_ECOSYSTEM.md` 8.5 and 20.1).
@@ -22,7 +22,7 @@ Checked on 14 November 2026 against the public repositories (file lists, not eve
 |---|---|---|---|
 | `assets/rescue-maps/` (in the repo) | 245 Red Rescue Team maps as whole pictures: 57 Friend Areas, Pelipper Post Office (outside and inside), Makuhita Dojo, Pokémon Square, Whiscash Pond, the team bases | No | Already fetched. **WORLD and the launcher only** |
 | `assets/sky-maps/` (in the repo) | 440 Explorers of Sky maps, by map code | Owner's ROM, already ripped | Already cut. **WORLD and the launcher only** |
-| PokeAPI/sprites | `badges/` (Gym badges), every Berry icon, every Mail icon, Gimmighoul Coin | No | Verified. Only 6 berries and the coin are in `assets/items` today |
+| PokeAPI/sprites | `badges/` (Gym badges), every Berry icon, every Mail icon, Gimmighoul Coin | No | Verified. Fetched in 0.194.0 (section 7, chunk 1): the 77 badges are in `assets/badges` and 105 Berry and Mail icons in `assets/items` (not yet bundled by Gradle) |
 | `pret/pokeemerald` | 43 Secret Base decoration sprites (dolls, mats, desks, plants, tents, bricks), the Secret Base tilesets (per cave, tree and shrub type), 32 Berry tree growth sheets, Pokéblock art, Mail papers, object sprites | No | Verified |
 | `pret/pokecrystal` | Mom's sprite, Mail borders | No | Verified. The bedroom decorations (bed, carpet, poster, dolls) are not checked yet |
 | `pret/pokeplatinum` | About 4,900 PNGs: Poffin case art, a Pokétch graphics folder | No | Folder verified; which Pokétch app screens are there is not checked |
@@ -40,11 +40,11 @@ Limits that shape the ideas:
 
 | # | Module | Idea (game) | What happens | Art | Verdict |
 |---|---|---|---|---|---|
-| A1 | BASE | Secret Base room (Hoenn) | Base's party lives in a furnished room. Chores and maintenance earn decorations, the user places them. The lead's type picks the spot: tree, shrub or cave | pokeemerald decorations and tilesets | Buildable; needs the scale test |
+| A1 | BASE | Secret Base room (Hoenn) | Base's party lives in a furnished room. Chores and maintenance earn decorations, the user places them. The lead's type picks the spot: tree, shrub or cave | pokeemerald decorations and tilesets | **Built** (0.196.0, `MODULES/BASE.md` 9.5); the scale test is done (section 6) |
 | A2 | BASE | Berry plots (Gen 3 soil) | Upkeep done waters a plot; berries grow in real hours and go to the Bag. They never wilt | pokeemerald trees, PokeAPI icons | Buildable |
-| A3 | PLAN | Gym badges for goals | A goal's milestones are badges; a finished goal is a Hall of Fame entry with the Plan party that was there | PokeAPI badges | Buildable, one fetch |
+| A3 | PLAN | Gym badges for goals | A goal's milestones are badges; a finished goal is a Hall of Fame entry with the Plan party that was there | PokeAPI badges | **Built** (0.197.0, `MODULES/PLAN.md` 9.1) |
 | A4 | LINK | Mail (Gen 2 to 4) | A party Pokémon carries a follow-up as a Mail item; finishing it delivers the letter. The paper is a cosmetic choice | PokeAPI icons, pret papers | Buildable |
-| A5 | MINT | Gimmighoul coins | One coin per paid Mint action; 999 evolve Gimmighoul into Gholdengo (the canonical rule) | In `assets/items` | Buildable now |
+| A5 | MINT | Gimmighoul coins | One coin per paid Mint action; 999 evolve Gimmighoul into Gholdengo (the canonical rule) | In `assets/items` | Buildable now. The coin exists as an item (Kecleon Shop, Paldea floors); a coin per paid Mint action is not built |
 | A6 | MINT | Mom's savings (Gold/Silver) | Reconciling and reviewing fill a jar; Mom sometimes sends a decoration or an item | pokecrystal sprite, the A1 decorations | Buildable, after A1 |
 | A7 | CARE | Cooking | Berries are cooked with the Care party; each recipe fills a small dex. One moment, no hunger | Curry is 3D only: use Poffins (pokeplatinum) or Pokéblocks (pokeemerald) | Buildable as Poffins or Pokéblocks |
 | A8 | GEAR | Pokétch apps, Rotom forms | Tools drawn as Pokétch apps; a Rotom helper changes form per tool. Visual only | pokeplatinum folder, SpriteCollab Rotom | Likely; app screens not checked |
@@ -59,10 +59,10 @@ A place is a real location from the games that a module opens onto or keeps a co
 
 | # | Module | Place (game) | What it is for | Art | Verdict |
 |---|---|---|---|---|---|
-| P1 | BASE | Secret Base (Hoenn) | A1: the room, with the berry plot (A2) outside it | pokeemerald | First choice |
+| P1 | BASE | Secret Base (Hoenn) | A1: the room, with the berry plot (A2) outside it | pokeemerald | **Built** (0.196.0), without the berry plot (A2, chunk 4) |
 | P2 | BASE | The player's bedroom (Johto) | An alternative or second room: the bed, carpet, poster and dolls Mom buys (A6) | pokecrystal, not checked | Check the art first |
 | P3 | PLAN | Day Care (Hoenn Route 117) | Where Focus and Task Eggs wait. The Day-Care Man stands outside when one is ready, as in the games | pokeemerald tiles and sprites | Strong fit with Eggs |
-| P4 | PLAN | Gym and Hall of Fame | A3: the badge case, and the room finished goals are recorded in | PokeAPI badges, pokeemerald Hall of Fame art (not checked) | Buildable |
+| P4 | PLAN | Gym and Hall of Fame | A3: the badge case, and the room finished goals are recorded in | PokeAPI badges, pokeemerald Hall of Fame art (not checked) | Badge case and Hall of Fame **built** (0.197.0, on the Goals view) |
 | P5 | PLAN | Trainers' School (Rustboro) | The weekly review, at the blackboard | pokeemerald tiles | Small; only if reviews want a scene |
 | P6 | CARE | Hot spring (Lavaridge) | Care's quiet place: the party soaks while a routine is done. Visitors can turn up here | pokeemerald tiles | Good fit |
 | P7 | CARE | Berry Blender or Poffin house | A7's kitchen | pokeemerald, pokeplatinum | With A7 |
@@ -81,6 +81,8 @@ Left to WORLD and the launcher by rule 4.0: the team base, Pelipper Post Office,
 Not possible with real art: Amity Square, the Sinnoh Underground, Join Avenue, the Resort Area Villa (all 3D).
 
 ## 5. Suggested order
+
+Steps 1 and 2 (the test render, the fetch) and A1 and A3 are done (section 7); what remains is A2, then step 3 onwards.
 
 1. **Test render** of P1: a Hoenn Secret Base room with the decorations and the Base party's SpriteCollab sprites, both palettes. It settles the scale for every module place.
 2. **One fetch script** for pret (pinned commits) and the missing PokeAPI folders (badges, berries, mail), then A1, A2, A3.

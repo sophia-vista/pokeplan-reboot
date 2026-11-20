@@ -26,13 +26,10 @@ Bodies adapt through `LocalCells` (clock, shortcuts, app buttons) and `LocalGrid
 ## Built (0.94.0): pages and live preview
 `WidgetPage` is HOME, TODAY and PAGE3 to PAGE5; `LauncherPrefs.pages` (saved `K pages`) says how many exist. `GridCanvas` previews every drag and resize live (the others slide), a dragged widget held at a screen edge hops pages (`moveGridWidgetToPage`, which makes the page when needed), the edit bar has New page and Delete this page. `LauncherScreen` slides any number of pages.
 
-## Still to build (in this order)
-0. (done: pages, live preview) Drag to the other page at the screen edge; live preview of what a drop bumps.
-1. **Adapt the bodies:** a half-width widget shows one column of its content; a short one fewer rows; then make the grid the default.
-2. **Edit mode like Smart Launcher:** long-press a widget to lift it (a little scale and shadow), drag it anywhere (a ghost
-   of the drop cell, widgets bump down live), drop; a frame with corner handles to resize in whole cells with the limits as
-   the stops; a remove (x) and the widget's settings in the frame; drag to the screen edge for the other page.
-3. **Retire** the old edit bar and `layout` once the grid has shipped for a version; keep decoding `G` lines.
-4. Accessibility: every drag has a button alternative (move up, down, left, right, wider, narrower, taller, shorter), and
-   Reduce motion drops the lift animation.
-5. Android widgets (`ANDROID`): the host's own min and max cell sizes feed `limits()` for that widget.
+## Since 0.94.0
+Pages became ordered (`LauncherPrefs.pageOrder`, saved `K pageOrder`): the edit bar adds a page at the left or right end ("Left+", "Right+": `GridEditBar` in `GridPage.kt`, `LauncherPrefs.addPage`) and deletes a page, moving its widgets to the next one (`deletePage`). The other apps' widgets take their limits from the provider (`HostedWidgetSpec.limits` in `HostedWidgets.kt`, fed by `LauncherActivity`). Every drag has a button alternative: the frame's accessibility actions are Move up, down, left and right, Wider, Narrower, Taller and Shorter (`GridPage.kt`), and Reduce motion makes moves snap instead of slide.
+
+## Still open
+- **Retire** the old list mode (`LauncherPrefs.layout`, the `G` lines, the per-widget `EditBar` in `LauncherWidgets.kt` and the Launcher settings switch back to the list) once the grid has shipped for a version; keep decoding `G` lines. The grid is the default but the list mode is still in the code.
+
+Everything else on the earlier to-do list (adapt the bodies, the Smart Launcher style edit mode, the accessibility alternatives, the hosted widgets' limits) is built, as above.
