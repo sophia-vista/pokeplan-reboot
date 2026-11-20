@@ -7,7 +7,7 @@ release always has the newest merge).
 
 ## 0.220.1
 
-Care: the five places (Today, Routines, Calm, Reflect, Dream) are reached from the Sections key in the header, as in every other module, with their state for today; there is no row of keys on the page. Today also shows Care's party (Dream keeps it too). UI only; `docs/pokelife/MODULES/CARE.md` 3 notes it.
+Care: the five places (Today, Routines, Calm, Reflect, Dream) are reached from the Sections key in the header, as in every other module, with their state for today; there is no row of keys on the page. Today follows the order every module's main screen keeps (the short lead, today's routines and the mood key, a Quick actions box with Add routine, Calm and Check in, then Care's party; Dream keeps the party too). UI only; `docs/pokelife/MODULES/CARE.md` 3 notes it.
 
 ## 0.220.0
 

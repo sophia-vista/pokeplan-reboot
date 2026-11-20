@@ -330,6 +330,7 @@ Every module specification must include a short section titled **Visual presenta
 5. Confirms light/dark themes, text scaling, TalkBack, reduced motion and responsive layouts.
 
 All module UI reviews must check:
+- [ ] The module's main screen keeps the one order of 5.1: short lead, overview of its records, a Quick actions box, then the party last.
 - [ ] Shared dialogue-box border/corner/surface grammar is recognizable.
 - [ ] Content-driven sizing; no forced identical dialogue-box dimensions.
 - [ ] No unnecessary boxes, captions, nested containers or decoration.

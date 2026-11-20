@@ -38,7 +38,7 @@ CARE follows `../FEATURES/DESIGN_SYSTEM.md` and introduces no separate design la
 The CARE landing is a calm, action-oriented entry point. It must not compete with the Home dashboard or become a catalogue of every feature.
 
 Primary areas (**owner decision, 20 November 2026: exactly these five, reached from the Sections key every module has at the end of its header (no row of keys on the page; 20 November 2026, later the same day); Care opens on Today, and Back from any other goes to Today**):
-1. **Today** — next useful action, today's routines, concise completion progress, the mood key, and Care's party (also in Dream).
+1. **Today** — next useful action, today's routines, concise completion progress, the mood key, a Quick actions box (add a routine, Calm, check in), and Care's party last (also in Dream); the order every module's main screen keeps (`DESIGN_SYSTEM.md` 5.1).
 2. **Routines** — add, edit, skip, archive and restore routines, and tick yesterday (3.1).
 3. **Calm** — the breathing break and the skills library, together: quick grounding, breathing and coping tools.
 4. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).

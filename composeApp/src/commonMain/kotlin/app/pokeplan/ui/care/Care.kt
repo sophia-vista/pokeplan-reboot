@@ -176,7 +176,7 @@ private fun careSections(model: AppModel): List<MenuEntry> {
     )
 }
 
-/** What to do now: the buddy, today's routines, the mood key and Care's party (it is in Dream too). The visitors and the egg are in Dream. */
+/** Care's main screen, in the order every module keeps: the short lead, the overview (today's routines, the mood key), Quick actions, then the party (it is in Dream too). The visitors and the egg are in Dream. */
 @Composable
 private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
     val care = model.careData
@@ -199,6 +199,17 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
         }
     }
     MoodRow(model)
+    // The action items, then the party last (the order every module's main screen keeps, DESIGN_SYSTEM.md 5.1).
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Quick actions")
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Add routine", { model.careSection = CareSection.ROUTINES }, Modifier.weight(1f), ModuleAccent.CARE.accent, compact = true)
+                PixelButton("Calm", { model.careSection = CareSection.CALM }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Check in", { model.careSection = CareSection.REFLECT }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            }
+        }
+    }
     CarePartyPanel(model, openPokemon)
 }
 
