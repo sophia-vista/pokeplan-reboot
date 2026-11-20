@@ -7,7 +7,11 @@ package app.pokeplan.ui.launcher
  */
 
 /** When the launcher saves battery: the town stands still, the weather and the clock's seconds stop, nothing blurs and it checks less often. */
-enum class BatterySaver(val label: String) { OFF("Off"), AUTO("Automatic"), ON("Always") }
+enum class BatterySaver(val label: String, val note: String) {
+    OFF("Off", "Never saves. The town, the weather and the clock always run at full speed."),
+    AUTO("Automatic", "Saves at 20% or lower while not charging, or whenever Android's own battery saver is on."),
+    ON("Always", "Always saves: the Pokémon stand still, animations stop, the clock updates every 10 seconds and the forecast every two hours."),
+}
 
 /** Whether battery saving is on, given the choice, the charge and whether the phone's own power saving is on. */
 fun batterySaving(choice: BatterySaver, battery: BatteryStatus?, phoneSaving: Boolean): Boolean = when (choice) {
@@ -187,14 +191,8 @@ data class LauncherPrefs(
     val fahrenheit: Boolean = false,
     /** When the launcher saves battery: never, on its own at 20% or lower (or when the phone's power saving is on), or always. */
     val batterySaver: BatterySaver = BatterySaver.AUTO,
-    /** How the clock widget writes the date. */
-    val dateStyle: DateStyle = DateStyle.SHORT,
-    /** Whether the clock widget uses a 12-hour clock (AM and PM). */
-    val hour12: Boolean = false,
     /** Whether the clock widget shows the seconds. */
     val showSeconds: Boolean = false,
-    /** Whether the calendar widget's weeks start on Sunday (otherwise Monday). */
-    val sundayFirst: Boolean = true,
     /** The widgets, top to bottom in each area; null until the user changes them, which shows [defaultWidgets]. */
     val layout: List<WidgetSlot>? = null,
     /** The widgets on the grid (docs: the Smart Launcher style canvas); null until the grid is first changed, which shows the old [widgets] laid out as a grid. */
@@ -271,10 +269,7 @@ data class LauncherPrefs(
     fun withShowStatus(on: Boolean) = copy(showStatus = on)
     fun withEdgeDrag(on: Boolean) = copy(edgeDrag = on)
     fun nextBatterySaver() = copy(batterySaver = BatterySaver.entries[(batterySaver.ordinal + 1) % BatterySaver.entries.size])
-    fun nextDateStyle() = copy(dateStyle = dateStyle.next())
-    fun withHour12(on: Boolean) = copy(hour12 = on)
     fun withShowSeconds(on: Boolean) = copy(showSeconds = on)
-    fun withSundayFirst(on: Boolean) = copy(sundayFirst = on)
     fun withPageSwipe(on: Boolean) = copy(pageSwipe = on)
     fun withGatherTap(on: Boolean) = copy(gatherTap = on)
 
@@ -284,7 +279,7 @@ data class LauncherPrefs(
         GestureTrigger.TRIPLE_TAP -> if (gatherTap) GestureAction.GATHER else GestureAction.NONE
         GestureTrigger.DOUBLE_TAP -> GestureAction.NONE
         GestureTrigger.SWIPE_UP -> GestureAction.APPS
-        GestureTrigger.SWIPE_DOWN -> GestureAction.NONE
+        else -> GestureAction.NONE
     }
 
     /** Makes [trigger] do [action] (only what the trigger can do: the edge drag is the one that follows the finger, so it can open the app list). */
@@ -398,8 +393,15 @@ data class LauncherPrefs(
     fun nextWeather() = copy(weather = Weather.entries[(weather.ordinal + 1) % Weather.entries.size])
     /** The next town size: 8, then 16, then 24, then 8 again. */
     fun nextTownSize() = copy(townSize = when (townSize) { 8 -> 16; 16 -> 24; else -> 8 })
-    /** Pins and their icons forgotten; hidden apps and the other choices kept. */
+    /** Pins and their icons cleared; hidden apps and the other choices kept. */
     fun withoutPins() = copy(pinned = emptyList(), icons = emptyMap())
+
+    /**
+     * Every setting back to how a new launcher starts (the town, the widgets and the grid, the pages, the gestures, the weather, the battery saver), but
+     * what the user built or chose about their apps and place is kept: the pinned apps and their icons, the hidden apps, the moved categories, the
+     * folders, the counts behind Often used and the weather place.
+     */
+    fun reset() = LauncherPrefs(pinned = pinned, hidden = hidden, moved = moved, icons = icons, launches = launches, folders = folders, place = place)
 
     fun withIcon(key: String, item: String?) = if (item == null) copy(icons = icons - key) else if (item in LauncherIcons.items) copy(icons = icons + (key to item)) else this
 
@@ -428,10 +430,7 @@ data class LauncherPrefs(
         if (!showStatus) append("K showStatus\t0\n")
         if (!edgeDrag) append("K edgeDrag\t0\n")
         if (batterySaver != BatterySaver.AUTO) append("K batterySaver\t").append(batterySaver.name).append('\n')
-        if (dateStyle != DateStyle.SHORT) append("K dateStyle\t").append(dateStyle.name).append('\n')
-        if (hour12) append("K hour12\t1\n")
         if (showSeconds) append("K showSeconds\t1\n")
-        if (!sundayFirst) append("K sundayFirst\t0\n")
         if (!pageSwipe) append("K pageSwipe\t0\n")
         if (!gatherTap) append("K gatherTap\t0\n")
         gestures.entries.sortedBy { it.key.ordinal }.forEach { (t, a) -> append("K gesture.").append(t.name).append('\t').append(a.name).append('\n') }
@@ -464,7 +463,7 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
-                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "chirps" -> prefs.withChirps(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "gridMode" -> prefs.withGridMode(f[1] != "0"); "pages" -> prefs.withPages(f[1].toIntOrNull() ?: WidgetPage.MIN); "pageOrder" -> f[1].split(',').mapNotNull { n -> WidgetPage.entries.firstOrNull { it.name == n } }.let { o -> if (o.distinct().size == o.size && WidgetPage.HOME in o && WidgetPage.TODAY in o && o.size <= WidgetPage.MAX) prefs.copy(pageOrder = o) else prefs }; "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); "activity" -> prefs.withActivity(f[1].toIntOrNull() ?: TownBehavior.ACTIVITY_DEFAULT); "layout" -> f[1].split(',').let { v -> val d = v.getOrNull(0)?.toLongOrNull(); val r = v.getOrNull(1)?.toIntOrNull(); if (d != null && r != null) prefs.copy(layoutDay = d, layoutRoll = r) else prefs }; else -> if (f[0].startsWith("gesture.")) GestureTrigger.entries.firstOrNull { it.name == f[0].removePrefix("gesture.") }?.let { t -> GestureAction.entries.firstOrNull { it.name == f[1] }?.let { a -> prefs.withGesture(t, a) } } ?: prefs else prefs } }
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "chirps" -> prefs.withChirps(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "gridMode" -> prefs.withGridMode(f[1] != "0"); "pages" -> prefs.withPages(f[1].toIntOrNull() ?: WidgetPage.MIN); "pageOrder" -> f[1].split(',').mapNotNull { n -> WidgetPage.entries.firstOrNull { it.name == n } }.let { o -> if (o.distinct().size == o.size && WidgetPage.HOME in o && WidgetPage.TODAY in o && o.size <= WidgetPage.MAX) prefs.copy(pageOrder = o) else prefs }; "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); "activity" -> prefs.withActivity(f[1].toIntOrNull() ?: TownBehavior.ACTIVITY_DEFAULT); "layout" -> f[1].split(',').let { v -> val d = v.getOrNull(0)?.toLongOrNull(); val r = v.getOrNull(1)?.toIntOrNull(); if (d != null && r != null) prefs.copy(layoutDay = d, layoutRoll = r) else prefs }; else -> if (f[0].startsWith("gesture.")) GestureTrigger.entries.firstOrNull { it.name == f[0].removePrefix("gesture.") }?.let { t -> GestureAction.entries.firstOrNull { it.name == f[1] }?.let { a -> prefs.withGesture(t, a) } } ?: prefs else prefs } }
                     'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
                     'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
                     'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }
@@ -693,6 +692,7 @@ object LauncherIcons {
 /** What a launcher gesture can be set to do. */
 enum class GestureAction(val label: String) {
     NONE("Nothing"), APPS("Open the app list"), GATHER("Gather the Pokémon"), POKELIFE("Open PokéLife"), GEAR("Open Gear"), SETTINGS("Launcher settings"),
+    FOLDERS("Open folders"), WIDGETS("Open widgets"), EDIT("Edit the home screen"), PAGE("Go to the next page"), NOTIFICATIONS("Pull down notifications"),
 }
 
 /** The gestures that can be given a job, each with the jobs it offers. */
@@ -703,4 +703,9 @@ enum class GestureTrigger(val label: String, val actions: List<GestureAction>) {
     /** A swipe up or down on the open town (LAUNCHER.md 11.4): up opens the app list, down is free for the user's choice. */
     SWIPE_UP("Swipe up", GestureAction.entries),
     SWIPE_DOWN("Swipe down", GestureAction.entries),
+    /** Two fingers together up or down, on the open town. */
+    TWO_FINGER_UP("Swipe up with two fingers", GestureAction.entries),
+    TWO_FINGER_DOWN("Swipe down with two fingers", GestureAction.entries),
+    /** Press and hold on empty space (not on a Pokémon, which has its own menu). */
+    LONG_PRESS("Press and hold empty space", GestureAction.entries),
 }

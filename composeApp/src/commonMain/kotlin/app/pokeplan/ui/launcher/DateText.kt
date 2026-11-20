@@ -29,3 +29,6 @@ fun formatTime(hour: Int, minute: Int, second: Int? = null, hour12: Boolean = fa
     val shown = if (hour % 12 == 0) 12 else hour % 12
     return "$shown:${two(minute)}$seconds ${if (hour < 12) "AM" else "PM"}"
 }
+
+/** The date style the user chose in Settings → Date and time. */
+internal val app.pokeplan.app.Settings.dateStyle: DateStyle get() = DateStyle.entries.firstOrNull { it.name == dateFormat } ?: DateStyle.SHORT

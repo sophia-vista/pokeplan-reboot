@@ -318,11 +318,29 @@ class LauncherDateTextTest {
 
     @Test
     fun theNewChoicesSurviveTheRoundTripAndWeeksStartWhereAsked() {
-        val prefs = LauncherPrefs().nextDateStyle().withHour12(true).withShowSeconds(true).withSundayFirst(false)
+        val prefs = LauncherPrefs().withShowSeconds(true)
         assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
         assertEquals(kotlinx.datetime.DayOfWeek.SUNDAY, weekDays(true).first())
         assertEquals(kotlinx.datetime.DayOfWeek.MONDAY, weekDays(false).first())
         assertEquals(7, weekDays(true).distinct().size)
+    }
+
+    @Test
+    fun resetKeepsTheUsersAppsAndPlaceButNothingElse() {
+        val place = GeoPlace("Manila", 14.6, 121.0)
+        val messy = LauncherPrefs().pin("a").withIcon("a", "poke-ball").hide("b").withWalking(false).nextTownSize().withGesture(GestureTrigger.LONG_PRESS, GestureAction.WIDGETS).copy(place = place, fahrenheit = true)
+        val reset = messy.reset()
+        assertEquals(LauncherPrefs().copy(pinned = listOf("a"), icons = mapOf("a" to "poke-ball"), hidden = setOf("b"), place = place), reset)
+        assertEquals(GestureAction.NONE, reset.action(GestureTrigger.LONG_PRESS))
+    }
+
+    @Test
+    fun theNewGesturesDefaultToNothingAndCanBeGivenAnyJob() {
+        val p = LauncherPrefs()
+        for (t in listOf(GestureTrigger.TWO_FINGER_UP, GestureTrigger.TWO_FINGER_DOWN, GestureTrigger.LONG_PRESS)) assertEquals(GestureAction.NONE, p.action(t))
+        val set = p.withGesture(GestureTrigger.TWO_FINGER_UP, GestureAction.NOTIFICATIONS).withGesture(GestureTrigger.LONG_PRESS, GestureAction.EDIT)
+        assertEquals(set, LauncherPrefs.decode(set.encode()))
+        assertEquals(GestureAction.NOTIFICATIONS, set.action(GestureTrigger.TWO_FINGER_UP))
     }
 }
 

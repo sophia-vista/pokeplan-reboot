@@ -182,10 +182,10 @@ private fun ClockWidget(env: WidgetEnv) {
         stamp
         val now = env.model.store.now
         val cells = LocalCells.current
-        val time = formatTime(now.hour, now.minute, if (env.prefs.showSeconds && !env.saver) now.second else null, env.prefs.hour12)
+        val time = formatTime(now.hour, now.minute, if (env.prefs.showSeconds && !env.saver) now.second else null, env.model.data.settings.clock12Hour)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             // Narrower than the screen the date gives way to the time, and the battery to a wider place.
-            PmdText(if (cells.w >= 3) "${formatDate(now.date, env.prefs.dateStyle)}   $time" else time, env.pixel, gap)
+            PmdText(if (cells.w >= 3) "${formatDate(now.date, env.model.data.settings.dateStyle)}   $time" else time, env.pixel, gap)
             Box(Modifier.weight(1f))
             // A battery filled to its charge (empty, one, two or three bars), with a bolt beside it while charging; low and not charging, it turns red.
             if (cells.w >= 4) battery?.let {
@@ -352,10 +352,10 @@ private fun CalendarWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) 
             }
             PmdRule(pixel)
             Row(Modifier.fillMaxWidth().padding(top = Spacing.S)) {
-                weekDays(env.prefs.sundayFirst).forEach { Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { PmdText(dayName(it).take(2), pixel, alpha = 0.7f) } }
+                weekDays(!env.model.data.settings.weekStartsOnMonday).forEach { Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { PmdText(dayName(it).take(2), pixel, alpha = 0.7f) } }
             }
             // Weeks start on Sunday or Monday as chosen; the first row is padded with the end of the month before.
-            val lead = weekDays(env.prefs.sundayFirst).indexOf(state.month.dayOfWeek)
+            val lead = weekDays(!env.model.data.settings.weekStartsOnMonday).indexOf(state.month.dayOfWeek)
             val days = (0 until 42).map { state.month.plus(DatePeriod(days = it - lead)) }
             // The rows are as tall as the box leaves room for (a box holds [WidgetGrid.ROW_DP] per cell; the header, the rule and the weekday
             // names take about 104 dp): at most Target, at least 24 dp. When even the smallest rows do not all fit, only the weeks around the
@@ -399,10 +399,10 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
     val day = state.day
     val open = model.data.tasks.filter { it.state == TaskState.OPEN }
     // The app's own events and the phone's calendars (Google Calendar's among them), all-day ones first and then by the hour; then the open tasks of the day.
-    fun eventsOn(d: LocalDate): List<AgendaLine> = (model.data.events.flatMap { it.occurrences(d, d) }.map { e -> AgendaLine(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.prefs.hour12), e.title, if (e.allDay) -1 else e.start.hour * 60 + e.start.minute) } +
+    fun eventsOn(d: LocalDate): List<AgendaLine> = (model.data.events.flatMap { it.occurrences(d, d) }.map { e -> AgendaLine(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.model.data.settings.clock12Hour), e.title, if (e.allDay) -1 else e.start.hour * 60 + e.start.minute) } +
         state.device.filter { it.isOn(d) }.map { e ->
             val from = e.span(d)?.first
-            AgendaLine(if (e.allDay || from == null) "All day" else formatTime(from / 60, from % 60, null, env.prefs.hour12), e.shownTitle, if (e.allDay || from == null) -1 else from)
+            AgendaLine(if (e.allDay || from == null) "All day" else formatTime(from / 60, from % 60, null, env.model.data.settings.clock12Hour), e.shownTitle, if (e.allDay || from == null) -1 else from)
         }).sortedBy { it.sort }
     fun tasksOn(d: LocalDate) = if (d == today) model.store.todayTasks().filter { it.state == TaskState.OPEN } else open.filter { it.planned == d || it.due?.date == d }
     val lines = eventsOn(day)
