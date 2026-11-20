@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -140,7 +141,7 @@ private fun AboutForm(model: AppModel, p: Person, onDone: () -> Unit) {
             }
             val unused = ProfileKit.questions.filter { q -> answers.none { it.question.equals(q, ignoreCase = true) } }
             if (unused.isNotEmpty()) PixelDropdown(unused, question, { it ?: "" }, { q -> if (q != null) { answers = answers + Answer(q, ""); question = null } }, Modifier.fillMaxWidth(), key = tint, label = "Add a question", placeholder = "Choose")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
                 PixelField(own, { own = it.take(ProfileKit.TEXT_MAX) }, Modifier.weight(1f), label = "Your own question", singleLine = true, keyboardOptions = sentenceKeys)
                 PixelButton("Add", { answers = answers + Answer(own.trim(), ""); own = "" }, color = tint, enabled = own.isNotBlank() && answers.none { it.question.equals(own.trim(), ignoreCase = true) })
             }
