@@ -600,8 +600,10 @@ private fun Resident(
                     delay(500)
                     if (life.occupantOf(g, c, mon.id) != null) { if (tries < 2) return roamFloor(g, g.spotOf(goal), speed, tries + 1) else return }
                 }
-                // Through a wall it is faint, as a ghost is.
-                fade.animateTo(if (g.floor.map.at(c.x, c.y) == TownCell.WALL) 0.5f else 1f, tween(160))
+                // Through a wall it is faint, as a ghost is. Only when the shade changes, and beside the step, never before it: an animation to the value it already has
+                // still waits out its whole time, which put a pause before every square (they went tile by tile, 0.221.0).
+                val shade = if (g.floor.map.at(c.x, c.y) == TownCell.WALL) 0.5f else 1f
+                if (fade.targetValue != shade) scope.launch { fade.animateTo(shade, tween(160)) }
                 stepTo(g, g.spotOf(c), speed * if (quirk == Quirk.ERRATIC) 0.6f + random.nextFloat() else 1f)
                 life.finds[c]?.let { i ->
                     if (life.pickUp(i, interactive && g.spotOf(c).x.let { it >= home && it < home + 1 })) { walk = null; hopping = true; hopKey++; feel(StatusKind.TWINKLE, 900, stay = false); delay(500) }
