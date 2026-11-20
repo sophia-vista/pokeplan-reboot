@@ -75,11 +75,11 @@ internal fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> 
         }
         if (creating) ListEditor(model, null) { made -> creating = false; made?.let(open) }
         val lists = store.activeLists
-        ListRows(lists, tasks, open)
+        ListRows(lists, tasks, open = open)
         val archived = model.data.lists.filter { it.archived }
         if (archived.isNotEmpty()) {
             PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, color = Pixel.InkSoft, compact = true)
-            if (showArchived) ListRows(archived, tasks, open)
+            if (showArchived) ListRows(archived, tasks, open = open)
         }
     }
 }
