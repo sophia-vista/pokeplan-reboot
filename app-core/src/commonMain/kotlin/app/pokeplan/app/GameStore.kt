@@ -60,7 +60,6 @@ import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardFocus
 import app.pokeplan.plan.EventCompanions
 import app.pokeplan.core.reward.RewardEngine
-import app.pokeplan.plan.Category
 import app.pokeplan.plan.ChecklistReset
 import app.pokeplan.plan.ListKind
 import app.pokeplan.plan.LinkKind
@@ -653,11 +652,10 @@ class GameStore(
 
     // --- tasks --------------------------------------------------------------------------------------------------------
 
-    /** Adds a task. Everything but the title is optional; with no [category] it takes its list's ([defaultCategory]). */
+    /** Adds a task. Everything but the title is optional. */
     fun addTask(
         title: String,
         rank: Rank = Rank.C,
-        category: Category? = null,
         planned: LocalDate? = null,
         due: LocalDateTime? = null,
         estimateMinutes: Int? = null,
@@ -671,7 +669,7 @@ class GameStore(
         reward: RewardFocus? = null,
     ): Task {
         val task = Task(
-            id = newId(), title = title.trim(), notes = notes, rank = rank, category = category ?: defaultCategory(listId), planned = planned, due = due,
+            id = newId(), title = title.trim(), notes = notes, rank = rank, planned = planned, due = due,
             plannedTime = plannedTime?.takeIf { planned != null }, evening = evening && planned != null,
             estimateMinutes = estimateMinutes, createdAtMillis = nowMillis, listId = listId?.takeIf { id -> data.lists.any { it.id == id } },
             reward = reward ?: data.settings.defaultReward,
@@ -718,7 +716,7 @@ class GameStore(
         val link = TaskLink(LinkKind.HOME_CHORE, choreId)
         val open = owner.project(link) as? LinkState.Open ?: return null
         val task = Task(
-            id = newId(), title = open.title, category = Category.HOME, planned = open.planned, createdAtMillis = nowMillis,
+            id = newId(), title = open.title, planned = open.planned, createdAtMillis = nowMillis,
             link = link.copy(occurrence = open.occurrence),
         )
         update { it.copy(tasks = it.tasks + task) }
@@ -740,7 +738,7 @@ class GameStore(
         linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { return it }
         val clean = title.trim().ifEmpty { return null }
         val task = Task(
-            id = newId(), title = clean, category = Category.SOCIAL, planned = planned, due = due, createdAtMillis = nowMillis,
+            id = newId(), title = clean, planned = planned, due = due, createdAtMillis = nowMillis,
             link = TaskLink(LinkKind.LINK_FOLLOW_UP, followUpId),
         )
         update { it.copy(tasks = it.tasks + task) }
@@ -794,13 +792,13 @@ class GameStore(
      * items, unticked (PLAN.md 3.5A); the new list is then a Checklist whatever [kind] says.
      */
     fun addList(
-        name: String, color: Long = TaskList.COLORS.first(), icon: String = TaskList.ICONS.first(), category: Category? = null,
+        name: String, color: Long = TaskList.COLORS.first(), icon: String = TaskList.ICONS.first(),
         kind: ListKind = ListKind.TASKS, startFrom: String? = null,
     ): TaskList? {
         val clean = name.trim().take(TaskList.MAX_NAME).ifEmpty { return null }
         val items = startFrom?.let { id -> data.lists.firstOrNull { it.id == id }?.template }.orEmpty()
         val list = TaskList(
-            newId(), clean, color, icon, category = category, kind = if (items.isEmpty()) kind else ListKind.CHECKLIST,
+            newId(), clean, color, icon, kind = if (items.isEmpty()) kind else ListKind.CHECKLIST,
             template = items, resetOn = today,
         )
         update { it.copy(lists = it.lists + list) }
@@ -838,10 +836,7 @@ class GameStore(
         }
     }
 
-    /** The category a new task in list [listId] starts with: the list's own, else Personal (the Inbox and a list with none). */
-    fun defaultCategory(listId: String?): Category = data.lists.firstOrNull { it.id == listId }?.category ?: Category.PERSONAL
-
-    /** Renames, recolours, re-icons, re-categorises or archives a list. Its tasks keep their own categories. */
+    /** Renames, recolours, re-icons, or archives a list. */
     fun updateList(list: TaskList) = update { d ->
         d.copy(lists = d.lists.map { if (it.id == list.id) list.copy(name = list.name.trim().take(TaskList.MAX_NAME).ifEmpty { it.name }) else it })
     }
@@ -1204,15 +1199,15 @@ class GameStore(
 
     // --- goals --------------------------------------------------------------------------------------------------------
 
-    fun addGoal(title: String, category: Category = Category.PERSONAL, targetDate: LocalDate? = null): Goal {
-        val goal = Goal(newId(), title.trim(), category, targetDate, createdAtMillis = nowMillis)
+    fun addGoal(title: String, targetDate: LocalDate? = null): Goal {
+        val goal = Goal(newId(), title.trim(), targetDate, createdAtMillis = nowMillis)
         update { it.copy(goals = it.goals + goal) }
         return goal
     }
 
-    /** Changes a goal's words, area and target date (null: no date to aim for). A blank title keeps the old one. Milestones and progress are untouched. */
-    fun editGoal(goalId: String, title: String, category: Category, targetDate: LocalDate?) {
-        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(title = title.trim().ifEmpty { g.title }, category = category, targetDate = targetDate) else g }) }
+    /** Changes a goal's words and target date (null: no date to aim for). A blank title keeps the old one. Milestones and progress are untouched. */
+    fun editGoal(goalId: String, title: String, targetDate: LocalDate?) {
+        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(title = title.trim().ifEmpty { g.title }, targetDate = targetDate) else g }) }
     }
 
     /** The goal task [taskId] is linked to, if any: a task counts toward at most one goal. */

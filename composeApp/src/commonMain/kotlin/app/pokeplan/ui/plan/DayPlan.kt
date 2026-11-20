@@ -76,7 +76,7 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.CalendarEvent
 import app.pokeplan.plan.SpanLayout
 import app.pokeplan.plan.DaySpan
-import app.pokeplan.plan.Category
+import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.DayTimeline
 import app.pokeplan.plan.EventRepeat
 import app.pokeplan.plan.PlanEvent
@@ -114,24 +114,15 @@ private val blockShape = PixelShape
 
 /** How far ahead the day view goes (recurring tasks are generated 14 days ahead). */
 
-internal fun categoryColor(c: Category) = when (c) {
-    Category.WORK -> Pixel.Blue
-    Category.SCHOOL -> Pixel.Violet
-    Category.HOME -> Pixel.Amber
-    Category.HEALTH -> Pixel.Green
-    Category.SOCIAL -> Pixel.Pink
-    Category.PERSONAL -> Pixel.Gray
-}
+/** The player's lists (App provides them), from which a task takes its colour and icon; a task in no list is grey with the heart scale. */
+val LocalTaskLists = androidx.compose.runtime.staticCompositionLocalOf<List<TaskList>> { emptyList() }
 
-/** The real item icon a task shows on the timeline: its own, or its category's. */
-private fun taskIcon(t: Task): String = t.icon ?: when (t.category) {
-    Category.WORK -> "member-card"
-    Category.SCHOOL -> "scroll-of-waters"
-    Category.HOME -> "storage-key"
-    Category.HEALTH -> "hp-up"
-    Category.SOCIAL -> "friend-ball"
-    Category.PERSONAL -> "heart-scale"
-}
+@Composable
+internal fun taskColor(t: Task): Color = LocalTaskLists.current.firstOrNull { it.id == t.listId }?.let { Color(it.color) } ?: Pixel.Gray
+
+/** The real item icon a task shows on the timeline: its own, or its list's. */
+@Composable
+private fun taskIcon(t: Task): String = t.icon ?: LocalTaskLists.current.firstOrNull { it.id == t.listId }?.icon ?: "heart-scale"
 
 /** "2 h 15 min", "45 min" */
 internal fun duration(minutes: Int): String = when {
@@ -603,7 +594,7 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
 
 /**
  * The tasks still waiting for an hour, on one panel like Structured's inbox and Sunsama's backlog: a wrapping run of chips,
- * each with its category's colour.
+ * each with its list's colour.
  */
 // Help says how too: hold a chip and drag it to an hour, or tap it, then an hour; [hint] says it here until the first placement.
 @OptIn(ExperimentalLayoutApi::class)
@@ -638,7 +629,7 @@ private fun Tray(tasks: List<Task>, picked: String?, pick: (String) -> Unit, gri
 @Composable
 private fun TrayChip(t: Task, selected: Boolean, onClick: () -> Unit, modifier: Modifier) {
     val shape = PixelShape
-    val color = categoryColor(t.category)
+    val color = taskColor(t)
     Row(
         modifier
             .defaultMinSize(minHeight = Spacing.Target)
@@ -817,7 +808,7 @@ private fun TimelineBlock(
     modifier: Modifier,
 ) {
     val t = block.task
-    val color = categoryColor(t.category)
+    val color = taskColor(t)
     val start = LocalTime(block.startMinute / 60, block.startMinute % 60)
     val anchor = remember { Anchor() }
     val edge = with(LocalDensity.current) { ResizeEdge.toPx() }

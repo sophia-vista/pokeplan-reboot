@@ -28,7 +28,6 @@ data class Habit(
     val id: String,
     val title: String,
     val rank: Rank = Rank.C,
-    val category: Category = Category.HEALTH,
     val target: HabitTarget,
     val createdOn: LocalDate,
     val completions: Set<LocalDate> = emptySet(),

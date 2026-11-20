@@ -36,7 +36,7 @@ import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 
 /**
- * The search box with its Filter panel (category, difficulty, and with [withStatus] the status and the Done preset), shared by the Tasks workspace's Open and Done views. Tap a chosen chip again to drop it.
+ * The search box with its Filter panel (list, difficulty, and with [withStatus] the status and the Done preset), shared by the Tasks workspace's Open and Done views. Tap a chosen chip again to drop it.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -61,8 +61,15 @@ internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskF
                         TaskFilter.Status.entries.forEach { st -> TabButton(st.label, filter.status == st, { onChange(filter.copy(status = st)) }) }
                     }
                 }
-                FieldLabel("Category")
-                CategoryChips(filter.category, allowNone = true) { onChange(filter.copy(category = it)) }
+                val lists = model.store.activeLists
+                if (lists.isNotEmpty()) {
+                    FieldLabel("List")
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        (lists.map { it.id to it.name } + (TaskFilter.INBOX to "No list")).forEach { (id, name) ->
+                            TabButton(name, filter.listId == id, { onChange(filter.copy(listId = if (filter.listId == id) null else id)) })
+                        }
+                    }
+                }
                 FieldLabel("Difficulty")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = Alignment.CenterVertically) {
                     Rank.entries.forEach { r -> RankBadge(r, selected = filter.rank == r, onClick = { onChange(filter.copy(rank = if (filter.rank == r) null else r)) }) }

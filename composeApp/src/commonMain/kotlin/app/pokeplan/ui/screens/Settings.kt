@@ -490,6 +490,7 @@ internal fun PlanSettings(model: AppModel) {
         ToggleRow("Focus halfway alert", settings.focusHalfway) { store.changeSettings { s -> s.copy(focusHalfway = it) } }
         ToggleRow("Focus end alert", settings.focusEnd) { store.changeSettings { s -> s.copy(focusEnd = it) } }
     }
+    TextBox { ListsSettings(model) }
     SettingsGroup("Rewards", "zap") {
         // The focus a new task starts with; each task can change it (More options, or its editor). Exp is the ordinary payout.
         PixelChoice(
@@ -517,5 +518,15 @@ private fun GlyphTitle(text: String, glyph: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         app.pokeplan.ui.Glyph(glyph, Pixel.Ink, description = null)
         PixelTitle(text)
+    }
+}
+
+/** Plan's lists, made and edited here (the Tasks screen only filters by them): a row each, a tap opens its editor. */
+@Composable
+private fun ListsSettings(model: AppModel) {
+    var editing by remember { mutableStateOf<String?>(null) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        app.pokeplan.ui.plan.ListsSection(model, model.data.tasks, onMade = { editing = null }) { id -> editing = if (editing == id) null else id }
+        model.data.lists.firstOrNull { it.id == editing }?.let { l -> app.pokeplan.ui.plan.ListEditor(model, l) { editing = null } }
     }
 }

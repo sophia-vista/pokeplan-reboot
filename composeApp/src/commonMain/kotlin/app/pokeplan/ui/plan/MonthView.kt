@@ -121,7 +121,7 @@ internal fun MonthView(
     // All-day events first (the longest keep the top lanes), then timed events by start, then tasks.
     val spans = events.filter { it.allDay }.map { DaySpan(MonthItem(it.id, it.title, eventColor(it), it), it.start.date, it.lastDay) } +
         events.filter { !it.allDay }.sortedBy { it.start }.map { DaySpan(MonthItem(it.id, it.title, eventColor(it), it), it.start.date, it.start.date) } +
-        open.map { t -> (t.planned ?: t.due!!.date).let { d -> DaySpan(MonthItem(t.id, t.title, categoryColor(t.category)), d, d) } }
+        open.map { t -> (t.planned ?: t.due!!.date).let { d -> DaySpan(MonthItem(t.id, t.title, taskColor(t)), d, d) } }
 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -265,7 +265,7 @@ private fun DayAgenda(
             }
             tasks.forEach { t ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Box(Modifier.size(10.dp).border(Sizes.Line, categoryColor(t.category), PixelShape))
+                    Box(Modifier.size(10.dp).border(Sizes.Line, taskColor(t), PixelShape))
                     (t.plannedTime ?: t.due?.time)?.let { Text(clock(it), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
                     Text(t.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }

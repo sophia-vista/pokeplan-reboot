@@ -21,15 +21,6 @@ enum class Rank(val letter: Char, val tier: Int, val minAgeMinutes: Int) {
     }
 }
 
-enum class Category(val label: String) {
-    WORK("Work"),
-    SCHOOL("School"),
-    HOME("Home"),
-    HEALTH("Health"),
-    SOCIAL("Social"),
-    PERSONAL("Personal"),
-}
-
 enum class TaskState { OPEN, DONE, WONT_DO, DELETED }
 
 /**
@@ -70,7 +61,6 @@ data class Task(
     val title: String,
     val notes: String = "",
     val rank: Rank = Rank.C,
-    val category: Category = Category.PERSONAL,
     val listId: String? = null,
     /** When you intend to do it. */
     val planned: LocalDate? = null,

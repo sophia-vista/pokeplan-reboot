@@ -27,7 +27,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
-import app.pokeplan.plan.Category
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Pixel
@@ -42,32 +41,6 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.PixelDateField
 import app.pokeplan.ui.screens.label
 
-/**
- * A category chip: its colour as a dot, so the same six colours as the day view and Growth tell them apart. Used where a
- * category is picked (the task editor, habits, goals) and where tasks are filtered.
- */
-@Composable
-internal fun CategoryChip(category: Category, selected: Boolean, onClick: () -> Unit) {
-    val color = categoryColor(category)
-    PixelKey(onClick, key = color, selected = selected, fill = true, role = Role.Tab, horizontal = Spacing.M) { look ->
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            // The dot keeps the category's colour on a filled key too: white ring so it shows on its own colour.
-            Box(Modifier.size(10.dp).background(color, PixelShape).then(if (selected) Modifier.border(Sizes.Line, Color.White, PixelShape) else Modifier))
-            KeyLabel(category.label, look)
-        }
-    }
-}
-
-/** All six categories as chips. With [allowNone], tapping the chosen one again clears the choice (a filter); otherwise it stays. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-internal fun CategoryChips(selected: Category?, allowNone: Boolean = false, onSelect: (Category?) -> Unit) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Category.entries.forEach { c ->
-            CategoryChip(c, c == selected, { onSelect(if (allowNone && c == selected) null else c) })
-        }
-    }
-}
 
 /**
  * A day, optional: a few presets counted from [today] (label to days ahead), "No date", and "Pick a date" for a month to tap.

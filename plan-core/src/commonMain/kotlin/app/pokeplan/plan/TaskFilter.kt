@@ -1,12 +1,11 @@
 package app.pokeplan.plan
 
 /**
- * What Plan's "All tasks" view shows: a search over title and notes, and one choice each for category, list, rank
+ * What Plan's "All tasks" view shows: a search over title and notes, and one choice each for list, rank
  * and status. A null choice means "any". Deleted tasks never match.
  */
 data class TaskFilter(
     val query: String = "",
-    val category: Category? = null,
     /** A list's id, [INBOX] for tasks in no list, or null for any list. */
     val listId: String? = null,
     val rank: Rank? = null,
@@ -22,7 +21,6 @@ data class TaskFilter(
             Status.FINISHED -> if (task.state != TaskState.DONE && task.state != TaskState.WONT_DO) return false
             Status.ANY -> {}
         }
-        if (category != null && task.category != category) return false
         if (rank != null && task.rank != rank) return false
         if (listId != null && (if (listId == INBOX) task.listId != null else task.listId != listId)) return false
         // Every word must appear in the title or the notes, in any order and any case.
