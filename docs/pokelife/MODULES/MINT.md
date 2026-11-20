@@ -650,7 +650,7 @@ Financial data is sensitive and receives explicit boundaries.
 
 ### 13.2 Access protection
 
-MINT may offer optional biometric/device-authentication gating using supported Android APIs. The gate must not create a second password database or make the data unrecoverable. Recovery and backup behavior are specified by shared architecture.
+MINT may offer optional biometric/device-authentication gating using supported Android APIs. As built (20 November 2026) its switch is Lock Mint in Me, Settings, Privacy and access, next to the same switch for Care, Heal, Base and Link (one place for every module's screen lock); it still writes Mint's own `gate` setting and has no copy in Mint settings. The gate must not create a second password database or make the data unrecoverable. Recovery and backup behavior are specified by shared architecture.
 
 ### 13.3 Backup, export and deletion
 

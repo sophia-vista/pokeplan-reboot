@@ -404,7 +404,8 @@ Retries cannot pay twice. Undo/redo respects payment policy. Recurring occurrenc
 
 PLAN has its own short settings page (More → Settings), grouped:
 
-- **Reminders:** task reminders on or off, repeat until answered, and the focus alerts (halfway and end). These moved here from General (18 November 2026). Global quiet hours, notification permissions, delivery and focus deferral are managed by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; the quiet-hours times are shown beside the reminder switch.
+- **Alerts (20 November 2026):** repeat until answered and the focus alerts (halfway and end). The task-reminders switch and the quiet hours moved to Me, Settings, Notifications, with every module's reminders switch. **Lists:** made, edited, archived and deleted here (the Tasks screen only filters by them).
+- **Reminders (history):** task reminders on or off, repeat until answered, and the focus alerts (halfway and end) moved here from General (18 November 2026). Global quiet hours, notification permissions, delivery and focus deferral are managed by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; the quiet-hours times are shown beside the reminder switch.
 - **Calendar:** which device calendars appear (8.1). Nothing is imported or written back.
 - **Focus:** the usual length and Deep Focus are what the last session was started with (6.1); no separate default is asked for.
 - **Week start** is a General setting (shared by every calendar in the app), not a PLAN one.
