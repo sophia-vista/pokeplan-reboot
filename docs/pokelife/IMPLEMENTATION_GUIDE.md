@@ -1,7 +1,7 @@
 # PokéLife Implementation Guide
 
 **Status:** Implementation status, dependency plan and release gates. Product rules live in the Product Bible and the module and feature specifications, not here.
-**Status last audited:** 15 November 2026, at 0.197.0, from the changelog, the backlog and the modules' "As built" sections (section 3.2); refresh it against a named commit whenever work lands.
+**Status last audited:** 20 November 2026, at 0.224.0 and rules version 32, from the changelog (0.197.0 to 0.224.0) and the backlog, on top of the 15 November rebuild from the modules' "As built" sections (section 3.2); refresh it against a named commit whenever work lands.
 
 > This guide separates approved specifications from implementation evidence. Nothing in it is device-verified except the owner's confirmation on the phone that the database cutover kept all data (REP-012).
 
@@ -15,7 +15,7 @@ The main engineering risk is not a lack of specifications. It is the gap between
 
 ### 2.1 Evidence boundary
 
-A source file or test file is evidence of code and test presence only, not that tests passed or that a workflow works. Not established anywhere: end-to-end acceptance of every workflow, live Huawei Health, bank or e-wallet integrations, a complete device review of visual quality, and the wasm tests (compile only). The JVM suite passes (`./gradlew jvmTest compileKotlinWasmJs`; about 1,200 `@Test` methods in about 120 files at 0.145.0).
+A source file or test file is evidence of code and test presence only, not that tests passed or that a workflow works. Not established anywhere: end-to-end acceptance of every workflow, live Huawei Health, bank or e-wallet integrations, a complete device review of visual quality, and the wasm tests (compile only). The JVM suite is the merge gate (`./gradlew jvmTest compileKotlinWasmJs`); about 1,800 `@Test` methods in about 200 files at 0.224.0 (counted in the source, not run for this guide).
 
 ### 2.2 Required status labels
 
@@ -35,7 +35,7 @@ A capability may be built but untested, or tested but not device-verified. Never
 
 ## 3. Baseline implementation status
 
-The 0.123.0 baseline (before the data foundation and the HEAL, MINT, HOME and LINK modules existed) is superseded by section 3.2. Its test run (816 JVM tests, 0 failures; screenshot tests assert only that something was drawn) and the baseline inventories are recorded in the backlog rows REP-001 to REP-003.
+The 0.123.0 baseline (before the data foundation and the HEAL, MINT, BASE (then HOME) and LINK modules existed) is superseded by section 3.2. Its test run (816 JVM tests, 0 failures; screenshot tests assert only that something was drawn) and the baseline inventories are recorded in the backlog rows REP-001 to REP-003.
 
 ## 3.1 Engineering operations
 
@@ -71,15 +71,15 @@ Status words follow section 2.2. Refreshed from the changelog (0.197.0 to 0.224.
 | Sequence | Status |
 |---|---|
 | 0 Baseline, 1 Architecture and test strategy | Done (REP-001 to REP-007; Gate A passed). Signing stays test-grade; a release key is not needed for personal use (REP-047) |
-| 2 Local data foundation | Built and live on Android (REP-008). **Gate B is partial**: fixtures migrate and the owner confirmed the cutover on the phone; Robolectric covers process death and corruption recovery, but kill, low-storage and recovery on a device are not run, and the backup archive is incomplete |
-| 3 Shared Pokémon, economy and reminders | Built. **Gate C is partial**: ownership, one Bag and one Poké balance and privacy-safe events hold in tests; Plan reminders are covered by Robolectric, the other modules' notifications and a device run are not |
+| 2 Local data foundation | Built and live on Android (REP-008). **Gate B is partial**: fixtures migrate and the owner confirmed the cutover on the phone; Robolectric covers process death and corruption recovery, but kill, low-storage and recovery on a device are not run, and the backup archive is incomplete (an automatic copy off the phone exists since 0.199.0, not run on a device) |
+| 3 Shared Pokémon, economy and reminders | Built (rules version 32). **Gate C is partial**: ownership, one Bag and one Poké balance and privacy-safe events hold in tests; Plan reminders are covered by Robolectric, the other modules' notifications and a device run are not |
 | 3B Expanded Pokémon foundations | Partial: held items, Mints, capsules, training items, Tera, trade items and the moveset exist; Balls, Ribbons, history, Mega and Dynamax and the WORLD expansion systems do not |
 | 4 Design system and app shell | Partial; tokens and components applied, device rendering not reviewed |
 | 5 PLAN and CARE refactor | Done on the data side; open on behaviour (REP-030, REP-035, REP-036) |
-| 6 HEAL, 7 MINT, 8 BASE and LINK | Manual slices built, with imports for Heal and Mint and the Secret Base room; the gaps above remain |
+| 6 HEAL, 7 MINT, 8 BASE and LINK | Manual slices built, with imports for Heal, Mint and Link, the Secret Base room, and Mint's installments, interest and widgets; the gaps above remain |
 | 9 GEAR | Broad tool set, audited once; UX decisions open (REP-028); not accepted |
 | 10 WORLD | Foundation and broad content present; branching, shared Exploration XP and the remaining expansion systems remain |
-| 11 Launcher | Prototype with a dungeon-floor town; host robustness, module widgets and navigation remain |
+| 11 Launcher | Prototype with a dungeon-floor town, species quirks and gesture settings (0.221.0); host robustness, module widgets and navigation remain |
 | 12 Release hardening | Not started (asset registry, manifest and backup policy, CI hardening, device suites); store-only items dropped |
 | Gate D (module acceptance), Gate E (device and release acceptance) | D: no module passes in full (each lacks device and accessibility evidence). E: not started |
 
@@ -110,7 +110,7 @@ Status words follow section 2.2. Refreshed from the changelog (0.197.0 to 0.224.
 | 5 | Mega and Dynamax | **Integrate them into PokéLife** | Open: REP-044 |
 | 6 | HEAL encryption | **Put in the roadmap** | Built (Heal's own Keystore key; a passphrase backup seals it with Mint) |
 | 7 | Gear loans | **Retire** | Done |
-| 8 | Manifest | **Backup closed; permissions OK for now** | Declared permissions stay in pending item 9 |
+| 8 | Manifest | **Backup closed; permissions OK for now** | Declared permissions stay as listed in the Integrations row of section 3.2 (the pending list is retired) |
 
 ### Pending items
 
@@ -120,12 +120,12 @@ Retired as a separate list on 15 November 2026: it duplicated the backlog and ha
 
 ### P0 — Must precede broad feature expansion
 
-Done or live: the source baseline and save fixtures, the architecture decisions and test strategy, the local data foundation, and the shared Pokémon, Bag, Poké, ledger and reminder foundations. Cloud, account and sync paths are retired. What remains of P0 is the device evidence in pending item 1 and the typed repositories in item 6.
+Done or live: the source baseline and save fixtures, the architecture decisions and test strategy, the local data foundation, and the shared Pokémon, Bag, Poké, ledger and reminder foundations. Cloud, account and sync paths are retired. What remains of P0 is the device evidence (REP-033 and the device checks in the backlog's Tier 5) and the typed repositories (REP-020).
 
 ### P1 — Core product workflows
 
 - Design-system components and app shell.
-- Completing PLAN and CARE behaviour, and the HEAL, MINT, HOME and LINK scope still open.
+- Completing PLAN and CARE behaviour, and the HEAL, MINT, BASE and LINK scope still open.
 - GEAR tool correctness, lifecycle, accessibility and permission audit.
 - WORLD shared ownership, expedition model validation, authored story and regional content.
 - Launcher completion after shared Pokémon presentation and platform lifecycle are stable.
@@ -154,7 +154,7 @@ Dependencies matter more than the phase number. Parallel work is allowed only wh
 | 5 | PLAN and CARE migration/refactor | 2–4 | Existing data preserved; one owner per record/action; acceptance tests pass |
 | 6 | HEAL | 2–4 | Manual workflows work offline; source/provenance and privacy tests pass; wearable claims withheld until device proof |
 | 7 | MINT | 2–4 | Manual/import/reconciliation workflows work; financial privacy tests pass; live integrations separately approved and verified |
-| 8 | HOME and LINK | 2–4 | Domain ownership, cross-links, privacy-safe events, offline workflows, export/restore and opt-out tests pass |
+| 8 | BASE and LINK | 2–4 | Domain ownership, cross-links, privacy-safe events, offline workflows, export/restore and opt-out tests pass |
 | 9 | GEAR completion | 2–4 | Each shipped tool passes its own correctness, lifecycle, permission and accessibility checklist |
 | 10 | WORLD completion | 3 plus stable foundations | Shared ownership canonical; deterministic expedition/reward tests pass; authored story/content validation passes |
 | 11 | Launcher completion | 3–4 | Lifecycle, widget behavior, gestures, fallback, performance and accessibility verified on physical Samsung hardware |
@@ -216,20 +216,20 @@ A phase cannot close as "mostly done". List unmet acceptance criteria and eviden
 
 ## 8. Documentation inventory
 
-The canonical set is the 17 documents listed in `PRODUCT_BIBLE.md` section 11; `IMPLEMENTATION_BACKLOG.md` is the separate delivery artifact. `README.md` is orientation only.
+The canonical set is the 17 documents listed in `PRODUCT_BIBLE.md` section 11; `IMPLEMENTATION_BACKLOG.md` is the separate delivery artifact. `README.md` is orientation only; `evidence/` and `FEATURES/POKEMON_PLACES_IDEAS.md` (proposals) are outside the set.
 
 - The `docs/pokelife/` tree is the only current specification authority.
 - Update the owning canonical document when a requirement changes, then dependent cross-references and backlog items in the same change.
 - Never infer implementation status from specification presence.
-- Still stale and not to be mistaken for current: `CLAUDE.md` details (habits, the reminder list, widgets described as Glance), `docs/design.md` (habits as Today items, strict-mode and milestone text, Mega/Dynamax claims), `BASE.md` 16 status line, `HEAL.md` 322 and 496 against the on-by-default rule at 532, `DATA_AND_MIGRATIONS.md` 10.5.1 (documents list), `INTEGRATIONS_AND_PRIVACY.md` manifest sections (an open gap, not a done state), `TEST_STRATEGY.md` file counts (0.123.0 baseline), `GEAR.md` (Choose and Measure grouping, Pokégear name), and the `MODULES/*.md` acceptance boxes, which are all unticked and carry no built/partial status.
+- Still behind the code and not to be mistaken for current (re-checked 20 November 2026): `docs/design.md` (its own banners mark the retired cloud sections; habits as Today items, strict-mode and milestone text and Mega/Dynamax claims are older than the code), the acceptance boxes in `MODULES/BASE.md`, `MINT.md` and `WORLD.md` (all unticked and carrying no built or partial status; the other module files have none), `INTEGRATIONS_AND_PRIVACY.md` manifest sections (an open gap, not a done state), and `DATA_AND_MIGRATIONS.md` 10.5.1 (the documents list).
 
 ## 9. Owner decisions of 6 November 2026
 
 Recorded in their authoritative documents; listed here so the plan reads in one place.
 
 1. These docs are the source of truth over the older `docs/design.md` and `docs/economy.md` (see `README.md`).
-2. Pokémon roles: global buddy (cosmetic); a party of one lead plus five per module, bonuses for that module only; WORLD expedition teams; GEAR helpers (visual only). `FEATURES/POKEMON_ECOSYSTEM.md` 2.2. REP-009.
-3. Module map: PLAN, CARE, HEAL, MINT, HOME, LINK, GEAR, WORLD; no Grow and no Explore. Bible section 4.
+2. Pokémon roles: global buddy (cosmetic); a party of one lead plus five per module, bonuses for that module only; WORLD expedition teams; GEAR helpers (visual only); on 7 November a Pokémon was put in one place only (later also a Guardian slot, 8 November, and the PC). `FEATURES/POKEMON_ECOSYSTEM.md` 2.2. REP-009.
+3. Module map: PLAN, CARE, HEAL, MINT, HOME (renamed BASE on 13 November 2026), LINK, GEAR, WORLD; no Grow and no Explore. Bible section 4.
 4. Local-only has priority: no work on Supabase, accounts, sync or the server reward function. Bible section 3. REP-012.
 5. Android is the only product platform; desktop and web are development conveniences. Bible section 3. REP-006, REP-013.
 6. One currency, Poké: PLAN coins and WORLD Poké merge 1:1. REP-010.
@@ -239,7 +239,7 @@ Recorded in their authoritative documents; listed here so the plan reads in one 
 1. **Integration feasibility:** Huawei Watch Fit 4 Pro/Health Connect and Philippine bank/e-wallet integrations remain provider/device-dependent; no live integration is verified.
 2. **Asset distribution rights:** the repository includes game-derived/private-use material; public distribution requires an asset-by-asset rights review and replacement or permission where necessary.
 3. **Expanded Pokémon scope:** the integrated expansion catalogue is approved target scope, not evidence of implementation; verify the Kotlin source areas, schemas and tests before assigning status.
-4. **Device evidence:** the database cutover, reminders, Keystore paths and every module's acceptance still need a physical-device pass (pending item 1).
+4. **Device evidence:** the database cutover, reminders, Keystore paths and every module's acceptance still need a physical-device pass (backlog Tier 5 and REP-033).
 
 ## 11. Documentation change control
 

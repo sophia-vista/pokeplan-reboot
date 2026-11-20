@@ -1,5 +1,7 @@
 # PokéLife -- Regional Expeditions & Main Storylines
 
+Status: an early concept brief (before the WORLD spec), kept for the regional premises in sections 7 to 9, which the region code comments cite. `docs/pokelife/MODULES/WORLD.md` owns the structure: sections 3 (activity progression) and 4 (module quests feeding travel) are superseded by its rule that the journey advances only through WORLD's teams and module quests and tasks never feed travel (section 14.6, owner, 1 November 2026), all regions are open from day one (4.3), and the mainline stories are told as Pokémon-only adventures (4.3). The Mystery Dungeon arcs built are Rescue Team and Explorers (`docs/world-story-rewrite.md`), not the continents of section 9.
+
 ## 1. Core Concept
 
 Each Pokémon region is a self-contained adventure in which the player
