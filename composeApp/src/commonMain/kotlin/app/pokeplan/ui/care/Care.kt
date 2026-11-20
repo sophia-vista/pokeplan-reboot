@@ -136,7 +136,7 @@ enum class CareSection(val label: String, val icon: String) {
     ROUTINES("Routines", "oaks-parcel"), CALM("Calm", "lunar-wing"), REFLECT("Reflect", "journal"), DREAM("Dream", "town-map"),
 }
 
-/** The header and the row of five places stay put; only the page under them changes. Back from a place goes to Today, from Today to the module list. */
+/** The header, with the row of five places in it, stays put; only the page under them changes. Back from a place goes to Today, from Today to the module list. */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
@@ -144,15 +144,14 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     val back = if (section == null) ({ model.module = null }) else ({ model.careSection = null })
     BackHandler(enabled = true, onBack = back)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header)
-        // Each key is as wide as its word (five equal keys cut "Routines" short); at a large text size the row scrolls rather than clip.
-        Row(
-            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup().padding(horizontal = Spacing.Page, vertical = Spacing.S),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
-        ) {
-            val places: List<Pair<CareSection?, String>> = listOf(null to "Today") + CareSection.entries.map { it to it.label }
-            places.forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }) }
-        }
+        // The five places live in the header itself, under the title. Each key is as wide as its word (five equal keys cut "Routines" short);
+        // at a large text size the row scrolls rather than clip. Neutral keys, like Back, so the chosen one stands out on the module colour.
+        ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header, footer = {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                val places: List<Pair<CareSection?, String>> = listOf(null to "Today") + CareSection.entries.map { it to it.label }
+                places.forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }, key = Pixel.InkSoft) }
+            }
+        })
         ScreenSwitch(section) { page ->
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
