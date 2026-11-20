@@ -1496,6 +1496,39 @@ class ScreenshotTest {
         render(name, fontScale = fontScale, height = height, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
+    /** A person's slambook page (About, Mind, Stars and their forms) with synthetic details, light and dark; the Stars page with a time and place so the rising sign and houses show. */
+    @Test
+    fun linkProfile() {
+        fun model(): Pair<AppModel, app.pokeplan.link.Person> {
+            val store = storeWithTeam()
+            val m = AppModel(store)
+            val ana = m.link.createMe("Ana Reyes").record!!
+            m.link.setBirthday(ana.id, 3, 14, 1994)
+            m.link.updateProfile(
+                ana.id,
+                app.pokeplan.link.Profile(
+                    socials = listOf(app.pokeplan.link.Social("Instagram", "@ana.reyes.choir"), app.pokeplan.link.Social("Discord", "anaverylongusername#1234")),
+                    likes = listOf("Ramen", "Rainy days", "Pikachu"), dislikes = listOf("Loud chewing", "Cold rooms"),
+                    answers = listOf(app.pokeplan.link.Answer("Favourite Pokémon", "Eevee"), app.pokeplan.link.Answer("Motto", "Be kind, be curious, be early")),
+                    mbti = "INFP", enneagram = 4, enneagramWing = 5, loveLanguages = listOf(app.pokeplan.link.LoveLanguage.TIME, app.pokeplan.link.LoveLanguage.WORDS),
+                    attachment = app.pokeplan.link.Attachment.SECURE, disc = listOf(app.pokeplan.link.Disc.I, app.pokeplan.link.Disc.S),
+                    bigFive = mapOf(app.pokeplan.link.Trait.OPENNESS to app.pokeplan.link.Level.HIGH, app.pokeplan.link.Trait.EXTRAVERSION to app.pokeplan.link.Level.LOW),
+                    birth = app.pokeplan.link.Birth(minutes = 8 * 60 + 5, utcOffsetMinutes = 480, placeName = "Manila", latitude = 14.5995, longitude = 120.9842, kuaFormula = "B"),
+                ),
+            )
+            return m to m.linkData.people.first { it.isMe }
+        }
+        for (dark in listOf(false, true)) {
+            for ((tag, tab, edit) in listOf(Triple("about", 0, false), Triple("mind", 1, false), Triple("stars", 2, false), Triple("about-edit", 0, true), Triple("mind-edit", 1, true), Triple("stars-edit", 2, true))) {
+                if (dark && tag != "stars" && tag != "about") continue
+                val (m, p) = model()
+                render("link-profile-$tag${if (dark) "-dark" else ""}", height = if (tag == "stars") 4200 else 2200) {
+                    PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.PersonProfileTab(m, p, tab, edit) } } } }
+                }
+            }
+        }
+    }
+
     @Test
     fun linkMenu() = link("link-menu", null, height = 2600, linkParty = 3)
 

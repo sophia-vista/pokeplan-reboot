@@ -68,14 +68,14 @@ private val numberKeys = KeyboardOptions(keyboardType = KeyboardType.Number)
 private val decimalKeys = KeyboardOptions(keyboardType = KeyboardType.Decimal)
 
 @Composable
-internal fun PersonProfileTab(model: AppModel, p: Person) {
-    var sub by remember(p.id) { mutableStateOf(0) }
+internal fun PersonProfileTab(model: AppModel, p: Person, firstTab: Int = 0, startEditing: Boolean = false) {
+    var sub by remember(p.id) { mutableStateOf(firstTab) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         ModuleTabs(listOf("About", "Mind", "Stars"), sub, tint) { sub = it }
         when (sub) {
-            0 -> AboutView(model, p)
-            1 -> MindView(model, p)
-            else -> StarsView(model, p)
+            0 -> AboutView(model, p, startEditing)
+            1 -> MindView(model, p, startEditing)
+            else -> StarsView(model, p, startEditing)
         }
     }
 }
@@ -93,8 +93,8 @@ private fun save(model: AppModel, p: Person, profile: Profile): Boolean = model.
 // ----- About ------------------------------------------------------------------------------------------------------------------
 
 @Composable
-private fun AboutView(model: AppModel, p: Person) {
-    var editing by remember(p.id) { mutableStateOf(false) }
+private fun AboutView(model: AppModel, p: Person, startEditing: Boolean = false) {
+    var editing by remember(p.id) { mutableStateOf(startEditing) }
     val pr = p.profile
     if (editing) {
         AboutForm(model, p) { editing = false }
@@ -157,8 +157,8 @@ private fun AboutForm(model: AppModel, p: Person, onDone: () -> Unit) {
 // ----- Mind -------------------------------------------------------------------------------------------------------------------
 
 @Composable
-private fun MindView(model: AppModel, p: Person) {
-    var editing by remember(p.id) { mutableStateOf(false) }
+private fun MindView(model: AppModel, p: Person, startEditing: Boolean = false) {
+    var editing by remember(p.id) { mutableStateOf(startEditing) }
     val pr = p.profile
     if (editing) {
         MindForm(model, p) { editing = false }
@@ -234,8 +234,8 @@ private val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
 private fun fmt(lon: Double): String = "${(((lon % 360.0) + 360.0) % 360.0 % 30.0).toInt()}°"
 
 @Composable
-private fun StarsView(model: AppModel, p: Person) {
-    var editing by remember(p.id) { mutableStateOf(false) }
+private fun StarsView(model: AppModel, p: Person, startEditing: Boolean = false) {
+    var editing by remember(p.id) { mutableStateOf(startEditing) }
     val data = model.linkData
     val ins = Insights.of(data, p)
     val birth = p.profile.birth
