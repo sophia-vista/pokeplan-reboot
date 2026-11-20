@@ -1,6 +1,21 @@
 package app.pokeplan.ui.plan
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import app.pokeplan.ui.theme.DialogueShape
+import app.pokeplan.ui.Glyph
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.MaterialTheme
@@ -28,16 +43,16 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
-/** The views of the one Tasks workspace (PLAN.md section 3): Open is the default, grouped by list. */
-enum class TasksView(val label: String) { OPEN("Open"), TODAY("Today"), INBOX("Inbox"), UPCOMING("Upcoming"), DONE("Done") }
+/** The views of the one Tasks workspace (PLAN.md section 3): Today is the default, All is every open task grouped by list. */
+enum class TasksView(val label: String) { TODAY("Today"), UPCOMING("Upcoming"), ALL("All"), DONE("Done") }
 
 /** Rows shown at most in Done; a search narrows the rest down. */
 private const val SHOWN = 60
 
 /**
- * Plan's Tasks workspace: quick add into the Inbox (or Today, or the chosen list), the views as chips, the lists as chips with
- * Manage (make, edit, archive), and the tasks. One engine: a Checklist or Tracker list only changes how its group is titled and
- * that its finished items stay on view. [onFocus] is null where there is no Focus (desktop and the web).
+ * Plan's Tasks workspace: quick add, the four views as pills (Today, Upcoming, All, Done), the lists folded under them, and the tasks.
+ * Choosing a list narrows whichever view is open to that list and leaves the view alone. One engine: a Checklist or Tracker list only
+ * changes how its group is titled and that its finished items stay on view. [onFocus] is null where there is no Focus (desktop and the web).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -50,32 +65,30 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
     var filter by remember { mutableStateOf(TaskFilter()) }
     var managing by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf(false) }
+    // The lists stay folded until asked for; a chosen list shows by name in the folded row.
+    var listsOpen by remember { mutableStateOf(false) }
     val lists = store.activeLists
     val list = listId?.let { id -> lists.firstOrNull { it.id == id } }
     // A list that was archived or deleted is no longer the one chosen.
     LaunchedEffect(list, listId) { if (listId != null && list == null) { listId = null; editing = false } }
-    val scoped = view == TasksView.OPEN || view == TasksView.UPCOMING || view == TasksView.DONE
 
-    QuickAddBox(model, if (view == TasksView.TODAY && list == null) AddTo.TODAY else AddTo.INBOX, listId = list?.id.takeIf { scoped })
+    QuickAddBox(model, if (view == TasksView.TODAY) AddTo.TODAY else AddTo.NO_DATE, listId = list?.id)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         TasksView.entries.forEach { v -> TabButton(v.label, v == view, { model.tasksView = v }) }
     }
-    if (scoped) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            if (lists.isNotEmpty()) TabButton("All lists", list == null, { listId = null; editing = false })
-            lists.forEach { l -> TabButton(l.name, l.id == listId, { listId = if (listId == l.id) null else l.id; editing = false }) }
-            PixelButton(if (managing) "Close lists" else if (lists.isEmpty()) "New list" else "Manage lists", { managing = !managing }, color = Pixel.InkSoft, compact = true)
-        }
-        if (managing) ListsSection(model, live) { id -> listId = id; managing = false }
-        if (list != null) {
-            if (editing) ListEditor(model, list) { kept -> editing = false; if (kept == null) listId = null }
-            else PixelButton("Edit ${list.name}", { editing = true }, color = Pixel.InkSoft, compact = true)
-        }
-    }
+    ListsFold(
+        model, live, list, open = listsOpen, managing = managing, editing = editing,
+        onToggle = { listsOpen = !listsOpen; if (!listsOpen) { managing = false; editing = false } },
+        onChoose = { id -> listId = if (listId == id) null else id; editing = false },
+        onManage = { managing = !managing; editing = false },
+        onEdit = { editing = it },
+        onListGone = { listId = null; editing = false },
+    )
     val card = taskCards(model, host)
     val inList = taskCards(model, host, showList = false)
     when (view) {
-        TasksView.OPEN -> {
+        TasksView.TODAY -> TodayList(model, onFocus, listId = list?.id)
+        TasksView.ALL -> {
             TaskFilterBox(model, filter, { filter = it }, withStatus = false)
             val narrowed = filter.copy(listId = list?.id)
             if (list != null && list.kind != ListKind.TASKS) {
@@ -92,15 +105,11 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
                     action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to { model.addTaskRequested = true },
                 ) else groups.forEach { g ->
                     val l = g.listId?.let { id -> lists.firstOrNull { it.id == id } }
-                    TaskGroup(if (l == null) "Inbox" else groupTitle(model, l), g.tasks, card = inList)
+                    // Tasks in no list sit in one plain group; with no lists at all there is nothing to group by.
+                    val title = if (l != null) groupTitle(model, l) else if (lists.isEmpty() || list != null) null else "No list"
+                    TaskGroup(title, g.tasks, card = if (list != null) inList else card)
                 }
             }
-        }
-        TasksView.TODAY -> TodayList(model, onFocus)
-        TasksView.INBOX -> {
-            val shown = TaskViews.inbox(live)
-            if (shown.isEmpty()) EmptyState("The inbox is empty", icon = "seal-bag", action = "Add a task" to { model.addTaskRequested = true })
-            else TaskGroup(null, shown.sortedByDescending { it.createdAtMillis }, card = card)
         }
         TasksView.UPCOMING -> {
             // By the day each task is on (Todoist's Upcoming), with no cap on how far ahead.
@@ -114,6 +123,44 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
             if (found.size > SHOWN) Text("Showing the first $SHOWN of ${found.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (found.isEmpty()) EmptyState(if (filter.isNarrowed || list != null) "Nothing matches" else "Nothing finished yet", icon = "scope-lens")
             else TaskGroup(null, found.take(SHOWN), card = card)
+        }
+    }
+}
+
+/**
+ * The lists under the view pills: one "Lists" row (the chosen list's name when folded, Manage when open), folded by default. Open, it is one
+ * row per list with its open count; tap one to narrow the view to it, tap it again to go back to all. Manage makes, edits and archives.
+ */
+@Composable
+private fun ListsFold(
+    model: AppModel, tasks: List<Task>, chosen: TaskList?, open: Boolean, managing: Boolean, editing: Boolean,
+    onToggle: () -> Unit, onChoose: (String) -> Unit, onManage: () -> Unit, onEdit: (Boolean) -> Unit, onListGone: () -> Unit,
+) {
+    val lists = model.store.activeLists
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(
+                Modifier.weight(1f).defaultMinSize(minHeight = Spacing.Target).clip(DialogueShape)
+                    .clickable(role = Role.Button, onClickLabel = if (open) "Hide lists" else "Show lists", onClick = onToggle)
+                    .semantics { stateDescription = if (open) "Shown" else "Hidden" },
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
+            ) {
+                Text("Lists", style = MaterialTheme.typography.titleSmall)
+                if (!open && chosen != null) Text(chosen.name, Modifier.weight(1f, fill = false), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Glyph(if (open) "chevron-up" else "chevron-down", Pixel.Ink, size = 20.dp)
+            }
+            if (open) PixelButton(if (managing) "Close" else "Manage", onManage, color = Pixel.InkSoft, compact = true)
+        }
+        if (open) {
+            if (managing) ListsSection(model, tasks) { id -> onChoose(id); onManage() }
+            else {
+                if (lists.isEmpty()) PixelButton("New list", onManage, color = Pixel.InkSoft, compact = true)
+                else ListRows(lists, tasks, selected = chosen?.id, open = onChoose)
+                if (chosen != null) {
+                    if (editing) ListEditor(model, chosen) { kept -> onEdit(false); if (kept == null) onListGone() }
+                    else PixelButton("Edit ${chosen.name}", { onEdit(true) }, color = Pixel.InkSoft, compact = true)
+                }
+            }
         }
     }
 }

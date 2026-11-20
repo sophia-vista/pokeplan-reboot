@@ -283,7 +283,7 @@ class AppModel(
     var planSection: PlanSection? by mutableStateOf(null)
 
     /** The view open in Plan's Tasks workspace (Open by default). */
-    var tasksView: app.pokeplan.ui.plan.TasksView by mutableStateOf(app.pokeplan.ui.plan.TasksView.OPEN)
+    var tasksView: app.pokeplan.ui.plan.TasksView by mutableStateOf(app.pokeplan.ui.plan.TasksView.TODAY)
 
     /** The screen open inside Care (null shows Care's menu). */
     var careSection: CareSection? by mutableStateOf(null)
