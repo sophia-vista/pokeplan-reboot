@@ -7,10 +7,15 @@ release always has the newest merge).
 
 ## 0.216.0
 
-Module pages share one order (owner, 20 November 2026; `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` 5.1). No rule, economy or schema change.
+Module pages share one order (owner, 20 November 2026; `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` 5.1). No schema change; the rules change is the weekly review and frequency targets going (below).
 
 - **Shorter lead:** a module's lead window is 112 dp high (was 144; Care's meadow was 248) with a 72 dp sprite.
 - **Same order everywhere:** lead, overview, action items in a box of their own, party last. Mint's overview now lists a few accounts and budgets, and Expense / Income / Transfer moved below it; Heal's Log activity / Add a drink, Base's and Link's Add, and a new Care row (Routine, Calm, Diary) follow the same way. Care's visitors and Egg meter and the Base and Link search moved down beside the party.
+- **Plan's page has no menu (owner, 20 November 2026):** lead (112 dp), overview (today's open tasks, five at most, each with a check key, an "All N tasks" button; one title when nothing is planned), action items (Inbox quick add, the task to do next with Focus and Pick for me), party last. Tasks, Calendar, Focus (phone), Goals and Settings are in the header `SectionsKey`, replacing More. `PlanSection` is TASKS, CALENDAR, FOCUS, GOALS, SETTINGS.
+- **Weekly review scrapped:** no 1-berry payout, review card, past reviews, "Weekly review is ready" key or `Feature.WEEKLY_REVIEW`; the `WEEKLY_REVIEWS` quest requirement is gone (Uxie, Mesprit and the mythical long-road quests lose it); `HABIT_DAYS` counts the days a repeating task was finished plus old ticked-target days. Saved reviews stay unread in `plan_review` / `AppData.reviews`; no schema change. `RewardRules.VERSION` 30 (`docs/economy.md`).
+- **Frequency targets scrapped:** the Targets screen and their payout path are gone. A saved target becomes an ordinary recurring task on load (`GameStore.convertTargets`, plan-core `TargetConversion`; Daily to daily, weekdays to weekly on them, N a week to weekly on N spread days, once a month to monthly on its day, N a month to weekly on round(N*7/30) days; id, title, rank, category, completion days and payment day kept, nothing paid, idempotent). New repeating tasks pay as ordinary tasks. The `target` field and `plan_series` rows stay.
+- **Stats moved to Me:** Me lists Plan progress (growth and trends, no review) and Care trends (gone from Care's Sections key), above Settings and Help. Mint Review and Heal Readings stay.
+- **Quick actions:** every module's action box has a "Quick actions" title, and the module party row is shorter (40 dp sprites, less padding). Defaults applied: the owner chose A, A, B for the three questions: drop Plan's menu, Progress and Trends only to Me, saved targets become recurring tasks.
 
 ## 0.215.0
 

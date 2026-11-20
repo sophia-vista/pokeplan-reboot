@@ -13,7 +13,7 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: your Po
 3. **Your partner matters.** A well-raised older Pokémon stays worth using; new hatches never make it obsolete.
 4. **Nostalgic pixel.** Gen 3 to 5 look and feel (GBA/DS era), cute and readable.
 5. **Gentle by design.** It should quietly help people with ADHD without ever saying so: low friction to start and capture, instant rewards, no shame (see ADHD-friendly design). Strictness applies to distractions, never to the person.
-6. **Growth you can see.** Levelling and evolution mirror real progress: goals, habits and reviews feed the same loop as tasks and focus, and the app shows how you are growing.
+6. **Growth you can see.** Levelling and evolution mirror real progress: goals and habits feed the same loop as tasks and focus, and the app shows how you are growing.
 
 ## Core loop
 
@@ -77,7 +77,7 @@ The app never mentions ADHD; it just removes friction and shame.
 
 | Rank | Typical day | Appears |
 |---|---|---|
-| Rookie (start) | 1 | tasks, habits, planner, focus and eggs, buddy, party and PC, Pokédex, Rare Candy, the weekly review |
+| Rookie (start) | 1 | tasks, habits, planner, focus and eggs, buddy, party and PC, Pokédex, Rare Candy |
 | Apprentice | 2 | Super Candy and evolution, the Bag, goals, the region picker (Plan or Care Region) |
 | Trainer | 5 | held items, party perks (Plan's and Care's alike, *0.43.1*), the Growth screen, coins |
 | Ace | 11 | Nature Mints, Bottle Caps, Ability Capsules and Tera Shards; stats and the IV judge |
@@ -90,11 +90,11 @@ The app never mentions ADHD; it just removes friction and shame.
 - **Reminders that persist gently:** up to 3 repeats (10 minutes apart) until acknowledged, then stop; the chain ends as soon as the notification is answered, tapped or swiped away. *(shipped, Android)*
 - **Considered, not included for now:** routines (recurring checklists with timers) and a one-tap "reschedule all overdue". Both can be added later.
 
-## Growth: goals, habits, reviews, insights
+## Growth: goals, habits, insights
 
 - **Goals with milestones.** A goal ("Learn guitar", "Run a 10k") has a category, an optional target date, ordered **milestones**, and linked tasks, habits, lists and focus time, with a progress bar. **Finishing a milestone grants a Super Candy** *(tune)*, so a real achievement evolves a Pokémon; finishing the goal grants a bonus item. Anti-farming: a milestone must exist for at least a day before it pays, and milestone rewards are capped per day *(tune: 3 Super Candies)*.
-- **Habits are a recurring-task type** with flexible targets: daily, chosen weekdays, or N times per week / month. Each habit has its own **forgiving streak** (counted in weeks for N-per-week habits) and a simple completion history. Completions pay like recurring tasks (once per day per habit). Habits appear in Today and in the widget.
-- **Weekly review.** A short Sunday ritual: what you finished, focus time, habit results, carry forward or reschedule unfinished tasks, and one optional line about how the week went. Completing it earns a small reward once a week *(tune: a berry)*. Notes are private. Not therapy, no diagnosis, no scores about the person.
+- **Habits are a recurring-task type** (frequency targets retired 20 November 2026: a saved target becomes an ordinary recurring task, `GameStore.convertTargets`). Was: flexible targets: daily, chosen weekdays, or N times per week / month. Each habit has its own **forgiving streak** (counted in weeks for N-per-week habits) and a simple completion history. Completions pay like recurring tasks (once per day per habit). Habits appear in Today and in the widget.
+- **Weekly review (retired 20 November 2026: no review, payout or unlock entry; saved reviews stay in the save unread).** Was: a short Sunday ritual: what you finished, focus time, habit results, carry forward or reschedule unfinished tasks, and one optional line about how the week went. Completing it earns a small reward once a week *(tune: a berry)*. Notes are private. Not therapy, no diagnosis, no scores about the person.
 - **Growth screen** (under Me): a **balance wheel** across the six categories (tasks finished and focus time, last 7 / 30 / 90 days), trends for focus hours and tasks per week, estimate accuracy, goal progress, habit streaks, review history and collection layers. *(0.17.0: the wheel with 7 / 30 / 90 days, each area's tasks and minutes beside its share and only active areas listed; tasks and focus per week with week labels; goal progress apart from tasks and time. Every metric states what it counts and over which days, and the trainer card says "all time" and how the streak counts.)*
 
 ## Planner (v1)
@@ -191,7 +191,7 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 - **Mythical rewards:** *(superseded)* the first idea was one mythical per milestone (long streaks, task totals, top rank, full regional dex). What shipped instead is a long-term quest per mythical (below).
 - **Every legendary and mythical has a quest** *(decided by the owner; from 0.103.0 the ones World gives through its own region quests, Kanto, Johto and Hoenn's main legendaries and Mew, have no Plan quest, `Legends.coveredSpecies`; a finished Plan quest stays finished, an unfinished one for such a species goes away, and the rest keep theirs until a region or module gives them)*. Mythicals with no in-game encounter get **long-term quests**: available fairly early, but slow to finish (weeks of steady use, not a single push). Legendaries in the Plan Region are tied to its lore: the lake trio (Uxie, Mesprit, Azelf) stand for the core self-improvement ideas of the app, so their quests are written around those ideas (knowledge, emotion, willpower) rather than generic task counts. **Implemented (first pass, *(tune)*):** every legendary-class and mythical species has a quest, generated by rule with the lake trio hand-written.
   - *Legendaries:* three requirements counted from when the quest is taken (Deep Focus sessions, paid tasks of rank B or A, active days), scaled by the strength of the species (tier 1, 2 or 3 at rank 4, 6 or 8) and unlocked by catching a share of their region's ordinary species (50%, 60%, 70%). Uxie, Mesprit and Azelf are written around knowledge (focus sessions, goal milestones, weekly reviews), emotion (habit days, weekly reviews, active days) and willpower (Deep Focus, hard tasks, a 7 day streak), all at rank 4.
-  - *Mythicals:* long-term quests from rank 2: 45 active days, 120 paid tasks, 1,200 focus minutes and 6 weekly reviews.
+  - *Mythicals:* long-term quests from rank 2: 45 active days, 120 paid tasks, 1,200 focus minutes (the weekly reviews requirement was dropped 20 November 2026).
   - Up to three quests at a time, no deadlines. Finishing one lets the player welcome the Pokémon (the button says "Welcome <name>"), which joins the collection as a Guardian candidate. Progress is derived from the player's history, so nothing extra is tracked.
   - The 26 quest-only species in the Plan list are confirmed as quest-only.
 - **Species with a tradition of being obtainable in the wild** (the pseudo-legendary lines, Absol, etc.) stay in the egg pools, in the Super Rare tier by the rule.
