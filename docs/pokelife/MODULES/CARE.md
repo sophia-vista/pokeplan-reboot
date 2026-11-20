@@ -37,14 +37,14 @@ CARE follows `../FEATURES/DESIGN_SYSTEM.md` and introduces no separate design la
 
 The CARE landing is a calm, action-oriented entry point. It must not compete with the Home dashboard or become a catalogue of every feature.
 
-Primary areas (**owner decision, 20 November 2026: exactly these five, as a row of five keys under the header on every Care screen, one tap apart; Care opens on Today, and Back from any other goes to Today**):
-1. **Today** — next useful action, today's routines, concise completion progress, and the mood key.
+Primary areas (**owner decision, 20 November 2026: exactly these five, reached from the Sections key every module has at the end of its header (no row of keys on the page; 20 November 2026, later the same day); Care opens on Today, and Back from any other goes to Today**):
+1. **Today** — next useful action, today's routines, concise completion progress, the mood key, and Care's party (also in Dream).
 2. **Routines** — add, edit, skip, archive and restore routines, and tick yesterday (3.1).
 3. **Calm** — the breathing break and the skills library, together: quick grounding, breathing and coping tools.
 4. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
 5. **Dream** — the Pokémon interaction environment (5), where the visitors (6) and Care Play (4) now live too; it is a companion experience, not another task dashboard.
 
-The header keeps the Sections key every module has (20 November 2026 correction), listing the same five places with their state for today. Prior diary cards and the journal archive are secondary destinations inside Reflect. (20 November 2026: Care trends moved to Me, next to Plan progress; Care's Sections key no longer has a Trends place.) Settings remain in CARE settings. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
+The Sections key lists the five places with their state for today. Prior diary cards and the journal archive are secondary destinations inside Reflect. (20 November 2026: Care trends moved to Me, next to Plan progress; Care's Sections key no longer has a Trends place.) Settings remain in CARE settings. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
 
 ### 3.1 Today and routines
 

@@ -60,7 +60,6 @@ import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.ui.Sfx
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.ui.semantics.Role
 import app.pokeplan.ui.Sprite
 import app.pokeplan.care.JournalEntry
@@ -124,7 +123,7 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
 /**
- * Care's screens (docs/pokelife/MODULES/CARE.md section 3). Five places, always one tap apart in a row under the header (owner, 20 November 2026):
+ * Care's screens (docs/pokelife/MODULES/CARE.md section 3). Five places, reached from the Sections key in the header (owner, 20 November 2026; no row of keys on the page):
  * **Today** (the landing: the buddy, today's routines and the mood key), **Routines** (add, edit, skip and archive them), **Calm** (the breathing break and the guided DBT skills),
  * **Reflect** (the diary card and the journal, two modes of one place) and **Dream** (the dream world: the buddy and the dreamers asleep in one
  * scene, visiting, play and the party). Doing earns (a routine, a calm break, a practised skill, a week with a
@@ -136,7 +135,7 @@ enum class CareSection(val label: String, val icon: String) {
     ROUTINES("Routines", "oaks-parcel"), CALM("Calm", "lunar-wing"), REFLECT("Reflect", "journal"), DREAM("Dream", "town-map"),
 }
 
-/** The header and the row of five places stay put; only the page under them changes. Back from a place goes to Today, from Today to the module list. */
+/** The header stays put; only the page under it changes. Back from a place goes to Today, from Today to the module list. */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
@@ -144,16 +143,8 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     val back = if (section == null) ({ model.module = null }) else ({ model.careSection = null })
     BackHandler(enabled = true, onBack = back)
     Column(Modifier.fillMaxSize()) {
-        // The Sections key, as in every module's header, lists the same five places with their state.
+        // The five places are reached from the Sections key, as in every module's header; the page under it is the point.
         ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header, trailing = { SectionsKey(Module.CARE.label, careSections(model)) { key -> model.careSection = CareSection.entries.firstOrNull { it.name == key } } })
-        // Each key is as wide as its word (five equal keys cut "Routines" short); at a large text size the row scrolls rather than clip.
-        Row(
-            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup().padding(horizontal = Spacing.Page, vertical = Spacing.S),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
-        ) {
-            val places: List<Pair<CareSection?, String>> = listOf(null to "Today") + CareSection.entries.map { it to it.label }
-            places.forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }) }
-        }
         ScreenSwitch(section) { page ->
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
@@ -185,7 +176,7 @@ private fun careSections(model: AppModel): List<MenuEntry> {
     )
 }
 
-/** What to do now: the buddy, today's routines and the mood key. Visitors, the egg and the party live in Dream. */
+/** What to do now: the buddy, today's routines, the mood key and Care's party (it is in Dream too). The visitors and the egg are in Dream. */
 @Composable
 private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
     val care = model.careData
@@ -208,6 +199,7 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
         }
     }
     MoodRow(model)
+    CarePartyPanel(model, openPokemon)
 }
 
 /** Reflect: the diary card and the journal stay separate records and separate modes of one place (CARE.md 3.3); a half-written journal entry opens on the journal. */
