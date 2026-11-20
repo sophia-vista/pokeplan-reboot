@@ -2082,6 +2082,13 @@ class ScreenshotTest {
     @Test
     fun careCalm() = care("care-calm", app.pokeplan.ui.care.CareSection.CALM)
 
+    /** A skill opened as the guided walk-through (a tap on "Wise mind" in Calm's library). */
+    @Test
+    fun careSkillGuide() = care("care-skill-guide", app.pokeplan.ui.care.CareSection.CALM, interact = { scene ->
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(200f, 945f))
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(200f, 945f))
+    })
+
     /** Reflect opens on the diary card, or on the journal when a half-written entry waits. */
     @Test
     fun careDiary() = care("care-diary", app.pokeplan.ui.care.CareSection.REFLECT)

@@ -145,8 +145,8 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header)
         Row(Modifier.fillMaxWidth().selectableGroup().padding(horizontal = Spacing.Page, vertical = Spacing.S), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            listOf<Pair<CareSection?, String>>(null to "Today") + CareSection.entries.map { it to it.label }
-                .forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }, Modifier.weight(1f)) }
+            val places: List<Pair<CareSection?, String>> = listOf(null to "Today") + CareSection.entries.map { it to it.label }
+            places.forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }, Modifier.weight(1f)) }
         }
         ScreenSwitch(section) { page ->
             Column(

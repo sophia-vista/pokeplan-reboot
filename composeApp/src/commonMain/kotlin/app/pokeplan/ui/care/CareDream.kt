@@ -138,7 +138,7 @@ internal fun DreamView(model: AppModel, openPokemon: (String) -> Unit) {
             )
             if (asleep && !calm) StatusIcon(
                 StatusKind.SLEEP, (2 * LocalDensity.current.density).roundToInt(),
-                Modifier.align(Alignment.TopStart).padding(start = w * x + (size / 4).dp, top = h * y - size.dp - 14.dp), loop = true, animate = true,
+                Modifier.align(Alignment.TopStart).padding(start = w * x + (size / 10).dp, top = h * y - (size * 0.62f).dp - 30.dp), loop = true, animate = true,
             )
         }
         if (buddy != null) Resident(buddy.form.id, buddy.isShiny, buddy.nickname, buddy.id, buddy.speciesId, 0.5f, 0.90f, 144)
