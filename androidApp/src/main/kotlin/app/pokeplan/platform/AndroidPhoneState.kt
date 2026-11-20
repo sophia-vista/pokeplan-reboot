@@ -32,6 +32,13 @@ class AndroidPhoneState(private val context: Context) : PhoneState {
         try { context.startActivity(intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { /* no such screen on this phone */ }
     }
 
+    override val notificationsAllowed: Boolean
+        get() = context.getSystemService(android.app.NotificationManager::class.java)?.areNotificationsEnabled() != false
+
+    override fun openNotificationSettings() = open(
+        android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName),
+    )
+
     override val canContact: Boolean = true
 
     // The dialer, messages and mail apps are opened with what the person has written down; none of them is started without the player pressing send or call, and no permission is needed.

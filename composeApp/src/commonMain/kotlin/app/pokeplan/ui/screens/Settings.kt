@@ -62,8 +62,9 @@ import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 
+/** General: what every module shares, with the trainer's name first (Me, Settings, General). */
 @Composable
-internal fun SettingsView(model: AppModel) {
+internal fun GeneralSettings(model: AppModel) {
     val store = model.store
     val settings = model.data.settings
     var name by remember { mutableStateOf(model.data.trainerName) }
@@ -99,24 +100,48 @@ internal fun SettingsView(model: AppModel) {
             TabButton(if (choosing) "Done" else "Change", choosing, { choosing = !choosing })
         }
         if (choosing) app.pokeplan.ui.BackgroundChoices(settings.appBackground, store.now.hour, store.now.minute, Pixel.dark) { name -> store.changeSettings { s -> s.copy(appBackground = name) } }
+    }
+    SettingsGroup("Accessibility", "eye") {
         ToggleRow("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
-    SettingsGroup("Week", "calendar") {
+    SettingsGroup("Date and time", "calendar") {
         ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
     }
-    SettingsGroup("Notifications", "bell") {
-        model.phone?.let { phone ->
-            // Read again when the player comes back from the phone's permission screen.
-            var exact by remember { mutableStateOf(phone.exactAlarms) }
-            androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { exact = phone.exactAlarms }
-            if (!exact) {
-                Text("Android is not letting PokéLife set exact alarms, so reminders and timers can arrive minutes late.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) // copy-ok: warning or legal
-                PixelButton("Allow exact alarms", { phone.allowExactAlarms() }, Modifier.fillMaxWidth(), Pixel.Tone)
-            }
+}
+
+/**
+ * Notifications, in one place: what Android allows, the quiet hours every reminder respects, and one switch for each module's reminders (a module keeps
+ * its own lead time and hour). Permissions are read again when the player comes back from the phone's settings.
+ */
+@Composable
+internal fun NotificationSettings(model: AppModel) {
+    val store = model.store
+    val settings = model.data.settings
+    model.phone?.let { phone ->
+        var notify by remember { mutableStateOf(phone.notificationsAllowed) }
+        var exact by remember { mutableStateOf(phone.exactAlarms) }
+        androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { notify = phone.notificationsAllowed; exact = phone.exactAlarms }
+        SettingsGroup("Permissions", "lock") {
+            PermissionRow("Notifications", notify, "Open settings") { phone.openNotificationSettings() }
+            PermissionRow("Exact alarms", exact, "Allow") { phone.allowExactAlarms() }
         }
-        ToggleRow(
-            "Routine reminders", model.careData.settings.reminders,
-        ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
+    }
+    SettingsGroup("Quiet hours", "moon") {
+        PixelTimeField(
+            settings.quietHours.start, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = it)) } } },
+            Pixel.Tone, label = "Quiet from",
+        )
+        PixelTimeField(
+            settings.quietHours.end, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = it)) } } },
+            Pixel.Tone, label = "Quiet until",
+        )
+    }
+    SettingsGroup("Reminders", "bell") {
+        ToggleRow("Plan tasks", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
+        ToggleRow("Care routines", model.careData.settings.reminders) { on -> model.care.changeSettings { it.copy(reminders = on) } }
+        ToggleRow("Base chores and upkeep", model.baseData.settings.reminders) { model.base.setReminders(it) }
+        ToggleRow("Link dates and follow-ups", model.linkData.settings.reminders) { model.link.setReminders(it) }
+        ToggleRow("Mint bills", model.mintData.settings.billReminders) { model.mint.setBillReminders(it) }
         ToggleRow("World job alert", settings.worldJobAlerts) { store.changeSettings { s -> s.copy(worldJobAlerts = it) } }
         ToggleRow("Streak reminder", settings.streakReminder) { store.changeSettings { s -> s.copy(streakReminder = it) } }
         if (settings.streakReminder) {
@@ -126,18 +151,30 @@ internal fun SettingsView(model: AppModel) {
         }
         ToggleRow("Weekly recap", settings.weeklyRecap) { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
     }
-    PrivacyCard(model)
-    DataCard(model)
-    BackupsCard(model)
-    AboutCard()
 }
 
-/** The screen lock in front of the private modules (Care's journal, Heal, Home, Link); Mint's switch is in Mint. Only where the phone has a lock to ask. */
+/** What Android allows, as a label, its state at the end of the line, and a key to the phone's screen for it while it is off. */
 @Composable
-private fun PrivacyCard(model: AppModel) {
-    val gate = model.gate ?: return
-    if (!gate.available() && model.data.settings.lockedModules.isEmpty()) return
-    SettingsGroup("Private modules", "storage-key") {
+private fun PermissionRow(label: String, allowed: Boolean, action: String, open: () -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+        Text(if (allowed) "Allowed" else "Blocked", style = MaterialTheme.typography.bodyMedium, color = if (allowed) Pixel.Green else Pixel.Danger)
+        if (!allowed) PixelButton(action, open, color = Pixel.Tone, compact = true)
+    }
+}
+
+/**
+ * Privacy and access: the phone's screen lock in front of each private module, Mint included (one door for all, here; Mint's own records stay sealed either way).
+ * Only where the phone has a lock to ask.
+ */
+@Composable
+internal fun PrivacySettings(model: AppModel) {
+    val gate = model.gate
+    if (gate == null || (!gate.available() && model.data.settings.lockedModules.isEmpty() && !model.mintData.settings.gate)) {
+        SettingsGroup("Screen lock", "lock") { Text("No screen lock on this phone", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+        return
+    }
+    SettingsGroup("Screen lock", "lock") {
         gateableModules.forEach { m ->
             val on = m.name in model.data.settings.lockedModules
             ToggleRow("Lock ${m.label}", on) { want ->
@@ -145,6 +182,10 @@ private fun PrivacyCard(model: AppModel) {
                 if (!want) set(false)
                 else gate.authenticate { ok -> if (ok) { set(true); model.moduleUnlockedAt[m.name] = model.store.nowMillis } }
             }
+        }
+        ToggleRow("Lock ${Module.MINT.label}", model.mintData.settings.gate) { want ->
+            if (!want) model.mint.setGate(false)
+            else gate.authenticate { ok -> if (ok) { model.mint.setGate(true); model.moduleUnlockedAt[Module.MINT.name] = model.store.nowMillis } }
         }
     }
 }
@@ -181,7 +222,7 @@ internal fun CalendarsCard(model: AppModel) {
  * before anything is asked; restoring replaces what is on the phone but keeps it aside, and asks first.
  */
 @Composable
-private fun BackupsCard(model: AppModel) {
+internal fun BackupsCard(model: AppModel) {
     val backups = model.backups ?: return
     var note by remember { mutableStateOf<String?>(null) }
     var entries by remember { mutableStateOf(backups.automatic()) }
@@ -196,7 +237,7 @@ private fun BackupsCard(model: AppModel) {
     fun restored(text: String) { model.store.reload(); model.care.reload(); model.heal.reload(); model.mint.reload(); model.base.reload(); model.link.reload(); entries = backups.automatic(); note = text }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            GlyphTitle("Backups", "download")
+            GlyphTitle("Complete backup", "download")
             if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
             // Help: a copy is made every day, sealed to this phone (the last seven days, then one a week for four weeks).
             Text(entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}" } ?: "No backup yet", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -306,19 +347,40 @@ private fun backupLabel(millis: Long): String {
     return "${t.date} ${t.hour.toString().padStart(2, '0')}:${t.minute.toString().padStart(2, '0')}"
 }
 
-/** The player's data: a copy to keep, starting over on this device. Each destructive step asks twice. */
+/**
+ * Module exports: one readable file per module, from the module's own export (the complete, restorable copy is the backup above). Heal's and Mint's
+ * files are plain text once saved, so the player chooses where each goes.
+ */
 @Composable
-private fun DataCard(model: AppModel) {
+internal fun ModuleExportsCard(model: AppModel) {
+    val files = model.files ?: return
+    var note by remember { mutableStateOf<String?>(null) }
+    val today = model.store.today
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            GlyphTitle("Module exports", "download")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton("Plan and Pokémon", { note = files.save("pokeplan-export-$today.json", model.store.exportJson()) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Care", { note = files.save("pokeplan-care-$today.json", model.care.exportJson()) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Heal", { note = files.save("pokelife-heal.json", model.heal.export()) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Mint", { note = files.save("pokelife-mint.json", model.mint.export()) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Base", { note = files.save("pokelife-base.json", model.base.export()) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Link", { note = files.save("pokelife-link.json", model.link.export()) }, color = Pixel.InkSoft, compact = true)
+            }
+            note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+        }
+    }
+}
+
+/** Starting over: Care's data alone, or the whole device (every module, every setting, the backups). Each destructive step asks twice. */
+@Composable
+internal fun ResetCard(model: AppModel) {
     val store = model.store
     var note by remember { mutableStateOf<String?>(null) }
     var asking by remember { mutableStateOf<String?>(null) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            GlyphTitle("Your data", "download")
-            model.files?.let { files ->
-                PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
-                PixelButton("Export Care data", { note = files.save("pokeplan-care-${store.today}.json", model.care.exportJson()) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            }
+            GlyphTitle("Reset", "trash")
             when (asking) {
                 "care" -> {
                     Text(
@@ -331,9 +393,12 @@ private fun DataCard(model: AppModel) {
                     }
                 }
                 "device" -> {
-                    Text("Erase this device? Everything here is removed and the app starts over: tasks, Pokémon, settings, and every Care, Heal, Mint and Base record, with the daily backups. A copy you saved as a file is not touched. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                    Text("Erase this device? Everything here is removed and the app starts over: tasks, Pokémon, every module's records and settings, the launcher's layout, reminders, and the backups on this phone and the off-phone copy setup. A copy you saved as a file is not touched. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        HoldToConfirm("Hold to erase", { store.eraseDevice(); model.care.erase(); model.heal.eraseAll(); model.mint.eraseAll(); model.base.eraseAll(); note = model.backups?.eraseLeftovers()?.ifBlank { null }; asking = null }, Modifier.weight(1f))
+                        HoldToConfirm("Hold to erase", {
+                            store.eraseDevice(); model.care.erase(); model.heal.resetAll(); model.mint.resetAll(); model.base.resetAll(); model.link.resetAll()
+                            note = model.backups?.eraseLeftovers()?.ifBlank { null }; asking = null
+                        }, Modifier.weight(1f))
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
@@ -365,7 +430,7 @@ private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
 
 /** The app's version, so a bug report or a friend's install can say exactly which build it is. */
 @Composable
-private fun AboutCard() {
+internal fun AboutCard() {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             GlyphTitle("About", "info-box")
@@ -420,19 +485,8 @@ private fun hourText(hour: Int) = "${hour.toString().padStart(2, '0')}:00"
 internal fun PlanSettings(model: AppModel) {
     val store = model.store
     val settings = model.data.settings
-    SettingsGroup("Reminders", "bell") {
-        ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
-        if (settings.reminders) {
-            PixelTimeField(
-                settings.quietHours.start, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = it)) } } },
-                Pixel.Tone, label = "Quiet from",
-            )
-            PixelTimeField(
-                settings.quietHours.end, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = it)) } } },
-                Pixel.Tone, label = "Quiet until",
-            )
-            ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
-        }
+    SettingsGroup("Alerts", "bell") {
+        if (settings.reminders) ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
         ToggleRow("Focus halfway alert", settings.focusHalfway) { store.changeSettings { s -> s.copy(focusHalfway = it) } }
         ToggleRow("Focus end alert", settings.focusEnd) { store.changeSettings { s -> s.copy(focusEnd = it) } }
     }

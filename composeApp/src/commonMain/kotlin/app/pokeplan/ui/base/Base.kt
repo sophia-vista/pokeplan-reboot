@@ -1244,11 +1244,10 @@ private fun BaseSettingsView(model: AppModel) {
             ToggleRow("Find Pokémon from finished work", settings.progression) { home.setProgression(it) }
         }
     }
-    TextBox {
+    if (settings.reminders) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Reminders")
-            ToggleRow("Remind me about the home", settings.reminders) { home.setReminders(it) }
-            if (settings.reminders) {
+            run {
                 PixelChoice(listOf(8, 9, 12, 18, 20), settings.reminderHour, { "${it.toString().padStart(2, '0')}:00" }, { h -> if (h != null) home.setReminderHour(h) }, label = "At", key = accent)
                 val maintenanceLeads = listOf(0 to "On the day", 1 to "1 day before", 3 to "3 days before", 7 to "A week before")
                 PixelChoice(maintenanceLeads.map { it.first }, settings.maintenanceLeadDays, { d -> maintenanceLeads.firstOrNull { it.first == d }?.second ?: "" }, { d -> if (d != null) home.setMaintenanceLeadDays(d) }, label = "Maintenance", key = accent)

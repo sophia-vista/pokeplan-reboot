@@ -36,6 +36,18 @@ private enum class MeSection(val label: String, val icon: String) {
     SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"), PROGRESS("Plan progress", "exp-share"), TRENDS("Care trends", "heart-scale"),
     /** The dashboard of history: the totals, then Plan's progress and Care's trends, which open from it and go back to it. */
     STATS("Stats", "exp-share"),
+
+    /** Settings is a menu of pages (owner, 20 November 2026); each goes back to it. Appended, so a saved index still opens the same one. */
+    GENERAL("General", "gb-sounds"), PRIVACY("Privacy and access", "storage-key"), NOTIFICATIONS("Notifications", "soothe-bell"), BACKUPS("Backups and data", "journal"), ABOUT("About", "member-card"),
+}
+
+private val settingsPages = listOf(MeSection.GENERAL, MeSection.PRIVACY, MeSection.NOTIFICATIONS, MeSection.BACKUPS, MeSection.ABOUT)
+
+/** The section Back returns to: Stats for its views, Settings for its pages, otherwise the Me menu. */
+private fun parentOf(s: MeSection): MeSection? = when (s) {
+    MeSection.PROGRESS, MeSection.TRENDS -> MeSection.STATS
+    in settingsPages -> MeSection.SETTINGS
+    else -> null
 }
 
 @Composable
@@ -43,7 +55,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
     var section by remember { mutableStateOf(MeSection.entries.getOrNull(startSection)) }
     val data = model.data
     // Into a section and back slides; each page keeps its scroll position.
-    ScreenSwitch(section, depth = { if (it == null) 0 else if (it == MeSection.PROGRESS || it == MeSection.TRENDS) 2 else 1 }) { current ->
+    ScreenSwitch(section, depth = { if (it == null) 0 else if (parentOf(it) != null) 2 else 1 }) { current ->
         if (current == null) {
             Column(Modifier.fillMaxSize()) {
                 ScreenHeader("Me", icon = "member-card")
@@ -63,11 +75,15 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             }
             return@ScreenSwitch
         }
-        val parent = if (current == MeSection.PROGRESS || current == MeSection.TRENDS) MeSection.STATS else null
-        SectionScaffold(current.label, null, onBack = { section = parent }, icon = current.icon) {
+        SectionScaffold(current.label, null, onBack = { section = parentOf(current) }, icon = current.icon) {
             when (current) {
                 MeSection.STATS -> StatsView(model) { section = it }
-                MeSection.SETTINGS -> SettingsView(model)
+                MeSection.SETTINGS -> MenuList(settingsPages.map { MenuEntry(it.name, it.icon, it.label) }) { key -> section = MeSection.valueOf(key) }
+                MeSection.GENERAL -> GeneralSettings(model)
+                MeSection.PRIVACY -> PrivacySettings(model)
+                MeSection.NOTIFICATIONS -> NotificationSettings(model)
+                MeSection.BACKUPS -> { BackupsCard(model); ModuleExportsCard(model); ResetCard(model) }
+                MeSection.ABOUT -> AboutCard()
                 MeSection.HELP -> HelpView()
                 MeSection.PROGRESS -> app.pokeplan.ui.plan.ProgressView(model)
                 MeSection.TRENDS -> app.pokeplan.ui.care.CareTrendsView(model)

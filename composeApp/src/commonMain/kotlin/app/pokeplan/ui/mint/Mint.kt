@@ -1796,11 +1796,10 @@ private fun MintSettingsView(model: AppModel) {
             ToggleRow("Ledger Research", settings.progression) { mint.setProgression(it) }
         }
     }
-    TextBox {
+    if (settings.billReminders) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            ToggleRow("Bill reminders", settings.billReminders) { mint.setBillReminders(it) }
-            Text("Installment reminders follow plan dates.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (settings.billReminders) {
+            PixelTitle("Bill reminders")
+            run {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     val early = listOf(0 to "On the day", 1 to "1 day before", 2 to "2 days before", 3 to "3 days before", 7 to "A week before")
                     PixelDropdown(early.map { it.first }, settings.billReminderDays, { d -> early.firstOrNull { it.first == d }?.second ?: "" }, { d -> if (d != null) mint.setBillReminderDays(d) }, Modifier.weight(3f), key = accent, label = "How early")
@@ -1818,12 +1817,6 @@ private fun MintSettingsView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Privacy")
             ToggleRow("Hide amounts", settings.hideValues) { mint.setHideValues(it) }
-            model.gate?.let { gate ->
-                if (gate.available() || settings.gate) ToggleRow("Ask for my screen lock", settings.gate) { on ->
-                    if (!on) mint.setGate(false)
-                    else gate.authenticate { ok -> if (ok) { mint.setGate(true); model.moduleUnlockedAt[Module.MINT.name] = model.store.nowMillis } }
-                }
-            }
             PixelDropdown(Money.common, settings.currency, { it ?: "" }, { c -> if (c != null) mint.setCurrency(c) }, Modifier.fillMaxWidth(), key = accent, label = "Currency")
         }
     }

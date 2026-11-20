@@ -1069,6 +1069,9 @@ class MintStore(
     /** Erases all of MINT's records (not its settings, not what Ledger Research paid). Categories come back as the starting set. */
     fun eraseAll() = update { d -> tidy(MintKinds.entries.fold(d) { acc, k -> MintExport.without(acc, k) }) }
 
+    /** The full-device reset: MINT as new, its records and its settings (the starting categories come back). */
+    fun resetAll() = update { tidy(MintData()) }
+
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 

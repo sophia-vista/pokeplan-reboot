@@ -361,6 +361,9 @@ class LinkStore(
     /** Erases all of LINK's records (not its settings, not what Postcard Trail paid). */
     fun eraseAll() = update { d -> LinkKinds.entries.fold(d) { acc, k -> LinkExport.without(acc, k) } }
 
+    /** The full-device reset: LINK as new, its records and its settings. */
+    fun resetAll() = update { LinkData() }
+
     companion object {
         /** Why a follow-up that PLAN owns cannot be finished or cancelled here: one real action, one completion. */
         const val IN_PLAN = "This one is in Plan now. Finish it there."
