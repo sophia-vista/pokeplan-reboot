@@ -95,7 +95,7 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
                     val l = g.listId?.let { id -> lists.firstOrNull { it.id == id } }
                     // Tasks in no list sit in one plain group; with no lists at all there is nothing to group by.
                     val title = if (l != null) groupTitle(model, l) else if (lists.isEmpty() || list != null) null else "No list"
-                    TaskGroup(title, g.tasks, card = if (list != null) inList else card)
+                    TaskGroup(title, g.tasks, card = inList)
                 }
             }
         }
