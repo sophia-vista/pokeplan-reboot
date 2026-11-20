@@ -157,6 +157,9 @@ object MintRules {
         if (tx.creditStatementId != null &&
             (tx.type != TxType.FEE || tx.feeKind != FeeKind.INTEREST || data.creditStatements.none { it.id == tx.creditStatementId }))
             return Check.Refused("That estimated-interest record is not linked to a statement.")
+        if (tx.feeMinor != 0L && (tx.type != TxType.TRANSFER || tx.feeMinor < 0 || tx.feeMinor > Money.MAX_MINOR)) return Check.Refused("Only a transfer has a fee, and it has to be positive.")
+        if (tx.type == TxType.TRANSFER && tx.categoryId != null && data.categories.firstOrNull { it.id == tx.categoryId }?.kind != CategoryKind.EXPENSE)
+            return Check.Refused("A transfer's category is for its fee, and it has to be a spending category.")
         tx.categoryId?.let { id ->
             val c = data.categories.firstOrNull { it.id == id } ?: return Check.Refused("That category is gone.")
             val wanted = when (tx.type) { TxType.INCOME -> CategoryKind.INCOME; TxType.EXPENSE, TxType.FEE, TxType.REFUND -> CategoryKind.EXPENSE; else -> null }
@@ -196,7 +199,7 @@ object MintRules {
             TxType.EXPENSE, TxType.FEE -> if (tx.accountId == account.id) -tx.amountMinor else return null
             TxType.INCOME, TxType.REFUND -> if (tx.accountId == account.id) tx.amountMinor else return null
             TxType.ADJUSTMENT -> if (tx.accountId == account.id) (if (tx.up) tx.amountMinor else -tx.amountMinor) else return null
-            TxType.TRANSFER -> when (account.id) { tx.accountId -> -tx.amountMinor; tx.toAccountId -> tx.amountMinor; else -> return null }
+            TxType.TRANSFER -> when (account.id) { tx.accountId -> -(tx.amountMinor + tx.feeMinor); tx.toAccountId -> tx.amountMinor; else -> return null }
         }
         if (tx.type == TxType.ADJUSTMENT) return flow // an adjustment moves the displayed balance in the direction given, for either kind
         return if (account.type.liability) -flow else flow
@@ -227,8 +230,13 @@ object MintRules {
 
     /** A simple daily APR/365 estimate in minor units, rounded half up once for the whole period. */
     fun simpleInterestEstimate(data: MintData, account: FinancialAccount, from: LocalDate, through: LocalDate): Long {
-        val apr = account.annualAprBasisPoints
-        if (apr <= 0 || apr > MAX_APR_BASIS_POINTS || from > through || !account.type.liability) return 0
+        if (!account.type.liability) return 0
+        return dailyInterest(data, account, account.annualAprBasisPoints, from, through)
+    }
+
+    /** Simple daily interest at [apr] basis points a year on the positive balance of [account] for each day of `[from, through]`, rounded half up once for the period. */
+    private fun dailyInterest(data: MintData, account: FinancialAccount, apr: Int, from: LocalDate, through: LocalDate): Long {
+        if (apr <= 0 || apr > MAX_APR_BASIS_POINTS || from > through) return 0
         val denominator = 3_650_000L
         val relevant = data.transactions.asSequence()
             .filter { it.status == TxStatus.POSTED && it.day >= account.openingDay && it.day <= through }
@@ -256,6 +264,67 @@ object MintRules {
         }
         val rounded = whole + if (fraction * 2 >= denominator) 1 else 0
         return rounded.coerceAtMost(Money.MAX_MINOR)
+    }
+
+    // --- interest earned by a deposit account (MINT.md 4.3E) ----------------------------------------------------------------
+
+    const val MAX_TAX_BASIS_POINTS = 5_000
+
+    /** The income category earned-interest estimates are filed under (added on first use when an older save lacks it). */
+    const val INTEREST_CATEGORY = "cat-interest"
+
+    /** Whether the earned-interest settings fit [type]: only a deposit account (not cash, not a liability) can have a rate or a schedule. */
+    fun checkEarn(type: AccountType, rateBasisPoints: Int, schedule: EarnSchedule, taxBasisPoints: Int): Check {
+        val any = rateBasisPoints != 0 || schedule != EarnSchedule.OFF || taxBasisPoints != 0
+        if (any && (type.liability || type == AccountType.CASH)) return Check.Refused("Interest earned is for bank, wallet and other deposit accounts.")
+        if (rateBasisPoints !in 0..MAX_APR_BASIS_POINTS) return Check.Refused("Enter a yearly rate from 0 to 1000 percent.")
+        if (taxBasisPoints !in 0..MAX_TAX_BASIS_POINTS) return Check.Refused("Enter a tax from 0 to 50 percent.")
+        if (schedule != EarnSchedule.OFF && rateBasisPoints == 0) return Check.Refused("Enter a yearly rate to estimate interest.")
+        return Check.Ok
+    }
+    private const val MAX_ACCRUAL_PERIODS = 12
+    private const val MAX_ACCRUAL_DAYS = 366
+
+    /** The days one earned-interest estimate covers. */
+    data class InterestPeriod(val from: LocalDate, val through: LocalDate)
+
+    /** Whether [account] estimates earned interest at all: an open deposit account with a rate and a schedule. */
+    fun earnsInterest(account: FinancialAccount): Boolean =
+        !account.type.liability && account.type != AccountType.CASH && account.earnSchedule != EarnSchedule.OFF && account.earnRateBasisPoints > 0 && account.status == AccountStatus.ACTIVE
+
+    /**
+     * What a deposit account earned over `[from, through]` after the tax its bank withholds: the daily balance times the yearly rate over 365, rounded half up once,
+     * less the tax rounded half up. Posted records only, so an estimate still waiting for review never compounds. It is an estimate, not the bank's figure.
+     */
+    fun earnedInterest(data: MintData, account: FinancialAccount, from: LocalDate, through: LocalDate): Long {
+        if (account.type.liability) return 0
+        val gross = dailyInterest(data, account, account.earnRateBasisPoints, from, through)
+        return gross - (gross * account.earnTaxBasisPoints.coerceIn(0, MAX_TAX_BASIS_POINTS) + 5_000) / 10_000
+    }
+
+    /**
+     * The estimates still to make for [account] as of [today]: complete days only, from the day after the last one made (a record of any status counts, so a skipped
+     * estimate is not made again) or from the day interest was switched on. A daily schedule is one catch-up period; a monthly one is one per calendar month that has ended.
+     */
+    fun interestPeriods(data: MintData, account: FinancialAccount, today: LocalDate): List<InterestPeriod> {
+        if (!earnsInterest(account)) return emptyList()
+        val last = data.transactions.filter { it.accountId == account.id && it.interestThrough != null }.maxOfOrNull { it.interestThrough!! }
+        val firstDay = maxOf(account.earnFrom ?: today, account.openingDay)
+        var next = if (last == null) firstDay else last.plus(DatePeriod(days = 1))
+        val yesterday = today.minus(DatePeriod(days = 1))
+        if (next > yesterday) return emptyList()
+        if (account.earnSchedule == EarnSchedule.DAILY) {
+            val start = maxOf(next, yesterday.minus(DatePeriod(days = MAX_ACCRUAL_DAYS - 1)))
+            return listOf(InterestPeriod(start, yesterday))
+        }
+        val periods = mutableListOf<InterestPeriod>()
+        while (periods.size < MAX_ACCRUAL_PERIODS) {
+            val monthEnd = monthStart(next).plus(1, DateTimeUnit.MONTH).minus(DatePeriod(days = 1))
+            if (monthEnd > yesterday) break
+            periods += InterestPeriod(next, monthEnd)
+            next = monthEnd.plus(DatePeriod(days = 1))
+        }
+        return periods
     }
 
     /** Assets less liabilities, per currency, over active accounts. Never converted across currencies: each currency has its own line. */
@@ -286,18 +355,20 @@ object MintRules {
     private fun counts(t: Transaction) = t.status == TxStatus.POSTED
 
     /**
-     * What was spent in `[from, endExclusive)` in [currency] (overall, or in one [categoryId]): posted expenses and fees, less refunds. A transfer
+     * What was spent in `[from, endExclusive)` in [currency] (overall, or in one [categoryId]): posted expenses and fees (a transfer's fee included, never its amount), less refunds. A transfer
      * is never spending; an excluded, voided or pending record is left out (MINT.md sections 5.4, 7.1). May be negative if refunds exceed spending.
      */
     fun spent(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String, categoryId: String? = null): Long =
         data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive }
             .sumOf { tx ->
-                val direction = when (tx.type) { TxType.EXPENSE, TxType.FEE -> 1; TxType.REFUND -> -1; else -> 0 }
+                val direction = when (tx.type) { TxType.EXPENSE, TxType.FEE -> 1; TxType.REFUND -> -1; TxType.TRANSFER -> if (tx.feeMinor > 0) 1 else 0; else -> 0 }
                 if (direction == 0) 0L
                 else {
-                    val amount = if (categoryId == null) tx.amountMinor
+                    // A transfer's own amount is never spending; only the fee it was charged is (MINT.md 5.5).
+                    val whole = if (tx.type == TxType.TRANSFER) tx.feeMinor else tx.amountMinor
+                    val amount = if (categoryId == null) whole
                     else if (tx.splits.isNotEmpty()) tx.splits.filter { it.categoryId == categoryId }.sumOf { it.amountMinor }
-                    else if (tx.categoryId == categoryId) tx.amountMinor else 0L
+                    else if (tx.categoryId == categoryId) whole else 0L
                     direction * amount
                 }
             }
@@ -309,10 +380,10 @@ object MintRules {
     /** Spending by category over the period, largest first; records with no category are one line with a null id. */
     fun spendingByCategory(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): List<Pair<String?, Long>> {
         val totals = mutableMapOf<String?, Long>()
-        data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive && it.type in setOf(TxType.EXPENSE, TxType.FEE, TxType.REFUND) }
+        data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive && (it.type in setOf(TxType.EXPENSE, TxType.FEE, TxType.REFUND) || (it.type == TxType.TRANSFER && it.feeMinor > 0)) }
             .forEach { tx ->
                 val direction = if (tx.type == TxType.REFUND) -1 else 1
-                val parts = tx.splits.ifEmpty { listOf(TransactionSplit(tx.categoryId, tx.amountMinor)) }
+                val parts = tx.splits.ifEmpty { listOf(TransactionSplit(tx.categoryId, if (tx.type == TxType.TRANSFER) tx.feeMinor else tx.amountMinor)) }
                 parts.forEach { part -> totals[part.categoryId] = (totals[part.categoryId] ?: 0L) + direction * part.amountMinor }
             }
         return totals.filterValues { it != 0L }.toList().sortedByDescending { it.second }
@@ -457,6 +528,17 @@ object MintRules {
     /** Reconciled accounts paid in a day; the rest are still kept. *(tune)* */
     const val RECONCILES_PAID_PER_DAY = 2
 
+    /** Logged purchases, payments and transfers paid in a day: no limit (owner, 20 November 2026: frequent actions pay like a Plan focus egg, and farming is the player's own business). */
+    const val RECORDS_PAID_PER_DAY = Int.MAX_VALUE
+
+    /**
+     * Whether logging [tx] pays the flat reward: Ledger Research is on, it is a purchase (expense) or a transfer (a payment to a card or loan counts), posted,
+     * typed by the player and dated today. Never reads the amount, and there is no daily limit ([RECORDS_PAID_PER_DAY]).
+     */
+    fun logPays(data: MintData, tx: Transaction, today: LocalDate): Boolean =
+        data.settings.progression && (tx.type == TxType.EXPENSE || tx.type == TxType.TRANSFER) && tx.status == TxStatus.POSTED && tx.source == TxSource.MANUAL &&
+            tx.importBatch == null && tx.day == today
+
     /** A review pays at most once a week. *(tune)* */
     const val REVIEWS_PAID_PER_WEEK = 1
 
@@ -511,6 +593,6 @@ object MintRules {
         "food" to "Groceries", "dining" to "Eating out", "transport" to "Transport", "bills" to "Bills and utilities", "rent" to "Rent and housing",
         "health" to "Health", "shopping" to "Shopping", "school" to "School", "fun" to "Fun", "family" to "Family and gifts", "care" to "Personal care", "other" to "Other",
     ).map { (key, name) -> Category("cat-$key", name, CategoryKind.EXPENSE) } + listOf(
-        "salary" to "Salary", "business" to "Business", "gift-in" to "Gifts received", "other-in" to "Other income",
+        "salary" to "Salary", "business" to "Business", "gift-in" to "Gifts received", "interest" to "Interest", "other-in" to "Other income",
     ).map { (key, name) -> Category("cat-$key", name, CategoryKind.INCOME) }
 }

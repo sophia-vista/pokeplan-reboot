@@ -376,6 +376,13 @@ Each module specification defines its own exact eligibility, pacing, caps and pr
 
 ## 10. Acquisition contracts and reward generosity
 
+### 10.0 Reward cadence and the loop of each module *(owner, 20 November 2026)*
+
+1. **A frequent action pays about as often as a Plan focus egg or a Care visitor** (an egg per finished session; about 1.35 visitors a day). Every module with an acquisition (PLAN, CARE, HEAL, MINT, HOME, LINK) has one such everyday action whose reward reaches the Egg meter often enough that an active day finds at least one Pokémon. These actions carry **no daily limit**: farming them is the player's own responsibility, and a cap is added only to guard the privacy contract or a bug, not to slow the player down. MINT's is logging a purchase, a payment or a transfer (a flat reward, never based on an amount: MINT.md 16.2).
+2. **A rarer action pays better, not just more**: a reconciled account, a weekly review, a finished goal or a long streak opens an **outbreak** (owner, 20 November 2026; built for MINT in 0.219.0, `MINT.md` 16.2A): a choice among three Pokémon of the module's region, drawn from better rarities than an egg gives, each **caught directly (no egg)**, with extra **shiny rolls** that a streak raises. The other modules adopt it for their own rare actions (backlog REP-069).
+3. **Every module has a clear Pokémon influence and a gameplay loop of its own**, as Plan has one: a daycare-style egg that hatches over a cycle, filled by a Forest-style focus timer. What each other module's loop is, and what its Pokémon changes in the module, is designed one module at a time (backlog REP-068 to REP-070); until then a module keeps the loop it has.
+4. The privacy contracts of each module (what an event may carry) do not change.
+
 ### 10.1 Acquisition identity matrix
 
 | Module | Acquisition identity | Canonical output | Important boundary |

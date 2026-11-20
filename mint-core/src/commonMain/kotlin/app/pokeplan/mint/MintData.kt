@@ -59,7 +59,18 @@ data class FinancialAccount(
     val annualAprBasisPoints: Int = 0,
     /** Days after the latest statement's due date before estimated interest starts. */
     val interestGraceDays: Int = 0,
+    /** Interest this deposit account earns (MINT.md 4.3E): the yearly rate in basis points, how often the bank credits it, the tax it withholds and whether estimates post without review. Liabilities keep these off. */
+    val earnRateBasisPoints: Int = 0,
+    val earnSchedule: EarnSchedule = EarnSchedule.OFF,
+    val earnTaxBasisPoints: Int = 0,
+    val earnAutoPost: Boolean = false,
+    /** The first day interest is estimated for: the day the schedule was switched on, so nothing is back-filled. */
+    val earnFrom: LocalDate? = null,
 )
+
+/** How often a deposit account is credited interest: [DAILY] (Maya, MariBank, GoTyme style) or [MONTHLY]. */
+@Serializable
+enum class EarnSchedule(val label: String) { OFF("Off"), DAILY("Every day"), MONTHLY("Every month") }
 
 /**
  * The look of an account's card (REP-056, cosmetic). The ids are saved; the colour for each is chosen in the UI, so a palette change never touches the data.
@@ -144,6 +155,12 @@ data class Transaction(
     val splits: List<TransactionSplit> = emptyList(),
     /** The statement whose estimated interest this transaction records, null for ordinary fees. */
     val creditStatementId: String? = null,
+    /** Only for [TxType.TRANSFER]: what the sending side charged on top of [amountMinor] (MINT.md 5.5). The source falls by both; the destination gets only the amount; the fee counts as a fee in spending. */
+    val feeMinor: Long = 0,
+    /** Whether logging this record paid Ledger Research's flat reward (MINT.md 16.2). It only counts the day's paid records; it holds no figure. */
+    val paid: Boolean = false,
+    /** Only for earned interest (an [TxType.INCOME] record made by [MintRules.accrue]): the last day this estimate covers. The latest one per account is where the next estimate starts. */
+    val interestThrough: LocalDate? = null,
     /** One optional receipt image as base64 PNG, kept inside this transaction's sealed record. */
     val receiptImage: String = "",
 )

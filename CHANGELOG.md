@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.219.0
+
+Mint: transfer fees, interest earned, the credit card flow and a flat reward for logging (rules version 32; `docs/pokelife/MODULES/MINT.md` 4.3E, 5.5, 5.6D and 16.2, and `docs/economy.md`, changed first). `RewardRules.VERSION` is 32 and `golden.json` is regenerated. No schema migration: every new field sits inside the sealed Mint rows with a default.
+
+- **Transfer fee:** a transfer can carry `Transaction.feeMinor`. The source falls by amount plus fee, the destination by the amount only; the fee counts as spending (a fee), as cash out of liquid accounts and in a credit account's fee activity. It is one record, so edit and delete stay consistent. The Activity form has an optional Fee field (new transfer and edit) and the row says "fee X".
+- **Interest earned:** a deposit account can earn interest (rate, daily or monthly schedule, tax, auto-post, start date). Pending estimates wait in an "Interest to confirm" box on the Overview, where each is confirmed, adjusted or skipped; auto-post books them. An "Interest" income category is seeded. The account add and edit forms have the Interest earned fields.
+- **Credit card flow:** the Credit line box shows "Owed now", the latest statement balance, minimum and pay-by date, a "Pay card" or "Pay balance" button that opens Activity as a transfer to the card, and a "?" key opening "How a card works". The Activity form hints when you are paying a card.
+- **Rewards (16.2 reversed):** logging an expense, a bill or installment payment or a transfer typed in today pays a flat reward (1 Rare Candy, 1 Ledger Egg-meter point, Mint lead friendship, Poke, no trainer point), never based on the amount, with no daily limit (frequent actions pay about like a Plan focus egg; farming is the player's own call). New `MintKind.LOGGED` (`record_logged`).
+- **Outbreaks (MINT.md 16.2A):** a reconciled account or a finished weekly review also opens an outbreak: a pick of three different Mint Region Pokémon (better rarities than an egg), caught directly with no egg, with 2 or 3 shiny rolls plus one per week in a row with a review (at most 7). Shown on the Overview as "Outbreak: choose one". `MintEvent` gains a review `streak` (weeks, no figure); golden vector regenerated.
+- **Tests:** `MintFeesAndInterestTest`, `MintLoggingRewardTest`, and LOGGED cases in `MintRewardTest`.
+
 ## 0.218.0
 
 Plan: event companions and task reward focus (rules version 31; `docs/pokelife/MODULES/PLAN.md` 8.2 and 12.1, `docs/pokelife/POKEMON_ECOSYSTEM.md` 2.2 and `docs/economy.md`, changed first). `RewardRules.VERSION` is 31. No schema migration: `Task` and `PlanEvent` gained fields with defaults inside their JSON rows and Settings gained `defaultReward`; a test loads old rows.

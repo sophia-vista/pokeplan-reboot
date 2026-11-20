@@ -29,6 +29,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.pokeplan.app.heal.Logged
 import app.pokeplan.mint.AccountStatus
+import app.pokeplan.mint.AccountType
 import app.pokeplan.mint.BillMonth
 import app.pokeplan.mint.BudgetPeriod
 import app.pokeplan.mint.CategoryKind
@@ -109,6 +110,8 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
     var existing by remember(a.id) { mutableStateOf(false) }
     var openBill by remember(a.id) { mutableStateOf<BillMonth?>(null) }
     var allBills by remember(a.id) { mutableStateOf(false) }
+    var howItWorks by remember(a.id) { mutableStateOf(false) }
+    if (howItWorks) CardFlowInfo { howItWorks = false }
     if (buying) Dialog({ buying = false }, DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize().padding(Spacing.L), contentAlignment = Alignment.Center) {
             FormBox { Column(Modifier.verticalScroll(rememberScrollState())) { NewPurchaseForm(model, a, startExisting = existing) { buying = false } } }
@@ -116,15 +119,23 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Credit line")
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { PixelTitle("Credit line") }
+                PixelButton("?", { howItWorks = true }, color = Pixel.InkSoft, compact = true)
+            }
             if (a.limitMinor > 0) MintValueRow("Limit", mint.show(a.limitMinor, a.currency))
-            MintValueRow("Owed", mint.show(owed, a.currency))
+            MintValueRow("Owed now", mint.show(owed, a.currency))
             MintRules.leftToSpend(a, owed)?.let { left ->
                 MintValueRow("Available credit", mint.show(left, a.currency))
                 if (owed > a.limitMinor) Text("Over the limit by ${mint.show(owed - a.limitMinor, a.currency)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning)
             }
             listOf("Purchases" to act.purchasesMinor, "Fees" to act.feesMinor, "Interest" to act.interestMinor, "Late fees" to act.lateFeesMinor, "Refunds" to act.refundsMinor, "Repaid" to act.repaymentsMinor)
                 .filter { it.second != 0L }.forEach { (label, minor) -> MintValueRow(label, mint.show(minor, a.currency), soft = true) }
+            data.creditStatements.filter { it.accountId == a.id }.maxByOrNull { it.statementDay }?.let { st ->
+                MintValueRow("Last statement", mint.show(st.statementBalanceMinor, a.currency), soft = true)
+                if (st.minimumPaymentMinor > 0) MintValueRow("Minimum due", mint.show(st.minimumPaymentMinor, a.currency), soft = true)
+                Text("Pay by ${st.dueDay.compact()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
             dayLine("Statement", a.statementDay, today)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             dayLine("Due", a.dueDay, today)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             val bills = mint.openBills(a.id)
@@ -146,6 +157,11 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
                 MintLine(onClick = { finished = !finished }, onClickLabel = if (finished) "Hide finished plans" else "Show finished plans") { Text("Finished (${done.size})", style = MaterialTheme.typography.bodyLarge) }
                 if (finished) done.forEach { PlanRow(model, it, open == it.plan.id, { open = if (open == it.plan.id) null else it.plan.id }, problem) }
             }
+            if (owed > 0 && a.status == AccountStatus.ACTIVE) PixelButton(
+                if (a.type == AccountType.CREDIT_CARD) "Pay card" else "Pay balance",
+                { model.mintStartType = TxType.TRANSFER; model.mintStartTo = a.id; model.mintSection = MintSection.ACTIVITY },
+                Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true,
+            )
             PixelButton("Add purchase", { existing = false; buying = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
         }
     }
@@ -667,6 +683,34 @@ internal fun InstallmentsDueBox(model: AppModel, startOpenFirst: Boolean = false
                 }
             }
             refused?.let { Report(model, it, NoticeTone.WARNING) }
+        }
+    }
+}
+
+/** How a credit card or pay-later account works, in the order a month goes (MINT.md 5.6D). */
+@Composable
+private fun CardFlowInfo(onClose: () -> Unit) {
+    val steps = listOf(
+        "Spend" to "Record an Expense on the card. It raises Owed now and counts as spending once, on the day you spent.",
+        "Statement" to "When the lender's statement arrives, add it under Statements. It is a note of what was billed; it changes nothing you owe.",
+        "Pay" to "Pay card moves money from a bank or wallet to the card. Owed now and that account fall together. It is not spending.",
+        "Fees and interest" to "Add a late fee or interest as a Fee or interest on the card. It raises Owed now and counts as spending.",
+        "Limit" to "The limit and Available credit are information. They are never counted as your money.",
+    )
+    Dialog(onClose, DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.fillMaxSize().padding(Spacing.L), contentAlignment = Alignment.Center) {
+            TextBox {
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    PixelTitle("How a card works")
+                    steps.forEach { (title, note) ->
+                        Column {
+                            Text(title, style = MaterialTheme.typography.titleSmall)
+                            Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        }
+                    }
+                    PixelButton("Close", onClose, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
+                }
+            }
         }
     }
 }

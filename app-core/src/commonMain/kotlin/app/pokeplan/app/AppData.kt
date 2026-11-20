@@ -120,6 +120,8 @@ data class AppData(
     val healPaid: List<String> = emptyList(),
     /** The ids of MINT events already paid (`MintEvent.id`, opaque, no figure in them), kept like [healPaid]. The newest [GameStore.MINT_PAID_KEPT] are kept. */
     val mintPaid: List<String> = emptyList(),
+    /** Outbreaks waiting for a pick (POKEMON_ECOSYSTEM.md 10.0): a rare MINT moment opened each, the player chooses one Pokémon of its list to catch. The newest [app.pokeplan.core.reward.RewardEngine.MAX_PENDING_OUTBREAKS] are kept. */
+    val outbreaks: List<app.pokeplan.core.reward.Outbreak> = emptyList(),
     /** The ids of HOME events already paid (`BaseEvent.id`, opaque, no household word in them), kept like [mintPaid]. The newest [GameStore.HOME_PAID_KEPT] are kept. */
     @SerialName("homePaid") val basePaid: List<String> = emptyList(),
     /** The ids of LINK events already paid (`LinkEvent.id`, opaque, no word of a person or a follow-up in them), kept like [basePaid]. The newest [GameStore.LINK_PAID_KEPT] are kept. */

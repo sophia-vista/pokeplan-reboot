@@ -15,6 +15,7 @@ import app.pokeplan.mint.CardStyle
 import app.pokeplan.mint.Check
 import app.pokeplan.mint.CreditActivity
 import app.pokeplan.mint.CreditStatement
+import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.FeeKind
 import app.pokeplan.mint.FeeRule
 import app.pokeplan.mint.InstallmentPlan
@@ -44,6 +45,7 @@ import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -103,8 +105,28 @@ class MintStore(
 
     private fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
 
-    private fun pay(kind: MintKind, recordId: String): List<app.pokeplan.core.reward.Reward>? =
-        if (!data.settings.progression) null else world.mint(MintEvent("mint:${kind.name.lowercase()}:$recordId", kind, nowMillis, recordId))
+    private fun pay(kind: MintKind, recordId: String, streak: Int = 0): List<app.pokeplan.core.reward.Reward>? =
+        if (!data.settings.progression) null else world.mint(MintEvent("mint:${kind.name.lowercase()}:$recordId", kind, nowMillis, recordId, streak = streak))
+
+    /** How many weeks in a row, this one included, had a paid review (the count that adds shiny rolls to a review's outbreak). Counts weeks only. */
+    private fun reviewStreak(): Int {
+        val weeks = data.reviews.filter { it.paid }.map { MintRules.weekStartOf(it.day, weekStart()) }.toSet()
+        var week = MintRules.weekStartOf(today, weekStart()).minus(DatePeriod(days = 7))
+        var streak = 1
+        while (week in weeks) { streak++; week = week.minus(DatePeriod(days = 7)) }
+        return streak
+    }
+
+    /**
+     * Pays the flat "logged a record" reward for [tx] (already saved) when [MintRules.logPays] allows, and marks it paid. The event holds no amount (MINT.md 16.2, 16.3).
+     * Returns the rewards, empty when nothing was paid.
+     */
+    private fun payForLog(tx: Transaction): List<app.pokeplan.core.reward.Reward> {
+        if (!MintRules.logPays(data, tx, today)) return emptyList()
+        val rewards = pay(MintKind.LOGGED, tx.id) ?: return emptyList()
+        update { d -> d.copy(transactions = d.transactions.map { if (it.id == tx.id) it.copy(paid = true) else it }) }
+        return rewards
+    }
 
     /** Every amount on a screen goes through this, so hiding values (MINT.md section 3.3) is one switch and covers all of Mint. */
     fun show(minor: Long, currency: String): String = app.pokeplan.mint.Money.format(minor, currency, data.settings.hideValues)
@@ -115,6 +137,7 @@ class MintStore(
         name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "",
         group: String = "", card: String = "", limitMinor: Long = 0, statementDay: Int = 0, dueDay: Int = 0,
         annualAprBasisPoints: Int = 0, interestGraceDays: Int = 0,
+        earnRateBasisPoints: Int = 0, earnSchedule: EarnSchedule = EarnSchedule.OFF, earnTaxBasisPoints: Int = 0, earnAutoPost: Boolean = false,
     ): Logged<FinancialAccount> {
         val code = currency.trim().uppercase()
         (MintRules.checkAccount(name, code, openingMinor, suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -124,10 +147,13 @@ class MintStore(
         if (annualAprBasisPoints !in 0..MintRules.MAX_APR_BASIS_POINTS) return Logged(null, "Enter an annual rate from 0 to 1000 percent.")
         if (interestGraceDays !in 0..MintRules.MAX_GRACE_DAYS) return Logged(null, "Enter a grace period from 0 to ${MintRules.MAX_GRACE_DAYS} days.")
         if (!Installments.allowedFor(type) && (annualAprBasisPoints != 0 || interestGraceDays != 0)) return Logged(null, "Interest estimates are for credit card and pay-later accounts.")
+        (MintRules.checkEarn(type, earnRateBasisPoints, earnSchedule, earnTaxBasisPoints) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val account = FinancialAccount(
             newId(), name.trim(), type, code, openingMinor, today, institution.trim().take(MintRules.NAME_MAX), suffix.trim(), group.trim().take(MintRules.NAME_MAX),
             createdMillis = nowMillis, card = MintRules.cardId(card), limitMinor = limitMinor, statementDay = statementDay, dueDay = dueDay,
             annualAprBasisPoints = annualAprBasisPoints, interestGraceDays = interestGraceDays,
+            earnRateBasisPoints = earnRateBasisPoints, earnSchedule = earnSchedule, earnTaxBasisPoints = earnTaxBasisPoints, earnAutoPost = earnAutoPost,
+            earnFrom = if (earnSchedule != EarnSchedule.OFF) today else null,
         )
         update { it.copy(accounts = it.accounts + account) }
         return Logged(account)
@@ -189,7 +215,11 @@ class MintStore(
             return Logged(null, "Interest estimates are for credit card and pay-later accounts.")
         (MintRules.checkLimit(newType, a.limitMinor) as? Check.Refused)?.let { if (Installments.allowedFor(newType)) return Logged(null, it.reason) }
         if (Installments.allowedFor(newType)) listOf(a.statementDay, a.dueDay).forEach { d -> (MintRules.checkCardDay(newType, d) as? Check.Refused)?.let { return Logged(null, it.reason) } }
+        val earnType = if (a.type.liability == old.type.liability) a.type else old.type
+        (MintRules.checkEarn(earnType, a.earnRateBasisPoints, a.earnSchedule, a.earnTaxBasisPoints) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val next = old.copy(
+            earnRateBasisPoints = a.earnRateBasisPoints, earnSchedule = a.earnSchedule, earnTaxBasisPoints = a.earnTaxBasisPoints, earnAutoPost = a.earnAutoPost,
+            earnFrom = if (a.earnSchedule == EarnSchedule.OFF) null else if (old.earnSchedule == EarnSchedule.OFF) today else old.earnFrom,
             name = a.name.trim(), institution = a.institution.trim().take(MintRules.NAME_MAX), suffix = a.suffix.trim(), group = a.group.trim().take(MintRules.NAME_MAX),
             type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency, card = MintRules.cardId(a.card), hideFromTotal = a.hideFromTotal, appPackage = MintRules.cleanPackage(a.appPackage), limitMinor = if (Installments.allowedFor(newType)) a.limitMinor else 0, statementDay = if (Installments.allowedFor(newType)) a.statementDay else 0, dueDay = if (Installments.allowedFor(newType)) a.dueDay else 0,
             annualAprBasisPoints = if (Installments.allowedFor(newType)) a.annualAprBasisPoints else 0,
@@ -252,17 +282,17 @@ class MintStore(
      */
     fun record(
         type: TxType, amountMinor: Long, accountId: String, toAccountId: String? = null, categoryId: String? = null, payee: String = "", note: String = "",
-        atMillis: Long = nowMillis, status: TxStatus = TxStatus.POSTED, up: Boolean = true, refundOf: String? = null, splits: List<TransactionSplit> = emptyList(),
+        atMillis: Long = nowMillis, status: TxStatus = TxStatus.POSTED, up: Boolean = true, refundOf: String? = null, splits: List<TransactionSplit> = emptyList(), feeMinor: Long = 0,
     ): Logged<Transaction> {
         val currency = data.accounts.firstOrNull { it.id == accountId }?.currency ?: return Logged(null, "Choose an account.")
         if (type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == toAccountId }?.let { target ->
                 Installments.allowedFor(target.type) && Installments.views(data, today).any { it.plan.accountId == target.id && it.remainingMinor > 0 }
             } == true)
             return Logged(null, "Repayments to this account must be allocated to its unpaid installment plans.")
-        val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits)
+        val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }
-        return Logged(tx)
+        return Logged(tx, rewards = payForLog(tx))
     }
 
     /** Changes what was written down. The account's currency can not change under a record; a source of [TxSource.ADJUSTMENT] stays an adjustment. */
@@ -270,7 +300,7 @@ class MintStore(
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
         val next = t.copy(
             planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, planAllocations = old.planAllocations,
-            creditStatementId = old.creditStatementId, source = old.source, createdMillis = old.createdMillis,
+            creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis,
             importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint,
             day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
         )
@@ -290,6 +320,59 @@ class MintStore(
             )
         }
         return Logged(next)
+    }
+
+    // --- interest earned by a deposit account (MINT.md 4.3E) ---------------------------------------------------------------------
+
+    /** The estimates waiting for the player: pending income records [accrueInterest] made, oldest first. */
+    fun interestToReview(): List<Transaction> = data.transactions.filter { it.interestThrough != null && it.status == TxStatus.PENDING }.sortedBy { it.day }
+
+    /**
+     * Makes the estimates now due for every deposit account that earns interest (complete days only; a catch-up after days away is one record). Each is an income
+     * record in the Interest category: pending, so it waits for [confirmInterest], or posted at once for an account set to post without review. Nothing is paid
+     * (16.2). Safe to call as often as wanted: a period already made, in any status, is not made again. Returns how many were made.
+     */
+    fun accrueInterest(): Int {
+        var working = data
+        val made = mutableListOf<Transaction>()
+        for (account in data.accounts) {
+            for (period in MintRules.interestPeriods(working, account, today)) {
+                val amount = MintRules.earnedInterest(working, account, period.from, period.through)
+                if (amount <= 0) continue
+                val tx = Transaction(
+                    newId(), TxType.INCOME, amount, account.currency, noonOf(period.through), period.through, account.id, categoryId = MintRules.INTEREST_CATEGORY,
+                    payee = "Interest", note = "Estimate for ${period.from} to ${period.through}", status = if (account.earnAutoPost) TxStatus.POSTED else TxStatus.PENDING,
+                    createdMillis = nowMillis, interestThrough = period.through,
+                )
+                working = working.copy(transactions = working.transactions + tx)
+                made += tx
+            }
+        }
+        if (made.isEmpty()) return 0
+        update { d ->
+            val withCategory = if (d.categories.any { it.id == MintRules.INTEREST_CATEGORY }) d.categories else d.categories + Category(MintRules.INTEREST_CATEGORY, "Interest", CategoryKind.INCOME)
+            d.copy(categories = withCategory, transactions = d.transactions + made)
+        }
+        return made.size
+    }
+
+    /** Posts an estimate, optionally at the amount the bank really credited. */
+    fun confirmInterest(id: String, amountMinor: Long? = null): Logged<Transaction> {
+        val old = data.transactions.firstOrNull { it.id == id && it.interestThrough != null && it.status == TxStatus.PENDING } ?: return Logged(null, "That estimate is gone.")
+        if (amountMinor != null) (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val next = old.copy(amountMinor = amountMinor ?: old.amountMinor, status = TxStatus.POSTED)
+        update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) next else it }) }
+        return Logged(next)
+    }
+
+    /** Posts every estimate waiting, at its estimated amount. */
+    fun confirmAllInterest(): Int = interestToReview().count { confirmInterest(it.id).record != null }
+
+    /** Leaves an estimate out (kept as a voided record so the same days are not estimated again). */
+    fun skipInterest(id: String): Boolean {
+        if (data.transactions.none { it.id == id && it.interestThrough != null && it.status == TxStatus.PENDING }) return false
+        setStatus(id, TxStatus.VOIDED)
+        return true
     }
 
     // --- statement import (a user-assisted import of a CSV file; no provider is connected) -----------------------------------
@@ -532,7 +615,7 @@ class MintStore(
         val full = bill.expectedMinor
         val payment = BillPayment(newId(), bill.id, dueDay, SettleStatus.PAID.takeIf { bill.estimate || full == null || paidMinor >= full } ?: SettleStatus.PARTIAL, paidMinor, paidDay, tx.id, nowMillis)
         update { d -> d.copy(transactions = d.transactions + tx, billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay } + payment) }
-        return Logged(tx)
+        return Logged(tx, rewards = payForLog(tx))
     }
 
     /** Takes a settlement back, so the occurrence is upcoming, due or overdue again. */
@@ -580,7 +663,7 @@ class MintStore(
             Installments.generate(totalMinor, count, every, first, fee), nowMillis, feeRule = fee,
         )
         update { it.copy(transactions = it.transactions + tx.copy(planId = planId), plans = it.plans + plan) }
-        return Logged(plan)
+        return Logged(plan, rewards = payForLog(tx))
     }
 
     /**
@@ -624,7 +707,7 @@ class MintStore(
         val after = Installments.view(data.copy(transactions = data.transactions + tx), plan, today)
         val fees = after.installments.filter { it.paidMinor > 0 && it.feeMinor > 0 && !it.feeRecorded }.map { feeRecord(plan, it.no, it.feeMinor, day, plan.feeKind) }
         update { it.copy(transactions = it.transactions + tx + fees) }
-        return Logged(tx)
+        return Logged(tx, rewards = payForLog(tx))
     }
 
     /** The bills of a credit account that still have something owed, earliest month first (MINT.md 5.6C). */
@@ -637,16 +720,16 @@ class MintStore(
      * A repayment of one monthly bill (MINT.md 5.6C): a transfer to the account allocated to that month's installments first; anything beyond the bill spills
      * forward into the next bills, and anything beyond every scheduled balance is an ordinary repayment.
      */
-    fun payBill(accountId: String, month: BillMonth, amountMinor: Long, fromAccountId: String, day: LocalDate = today): Logged<Transaction> {
+    fun payBill(accountId: String, month: BillMonth, amountMinor: Long, fromAccountId: String, day: LocalDate = today, feeMinor: Long = 0): Logged<Transaction> {
         if (openBills(accountId).none { it.month == month }) return Logged(null, "That bill has nothing left to pay.")
-        return payPlans(accountId, amountMinor, fromAccountId, day, month)
+        return payPlans(accountId, amountMinor, fromAccountId, day, month, feeMinor)
     }
 
     /**
      * A repayment is allocated installment by installment in due-date order across every unpaid plan on the credit account, so it settles the earliest bill first
      * (or [firstBill] first), never one purchase's whole schedule before another purchase's earlier month.
      */
-    fun payPlans(accountId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today, firstBill: BillMonth? = null): Logged<Transaction> {
+    fun payPlans(accountId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today, firstBill: BillMonth? = null, feeMinor: Long = 0): Logged<Transaction> {
         val to = creditAccount(accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
         val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
         if (from.type.liability) return Logged(null, "Pay from a bank, wallet or cash account.")
@@ -656,7 +739,7 @@ class MintStore(
         if (allocations.isEmpty()) return Logged(null, "There are no unpaid plans on this account.")
         val tx = Transaction(
             id = newId(), type = TxType.TRANSFER, amountMinor = amountMinor, currency = from.currency, atMillis = atMillis(day), day = day,
-            accountId = from.id, toAccountId = to.id, createdMillis = nowMillis, planAllocations = allocations,
+            accountId = from.id, toAccountId = to.id, createdMillis = nowMillis, planAllocations = allocations, feeMinor = feeMinor,
         )
         (checkPlanTransfer(data, tx, to.id) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val withPayment = data.copy(transactions = data.transactions + tx)
@@ -667,7 +750,7 @@ class MintStore(
                 .map { feeRecord(plan, it.no, it.feeMinor, day, plan.feeKind) }
         }
         update { it.copy(transactions = it.transactions + tx + fees) }
-        return Logged(tx)
+        return Logged(tx, rewards = payForLog(tx))
     }
 
     private fun feeRecord(plan: InstallmentPlan, no: Int, amount: Long, day: LocalDate, kind: FeeKind): Transaction =
@@ -920,7 +1003,7 @@ class MintStore(
         val record = ReviewRecord(newId(), today, nowMillis)
         val pays = MintRules.reviewPays(data, today, weekStart())
         update { it.copy(reviews = it.reviews + record) }
-        val rewards = if (pays) pay(MintKind.REVIEW, record.id) else null
+        val rewards = if (pays) pay(MintKind.REVIEW, record.id, reviewStreak()) else null
         if (rewards != null) update { d -> d.copy(reviews = d.reviews.map { if (it.id == record.id) it.copy(paid = true) else it }) }
         return Logged(data.reviews.first { it.id == record.id }, rewards = rewards.orEmpty())
     }

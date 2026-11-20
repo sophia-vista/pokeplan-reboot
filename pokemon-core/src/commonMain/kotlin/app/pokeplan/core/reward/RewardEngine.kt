@@ -273,6 +273,8 @@ data class HealEvent(
 enum class MintKind {
     @SerialName("account_reconciled") RECONCILED,
     @SerialName("financial_review_completed") REVIEW,
+    /** A purchase, a payment or a transfer the player logged (MINT.md 16.2, 20 November 2026): one flat reward, never based on an amount. */
+    @SerialName("record_logged") LOGGED,
 }
 
 /**
@@ -289,6 +291,8 @@ data class MintEvent(
     val ref: String,
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.ALWAYS)
     val module: String = MODULE,
+    /** Only for a review: how many weeks in a row (this one included) had one. A count of weeks, no figure; it adds shiny rolls to the outbreak (POKEMON_ECOSYSTEM.md 10.0). */
+    val streak: Int = 0,
 ) {
     companion object { const val MODULE = "mint" }
 }
@@ -547,12 +551,15 @@ object RewardEngine {
     val HEAL_TRAINER_POINTS: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to HEAL_POINTS, HealKind.PARTICIPATION to HEAL_POINTS, HealKind.STEPS to 0, HealKind.IMPORT to 0)
 
     /** Rare Candies for each MINT moment (Ledger Research). *(tune)* */
-    val MINT_CANDIES: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to 3, MintKind.REVIEW to 5)
+    val MINT_CANDIES: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to 3, MintKind.REVIEW to 5, MintKind.LOGGED to 1)
 
     /** Ledger Research's meter, kept by the app: each moment adds its points and a full meter discovers a Ledger Egg ([mintEgg]). *(tune)* */
-    val MINT_EGG_POINTS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to 2, MintKind.REVIEW to 3)
+    val MINT_EGG_POINTS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to 2, MintKind.REVIEW to 3, MintKind.LOGGED to 1)
     const val MINT_EGG_METER_SIZE = 4
     const val MINT_POINTS = 1
+
+    /** Trainer points for each MINT moment: logging a record pays none, so Mint's trainer points stay at most 3 a day. *(tune)* */
+    val MINT_TRAINER_POINTS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to MINT_POINTS, MintKind.REVIEW to MINT_POINTS, MintKind.LOGGED to 0)
 
     /** Rare Candies for each HOME moment (Habitat Discovery). *(tune)* */
     val HOME_CANDIES: Map<BaseKind, Int> = mapOf(BaseKind.CHORE to 2, BaseKind.MAINTENANCE to 4)
@@ -932,7 +939,60 @@ object RewardEngine {
         val candies = MINT_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)
-        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow + MODULE_POKE, trainerPoints = state.trainerPoints + MINT_POINTS), rewards + Reward.Coins(MODULE_POKE)), ModuleDrops.Module.MINT, rng, if (e.kind == MintKind.REVIEW) Items.NATURE_MINT else null)
+        return ModuleDrops.add(Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow + MODULE_POKE, trainerPoints = state.trainerPoints + MINT_TRAINER_POINTS.getValue(e.kind)), rewards + Reward.Coins(MODULE_POKE)), ModuleDrops.Module.MINT, rng, if (e.kind == MintKind.REVIEW) Items.NATURE_MINT else null)
+    }
+
+    /** Shiny rolls an outbreak gets for each MINT moment, before any streak. *(tune)* */
+    val MINT_OUTBREAK_ROLLS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to 2, MintKind.REVIEW to 3)
+
+    /** One more shiny roll for each week in a row with a review, up to [MAX_OUTBREAK_ROLLS] in all. *(tune)* */
+    const val MAX_OUTBREAK_ROLLS = 7
+    const val OUTBREAK_OPTIONS = 3
+    const val MAX_PENDING_OUTBREAKS = 5
+
+    /** The rarity an outbreak option is drawn from, by percent: a reconciled account mostly Uncommon and Rare, a review Rare and Super Rare. *(tune)* */
+    private val MINT_OUTBREAK_RARITY: Map<MintKind, List<Pair<Rarity, Int>>> = mapOf(
+        MintKind.RECONCILED to listOf(Rarity.UNCOMMON to 60, Rarity.RARE to 30, Rarity.SUPER_RARE to 10),
+        MintKind.REVIEW to listOf(Rarity.RARE to 70, Rarity.SUPER_RARE to 30),
+    )
+
+    /**
+     * The outbreak a rare MINT moment opens (MINT.md 16.2A): [OUTBREAK_OPTIONS] different Pokémon of the Mint Region, drawn from better rarities than an egg gives
+     * (species not caught yet more likely), and [MINT_OUTBREAK_ROLLS] shiny rolls plus one for each week of a review streak. Null for a kind that opens none.
+     */
+    fun mintOutbreak(state: PlayerState, e: MintEvent, id: String, rng: Random): Outbreak? {
+        val table = MINT_OUTBREAK_RARITY[e.kind] ?: return null
+        val known = state.caught + state.pokemon.map { it.speciesId }
+        val chosen = LinkedHashMap<Int, OutbreakOption>()
+        var tries = 0
+        while (chosen.size < OUTBREAK_OPTIONS && tries++ < 60) {
+            var pick = rng.nextInt(100)
+            var rarity = table.last().first
+            for ((r, percent) in table) { if (pick < percent) { rarity = r; break }; pick -= percent }
+            while (rarity.ordinal > 0 && HatchRules.pool(Region.MINT, rarity).isEmpty()) rarity = Rarity.entries[rarity.ordinal - 1]
+            val option = HatchRules.rollWeighted(Region.MINT, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
+            if (option.speciesId !in chosen) chosen[option.speciesId] = OutbreakOption(option.speciesId, option.formIdentifier)
+        }
+        if (chosen.isEmpty()) return null
+        val rolls = ((MINT_OUTBREAK_ROLLS[e.kind] ?: 1) + (e.streak - 1).coerceAtLeast(0)).coerceAtMost(MAX_OUTBREAK_ROLLS)
+        return Outbreak(id, Region.MINT, chosen.values.toList(), rolls, e.nowMillis)
+    }
+
+    /**
+     * Catches the option [speciesId] of [outbreak] directly (no egg): it joins Mint's party if there is room (else the PC), leads it if Mint has no lead, pays the
+     * usual new-species candies, and is shiny with [Outbreak.shinyRolls] times the ordinary chance. Null when the outbreak does not offer that species.
+     */
+    fun claimMintOutbreak(state: PlayerState, outbreak: Outbreak, speciesId: Int, newPokemonId: String, nowMillis: Long, rng: Random): Outcome? {
+        val option = outbreak.options.firstOrNull { it.speciesId == speciesId } ?: return null
+        val known = state.caught + state.pokemon.map { it.speciesId }
+        val size = state.partyOf(PartyIds.MINT).size
+        val p = Hatching.create(newPokemonId, HatchOption(option.speciesId, option.formIdentifier), size, nowMillis, 0, rng, outbreak.shinyRolls.toDouble()).copy(partyId = PartyIds.MINT)
+        val lead = state.mintLead?.id ?: p.id.takeIf { p.inParty }
+        val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
+        return Outcome(
+            state.copy(pokemon = state.pokemon + p, mintLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
+            listOf(Reward.Hatched(p, fromTask = true)) + newRewards,
+        )
     }
 
     /**

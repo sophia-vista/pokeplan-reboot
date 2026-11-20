@@ -244,7 +244,8 @@ object Installments {
         fun sum(f: (Transaction) -> Boolean) = txs.filter(f).sumOf { it.amountMinor }
         return CreditActivity(
             purchasesMinor = sum { it.type == TxType.EXPENSE && it.accountId == accountId },
-            feesMinor = sum { it.type == TxType.FEE && it.accountId == accountId && it.feeKind != FeeKind.INTEREST && it.feeKind != FeeKind.LATE },
+            feesMinor = sum { it.type == TxType.FEE && it.accountId == accountId && it.feeKind != FeeKind.INTEREST && it.feeKind != FeeKind.LATE } +
+                txs.filter { it.type == TxType.TRANSFER && it.accountId == accountId }.sumOf { it.feeMinor },
             interestMinor = sum { it.type == TxType.FEE && it.accountId == accountId && it.feeKind == FeeKind.INTEREST },
             lateFeesMinor = sum { it.type == TxType.FEE && it.accountId == accountId && it.feeKind == FeeKind.LATE },
             refundsMinor = sum { it.type == TxType.REFUND && it.accountId == accountId },
@@ -266,6 +267,7 @@ object Installments {
                 TxType.ADJUSTMENT -> if (fromLiquid) { if (t.up) inflow += t.amountMinor else outflow += t.amountMinor }
                 TxType.TRANSFER -> {
                     val toLiquid = t.toAccountId in liquid
+                    if (fromLiquid) outflow += t.feeMinor
                     if (fromLiquid && !toLiquid) outflow += t.amountMinor
                     if (!fromLiquid && toLiquid) inflow += t.amountMinor
                 }

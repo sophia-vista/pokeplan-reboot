@@ -74,7 +74,8 @@ class MintStoreTest {
     /** One bank account with some history, which is what makes an organising moment worth paying for. */
     private fun Setup.withHistory(): String {
         val a = assertNotNull(mint.addAccount("Savings", AccountType.BANK, "PHP", 100_000).record).id
-        assertNotNull(mint.record(TxType.EXPENSE, 2_500, a, categoryId = "cat-food", payee = "Market").record)
+        // Dated yesterday, so this history is not itself a logged record that pays (MINT.md 16.2): these tests are about organising.
+        assertNotNull(mint.record(TxType.EXPENSE, 2_500, a, categoryId = "cat-food", payee = "Market", atMillis = clock.millis - 86_400_000L).record)
         return a
     }
 
@@ -108,14 +109,20 @@ class MintStoreTest {
     }
 
     @Test
-    fun anExpenseNeverPaysAndTheWorldHearsNothing() {
+    fun incomeAndABackdatedEntryNeverPayButAPurchaseLoggedTodayPaysAFlatEvent() {
         val s = setup()
         val before = s.candies
-        s.withHistory()
-        s.mint.record(TxType.INCOME, 50_000, s.mint.data.accounts.single().id, categoryId = "cat-salary")
-        assertTrue(s.spy.events.isEmpty(), "money moving is never an event")
+        val a = s.withHistory()
+        s.mint.record(TxType.INCOME, 50_000, a, categoryId = "cat-salary")
+        assertTrue(s.spy.events.isEmpty(), "income and a backdated entry are never an event")
         assertEquals(before, s.candies)
         assertTrue(s.game.data.mintPaid.isEmpty())
+        val out = s.mint.record(TxType.EXPENSE, 123_456, a, categoryId = "cat-food", payee = "Market")
+        assertTrue(out.rewards.isNotEmpty())
+        val e = s.spy.events.single()
+        assertEquals(MintKind.LOGGED, e.kind)
+        val text = GameStore.json.encodeToString(MintEvent.serializer(), e)
+        for (secret in listOf("123456", "1234.56", "Savings", "Market", "PHP", "cat-food", a)) assertTrue(secret !in text, "the event leaked $secret: $text")
     }
 
     @Test
