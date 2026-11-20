@@ -1974,11 +1974,11 @@ class GameStore(
         private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research", HealKind.STEPS to "Field Research: steps", HealKind.IMPORT to "Field Research: records read").mapValues { HEAL_LOG_PREFIX + it.value }
 
         /** The most of each MINT kind the world pays in its period *(tune)*, a backstop to the same limits in `MintRules`: reconciled accounts a day, reviews a week. */
-        val MINT_CAPS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to app.pokeplan.mint.MintRules.RECONCILES_PAID_PER_DAY, MintKind.REVIEW to app.pokeplan.mint.MintRules.REVIEWS_PAID_PER_WEEK)
+        val MINT_CAPS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to app.pokeplan.mint.MintRules.RECONCILES_PAID_PER_DAY, MintKind.REVIEW to app.pokeplan.mint.MintRules.REVIEWS_PAID_PER_WEEK, MintKind.LOGGED to app.pokeplan.mint.MintRules.RECORDS_PAID_PER_DAY)
 
         /** Every MINT entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val MINT_LOG_PREFIX = "Mint: "
-        private val MINT_SOURCES = mapOf(MintKind.RECONCILED to "Ledger Research", MintKind.REVIEW to "Ledger Research").mapValues { MINT_LOG_PREFIX + it.value }
+        private val MINT_SOURCES = mapOf(MintKind.RECONCILED to "Ledger Research", MintKind.REVIEW to "Ledger Research", MintKind.LOGGED to "Ledger Research: records").mapValues { MINT_LOG_PREFIX + it.value }
 
         /** The most of each HOME kind the world pays in a day *(tune)*, a backstop to the same limits in `BaseRules`. */
         val BASE_CAPS: Map<BaseKind, Int> = mapOf(BaseKind.CHORE to app.pokeplan.base.BaseRules.CHORES_PAID_PER_DAY, BaseKind.MAINTENANCE to app.pokeplan.base.BaseRules.MAINTENANCE_PAID_PER_DAY)

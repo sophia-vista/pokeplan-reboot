@@ -871,7 +871,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
         if (plansOwed.isNotEmpty() && from != null && to != null) {
             val out = mint.payPlans(to.id, minor, from.id, day, feeMinor = feeMinor)
             if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-            else { message = null; model.say("Saved."); payAt = null; amount = ""; fee = ""; model.haptic() }
+            else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; model.haptic() }
             return
         }
         val out = mint.record(
@@ -880,7 +880,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             payee = payee, note = note, atMillis = at, up = up, splits = splits, feeMinor = feeMinor,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
+        else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
     }
     val otherTypes = quickTypes.filter { it !in mainTypes }
     FormBox {

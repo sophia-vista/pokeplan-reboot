@@ -107,6 +107,17 @@ class MintStore(
     private fun pay(kind: MintKind, recordId: String): List<app.pokeplan.core.reward.Reward>? =
         if (!data.settings.progression) null else world.mint(MintEvent("mint:${kind.name.lowercase()}:$recordId", kind, nowMillis, recordId))
 
+    /**
+     * Pays the flat "logged a record" reward for [tx] (already saved) when [MintRules.logPays] allows, and marks it paid. The event holds no amount (MINT.md 16.2, 16.3).
+     * Returns the rewards, empty when nothing was paid.
+     */
+    private fun payForLog(tx: Transaction): List<app.pokeplan.core.reward.Reward> {
+        if (!MintRules.logPays(data, tx, today)) return emptyList()
+        val rewards = pay(MintKind.LOGGED, tx.id) ?: return emptyList()
+        update { d -> d.copy(transactions = d.transactions.map { if (it.id == tx.id) it.copy(paid = true) else it }) }
+        return rewards
+    }
+
     /** Every amount on a screen goes through this, so hiding values (MINT.md section 3.3) is one switch and covers all of Mint. */
     fun show(minor: Long, currency: String): String = app.pokeplan.mint.Money.format(minor, currency, data.settings.hideValues)
 
@@ -271,7 +282,7 @@ class MintStore(
         val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }
-        return Logged(tx)
+        return Logged(tx, rewards = payForLog(tx))
     }
 
     /** Changes what was written down. The account's currency can not change under a record; a source of [TxSource.ADJUSTMENT] stays an adjustment. */
@@ -279,7 +290,7 @@ class MintStore(
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
         val next = t.copy(
             planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, planAllocations = old.planAllocations,
-            creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, source = old.source, createdMillis = old.createdMillis,
+            creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis,
             importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint,
             day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
         )
@@ -594,7 +605,7 @@ class MintStore(
         val full = bill.expectedMinor
         val payment = BillPayment(newId(), bill.id, dueDay, SettleStatus.PAID.takeIf { bill.estimate || full == null || paidMinor >= full } ?: SettleStatus.PARTIAL, paidMinor, paidDay, tx.id, nowMillis)
         update { d -> d.copy(transactions = d.transactions + tx, billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay } + payment) }
-        return Logged(tx)
+        return Logged(tx, rewards = payForLog(tx))
     }
 
     /** Takes a settlement back, so the occurrence is upcoming, due or overdue again. */
@@ -642,7 +653,7 @@ class MintStore(
             Installments.generate(totalMinor, count, every, first, fee), nowMillis, feeRule = fee,
         )
         update { it.copy(transactions = it.transactions + tx.copy(planId = planId), plans = it.plans + plan) }
-        return Logged(plan)
+        return Logged(plan, rewards = payForLog(tx))
     }
 
     /**
@@ -686,7 +697,7 @@ class MintStore(
         val after = Installments.view(data.copy(transactions = data.transactions + tx), plan, today)
         val fees = after.installments.filter { it.paidMinor > 0 && it.feeMinor > 0 && !it.feeRecorded }.map { feeRecord(plan, it.no, it.feeMinor, day, plan.feeKind) }
         update { it.copy(transactions = it.transactions + tx + fees) }
-        return Logged(tx)
+        return Logged(tx, rewards = payForLog(tx))
     }
 
     /** The bills of a credit account that still have something owed, earliest month first (MINT.md 5.6C). */
@@ -729,7 +740,7 @@ class MintStore(
                 .map { feeRecord(plan, it.no, it.feeMinor, day, plan.feeKind) }
         }
         update { it.copy(transactions = it.transactions + tx + fees) }
-        return Logged(tx)
+        return Logged(tx, rewards = payForLog(tx))
     }
 
     private fun feeRecord(plan: InstallmentPlan, no: Int, amount: Long, day: LocalDate, kind: FeeKind): Transaction =

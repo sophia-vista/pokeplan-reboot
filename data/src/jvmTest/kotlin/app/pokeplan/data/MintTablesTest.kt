@@ -134,6 +134,7 @@ class MintTablesTest {
         val s = live()
         val mint = mintOn(s, game())
         val a = mint.fill()
+        mint.setProgression(false) // a logged record would also mark itself paid (a second write); this test counts plain saves
         countWrites(s)
         mint.record(TxType.EXPENSE, 100, a) // one new row in one table
         assertEquals(1L, writes(s))
@@ -263,7 +264,7 @@ class MintTablesTest {
         mint.setHideValues(true)
         val raw = rawText(s)
         assertTrue(raw.contains("m1."), "rows are sealed")
-        for (secret in listOf("Savings", "Wallet", "Market", "Internet", "100000", "2500", "PHP", "2026-", "hideValues", "Salary")) assertFalse(secret in raw, "a row holds $secret in clear")
+        for (secret in listOf("Savings", "Wallet", "Market", "Internet", "100000", "2500", "PHP", "2026-", "hideValues", "Salary")) assertFalse(secret in raw, "a row holds $secret in clear: ..." + raw.substring((raw.indexOf(secret) - 80).coerceAtLeast(0), (raw.indexOf(secret) + 80).coerceAtMost(raw.length)))
         assertEquals(0L, s.driver.executeQuery(null, "SELECT count(*) FROM mint_transaction WHERE day IS NOT NULL", { c -> QueryResult.Value(if (c.next().value) c.getLong(0) else 0L) }, 0).value)
     }
 

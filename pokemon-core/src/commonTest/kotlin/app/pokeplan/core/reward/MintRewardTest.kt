@@ -35,6 +35,15 @@ class MintRewardTest {
     }
 
     @Test
+    fun aLoggedRecordPaysAFlatCandyAndNoRankAndTheEventHasNoAmount() {
+        val out = RewardEngine.mint(mintState(), event(MintKind.LOGGED), Random(1))
+        assertTrue(out.rewards.any { it is Reward.Candies && it.amount >= RewardEngine.MINT_CANDIES.getValue(MintKind.LOGGED) })
+        assertEquals(10, out.state.trainerPoints, "logging pays no trainer point")
+        assertEquals(1, RewardEngine.MINT_EGG_POINTS.getValue(MintKind.LOGGED))
+        assertTrue("record_logged" in Json.encodeToString(MintEvent.serializer(), event(MintKind.LOGGED)))
+    }
+
+    @Test
     fun aReviewPaysMoreThanAReconciliation() {
         assertTrue(RewardEngine.MINT_CANDIES.getValue(MintKind.REVIEW) > RewardEngine.MINT_CANDIES.getValue(MintKind.RECONCILED))
     }

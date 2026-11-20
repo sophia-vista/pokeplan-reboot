@@ -157,6 +157,8 @@ data class Transaction(
     val creditStatementId: String? = null,
     /** Only for [TxType.TRANSFER]: what the sending side charged on top of [amountMinor] (MINT.md 5.5). The source falls by both; the destination gets only the amount; the fee counts as a fee in spending. */
     val feeMinor: Long = 0,
+    /** Whether logging this record paid Ledger Research's flat reward (MINT.md 16.2). It only counts the day's paid records; it holds no figure. */
+    val paid: Boolean = false,
     /** Only for earned interest (an [TxType.INCOME] record made by [MintRules.accrue]): the last day this estimate covers. The latest one per account is where the next estimate starts. */
     val interestThrough: LocalDate? = null,
     /** One optional receipt image as base64 PNG, kept inside this transaction's sealed record. */
