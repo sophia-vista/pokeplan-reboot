@@ -3,10 +3,9 @@
 **Version:** 1.0  
 **Status:** Owner-approved target specification  
 **Decision status:** Approved; individual expedition participants each receive the full per-Pokémon XP award (not a divided pool)  
-**Baseline reviewed:** `pokeplan-reboot-main`, source archive version `0.123.0`  
 **Last consolidated:** 5 November 2026
 
-> This document defines WORLD's module-specific requirements and contracts. It is not a claim that every described feature is implemented. The Product Bible remains the product-wide authority; the Implementation Guide records baseline status and delivery work. Shared Pokémon ownership, progression, battle identity, Bag, Poké and reward-ledger contracts are defined in `../FEATURES/POKEMON_ECOSYSTEM.md`. Shared visual rules are owned by `../FEATURES/DESIGN_SYSTEM.md`; shared reminder scheduling and delivery are owned by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
+> This document defines WORLD's module-specific requirements and contracts. It is not a claim that every described feature is implemented. The Product Bible remains the product-wide authority; the Implementation Guide records status and delivery work. Shared Pokémon ownership, progression, battle identity, Bag, Poké and reward-ledger contracts are defined in `../FEATURES/POKEMON_ECOSYSTEM.md`. Shared visual rules are owned by `../FEATURES/DESIGN_SYSTEM.md`; shared reminder scheduling and delivery are owned by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
 
 ## 1. Purpose and boundaries
 
@@ -56,7 +55,7 @@ WORLD has five primary destinations. Secondary functions remain contextual rathe
 
 | Destination | Purpose | Primary contents |
 |---|---|---|
-| **Town** (called Base until 13 November 2026, when the BASE module took the name) | Exploration headquarters and community | Rank summary, facilities, active team summary, Finds, Guild attention and story continuation |
+| **Town** | Exploration headquarters and community | Rank summary, facilities, active team summary, Finds, Guild attention and story continuation |
 | **Atlas** | Geographic exploration | Regions, maps, settlements, routes, landmarks, dungeons and Guardian locations |
 | **Expeditions** | Main gameplay loop | Team roster, team presets, dungeon selection, active expeditions, recall and expedition reports |
 | **Guild** | Requests and objectives | Rescue, retrieval, delivery, escort, investigation, challenge and story requests |
@@ -120,9 +119,9 @@ Team rules:
 - Preserve the current six saved team presets, team names and accent identity unless usability testing identifies a material problem.
 - Presets must validate ownership and availability when applied; missing, released or currently assigned members are skipped with clear feedback.
 - Provide a strongest-team recommendation as an optional shortcut, never as an automatic replacement for the user's choice.
-- **Choosing a team that suits the dungeon (owner, 15 November 2026; REP-054).** When picking by hand, **type suitability comes before strength**. For the chosen dungeon the app offers *Recommend team*: candidates are ranked by how many of the dungeon's favoured types they cover first, strength within that group second; each pick shows a short reason (favoured type, coverage, strength, any limit); when the idle roster has no good match it says so and offers the best available. A recommendation is a preview the player applies, and every member stays changeable. The ranking is a selection aid only: it does not change the expedition formula in 3.2, and any change to that formula is simulated first.
+- **Choosing a team that suits the dungeon (REP-054).** When picking by hand, **type suitability comes before strength**. For the chosen dungeon the app offers *Recommend team*: candidates are ranked by how many of the dungeon's favoured types they cover first, strength within that group second; each pick shows a short reason (favoured type, coverage, strength, any limit); when the idle roster has no good match it says so and offers the best available. A recommendation is a preview the player applies, and every member stays changeable. The ranking is a selection aid only: it does not change the expedition formula in 3.2, and any change to that formula is simulated first.
 - **The previous team is never cleared for the player.** It stays saved; when the chosen dungeon changes, a team that suits it poorly is marked so, and *Replace team* swaps the whole team in one action instead of removing members one by one. The manual list shows Pokémon of the favoured types first, with type filters and search, and keeps the chosen members at the top.
-- As built (0.202.0, `TeamAdvice` in world-core, `worldRecommend` and `worldReplaceTeam` in app-core): the Teams editor has dungeon chips, Recommend team and Replace team keys, a poor-match alert (under 33% of the team matching the favoured types) on a saved team, and a search over the whole PC; when nobody matches, the reason line says "strongest instead". Nothing is stored and the formula in 3.2 is unchanged.
+- `TeamAdvice` (world-core), `worldRecommend` and `worldReplaceTeam` (app-core): the Teams editor has dungeon chips, Recommend team and Replace team keys, a poor-match alert (under 33% of the team matching the favoured types) on a saved team, and a search over the whole PC; when nobody matches, the reason line says "strongest instead". Nothing is stored and the formula in 3.2 is unchanged.
 - Team suitability should explain relevant type coverage, moves, abilities and dungeon modifiers without demanding competitive optimization.
 
 Expedition status must show team identity/portraits, destination, current floor, floor count, progress since last settlement, significant discoveries and recall action. Do not simulate literal real-time combat or movement when the result is timestamp-calculated. A visual expedition feed may animate the latest state but must remain honest about what is simulated.
@@ -167,7 +166,7 @@ Requirements:
 - Stable expedition/team/floor/reward identifiers.
 - Preserve fractional elapsed time between settlements where the cap is not exceeded.
 - Clock rollback must not freeze a team until the clock catches up; reconcile the settlement timestamp safely.
-  - *Implemented (0.173.1):* the settlement point follows a clock set back, and the moment it came from is kept (`WorldData.rewoundFrom`); when the clock reaches that moment again, each team's settlement point moves up to it, so a clock set back and forward again does not credit the same stretch twice. What a team climbs on the earlier clock is kept, so the most a back-and-forward change can add is the time really spent on the earlier clock.
+  - The settlement point follows a clock set back, and the moment it came from is kept (`WorldData.rewoundFrom`); when the clock reaches that moment again, each team's settlement point moves up to it, so a clock set back and forward again does not credit the same stretch twice. What a team climbs on the earlier clock is kept, so the most a back-and-forward change can add is the time really spent on the earlier clock.
 - Time-zone changes must not create or erase elapsed progress; use absolute instants for elapsed-time calculations.
 - Handle process death, reboot, app update, interrupted settlement, multiple active teams and repeated settlement idempotently.
 - No reward or floor may be paid twice after retry, migration or restore.
@@ -187,7 +186,7 @@ Inputs include:
 
 The current baseline uses the sum of member levels, adding 20% for each member with a type favored by the dungeon. Floor time is calculated from dungeon base time divided by `1 + power / 100`, with a floor-time minimum of 25% of base; Guardian mastery and relevant legendary bonuses may further reduce time. This is a verified starting implementation, not the final battle model. Preserve its understandable explanatory output while evolving the formula through balance simulations. Skills that improve reward discovery must not silently change floor time unless explicitly documented.
 
-**As built (`BattleIdentity`, rule version 1; numbers *(tune)*):** each member's contribution is its level times (1 + 20% for a favoured type + its identity share), where the share is the sum of named parts, at most 25%: each damaging move of a type the dungeon favours +6% (at most two), one damaging move of power 80 or more +4%, a support (status) move +2%, an ability tied to a favoured type +6% or a general fighting ability +3% (the abilities World's skills use never count here), a held Leftovers or Scope Lens +4%, a Mega Stone held by its own Pokémon +6%. The moves are the owned record's moveset (`OwnedPokemon.moves`; none stored means the natural moves, the last four level-up moves by level). "How fast?" lists every part by name; a move, ability or item not in these rules adds nothing and is not said to. Not done: move effects beyond type and power, conditional abilities, held items beyond the two and the Mega Stone, and tests across level bands for the whole rank range (the economy report covers the common teams).
+**`BattleIdentity` (numbers *(tune)*):** each member's contribution is its level times (1 + 20% for a favoured type + its identity share), where the share is the sum of named parts, at most 25%: each damaging move of a type the dungeon favours +6% (at most two), one damaging move of power 80 or more +4%, a support (status) move +2%, an ability tied to a favoured type +6% or a general fighting ability +3% (the abilities World's skills use never count here), a held Leftovers or Scope Lens +4%, a Mega Stone held by its own Pokémon +6%. The moves are the owned record's moveset (`OwnedPokemon.moves`; none stored means the natural moves, the last four level-up moves by level). "How fast?" lists every part by name; a move, ability or item not in these rules adds nothing and is not said to. Not done: move effects beyond type and power, conditional abilities, held items beyond the two and the Mega Stone, and tests across level bands for the whole rank range (the economy report covers the common teams).
 
 The final model must provide a human-readable suitability explanation and must be tested across team sizes, level bands, type matchups, abilities, moves, dungeon modifiers and rank tiers. No single species, move or type should dominate every dungeon. Broad experimentation must remain viable.
 
@@ -241,7 +240,7 @@ Events must be deterministic per expedition/floor seed. A missing capability may
 
 ### 3.6 Expedition outcomes, defeat and recall
 
-**As built (`Outcomes`; the numbers are *(tune)*, a decision the owner may reverse):** a floor is cleared, a setback or a safe retreat by one deterministic comparison of the team's power (the sum of levels, 20% more for a favored type) with what the floor asks: the dungeon's recommended power (by the rank it needs: Bronze 90, Silver 150, Gold 220, Platinum 300, Diamond 400) times floor/floors. At 40% or more the floor is cleared in full; from 20% to 40% it is a **setback** (half the Poké and Exploration XP, no treasure, find, milestone, side path or choice, no dungeon clear, a job does not move on; the members still get their Pokémon XP and berries still count); under 20% the team **turns back** and comes home safely (the expedition ends). The first floor and every Normal-rank dungeon always clear in full, so a new player with a single starter is never stuck; only Bronze rank and above can set a team back. Nothing earned is rolled back, nothing is injured or locked, the team can be sent again at once, the report and the journal say what happened, and the team page explains how far it clears in full. Moves, abilities and held items count in the power (3.2; `Outcomes` rule version 2). Not done: the shared battle service.
+**`Outcomes` (numbers *(tune)*):** a floor is cleared, a setback or a safe retreat by one deterministic comparison of the team's power (the sum of levels, 20% more for a favored type) with what the floor asks: the dungeon's recommended power (by the rank it needs: Bronze 90, Silver 150, Gold 220, Platinum 300, Diamond 400) times floor/floors. At 40% or more the floor is cleared in full; from 20% to 40% it is a **setback** (half the Poké and Exploration XP, no treasure, find, milestone, side path or choice, no dungeon clear, a job does not move on; the members still get their Pokémon XP and berries still count); under 20% the team **turns back** and comes home safely (the expedition ends). The first floor and every Normal-rank dungeon always clear in full, so a new player with a single starter is never stuck; only Bronze rank and above can set a team back. Nothing earned is rolled back, nothing is injured or locked, the team can be sent again at once, the report and the journal say what happened, and the team page explains how far it clears in full. Moves, abilities and held items count in the power (3.2). Not done: the shared battle service.
 
 Expeditions must have meaningful outcomes without making Pokémon disposable or turning failure into a punishment loop.
 
@@ -308,7 +307,7 @@ Reuse the current story DSL/runtime, scene models, branch execution, resume stat
 - Cinematic scenes for significant events.
 - Background and environment changes.
 - Scripted sprite movement and expressions.
-- Narration, dialogue, sound effects and Pokémon cries. **As built:** the engine adds sounds on its own (`StoryCues`: the emote clips of the Mystery Dungeon games for a speaker's changing face and for emotes, the stairs on entering a dungeon, a rumble under a long shake, wind, fire or electricity for a cold, fiery or stormy place, a tick on advancing a line), a script can name any `Sfx` with `sound("NAME")` (the Explorers of Sky cutscene clips are `STORY_*`, levelled to sit with the cries), and a cry takes a small voice (`CryVoice`): a stable detune of its own and a pitch and speed for the line's feeling, never more than 15% from the recording, a level by feeling and distance (default 100%, loud 120%, low 80%, injured 95%, seriously injured 85%; near, medium, far), and the cry of a speaker whose face turns strongly plays just before the face changes. Not built: a modulation curve over the cry's length (the report's "stroke") and cries guided by voice acting, which need the cries re-rendered offline, not a player setting.
+- Narration, dialogue, sound effects and Pokémon cries. The engine adds sounds on its own (`StoryCues`: the emote clips of the Mystery Dungeon games for a speaker's changing face and for emotes, the stairs on entering a dungeon, a rumble under a long shake, wind, fire or electricity for a cold, fiery or stormy place, a tick on advancing a line), a script can name any `Sfx` with `sound("NAME")` (the Explorers of Sky cutscene clips are `STORY_*`, levelled to sit with the cries), and a cry takes a small voice (`CryVoice`): a stable detune of its own and a pitch and speed for the line's feeling, never more than 15% from the recording, a level by feeling and distance (default 100%, loud 120%, low 80%, injured 95%, seriously injured 85%; near, medium, far), and the cry of a speaker whose face turns strongly plays just before the face changes. Not built: a modulation curve over the cry's length (the report's "stroke") and cries guided by voice acting, which need the cries re-rendered offline, not a player setting.
 - Branches, conditional lines, callbacks and flags.
 - Scene/episode resume, replay and archive completion state.
 
@@ -384,16 +383,9 @@ A Guardian's perk may benefit WORLD or another module only through the shared Gu
 
 WORLD is the primary player-facing home for the expanded mainline, PMD and Ranger-inspired Pokémon activities. The shared Pokémon domain remains authoritative for owned Pokémon, abilities, natures, moves, evolution, held-item assignments, item inventory, item effects and reward settlement. WORLD owns the presentation and local gameplay state for expeditions, shops, crafting, jobs, contests, Pokéathlon, Berry Garden, cooking, camps, fossils, raids/boss variants, outbreaks, research encounters and Ranger-style field interactions.
 
-The approved staged scope is defined in `../FEATURES/POKEMON_ECOSYSTEM.md` Section 20. Core rules include:
-- Held items are persistent, reusable, non-consumable equipment and never lifetime single-use. An effect trigger never consumes, breaks, charges or removes the item; scoped trigger/cooldown state is separate from inventory and resets for later eligible encounters.
-- Item acquisition is explicit and source-backed: expedition loot, missions, bosses/Guardians, permanent shops, crafting, foraging, research, capped Pokémon abilities/jobs and authored story rewards. All delivery uses the shared Bag and ledger.
-- Evolution stones/materials, vitamins, TMs, Poké Balls, berries, shards, fossils and other item categories retain their own canonical consumable/material/equipment classifications.
-- Mega Evolution, Z-Moves, Dynamax/Gigantamax and Terastallization use one shared transformation framework. Temporary transformation state never creates a duplicate owned Pokémon or permanently inflates base stats.
-- Abilities, Hidden Abilities, natures/Mints, moves/mastery, bounded training, Ribbons/Marks and Pokédex research are shared Pokémon identity/progression systems, not WORLD-owned shadow attributes.
-- Jobs and other offline activities settle deterministically, cannot double-assign incompatible Pokémon, and never create attendance penalties or expiring essential rewards.
-- Contests, Pokéathlon, camps, cooking, Berry Garden, fossils, outbreaks, raids, Secret Bases and Ranger field mechanics are optional Pokémon activities. They do not depend on personal health, financial, relationship, diary or household data.
+The approved staged scope and its rules (persistent reusable held items, source-backed item acquisition, the shared transformation framework, shared abilities, natures, moves and Ribbons, offline jobs) are `../FEATURES/POKEMON_ECOSYSTEM.md` Section 20. Contests, Pokéathlon, camps, cooking, Berry Garden, fossils, outbreaks, raids, Secret Bases and Ranger field mechanics are optional Pokémon activities and do not depend on personal health, financial, relationship, diary or household data.
 
-WORLD facilities may expose shops, training, item refinement/crafting, research and activity interfaces, but all inventory mutations must go through the shared inventory/economy services. Essential evolution/progression materials require reliable acquisition paths. Do not introduce a WORLD-only Bag, currency, friendship meter, collection or item ownership model.
+WORLD facilities may expose shops, training, item refinement and crafting, research and activity interfaces, but all inventory mutations go through the shared inventory and economy services. Essential evolution and progression materials need reliable acquisition paths. No WORLD-only Bag, currency, friendship meter, collection or item ownership model.
 
 ## 6. Data ownership, relationships and persistence
 
@@ -490,35 +482,14 @@ WORLD works without an account or internet connection. It requires no location p
 
 WORLD uses the immersive presentation intensity defined in `../FEATURES/DESIGN_SYSTEM.md`. It may use PMD scene composition, character portraits, expressive dialogue panels, pixel environments, sprites, tile maps and contextual sound, while retaining shared typography, spacing, tokens, borders, buttons, dialogs, interaction states and accessibility behavior.
 
-Primary shared components:
-- **PrimaryDialogueBox:** important character messages, contextual prompts and major action groups.
-- **SecondaryDialogueBox:** supporting status, expedition reports and grouped context.
-- **InlinePanel/FramedSurface:** team configuration, dungeon information and controls that are not dialogue.
-- **CharacterPortrait:** authored story scenes and significant Pokémon interactions.
-- **ListRow/DataRow:** mission lists, team rosters, research and history.
-- **ProgressIndicator:** rank, expedition and research progress where a visual indicator adds value.
-- **DialogueDialog/BottomSheet/ConfirmationPrompt:** contextual actions, team editing and consequential confirmations.
-
-Presentation rules:
-- Use actual PMD dialogue-box geometry and crisp pixel-inspired borders; do not make every value or row a dialogue box.
-- Dialogue panels are content-driven and adapt to available width; no fixed speech-bubble dimensions.
-- Use system typography for long descriptions, dense data and accessibility-critical text. Pixel fonts are limited to short accents or authored game dialogue where legible.
-- Preserve original pixel-art dimensions and nearest-neighbor rendering; use nine-slice borders without stretching corners.
-- Use character portraits, background changes and scripted sprite movement for narrative emphasis, not decoration on every utility surface.
-- Keep the primary action obvious; use progressive disclosure for advanced controls.
-- Avoid dashboard clutter, redundant captions, nested boxes and repeated reward fanfare.
+Components, tokens and accessibility behavior are `../FEATURES/DESIGN_SYSTEM.md`'s (dialogue boxes, portraits, rows, progress indicators, dialogs and bottom sheets). WORLD-specific rules:
+- Use actual PMD dialogue-box geometry; do not make every value or row a dialogue box. Panels are content-driven, with no fixed speech-bubble dimensions.
+- Use system typography for long descriptions, dense data and accessibility-critical text; pixel fonts only for short accents or authored game dialogue.
+- Preserve original pixel-art dimensions and nearest-neighbor rendering; nine-slice borders without stretching corners.
+- Portraits, background changes and scripted sprite movement are for narrative emphasis, not decoration on every utility surface.
+- Keep the primary action obvious; progressive disclosure for advanced controls. Avoid dashboard clutter, redundant captions, nested boxes and repeated reward fanfare.
 - Sound effects, cries and music have separate controls; essential information never depends on sound.
-
-Accessibility and responsiveness:
-- Light and dark themes are first-class.
-- Respect system text scaling and display size; content must reflow without clipping.
-- TalkBack names, roles, state descriptions and logical traversal for all controls.
-- Minimum 48 dp interactive targets.
-- Reduced-motion support; no essential content depends on animation.
-- Sound can be disabled independently.
-- Map has a text/list alternative; color is never the only state indicator.
-- Provide alternatives to long press, drag, swipe and timed choices.
-- Verify phone, landscape where relevant, tablet/foldable and narrow/wide layouts.
+- The map has a text/list alternative; color is never the only state indicator; long press, drag, swipe and timed choices have alternatives. Verify phone, landscape where relevant, tablet/foldable and narrow/wide layouts.
 
 ## 9. Privacy, security and data lifecycle
 
@@ -531,107 +502,17 @@ Accessibility and responsiveness:
 - Imported/restored records must not replay rewards, recruitment, story grants or mission claims.
 - Asset provenance/licensing is tracked separately; assets without clear distribution rights are not bundled in a public release.
 
-## 10. Existing implementation audit — baseline 0.123.0
+## 10. Ownership rules for reuse and migration
 
-The supplied source archive contains a substantial WORLD foundation. The implementation direction is **reuse and refactor**, not a ground-up rewrite of the expedition engine.
+Reuse and refactor `world-core`; never rewrite the expedition engine. WORLD-owned Poké, Exploration XP/rank derivation and permanent item or treasure inventory are retired in favour of the shared economy, progression record and Bag; WORLD keeps only its source events and pending delivery references. WORLD mutates shared Pokémon only through the shared progression and recruitment APIs. Do not discard pending reward state until all outstanding rewards are reconciled, and do not remove legacy storage before migration fixtures prove the data is represented in the new owners. Settlement is driven by WORLD entry, resume and persisted timestamps, never by UI polling. The open ownership item (World's own `xp` and `treasure`) is in 14.8.
 
-*Status note (20 November 2026): this audit is a dated record of 0.123.0. Since then the five destinations of section 2 are built (`WorldSection` in `ui/world/World.kt`) and settlement no longer polls (14.5); the items below that say "open" still stand. Section 14 is the current state.*
+## 11. Priorities
 
-### 10.1 Reuse after review
+WORLD work follows the dependency-first roadmap in the Implementation Guide. Do not broaden campaign content while shared ownership and migration remain unresolved. Order of what is open:
 
-The direction is reuse and refactor, not a rewrite of the expedition engine: keep `world-core` (`WorldSim` deterministic settlement and seeds, `WorldData`, teams, expeditions and presets, `Dungeons` and `Layers`, `Missions`, `Choices`, `FloorEvents`, `DungeonModifiers`, `Notebook`, `Research`, `WorldMoments`, `Legends`, the story DSL and chapter files, the `WorldSpeed` explanation), and reuse PMD/mainline maps, sprites, portraits, item art, tilesets and SFX only after asset provenance and rendering checks. Existing tests are preserved, updated and expanded, with integration and device coverage added.
-
-### 10.2 Refactor and improve
-
-**Persistence and ownership** *(open: `xp` and unopened `treasure` are still World's own; Poké and items already go to the shared services)*: `WorldData` stored WORLD-local `xp`, `poke`, item quantities and treasure counts alongside teams, story, Finds and research. These balances/quantities conflict with the Product Bible's shared Exploration Rank, shared Poké and shared Bag. Move authoritative values to shared services; retain only WORLD source events and pending delivery references. Review `GameStore`'s WORLD-specific functions and establish module-owned repositories/use cases with transactions and migration.
-
-**Expedition rewards:** current `WorldSim` deterministically calculates floor XP, Poké, berries, treasure, Finds, milestones and events. Keep deterministic settlement, but route each reward through shared idempotent services. Add the approved individual Pokémon XP award to every participating member per completed eligible floor; do not split the award.
-
-**Strength model:** current power sums Pokémon levels and applies a 20% favored-type bonus per matching member. Floor time uses `base / (1 + power / 100)`, with a 25% minimum, plus mastery/legendary modifiers. Retain as a tested starting point and migrate toward the shared simplified battle identity model using stats, types, moves and abilities. Do not replace with opaque math or assume the current formula is final.
-
-**Navigation:** the current landing/navigation was simplified in 0.121.0. Reconcile the existing UI into the target Town, Atlas, Expeditions, Guild and Journal destinations. Reuse screens and components that pass UX/accessibility review; move skills, facilities, research, recruitment and settings into contextual destinations.
-
-**Expedition presentation:** improve team suitability, dungeon preview, active status, progress summaries, reward explanation and report readability. Clearly separate guaranteed, milestone and chance-based rewards.
-
-**Story:** the 0.123.0 baseline already separates Mew's opening from regional layers, keeps Rescue Team and Explorers distinct, executes story branch actions and supports recursive branch validation. Do not rebuild these as missing. Extend the runtime, content coverage, replay-safety and authoring validation pipeline.
-
-**Lifecycle/performance:** remove recurring three-second UI polling as a settlement mechanism. Settle on WORLD entry/resume and relevant transitions using persisted timestamps. Profile large save settlement, multi-team operation, animation and rendering.
-
-**Visuals:** existing Compose components such as `TextBox`, `PixelButton` and `PixelBar` are candidates for selective reuse, not automatic approval. Assess against the shared dialogue-box anatomy, content sizing, themes, TalkBack, text scaling and responsive layout.
-
-### 10.3 Retire or replace
-
-- WORLD-owned Poké balance → shared economy balance.
-- WORLD-owned Exploration XP/rank derivation → shared progression record; WORLD emits eligible events.
-- WORLD-owned permanent item/treasure inventory → shared Bag and treasure/reward services.
-- Direct shared Pokémon mutation from WORLD → shared Pokémon progression/recruitment APIs.
-- Monolithic WORLD operations embedded in `GameStore` → module-owned use cases/repositories behind shared services.
-- Old navigation grouping → five primary destinations.
-- Continuous UI polling → lifecycle-aware deterministic settlement.
-- Hardcoded campaign-specific progression where reusable content configuration is appropriate → validated campaign/region configuration.
-
-Do not discard pending reward state until all outstanding rewards are safely reconciled. Do not remove legacy storage before migration fixtures prove the data is represented in the new owners.
-
-## 11. Implementation phases and priorities
-
-WORLD work follows the dependency-first roadmap in the Implementation Guide. Do not broaden campaign content while shared ownership and migration remain unresolved.
-
-### Phase 0 — Architecture and migration (P0)
-- Finalize WORLD/shared-service dependency contracts.
-- Inventory legacy WORLD fields, save versions, `GameStore` operations, alarm/notification identities and reward paths.
-- Define transactional migration from 0.123.0.
-- Reconcile WORLD XP/Poké/items/treasure with shared progression/economy/Bag.
-- Define reward idempotency keys and pending delivery reconciliation.
-- Define individual Pokémon XP event contract and test fixtures.
-- Preserve historical team, dungeon, story, mission, research and Guardian progress.
-
-**Exit criteria:** existing saves migrate without data loss, duplicate Pokémon, duplicate rewards, duplicated currency or duplicated items; interrupted migration resumes safely.
-
-### Phase 1 — Core gameplay and navigation (P1)
-- Implement Town, Atlas, Expeditions, Guild and Journal on the shared app shell.
-- Complete team assignment, presets, dungeon selection and suitability explanation.
-- Integrate shared collection, Finds/recruitment, Bag, Poké, Exploration Rank and reward ledger.
-- Implement per-floor individual Pokémon XP for each participating member.
-- Complete mission progress and claim delivery.
-- Replace polling with lifecycle-aware settlement and validate offline recovery.
-
-**Exit criteria:** full basic exploration loop works offline through process death/reboot, with deterministic and idempotent rewards.
-
-### Phase 2 — Story and regional foundations (P1)
-- Complete the Mew/Mythical introductory tutorial.
-- Complete story runtime, branch/resume/replay validation.
-- Keep Rescue Team and Explorers as separate authored campaigns.
-- Improve existing regional campaigns and story archive.
-- Establish region/campaign content schema and asset validation pipeline.
-
-**Exit criteria:** opening and campaign framework are playable, resumable, replayable and do not re-award rewards on replay.
-
-### Phase 3 — Deeper expedition gameplay (P2)
-- Finalize shared battle-strength model for idle expedition resolution.
-- Incorporate relevant stats, types, moves, abilities and dungeon modifiers.
-- Expand field moves, floor events, choices and side paths.
-- Improve research, skills, facilities and useful Poké sinks.
-- Simulate rank progression, team balance, XP, rewards, rarity and long-run economy.
-
-**Exit criteria:** team composition matters without competitive micromanagement; progression remains generous, understandable and sustainable.
-
-### Phase 4 — Regional content expansion (P2)
-- Complete authored PMD and mainline region coverage in a sustainable sequence.
-- Add further PMD settings and permanent legendary investigations.
-- Add Ranger regions Fiore, Almia and Oblivia after the PMD/mainline foundations.
-- Expand settlements, routes, dungeons, regional rosters, missions, Guardians and postgame.
-
-**Exit criteria:** every released region has coherent geography, regional availability, entry-level content, deeper progression, missions and authored story identity.
-
-### Phase 5 — Polish and release QA (P0 before release)
-- Complete asset provenance/licensing review.
-- Test offline settlement, restore, migration and duplicate reward protection.
-- Test widgets, launcher deep links and optional notifications.
-- Complete light/dark, TalkBack, font scaling, reduced-motion and touch-target review.
-- Profile battery, memory, rendering and large-save settlement.
-- Run automated domain/integration tests and physical Android device acceptance.
-
-**Exit criteria:** no unresolved critical data, reward, privacy, accessibility, licensing, lifecycle or performance defects.
+1. **Deeper expedition gameplay (P2):** the shared battle-strength model for idle resolution (stats, types, moves, abilities, dungeon modifiers); more field moves, floor events, choices and side paths; useful Poké sinks; simulation of rank progression, team balance, XP, rewards, rarity and the long-run economy. Exit: team composition matters without competitive micromanagement; progression stays generous, understandable and sustainable.
+2. **Regional content expansion (P2):** authored PMD and mainline coverage in a sustainable sequence, further PMD settings and permanent legendary investigations, then the Ranger regions (Fiore, Almia, Oblivia); settlements, routes, dungeons, regional rosters, missions, Guardians and postgame. Exit: every released region has coherent geography, regional availability, entry-level content, deeper progression, missions and authored story identity.
+3. **Polish and release QA (P0 before release):** asset provenance and licensing review; offline settlement, restore, migration and duplicate-reward tests; widgets, launcher deep links and optional notifications; light/dark, TalkBack, font scaling, reduced-motion and touch-target review; battery, memory, rendering and large-save profiling; physical-device acceptance. Exit: no unresolved critical data, reward, privacy, accessibility, licensing, lifecycle or performance defects.
 
 ## 12. Acceptance criteria
 
@@ -691,7 +572,7 @@ WORLD work follows the dependency-first roadmap in the Implementation Guide. Do 
 Shared persistence, transactional reward delivery, backup/restore, legacy save migration and recovery follow `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`. WORLD owns adventure progress but not canonical Pokémon ownership, Bag, currency or the shared reward ledger.
 
 - Product-wide intent and module ownership: `../PRODUCT_BIBLE.md`.
-- Baseline audit and delivery order: `../IMPLEMENTATION_GUIDE.md`.
+- Delivery order and status: `../IMPLEMENTATION_GUIDE.md`.
 - Shared Pokémon collection, progression, battle identity, acquisition, economy and reward ownership: `../FEATURES/POKEMON_ECOSYSTEM.md`.
 - Expanded item acquisition, persistent held-item rules, abilities, moves, transformations and optional Pokémon activities: `../FEATURES/POKEMON_ECOSYSTEM.md` Section 20.
 - Shared PMD visual language and components: `../FEATURES/DESIGN_SYSTEM.md`.
@@ -699,7 +580,7 @@ Shared persistence, transactional reward delivery, backup/restore, legacy save m
 
 This file is the single WORLD requirements source. Do not maintain parallel WORLD feature specifications with conflicting ownership or behavior. The story documents (`docs/world-story-*.md`) and the source code are references; when they conflict with the approved Product Bible or this specification, the current approved specifications take precedence.
 
-## 14. Mechanics as built (rules and numbers)
+## 14. Mechanics (rules and numbers)
 
 The rules the code implements today, which code comments cite as the World rules. Numbers are starting values *(tune)*; the year-long simulation is `./gradlew :world-core:simulateWorldEconomy` (writes `docs/world-economy-report.md`; re-run it after any World number changes), and every reward source is in `docs/economy.md`.
 
@@ -731,7 +612,7 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 - **Dungeon modifiers:** about a third of (dungeon, UTC day) pairs have one, each floor using the day it was climbed: +20% Poké, berries easier (+20 points), treasure (+4 points), or finds (+1 point). Rewards only.
 
 ### 14.5 Missions (jobs)
-- The board opens at story chapter 2 of the home layer; three jobs at a time. Kinds: Explore, Find items, Rescue, Deliver, Escort (a team of a size), Defeat (a team power), and since 0.156.0 Investigation, Challenge and Story. A job is one-time, ordinary (back after 14 days, so repeating is no faster than exploring), weekly (7 days) or the daily berry run (1 day, coming back at the player's midnight). The board states why a job is unavailable (rank, already done, days left).
+- The board opens at story chapter 2 of the home layer; three jobs at a time. Kinds: Explore, Find items, Rescue, Deliver, Escort (a team of a size), Defeat (a team power), Investigation, Challenge and Story. A job is one-time, ordinary (back after 14 days, so repeating is no faster than exploring), weekly (7 days) or the daily berry run (1 day, coming back at the player's midnight). The board states why a job is unavailable (rank, already done, days left).
 - **Finished-job alert (Android):** when a team will climb to a job's floor, one alarm is set for the earliest such moment (`WorldSim.jobsDoneAt`, `WorldAlerts.nextJobDone`; Settings, on by default); it settles World and names the finished job or how many are ready. Berry jobs have no forecast. Settling otherwise happens on entry and at the next due floor (`WorldSim.nextFloorAt`), never by polling.
 
 ### 14.6 Story, quests and Guardians
@@ -751,21 +632,21 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 | Sinnoh | Dialga / Palkia | Mt. Coronet / Spear Pillar 3 times | Steel / Water dungeons 10% faster |
 | Sinnoh | Giratina (Guardian) | Distortion World, after its Guardian | 3% more treasure boxes |
 
-- **Plan has no quest for a legendary World gives** (owner, 1 November 2026): Zapdos, Articuno, Moltres, Mewtwo, Mew, Lugia, Ho-Oh, Groudon, Kyogre, Rayquaza and the other World-given ones (`Legends.coveredSpecies`; the list is `Legends.all`). A finished Plan quest stays finished and its Pokémon owned. Every other legendary keeps its Plan quest until a World layer or a module's arc gives it.
-- A region's story follows five parts: Arrival, Investigation, Awakening, Confrontation, Resolution, with the box legendary felt from the start (signs, then mythology, then the encounter). The journey advances only through WORLD's teams (owner, 1 November 2026): module quests and tasks never feed travel.
+- **Plan has no quest for a legendary World gives:** Zapdos, Articuno, Moltres, Mewtwo, Mew, Lugia, Ho-Oh, Groudon, Kyogre, Rayquaza and the other World-given ones (`Legends.coveredSpecies`; the list is `Legends.all`). A finished Plan quest stays finished and its Pokémon owned. Every other legendary keeps its Plan quest until a World layer or a module's arc gives it.
+- A region's story follows five parts: Arrival, Investigation, Awakening, Confrontation, Resolution, with the box legendary felt from the start (signs, then mythology, then the encounter). The journey advances only through WORLD's teams: module quests and tasks never feed travel.
 
 ### 14.7 Decisions on record (owner)
 1. The Mystery Dungeon world is a main map; regions are layers beside it; nothing existing is replaced.
-2. All mainline regions in game order, one layer each (Unova, Kalos, Alola, Galar and Paldea are since built, see 5), then Hisui as a historical layer (Arceus, and the items that unlock the Origin forms of Dialga, Palkia and Giratina), then the other Mystery Dungeon continents and spin-off settings (Ranger regions, Orre) one layer each. A region's extra areas are late dungeons of it; special spaces (Distortion Rift, Hyperspace Lumiose, Ultra Space, Area Zero) are Guardian-tier places in their region.
+2. All mainline regions in game order, one layer each (Unova, Kalos, Alola, Galar and Paldea are built, see 5), then Hisui as a historical layer (Arceus, and the items that unlock the Origin forms of Dialga, Palkia and Giratina), then the other Mystery Dungeon continents and spin-off settings (Ranger regions, Orre) one layer each. A region's extra areas are late dungeons of it; special spaces (Distortion Rift, Hyperspace Lumiose, Ultra Space, Area Zero) are Guardian-tier places in their region.
 3. A region's Pokémon are found only in that region; official game map art for each.
 4. Main (box) legendaries are quests and Guardians of their region; side legendaries (Mew also as a Kanto quest, the beasts, Celebi, Latias and Latios, Jirachi, Deoxys, the regis and the like) are featured by modules, not regions. A Guardian helps other places depending on the module it is placed in.
 
-5. *(Owner, 14 November 2026)* The Unova, Kalos, Alola, Galar, Paldea and Hisui layers are built (nine dungeons each from the regional dex, five authored chapters, the box legendaries as quests and Guardians: Reshiram, Zekrom, Kyurem; Xerneas, Yveltal, Zygarde; Solgaleo, Lunala, Necrozma; Zacian, Zamazenta, Eternatus; Koraidon, Miraidon, Terapagos; Arceus). They have no map picture yet (no game map art could be fetched), so their dungeons are a list. Evolution Trials happen there (`EvolutionTrialSites`): a team member that could make a special evolution reaches its trial floor in a dungeon of the evolution's region. Paldea's floors and milestones give Gimmighoul Coins.
+5. The Unova, Kalos, Alola, Galar, Paldea and Hisui layers are built (nine dungeons each from the regional dex, five authored chapters, the box legendaries as quests and Guardians: Reshiram, Zekrom, Kyurem; Xerneas, Yveltal, Zygarde; Solgaleo, Lunala, Necrozma; Zacian, Zamazenta, Eternatus; Koraidon, Miraidon, Terapagos; Arceus). They have no map picture yet (no game map art could be fetched), so their dungeons are a list. Evolution Trials happen there (`EvolutionTrialSites`): a team member that could make a special evolution reaches its trial floor in a dungeon of the evolution's region. Paldea's floors and milestones give Gimmighoul Coins.
 
 ### 14.8 Not built and open
 - Settlements and routes as map nodes, fog of war, a story track versus an optional exploration track, regional jobs for the mainline layers, postgame per region (deeper floors, modifiers, rematches), fuller story text, the remaining regions and spin-off layers above.
-- More skills (Mining, Archaeology, Survival, Navigation), Friend Area camps, Storage and the Duskull Bank, team roles and equipment, Pokégear helpers.
-- Open: how the boosts of several Guardians in one region combine (assumed: they add within the cap); which module features which side legendary and which Guardian helps which module; whether spin-off layers follow the one-layer-each rule (assumed yes); marker positions on the region maps (read by eye, need a device check); a device test of the job alarm.
+- More skills (Mining, Archaeology, Survival, Navigation), Friend Area camps, Storage and the Duskull Bank, team roles and equipment.
+- Open: `WorldData` still keeps its own Exploration `xp` and unopened `treasure` counts (the Poké and items already go to the shared services); moving the XP into the shared Exploration Rank record is unfinished. How the boosts of several Guardians in one region combine (assumed: they add within the cap); which module features which side legendary and which Guardian helps which module; whether spin-off layers follow the one-layer-each rule (assumed yes); marker positions on the region maps (read by eye, need a device check); a device test of the job alarm.
 
 ## Shared Pokémon ecosystem contract
 

@@ -324,9 +324,9 @@ Helper Pokémon are an optional visual identity element, not a GEAR system of pr
 - Helper Pokémon are the fourth Pokémon role (`FEATURES/POKEMON_ECOSYSTEM.md` section 2.2): aesthetics only. If a helper is selected/available for a tool, its compact sprite is used as the tool icon in the GEAR catalog and the GEAR menu, and may appear in the tool header when it fits.
 - If no suitable helper sprite is available, use the normal tool/item icon. Never show an empty helper placeholder.
 - The sprite must not displace the tool name, reduce touch targets, occupy the working area or obscure results.
-- A helper is one of the Pokémon places (`FEATURES/POKEMON_ECOSYSTEM.md` section 2.2): a Pokémon helps **one** tool and is then in no party, not the buddy and not on a WORLD team; choosing it moves it from where it was. Nothing picks a helper automatically from the collection (that would take a Pokémon out of the PC unasked): a tool without a chosen helper shows its normal icon (the Ranger loaners were retired in 0.145.0).
+- A helper is one of the Pokémon places (`FEATURES/POKEMON_ECOSYSTEM.md` section 2.2): a Pokémon helps **one** tool and is then in no party, not the buddy and not on a WORLD team; choosing it moves it from where it was. Nothing picks a helper automatically from the collection (that would take a Pokémon out of the PC unasked): a tool without a chosen helper shows its normal icon.
 - Helper selection affects presentation only. It does not alter calculations, permissions, tool behavior, unlocks, availability or outcomes.
-- No helper recruitment, acquisition, loan progression, eligibility challenge, friendship, levels, XP, rewards, collection records or helper-specific quests are part of GEAR. Existing helper assignment/loan mechanics must be inspected and simplified or retired where they imply gameplay effects; retain only a visual preference if it has independent user value.
+- No helper recruitment, acquisition, loans, eligibility challenge, friendship, levels, XP, rewards, collection records or helper-specific quests are part of GEAR; a helper is only a visual preference.
 - Small reactions may occur after a real user action when an appropriate asset exists. Do not trigger reactions on recomposition, polling, every keystroke or routine screen redraw.
 - Respect reduced motion and sound settings. Static sprite is the default fallback.
 
@@ -361,7 +361,7 @@ Ownership boundaries:
 - Android platform adapters own hardware API access; GEAR domain logic owns tool behavior and interprets capability results.
 - Shared design system owns reusable UI components and tokens; GEAR defines only tool-specific layout adaptations.
 
-All GEAR records and preferences are local-only. They must not be uploaded, synchronized, sent to telemetry or shared with social systems (there is no cloud, account or sync since 0.130.0). Local backup/export behavior is user-controlled and documented. Preserve local-only state boundaries through migrations and test that nothing GEAR keeps can leak into a shared payload.
+All GEAR records and preferences are local-only. They must not be uploaded, synchronized, sent to telemetry or shared with social systems. Local backup/export behavior is user-controlled and documented. Preserve local-only state boundaries through migrations and test that nothing GEAR keeps can leak into a shared payload.
 
 ## 9. Privacy, permissions and offline behavior
 
@@ -467,9 +467,9 @@ Do not add weather, habit tracking, health tracking, expense tracking or another
 - Shared local persistence, transaction, backup/restore and migration contracts: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`.
 - Android permissions, provider integrations and privacy boundaries: relevant documents under `../ARCHITECTURE/`.
 
-## 15. As built (0.197.0, corrected for 0.198.0)
+## 15. As built
 
-*Compiled for Android and covered by JVM tests of the rules (calculator, Everyday sums, dice, light, QR payloads, sensor maths, timers); audited end to end in 0.171.2; not run on a device, with no TalkBack or font-scale evidence.* Gear pays nothing and has no store of its own: the actions are extension functions on `GameStore` (`app/gear/GearActions.kt`, `GearTimers.kt`), the screens are in `ui/gear/`.
+*Compiled for Android and covered by JVM tests of the rules (calculator, Everyday sums, dice, light, QR payloads, sensor maths, timers); not run on a device, with no TalkBack or font-scale evidence.* Gear pays nothing and has no store of its own: the actions are extension functions on `GameStore` (`app/gear/GearActions.kt`, `GearTimers.kt`), the screens are in `ui/gear/`.
 
 **The 18 tools** (`GearTool`, grouped by `ToolCatalog` into Calculate, Convert, Time, Light, Choose, Measure; a tolerant local search with keywords, favourites, recents):
 - **Calculator:** brackets, percentages, scientific functions, memory, Ans, optional history. **Everyday sums:** tip and split, percent, sale and tax, a loan, savings, trip cost. **Units:** lengths, weights, volume and cooking, temperature, data and more, starred pairs. **Currency:** reference rates from `api.frankfurter.dev` (a copy under 6 hours old is used; Refresh asks), entered rates, a board, a "what it really costs" fee mode; only the rates are fetched.
@@ -479,11 +479,11 @@ Do not add weather, habit tracking, health tracking, expense tracking or another
 
 **Saved state** (all in the one `save`, device-only, every field defaulted so older saves load): `AppData.gear` (`GearData`: favourites, recents, home currency and board, manual rates, fee, unit favourites and category, calculator history, memory and angle mode, `timers` with their end times, the stopwatch, Picker weights and history, dice history, screen-light colour and brightness, World clock zones, sea-level pressure, up to 30 waypoints, the sound offset; each history has its own on/off switch, saved), `AppData.gearHelpers` (tool name to Pokémon id), `AppData.pickerOptions` and `AppData.gearRates` (the cached rates). No reward event, no record in the ledger.
 
-**Helpers:** a Pokémon helps one tool and is then in no other place (`Places.GearHelper`); the choosers say where a Pokémon is now and leave out a team on an expedition. Visual only; a tool with no helper shows no empty strip. Loans are retired.
+**Helpers:** a Pokémon helps one tool and is then in no other place (`Places.GearHelper`); the choosers say where a Pokémon is now and leave out a team on an expedition. Visual only; a tool with no helper shows no empty strip.
 
 **Android adapters** (`androidApp/.../platform/`): `AndroidTorch` (camera flash, no permission), `AndroidSensorFeed` (`SensorManager`), `AndroidCapabilities` (sensors and features read on demand, nothing started), `AndroidGearServices` (location fix on explicit capture, microphone on explicit start, network info, the Google code scanner), and the timers' alarm in `reminders/Alarms.kt`. Each asks its permission only when the tool is used.
 
-**Known gaps** (REP-028 and REP-042 hold the owner's decisions): the tools to drop or merge (Device check, Barometer, Sound meter, Network check, Coin and dice into Picker); Everyday sums lack unit price, ratio, recipe scaling, VAT-inclusive and custom shares, and the date sums sit under World clock; no kept timer presets; the World clock has 28 fixed cities, no search, 24-hour only; timers and the stopwatch use the wall clock, not a monotonic source (a deliberate choice in `GearTimers`); a helper's sprite is not yet the tool's catalogue icon (the reaction fires on real actions only since 0.198.0); every `changeGear` writes the whole save (REP-018), the Sound meter's spectrum runs on the main thread and the Stopwatch redraws its lap list 20 times a second; QR codes for Wi-Fi and contacts, Currency history charts, true north and calibration for the Compass, and the document scanner with OCR are not built; the capture minigame (section 7) is not built.
+**Known gaps** (REP-028 and REP-042 hold the owner's decisions): the tools to drop or merge (Device check, Barometer, Sound meter, Network check, Coin and dice into Picker); Everyday sums lack unit price, ratio, recipe scaling, VAT-inclusive and custom shares, and the date sums sit under World clock; no kept timer presets; the World clock has 28 fixed cities, no search, 24-hour only; timers and the stopwatch use the wall clock, not a monotonic source (a deliberate choice in `GearTimers`); a helper's sprite is not yet the tool's catalogue icon (the reaction fires on real actions only); every `changeGear` writes the whole save (REP-018), the Sound meter's spectrum runs on the main thread and the Stopwatch redraws its lap list 20 times a second; QR codes for Wi-Fi and contacts, Currency history charts, true north and calibration for the Compass, and the document scanner with OCR are not built; the capture minigame (section 7) is not built.
 
 ## Shared Pokémon ecosystem contract
 

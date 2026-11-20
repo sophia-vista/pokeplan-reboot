@@ -40,25 +40,13 @@ The launcher is not:
 - A permanent background game process.
 - A requirement for using PokéLife.
 
-## 3. Existing launcher audit and preservation plan
+## 3. Existing launcher: what to preserve
 
-The 0.123.0 baseline contains a meaningful launcher prototype. The inspected implementation includes `LauncherActivity.kt`, `LauncherScreen.kt`, `GridPage.kt`, `WidgetGrid.kt`, `Widgets.kt` (now `LauncherWidgets.kt`) and `LauncherModel.kt`, alongside Android widget-hosting code under `androidApp/.../widgets/`.
+Preserve where reliable (refactor rather than discard; record behavior, dependencies and migration needs before removing a component): the four-column grid and multiple home pages, movable and resizable widgets, Android AppWidget hosting, town scenes and weather presentation, the app list, drawer, folders and app pinning, gesture handling and launcher settings, and the battery-saver and animation controls. Their implementation is in `composeApp/.../ui/launcher/` and `androidApp/.../widgets/`; the grid's rules are in `docs/launcher-widget-grid.md`.
 
-Existing capabilities to preserve where reliable:
+Asset priority: PMD Pokémon PNGs, portrait strips, cries, sound effects and town, guild, map and environment art first; suitable mainline sprites second; Pixelarticons for interface glyphs only. Respect source licensing and redistribution restrictions.
 
-- Four-column grid and multiple home pages.
-- Movable and resizable widgets.
-- Android AppWidget hosting.
-- Town scenes and weather presentation.
-- App listing, app drawer, folders and app pinning.
-- Gesture handling and launcher settings.
-- AUTO/OFF/ON battery-saver behavior and existing animation controls.
-
-The source audit also identified a widget measurement inconsistency: grid dimensions are reduced through an intermediate slot representation, the Android host receives a coarse three-state `WidgetSize`, and `HostedWidget()` derives dimensions from provider minimums rather than the actual allocated grid dimensions. This can produce clipping, incorrect reflow or unused space. Correct the measurement contract before expanding the widget catalog.
-
-The existing asset inventory includes PMD Pokémon PNGs, portrait strips, cries, sound effects, town/guild/map/environment artwork, tileset atlases, mainline sprite fallbacks and Pixelarticons. Reuse the established asset pipeline and priority: PMD assets first, suitable mainline assets second, Pixelarticons for interface glyphs only. Respect source licensing and redistribution restrictions.
-
-The audit is a source-level baseline, not proof of current physical-device behavior. Build verification, lifecycle testing, visual comparison and device profiling remain required. Do not remove a component until its behavior, dependencies, migration needs and replacement have been recorded.
+Widget measurement: a widget is measured against the dimensions its grid cells actually allocate, not a coarse size (section 11.5). Open: verify clipping, reflow and unused space with several providers and sizes on a physical device. Source-level behavior is not proof of device behavior; build verification, lifecycle testing and device profiling remain required.
 
 ## 4. PMD living environment
 
@@ -84,7 +72,7 @@ Multiple home pages form one continuous environment. Horizontal page movement sh
 
 Provide a polished default scene before adding many variants. Support a small curated set of built-in environments, day/night presentation based on local time, optional weather presentation, manual atmospheric overrides, seasonal appearance options and optional ambient effects (e.g. rain, leaves or particles). Weather and seasonal effects are cosmetic and must never affect rewards, availability, deadlines or progression.
 
-### 4.4 Weather layers (as built, from Red Rescue Team's own code)
+### 4.4 Weather layers (from Red Rescue Team's own code)
 
 The town's weather imitates the original game's ground-screen weather (pret/pmd-red `src/ground_weather.c`); the numbers live in `GbaWeather.kt`, the layers are rebuilt from the game's files by `tools/weather/decode_bg.py` (needs a read-only checkout of `pret/pmd-red`; no ROM is used), and the per-weather colour lookup is `WeatherGrade.kt` (from `assets/weather/ramps.tsv`, written by `tools/weather/extract_ramps.py`). Weather is cosmetic (section 4.3).
 
@@ -96,19 +84,19 @@ The town's weather imitates the original game's ground-screen weather (pret/pmd-
 - **Colour ramps:** for dungeon-tile towns each tile colour goes through the weather's own ramp (`out5 = ramp[channel] * brightness / 256 & 0x1F` on the 8-bit value `v5 * 8 + 7`), a lookup and not a tint (a straight line is off by up to 31 of 255). Clear is the identity. What each does to black: sunny lifts to 15; sandstorm to 63 with blue crushed (white becomes 255, 255, 207: yellow-brown); cloudy to 31, 31, 63 and white to 231, 231, 255; rain sinks red and green and lifts blue (0, 0, 39); hail 0, 15, 31; fog flattens to grey (black 87, white 239); snow 0, 23, 39 and white 231.
 - **Open:** decode the rain (effect 16) and sandstorm (239) effect animations; the game takes about a second to move to a new ramp while the town changes at once; ground kinds 0 to 8 (map-specific layers), the dungeon's sunny and fog weathers and weather transitions are not used.
 
-### 4.5 The dungeon floor (owner, 14 November 2026; REP-052)
+### 4.5 The dungeon floor (REP-052)
 
 A town of a dungeon's tiles is a Mystery Dungeon floor that the app lays out from the game's own tiles: the code arranges real tiles, it never draws any (`DungeonFloor` in `launcher/DungeonFloor.kt`). Scenes (whole pictures) keep their ground band.
 
-- **Layout:** rooms joined by corridors, walls everywhere else, as on the games' floors, across every page as one floor. Rooms are big (owner, 14 November 2026): two columns a page with two rooms each (three on a tall screen), each most of its column's width and four to ten squares tall, and now and then one as wide as the page; a room may sit anywhere down its column, two squares of wall from the next. Corridors join every room to its nearest (so every floor square reaches every other), with a few more for loops. Some rooms hold a pond and some wall holds water, from the tileset's own water. The floor's edges are wall. Of a few tries, a room takes the place that shows the most floor no widget covers, so the rooms fill the open bands between the widgets; a square counts as under a widget if any of it is.
+- **Layout:** rooms joined by corridors, walls everywhere else, as on the games' floors, across every page as one floor. Rooms are big: two columns a page with two rooms each (three on a tall screen), each most of its column's width and four to ten squares tall, and now and then one as wide as the page; a room may sit anywhere down its column, two squares of wall from the next. Corridors join every room to its nearest (so every floor square reaches every other), with a few more for loops. Some rooms hold a pond and some wall holds water, from the tileset's own water. The floor's edges are wall. Of a few tries, a room takes the place that shows the most floor no widget covers, so the rooms fill the open bands between the widgets; a square counts as under a widget if any of it is.
 - **A new floor each day:** the seed is the tileset and the local date, so the floor is the same all day; Launcher settings → Town → New layout gives another one for the same day (the finds stay the same, see below).
 - **Shapes:** with a tileset's full autotile set (`assets/tiles/ex-NNN-auto.png`: the 47 neighbourhoods a square can have, the game's three variants of each, cut by `tools/tiles/extract_sky_tiles.py`) walls and water take any shape, with ragged room edges and irregular ponds. A tileset with only the 3 x 3 block (the Red Rescue Team ones, until their full sets are cut) keeps rectangles and walls at least two squares thick.
-- **Walking:** a Pokémon walks only on the floor, along a path over its squares. Water types swim and Flying types fly over water; only Ghost types pass through walls, as in the games (owner, 14 November 2026). Widgets are soft walls: nobody stops, rests or meets under a widget, and a path goes round one when it can; it passes behind only where there is no other way (a widget row as wide as the screen).
+- **Walking:** a Pokémon walks only on the floor, along a path over its squares. Water types swim and Flying types fly over water; only Ghost types pass through walls, as in the games. Widgets are soft walls: nobody stops, rests or meets under a widget, and a path goes round one when it can; it passes behind only where there is no other way (a widget row as wide as the screen).
 - **Stairs:** each floor has the game's stairs. A Guardian that arrives comes up them; one that leaves goes down them.
 - **Traps (cosmetic only):** a few of the games' gentle traps lie hidden on the floor: Warp, Spin, Slumber, Gust, Slow, Trip and Poison. Any trap a Pokémon steps on springs, every time, as in the games; it is then shown for the day, and the Pokémon step round the traps they know about when there is another way, and never stop on one. On Home each plays the game's sound, and the traps that have an effect of their own in the game play it at the Pokémon's feet (Spin's swirl, Gust's wind, Slow's falling light: `assets/tiles/trap-*.png`, the game's `TRAP_ANIMATION_INFO` table, cut by `tools/sprites/extract_sky_effects.py`; Slumber's is of a kind not yet drawn, so it keeps the sleep icon). What it does is for show: it warps the Pokémon to another room, spins it and leaves it **confused** (about 25 seconds: a question mark over its head, and now and then it stumbles a square to the side and finds its way again), sends it to sleep for a moment, blows it away in a random direction until it meets a wall or another Pokémon (at most ten squares, as the games' blown-away effect does), slows it for 20 seconds, trips it, or **poisons** it (about 30 seconds: a skull over its head, and it walks at 70% pace). A status wears off by itself with a twinkle (`Condition` in `TownFloor.kt`). A Pokémon is only ever warped to, or started on, a square it can walk away from (no lake in the rock, no hollow in a wall), and nobody picks a square where it would overlap another Pokémon (standing there or walking to it), while the floor has room: the room follows each sprite's frame size (about two squares between ordinary Pokémon, three or more for a Wailord or a Moltres, and a big one covers the squares behind it, not those in front: `TownLife.overlap`); what each does next is never scripted: no two Pokémon act out the same moments, and a crowd standing together has one meeting at a time. **Pokémon are walls to each other** (`DungeonFloor.path(blocked)`): a walking Pokémon goes round the others, one square at a time, and only where there is no way round does it swap places with the one in the way (the other walks to the square it left, as the games' team members trade places); a sleeping Pokémon or one stopped for a meeting is never swapped with. A Wonder Tile is always shown and gives a twinkle. No reward, no harm, nothing in Reduce motion. Tiles from `assets/tiles/floor-traps.png` (`tools/tiles/extract_sky_floor.py`).
-- **Finds:** `TownFinds.PER_DAY` (3) things lie on the floor each day: berries, vitamins or a little Poké (`docs/economy.md`, `TownFinds`). They come from the date, not the layout, so a new layout moves them and never makes more. A tap picks one up into the Bag (or adds its Poké), with the game's pick-up sound; so does a Pokémon that walks onto one, as a team picks up items in the games (owner, 14 November 2026), and now and then one heads for a find it has spotted. Either way it rises from the floor with its name and is gone until tomorrow; the Pokémon only walk while the home screen shows, and the sound plays only on Home. Never under a widget. Pictures from `assets/tiles/floor-items.png`, the game's own floor pictures for those items.
+- **Finds:** `TownFinds.PER_DAY` (3) things lie on the floor each day: berries, vitamins or a little Poké (`docs/economy.md`, `TownFinds`). They come from the date, not the layout, so a new layout moves them and never makes more. A tap picks one up into the Bag (or adds its Poké), with the game's pick-up sound; so does a Pokémon that walks onto one, as a team picks up items in the games, and now and then one heads for a find it has spotted. Either way it rises from the floor with its name and is gone until tomorrow; the Pokémon only walk while the home screen shows, and the sound plays only on Home. Never under a widget. Pictures from `assets/tiles/floor-items.png`, the game's own floor pictures for those items.
 - **Sky:** none yet. Outdoor tilesets would have a sky strip above the top wall only once a matching Mystery Dungeon sky is found among real assets (REP-052 open item); a sky from another game would not match.
-- **Ghosts and walls (owner, 20 November 2026):** a Ghost type takes a short cut through walls only rarely (12% of long legs), fades while inside, and never rests or sleeps in a wall; one caught in a wall walks out or is set on the floor. Trap effects are not cancelled by the trap's own status icon.
+- **Ghosts and walls:** a Ghost type takes a short cut through walls only rarely (12% of long legs), fades while inside, and never rests or sleeps in a wall; one caught in a wall walks out or is set on the floor. Trap effects are not cancelled by the trap's own status icon.
 
 ## 5. Main navigation and app access
 
@@ -153,7 +141,7 @@ Folders open in a compact floating panel, support rename/reorder/add/remove and 
 Visible inhabitants are projections of the canonical owned-Pokémon collection. Priority order:
 
 1. Selected global buddy.
-2. The Guardian (owner, 9 November 2026; turns added 11 November 2026): at most one Guardian walks the town, however many the player has (one per module). It is the buddy if the buddy is a Guardian; otherwise the Guardians take turns, one a day, in order of level (then id), so the town changes without the player doing anything. When the Guardian changes, the old one walks off the edge of Home and the new one walks in (nothing happens in Reduce motion: it is just a change). The others stay in their modules.
+2. The Guardian: at most one Guardian walks the town, however many the player has (one per module). It is the buddy if the buddy is a Guardian; otherwise the Guardians take turns, one a day, in order of level (then id), so the town changes without the player doing anything. When the Guardian changes, the old one walks off the edge of Home and the new one walks in (nothing happens in Reduce motion: it is just a change). The others stay in their modules.
 3. User-favorited Pokémon.
 4. Other eligible owned Pokémon according to rotation settings or an explicitly selected launcher display roster.
 
@@ -169,7 +157,7 @@ Use a lightweight, bounded state machine with appropriate states such as idle, w
 
 Behaviours in the town today (all cosmetic, built only from the sprite sheets' own animations and the status icons): idle variation (standing, turning to look the other way, grazing with the eat animation, a hop); spells of rest and of pottering about (a two-state rhythm, so a few walk while most rest and it changes, each Pokémon a little more or less restless by nature): resting, it stands, looks about, grazes or shifts a step; restless, it walks two to four connected legs as a correlated random walk (it keeps roughly to its way with gentle turns, bends back towards a place it likes the further it strays, the buddy near the middle of Home, leans along the back and front of the ground, keeps a little room from the others and now and then sets off across the town), each leg a gentle curve that eases in and out, at a pace of its own; how lively the town is, 1 (sleepy) to 10 (restless, default 4, calm), is a launcher setting that sets how often they set off and how long they rest; staggered bedtimes, with a hop, a stretch and a bite of breakfast on waking; surprise (a Pokémon next to one that is tapped, or to a Guardian that has just arrived, may be startled); weather felt through status icons (a twinkle for a Pokémon at home in the weather, a drop of sweat for one that suffers in it, by type); a tap that hops, hops happily, turns about, or, tapped over and over, is flustered. Greetings, playing together, following, investigating objects, hiding, species-specific patterns and the Guardian's arrival and departure scenes wait for the capability registry.
 
-Town additions (20 November 2026): a soft shadow under every Pokémon; status icons centred on one line above the head; meetings on a floor happen on their own squares with up to one square between (Chebyshev distance 2 or less). Species quirks (`TownQuirks.kt`, cosmetic): always asleep (Snorlax, Slakoth, Slaking, Abra, Komala, Munna, Musharna, Morelull), rooted (Metapod, Kakuna, Cascoon, Silcoon, Sudowoodo, Ferroseed, Ferrothorn, Sandygast, Palossand), disguised as another species until tapped and back after a minute (Mew, Ditto, Zorua, Zoroark), slow at x0.5 (Shuckle, Slowpoke line, Torkoal, Carbink), fast at x1.9 (Vigoroth, Ninjask, Varoom, Revavroom, Zebstrika, Doduo, Dodrio, Cyclizar, Cinderace, Arcanine, Talonflame, Pikachu and clones), erratic (Spinda: 30% stumble a step, 8% confused), timid (Ralts, Wimpod: flee from anyone within 2 squares). Every Guardian shows its type's stat icon with a hop every 25 to 60 seconds.
+Town additions: a soft shadow under every Pokémon; status icons centred on one line above the head; meetings on a floor happen on their own squares with up to one square between (Chebyshev distance 2 or less). Species quirks (`TownQuirks.kt`, cosmetic): always asleep (Snorlax, Slakoth, Slaking, Abra, Komala, Munna, Musharna, Morelull), rooted (Metapod, Kakuna, Cascoon, Silcoon, Sudowoodo, Ferroseed, Ferrothorn, Sandygast, Palossand), disguised as another species until tapped and back after a minute (Mew, Ditto, Zorua, Zoroark), slow at x0.5 (Shuckle, Slowpoke line, Torkoal, Carbink), fast at x1.9 (Vigoroth, Ninjask, Varoom, Revavroom, Zebstrika, Doduo, Dodrio, Cyclizar, Cinderace, Arcanine, Talonflame, Pikachu and clones), erratic (Spinda: 30% stumble a step, 8% confused), timid (Ralts, Wimpod: flee from anyone within 2 squares). Every Guardian shows its type's stat icon with a hop every 25 to 60 seconds.
 
 ### 6.3 Stable placement
 
@@ -245,7 +233,7 @@ Settings are organized by intent and use sensible defaults.
 
 Resetting launcher preferences must never delete apps, owned Pokémon, module records or the PokéLife save. Avoid exposing complex tuning unless it produces a meaningful visible result.
 
-Built (20 November 2026): Launcher settings hold choice lists, not cycling lines (town size, weather, temperature, battery saver, every gesture), switches for on/off lines, and no Sound section (global Settings owns sound). Date format and 12-hour clock live in General Settings, "Date and time". "Clear pinned apps and custom icons" and "Reset launcher settings" ask first; reset keeps pins, icons, hidden, moved, folders, launch counts and the weather place.
+Launcher settings hold choice lists, not cycling lines (town size, weather, temperature, battery saver, every gesture), switches for on/off lines, and no Sound section (global Settings owns sound). Date format and 12-hour clock live in General Settings, "Date and time". "Clear pinned apps and custom icons" and "Reset launcher settings" ask first; reset keeps pins, icons, hidden, moved, folders, launch counts and the weather place.
 
 ## 11. Android default-launcher integration
 
@@ -285,11 +273,11 @@ Review `QUERY_ALL_PACKAGES` policy and distribution eligibility before using it.
 
 Resolve gesture conflicts through predictable touch regions and provide visible alternatives for users who cannot or do not wish to use gestures.
 
-Built (20 November 2026): swipe up or down reach is 64 dp. Extra triggers: swipe up or down with two fingers, press and hold empty space. Jobs: Open folders, Open widgets, Edit the home screen, Go to the next page, Pull down notifications (`EXPAND_STATUS_BAR`, used only for this).
+Swipe up or down reach is 64 dp. Extra triggers: swipe up or down with two fingers, press and hold empty space. Jobs: Open folders, Open widgets, Edit the home screen, Go to the next page, Pull down notifications (`EXPAND_STATUS_BAR`, used only for this).
 
 ### 11.5 Android widget host
 
-Preserve existing AppWidgetHost infrastructure while correcting its contract:
+Keep the AppWidgetHost infrastructure to this contract:
 
 1. Pass actual allocated width and height in dp through the entire hosting pipeline.
 2. Respect provider minimum dimensions and supported resize modes.
@@ -326,7 +314,7 @@ Animate visible sprites only, use bounded animation rates, pause offscreen pages
 | Process killed | Restore configuration and stable scene state |
 | Device reboot | Recover without manual repair |
 
-Use existing AUTO/OFF/ON battery saver behavior as a migration input; consolidate to Automatic, Balanced and Minimal user-facing modes. Avoid background wake locks and per-frame persistence. Weather refresh and scheduled data updates follow shared background-work policies.
+Consolidate the AUTO/OFF/ON battery saver into Automatic, Balanced and Minimal user-facing modes. Avoid background wake locks and per-frame persistence. Weather refresh and scheduled data updates follow shared background-work policies.
 
 ### 12.4 Performance targets
 
@@ -364,7 +352,7 @@ No cloud account, remote server or internet connection is required to render the
 
 Read canonical species/form data, owned Pokémon instances, module-party references where explicitly requested, global buddy selection, favorites, display eligibility and asset references from `POKEMON_ECOSYSTEM.md`. Use owned instance IDs to identify individuals; species IDs alone cannot distinguish duplicates.
 
-The launcher must not create owned Pokémon, award XP, change levels/evolution, deliver rewards (the one exception is the dungeon floor's daily finds, section 4.5, owner 14 November 2026), modify party/buddy selection independently or maintain affection. It only projects the shared data into the scene.
+The launcher must not create owned Pokémon, award XP, change levels/evolution, deliver rewards (the one exception is the dungeon floor's daily finds, section 4.5), modify party/buddy selection independently or maintain affection. It only projects the shared data into the scene.
 
 ### 15.2 Module projections and actions
 
@@ -456,37 +444,9 @@ Restore last valid configuration; validate scene/widget references; repair missi
 - [ ] Scenery does not compete with widgets; day/night remains readable.
 - [ ] Empty states remain coherent.
 
-## 19. Implementation phases
+## 19. Implementation order
 
-| Phase | Scope | Exit condition |
-|---|---|---|
-| 0. Audit/stabilization | Inventory current launcher; capture screenshots; test gestures, widgets, settings and lifecycle | Existing behavior documented; regressions identified |
-| 1. Architecture | Separate Android host, scene model, renderer, Pokémon projection and widget integration | Clear ownership and lifecycle contracts |
-| 2. Navigation/host | Home role, app drawer, search, folders and shortcuts | Dependable daily launcher without advanced scene behavior |
-| 3. Living environment | Continuous scenery, pages, landmarks and pixel renderer | Coherent environment with direct navigation |
-| 4. Pokémon simulation | Buddy, party priority, movement and interactions | Stable species-appropriate inhabitants |
-| 5. Widget reliability | Actual-size hosting, built-in catalog and contextual editing | Tested widget sizes and providers |
-| 6. Shared integration | Module projections, actions, reminders and privacy | No duplicated domain logic or sensitive-data leaks |
-| 7. Customization | Scenes, settings, gestures, sound and performance modes | Maintainable personalization |
-| 8. Optimization/QA | Profiling, accessibility, lifecycle, offline and physical-device tests | Acceptance criteria pass |
-
-Do not replace `LauncherScreen.kt` or the existing renderer wholesale before mapping reusable behavior and dependencies. Navigation and widget correctness precede advanced animation.
-
-### Suggested logical architecture
-
-```text
-launcher/
-  android/       LauncherActivity, HomeRoleIntegration, AppDiscovery, WidgetHost
-  scene/         SceneDefinition, SceneRenderer, SceneViewport, EnvironmentLayers
-  inhabitants/   PopulationResolver, RoamingSimulation, BehaviorStateMachine
-  navigation/    AppDrawer, Search, Folders, Shortcuts
-  widgets/       BuiltInWidgets, WidgetPlacement, ExternalWidgetBridge
-  integration/   PokemonProjection, ModuleProjection, NotificationProjection
-  settings/      LauncherPreferences
-  assets/        AssetResolver
-```
-
-This is a logical boundary proposal, not a mandate to create every package immediately. Align names and package structure with repository conventions.
+Navigation and widget correctness precede advanced animation. Do not replace `LauncherScreen.kt` or the existing renderer wholesale before mapping reusable behavior and dependencies. Delivery status is `../IMPLEMENTATION_GUIDE.md`'s and the backlog's.
 
 ## 20. Documentation ownership and cross-references
 
