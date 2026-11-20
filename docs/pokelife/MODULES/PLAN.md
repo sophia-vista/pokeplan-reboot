@@ -73,7 +73,7 @@ Use a small, stable navigation structure. Avoid a separate destination for every
 
 Primary destinations (the owner uses only these three, so nothing else is a destination):
 
-1. **Tasks** — one workspace. It opens on **Open**: every open task grouped by list (the Inbox first). Views, as chips on the same page: **Today**, **Inbox**, **Upcoming** and **Done** (finished and won't-do tasks, latest first). Lists are chosen and managed here (a list chip row, "New list", edit, archive); there is no separate Lists, Outstanding or All tasks page.
+1. **Tasks** — one workspace (owner, 20 November 2026). It opens on **Today**. Four views as pills under the quick add box: **Today**, **Upcoming**, **All** (every open task grouped by list) and **Done** (finished and won't-do tasks, latest first). There is no Inbox and no Calendar key on this page (the Calendar is in the Sections key). Below the pills is a **Lists** row, folded by default (it shows the chosen list's name while folded); open, it is one row per list with its open count, and a **Manage** button (new list, edit, archive). Choosing a list narrows the open view to that list without changing the view; choosing it again goes back to all. A task in no list shows under "No list" in All. The quick add field reads "Add a task (date, #list)"; inside a chosen list a new task is filed in it, and on Today it is planned for today.
 2. **Calendar** — the day, week and month views with PLAN events and the read-only device calendars (8); one tap from the page and from the Tasks header.
 3. **Focus** — start and manage focus sessions, for any open task or none (6).
 
@@ -98,7 +98,7 @@ As built: the lead's stage, quick add, the day's progress, the task to do next w
 
 Do not fill Today with future tasks merely because they are incomplete. Do not automatically treat unscheduled tasks as due today. Overdue tasks remain visible until resolved or rescheduled. Completed tasks should not dominate. Linked CARE records must be distinguishable and must not generate PLAN rewards. Today remains useful when empty, with a restrained empty state and capture action.
 
-### 3.2 Inbox
+### 3.2 Inbox (retired as a view, 20 November 2026: tasks in no list show as "No list" in All; the rules below describe capture, which still holds)
 
 Inbox is the low-friction destination for anything the user does not want to organize immediately: an open task with no list and no date. Giving it a date or a list takes it out of the Inbox. Title-only capture is valid. A task does not require a list, project, due date, priority, recurrence, or reminder.
 

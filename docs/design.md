@@ -104,7 +104,7 @@ In scope for v1: tasks with difficulty rank, category, planned date, due date/ti
 ### Task model, Today and focus link
 
 - **Fields:** title, notes, difficulty rank, category, optional list, **planned date** (when you intend to do it), **due date/time** (the deadline), estimated duration (optional), recurrence, reminders, subtasks.
-- **Views:** Plan has three places, **Tasks**, **Calendar** and **Focus**. Tasks is one workspace with the views **Open** (default, grouped by list), **Today** (planned today + due today + overdue + nudges), **Inbox** (no planned or due date; quick captures land here), **Upcoming** and **Done**; Progress, Goals and Targets sit behind the More key.
+- **Views:** Plan has three places, **Tasks**, **Calendar** and **Focus**. Tasks is one workspace that opens on **Today** (planned today + due today + overdue + nudges), with the views **Today**, **Upcoming**, **All** (open tasks in no list show under "No list") and **Done**, and a folded "Lists" row that narrows the view to one list (0.217.0); Progress, Goals and Targets sit behind the More key.
 - **Focus on this task:** a session can be started from a task. The minutes are logged on it, and it shows its total focused time. Finishing a task you focused on gives a small bonus *(tune: +10% candies)*. Egg odds are unchanged. Sessions can also be started without a task.
 
 ## Pokémon

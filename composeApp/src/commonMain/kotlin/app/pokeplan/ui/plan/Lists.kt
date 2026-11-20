@@ -53,6 +53,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.FormBox
@@ -74,17 +75,17 @@ internal fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> 
         }
         if (creating) ListEditor(model, null) { made -> creating = false; made?.let(open) }
         val lists = store.activeLists
-        ListRows(lists, tasks, open)
+        ListRows(lists, tasks, open = open)
         val archived = model.data.lists.filter { it.archived }
         if (archived.isNotEmpty()) {
             PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, color = Pixel.InkSoft, compact = true)
-            if (showArchived) ListRows(archived, tasks, open)
+            if (showArchived) ListRows(archived, tasks, open = open)
         }
     }
 }
 
 @Composable
-private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) -> Unit) {
+internal fun ListRows(lists: List<TaskList>, tasks: List<Task>, selected: String? = null, open: (String) -> Unit) {
     if (lists.isEmpty()) return
     val shape = PixelShape
     Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape).clip(shape)) {
@@ -92,7 +93,9 @@ private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) ->
             if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
             val count = tasks.count { it.isOpen && it.listId == l.id }
             Row(
-                Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open ${l.name}") { open(l.id) }
+                Modifier.fillMaxWidth().background(if (l.id == selected) Color(l.color).copy(alpha = 0.16f) else Color.Transparent)
+                    .clickable(role = Role.Button, onClickLabel = "Open ${l.name}") { open(l.id) }
+                    .semantics { if (l.id == selected) stateDescription = "Chosen" }
                     .defaultMinSize(minHeight = 56.dp).padding(horizontal = Spacing.M, vertical = Spacing.S),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
             ) {
@@ -108,7 +111,7 @@ private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) ->
 
 /**
  * Makes a list ([list] null) or edits one: its name, one of eight colours, a real item icon and the category its new tasks start with; an existing list can also
- * be archived (hidden from the menu, tasks kept) or deleted (its tasks go back to the Inbox). [done] gets the list's id,
+ * be archived (hidden from the menu, tasks kept) or deleted (its tasks go back to no list). [done] gets the list's id,
  * or null when it was deleted or nothing was made.
  */
 @Composable
@@ -170,7 +173,7 @@ internal fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Uni
                     ) { ItemIcon(id, size = 36.dp, description = null) }
                 }
             }
-            // The category a task added here starts with; tap the chosen one again for none (Personal, as in the Inbox).
+            // The category a task added here starts with; tap the chosen one again for none (Personal for a task in no list).
             FieldLabel("New tasks are")
             CategoryChips(category, allowNone = true) { category = it }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {

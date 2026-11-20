@@ -116,8 +116,8 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
-/** Where a quick-add box files a task when the words name no day: Today plans it for today, the Inbox and a list leave it undated. */
-internal enum class AddTo { TODAY, INBOX }
+/** Where a quick-add box files a task when the words name no day: Today plans it for today, NO_DATE leaves it undated. */
+internal enum class AddTo { TODAY, NO_DATE }
 
 /** Which task card is open on a page, so a page opens one card at a time. */
 @androidx.compose.runtime.Stable
@@ -145,8 +145,7 @@ internal fun PlanView(model: AppModel, section: PlanSection, onBack: () -> Unit,
 @Composable
 private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Unit, open: (PlanSection) -> Unit, onFocus: ((Task) -> Unit)?, startWeek: Boolean) {
     val pendingIds = model.data.pending.map { it.original.id }.toSet()
-    val calendarKey: (@Composable () -> Unit)? = if (section != PlanSection.TASKS) null else ({ PixelButton("Calendar", { open(PlanSection.CALENDAR) }, color = Pixel.InkSoft, compact = true) })
-    SectionScaffold(section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header, trailing = calendarKey) {
+        SectionScaffold(section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header, trailing = null) {
         when (section) {
             PlanSection.CALENDAR -> DayView(model, pendingIds, startWeek)
             PlanSection.TASKS -> TasksWorkspace(model, onFocus)
@@ -199,14 +198,14 @@ internal fun PlanOverview(model: AppModel) {
 }
 
 /**
- * Plan's page, action items: quick add into the Inbox, and the task to do next (with Focus on this and Pick for me).
+ * Plan's page, action items: quick add (undated), and the task to do next (with Focus on this and Pick for me).
  * Nothing shows for what is not there.
  */
 @Composable
 internal fun PlanActionItems(model: AppModel, onFocus: ((Task) -> Unit)?) {
     val store = model.store
     val data = model.data
-    QuickAddBox(model, AddTo.INBOX)
+    QuickAddBox(model, AddTo.NO_DATE)
     val tasks = store.openTodayTasks()
     val late = TaskViews.overdue(tasks, store.now).toSet()
     val next = nextTask(model, tasks, late)
@@ -226,13 +225,15 @@ internal fun PlanActionItems(model: AppModel, onFocus: ((Task) -> Unit)?) {
  * lines. [onFocus] is null where there is no Focus (desktop and the web).
  */
 @Composable
-internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?) {
+internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?, listId: String? = null) {
     val store = model.store
     val data = model.data
     val host = remember { CardHost() }
     val card = taskCards(model, host)
-    val tasks = store.openTodayTasks()
-    val done = store.doneToday()
+    // With a list chosen, Today is that list's part of the day, counted the same way.
+    val tasks = store.openTodayTasks().filter { listId == null || it.listId == listId }
+    val done = if (listId == null) store.doneToday()
+    else data.tasks.count { it.listId == listId && it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
     if (tasks.isNotEmpty() || done > 0) {
         val total = tasks.size + done
         Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -425,11 +426,11 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             val planned: LocalDate? = when {
                 noDate -> null
                 day != null -> day
-                else -> parsed.planned ?: if (parsed.due == null && addTo == AddTo.TODAY && listId == null) model.store.today else null
+                else -> parsed.planned ?: if (parsed.due == null && addTo == AddTo.TODAY) model.store.today else null
             }
             val made = model.store.addTask(
                 title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
-                // With none in the words, the list's own category (Personal in the Inbox).
+                // With none in the words, the list's own category (Personal with no list).
                 category = parsed.category,
                 planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes,
                 // "#Groceries" files it in that list; inside a list, the list itself.
@@ -439,13 +440,13 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             )
             // A repeating task starts on its day (today when it has none) and the next ones are made ahead.
             repeat.toRepeat(made.planned ?: model.store.today)?.let { model.store.makeRepeating(made.id, it) }
-            // Where it went: its list, else its day, else the Inbox.
+            // Where it went: its list, else its day, else just Tasks.
             val filed = made.listId?.let { id -> model.data.lists.firstOrNull { it.id == id }?.name }
             model.say("Added to " + when {
                 filed != null -> filed
                 made.planned == model.store.today -> "Today"
                 made.planned != null -> made.planned!!.short()
-                else -> "Inbox"
+                else -> "Tasks"
             })
             text = ""; day = null; noDate = false; picking = false; more = false; repeat = RepeatKind.NEVER
         }
@@ -455,7 +456,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(
                     text, { text = it }, Modifier.weight(1f).focusRequester(focus), singleLine = true,
-                    placeholder = "Buy milk tomorrow #Home",
+                    placeholder = "Add a task (date, #list)",
                     // The keyboard's own key adds the task, so the thumb need not travel to the button.
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
@@ -671,7 +672,7 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
                 if (store.activeLists.isNotEmpty()) {
                     PixelDropdown(
                         listOf<String?>(null) + store.activeLists.map { it.id }, task.listId,
-                        { id -> if (id == null) "Inbox" else store.activeLists.firstOrNull { it.id == id }?.name ?: "" },
+                        { id -> if (id == null) "No list" else store.activeLists.firstOrNull { it.id == id }?.name ?: "" },
                         { store.moveToList(task.id, it) }, Modifier.fillMaxWidth(), label = "List",
                     )
                 }
@@ -876,7 +877,7 @@ fun taskMeta(t: Task, day: LocalDate? = null, repeats: String? = null): String =
     if (repeats != null) add(repeats)
 }.joinToString(", ")
 
-/** A list's tasks (or the Inbox's) grouped by when they are, as TickTick shows a list: from before, today, tomorrow... */
+/** A list's tasks (or the tasks in no list) grouped by when they are, as TickTick shows a list: from before, today, tomorrow... */
 @Composable
 internal fun WhenGroups(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit) {
     val today = model.store.today
