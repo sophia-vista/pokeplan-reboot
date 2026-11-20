@@ -156,6 +156,10 @@ private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Un
     }
 }
 
+/** The task to do next: the picked one, else the first of today's own that is not for the evening, else any not from before, else the first. */
+private fun nextTask(model: AppModel, tasks: List<Task>, late: Set<Task>): Task? =
+    tasks.firstOrNull { it.id == model.data.pickedTaskId } ?: tasks.firstOrNull { it !in late && !TaskViews.isEvening(it) } ?: tasks.firstOrNull { it !in late } ?: tasks.firstOrNull()
+
 /**
  * Plan's page, first box: today's open tasks (the first five, each with its check key; "from before" ones in the warning colour) and how
  * many are done. A full list opens in Tasks. With nothing planned it is one title.
@@ -177,14 +181,18 @@ internal fun PlanOverview(model: AppModel) {
                     Box(Modifier.weight(1f)) { PixelTitle("Today") }
                     Text("$done of ${tasks.size + done} done", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
-                tasks.take(5).forEach { t ->
+                // The task to do next has its own box below (Focus on this, Pick for me), so the list here is the rest of the day.
+                val next = nextTask(model, tasks, late)
+                val rest = tasks.filter { it.id != next?.id }
+                if (rest.isEmpty()) app.pokeplan.ui.theme.PixelBar(done.toFloat() / (tasks.size + done), label = "$done of ${tasks.size + done} done")
+                rest.take(5).forEach { t ->
                     RecordRow(
                         t.title, if (t in late) "From before" else "", warn = t in late,
                         lead = { PixelIconButton("check", "Mark ${t.title} done", { model.completeTask(t.id) }, Pixel.Green) },
                         onClick = openToday, onClickLabel = "Open today's tasks",
                     )
                 }
-                if (tasks.size > 5) PixelButton("All ${tasks.size} tasks", openToday, color = Pixel.InkSoft, compact = true)
+                if (rest.size > 5) PixelButton("All ${tasks.size} tasks", openToday, color = Pixel.InkSoft, compact = true)
             }
         }
     }
@@ -201,7 +209,7 @@ internal fun PlanActionItems(model: AppModel, onFocus: ((Task) -> Unit)?) {
     QuickAddBox(model, AddTo.INBOX)
     val tasks = store.openTodayTasks()
     val late = TaskViews.overdue(tasks, store.now).toSet()
-    val next = tasks.firstOrNull { it.id == data.pickedTaskId } ?: tasks.firstOrNull { it !in late && !TaskViews.isEvening(it) } ?: tasks.firstOrNull { it !in late } ?: tasks.firstOrNull()
+    val next = nextTask(model, tasks, late)
     if (next != null) NextUp(
         task = next,
         onDone = { model.completeTask(next.id) },
