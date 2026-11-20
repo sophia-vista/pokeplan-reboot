@@ -9,6 +9,8 @@ import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardFocus
 import app.pokeplan.plan.EventRepeat
+import app.pokeplan.plan.Rank
+import app.pokeplan.plan.Repeat
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.Task
 import kotlinx.datetime.DatePeriod
@@ -154,6 +156,43 @@ class EventCompanionTest {
         s.moveEvent(e.id, s.today.plus(DatePeriod(days = 1)), at(10))
         clock.advanceMinutes(24 * 60); s.tick()
         assertEquals(1, expCount(s))
+    }
+
+    @Test
+    fun shiftingADailyEventBackAndForthNeverPaysMoreThanTheCap() {
+        val (s, clock) = started()
+        val e = s.addEvent("Long", s.today, at(10), 180, repeat = EventRepeat.DAILY)
+        s.setEventCompanion(e.id, lead(s).id)
+        clock.advanceMinutes(5 * 60); s.tick() // 14:00: today's three hours are over
+        assertEquals(4 * CandyRules.XP_PER_CANDY, exp(s))
+        // Moving the series a day back and a day forward reopens dates, but an edit restarts the companion's time: nothing more is paid.
+        s.updateEvent(e.id, day = s.today.plus(DatePeriod(days = -1)))
+        s.tick()
+        s.updateEvent(e.id, day = s.today)
+        s.tick()
+        assertEquals(4 * CandyRules.XP_PER_CANDY, exp(s))
+        assertEquals(1, expCount(s))
+    }
+
+    @Test
+    fun anEventDraggedIntoTimeThatHasPassedPaysNothing() {
+        val (s, clock) = started()
+        val e = s.addEvent("Later", s.today.plus(DatePeriod(days = 1)), at(10), 60)
+        s.setEventCompanion(e.id, lead(s).id)
+        s.moveEvent(e.id, s.today, at(7)) // 07:00 to 08:00 today, an hour ago (the clock is 09:00)
+        clock.advanceMinutes(30); s.tick()
+        assertEquals(0, expCount(s))
+    }
+
+    @Test
+    fun aRepeatingTasksCopiesKeepItsRewardFocus() {
+        val (s, clock) = started()
+        val task = s.addTask("Stretch", Rank.C, planned = s.today, reward = RewardFocus.EGG)
+        assertTrue(s.makeRepeating(task.id, Repeat.Weekly()))
+        clock.advanceMinutes(8 * 24 * 60); s.refresh()
+        val copies = s.data.tasks.filter { it.seriesId != null }
+        assertTrue(copies.size >= 2, "the series has made copies: ${copies.size}")
+        assertTrue(copies.all { it.reward == RewardFocus.EGG }, "every copy keeps Egg: ${copies.map { it.reward }}")
     }
 
     @Test

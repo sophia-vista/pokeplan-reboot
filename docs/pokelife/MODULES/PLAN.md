@@ -283,7 +283,7 @@ PLAN may create its own events with title, start/end, optional location/descript
 
 **Event companion (owner, 20 November 2026):** an event can name a **companion**, a Pokémon from the **PLAN party** (the lead or one of the five; no new Pokémon place, so POKEMON_ECOSYSTEM.md 2.2 stands). After an occurrence **ends**, its companion gains exp and may bring back an item, with no tap. Rules *(numbers are tune; economy.md has them)*:
 - **Pays once per occurrence.** A repeating event keeps the dates it has paid; a skipped occurrence never pays.
-- **Only what the companion was there for.** An occurrence pays only if it ends after the moment the companion was set. A companion added to a past event, or an event made for a past time, pays nothing.
+- **Only what the companion was there for.** An occurrence pays only if it ends after the moment the companion was set, **or the event's day, time, length or repeat was last edited**. A companion added to a past event, an event made for a past time, and an event dragged into time that has passed, pay nothing.
 - **Exp by length:** one Exp Candy's worth of exp for each 30 minutes of a timed event (a quarter hour counts as one, four at most for one event), a daily cap on all events together, and a small chance of one item from the ordinary drop table when it paid. **An all-day event never pays** (it has no length).
 - **The companion must be in the PLAN party when the occurrence ends**, and be able to take exp (not an egg, not a Guardian, not at the top level); otherwise the occurrence pays nothing and is not owed later.
 - **When the app was closed:** the next time it runs it pays occurrences that ended up to two days ago, once each.

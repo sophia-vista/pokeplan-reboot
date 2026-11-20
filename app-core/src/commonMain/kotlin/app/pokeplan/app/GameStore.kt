@@ -902,8 +902,22 @@ class GameStore(
 
     private fun editEvents(edit: (List<PlanEvent>) -> PlanCalendar.Edit): String {
         val result = edit(data.events)
-        if (result.events != data.events) update { it.copy(events = result.events) }
+        val events = restartCompanions(data.events, result.events)
+        if (events != data.events) update { it.copy(events = events) }
         return result.shownId
+    }
+
+    /**
+     * An edit that changes when a companion's event happens (its day, time, length or repeat) starts the companion's time again, so
+     * moving an event into time that has already passed never pays for it (PLAN.md 8.2). An occurrence still running pays normally.
+     */
+    private fun restartCompanions(before: List<PlanEvent>, after: List<PlanEvent>): List<PlanEvent> {
+        val was = before.associateBy { it.id }
+        return after.map { e ->
+            val old = was[e.id]
+            val moved = old != null && (old.day != e.day || old.start != e.start || old.minutes != e.minutes || old.allDay != e.allDay || old.repeat != e.repeat)
+            if (e.companionId != null && moved) e.copy(companionSince = nowMillis) else e
+        }
     }
 
     /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
@@ -1102,7 +1116,8 @@ class GameStore(
                 next = next.copy(events = next.events.map { e -> if (e.id == x.eventId) e.copy(paid = e.paid + x.date) else e })
                 val pokemon = next.player.pokemon.firstOrNull { it.id == x.companionId }
                 if (pokemon == null || !pokemon.inParty || pokemon.partyId != PartyIds.PLAN || !pokemon.canFeed) continue
-                val used = Counters.EVENT_CANDIES.get(next.counters, x.date)
+                // The cap counts on the day it is paid (the streak day), so one period is ever live and moving an event never resets it.
+                val used = Counters.EVENT_CANDIES.get(next.counters, streakDay)
                 val candies = minOf(x.candies, EventCompanions.DAILY_CAP - used)
                 if (candies <= 0) continue
                 val partner = next.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
@@ -1119,7 +1134,7 @@ class GameStore(
                 }
                 val paid = next.copy(
                     player = next.player.copy(pokemon = next.player.pokemon.map { if (it.id == pokemon.id) grown else it }, inventory = inventory, coins = coins),
-                    counters = Counters.EVENT_CANDIES.set(next.counters, x.date, used + candies),
+                    counters = Counters.EVENT_CANDIES.set(next.counters, streakDay, used + candies),
                 )
                 next = noted(next, log("Event: ${x.title}", rewards, paid), "plan:event:${x.eventId}:${x.date}", "PLAN", x.eventId, "event", nowMillis)
             }
