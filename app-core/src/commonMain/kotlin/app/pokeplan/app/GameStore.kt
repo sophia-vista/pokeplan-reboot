@@ -80,7 +80,7 @@ import app.pokeplan.plan.MiniQuest
 import app.pokeplan.plan.MiniQuests
 import app.pokeplan.plan.PickForMe
 import app.pokeplan.plan.MilestoneResult
-import app.pokeplan.plan.Reviews
+import app.pokeplan.plan.TargetConversion
 import app.pokeplan.plan.FrequencyProgress
 import app.pokeplan.plan.FrequencyTarget
 import app.pokeplan.plan.Frequency
@@ -199,6 +199,19 @@ class GameStore(
         return d.copy(series = d.series + merged, habits = emptyList(), legacyHabits = d.legacyHabits + d.habits, habitsMergedAtMillis = d.habitsMergedAtMillis ?: nowMillis)
     }
 
+    /**
+     * Frequency targets were scrapped (owner, 20 November 2026): each saved target becomes an ordinary recurring task with the nearest calendar rule
+     * ([TargetConversion]), keeping its id, title, rank, category and completion days (so a goal that links it, and the days a quest counts, stay). It pays
+     * nothing by itself being converted. Idempotent: a series has a target or a rule, never both, so once none has a target it does nothing.
+     */
+    private fun convertTargets(d: AppData): AppData {
+        if (d.series.none { it.target != null }) return d
+        return d.copy(series = d.series.map { s ->
+            val target = s.target ?: return@map s
+            s.copy(recurrence = TargetConversion.toRecurrence(target, s.createdOn ?: today), target = null)
+        })
+    }
+
     /** The one-time merge of Plan's coins and World's Poké, 1:1, recording both sources. Does nothing once it has run. */
     private fun migratePoke(d: AppData): AppData {
         // The World balance of a save is read once (`legacyPoke`), then it is 0 and not written.
@@ -223,7 +236,7 @@ class GameStore(
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(Places::guardiansToModules).let(::mergeHabits).let(::startDecorations)
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(Places::guardiansToModules).let(::mergeHabits).let(::convertTargets).let(::startDecorations)
 
     /** The three starter decorations (BASE.md 9.5.4), once per save: a new save, and a save from before the room. */
     private fun startDecorations(d: AppData): AppData =
@@ -1092,54 +1105,8 @@ class GameStore(
 
     // --- frequency targets (recurring tasks that repeat N times in a period; there is no Habit record any more) ------------
 
-    /** The recurring tasks with a frequency target. */
-    fun frequencyTasks(): List<TaskSeries> = data.series.filter { it.isFrequency }
-
-    fun addFrequencyTask(title: String, target: FrequencyTarget = HabitTarget.Daily, rank: Rank = Rank.C, category: Category = Category.HEALTH): TaskSeries {
-        val id = newId()
-        val series = TaskSeries(
-            Task(id = id, seriesId = id, title = title.trim(), rank = rank, category = category, createdAtMillis = nowMillis),
-            target = target, createdOn = today,
-        )
-        update { it.copy(series = it.series + series) }
-        return series
-    }
-
-    /** Changes a target's words, how often, rank or category. Its history of completions is kept. A blank title changes nothing. */
-    fun editFrequencyTask(id: String, title: String, target: FrequencyTarget, rank: Rank, category: Category) {
-        val clean = title.trim().ifEmpty { return }
-        update { d -> d.copy(series = d.series.map { if (it.template.id == id && it.isFrequency) it.copy(template = it.template.copy(title = clean, rank = rank, category = category), target = target) else it }) }
-    }
-
-    /** Removes a target and its history. [restoreSeries] brings it back. */
-    fun deleteFrequencyTask(id: String) = update { d -> d.copy(series = d.series.filterNot { it.template.id == id && it.isFrequency }) }
-
     /** Puts the recurring tasks and targets back as they were (for an undo). */
     fun restoreSeries(series: List<TaskSeries>) = update { it.copy(series = series) }
-
-    /** Marks a frequency task done for [date]; the first completion of the day pays like a task, and never twice for the same day. */
-    fun completeFrequencyTask(id: String, date: LocalDate = today) {
-        if (date > today) return
-        val series = data.series.first { it.template.id == id && it.isFrequency }
-        val habit = checkNotNull(series.asHabit())
-        val pays = habit.paysOn(date) && date == today
-        update { d ->
-            val next = d.copy(series = d.series.map { if (it.template.id == id) it.copy(completions = it.completions + date, paidOn = if (pays) date else it.paidOn) else it })
-            if (pays) achieve(next, series.template.rank.tier, "Recurring: ${series.template.title}", "plan:series:$id:${date.toEpochDays()}", id) else next
-        }
-    }
-
-    fun undoFrequencyTask(id: String, date: LocalDate = today) =
-        update { d -> d.copy(series = d.series.map { if (it.template.id == id && it.isFrequency) it.copy(completions = it.completions - date) else it }) }
-
-    /** How far [series] is in its current period: "2 / 3 this week". */
-    fun frequencyProgress(series: TaskSeries): FrequencyProgress? = series.target?.let { Frequency.progress(it, series.completions, today, firstDayOfWeek) }
-
-    /** Whether a target is one of Today's: not done today and its period not met ([Frequency.dueToday]). */
-    fun frequencyDueToday(series: TaskSeries): Boolean = series.target?.let { Frequency.dueToday(it, series.completions, today, firstDayOfWeek) } ?: false
-
-    /** The streak of a frequency task, forgiving and secondary (PLAN.md section 5.4). */
-    fun frequencyStreak(series: TaskSeries): Int = series.asHabit()?.streak(today, data.restDays, perks.extraForgivenDays, firstDayOfWeek) ?: 0
 
     // --- goals --------------------------------------------------------------------------------------------------------
 
@@ -1229,33 +1196,10 @@ class GameStore(
         return result
     }
 
-    // --- weekly review and rest days ----------------------------------------------------------------------------------
+    // --- the week and rest days ---------------------------------------------------------------------------------------
 
     val weekStart: LocalDate
         get() = Streaks.weekStartOf(today, firstDayOfWeek)
-
-    fun reviewSummary(): Reviews.Summary = Reviews.summary(weekStart, data.tasks, data.focusHistory, data.series.mapNotNull { it.asHabit() }, zone)
-
-    fun canReview(): Boolean = Reviews.canComplete(weekStart, today, data.reviews)
-
-    /**
-     * Finishes this week's review: optionally moves unfinished tasks to [carryTo], and pays a berry. [movedIds] are the tasks the
-     * review already moved one by one (Move or Later), recorded with the carried ones.
-     */
-    fun completeReview(note: String?, carryTo: LocalDate? = null, movedIds: Collection<String> = emptyList()) {
-        check(canReview()) { "this week was already reviewed" }
-        val carried = if (carryTo != null) reviewSummary().unfinished.map { Reviews.carryForward(it, carryTo) } else emptyList()
-        val review = Reviews.complete(weekStart, nowMillis, note, carried, data.reviews).let { r -> r.copy(carriedForwardTaskIds = (r.carriedForwardTaskIds + movedIds).distinct()) }
-        val berry = Items.randomBerry(rng)
-        update { d ->
-            val byId = carried.associateBy { it.id }
-            val next = d.copy(
-                tasks = d.tasks.map { byId[it.id] ?: it }, reviews = d.reviews + review,
-                player = d.player.copy(inventory = d.player.inventory.add(berry, Reviews.REWARD_BERRIES)),
-            )
-            noted(d, log("Weekly review", listOf(Reward.ItemDrop(berry, Reviews.REWARD_BERRIES)), next), "plan:review:${weekStart.toEpochDays()}", "PLAN", "week:${weekStart.toEpochDays()}", "review", nowMillis)
-        }
-    }
 
     // --- nudges: Pick for me, mini-quests, welcome back ---------------------------------------------------------------
 

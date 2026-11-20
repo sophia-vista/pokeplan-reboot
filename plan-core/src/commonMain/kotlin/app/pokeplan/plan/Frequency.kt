@@ -46,3 +46,29 @@ object Frequency {
         return !progress(target, completions, today, weekStart).reached
     }
 }
+
+/**
+ * The frequency targets were scrapped on 20 November 2026 (owner; PLAN.md section 5): a saved target becomes an ordinary recurring task, and
+ * this maps its "how often" onto the nearest calendar rule. Every day and chosen weekdays map exactly; "N a week" and "N a month" have no exact
+ * calendar form, so they become a weekly rule on N days spread across the week (a month's N becomes about N / 4 days a week, and once a month
+ * becomes the day of the month it began on). The completion history is kept by the caller.
+ */
+object TargetConversion {
+    /** [times] days of the week spread as evenly as they go, from Monday: 1 is Monday, 2 Monday and Thursday, 3 Monday, Wednesday and Friday. */
+    fun spreadDays(times: Int): Set<DayOfWeek> {
+        val k = times.coerceIn(1, 7)
+        return (0 until k).map { DayOfWeek.entries[it * 7 / k] }.toSet()
+    }
+
+    fun toRecurrence(target: FrequencyTarget, start: LocalDate): Recurrence = Recurrence(
+        repeat = when (target) {
+            HabitTarget.Daily -> Repeat.Daily(1)
+            is HabitTarget.Weekdays -> Repeat.Weekly(1, target.days)
+            is HabitTarget.PerWeek -> if (target.times >= 7) Repeat.Daily(1) else Repeat.Weekly(1, spreadDays(target.times))
+            is HabitTarget.PerMonth ->
+                if (target.times <= 1) Repeat.Monthly(1, MonthlyRule.DayOfMonth(start.dayOfMonth.coerceAtMost(28)))
+                else Repeat.Weekly(1, spreadDays(((target.times * 7 + 15) / 30).coerceAtLeast(1)))
+        },
+        start = start,
+    )
+}

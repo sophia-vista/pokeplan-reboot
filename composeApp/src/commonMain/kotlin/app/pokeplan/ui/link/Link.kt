@@ -250,6 +250,7 @@ private fun LinkOverview(model: AppModel) {
     // The action items sit below the overview and above the party.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Quick actions")
             var adding by remember { mutableStateOf(false) }
             if (!adding) PixelButton("Add", { adding = true }, Modifier.fillMaxWidth(), compact = true)
             else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {

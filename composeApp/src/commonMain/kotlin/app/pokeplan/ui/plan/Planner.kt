@@ -146,7 +146,6 @@ private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Un
     val calendarKey: (@Composable () -> Unit)? = if (section != PlanSection.TASKS) null else ({ PixelButton("Calendar", { open(PlanSection.CALENDAR) }, color = Pixel.InkSoft, compact = true) })
     SectionScaffold(section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header, trailing = calendarKey) {
         when (section) {
-            PlanSection.TARGETS -> FrequencyView(model)
             PlanSection.CALENDAR -> DayView(model, pendingIds, startWeek)
             PlanSection.TASKS -> TasksWorkspace(model, onFocus)
             PlanSection.SETTINGS -> app.pokeplan.ui.screens.PlanSettings(model)
@@ -156,8 +155,42 @@ private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Un
 }
 
 /**
- * What on Plan's page needs a look (PLAN.md section 3): quick add into the Inbox, the task to do next (with Focus on this and Pick for me),
- * and one quiet key for each thing waiting: tasks from before, targets due today, the weekly review. Nothing shows for what is not there.
+ * Plan's page, first box: today's open tasks (the first five, each with its check key; "from before" ones in the warning colour) and how
+ * many are done. A full list opens in Tasks. With nothing planned it is one title.
+ */
+@Composable
+internal fun PlanOverview(model: AppModel) {
+    val store = model.store
+    val tasks = store.openTodayTasks()
+    val done = store.doneToday()
+    val late = TaskViews.overdue(tasks, store.now).toSet()
+    val openToday = { model.tasksView = TasksView.TODAY; model.planSection = PlanSection.TASKS }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            if (tasks.isEmpty()) {
+                PixelTitle(if (done > 0) "All clear for today" else "Nothing planned for today")
+                if (done == 0) PixelButton("Add a task", { model.addTaskRequested = true }, Modifier.fillMaxWidth(), compact = true)
+            } else {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    Box(Modifier.weight(1f)) { PixelTitle("Today") }
+                    Text("$done of ${tasks.size + done} done", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+                tasks.take(5).forEach { t ->
+                    RecordRow(
+                        t.title, if (t in late) "From before" else "", warn = t in late,
+                        lead = { PixelIconButton("check", "Mark ${t.title} done", { model.completeTask(t.id) }, Pixel.Green) },
+                        onClick = openToday, onClickLabel = "Open today's tasks",
+                    )
+                }
+                if (tasks.size > 5) PixelButton("All ${tasks.size} tasks", openToday, color = Pixel.InkSoft, compact = true)
+            }
+        }
+    }
+}
+
+/**
+ * Plan's page, action items: quick add into the Inbox, and the task to do next (with Focus on this and Pick for me).
+ * Nothing shows for what is not there.
  */
 @Composable
 internal fun PlanActionItems(model: AppModel, onFocus: ((Task) -> Unit)?) {
@@ -175,22 +208,11 @@ internal fun PlanActionItems(model: AppModel, onFocus: ((Task) -> Unit)?) {
         picked = next.id == data.pickedTaskId,
         day = store.today,
     )
-    val targets = store.frequencyTasks().count { store.frequencyDueToday(it) }
-    val waiting = buildList<Pair<String, () -> Unit>> {
-        if (late.isNotEmpty()) add("${late.size} from before" to { model.tasksView = TasksView.TODAY; model.planSection = PlanSection.TASKS })
-        if (tasks.size - late.size > (if (next != null && next !in late) 1 else 0)) add("${tasks.size - late.size - (if (next != null && next !in late) 1 else 0)} more today" to { model.tasksView = TasksView.TODAY; model.planSection = PlanSection.TASKS })
-        if (targets > 0) add("$targets target${if (targets == 1) "" else "s"} today" to { model.planSection = PlanSection.TARGETS })
-        if (store.canReview()) add("Weekly review is ready" to { model.planSection = PlanSection.PROGRESS })
-    }
-    if (waiting.isNotEmpty()) androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        waiting.forEach { (label, go) -> PixelButton(label, go, color = Pixel.InkSoft, compact = true) }
-    }
 }
 
 /**
  * Plan's Today (PLAN.md section 3.1), after Things and Todoist: how the day is going, the task to do next (with Focus on this
- * and Pick for me, +10% candies), the tasks from before (with one button to bring them to today), today's, today's unmet
- * frequency targets, "This evening", and what was finished today folded away. Every group sits in one panel, rows split by
+ * and Pick for me, +10% candies), the tasks from before (with one button to bring them to today), today's, "This evening", and what was finished today folded away. Every group sits in one panel, rows split by
  * lines. [onFocus] is null where there is no Focus (desktop and the web).
  */
 @Composable
@@ -200,7 +222,6 @@ internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?) {
     val host = remember { CardHost() }
     val card = taskCards(model, host)
     val tasks = store.openTodayTasks()
-    val targets = store.frequencyTasks().filter { store.frequencyDueToday(it) }
     val done = store.doneToday()
     if (tasks.isNotEmpty() || done > 0) {
         val total = tasks.size + done
@@ -209,7 +230,7 @@ internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?) {
             app.pokeplan.ui.theme.PixelBar(done.toFloat() / total, Modifier.weight(1f), label = "$done of $total done")
         }
     }
-    if (tasks.isEmpty() && targets.isEmpty()) {
+    if (tasks.isEmpty()) {
         if (done > 0) EmptyState("All clear for today", icon = "oaks-parcel", sleeper = true, action = "Add another" to { model.addTaskRequested = true })
         else EmptyState("Nothing planned for today", icon = "oaks-parcel", sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
     }
@@ -234,42 +255,13 @@ internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?) {
         action = if (movable.isEmpty()) null else "Move to today" to { movable.forEach { store.updateTask(it.copy(planned = store.today)) } },
         card = card,
     )
-    if (day.isNotEmpty()) TaskGroup(if (before.isEmpty() && evening.isEmpty() && targets.isEmpty()) null else "Today", day, dayOf = store.today, card = card)
-    if (targets.isNotEmpty()) TargetGroup(model, targets)
+    if (day.isNotEmpty()) TaskGroup(if (before.isEmpty() && evening.isEmpty()) null else "Today", day, dayOf = store.today, card = card)
     if (evening.isNotEmpty()) TaskGroup("This evening", evening, dayOf = store.today, card = card)
     // What was finished today, folded away (Reopen is on each row).
     if (done > 0) {
         var showDone by remember { mutableStateOf(false) }
         PixelButton(if (showDone) "Hide done" else "Done today ($done)", { showDone = !showDone }, color = Pixel.InkSoft, compact = true)
         if (showDone) TaskGroup(null, data.tasks.filter { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }.sortedByDescending { it.completedAtMillis }, card = card)
-    }
-}
-
-/** Today's frequency targets not yet met, as a group of rows with the same check key as a task; the Targets page edits them. */
-@Composable
-private fun TargetGroup(model: AppModel, targets: List<app.pokeplan.app.TaskSeries>) {
-    val store = model.store
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Row(Modifier.fillMaxWidth().padding(top = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Targets", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
-            Text("${targets.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-        val shape = PixelShape
-        Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape).clip(shape)) {
-            targets.forEachIndexed { i, h ->
-                if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
-                Row(
-                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp).padding(Spacing.M),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
-                ) {
-                    PixelIconButton("check", "Done", { model.effect(app.pokeplan.ui.Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
-                    Column(Modifier.weight(1f)) {
-                        TaskTitleLine(h.template, MaterialTheme.typography.bodyLarge)
-                        store.frequencyProgress(h)?.let { Text(it.label(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-                    }
-                }
-            }
-        }
     }
 }
 

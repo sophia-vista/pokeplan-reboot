@@ -111,7 +111,7 @@ internal fun jumpTargets(model: AppModel, focus: Boolean): List<JumpTarget> = bu
         if (m == Module.CARE && !careOn) return@forEach
         add(JumpTarget(m.label, "Module", m.icon) { model.open(Place.valueOf(m.name), focus) })
     }
-    PlanSection.entries.filter { it != PlanSection.MORE && (it != PlanSection.FOCUS || focus) }.forEach { s ->
+    PlanSection.entries.filter { it != PlanSection.FOCUS || focus }.forEach { s ->
         add(JumpTarget(s.label, "Plan", s.icon) { model.open(Place.PLAN, focus); model.planSection = s })
     }
     if (careOn) CareSection.entries.forEach { s -> add(JumpTarget(s.label, "Care", s.icon) { model.open(Place.CARE, focus); model.careSection = s }) }

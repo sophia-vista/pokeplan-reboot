@@ -68,12 +68,4 @@ class PlanCareLedgerNotesTest {
         assertEquals(ids.size, ids.toSet().size)
         assertTrue(ids.all { it.startsWith("care:routine:") })
     }
-
-    @Test fun `a weekly review is noted once for its week`() {
-        val (s, _) = started()
-        s.completeReview(null)
-        val note = s.data.ledgerNotes.single()
-        assertEquals("plan:review:${s.weekStart.toEpochDays()}", note.eventId)
-        assertEquals(1L, note.items.values.sum())
-    }
 }

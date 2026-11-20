@@ -61,15 +61,11 @@ class BackChainTest {
 
     @Test
     fun planSectionsGoBackToTodayThenToModules() {
-        // A section of More goes back to More first; every other section goes back to Today, Plan's page.
+        // Every section goes back to Today, Plan's page.
         for (section in PlanSection.entries) {
             val m = model().also { it.module = Module.PLAN; it.planSection = section }
             scene({ app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }) { s ->
                 s.settle()
-                if (section.parent != null) {
-                    s.back()
-                    assertEquals(PlanSection.MORE, m.planSection, "Back from Plan's ${section.label} lands on More")
-                }
                 s.back()
                 assertNull(m.planSection, "Back from Plan's ${section.label} lands on Today")
                 assertEquals(Module.PLAN, m.module)

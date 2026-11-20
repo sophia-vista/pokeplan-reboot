@@ -34,11 +34,8 @@ class NavigationTest {
     }
 
     @Test
-    fun planHasTasksCalendarAndFocusAndTheMoreKeyHoldsTheRest() {
-        assertEquals(listOf(PlanSection.TASKS, PlanSection.CALENDAR, PlanSection.FOCUS), PlanSection.entries.take(3))
-        assertEquals(setOf(PlanSection.PROGRESS, PlanSection.GOALS, PlanSection.TARGETS, PlanSection.SETTINGS), PlanSection.MORE_HOLDS)
-        PlanSection.MORE_HOLDS.forEach { assertEquals(PlanSection.MORE, it.parent, "${it.label} sits in More, so Back returns there") }
-        assertNull(PlanSection.TASKS.parent)
+    fun everyPlanPlaceIsInTheSectionsKeyAndProgressAndTrendsAreInMe() {
+        assertEquals(listOf(PlanSection.TASKS, PlanSection.CALENDAR, PlanSection.FOCUS, PlanSection.GOALS, PlanSection.SETTINGS), PlanSection.entries)
     }
 
     @Test

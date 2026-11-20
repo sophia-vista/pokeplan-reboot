@@ -49,10 +49,10 @@ class SaveFixtureTest {
         // 1. Nothing done yet.
         out["main-empty"] = encode(newStore(Clock(start)))
 
-        // 2. A week of ordinary use, with a habit, a goal, an open task and a finished focus session.
+        // 2. A week of ordinary use, with a repeating task, a goal, an open task and a finished focus session.
         val clock = Clock(start)
         val store = newStore(clock)
-        store.addFrequencyTask("Stretch")
+        store.addRecurring(app.pokeplan.plan.Task(id = "", title = "Stretch", createdAtMillis = start), app.pokeplan.plan.Recurrence(app.pokeplan.plan.Repeat.Daily(1), store.today))
         store.addGoal("Read a book")
         repeat(7) { useADay(store, clock, it) }
         store.addTask("Still to do", Rank.B)

@@ -136,6 +136,9 @@ fun MintPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
  * A module's party in one row of six sprites, the lead first and outlined, the free places a faint Poké Ball. Tapping one plays its
  * cry and a hop; holding it opens its page (the Pokémon tab shows names and levels). Below, the party's perks once the rank opens them.
  */
+/** A sprite in a module page's party row: smaller than on the Pokémon tab, so the party takes less of the page. */
+private val COMPACT_SPRITE = 40.dp
+
 @Composable
 private fun PartyPanel(
     model: AppModel, members: List<OwnedPokemon>, leadId: String?, lead: String,
@@ -143,7 +146,7 @@ private fun PartyPanel(
 ) {
     val ordered = members.sortedByDescending { it.id == leadId }.take(PARTY_SIZE)
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Party", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 Text("${ordered.size} of $PARTY_SIZE", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
@@ -219,7 +222,7 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
                 model.haptic()
                 if (tapOpens) onOpen(p.id) else hear(model, p, calm) { action = SpriteAction.HOP; hops++ }
             }
-            .padding(vertical = Spacing.S, horizontal = Spacing.XS)
+            .padding(vertical = if (compact) Spacing.XS else Spacing.S, horizontal = Spacing.XS)
             .semantics(mergeDescendants = true) {
                 contentDescription = listOfNotNull(role, p.nickname, "level ${p.level}", if (p.isShiny) "shiny" else null).joinToString(", ")
             },
@@ -227,7 +230,7 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             AnimatedSprite(
                 p.form.id, p.isShiny, p.nickname, Modifier.offset { IntOffset(0, lift.value.dp.roundToPx()) },
-                size = Sizes.SpriteS, animate = !calm, ground = 4.dp,
+                size = if (compact) COMPACT_SPRITE else Sizes.SpriteS, animate = !calm, ground = 4.dp,
                 action = action, actionKey = hops, onActionDone = { action = SpriteAction.IDLE },
             )
             if (!compact) Text(
@@ -261,8 +264,8 @@ private fun EmptySlot(modifier: Modifier, compact: Boolean = false) {
         modifier.background(Pixel.Shade.copy(alpha = 0.3f), slotShape).semantics(mergeDescendants = true) { contentDescription = "Free place" },
         contentAlignment = Alignment.Center,
     ) {
-        Column(Modifier.padding(vertical = Spacing.S).alpha(0f)) {
-            Box(Modifier.size(Sizes.SpriteS))
+        Column(Modifier.padding(vertical = if (compact) Spacing.XS else Spacing.S).alpha(0f)) {
+            Box(Modifier.size(if (compact) COMPACT_SPRITE else Sizes.SpriteS))
             if (!compact) {
                 Text(" ", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                 Text(" ", style = MaterialTheme.typography.labelMedium)
