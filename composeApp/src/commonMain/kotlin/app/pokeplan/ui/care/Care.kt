@@ -767,7 +767,7 @@ private fun JournalView(model: AppModel) {
     var shown by remember { mutableStateOf(30) }
     val found = care.searchJournal(query)
     val entries = found.take(shown)
-    if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", icon = CareSection.JOURNAL.icon, action = "Clear the search" to { query = "" })
+    if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", icon = CareSection.REFLECT.icon, action = "Clear the search" to { query = "" })
     entries.forEach { e ->
         ListRow(
             trail = {
