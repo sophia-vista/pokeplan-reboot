@@ -60,7 +60,6 @@ import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.ui.Sfx
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.ui.semantics.Role
 import app.pokeplan.ui.Sprite
 import app.pokeplan.care.JournalEntry
@@ -124,7 +123,7 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
 /**
- * Care's screens (docs/pokelife/MODULES/CARE.md section 3). Five places, always one tap apart in a row under the header (owner, 20 November 2026):
+ * Care's screens (docs/pokelife/MODULES/CARE.md section 3). Five places, reached from the Sections key in the header (owner, 20 November 2026; no row of keys on the page):
  * **Today** (the landing: the buddy, today's routines and the mood key), **Routines** (add, edit, skip and archive them), **Calm** (the breathing break and the guided DBT skills),
  * **Reflect** (the diary card and the journal, two modes of one place) and **Dream** (the dream world: the buddy and the dreamers asleep in one
  * scene, visiting, play and the party). Doing earns (a routine, a calm break, a practised skill, a week with a
@@ -136,7 +135,7 @@ enum class CareSection(val label: String, val icon: String) {
     ROUTINES("Routines", "oaks-parcel"), CALM("Calm", "lunar-wing"), REFLECT("Reflect", "journal"), DREAM("Dream", "town-map"),
 }
 
-/** The header and the row of five places stay put; only the page under them changes. Back from a place goes to Today, from Today to the module list. */
+/** The header stays put; only the page under it changes. Back from a place goes to Today, from Today to the module list. */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
@@ -144,15 +143,8 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     val back = if (section == null) ({ model.module = null }) else ({ model.careSection = null })
     BackHandler(enabled = true, onBack = back)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header)
-        // Each key is as wide as its word (five equal keys cut "Routines" short); at a large text size the row scrolls rather than clip.
-        Row(
-            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup().padding(horizontal = Spacing.Page, vertical = Spacing.S),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
-        ) {
-            val places: List<Pair<CareSection?, String>> = listOf(null to "Today") + CareSection.entries.map { it to it.label }
-            places.forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }) }
-        }
+        // The five places are reached from the Sections key, as in every module's header; the page under it is the point.
+        ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header, trailing = { SectionsKey(Module.CARE.label, careSections(model)) { key -> model.careSection = CareSection.entries.firstOrNull { it.name == key } } })
         ScreenSwitch(section) { page ->
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
@@ -170,7 +162,21 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     }
 }
 
-/** What to do now: the buddy, today's routines and the mood key. Visitors, the egg and the party live in Dream. */
+/** The Sections sheet: the five places, each with its state for today. "TODAY" is the landing (`careSection == null`). */
+private fun careSections(model: AppModel): List<MenuEntry> {
+    val today = model.care.todayRoutines()
+    val done = today.count { it.doneOn(model.care.today) }
+    val tint = ModuleAccent.CARE.accent
+    return listOf(
+        MenuEntry("TODAY", "poke-ball", "Today", tint = tint),
+        MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = tint),
+        MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm", "breathe, skills", tint = tint),
+        MenuEntry(CareSection.REFLECT.name, CareSection.REFLECT.icon, "Reflect", if (model.care.diaryToday() != null) "saved today" else "diary card, journal", tint = tint),
+        MenuEntry(CareSection.DREAM.name, CareSection.DREAM.icon, "Dream", "visitors, play, party", tint = tint),
+    )
+}
+
+/** Care's main screen, in the order every module keeps: the short lead, the overview (today's routines, the mood key), Quick actions, then the party (it is in Dream too). The visitors and the egg are in Dream. */
 @Composable
 private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
     val care = model.careData
@@ -193,12 +199,27 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
         }
     }
     MoodRow(model)
+    // The action items, then the party last (the order every module's main screen keeps, DESIGN_SYSTEM.md 5.1).
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Quick actions")
+            // Keys at their natural width that wrap at a large text size, so no label is cut.
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                // What people do often: a calm break, today's check-in, a journal entry. Adding a routine is set-up, so it lives in Routines.
+                PixelButton("Calm", { model.careSection = CareSection.CALM }, color = ModuleAccent.CARE.accent, compact = true)
+                PixelButton("Check in", { model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Write", { model.reflectJournal = true; model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
+            }
+        }
+    }
+    CarePartyPanel(model, openPokemon)
 }
 
 /** Reflect: the diary card and the journal stay separate records and separate modes of one place (CARE.md 3.3); a half-written journal entry opens on the journal. */
 @Composable
 private fun ReflectView(model: AppModel) {
-    var journal by remember { mutableStateOf(model.journalDraft.isNotEmpty()) }
+    var journal by remember { mutableStateOf(model.reflectJournal || model.journalDraft.isNotEmpty()) }
+    LaunchedEffect(Unit) { model.reflectJournal = false }
     Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         TabButton("Diary card", !journal, { journal = false }, Modifier.weight(1f))
         TabButton("Journal", journal, { journal = true }, Modifier.weight(1f))

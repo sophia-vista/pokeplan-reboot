@@ -5,11 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.220.1
+
+Care: the five places (Today, Routines, Calm, Reflect, Dream) are reached from the Sections key in the header, as in every other module, with their state for today; there is no row of keys on the page. Today follows the order every module's main screen keeps (the short lead, today's routines and the mood key, a Quick actions box with the commonly done actions (Calm, Check in, Write), then Care's party; Dream keeps the party too). UI only; `docs/pokelife/MODULES/CARE.md` 3 notes it.
+
 ## 0.220.0
 
 Care: navigation redesign (owner, 20 November 2026, REP-030; `docs/pokelife/MODULES/CARE.md` 1.5, changed first). UI only: no game-rule or economy change, no save or schema change, `RewardRules.VERSION` unchanged.
 
-- **Five keys:** a row under the Care header on every Care screen: Today (the landing: buddy, today's routines, mood key), Routines, Calm, Reflect, Dream. Keys are as wide as their word and the row scrolls sideways at large text. Back from any place goes to Today, from Today to the module list.
+- **Five places:** Today (the landing: buddy, today's routines, mood key), Routines, Calm, Reflect, Dream, reached from the Sections key in the header (0.220.1 removed the row of keys 0.220.0 first put on the page). Back from any place goes to Today, from Today to the module list.
 - **Calm:** the breathing break plus the DBT skills library. Each skill opens as a guided walk-through like the breathing break (progress bar, an intro page, one page per step with Next and Back, a closing page where "I practised this" pays as before); the breathing skill leads back to the break.
 - **Reflect:** the diary card and the journal as two modes of one place; it opens on the journal when a draft waits.
 - **Dream:** replaces the Meadow, the Visitors card on the landing and the Play screen. One dusk scene (the garden scene darkened, the buddy and the dreamers asleep with Zz; a tap wakes one for 2.5 seconds), "Spend time" (Care Play opened in place), the dreamers (the visitors) with queue, sent away and met, and Care's party.
