@@ -280,7 +280,7 @@ private fun LinkSearch(model: AppModel) {
 private fun openHit(model: AppModel, kind: HitKind, id: String) {
     when (kind) {
         HitKind.PERSON -> go(model, LinkSection.PEOPLE, id)
-        HitKind.NOTE -> go(model, LinkSection.PEOPLE, id, 1)
+        HitKind.NOTE -> go(model, LinkSection.PEOPLE, id, 2)
         HitKind.DATE -> go(model, LinkSection.DATES, id)
         HitKind.FOLLOW_UP -> go(model, LinkSection.FOLLOW_UPS, id, if (model.linkData.followUps.firstOrNull { it.id == id }?.status == FollowUpStatus.OPEN) 0 else 1)
     }
@@ -305,6 +305,7 @@ private fun PeopleView(model: AppModel) {
     var message by remember { mutableStateOf<String?>(null) }
     var shown by remember { mutableStateOf(DIRECTORY_PAGE) }
     var importing by remember { mutableStateOf(false) }
+    var openTab by remember { mutableStateOf<Int?>(null) }
     val contacts = model.contacts
     if (importing && contacts != null) {
         TextBox { ContactImportView(model, contacts) { importing = false } }
@@ -320,6 +321,9 @@ private fun PeopleView(model: AppModel) {
                     if (out.record == null) message = out.refused else { name = ""; message = null; openId = out.record!!.id; model.haptic() }
                 }, accent, enabled = name.isNotBlank())
             }
+            if (data.people.none { it.isMe }) PixelButton("Set up my profile", {
+                link.createMe(model.data.trainerName).record?.let { me -> openId = me.id; openTab = 1; model.haptic() }
+            }, Modifier.fillMaxWidth(), accent, compact = true)
             if (contacts != null) PixelButton("Import contacts", { importing = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             message?.let { Report(model, it, NoticeTone.WARNING) }
             val similar = if (name.isBlank()) emptyList() else link.possibleDuplicates(name)
@@ -346,7 +350,7 @@ private fun PeopleView(model: AppModel) {
                     LinkRules.displayName(p), listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · "),
                     onClick = { openId = if (openId == p.id) null else p.id }, onClickLabel = if (openId == p.id) "Close the profile" else "Open the profile",
                 )
-                if (openId == p.id) PersonProfile(model, p, jump?.tab?.takeIf { jump.id == p.id }) { openId = null }
+                if (openId == p.id) PersonProfile(model, p, openTab?.takeIf { openId == p.id } ?: jump?.tab?.takeIf { jump.id == p.id }) { openId = null; openTab = null }
             }
             if (people.size > upTo) PixelButton("Show ${minOf(DIRECTORY_PAGE, people.size - upTo)} more of ${people.size - upTo}", { shown = upTo + DIRECTORY_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
@@ -363,10 +367,11 @@ private fun PersonProfile(model: AppModel, p: Person, firstTab: Int?, onClose: (
             PersonForm(model, p, onDone = { editing = false })
             return@Column
         }
-        ModuleTabs(listOf("Overview", "Notes", "Follow-ups"), tab, accent) { tab = it }
+        ModuleTabs(listOf("Overview", "Profile", "Notes", "Follow-ups"), tab, accent) { tab = it }
         when (tab) {
             0 -> PersonOverview(model, p, onEdit = { editing = true }, onClose = onClose)
-            1 -> PersonNotes(model, p)
+            1 -> PersonProfileTab(model, p)
+            2 -> PersonNotes(model, p)
             else -> PersonFollowUps(model, p)
         }
     }
@@ -409,6 +414,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     ).filter { it.second.isNotBlank() }
     lines.forEach { (k, v) -> RecordRow(v, k) }
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    profileSummary(model, p).takeIf { it.isNotEmpty() }?.let { RecordRow(it, "Sign, animal, type") }
     dates.forEach { d -> LinkRules.next(d, today)?.let { u -> RecordRow(d.title, dateLine(u)) } ?: RecordRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
     next?.let { RecordRow(it.title, dueText(it, today) ?: "Next follow-up") }
     val contact = model.phone?.takeIf { it.canContact }

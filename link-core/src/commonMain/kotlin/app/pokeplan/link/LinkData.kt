@@ -31,6 +31,10 @@ data class Person(
      * Empty for a person the user typed. The phone's address book is never LINK's source of truth, and this never leaves LINK.
      */
     val sourceId: String = "",
+    /** The one person who is the user (LINK.md 2.6): same profile as anyone, pinned first in the directory. At most one. */
+    val isMe: Boolean = false,
+    /** The slambook half: socials, likes, answers, personality and birth details (LINK.md 2.6). Lives in the person's JSON, so there is no schema step. */
+    val profile: Profile = Profile(),
 )
 
 /** A dated line of context about a person (LINK.md 2.2). Private to LINK: it never leaves in a notification or an event. */

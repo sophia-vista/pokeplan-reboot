@@ -14,6 +14,9 @@ import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.LinkSettings
 import app.pokeplan.link.Person
+import app.pokeplan.link.Profile
+import app.pokeplan.link.ProfileKit
+import app.pokeplan.link.birthdayOf
 import app.pokeplan.link.PersonNote
 import app.pokeplan.link.Sort
 import app.pokeplan.plan.toLocalDateTime
@@ -98,6 +101,31 @@ class LinkStore(
         (LinkRules.checkPerson(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { d -> d.copy(people = d.people.map { if (it.id == p.id) next else it }) }
         return Logged(next)
+    }
+
+    /** The user's own card (LINK.md 2.6): the one person marked [Person.isMe]. Asking again returns the existing one, so there is never a second. Pays nothing. */
+    fun createMe(name: String): Logged<Person> {
+        data.people.firstOrNull { it.isMe }?.let { return Logged(it) }
+        val out = addPerson(name.ifBlank { "Me" }, category = "Me")
+        val made = out.record ?: return out
+        val me = made.copy(isMe = true)
+        update { d -> d.copy(people = d.people.map { if (it.id == me.id) me else it }) }
+        return Logged(me)
+    }
+
+    /** Saves a person's slambook details, tidied (LINK.md 2.6). Nothing here pays and nothing reaches an event. */
+    fun updateProfile(personId: String, profile: Profile): Logged<Person> {
+        val old = data.people.firstOrNull { it.id == personId } ?: return Logged(null, "That person is gone.")
+        val next = old.copy(profile = ProfileKit.tidy(profile), updatedMillis = nowMillis)
+        update { d -> d.copy(people = d.people.map { if (it.id == personId) next else it }) }
+        return Logged(next)
+    }
+
+    /** Sets a person's birthday (the date their birth chart is worked from): changes the one they have, or adds it. [year] may be null; the chart then needs it. */
+    fun setBirthday(personId: String, month: Int, day: Int, year: Int?): Logged<ImportantDate> {
+        val old = data.birthdayOf(personId)
+        return if (old == null) addDate(DateKind.BIRTHDAY, "Birthday", month, day, year, annual = true, personId = personId)
+        else updateDate(old.copy(month = month, day = day, year = year))
     }
 
     /** A favourite is only a shortcut in the directory, never a ranking (LINK.md 2.1). */
