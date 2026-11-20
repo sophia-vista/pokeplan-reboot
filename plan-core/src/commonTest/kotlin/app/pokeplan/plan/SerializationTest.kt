@@ -22,7 +22,7 @@ class SerializationTest {
     @Test
     fun tasksAndSubtasks() = roundTrip(
         Task(
-            id = "t1", title = "Write report", notes = "draft", rank = Rank.B, category = Category.WORK, listId = "l1",
+            id = "t1", title = "Write report", notes = "draft", rank = Rank.B, listId = "l1",
             planned = LocalDate(2026, 10, 19), plannedTime = LocalTime(9, 30), due = LocalDateTime(2026, 10, 20, 17, 0),
             estimateMinutes = 45, seriesId = "s1", subtasks = listOf(Subtask("a", "outline", true, 1L, true)),
             state = TaskState.DONE, createdAtMillis = 1L, completedAtMillis = 2L, focusedMinutes = 25, paid = true,
@@ -43,12 +43,12 @@ class SerializationTest {
     fun habits() {
         val on = LocalDate(2026, 10, 1)
         listOf<HabitTarget>(HabitTarget.Daily, HabitTarget.Weekdays(setOf(DayOfWeek.SATURDAY)), HabitTarget.PerWeek(3), HabitTarget.PerMonth(8))
-            .forEach { roundTrip(Habit("h", "Stretch", Rank.D, Category.HEALTH, it, on, setOf(on))) }
+            .forEach { roundTrip(Habit("h", "Stretch", Rank.D, it, on, setOf(on))) }
     }
 
     @Test
     fun goals() = roundTrip(
-        Goal("g", "Learn guitar", Category.PERSONAL, LocalDate(2027, 1, 1), listOf(Milestone("m", "First chord", 1L, 2L, true)), setOf("t1"), setOf("h"), "l", 1L, null, false),
+        Goal("g", "Learn guitar", LocalDate(2027, 1, 1), listOf(Milestone("m", "First chord", 1L, 2L, true)), setOf("t1"), setOf("h"), "l", 1L, null, false),
     )
 
     @Test

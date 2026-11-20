@@ -1,6 +1,5 @@
 package app.pokeplan.app
 
-import app.pokeplan.plan.Category
 import app.pokeplan.plan.Rank
 import java.io.File
 import kotlin.random.Random
@@ -33,7 +32,7 @@ class SaveFixtureTest {
 
     /** One day of ordinary use: tasks added and finished, a focus session, a habit ticked. */
     private fun useADay(store: GameStore, clock: Clock, n: Int) {
-        val tasks = (1..3).map { store.addTask("Task $n.$it", Rank.entries[it % Rank.entries.size], Category.entries[it % Category.entries.size]) }
+        val tasks = (1..3).map { store.addTask("Task $n.$it", Rank.entries[it % Rank.entries.size]) }
         tasks.take(2).forEach { store.completeTask(it.id) }
         clock.millis += 61_000
         store.tick()

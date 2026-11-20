@@ -289,17 +289,6 @@ class ScreenshotTest {
                 PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
             }
         }
-        // The Lists row open (with the longest name), and folded with a list chosen.
-        listOf(false, true).forEach { dark ->
-            val n = if (dark) "dark" else "light"
-            render("tasks-lists-open-$n", height = 1300, frames = 8) {
-                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; model.tasksListId = a.id; model.tasksListsOpen = true; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
-            }
-            render("tasks-list-chosen-$n", height = 900, frames = 8) {
-                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; model.tasksListId = a.id; model.tasksListsOpen = false; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
-            }
-        }
-        model.tasksListId = null; model.tasksListsOpen = false
         val emptyStore = started()
         emptyStore.data.tasks.filter { it.deletedAtMillis == null }.forEach { emptyStore.deleteTask(it.id) }
         val empty = AppModel(emptyStore)
@@ -651,9 +640,9 @@ class ScreenshotTest {
     fun plannerWeek() {
         val model = plannerDayModel()
         val store = model.store
-        val gym = store.addTask("Gym", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 2)), estimateMinutes = 60, category = app.pokeplan.plan.Category.HEALTH)
+        val gym = store.addTask("Gym", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 2)), estimateMinutes = 60)
         store.setPlannedTime(gym.id, kotlinx.datetime.LocalTime(17, 0))
-        val study = store.addTask("Study for the quiz", Rank.B, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 4)), estimateMinutes = 120, category = app.pokeplan.plan.Category.SCHOOL)
+        val study = store.addTask("Study for the quiz", Rank.B, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 4)), estimateMinutes = 120)
         store.setPlannedTime(study.id, kotlinx.datetime.LocalTime(14, 0))
         val colors = app.pokeplan.plan.TaskList.COLORS
         store.addAllDayEvent("Condo", store.today.plus(kotlinx.datetime.DatePeriod(days = 1)), store.today.plus(kotlinx.datetime.DatePeriod(days = 5)), colors[0])
@@ -707,11 +696,11 @@ class ScreenshotTest {
     /** A day with timed tasks, one beside a calendar event, an untimed one, an inbox one and an all-day event. */
     private fun plannerDayModel(): AppModel {
         val store = started()
-        val report = store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 90, category = app.pokeplan.plan.Category.WORK)
+        val report = store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 90)
         store.setPlannedTime(report.id, kotlinx.datetime.LocalTime(9, 0))
-        val call = store.addTask("Call the dentist", Rank.E, planned = store.today, category = app.pokeplan.plan.Category.HEALTH)
+        val call = store.addTask("Call the dentist", Rank.E, planned = store.today)
         store.setPlannedTime(call.id, kotlinx.datetime.LocalTime(10, 0))
-        val run = store.addTask("Evening run", Rank.C, planned = store.today, estimateMinutes = 45, category = app.pokeplan.plan.Category.HEALTH)
+        val run = store.addTask("Evening run", Rank.C, planned = store.today, estimateMinutes = 45)
         store.setPlannedTime(run.id, kotlinx.datetime.LocalTime(18, 30))
         store.addTask("Reply to mail", Rank.E, planned = store.today)
         store.addTask("Buy a birthday card", Rank.E)
@@ -2019,7 +2008,6 @@ class ScreenshotTest {
             }
             app.pokeplan.ui.screens.PixelDropdown(listOf<String?>(null, "Weekly", "Monthly"), null, { it ?: "All" }, {})
             app.pokeplan.ui.screens.PixelDropdown(listOf<String?>("Groceries and household supplies for the month"), "Groceries and household supplies for the month", { it ?: "" }, {})
-            app.pokeplan.ui.plan.CategoryChips(app.pokeplan.plan.Category.entries[1]) {}
             app.pokeplan.ui.plan.Segmented(listOf("Day", "Week", "Month"), 1) {}
             Text("Rows", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
             app.pokeplan.ui.theme.ChoiceRow(true, {}) { Text("Chosen") }

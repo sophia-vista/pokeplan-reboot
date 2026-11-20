@@ -62,6 +62,7 @@ import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.Money
+import app.pokeplan.mint.SharedRules
 import app.pokeplan.mint.Occurrence
 import app.pokeplan.mint.OccurrenceState
 import app.pokeplan.mint.PlanStatus
@@ -130,6 +131,8 @@ import app.pokeplan.ui.screens.short
 enum class MintSection(val label: String, val icon: String) {
     ACCOUNTS("Accounts", "member-card"), ACTIVITY("Activity", "journal"), BUDGETS("Budgets", "heart-scale"), BILLS("Bills and income", "oaks-letter"),
     REVIEW("Review", "scope-lens"), IMPORT("Import", "town-map"), SETTINGS("Settings", "storage-key"),
+    /** Appended, so a saved index still opens the same section. */
+    SHARED("Shared bills", "friend-ball"),
 }
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
@@ -194,6 +197,7 @@ private fun MintPage(model: AppModel, section: MintSection?, openPokemon: (Strin
             MintSection.BILLS -> BillsView(model)
             MintSection.REVIEW -> MintReviewView(model)
             MintSection.IMPORT -> MintImportView(model)
+            MintSection.SHARED -> SharedView(model)
             MintSection.SETTINGS -> MintSettingsView(model)
         }
     }
@@ -208,6 +212,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(MintSection.ACTIVITY.name, MintSection.ACTIVITY.icon, "Activity", if (data.transactions.isEmpty()) "add a purchase" else "${data.transactions.size} records", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.BUDGETS.name, MintSection.BUDGETS.icon, "Budgets", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) "optional" else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} active", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.BILLS.name, MintSection.BILLS.icon, "Bills and income", billsDetail(model), tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.SHARED.name, MintSection.SHARED.icon, "Shared bills", if (data.shared.isEmpty()) "who owes whom" else "${SharedRules.balances(data.shared).size} open", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
     ) + listOfNotNull(
         MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },

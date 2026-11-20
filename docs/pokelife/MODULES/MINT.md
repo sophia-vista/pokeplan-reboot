@@ -404,6 +404,19 @@ It supports:
 
 Imported records remain identifiable as imported. Reconciliation does not silently replace manual history or erase unmatched transactions.
 
+### 5.8A Shared bills (owner, 20 November 2026)
+
+A small ledger of who owes whom for bills split with other people, as the player would keep it in Splitwise. It is **display only**: it moves no account balance, makes no transaction, changes no net position, available money, budget or report, and pays nothing (no `MintEvent`, 16.2). The player records the real payment as an ordinary transaction (5.4) and keeps this ledger beside it.
+
+- **Entry** (`SharedEntry`, kept in the sealed `mint_state` as the `shared` list, so no migration): a person's name (a plain word, at most 40 characters, matched without case and edge spaces), a kind, an amount in integer minor units above zero, its currency, a day and an optional note (at most 120 characters).
+- **Four kinds.** *I paid* (I footed the bill; their share is now owed to me), *They paid* (someone else footed it; my share is now owed to them), *They paid me back* and *I paid them back* (a settlement).
+- **Balance** per person and currency = I paid + I paid them back - They paid - They paid me back, in minor units. Above zero the person owes the player; below zero the player owes them; zero is square. A settlement larger than what is owed simply turns the balance round (a person can overpay); nothing is refused for it.
+- **Totals** per currency: *owed to me* is the sum of the positive balances, *I owe* the sum of the negative ones, both shown as positive amounts and never netted across people.
+- **Settle up** on a person's line adds the one settlement entry that brings the balance to zero (They paid me back when they owed me, I paid them back when I owed them), dated today. It records nothing in an account: the player records the money moving as a transaction if they want it in their books.
+- **Screen:** *Shared*, a Mint section. Balances first, one line per person with the amount and Settle up; then New entry; then the history, newest first, each entry deletable. Hide values (3.3) hides every amount here too.
+- **Export and erase:** a kind of its own (`MintKinds.SHARED`, "Shared bills"): exported and erased on its own, with the rest in "Export everything" and "Erase all". A names-only record, so it is as private as the rest of Mint and rides in the sealed table.
+- **Not built:** splitting one bill by share or percentage between several people at once, simplifying debts across a group, linking an entry to a transaction, and posting a settlement to an account.
+
 ## 6. Categories and merchants
 
 Categories are MINT-owned and support:

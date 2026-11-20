@@ -340,6 +340,8 @@ data class MintData(
     /** Installment plans (MINT.md 5.6A). Kept as one sealed list in `mint_state`, not a table of their own. */
     val plans: List<InstallmentPlan> = emptyList(),
     val creditStatements: List<CreditStatement> = emptyList(),
+    /** Who owes whom for bills split with other people (MINT.md 5.8A). Display only; kept in the sealed `mint_state`. */
+    val shared: List<SharedEntry> = emptyList(),
     val settings: MintSettings = MintSettings(),
 )
 
@@ -351,4 +353,5 @@ enum class MintKinds(val label: String) {
     BUDGETS("Budgets"),
     BILLS("Bills"),
     REVIEWS("Reconciliations and reviews"),
+    SHARED("Shared bills"),
 }

@@ -19,6 +19,10 @@ import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.FeeKind
 import app.pokeplan.mint.FeeRule
 import app.pokeplan.mint.InstallmentPlan
+import app.pokeplan.mint.SharedBalance
+import app.pokeplan.mint.SharedEntry
+import app.pokeplan.mint.SharedKind
+import app.pokeplan.mint.SharedRules
 import app.pokeplan.mint.Installments
 import app.pokeplan.mint.PlanEvery
 import app.pokeplan.mint.PlanView
@@ -553,6 +557,24 @@ class MintStore(
     /** The days of a twice-a-month bill: 1 to 31, distinct, sorted, at most four; empty (15 and 30) for any other frequency or none given (MINT.md 8.3B). */
     private fun cleanDays(frequency: Frequency, days: List<Int>): List<Int> =
         if (frequency != Frequency.SEMI_MONTHLY) emptyList() else days.filter { it in 1..31 }.distinct().sorted().take(4).let { if (it == listOf(15, 30)) emptyList() else it }
+
+    // --- shared bills (MINT.md 5.8A): display only, no account, transaction or reward --------------------------------------------
+
+    /** Keeps one shared-bill entry; null and a reason in words when it cannot be kept. */
+    fun addShared(person: String, kind: SharedKind, amountMinor: Long, day: LocalDate, note: String = "", currency: String = data.settings.currency): String? {
+        SharedRules.refusal(person, amountMinor, currency)?.let { return it }
+        val entry = SharedEntry(newId(), SharedRules.cleanPerson(person), kind, amountMinor, currency, day, note.trim().take(SharedRules.NOTE_MAX))
+        update { it.copy(shared = it.shared + entry) }
+        return null
+    }
+
+    /** Settles [balance] with the one entry that brings it to zero, dated [day]. */
+    fun settleShared(balance: SharedBalance, day: LocalDate) {
+        val entry = SharedRules.settlement(balance, day, newId()) ?: return
+        update { it.copy(shared = it.shared + entry) }
+    }
+
+    fun deleteShared(id: String) = update { it.copy(shared = it.shared.filterNot { e -> e.id == id }) }
 
     fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null, income: Boolean = false, days: List<Int> = emptyList(), workday: Boolean = false, estimate: Boolean = false): Logged<Bill> {
         if (name.isBlank()) return Logged(null, "Give the bill a name.")
@@ -1094,6 +1116,7 @@ object MintExport {
         MintKinds.BUDGETS to listOf("budgets", "savingsTargets"),
         MintKinds.BILLS to listOf("bills", "billPayments"),
         MintKinds.REVIEWS to listOf("reconciliations", "reviews"),
+        MintKinds.SHARED to listOf("shared"),
     )
 
     fun json(data: MintData, kinds: Set<MintKinds>): String {
@@ -1123,6 +1146,7 @@ object MintExport {
         MintKinds.BUDGETS -> d.copy(budgets = emptyList(), savingsTargets = emptyList())
         MintKinds.BILLS -> d.copy(bills = emptyList(), billPayments = emptyList(), transactions = d.transactions.map { it.copy(billId = null, billDueDay = null) })
         MintKinds.REVIEWS -> d.copy(reconciliations = emptyList(), reviews = emptyList())
+        MintKinds.SHARED -> d.copy(shared = emptyList())
     }
 }
 /** What reading a statement file gave: the table, the columns and date order in use (guessed, or chosen), whether the order is certain, and the preview; or [refused], in words. */
