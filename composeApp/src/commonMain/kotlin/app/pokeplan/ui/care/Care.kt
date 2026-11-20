@@ -128,7 +128,7 @@ import app.pokeplan.ui.screens.short
  */
 enum class CareSection(val label: String, val icon: String) {
     ROUTINES("Routines", "oaks-parcel"), CALM("Calm break", "lunar-wing"), DIARY("Diary card", "heart-scale"),
-    SKILLS("Skills", "mental-herb"), JOURNAL("Journal", "journal"), TRENDS("Trends", "exp-share"),
+    SKILLS("Skills", "mental-herb"), JOURNAL("Journal", "journal"),
     MEADOW("Meadow", "town-map"), PLAY("Play", "poke-ball"),
 }
 
@@ -153,7 +153,6 @@ private fun CarePage(model: AppModel, section: CareSection?, openPokemon: (Strin
             CareSection.DIARY -> DiaryView(model)
             CareSection.SKILLS -> SkillsView(model)
             CareSection.JOURNAL -> JournalView(model)
-            CareSection.TRENDS -> TrendsView(model)
             CareSection.MEADOW -> MeadowView(model) { key -> model.playTarget = key; model.careSection = CareSection.PLAY }
             CareSection.PLAY -> PlayView(model, model.playTarget.also { model.playTarget = null })
         }
@@ -173,7 +172,6 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = ModuleAccent.CARE.accent),
         MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = ModuleAccent.CARE.accent),
         MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = ModuleAccent.CARE.accent),
-        MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = ModuleAccent.CARE.accent),
         MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = ModuleAccent.CARE.accent),
         MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = ModuleAccent.CARE.accent),
     )
@@ -183,7 +181,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            // What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
+            // Lead, overview, action items, party (the layout every module shares). What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
             CareBuddy(model, openPokemon)
             FirstRecordEgg(model, app.pokeplan.app.Tutorials.CARE_BREATH, care.routines.size + care.breaks.size + care.practices.size + care.diary.size + care.journal.size)
             if (today.isEmpty()) {
@@ -201,6 +199,17 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                 }
             }
             MoodRow(model)
+            // The action items, then the visitors and the egg meter that belong with the party, which comes last.
+            TextBox {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelTitle("Quick actions")
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        if (today.isNotEmpty()) PixelButton("Routine", { model.careSection = CareSection.ROUTINES }, Modifier.weight(1f), ModuleAccent.CARE.accent, compact = true)
+                        PixelButton("Calm", { model.careSection = CareSection.CALM }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        PixelButton("Diary", { model.careSection = CareSection.DIARY }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+            }
             CareEggMeter(model)
             VisitorsCard(model)
             CarePartyPanel(model, openPokemon)
@@ -232,6 +241,7 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
         guests = Visitors.meadow(model.careData.visitors).sortedByDescending { it.progress }.take(2).map { v ->
             StageGuest(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, Dex.species(v.speciesId).name) { model.haptic(); model.cry(v.speciesId) }
         },
+        compact = true,
     )
 }
 
@@ -897,6 +907,10 @@ private fun JournalEditor(model: AppModel, e: JournalEntry, onDone: () -> Unit) 
 }
 
 // ----- Trends ---------------------------------------------------------------------------------------------------------
+
+/** Care's trends, shown in Me (owner, 20 November 2026). */
+@Composable
+internal fun CareTrendsView(model: AppModel) = app.pokeplan.ui.theme.ModuleTone(ModuleAccent.CARE) { TrendsView(model) }
 
 @Composable
 private fun TrendsView(model: AppModel) {

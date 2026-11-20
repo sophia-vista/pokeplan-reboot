@@ -69,7 +69,7 @@ CARE retains ownership of its routine and Diary Card reminder preferences and so
 
 Use a small, stable navigation structure. Avoid a separate destination for every feature.
 
-**As built (owner, 18 November 2026; supersedes the 12 November layout):** Modules → Plan opens a page in the standard module layout: a short lead box, the overview of the three places (**Tasks**, **Calendar**, **Focus**, each with a count or state), the relevant action items (quick add to the Inbox, the task to do next, what is overdue, a weekly review when one is ready), and the party at the end. A **More** key in the lead box header holds the places visited less often: **Progress** (with the weekly review), **Goals**, **Targets** (frequency targets) and **Settings** (PLAN settings, 13).
+**As built (owner, 20 November 2026; supersedes the 18 November build and the 12 November layout):** Modules → Plan opens a page with no on-page menu: the lead (112 dp), the overview (today's open tasks, five at most, each with a check key, and an "All N tasks" button; one title when nothing is planned), the action items (Inbox quick add, the task to do next with **Focus** and **Pick for me**), and the party last. Every Plan place (**Tasks**, **Calendar**, **Focus** on the phone, **Goals**, **Settings**) is in the shared Sections key in the header (`SectionsKey`), which replaces the More button. `PlanSection` is TASKS, CALENDAR, FOCUS, GOALS, SETTINGS (MORE, PROGRESS, TARGETS are gone). Progress (without the review) moved to Me. The weekly review is retired (owner, 20 November 2026): no payout, review card, past reviews or unlock entry; saved reviews stay in the save unread. (18 November build, superseded: an overview menu of Tasks / Calendar / Focus, a More key holding Progress, Goals, Targets and Settings, and a weekly review action item.)
 
 Primary destinations (the owner uses only these three, so nothing else is a destination):
 
@@ -94,7 +94,7 @@ Suggested order:
 7. Compact focus entry point.
 8. Completed items, collapsed by default.
 
-As built: the lead's stage, quick add, the day's progress, the task to do next with **Focus on this** and **Pick for me**, then From before (with Move to today), Today, today's unmet frequency targets (as a group, ticked with the same check key as a task), This evening, "Done today" folded, the menu, and the party as one row.
+As built: the lead's stage, quick add, the day's progress, the task to do next with **Focus on this** and **Pick for me**, then From before (with Move to today), Today, today's unmet frequency targets (as a group, ticked with the same check key as a task), This evening, "Done today" folded, the menu, and the party as one row. (Superseded 20 November 2026: the page no longer shows this list; see the layout paragraph above. Frequency targets and the weekly review are retired.)
 
 Do not fill Today with future tasks merely because they are incomplete. Do not automatically treat unscheduled tasks as due today. Overdue tasks remain visible until resolved or rescheduled. Completed tasks should not dominate. Linked CARE records must be distinguishable and must not generate PLAN rewards. Today remains useful when empty, with a restrained empty state and capture action.
 
@@ -172,6 +172,8 @@ As built (0.178.0): one set of day keys wherever a task or a Plan event gets a d
 
 ## 5. Recurring tasks and flexible frequency targets
 
+**Retired (owner, 20 November 2026):** frequency targets (the Targets screen, "N a week/month" rules and their own payout path) are scrapped. A saved target becomes an ordinary recurring task on load (`GameStore.convertTargets`, mapping in plan-core `TargetConversion`): Daily becomes daily; chosen weekdays become weekly on those days; N a week becomes weekly on N days spread from Monday (1 Mon; 2 Mon+Thu; 3 Mon+Wed+Fri; 7 daily); once a month becomes monthly on the day it began (max 28); N a month (N >= 2) becomes weekly on round(N*7/30, minimum 1) spread days. Id, title, rank, category, completion days and payment day are kept, nothing is paid by the conversion, and it is idempotent. New repeating tasks pay as ordinary tasks. The `target` field and `plan_series` rows stay for old saves; there is no migration. The target text below is history.
+
 There is no separate PLAN Habits record type or primary Habits section. One recurring-task system supports both calendar recurrence and flexible frequency targets. It combines useful capabilities of existing `Recurrence` and `Habit` implementations without forcing users to choose between overlapping concepts.
 
 Examples:
@@ -207,7 +209,7 @@ Requirements:
 - Generated occurrences are deterministic and idempotent.
 - Restart/recalculation cannot create duplicate occurrences.
 
-### 5.3 Frequency-target behavior
+### 5.3 Frequency-target behavior (retired 20 November 2026, converted to recurring tasks; see above)
 
 Frequency targets have explicit period boundaries. A target of three per week counts completions within the configured week, not necessarily on consecutive days.
 

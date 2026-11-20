@@ -31,9 +31,9 @@ import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 
-/** Me holds only what every module shares; Plan's Growth, Goals and Review are in Modules, Plan. */
+/** Me holds what every module shares and every module's stats (owner, 20 November 2026): Plan's progress and Care's trends. New sections go at the end, so a saved index still opens the same one. */
 private enum class MeSection(val label: String, val icon: String) {
-    SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"),
+    SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"), PROGRESS("Plan progress", "exp-share"), TRENDS("Care trends", "heart-scale"),
 }
 
 @Composable
@@ -52,6 +52,8 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
                     TrainerCard(model)
                     MenuList(
                         listOf(
+                            MenuEntry("PROGRESS", MeSection.PROGRESS.icon, MeSection.PROGRESS.label),
+                            MenuEntry("TRENDS", MeSection.TRENDS.icon, MeSection.TRENDS.label),
                             MenuEntry("SETTINGS", "gb-sounds", "Settings"),
                             MenuEntry("HELP", "town-map", "Help"),
                         ),
@@ -64,6 +66,8 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             when (current) {
                 MeSection.SETTINGS -> SettingsView(model)
                 MeSection.HELP -> HelpView()
+                MeSection.PROGRESS -> app.pokeplan.ui.plan.ProgressView(model)
+                MeSection.TRENDS -> app.pokeplan.ui.care.CareTrendsView(model)
             }
         }
     }

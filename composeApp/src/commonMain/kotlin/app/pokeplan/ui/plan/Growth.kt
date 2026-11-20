@@ -331,103 +331,12 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
     }
 }
 
-// ----- Weekly review --------------------------------------------------------------------------------------------------
+// ----- Progress -------------------------------------------------------------------------------------------------------
 
-/** Progress: the weekly review as a card when one is ready, the trends, then past reviews (PLAN.md section 3). */
+/** Plan's progress and trends, shown in Me (owner, 20 November 2026; the weekly review is scrapped). */
 @Composable
 internal fun ProgressView(model: AppModel) {
-    if (model.store.canReview()) ReviewCard(model)
-    GrowthView(model)
-    PastReviews(model)
+    app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.PLAN) { GrowthView(model) }
 }
-
-/**
- * This week's review: what the week held, each unfinished task with Move (to tomorrow), Later (to next week's first day) and
- * Won't do, then the week's question and Finish, which pays a berry once a week.
- */
-@Composable
-private fun ReviewCard(model: AppModel) {
-    val store = model.store
-    val summary = store.reviewSummary()
-    var note by remember { mutableStateOf("") }
-    // The tasks this review already dealt with, so a task moved to a day still in this week leaves the list too.
-    var handled by remember(summary.weekStart) { mutableStateOf(setOf<String>()) }
-    var moved by remember(summary.weekStart) { mutableStateOf(setOf<String>()) }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Your week")
-            Text("${summary.tasksDone} tasks finished", style = MaterialTheme.typography.bodyLarge)
-            Text("${summary.focusMinutes} minutes focused in ${summary.sessionsCompleted} sessions", style = MaterialTheme.typography.bodyLarge)
-            summary.habits.filter { it.completions > 0 }.forEach { Text("${it.title}: ${it.completions} days", style = MaterialTheme.typography.bodyMedium) }
-            // Where the finished tasks were, biggest first; a bar for each area that had any.
-            val split = summary.categorySplit.filterValues { it > 0 }.entries.sortedByDescending { it.value }
-            if (split.isNotEmpty()) {
-                Text("Where it went", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Spacing.S))
-                val most = split.first().value
-                split.forEach { (c, n) ->
-                    Row(
-                        Modifier.semantics(mergeDescendants = true) { contentDescription = "${c.label}: ${plural(n, "task")}" },
-                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
-                    ) {
-                        Text(c.label, Modifier.width(84.dp), style = MaterialTheme.typography.bodyMedium)
-                        Box(Modifier.weight(1f)) { PixelBar(n.toFloat() / most, color = categoryColor(c)) }
-                        Text("$n", Modifier.width(32.dp), style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-        }
-    }
-    val unfinished = summary.unfinished.filter { it.id !in handled }
-    if (unfinished.isNotEmpty()) {
-        val tomorrow = store.today.plus(DatePeriod(days = 1))
-        val nextWeek = store.weekStart.plus(DatePeriod(days = 7))
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                PixelTitle("Not finished yet (${unfinished.size})")
-                unfinished.forEach { t ->
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        TaskTitleLine(t, MaterialTheme.typography.bodyLarge)
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            PixelButton("Move", { store.updateTask(t.copy(planned = tomorrow)); handled = handled + t.id; moved = moved + t.id }, Modifier.weight(1f), Pixel.Tone, compact = true)
-                            PixelButton("Later", { store.updateTask(t.copy(planned = nextWeek)); handled = handled + t.id; moved = moved + t.id }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                            PixelButton("Won't do", {
-                                store.wontDo(t.id); handled = handled + t.id
-                                model.offerUndo("Won't do: ${t.title}") { store.reopen(t.id); handled = handled - t.id }
-                            }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                        }
-                    }
-                }
-            }
-        }
-    }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text(Reviews.promptFor(store.weekStart), style = MaterialTheme.typography.bodyLarge)
-            PixelField(note, { note = it }, Modifier.fillMaxWidth(), placeholder = "Note")
-            PixelButton("Finish the review", { store.completeReview(note, movedIds = moved) }, Modifier.fillMaxWidth())
-        }
-    }
-}
-
-/** The weeks already reviewed, newest first, with the note written then. */
-@Composable
-private fun PastReviews(model: AppModel) {
-    val reviews = model.data.reviews.sortedByDescending { it.weekStart }.take(PAST_REVIEWS_SHOWN)
-    if (reviews.isEmpty()) return
-    Text("Past reviews", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Spacing.S).semantics { heading() })
-    TextBox {
-        Column {
-            reviews.forEachIndexed { i, r ->
-                if (i > 0) HorizontalDivider(color = Pixel.Border)
-                Column(Modifier.fillMaxWidth().padding(vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                    Text("Week of ${r.weekStart.short()}", style = MaterialTheme.typography.bodyLarge)
-                    r.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-                }
-            }
-        }
-    }
-}
-
-private const val PAST_REVIEWS_SHOWN = 12
 
 // ----- Settings -------------------------------------------------------------------------------------------------------

@@ -17,8 +17,7 @@ enum class RequirementKind(val describe: (Int) -> String) {
     FOCUS_MINUTES({ "Focus for $it minutes" }),
     TASKS_DONE({ "Finish $it tasks" }),
     TASKS_DONE_HARD({ "Finish $it tasks of rank B or A" }),
-    HABIT_DAYS({ "Do your habits on $it days" }),
-    WEEKLY_REVIEWS({ "Finish $it weekly reviews" }),
+    HABIT_DAYS({ "Finish your repeating tasks on $it days" }),
     MILESTONES_DONE({ "Reach $it goal milestones" }),
     ACTIVE_DAYS({ "Be active on $it days" }),
     STREAK_DAYS({ "Reach a streak of $it days" }),
@@ -54,14 +53,14 @@ object Quests {
     private val lakeTrio = mapOf(
         "uxie" to Quest(
             "uxie", 0, "The Being of Knowledge",
-            "Uxie rewards steady learning: show up to focus again and again, reach the milestones of a real goal, and look back on your weeks.",
-            listOf(Requirement(RequirementKind.FOCUS_SESSIONS, 15), Requirement(RequirementKind.MILESTONES_DONE, 3), Requirement(RequirementKind.WEEKLY_REVIEWS, 3)),
+            "Uxie rewards steady learning: show up to focus again and again, and reach the milestones of a real goal.",
+            listOf(Requirement(RequirementKind.FOCUS_SESSIONS, 15), Requirement(RequirementKind.MILESTONES_DONE, 3)),
             unlockRank = 4,
         ),
         "mesprit" to Quest(
             "mesprit", 0, "The Being of Emotion",
-            "Mesprit answers to care: small habits kept gently, a weekly look at how you are doing, and days spent looking after yourself.",
-            listOf(Requirement(RequirementKind.HABIT_DAYS, 21), Requirement(RequirementKind.WEEKLY_REVIEWS, 4), Requirement(RequirementKind.ACTIVE_DAYS, 21)),
+            "Mesprit answers to care: small habits kept gently and days spent looking after yourself.",
+            listOf(Requirement(RequirementKind.HABIT_DAYS, 21), Requirement(RequirementKind.ACTIVE_DAYS, 21)),
             unlockRank = 4,
         ),
         "azelf" to Quest(
@@ -84,7 +83,7 @@ object Quests {
                     "$name is a rare friend, and it takes time. Keep showing up: steady days, finished tasks and focused hours add up.",
                     listOf(
                         Requirement(RequirementKind.ACTIVE_DAYS, 45), Requirement(RequirementKind.TASKS_DONE, 120),
-                        Requirement(RequirementKind.FOCUS_MINUTES, 1200), Requirement(RequirementKind.WEEKLY_REVIEWS, 6),
+                        Requirement(RequirementKind.FOCUS_MINUTES, 1200),
                     ),
                     unlockRank = 2, longTerm = true,
                 ) else {
@@ -139,8 +138,8 @@ object Quests {
             RequirementKind.TASKS_DONE_HARD -> data.tasks.count {
                 it.state == TaskState.DONE && it.paid && (it.completedAtMillis ?: 0) >= since && (it.rank == Rank.B || it.rank == Rank.A)
             }
-            RequirementKind.HABIT_DAYS -> data.series.flatMap { it.completions }.toSet().count { it >= sinceDay }
-            RequirementKind.WEEKLY_REVIEWS -> data.reviews.count { it.completedAtMillis >= since }
+            // The days a repeating task was finished (and, for a save from the days of targets, the days one was ticked).
+            RequirementKind.HABIT_DAYS -> (data.series.flatMap { it.completions } + data.tasks.filter { it.seriesId != null && it.state == TaskState.DONE }.mapNotNull { t -> t.completedAtMillis?.toLocalDateTime(zone)?.date }).toSet().count { it >= sinceDay }
             RequirementKind.MILESTONES_DONE -> data.goals.flatMap { it.milestones }.count { it.rewarded && (it.doneAtMillis ?: 0) >= since }
             RequirementKind.ACTIVE_DAYS -> data.activeDays.count { it >= sinceDay }
             RequirementKind.STREAK_DAYS -> streak

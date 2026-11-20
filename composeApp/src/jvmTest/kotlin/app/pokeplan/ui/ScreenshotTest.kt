@@ -579,7 +579,7 @@ class ScreenshotTest {
         store.addTask("Oat milk", Rank.E, listId = groceries.id)
         store.moveToList(store.data.tasks.first { it.title == "Buy stamps" }.id, groceries.id)
         store.addTask("Call the bank", Rank.C)
-        store.addFrequencyTask("Stretch")
+        store.addRecurring(app.pokeplan.plan.Task(id = "", title = "Stretch", createdAtMillis = 0L), app.pokeplan.plan.Recurrence(app.pokeplan.plan.Repeat.Daily(1), store.today))
         store.completeTask(store.data.tasks.first().id)
         clock.millis += 11_000
         store.tick()
@@ -604,9 +604,6 @@ class ScreenshotTest {
         store.makeRepeating(store.data.tasks.first { it.title == "Pay the rent" }.id, app.pokeplan.plan.Repeat.Weekly())
         render("planner-all", height = 1700) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.OPEN; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
-        }
-        render("planner-habits") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TARGETS, {}, {}, {}) } }
         }
     }
 
@@ -1154,7 +1151,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun planGrowth() = modules("plan-growth", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.PROGRESS)
+    fun planGrowth() = me("plan-growth", 2)
 
     @Test
     fun planGoals() = modules("plan-goals", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.GOALS)
@@ -1185,7 +1182,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun planMore() = modules("plan-more", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.MORE)
+    fun meHome() = me("me-home", -1)
 
     /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
     private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
@@ -2062,7 +2059,7 @@ class ScreenshotTest {
     fun careJournal() = care("care-journal", app.pokeplan.ui.care.CareSection.JOURNAL)
 
     @Test
-    fun careTrends() = care("care-trends", app.pokeplan.ui.care.CareSection.TRENDS)
+    fun careTrends() = me("care-trends", 3)
 
     @Test
     fun careMeadow() = care("care-meadow", app.pokeplan.ui.care.CareSection.MEADOW, careParty = 2)

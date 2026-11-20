@@ -38,6 +38,7 @@ import app.pokeplan.ui.plan.AddTo
 import app.pokeplan.ui.plan.FocusScreen
 import app.pokeplan.ui.plan.GoalsView
 import app.pokeplan.ui.plan.PlanActionItems
+import app.pokeplan.ui.plan.PlanOverview
 import app.pokeplan.ui.plan.PlanView
 import app.pokeplan.ui.plan.ProgressView
 import app.pokeplan.ui.plan.planTasks
@@ -58,15 +59,7 @@ enum class Module(val label: String, val icon: String, val look: RegionLook) {
  * review), Goals, Targets and Settings. Plan's own page (null) is the module layout: lead, the three places, action items, party.
  */
 enum class PlanSection(val label: String, val icon: String) {
-    TASKS("Tasks", "journal"), CALENDAR("Calendar", "town-map"), FOCUS("Focus", "mystery-egg"), MORE("More", "storage-key"),
-    PROGRESS("Progress", "exp-share"), GOALS("Goals", "star-piece"), TARGETS("Targets", "heart-scale"), SETTINGS("Settings", "oaks-letter");
-
-    /** The section Back returns to: More for the places it holds, Plan's page (null) for the rest. */
-    val parent: PlanSection? get() = if (this in MORE_HOLDS) MORE else null
-
-    companion object {
-        val MORE_HOLDS = setOf(PROGRESS, GOALS, TARGETS, SETTINGS)
-    }
+    TASKS("Tasks", "journal"), CALENDAR("Calendar", "town-map"), FOCUS("Focus", "mystery-egg"), GOALS("Goals", "star-piece"), SETTINGS("Settings", "oaks-letter"),
 }
 
 /** Start the Focus screen on [task] (Focus exists only on the phone). */
@@ -136,13 +129,13 @@ private fun ModulesMenu(model: AppModel) {
 
 @Composable
 private fun PlanScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
-    ScreenSwitch(model.planSection, depth = { if (it == null) 0 else if (it.parent == null) 1 else 2 }) { section -> PlanPage(model, section, focusTab, openPokemon) }
+    ScreenSwitch(model.planSection, depth = { if (it == null) 0 else 1 }) { section -> PlanPage(model, section, focusTab, openPokemon) }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, openPokemon: (String) -> Unit) {
-    val back = { model.planSection = section?.parent }
+    val back = { model.planSection = null }
     when (section) {
         null -> {
             val toModules = { model.module = null }
@@ -154,18 +147,15 @@ private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, 
             BackHandler(enabled = true, onBack = back)
             FocusScreen(model, openPokemon, onBack = back)
         }
-        PlanSection.MORE -> SectionScaffold(section.label, null, onBack = back, icon = section.icon, color = Module.PLAN.look.header) { PlanMoreMenu(model) }
-        PlanSection.PROGRESS, PlanSection.GOALS -> SectionScaffold(section.label, null, onBack = back, icon = section.icon, color = Module.PLAN.look.header) {
-            if (section == PlanSection.GOALS) GoalsView(model) else ProgressView(model)
-        }
+        PlanSection.GOALS -> SectionScaffold(section.label, null, onBack = back, icon = section.icon, color = Module.PLAN.look.header) { GoalsView(model) }
         else -> PlanView(model, section, onBack = back, open = { model.planSection = it }, onFocus = if (focusTab) ({ t -> focusOn(model, t) }) else null)
     }
 }
 
 /**
- * Plan's page, in the layout every module shares (PLAN.md section 3): its lead in Plan's town, the three places as one menu (Tasks with
- * what is open, Calendar, Focus with "on" while a session runs), the action items (quick add to the Inbox, the task to do next, what is
- * waiting) and the party as one row. The More key in the header holds Progress, Goals, Targets and Settings.
+ * Plan's page, in the layout every module shares (PLAN.md section 3): its lead in Plan's town, an overview of today's tasks, the action items
+ * (quick add to the Inbox, the task to do next) and the party as one row. Every place Plan has (Tasks, Calendar, Focus, Goals, Settings) is in
+ * the Sections key in the header; its progress and trends are in Me.
  */
 @Composable
 private fun PlanHome(model: AppModel, focusTab: Boolean, onBack: () -> Unit, openPokemon: (String) -> Unit) {
@@ -173,15 +163,17 @@ private fun PlanHome(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
     val store = model.store
     val session = data.focus
     val open = planTasks(model).count { it.isOpen }
-    val places = listOfNotNull(
+    val sections = listOfNotNull(
         MenuEntry(PlanSection.TASKS.name, PlanSection.TASKS.icon, PlanSection.TASKS.label, tint = ModuleAccent.PLAN.accent, count = if (open > 0) "$open" else ""),
         MenuEntry(PlanSection.CALENDAR.name, PlanSection.CALENDAR.icon, PlanSection.CALENDAR.label, tint = ModuleAccent.PLAN.accent),
         if (!focusTab) null else MenuEntry(PlanSection.FOCUS.name, PlanSection.FOCUS.icon, PlanSection.FOCUS.label, badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent, count = if (session != null) "on" else ""),
+        if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, PlanSection.GOALS.label, tint = ModuleAccent.PLAN.accent, count = if (data.goals.isEmpty()) "" else "${data.goals.size}"),
+        MenuEntry(PlanSection.SETTINGS.name, PlanSection.SETTINGS.icon, PlanSection.SETTINGS.label, tint = app.pokeplan.ui.theme.Pixel.InkSoft),
     )
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(
             Module.PLAN.label, onBack = onBack, color = Module.PLAN.look.header,
-            trailing = { app.pokeplan.ui.theme.PixelButton("More", { model.planSection = PlanSection.MORE }, color = app.pokeplan.ui.theme.Pixel.InkSoft, compact = true) },
+            trailing = { SectionsKey(Module.PLAN.label, sections) { key -> model.planSection = PlanSection.valueOf(key) } },
         )
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
@@ -189,25 +181,9 @@ private fun PlanHome(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
         ) {
             ModuleLeadStage(model, Module.PLAN, data.player.planLead, store.moduleEvent(null), resting = session != null, openPokemon = openPokemon)
             FirstRecordEgg(model, app.pokeplan.app.Tutorials.PLAN_FOCUS, model.data.tasks.count { it.completedAtMillis != null })
-            MenuList(places) { key -> model.planSection = PlanSection.valueOf(key) }
+            PlanOverview(model)
             PlanActionItems(model, onFocus = if (!focusTab) null else ({ t -> focusOn(model, t) }))
             PlanPartyPanel(model, openPokemon)
         }
     }
-}
-
-/** More: the places Plan's page leaves out, as rows with counts; the weekly review waits in Progress. */
-@Composable
-private fun PlanMoreMenu(model: AppModel) {
-    val store = model.store
-    val data = model.data
-    val targets = store.frequencyTasks()
-    MenuList(
-        listOfNotNull(
-            MenuEntry(PlanSection.PROGRESS.name, PlanSection.PROGRESS.icon, PlanSection.PROGRESS.label, badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent, count = if (store.canReview()) "review" else ""),
-            if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, PlanSection.GOALS.label, tint = ModuleAccent.PLAN.accent, count = if (data.goals.isEmpty()) "" else "${data.goals.size}"),
-            MenuEntry(PlanSection.TARGETS.name, PlanSection.TARGETS.icon, PlanSection.TARGETS.label, tint = ModuleAccent.PLAN.accent, count = if (targets.isEmpty()) "" else "${targets.count { store.today in it.completions }}/${targets.size}"),
-            MenuEntry(PlanSection.SETTINGS.name, PlanSection.SETTINGS.icon, PlanSection.SETTINGS.label, tint = ModuleAccent.PLAN.accent),
-        ),
-    ) { key -> model.planSection = PlanSection.valueOf(key) }
 }

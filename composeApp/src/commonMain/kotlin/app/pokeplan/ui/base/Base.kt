@@ -225,8 +225,8 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         ) {
             ModuleLeadStage(model, Module.BASE, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.BASE_LOG_PREFIX), openPokemon = openPokemon)
             FirstRecordEgg(model, Tutorials.BASE_TIDY, data.chores.size + data.supplies.size + data.assets.size)
-            BaseSearch(model)
             BaseOverview(model, overview)
+            BaseSearch(model)
             BasePartyPanel(model, openPokemon)
         }
     }
@@ -290,6 +290,12 @@ private fun BaseOverview(model: AppModel, o: Overview) {
                     )
                 }
             }
+        }
+    }
+    // The action items sit below the overview and above the party.
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Quick actions")
             var adding by remember { mutableStateOf(false) }
             if (!adding) PixelButton("Add", { adding = true }, Modifier.fillMaxWidth(), compact = true)
             else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {

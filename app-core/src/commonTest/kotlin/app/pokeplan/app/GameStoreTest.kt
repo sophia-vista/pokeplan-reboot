@@ -184,22 +184,7 @@ class GameStoreTest {
     }
 
     @Test
-    fun aHabitPaysOncePerDay() {
-        val (s, _) = started()
-        val habit = s.addFrequencyTask("Stretch", HabitTarget.Daily, Rank.E)
-        s.completeFrequencyTask(habit.template.id)
-        assertEquals(1, s.data.rewardLog.size)
-        s.completeFrequencyTask(habit.template.id)
-        assertEquals(1, s.data.rewardLog.size, "the second tick the same day pays nothing")
-        assertEquals(setOf(s.today), s.frequencyTasks().single().completions)
-        s.undoFrequencyTask(habit.template.id)
-        assertEquals(emptySet(), s.frequencyTasks().single().completions)
-        s.completeFrequencyTask(habit.template.id)
-        assertEquals(1, s.data.rewardLog.size, "undoing and ticking again the same day pays nothing")
-    }
-
-    @Test
-    fun habitsOfAnOlderSaveBecomeRecurringTasksWithTheirHistoryAndPayNothing() {
+    fun habitsAndTargetsOfAnOlderSaveBecomeRecurringTasksWithTheirHistoryAndPayNothing() {
         val (s, _) = started()
         val day = s.today
         val habit = app.pokeplan.plan.Habit("h1", "Read", Rank.D, app.pokeplan.plan.Category.PERSONAL, HabitTarget.PerWeek(3), day.minus(DatePeriod(days = 10)),
@@ -209,26 +194,22 @@ class GameStoreTest {
         val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
         val coins = old.player.coins
         val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
-        val series = reopened.frequencyTasks().single()
+        val series = reopened.data.series.single()
         assertEquals("h1", series.template.id, "the id is kept, so the goal that links it still does")
         assertEquals(setOf("h1"), reopened.data.goals.single().linkedHabitIds)
-        assertEquals(HabitTarget.PerWeek(3), series.target)
+        // Targets are scrapped: "3 a week" is now a weekly rule on three days, and no series has a target any more.
+        assertNull(series.target)
+        assertEquals(app.pokeplan.plan.Repeat.Weekly(1, setOf(kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.DayOfWeek.WEDNESDAY, kotlinx.datetime.DayOfWeek.FRIDAY)), series.recurrence!!.repeat)
+        assertEquals(habit.createdOn, series.recurrence!!.start)
         assertEquals(habit.completions, series.completions); assertEquals(habit.paidOn, series.paidOn); assertEquals(habit.createdOn, series.createdOn)
         assertEquals(listOf(habit), reopened.data.legacyHabits, "the old habits are kept aside")
         assertTrue(reopened.data.habits.isEmpty()); assertNotNull(reopened.data.habitsMergedAtMillis)
-        assertEquals(coins, reopened.data.player.coins, "the migration pays nothing")
+        assertEquals(coins, reopened.data.player.coins, "the conversion pays nothing")
         assertEquals(old.rewardLog, reopened.data.rewardLog)
-        // The history counts as progress and as a streak; yesterday's payment is not paid again, and a new day's first tick pays once.
-        assertEquals(0, reopened.frequencyProgress(series)!!.done, "the test day is a Monday: the two days before it belong to last week")
-        assertEquals(3, reopened.frequencyProgress(series)!!.target)
-        assertEquals(habit.streak(day), reopened.frequencyStreak(series))
         // Loading again changes nothing (idempotent).
         val again = GameStore(storage, FakeClock(start), utc, Random(7))
         assertEquals(1, again.data.series.size)
-        reopened.completeFrequencyTask("h1")
-        assertEquals(old.rewardLog.size + 1, reopened.data.rewardLog.size)
-        reopened.completeFrequencyTask("h1")
-        assertEquals(old.rewardLog.size + 1, reopened.data.rewardLog.size)
+        assertEquals(series.recurrence, again.data.series.single().recurrence)
     }
 
     @Test
@@ -521,30 +502,6 @@ class GameStoreTest {
         assertEquals(1, s.data.tasks.first { it.id == task.id }.subtasks.size)
         s.restoreSubtasks(task.id, steps)
         assertEquals(2, s.data.tasks.first { it.id == task.id }.subtasks.size)
-
-        val series = s.addFrequencyTask("Stretch", HabitTarget.Daily)
-        s.completeFrequencyTask(series.template.id)
-        s.editFrequencyTask(series.template.id, "Stretch well", HabitTarget.PerWeek(3), Rank.D, app.pokeplan.plan.Category.HEALTH)
-        val edited = s.frequencyTasks().single()
-        assertEquals("Stretch well", edited.template.title)
-        assertEquals(1, edited.completions.size, "its history is kept")
-        val before = s.data.series
-        s.deleteFrequencyTask(series.template.id)
-        assertTrue(s.frequencyTasks().isEmpty())
-        s.restoreSeries(before)
-        assertEquals(1, s.frequencyTasks().size)
-    }
-
-    @Test
-    fun theWeeklyReviewPaysABerryOnceAndCarriesTasksForward() {
-        val (s, _) = started()
-        val open = s.addTask("Unfinished", Rank.C, planned = s.today)
-        assertTrue(s.canReview())
-        s.completeReview("Went fine", carryTo = s.today.plus(kotlinx.datetime.DatePeriod(days = 1)))
-        assertFalse(s.canReview())
-        assertEquals(1, s.data.reviews.size)
-        assertEquals(s.today.plus(kotlinx.datetime.DatePeriod(days = 1)), s.data.tasks.first { it.id == open.id }.planned)
-        assertTrue(s.data.rewardLog.last().rewards.single() is Reward.ItemDrop)
     }
 
     @Test

@@ -235,8 +235,8 @@ private fun billsDetail(model: AppModel): String {
 // ----- Overview ---------------------------------------------------------------------------------------------------------
 
 /**
- * The first screen (MINT.md section 3.2): net position when there is something to count, available money with its basis shown, the next bills, and the
- * three quick actions. With no account yet it is one title and one action.
+ * The first screen (MINT.md section 3.2): net position when there is something to count, available money with its basis shown, the next bills, a few
+ * accounts and budgets, then the three quick actions in a box of their own. With no account yet it is one title and one action.
  */
 @Composable
 internal fun OverviewCard(model: AppModel) {
@@ -280,6 +280,28 @@ internal fun OverviewCard(model: AppModel) {
             upcoming.forEach { o ->
                 MintValueRow(o.bill.name, if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(), soft = true)
             }
+            // Accounts and budgets, a few of each; the full lists are in their own sections.
+            val accounts = MintRules.balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal }.take(4)
+            if (accounts.isNotEmpty()) {
+                SectionLabel("Accounts")
+                accounts.forEach { b -> MintValueRow(b.account.name, mint.show(b.postedMinor, b.account.currency), soft = true) }
+            }
+            val budgets = data.budgets.filter { it.status == PlanStatus.ACTIVE }.take(3)
+            if (budgets.isNotEmpty()) {
+                SectionLabel("Budgets")
+                budgets.forEach { b ->
+                    val p = MintRules.progress(data, b, today, model.data.settings.weekStart)
+                    val label = data.categories.firstOrNull { it.id == b.categoryId }?.name ?: "Everything"
+                    MintValueRow(label, if (p.remainingMinor >= 0) "${mint.show(p.remainingMinor, b.currency)} left" else "${mint.show(-p.remainingMinor, b.currency)} over", soft = true)
+                    PixelBar((p.percent ?: 0) / 100f, color = ModuleAccent.MINT.accent, label = "$label: ${p.percent ?: 0} percent used")
+                }
+            }
+        }
+    }
+    // The action items sit below the overview and above the party.
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Quick actions")
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Expense", { model.mintStartType = TxType.EXPENSE; model.mintSection = MintSection.ACTIVITY }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
                 PixelButton("Income", { model.mintStartType = TxType.INCOME; model.mintSection = MintSection.ACTIVITY }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
