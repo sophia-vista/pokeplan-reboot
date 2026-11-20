@@ -76,16 +76,16 @@ class BackChainTest {
     }
 
     @Test
-    fun careSectionsGoBackToTheCareMenuThenToModules() {
+    fun careSectionsGoBackToTodayThenToModules() {
         for (section in CareSection.entries) {
             val m = model().also { it.module = Module.CARE; it.careSection = section }
             scene({ app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }) { s ->
                 s.settle()
                 s.back()
-                assertNull(m.careSection, "Back from Care's ${section.label} lands on Care's menu")
+                assertNull(m.careSection, "Back from Care's ${section.label} lands on Care's Today")
                 assertEquals(Module.CARE, m.module)
                 s.back()
-                assertNull(m.module, "and Back from Care's menu lands on Modules")
+                assertNull(m.module, "and Back from Care's Today lands on Modules")
             }
         }
     }

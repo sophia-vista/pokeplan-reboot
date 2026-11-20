@@ -1216,8 +1216,8 @@ class ScreenshotTest {
     @Test
     fun meHome() = me("me-home", -1)
 
-    /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
-    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
+    /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for Today). */
+    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, journalDraft: String = "", interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
@@ -1233,6 +1233,7 @@ class ScreenshotTest {
         care.write("Tea with a friend after work.", tags = setOf("People"))
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
+        model.journalDraft = journalDraft
         if (visiting) care.visitors().first().let { v -> care.startVisit(v.speciesId); care.visitAct(app.pokeplan.care.CareAction.WORDS) }
         render(name, fontScale = fontScale, height = height, interact = interact) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
@@ -1979,7 +1980,7 @@ class ScreenshotTest {
             meStore("plan-xl-${sec.name.lowercase()}", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.planSection = sec }, height = 1500, fontScale = 1.3f) { m -> app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }
         }
         meStore("plan-xl-menu", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3600, fontScale = 1.3f) { m -> app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }
-        care("care-xl-menu", null, height = 3800, careParty = 3, fontScale = 1.3f)
+        care("care-xl-today", null, height = 2400, fontScale = 1.3f)
         app.pokeplan.ui.care.CareSection.entries.forEach { care("care-xl-${it.name.lowercase()}", it, height = 1500, fontScale = 1.3f) }
         (0..3).forEach { collection("collection-xl-$it", it, hatched = 6, fontScale = 1.3f, height = 1500) }
         collection("collection-xl-menu", -1, fontScale = 1.3f)
@@ -2065,15 +2066,15 @@ class ScreenshotTest {
     }
 
     @Test
-    fun careMenu() = care("care", null)
+    fun careToday() = care("care", null)
 
-    /** Care's whole page with three in Care's party, for comparing with Plan's. */
+    /** Dream with three in Care's party: the scene, Spend time, the dreamers and the party on one page. */
     @Test
-    fun careMenuFull() = care("care-full", null, height = 3600, careParty = 3)
+    fun careDreamFull() = care("care-full", app.pokeplan.ui.care.CareSection.DREAM, height = 3600, careParty = 3)
 
-    /** Care with a visit on: the visitor up close in the meadow, its bid, and the kinds of care left. */
+    /** Dream with a visit on: the dreamer up close, its bid, and the kinds of care left. */
     @Test
-    fun careVisit() = care("care-visit", null, height = 3800, careParty = 3, visiting = true)
+    fun careVisit() = care("care-visit", app.pokeplan.ui.care.CareSection.DREAM, height = 3800, careParty = 3, visiting = true)
 
     @Test
     fun careRoutines() = care("care-routines", app.pokeplan.ui.care.CareSection.ROUTINES)
@@ -2081,23 +2082,18 @@ class ScreenshotTest {
     @Test
     fun careCalm() = care("care-calm", app.pokeplan.ui.care.CareSection.CALM)
 
+    /** Reflect opens on the diary card, or on the journal when a half-written entry waits. */
     @Test
-    fun careDiary() = care("care-diary", app.pokeplan.ui.care.CareSection.DIARY)
+    fun careDiary() = care("care-diary", app.pokeplan.ui.care.CareSection.REFLECT)
 
     @Test
-    fun careSkills() = care("care-skills", app.pokeplan.ui.care.CareSection.SKILLS)
-
-    @Test
-    fun careJournal() = care("care-journal", app.pokeplan.ui.care.CareSection.JOURNAL)
+    fun careJournal() = care("care-journal", app.pokeplan.ui.care.CareSection.REFLECT, journalDraft = "Walked by the river after work.")
 
     @Test
     fun careTrends() = me("care-trends", 3)
 
     @Test
-    fun careMeadow() = care("care-meadow", app.pokeplan.ui.care.CareSection.MEADOW, careParty = 2)
-
-    @Test
-    fun carePlay() = care("care-play", app.pokeplan.ui.care.CareSection.PLAY, careParty = 2)
+    fun careDream() = care("care-dream", app.pokeplan.ui.care.CareSection.DREAM, careParty = 2)
 
     @Test
     fun meSettings() = me("me-settings", 0)
