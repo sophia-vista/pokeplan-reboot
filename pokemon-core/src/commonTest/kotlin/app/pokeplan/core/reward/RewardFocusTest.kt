@@ -12,7 +12,8 @@ class RewardFocusTest {
         if (focus == null) AchievementEvent(tier, Region.KANTO, 12, false, false, false, "egg", 2_000L)
         else AchievementEvent(tier, Region.KANTO, 12, false, false, false, "egg", 2_000L, focus = focus)
 
-    private fun candies(out: Outcome) = out.rewards.filterIsInstance<Reward.Candies>().map { it.amount }
+    /** The task's own candy rolls: the Candies before its Poké (a hatched Task Egg pays "new species" candies after them, at any focus). */
+    private fun candies(out: Outcome) = out.rewards.takeWhile { it !is Reward.Coins }.filterIsInstance<Reward.Candies>().map { it.amount }
 
     @Test
     fun expIsExactlyTheOrdinaryPayout() {
@@ -35,8 +36,7 @@ class RewardFocusTest {
     fun eggAndItemsPayHalfTheCandiesOfEachRoll() {
         for (focus in listOf(RewardFocus.EGG, RewardFocus.ITEMS)) for (tier in 1..5) for (seed in 1..30) {
             val full = candies(RewardEngine.achievement(PlayerState(), event(tier), Random(seed)))
-            // An Egg that fills the meter also pays "new species" candies after the task's own rolls, so only the rolls are compared.
-            val half = candies(RewardEngine.achievement(PlayerState(), event(tier, focus), Random(seed))).take(full.size)
+            val half = candies(RewardEngine.achievement(PlayerState(), event(tier, focus), Random(seed)))
             assertEquals(full.map { maxOf(1, it * RewardEngine.FOCUS_CANDY_PERCENT / 100) }, half, "$focus tier $tier seed $seed")
         }
     }
