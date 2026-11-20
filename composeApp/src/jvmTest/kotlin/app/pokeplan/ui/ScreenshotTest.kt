@@ -2094,6 +2094,21 @@ class ScreenshotTest {
     fun meSettings() = me("me-settings", 0)
 
     @Test
+    fun meStats() = me("me-stats", 4)
+
+    @Test
+    fun meSettingsGeneral() = me("me-settings-general", 5)
+
+    @Test
+    fun meSettingsPrivacy() = me("me-settings-privacy", 6)
+
+    @Test
+    fun meSettingsNotifications() = me("me-settings-notifications", 7)
+
+    @Test
+    fun meSettingsBackups() = me("me-settings-backups", 8)
+
+    @Test
     fun meHelp() = me("me-help", 1)
 
     /** A module's Guardian slot under its party, with the six-module switcher above it (the owner's phone showed the old tabs cut to "Pl..." and "Ca..."). */
@@ -2531,6 +2546,19 @@ class ScreenshotTest {
     fun recoveryChoiceScreen() = listOf(false, true).forEach { dark ->
         render("recovery-choice-${if (dark) "dark" else "light"}", height = 1000) {
             app.pokeplan.ui.screens.RecoveryChoice(clock.nowMillis() - 40L * 24 * 60 * 60 * 1000, {}, {}, darkTheme = dark)
+        }
+    }
+
+    /** The accordion that folds a module page's party perks: folded, and open (both palettes). */
+    @Test
+    fun accordion() = listOf(false, true).forEach { dark ->
+        render("accordion-${if (dark) "dark" else "light"}", height = 400) {
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(app.pokeplan.ui.theme.Spacing.M)) {
+                    app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.theme.Accordion("Mint perks", summary = "2 perks") { androidx.compose.material3.Text("Ledger Research +10%") } }
+                    app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.theme.Accordion("Mint perks", startOpen = true) { androidx.compose.material3.Text("Ledger Research +10%") } }
+                }
+            } }
         }
     }
 }

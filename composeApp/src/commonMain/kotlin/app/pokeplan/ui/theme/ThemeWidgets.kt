@@ -323,9 +323,8 @@ fun Accordion(title: String, modifier: Modifier = Modifier, summary: String? = n
                 .semantics { stateDescription = if (open) "Shown" else "Hidden" },
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
         ) {
-            Text(title, Modifier.weight(1f, fill = false), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), maxLines = 1)
-            if (!open && summary != null) Text(summary, Modifier.weight(1f, fill = false), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1)
-            Box(Modifier.weight(1f))
+            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), maxLines = 1)
+            if (!open && summary != null) Text(summary, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1)
             app.pokeplan.ui.Glyph(if (open) "chevron-up" else "chevron-down", Pixel.Ink, size = 20.dp)
         }
         if (open) content()
