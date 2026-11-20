@@ -474,4 +474,70 @@ class LinkStoreTest {
         assertTrue(note.eventId.startsWith("link:"))
         assertTrue(secrets.none { it in note.toString() })
     }
+
+    // --- my profile and the slambook details (LINK.md 2.6) -------------------------------------------------------------------------
+
+    @Test
+    fun myCardIsOneAndPinnedFirstAndTheProfileSurvivesAReopen() {
+        val s = setup()
+        s.link.addPerson("Aaron")
+        val me = assertNotNull(s.link.createMe("Sophia").record)
+        assertTrue(me.isMe)
+        assertEquals(me.id, s.link.createMe("Someone else").record!!.id)
+        assertEquals(1, s.link.data.people.count { it.isMe })
+        assertEquals(listOf("Sophia", "Aaron"), s.link.directory().map { it.name })
+        val profile = app.pokeplan.link.Profile(
+            socials = listOf(app.pokeplan.link.Social("Instagram", "@zorblax"), app.pokeplan.link.Social("TikTok", " ")),
+            likes = listOf("Ramen", "ramen", " ", "Rain"), dislikes = listOf("Loud chewing"),
+            answers = listOf(app.pokeplan.link.Answer("Motto", "Be kind"), app.pokeplan.link.Answer("Hobby", "")),
+            mbti = "infp", enneagram = 4, enneagramWing = 5, loveLanguages = listOf(app.pokeplan.link.LoveLanguage.TIME, app.pokeplan.link.LoveLanguage.TIME, app.pokeplan.link.LoveLanguage.WORDS),
+            attachment = app.pokeplan.link.Attachment.SECURE, disc = listOf(app.pokeplan.link.Disc.I),
+            birth = app.pokeplan.link.Birth(minutes = 8 * 60 + 5, latitude = 14.6, longitude = 121.0, placeName = "Manila", kuaFormula = "B"),
+        )
+        val saved = assertNotNull(s.link.updateProfile(me.id, profile).record).profile
+        assertEquals(listOf("Ramen", "Rain"), saved.likes)
+        assertEquals(1, saved.socials.size)
+        assertEquals(1, saved.answers.size)
+        assertEquals("INFP", saved.mbti)
+        assertEquals(5, saved.enneagramWing)
+        assertEquals(listOf(app.pokeplan.link.LoveLanguage.TIME, app.pokeplan.link.LoveLanguage.WORDS), saved.loveLanguages)
+        s.reopen()
+        val again = s.link.data.people.first { it.isMe }
+        assertEquals(saved, again.profile)
+        // The slambook words are searchable, and editing the person's contact details keeps the profile and the "me" mark.
+        assertEquals(listOf(me.id), s.link.directory("zorblax").map { it.id })
+        assertTrue(assertNotNull(s.link.updatePerson(again.copy(phone = "0917 000 1234")).record).isMe)
+        assertEquals(saved, s.link.data.people.first { it.isMe }.profile)
+    }
+
+    @Test
+    fun aWingMustBeNextToTheTypeAndABirthdayIsKeptOnce() {
+        val s = setup()
+        val p = assertNotNull(s.link.addPerson("Mika").record)
+        assertEquals(0, assertNotNull(s.link.updateProfile(p.id, app.pokeplan.link.Profile(enneagram = 4, enneagramWing = 7)).record).profile.enneagramWing)
+        s.link.setBirthday(p.id, 11, 1, 1990)
+        s.link.setBirthday(p.id, 11, 2, 1990)
+        val birthdays = s.link.data.dates.filter { it.personId == p.id && it.kind == DateKind.BIRTHDAY }
+        assertEquals(1, birthdays.size)
+        assertEquals(2, birthdays.single().day)
+        val insights = app.pokeplan.link.Insights.of(s.link.data, s.link.data.people.first { it.id == p.id })
+        assertEquals(LocalDate(1990, 11, 2), insights.date)
+        assertEquals("Horse", insights.zodiac!!.animal)
+        assertNull(insights.western!!.rising)
+    }
+
+    @Test
+    fun profilesAndBirthChartsPayNothingAndSendNoEvent() {
+        val s = setup()
+        val before = s.candies
+        val me = assertNotNull(s.link.createMe("Sophia").record)
+        s.link.updateProfile(me.id, app.pokeplan.link.Profile(likes = listOf("Zorblax-like"), mbti = "ENFP"))
+        s.link.setBirthday(me.id, 5, 17, 1999)
+        assertTrue(s.spy.events.isEmpty())
+        assertEquals(before, s.candies)
+        // And a profile is part of the export of People, so it can be taken out and erased.
+        assertTrue("Zorblax-like" in s.link.export(setOf(LinkKinds.PEOPLE)))
+        s.link.erase(LinkKinds.PEOPLE)
+        assertTrue(s.link.data.people.isEmpty())
+    }
 }
