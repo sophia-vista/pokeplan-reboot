@@ -376,7 +376,7 @@ private fun PeopleView(model: AppModel) {
     }
 }
 
-/** One person's own screen (a dialogue box under a header with their name; back returns to the directory). */
+/** One person's own screen: a profile card (their picture, whole name and tags) over a dialogue box of their details; back returns to the directory. */
 @Composable
 private fun PersonScreen(model: AppModel, personId: String) {
     val p = model.linkData.people.firstOrNull { it.id == personId }
@@ -385,8 +385,13 @@ private fun PersonScreen(model: AppModel, personId: String) {
         return
     }
     val close = { model.linkPersonId = null }
-    SectionScaffold(LinkRules.displayName(p), listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · ").takeIf { it.isNotBlank() }, onBack = close, icon = LinkSection.PEOPLE.icon, color = Module.LINK.look.header) {
-        TextBox { PersonProfile(model, p, model.linkPersonTab, close) }
+    var choosing by remember(p.id) { mutableStateOf(false) }
+    SectionScaffold(if (p.isMe) "My profile" else "Profile", null, onBack = close, icon = LinkSection.PEOPLE.icon, color = Module.LINK.look.header) {
+        if (choosing) PersonPicture(model, p) { choosing = false }
+        else {
+            PersonCard(p) { choosing = true }
+            TextBox { PersonProfile(model, p, model.linkPersonTab, close) }
+        }
     }
 }
 
@@ -443,11 +448,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         DateForm(model, null, onDone = { addingDate = false }, presetPerson = p.id)
         return
     }
-    // The header shortens a long name to one line, so the whole of it is read here.
-    val full = p.name.takeIf { it.length > 16 }
-    val lines = listOf(
-        "Name" to full.orEmpty(), "Called" to p.preferred, "Phone" to p.phone, "Email" to p.email, "Organization" to p.organization, "Role" to p.role, "Address" to p.address,
-    ).filter { it.second.isNotBlank() }
+    val lines = listOf("Phone" to p.phone, "Email" to p.email, "Address" to p.address).filter { it.second.isNotBlank() }
     lines.forEach { (k, v) -> RecordRow(v, k) }
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     profileSummary(model, p).takeIf { it.isNotEmpty() }?.let { RecordRow(it, "Sign, animal, type") }

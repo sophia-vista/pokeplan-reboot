@@ -129,6 +129,9 @@ class LinkStore(
     }
 
     /** A favourite is only a shortcut in the directory, never a ranking (LINK.md 2.1). */
+    /** Sets the Pokémon [speciesId] shown as [id]'s picture (0 clears it). Cosmetic: it pays nothing. */
+    fun setAvatar(id: String, speciesId: Int) = update { d -> d.copy(people = d.people.map { if (it.id == id) it.copy(avatar = speciesId.coerceAtLeast(0)) else it }) }
+
     fun setFavorite(id: String, favorite: Boolean) = update { d -> d.copy(people = d.people.map { if (it.id == id) it.copy(favorite = favorite) else it }) }
 
     /** People who may be the same as this, to suggest; never merged. */
