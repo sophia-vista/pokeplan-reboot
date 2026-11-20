@@ -36,7 +36,13 @@ class EventCompanionTest {
 
     private fun started(): Pair<GameStore, FakeClock> {
         val clock = FakeClock(start)
-        return GameStore(MemoryStorage(), clock, utc, Random(7)).also { it.start("Sophia", 25) } to clock
+        // The starter is only the global buddy; Plan's party starts with whoever is put in it, so one Pokémon joins it as the lead.
+        return GameStore(MemoryStorage(), clock, utc, Random(7)).also {
+            it.start("Sophia", 25)
+            val first = it.grantPokemon(133, "Quest: Eevee")
+            assertTrue(it.setInParty(first.id, true))
+            assertTrue(it.setPlanLead(first.id))
+        } to clock
     }
 
     private fun exp(s: GameStore) = s.data.rewardLog.flatMap { it.rewards }.filterIsInstance<Reward.Exp>().sumOf { it.points }
