@@ -10,7 +10,7 @@ release always has the newest merge).
 Module pages share one order (owner, 20 November 2026; `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` 5.1). No rule, economy or schema change.
 
 - **Shorter lead:** a module's lead window is 112 dp high (was 144; Care's meadow was 248) with a 72 dp sprite.
-- **Same order everywhere:** lead, overview, action items in a box of their own, party last. Mint's overview now lists a few accounts and budgets, and Expense / Income / Transfer moved below it; Heal's Log activity / Add a drink, Base's and Link's Add, and a new Care row (Routine, Calm break, Diary) follow the same way. Care's visitors and Egg meter and the Base and Link search moved down beside the party.
+- **Same order everywhere:** lead, overview, action items in a box of their own, party last. Mint's overview now lists a few accounts and budgets, and Expense / Income / Transfer moved below it; Heal's Log activity / Add a drink, Base's and Link's Add, and a new Care row (Routine, Calm, Diary) follow the same way. Care's visitors and Egg meter and the Base and Link search moved down beside the party.
 
 ## 0.215.0
 

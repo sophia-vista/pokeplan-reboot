@@ -205,7 +205,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             TextBox {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     if (today.isNotEmpty()) PixelButton("Routine", { model.careSection = CareSection.ROUTINES }, Modifier.weight(1f), ModuleAccent.CARE.accent, compact = true)
-                    PixelButton("Calm break", { model.careSection = CareSection.CALM }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Calm", { model.careSection = CareSection.CALM }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     PixelButton("Diary", { model.careSection = CareSection.DIARY }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
