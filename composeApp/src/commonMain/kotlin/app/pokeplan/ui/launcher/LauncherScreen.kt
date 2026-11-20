@@ -34,6 +34,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -168,6 +170,8 @@ interface LauncherHost {
     fun widgetSpec(id: Int): HostedWidgetSpec? = null
     /** Opens PokéLife itself on [place] (Focus from the Focus button, Home from the buddy). */
     fun openApp(place: Place)
+    /** Pulls the notification shade down (the phone's own), where the phone lets a launcher; a gesture's job. */
+    fun expandNotifications() {}
 }
 
 private val rowShape = DialogueShape
@@ -240,6 +244,12 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var pickingTown by remember { mutableStateOf(false) }
     var menuMon by remember { mutableStateOf<OwnedPokemon?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
+    var foldersOpen by remember { mutableStateOf(false) }
+    var widgetsOpen by remember { mutableStateOf(false) }
+    // Editing the widgets on the screen (hold one): drag, resize, remove; page swipes are off meanwhile.
+    var editing by remember { mutableStateOf(false) }
+    // Asks the pages (which live further in) to go to the next one, and round to Home after the last.
+    var pageNudge by remember { androidx.compose.runtime.mutableIntStateOf(0) }
     /** Does what the user set a gesture to do. */
     fun runAction(action: GestureAction) {
         when (action) {
@@ -249,6 +259,11 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
             GestureAction.POKELIFE -> host.openApp(Place.HOME)
             GestureAction.GEAR -> host.openApp(Place.GEAR)
             GestureAction.SETTINGS -> settingsOpen = true
+            GestureAction.FOLDERS -> foldersOpen = true
+            GestureAction.WIDGETS -> widgetsOpen = true
+            GestureAction.EDIT -> editing = true
+            GestureAction.PAGE -> pageNudge++
+            GestureAction.NOTIFICATIONS -> host.expandNotifications()
         }
     }
     fun countTap() {
@@ -258,10 +273,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         lastTap = kotlin.time.TimeSource.Monotonic.markNow()
         if (taps >= 3) { runAction(job); taps = 0 }
     }
-    var foldersOpen by remember { mutableStateOf(false) }
-    var widgetsOpen by remember { mutableStateOf(false) }
-    // Editing the widgets on the screen (hold one): drag, resize, remove; page swipes are off meanwhile.
-    var editing by remember { mutableStateOf(false) }
     val todayState = remember { TodayState(model.store.today) }
     val mood = remember { BuddyMood() }
     // The phone's calendars around the month the calendar widget shows (six weeks, read off the main thread), again after the permission is answered, the chosen calendars change, or every few minutes.
@@ -345,18 +356,26 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         }
                     }
                 } }
+                LaunchedEffect(pageNudge) {
+                    if (pageNudge == 0) return@LaunchedEffect
+                    val to = if (page.value.roundToInt() >= right) -left.toFloat() else page.value.roundToInt() + 1f
+                    if (data.settings.reduceMotion) page.snapTo(to) else page.animateTo(to, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth))
+                }
                 LaunchedEffect(homePresses) { if (homePresses > 0) page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) }
                 Box(
                     Modifier.fillMaxSize().pointerInput(prefs.gestures, prefs.gatherTap) {
                         // The widget pages are drawn over the town and swallow touches meant for the Pokémon below, so a tap that lands on one is handed to the town here.
                         val double = prefs.action(GestureTrigger.DOUBLE_TAP)
-                        detectTapGestures(onDoubleTap = if (double == GestureAction.NONE) null else ({ at ->
+                        val hold = prefs.action(GestureTrigger.LONG_PRESS)
+                        detectTapGestures(onLongPress = if (hold == GestureAction.NONE) null else ({ at ->
+                            if (abs(page.value) < 0.02f && !editing && !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) runAction(hold)
+                        }), onDoubleTap = if (double == GestureAction.NONE) null else ({ at ->
                             if (abs(page.value) < 0.02f && !editing && !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) runAction(double)
                         }), onTap = { at -> if (abs(page.value) >= 0.02f || editing || !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) countTap() })
                     }.pointerInput(prefs.gestures, editing) {
                         // Swipe up opens the app list and swipe down does what it is set to (nothing at first): on the open town, where no widget took the touch, and a good way along.
                         var travelled = 0f
-                        val reach = 96.dp.toPx()
+                        val reach = 64.dp.toPx()
                         detectVerticalDragGestures(
                             onDragStart = { travelled = 0f }, onDragCancel = { travelled = 0f },
                             onDragEnd = {
@@ -366,6 +385,27 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                                 travelled = 0f
                             },
                         ) { _, dy -> travelled += dy }
+                    }.pointerInput(prefs.gestures, editing) {
+                        // Two fingers together up or down: watched without taking the touches, so the town and the widgets still get them.
+                        val reach = 72.dp.toPx()
+                        awaitEachGesture {
+                            awaitFirstDown(requireUnconsumed = false, pass = androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                            var start: Float? = null
+                            var now = 0f
+                            do {
+                                val event = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                                val down = event.changes.filter { it.pressed }
+                                if (down.size >= 2) {
+                                    val y = down.map { it.position.y }.average().toFloat()
+                                    if (start == null) start = y
+                                    now = y
+                                }
+                            } while (event.changes.any { it.pressed })
+                            val travelled = start?.let { now - it } ?: 0f
+                            if (!editing && abs(page.value) < 0.02f) {
+                                if (travelled < -reach) runAction(prefs.action(GestureTrigger.TWO_FINGER_UP)) else if (travelled > reach) runAction(prefs.action(GestureTrigger.TWO_FINGER_DOWN))
+                            }
+                        }
                     }.draggable(
                         enabled = prefs.pageSwipe && !editing,
                         orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
@@ -830,10 +870,15 @@ internal fun LauncherSettings(
     model: AppModel, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, hiddenCount: Int, pixel: Int, host: LauncherHost,
     onTown: () -> Unit, onHidden: () -> Unit, onPlace: () -> Unit, onWidgets: () -> Unit, onClose: () -> Unit,
 ) {
-    fun onOff(on: Boolean) = if (on) "On" else "Off"
     val settings = model.data.settings
-    val effects = if (settings.sound) settings.effectsVolume else 0
-    val cries = if (!settings.sound) 0 else if (settings.criesVolume < 0) settings.effectsVolume else settings.criesVolume
+    // A question that is on screen (a list to choose from, or "are you sure"), drawn over the settings; null when there is none.
+    var dialog by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
+    fun <T> choose(title: String, options: List<ChoiceOption<T>>, current: T, pick: (T) -> Unit) {
+        dialog = { PmdChoiceDialog(title, options, current, pixel, onPick = { pick(it); dialog = null }, onClose = { dialog = null }) }
+    }
+    fun confirm(title: String, note: String, action: String, run: () -> Unit) {
+        dialog = { PmdConfirmDialog(title, note, action, pixel, onConfirm = { run(); dialog = null }, onClose = { dialog = null }) }
+    }
     Box(Modifier.fillMaxSize().background(Pixel.Night).safeDrawingPadding()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.XL), verticalArrangement = Arrangement.spacedBy(Spacing.XL)) {
             PmdBox(pixel, Modifier.fillMaxWidth()) {
@@ -856,53 +901,70 @@ internal fun LauncherSettings(
             }
             Section("Town", "map") {
                 PmdMenuLine("Scene: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, icon = "pa-layout", onClick = onTown)
-                PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel, icon = "pa-heart") { onPrefs(prefs.nextTownSize()) }
-                PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel, icon = "pa-zap") { onPrefs(prefs.withWalking(!prefs.walking)) }
+                PmdChoiceLine("Pokémon in the town", "${prefs.townSize}", pixel, icon = "pa-heart") {
+                    choose("Pokémon in the town", listOf(8, 16, 24).map { ChoiceOption(it, "$it Pokémon") }, prefs.townSize) { onPrefs(prefs.copy(townSize = it)) }
+                }
+                PmdToggleLine("Pokémon walk about", prefs.walking, pixel, icon = "pa-zap") { onPrefs(prefs.withWalking(it)) }
                 if (prefs.walking) PmdVolume("How lively", "pa-sliders", prefs.activity * 10, pixel, min = 1, valueText = { TownBehavior.activityLabel(it) }, onChange = { v -> onPrefs(prefs.withActivity(v / 10)) }, onDone = {})
-                PmdMenuLine("Pokémon chirp: ${onOff(prefs.chirps)}", pixel, icon = "pa-heart") { onPrefs(prefs.withChirps(!prefs.chirps)) }
-                PmdMenuLine("Weather: ${prefs.weather.label}", pixel, icon = "pa-cloud") { onPrefs(prefs.nextWeather()) }
+                PmdToggleLine("Pokémon chirp", prefs.chirps, pixel, icon = "pa-heart") { onPrefs(prefs.withChirps(it)) }
+                PmdChoiceLine("Weather", prefs.weather.label, pixel, icon = "pa-cloud") {
+                    choose("Weather over the town", Weather.entries.map { ChoiceOption(it, it.label, WEATHER_NOTES[it].orEmpty()) }, prefs.weather) { onPrefs(prefs.copy(weather = it)) }
+                }
                 // A dungeon town is a new floor each day; this lays out another one for today (the day's finds stay the same, LAUNCHER.md 4.5).
                 if (TownScenes.isDungeon(prefs.scene)) PmdMenuLine("New floor layout", pixel, icon = "pa-reload") { model.effect(Sfx.STAIRS_DOWN); onPrefs(prefs.withNewLayout(model.store.today.toEpochDays().toLong())) }
             }
             Section("Home screen", "home") {
                 PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, icon = "pa-grid-2x2-2", onClick = onWidgets)
-                PmdMenuLine("Widget grid (drag, resize): ${onOff(prefs.gridMode)}", pixel, icon = "pa-drag-and-drop") { onPrefs(prefs.withGridMode(!prefs.gridMode)) }
-                PmdMenuLine("Swipe across between pages: ${onOff(prefs.pageSwipe)}", pixel, icon = "pa-sliders") { onPrefs(prefs.withPageSwipe(!prefs.pageSwipe)) }
+                PmdToggleLine("Widget grid (drag, resize)", prefs.gridMode, pixel, icon = "pa-drag-and-drop") { onPrefs(prefs.withGridMode(it)) }
+                PmdToggleLine("Swipe across between pages", prefs.pageSwipe, pixel, icon = "pa-sliders") { onPrefs(prefs.withPageSwipe(it)) }
             }
-            // A gesture and its job: tap one to give it the next job on its list. The edge drag follows the finger and opens the app list; the others run the job the moment they are made.
+            // A gesture and its job, chosen from a list. The edge drag follows the finger and opens the app list; the others run the job the moment they are made.
             Section("Gestures", "hand") {
                 GestureTrigger.entries.forEach { trigger ->
-                    PmdMenuLine("${trigger.label}: ${prefs.action(trigger).label}", pixel, icon = "pa-pointer") {
-                        val jobs = trigger.actions
-                        onPrefs(prefs.withGesture(trigger, jobs[(jobs.indexOf(prefs.action(trigger)) + 1) % jobs.size]))
+                    PmdChoiceLine(trigger.label, prefs.action(trigger).label, pixel, icon = "pa-pointer") {
+                        choose(trigger.label, trigger.actions.map { ChoiceOption(it, it.label) }, prefs.action(trigger)) { onPrefs(prefs.withGesture(trigger, it)) }
                     }
                 }
-                PmdMenuLine("Tap a gesture to give it the next job.", pixel, dim = true) {}
             }
-            Section("Time and date", "clock") {
-                PmdMenuLine("Date: ${prefs.dateStyle.label}", pixel, icon = "pa-calendar") { onPrefs(prefs.nextDateStyle()) }
-                PmdMenuLine("Clock: ${if (prefs.hour12) "12 hour" else "24 hour"}", pixel, icon = "pa-clock") { onPrefs(prefs.withHour12(!prefs.hour12)) }
-                PmdMenuLine("Seconds: ${onOff(prefs.showSeconds)}", pixel, icon = "pa-eye") { onPrefs(prefs.withShowSeconds(!prefs.showSeconds)) }
-                PmdMenuLine("Calendar weeks start on ${if (prefs.sundayFirst) "Sunday" else "Monday"}", pixel, icon = "pa-calendar") { onPrefs(prefs.withSundayFirst(!prefs.sundayFirst)) }
+            Section("Clock and weather", "clock") {
+                PmdToggleLine("Show seconds", prefs.showSeconds, pixel, icon = "pa-eye") { onPrefs(prefs.withShowSeconds(it)) }
                 PmdMenuLine("Weather place: ${prefs.place?.name ?: "not set"}", pixel, icon = "pa-map-pin", onClick = onPlace)
-                PmdMenuLine("Temperature: ${if (prefs.fahrenheit) "Fahrenheit" else "Celsius"}", pixel, icon = "pa-thermometer") { onPrefs(prefs.withFahrenheit(!prefs.fahrenheit)) }
+                PmdChoiceLine("Temperature", if (prefs.fahrenheit) "Fahrenheit" else "Celsius", pixel, icon = "pa-thermometer") {
+                    choose("Temperature", listOf(ChoiceOption(false, "Celsius"), ChoiceOption(true, "Fahrenheit")), prefs.fahrenheit) { onPrefs(prefs.withFahrenheit(it)) }
+                }
             }
             Section("Battery", "battery") {
-                PmdMenuLine("Battery saver: ${prefs.batterySaver.label}", pixel, icon = "pa-battery") { onPrefs(prefs.nextBatterySaver()) }
-            }
-            Section("Sound", "volume-2") {
-                PmdVolume("Sound effects", "pa-volume-2", effects, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }, onDone = { model.effect(Sfx.CONFIRM) })
-                PmdRule(pixel)
-                PmdVolume("Pokémon cries", "pa-music", cries, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }, onDone = { model.cry(model.data.player.buddy?.speciesId ?: 25) })
+                PmdChoiceLine("Battery saver", prefs.batterySaver.label, pixel, icon = "pa-battery") {
+                    choose("Battery saver", BatterySaver.entries.map { ChoiceOption(it, it.label, it.note) }, prefs.batterySaver) { onPrefs(prefs.copy(batterySaver = it)) }
+                }
             }
             Section("Apps", "layout") {
                 if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, icon = "pa-eye-off", onClick = onHidden)
-                PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty(), icon = "pa-trash") { onPrefs(prefs.withoutPins()) }
+                PmdMenuLine("Clear pinned apps and custom icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty(), icon = "pa-trash") {
+                    if (prefs.pinned.isNotEmpty() || prefs.icons.isNotEmpty()) confirm(
+                        "Clear pinned apps and custom icons?", "${prefs.pinned.size} pinned and ${prefs.icons.size} custom icons are removed from Favorites. The apps stay installed.", "Clear",
+                    ) { onPrefs(prefs.withoutPins()) }
+                }
                 PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel, icon = "pa-settings-cog") { host.openBaseSettings() }
             }
+            Section("Reset", "reload") {
+                PmdMenuLine("Reset launcher settings", pixel, icon = "pa-trash") {
+                    confirm(
+                        "Reset launcher settings?", "The town, widgets, pages, gestures, weather and battery saver go back to how they began. Pinned apps, hidden apps, folders and the weather place are kept.", "Reset",
+                    ) { onPrefs(prefs.reset()) }
+                }
+            }
         }
+        dialog?.invoke()
     }
 }
+
+/** What each weather choice does, for the list it is picked from. */
+private val WEATHER_NOTES = mapOf(
+    Weather.LIVE to "Follows the forecast for your weather place.",
+    Weather.GUARDIAN to "The weather of today's Guardian; a clear sky if it brings none.",
+    Weather.CLEAR to "Always a clear sky.",
+)
 
 /**
  * A volume control in the dialogue style: ten blocks you tap or drag across, 0 to 10 (the font has no % sign, so it says

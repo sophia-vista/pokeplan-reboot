@@ -132,6 +132,7 @@ Never repeatedly prompt after denial. Do not use a permission rationale to press
 | Sensors | `SensorManager` where applicable | Usually no runtime permission for basic motion/environment sensors; only while relevant GEAR tool is active |
 | Package visibility | Launcher intents / `<queries>`; `QUERY_ALL_PACKAGES` only if justified | Only for optional launcher/app-drawer functionality and subject to Play policy; avoid broad visibility if launcher queries suffice |
 | Boot receiver | `RECEIVE_BOOT_COMPLETED` | Only to restore user-configured reminders/widgets that require reboot recovery |
+| Status bar | `EXPAND_STATUS_BAR` (normal permission, no prompt) | Only for the launcher gesture "Pull down notifications" (`LauncherHost.expandNotifications`, reflection on `StatusBarManager`); nothing else uses it |
 
 The matrix is a policy map, not a declaration that every permission should be present in the manifest. Each manifest entry must have an implemented owner and documented purpose.
 

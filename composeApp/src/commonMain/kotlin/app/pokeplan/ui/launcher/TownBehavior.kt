@@ -191,8 +191,8 @@ internal object TownBehavior {
      */
     fun bedtime(id: String): Float = 0.4f + spread(id, 0x7654321) * 0.25f
 
-    /** Whether [mon] is asleep at this [darkness] (0 day, 1 night). */
-    fun asleep(mon: OwnedPokemon, darkness: Float): Boolean = sleepsAtNight(mon) && darkness >= bedtime(mon.id)
+    /** Whether [mon] is asleep at this [darkness] (0 day, 1 night); the sleepy species ([Quirk.ASLEEP]) are asleep at any hour. */
+    fun asleep(mon: OwnedPokemon, darkness: Float): Boolean = TownQuirks.of(mon) == Quirk.ASLEEP || (sleepsAtNight(mon) && darkness >= bedtime(mon.id))
 
     /**
      * How a Pokémon of these [types] feels about [weather]: those at home in it enjoy it (water and grass in rain, ice in snow, ground, rock and steel in sand,

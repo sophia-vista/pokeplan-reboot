@@ -83,6 +83,8 @@ class DungeonFloorTest {
             assertTrue(!f.canStand(water, Mover.WALKER) && f.canStand(water, Mover.WADER) && !f.canStand(water, Mover.GHOST))
         }
         for (m in listOf(Mover.WALKER, Mover.WADER, Mover.GHOST)) assertTrue(f.restingCells(m).none { it in f.traps || it == f.stairs })
+        // Nobody rests or sleeps in a wall, a ghost included: it passes through one, and stops on the floor.
+        for (m in listOf(Mover.WALKER, Mover.WADER, Mover.GHOST)) assertTrue(f.restingCells(m).none { f.map.at(it.x, it.y) == TownCell.WALL })
     }
 
     @Test

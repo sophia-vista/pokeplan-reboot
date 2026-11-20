@@ -167,7 +167,8 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     private fun keepFocusScreen() {
         reloadSave()
-        if (store.data.focus != null) {
+        // Only a timer that is still running holds Home: a session that has ended (completed or failed, waiting to be dismissed) must not pull Home back into the app.
+        if (store.data.focus?.isFinished == false) {
             // The low buzz says Home is shut while the timer runs.
             if (::model.isInitialized) model.effect(Sfx.FOCUS_LOCK)
             openApp(Place.FOCUS)
@@ -420,6 +421,15 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     override fun openPokemon(id: String) {
         startActivity(Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.COLLECTION.name).putExtra(MainActivity.EXTRA_POKEMON, id))
+    }
+
+    /** Pulls the notification shade down with the status bar service (the EXPAND_STATUS_BAR permission); a phone that refuses just does nothing. */
+    @android.annotation.SuppressLint("WrongConstant")
+    override fun expandNotifications() {
+        try {
+            val bar = getSystemService("statusbar") ?: return
+            Class.forName("android.app.StatusBarManager").getMethod("expandNotificationsPanel").invoke(bar)
+        } catch (e: Exception) { /* not allowed on this phone */ }
     }
 
     override fun openApp(place: Place) {
