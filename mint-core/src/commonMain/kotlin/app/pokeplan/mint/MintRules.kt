@@ -528,16 +528,16 @@ object MintRules {
     /** Reconciled accounts paid in a day; the rest are still kept. *(tune)* */
     const val RECONCILES_PAID_PER_DAY = 2
 
-    /** Logged purchases, payments and transfers paid in a day (MINT.md 16.2, 20 November 2026); the rest are still kept. *(tune)* */
-    const val RECORDS_PAID_PER_DAY = 3
+    /** Logged purchases, payments and transfers paid in a day: no limit (owner, 20 November 2026: frequent actions pay like a Plan focus egg, and farming is the player's own business). */
+    const val RECORDS_PAID_PER_DAY = Int.MAX_VALUE
 
     /**
      * Whether logging [tx] pays the flat reward: Ledger Research is on, it is a purchase (expense) or a transfer (a payment to a card or loan counts), posted,
-     * typed by the player, dated today, and fewer than [RECORDS_PAID_PER_DAY] records have paid today. Never reads the amount.
+     * typed by the player and dated today. Never reads the amount, and there is no daily limit ([RECORDS_PAID_PER_DAY]).
      */
     fun logPays(data: MintData, tx: Transaction, today: LocalDate): Boolean =
         data.settings.progression && (tx.type == TxType.EXPENSE || tx.type == TxType.TRANSFER) && tx.status == TxStatus.POSTED && tx.source == TxSource.MANUAL &&
-            tx.importBatch == null && tx.day == today && data.transactions.count { it.paid && it.day == today } < RECORDS_PAID_PER_DAY
+            tx.importBatch == null && tx.day == today
 
     /** A review pays at most once a week. *(tune)* */
     const val REVIEWS_PAID_PER_WEEK = 1

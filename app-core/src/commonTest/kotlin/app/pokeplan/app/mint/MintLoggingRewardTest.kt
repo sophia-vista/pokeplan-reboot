@@ -49,12 +49,12 @@ class MintLoggingRewardTest {
     }
 
     @Test
-    fun onlyThreeRecordsPayADayAndIncomeBackdatedAndOffNeverPay() {
+    fun everyLoggedRecordPaysWithNoDailyLimitAndIncomeBackdatedAndOffNeverPay() {
         val s = setup()
         val bank = assertNotNull(s.mint.addAccount("BPI", AccountType.BANK, "PHP", 1_000_000).record)
-        repeat(MintRules.RECORDS_PAID_PER_DAY) { assertTrue(s.mint.record(TxType.EXPENSE, 100, bank.id).rewards.isNotEmpty()) }
-        assertTrue(s.mint.record(TxType.EXPENSE, 100, bank.id).rewards.isEmpty(), "the day's cap is spent")
-        assertEquals(MintRules.RECORDS_PAID_PER_DAY, s.mint.data.transactions.count { it.paid })
+        repeat(12) { assertTrue(s.mint.record(TxType.EXPENSE, 100, bank.id).rewards.isNotEmpty(), "record ${it + 1} pays") }
+        assertEquals(12, s.mint.data.transactions.count { it.paid })
+        assertTrue(s.game.mintEggMeter() >= 0 && s.game.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.MINT).size >= 3, "twelve records found at least three Ledger Eggs")
 
         val fresh = setup()
         val acct = assertNotNull(fresh.mint.addAccount("BPI", AccountType.BANK, "PHP", 1_000_000).record)
