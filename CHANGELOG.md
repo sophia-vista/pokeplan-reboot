@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.222.0
+
+Me, Settings, Plan and Mint (owner, 20 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` unchanged.
+
+- **Party perks fold away:** a reusable `Accordion`; each module's Today page shows its party perks behind it, closed by default.
+- **Me, Stats:** a new page with totals (trainer points, tasks finished, minutes focused, streaks) that opens Plan progress and Care trends. The trainer card keeps name, buddy and rank.
+- **Settings is a menu of pages under Me:** General (trainer name, sound and touch, look, Reduce motion, week start); Privacy and access (the screen lock for Care, Heal, Base, Link and Mint in one place; Mint's switch left Mint settings); Notifications (permission status with buttons, Quiet hours moved from Plan settings, one reminders switch per module, each module's lead time and hour shown only when its switch is on; Heal has none, its reminders are the times you add); Backups and data (complete backup, a Module exports card with one export per module, Reset); About.
+- **Reset:** Erase this device now also resets Link and every module's settings, clears all the Android shared preferences and old save files, and cancels set alarms. The launcher's open layout refreshes only after a restart.
+- **Plan, no categories:** tasks, habits, goals and lists lose their category. Insights and the Review recap split by list, the weekly recap names the top list, quick add `#word` is always a list, and the calendar and widgets take colour and icon from the list. Lists are made, edited and archived in Plan settings; the Lists row on Tasks is gone and the Filter on All and Done has a List chooser. Old saves' `category` keys are ignored.
+- **Mint, Shared bills** (`MINT.md` 5.8A): a display-only ledger of who owes whom, kept in the sealed Mint state. It pays nothing and touches no account.
+- **Not done:** a 12/24-hour setting (time text is built in about 22 places without a shared formatter).
+
 ## 0.220.1
 
 Care: the five places (Today, Routines, Calm, Reflect, Dream) are reached from the Sections key in the header, as in every other module, with their state for today; there is no row of keys on the page. Today follows the order every module's main screen keeps (the short lead, today's routines and the mood key, a Quick actions box with the commonly done actions (Calm, Check in, Write), then Care's party; Dream keeps the party too). UI only; `docs/pokelife/MODULES/CARE.md` 3 notes it.
