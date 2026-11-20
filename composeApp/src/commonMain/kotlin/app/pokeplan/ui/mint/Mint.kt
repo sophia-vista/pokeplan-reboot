@@ -290,7 +290,7 @@ internal fun OverviewCard(model: AppModel) {
             if (budgets.isNotEmpty()) {
                 SectionLabel("Budgets")
                 budgets.forEach { b ->
-                    val p = MintRules.progress(data, b, today, data.settings.weekStart)
+                    val p = MintRules.progress(data, b, today, model.data.settings.weekStart)
                     val label = data.categories.firstOrNull { it.id == b.categoryId }?.name ?: "Everything"
                     MintValueRow(label, if (p.remainingMinor >= 0) "${mint.show(p.remainingMinor, b.currency)} left" else "${mint.show(-p.remainingMinor, b.currency)} over", soft = true)
                     PixelBar((p.percent ?: 0) / 100f, color = ModuleAccent.MINT.accent, label = "$label: ${p.percent ?: 0} percent used")
