@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.217.0
+
+Plan → Tasks polish (owner, 20 November 2026; `docs/pokelife/MODULES/PLAN.md` 3 item 1 and 3.2, changed first). No schema change, `RewardRules.VERSION` and `docs/economy.md` unchanged.
+
+- **Opens on Today:** the Tasks screen opens on Today. The views are four pills: Today, Upcoming, All, Done ("Open" is now "All").
+- **No Inbox view:** open tasks in no list show under "No list" in All. The data and the quick-add parsing are unchanged.
+- **Lists row:** the lists sit in a "Lists" row under the pills, folded by default and showing the chosen list's name while folded. Open, it is one row per list with its open count; Manage makes, edits and archives. Choosing a list narrows the open view (Today, Upcoming, All, Done) to that list without changing the view; the choice and the open state are kept across tabs.
+- **Header and quick add:** the Calendar key is gone from the Tasks header (Calendar stays in the Sections key). The placeholder reads "Add a task (date, #list)". On Today inside a list a new task is planned for today, and the Today progress count follows the chosen list.
+- **Screenshot tests:** `planner-inbox` removed, `tasks-lists-open` and `tasks-list-chosen` added.
+
 ## 0.216.0
 
 Module pages share one order (owner, 20 November 2026; `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` 5.1). No schema change; the rules change is the weekly review and frequency targets going (below).
