@@ -38,7 +38,7 @@ private enum class MeSection(val label: String, val icon: String) {
     STATS("Stats", "exp-share"),
 
     /** Settings is a menu of pages (owner, 20 November 2026); each goes back to it. Appended, so a saved index still opens the same one. */
-    GENERAL("General", "gb-sounds"), PRIVACY("Privacy and access", "storage-key"), NOTIFICATIONS("Notifications", "soothe-bell"), BACKUPS("Backups and data", "journal"), ABOUT("About", "member-card"),
+    GENERAL("General", "gb-sounds"), PRIVACY("Privacy and access", "storage-key"), NOTIFICATIONS("Notifications", "soothe-bell"), BACKUPS("Backups", "journal"), ABOUT("About", "member-card"),
 }
 
 private val settingsPages = listOf(MeSection.GENERAL, MeSection.PRIVACY, MeSection.NOTIFICATIONS, MeSection.BACKUPS, MeSection.ABOUT)

@@ -2561,4 +2561,39 @@ class ScreenshotTest {
             } }
         }
     }
+    /** Shared bills with balances (the longest name and amount on the row) and a history, both palettes. */
+    @Test
+    fun mintSharedBills() {
+        mint("mint-shared", app.pokeplan.ui.mint.MintSection.SHARED, height = 1700, settings = { m ->
+            val day = m.store.today
+            m.mint.addShared("Alexandria Montgomery-Santos", app.pokeplan.mint.SharedKind.THEY_PAID, 1_234_567, day, "Groceries and the weekend trip", "PHP")
+            m.mint.addShared("Ana", app.pokeplan.mint.SharedKind.I_PAID, 50_000, day, "Dinner", "PHP")
+        })
+    }
+
+    /** Notifications with both permissions blocked, and Privacy and access with a phone lock, both palettes, at 360 dp and large text. */
+    @Test
+    fun settingsBlockedAndLocks() {
+        val phone = object : app.pokeplan.ui.PhoneState {
+            override val screenOff = false
+            override val inCall = false
+            override val notificationsAllowed = false
+            override val exactAlarms = false
+        }
+        val gate = object : app.pokeplan.ui.DeviceGate {
+            override fun available() = true
+            override fun authenticate(onResult: (Boolean) -> Unit) = onResult(true)
+            override fun leftAt() = 0L
+        }
+        for (dark in listOf(false, true)) {
+            val model = AppModel(storeWithTeam(), phone = phone, gate = gate)
+            val suffix = if (dark) "-dark" else ""
+            render("settings-notifications-blocked$suffix", height = 1300, width = 540, fontScale = 1.3f) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) { app.pokeplan.ui.screens.NotificationSettings(model) } } }
+            }
+            render("settings-privacy$suffix", height = 700, width = 540, fontScale = 1.3f) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) { app.pokeplan.ui.screens.PrivacySettings(model) } } }
+            }
+        }
+    }
 }

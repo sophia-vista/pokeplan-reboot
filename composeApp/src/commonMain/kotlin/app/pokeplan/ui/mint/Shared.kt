@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
 import app.pokeplan.mint.Money
 import app.pokeplan.mint.SharedBalance
@@ -59,8 +60,9 @@ internal fun SharedView(model: AppModel) {
             data.shared.sortedWith(compareByDescending<SharedEntry> { it.day }.thenByDescending { it.id }).forEach { e ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Column(Modifier.weight(1f)) {
-                        Text("${e.person}, ${e.kind.label.lowercase()}", style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-                        Text(listOfNotNull(e.day.short(), e.note.takeIf { it.isNotBlank() }).joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
+                        Text(e.person, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("${e.kind.label}, ${e.day.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (e.note.isNotBlank()) Text(e.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     Text(mint.show(e.amountMinor, e.currency), style = MaterialTheme.typography.bodyLarge)
                     PixelIconButton("trash", "Delete the entry with ${e.person}", { mint.deleteShared(e.id) }, Pixel.InkSoft)
@@ -74,10 +76,10 @@ internal fun SharedView(model: AppModel) {
 private fun BalanceRow(model: AppModel, b: SharedBalance) {
     TextBox {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text(
-                if (b.minor > 0) "${b.person} owes me" else "I owe ${b.person}",
-                Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1,
-            )
+            Column(Modifier.weight(1f)) {
+                Text(b.person, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(if (b.minor > 0) "owes me" else "I owe", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
+            }
             Text(model.mint.show(kotlin.math.abs(b.minor), b.currency), style = MaterialTheme.typography.titleSmall, color = if (b.minor > 0) Pixel.Green else Pixel.Ink)
             PixelButton("Settle up", { model.mint.settleShared(b, model.store.today) }, color = ModuleAccent.MINT.accent, compact = true)
         }
