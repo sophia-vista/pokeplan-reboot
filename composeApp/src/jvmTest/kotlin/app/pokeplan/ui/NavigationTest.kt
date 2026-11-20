@@ -27,7 +27,7 @@ class NavigationTest {
         model().apply { open(Place.HEAL, true); assertEquals(Module.HEAL, module); assertNull(healSection) }
         model().apply { open(Place.MINT, true); assertEquals(Module.MINT, module); assertNull(mintSection) }
         model().apply { open(Place.BASE, true); assertEquals(Module.BASE, module); assertNull(baseSection) }
-        model().apply { open(Place.LINK, true); assertEquals(Module.LINK, module); assertNull(linkSection) }
+        model().apply { linkPersonId = "x"; open(Place.LINK, true); assertEquals(Module.LINK, module); assertNull(linkSection); assertNull(linkPersonId) }
         model().apply { open(Place.WORLD, true); assertEquals(Module.WORLD, module); assertNull(worldSection) }
         model().apply { open(Place.PARTY, true); assertTrue(openParty) }
         model().apply { open(Place.GEAR, true); assertTrue(gearOpen) }

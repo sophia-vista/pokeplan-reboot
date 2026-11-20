@@ -229,6 +229,10 @@ class AppModel(
     /** The screen open inside Link (null shows Link's menu). */
     var linkSection: LinkSection? by mutableStateOf(null)
 
+    /** The person whose own screen is open inside Link's People (null shows the directory), and the tab it opens on (0 Overview, 1 Profile, 2 Notes, 3 Follow-ups). */
+    var linkPersonId: String? by mutableStateOf(null)
+    var linkPersonTab: Int by mutableStateOf(0)
+
     /** The one line the feedback bar shows (see [Feedback]); say it with [say] or keep it up with [Report]. */
     var feedback: Feedback? by mutableStateOf(null)
         private set
@@ -345,7 +349,7 @@ class AppModel(
             Place.HEAL -> { module = Module.HEAL; healSection = null }
             Place.MINT -> { module = Module.MINT; mintSection = null }
             Place.BASE -> { module = Module.BASE; baseSection = null }
-            Place.LINK -> { module = Module.LINK; linkSection = null }
+            Place.LINK -> { module = Module.LINK; linkSection = null; linkPersonId = null }
             Place.PARTY -> openParty = true
             Place.GEAR -> gearOpen = true
             Place.WORLD -> { module = Module.WORLD; worldSection = null }

@@ -120,7 +120,7 @@ internal fun jumpTargets(model: AppModel, focus: Boolean): List<JumpTarget> = bu
         add(JumpTarget(s.label, "Mint", s.icon) { model.open(Place.MINT, focus); model.mintStartType = null; model.mintSection = s })
     }
     BaseSection.entries.forEach { s -> add(JumpTarget(s.label, "Base", s.icon) { model.open(Place.BASE, focus); model.baseSection = s }) }
-    LinkSection.entries.forEach { s -> add(JumpTarget(s.label, "Link", s.icon) { model.open(Place.LINK, focus); model.linkSection = s }) }
+    LinkSection.entries.forEach { s -> add(JumpTarget(s.label, "Link", s.icon) { model.open(Place.LINK, focus); model.linkPersonId = null; model.linkSection = s }) }
     WorldSection.entries.forEach { s -> add(JumpTarget(s.label, "World", s.icon) { model.open(Place.WORLD, focus); model.worldSection = s }) }
 }
 

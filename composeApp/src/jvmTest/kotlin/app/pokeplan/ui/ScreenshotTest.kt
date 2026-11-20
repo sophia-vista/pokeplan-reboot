@@ -1518,6 +1518,22 @@ class ScreenshotTest {
         }
     }
 
+    /** One person's own screen inside People (light and dark; the longest name and organization, and the Notes and Follow-ups tabs). */
+    @Test
+    fun linkPersonScreen() {
+        fun open(tab: Int): (AppModel) -> Unit = { m ->
+            val long = m.link.addPerson("Maria Clara Delos Santos-Villanueva de la Cruz-Fernandez", organization = "Barangay Health Centre of the Northern District", category = "Colleague", phone = "+63 917 555 0100").record!!
+            m.link.addNote(long.id, "Prefers texts in the evening.")
+            m.link.addFollowUp("Send the choir photos", long.id)
+            m.linkPersonTab = tab
+            m.linkPersonId = long.id
+        }
+        link("link-person", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(0))
+        link("link-person-dark", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, dark = true, prepare = open(0))
+        link("link-person-notes", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(2))
+        link("link-person-followups", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(3))
+    }
+
     @Test
     fun linkMenu() = link("link-menu", null, height = 2600, linkParty = 3)
 
