@@ -4,7 +4,7 @@
 
 > **Describes what the code pays today (rules version 17).** The source of truth for the economy's shape is `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` (reward ledger, one Bag, one currency: Poké). Coins and World Poké are one balance, Poké, since rules version 15 (the tables below still say "coins" for what Plan pays and "Poké" for what World pays; both are the same Poké); this file stays accurate for the code**
 
-Every reward source, every use and every cap, as the code has them under **rules version 27** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 30** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -30,7 +30,6 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Subtask done** | 1 Rare Candy, once per subtask, at most 5 paid per task, after the task rank's minimum age | `SUBTASK_RARE_CANDIES`, `MAX_PAID_SUBTASKS` |
 | **Goal milestone done** (24 hours old or more) | 1 Super Candy, at most 3 a day; an active day | `SUPER_CANDIES_PER_MILESTONE`, `MILESTONE_MIN_AGE_MILLIS`, `MAX_MILESTONE_REWARDS_PER_DAY` |
 | **Every milestone of a goal done** | 1 Nature Mint, once per goal | `Goal.bonusGiven` |
-| **Weekly review** | 1 berry, once a week | `Review.REWARD_BERRIES` |
 | **Mini-quest** ticked (honour system, 3 a day from 4am, one reroll before any is done that gives three others; petting the buddy ticks "Pet your buddy") | 1 random berry and 2 Rare Candies each, 1 more berry and 5 more candies for the third; no active day | `MiniQuests.ALL_THREE_BONUS_BERRIES`, `RARE_CANDIES`, `ALL_THREE_BONUS_CANDIES`, `GameStore.completeMiniQuest` |
 | **Welcome back** after 7 or more days away (once per absence) | 5 Rare Candies and 2 berries of one flavour | `WELCOME_BACK_RARE_CANDIES`, `WELCOME_BACK_BERRIES` |
 | **Transfer** a Pokémon | Rare Candies (Common 8, Uncommon 12, Rare 22, Super Rare 60, plus a fifth of the candies it was fed), coins twice the base candies (16 / 24 / 44 / 120), its held item back | `Transfer.candiesByRarity`, `COIN_FACTOR`, `REFUND_DIVISOR` |
@@ -220,7 +219,6 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Egg meter | 10 | `EGG_METER_SIZE` |
 | Paid subtasks | 5 a task | `MAX_PAID_SUBTASKS` |
 | Milestone Super Candies | 3 a day | `MAX_MILESTONE_REWARDS_PER_DAY` |
-| Weekly review berry | 1 a week | `Review` |
 | Habit | pays once a day, even after an undo | `Habit.paysOn`, `paidOn` |
 | Task | pays once, after its rank's minimum age (2, 5, 10, 15, 20 minutes for E to A); a repeating task's instance pays from its own day, never ahead | `Rank.minAgeMinutes`, `TaskRules.paysOnCompletion`, `plan.finish_task` |
 | Focus session | 5 minutes at least; 180 in the app; 240 on the server (the shiny bonus stops at 240) | `Egg.MIN_MINUTES`, `MAX_MINUTES` |
@@ -265,7 +263,7 @@ Found while writing this down; each is its own change, none is in this rules ver
 - **Coins buy only Rare Candies** (0.46.0). design.md also plans Lures bought or crafted from berries; not built.
 - **Earned items with no use yet:** Lures (Focus never passes one). Mega Stones can be held but never drop.
 - **Trial evolutions** (0.182.0) are checked on the spot, done with the phone, or done in World (`EvolutionTrialSites`); see docs/design.md, "Evolution".
-- **Stack caps are uneven:** transfers, the focus berry and the weekly review berry add without the cap; the server's gift caps every item at 9,999, the app caps non-candies at 999.
+- **Stack caps are uneven:** transfers and the focus berry add without the cap; the server's gift caps every item at 9,999, the app caps non-candies at 999.
 - **Who decides.** The app computes every reward itself and the server checks the snapshot on sync (points never drop, the party and Guardians fit, column ranges). The server's `effort`, `task` and `achievement` kinds exist and are tested but no app calls them yet. Moving rewards to them (and adding the daily caps) is the step before a public release (`supabase/README.md`, Known limits).
 
 ## World (0.83.1)

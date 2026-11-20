@@ -61,6 +61,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelTitle
+import app.pokeplan.ui.screens.RecordRow
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.ScreenHeader

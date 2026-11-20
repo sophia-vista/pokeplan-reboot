@@ -38,6 +38,7 @@ import app.pokeplan.ui.plan.AddTo
 import app.pokeplan.ui.plan.FocusScreen
 import app.pokeplan.ui.plan.GoalsView
 import app.pokeplan.ui.plan.PlanActionItems
+import app.pokeplan.ui.plan.PlanOverview
 import app.pokeplan.ui.plan.PlanView
 import app.pokeplan.ui.plan.ProgressView
 import app.pokeplan.ui.plan.planTasks
@@ -128,7 +129,7 @@ private fun ModulesMenu(model: AppModel) {
 
 @Composable
 private fun PlanScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
-    ScreenSwitch(model.planSection, depth = { if (it == null) 0 else if (it.parent == null) 1 else 2 }) { section -> PlanPage(model, section, focusTab, openPokemon) }
+    ScreenSwitch(model.planSection, depth = { if (it == null) 0 else 1 }) { section -> PlanPage(model, section, focusTab, openPokemon) }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

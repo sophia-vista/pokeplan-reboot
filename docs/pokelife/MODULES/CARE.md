@@ -43,7 +43,7 @@ Primary areas:
 3. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
 4. **Care Garden** — prominent entry to the Pokémon interaction environment; it is a companion experience, not another task dashboard.
 
-Skills library and History (trends, prior diary cards and journal archive) are secondary destinations. Settings remain in CARE settings. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
+Skills library and History (trends, prior diary cards and journal archive) are secondary destinations. (20 November 2026: Care trends moved to Me, next to Plan progress; Care's Sections key no longer has a Trends place.) Settings remain in CARE settings. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
 
 ### 3.1 Today and routines
 
