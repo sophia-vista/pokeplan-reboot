@@ -223,6 +223,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             FirstRecordEgg(model, Tutorials.MINT_TALLY, data.accounts.size + data.transactions.size)
             OverviewCard(model)
             InterestReview(model)
+            OutbreakPanel(model)
             MintPartyPanel(model, openPokemon)
         }
     }

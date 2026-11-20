@@ -45,6 +45,7 @@ import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -104,8 +105,17 @@ class MintStore(
 
     private fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
 
-    private fun pay(kind: MintKind, recordId: String): List<app.pokeplan.core.reward.Reward>? =
-        if (!data.settings.progression) null else world.mint(MintEvent("mint:${kind.name.lowercase()}:$recordId", kind, nowMillis, recordId))
+    private fun pay(kind: MintKind, recordId: String, streak: Int = 0): List<app.pokeplan.core.reward.Reward>? =
+        if (!data.settings.progression) null else world.mint(MintEvent("mint:${kind.name.lowercase()}:$recordId", kind, nowMillis, recordId, streak = streak))
+
+    /** How many weeks in a row, this one included, had a paid review (the count that adds shiny rolls to a review's outbreak). Counts weeks only. */
+    private fun reviewStreak(): Int {
+        val weeks = data.reviews.filter { it.paid }.map { MintRules.weekStartOf(it.day, weekStart()) }.toSet()
+        var week = MintRules.weekStartOf(today, weekStart()).minus(DatePeriod(days = 7))
+        var streak = 1
+        while (week in weeks) { streak++; week = week.minus(DatePeriod(days = 7)) }
+        return streak
+    }
 
     /**
      * Pays the flat "logged a record" reward for [tx] (already saved) when [MintRules.logPays] allows, and marks it paid. The event holds no amount (MINT.md 16.2, 16.3).
@@ -993,7 +1003,7 @@ class MintStore(
         val record = ReviewRecord(newId(), today, nowMillis)
         val pays = MintRules.reviewPays(data, today, weekStart())
         update { it.copy(reviews = it.reviews + record) }
-        val rewards = if (pays) pay(MintKind.REVIEW, record.id) else null
+        val rewards = if (pays) pay(MintKind.REVIEW, record.id, reviewStreak()) else null
         if (rewards != null) update { d -> d.copy(reviews = d.reviews.map { if (it.id == record.id) it.copy(paid = true) else it }) }
         return Logged(data.reviews.first { it.id == record.id }, rewards = rewards.orEmpty())
     }

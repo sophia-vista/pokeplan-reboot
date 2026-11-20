@@ -448,11 +448,27 @@ class GameStore(
         val meter = mintEggMeter() + RewardEngine.MINT_EGG_POINTS.getValue(event.kind)
         val egg = if (meter >= RewardEngine.MINT_EGG_METER_SIZE) RewardEngine.mintEgg(outcome.state, newId(), nowMillis, rng) else null
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
+        // A rare moment (a reconciled account, a review) also opens an outbreak: a pick of Pokémon to catch directly (POKEMON_ECOSYSTEM.md 10.0).
+        val outbreak = RewardEngine.mintOutbreak((egg ?: outcome).state, event, newId(), rng)
         update { d ->
             val counters = tally.set(d.counters, period, paidInPeriod + 1) + (Counters.MINT_EGG_METER to meter % RewardEngine.MINT_EGG_METER_SIZE)
-            noted(d, log(MINT_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, mintPaid = (d.mintPaid + event.id).takeLast(MINT_PAID_KEPT)), origin = Origin(Origin.How.LEDGER_EGG, Region.MINT)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
+            val pending = (d.outbreaks + listOfNotNull(outbreak)).takeLast(RewardEngine.MAX_PENDING_OUTBREAKS)
+            noted(d, log(MINT_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, outbreaks = pending, mintPaid = (d.mintPaid + event.id).takeLast(MINT_PAID_KEPT)), origin = Origin(Origin.How.LEDGER_EGG, Region.MINT)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
+    }
+
+    /**
+     * Catches [speciesId] from the pending outbreak [outbreakId] directly, into Mint's party (else the PC), with the outbreak's shiny rolls. The outbreak is used up
+     * either way. Returns the reward, or null when the outbreak or the species is not there.
+     */
+    fun claimOutbreak(outbreakId: String, speciesId: Int): List<Reward>? {
+        val outbreak = data.outbreaks.firstOrNull { it.id == outbreakId } ?: return null
+        val outcome = RewardEngine.claimMintOutbreak(data.player, outbreak, speciesId, newId(), nowMillis, rng) ?: return null
+        update { d ->
+            log(MINT_SOURCES.getValue(MintKind.REVIEW), outcome.rewards, d.copy(player = outcome.state, outbreaks = d.outbreaks.filterNot { it.id == outbreakId }), origin = Origin(Origin.How.LEDGER_EGG, Region.MINT))
+        }
+        return outcome.rewards
     }
 
     /**

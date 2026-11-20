@@ -756,6 +756,10 @@ Eligible activity events may include:
 
 Do not reward creating empty records, repeated edits, repeatedly opening the same review, or artificial micro-actions. Define eligibility thresholds and caps in the shared economy/progression ledger, not in UI code.
 
+### 16.2A Outbreaks: the rare actions pay a choice and better shiny odds (owner, 20 November 2026)
+
+A **reconciled account** or a **finished weekly review** also opens an **outbreak** (`Outbreak`, saved in `AppData.outbreaks`, at most 5 waiting): three different Pokémon of the Mint Region to choose from, shown on the Overview as "Outbreak: choose one". Tapping **Catch** under one **catches it directly, with no egg**: it joins Mint's party (else the PC), leads Mint if there is no lead, pays the usual new-species candies, and uses the outbreak up. The options are drawn from better rarities than an egg gives (a reconciled account: 60% Uncommon, 30% Rare, 10% Super Rare; a review: 70% Rare, 30% Super Rare), species not caught yet six times as likely (*(tune)*, `RewardEngine.mintOutbreak`). The caught Pokémon has **shiny rolls**: 2 for a reconciled account and 3 for a review, plus **one for each week in a row with a review**, at most 7 in all (the ordinary chance times the rolls, `RewardEngine.MINT_OUTBREAK_ROLLS`, `MAX_OUTBREAK_ROLLS`). The review streak is a count of weeks in `MintEvent.streak`, so the event still holds no figure. It does not use Plan's Shiny Hunter perks. The existing meter, candies and friendship from these moments are unchanged; the reward text is the Ledger Research arrival scene.
+
 ### 16.3 Minimal progression event contract
 
 MINT may emit only approved abstract events, for example:
