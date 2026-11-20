@@ -424,9 +424,9 @@ internal fun ResetCard(model: AppModel) {
 @Composable
 private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
     Column {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
-            Text("$value%", style = MaterialTheme.typography.bodyMedium)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyLarge)
+            Text("$value%", Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyMedium)
         }
         PixelSlider(
             value = value / 100f, onChange = { onChange((it * 10).roundToInt() * 10) }, steps = 9,

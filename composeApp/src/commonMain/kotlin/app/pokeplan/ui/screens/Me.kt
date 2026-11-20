@@ -135,9 +135,9 @@ private fun StatsView(model: AppModel, open: (MeSection) -> Unit) {
 /** A label at the start and its value at the end of one line. */
 @Composable
 private fun StatLine(label: String, value: String) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        Text(value, style = MaterialTheme.typography.bodyLarge)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        Text(label, Modifier.weight(1f).alignByBaseline(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        Text(value, Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyLarge)
     }
 }
 

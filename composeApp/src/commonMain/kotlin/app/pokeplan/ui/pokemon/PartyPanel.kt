@@ -148,9 +148,10 @@ private fun PartyPanel(
     val ordered = members.sortedByDescending { it.id == leadId }.take(PARTY_SIZE)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Party", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-                Text("${ordered.size} of $PARTY_SIZE", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            // Two sizes on one row share a baseline, not a centre line (BaselineTest).
+            Row {
+                Text("Party", Modifier.weight(1f).alignByBaseline(), style = MaterialTheme.typography.titleSmall)
+                Text("${ordered.size} of $PARTY_SIZE", Modifier.alignByBaseline(), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
             }
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 (0 until PARTY_SIZE).forEach { i ->
@@ -164,9 +165,9 @@ private fun PartyPanel(
                 Accordion(perksTitle) {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                         perks.forEach { line ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(line.label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                                Text(pct(line.percent), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.Green)
+                            Row {
+                                Text(line.label, Modifier.weight(1f).alignByBaseline(), style = MaterialTheme.typography.bodyLarge)
+                                Text(pct(line.percent), Modifier.alignByBaseline(), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.Green)
                             }
                         }
                     }

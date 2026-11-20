@@ -163,9 +163,9 @@ internal fun MintLine(onClick: (() -> Unit)? = null, onClickLabel: String? = nul
 /** A label at the left and its value at the right. */
 @Composable
 internal fun MintValueRow(label: String, value: String, soft: Boolean = false) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        Text(label, Modifier.weight(1f), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge, color = if (soft) Pixel.InkSoft else Pixel.Ink)
-        Text(value, style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleSmall)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        Text(label, Modifier.weight(1f).alignByBaseline(), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge, color = if (soft) Pixel.InkSoft else Pixel.Ink)
+        Text(value, Modifier.alignByBaseline(), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleSmall)
     }
 }
 
