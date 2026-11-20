@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.218.0
+
+Plan: event companions and task reward focus (rules version 31; `docs/pokelife/MODULES/PLAN.md` 8.2 and 12.1, `docs/pokelife/POKEMON_ECOSYSTEM.md` 2.2 and `docs/economy.md`, changed first). `RewardRules.VERSION` is 31. No schema migration: `Task` and `PlanEvent` gained fields with defaults inside their JSON rows and Settings gained `defaultReward`; a test loads old rows.
+
+- **Task reward focus:** a task has a reward focus, Exp, Egg or Items, chosen in quick add under More options or in the task editor's More tab. The default for new tasks is in Plan Settings, Rewards, "New tasks pay most in". Exp is the default and pays exactly what a task paid before (the golden vector's outcomes are unchanged; only its recorded input gained `focus`, and `rulesVersion` is 31). Egg pays half the candies of each roll and `ceil(tier x 1.5)` Egg points. Items pays half the candies and doubles the item-drop chance (cap 100%). Poké and trainer points never change. The focus is read when the task is ticked (it is part of the pending completion's task copy); repeating tasks' copies keep it.
+- **Event companions:** a PLAN event can name a companion from the PLAN party (event panel: Companion; new event: Additional details). After an occurrence ends, the companion gains one Exp Candy's worth of exp (`XP_PER_CANDY`) per 30 minutes (a quarter hour counts as one, at most 4 an event, at most 6 a day across events) and has a 10% chance of one item from the drop table. Paid once per occurrence (the event keeps the dates it has paid, and moving a paid event keeps them), only for occurrences that end after the companion was named and within two days of ending, never for all-day events, skipped occurrences or device calendar events, and not if the companion left the PLAN party. Paid in `GameStore.tick` (`settleEvents`). A new reward `Reward.Exp` shows in the reward log as "<name> +N exp".
+- **Egg meter:** it is 5 points in code and docs (`docs/design.md` said 10 by mistake).
+- **Not simulated:** `simulateEconomy` plays the default focus only, so Egg and Items focus are not covered (numbers marked tune).
+
 ## 0.217.0
 
 Plan → Tasks polish (owner, 20 November 2026; `docs/pokelife/MODULES/PLAN.md` 3 item 1 and 3.2, changed first). No schema change, `RewardRules.VERSION` and `docs/economy.md` unchanged.
