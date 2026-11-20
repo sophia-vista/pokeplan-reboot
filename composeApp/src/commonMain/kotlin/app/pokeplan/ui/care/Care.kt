@@ -60,6 +60,7 @@ import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.ui.Sfx
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.ui.semantics.Role
 import app.pokeplan.ui.Sprite
 import app.pokeplan.care.JournalEntry
@@ -144,9 +145,13 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     BackHandler(enabled = true, onBack = back)
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header)
-        Row(Modifier.fillMaxWidth().selectableGroup().padding(horizontal = Spacing.Page, vertical = Spacing.S), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        // Each key is as wide as its word (five equal keys cut "Routines" short); at a large text size the row scrolls rather than clip.
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup().padding(horizontal = Spacing.Page, vertical = Spacing.S),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
+        ) {
             val places: List<Pair<CareSection?, String>> = listOf(null to "Today") + CareSection.entries.map { it to it.label }
-            places.forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }, Modifier.weight(1f)) }
+            places.forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }) }
         }
         ScreenSwitch(section) { page ->
             Column(
