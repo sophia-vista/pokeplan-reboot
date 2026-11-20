@@ -60,6 +60,7 @@ import app.pokeplan.mint.Frequency
 import app.pokeplan.mint.Installments
 import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.MintRules
+import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.Money
 import app.pokeplan.mint.Occurrence
 import app.pokeplan.mint.OccurrenceState
@@ -133,7 +134,7 @@ enum class MintSection(val label: String, val icon: String) {
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.MINT.accent
-private fun percentText(basisPoints: Int): String {
+internal fun percentText(basisPoints: Int): String {
     if (basisPoints == 0) return ""
     val fraction = (basisPoints % 100).toString().padStart(2, '0').trimEnd('0')
     return if (fraction.isEmpty()) (basisPoints / 100).toString() else "${basisPoints / 100}.$fraction"
@@ -221,6 +222,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             ModuleLeadStage(model, Module.MINT, model.data.player.mintLead, model.store.moduleEvent(app.pokeplan.app.GameStore.MINT_LOG_PREFIX), openPokemon = openPokemon)
             FirstRecordEgg(model, Tutorials.MINT_TALLY, data.accounts.size + data.transactions.size)
             OverviewCard(model)
+            InterestReview(model)
             MintPartyPanel(model, openPokemon)
         }
     }
@@ -327,6 +329,7 @@ private fun AccountsView(model: AppModel) {
     var dueDay by remember { mutableStateOf("") }
     var annualApr by remember { mutableStateOf("") }
     var interestGraceDays by remember { mutableStateOf("0") }
+    val earn = remember { EarnDraft() }
     var more by remember { mutableStateOf(false) }
     var suffix by remember { mutableStateOf("") }
     var group by remember { mutableStateOf("") }
@@ -345,16 +348,19 @@ private fun AccountsView(model: AppModel) {
         if (aprBps == null) { message = "Check the annual rate." to NoticeTone.WARNING; return }
         val grace = if (Installments.allowedFor(type)) interestGraceDays.toIntOrNull() ?: 0 else 0
         if (grace !in 0..MintRules.MAX_GRACE_DAYS) { message = "Enter a grace period from 0 to ${MintRules.MAX_GRACE_DAYS} days." to NoticeTone.WARNING; return }
+        val earnBps = earn.basisPoints(type)
+        if (earnBps == null) { message = "Check the interest rate and tax." to NoticeTone.WARNING; return }
         val first = data.accounts.none { it.status == AccountStatus.ACTIVE }
         val out = mint.addAccount(
             name, type, currency, minor, suffix = suffix, group = group, card = card, limitMinor = limitMinor,
             statementDay = if (Installments.allowedFor(type)) statementDay.toIntOrNull() ?: 0 else 0,
             dueDay = if (Installments.allowedFor(type)) dueDay.toIntOrNull() ?: 0 else 0,
             annualAprBasisPoints = aprBps, interestGraceDays = grace,
+            earnRateBasisPoints = earnBps.first, earnSchedule = if (canEarn(type)) earn.schedule else EarnSchedule.OFF, earnTaxBasisPoints = earnBps.second, earnAutoPost = earn.autoPost,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else {
-            message = null; name = ""; opening = ""; limit = ""; statementDay = ""; dueDay = ""; annualApr = ""; interestGraceDays = "0"; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
+            message = null; name = ""; opening = ""; limit = ""; statementDay = ""; dueDay = ""; annualApr = ""; interestGraceDays = "0"; earn.rate = ""; earn.tax = ""; earn.schedule = EarnSchedule.OFF; earn.autoPost = false; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
             // The first account ends on the overview, where Expense is the one next action (REP-056).
             if (first) model.mintSection = null
         }
@@ -400,6 +406,7 @@ private fun AccountsView(model: AppModel) {
                     )
                     Text("Simple APR/365 estimate; not a lender quote.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
+                EarnFields(type, earn)
             }
             FormDisclosure("Additional details", more, { more = !more }) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -477,6 +484,7 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
     var dueDay by remember(a.id) { mutableStateOf(if (a.dueDay > 0) a.dueDay.toString() else "") }
     var annualApr by remember(a.id) { mutableStateOf(percentText(a.annualAprBasisPoints)) }
     var interestGraceDays by remember(a.id) { mutableStateOf(a.interestGraceDays.toString()) }
+    val earn = remember(a.id) { EarnDraft(percentText(a.earnRateBasisPoints), a.earnSchedule, percentText(a.earnTaxBasisPoints), a.earnAutoPost) }
     var limit by remember(a.id) { mutableStateOf(if (a.limitMinor > 0) Money.plain(a.limitMinor, a.currency) else "") }
     var institution by remember(a.id) { mutableStateOf(a.institution) }
     var group by remember(a.id) { mutableStateOf(a.group) }
@@ -528,6 +536,7 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                         )
                         Text("Simple APR/365 estimate; not a lender quote.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     }
+                    EarnFields(type, earn)
                 }
                 ToggleRow("Hide from total", hideTotal) { hideTotal = it }
                 FormDisclosure("Additional details", moreEdit, { moreEdit = !moreEdit }) {
@@ -544,7 +553,9 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                     val limitMinor = if (Installments.allowedFor(type) && limit.isNotBlank()) Money.parse(limit, currency) else 0L
                     val aprBps = if (Installments.allowedFor(type) && annualApr.isNotBlank()) percentToBasisPoints(annualApr) else 0
                     val grace = if (Installments.allowedFor(type)) interestGraceDays.toIntOrNull() ?: 0 else 0
-                    if (minor == null) refused = "Check the balance."
+                    val earnBps = earn.basisPoints(type)
+                    if (earnBps == null) refused = "Check the interest rate and tax."
+                    else if (minor == null) refused = "Check the balance."
                     else if (limitMinor == null) refused = "Check the credit limit."
                     else if (aprBps == null) refused = "Check the annual rate."
                     else if (grace !in 0..MintRules.MAX_GRACE_DAYS) refused = "Enter a grace period from 0 to ${MintRules.MAX_GRACE_DAYS} days."
@@ -552,6 +563,7 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                         limitMinor = limitMinor, statementDay = if (Installments.allowedFor(type)) statementDay.toIntOrNull() ?: 0 else 0,
                         dueDay = if (Installments.allowedFor(type)) dueDay.toIntOrNull() ?: 0 else 0,
                         annualAprBasisPoints = aprBps, interestGraceDays = grace,
+                        earnRateBasisPoints = earnBps?.first ?: 0, earnSchedule = if (canEarn(type)) earn.schedule else EarnSchedule.OFF, earnTaxBasisPoints = earnBps?.second ?: 0, earnAutoPost = earn.autoPost,
                         name = name, type = type, currency = currency, openingMinor = minor,
                         institution = institution, group = group, suffix = suffix, card = card,
                         hideFromTotal = hideTotal, appPackage = appPackage,
@@ -805,7 +817,8 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var type by remember { mutableStateOf(model.mintStartType ?: TxType.EXPENSE) }
     var amount by remember { mutableStateOf(startAmount) }
     var accountId by remember { mutableStateOf<String?>(null) }
-    var toId by remember { mutableStateOf<String?>(null) }
+    var toId by remember { mutableStateOf(model.mintStartTo) }
+    LaunchedEffect(Unit) { model.mintStartTo = null }
     var categoryId by remember { mutableStateOf<String?>(null) }
     var splitEnabled by remember { mutableStateOf(false) }
     var splitParts by remember { mutableStateOf(listOf(SplitDraft(), SplitDraft())) }
@@ -816,6 +829,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var showFilter by remember { mutableStateOf(false) }
     var payee by remember { mutableStateOf(startPayee) }
     var note by remember { mutableStateOf("") }
+    var fee by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
     var query by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf<TxType?>(null) }
@@ -844,6 +858,8 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             if (parsed.sumOf { it.second!! } != minor) { message = "Split amounts must add up to the transaction." to NoticeTone.WARNING; return }
             parsed.map { (part, amount) -> TransactionSplit(part.categoryId, amount!!) }
         } else emptyList()
+        val feeMinor = if (type == TxType.TRANSFER && fee.isNotBlank()) Money.parse(fee, currency) else 0L
+        if (feeMinor == null) { message = "Check the fee." to NoticeTone.WARNING; return }
         val at = payAt ?: model.store.nowMillis
         val day = at.toLocalDateTime(zone).date
         if (installmentMode) {
@@ -853,18 +869,18 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             return
         }
         if (plansOwed.isNotEmpty() && from != null && to != null) {
-            val out = mint.payPlans(to.id, minor, from.id, day)
+            val out = mint.payPlans(to.id, minor, from.id, day, feeMinor = feeMinor)
             if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-            else { message = null; model.say("Saved."); payAt = null; amount = ""; model.haptic() }
+            else { message = null; model.say("Saved."); payAt = null; amount = ""; fee = ""; model.haptic() }
             return
         }
         val out = mint.record(
             type, minor, from!!.id, toAccountId = if (type == TxType.TRANSFER) to?.id else null,
             categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT && splits.isEmpty() },
-            payee = payee, note = note, atMillis = at, up = up, splits = splits,
+            payee = payee, note = note, atMillis = at, up = up, splits = splits, feeMinor = feeMinor,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); payAt = null; amount = ""; payee = ""; note = ""; more = false; splitEnabled = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
+        else { message = null; model.say("Saved."); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
     }
     val otherTypes = quickTypes.filter { it !in mainTypes }
     FormBox {
@@ -893,6 +909,11 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                         targets.map { it.id }, to?.id, { id -> targets.firstOrNull { it.id == id }?.name ?: "" },
                         { id -> if (id != null) toId = id }, Modifier.fillMaxWidth(), key = accent, label = "To",
                     )
+                    if (targets.isNotEmpty()) PixelField(
+                        fee, { fee = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Fee (optional)", singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = currency, placeholder = "0.00",
+                    )
+                    if (plansOwed.isEmpty() && to?.type?.liability == true) Text("Paying a card is not spending. Owed now and the account you pay from both fall.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     if (plansOwed.isNotEmpty()) Text("Repayment fills earliest due plans first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 } else if (type == TxType.ADJUSTMENT) {
                     PixelChoice(listOf(true, false), up, { if (it == true) "Balance goes up" else "Balance goes down" }, { if (it != null) up = it }, label = "Change", key = accent)
@@ -990,7 +1011,7 @@ private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onCli
     val plan = planNames.joinToString(", ").takeIf { it.isNotEmpty() }
     val repayment = t.type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == t.toAccountId }?.type?.liability == true
     val title = t.payee.ifBlank { category ?: (if (t.type == TxType.FEE) t.feeKind?.label else null) ?: (if (repayment) "Repayment" else t.type.label) }
-    val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }, plan?.let { "Plan: $it" }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
+    val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.feeMinor.takeIf { it > 0 }?.let { "fee " + model.mint.show(it, t.currency) }, t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }, plan?.let { "Plan: $it" }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
     MintLine(
         trail = { Text(t.signed() + model.mint.show(t.amountMinor, t.currency), style = MaterialTheme.typography.titleSmall) },
         onClick = onClick, onClickLabel = if (open) "Hide options" else "Show options",
@@ -1017,6 +1038,7 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
         mutableStateOf(t.splits.map { SplitDraft(it.categoryId, Money.plain(it.amountMinor, t.currency)) }.ifEmpty { listOf(SplitDraft(), SplitDraft()) })
     }
     var accountId by remember(t.id) { mutableStateOf(t.accountId) }
+    var fee by remember(t.id) { mutableStateOf(if (t.feeMinor > 0) Money.plain(t.feeMinor, t.currency) else "") }
     var moreTx by remember(t.id) { mutableStateOf(t.payee.isNotEmpty() || t.note.isNotEmpty()) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (editing) {
@@ -1029,6 +1051,10 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                 )
                 FormDivider()
                 FormGroup {
+                    if (t.type == TxType.TRANSFER) PixelField(
+                        fee, { fee = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Fee (optional)", singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = t.currency, placeholder = "0.00",
+                    )
                     if (!planPurchase && accounts.size > 1 && t.type != TxType.TRANSFER) {
                         PixelDropdown(accounts.map { it.id }, accountId, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) accountId = id }, Modifier.fillMaxWidth(), key = accent, label = "Account")
                     }
@@ -1054,7 +1080,9 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                 }
                 FormSave("Save", {
                     val minor = if (planPurchase) t.amountMinor else Money.parse(amount, t.currency)
+                    val feeMinor = if (t.type == TxType.TRANSFER && fee.isNotBlank()) Money.parse(fee, t.currency) else 0L
                     if (minor == null) refused = "Check the amount."
+                    else if (feeMinor == null) refused = "Check the fee."
                     else {
                         val splits = if (splitEnabled) {
                             val parsed = splitParts.map { part -> part to Money.parse(part.amount, t.currency) }
@@ -1063,7 +1091,7 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                             parsed.map { (part, amount) -> TransactionSplit(part.categoryId, amount!!) }
                         } else emptyList()
                         mint.updateTransaction(t.copy(
-                            amountMinor = minor, payee = payee, note = note, atMillis = at, accountId = accountId,
+                            amountMinor = minor, feeMinor = feeMinor, payee = payee, note = note, atMillis = at, accountId = accountId,
                             categoryId = categoryId.takeIf { splits.isEmpty() }, splits = splits,
                         )).let { if (it.record != null) { editing = false; onDone() } else refused = it.refused }
                     }

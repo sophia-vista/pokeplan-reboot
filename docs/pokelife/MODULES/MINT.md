@@ -195,6 +195,17 @@ For a **credit card** (owner, 15 November 2026) the opening balance field reads 
 
 **Statement day and due day** (owner, 15 November 2026): a credit card may also keep a **statement day** (the day of the month its statement closes) and a **due day** (the day of the month the payment is due), each `1` to `31`, `0` is none (`FinancialAccount.statementDay`, `dueDay`). A day later than the month has falls on the month's last day (31 in April is 30; 29 to 31 in a common February is 28), as for a bill (8.3). The card shows **Statement on the 15th** and **Due on the 5th** with how many days away the next one is ("today", "tomorrow", "in 4 days"), and its options show **current amount owed** (the card's balance, derived from the starting balance and its records, never typed twice), the limit, used of limit and left to spend. They are information only: no reminder, no bill and no transaction is made from them (a card payment is a transfer or a bill the player adds), and nothing is paid.
 
+### 4.3E Interest a deposit account earns (owner, 20 November 2026)
+
+A bank, e-wallet, digital-bank or other deposit account (not cash, never a liability) may keep an **interest schedule**: `earnSchedule` **Off**, **Every day** (Maya, MariBank and GoTyme credit daily) or **Every month**, a **yearly rate** (`earnRateBasisPoints`, 0 to 1000 percent), the **tax withheld** by the bank (`earnTaxBasisPoints`, 0 to 50 percent; 20 is the usual final tax) and **Post without review** (`earnAutoPost`, off by default). Switching the schedule on records the day (`earnFrom`); nothing is back-filled.
+
+1. **Estimates are made automatically** when Mint opens (`MintStore.accrueInterest`), for complete days only. Each is one `INCOME` record in the **Interest** category, payee "Interest", with `interestThrough` set to the last day it covers. A daily schedule makes one record for all the days since the last one (so a week away is one record, not seven); a monthly one makes one record per calendar month that has ended (the first may be a part month; at most 12 are caught up).
+2. **The figure** is the daily balance times the yearly rate over 365, summed over the days and rounded half up once, less the tax rounded half up. It uses posted records only, so an estimate still waiting never compounds. It is an estimate, not the bank's figure.
+3. **Review.** Unless the account posts without review, the record is **pending**: it is not in the balance and is listed in an **Interest to confirm** box on the Overview with **Confirm**, **Adjust** (type what the bank really credited, then save) and **Skip**, and **Confirm all**. Skip keeps the record as voided, so the same days are not estimated again. A record of any status moves the next estimate on; deleting one makes the days estimable again.
+4. **Reports.** A posted estimate is income (7.1), because the bank paid it. Nothing here pays a reward (16.2). Not a lender statement; reconcile (5.8) against the real balance as usual.
+
+Test: `MintFeesAndInterestTest`.
+
 ### 4.3C Open the wallet's own app
 
 Optional `FinancialAccount.appPackage` (the Android package name of the account's own app, such as the e-wallet or bank). In the account's Edit form (Android only) the player picks the app from the apps installed on the phone (name only, listed on the phone, never sent anywhere; the manifest already holds `QUERY_ALL_PACKAGES` for the launcher, personal use), and the account's options then show **Open <app name>**, which starts that app and nothing else. Only the package name is saved; it is not a credential and carries no token. An app that is no longer installed hides the button.
@@ -303,6 +314,8 @@ A transfer is one logical event with two account legs:
 - Editing or deleting a transfer updates both legs consistently.
 - A failed or interrupted save must not leave a one-sided transfer.
 
+**Transfer fee** (owner, 20 November 2026; `Transaction.feeMinor`, default 0, transfers only, never negative): what the sending side charged on top of the amount (an InstaPay or bank-transfer fee). It is part of the same one record, so it can never be saved, edited, excluded, voided or deleted apart from its transfer. The **source falls by amount plus fee**, the **destination rises by the amount only**; the amount is still no income and no expense. The fee is **spending** (a fee, 7.1, in the transfer's category or uncategorised), is cash out of the liquid accounts for cash flow even between two liquid accounts, and counts as a fee in a credit account's activity when the card is the sender. A repayment to a credit account takes a fee the same way (the fee is not part of what the card receives, and plan allocation uses the amount only). The Activity form shows an optional **Fee** field on a transfer and the record's line shows "fee ₱15".
+
 Transfers between different currencies preserve source amount, destination amount, rate, fee and rate provenance.
 
 ### 5.6 Credit cards and liabilities
@@ -351,6 +364,16 @@ Not changed: nothing here records spending or moves money by itself; the purchas
 ### 5.6B Statement tracking and estimated interest
 
 For a credit card or pay-later account, the player may record the lender's statement balance, minimum payment and due date as facts from the statement. These values do not create a transaction or reminder; payments are still recorded by the player. The player may optionally enter an annual rate and a grace period for automatic estimated interest. When a statement is recorded, Mint calculates simple daily interest on the posted liability balance for each eligible day after the prior due date plus the grace period, using `APR / 365`; it rounds the period total half up to the minor currency unit and posts one estimated `INTEREST` record. A unique account-and-statement-date key prevents duplicate accrual. It is an estimate, not a lender calculation, statement or early-settlement quote. The grace period is the number of days after the previous statement's due date before estimated interest starts. A zero rate accrues nothing.
+
+### 5.6D The card month, step by step (owner, 20 November 2026)
+
+The account's Credit line box has a "?" key that opens **How a card works**, and a **Pay card** button (**Pay balance** on a pay-later or other credit account) while something is owed. The steps, each already defined above:
+
+1. **Spend:** an Expense on the card. It raises **Owed now** and counts as spending once, on the day (5.6, 5.6A).
+2. **Statement:** the lender's statement is entered under Statements (5.6B). It is a note of what was billed and what is due; it changes no balance and makes no record. The box shows the latest statement's balance, minimum and pay-by day under **Owed now**, so the two are never mistaken for each other.
+3. **Pay:** Pay card opens Activity as a **Transfer to the card** (the card already chosen); with unpaid installment plans it fills the earliest due installments first (5.6C). Owed now and the paying account fall together; it is not spending, and the form says so. An optional transfer fee (5.5) can be added.
+4. **Fees and interest:** a late fee, annual fee or interest is a **Fee or interest** record on the card (5.6A, 5.6B). It raises Owed now and counts as spending.
+5. **Limit:** the limit and available credit are information only (4.3D).
 
 ### 5.7 Splits, duplicates and edits
 
@@ -729,7 +752,7 @@ Eligible activity events may include:
 - Reviewing upcoming bills as part of a periodic review.
 - Completing a defined periodic financial organization milestone.
 
-Opening MINT, viewing balances, entering a purchase, making a payment, receiving income, transferring money, changing an account balance, connecting a bank or increasing savings are not reward-bearing actions.
+**Logging a purchase, a payment or a transfer is reward-bearing (owner, 20 November 2026, replacing the earlier rule that no entry ever paid).** The event is `record_logged` (`MintKind.LOGGED`) and it **never depends on an amount**: the same flat reward whether the record is ₱5 or ₱50,000, and it carries no figure, account, category or payee (16.3). Rules: only a record the player types or taps in today (dated today, manual; not an import, an interest estimate, a fee Mint made itself, an adjustment or a backdated entry) of type **Expense** (a purchase, including a bill or card installment paid), or **Transfer** (a payment to a card or loan, or money moved between accounts); income, refunds, fees and balance adjustments do not pay. At most **3 paid records a day** (*(tune)*, `MintRules.RECORDS_PAID_PER_DAY`), each record id pays once, and it adds **1 point to Ledger Research's Egg meter**, so steady logging finds Ledger Eggs. It pays 1 Rare Candy and the usual Mint lead friendship step and Poké, but no trainer point. Opening MINT, viewing balances, receiving income, changing an account balance, connecting a bank, increasing savings, empty records, repeated edits and artificial micro-actions are still not reward-bearing; the daily cap is what keeps a micro-entry from being worth farming.
 
 Do not reward creating empty records, repeated edits, repeatedly opening the same review, or artificial micro-actions. Define eligibility thresholds and caps in the shared economy/progression ledger, not in UI code.
 

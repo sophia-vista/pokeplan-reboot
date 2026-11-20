@@ -214,6 +214,8 @@ class AppModel(
     /** The screen open inside Mint (null shows Mint's menu), and the kind of entry a quick action asked the Activity screen to start with. */
     var mintSection: MintSection? by mutableStateOf(null)
     var mintStartType: app.pokeplan.mint.TxType? by mutableStateOf(null)
+    /** The account a "Pay card" action asked the Activity screen to send the money to (read once, then cleared). */
+    var mintStartTo: String? by mutableStateOf(null)
 
     var baseData: BaseData by mutableStateOf(base.data)
         private set
