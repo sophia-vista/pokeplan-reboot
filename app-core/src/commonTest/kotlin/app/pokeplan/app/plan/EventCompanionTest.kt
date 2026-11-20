@@ -103,14 +103,23 @@ class EventCompanionTest {
     }
 
     @Test
-    fun anAllDayEventAndAShortOneNeverPay() {
+    fun anAllDayEventNeverPays() {
         val (s, clock) = started()
         val day = s.addAllDayEvent("Home", s.today)
-        val short = s.addEvent("Call", s.today, at(10), 10)
         s.setEventCompanion(day.id, lead(s).id)
-        s.setEventCompanion(short.id, lead(s).id)
         clock.advanceMinutes(24 * 60); s.tick()
         assertEquals(0, expCount(s))
+    }
+
+    @Test
+    fun aQuarterHourIsTheShortestEventAndPaysOneCandy() {
+        val (s, clock) = started()
+        // The calendar snaps every timed event to at least 15 minutes, so that is the least one can be (EventCompanions.MIN_MINUTES).
+        val e = s.addEvent("Call", s.today, at(10), 10)
+        assertEquals(15, s.data.events.single().minutes)
+        s.setEventCompanion(e.id, lead(s).id)
+        clock.advanceMinutes(90); s.tick()
+        assertEquals(CandyRules.XP_PER_CANDY, exp(s))
     }
 
     @Test
