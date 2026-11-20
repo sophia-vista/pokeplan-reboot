@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.220.1
+
+Care: the Sections key is back in the header, as in every other module, listing the same five places (Today, Routines, Calm, Reflect, Dream) with their state for today; the five keys stay in their row under the header. UI only; `docs/pokelife/MODULES/CARE.md` 3 notes it.
+
 ## 0.220.0
 
 Care: navigation redesign (owner, 20 November 2026, REP-030; `docs/pokelife/MODULES/CARE.md` 1.5, changed first). UI only: no game-rule or economy change, no save or schema change, `RewardRules.VERSION` unchanged.
