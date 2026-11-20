@@ -266,7 +266,7 @@ class ScreenshotTest {
                 PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.EventPanel(model, model.data.events.single(), {}, {}) } }
             }
             render("plan-settings-rewards-$n", height = 1000, frames = 8) {
-                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PlanSettings(model) } }
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(app.pokeplan.ui.theme.Spacing.M)) { app.pokeplan.ui.screens.PlanSettings(model) } } }
             }
         }
     }
