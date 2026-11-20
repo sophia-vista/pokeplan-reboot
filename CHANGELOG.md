@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.220.0
+
+Care: navigation redesign (owner, 20 November 2026, REP-030; `docs/pokelife/MODULES/CARE.md` 1.5, changed first). UI only: no game-rule or economy change, no save or schema change, `RewardRules.VERSION` unchanged.
+
+- **Five keys:** a row under the Care header on every Care screen: Today (the landing: buddy, today's routines, mood key), Routines, Calm, Reflect, Dream. Keys are as wide as their word and the row scrolls sideways at large text. Back from any place goes to Today, from Today to the module list.
+- **Calm:** the breathing break plus the DBT skills library. Each skill opens as a guided walk-through like the breathing break (progress bar, an intro page, one page per step with Next and Back, a closing page where "I practised this" pays as before); the breathing skill leads back to the break.
+- **Reflect:** the diary card and the journal as two modes of one place; it opens on the journal when a draft waits.
+- **Dream:** replaces the Meadow, the Visitors card on the landing and the Play screen. One dusk scene (the garden scene darkened, the buddy and the dreamers asleep with Zz; a tap wakes one for 2.5 seconds), "Spend time" (Care Play opened in place), the dreamers (the visitors) with queue, sent away and met, and Care's party.
+- **Removed as separate screens:** Diary card, Skills, Journal, Meadow, Play. Jump-to targets are now Routines, Calm, Reflect, Dream. `CareMeadow.kt` became `CareDream.kt`; `playTarget` left `App.kt`.
+- **Tests:** `BackChainTest` and `ScreenshotTest` follow the new places.
+
 ## 0.219.0
 
 Mint: transfer fees, interest earned, the credit card flow and a flat reward for logging (rules version 32; `docs/pokelife/MODULES/MINT.md` 4.3E, 5.5, 5.6D and 16.2, and `docs/economy.md`, changed first). `RewardRules.VERSION` is 32 and `golden.json` is regenerated. No schema migration: every new field sits inside the sealed Mint rows with a default.

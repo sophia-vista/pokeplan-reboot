@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.Emotion
+import app.pokeplan.care.Skill
 import app.pokeplan.care.Skills
 import app.pokeplan.care.Visitors
 import app.pokeplan.core.dex.Dex
@@ -59,6 +60,7 @@ import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.ui.Sfx
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.ui.semantics.Role
 import app.pokeplan.ui.Sprite
 import app.pokeplan.care.JournalEntry
@@ -122,105 +124,103 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
 /**
- * Care's screens (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md), after journalling and DBT: routines, calm breaks, a daily diary card, a
- * skills library and a journal, and trends. Doing earns (a routine, a calm break, a practised skill, a week with a rhythm);
- * a diary card, a note or a journal entry never does, and the buddy never comments on them.
+ * Care's screens (docs/pokelife/MODULES/CARE.md section 3). Five places, always one tap apart in a row under the header (owner, 20 November 2026):
+ * **Today** (the landing: the buddy, today's routines and the mood key), **Routines** (add, edit, skip and archive them), **Calm** (the breathing break and the guided DBT skills),
+ * **Reflect** (the diary card and the journal, two modes of one place) and **Dream** (the dream world: the buddy and the dreamers asleep in one
+ * scene, visiting, play and the party). Doing earns (a routine, a calm break, a practised skill, a week with a
+ * rhythm); a diary card, a note or a journal entry never does, and the buddy never comments on them.
+ *
+ * [CareSection] holds the places other than Today (`model.careSection == null` is Today).
  */
 enum class CareSection(val label: String, val icon: String) {
-    ROUTINES("Routines", "oaks-parcel"), CALM("Calm break", "lunar-wing"), DIARY("Diary card", "heart-scale"),
-    SKILLS("Skills", "mental-herb"), JOURNAL("Journal", "journal"),
-    MEADOW("Meadow", "town-map"), PLAY("Play", "poke-ball"),
+    ROUTINES("Routines", "oaks-parcel"), CALM("Calm", "lunar-wing"), REFLECT("Reflect", "journal"), DREAM("Dream", "town-map"),
 }
 
-@Composable
-internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
-    ScreenSwitch(model.careSection, depth = { if (it == null) 0 else 1 }) { section -> CarePage(model, section, openPokemon) }
-}
-
+/** The header and the row of five places stay put; only the page under them changes. Back from a place goes to Today, from Today to the module list. */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun CarePage(model: AppModel, section: CareSection?, openPokemon: (String) -> Unit) {
-    if (section == null) {
-        val toModules = { model.module = null }
-        BackHandler(enabled = true, onBack = toModules)
-        CareMenu(model, toModules, openPokemon)
-        return
-    }
-    SectionScaffold(section.label, null, onBack = { model.careSection = null }, icon = section.icon, color = Module.CARE.look.header) {
-        when (section) {
-            CareSection.ROUTINES -> RoutinesView(model)
-            CareSection.CALM -> CalmBreakView(model)
-            CareSection.DIARY -> DiaryView(model)
-            CareSection.SKILLS -> SkillsView(model)
-            CareSection.JOURNAL -> JournalView(model)
-            CareSection.MEADOW -> MeadowView(model) { key -> model.playTarget = key; model.careSection = CareSection.PLAY }
-            CareSection.PLAY -> PlayView(model, model.playTarget.also { model.playTarget = null })
+internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
+    val section = model.careSection
+    val back = if (section == null) ({ model.module = null }) else ({ model.careSection = null })
+    BackHandler(enabled = true, onBack = back)
+    Column(Modifier.fillMaxSize()) {
+        ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header)
+        // Each key is as wide as its word (five equal keys cut "Routines" short); at a large text size the row scrolls rather than clip.
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup().padding(horizontal = Spacing.Page, vertical = Spacing.S),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
+        ) {
+            val places: List<Pair<CareSection?, String>> = listOf(null to "Today") + CareSection.entries.map { it to it.label }
+            places.forEach { (s, label) -> TabButton(label, section == s, { model.careSection = s }) }
+        }
+        ScreenSwitch(section) { page ->
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
+                verticalArrangement = Arrangement.spacedBy(Spacing.M),
+            ) {
+                when (page) {
+                    null -> TodayView(model, openPokemon)
+                    CareSection.ROUTINES -> RoutinesView(model)
+                    CareSection.CALM -> CalmView(model)
+                    CareSection.REFLECT -> ReflectView(model)
+                    CareSection.DREAM -> DreamView(model, openPokemon)
+                }
+            }
         }
     }
 }
 
+/** What to do now: the buddy, today's routines and the mood key. Visitors, the egg and the party live in Dream. */
 @Composable
-private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
+private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
     val care = model.careData
     val today = model.care.todayRoutines()
     val done = today.count { it.doneOn(model.care.today) }
-    val diarySaved = model.care.diaryToday() != null
-    val practised = model.care.practisedToday().size
-    val sections = listOf(
-        MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = ModuleAccent.CARE.accent),
-        MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm break", "a minute to breathe", tint = ModuleAccent.CARE.accent),
-        MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = ModuleAccent.CARE.accent),
-        MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = ModuleAccent.CARE.accent),
-        MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = ModuleAccent.CARE.accent),
-        MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = ModuleAccent.CARE.accent),
-        MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = ModuleAccent.CARE.accent),
-    )
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.CARE.label, onBack = onBack, color = Module.CARE.look.header, trailing = { SectionsKey(Module.CARE.label, sections) { key -> model.careSection = CareSection.valueOf(key) } })
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.M),
-        ) {
-            // Lead, overview, action items, party (the layout every module shares). What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
-            CareBuddy(model, openPokemon)
-            FirstRecordEgg(model, app.pokeplan.app.Tutorials.CARE_BREATH, care.routines.size + care.breaks.size + care.practices.size + care.diary.size + care.journal.size)
-            if (today.isEmpty()) {
-                EmptyState(
-                    if (care.routines.none { !it.archived }) "No routines yet" else "Nothing planned for today",
-                    action = "Add a routine" to { model.careSection = CareSection.ROUTINES }, sleeper = true,
-                )
-            } else TextBox {
-                Column {
-                    SectionLabel("$done of ${today.size} today", icon = CareSection.ROUTINES.icon)
-                    today.forEachIndexed { i, r ->
-                        if (i > 0) HorizontalDivider(color = Pixel.Border)
-                        RoutineLine(model, r)
-                    }
-                }
+    CareBuddy(model, openPokemon)
+    FirstRecordEgg(model, app.pokeplan.app.Tutorials.CARE_BREATH, care.routines.size + care.breaks.size + care.practices.size + care.diary.size + care.journal.size)
+    if (today.isEmpty()) {
+        EmptyState(
+            if (care.routines.none { !it.archived }) "No routines yet" else "Nothing planned for today",
+            action = "Add a routine" to { model.careSection = CareSection.ROUTINES }, sleeper = true,
+        )
+    } else TextBox {
+        Column {
+            SectionLabel("$done of ${today.size} today", icon = CareSection.ROUTINES.icon)
+            today.forEachIndexed { i, r ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                RoutineLine(model, r)
             }
-            MoodRow(model)
-            // The action items, then the visitors and the egg meter that belong with the party, which comes last.
-            TextBox {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelTitle("Quick actions")
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                        if (today.isNotEmpty()) PixelButton("Routine", { model.careSection = CareSection.ROUTINES }, Modifier.weight(1f), ModuleAccent.CARE.accent, compact = true)
-                        PixelButton("Calm", { model.careSection = CareSection.CALM }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                        PixelButton("Diary", { model.careSection = CareSection.DIARY }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    }
-                }
-            }
-            CareEggMeter(model)
-            VisitorsCard(model)
-            CarePartyPanel(model, openPokemon)
         }
     }
+    MoodRow(model)
+}
+
+/** Reflect: the diary card and the journal stay separate records and separate modes of one place (CARE.md 3.3); a half-written journal entry opens on the journal. */
+@Composable
+private fun ReflectView(model: AppModel) {
+    var journal by remember { mutableStateOf(model.journalDraft.isNotEmpty()) }
+    Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        TabButton("Diary card", !journal, { journal = false }, Modifier.weight(1f))
+        TabButton("Journal", journal, { journal = true }, Modifier.weight(1f))
+    }
+    if (journal) JournalView(model) else DiaryView(model)
+}
+
+/** Calm: the breathing break, then the skills library; a skill opens as a guided walk-through that replaces both. */
+@Composable
+private fun CalmView(model: AppModel) {
+    var skillId by remember { mutableStateOf<String?>(null) }
+    val skill = skillId?.let { Skills.byId(it) }
+    if (skill != null) { SkillGuide(model, skill) { skillId = null }; return }
+    CalmBreakView(model)
+    // While a break runs nothing else is offered: the screen is for the breath.
+    if (model.calmBreakStartedAt == null) SkillsList(model) { skillId = it }
 }
 
 /**
  * Care's buddy (Care's lead, else the Plan buddy) in the meadow, as on Home: pet it, give it a berry, and it celebrates Care's
- * own moments (a routine, a calm break, a skill, a friend) with its cry, its portrait and a hop. Two of today's visitors stand
- * beside it, and Care's whole party sits below ([CarePartyPanel]). It never comments on how the player feels.
+ * own moments (a routine, a calm break, a skill, a friend) with its cry, its portrait and a hop. The visitors and Care's party
+ * are in Dream, not here. It never comments on how the player feels.
  */
 @Composable
 private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
@@ -237,131 +237,8 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
         onOpen = { openPokemon(buddy.id) }, onHaptic = { model.haptic() },
         onEvent = { model.cry(buddy) },
         celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
-        // The warmest visitors wait in the meadow beside the buddy; a tap is a pat, just for fun.
-        guests = Visitors.meadow(model.careData.visitors).sortedByDescending { it.progress }.take(2).map { v ->
-            StageGuest(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, Dex.species(v.speciesId).name) { model.haptic(); model.cry(v.speciesId) }
-        },
         compact = true,
     )
-}
-
-// ----- Visitors -------------------------------------------------------------------------------------------------------
-
-/**
- * Who is in Care's meadow (docs/pokelife `MODULES/CARE.md`, section 6). Visitors arrive on their own, four are in the meadow and the
- * rest wait in a quiet queue that never expires. Any of them can be visited at any time, with nothing done first: each kind of care
- * warms it at once and the warmth is never lost, however long you are away. At sixteen it becomes a friend: usually an egg of its
- * family's first stage that hatches at once, rarely the visitor itself. A visitor can also be played with, which counts for
- * nothing, and sent away on purpose (it keeps what it earned and can be asked back).
- */
-@Composable
-private fun VisitorsCard(model: AppModel) {
-    val care = model.care
-    // The day's arrivals are made the first time they are asked for.
-    LaunchedEffect(care.today) { care.arrive() }
-    val all = model.careData.visitors
-    val meadow = Visitors.meadow(all)
-    val waiting = Visitors.queue(all)
-    var note by remember { mutableStateOf<String?>(null) }
-    var playing by remember { mutableStateOf<Int?>(null) }
-    var sendAway by remember { mutableStateOf<Int?>(null) }
-    var showAway by remember { mutableStateOf(false) }
-    if (all.isEmpty() && model.careData.dismissed.isEmpty()) return
-    val visit = model.careData.visit
-    val open = meadow.firstOrNull { it.speciesId == (visit?.speciesId ?: playing) }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Visitors")
-            note?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
-            if (open != null) VisitorScene(model, open, visit?.takeIf { it.speciesId == open.speciesId }, { note = it }) { playing = null }
-            meadow.forEachIndexed { i, v ->
-                val species = Dex.species(v.speciesId)
-                val resting = care.resting(v)
-                if (i > 0) HorizontalDivider(color = Pixel.Border)
-                PlainRow(
-                    lead = {
-                        AnimatedSprite(
-                            Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name,
-                            Modifier.size(Sizes.SpriteS).clickable(onClickLabel = "Hear ${species.name}", role = Role.Button) { model.cry(v.speciesId) },
-                            size = Sizes.SpriteS, animate = !model.data.settings.reduceMotion,
-                        )
-                    },
-                    trail = {
-                        when {
-                            visit?.speciesId == v.speciesId -> Text("Visiting", style = MaterialTheme.typography.labelMedium, color = Pixel.Tone)
-                            care.canVisit(v) -> PixelButton("Visit", {
-                                if (care.startVisit(v.speciesId) == null) note = "Not now." else { playing = null; note = null; model.haptic(); model.cry(v.speciesId) }
-                            }, color = Pixel.Tone, compact = true)
-                            else -> PixelButton(if (playing == v.speciesId) "Playing" else "Play", {
-                                playing = v.speciesId; note = null; model.haptic()
-                            }, color = Pixel.InkSoft, enabled = visit == null && playing != v.speciesId, compact = true)
-                        }
-                    },
-                ) {
-                    Column {
-                        Text(species.name, style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            listOfNotNull(
-                                if (Visitors.friend(v)) "ready to be a friend" else if (v.progress == 0) "Just arrived" else "${v.progress} of ${Visitors.FRIEND_PROGRESS} warm",
-                                if (resting) "ready about " + ExactInput.formatMinuteOfDay(v.restUntilMillis.toLocalDateTime(TimeZone.currentSystemDefault()).let { it.hour * 60 + it.minute }) else null,
-                            ).joinToString(", "),
-                            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                        )
-                    }
-                }
-            }
-            if (waiting.isNotEmpty()) {
-                SectionLabel("Waiting for a place (${waiting.size})")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    waiting.forEach { v -> Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, "${Dex.species(v.speciesId).name}, waiting for a place", size = Sizes.IconL) }
-                }
-            }
-            // Sending a visitor away is a deliberate choice, not a chore: it asks once, keeps what the visitor earned and can be undone.
-            if (open != null && visit == null) {
-                if (sendAway == open.speciesId) {
-                    Text("Send ${Dex.species(open.speciesId).name} away? It keeps what it has earned, and you can ask it back.", style = MaterialTheme.typography.bodyMedium) // copy-ok: result
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        PixelButton("Send away", { care.dismiss(open.speciesId); sendAway = null; playing = null; note = null }, color = Pixel.InkSoft, compact = true)
-                        PixelButton("Keep", { sendAway = null }, color = Pixel.Tone, compact = true)
-                    }
-                } else PixelButton("Send away", { sendAway = open.speciesId }, color = Pixel.InkSoft, compact = true)
-            }
-            val away = model.careData.dismissed
-            if (away.isNotEmpty()) {
-                PixelButton(if (showAway) "Hide sent away" else "Sent away (${away.size})", { showAway = !showAway }, color = Pixel.InkSoft, compact = true)
-                if (showAway) away.asReversed().forEachIndexed { i, v ->
-                    val species = Dex.species(v.speciesId)
-                    if (i > 0) HorizontalDivider(color = Pixel.Border)
-                    PlainRow(
-                        lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = Sizes.IconL) },
-                        trail = { PixelButton("Ask back", { note = if (care.restore(v.id)) "${species.name} is back, waiting for a place." else "No room just now." }, color = Pixel.Tone, compact = true) },
-                    ) { Text(species.name, style = MaterialTheme.typography.bodyLarge) }
-                }
-            }
-            MetAlbum(model)
-        }
-    }
-}
-
-/** A row inside a box that already frames it: [lead], [content] and [trail] on one centre line, no frame of its own. */
-@Composable
-private fun PlainRow(lead: @Composable () -> Unit, trail: @Composable () -> Unit, content: @Composable () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
-        lead()
-        Box(Modifier.weight(1f)) { content() }
-        trail()
-    }
-}
-
-/** The visitors cared for so far, as small sprites: a quiet album with no counts to chase. */
-@Composable
-private fun MetAlbum(model: AppModel) {
-    val met = model.careData.met.sorted()
-    if (met.isEmpty()) return
-    SectionLabel("Met")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        met.forEach { id -> Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = Sizes.IconL) }
-    }
 }
 
 // ----- Routines -------------------------------------------------------------------------------------------------------
@@ -750,31 +627,11 @@ private fun DiaryView(model: AppModel) {
 
 // ----- Skills ---------------------------------------------------------------------------------------------------------
 
+/** The library, by DBT group: a tap opens the skill as a guided walk-through ([SkillGuide]). */
 @Composable
-private fun SkillsView(model: AppModel) {
-    val care = model.care
+private fun SkillsList(model: AppModel, onOpen: (String) -> Unit) {
     model.careData // redraw when Care changes
-    var open by remember { mutableStateOf<String?>(null) }
-    val practised = care.practisedToday()
-    val skill = open?.let { Skills.byId(it) }
-
-    if (skill != null) {
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                Text(skill.name, style = MaterialTheme.typography.titleMedium)
-                Text(skill.group.label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Text(skill.use, style = MaterialTheme.typography.bodyLarge)
-                skill.steps.forEachIndexed { i, step -> Text("${i + 1}. $step", style = MaterialTheme.typography.bodyLarge) }
-                when {
-                    skill.calmBreak -> PixelButton("Start a calm break", { model.careSection = CareSection.CALM }, Modifier.fillMaxWidth(), Pixel.Tone)
-                    else -> PixelButton(if (skill.id in practised) "Practised again" else "I practised this", { model.effect(Sfx.LEARN); model.haptic(); care.practiseSkill(skill.id) }, Modifier.fillMaxWidth(), Pixel.Tone)
-                }
-                if (skill.id in practised) Text("Practised today.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                PixelButton("All skills", { open = null }, color = Pixel.InkSoft, compact = true)
-            }
-        }
-        return
-    }
+    val practised = model.care.practisedToday()
     // Help: skills come from DBT; up to CareRules.SKILLS_PAID_PER_DAY a day earn friendship and a berry. A reminder, not therapy; in danger, call the local emergency number.
     app.pokeplan.care.SkillGroup.entries.forEach { group ->
         SectionLabel(group.label)
@@ -783,12 +640,56 @@ private fun SkillsView(model: AppModel) {
                 Skills.inGroup(group).forEachIndexed { i, k ->
                     if (i > 0) HorizontalDivider(color = Pixel.Border)
                     Column(
-                        Modifier.fillMaxWidth().clickable(onClickLabel = "Open ${k.name}", role = Role.Button) { open = k.id }.padding(vertical = Spacing.S),
+                        Modifier.fillMaxWidth().clickable(onClickLabel = "Open ${k.name}", role = Role.Button) { onOpen(k.id) }.padding(vertical = Spacing.S),
                     ) {
                         Text(k.name, style = MaterialTheme.typography.bodyLarge)
                         Text(if (k.id in practised) "Practised today" else k.use, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * A skill walked through the way the breathing break is: one page at a time with a bar, never the whole list of steps at once. Page 0 says what the
+ * skill is for, pages 1 to n are its steps (Back and Next, no timer, no wrong answer), and the last page is the close: "I practised this" pays
+ * through [care] as before (the breathing skill instead leads back to the break, which pays as a calm break). Leaving at any page costs nothing.
+ */
+@Composable
+private fun SkillGuide(model: AppModel, skill: Skill, onClose: () -> Unit) {
+    val care = model.care
+    model.careData // redraw when Care changes
+    val practised = skill.id in care.practisedToday()
+    var page by remember(skill.id) { mutableStateOf(0) }
+    val steps = skill.steps.size
+    val end = steps + 1
+    val where = when (page) { 0 -> skill.name; end -> "${skill.name}: the last page"; else -> "${skill.name}: step $page of $steps" }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelBar(page.toFloat() / end, color = Pixel.Tone, label = where)
+            when (page) {
+                0 -> {
+                    Text(skill.name, style = MaterialTheme.typography.titleLarge)
+                    Text(skill.group.label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    Text(skill.use, style = MaterialTheme.typography.bodyLarge)
+                }
+                end -> {
+                    Text(if (skill.calmBreak) "Ready to breathe?" else "That was the last step.", style = MaterialTheme.typography.titleLarge) // copy-ok: result
+                    if (practised) Text("Practised today.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+                else -> {
+                    Text("Step $page", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                    Text(skill.steps[page - 1], style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                }
+            }
+            if (page == end) {
+                if (skill.calmBreak) PixelButton("Start the breathing", onClose, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent)
+                else PixelButton(if (practised) "Practised again" else "I practised this", { model.effect(Sfx.LEARN); model.haptic(); care.practiseSkill(skill.id); onClose() }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent)
+            } else PixelButton(if (page == 0) "Begin" else "Next", { model.haptic(); page++ }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                if (page > 0) PixelButton("Back", { page-- }, color = Pixel.InkSoft, compact = true)
+                PixelButton("All skills", onClose, color = Pixel.InkSoft, compact = true)
             }
         }
     }
@@ -861,7 +762,7 @@ private fun JournalView(model: AppModel) {
     var shown by remember { mutableStateOf(30) }
     val found = care.searchJournal(query)
     val entries = found.take(shown)
-    if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", icon = CareSection.JOURNAL.icon, action = "Clear the search" to { query = "" })
+    if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", icon = CareSection.REFLECT.icon, action = "Clear the search" to { query = "" })
     entries.forEach { e ->
         ListRow(
             trail = {
@@ -963,21 +864,6 @@ private fun TrendsView(model: AppModel) {
                     if (avg != null) PixelBar((avg / 5).toFloat(), Modifier.fillMaxWidth(), Pixel.Tone, label = label)
                 }
             }
-        }
-    }
-}
-
-/** How far the next Care Egg is: every routine, calm break, skill and play fills it a little. */
-@Composable
-private fun CareEggMeter(model: AppModel) {
-    model.data // observe the save: the store itself is not Compose state
-    val points = model.store.careEggMeter()
-    val size = RewardEngine.CARE_EGG_METER_SIZE
-    val label = "Care Egg: $points of $size"
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
-            PixelBar(points.toFloat() / size, color = Pixel.Tone, label = label)
         }
     }
 }

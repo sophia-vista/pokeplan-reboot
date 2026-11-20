@@ -28,7 +28,7 @@ Shipped in one PR; the register rows below carry the detail. Not run on a device
 
 - **Credits** (REP-015, credits half): Settings → About → Credits lists the art, sound and font sources and licences (`ui/screens/Credits.kt`; add a line there when a source is added to `docs/assets.md`).
 - **Care Egg meter** (REP-030, D1): Care Play fills no meter point; rules version 29.
-- **Care** (REP-030): routine Skip (kept in the routine's JSON, no migration), "2 of 5 today", yesterday tickable (records only, pays nothing), Stop tracking behind a confirm and out of the daily form, "ready about HH:MM" on a resting visitor, "Leave the visit" as a labelled key.
+- **Care** (REP-030): routine Skip (kept in the routine's JSON, no migration), "2 of 5 today", yesterday tickable (records only, pays nothing), Stop tracking behind a confirm and out of the daily form, "ready about HH:MM" on a resting visitor, "Leave the visit" as a labelled key. Navigation redesign (0.220.0): five keys Today, Routines, Calm, Reflect, Dream; Meadow, Play, Skills, Journal and Diary card are no longer separate screens (CARE.md 1.5).
 - **Plan** (REP-030): "Added to ..." feedback, the quick-add example and a kept draft, Duplicate task, Month cells with an ellipsis and a tappable "+n".
 - **Base** (REP-029 a, e, f): "Remind me" always offered (the first one turns the setting on), chore history trimmed at 400 days, the daily cap counted once.
 - **Gear** (REP-028 e, f): the helper reacts to real actions only; the dice history switch is saved.

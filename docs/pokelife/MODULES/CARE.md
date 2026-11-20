@@ -1,6 +1,6 @@
 # PokéLife — CARE Module
 
-**Version:** 1.4  
+**Version:** 1.5  
 **Status:** Owner-approved target specification  
 **Decision status:** Owner-approved requirements incorporated directly below  
 **Last consolidated:** 5 November 2026
@@ -18,7 +18,7 @@ CARE owns:
 - Journals, notes, prompts and personal reflections.
 - DBT/CBT reference material, skills and guided exercises.
 - CARE history and trends.
-- CARE's Pokémon interaction experience (Care Play and the Care Garden/Meadow).
+- CARE's Pokémon interaction experience (Care Play and Dream, the dream world).
 - CARE Egg progress and visitor relationship/recruitment events, using shared Pokémon and Bag services.
 
 CARE does not own HEAL activity, fitness/workouts, nutrition, hydration, sleep, body measurements or personal health records. HEAL is the authoritative owner of physical-health records and is specified in `../MODULES/HEAL.md`. CARE may link to a HEAL record only through an explicit user action; it must not copy health measurements or create a competing health log. CARE does not own a second Pokémon collection, party, Bag, currency or independent egg-hatching system. It uses the shared Pokémon collection, inventory and egg progression.
@@ -30,20 +30,21 @@ CARE follows `../FEATURES/DESIGN_SYSTEM.md` and introduces no separate design la
 - Compact dialogue-box surfaces for Today actions, routine summaries, check-in status, prompts and feedback; a more expressive treatment for buddy/visitor interaction (do not turn the landing into a chat transcript).
 - Diary Card and Journal prioritize writing comfort, legibility and content width; their inputs must not inherit cramped game dialogue typography or fixed speech-bubble sizes.
 - Calm tools use restrained panels; animation, effects and sound are optional and subordinate.
-- Care Garden/Meadow keeps its scene-first composition; its panels use shared components.
+- Dream keeps its scene-first composition; its panels use shared components.
 - Do not wrap every routine row, metric or paragraph in its own box. Sensitive content must stay readable without relying on colour.
 
 ## 3. CARE landing and navigation
 
 The CARE landing is a calm, action-oriented entry point. It must not compete with the Home dashboard or become a catalogue of every feature.
 
-Primary areas:
-1. **Today** — next useful action, today's routines, concise completion progress, and check-in status.
-2. **Calm** — quick grounding, breathing and coping tools.
-3. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
-4. **Care Garden** — prominent entry to the Pokémon interaction environment; it is a companion experience, not another task dashboard.
+Primary areas (**owner decision, 20 November 2026: exactly these five, as a row of five keys under the header on every Care screen, one tap apart; Care opens on Today, and Back from any other goes to Today**):
+1. **Today** — next useful action, today's routines, concise completion progress, and the mood key.
+2. **Routines** — add, edit, skip, archive and restore routines, and tick yesterday (3.1).
+3. **Calm** — the breathing break and the skills library, together: quick grounding, breathing and coping tools.
+4. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
+5. **Dream** — the Pokémon interaction environment (5), where the visitors (6) and Care Play (4) now live too; it is a companion experience, not another task dashboard.
 
-Skills library and History (trends, prior diary cards and journal archive) are secondary destinations. (20 November 2026: Care trends moved to Me, next to Plan progress; Care's Sections key no longer has a Trends place.) Settings remain in CARE settings. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
+Prior diary cards and the journal archive are secondary destinations inside Reflect. (20 November 2026: Care trends moved to Me, next to Plan progress; Care's Sections key no longer has a Trends place.) Settings remain in CARE settings. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
 
 ### 3.1 Today and routines
 
@@ -56,7 +57,7 @@ Skills library and History (trends, prior diary cards and journal archive) are s
 
 ### 3.2 Calm
 
-Provide short, accessible tools that can be entered and exited quickly. Activities should not require a mood disclosure or journal entry. Keep the tool itself distinct from diary tracking and avoid presenting the module as diagnosis or treatment.
+Calm is one page: the breathing break first, then the skills library by DBT group. A skill opens as a **guided walk-through**, the way the breathing break is guided (20 November 2026): a progress bar and one page at a time, never the whole list of steps at once. Page 0 says what the skill is for ("Begin"), each step has its own page ("Next" and "Back"; no timer, no wrong answer), and the last page closes it: "I practised this" pays as before, and the breathing skill instead leads back to the break, which pays as a calm break. Leaving at any page costs nothing. While a break runs the library is hidden. Provide short, accessible tools that can be entered and exited quickly. Activities should not require a mood disclosure or journal entry. Keep the tool itself distinct from diary tracking and avoid presenting the module as diagnosis or treatment.
 
 ### 3.3 Reflect
 
@@ -128,13 +129,15 @@ Each Pokémon may have one primary and one secondary preferred affection/interac
 - Use existing shared items/reward services only; do not create duplicate Bag, currency or ownership.
 - Journal, diary, mood and other sensitive data never contribute to rewards.
 
-## 5. Care Garden (working name: Meadow)
+## 5. Dream (the Care Garden, formerly the Meadow)
 
-The Meadow is a dedicated, fixed interaction scene for the buddy and visitors. It is not the Android launcher and does not simulate free roaming.
+**Owner decision, 20 November 2026:** the generic garden becomes a dream world, after the Pokémon dream world: the buddy and the visitors are asleep in one dusk scene. **One screen, Dream, holds what used to be three** (the Meadow, the Visitors card on the landing and the Play screen): the scene, then time with a visitor, "Spend time" (Care Play, opened in place for any Pokémon you own), the dreamers (the visitors of 6, shown under that name) with the queue, and Care's party. The rules of 4 and 6 do not change; only where they are shown does. No new art: the scene is the existing real garden scene, darkened; the sleepers use the sprites' own sleep and Zz.
+
+Dream is a dedicated, fixed interaction scene for the buddy and visitors. It is not the Android launcher and does not simulate free roaming.
 
 ### 5.1 Scene and layout
 
-- One illustrated garden scene fitted to the available screen.
+- One scene fitted to the available width: the garden at dusk.
 - No scrolling, panning or camera movement.
 - Buddy has a consistent central position.
 - Up to four regular visitors occupy designated surrounding positions.
@@ -166,7 +169,7 @@ Tap reactions can reflect simple states (sleeping, playful, relaxed, hungry when
 
 ### 5.4 Customization
 
-Meadow customization is deferred and is not a current priority. Use the existing environment and assets. Do not implement furniture placement, decoration inventories, theme shops or a building system as part of the initial Meadow. Revisit only after core interactions and usability are complete.
+Dream customization is deferred and is not a current priority. Use the existing environment and assets. Do not implement furniture placement, decoration inventories, theme shops or a building system as part of the initial Meadow. Revisit only after core interactions and usability are complete.
 
 ## 6. Visitor system
 
@@ -236,7 +239,7 @@ Rules:
 
 ### 6.7 Departure and return visits
 
-- After befriending, the visitor leaves the Meadow following the recruitment scene, whether the outcome is an egg or direct recruitment.
+- After befriending, the visitor leaves the dream following the recruitment scene, whether the outcome is an egg or direct recruitment.
 - The visitor slot becomes available for the next queued visitor.
 - The visitor's identity and relationship history remain represented by the egg origin record or recruited Pokémon record.
 - Previously befriended visitors may occasionally return as familiar faces.
@@ -257,7 +260,7 @@ The sections above say what visitors are; these are the numbers the code uses an
 - **Reunions (6.7):** a befriended visitor is remembered (`CareData.friends`: species, form, visitor id, the day, whether it stayed). Once a day, with a 20% chance (the same for the same device and day), one friend may come back to say hello if none is waiting and it has not been back for 3 days. It holds no meadow place and does not count towards the 4 and 6, never expires, pays nothing and gives no egg or recruitment; greeting it says a line that remembers the day you became friends.
 - **Egg inheritance (6.6):** an egg a friend leaves (not a visitor that stays) may take a temperament from it: the visitor's nature (40%), its strong stat raised to an IV of at least 24 (40%), and, rarely (5%), a second strong stat to at least 28 along with the other two. A visitor's nature and strong stat come from its id, so they are stable; what an egg takes comes from the visitor and the egg together, so it is the same on a retry. Shininess, ability, species and level are never touched. The hatchling's origin record (`Origin.visitor`: visitor, day, traits, a note such as "Left by a Pikachu you befriended; it took Jolly nature") is shown on its page.
 - **Care Play (4):** time with the buddy, a visitor or any owned Pokémon (invited without touching a party). Six activities map to the five kinds of care (grooming, toy play, a treat, cheering on, gentle touch, quiet time), each a short run of taps that can be stopped any time; suggested (never expires), browsed or "Surprise me". Every Pokémon has a primary and a secondary liked kind from its id, undiscovered until it shows them (a delighted or happy reaction records the kind; any other reaction is pleasant and records nothing). The first time with each Pokémon on a day pays `CareKind.PLAY` (1 friendship step to that Pokémon, 1 Rare Candy, 1 point on Care's Egg meter, at most 6 a day); repeats pay nothing and are unlimited.
-- **Meadow (5):** one fixed scene (Care → Meadow): the buddy in the middle and four visitor spots, no scrolling or roaming; tap is a reaction with a 0.9 s cooldown (a tap during it changes nothing and plays no cry), long press (or the "Details" accessibility action) opens a compact panel with identity, discovered likes and the way into Care Play; the queue and Care Egg progress sit small in the corners; a returning friend appears below with "Say hello". Reduced motion stops the animations.
+- **Dream (5):** one fixed scene (Care → Dream, with Spend time, the dreamers and the party below it): the buddy asleep in the middle and four visitor spots, no scrolling or roaming; tap is a reaction with a 0.9 s cooldown (a tap during it changes nothing and plays no cry), long press (or the "Details" accessibility action) opens a compact panel with identity, discovered likes and the way into Care Play; the queue and Care Egg progress sit small in the corners; a returning friend appears below with "Say hello". Tapping a sleeper wakes it for 2.5 s. Reduced motion stops the animations.
 
 ## 7. Asset and animation policy
 
@@ -300,17 +303,17 @@ Use stable IDs and idempotent reward events. Do not derive rewards from private 
 ## 10. Acceptance criteria
 
 ### CARE utility and privacy
-- CARE landing presents Today, Calm and Reflect clearly, with Care Garden accessible without displacing core care actions.
+- CARE landing presents Today, Calm and Reflect clearly, with Dream accessible without displacing core care actions.
 - Diary Card and Journal remain distinct, searchable/editable/exportable records.
 - Routine and diary reminders are optional and non-nagging.
 - Sensitive CARE content never enters shared progression or World.
 - Missed days do not break streaks, remove rewards or harm Pokémon relationships.
 
-### Care Play and Meadow
+### Care Play and Dream
 - Buddy, visitors and invited owned Pokémon can participate without changing CARE party membership.
 - Activities can be selected through suggestions, browser or Surprise me.
 - A user can complete or leave an activity in 30–90 seconds without losing state unexpectedly.
-- The Meadow is one fixed screen, with central buddy and up to four designated visitor spots; no free roaming, camera motion or scrolling.
+- Dream is one fixed scene, with central buddy and up to four designated visitor spots; no free roaming, camera motion or scrolling.
 - Tap and long-press behavior is reliable, accessible and does not conflict with cooldowns.
 - Missing PMD animations never cause broken sprites or fabricated frame sequences.
 - Reduce Motion, sound settings, dark mode, enlarged text and TalkBack are supported.
@@ -330,7 +333,7 @@ Use stable IDs and idempotent reward events. Do not derive rewards from private 
 - Add migration tests for old visitor state, including visitors previously subject to three-day departure and relationship-day progress.
 - Test process death, offline use, backup/restore, clock/time-zone changes and duplicate event delivery.
 - Validate scene fit and touch targets on target Android device and common aspect ratios.
-- Profile sprite decoding, animation lifecycle, memory and battery; stop animation work when the Meadow is not visible.
+- Profile sprite decoding, animation lifecycle, memory and battery; stop animation work when Dream is not visible.
 - Maintain asset provenance/licensing metadata and verify public-distribution rights before release.
 
 ## 11. Explicit non-goals

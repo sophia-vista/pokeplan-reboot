@@ -291,10 +291,8 @@ class AppModel(
     var tasksListId: String? by mutableStateOf(null)
     var tasksListsOpen: Boolean by mutableStateOf(false)
 
-    /** The screen open inside Care (null shows Care's menu). */
+    /** The place open inside Care (null is Today, the landing; Routines is a page under Today). */
     var careSection: CareSection? by mutableStateOf(null)
-    /** The Pokémon the Meadow's panel sent to Care Play (opens it on them). */
-    var playTarget: String? by mutableStateOf(null)
     var worldSection: WorldSection? by mutableStateOf(null)
 
     /** The dungeon the World team editor is choosing a team for (UI only, not saved; null = the team's own, else the next one to explore). */
