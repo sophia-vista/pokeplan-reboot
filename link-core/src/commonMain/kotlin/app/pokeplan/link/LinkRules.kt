@@ -167,7 +167,9 @@ object LinkRules {
                 (!favoritesOnly || p.favorite) &&
                 (q.isEmpty() || matches(p, q))
         }
-        return if (sort == Sort.RECENT) found.sortedByDescending { it.updatedMillis } else found.sortedBy { displayName(it).lowercase() }
+        // The user's own card is pinned first, whatever the sort; it is a place, not a rank.
+        val ordered = if (sort == Sort.RECENT) found.sortedByDescending { it.updatedMillis } else found.sortedBy { displayName(it).lowercase() }
+        return ordered.filter { it.isMe } + ordered.filterNot { it.isMe }
     }
 
     /** Every category in use or added, for the filter. */
@@ -179,6 +181,9 @@ object LinkRules {
     /** Whether a person's words contain [q] (already lower case): name, alias, organization, role, category, tags, email, address, and a phone number however it is spaced. */
     private fun matches(p: Person, q: String): Boolean {
         if (listOf(p.name, p.preferred, p.organization, p.role, p.category, p.email, p.address, p.phone, p.tags.joinToString(" ")).any { it.lowercase().contains(q) }) return true
+        val pr = p.profile
+        // The slambook details the user wrote are searchable too (LINK.md 2.1 "user-entered searchable detail"); a birth chart is never searched.
+        if ((pr.socials.flatMap { listOf(it.platform, it.handle) } + pr.likes + pr.dislikes + pr.answers.map { it.answer } + pr.mbti).any { it.lowercase().contains(q) }) return true
         val d = digits(q)
         return d.length >= 3 && digits(p.phone).contains(d)
     }
