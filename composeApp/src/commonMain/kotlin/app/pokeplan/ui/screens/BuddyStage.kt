@@ -92,11 +92,13 @@ fun BuddyStage(
     celebrated: Long, onCelebrated: (Long) -> Unit,
     guests: List<StageGuest> = emptyList(),
     modifier: Modifier = Modifier,
-    /** A strip for a module page, where the work comes first: a shorter window and a smaller sprite. */
+    /** A strip for a module page, where the work comes first: a short window (112 dp) and a smaller sprite. */
     compact: Boolean = false,
 ) {
-    val stageHeight = if (compact) 144.dp else 248.dp
-    val spriteSize = if (compact) 96.dp else 144.dp
+    val stageHeight = if (compact) 112.dp else 248.dp
+    val spriteSize = if (compact) 72.dp else 144.dp
+    // How far the sprite's feet stand above the window's bottom edge; the strip is short, so it stands lower to leave room for a hop.
+    val feet = if (compact) 24.dp else 34.dp
     var taps by remember { mutableIntStateOf(0) }
     var reaction by remember { mutableStateOf<ReactionIcon?>(null) }
     var longReaction by remember { mutableStateOf(false) }
@@ -151,7 +153,7 @@ fun BuddyStage(
     Box(modifier.fillMaxWidth().height(stageHeight).clip(shape).border(Sizes.Hairline, Pixel.Border, shape)) {
         SceneImage(scene, Modifier.matchParentSize(), darkness)
         // A small shadow made of a few flat rows, so it matches the pixels of the sprite.
-        Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp).size(Sizes.SpriteM, 12.dp)) {
+        Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = feet + 6.dp).size(Sizes.SpriteM, 12.dp)) {
             val rows = floatArrayOf(0.55f, 0.85f, 1f, 0.85f, 0.55f)
             val rowHeight = size.height / rows.size
             rows.forEachIndexed { i, share ->
@@ -160,11 +162,11 @@ fun BuddyStage(
         }
         // Visitors stand behind the buddy, one on each side, above the corner panels so neither covers the other.
         guests.take(2).forEachIndexed { i, guest ->
-            StageGuestSprite(guest, calm, Modifier.align(Alignment.BottomCenter).padding(bottom = 60.dp).offset(x = if (i == 0) (-108).dp else 108.dp))
+            StageGuestSprite(guest, calm, Modifier.align(Alignment.BottomCenter).padding(bottom = if (compact) feet else 60.dp).offset(x = if (i == 0) (-108).dp else 108.dp))
         }
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}",
-            Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp)
+            Modifier.align(Alignment.BottomCenter).padding(bottom = feet)
                 .offset { IntOffset(0, (hop.value + bob).dp.roundToPx()) }
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Pet ${buddy.nickname}", role = Role.Button) {
                     onHaptic()
@@ -175,8 +177,8 @@ fun BuddyStage(
         )
 
         // The Zz while it sleeps through a focus session.
-        if (resting) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp + spriteSize * 0.72f).offset(x = 40.dp), loop = true, animate = !calm)
-        if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp).size(spriteSize))
+        if (resting) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = feet + spriteSize * 0.72f).offset(x = 40.dp), loop = true, animate = !calm)
+        if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = feet).size(spriteSize))
 
         // Level and progress: small, in the corner, readable on any scene. Its corners are the stage's minus the inset, so
         // the two curves stay concentric.
@@ -194,7 +196,7 @@ fun BuddyStage(
             }
         }
 
-        AnimatedVisibility(reaction != null && face == null, Modifier.align(Alignment.Center).padding(bottom = if (compact) 96.dp else 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
+        AnimatedVisibility(reaction != null && face == null, Modifier.align(Alignment.Center).padding(bottom = if (compact) 64.dp else 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
             reaction?.let { ReactionMark(it, Modifier.semantics { contentDescription = "reaction" }, size = 40.dp, animate = !calm) }
         }
         // A real event shows the buddy's own face in the corner, as the Mystery Dungeon games do beside a line of text.

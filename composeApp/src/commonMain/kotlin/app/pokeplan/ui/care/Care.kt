@@ -183,7 +183,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            // What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
+            // Lead, overview, action items, party (the layout every module shares). What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
             CareBuddy(model, openPokemon)
             FirstRecordEgg(model, app.pokeplan.app.Tutorials.CARE_BREATH, care.routines.size + care.breaks.size + care.practices.size + care.diary.size + care.journal.size)
             if (today.isEmpty()) {
@@ -201,6 +201,14 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                 }
             }
             MoodRow(model)
+            // The action items, then the visitors and the egg meter that belong with the party, which comes last.
+            TextBox {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    if (today.isNotEmpty()) PixelButton("Routine", { model.careSection = CareSection.ROUTINES }, Modifier.weight(1f), ModuleAccent.CARE.accent, compact = true)
+                    PixelButton("Calm break", { model.careSection = CareSection.CALM }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Diary", { model.careSection = CareSection.DIARY }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
+            }
             CareEggMeter(model)
             VisitorsCard(model)
             CarePartyPanel(model, openPokemon)
@@ -232,6 +240,7 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
         guests = Visitors.meadow(model.careData.visitors).sortedByDescending { it.progress }.take(2).map { v ->
             StageGuest(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, Dex.species(v.speciesId).name) { model.haptic(); model.cry(v.speciesId) }
         },
+        compact = true,
     )
 }
 

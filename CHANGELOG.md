@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.216.0
+
+Module pages share one order (owner, 20 November 2026; `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` 5.1). No rule, economy or schema change.
+
+- **Shorter lead:** a module's lead window is 112 dp high (was 144; Care's meadow was 248) with a 72 dp sprite.
+- **Same order everywhere:** lead, overview, action items in a box of their own, party last. Mint's overview now lists a few accounts and budgets, and Expense / Income / Transfer moved below it; Heal's Log activity / Add a drink, Base's and Link's Add, and a new Care row (Routine, Calm break, Diary) follow the same way. Care's visitors and Egg meter and the Base and Link search moved down beside the party.
+
 ## 0.215.0
 
 PLAN module redesign (owner, 18 November 2026; `docs/pokelife/MODULES/PLAN.md` 3, 3.5A, 6.1, 8.1, 13; REP-058). `RewardRules.VERSION` and `docs/economy.md` are unchanged (nothing pays differently). No SQL schema change: the new list and task fields are optional JSON fields in the `plan_list` and `plan_task` rows. Not run on a device.

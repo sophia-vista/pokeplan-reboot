@@ -182,8 +182,8 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         ) {
             ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
             FirstRecordEgg(model, Tutorials.LINK_POSTCARD, data.people.size + data.dates.size + data.followUps.size)
-            LinkSearch(model)
             LinkOverview(model)
+            LinkSearch(model)
             LinkPartyPanel(model, openPokemon)
         }
     }
@@ -245,6 +245,11 @@ private fun LinkOverview(model: AppModel) {
                     RecordRow(u.date.title, listOfNotNull(who, dateLine(u)).joinToString(" · "), onClick = { go(model, LinkSection.DATES, u.date.id) }, onClickLabel = "Open dates")
                 }
             }
+        }
+    }
+    // The action items sit below the overview and above the party.
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             var adding by remember { mutableStateOf(false) }
             if (!adding) PixelButton("Add", { adding = true }, Modifier.fillMaxWidth(), compact = true)
             else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
