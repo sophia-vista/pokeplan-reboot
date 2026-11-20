@@ -450,6 +450,8 @@ Requirements:
 
 Global quiet-hours settings are managed once in the app's shared settings surface. Module settings link to or summarize the policy but do not create independent copies.
 
+**As built (owner, 20 November 2026): one Notifications page** (Me, Settings, Notifications). It shows what Android allows (notifications and exact alarms: Allowed or Blocked, with a key to the phone's own screen while blocked, read again when the player returns to the app), the quiet hours, and one reminders switch per module (Plan tasks, Care routines, Base, Link, Mint bills, plus World jobs, the streak reminder and the weekly recap). A module keeps its own lead time, hour and naming choice in its settings, shown there only while its switch is on. Heal has no switch: its reminders are the times the player adds.
+
 ### 9.5 Focus deferral
 
 Reminders marked as deferrable are held while a qualifying focus session is active.
@@ -655,6 +657,8 @@ Imports must be user-selected, validated, previewed, provenance-preserving, dedu
 Provide controls to disconnect a provider, revoke provider tokens where supported, delete provider connection metadata, delete imported records by source, delete individual records, delete a module's data, and erase all local PokéLife data. These are distinct operations and must be explained separately.
 
 Disconnecting a provider stops future access but does not automatically erase previously imported data. Deleting active records must also remove associated attachments, thumbnails, search indexes, derived caches, and temporary files as specified by `DATA_AND_MIGRATIONS.md`. App-managed local backups must be included in full erase scope; user-exported copies are not.
+
+**Erase this device (as built, 20 November 2026)** clears the whole app, not only the save: every module's records and settings (Link and each sealed module included), the daily and kept-aside backups, the off-phone backup setup (folder permission released, sealed passphrase forgotten; what is already in the folder is the player's), the launcher's layout and weather cache, the reminder and alarm bookkeeping with every alarm already set, the crash guard, the widget's state and the old save files. It goes through every preferences file the app has, so a store added later is cleared too (`DeviceResetTest`). It does not revoke Health Connect grants (the player does that in Health Connect) or delete files the player saved elsewhere.
 
 Deleting a module must not delete unrelated module records, shared Pokémon ownership, Bag, Poké balance, or reward history. Shared ledger integrity must be preserved using the retention/anonymization rules in `DATA_AND_MIGRATIONS.md` and the Pokémon/economy specification.
 

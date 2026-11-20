@@ -1,11 +1,11 @@
 package app.pokeplan.app.plan
 
-import app.pokeplan.plan.Category
 import app.pokeplan.plan.FocusRecord
 import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.PauseReason
 import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Task
+import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.core.dex.Region
@@ -79,15 +79,16 @@ class NudgesTest {
     }
 
     @Test
-    fun theRecapNamesTheWeeksTasksFocusAndTopCategory() {
-        fun done(id: String, category: Category, day: LocalDate) =
-            Task(id, id, category = category, state = TaskState.DONE, createdAtMillis = 0, completedAtMillis = at(day, 10))
+    fun theRecapNamesTheWeeksTasksFocusAndTopList() {
+        fun done(id: String, listId: String, day: LocalDate) =
+            Task(id, id, listId = listId, state = TaskState.DONE, createdAtMillis = 0, completedAtMillis = at(day, 10))
         val data = AppData(
+            lists = listOf(TaskList("work", "Work"), TaskList("home", "Home")),
             tasks = listOf(
-                done("a", Category.WORK, LocalDate(2026, 10, 20)),
-                done("b", Category.HOME, LocalDate(2026, 10, 22)),
-                done("c", Category.HOME, LocalDate(2026, 10, 23)),
-                done("old", Category.WORK, LocalDate(2026, 10, 10)),
+                done("a", "work", LocalDate(2026, 10, 20)),
+                done("b", "home", LocalDate(2026, 10, 22)),
+                done("c", "home", LocalDate(2026, 10, 23)),
+                done("old", "work", LocalDate(2026, 10, 10)),
             ),
             focusHistory = listOf(FocusRecord(at(LocalDate(2026, 10, 21), 9), 25, true), FocusRecord(at(LocalDate(2026, 10, 22), 9), 50, true), FocusRecord(at(LocalDate(2026, 10, 22), 12), 25, false)),
         )

@@ -289,17 +289,6 @@ class ScreenshotTest {
                 PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
             }
         }
-        // The Lists row open (with the longest name), and folded with a list chosen.
-        listOf(false, true).forEach { dark ->
-            val n = if (dark) "dark" else "light"
-            render("tasks-lists-open-$n", height = 1300, frames = 8) {
-                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; model.tasksListId = a.id; model.tasksListsOpen = true; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
-            }
-            render("tasks-list-chosen-$n", height = 900, frames = 8) {
-                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; model.tasksListId = a.id; model.tasksListsOpen = false; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
-            }
-        }
-        model.tasksListId = null; model.tasksListsOpen = false
         val emptyStore = started()
         emptyStore.data.tasks.filter { it.deletedAtMillis == null }.forEach { emptyStore.deleteTask(it.id) }
         val empty = AppModel(emptyStore)
@@ -651,9 +640,9 @@ class ScreenshotTest {
     fun plannerWeek() {
         val model = plannerDayModel()
         val store = model.store
-        val gym = store.addTask("Gym", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 2)), estimateMinutes = 60, category = app.pokeplan.plan.Category.HEALTH)
+        val gym = store.addTask("Gym", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 2)), estimateMinutes = 60)
         store.setPlannedTime(gym.id, kotlinx.datetime.LocalTime(17, 0))
-        val study = store.addTask("Study for the quiz", Rank.B, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 4)), estimateMinutes = 120, category = app.pokeplan.plan.Category.SCHOOL)
+        val study = store.addTask("Study for the quiz", Rank.B, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 4)), estimateMinutes = 120)
         store.setPlannedTime(study.id, kotlinx.datetime.LocalTime(14, 0))
         val colors = app.pokeplan.plan.TaskList.COLORS
         store.addAllDayEvent("Condo", store.today.plus(kotlinx.datetime.DatePeriod(days = 1)), store.today.plus(kotlinx.datetime.DatePeriod(days = 5)), colors[0])
@@ -707,11 +696,11 @@ class ScreenshotTest {
     /** A day with timed tasks, one beside a calendar event, an untimed one, an inbox one and an all-day event. */
     private fun plannerDayModel(): AppModel {
         val store = started()
-        val report = store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 90, category = app.pokeplan.plan.Category.WORK)
+        val report = store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 90)
         store.setPlannedTime(report.id, kotlinx.datetime.LocalTime(9, 0))
-        val call = store.addTask("Call the dentist", Rank.E, planned = store.today, category = app.pokeplan.plan.Category.HEALTH)
+        val call = store.addTask("Call the dentist", Rank.E, planned = store.today)
         store.setPlannedTime(call.id, kotlinx.datetime.LocalTime(10, 0))
-        val run = store.addTask("Evening run", Rank.C, planned = store.today, estimateMinutes = 45, category = app.pokeplan.plan.Category.HEALTH)
+        val run = store.addTask("Evening run", Rank.C, planned = store.today, estimateMinutes = 45)
         store.setPlannedTime(run.id, kotlinx.datetime.LocalTime(18, 30))
         store.addTask("Reply to mail", Rank.E, planned = store.today)
         store.addTask("Buy a birthday card", Rank.E)
@@ -2052,7 +2041,6 @@ class ScreenshotTest {
             }
             app.pokeplan.ui.screens.PixelDropdown(listOf<String?>(null, "Weekly", "Monthly"), null, { it ?: "All" }, {})
             app.pokeplan.ui.screens.PixelDropdown(listOf<String?>("Groceries and household supplies for the month"), "Groceries and household supplies for the month", { it ?: "" }, {})
-            app.pokeplan.ui.plan.CategoryChips(app.pokeplan.plan.Category.entries[1]) {}
             app.pokeplan.ui.plan.Segmented(listOf("Day", "Week", "Month"), 1) {}
             Text("Rows", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
             app.pokeplan.ui.theme.ChoiceRow(true, {}) { Text("Chosen") }
@@ -2137,6 +2125,21 @@ class ScreenshotTest {
 
     @Test
     fun meSettings() = me("me-settings", 0)
+
+    @Test
+    fun meStats() = me("me-stats", 4)
+
+    @Test
+    fun meSettingsGeneral() = me("me-settings-general", 5)
+
+    @Test
+    fun meSettingsPrivacy() = me("me-settings-privacy", 6)
+
+    @Test
+    fun meSettingsNotifications() = me("me-settings-notifications", 7)
+
+    @Test
+    fun meSettingsBackups() = me("me-settings-backups", 8)
 
     @Test
     fun meHelp() = me("me-help", 1)
@@ -2576,6 +2579,54 @@ class ScreenshotTest {
     fun recoveryChoiceScreen() = listOf(false, true).forEach { dark ->
         render("recovery-choice-${if (dark) "dark" else "light"}", height = 1000) {
             app.pokeplan.ui.screens.RecoveryChoice(clock.nowMillis() - 40L * 24 * 60 * 60 * 1000, {}, {}, darkTheme = dark)
+        }
+    }
+
+    /** The accordion that folds a module page's party perks: folded, and open (both palettes). */
+    @Test
+    fun accordion() = listOf(false, true).forEach { dark ->
+        render("accordion-${if (dark) "dark" else "light"}", height = 400) {
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(app.pokeplan.ui.theme.Spacing.M)) {
+                    app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.theme.Accordion("Mint perks", summary = "2 perks") { androidx.compose.material3.Text("Ledger Research +10%") } }
+                    app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.theme.Accordion("Mint perks", startOpen = true) { androidx.compose.material3.Text("Ledger Research +10%") } }
+                }
+            } }
+        }
+    }
+    /** Shared bills with balances (the longest name and amount on the row) and a history, both palettes. */
+    @Test
+    fun mintSharedBills() {
+        mint("mint-shared", app.pokeplan.ui.mint.MintSection.SHARED, height = 1700, settings = { m ->
+            val day = m.store.today
+            m.mint.addShared("Alexandria Montgomery-Santos", app.pokeplan.mint.SharedKind.THEY_PAID, 1_234_567, day, "Groceries and the weekend trip", "PHP")
+            m.mint.addShared("Ana", app.pokeplan.mint.SharedKind.I_PAID, 50_000, day, "Dinner", "PHP")
+        })
+    }
+
+    /** Notifications with both permissions blocked, and Privacy and access with a phone lock, both palettes, at 360 dp and large text. */
+    @Test
+    fun settingsBlockedAndLocks() {
+        val phone = object : app.pokeplan.ui.PhoneState {
+            override val screenOff = false
+            override val inCall = false
+            override val notificationsAllowed = false
+            override val exactAlarms = false
+        }
+        val gate = object : app.pokeplan.ui.DeviceGate {
+            override fun available() = true
+            override fun authenticate(onResult: (Boolean) -> Unit) = onResult(true)
+            override fun leftAt() = 0L
+        }
+        for (dark in listOf(false, true)) {
+            val model = AppModel(storeWithTeam(), phone = phone, gate = gate)
+            val suffix = if (dark) "-dark" else ""
+            render("settings-notifications-blocked$suffix", height = 1300, width = 540, fontScale = 1.3f) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) { app.pokeplan.ui.screens.NotificationSettings(model) } } }
+            }
+            render("settings-privacy$suffix", height = 700, width = 540, fontScale = 1.3f) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) { app.pokeplan.ui.screens.PrivacySettings(model) } } }
+            }
         }
     }
 }

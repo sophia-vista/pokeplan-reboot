@@ -5,6 +5,20 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.224.0
+
+Me, Settings, Plan and Mint (owner, 20 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` unchanged.
+
+- **Party perks fold away:** a reusable `Accordion`; each module's Today page shows its party perks behind it, closed by default.
+- **Me, Stats:** a new page with totals (trainer points, tasks finished, minutes focused, streaks) that opens Plan progress and Care trends. The trainer card keeps name, buddy and rank.
+- **Settings is a menu of pages under Me:** General (trainer name, sound and touch, look, Reduce motion, week start); Privacy and access (the screen lock for Care, Heal, Base, Link and Mint in one place; Mint's switch left Mint settings); Notifications (permission status with buttons, Quiet hours moved from Plan settings, one reminders switch per module, each module's lead time and hour shown only when its switch is on; Heal has none, its reminders are the times you add); Backups (complete backup, a Module exports card with one export per module, Reset); About.
+- **Reset:** Erase this device now also resets Link and every module's settings, clears all the Android shared preferences and old save files, and cancels set alarms. The launcher's open layout refreshes only after a restart.
+- **Plan, no categories:** tasks, habits, goals and lists lose their category. Insights and the Review recap split by list, the weekly recap names the top list, quick add `#word` is always a list, and the calendar and widgets take colour and icon from the list. Lists are made, edited and archived in Plan settings; the Lists row on Tasks is gone and the Filter on All and Done has a List chooser. Old saves' `category` keys are ignored.
+- **Mint, Shared bills** (`MINT.md` 5.8A): a display-only ledger of who owes whom, kept in the sealed Mint state. It pays nothing and touches no account.
+- **Baseline and padding (from phone screenshots):** two texts of different sizes on one row (a title and its count, a name and its value) now share a baseline instead of a centre line: the party header and perks, Me's stats, Mint's value rows, the volume rows (`BaselineTest`). Single labels in keys and fields were measured on the phone screenshot and are centred within a pixel. Care's "How is today?" box is a dialogue box like Quick actions under it (it was a form box with 16 dp inside the frame, not 24 by 18).
+- **Launcher movement (0.221.0 regression):** Pokémon went tile by tile because the walk set the ghost fade with `fade.animateTo(..., tween(160))` before every square, and an animation to the value a state already has still waits its whole time (`AnimateToSameValueTest`): a 160 ms pause on every tile. The fade is now set beside the step and only when it changes. Not run on a device.
+- **Not done:** the 12-hour clock and date format added in 0.221.0 are used by the launcher only; the rest of the app builds time text in about 22 places without a shared formatter.
+
 ## 0.223.0
 
 LINK slambook profile (owner request, 20 November 2026, REP-071; `docs/pokelife/MODULES/LINK.md`, changed first). Built and JVM-tested only: not run on a device. Pays nothing and nothing reaches `LinkEvent`; no schema step (inside the person JSON); `RewardRules.VERSION` unchanged.

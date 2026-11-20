@@ -23,22 +23,26 @@ object Insights {
 
     private fun dayOf(millis: Long, zone: TimeZone): LocalDate = millis.toLocalDateTime(zone).date
 
-    data class Wheel(val tasksDone: Map<Category, Int>, val focusMinutes: Map<Category, Int>) {
-        fun score(category: Category): Double = (tasksDone[category] ?: 0) + (focusMinutes[category] ?: 0).toDouble() / MINUTES_PER_TASK_POINT
+    /** What was done per list id (null: no list). */
+    data class Wheel(val tasksDone: Map<String?, Int>, val focusMinutes: Map<String?, Int>) {
+        fun score(listId: String?): Double = (tasksDone[listId] ?: 0) + (focusMinutes[listId] ?: 0).toDouble() / MINUTES_PER_TASK_POINT
 
-        private val total: Double get() = Category.entries.sumOf { score(it) }
+        /** Every list that has anything done, in no particular order. */
+        val lists: Set<String?> get() = tasksDone.keys + focusMinutes.keys
 
-        /** The category's share of everything done, 0..1 (0 for all when nothing was done). */
-        fun share(category: Category): Double = if (total == 0.0) 0.0 else score(category) / total
+        private val total: Double get() = lists.sumOf { score(it) }
+
+        /** The list's share of everything done, 0..1 (0 for all when nothing was done). */
+        fun share(listId: String?): Double = if (total == 0.0) 0.0 else score(listId) / total
     }
 
-    /** Finished tasks and completed focus time per category for [from]..[to] inclusive. Focus without a task counts as Personal. */
+    /** Finished tasks and completed focus time per list for [from]..[to] inclusive. Focus without a task counts as no list. */
     fun balanceWheel(tasks: List<Task>, focus: List<FocusRecord>, from: LocalDate, to: LocalDate, zone: TimeZone): Wheel {
         val byId = tasks.associateBy { it.id }
         val done = tasks.filter { it.state == TaskState.DONE && it.completedAtMillis != null && dayOf(it.completedAtMillis, zone) in from..to }
-            .groupingBy { it.category }.eachCount()
+            .groupingBy { it.listId }.eachCount()
         val minutes = focus.filter { it.completed && dayOf(it.startedAtMillis, zone) in from..to }
-            .groupBy { byId[it.taskId]?.category ?: Category.PERSONAL }
+            .groupBy { byId[it.taskId]?.listId }
             .mapValues { (_, records) -> records.sumOf { it.minutes } }
         return Wheel(done, minutes)
     }

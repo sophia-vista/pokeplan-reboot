@@ -62,6 +62,7 @@ import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.Money
+import app.pokeplan.mint.SharedRules
 import app.pokeplan.mint.Occurrence
 import app.pokeplan.mint.OccurrenceState
 import app.pokeplan.mint.PlanStatus
@@ -130,6 +131,8 @@ import app.pokeplan.ui.screens.short
 enum class MintSection(val label: String, val icon: String) {
     ACCOUNTS("Accounts", "member-card"), ACTIVITY("Activity", "journal"), BUDGETS("Budgets", "heart-scale"), BILLS("Bills and income", "oaks-letter"),
     REVIEW("Review", "scope-lens"), IMPORT("Import", "town-map"), SETTINGS("Settings", "storage-key"),
+    /** Appended, so a saved index still opens the same section. */
+    SHARED("Shared bills", "friend-ball"),
 }
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
@@ -160,9 +163,9 @@ internal fun MintLine(onClick: (() -> Unit)? = null, onClickLabel: String? = nul
 /** A label at the left and its value at the right. */
 @Composable
 internal fun MintValueRow(label: String, value: String, soft: Boolean = false) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        Text(label, Modifier.weight(1f), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge, color = if (soft) Pixel.InkSoft else Pixel.Ink)
-        Text(value, style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleSmall)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        Text(label, Modifier.weight(1f).alignByBaseline(), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge, color = if (soft) Pixel.InkSoft else Pixel.Ink)
+        Text(value, Modifier.alignByBaseline(), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleSmall)
     }
 }
 
@@ -194,6 +197,7 @@ private fun MintPage(model: AppModel, section: MintSection?, openPokemon: (Strin
             MintSection.BILLS -> BillsView(model)
             MintSection.REVIEW -> MintReviewView(model)
             MintSection.IMPORT -> MintImportView(model)
+            MintSection.SHARED -> SharedView(model)
             MintSection.SETTINGS -> MintSettingsView(model)
         }
     }
@@ -208,6 +212,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(MintSection.ACTIVITY.name, MintSection.ACTIVITY.icon, "Activity", if (data.transactions.isEmpty()) "add a purchase" else "${data.transactions.size} records", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.BUDGETS.name, MintSection.BUDGETS.icon, "Budgets", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) "optional" else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} active", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.BILLS.name, MintSection.BILLS.icon, "Bills and income", billsDetail(model), tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.SHARED.name, MintSection.SHARED.icon, "Shared bills", if (data.shared.isEmpty()) "who owes whom" else "${SharedRules.balances(data.shared).size} open", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
     ) + listOfNotNull(
         MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },
@@ -1796,11 +1801,10 @@ private fun MintSettingsView(model: AppModel) {
             ToggleRow("Ledger Research", settings.progression) { mint.setProgression(it) }
         }
     }
-    TextBox {
+    if (settings.billReminders) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            ToggleRow("Bill reminders", settings.billReminders) { mint.setBillReminders(it) }
-            Text("Installment reminders follow plan dates.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (settings.billReminders) {
+            PixelTitle("Bill reminders")
+            run {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     val early = listOf(0 to "On the day", 1 to "1 day before", 2 to "2 days before", 3 to "3 days before", 7 to "A week before")
                     PixelDropdown(early.map { it.first }, settings.billReminderDays, { d -> early.firstOrNull { it.first == d }?.second ?: "" }, { d -> if (d != null) mint.setBillReminderDays(d) }, Modifier.weight(3f), key = accent, label = "How early")
@@ -1818,12 +1822,6 @@ private fun MintSettingsView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Privacy")
             ToggleRow("Hide amounts", settings.hideValues) { mint.setHideValues(it) }
-            model.gate?.let { gate ->
-                if (gate.available() || settings.gate) ToggleRow("Ask for my screen lock", settings.gate) { on ->
-                    if (!on) mint.setGate(false)
-                    else gate.authenticate { ok -> if (ok) { mint.setGate(true); model.moduleUnlockedAt[Module.MINT.name] = model.store.nowMillis } }
-                }
-            }
             PixelDropdown(Money.common, settings.currency, { it ?: "" }, { c -> if (c != null) mint.setCurrency(c) }, Modifier.fillMaxWidth(), key = accent, label = "Currency")
         }
     }

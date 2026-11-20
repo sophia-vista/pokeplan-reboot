@@ -26,7 +26,7 @@ object TaskViews {
 
     /**
      * Every open task across the lists, grouped by list: the Inbox group first (tasks in no list, or in a list that is no longer in [listOrder]),
-     * then the lists in [listOrder]. [filter] narrows by search, category, list and difficulty; its status is ignored (only open tasks).
+     * then the lists in [listOrder]. [filter] narrows by search, list and difficulty; its status is ignored (only open tasks).
      * Within a group the filter's order applies (by day, undated last). Empty groups are left out.
      */
     fun outstanding(tasks: List<Task>, listOrder: List<String>, filter: TaskFilter = TaskFilter()): List<OutstandingGroup> {

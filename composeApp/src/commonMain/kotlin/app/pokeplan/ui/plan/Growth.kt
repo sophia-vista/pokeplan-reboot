@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import kotlin.math.roundToInt
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -37,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.pokeplan.plan.Category
 import app.pokeplan.ui.BadgeImage
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.theme.Sizes
@@ -101,20 +101,23 @@ internal fun GrowthView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Where your effort went")
-            // Help: the share counts ${"$"}{Insights.MINUTES_PER_TASK_POINT} minutes of focus as one task; focus without a task counts as Personal.
+            // Help: the share counts ${"$"}{Insights.MINUTES_PER_TASK_POINT} minutes of focus as one task; focus without a task counts as no list.
             // Only the areas with something in them get a row.
-            val busy = Category.entries.filter { wheel.score(it) > 0 }
+            val lists = model.data.lists
+            val busy = wheel.lists.filter { wheel.score(it) > 0 }.sortedByDescending { wheel.score(it) }
+            fun nameOf(id: String?) = lists.firstOrNull { it.id == id }?.name ?: "No list"
+            fun colorOf(id: String?) = lists.firstOrNull { it.id == id }?.let { Color(it.color) } ?: Pixel.Gray
             if (busy.isEmpty()) Text("Nothing finished in the last $days days yet.", style = MaterialTheme.typography.bodyLarge) // copy-ok: result
             busy.forEach { c ->
                 val tasks = wheel.tasksDone[c] ?: 0
                 val minutes = wheel.focusMinutes[c] ?: 0
                 val share = (wheel.share(c) * 100).roundToInt()
                 Column(Modifier.semantics(mergeDescendants = true) {
-                    contentDescription = "${c.label}: ${plural(tasks, "task")}, $minutes minutes focused, $share percent of your effort"
+                    contentDescription = "${nameOf(c)}: ${plural(tasks, "task")}, $minutes minutes focused, $share percent of your effort"
                 }) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Text(c.label, Modifier.width(84.dp), style = MaterialTheme.typography.bodyMedium)
-                        Box(Modifier.weight(1f)) { PixelBar(wheel.share(c).toFloat(), color = categoryColor(c)) }
+                        Text(nameOf(c), Modifier.width(84.dp), style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Box(Modifier.weight(1f)) { PixelBar(wheel.share(c).toFloat(), color = colorOf(c)) }
                         Text("$share%", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium)
                     }
                     Text("${plural(tasks, "task")}, $minutes min", Modifier.padding(start = 92.dp), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
@@ -188,12 +191,11 @@ internal fun GoalsView(model: AppModel) {
     val store = model.store
     var title by remember { mutableStateOf("") }
     var more by remember { mutableStateOf(false) }
-    var category by remember { mutableStateOf(Category.PERSONAL) }
     var targetDate by remember { mutableStateOf<LocalDate?>(null) }
     fun add() {
         if (title.isBlank()) return
-        store.addGoal(title, category, targetDate)
-        title = ""; more = false; category = Category.PERSONAL; targetDate = null
+        store.addGoal(title, targetDate)
+        title = ""; more = false; targetDate = null
     }
     FormBox {
         FormStack {
@@ -205,8 +207,6 @@ internal fun GoalsView(model: AppModel) {
             )
             FormDisclosure("Additional details", more, { more = !more }) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    FieldLabel("Category")
-                    CategoryChips(category) { category = it ?: category }
                     // Optional, and only a date to aim for: nothing happens when it passes.
                     FieldLabel("Target date")
                     PixelDateField(
@@ -241,13 +241,7 @@ private fun GoalCard(model: AppModel, g: Goal) {
                 PixelIconButton("pencil", if (editing) "Close edit" else "Edit goal", { editing = !editing }, Pixel.InkSoft)
             }
             if (editing) GoalEditor(model, g) { editing = false }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Box(Modifier.size(10.dp).background(categoryColor(g.category), PixelShape))
-                Text(
-                    listOfNotNull(g.category.label, g.targetDate?.let { "aiming for ${it.short()}" }).joinToString(", "),
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
-            }
+            g.targetDate?.let { Text("aiming for ${it.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             // The words beside the bar say how close the goal is; the nearer it looks, the likelier it gets finished.
             // A goal with no milestones counts the tasks linked to it (from a task's Edit tab) instead.
             val linked = model.data.tasks.filter { it.id in g.linkedTaskIds && it.state != TaskState.DELETED && it.state != TaskState.WONT_DO }
@@ -298,18 +292,15 @@ private fun BadgeCase(g: Goal) {
     }
 }
 
-/** A goal's title, area and target date, and its milestones' names; Save applies all of it, Delete removes the goal. */
+/** A goal's title and target date, and its milestones' names; Save applies all of it, Delete removes the goal. */
 @Composable
 private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
     val store = model.store
     var title by remember(g.id) { mutableStateOf(g.title) }
-    var category by remember(g.id) { mutableStateOf(g.category) }
     var target by remember(g.id) { mutableStateOf(g.targetDate) }
     val names = remember(g.id) { mutableStateMapOf<String, String>().apply { g.milestones.forEach { put(it.id, it.title) } } }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Title")
-        FieldLabel("Category")
-        CategoryChips(category) { category = it ?: category }
         FieldLabel("Target date")
         PixelDateField(
             target, store.today, Pixel.Tone, { target = it },
@@ -322,7 +313,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
             }
         }
         PixelButton("Save", {
-            store.editGoal(g.id, title, category, target)
+            store.editGoal(g.id, title, target)
             g.milestones.forEach { m -> names[m.id]?.let { n -> if (n.trim() != m.title) store.renameMilestone(g.id, m.id, n) } }
             model.say("Saved.")
             onClose()

@@ -288,8 +288,6 @@ class AppModel(
     var tasksView: app.pokeplan.ui.plan.TasksView by mutableStateOf(app.pokeplan.ui.plan.TasksView.TODAY)
 
     /** The list Plan's Tasks are narrowed to (null: all), and whether the Lists row under the view pills is open (folded by default). */
-    var tasksListId: String? by mutableStateOf(null)
-    var tasksListsOpen: Boolean by mutableStateOf(false)
 
     /** The place open inside Care (null is Today, the landing; Routines is a page under Today). */
     var careSection: CareSection? by mutableStateOf(null)
@@ -506,7 +504,7 @@ fun App(
                 // The intro's picture runs under the system bars; only its content keeps clear of them.
                 PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }
             } else {
-                CompositionLocalProvider(LocalReduceMotion provides model.data.settings.reduceMotion, app.pokeplan.ui.screens.LocalBuddy provides model.data.player.buddy, LocalUiSound provides model::tap) { MainShell(model, focusTab, start, launches) }
+                CompositionLocalProvider(LocalReduceMotion provides model.data.settings.reduceMotion, app.pokeplan.ui.plan.LocalTaskLists provides model.data.lists, app.pokeplan.ui.screens.LocalBuddy provides model.data.player.buddy, LocalUiSound provides model::tap) { MainShell(model, focusTab, start, launches) }
             }
         }
     }

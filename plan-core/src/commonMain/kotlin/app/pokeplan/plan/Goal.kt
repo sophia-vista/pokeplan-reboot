@@ -27,7 +27,6 @@ data class BadgeSlot(val badgeId: Int, val earned: Boolean)
 data class Goal(
     val id: String,
     val title: String,
-    val category: Category = Category.PERSONAL,
     val targetDate: kotlinx.datetime.LocalDate? = null,
     val milestones: List<Milestone> = emptyList(),
     val linkedTaskIds: Set<String> = emptySet(),

@@ -56,7 +56,6 @@ import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
-import app.pokeplan.plan.Category
 import app.pokeplan.plan.LinkKind
 import app.pokeplan.plan.TaskLink
 import app.pokeplan.plan.FailReason

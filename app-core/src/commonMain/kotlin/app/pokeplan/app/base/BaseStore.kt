@@ -525,6 +525,9 @@ class BaseStore(
     /** Erases all of HOME's records (not its settings, not what Habitat Discovery paid). */
     fun eraseAll() = update { d -> BaseKinds.entries.fold(d) { acc, k -> BaseExport.without(acc, k) } }
 
+    /** The full-device reset: BASE as new, its records and its settings. */
+    fun resetAll() = update { BaseData() }
+
     companion object {
         const val MAX_LEAD_DAYS = 14
         const val MAX_WARRANTY_LEAD_DAYS = 90

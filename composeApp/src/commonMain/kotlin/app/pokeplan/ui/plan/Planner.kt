@@ -433,8 +433,6 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             }
             val made = model.store.addTask(
                 title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
-                // With none in the words, the list's own category (Personal with no list).
-                category = parsed.category,
                 planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes, reward = reward,
                 // "#Groceries" files it in that list; inside a list, the list itself.
                 listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
@@ -539,7 +537,7 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
         }
         if (expanded) {
             // The open card is a sheet of three tabs instead of one long column of controls: When (where and when it goes), Steps (its notes and small steps) and
-            // Edit (its words, difficulty and category, and the ways to be rid of it). A finished task has no tabs: only its notes and steps.
+            // Edit (its words and difficulty, and the ways to be rid of it). A finished task has no tabs: only its notes and steps.
             var tab by remember(task.id) { mutableStateOf(startTab) }
             Box(Modifier.fillMaxWidth().background(Pixel.Shade.copy(alpha = 0.5f)).padding(Spacing.M)) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -648,7 +646,7 @@ private fun TaskStepsTab(model: AppModel, task: Task) {
 }
 
 /**
- * Details (the words, category, notes, estimate, list and steps) or, with [more], More (difficulty, goal, deadline, Won't do, Duplicate and Delete).
+ * Details (the words, notes, estimate, list and steps) or, with [more], More (difficulty, goal, deadline, Won't do, Duplicate and Delete).
  * Edits are saved as they are made.
  */
 @Composable
@@ -657,7 +655,6 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
     var title by remember(task.id) { mutableStateOf(task.title) }
     var rank by remember(task.id) { mutableStateOf(task.rank) }
     var minutes by remember(task.id) { mutableStateOf(task.estimateMinutes ?: 0) }
-    var category by remember(task.id) { mutableStateOf(task.category) }
     var notes by remember(task.id) { mutableStateOf(task.notes) }
     var reward by remember(task.id) { mutableStateOf(task.reward) }
     var dueDay by remember(task.id) { mutableStateOf(task.due?.date) }
@@ -667,8 +664,6 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
         if (!more) {
             FormGroup {
                 PixelField(title, { title = it }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, placeholder = "Title")
-                FieldLabel("Category")
-                CategoryChips(category) { category = it ?: category }
                 PixelField(
                     notes, { notes = it }, Modifier.fillMaxWidth(), label = "Notes", minLines = 2, maxLines = 6, placeholder = "Notes",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
@@ -703,13 +698,13 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
             if (live != null && live.state == TaskState.OPEN) {
                 val next = live.copy(
                     title = title.trim().ifEmpty { live.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
-                    category = category, notes = notes.trim(), reward = reward,
+                    notes = notes.trim(), reward = reward,
                     due = dueDay?.let { LocalDateTime(it, dueTime ?: LocalTime(23, 59)) },
                 )
                 if (next != live) store.updateTask(next)
             }
         }
-        LaunchedEffect(title, notes, rank, minutes, category, dueDay, dueTime, reward) { kotlinx.coroutines.delay(600); commit() }
+        LaunchedEffect(title, notes, rank, minutes, dueDay, dueTime, reward) { kotlinx.coroutines.delay(600); commit() }
         DisposableEffect(task.id) { onDispose { commit() } }
         if (more) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

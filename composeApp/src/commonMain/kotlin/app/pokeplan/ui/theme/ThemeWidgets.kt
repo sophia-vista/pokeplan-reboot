@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.Rank
 import app.pokeplan.ui.ItemIcon
@@ -306,4 +307,26 @@ fun ChoiceRow(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modif
 fun FieldLabel(text: String, modifier: Modifier = Modifier) {
     // One label voice for every field (the same as PixelField's own): small and soft, not bold.
     Text(text, modifier, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+}
+
+/**
+ * A folded section: a title row with a chevron (and an optional [summary] while folded) that opens [content] below it. Folded by default,
+ * so a screen shows its facts first and the detail on a tap. The whole row is the target and stays [Spacing.Target] tall.
+ */
+@Composable
+fun Accordion(title: String, modifier: Modifier = Modifier, summary: String? = null, startOpen: Boolean = false, content: @Composable () -> Unit) {
+    var open by remember { mutableStateOf(startOpen) }
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Row(
+            Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).clip(DialogueShape)
+                .clickable(role = Role.Button, onClickLabel = if (open) "Hide $title" else "Show $title") { open = !open }
+                .semantics { stateDescription = if (open) "Shown" else "Hidden" },
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
+        ) {
+            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), maxLines = 1)
+            if (!open && summary != null) Text(summary, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1)
+            app.pokeplan.ui.Glyph(if (open) "chevron-up" else "chevron-down", Pixel.Ink, size = 20.dp)
+        }
+        if (open) content()
+    }
 }

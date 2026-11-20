@@ -50,8 +50,8 @@ enum class TasksView(val label: String) { TODAY("Today"), UPCOMING("Upcoming"), 
 private const val SHOWN = 60
 
 /**
- * Plan's Tasks workspace: quick add, the four views as pills (Today, Upcoming, All, Done), the lists folded under them, and the tasks.
- * Choosing a list narrows whichever view is open to that list and leaves the view alone. One engine: a Checklist or Tracker list only
+ * Plan's Tasks workspace: quick add, the four views as pills (Today, Upcoming, All, Done) and the tasks. The Filter on All and Done narrows to one list;
+ * lists are made and edited in Plan settings. One engine: a Checklist or Tracker list only
  * changes how its group is titled and that its finished items stay on view. [onFocus] is null where there is no Focus (desktop and the web).
  */
 @OptIn(ExperimentalLayoutApi::class)
@@ -61,37 +61,24 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
     val live = planTasks(model)
     val host = remember { CardHost() }
     val view = model.tasksView
-    var listId by model::tasksListId
     var filter by remember { mutableStateOf(TaskFilter()) }
-    var managing by remember { mutableStateOf(false) }
-    var editing by remember { mutableStateOf(false) }
-    // The lists stay folded until asked for; a chosen list shows by name in the folded row.
-    var listsOpen by model::tasksListsOpen
     val lists = store.activeLists
-    val list = listId?.let { id -> lists.firstOrNull { it.id == id } }
+    // The list the Filter chose on All or Done (a Checklist or Tracker list then keeps its finished items on view).
+    val list = filter.listId?.let { id -> lists.firstOrNull { it.id == id } }
     // A list that was archived or deleted is no longer the one chosen.
-    LaunchedEffect(list, listId) { if (listId != null && list == null) { listId = null; editing = false } }
+    LaunchedEffect(list, filter.listId) { if (filter.listId != null && filter.listId != TaskFilter.INBOX && list == null) filter = filter.copy(listId = null) }
 
-    QuickAddBox(model, if (view == TasksView.TODAY) AddTo.TODAY else AddTo.NO_DATE, listId = list?.id)
+    QuickAddBox(model, if (view == TasksView.TODAY) AddTo.TODAY else AddTo.NO_DATE, listId = if (view == TasksView.ALL) list?.id else null)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         TasksView.entries.forEach { v -> TabButton(v.label, v == view, { model.tasksView = v }) }
     }
-    ListsFold(
-        model, live, list, open = listsOpen, managing = managing, editing = editing,
-        onToggle = { listsOpen = !listsOpen; if (!listsOpen) { managing = false; editing = false } },
-        onChoose = { id -> listId = if (listId == id) null else id; editing = false },
-        onPick = { id -> listId = id; editing = false },
-        onManage = { managing = !managing; editing = false },
-        onEdit = { editing = it },
-        onListGone = { listId = null; editing = false },
-    )
     val card = taskCards(model, host)
     val inList = taskCards(model, host, showList = false)
     when (view) {
-        TasksView.TODAY -> TodayList(model, onFocus, listId = list?.id)
+        TasksView.TODAY -> TodayList(model, onFocus, listId = null)
         TasksView.ALL -> {
             TaskFilterBox(model, filter, { filter = it }, withStatus = false)
-            val narrowed = filter.copy(listId = list?.id)
+            val narrowed = filter
             if (list != null && list.kind != ListKind.TASKS) {
                 // A checklist or tracker keeps its finished items on view (a checklist ticks off, then resets).
                 val items = live.filter { it.listId == list.id && narrowed.copy(status = TaskFilter.Status.ANY).matches(it) }
@@ -108,60 +95,22 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
                     val l = g.listId?.let { id -> lists.firstOrNull { it.id == id } }
                     // Tasks in no list sit in one plain group; with no lists at all there is nothing to group by.
                     val title = if (l != null) groupTitle(model, l) else if (lists.isEmpty() || list != null) null else "No list"
-                    TaskGroup(title, g.tasks, card = if (list != null) inList else card)
+                    TaskGroup(title, g.tasks, card = inList)
                 }
             }
         }
         TasksView.UPCOMING -> {
             // By the day each task is on (Todoist's Upcoming), with no cap on how far ahead.
-            val shown = TaskViews.upcoming(live, store.now).filter { list == null || it.listId == list.id }
+            val shown = TaskViews.upcoming(live, store.now)
             shown.groupBy { it.planned ?: it.due!!.date }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, dayOf = day, card = card) }
             if (shown.isEmpty()) EmptyState("Nothing coming up", icon = "timer-ball", action = "Add a task" to { model.addTaskRequested = true })
         }
         TasksView.DONE -> {
             TaskFilterBox(model, filter, { filter = it }, withStatus = false)
-            val found = filter.copy(status = TaskFilter.Status.FINISHED, listId = list?.id).apply(live)
+            val found = filter.copy(status = TaskFilter.Status.FINISHED).apply(live)
             if (found.size > SHOWN) Text("Showing the first $SHOWN of ${found.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (found.isEmpty()) EmptyState(if (filter.isNarrowed || list != null) "Nothing matches" else "Nothing finished yet", icon = "scope-lens")
             else TaskGroup(null, found.take(SHOWN), card = card)
-        }
-    }
-}
-
-/**
- * The lists under the view pills: one "Lists" row (the chosen list's name when folded, Manage when open), folded by default. Open, it is one
- * row per list with its open count; tap one to narrow the view to it, tap it again to go back to all. Manage makes, edits and archives.
- */
-@Composable
-private fun ListsFold(
-    model: AppModel, tasks: List<Task>, chosen: TaskList?, open: Boolean, managing: Boolean, editing: Boolean,
-    onToggle: () -> Unit, onChoose: (String) -> Unit, onPick: (String) -> Unit, onManage: () -> Unit, onEdit: (Boolean) -> Unit, onListGone: () -> Unit,
-) {
-    val lists = model.store.activeLists
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(
-                Modifier.weight(1f).defaultMinSize(minHeight = Spacing.Target).clip(DialogueShape)
-                    .clickable(role = Role.Button, onClickLabel = if (open) "Hide lists" else "Show lists", onClick = onToggle)
-                    .semantics { stateDescription = if (open) "Shown" else "Hidden" },
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
-            ) {
-                Text("Lists", style = MaterialTheme.typography.titleSmall)
-                if (!open && chosen != null) Text(chosen.name, Modifier.weight(1f, fill = false), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Glyph(if (open) "chevron-up" else "chevron-down", Pixel.Ink, size = 20.dp)
-            }
-            if (open) PixelButton(if (managing) "Close" else "Manage", onManage, color = Pixel.InkSoft, compact = true)
-        }
-        if (open) {
-            if (managing) ListsSection(model, tasks) { id -> onPick(id); onManage() }
-            else {
-                if (lists.isEmpty()) PixelButton("New list", onManage, color = Pixel.InkSoft, compact = true)
-                else ListRows(lists, tasks, selected = chosen?.id, open = onChoose)
-                if (chosen != null) {
-                    if (editing) ListEditor(model, chosen) { kept -> onEdit(false); if (kept == null) onListGone() }
-                    else PixelButton("Edit ${chosen.name}", { onEdit(true) }, color = Pixel.InkSoft, compact = true)
-                }
-            }
         }
     }
 }

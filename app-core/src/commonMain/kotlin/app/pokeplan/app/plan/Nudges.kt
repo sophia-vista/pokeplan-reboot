@@ -90,11 +90,12 @@ object Nudges {
         val start: LocalDate = now.date.plus(DatePeriod(days = -6))
         val s = Reviews.summary(start, data.tasks, data.focusHistory, data.series.mapNotNull { it.asHabit() }, zone)
         if (s.tasksDone == 0 && s.focusMinutes == 0) return null
-        val top = s.categorySplit.entries.sortedWith(compareBy({ -it.value }, { it.key.ordinal })).firstOrNull()?.key
+        val top = s.listSplit.entries.filter { it.key != null }.sortedWith(compareBy({ -it.value }, { it.key })).firstOrNull()?.key
+            ?.let { id -> data.lists.firstOrNull { it.id == id }?.name }
         val parts = buildList {
             add("${s.tasksDone} ${if (s.tasksDone == 1) "task" else "tasks"} finished")
             add(focusText(s.focusMinutes))
-            if (top != null) add("most in ${top.label}")
+            if (top != null) add("most in $top")
         }
         return NudgeText("Your week in PokéLife", parts.joinToString(", ") + ".")
     }

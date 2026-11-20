@@ -18,7 +18,7 @@ class QuickAddTest {
         assertEquals("Call mum", r.title)
         assertEquals(LocalDate(2026, 10, 20), r.planned)
         assertEquals(LocalTime(17, 0), r.plannedTime)
-        assertEquals(Category.SOCIAL, r.category)
+        assertEquals("Social", r.listName)
         assertEquals(Rank.B, r.rank)
         assertNull(r.due)
     }
@@ -37,7 +37,7 @@ class QuickAddTest {
         assertNull(r.planned)
         assertEquals(120, r.estimateMinutes)
         assertEquals(Rank.A, r.rank)
-        assertEquals(Category.WORK, r.category)
+        assertEquals("work", r.listName)
     }
 
     @Test
@@ -107,7 +107,6 @@ class QuickAddTest {
     fun unknownHashtagsBecomeLists() {
         val r = parse("Eggs #Groceries")
         assertEquals("Groceries", r.listName)
-        assertNull(r.category)
         assertEquals("Eggs", r.title)
     }
 
@@ -125,7 +124,7 @@ class QuickAddHintsTest {
     @kotlin.test.Test
     fun sayWhatWasUnderstood() {
         val r = QuickAdd.parse("Call mum tomorrow 5pm 30m #Social !B", today)
-        kotlin.test.assertEquals(listOf("Tomorrow", "17:00", "Social", "Difficulty B", "30 min"), QuickAdd.hints(r, today))
+        kotlin.test.assertEquals(listOf("Tomorrow", "17:00", "List Social", "Difficulty B", "30 min"), QuickAdd.hints(r, today))
     }
 
     @kotlin.test.Test

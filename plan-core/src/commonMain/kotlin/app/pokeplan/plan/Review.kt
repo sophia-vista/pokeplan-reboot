@@ -34,7 +34,8 @@ object Reviews {
         val habits: List<HabitResult>,
         /** Open tasks planned or due in the week (or overdue) that can be carried forward. */
         val unfinished: List<Task>,
-        val categorySplit: Map<Category, Int>,
+        /** Tasks finished in the week per list id (null: no list). */
+        val listSplit: Map<String?, Int>,
     )
 
     fun summary(weekStart: LocalDate, tasks: List<Task>, focus: List<FocusRecord>, habits: List<Habit>, zone: TimeZone): Summary {
@@ -53,7 +54,7 @@ object Reviews {
             sessionsFailed = sessions.count { !it.completed },
             habits = habits.map { h -> HabitResult(h.id, h.title, h.completions.count { it in weekStart..end }) },
             unfinished = unfinished,
-            categorySplit = done.groupingBy { it.category }.eachCount(),
+            listSplit = done.groupingBy { it.listId }.eachCount(),
         )
     }
 

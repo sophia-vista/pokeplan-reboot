@@ -783,11 +783,10 @@ private fun LinkSettingsView(model: AppModel) {
             ToggleRow("Find Pokémon from finished follow-ups", data.settings.postcardTrail) { link.setPostcardTrail(it) }
         }
     }
-    TextBox {
+    if (data.settings.reminders) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Reminders")
-            ToggleRow("Remind me about dates and follow-ups", data.settings.reminders) { link.setReminders(it) }
-            if (data.settings.reminders) {
+            run {
                 PixelChoice(listOf(8, 9, 12, 18, 20), data.settings.reminderHour, { "${it.toString().padStart(2, '0')}:00" }, { h -> if (h != null) link.setReminderHour(h) }, label = "At", key = accent)
                 ToggleRow("Name it", data.settings.reminderNames) { link.setReminderNames(it) }
             }

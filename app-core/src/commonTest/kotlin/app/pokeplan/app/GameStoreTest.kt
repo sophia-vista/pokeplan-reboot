@@ -187,7 +187,7 @@ class GameStoreTest {
     fun habitsAndTargetsOfAnOlderSaveBecomeRecurringTasksWithTheirHistoryAndPayNothing() {
         val (s, _) = started()
         val day = s.today
-        val habit = app.pokeplan.plan.Habit("h1", "Read", Rank.D, app.pokeplan.plan.Category.PERSONAL, HabitTarget.PerWeek(3), day.minus(DatePeriod(days = 10)),
+        val habit = app.pokeplan.plan.Habit("h1", "Read", Rank.D, HabitTarget.PerWeek(3), day.minus(DatePeriod(days = 10)),
             completions = setOf(day.minus(DatePeriod(days = 2)), day.minus(DatePeriod(days = 1))), paidOn = day.minus(DatePeriod(days = 1)))
         val goal = s.addGoal("Learn")
         val old = s.data.copy(habits = listOf(habit), goals = listOf(goal.copy(linkedHabitIds = setOf("h1"))))
@@ -427,10 +427,10 @@ class GameStoreTest {
         s.addMilestone(goal.id, "First chord")
         s.addMilestone(goal.id, "Second chord")
         val target = s.today.plus(DatePeriod(days = 40))
-        s.editGoal(goal.id, "  Learn the guitar ", app.pokeplan.plan.Category.PERSONAL, target)
+        s.editGoal(goal.id, "  Learn the guitar ", target)
         assertEquals("Learn the guitar", s.data.goals.single().title)
         assertEquals(target, s.data.goals.single().targetDate)
-        s.editGoal(goal.id, " ", app.pokeplan.plan.Category.PERSONAL, null)
+        s.editGoal(goal.id, " ", null)
         assertEquals("Learn the guitar", s.data.goals.single().title, "a blank title keeps the old one")
         assertEquals(null, s.data.goals.single().targetDate)
         val first = s.data.goals.single().milestones.first()
@@ -459,10 +459,10 @@ class GameStoreTest {
         s.addMilestone(goal.id, "First chord")
         s.addMilestone(goal.id, "Second chord")
         val first = s.data.goals.single().milestones.first()
-        s.editGoal(goal.id, "  Learn the guitar ", app.pokeplan.plan.Category.PERSONAL, s.today)
+        s.editGoal(goal.id, "  Learn the guitar ", s.today)
         assertEquals("Learn the guitar", s.data.goals.single().title)
         assertEquals(s.today, s.data.goals.single().targetDate)
-        s.editGoal(goal.id, "   ", app.pokeplan.plan.Category.PERSONAL, null)
+        s.editGoal(goal.id, "   ", null)
         assertEquals("Learn the guitar", s.data.goals.single().title, "a blank title changes nothing")
         s.renameMilestone(goal.id, first.id, "G chord")
         assertEquals("G chord", s.data.goals.single().milestones.first().title)
@@ -836,19 +836,6 @@ class GameStoreTest {
         s.deleteList(groceries.id)
         assertTrue(s.data.lists.isEmpty())
         assertTrue(s.data.tasks.none { it.listId != null })
-    }
-
-    @Test
-    fun a_list_gives_its_category_to_new_tasks_only() {
-        val (s, _) = started()
-        val gym = s.addList("Gym")!!
-        val old = s.addTask("Old", listId = gym.id)
-        s.updateList(gym.copy(category = app.pokeplan.plan.Category.HEALTH))
-        assertEquals(app.pokeplan.plan.Category.HEALTH, s.addTask("Run", listId = gym.id).category)
-        // A category named for the task wins; the Inbox and the tasks already in the list keep theirs.
-        assertEquals(app.pokeplan.plan.Category.WORK, s.addTask("Plan", category = app.pokeplan.plan.Category.WORK, listId = gym.id).category)
-        assertEquals(app.pokeplan.plan.Category.PERSONAL, s.addTask("Stray").category)
-        assertEquals(app.pokeplan.plan.Category.PERSONAL, s.data.tasks.first { it.id == old.id }.category)
     }
 
     @Test

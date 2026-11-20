@@ -73,7 +73,7 @@ Use a small, stable navigation structure. Avoid a separate destination for every
 
 Primary destinations (the owner uses only these three, so nothing else is a destination):
 
-1. **Tasks** — one workspace (owner, 20 November 2026). It opens on **Today**. Four views as pills under the quick add box: **Today**, **Upcoming**, **All** (every open task grouped by list) and **Done** (finished and won't-do tasks, latest first). There is no Inbox and no Calendar key on this page (the Calendar is in the Sections key). Below the pills is a **Lists** row, folded by default (it shows the chosen list's name while folded); open, it is one row per list with its open count, and a **Manage** button (new list, edit, archive). Choosing a list narrows the open view to that list without changing the view; choosing it again goes back to all. A task in no list shows under "No list" in All. The quick add field reads "Add a task (date, #list)"; inside a chosen list a new task is filed in it, and on Today it is planned for today.
+1. **Tasks** — one workspace (owner, 20 November 2026). It opens on **Today**. Four views as pills under the quick add box: **Today**, **Upcoming**, **All** (every open task grouped by list) and **Done** (finished and won't-do tasks, latest first). There is no Inbox and no Calendar key on this page (the Calendar is in the Sections key). There is no Lists row (owner, 20 November 2026: it repeated what All already shows): the lists are managed in **Plan settings** (new list, edit, archive, delete), and the **Filter** under the search box on All and Done narrows to one list (a Checklist or Tracker list then keeps its finished items on view). A task in no list shows under "No list" in All. The quick add field reads "Add a task (date, #list)"; inside a chosen list a new task is filed in it, and on Today it is planned for today.
 2. **Calendar** — the day, week and month views with PLAN events and the read-only device calendars (8); one tap from the page and from the Tasks header.
 3. **Focus** — start and manage focus sessions, for any open task or none (6).
 
@@ -113,6 +113,8 @@ Present future commitments chronologically with date grouping. Include overdue i
 Calendar is a planning surface, not a second task database. Support month/week views and compact agenda. Display PLAN events, PLAN task due dates/scheduled times, read-only external events, and optionally linked CARE routines.
 
 A task is actionable and has completion state; an event represents something happening at a time; an external event is read-only. Do not create a task merely because an external event appears.
+
+**Categories are retired (owner, 20 November 2026).** Tasks, habits, goals and lists carry no category: a list is the one way to group (a Work list, a Home list). Nothing paid by category, so no reward changes. The balance wheel and the weekly recap split by list; `#word` in quick add names a list; the calendar and widgets colour a task by its list. An old save's category is ignored on load and dropped on the next save.
 
 ### 3.5 Lists and projects
 
@@ -319,7 +321,7 @@ PLAN follows the shared PMD dialogue-box visual system and reusable component ru
 
 ### 10.1 Task and planning surfaces
 
-Task cards prioritize the completion control, title, relevant date/recurrence, then optional priority/list context. Do not display every available field on every card. As built (0.177.0): the check key first on every row (a finished task's reopens it), the rank as a small tag after the title, the When tab folded to the day and the list with a "Time and repeat" row that unfolds the time, reminders and repeat, a Goal row on the Edit tab (one goal per task, no reward), Reopen and Delete on a finished task, and a list's optional category for the tasks added to it. The title remains primary; metadata is concise and secondary. Today, Inbox, Upcoming, Lists, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
+Task cards prioritize the completion control, title, relevant date/recurrence, then optional priority/list context. Do not display every available field on every card. As built (0.177.0): the check key first on every row (a finished task's reopens it), the rank as a small tag after the title, the When tab folded to the day and the list with a "Time and repeat" row that unfolds the time, reminders and repeat, a Goal row on the Edit tab (one goal per task, no reward), Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary. Today, Inbox, Upcoming, Lists, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
 
 ### 10.2 Focus presentation
 
@@ -402,7 +404,8 @@ Retries cannot pay twice. Undo/redo respects payment policy. Recurring occurrenc
 
 PLAN has its own short settings page (More → Settings), grouped:
 
-- **Reminders:** task reminders on or off, repeat until answered, and the focus alerts (halfway and end). These moved here from General (18 November 2026). Global quiet hours, notification permissions, delivery and focus deferral are managed by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; the quiet-hours times are shown beside the reminder switch.
+- **Alerts (20 November 2026):** repeat until answered and the focus alerts (halfway and end). The task-reminders switch and the quiet hours moved to Me, Settings, Notifications, with every module's reminders switch. **Lists:** made, edited, archived and deleted here (the Tasks screen only filters by them).
+- **Reminders (history):** task reminders on or off, repeat until answered, and the focus alerts (halfway and end) moved here from General (18 November 2026). Global quiet hours, notification permissions, delivery and focus deferral are managed by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; the quiet-hours times are shown beside the reminder switch.
 - **Calendar:** which device calendars appear (8.1). Nothing is imported or written back.
 - **Focus:** the usual length and Deep Focus are what the last session was started with (6.1); no separate default is asked for.
 - **Week start** is a General setting (shared by every calendar in the app), not a PLAN one.

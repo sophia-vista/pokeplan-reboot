@@ -64,7 +64,7 @@ private val listColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Pu
 
 /** The menu's Lists: one row per list with its icon and count, "New list", and the archived ones folded away. */
 @Composable
-internal fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> Unit) {
+internal fun ListsSection(model: AppModel, tasks: List<Task>, onMade: ((String) -> Unit)? = null, open: (String) -> Unit) {
     val store = model.store
     var creating by remember { mutableStateOf(false) }
     var showArchived by remember { mutableStateOf(false) }
@@ -73,7 +73,7 @@ internal fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> 
             Text("Lists", Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleSmall)
             if (!creating) PixelButton("New list", { creating = true }, color = Pixel.InkSoft, compact = true)
         }
-        if (creating) ListEditor(model, null) { made -> creating = false; made?.let(open) }
+        if (creating) ListEditor(model, null) { made -> creating = false; made?.let(onMade ?: open) }
         val lists = store.activeLists
         ListRows(lists, tasks, open = open)
         val archived = model.data.lists.filter { it.archived }
@@ -110,7 +110,7 @@ internal fun ListRows(lists: List<TaskList>, tasks: List<Task>, selected: String
 }
 
 /**
- * Makes a list ([list] null) or edits one: its name, one of eight colours, a real item icon and the category its new tasks start with; an existing list can also
+ * Makes a list ([list] null) or edits one: its name, one of eight colours, and a real item icon; an existing list can also
  * be archived (hidden from the menu, tasks kept) or deleted (its tasks go back to no list). [done] gets the list's id,
  * or null when it was deleted or nothing was made.
  */
@@ -120,7 +120,6 @@ internal fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Uni
     var name by remember { mutableStateOf(list?.name ?: "") }
     var color by remember { mutableStateOf(list?.color ?: TaskList.COLORS.first()) }
     var icon by remember { mutableStateOf(list?.icon ?: TaskList.ICONS.first()) }
-    var category by remember { mutableStateOf(list?.category) }
     var kind by remember { mutableStateOf(list?.kind ?: ListKind.TASKS) }
     var reset by remember { mutableStateOf(list?.reset ?: ChecklistReset.NEVER) }
     // A new checklist can start from the saved items of another (PLAN.md 3.5A).
@@ -173,13 +172,10 @@ internal fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Uni
                     ) { ItemIcon(id, size = 36.dp, description = null) }
                 }
             }
-            // The category a task added here starts with; tap the chosen one again for none (Personal for a task in no list).
-            FieldLabel("New tasks are")
-            CategoryChips(category, allowNone = true) { category = it }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (list == null) "Make list" else "Save", {
-                    if (list == null) done(store.addList(name, color, icon, category, kind, startFrom)?.let { made -> if (made.kind == ListKind.CHECKLIST && reset != ChecklistReset.NEVER) store.updateList(made.copy(reset = reset)); made.id })
-                    else { store.updateList(list.copy(name = name, color = color, icon = icon, category = category, kind = kind, reset = reset, resetOn = list.resetOn ?: model.store.today)); done(list.id) }
+                    if (list == null) done(store.addList(name, color, icon, kind, startFrom)?.let { made -> if (made.kind == ListKind.CHECKLIST && reset != ChecklistReset.NEVER) store.updateList(made.copy(reset = reset)); made.id })
+                    else { store.updateList(list.copy(name = name, color = color, icon = icon, kind = kind, reset = reset, resetOn = list.resetOn ?: model.store.today)); done(list.id) }
                 }, Modifier.weight(1f), enabled = name.isNotBlank(), compact = true)
                 PixelIconButton("close", "Cancel", { done(list?.id) }, Pixel.InkSoft)
             }

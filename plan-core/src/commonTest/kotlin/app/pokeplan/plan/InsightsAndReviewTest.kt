@@ -15,14 +15,14 @@ class InsightsAndReviewTest {
     private val zone = TimeZone.UTC
     private val monday = LocalDate(2026, 10, 19)
     private fun at(date: LocalDate, hour: Int = 12) = LocalDateTime(date, kotlinx.datetime.LocalTime(hour, 0)).toEpochMillis(zone)
-    private fun done(id: String, date: LocalDate, category: Category = Category.WORK, estimate: Int? = null, focused: Int = 0) =
-        Task(id = id, title = id, category = category, state = TaskState.DONE, completedAtMillis = at(date), createdAtMillis = 0, estimateMinutes = estimate, focusedMinutes = focused)
+    private fun done(id: String, date: LocalDate, listId: String? = "w", estimate: Int? = null, focused: Int = 0) =
+        Task(id = id, title = id, listId = listId, state = TaskState.DONE, completedAtMillis = at(date), createdAtMillis = 0, estimateMinutes = estimate, focusedMinutes = focused)
 
     @Test
-    fun theBalanceWheelCountsTasksAndFocusByCategory() {
+    fun theBalanceWheelCountsTasksAndFocusByList() {
         val tasks = listOf(
-            done("a", monday, Category.WORK), done("b", monday.plusDays(1), Category.WORK),
-            done("c", monday.plusDays(2), Category.HEALTH), done("old", monday.plusDays(-30), Category.HOME),
+            done("a", monday, "w"), done("b", monday.plusDays(1), "w"),
+            done("c", monday.plusDays(2), "h"), done("old", monday.plusDays(-30), "x"),
         )
         val focus = listOf(
             FocusRecord(at(monday), 60, true, taskId = "c"),
@@ -30,12 +30,12 @@ class InsightsAndReviewTest {
             FocusRecord(at(monday), 30, true, taskId = null),
         )
         val wheel = Insights.balanceWheel(tasks, focus, monday, monday.plusDays(6), zone)
-        assertEquals(2.0, wheel.score(Category.WORK))
-        assertEquals(1.0 + 2.0, wheel.score(Category.HEALTH), "a finished task plus 60 minutes of focus on it")
-        assertEquals(1.0, wheel.score(Category.PERSONAL), "focus without a task counts as Personal")
-        assertEquals(0.0, wheel.score(Category.HOME))
-        assertEquals(1.0, Category.entries.sumOf { wheel.share(it) }, 1e-9)
-        assertEquals(0.0, Insights.Wheel(emptyMap(), emptyMap()).share(Category.WORK))
+        assertEquals(2.0, wheel.score("w"))
+        assertEquals(1.0 + 2.0, wheel.score("h"), "a finished task plus 60 minutes of focus on it")
+        assertEquals(1.0, wheel.score(null), "focus without a task counts as no list")
+        assertEquals(0.0, wheel.score("x"))
+        assertEquals(1.0, wheel.lists.sumOf { wheel.share(it) }, 1e-9)
+        assertEquals(0.0, Insights.Wheel(emptyMap(), emptyMap()).share("w"))
     }
 
     @Test
@@ -70,7 +70,7 @@ class InsightsAndReviewTest {
     fun theReviewSummarisesTheWeek() {
         val open = Task(id = "open", title = "open", planned = monday.plusDays(3), createdAtMillis = 0)
         val later = Task(id = "later", title = "later", planned = monday.plusDays(20), createdAtMillis = 0)
-        val tasks = listOf(done("a", monday), done("b", monday.plusDays(4), Category.HEALTH), done("old", monday.plusDays(-1)), open, later)
+        val tasks = listOf(done("a", monday), done("b", monday.plusDays(4), "h"), done("old", monday.plusDays(-1)), open, later)
         val focus = listOf(FocusRecord(at(monday), 25, true), FocusRecord(at(monday), 10, false), FocusRecord(at(monday.plusDays(8)), 50, true))
         val habit = Habit(id = "h", title = "Read", target = HabitTarget.Daily, createdOn = monday.plusDays(-30), completions = setOf(monday, monday.plusDays(1), monday.plusDays(9)))
         val s = Reviews.summary(monday, tasks, focus, listOf(habit), zone)
@@ -80,7 +80,7 @@ class InsightsAndReviewTest {
         assertEquals(1, s.sessionsFailed)
         assertEquals(listOf(Reviews.HabitResult("h", "Read", 2)), s.habits)
         assertEquals(listOf("open"), s.unfinished.map { it.id })
-        assertEquals(mapOf(Category.WORK to 1, Category.HEALTH to 1), s.categorySplit)
+        assertEquals(mapOf<String?, Int>("w" to 1, "h" to 1), s.listSplit)
         assertEquals(monday.plusDays(7), Reviews.carryForward(open, monday.plusDays(7)).planned)
     }
 

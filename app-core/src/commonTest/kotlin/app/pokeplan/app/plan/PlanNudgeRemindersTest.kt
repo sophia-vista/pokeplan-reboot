@@ -1,6 +1,5 @@
 package app.pokeplan.app.plan
 
-import app.pokeplan.plan.Category
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.toEpochMillis
@@ -95,7 +94,7 @@ class PlanNudgeRemindersTest {
         val request = a.requests(at(sunday, 9), zone).single { it.kind == "recap" }
         assertEquals("2026-10-25", request.occurrence)
         assertFalse(a.isStillWanted(request), "an empty week is not scolded")
-        box.data = AppData(tasks = listOf(Task("a", "a", category = Category.HOME, state = TaskState.DONE, createdAtMillis = 0, completedAtMillis = at(LocalDate(2026, 10, 22), 10))))
+        box.data = AppData(tasks = listOf(Task("a", "a", state = TaskState.DONE, createdAtMillis = 0, completedAtMillis = at(LocalDate(2026, 10, 22), 10))))
         assertTrue(a.isStillWanted(request))
         assertEquals("Your week in PokéLife", a.present(request)?.title)
         box.now = at(monday, 9)

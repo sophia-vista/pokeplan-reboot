@@ -27,6 +27,12 @@ interface PhoneState {
     /** Opens the phone's screen where the player allows exact alarms. */
     fun allowExactAlarms() {}
 
+    /** False when Android is blocking this app's notifications (the permission refused, or the app's notifications turned off); Settings then says so. */
+    val notificationsAllowed: Boolean get() = true
+
+    /** Opens the phone's own notification settings for this app. */
+    fun openNotificationSettings() {}
+
     /** Whether this device can hand a number or an address to its dialer, messages and mail apps (Link shows Call, Message and Email only then). */
     val canContact: Boolean get() = false
 

@@ -394,12 +394,12 @@ data class TaskSeries(
     val isFrequency: Boolean get() = target != null
 
     /** The computing shape of a frequency series (its streak, and paying once a day): null for a calendar series. */
-    fun asHabit(): Habit? = target?.let { Habit(template.id, template.title, template.rank, template.category, it, createdOn ?: LocalDate(1970, 1, 1), completions, paidOn) }
+    fun asHabit(): Habit? = target?.let { Habit(template.id, template.title, template.rank, it, createdOn ?: LocalDate(1970, 1, 1), completions, paidOn) }
 
     companion object {
         /** A legacy habit as a frequency series: same id (so goals that link it still do), creation day, completions and payment day. Pays nothing. */
         fun of(h: Habit, createdAtMillis: Long): TaskSeries = TaskSeries(
-            template = Task(id = h.id, seriesId = h.id, title = h.title, rank = h.rank, category = h.category, createdAtMillis = createdAtMillis),
+            template = Task(id = h.id, seriesId = h.id, title = h.title, rank = h.rank, createdAtMillis = createdAtMillis),
             target = h.target, createdOn = h.createdOn, completions = h.completions, paidOn = h.paidOn,
         )
     }

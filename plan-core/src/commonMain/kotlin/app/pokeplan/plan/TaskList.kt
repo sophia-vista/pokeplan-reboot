@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * A list the player makes to file tasks under ("Groceries", "Thesis"), as in TickTick: a name, a colour and a real item
- * icon, and optionally the category its new tasks start with. A task is in at most one list ([Task.listId]); a task in none is in the Inbox. Archiving hides a list and its tasks
+ * icon. A task is in at most one list ([Task.listId]); a task in none is in the Inbox. Archiving hides a list and its tasks
  * from the menu. Lists carry no reward.
  */
 @Serializable
@@ -16,8 +16,6 @@ data class TaskList(
     /** An item icon file name (assets/items), one of [ICONS]. */
     val icon: String = ICONS.first(),
     val archived: Boolean = false,
-    /** The category a task added to this list starts with (null: Personal, as in the Inbox); changing it leaves the tasks already in it alone. */
-    val category: Category? = null,
     /** What the list is for (PLAN.md 3.5A): a normal list of tasks, a checklist to tick off and reset, or a tracker of things to finish over time. */
     val kind: ListKind = ListKind.TASKS,
     /** A checklist's saved items ("Save items as template"); "Start from" makes a new checklist with them. Part of the list, no dates. */

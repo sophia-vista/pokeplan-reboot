@@ -907,8 +907,9 @@ internal fun MoodKeys(chosen: Int?, onPick: (Int?) -> Unit) {
 @Composable
 private fun MoodRow(model: AppModel) {
     model.careData // redraw when Care changes
-    FormBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+    // One dialogue box like the Quick actions under it (BoxX by BoxY): a form box is 16 dp inside its frame, so this one looked tighter than its neighbours.
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FormLabel("How is today?")
             MoodKeys(model.care.diaryToday()?.mood) { model.care.setMood(it); model.haptic() }
         }

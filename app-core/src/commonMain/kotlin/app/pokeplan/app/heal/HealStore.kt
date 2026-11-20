@@ -329,6 +329,9 @@ class HealStore(
     /** Erases all of HEAL's records (not its settings, not what Field Research paid). */
     fun eraseAll() = update { d -> HealKinds.entries.fold(d) { acc, k -> HealExport.without(acc, k) } }
 
+    /** The full-device reset: HEAL as new, its records and its settings. */
+    fun resetAll() = update { HealData() }
+
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 

@@ -10,7 +10,7 @@ import kotlinx.datetime.plus
 /**
  * Turns a line like `Call mum tomorrow 5pm #Social !B` into task fields. Understood words:
  *
- * - `!A` to `!E`: difficulty rank. `#Work` (a category) or `#Groceries` (otherwise a list name).
+ * - `!A` to `!E`: difficulty rank. `#Groceries` (a list name).
  * - Dates: `today`, `tomorrow`, `tonight`, weekdays (`friday`, `next mon`: the next one after today), `in 3 days`,
  *   `in 2 weeks`, `2026-11-01`, `oct 25`, `25 oct`.
  * - Times: `5pm`, `5:30pm`, `17:30` (optionally after `at`).
@@ -23,7 +23,6 @@ object QuickAdd {
     data class Result(
         val title: String,
         val rank: Rank? = null,
-        val category: Category? = null,
         val listName: String? = null,
         val planned: LocalDate? = null,
         val plannedTime: LocalTime? = null,
@@ -132,14 +131,13 @@ object QuickAdd {
     private fun clock(t: LocalTime) = "${t.hour.toString().padStart(2, '0')}:${t.minute.toString().padStart(2, '0')}"
 
     /**
-     * What [result] was understood as, in plain words and in the order a person says them ("Tomorrow", "17:00", "Social",
+     * What [result] was understood as, in plain words and in the order a person says them ("Tomorrow", "17:00", "List Social",
      * "Difficulty B", "30 min"), so the quick-add box can show it before the task is made. Empty when the line is only a title.
      */
     fun hints(result: Result, today: LocalDate): List<String> = buildList {
         result.planned?.let { add(dayLabel(it, today)) }
         result.plannedTime?.let { add(clock(it)) }
         result.due?.let { add("Due ${dayLabel(it.date, today)} ${clock(it.time)}") }
-        result.category?.let { add(it.label) }
         result.listName?.let { add("List $it") }
         result.rank?.let { add("Difficulty ${it.letter}") }
         result.estimateMinutes?.let { add(if (it % 60 == 0) "${it / 60} h" else if (it > 60) "${it / 60} h ${it % 60} min" else "$it min") }
@@ -149,7 +147,6 @@ object QuickAdd {
         val tokens = input.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
         val used = BooleanArray(tokens.size)
         var rank: Rank? = null
-        var category: Category? = null
         var listName: String? = null
         var estimate: Int? = null
         var evening = false
@@ -170,8 +167,7 @@ object QuickAdd {
                 tok.length == 2 && tok[0] == '!' && Rank.fromLetter(tok[1]) != null -> { rank = Rank.fromLetter(tok[1]); use(i, 1); i++ }
                 tok.length > 1 && tok[0] == '#' -> {
                     val name = tok.substring(1)
-                    val cat = Category.entries.firstOrNull { it.label.equals(name, ignoreCase = true) }
-                    if (cat != null) category = cat else listName = name
+                    listName = name
                     use(i, 1); i++
                 }
                 (lower == "by" || lower == "due") && startsDateOrTime(i + 1) -> { dueMode = true; use(i, 1); i++ }
@@ -200,6 +196,6 @@ object QuickAdd {
         if (plannedTime != null && plannedDate == null) plannedDate = today
         val due = if (dueDate != null || dueTime != null) LocalDateTime(dueDate ?: today, dueTime ?: LocalTime(23, 59)) else null
         val title = tokens.filterIndexed { index, _ -> !used[index] }.joinToString(" ")
-        return Result(title, rank, category, listName, plannedDate, plannedTime, due, estimate, evening)
+        return Result(title, rank, listName, plannedDate, plannedTime, due, estimate, evening)
     }
 }
