@@ -34,6 +34,8 @@ import app.pokeplan.ui.pokemon.label
 /** Me holds what every module shares and every module's stats (owner, 20 November 2026): Plan's progress and Care's trends. New sections go at the end, so a saved index still opens the same one. */
 private enum class MeSection(val label: String, val icon: String) {
     SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"), PROGRESS("Plan progress", "exp-share"), TRENDS("Care trends", "heart-scale"),
+    /** The dashboard of history: the totals, then Plan's progress and Care's trends, which open from it and go back to it. */
+    STATS("Stats", "exp-share"),
 }
 
 @Composable
@@ -41,7 +43,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
     var section by remember { mutableStateOf(MeSection.entries.getOrNull(startSection)) }
     val data = model.data
     // Into a section and back slides; each page keeps its scroll position.
-    ScreenSwitch(section, depth = { if (it == null) 0 else 1 }) { current ->
+    ScreenSwitch(section, depth = { if (it == null) 0 else if (it == MeSection.PROGRESS || it == MeSection.TRENDS) 2 else 1 }) { current ->
         if (current == null) {
             Column(Modifier.fillMaxSize()) {
                 ScreenHeader("Me", icon = "member-card")
@@ -52,8 +54,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
                     TrainerCard(model)
                     MenuList(
                         listOf(
-                            MenuEntry("PROGRESS", MeSection.PROGRESS.icon, MeSection.PROGRESS.label),
-                            MenuEntry("TRENDS", MeSection.TRENDS.icon, MeSection.TRENDS.label),
+                            MenuEntry("STATS", MeSection.STATS.icon, MeSection.STATS.label),
                             MenuEntry("SETTINGS", "gb-sounds", "Settings"),
                             MenuEntry("HELP", "town-map", "Help"),
                         ),
@@ -62,8 +63,10 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             }
             return@ScreenSwitch
         }
-        SectionScaffold(current.label, null, onBack = { section = null }, icon = current.icon) {
+        val parent = if (current == MeSection.PROGRESS || current == MeSection.TRENDS) MeSection.STATS else null
+        SectionScaffold(current.label, null, onBack = { section = parent }, icon = current.icon) {
             when (current) {
+                MeSection.STATS -> StatsView(model) { section = it }
                 MeSection.SETTINGS -> SettingsView(model)
                 MeSection.HELP -> HelpView()
                 MeSection.PROGRESS -> app.pokeplan.ui.plan.ProgressView(model)
@@ -86,14 +89,31 @@ private fun TrainerCard(model: AppModel) {
                 Text(data.trainerName, style = MaterialTheme.typography.titleMedium)
             }
             StatLine("Rank", TrainerRank.names[rank.coerceIn(0, TrainerRank.names.lastIndex)])
-            StatLine("Trainer points", "${data.player.trainerPoints}")
             if (buddy != null) StatLine("Buddy", "${buddy.nickname}, Lv. ${buddy.level}")
+        }
+    }
+}
+
+/** Stats: the lifetime totals in one box, then the history views that open from it (a row with its icon, like the Me menu). */
+@Composable
+private fun StatsView(model: AppModel, open: (MeSection) -> Unit) {
+    val data = model.data
+    val streak = model.store.streak
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            StatLine("Trainer points", "${data.player.trainerPoints}")
             StatLine("Tasks finished", "${data.tasks.count { it.state == TaskState.DONE }}")
             StatLine("Minutes focused", "${data.focusHistory.filter { it.completed }.sumOf { it.minutes }}")
             StatLine("Streak", plural(streak.current, "day"))
             StatLine("Best streak", plural(streak.longest, "day"))
         }
     }
+    MenuList(
+        listOf(
+            MenuEntry("PROGRESS", MeSection.PROGRESS.icon, MeSection.PROGRESS.label),
+            MenuEntry("TRENDS", MeSection.TRENDS.icon, MeSection.TRENDS.label),
+        ),
+    ) { key -> open(MeSection.valueOf(key)) }
 }
 
 /** A label at the start and its value at the end of one line. */

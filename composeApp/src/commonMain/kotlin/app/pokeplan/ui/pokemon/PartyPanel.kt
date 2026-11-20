@@ -1,6 +1,7 @@
 package app.pokeplan.ui.pokemon
 
 import app.pokeplan.ui.theme.Sizes
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -160,11 +161,14 @@ private fun PartyPanel(
             }
             if (perks.isNotEmpty()) {
                 HorizontalDivider(color = Pixel.Border)
-                Text(perksTitle, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                perks.forEach { line ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(line.label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                        Text(pct(line.percent), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.Green)
+                Accordion(perksTitle) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                        perks.forEach { line ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(line.label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                                Text(pct(line.percent), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.Green)
+                            }
+                        }
                     }
                 }
             }

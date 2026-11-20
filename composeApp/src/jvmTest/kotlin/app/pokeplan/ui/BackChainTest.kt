@@ -123,7 +123,7 @@ class BackChainTest {
     @Test
     fun meSectionsGoBackToTheMeMenu() {
         val menu = model().let { m -> var h: List<Int> = emptyList(); scene({ app.pokeplan.ui.screens.MeScreen(m, startSection = -1) }) { s -> s.settle(); h = s.header() }; h }
-        for (i in 0..1) {
+        for (i in listOf(0, 1, 4)) {
             val m = model()
             scene({ app.pokeplan.ui.screens.MeScreen(m, startSection = i) }) { s ->
                 s.settle()
