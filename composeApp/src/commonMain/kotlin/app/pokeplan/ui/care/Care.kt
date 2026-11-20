@@ -868,21 +868,6 @@ private fun TrendsView(model: AppModel) {
     }
 }
 
-/** How far the next Care Egg is: every routine, calm break, skill and play fills it a little. */
-@Composable
-private fun CareEggMeter(model: AppModel) {
-    model.data // observe the save: the store itself is not Compose state
-    val points = model.store.careEggMeter()
-    val size = RewardEngine.CARE_EGG_METER_SIZE
-    val label = "Care Egg: $points of $size"
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
-            PixelBar(points.toFloat() / size, color = Pixel.Tone, label = label)
-        }
-    }
-}
-
 private val moodNames = listOf("Rough", "Low", "Okay", "Good", "Great")
 
 /** Five mood keys that wrap onto a second line rather than cut a word; tapping the chosen one again takes it back ([onPick] gets null). */
