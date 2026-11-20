@@ -98,10 +98,10 @@ internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val scr
 
     /**
      * A square [mover] can stop on and walk away from, at random from [random], on page [page] if it has one, and not [crowded] (a square where
-     * it would overlap another Pokémon) if there is room for that.
+     * it would overlap another Pokémon) if there is room for that. [roomsOnly]: in a room and not a corridor (for one that stays put and must not block the way).
      */
-    fun restingCell(random: Random, mover: Mover, page: Int? = null, crowded: (Cell) -> Boolean = { false }): Cell {
-        val all = floor.restingCells(mover)
+    fun restingCell(random: Random, mover: Mover, page: Int? = null, crowded: (Cell) -> Boolean = { false }, roomsOnly: Boolean = false): Cell {
+        val all = floor.restingCells(mover).let { cells -> if (roomsOnly) cells.filter { floor.roomOf(it) != null }.ifEmpty { cells } else cells }
         val on = (if (page == null) all else all.filter { it.x * tilePx / screenPx >= page && it.x * tilePx / screenPx < page + 1 }).ifEmpty { all }
         val spaced = on.filter { !crowded(it) }
         return (spaced.ifEmpty { on }.ifEmpty { listOf(floor.stairs) }).random(random)

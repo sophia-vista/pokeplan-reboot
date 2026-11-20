@@ -106,6 +106,13 @@ internal fun GeneralSettings(model: AppModel) {
     }
     SettingsGroup("Date and time", "calendar") {
         ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
+        ToggleRow("12-hour clock (AM and PM)", settings.clock12Hour) { store.changeSettings { s -> s.copy(clock12Hour = it) } }
+        FieldLabel("Date format")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            app.pokeplan.ui.launcher.DateStyle.entries.forEach { style ->
+                TabButton(style.label, settings.dateFormat == style.name, { store.changeSettings { s -> s.copy(dateFormat = style.name) } })
+            }
+        }
     }
 }
 

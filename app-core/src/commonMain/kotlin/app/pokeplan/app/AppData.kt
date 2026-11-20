@@ -312,6 +312,10 @@ data class Settings(
     /** A short vibration when the buddy is petted or fed (Android). */
     val haptics: Boolean = true,
     val weekStartsOnMonday: Boolean = true,
+    /** How dates are written on the launcher (the name of a `DateStyle`: SHORT, LONG, DAY_MONTH_YEAR, MONTH_DAY or ISO). */
+    val dateFormat: String = "SHORT",
+    /** A 12-hour clock with AM and PM on the launcher, instead of 24 hours. */
+    val clock12Hour: Boolean = false,
     val theme: ThemeMode = ThemeMode.SYSTEM,
     /** The page behind every screen: "day" (the time-of-day gradient), or the name of a scene or dungeon town (a veil keeps the text readable). */
     val appBackground: String = "day",
