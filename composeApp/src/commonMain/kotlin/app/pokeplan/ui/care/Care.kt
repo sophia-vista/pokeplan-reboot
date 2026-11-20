@@ -203,10 +203,11 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Add routine", { model.careSection = CareSection.ROUTINES }, Modifier.weight(1f), ModuleAccent.CARE.accent, compact = true)
-                PixelButton("Calm", { model.careSection = CareSection.CALM }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Check in", { model.careSection = CareSection.REFLECT }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            // Keys at their natural width that wrap at a large text size, so no label is cut.
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton("Add routine", { model.careSection = CareSection.ROUTINES }, color = ModuleAccent.CARE.accent, compact = true)
+                PixelButton("Calm", { model.careSection = CareSection.CALM }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Check in", { model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
             }
         }
     }
