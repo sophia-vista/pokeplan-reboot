@@ -248,6 +248,30 @@ class ScreenshotTest {
 
     /** REP-057: Outstanding (three lists, the longest name, a long title) and empty, and the editor with Monthly chosen. */
     @Test
+    fun rewardFocusAndEventCompanion() {
+        val store = started()
+        val mate = store.grantPokemon(25, "Quest: Pikachu")
+        store.setInParty(mate.id, true)
+        store.setPlanLead(mate.id)
+        val task = store.addTask("Write the quarterly report for the whole team", Rank.B, planned = store.today, reward = app.pokeplan.core.reward.RewardFocus.EGG)
+        val event = store.addEvent("Dentist appointment with a long name", store.today, kotlinx.datetime.LocalTime(10, 0), 60)
+        store.setEventCompanion(event.id, mate.id)
+        val model = AppModel(store)
+        listOf(false, true).forEach { dark ->
+            val n = if (dark) "dark" else "light"
+            render("task-reward-$n", height = 1100, frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.TaskCard(model, task, store.today, true, {}, {}, startTab = app.pokeplan.ui.plan.CardTab.MORE) } }
+            }
+            render("event-companion-$n", height = 1100, frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.EventPanel(model, model.data.events.single(), {}, {}) } }
+            }
+            render("plan-settings-rewards-$n", height = 1000, frames = 8) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(app.pokeplan.ui.theme.Spacing.M)) { app.pokeplan.ui.screens.PlanSettings(model) } } }
+            }
+        }
+    }
+
+    @Test
     fun outstandingAndMonthlyRepeat() {
         val store = started()
         val longest = "Groceries and household shopping run"

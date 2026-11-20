@@ -136,6 +136,10 @@ sealed interface Reward {
     @Serializable
     @SerialName("decoration")
     data class Decoration(val decorationId: String) : Reward
+    /** Exp a PLAN event's companion gained when an occurrence ended (PLAN.md 8.2): [points] of exp for the Pokémon called [name]. */
+    @Serializable
+    @SerialName("exp")
+    data class Exp(val points: Int, val name: String) : Reward
 }
 
 @Serializable
@@ -169,6 +173,20 @@ data class BefriendEvent(
     val visitorId: String = "",
 )
 
+/**
+ * What a task pays most of (owner, 20 November 2026; docs/economy.md "Task reward focus"): [EXP] is the ordinary payout, exactly as it was
+ * before there was a choice; [EGG] and [ITEMS] trade half the candies for more Egg points or a better item chance. Poké and trainer points never change.
+ */
+@Serializable
+enum class RewardFocus(val label: String) {
+    EXP("Exp"), EGG("Egg"), ITEMS("Items");
+
+    companion object {
+        /** The focus a task read from an old save has: the ordinary payout. */
+        val DEFAULT = EXP
+    }
+}
+
 /** A finished piece of work of some [tier] (1 to 5): a task, a habit, a milestone... */
 @Serializable
 data class AchievementEvent(
@@ -185,6 +203,8 @@ data class AchievementEvent(
     val picked: Boolean = false,
     /** Paid work that already warmed Plan's lead today; past [RewardEngine.TASK_FRIENDSHIP_DAILY_CAP] it adds no friendship. */
     val friendshipTasksToday: Int = 0,
+    /** What the task pays most of; [RewardFocus.EXP] pays the ordinary amounts. */
+    val focus: RewardFocus = RewardFocus.EXP,
 )
 
 /**
@@ -468,6 +488,15 @@ object RewardEngine {
 
     /** Points that fill the Egg meter, and what a Task Egg is rolled on (a 15 minute session). *(tune)* */
     const val EGG_METER_SIZE = 5
+
+    /** A task with the Egg or Items focus pays this percent of each candy roll (rounded down, at least 1) (docs/economy.md, task reward focus) *(tune)*. */
+    const val FOCUS_CANDY_PERCENT = 50
+
+    /** With the Egg focus a task fills the Egg meter by `tier` times this, rounded up *(tune)*. */
+    const val EGG_FOCUS_POINT_FACTOR = 1.5
+
+    /** With the Items focus the item-drop chance is multiplied by this, up to 100% *(tune)*. */
+    const val ITEMS_FOCUS_DROP_FACTOR = 2.0
     const val TASK_EGG_MINUTES = 15
 
     const val ON_TIME_BONUS = 1.10
@@ -623,7 +652,8 @@ object RewardEngine {
         if (e.picked) multiplier *= PICKED_BONUS
         var overflow = 0
         for (roll in CandyRewards.rates(tier).roll(rng, perks[PerkBucket.SUPER_CANDY_CHANCE].roundToInt())) {
-            val amount = scaled(roll.amount, multiplier)
+            val full = scaled(roll.amount, multiplier)
+            val amount = if (e.focus == RewardFocus.EXP) full else maxOf(1, full * FOCUS_CANDY_PERCENT / 100)
             val candyId = if (roll.type == CandyType.SUPER) Items.SUPER_CANDY else Items.RARE_CANDY
             val (afterCandy, extra) = inventory.addCapped(candyId, amount)
             inventory = afterCandy
@@ -636,7 +666,8 @@ object RewardEngine {
         coins += earned
         rewards += Reward.Coins(earned + overflow)
 
-        val dropPercent = DROP_BASE_PERCENT + DROP_PER_TIER_PERCENT * tier + perks[PerkBucket.ITEM_FINDER]
+        val ordinaryDrop = (DROP_BASE_PERCENT + DROP_PER_TIER_PERCENT * tier + perks[PerkBucket.ITEM_FINDER]).toDouble()
+        val dropPercent = if (e.focus == RewardFocus.ITEMS) minOf(ordinaryDrop * ITEMS_FOCUS_DROP_FACTOR, 100.0) else ordinaryDrop
         if (rng.nextDouble() * 100 < dropPercent) {
             val drop = DropTable.roll(rng)
             val (afterDrop, extra) = inventory.addCapped(drop, 1)
@@ -648,7 +679,7 @@ object RewardEngine {
         val warms = e.friendshipTasksToday < TASK_FRIENDSHIP_DAILY_CAP
         var pokemon = state.pokemon.map { p -> if (warms && p.id == buddy?.id) p.gainFriendship(FriendshipRules.Source.TASK) else p }
 
-        var meter = state.eggMeter + tier
+        var meter = state.eggMeter + if (e.focus == RewardFocus.EGG) kotlin.math.ceil(tier * EGG_FOCUS_POINT_FACTOR).toInt() else tier
         var caught = state.caught + state.pokemon.map { it.speciesId }
         if (meter >= EGG_METER_SIZE) {
             meter -= EGG_METER_SIZE

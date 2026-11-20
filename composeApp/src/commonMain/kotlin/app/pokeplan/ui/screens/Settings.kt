@@ -436,6 +436,13 @@ internal fun PlanSettings(model: AppModel) {
         ToggleRow("Focus halfway alert", settings.focusHalfway) { store.changeSettings { s -> s.copy(focusHalfway = it) } }
         ToggleRow("Focus end alert", settings.focusEnd) { store.changeSettings { s -> s.copy(focusEnd = it) } }
     }
+    SettingsGroup("Rewards", "zap") {
+        // The focus a new task starts with; each task can change it (More options, or its editor). Exp is the ordinary payout.
+        PixelChoice(
+            app.pokeplan.core.reward.RewardFocus.entries.toList(), settings.defaultReward, { it?.label ?: "" },
+            { r -> if (r != null) store.changeSettings { s -> s.copy(defaultReward = r) } }, label = "New tasks pay most in",
+        )
+    }
     CalendarsCard(model)
 }
 

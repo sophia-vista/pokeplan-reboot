@@ -97,6 +97,8 @@ data class Task(
     val link: TaskLink? = null,
     /** A reminder with no date on the task (PLAN.md 3.5A): shows on Today from this time, never overdue, fires once. Cleared when the task is done. */
     val nudge: LocalDateTime? = null,
+    /** What it pays most of when it is done (docs/economy.md, task reward focus); a save from before the choice reads as Exp, the ordinary payout. */
+    val reward: app.pokeplan.core.reward.RewardFocus = app.pokeplan.core.reward.RewardFocus.EXP,
 ) {
     init {
         require(title.isNotBlank()) { "a task needs a title" }

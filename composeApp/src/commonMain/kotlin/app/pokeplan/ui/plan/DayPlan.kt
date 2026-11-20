@@ -165,6 +165,8 @@ private class Drag(val item: Item, val resize: Boolean, val grabMinutes: Int, po
 internal data class Draft(
     val title: String, val day: LocalDate, val start: Int, val minutes: Int,
     val allDay: Boolean = false, val lastDay: LocalDate = day, val color: Long? = null, val repeat: EventRepeat? = null,
+    /** The PLAN party Pokémon that keeps the event company (a timed event only; PLAN.md 8.2). */
+    val companion: String? = null,
 ) {
     /** The same draft starting on [first], an all-day one keeping its length. */
     fun movedTo(first: LocalDate): Draft = copy(day = first, lastDay = first.plus(DatePeriod(days = day.daysUntil(lastDay))))
@@ -172,7 +174,7 @@ internal data class Draft(
     /** Adds it to PokéPlan's own calendar. */
     fun addTo(store: app.pokeplan.app.GameStore) {
         if (allDay) store.addAllDayEvent(title, day, lastDay, color, repeat)
-        else store.addEvent(title, day, LocalTime(start / 60, start % 60), minutes, color, repeat)
+        else store.addEvent(title, day, LocalTime(start / 60, start % 60), minutes, color, repeat).also { e -> companion?.let { store.setEventCompanion(e.id, it) } }
     }
 }
 
@@ -368,7 +370,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 DayStrip(store.today, offset, firstDow, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.isOn(day) } }) { offset = it }
             }
 
-            draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store); draft = null }, today = store.today) { draft = null } }
+            draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store); draft = null }, today = store.today, party = model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN)) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, { picked = it }) { picked = null }
 

@@ -36,6 +36,9 @@ internal object Counters {
     /** Friendship-warming work done on the streak day. */
     val WARM = PeriodCounter("warm-")
 
+    /** Candies' worth of exp PLAN event companions were paid on the streak day it was paid (not the day the event was), so the daily cap is one live period. */
+    val EVENT_CANDIES = PeriodCounter("event-candies-")
+
     /** Friendship petting gave today. */
     val PET = PeriodCounter("pet-")
 

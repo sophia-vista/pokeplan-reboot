@@ -281,6 +281,14 @@ Google/device calendar integration is read-only initially. PLAN may request perm
 
 PLAN may create its own events with title, start/end, optional location/description/reminder, and recurrence only if implemented reliably. Events are not tasks and have no task completion state or task rewards.
 
+**Event companion (owner, 20 November 2026):** an event can name a **companion**, a Pokémon from the **PLAN party** (the lead or one of the five; no new Pokémon place, so POKEMON_ECOSYSTEM.md 2.2 stands). After an occurrence **ends**, its companion gains exp and may bring back an item, with no tap. Rules *(numbers are tune; economy.md has them)*:
+- **Pays once per occurrence.** A repeating event keeps the dates it has paid; a skipped occurrence never pays.
+- **Only what the companion was there for.** An occurrence pays only if it ends after the moment the companion was set, **or the event's day, time, length or repeat was last edited**. A companion added to a past event, an event made for a past time, and an event dragged into time that has passed, pay nothing.
+- **Exp by length:** one Exp Candy's worth of exp for each 30 minutes of a timed event (a quarter hour counts as one, four at most for one event), a daily cap on all events together, and a small chance of one item from the ordinary drop table when it paid. **An all-day event never pays** (it has no length).
+- **The companion must be in the PLAN party when the occurrence ends**, and be able to take exp (not an egg, not a Guardian, not at the top level); otherwise the occurrence pays nothing and is not owed later.
+- **When the app was closed:** the next time it runs it pays occurrences that ended up to two days ago, once each.
+- The event itself stays unrewarded for viewing, editing or attending; only the companion's exp is paid, and the event carries no figure into the reward log beyond its title.
+
 ### 8.3 Permissions and display
 
 Calendar access is optional. Denial must not impair PLAN. Explain denial and provide settings route without repeated prompting. Distinguish PLAN tasks, PLAN events, external events, and linked CARE routines; do not rely on color alone.
@@ -372,9 +380,11 @@ Document any legacy field that cannot be preserved before shipping; do not silen
 
 ### 12.1 Reward-bearing actions
 
-Potential PLAN reward-bearing actions are completing a PLAN task occurrence, completing a qualifying focus session, and completing a qualifying PLAN milestone only if explicitly supported by progression rules.
+Potential PLAN reward-bearing actions are completing a PLAN task occurrence, completing a qualifying focus session, completing a qualifying PLAN milestone only if explicitly supported by progression rules, and (owner, 20 November 2026) the end of a PLAN event occurrence that has a companion (8.2).
 
-Do not reward opening PLAN, viewing/editing/creating an empty task, moving tasks, generating occurrences, starting then immediately cancelling focus, viewing external events, or completing CARE-owned routines.
+**Reward focus on a task (owner, 20 November 2026):** each task has a reward focus chosen when it is made (quick add under "More options", or the task editor): **Exp** (the default, and exactly what a task paid before), **Egg** or **Items**. The focus trades the same share of a task's payout for another kind: Egg pays half the candies and doubles the Egg points; Items pays half the candies and doubles the item-drop chance *(tune; economy.md)*. Poké and trainer points never change. A Settings default picks the focus a new task starts with; a repeating task's copies keep its focus; the focus is read when the task is ticked, so changing it during the undo window does not change the payout.
+
+Do not reward opening PLAN, viewing/editing/creating an empty task, moving tasks, generating occurrences, starting then immediately cancelling focus, viewing external events (a device calendar's events never pay and never take a companion), or completing CARE-owned routines.
 
 ### 12.2 One action, one reward owner
 

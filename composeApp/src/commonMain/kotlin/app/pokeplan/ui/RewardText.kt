@@ -57,5 +57,6 @@ fun Reward.describe(source: String = ""): String = when (this) {
     is Reward.ItemDrop -> "${Items.name(itemId)}" + if (amount > 1) " x$amount" else ""
     is Reward.Evs -> "Training: +$points"
     is Reward.Friendship -> "Friendship +$amount"
+    is Reward.Exp -> "$name +$points exp"
     is Reward.Decoration -> "A new decoration: ${app.pokeplan.base.Decorations.get(decorationId)?.name ?: "for your room"}"
 }

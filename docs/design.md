@@ -324,7 +324,7 @@ state are marked *(proposed)*.
 The two loops feed each other so task-only and focus-only players both progress.
 
 - **Focus sessions also give coins and a berry** (amounts by minutes *(tune)*), not just an egg.
-- **Paid tasks fill an Egg meter** (rank-weighted: E counts 1, A counts 5 *(tune)*). Every 10 points *(tune)* produces a **Task Egg** from the player's selected region, hatched instantly with a small ceremony. It rolls on the odds of a short (about 15 minute) focus session, so long focus sessions remain the way to the rarest hatches.
+- **Paid tasks fill an Egg meter** (rank-weighted: E counts 1, A counts 5 *(tune)*). Every 5 points *(tune)* produces a **Task Egg** from the player's selected region, hatched instantly with a small ceremony. It rolls on the odds of a short (about 15 minute) focus session, so long focus sessions remain the way to the rarest hatches.
 
 ## Ideas adopted from other apps
 

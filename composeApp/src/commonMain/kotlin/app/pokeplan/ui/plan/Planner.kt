@@ -398,6 +398,9 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
     // The unsent words outlive the screen: leaving for another tab and coming back finds them again.
     LaunchedEffect(text) { if (text.isEmpty()) model.quickAddDrafts.remove(draftKey) else model.quickAddDrafts[draftKey] = text }
     var rank by remember { mutableStateOf(Rank.C) }
+    // What the task pays most of: the Settings default until chosen here (PLAN.md 12.1).
+    val defaultReward = model.data.settings.defaultReward
+    var reward by remember(defaultReward) { mutableStateOf(defaultReward) }
     // The day chosen with a key; with none ([day] null and not [noDate]) the day is what the text says or the view's default.
     var day by remember { mutableStateOf<LocalDate?>(null) }
     var noDate by remember { mutableStateOf(false) }
@@ -432,7 +435,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
                 title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
                 // With none in the words, the list's own category (Personal with no list).
                 category = parsed.category,
-                planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes,
+                planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes, reward = reward,
                 // "#Groceries" files it in that list; inside a list, the list itself.
                 listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
                 // "tomorrow 5pm" keeps its 5pm and "tonight" its evening; both only mean something on a planned day.
@@ -448,7 +451,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
                 made.planned != null -> made.planned!!.short()
                 else -> "Tasks"
             })
-            text = ""; day = null; noDate = false; picking = false; more = false; repeat = RepeatKind.NEVER
+            text = ""; day = null; noDate = false; picking = false; more = false; repeat = RepeatKind.NEVER; reward = defaultReward
         }
     }
     TextBox {
@@ -490,6 +493,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             if (more) {
                 DifficultyPicker(rank) { rank = it }
                 PixelChoice(RepeatKind.PICKABLE.toList(), repeat, { it?.label ?: "" }, { k -> if (k != null) repeat = k }, label = "Repeat")
+                PixelChoice(app.pokeplan.core.reward.RewardFocus.entries.toList(), reward, { it?.label ?: "" }, { r -> if (r != null) reward = r }, label = "Reward")
             }
         }
     }
@@ -655,6 +659,7 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
     var minutes by remember(task.id) { mutableStateOf(task.estimateMinutes ?: 0) }
     var category by remember(task.id) { mutableStateOf(task.category) }
     var notes by remember(task.id) { mutableStateOf(task.notes) }
+    var reward by remember(task.id) { mutableStateOf(task.reward) }
     var dueDay by remember(task.id) { mutableStateOf(task.due?.date) }
     // A deadline keeps its time of day; with none typed it is the end of that day (23:59).
     var dueTime by remember(task.id) { mutableStateOf(task.due?.time?.takeIf { it != LocalTime(23, 59) }) }
@@ -682,6 +687,7 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
         } else {
             FormGroup {
                 DifficultyPicker(rank) { rank = it }
+                PixelChoice(app.pokeplan.core.reward.RewardFocus.entries.toList(), reward, { it?.label ?: "" }, { r -> if (r != null) reward = r }, label = "Reward")
                 GoalChoice(model, task)
                 // A deadline is not the day you plan to do it (Schedule); with no time it is the end of that day, 23:59.
                 PixelDateTimeField(
@@ -697,13 +703,13 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
             if (live != null && live.state == TaskState.OPEN) {
                 val next = live.copy(
                     title = title.trim().ifEmpty { live.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
-                    category = category, notes = notes.trim(),
+                    category = category, notes = notes.trim(), reward = reward,
                     due = dueDay?.let { LocalDateTime(it, dueTime ?: LocalTime(23, 59)) },
                 )
                 if (next != live) store.updateTask(next)
             }
         }
-        LaunchedEffect(title, notes, rank, minutes, category, dueDay, dueTime) { kotlinx.coroutines.delay(600); commit() }
+        LaunchedEffect(title, notes, rank, minutes, category, dueDay, dueTime, reward) { kotlinx.coroutines.delay(600); commit() }
         DisposableEffect(task.id) { onDispose { commit() } }
         if (more) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

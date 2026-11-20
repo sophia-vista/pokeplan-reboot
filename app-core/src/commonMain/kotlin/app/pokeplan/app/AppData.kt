@@ -339,6 +339,8 @@ data class Settings(
     val worldScroll: Boolean = true,
     /** No longer used: a Pokémon on a World team is never in a party (one place only). Kept so older saves load. */
     val worldKeepPartyOut: Boolean = false,
+    /** The reward focus a new task starts with (docs/economy.md, task reward focus); Exp is the ordinary payout. */
+    val defaultReward: app.pokeplan.core.reward.RewardFocus = app.pokeplan.core.reward.RewardFocus.EXP
 ) {
     /** How loud sound effects play, 0 to 1 (0 when Sound was switched off). */
     val effectsLevel: Float get() = if (sound) effectsVolume / 100f else 0f
