@@ -222,8 +222,8 @@ class HuaweiScreenService : AccessibilityService() {
             if (tapped) { delay(PAGE_WAIT_MS); scrollThrough(wanted.scrolls) }
         }
         if (wanted.allData) openAllData(wanted)
-        // Back until the Health page shows, never pressing Back on the Health page itself (that would leave Huawei Health). The Steps page may need more presses (its
-        // All data page, then itself); a look-only card may open a layer of its own (an intro, a pop-up).
+        // Back until the Health page shows, never pressing Back on the Health page itself (that would leave Huawei Health). A page whose All data was opened needs more presses (the
+        // All data page, then the card page); a look-only card may open a layer of its own (an intro, a pop-up).
         if (!backToHealth(if (wanted.allData) 4 else if (HuaweiWalk.isWanted(wanted)) 1 else 3)) return "Stopped after ${wanted.title}: Back did not return to the Health page" // copy-ok: result
         note("${wanted.title}: Back to the Health page")
         return null
@@ -239,7 +239,7 @@ class HuaweiScreenService : AccessibilityService() {
         return awaitHealthPage() != null
     }
 
-    /** On the open Steps page: the four-dots menu, then "All data", scrolled within [HuaweiWalk.ALL_DATA_SCROLLS]; what happens goes in the walk log. */
+    /** On the open card page: the four-dots menu, then "All data", scrolled within the card's own budget; a page without the menu is noted and left; what happens goes in the walk log. */
     private suspend fun openAllData(wanted: HuaweiWalk.Card) {
         val root = huaweiRoot() ?: return
         val r = Rect()
@@ -255,7 +255,7 @@ class HuaweiScreenService : AccessibilityService() {
         if (clickableAncestor(item)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) != true) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' tap refused"); return }
         delay(PAGE_WAIT_MS)
         note("${wanted.title}: ${HuaweiWalk.ALL_DATA} opened ${page.ifBlank { "a page" }}")
-        scrollThrough(HuaweiWalk.ALL_DATA_SCROLLS)
+        scrollThrough(wanted.allDataScrolls)
     }
 
     /** Taps the "Week" tab of the open card page, when it has one and it is not the tab already showing; returns whether it tapped. */
@@ -328,7 +328,7 @@ class HuaweiScreenService : AccessibilityService() {
         const val PAGE_WAIT_MS = 2_500L
         const val BACK_WAIT_MS = 1_500L
         const val MENU_WAIT_MS = 1_000L
-        const val TIMEOUT_MS = 180_000L
+        const val TIMEOUT_MS = 240_000L
         const val MAX_TRIES = 4
         const val MAX_NODES = 400
         const val MAX_DEPTH = 40

@@ -12,7 +12,9 @@ import kotlinx.datetime.TimeZone
  */
 object HuaweiWalk {
     /** A card the walk opens: its title on the Health page (any of [titles]), how many times its page is scrolled, and whether its Week tab is opened too, and whether its four-dots menu → "All data" is opened too. */
-    data class Card(val titles: List<String>, val scrolls: Int, val week: Boolean = false, val allData: Boolean = false) {
+    data class Card(val titles: List<String>, val scrolls: Int, val week: Boolean = false, val allDataScrolls: Int = 0) {
+        /** Whether the card's page has a four-dots menu → "All data" worth opening (almost every one does; Exercise records is a list already). */
+        val allData: Boolean get() = allDataScrolls > 0
         val title: String get() = titles.first()
         fun matches(text: String) = text.trim() in titles
     }
@@ -22,20 +24,22 @@ object HuaweiWalk {
 
     /** In the order the cards sit on the Health page (top to bottom), which is the order the single pass meets them. */
     val CARDS = listOf(
-        Card(listOf("Exercise records"), EXERCISE_SCROLLS),
-        Card(listOf("Heart"), scrolls = 1), // captured so its page can be parsed (resting heart rate, the day's range): not parsed yet
-        Card(listOf("Weight"), scrolls = 2),
-        Card(listOf("Sleep"), scrolls = 2, week = true),
+        Card(listOf("Exercise records"), EXERCISE_SCROLLS), // a list already: no All data
+        Card(listOf("Heart"), scrolls = 1, allDataScrolls = 3), // captured so its page can be parsed (resting heart rate, the day's range): not parsed yet
+        Card(listOf("Weight"), scrolls = 2, allDataScrolls = 3),
+        Card(listOf("Sleep"), scrolls = 2, week = true, allDataScrolls = 3),
     )
 
     /** The Steps summary at the top of the Health page (not a card: its element is `time_strength_layout_middle`), opened first with two scrolls (owner, 21 November 2026). */
-    val STEPS = Card(listOf("Steps"), scrolls = 2, allData = true)
+    val STEPS = Card(listOf("Steps"), scrolls = 2, allDataScrolls = 4)
     const val STEPS_ID = "time_strength_layout_middle"
 
-    /** The Steps page has a four-dots menu with "All data" (owner, 21 November 2026): the menu button is found by one of these descriptions, the item by its text. */
+    /** Almost every card page, and the Steps page, has a four-dots menu with "All data" (owner, 21 November 2026): the menu button is found by one of these descriptions, the item by its text. */
     val MENU_DESCRIPTIONS = listOf("more", "more options", "more actions", "menu", "overflow", "options")
     const val ALL_DATA = "All data"
-    const val ALL_DATA_SCROLLS = 4
+
+    /** Scrolls of the All data page of a look-only card. */
+    const val LOOK_ALL_DATA_SCROLLS = 2
 
     /** Whether [description] names a four-dots / overflow menu button. */
     fun isMenuButton(description: String) = description.trim().lowercase() in MENU_DESCRIPTIONS
@@ -56,7 +60,7 @@ object HuaweiWalk {
     fun cardFor(text: String): Card? {
         val t = text.trim()
         if (t.isEmpty() || t in SKIP) return null
-        return CARDS.firstOrNull { it.matches(t) } ?: Card(listOf(t), LOOK_SCROLLS)
+        return CARDS.firstOrNull { it.matches(t) } ?: Card(listOf(t), LOOK_SCROLLS, allDataScrolls = LOOK_ALL_DATA_SCROLLS)
     }
 
     /** Whether [card] is one of the wanted [CARDS] (its page is read into records) rather than a look-only visit. */

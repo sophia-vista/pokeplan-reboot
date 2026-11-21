@@ -46,7 +46,9 @@ class HuaweiWalkTest {
     }
 
     @Test fun theStepsPageOpensItsFourDotsMenuAndAllData() {
-        assertTrue(HuaweiWalk.STEPS.allData); assertTrue(HuaweiWalk.CARDS.none { it.allData })
+        assertTrue(HuaweiWalk.STEPS.allData)
+        assertEquals(listOf("Heart", "Weight", "Sleep"), HuaweiWalk.CARDS.filter { it.allData }.map { it.title }, "Exercise records is a list already")
+        assertTrue(HuaweiWalk.cardFor("SpO2")!!.allData, "almost every other card has All data too")
         assertTrue(HuaweiWalk.isMenuButton(" More options ") && HuaweiWalk.isMenuButton("Menu") && !HuaweiWalk.isMenuButton("Back"))
         assertEquals("All data", HuaweiWalk.ALL_DATA)
     }
