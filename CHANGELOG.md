@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.225.0
+
+LINK people and Friend Safari (REP-072; owner, 20 and 21 November 2026). `RewardRules.VERSION` 32 to 33; `docs/economy.md` updated.
+
+- **A screen for each person:** inside LINK People a person opens their own screen (header "Profile", "My profile" for the Me card, back to the directory) instead of an accordion under the row.
+- **Profile card:** a Pokémon the user chooses as picture (`Person.avatar`, from caught Pokémon or a search of all species, in the ordinary Portrait frame), the whole name wrapped, role and organization, tags for Me, relationship and Pinned. Cosmetic: pays nothing. No schema step.
+- **Friend Safari** (`LINK.md` 9.5): each person, the Me card included, has a pool of Link Region Pokémon seeded only by a hash of their opaque record key. Slots: 2, plus 1 per 6 people (people capped at 20, Me excluded), at most 5, rarities Common, Uncommon, Uncommon, Rare, Rare, fixed by the seed so adding people never reshuffles. A visit is free and meets one slot: species not caught yet weigh x6, caught directly into Link's party else the PC, ordinary shiny chance, candies for a new species only; no Poké, trainer point, track point or item.
+- **Caps:** one catch per person a day and at most 5 Safari catches a day in total (`GameStore.SAFARI_PER_DAY`, *(tune)*, added so made-up contacts buy nothing; owner to confirm). Own event type `SafariEvent`, so Postcard Trail is untouched. Off when Postcard Trail is off or with the new Settings switch "Friend Safari on each person".
+- **Not simulated:** the economy simulator plays only Plan, so no simulation was re-run; `docs/economy.md` gives an analytic bound. Built under Sonnet with the Opus advisor, not an Opus economy session.
+- **Tests:** `LinkSafariTest` (8), `SafariRulesTest` (3), `ScreenshotTest` linkPersonScreen and linkPersonPicture, `NavigationTest`.
+
 ## 0.224.0
 
 Me, Settings, Plan and Mint (owner, 20 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` unchanged.
