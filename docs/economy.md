@@ -99,7 +99,7 @@ The Super Candy chance perk adds percentage points.
 - Deep Focus moves a session up one row. Egg luck then moves the rolled rarity up one with its chance (`luckyBump`).
 - A species' rarity comes from its evolution line's highest base stat total: 580 or more is Super Rare (`SUPER_RARE_LINE_BST`); the rest are split by rank, the bottom 30% Common, the next 40% Uncommon, the rest Rare. Legendaries and mythicals never hatch.
 - Within a rarity: a species not caught yet × 6 (`UNCAUGHT_WEIGHT`), the Lure's type × 3 (`LURE_WEIGHT`), the day's spotlight type × 2 (`SPOTLIGHT_WEIGHT`, one of 18 types by `epochDay % 18`).
-- The pool is the chosen region's dex, base forms only: the Plan or the Care Region, both open from the start. A save or event that names a retired game region hatches from the Plan Region (`Region.open`).
+- The pool is the dex of the Plan Region (for a module's own egg, that module's region), base forms only. An event that names any other region hatches from the Plan Region (`Region.open`).
 - Shiny chance: `1/128 × (1 + 0.5 × min(minutes, 240) / 240)` times the shiny perk (`Shiny.chance`); a Task Egg counts as 15 minutes.
 
 ### Item drops (`DropTable`, one roll per paid task or habit)
@@ -251,7 +251,7 @@ World pays through `AppData.world` and the Bag only, not the reward engine's sta
 
 - **Sources:** per floor Exploration XP (`XP_BASE` + floor), Poké (5 + 2 × floor + 0 to 4), a berry (70%), a treasure box (6%) and a wild find (3%); a milestone (Rare Candies and Poké) once per dungeon floor, never repeated. Floors take `baseFloorSeconds / (1 + power / 100)` (never under a quarter of it); at most 12 hours of away time counts per open.
 - **Floor outcomes** (`Outcomes`, `MODULES/WORLD.md` 3.6): a floor a team is too weak for pays half the Poké and Exploration XP (a setback) or ends the expedition safely (a turn-back).
-- **Missions:** nine jobs, each paying 60 to 400 Poké and 30 to 250 Exploration XP per claim, with an occasional berry; ordinary jobs pay 60% of that table and the daily berry run 100 Poké; ordinary jobs wait 14 days, daily jobs 1. The only Rare Candy from a job is a once-only rescue (Eevee, Bagon) and the weekly Mt. Steel patrol.
+- **Missions:** the job board and its pay and pace come from `./gradlew :world-core:simulateWorldEconomy`; the daily berry run pays 100 Poké; ordinary jobs wait 14 days, daily jobs 1. The only Rare Candy from a job is a once-only rescue (Eevee, Bagon) and the weekly Mt. Steel patrol.
 - **Member experience** (`MODULES/WORLD.md` 5.2): each Pokémon on a team gets `CandyRules.XP_PER_FLOOR` (1) XP for each floor the team climbs; `XP_PER_CANDY` (20) XP are one step of candy progress on the shared level curve. Guardians and level-100 Pokémon get none. Not simulated.
 - **Skills, facilities and abilities** add at most 20% Poké, +10 points berry chance, +3 points find chance, +5 points treasure chance and +50% Exploration XP; none changes floor time except the Guardian's Temporal Mastery (10% faster once the story is complete). Abilities add up to three levels to a skill (one per helper on the team).
 - **Poké sinks in World:** Camp and Lab (400 and 600 base, tripling over five levels), the Dojo (200 Poké for 60 skill XP), the Café (3 berries) and the Kecleon Shop (above); the Swap Shop is a convenience, not a sink or a source. The Poké Mart is in the Pokémon tab. Story chapters 3 to 6 need 3, 4, 5 and 7 different dungeons cleared.

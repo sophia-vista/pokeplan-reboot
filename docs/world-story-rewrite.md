@@ -4,10 +4,10 @@ The writing brief for World's story, with the scripts that are not in the code y
 
 **Still to port (REP-037):** the seven Mythical follow-ups (Hoopa, Victini, Celebi, Jirachi, Marshadow, Shaymin, Darkrai); the rewritten Explorers chapters 5 to 8 (the code still has the first pass); the Kanto, Johto, Hoenn and Sinnoh adaptations (the code has the first pass); the regions the brief does not cover yet (Unova, Kalos, Alola, Galar, Paldea and Hisui are first-pass code only; Orre, the Ranger regions and other spin-offs have nothing).
 
-**Engine gaps the brief assumes:** the player's own Pokémon as an on-stage character, Witness-mode arcs as optional layers (a premise line in each arc's first scene), tutorial hints that point at real screens, and a recruit confirmation inside a scene.
+**Engine gaps the brief assumes:** Witness-mode arcs as optional layers (a premise line in each arc's first scene), tutorial hints that point at real screens, and a recruit confirmation inside a scene.
 
 **Implementation note:** port scenes into the relevant `world-core/.../story/*Chapters.kt` file; keep existing scene IDs where their references are still valid, new scenes use the IDs written here.\
-**Character tokens:** `{player}` is the player's selected Pokémon; `{buddy}` is the player's selected story companion. Both are Pokémon.\
+**Character tokens:** `{player}` is the user's own name (the Witness, who is not a Pokémon); `{buddy}` is the player's selected story companion, a Pokémon.\
 **World rule:** PokéLife contains no humans. All characters, organizations, occupations, conflicts, and regional institutions are Pokémon-led.
 
 ------------------------------------------------------------------------
@@ -1361,14 +1361,15 @@ New tutorial-style follow-ups use `intro-<name>-*` (`intro-hoopa-*`, `intro-vict
 
 ## Player and buddy
 
--   `{player}` and `{buddy}` are always Pokémon.
--   Neither has a human origin, human memories, or a human
+-   `{player}` is the user's name (the Witness); `{buddy}` is always a
+    Pokémon. `{buddy}` has no human origin, human memories, or human
     transformation backstory.
--   They are already a pair, or become a team in the first few scenes.
+-   The Witness and `{buddy}` are already a pair, or become a team in the
+    first few scenes.
 -   The buddy should have opinions, humor, fears, and reactions. Do not
     reduce them to a line-delivery device.
--   The player's chosen Pokémon remains the player character. Avoid
-    forcing long spoken lines or a fixed personality onto `{player}`.
+-   Avoid forcing long spoken lines or a fixed personality onto
+    `{player}`.
 
 ## Mythical recruitment
 

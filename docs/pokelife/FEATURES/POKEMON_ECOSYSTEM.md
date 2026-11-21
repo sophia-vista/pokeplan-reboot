@@ -189,9 +189,7 @@ All regions are accessible from day one. Progression can unlock deeper chapters,
 
 A Pokémon can count toward multiple regional dexes only when the acquisition/encounter rules explicitly record it. Do not infer regional dex completion merely because a species exists in the global collection. Regional dexes are views over shared discovery/ownership events, not separate collections.
 
-### 5.3 Legacy region migration
-
-Region ids are stable machine ids (BASE is `home` in a region id and `HOUSEHOLD` in a saved record). A legacy `HOME` string is disambiguated by record provenance (PLAN or household), never mapped blindly; WORLD game-region IDs keep their campaign mapping. Unknown IDs are preserved as unresolved legacy metadata until mapped; never silently discard or coerce them.
+Region ids are stable machine ids (BASE is `home` in a region id and `HOUSEHOLD` in a saved record). WORLD game-region IDs keep their campaign mapping. Unknown IDs are kept as unresolved metadata until mapped; never silently discard or coerce them.
 
 ## 6. Module parties, PC, and collection UI
 
@@ -567,14 +565,6 @@ All core collection browsing, party editing, buddy selection, progression, candy
 ### 15.3 Backup and restore
 
 Backup/export includes owned instances, party references, WORLD teams, buddy preference, eggs, dex discovery, Bag, Poké balance/ledger, reward event identity, acquisition origins, evolution/hatch history and migration metadata. Restore must preserve IDs and event uniqueness. Importing the same backup twice must not duplicate Pokémon, eggs, rewards, items or currency.
-
-### 15.4 Migrations and recovery
-
-Migrations are versioned, transactional where possible, idempotent and tested against real legacy save shapes. Use staging/recovery markers when multiple legacy stores must be merged. Do not delete legacy sources until canonical data and verification metadata are committed.
-
-Legacy shapes (the shared collection and `inParty`/`partyId` flags, `careLeadId`, the two currency balances, `WorldData.items`, server-ticket eggs, legacy region ids, level-only Pokémon) are read once into the canonical records: parties become independent module party references (never one global party), eggs become persistent local Egg records with deterministic hatch outcomes, reward history gains durable idempotency keys and is never replayed.
-
-If any migration fails, retain recoverable source data and do not mark the migration complete. Migration verification must compare pre/post record counts, balances, inventory quantities, ownership references and reward totals.
 
 ## 16. UI, interaction, and shared components
 
