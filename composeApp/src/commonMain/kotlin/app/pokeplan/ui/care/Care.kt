@@ -113,6 +113,9 @@ import app.pokeplan.ui.screens.PixelMomentField
 import app.pokeplan.ui.screens.PixelTimeField
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
+import app.pokeplan.ui.screens.UpProvider
+import app.pokeplan.ui.screens.UpTo
+import app.pokeplan.ui.screens.rememberUpSlot
 import app.pokeplan.ui.screens.StageGuest
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.VisitorScene
@@ -140,12 +143,15 @@ enum class CareSection(val label: String, val icon: String) {
 @Composable
 internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     val section = model.careSection
-    val back = if (section == null) ({ model.module = null }) else ({ model.careSection = null })
+    // A page inside a place (a skill's guide, Care Play) closes first; the place's Back leaves Care.
+    val up = rememberUpSlot()
+    val leave = { if (section == null) model.module = null else model.careSection = null }
+    val back = { up.up?.invoke() ?: leave() }
     BackHandler(enabled = true, onBack = back)
     Column(Modifier.fillMaxSize()) {
         // The five places are reached from the Sections key, as in every module's header; the page under it is the point.
         ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header, trailing = { SectionsKey(Module.CARE.label, careSections(model)) { key -> model.careSection = CareSection.entries.firstOrNull { it.name == key } } })
-        ScreenSwitch(section) { page ->
+        UpProvider(up) { ScreenSwitch(section) { page ->
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                 verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -158,7 +164,7 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
                     CareSection.DREAM -> DreamView(model, openPokemon)
                 }
             }
-        }
+        } }
     }
 }
 
@@ -232,7 +238,7 @@ private fun ReflectView(model: AppModel) {
 private fun CalmView(model: AppModel) {
     var skillId by remember { mutableStateOf<String?>(null) }
     val skill = skillId?.let { Skills.byId(it) }
-    if (skill != null) { SkillGuide(model, skill) { skillId = null }; return }
+    if (skill != null) { UpTo { skillId = null }; SkillGuide(model, skill) { skillId = null }; return }
     CalmBreakView(model)
     // While a break runs nothing else is offered: the screen is for the breath.
     if (model.calmBreakStartedAt == null) SkillsList(model) { skillId = it }

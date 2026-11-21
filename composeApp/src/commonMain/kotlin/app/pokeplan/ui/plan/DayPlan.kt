@@ -100,6 +100,7 @@ import kotlinx.datetime.plus
 import kotlin.math.roundToInt
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.UpTo
 import app.pokeplan.ui.screens.dayMonth
 import app.pokeplan.ui.screens.dayNames
 import app.pokeplan.ui.screens.label
@@ -303,6 +304,8 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     val chosen = tasks.firstOrNull { it.id == picked && it.isOpen }
     val chosenEvent = ownShown.firstOrNull { it.id == picked }
     val pick = { id: String -> picked = if (picked == id) null else id; draft = null }
+    // A panel opened over the calendar closes before the Calendar section does (a new event's draft is not lost to Back).
+    if (draft != null) UpTo { draft = null } else if (chosen != null) UpTo { picked = null } else if (chosenEvent != null) UpTo { picked = null }
 
     val grid = remember { Grid() }
     grid.days = days

@@ -49,6 +49,7 @@ import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.StatusIcon
 import app.pokeplan.ui.StatusKind
 import app.pokeplan.ui.pokemon.CarePartyPanel
+import app.pokeplan.ui.screens.UpTo
 import app.pokeplan.ui.theme.ModuleAccent
 import kotlinx.datetime.TimeZone
 import kotlin.math.roundToInt
@@ -104,6 +105,8 @@ internal fun DreamView(model: AppModel, openPokemon: (String) -> Unit) {
     val calm = model.data.settings.reduceMotion
     // A tapped sleeper stirs for a moment, then drops off again.
     androidx.compose.runtime.LaunchedEffect(awake) { if (awake != null) { kotlinx.coroutines.delay(AWAKE_MS); awake = null } }
+    // A page opened in Dream closes before the place does: Care Play, then the Pokémon's panel.
+    if (timeWith != null) UpTo { timeWith = null } else if (panel != null) UpTo { panel = null }
 
     fun tap(key: String, speciesId: Int) {
         val last = cooldown.value[key] ?: 0L

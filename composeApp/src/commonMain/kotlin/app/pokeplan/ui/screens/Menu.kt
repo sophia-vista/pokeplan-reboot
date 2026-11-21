@@ -30,7 +30,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -165,8 +171,40 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
 }
 
 /**
+ * The page one level below the section now shown, if any. A section can open a page of its own (a town's facility, a journal
+ * page); while it is open this holds its Back, so the header's Back key and the system Back gesture go up one level at a time
+ * instead of leaving the section (and losing the draft or the place).
+ */
+internal class UpSlot { var up: (() -> Unit)? by mutableStateOf(null) }
+private val LocalUpSlot = staticCompositionLocalOf<UpSlot?> { null }
+
+/** The slot for the page one level below the screen now shown; [UpProvider] gives it to the content. */
+@Composable
+internal fun rememberUpSlot(): UpSlot = remember { UpSlot() }
+
+/** Hands [slot] to the content, so a page inside it can register its Back with [UpTo]. */
+@Composable
+internal fun UpProvider(slot: UpSlot, content: @Composable () -> Unit) = CompositionLocalProvider(LocalUpSlot provides slot) { content() }
+
+/**
+ * Makes [onUp] the screen's one-level-up while this page is shown; the Back that the screen draws and its system Back
+ * gesture run it, then the screen's own Back once the page has gone. Call it from the page's own composable, next to the
+ * content it belongs to.
+ */
+@Composable
+fun UpTo(onUp: () -> Unit) {
+    val slot = LocalUpSlot.current ?: return
+    val current by rememberUpdatedState(onUp)
+    DisposableEffect(slot) {
+        slot.up = { current() }
+        onDispose { slot.up = null }
+    }
+}
+
+/**
  * A screen reached from a menu: the header with Back at its start, and scrolling content. The system back gesture also
- * goes back. [subtitle] is where the section sits ("Planner"), so the way back is never something to remember.
+ * goes back, and so does a page opened inside the section ([UpTo]). [subtitle] is where the section sits ("Planner"), so
+ * the way back is never something to remember.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -176,13 +214,17 @@ fun SectionScaffold(
     trailing: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    BackHandler(enabled = true, onBack = onBack)
+    val slot = rememberUpSlot()
+    val back = { slot.up?.invoke() ?: onBack() }
+    BackHandler(enabled = true, onBack = back)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = onBack, color = color, trailing = trailing ?: { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.M),
-        ) { content() }
+        ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = back, color = color, trailing = trailing ?: { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
+        UpProvider(slot) {
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
+                verticalArrangement = Arrangement.spacedBy(Spacing.M),
+            ) { content() }
+        }
     }
 }
 

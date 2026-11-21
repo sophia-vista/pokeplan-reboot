@@ -238,6 +238,8 @@ Every form is built from the form kit (`screens/Form.kt`) and follows eight prin
   - **No module switcher on a module page.** The bottom Modules tab already switches module; tapping it again while it is open returns to the list of modules. A switcher key would only repeat it.
   - **The Modules list is compact rows** (icon, title, badge) in the rainbow order, not large square cards, with a **"Jump to"** field above it: a plain search that opens any module or section by its fixed name (it reads no record, name or amount, so it is safe for Heal and Mint).
   - **Gear is not a life module.** It sits as a labelled "Gear" key in the Modules header (and in Jump to), outside the module list.
+  - **A page opened inside a section is one level up before the section is left.** Where a section opens a page of its own (a town's facility, a journal page), the header's Back key and the system Back gesture both close that page and stay in the section; a second Back leaves the section. A Back press never discards a draft or a place by skipping the level it looked like it would close.
+  - **Every tab keeps its place.** Switching tabs keeps the section open in that tab, an open record (a Pokémon, a Pokédex entry) and the scroll position, so coming back finds the tab where it was left. Arriving from a widget, a shortcut or a notification replaces the Pokégear instead of opening behind it; only Gear asks for it.
 
 ### 6.8 Dialogs, sheets and confirmation prompts
 

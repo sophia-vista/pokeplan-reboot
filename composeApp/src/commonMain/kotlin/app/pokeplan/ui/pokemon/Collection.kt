@@ -21,9 +21,11 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +50,7 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Tab
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
@@ -84,13 +87,27 @@ private data class CollectionPage(val section: Section?, val dexEntry: Int?, val
 }
 
 @Composable
-fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null, startParty: Boolean = false, startPcEveryone: Boolean = false) {
-    var section by remember { mutableStateOf(if (startParty) Section.PARTY else Section.entries.getOrNull(startSection)) }
-    var selected by remember { mutableStateOf(startOpen) }
+fun CollectionScreen(
+    model: AppModel, startSection: Int = -1, startOpen: String? = null, startParty: Boolean = false, startPcEveryone: Boolean = false,
+    /** Where Back goes after a Pokémon opened from another tab (Home's buddy chip, a module): back there. */
+    onReturnToTab: (Tab) -> Unit = {},
+    /** Counts second taps on the Pokémon tab; a new count returns the tab to its menu. */
+    resetSignal: Int = 0,
+) {
+    // Saved, so a section, an open Pokémon or a Pokédex entry is still there after a tab switch (or the app being put away).
+    var section by rememberSaveable { mutableStateOf(if (startParty) Section.PARTY else Section.entries.getOrNull(startSection)) }
+    var selected by rememberSaveable { mutableStateOf(startOpen) }
     // Kept here, not in the PC section, so opening a Pokémon and coming back leaves the sort and filters as they were.
     var pcView by remember { mutableStateOf(PcView(everyone = startPcEveryone)) }
     var dexView by remember { mutableStateOf(DexView()) }
-    var dexEntry by remember { mutableStateOf<Int?>(null) }
+    var dexEntry by rememberSaveable { mutableStateOf<Int?>(null) }
+    // A jump from outside (Home's buddy chip, a widget, the Party shortcut) wins over the place the tab was left in. It is read
+    // here rather than passed in once, so it also works while the tab is already open; the jump is used once.
+    LaunchedEffect(model.openPokemonId) { model.openPokemonId?.let { selected = it; model.openPokemonId = null } }
+    LaunchedEffect(model.openParty) { if (model.openParty) { section = Section.PARTY; model.openParty = false } }
+    // A second tap on the Pokémon tab returns to its menu (the shell counts the taps so a restored place is not reset).
+    var handledReset by rememberSaveable { mutableStateOf(resetSignal) }
+    LaunchedEffect(resetSignal) { if (resetSignal != handledReset) { handledReset = resetSignal; section = null; selected = null; dexEntry = null } }
     val player = model.data.player
     val store = model.store
 
@@ -98,7 +115,11 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     ScreenSwitch(CollectionPage(section, dexEntry, selected), depth = { it.depth }) { page ->
         val open = page.pokemon?.let { id -> player.pokemon.firstOrNull { it.id == id } }
         if (open != null) {
-            PokemonDetail(model, open) { selected = null }
+            PokemonDetail(model, open) {
+                selected = null
+                // A Pokémon opened from another tab goes back there, not to the Pokémon menu.
+                model.pokemonReturnTab?.let { tab -> model.pokemonReturnTab = null; onReturnToTab(tab) }
+            }
             return@ScreenSwitch
         }
 

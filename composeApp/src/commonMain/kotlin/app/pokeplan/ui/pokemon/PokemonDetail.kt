@@ -43,6 +43,7 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.BackHandler
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
@@ -113,6 +114,8 @@ private fun DetailBox(title: String, content: @Composable () -> Unit) = TextBox 
  */
 @Composable
 internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
+    // The page draws a Back key, so the system Back gesture goes the same way (it used to leave the app).
+    BackHandler(enabled = true, onBack = back)
     val store = model.store
     val player = model.data.player
     val isGuardian = Guardians.canBe(p)

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -133,4 +134,63 @@ class BackChainTest {
             }
         }
     }
+    @Test
+    fun aTabKeepsItsSectionWhenAnotherTabIsShown() {
+        val m = model()
+        val tab = mutableStateOf(0)
+        // The first visit opens Settings by name; the second is a plain visit (as the shell makes it), so only a saved place keeps Settings.
+        var first = true
+        scene({
+            val start = if (first) 0 else -1
+            app.pokeplan.ui.screens.ScreenSwitch(tab.value) { t ->
+                if (t == 0) app.pokeplan.ui.screens.MeScreen(m, startSection = start) else Box(Modifier.fillMaxSize())
+            }
+        }) { s ->
+            s.settle()
+            val settings = s.header()
+            first = false
+            tab.value = 1; s.settle()
+            tab.value = 0; s.settle()
+            assertEquals(settings, s.header(), "Me still shows the Settings page after another tab was open")
+        }
+    }
+
+    @Test
+    fun thePokemonTabKeepsItsSectionWhenAnotherTabIsShown() {
+        val m = model()
+        val tab = mutableStateOf(0)
+        // Opened on the Pokédex the first time; a plain visit the second, so only a saved place shows the Pokédex again.
+        var first = true
+        scene({
+            val start = if (first) 2 else -1
+            app.pokeplan.ui.screens.ScreenSwitch(tab.value) { t ->
+                if (t == 0) app.pokeplan.ui.pokemon.CollectionScreen(m, startSection = start) else Box(Modifier.fillMaxSize())
+            }
+        }) { s ->
+            s.settle()
+            val dex = s.header()
+            first = false
+            tab.value = 1; s.settle()
+            tab.value = 0; s.settle()
+            assertEquals(dex, s.header(), "the Pokémon tab still shows the Pokédex after another tab was open")
+        }
+    }
+
+    @Test
+    fun aTownFacilityGoesBackToTheTownBeforeLeavingTheSection() {
+        val m = model().also { it.module = Module.WORLD; it.worldSection = WorldSection.TOWN }
+        app.pokeplan.ui.world.townPageToOpen = "CAFE"
+        try {
+            scene({ app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }) { s ->
+                s.settle()
+                s.back()
+                assertEquals(WorldSection.TOWN, m.worldSection, "the header's Back from the Café lands on the town")
+                s.back()
+                assertNull(m.worldSection, "and Back from the town leaves the section")
+            }
+        } finally {
+            app.pokeplan.ui.world.townPageToOpen = null
+        }
+    }
+
 }
