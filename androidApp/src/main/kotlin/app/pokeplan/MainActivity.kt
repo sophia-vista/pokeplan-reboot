@@ -11,6 +11,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import app.pokeplan.app.AppData
 import app.pokeplan.app.care.CareReminders
@@ -29,13 +34,17 @@ import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.App
 import app.pokeplan.ui.AppLaunch
 import app.pokeplan.ui.Place
+import app.pokeplan.ui.screens.RecoveryChoice
+import app.pokeplan.ui.screens.StartupLoading
 import app.pokeplan.reminders.AppAlerts
 import app.pokeplan.reminders.SharedReminders
 import app.pokeplan.reminders.TASK_REMINDERS_PREFS
 import app.pokeplan.widgets.announceBuddyEvent
 import app.pokeplan.widgets.updateWidgets
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -65,6 +74,9 @@ class MainActivity : ComponentActivity() {
 
     private var widgetSignature: Int? = null
     private var widgetRefresh: Job? = null
+
+    /** A change since the widgets were last brought up to date; what makes the update on leaving the app worth doing. */
+    private var widgetsDirty = false
     private var reminderSignature: Int? = null
     private var reminderRefresh: Job? = null
     private var appData: AppData? = null
@@ -85,18 +97,6 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         window.isNavigationBarContrastEnforced = false
-        // A damaged database with no backup: ask before any store opens (REP-026 c). The answer is saved and the activity starts over.
-        if (LiveStore.recoveryPending(this)) {
-            setContent {
-                app.pokeplan.ui.screens.RecoveryChoice(
-                    olderFromMillis = LiveStore.olderFilesMillis(this),
-                    onOlder = { LiveStore.resolveRecovery(this, useOlder = true); recreate() },
-                    onFresh = { LiveStore.resolveRecovery(this, useOlder = false); recreate() },
-                )
-            }
-            return
-        }
-        val storage = saveStorage(this)
         val motion = AccelerometerMotion(this)
         val calendars = AndroidCalendars(this)
         val contacts = AndroidContacts(this)
@@ -116,10 +116,42 @@ class MainActivity : ComponentActivity() {
         val first = launchFrom(intent)
         val place = first.place ?: Place.HOME
         setContent {
-            App(
-                storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), baseStorage = baseStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this), appLauncher = app.pokeplan.platform.AndroidAppLauncher(this), huawei = app.pokeplan.huawei.AndroidHuaweiReader(this), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
-            )
+            var ready by remember { mutableStateOf(false) }
+            var recovery by remember { mutableStateOf(false) }
+            // Opening the database (integrity check, migrations, Keystore keys) is IO and CPU; do it off the main thread
+            // while a small branded screen is shown, instead of blocking the first frame of the app.
+            LaunchedEffect(Unit) {
+                val app = applicationContext
+                val pending = withContext(Dispatchers.IO) {
+                    val needsChoice = LiveStore.recoveryPending(app)
+                    if (!needsChoice) LiveStore.get(app)
+                    needsChoice
+                }
+                recovery = pending
+                ready = true
+            }
+            when {
+                !ready -> StartupLoading()
+                recovery -> RecoveryChoice(
+                    olderFromMillis = LiveStore.olderFilesMillis(this@MainActivity),
+                    onOlder = { LiveStore.resolveRecovery(this@MainActivity, useOlder = true); recreate() },
+                    onFresh = { LiveStore.resolveRecovery(this@MainActivity, useOlder = false); recreate() },
+                )
+                else -> {
+                    // Opened once: asking the LiveStore for each document on every recomposition would be a handful of
+                    // meta queries and wrappers each time the theme or a dialog changes.
+                    val storage = remember { saveStorage(this@MainActivity) }
+                    val care = remember { careStorage(this@MainActivity) }
+                    val heal = remember { healStorage(this@MainActivity) }
+                    val mint = remember { mintStorage(this@MainActivity) }
+                    val base = remember { baseStorage(this@MainActivity) }
+                    val link = remember { linkStorage(this@MainActivity) }
+                    App(
+                        storage, careStorage = care, healStorage = heal, mintStorage = mint, baseStorage = base, linkStorage = link, focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
+                        cries = AndroidCryPlayer(this@MainActivity), haptics = AndroidHaptics(this@MainActivity), files = AndroidFileSaver(this@MainActivity), calendars = calendars, phone = AndroidPhoneState(this@MainActivity), torch = torch, capabilities = AndroidCapabilities(this@MainActivity), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this@MainActivity), appLauncher = app.pokeplan.platform.AndroidAppLauncher(this@MainActivity), huawei = app.pokeplan.huawei.AndroidHuaweiReader(this@MainActivity), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
+                    )
+                }
+            }
         }
     }
 
@@ -150,10 +182,12 @@ class MainActivity : ComponentActivity() {
         }
         if (signature == widgetSignature) return
         widgetSignature = signature
+        widgetsDirty = true
         widgetRefresh?.cancel()
         widgetRefresh = lifecycleScope.launch {
             delay(800)
-            updateWidgets(applicationContext)
+            withContext(Dispatchers.IO) { updateWidgets(applicationContext) }
+            widgetsDirty = false
         }
     }
 
@@ -176,8 +210,10 @@ class MainActivity : ComponentActivity() {
         reminderRefresh?.cancel()
         reminderRefresh = lifecycleScope.launch {
             delay(800)
-            SharedReminders.reschedule(applicationContext)
-            AppAlerts.schedule(applicationContext, alerts)
+            withContext(Dispatchers.IO) {
+                SharedReminders.reschedule(applicationContext)
+                AppAlerts.schedule(applicationContext, alerts)
+            }
         }
     }
 
@@ -192,10 +228,12 @@ class MainActivity : ComponentActivity() {
         }
         if (signature == careWidgetSignature) return
         careWidgetSignature = signature
+        widgetsDirty = true
         widgetRefresh?.cancel()
         widgetRefresh = lifecycleScope.launch {
             delay(800)
-            updateWidgets(applicationContext)
+            withContext(Dispatchers.IO) { updateWidgets(applicationContext) }
+            widgetsDirty = false
         }
     }
 
@@ -214,7 +252,7 @@ class MainActivity : ComponentActivity() {
         healRefresh?.cancel()
         healRefresh = lifecycleScope.launch {
             delay(800)
-            SharedReminders.reschedule(applicationContext)
+            withContext(Dispatchers.IO) { SharedReminders.reschedule(applicationContext) }
         }
     }
 
@@ -233,7 +271,7 @@ class MainActivity : ComponentActivity() {
         mintRefresh?.cancel()
         mintRefresh = lifecycleScope.launch {
             delay(800)
-            SharedReminders.reschedule(applicationContext)
+            withContext(Dispatchers.IO) { SharedReminders.reschedule(applicationContext) }
         }
     }
 
@@ -252,7 +290,7 @@ class MainActivity : ComponentActivity() {
         homeRefresh?.cancel()
         homeRefresh = lifecycleScope.launch {
             delay(800)
-            SharedReminders.reschedule(applicationContext)
+            withContext(Dispatchers.IO) { SharedReminders.reschedule(applicationContext) }
         }
     }
 
@@ -272,7 +310,7 @@ class MainActivity : ComponentActivity() {
         linkRefresh?.cancel()
         linkRefresh = lifecycleScope.launch {
             delay(800)
-            SharedReminders.reschedule(applicationContext)
+            withContext(Dispatchers.IO) { SharedReminders.reschedule(applicationContext) }
         }
     }
 
@@ -288,7 +326,7 @@ class MainActivity : ComponentActivity() {
         routineRefresh?.cancel()
         routineRefresh = lifecycleScope.launch {
             delay(800)
-            SharedReminders.reschedule(applicationContext)
+            withContext(Dispatchers.IO) { SharedReminders.reschedule(applicationContext) }
         }
     }
 
@@ -339,7 +377,11 @@ class MainActivity : ComponentActivity() {
         torch.release()
         deviceGate?.left()
         super.onStop()
-        lifecycleScope.launch { announceBuddyEvent(applicationContext) }
+        val dirty = widgetsDirty
+        lifecycleScope.launch {
+            announceBuddyEvent(applicationContext, updateWhenQuiet = dirty)
+            if (dirty) widgetsDirty = false
+        }
     }
 
     companion object {

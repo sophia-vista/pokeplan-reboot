@@ -59,7 +59,8 @@ private fun groupsOf(active: List<AccountBalance>): List<AccountGroup> =
 internal fun AccountList(model: AppModel, open: String?, startArranging: Boolean = false, setOpen: (String?) -> Unit) {
     val mint = model.mint
     val data = model.mintData
-    val balances = MintRules.balances(data)
+    // The ledger is re-walked on every local state change (opening a row, Arrange); remember it until the records change.
+    val balances = remember(data.accounts, data.transactions) { MintRules.balances(data) }
     val active = balances.filter { it.account.status == AccountStatus.ACTIVE }
     val rest = balances.filter { it.account.status != AccountStatus.ACTIVE }
     if (active.isEmpty() && rest.isEmpty()) return

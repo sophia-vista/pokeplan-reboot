@@ -1,6 +1,7 @@
 package app.pokeplan.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -31,11 +32,15 @@ fun DayBackground(hour: Int, minute: Int, modifier: Modifier = Modifier, dark: B
         Canvas(modifier.fillMaxSize()) { drawRect(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(top, bottom))) }
         return
     }
-    Canvas(modifier.fillMaxSize()) {
-        val cols = (size.width / cell).toInt() + 1
-        val rows = (size.height / cell).toInt() + 1
-        val bitmap = dithered(cols, rows, top, bottom)
-        drawImage(bitmap, dstSize = IntSize((cols * cell).toInt(), (rows * cell).toInt()), filterQuality = FilterQuality.None)
+    // Built once per size and palette step (and cached), not inside a draw pass: a whole-screen dither is thousands of
+    // drawRect calls and would otherwise be redone whenever the Canvas happens to redraw.
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        val cols = (constraints.maxWidth / cell).toInt() + 1
+        val rows = (constraints.maxHeight / cell).toInt() + 1
+        val bitmap = remember(cols, rows, top, bottom) { dithered(cols, rows, top, bottom) }
+        Canvas(Modifier.fillMaxSize()) {
+            drawImage(bitmap, dstSize = IntSize((cols * cell).toInt(), (rows * cell).toInt()), filterQuality = FilterQuality.None)
+        }
     }
 }
 
@@ -48,7 +53,7 @@ private fun dithered(cols: Int, rows: Int, top: Color, bottom: Color): ImageBitm
     // Colours move slowly through the day, so round them to keep a handful of pictures instead of one per minute.
     val key = "$cols:$rows:${top.toArgb8()}:${bottom.toArgb8()}"
     cache[key]?.let { return it }
-    if (cache.size > 6) cache.clear()
+    if (cache.size > 8) cache.remove(cache.keys.first())
     val bitmap = ImageBitmap(cols, rows)
     val canvas = ComposeCanvas(bitmap)
     val paintTop = Paint().apply { color = top; isAntiAlias = false }

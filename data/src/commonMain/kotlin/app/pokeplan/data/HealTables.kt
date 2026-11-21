@@ -69,8 +69,16 @@ class HealTables(private val store: DataStore) {
         return SLICES.any { slice -> rows.records(slice.table).any { c.open(it.json) == null } } || rows.state("heal_state").values.any { c.open(it) == null }
     }
 
-    /** Heal's document, or null when it is empty or locked: the callers that must not fail inside a transaction (or that treat a locked Heal as empty) use this. */
-    fun readOrNull(): String? = if (locked()) null else read()
+    /**
+     * Heal's document, or null when it is empty or locked: the callers that must not fail inside a transaction (or that treat a locked Heal as empty) use this.
+     * The read itself opens every row, so a row this phone's key cannot open fails the transaction and is reported as null; a separate
+     * `locked()` pass would decrypt every row a second time (and each open is a Keystore round trip).
+     */
+    fun readOrNull(): String? = try {
+        read()
+    } catch (e: HealLockedException) {
+        null
+    }
 
     /**
      * Heal as one text for a backup or a kept-aside copy: sealed again as a whole once the rows are sealed (so a daily backup or a backup file holds no figure or

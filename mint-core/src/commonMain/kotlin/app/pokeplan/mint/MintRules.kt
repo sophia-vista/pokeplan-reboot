@@ -4,6 +4,7 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
@@ -473,20 +474,36 @@ object MintRules {
     fun occurrences(data: MintData, bill: Bill, from: LocalDate, to: LocalDate, today: LocalDate): List<Occurrence> {
         if (bill.status != PlanStatus.ACTIVE || to < from) return emptyList()
         val out = mutableListOf<Occurrence>()
-        var index = 0
+        // A bill can be years old; walking from its first occurrence made every call O(days since then). Start at the
+        // arithmetic index for the window, one step early to be safe around month-end clamping and workday shifts.
+        val safeFrom = from.minus(7, DateTimeUnit.DAY)
+        val first = bill.firstDue
+        val months = (safeFrom.year - first.year) * 12 + (safeFrom.monthNumber - first.monthNumber)
+        val start = when (bill.frequency) {
+            Frequency.ONCE -> 0
+            Frequency.WEEKLY -> (first.daysUntil(safeFrom) / 7 - 1).coerceAtLeast(0)
+            Frequency.MONTHLY -> (months - 1).coerceAtLeast(0)
+            Frequency.SEMI_ANNUAL -> (months / 6 - 1).coerceAtLeast(0)
+            Frequency.YEARLY -> (safeFrom.year - first.year - 1).coerceAtLeast(0)
+            Frequency.SEMI_MONTHLY -> (months * semiDays(bill).size - semiDays(bill).size).coerceAtLeast(0)
+        }
+        val payments = data.billPayments.filter { it.billId == bill.id }.associateBy { it.dueDay }
+        var index = start
         while (index <= MAX_OCCURRENCES) {
             val due = dueDay(bill, index)
             if (due > to.plus(7, DateTimeUnit.DAY)) break
             val pay = payDay(data, bill, due)
-            if ((due >= from && due <= to) || (pay >= from && pay <= to)) out += occurrence(data, bill, due, today)
+            if ((due >= from && due <= to) || (pay >= from && pay <= to)) out += occurrence(data, bill, due, today, payments[due])
             if (bill.frequency == Frequency.ONCE) break
             index++
         }
         return out
     }
 
-    fun occurrence(data: MintData, bill: Bill, due: LocalDate, today: LocalDate): Occurrence {
-        val payment = data.billPayments.firstOrNull { it.billId == bill.id && it.dueDay == due }
+    fun occurrence(data: MintData, bill: Bill, due: LocalDate, today: LocalDate): Occurrence =
+        occurrence(data, bill, due, today, data.billPayments.firstOrNull { it.billId == bill.id && it.dueDay == due })
+
+    private fun occurrence(data: MintData, bill: Bill, due: LocalDate, today: LocalDate, payment: BillPayment?): Occurrence {
         val pay = payDay(data, bill, due)
         val state = when (payment?.status) {
             SettleStatus.PAID -> OccurrenceState.PAID

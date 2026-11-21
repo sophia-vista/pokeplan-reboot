@@ -137,11 +137,13 @@ private fun TickButton(description: String, done: Boolean = false, onClick: Acti
 
 /** Brings every widget up to date; called when the app is left and after a tap on a widget. */
 suspend fun updateWidgets(context: Context) {
+    val manager = GlanceAppWidgetManager(context)
     for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget(), CareWidget(), WorldWidget(), MintWidget(), MintDueWidget())) {
+        // Nothing on the home screen of this kind: no state write and no remote-views pass for it.
+        val ids = manager.getGlanceIds(widget.javaClass)
+        if (ids.isEmpty()) continue
         val stamp = System.currentTimeMillis()
-        for (id in GlanceAppWidgetManager(context).getGlanceIds(widget.javaClass)) {
-            updateAppWidgetState(context, id) { it[RefreshKey] = stamp }
-        }
+        for (id in ids) updateAppWidgetState(context, id) { it[RefreshKey] = stamp }
         widget.updateAll(context)
     }
 }
@@ -319,8 +321,11 @@ private object BuddyTalk {
     }
 }
 
-/** Called when the app is left: an event that just happened (an egg hatched, a payout) gets a few seconds of reaction. */
-suspend fun announceBuddyEvent(context: Context) {
+/**
+ * Called when the app is left: an event that just happened (an egg hatched, a payout) gets a few seconds of reaction.
+ * [updateWhenQuiet] false skips the plain "bring the widgets up to date" pass when nothing changed while the app was open.
+ */
+suspend fun announceBuddyEvent(context: Context, updateWhenQuiet: Boolean = false) {
     val store = widgetStore(context)
     val event = store.buddyEvent()
     if (event != null && event.atMillis > BuddyTalk.celebrated(context) && !store.data.settings.reduceMotion) {
@@ -328,7 +333,7 @@ suspend fun announceBuddyEvent(context: Context) {
         BuddyTalk.show(context, event.event.icon)
         updateWidgets(context)
         BuddyTalk.settleLater(context)
-    } else {
+    } else if (updateWhenQuiet) {
         updateWidgets(context)
     }
 }

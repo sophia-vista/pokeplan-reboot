@@ -43,6 +43,7 @@ import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.describe
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.Portrait

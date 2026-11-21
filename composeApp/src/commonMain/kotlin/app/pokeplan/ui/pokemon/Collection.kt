@@ -149,7 +149,7 @@ fun CollectionScreen(
             return@ScreenSwitch
         }
 
-        SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon) {
+        SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon, scroll = current != Section.DEX) {
             when (current) {
                 Section.PARTY -> {
                     // One region's party at a time behind tabs (a page of every module's party was a very long scroll), as the games' party screen:

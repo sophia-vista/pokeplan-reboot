@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.gear.LightColors
 import app.pokeplan.ui.gear.Sos
 import app.pokeplan.ui.theme.FieldLabel
@@ -56,13 +57,16 @@ internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
     var sos by remember { mutableStateOf(false) }
     var warned by remember { mutableStateOf(false) }
     val reduce = model.data.settings.reduceMotion
-    // The light's state is the hardware's: another app or the system switching it shows here at once. Leaving the tool turns it off, so it is never left on by accident.
-    DisposableEffect(torch) {
-        val stop = torch?.observe { on = it; if (!it) sos = false }
+    // The light's state is the hardware's: another app or the system switching it shows here at once. Leaving the tool,
+    // or the app going to the background, turns it off (the SOS loop used to relight it after onStop released the torch).
+    val foreground = rememberInForeground()
+    DisposableEffect(torch, foreground) {
+        var stop: (() -> Unit)? = null
+        if (foreground) stop = torch?.observe { on = it; if (!it) sos = false }
         onDispose { stop?.invoke(); torch?.release() }
     }
-    LaunchedEffect(sos) {
-        if (!sos || torch == null) return@LaunchedEffect
+    LaunchedEffect(sos, foreground) {
+        if (!sos || torch == null || !foreground) return@LaunchedEffect
         val end = store.nowMillis + Sos.MAX_MS
         try {
             while (sos && store.nowMillis < end) for ((lit, ms) in Sos.pattern()) { torch.set(lit); delay(ms); if (!sos) break }
