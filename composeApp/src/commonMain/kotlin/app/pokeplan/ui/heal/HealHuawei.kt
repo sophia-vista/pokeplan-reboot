@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import app.pokeplan.app.heal.HuaweiControls
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.HuaweiReader
@@ -108,6 +109,16 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
             }
             if (!seen.isEmpty) {
                 StatusLine("Seen", "${count(seen.screens.size, "page")}, ${count(seen.notifications.size, "notification")}")
+                if (showing) {
+                    ListRow {
+                        Text("Controls", style = MaterialTheme.typography.bodyLarge)
+                        Text(HuaweiControls.lines(seen).joinToString("\n"), style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = Pixel.InkSoft)
+                    }
+                    if (seen.log.isNotEmpty()) ListRow {
+                        Text("Walk log", style = MaterialTheme.typography.bodyLarge)
+                        Text(seen.log.joinToString("\n"), style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = Pixel.InkSoft)
+                    }
+                }
                 if (showing) seen.screens.forEach { s ->
                     ListRow {
                         Text(s.title.ifBlank { "Page" }, style = MaterialTheme.typography.bodyLarge)
@@ -120,7 +131,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                         Text(listOf(n.title, n.text, n.subText, n.bigText).filter { it.isNotBlank() }.joinToString("\n"), style = MaterialTheme.typography.bodySmall, color = Pixel.InkSoft)
                     }
                 }
-                PixelButton(if (showing) "Hide what it saw" else "Show what it saw", { showing = !showing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                PixelButton(if (showing) "Hide controls and pages" else "Show controls and pages", { showing = !showing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 PixelButton("Save, numbers hidden", {
                     val text = seen.sample(AppVersion.NAME)
                     note = model.files?.save("pokelife-huawei-probe.txt", text) ?: run { clipboard.setText(AnnotatedString(text)); "Copied with every number hidden" } // copy-ok: result

@@ -74,14 +74,20 @@ class HuaweiScreenService : AccessibilityService() {
         return ScreenCapture(System.currentTimeMillis(), page, nodes).also { HuaweiCapture.addScreen(it) }
     }
 
-    private fun collect(node: AccessibilityNodeInfo, depth: Int, out: MutableList<ScreenNode>) {
+    private fun collect(node: AccessibilityNodeInfo, depth: Int, out: MutableList<ScreenNode>, via: String = "", viaDistance: Int = 0) {
         if (out.size >= MAX_NODES || depth > MAX_DEPTH || node.isPassword || !node.isVisibleToUser) return
         val text = node.text?.toString()?.trim()?.take(MAX_CHARS).orEmpty()
         val description = node.contentDescription?.toString()?.trim()?.take(MAX_CHARS).orEmpty()
+        val id = node.viewIdResourceName.orEmpty()
+        val kind = node.className?.toString()?.substringAfterLast('.').orEmpty()
+        // The element that takes a tap on this one: itself, or its nearest clickable ancestor within 8 levels (what clickableAncestor does in the walk).
+        val here = if (node.isClickable) id.substringAfter(":id/").ifBlank { kind } else via
+        val hereDistance = if (node.isClickable) 0 else viaDistance
+        val tapVia = if (here.isNotEmpty() && hereDistance <= TAP_LEVELS - 1) here else ""
         if (text.isNotEmpty() || description.isNotEmpty() || node.isScrollable) {
-            out += ScreenNode(text, description, node.viewIdResourceName.orEmpty(), node.className?.toString()?.substringAfterLast('.').orEmpty(), depth, node.isClickable, node.isScrollable, actionNames(node))
+            out += ScreenNode(text, description, id, kind, depth, node.isClickable, node.isScrollable, actionNames(node), tapVia)
         }
-        for (i in 0 until node.childCount) node.getChild(i)?.let { collect(it, depth + 1, out) }
+        for (i in 0 until node.childCount) node.getChild(i)?.let { collect(it, depth + 1, out, here, hereDistance + 1) }
     }
 
     /** The actions Android offers on [node] that matter to the walk (a debug aid in the capture: which controls can be manipulated). */
@@ -126,7 +132,7 @@ class HuaweiScreenService : AccessibilityService() {
 
     private fun clickableAncestor(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         var n: AccessibilityNodeInfo? = node
-        repeat(8) { if (n == null) return null; if (n!!.isClickable) return n; n = n!!.parent }
+        repeat(TAP_LEVELS) { if (n == null) return null; if (n!!.isClickable) return n; n = n!!.parent }
         return null
     }
 
@@ -137,6 +143,7 @@ class HuaweiScreenService : AccessibilityService() {
         if (walking) { done("Already reading Huawei Health"); return } // copy-ok: result
         val launch = packageManager.getLaunchIntentForPackage(HuaweiHealth.PACKAGE) ?: run { done("Huawei Health is not installed"); return } // copy-ok: result
         main.removeCallbacks(settle)
+        note("Walk started")
         var answered = false
         fun answer(problem: String?) { if (!answered) { answered = true; done(problem) } }
         walkJob = scope.launch {
@@ -164,6 +171,7 @@ class HuaweiScreenService : AccessibilityService() {
         delay(FIRST_WAIT_MS)
         if (awaitHealthPage() == null) return "Huawei Health did not show its Health page" // copy-ok: result
         val opened = HashSet<String>()
+        note("Health page found")
         capture()
         var scrolls = 0
         while (HuaweiWalk.remaining(opened).isNotEmpty()) {
@@ -171,18 +179,20 @@ class HuaweiScreenService : AccessibilityService() {
             val next = HuaweiWalk.remaining(opened).firstOrNull { card(root, it) != null }
             if (next != null) {
                 opened += next.title
+                note("${next.title}: in view")
                 visit(next, card(root, next)!!)?.let { return it }
                 continue
             }
-            if (scrolls++ >= HuaweiWalk.HOME_SCROLLS) break
+            if (scrolls++ >= HuaweiWalk.HOME_SCROLLS) { note("Health page: scroll limit reached"); break }
             val before = capture(root)?.signature
-            if (mainScroller(root)?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) != true) break
+            if (mainScroller(root)?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) != true) { note("Health page: scroll refused"); break }
             delay(SCROLL_WAIT_MS)
-            if (capture()?.signature == before) break
+            if (capture()?.signature == before) { note("Health page: end of list"); break }
+            note("Health page: scrolled")
         }
         for (wanted in HuaweiWalk.remaining(opened)) {
             val root = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
-            val target = findCard(root, wanted) ?: continue
+            val target = findCard(root, wanted) ?: run { note("${wanted.title}: not found"); null } ?: continue
             visit(wanted, target)?.let { return it }
         }
         return null
@@ -190,17 +200,23 @@ class HuaweiScreenService : AccessibilityService() {
 
     /** Opens [target] (the title element of [wanted]), captures its page within the card's scroll budget, and goes Back; null, or what stopped the walk. */
     private suspend fun visit(wanted: HuaweiWalk.Card, target: AccessibilityNodeInfo): String? {
-        if (clickableAncestor(target)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) != true) return null
+        if (clickableAncestor(target)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) != true) { note("${wanted.title}: tap refused or no clickable ancestor"); return null }
         delay(PAGE_WAIT_MS)
         val detail = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
-        if (isHealthPage(detail)) return null // the tap opened nothing
+        if (isHealthPage(detail)) { note("${wanted.title}: tap opened nothing"); return null }
+        note("${wanted.title}: opened ${page.ifBlank { "a page" }}")
         val exercise = wanted.title == "Exercise records"
         scrollThrough(wanted.scrolls) { exercise && HuaweiWalk.exerciseIsOldEnough(it, System.currentTimeMillis(), TimeZone.currentSystemDefault()) }
         // A page with Day / Week / Month / Year tabs (the Sleep page): also capture its Week view, which is a tab of the same page, so Back below still leaves it.
-        if (wanted.week && openWeek()) { delay(PAGE_WAIT_MS); scrollThrough(wanted.scrolls) }
+        if (wanted.week) {
+            val tapped = openWeek()
+            note("${wanted.title}: Week tab ${if (tapped) "tapped" else "not tapped"}")
+            if (tapped) { delay(PAGE_WAIT_MS); scrollThrough(wanted.scrolls) }
+        }
         performGlobalAction(GLOBAL_ACTION_BACK)
         delay(BACK_WAIT_MS)
         if (awaitHealthPage() == null) return "Stopped after ${wanted.title}: Back did not return to the Health page" // copy-ok: result
+        note("${wanted.title}: Back to the Health page")
         return null
     }
 
@@ -251,6 +267,9 @@ class HuaweiScreenService : AccessibilityService() {
         return huaweiRoot()?.let { card(it, wanted) }
     }
 
+    /** One line in the walk log (card titles and outcomes only; never Huawei's own text). */
+    private fun note(line: String) = HuaweiCapture.log(line)
+
     /** Turns this service off in Android's settings, as the player would; it stays off until turned on again. */
     fun turnOff() {
         stop()
@@ -274,6 +293,7 @@ class HuaweiScreenService : AccessibilityService() {
         const val MAX_TRIES = 4
         const val MAX_NODES = 400
         const val MAX_DEPTH = 40
+        const val TAP_LEVELS = 8
         const val MAX_CHARS = 200
     }
 }
