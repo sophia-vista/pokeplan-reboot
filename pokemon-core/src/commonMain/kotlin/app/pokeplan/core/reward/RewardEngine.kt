@@ -996,6 +996,29 @@ object RewardEngine {
     }
 
     /**
+     * A visit to a person's Friend Safari (LINK.md 9.5): one Pokémon of [SafariRules.pool] is met, species not caught yet more likely (so the pool's rate per slot
+     * falls as it widens), and caught directly (no egg, no ball): it joins Link's party if there is room (else the PC), leads it if Link has no lead, pays the usual
+     * new-species candies and is shiny at the ordinary chance. Nothing else is paid: no Poké, no trainer point, no track point. Null for an empty pool.
+     */
+    fun safariVisit(state: PlayerState, e: SafariEvent, newPokemonId: String, rng: Random): Outcome? {
+        val pool = SafariRules.pool(e.ref, e.spread)
+        if (pool.isEmpty()) return null
+        val known = state.caught + state.pokemon.map { it.speciesId }
+        val weights = pool.map { if (it.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
+        var roll = rng.nextDouble() * weights.sum()
+        var met = pool.last()
+        for ((i, o) in pool.withIndex()) { roll -= weights[i]; if (roll < 0) { met = o; break } }
+        val size = state.partyOf(PartyIds.LINK).size
+        val p = Hatching.create(newPokemonId, HatchOption(met.speciesId, met.formIdentifier), size, e.nowMillis, 0, rng, SafariRules.SHINY_ROLLS).copy(partyId = PartyIds.LINK)
+        val lead = state.linkLead?.id ?: p.id.takeIf { p.inParty }
+        val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
+        return Outcome(
+            state.copy(pokemon = state.pokemon + p, linkLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
+            listOf(Reward.Hatched(p, fromTask = true)) + newRewards,
+        )
+    }
+
+    /**
      * A Habitat Egg from a full Habitat Discovery meter ([HOME_EGG_POINTS]): rolled like a Task Egg from the Home Region (species not caught yet
      * more likely), it hatches at once into Home's party if there is room (else the PC), and leads it if Home has no lead yet.
      */

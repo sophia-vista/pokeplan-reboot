@@ -322,6 +322,7 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
                 }
                 Acquisition.HABITAT -> { delay(400); travel.animateTo(1f, tween(1000)) }
                 Acquisition.POSTCARD -> { delay(400); travel.animateTo(1f, tween(1100)) }
+                Acquisition.SAFARI -> { delay(500); travel.animateTo(1f, tween(1200)) }
                 Acquisition.EGG -> {}
             }
         }
@@ -343,7 +344,7 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
 
     val name = p.nickname
     val shiny = p.isShiny
-    val scenery = when (kind) { Acquisition.ARRIVAL -> BuddyScene.CARE; Acquisition.FIELD -> BuddyScene.HEAL; Acquisition.HABITAT -> BuddyScene.BASE; Acquisition.POSTCARD -> BuddyScene.LINK; else -> BuddyScene.MINT }
+    val scenery = when (kind) { Acquisition.ARRIVAL -> BuddyScene.CARE; Acquisition.FIELD -> BuddyScene.HEAL; Acquisition.HABITAT -> BuddyScene.BASE; Acquisition.POSTCARD, Acquisition.SAFARI -> BuddyScene.LINK; else -> BuddyScene.MINT }
     SceneFrame({ arrived = true }, flash.value, if (shiny) FlashGold else FlashWhite) {
         SceneStage(scenery, 260.dp) {
             // The slot the Pokémon stands in; it enters from the left (Care), the right (Heal), the floor (Mint) or from above (Home).
@@ -353,6 +354,7 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
                 Acquisition.FIELD -> Modifier.offset(x = ((1f - t) * 260).dp)
                 Acquisition.HABITAT -> Modifier.offset(y = (-(1f - t) * 200).dp)
                 Acquisition.POSTCARD -> Modifier.offset(x = ((1f - t) * 260).dp, y = (-(1f - t) * 60).dp)
+                Acquisition.SAFARI -> Modifier.offset(x = (-(1f - t) * 260).dp)
                 else -> Modifier.offset(y = ((1f - t) * 200).dp)
             }
             if (kind == Acquisition.LEDGER && !arrived) {
@@ -374,12 +376,13 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
         val prefix = if (shiny) "shiny " else ""
         SceneText(
             text = when {
-                !arrived -> when (kind) { Acquisition.ARRIVAL -> "Oh? Someone is coming over the meadow..."; Acquisition.FIELD -> "Oh? Something is running along the route..."; Acquisition.HABITAT -> "Oh? Something has settled into the habitat..."; Acquisition.POSTCARD -> "Oh? A postcard has arrived..."; else -> "Oh? Ledger Research has turned something up..." }
+                !arrived -> when (kind) { Acquisition.ARRIVAL -> "Oh? Someone is coming over the meadow..."; Acquisition.FIELD -> "Oh? Something is running along the route..."; Acquisition.HABITAT -> "Oh? Something has settled into the habitat..."; Acquisition.POSTCARD -> "Oh? A postcard has arrived..."; Acquisition.SAFARI -> "Oh? Something rustles in the tall grass..."; else -> "Oh? Ledger Research has turned something up..." }
                 else -> when (kind) {
                     Acquisition.ARRIVAL -> "A ${prefix}new friend wandered over: $name!"
                     Acquisition.FIELD -> "Field Research found a $prefix$name!"
                     Acquisition.HABITAT -> "Habitat Discovery found a $prefix$name!"
                     Acquisition.POSTCARD -> "Postcard Trail delivered a $prefix$name!"
+                    Acquisition.SAFARI -> "A Friend Safari had a $prefix$name!"
                     else -> "Ledger Research catalogued a $prefix$name!"
                 }
             },
