@@ -154,13 +154,19 @@ class HuaweiScreenService : AccessibilityService() {
     private fun touch(node: AccessibilityNodeInfo): Boolean {
         val r = Rect()
         node.getBoundsInScreen(r)
-        if (r.width() <= 0 || r.height() <= 0) return false
+        if (r.width() <= 0 || r.height() <= 0) { lastTouch = "no bounds"; return false }
+        if (serviceInfo?.capabilities?.and(android.accessibilityservice.AccessibilityServiceInfo.CAPABILITY_CAN_PERFORM_GESTURES) == 0) { lastTouch = "gestures not granted"; return false }
         val path = Path().apply { moveTo(r.exactCenterX(), r.exactCenterY()) }
         val gesture = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0, TOUCH_MS)).build()
-        return runCatching { dispatchGesture(gesture, null, null) }.getOrDefault(false)
+        val sent = runCatching { dispatchGesture(gesture, null, null) }.onFailure { lastTouch = "error ${it.javaClass.simpleName}" }.getOrDefault(false)
+        if (sent) lastTouch = "sent" else if (!lastTouch.startsWith("error")) lastTouch = "refused"
+        return sent
     }
 
-    /** What a refused tap tried, for the walk log: the ids from [node] up, with "tap" on the clickable ones (ids only, never text). */
+    /** What the last [touch] did, for the walk log. */
+    private var lastTouch = "not tried"
+
+    /** What a refused tap tried, for the walk log: the ids from [node] up, with "(tap)" on the clickable ones (ids only, never text). */
     private fun triedChain(node: AccessibilityNodeInfo): String {
         val out = ArrayList<String>()
         var n: AccessibilityNodeInfo? = node
@@ -248,7 +254,7 @@ class HuaweiScreenService : AccessibilityService() {
             // A list that is still settling refuses a click on a row it has just re-bound: look again after a moment and try once more.
             delay(RETAP_WAIT_MS)
             val again = refind()
-            if (again == null || !tap(again)) { note("${wanted.title}: tap refused (${triedChain(again ?: target)})"); return null }
+            if (again == null || !tap(again)) { note("${wanted.title}: tap refused (${triedChain(again ?: target)}; touch ${lastTouch})"); return null }
         }
         delay(PAGE_WAIT_MS)
         val detail = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
@@ -256,6 +262,12 @@ class HuaweiScreenService : AccessibilityService() {
         // A page that shows no words yet (a web page, a slow card) gets one more wait; the log says how much of it there was.
         var shown = capture(detail)
         if (shown == null || shown.nodes.none { it.text.isNotBlank() || it.description.isNotBlank() }) { delay(PAGE_WAIT_MS); shown = capture() }
+        // Still no words: the page may be a window of its own (a dialog or sheet), so read every Huawei Health window.
+        if (shown == null || shown.nodes.none { it.text.isNotBlank() || it.description.isNotBlank() }) {
+            val others = windows.mapNotNull { it.root }.filter { it.packageName?.toString() == HuaweiHealth.PACKAGE }
+            others.forEach { capture(it) }
+            note("${wanted.title}: ${others.size} windows read")
+        }
         note("${wanted.title}: opened ${page.ifBlank { "a page" }} (${shown?.nodes?.size ?: 0} elements)")
         val exercise = wanted.title == "Exercise records"
         scrollThrough(wanted.scrolls) { exercise && HuaweiWalk.exerciseIsOldEnough(it, System.currentTimeMillis(), TimeZone.currentSystemDefault()) }
@@ -301,7 +313,14 @@ class HuaweiScreenService : AccessibilityService() {
         delay(MENU_WAIT_MS)
         capture() // the open menu, so its items show in the sample
         // A web page (Weight, Cycle Calendar) draws its menu a moment later than a native one.
-        val item = allDataItem() ?: run { delay(MENU_WAIT_MS * 2); capture(); allDataItem() }
+        var item = allDataItem() ?: run { delay(MENU_WAIT_MS * 2); capture(); allDataItem() }
+        if (item == null && touch(menu)) {
+            // A web page (Weight, Cycle Calendar) may take a touch where an accessibility click did nothing.
+            delay(MENU_WAIT_MS * 2)
+            capture()
+            item = allDataItem()
+            note("${wanted.title}: menu touched (${if (item != null) "menu showed" else "still no menu"})")
+        }
         if (item == null) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' is not in the menu"); return }
         if (!tap(item)) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' tap refused"); return }
         delay(PAGE_WAIT_MS)
@@ -425,7 +444,7 @@ class HuaweiScreenService : AccessibilityService() {
         const val MENU_WAIT_MS = 1_000L
         const val RETAP_WAIT_MS = 800L
         const val TOUCH_MS = 60L
-        const val TIMEOUT_MS = 330_000L
+        const val TIMEOUT_MS = 420_000L
         const val MAX_TRIES = 4
         const val MAX_NODES = 400
         const val MAX_DEPTH = 40

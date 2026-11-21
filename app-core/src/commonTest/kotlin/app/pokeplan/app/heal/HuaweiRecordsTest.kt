@@ -177,4 +177,32 @@ class HuaweiRecordsTest {
         assertEquals(once.map { it.id }.sorted(), twice.map { it.id }.sorted())
         assertEquals(LocalDate(2026, 10, 30), HuaweiRecords.oldestAllDataDay(allData, now, utc))
     }
+
+    private val dayPage = ScreenCapture(10, "PrivacyDataModelActivity", listOf(
+        n("action_bar_title", "11/12/2026 data"),
+        n("privacy_content_title", "6 h 20 min"), n("privacy_time", "11/11, 11:30 PM-11/12, 5:50 AM"),
+        n("privacy_content_title", "42 min"), n("privacy_time", "11/12, 1:00 PM-1:42 PM"),
+        n("privacy_content_title", "oops"), n("privacy_time", "11/12, 9:00 AM-8:00 AM"),
+    ))
+
+    @Test fun aSleepDayPageGivesNightsAndNapsWithTheirOwnTimes() {
+        val sleeps = HuaweiRecords.read(HuaweiSeen(listOf(dayPage)), now, utc).filterIsInstance<Imported.Sleep>()
+        assertEquals(listOf(at(2026, 11, 11, 23, 30) to at(2026, 11, 12, 5, 50), at(2026, 11, 12, 13, 0) to at(2026, 11, 12, 13, 42)), sleeps.map { it.startMillis to it.endMillis })
+        assertTrue(sleeps.all { it.provider == HuaweiHealth.PROVIDER && it.id == "sleep:${it.startMillis}" })
+    }
+
+    @Test fun anAcrossYearsSpanAndAnOvernightWithoutADateEndRight() {
+        val newYear = ScreenCapture(11, "PrivacyDataModelActivity", listOf(n("action_bar_title", "01/01/2026 data"), n("privacy_content_title", "7 h"), n("privacy_time", "12/31, 11:00 PM-6:00 AM")))
+        val s = HuaweiRecords.read(HuaweiSeen(listOf(newYear)), now, utc).filterIsInstance<Imported.Sleep>().single()
+        assertEquals(at(2025, 12, 31, 23, 0) to at(2026, 1, 1, 6, 0), s.startMillis to s.endMillis, "a date after the page's day is the year before; no end date means the next morning")
+    }
+
+    @Test fun realNightsReplaceTheLengthOnlyReadingAndTodaysNightFromTheSleepPage() {
+        val today = ScreenCapture(12, "PrivacyDataModelActivity", listOf(n("action_bar_title", "11/14/2026 data"), n("privacy_content_title", "5 h 9 min"), n("privacy_time", "11/14, 2:00 AM-7:09 AM")))
+        val list = ScreenCapture(13, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) + rowOf("5 h 9 min", "11/14") + rowOf("6 h 2 min", "11/13"))
+        val records = HuaweiRecords.read(HuaweiSeen(listOf(home, sleepPage("Today"), list, today)), now, utc)
+        assertEquals(listOf("sleep:${at(2026, 11, 14, 2, 0)}"), records.filterIsInstance<Imported.Sleep>().map { it.id }, "the Sleep page's night for today is replaced")
+        val lengths = records.filterIsInstance<Imported.Vital>().filter { it.type == app.pokeplan.heal.VitalType.SLEEP_LENGTH }.map { it.id }
+        assertEquals(listOf("sleeplength:362:2026-11-13"), lengths, "a day with real times keeps no length-only reading")
+    }
 }

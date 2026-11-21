@@ -36,12 +36,18 @@ object HuaweiRecords {
             val records = when {
                 s.title.startsWith("SportHistory") -> exercises(s, today, zone)
                 s.title.startsWith("KnitSleepDetail") -> listOfNotNull(sleep(s, today, seen.home.getUpMinute, zone))
+                s.title.startsWith("PrivacyDataModel") && s.nodes.any { id(it) == "action_bar_title" && dayTitle.matches(it.text.trim()) } -> sleepDay(s, nowMillis, zone)
                 s.title.startsWith("PrivacyDataModel") -> allData(s, today, nowMillis, zone)
                 s.nodes.any { it.text == "Weight" } && s.nodes.any { weightDate.matches(it.text) } -> weight(s, today, zone)
                 else -> emptyList()
             }
             records.forEach { out[it.id] = it }
         }
+        // A night with real times (a Sleep All data day page) replaces today's night from the Sleep page and the length-only reading of the same day.
+        val nights = out.values.filterIsInstance<Imported.Sleep>().filter { it.id != "sleep:$today" }
+        val nightDays = nights.map { it.endMillis.toLocalDateTime(zone).date.toString() }.toSet()
+        if (nights.any { it.endMillis.toLocalDateTime(zone).date == today }) out.remove("sleep:$today")
+        out.values.removeAll { it is Imported.Vital && it.type == VitalType.SLEEP_LENGTH && it.id.substringAfterLast(':') in nightDays }
         return out.values.toList() + steps(seen, zone) + vitals(seen, today, zone)
     }
 
@@ -129,6 +135,35 @@ object HuaweiRecords {
                 if (date != null && date <= today && content.isNotEmpty()) out += AllDataRow(date, content)
                 content = ""
             }
+        }
+        return out
+    }
+
+    private val dayTitle = Regex("""^(\d{1,2})/(\d{1,2})/(\d{4})\s+data$""", RegexOption.IGNORE_CASE)
+    private val sleepSpan = Regex("""^(\d{1,2})/(\d{1,2}),\s*(\d{1,2}:\d{2}\s*[AP]?M?)\s*-\s*(?:(\d{1,2})/(\d{1,2}),\s*)?(\d{1,2}:\d{2}\s*[AP]?M?)$""", RegexOption.IGNORE_CASE)
+
+    /**
+     * A Sleep All data day page (the page a row of the list opens; its title is "MM/DD/YYYY data"): one session per row, a length ("5 h 9 min") and its span
+     * ("11/11, 11:30 PM-11/12, 6:50 AM", or "11/12, 1:00 PM-2:10 PM" within one day). These are the times the list lacks, so they become real nights and naps
+     * ([Imported.Sleep], id from the start). A date later than the page's day is the year before; a span that does not end after it starts is left out.
+     */
+    private fun sleepDay(s: ScreenCapture, nowMillis: Long, zone: TimeZone): List<Imported> {
+        val t = s.nodes.firstNotNullOfOrNull { n -> if (id(n) == "action_bar_title") dayTitle.matchEntire(n.text.trim()) else null } ?: return emptyList()
+        val page = runCatching { LocalDate(t.groupValues[3].toInt(), t.groupValues[1].toInt(), t.groupValues[2].toInt()) }.getOrNull() ?: return emptyList()
+        fun dateOf(m: String, d: String): LocalDate? = (page.year downTo page.year - 1).firstNotNullOfOrNull { y -> runCatching { LocalDate(y, m.toInt(), d.toInt()) }.getOrNull()?.takeIf { it <= page } }
+        val out = ArrayList<Imported>()
+        for (n in s.nodes) if (id(n) == "privacy_time") {
+            val m = sleepSpan.matchEntire(n.text.trim()) ?: continue
+            val startDate = dateOf(m.groupValues[1], m.groupValues[2]) ?: continue
+            val startTime = timeOf(m.groupValues[3]) ?: continue
+            val endTime = timeOf(m.groupValues[6]) ?: continue
+            val endDate = if (m.groupValues[4].isNotEmpty()) dateOf(m.groupValues[4], m.groupValues[5]) ?: continue else startDate
+            val start = millis(startDate, startTime, zone)
+            var end = millis(endDate, endTime, zone)
+            if (m.groupValues[4].isEmpty() && end <= start) end += 24 * 3_600_000L // "11:30 PM-6:50 AM" with no date for the end
+            val minutes = (end - start) / 60_000
+            if (minutes !in 30..16 * 60 || end > nowMillis + 3_600_000L) continue
+            out += Imported.Sleep(HuaweiHealth.PROVIDER, APP, "sleep:$start", start, end)
         }
         return out
     }

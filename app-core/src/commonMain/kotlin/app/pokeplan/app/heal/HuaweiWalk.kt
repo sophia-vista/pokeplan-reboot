@@ -38,8 +38,8 @@ object HuaweiWalk {
     const val ALL_DATA_SCROLLS = 14
     const val ALL_DATA_DAYS = 90
 
-    /** How many of the newest Sleep All data rows are opened one by one (each opens to its bed and wake times). */
-    const val SLEEP_ENTRIES = 8
+    /** How many of the newest Sleep All data rows (days) are opened one by one: each opens to that day's nights and naps with their bed and wake times. */
+    const val SLEEP_ENTRIES = 14
 
     /** The Steps summary at the top of the Health page (not a card: its element is `time_strength_layout_middle`), opened first with two scrolls (owner, 21 November 2026). */
     val STEPS = Card(listOf("Steps"), scrolls = 2, allDataScrolls = 4)
