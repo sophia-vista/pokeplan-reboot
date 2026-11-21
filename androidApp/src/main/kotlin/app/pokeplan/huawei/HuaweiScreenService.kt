@@ -77,10 +77,17 @@ class HuaweiScreenService : AccessibilityService() {
 
     private fun capture(root: AccessibilityNodeInfo? = huaweiRoot()): ScreenCapture? {
         root ?: return null
+        val started = System.nanoTime()
         val nodes = ArrayList<ScreenNode>()
         collect(root, 0, nodes)
+        captureNanos += System.nanoTime() - started
+        captures++
         return ScreenCapture(System.currentTimeMillis(), page, nodes).also { HuaweiCapture.addScreen(it) }
     }
+
+    /** Time spent reading Huawei Health's screens during a walk (each element is a call to another process), for the walk log: it runs on the app's main thread. */
+    private var captureNanos = 0L
+    private var captures = 0
 
     private fun collect(node: AccessibilityNodeInfo, depth: Int, out: MutableList<ScreenNode>, via: String = "", viaDistance: Int = 0) {
         if (out.size >= MAX_NODES || depth > MAX_DEPTH || node.isPassword || !node.isVisibleToUser) return
@@ -194,12 +201,15 @@ class HuaweiScreenService : AccessibilityService() {
         if (walking) { done("Already reading Huawei Health"); return } // copy-ok: result
         val launch = packageManager.getLaunchIntentForPackage(HuaweiHealth.PACKAGE) ?: run { done("Huawei Health is not installed"); return } // copy-ok: result
         main.removeCallbacks(settle)
+        captureNanos = 0L; captures = 0
         note("Walk started")
         var answered = false
         fun answer(problem: String?) { if (!answered) { answered = true; done(problem) } }
         walkJob = scope.launch {
             startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            val startedAt = System.currentTimeMillis()
             val problem = withTimeoutOrNull(TIMEOUT_MS) { runWalk() ?: OK } ?: "Huawei Health took too long. What was seen is kept." // copy-ok: result
+            note("Walk took ${(System.currentTimeMillis() - startedAt) / 1000} s; reading screens took ${captureNanos / 1_000_000_000} s in $captures reads")
             comeBack()
             answer(problem.takeIf { it != OK })
         }.also { job ->
