@@ -15,7 +15,7 @@ import app.pokeplan.app.heal.HuaweiWalk
 import app.pokeplan.app.heal.ScreenCapture
 import app.pokeplan.app.heal.ScreenNode
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -36,15 +36,22 @@ import kotlinx.datetime.toLocalDateTime
  */
 class HuaweiScreenService : AccessibilityService() {
     private val main = Handler(Looper.getMainLooper())
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var page = ""
-    private var walkJob: Job? = null
+
+    /**
+     * The walk runs on a thread of its own, not the app's main thread: every element it reads is a call to another process, and a read of a few minutes on the main
+     * thread left PokéLife unresponsive (owner, 21 November 2026). Reading nodes, clicking, scrolling and touching are fine from any thread; what the caller is told
+     * ([walk]'s `done`) and the service's own switching off are handed back to the main thread.
+     */
+    private val worker = java.util.concurrent.Executors.newSingleThreadExecutor { r -> Thread(r, "huawei-walk").apply { isDaemon = true } }
+    private val scope = CoroutineScope(SupervisorJob() + worker.asCoroutineDispatcher())
+    @Volatile private var page = ""
+    @Volatile private var walkJob: Job? = null
     private val settle = Runnable { capture() }
 
     val walking: Boolean get() = walkJob?.isActive == true
 
     /** What HEAL already has from Huawei Health for this read, so cards and lists with nothing new are skipped (HuaweiWalk.Known). */
-    private var known = HuaweiWalk.Known()
+    @Volatile private var known = HuaweiWalk.Known()
 
     override fun onServiceConnected() { HuaweiCapture.screen = this }
 
@@ -53,7 +60,7 @@ class HuaweiScreenService : AccessibilityService() {
         return super.onUnbind(intent)
     }
 
-    override fun onDestroy() { stop(); scope.cancel(); super.onDestroy() }
+    override fun onDestroy() { stop(); scope.cancel(); worker.shutdown(); super.onDestroy() }
 
     private fun stop() {
         if (HuaweiCapture.screen === this) HuaweiCapture.screen = null
@@ -204,7 +211,7 @@ class HuaweiScreenService : AccessibilityService() {
         captureNanos = 0L; captures = 0
         note("Walk started")
         var answered = false
-        fun answer(problem: String?) { if (!answered) { answered = true; done(problem) } }
+        fun answer(problem: String?) { if (!answered) { answered = true; main.post { done(problem) } } }
         walkJob = scope.launch {
             startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             val startedAt = System.currentTimeMillis()
