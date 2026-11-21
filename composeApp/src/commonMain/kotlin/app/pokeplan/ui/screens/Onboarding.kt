@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GameStore
+import app.pokeplan.ui.BackHandler
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.ItemIcon
@@ -68,6 +69,17 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
     var line by remember { mutableStateOf(0) }
     var name by remember { mutableStateOf(if (startStep > 1) "Sophia" else "") }
     var starter by remember { mutableStateOf(GameStore.starters.first()) }
+    // Back goes to the step before (the greeting line by line, then the step); on the very first line it leaves the app.
+    BackHandler(enabled = step != Step.GREETING || line > 0) {
+        when (step) {
+            Step.GREETING -> if (line > 0) line--
+            Step.NAME -> { line = greeting.lastIndex; step = Step.GREETING }
+            Step.CONFIRM_NAME -> step = Step.NAME
+            Step.STARTER -> step = Step.NAME
+            Step.CONFIRM_STARTER -> step = Step.STARTER
+            Step.FAREWELL -> step = Step.CONFIRM_STARTER
+        }
+    }
 
     Column(Modifier.fillMaxSize().padding(Spacing.M), verticalArrangement = Arrangement.SpaceBetween) {
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {

@@ -6,8 +6,10 @@ import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.ui.care.CareSection
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PlanSection
+import app.pokeplan.mint.TxType
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -42,6 +44,31 @@ class NavigationTest {
         listOf("PLANNER", "FOCUS", "CARE", "HEAL", "MINT", "BASE", "LINK", "WORLD", "ME", "HOME", "COLLECTION", "GEAR").forEach { name ->
             assertTrue(Place.entries.any { it.name == name }, "$name is a place")
         }
+    }
+
+    @Test
+    fun arrivingSomewhereClosesThePokegearAndOnlyGearOpensIt() {
+        val m = model()
+        m.open(Place.GEAR, true)
+        assertTrue(m.gearOpen, "Gear opens the Pokégear")
+        m.open(Place.CARE, true)
+        assertFalse(m.gearOpen, "a destination from a widget or notification replaces the Pokégear instead of opening behind it")
+        m.open(Place.GEAR, true)
+        m.open(Place.HOME, true)
+        assertFalse(m.gearOpen, "Home closes it too")
+        m.open(Place.GEAR, true)
+        m.open(Place.GEAR, true)
+        assertTrue(m.gearOpen, "Gear still opens it")
+    }
+
+    @Test
+    fun arrivingAtMintStartsAPlainExpenseWhateverALeftoverQuickActionAskedFor() {
+        val m = model()
+        m.mintStartType = TxType.TRANSFER
+        m.mintStartTo = "acc-1"
+        m.open(Place.MINT, true)
+        assertNull(m.mintStartType, "a kind left by an earlier quick action does not become the next entry's")
+        assertNull(m.mintStartTo)
     }
 
     @Test

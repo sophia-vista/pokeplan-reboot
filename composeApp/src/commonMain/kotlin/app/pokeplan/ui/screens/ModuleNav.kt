@@ -95,7 +95,7 @@ internal fun jumpTargets(model: AppModel, focus: Boolean): List<JumpTarget> = bu
     if (careOn) CareSection.entries.forEach { s -> add(JumpTarget(s.label, "Care", s.icon) { model.open(Place.CARE, focus); model.careSection = s }) }
     HealSection.entries.forEach { s -> add(JumpTarget(s.label, "Heal", s.icon) { model.open(Place.HEAL, focus); model.healSection = s }) }
     MintSection.entries.filter { it != MintSection.IMPORT || model.textFiles != null }.forEach { s ->
-        add(JumpTarget(s.label, "Mint", s.icon) { model.open(Place.MINT, focus); model.mintStartType = null; model.mintSection = s })
+        add(JumpTarget(s.label, "Mint", s.icon) { model.open(Place.MINT, focus); model.mintSection = s })
     }
     BaseSection.entries.forEach { s -> add(JumpTarget(s.label, "Base", s.icon) { model.open(Place.BASE, focus); model.baseSection = s }) }
     LinkSection.entries.forEach { s -> add(JumpTarget(s.label, "Link", s.icon) { model.open(Place.LINK, focus); model.linkPersonId = null; model.linkSection = s }) }

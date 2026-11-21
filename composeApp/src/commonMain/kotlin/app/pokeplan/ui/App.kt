@@ -218,6 +218,9 @@ class AppModel(
 
     var openPokemonId: String? by mutableStateOf(null)
 
+    /** The tab a jump to a Pokémon started from: Back from that Pokémon returns there (null for a plain visit to the tab). */
+    var pokemonReturnTab: Tab? by mutableStateOf(null)
+
     var openParty: Boolean by mutableStateOf(false)
 
     var module: Module? by mutableStateOf(null)
@@ -260,13 +263,16 @@ class AppModel(
     }
 
     fun open(place: Place, focusTab: Boolean) {
+        // A destination replaces the Pokégear when it is open, or the new screen would open behind it; only Gear asks for it.
+        if (place != Place.GEAR) gearOpen = false
         when (place) {
             Place.PLAN -> { module = Module.PLAN; planSection = null }
             Place.PLANNER -> { module = Module.PLAN; planSection = null }
             Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
             Place.CARE -> { module = Module.CARE; careSection = null }
             Place.HEAL -> { module = Module.HEAL; healSection = null }
-            Place.MINT -> { module = Module.MINT; mintSection = null }
+            // The entry's kind is a one-shot from a quick action; arriving from outside Mint starts a plain expense.
+            Place.MINT -> { module = Module.MINT; mintSection = null; mintStartType = null; mintStartTo = null }
             Place.BASE -> { module = Module.BASE; baseSection = null }
             Place.LINK -> { module = Module.LINK; linkSection = null; linkPersonId = null }
             Place.PARTY -> openParty = true
@@ -414,14 +420,24 @@ fun App(
 private val EXPANDED_WIDTH = 840.dp
 private val CONTENT_MAX_WIDTH = 640.dp
 
-private fun backToModuleList(model: AppModel, tapped: Tab, current: Tab) {
-    if (tapped == Tab.MODULES && current == Tab.MODULES) model.module = null
-}
-
 @Composable
 private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches: Flow<AppLaunch>?) {
     var selected by rememberSaveable { mutableStateOf(start.tab.name) }
     val tab = Tab.entries.firstOrNull { it.name == selected } ?: Tab.HOME
+    // A second tap on the tab already open returns it to its first screen, the way a bottom tab usually does.
+    var collectionTaps by rememberSaveable { mutableStateOf(0) }
+    var meTaps by rememberSaveable { mutableStateOf(0) }
+    val onTab = { t: Tab ->
+        if (t == tab) {
+            when (t) {
+                Tab.MODULES -> model.module = null
+                Tab.COLLECTION -> { model.pokemonReturnTab = null; collectionTaps++ }
+                Tab.ME -> meTaps++
+                Tab.HOME -> {}
+            }
+        } else if (t == Tab.COLLECTION) model.pokemonReturnTab = null
+        selected = t.name
+    }
     val go = { to: Place ->
         model.open(to, focusTab)
         selected = to.tab.name
@@ -447,15 +463,10 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                     Box(Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxSize()) {
                         ScreenSwitch(tab) { page ->
                             when (page) {
-                                Tab.HOME -> HomeScreen(model, { id -> model.openPokemonId = id; go(Place.COLLECTION) }, go)
-                                Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
-                                Tab.COLLECTION -> {
-                                    val open = remember { model.openPokemonId }
-                                    val party = remember { model.openParty }
-                                    LaunchedEffect(Unit) { model.openPokemonId = null; model.openParty = false }
-                                    CollectionScreen(model, startParty = party, startOpen = open)
-                                }
-                                Tab.ME -> MeScreen(model)
+                                Tab.HOME -> HomeScreen(model, { id -> model.openPokemonId = id; model.pokemonReturnTab = Tab.HOME; go(Place.COLLECTION) }, go)
+                                Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; model.pokemonReturnTab = Tab.MODULES; go(Place.COLLECTION) }
+                                Tab.COLLECTION -> CollectionScreen(model, resetSignal = collectionTaps, onReturnToTab = { selected = it.name })
+                                Tab.ME -> MeScreen(model, resetSignal = meTaps)
                             }
                         }
                         androidx.compose.foundation.layout.Column(Modifier.align(Alignment.BottomCenter)) {
@@ -481,7 +492,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.navigationBars)).padding(horizontal = Spacing.S, vertical = Spacing.M),
                     verticalArrangement = Arrangement.spacedBy(Spacing.S),
                 ) {
-                    Tab.entries.forEach { t -> NavButton(t.label, t.icon, selected = t == tab, onClick = { backToModuleList(model, t, tab); selected = t.name }, modifier = Modifier.fillMaxWidth()) }
+                    Tab.entries.forEach { t -> NavButton(t.label, t.icon, selected = t == tab, onClick = { onTab(t) }, modifier = Modifier.fillMaxWidth()) }
                 }
             }
             page(Modifier.weight(1f).fillMaxHeight())
@@ -494,7 +505,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
                     ) {
                         Tab.entries.forEach { t ->
-                            NavButton(t.label, t.icon, selected = t == tab, onClick = { backToModuleList(model, t, tab); selected = t.name }, modifier = Modifier.weight(1f))
+                            NavButton(t.label, t.icon, selected = t == tab, onClick = { onTab(t) }, modifier = Modifier.weight(1f))
                         }
                     }
                 }

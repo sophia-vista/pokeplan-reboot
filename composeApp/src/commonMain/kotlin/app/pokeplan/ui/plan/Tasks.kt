@@ -33,6 +33,7 @@ import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.screens.UpTo
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
@@ -53,6 +54,8 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
     val store = model.store
     val live = planTasks(model)
     val host = remember { CardHost() }
+    // An open task card closes before the page does.
+    host.expanded?.let { UpTo { host.expanded = null } }
     val view = model.tasksView
     var filter by remember { mutableStateOf(TaskFilter()) }
     val lists = store.activeLists
