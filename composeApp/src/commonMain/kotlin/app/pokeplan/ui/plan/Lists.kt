@@ -59,8 +59,6 @@ import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.FormBox
 import app.pokeplan.ui.screens.FormStack
 
-private val listColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Purple", "Pink", "Slate")
-
 @Composable
 internal fun ListsSection(model: AppModel, tasks: List<Task>, onMade: ((String) -> Unit)? = null, open: (String) -> Unit) {
     val store = model.store
@@ -143,7 +141,7 @@ internal fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Uni
                     Box(
                         Modifier.size(Spacing.Target).clip(DialogueShape)
                             .selectable(on, role = Role.RadioButton) { color = c }
-                            .semantics { contentDescription = listColorNames[i] },
+                            .semantics { contentDescription = taskColorNames[i] },
                         contentAlignment = Alignment.Center,
                     ) {
                         Box(Modifier.size(Sizes.Icon).background(Color(c), DialogueShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, DialogueShape))

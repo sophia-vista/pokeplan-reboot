@@ -202,8 +202,6 @@ private fun RepeatEnd(series: PlanEvent, shown: PlanEvent, set: (LocalDate?) -> 
     }
 }
 
-private val eventColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Purple", "Pink", "Slate")
-
 @Composable
 private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -211,7 +209,7 @@ private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
             val on = c == (selected ?: TaskList.COLORS[4])
             Box(
                 Modifier.size(36.dp).clip(DialogueShape).selectable(on, role = Role.RadioButton) { pick(c) }
-                    .semantics { contentDescription = eventColorNames[i] },
+                    .semantics { contentDescription = taskColorNames[i] },
                 contentAlignment = Alignment.Center,
             ) {
                 Box(Modifier.size(26.dp).background(Color(c), DialogueShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, DialogueShape))
