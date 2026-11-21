@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * A collecting region. The module regions ([isModule]) are hand-curated lists, one per life module
  * (`tools/species/regions/<name>.txt`, "Module regions" in docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md). A module region is open to everyone once its
  * module ships ([released]); until then it is hidden. [PLAN] was the Home Region and keeps its stored name `HOME` (saves,
- * plan.focus_sessions, the reward function).
+ * focus sessions, the reward function).
  *
  * The games' regional dexes (Kanto to Paldea) are retired (0.44.0, owner): only the Plan and Care Regions are collected. They
  * stay here, never released, only so saves, sessions and events that name one still load; [open] sends them to [PLAN].
@@ -32,7 +32,7 @@ enum class Region(val label: String, val isModule: Boolean = false, val released
     MINT("Mint Region", isModule = true),
     /** The Base module's region (kitchen, pantry, closet, garden): hearth, garden and pet Pokémon. Released with the Base screens. */
     @SerialName("HOUSEHOLD") BASE("Base Region", isModule = true),
-    /** The connection module's region (Postcard Trail): postal birds, loyal dogs, pairs and signallers. Not released until the module ships. */
+    /** The connection module's region (Postcard Trail): postal birds, loyal dogs, pairs and signallers. Released with the Link screens. */
     LINK("Link Region", isModule = true),
     ;
 

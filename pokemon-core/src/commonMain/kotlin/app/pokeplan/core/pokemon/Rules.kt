@@ -8,7 +8,7 @@ object CandyRules {
 
     /**
      * Rare Candies for one level: [BASE] plus level² / [CURVE], rounded down, the shape of the games' Medium Fast experience
-     * group (each level needs more the higher it is): 2 candies up to level 12, 8 at 30, 18 at 50, 67 at 99. *(tune)*
+     * group (each level needs more the higher it is): 2 candies up to level 17, 5 at 30, 10 at 50, 34 at 99. *(tune)*
      */
     const val BASE = 2
     const val CURVE = 300

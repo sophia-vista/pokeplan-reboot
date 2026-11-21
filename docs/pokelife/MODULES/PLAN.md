@@ -95,7 +95,7 @@ Do not fill Today with future tasks merely because they are incomplete. Do not a
 
 Anything the user does not want to organize immediately is an open task with no list and no date; it shows under "No list" in All. Giving it a date or a list files it. Title-only capture is valid. A task does not require a list, project, due date, priority, recurrence, or reminder.
 
-The user may leave a task unfiled, assign a date/list/project, add recurrence/priority/notes/subtasks, convert it to a PLAN event where appropriate, archive, or delete. Do not force mandatory triage.
+The user may leave a task unfiled, assign a date/list/project, add recurrence/notes/subtasks, convert it to a PLAN event where appropriate, archive, or delete. Do not force mandatory triage.
 
 ### 3.3 Upcoming
 
@@ -131,13 +131,13 @@ Project capabilities: name, optional description, optional icon/color, status (a
 
 Use `Goal → Milestones → Tasks`. A goal describes an outcome; a milestone is a meaningful checkpoint; a task is actionable work. A task may link to a goal/milestone but remains a normal PLAN task.
 
-Goal fields: title, optional description, optional target date, status, optional milestones, linked tasks. Milestone fields: title, optional target date, status, linked tasks, completion date. Goal completion is deliberate; do not infer it merely because currently linked tasks are complete. Avoid arbitrary numerical progress unless the user defines a measurable target.
+Goal fields: title, optional description, optional target date, status, optional milestones, linked tasks. Milestone fields: title, optional target date, status, linked tasks, completion date. A goal completes when all its milestones are done (a milestone is ticked by the user); linked tasks being complete does not complete it. Avoid arbitrary numerical progress unless the user defines a measurable target.
 
 ## 4. Task system
 
 ### 4.1 Core task model
 
-Audit and retain valid existing task behavior. The conceptual model should support stable ID, title, optional description/notes, creation/update timestamps, completion state/time, optional due date, optional scheduled date/time, optional estimated duration, optional priority, optional list/project association, optional parent task, optional recurrence definition, optional reminder configuration, optional goal/milestone association, optional archive state, and ordering metadata.
+Audit and retain valid existing task behavior. The conceptual model should support stable ID, title, optional description/notes, creation/update timestamps, completion state/time, optional due date, optional scheduled date/time, optional estimated duration, optional list/project association, optional parent task, optional recurrence definition, optional reminder configuration, optional goal/milestone association, optional archive state, and ordering metadata.
 
 Keep the default editor short; advanced fields are optional.
 
@@ -149,9 +149,9 @@ Minimum persisted states: open, completed, archived. Overdue is derived, not a p
 
 Due date means when the task should be completed. Scheduled date/time means when the user intends to work on it. A task may have either or both. Do not equate them automatically.
 
-### 4.4 Priority
+### 4.4 No priority field
 
-Use None, Low, Medium, High; default None. Priority must not visually overpower title/date information. Avoid overlapping urgency systems.
+A task has no priority field; urgency comes from its due and scheduled dates. Do not add an urgency system beside them.
 
 ### 4.5 Subtasks
 
@@ -278,9 +278,9 @@ Calendar access is optional. Denial must not impair PLAN. Explain denial and pro
 
 Keep the hierarchy simple: goal describes outcome; project groups work; milestone marks checkpoint; task is actionable work. Not every goal needs a project or milestones.
 
-Goals: ID, title, optional description, created date, optional target date, status (active/on hold/completed/archived), optional linked project, milestones, and tasks. Completion is deliberate.
+Goals: ID, title, optional description, created date, optional target date, status (active/on hold/completed/archived), optional linked project, milestones, and tasks. A goal completes when all its milestones are done.
 
-Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not generate *task* rewards. **Owner decision: the current payout stays**: a goal milestone reached pays a Super Candy, and a finished goal pays a bonus item (`Goal.kt`; `docs/design.md`). Goal completion is still to be made deliberate (see the implementation guide).
+Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not generate *task* rewards. **Owner decision: the current payout stays**: a goal milestone reached pays a Super Candy, and a finished goal pays a bonus item (`Goal.kt`; `docs/design.md`).
 
 ### 9.1 Goal badges and the Hall of Fame (owner, 15 November 2026; REP-053 chunk 5)
 
@@ -300,7 +300,7 @@ PLAN follows the shared PMD dialogue-box visual system and reusable component ru
 
 ### 10.1 Task and planning surfaces
 
-Task cards prioritize the completion control, title, relevant date/recurrence, then optional priority/list context. Do not display every available field on every card. The check key is first on every row (a finished task's reopens it), the rank as a small tag after the title, the When tab folded to the day and the list with a "Time and repeat" row that unfolds the time, reminders and repeat, a Goal row on the Edit tab (one goal per task, no reward), Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary. Today, Upcoming, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
+Task cards prioritize the completion control, title, relevant date/recurrence, then optional list context. Do not display every available field on every card. The check key is first on every row (a finished task's reopens it), the rank as a small tag after the title, the When tab folded to the day and the list with a "Time and repeat" row that unfolds the time, reminders and repeat, a Goal row on the Edit tab (one goal per task, no reward), Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary. Today, Upcoming, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
 
 ### 10.2 Focus presentation
 

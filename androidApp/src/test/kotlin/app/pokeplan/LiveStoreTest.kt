@@ -27,8 +27,12 @@ import kotlin.test.assertFalse
 class LiveStoreTest : AndroidTestBase() {
     private val clock = Clock { System.currentTimeMillis() }
 
-    /** The one field a load stamps with the clock (when the old coins were merged into Poké), set aside so two loads compare. */
-    private fun app.pokeplan.app.AppData.timeless() = copy(pokeMigration = pokeMigration?.copy(migratedAtMillis = 0))
+    /** The fields a load stamps with the clock (when the old coins were merged into Poké, when habits became repeating tasks), set aside so two loads compare. */
+    private fun app.pokeplan.app.AppData.timeless() = copy(
+        pokeMigration = pokeMigration?.copy(migratedAtMillis = 0),
+        habitsMergedAtMillis = habitsMergedAtMillis?.let { 0 },
+        series = series.map { it.copy(template = it.template.copy(createdAtMillis = 0)) },
+    )
 
     private fun mainFixtures() = listOf("main-empty.json", "main-typical-week.json", "main-heavy-70-days.json", "main-focus-running-and-pending.json")
 
@@ -52,7 +56,7 @@ class LiveStoreTest : AndroidTestBase() {
             val expected = GameStore(MemoryStorage(text), clock).data.timeless()
             assertEquals(expected, widgetStore(context).data.timeless(), "$name read from the database")
             assertEquals(CareStore(MemoryStorage(fixture("care-week.json")), clock, GameStore(MemoryStorage(text), clock)).data, careStore(context).data, "care-week.json with $name")
-            // And again after the process ends: the files are now only the rollback copy, the database is the save.
+            // And again after the process ends: the database is the save.
             processDeath()
             File(files, "save.json").writeText("{}")
             assertEquals(expected, widgetStore(context).data.timeless(), "$name after a process death")

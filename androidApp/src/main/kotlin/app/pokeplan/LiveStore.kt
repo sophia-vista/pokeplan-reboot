@@ -50,7 +50,7 @@ class DatabaseStorage(private val live: LiveDocuments, private val name: String)
  * rollback copy). Care's records then move into Care's own tables (schema 4, `CareTables`), PLAN's part of the save into PLAN's (schema 5,
  * `PlanTables`) and the player's side (Pokémon, places, Bag, Poké and its ledger) into the shared tables (schema 6, `PokemonTables`); `live.read`, `write` and the backup snapshot put them back together as `care` and `save`, so the app and the backup
  * see the same documents. A backup of the live documents is
- * written once a day (`backups/`).
+ * written once a day (`backups/`), sealed with a Keystore key.
  *
  * If the database cannot be used the app never loses data silently: a corrupt file is moved aside whole and the newest
  * backup is restored; with no backup the player is asked (REP-026 c, [recoveryPending]) whether to use the old files, which are as old as the

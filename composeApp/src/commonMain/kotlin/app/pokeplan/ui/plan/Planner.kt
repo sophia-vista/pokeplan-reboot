@@ -205,7 +205,7 @@ internal fun PlanOverview(model: AppModel) {
 internal fun PlanActionItems(model: AppModel, onFocus: ((Task) -> Unit)?) {
     val store = model.store
     val data = model.data
-    QuickAddBox(model, AddTo.NO_DATE)
+    QuickAddBox(model, AddTo.NO_DATE, titled = true)
     val tasks = store.openTodayTasks()
     val late = TaskViews.overdue(tasks, store.now).toSet()
     val next = nextTask(model, tasks, late)
@@ -392,7 +392,7 @@ private fun DuplicateButton(model: AppModel, task: Task) {
 
 /** Add a task with just a title; the chips pick a day and "More options" adds difficulty. "Call mum tomorrow 5pm 30m" is understood too. */
 @Composable
-internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) {
+internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, titled: Boolean = false) {
     val draftKey = "$addTo:${listId.orEmpty()}"
     var text by remember { mutableStateOf(model.quickAddDrafts[draftKey].orEmpty()) }
     // The unsent words outlive the screen: leaving for another tab and coming back finds them again.
@@ -454,6 +454,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            if (titled) PixelTitle("Quick actions")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(
                     text, { text = it }, Modifier.weight(1f).focusRequester(focus), singleLine = true,

@@ -529,7 +529,7 @@ class ScreenshotTest {
     }
 
     /**
-     * REP-053 chunk 2 (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md section 7): the scale test for the modules' places. One
+     * REP-053 (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md section 7): the scale test for the modules' places. One
      * Hoenn Secret Base room (the Tree layout: floor and walls from the pokeemerald tileset), six Secret Base decorations and six
      * SpriteCollab Pokémon standing in it, shown in a dialogue box at a phone's 1080 px width, at 2x to 5x, flush with the frame (8 dp at the sides, 6 dp above and below, so no gap), in both palettes
      * (`secretbase-2x-light.png` and so on). A test render, not a shipped screen.

@@ -10,7 +10,7 @@ import kotlinx.serialization.json.contentOrNull
 /**
  * LINK's records in their own tables from the start (schema version 10, REP-014; docs/pokelife `MODULES/LINK.md` and
  * `ARCHITECTURE/DATA_AND_MIGRATIONS.md` section 7.4). LINK, like HEAL, never had a document row: the app reads and writes it as one JSON document,
- * `LinkData`, so the rules stay pure and tested, and this class is what stands under it, as [HealTables] stands under Heal's. Nothing is sealed (that is Mint's alone).
+ * `LinkData`, so the rules stay pure and tested, and this class is what stands under it, as [HealTables] stands under Heal's. Its rows are not sealed (only Heal and Mint rows, and their backups, are).
  *
  * **One table family per kind of record** (`link_person`, `link_note`, `link_date`, `link_followup`, plus `link_state` for the settings), so a kind can be read ([readKind]), exported or
  * erased ([erase]) on its own; erasing LINK ([clear]) touches nothing outside the `link_*` tables: not the Pokémon, the Bag, the ledger, Plan, Care or Heal.

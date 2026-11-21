@@ -4,7 +4,7 @@ import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
 /**
- * Rescue Team arc, chapters 1 to 6 (docs/world-story-rewrite.md): Mew brings the Frontier team into a remembered Pokémon Square.
+ * Rescue Team arc, chapters 1 to 6 (the code is the source of the story): Mew brings the Frontier team into a remembered Pokémon Square.
  *
  * The frame, which every scene keeps: this is an echo of days that really happened. The square's own Rescue Team (a newcomer who cannot
  * remember where it came from, and the partner who found it) is the hero of those days and is never staged; {player} and {buddy} are the

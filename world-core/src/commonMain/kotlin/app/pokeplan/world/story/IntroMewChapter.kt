@@ -9,7 +9,7 @@ import app.pokeplan.world.story.Expression.SURPRISED
 import app.pokeplan.world.story.Expression.WORRIED
 
 /**
- * The opening of World: Mew's Unofficial Welcome (docs/world-story-rewrite.md, "Opening tutorial"). A Mythical Pokémon's prank
+ * The opening of World: Mew's Unofficial Welcome (the code is the source of the story). A Mythical Pokémon's prank
  * is the tutorial: a chase out of town, a short first dungeon, a job, a team, and a test at dusk, after which Mew joins. It
  * replaces the old chapter 1 (the guild letter); the scenes are `intro-mew-*`. Mew is added to Finds by [MEW_JOINED] once
  * the episode is finished (GameStore.worldEpisodeDone), so replaying it never gives a second Mew.

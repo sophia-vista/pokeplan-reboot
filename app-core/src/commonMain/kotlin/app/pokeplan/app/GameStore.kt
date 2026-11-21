@@ -204,7 +204,7 @@ class GameStore(
 
     /**
      * Frequency targets were scrapped (owner, 20 November 2026): each saved target becomes an ordinary recurring task with the nearest calendar rule
-     * ([TargetConversion]), keeping its id, title, rank, category and completion days (so a goal that links it, and the days a quest counts, stay). It pays
+     * ([TargetConversion]), keeping its id, title, rank and completion days (so a goal that links it, and the days a quest counts, stay). It pays
      * nothing by itself being converted. Idempotent: a series has a target or a rule, never both, so once none has a target it does nothing.
      */
     private fun convertTargets(d: AppData): AppData {
@@ -229,8 +229,8 @@ class GameStore(
     /** Everything PokéPlan keeps on this device, as readable JSON,. */
     fun exportJson(): String {
         val pretty = Json(json) { prettyPrint = true }
-        // The player's own data, so the Picker's list is in it; the tickets, the calendars shown and the public rate cache are not.
-        val full = json.encodeToJsonElement(AppData.serializer(), data.copy(eggTickets = EggTickets(), shownCalendars = emptySet(), gearRates = null)) as JsonObject
+        // The player's own data, so the Picker's list is in it; the calendars shown and the public rate cache are not.
+        val full = json.encodeToJsonElement(AppData.serializer(), data.copy(shownCalendars = emptySet(), gearRates = null)) as JsonObject
         return pretty.encodeToString(JsonObject.serializer(), JsonObject(full.filterKeys { it !in EXPORT_LEFT_OUT }))
     }
 
@@ -258,9 +258,6 @@ class GameStore(
 
     /** Shows or hides calendar events from this phone's calendars on the day timeline. */
     fun setShownCalendars(ids: Set<Long>) = update { it.copy(shownCalendars = ids) }
-
-    // --- egg tickets --------------------------------------------------------------------------------------------------
-
 
     // --- time and ids -------------------------------------------------------------------------------------------------
 
@@ -636,20 +633,16 @@ class GameStore(
     }
 
     /**
-     * Makes a friend of a Care visitor, up to [BEFRIEND_DAILY_CAP] a day: the egg's dice come from the oldest egg ticket (the day's key is
-     * `befriend:<epochDay>`, the ticket is spent with it) or, with none, from the device. Returns null when nothing was paid.
+     * Makes a friend of a Care visitor, up to [BEFRIEND_DAILY_CAP] a day: the egg's dice come from the device. Returns null when nothing was paid.
      */
     override fun befriend(event: BefriendEvent): List<Reward>? {
         if (!data.onboarded) return null
         val made = Counters.BEFRIEND.get(data.counters, today)
         if (made >= BEFRIEND_DAILY_CAP) return null
-        val ticket = data.eggTickets.stock.firstOrNull()
-        val outcome = RewardEngine.befriend(data.player, event, ticket?.let { Random(it.seed) } ?: rng)
+        val outcome = RewardEngine.befriend(data.player, event, rng)
         update { d ->
             val counters = Counters.BEFRIEND.set(d.counters, today, made + 1)
-            val tickets = if (ticket == null) d.eggTickets
-            else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
-            noted(d, log(CARE_FRIEND_SOURCE, outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets),
+            noted(d, log(CARE_FRIEND_SOURCE, outcome.rewards, d.copy(player = outcome.state, counters = counters),
                 origin = Origin(Origin.How.BEFRIENDED, Region.CARE, visitor = visitorOrigin(event, outcome.rewards))), "care:befriend:${event.newPokemonId}", "CARE", event.visitorId.ifEmpty { event.newPokemonId }, "befriend", event.nowMillis)
         }
         return outcome.rewards
@@ -1477,11 +1470,7 @@ class GameStore(
             id = newId(), durationMinutes = minutes, nowMillis = nowMillis, deepFocus = deepFocus, region = data.settings.region.open,
             leadIdAtStart = data.player.planLead?.id, taskId = taskId, lure = lure, emergencyPausesUsedToday = emergencyPausesToday(),
         )
-        // The oldest egg ticket fixes the egg's dice now, like the perks; without one the egg rolls on the device.
-        update { d ->
-            val t = d.eggTickets
-            d.copy(focus = session, eggTickets = t.copy(stock = t.stock.drop(1), inSession = t.stock.firstOrNull()))
-        }
+        update { d -> d.copy(focus = session) }
         return session
     }
 
@@ -1512,11 +1501,9 @@ class GameStore(
                 val event: EffortEvent = session.toEffortEvent(newId(), nowMillis, epochDay).let { it.copy(region = it.region.open) }
                 // The perks that count are the ones of Plan's lead when the session started.
                 val player = data.player
-                val ticket = data.eggTickets.inSession
-                val outcome = RewardEngine.effort(player.atStartOf(session), event, ticket?.let { Random(it.seed) } ?: rng)
+                val outcome = RewardEngine.effort(player.atStartOf(session), event, rng)
                 update { d ->
                     noted(d, log("Focus: $minutes min", outcome.rewards, d.copy(
-                        eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                         player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true, minutes = minutes, plannedMinutes = minutes, taskId = session.taskId, deepFocus = session.deepFocus),
                         focusHistory = d.focusHistory + session.record(minutes, completed = true),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
@@ -1529,7 +1516,6 @@ class GameStore(
                 magicGuard(session, phase.reason, minutes)?.let { return it }
                 update { d ->
                     d.copy(
-                        eggTickets = d.eggTickets.spend(d.eggTickets.inSession, session.startedAtMillis, null),
                         focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason, minutes = minutes, plannedMinutes = (session.durationMillis / 60_000L).toInt(), taskId = session.taskId, deepFocus = session.deepFocus),
                         focusHistory = d.focusHistory + session.record(minutes, completed = false),
                     )
@@ -1549,12 +1535,10 @@ class GameStore(
         val player = data.player.atStartOf(session)
         if (minutes < Egg.MIN_MINUTES || Counters.MAGIC_GUARD.isSet(data.counters, weekStart)) return null
         if (!Perks.total(player.planLead, player.party, guardians = listOfNotNull(player.guardianOf(PartyIds.PLAN))).keepsFailedEgg) return null
-        val ticket = data.eggTickets.inSession
         val event = EffortEvent(minutes, false, session.region.open, session.lure, epochDay, newId(), nowMillis)
-        val outcome = RewardEngine.effort(player, event, ticket?.let { Random(it.seed) } ?: rng)
+        val outcome = RewardEngine.effort(player, event, rng)
         update { d ->
             noted(d, log("Magic Guard: $minutes min", outcome.rewards, d.copy(
-                eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                 player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null,
                 lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true, minutes = minutes, plannedMinutes = (session.durationMillis / 60_000L).toInt(), taskId = session.taskId, deepFocus = session.deepFocus),
                 focusHistory = d.focusHistory + session.record(minutes, completed = false),
@@ -1569,10 +1553,6 @@ class GameStore(
         if (session.leadIdAtStart != null && party.any { it.id == session.leadIdAtStart }) copy(planLeadId = session.leadIdAtStart) else this
 
     private fun FocusSession.record(minutes: Int, completed: Boolean) = FocusRecord(startedAtMillis, minutes, completed, taskId, deepFocus)
-
-    /** A failed session spends its ticket too, so failing never rerolls an egg. */
-    private fun EggTickets.spend(ticket: EggTicket?, startedAtMillis: Long, pokemonId: String?): EggTickets =
-        if (ticket == null) copy(inSession = null) else copy(inSession = null, spent = spent + SpentTicket(ticket.id, startedAtMillis, pokemonId))
 
     fun dismissFocusEnd() = update { it.copy(lastFocusEnd = null) }
 
@@ -2052,7 +2032,7 @@ class GameStore(
         ).mapValues { CARE_LOG_PREFIX + it.value }
 
         /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted (see [cloudPart] and [adoptCloud]). */
-        internal val DEVICE_ONLY = setOf("eggTickets", "shownCalendars", "pickerOptions", "gearRates", "gear")
+        internal val DEVICE_ONLY = setOf("shownCalendars", "pickerOptions", "gearRates", "gear")
 
         /** What the "Export my data" file leaves out: the same as [DEVICE_ONLY] except the Picker's list and what the Pokégear tools remember, which are the player's own data. */
         private val EXPORT_LEFT_OUT = DEVICE_ONLY - setOf("pickerOptions", "gear")
