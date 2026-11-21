@@ -2,6 +2,8 @@ package app.pokeplan.huawei
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
+import android.accessibilityservice.GestureDescription
+import android.graphics.Path
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
@@ -142,7 +144,20 @@ class HuaweiScreenService : AccessibilityService() {
             if (c.isClickable && c.performAction(AccessibilityNodeInfo.ACTION_CLICK)) return true
             n = c.parent
         }
-        return false
+        return touch(node)
+    }
+
+    /**
+     * A real touch at the middle of [node], for a control that declares a click but refuses it (Huawei Health's Steps summary: it handles touches itself, so the
+     * accessibility click is refused). Only used after every click was refused; it needs the service's gesture capability (huawei_reader.xml).
+     */
+    private fun touch(node: AccessibilityNodeInfo): Boolean {
+        val r = Rect()
+        node.getBoundsInScreen(r)
+        if (r.width() <= 0 || r.height() <= 0) return false
+        val path = Path().apply { moveTo(r.exactCenterX(), r.exactCenterY()) }
+        val gesture = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0, TOUCH_MS)).build()
+        return runCatching { dispatchGesture(gesture, null, null) }.getOrDefault(false)
     }
 
     /** What a refused tap tried, for the walk log: the ids from [node] up, with "tap" on the clickable ones (ids only, never text). */
@@ -268,7 +283,14 @@ class HuaweiScreenService : AccessibilityService() {
         return awaitHealthPage() != null
     }
 
-    /** On the open card page: the four-dots menu, then "All data", scrolled within the card's own budget; a page without the menu is noted and left; what happens goes in the walk log. */
+    /** The "All data" item of an open menu (its text or description; a web page's menu exposes either), or null. */
+    private fun allDataItem(): AccessibilityNodeInfo? = huaweiRoot()?.let { r ->
+        visible(r).firstOrNull { n -> listOf(n.text, n.contentDescription).any { it?.toString()?.trim().equals(HuaweiWalk.ALL_DATA, ignoreCase = true) } && clickableAncestor(n) != null }
+    }
+
+    private fun onAllDataPage(root: AccessibilityNodeInfo) = visible(root).any { it.id() == "titleSpinner" || it.id() == "privacy_title" }
+
+    /** On the open card page: the four-dots menu, then "All data", kept as history (scrolled until a row is old enough, [HuaweiWalk.allDataIsFarEnough]); a page without the menu is noted and left. */
     private suspend fun openAllData(wanted: HuaweiWalk.Card) {
         val root = huaweiRoot() ?: return
         val r = Rect()
@@ -278,12 +300,57 @@ class HuaweiScreenService : AccessibilityService() {
         if (!tap(menu)) { note("${wanted.title}: menu tap refused"); return }
         delay(MENU_WAIT_MS)
         capture() // the open menu, so its items show in the sample
-        val item = huaweiRoot()?.let { r2 -> visible(r2).firstOrNull { it.text?.toString()?.trim().equals(HuaweiWalk.ALL_DATA, ignoreCase = true) } }
+        // A web page (Weight, Cycle Calendar) draws its menu a moment later than a native one.
+        val item = allDataItem() ?: run { delay(MENU_WAIT_MS * 2); capture(); allDataItem() }
         if (item == null) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' is not in the menu"); return }
         if (!tap(item)) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' tap refused"); return }
         delay(PAGE_WAIT_MS)
         note("${wanted.title}: ${HuaweiWalk.ALL_DATA} opened ${page.ifBlank { "a page" }}")
-        scrollThrough(wanted.allDataScrolls)
+        capture()
+        if (wanted.entries > 0) openEntries(wanted)
+        val now = System.currentTimeMillis()
+        scrollThrough(wanted.allDataScrolls) { HuaweiWalk.allDataIsFarEnough(it, now, TimeZone.currentSystemDefault()) }
+    }
+
+    /** What identifies an All data row: the words of its container (value and date). */
+    private fun rowKey(title: AccessibilityNodeInfo): String {
+        val p = title.parent ?: return title.text?.toString().orEmpty()
+        return (0 until p.childCount).mapNotNull { p.getChild(it)?.text?.toString() }.joinToString("|")
+    }
+
+    /**
+     * Opens the newest [HuaweiWalk.Card.entries] rows of the All data list one by one (a Sleep row opens to its bed and wake times), capturing each and coming back to the
+     * list. It only taps rows; the page's Delete icon is never touched. Back is pressed only while the list is not showing and the Health page is not either.
+     */
+    private suspend fun openEntries(wanted: HuaweiWalk.Card) {
+        val done = HashSet<String>()
+        var opened = 0
+        var rounds = 0
+        while (opened < wanted.entries && rounds++ < wanted.entries * 3) {
+            val root = huaweiRoot() ?: return
+            if (!onAllDataPage(root)) return
+            val row = visible(root).filter { it.id() == "privacy_content_title" }.firstOrNull { rowKey(it) !in done }
+            if (row == null) {
+                val before = capture(root)?.signature
+                if (mainScroller(root)?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) != true) return
+                delay(SCROLL_WAIT_MS)
+                if (capture()?.signature == before) return
+                continue
+            }
+            done += rowKey(row)
+            if (!tap(row)) { note("${wanted.title}: entry tap refused"); continue }
+            delay(PAGE_WAIT_MS)
+            val detail = capture()
+            opened++
+            note("${wanted.title}: entry $opened opened ${page.ifBlank { "a page" }} (${detail?.nodes?.size ?: 0} elements)")
+            repeat(2) {
+                val now = huaweiRoot() ?: return
+                if (onAllDataPage(now) || isHealthPage(now)) return@repeat
+                performGlobalAction(GLOBAL_ACTION_BACK)
+                delay(BACK_WAIT_MS)
+            }
+        }
+        note("${wanted.title}: $opened entries opened")
     }
 
     /** Taps the "Week" tab of the open card page, when it has one and it is not the tab already showing; returns whether it tapped. */
@@ -357,7 +424,8 @@ class HuaweiScreenService : AccessibilityService() {
         const val BACK_WAIT_MS = 1_500L
         const val MENU_WAIT_MS = 1_000L
         const val RETAP_WAIT_MS = 800L
-        const val TIMEOUT_MS = 240_000L
+        const val TOUCH_MS = 60L
+        const val TIMEOUT_MS = 330_000L
         const val MAX_TRIES = 4
         const val MAX_NODES = 400
         const val MAX_DEPTH = 40

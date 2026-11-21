@@ -2,6 +2,8 @@ package app.pokeplan.app.heal
 
 import app.pokeplan.heal.HealRules
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
 
 /**
  * What the Huawei Health walk visits and when it has seen enough (INTEGRATIONS_AND_PRIVACY.md 5.2.2). Pure, so the Android service only taps and scrolls.
@@ -11,8 +13,8 @@ import kotlinx.datetime.TimeZone
  * records list stops as soon as it shows a session older than a read can pay for.
  */
 object HuaweiWalk {
-    /** A card the walk opens: its title on the Health page (any of [titles]), how many times its page is scrolled, and whether its Week tab is opened too, and whether its four-dots menu → "All data" is opened too. */
-    data class Card(val titles: List<String>, val scrolls: Int, val week: Boolean = false, val allDataScrolls: Int = 0) {
+    /** A card the walk opens: its title on the Health page (any of [titles]), how many times its page is scrolled, and whether its Week tab is opened too, and whether its four-dots menu → "All data" is opened too, and how many of that list's newest rows are opened one by one ([entries]). */
+    data class Card(val titles: List<String>, val scrolls: Int, val week: Boolean = false, val allDataScrolls: Int = 0, val entries: Int = 0) {
         /** Whether the card's page has a four-dots menu → "All data" worth opening (almost every one does; Exercise records is a list already). */
         val allData: Boolean get() = allDataScrolls > 0
         val title: String get() = titles.first()
@@ -27,8 +29,17 @@ object HuaweiWalk {
         Card(listOf("Exercise records"), EXERCISE_SCROLLS), // a list already: no All data
         Card(listOf("Heart"), scrolls = 1, allDataScrolls = 3), // captured so its page can be parsed (resting heart rate, the day's range): not parsed yet
         Card(listOf("Weight"), scrolls = 2, allDataScrolls = 3),
-        Card(listOf("Sleep"), scrolls = 2, week = true, allDataScrolls = 3),
+        Card(listOf("Sleep"), scrolls = 2, week = true, allDataScrolls = ALL_DATA_SCROLLS, entries = SLEEP_ENTRIES),
+        Card(listOf("Skin temperature"), scrolls = 1, allDataScrolls = ALL_DATA_SCROLLS),
+        Card(listOf("SpO₂", "SpO2"), scrolls = 1, allDataScrolls = ALL_DATA_SCROLLS),
     )
+
+    /** The All data lists of Sleep, Skin temperature and SpO2 are kept as history (owner, 21 November 2026): scrolled until a row is [ALL_DATA_DAYS] old, at most this many times. */
+    const val ALL_DATA_SCROLLS = 14
+    const val ALL_DATA_DAYS = 90
+
+    /** How many of the newest Sleep All data rows are opened one by one (each opens to its bed and wake times). */
+    const val SLEEP_ENTRIES = 8
 
     /** The Steps summary at the top of the Health page (not a card: its element is `time_strength_layout_middle`), opened first with two scrolls (owner, 21 November 2026). */
     val STEPS = Card(listOf("Steps"), scrolls = 2, allDataScrolls = 4)
@@ -51,8 +62,8 @@ object HuaweiWalk {
     /** Every other card on the Health page is opened too, to capture its page (owner, 21 November 2026): one scroll each, nothing parsed from it yet. */
     const val LOOK_SCROLLS = 1
 
-    /** Cards never opened. Empty: the owner asked for every card, Cycle Calendar included (21 November 2026); its page is only held in memory like the rest. */
-    val SKIP = emptySet<String>()
+    /** Cards never opened: the owner asked for every card, Cycle Calendar included, but not Health Clovers or Activity rings (21 November 2026). */
+    val SKIP = setOf("Health Clovers", "Activity rings")
 
     /** The scrolls of the Health page itself: a safety bound; the pass ends sooner, at the end of the list. */
     const val HOME_SCROLLS = 14
@@ -69,6 +80,12 @@ object HuaweiWalk {
 
     /** Whether [card] is one of the wanted [CARDS] (its page is read into records) rather than a look-only visit. */
     fun isWanted(card: Card) = CARDS.any { it.title == card.title }
+
+    /** Whether an All data capture already shows a row [ALL_DATA_DAYS] old or older: the list is newest first, so it is far enough. */
+    fun allDataIsFarEnough(capture: ScreenCapture, nowMillis: Long, zone: TimeZone): Boolean {
+        val oldest = HuaweiRecords.oldestAllDataDay(capture, nowMillis, zone) ?: return false
+        return oldest < kotlinx.datetime.Instant.fromEpochMilliseconds(nowMillis).toLocalDateTime(zone).date.minus(ALL_DATA_DAYS, kotlinx.datetime.DateTimeUnit.DAY)
+    }
 
     /**
      * Whether an Exercise records capture already shows a session older than a read can pay for ([HealRules.IMPORT_FRESH_MILLIS]): the list is newest first, so

@@ -152,4 +152,29 @@ class HuaweiRecordsTest {
         assertEquals(LocalDate(2026, 11, 21), weekly.day)
         assertTrue(!HealReminders.huaweiStillWanted(heal.data, LocalDate(2026, 11, 15), LocalDate(2026, 11, 15), utc), "read since: not wanted before it is due")
     }
+
+    private fun rowOf(content: String, date: String) = listOf(n("privacy_content_title", content), n("privacy_time", date))
+    private val allData = ScreenCapture(9, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) +
+        rowOf("5 h 9 min", "11/12") + rowOf("42 min", "11/12") + rowOf("20.1-23.4°C", "11/11") + rowOf("SpO₂ range 94%-99%", "November 10") + rowOf("nonsense", "11/9") +
+        listOf(n("privacy_title", "October 2026")) + rowOf("6 h", "10/30") + rowOf("7 h 2 min", "11/30"))
+
+    @Test fun allDataRowsBecomeHistoryRecordsOnTheirOwnDays() {
+        val vitals = HuaweiRecords.read(HuaweiSeen(listOf(allData)), now, utc).filterIsInstance<Imported.Vital>().associateBy { it.id }
+        fun noon(m: Int, d: Int, y: Int = 2026) = at(y, m, d, 12, 0)
+        assertEquals(309.0, vitals["sleeplength:309:2026-11-12"]?.value); assertEquals(42.0, vitals["sleeplength:42:2026-11-12"]?.value, "a nap and a night are both kept")
+        assertEquals(360.0, vitals["sleeplength:360:2026-10-30"]?.value, "the October header gives the year of the rows under it")
+        assertEquals(noon(11, 12), vitals["sleeplength:309:2026-11-12"]?.atMillis)
+        assertEquals(20.1, vitals["skintemplow:2026-11-11"]?.value); assertEquals(23.4, vitals["skintemphigh:2026-11-11"]?.value)
+        assertEquals(94.0, vitals["spo2low:2026-11-10"]?.value); assertEquals(99.0, vitals["spo2high:2026-11-10"]?.value)
+        assertTrue(vitals.keys.none { "11-09" in it }, "a row that is not a value is left out")
+        assertTrue(vitals.keys.none { "2026-11-30" in it }, "a date in the future is left out")
+        assertEquals(app.pokeplan.heal.VitalType.SLEEP_LENGTH, vitals["sleeplength:309:2026-11-12"]?.type)
+    }
+
+    @Test fun allDataRowsReadAgainAddNothingTwice() {
+        val once = HuaweiRecords.read(HuaweiSeen(listOf(allData)), now, utc)
+        val twice = HuaweiRecords.read(HuaweiSeen(listOf(allData, allData.copy(atMillis = 99))), now, utc)
+        assertEquals(once.map { it.id }.sorted(), twice.map { it.id }.sorted())
+        assertEquals(LocalDate(2026, 10, 30), HuaweiRecords.oldestAllDataDay(allData, now, utc))
+    }
 }

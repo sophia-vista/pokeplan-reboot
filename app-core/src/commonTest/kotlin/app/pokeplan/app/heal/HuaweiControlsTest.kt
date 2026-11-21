@@ -17,7 +17,7 @@ class HuaweiControlsTest {
     @Test fun cardsSaySoWhenTheyCanBeTappedAndWhatTakesTheTap() {
         val cards = HuaweiControls.cards(HuaweiSeen(listOf(page)))
         assertEquals(listOf("Heart", "Sleep", "SpO2"), cards.map { it.title })
-        assertEquals(listOf(true, true, false), cards.map { it.walked })
+        assertEquals(listOf(true, true, true), cards.map { it.walked })
         assertEquals(listOf("card", "", "card"), cards.map { it.tapVia })
     }
 

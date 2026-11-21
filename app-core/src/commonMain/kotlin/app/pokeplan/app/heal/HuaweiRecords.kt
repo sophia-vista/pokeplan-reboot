@@ -36,6 +36,7 @@ object HuaweiRecords {
             val records = when {
                 s.title.startsWith("SportHistory") -> exercises(s, today, zone)
                 s.title.startsWith("KnitSleepDetail") -> listOfNotNull(sleep(s, today, seen.home.getUpMinute, zone))
+                s.title.startsWith("PrivacyDataModel") -> allData(s, today, nowMillis, zone)
                 s.nodes.any { it.text == "Weight" } && s.nodes.any { weightDate.matches(it.text) } -> weight(s, today, zone)
                 else -> emptyList()
             }
@@ -97,6 +98,64 @@ object HuaweiRecords {
         } ?: return null
         val score = s.nodes.firstOrNull { id(it) == "scoring_value" }?.text?.trim()?.toIntOrNull()?.takeIf { it in 1..100 } ?: return null
         return on to score
+    }
+
+    // --- All data pages (history) --------------------------------------------------------------------------------------------------
+
+    /** One row of an All data page: its date, and what it says; null for a row that is not a date and a value. */
+    data class AllDataRow(val date: LocalDate, val content: String)
+
+    private val monthYear = Regex("""^([A-Za-z]+) (\d{4})$""")
+    private val slashDate = Regex("""^(\d{1,2})/(\d{1,2})$""")
+    private val skinRange = Regex("""^(\d{2}(?:\.\d)?)\s*-\s*(\d{2}(?:\.\d)?)\s*°\s*C$""", RegexOption.IGNORE_CASE)
+    private val spo2Range = Regex("""^SpO\S*\s*range\s*(\d{2,3})\s*%\s*-\s*(\d{2,3})\s*%$""", RegexOption.IGNORE_CASE)
+
+    /**
+     * The rows of an All data page (`PrivacyDataModelActivity`: month headers `privacy_title`, then per row a value `privacy_content_title` and its date `privacy_time`,
+     * "11/14" or "November 14"). The year is the header's; a row above any header takes the latest year in which the date is not in the future.
+     */
+    fun allDataRows(s: ScreenCapture, today: LocalDate): List<AllDataRow> {
+        var year: Int? = null
+        var content = ""
+        val out = ArrayList<AllDataRow>()
+        for (n in s.nodes) when (id(n)) {
+            "privacy_title" -> monthYear.matchEntire(n.text.trim())?.let { year = it.groupValues[2].toInt() }
+            "privacy_content_title" -> content = n.text.trim()
+            "privacy_time" -> {
+                val t = n.text.trim()
+                val parsed = slashDate.matchEntire(t)?.let { m -> Month.entries.getOrNull(m.groupValues[1].toInt() - 1)?.let { it to m.groupValues[2].toInt() } }
+                    ?: monthDay.matchEntire(t)?.let { m -> month(m.groupValues[1])?.let { it to m.groupValues[2].toInt() } }
+                val date = parsed?.let { (mo, d) -> year?.let { y -> runCatching { LocalDate(y, mo, d) }.getOrNull() } ?: latestYear(mo, d, today) }
+                if (date != null && date <= today && content.isNotEmpty()) out += AllDataRow(date, content)
+                content = ""
+            }
+        }
+        return out
+    }
+
+    /** The oldest day an All data capture shows, or null when it shows none: the list is newest first, so a read can stop scrolling once this is old enough. */
+    fun oldestAllDataDay(s: ScreenCapture, nowMillis: Long, zone: TimeZone): LocalDate? =
+        if (!s.title.startsWith("PrivacyDataModel")) null else allDataRows(s, nowMillis.toLocalDateTime(zone).date).minOfOrNull { it.date }
+
+    /**
+     * An All data page as history, one record per row (owner, 21 November 2026, "keep all"): a night's **length** (Sleep), the **range** of skin temperature and of
+     * SpO2 for a day (each end its own reading). Each is stamped at noon of its own day and is never judged. A sleep row has no bedtime, so it is a length, not a night with times.
+     */
+    private fun allData(s: ScreenCapture, today: LocalDate, nowMillis: Long, zone: TimeZone): List<Imported> {
+        val out = ArrayList<Imported>()
+        for ((date, text) in allDataRows(s, today)) {
+            val at = minOf(millis(date, LocalTime(12, 0), zone), nowMillis)
+            fun put(type: VitalType, value: Double, key: String) { out += Imported.Vital(HuaweiHealth.PROVIDER, APP, "$key:$date", type, value, at) }
+            skinRange.matchEntire(text)?.let { m ->
+                put(VitalType.SKIN_TEMPERATURE_LOW, m.groupValues[1].toDouble(), "skintemplow"); put(VitalType.SKIN_TEMPERATURE_HIGH, m.groupValues[2].toDouble(), "skintemphigh")
+            } ?: spo2Range.matchEntire(text)?.let { m ->
+                put(VitalType.SPO2_LOW, m.groupValues[1].toDouble(), "spo2low"); put(VitalType.SPO2_HIGH, m.groupValues[2].toDouble(), "spo2high")
+            } ?: hoursMinutes.matchEntire(text)?.takeIf { it.groupValues[1].isNotEmpty() || it.groupValues[2].isNotEmpty() }?.let { m ->
+                val minutes = (m.groupValues[1].toIntOrNull() ?: 0) * 60 + (m.groupValues[2].toIntOrNull() ?: 0)
+                put(VitalType.SLEEP_LENGTH, minutes.toDouble(), "sleeplength:$minutes")
+            }
+        }
+        return out
     }
 
     // --- dates ----------------------------------------------------------------------------------------------------------------

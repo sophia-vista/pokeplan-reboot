@@ -22,12 +22,12 @@ class HuaweiWalkTest {
     private fun page(vararg dates: String) = ScreenCapture(1, "SportHistoryActivity", listOf(n("first_item_title", description = "November 2026, 6.20 km")) + dates.flatMap { item(it) })
 
     @Test fun cardsAreVisitedInPageOrderAndOnlyTheWantedOnes() {
-        assertEquals(listOf("Exercise records", "Heart", "Weight", "Sleep"), HuaweiWalk.CARDS.map { it.title })
-        assertEquals(listOf("Heart", "Weight", "Sleep"), HuaweiWalk.remaining(setOf("Exercise records")).map { it.title })
+        assertEquals(listOf("Exercise records", "Heart", "Weight", "Sleep", "Skin temperature", "SpO₂"), HuaweiWalk.CARDS.map { it.title })
+        assertEquals(listOf("Heart", "Weight", "Sleep", "Skin temperature", "SpO₂"), HuaweiWalk.remaining(setOf("Exercise records")).map { it.title })
         assertEquals(HuaweiWalk.CARDS.size, HuaweiWalk.remaining(emptySet()).size)
         assertTrue(HuaweiWalk.remaining(HuaweiWalk.CARDS.map { it.title }.toSet()).isEmpty(), "every card opened ends the pass")
         assertEquals(HuaweiWalk.LOOK_SCROLLS, HuaweiWalk.cardFor("Cycle Calendar")?.scrolls, "every card is opened, Cycle Calendar too"); assertNull(HuaweiWalk.cardFor("  "))
-        val look = HuaweiWalk.cardFor("SpO2")!!
+        val look = HuaweiWalk.cardFor("Emotional wellbeing")!!
         assertEquals(HuaweiWalk.LOOK_SCROLLS, look.scrolls); assertFalse(HuaweiWalk.isWanted(look), "any other card is looked at, not read into records")
         assertTrue(HuaweiWalk.isWanted(HuaweiWalk.cardFor("Heart")!!))
         assertEquals("Sleep", HuaweiWalk.cardFor(" Sleep ")?.title)
@@ -47,10 +47,22 @@ class HuaweiWalkTest {
 
     @Test fun theStepsPageOpensItsFourDotsMenuAndAllData() {
         assertTrue(HuaweiWalk.STEPS.allData)
-        assertEquals(listOf("Heart", "Weight", "Sleep"), HuaweiWalk.CARDS.filter { it.allData }.map { it.title }, "Exercise records is a list already")
-        assertTrue(HuaweiWalk.cardFor("SpO2")!!.allData, "almost every other card has All data too")
+        assertEquals(listOf("Heart", "Weight", "Sleep", "Skin temperature", "SpO₂"), HuaweiWalk.CARDS.filter { it.allData }.map { it.title }, "Exercise records is a list already")
+        assertEquals("SpO₂", HuaweiWalk.cardFor("SpO2")?.title, "either spelling is the wanted SpO₂ card")
+        assertNull(HuaweiWalk.cardFor("Health Clovers")); assertNull(HuaweiWalk.cardFor("Activity rings"))
+        assertTrue(HuaweiWalk.cardFor("Emotional wellbeing")!!.allData, "almost every other card has All data too")
         assertTrue(HuaweiWalk.isMenuButton("More items") && HuaweiWalk.isMenuButton(" More options "), "the owner's capture calls the button More items")
         listOf("Share", "Stats", "Add", "Edit", "Go back", "Menu").forEach { assertFalse(HuaweiWalk.isMenuButton(it), it) }
         assertEquals("All data", HuaweiWalk.ALL_DATA)
+    }
+
+    @Test fun sleepOpensItsNewestEntriesAndAllDataStopsAtNinetyDays() {
+        assertEquals(HuaweiWalk.SLEEP_ENTRIES, HuaweiWalk.CARDS.single { it.title == "Sleep" }.entries)
+        assertTrue(HuaweiWalk.CARDS.filter { it.title != "Sleep" }.all { it.entries == 0 })
+        fun row(content: String, date: String) = listOf(n("privacy_content_title", content), n("privacy_time", date))
+        fun list(vararg rows: List<ScreenNode>) = ScreenCapture(1, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) + rows.flatMap { it })
+        assertFalse(HuaweiWalk.allDataIsFarEnough(list(row("5 h 9 min", "11/12"), row("6 h 2 min", "11/5")), now, utc))
+        assertTrue(HuaweiWalk.allDataIsFarEnough(ScreenCapture(1, "PrivacyDataModelActivity", listOf(n("privacy_title", "July 2026")) + row("5 h 9 min", "7/3")), now, utc), "134 days back")
+        assertFalse(HuaweiWalk.allDataIsFarEnough(ScreenCapture(1, "KnitSleepDetailActivity", row("5 h", "7/3")), now, utc), "only an All data list counts")
     }
 }
