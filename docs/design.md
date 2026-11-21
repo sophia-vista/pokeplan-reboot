@@ -44,7 +44,7 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 
 ## Tasks
 
-- **Difficulty rank E, D, C, B, A** replaces the old priority 1 to 5 (E = old 1 … A = old 5). The player picks how hard a task is; **higher rank pays more, A the most**. Urgency comes from the due date, not the rank. Default rank is C. **S rank is not selectable**: it is reserved for special missions (legendary quest steps, weekly challenges). Reward tables are already ported (`CandyRewards`, indexed 1 to 5). **Every paid task gives Rare Candies** (E 6–10 up to A 14–40, doubled in rules version 12; exact table in `docs/economy.md`); a **Super Candy bonus** comes on top with a chance by rank (E 10%, D 15%, C 20%, B 30%, A 40%, raised by the Super Candy chance perk) *(tune)*. The original app paid one or the other.
+- **Difficulty rank E, D, C, B, A** replaces the old priority 1 to 5 (E = old 1 … A = old 5). The player picks how hard a task is; **higher rank pays more, A the most**. Urgency comes from the due date, not the rank. Default rank is C. **S rank is not selectable**: it is reserved for special missions (legendary quest steps, weekly challenges). Reward tables are already ported (`CandyRewards`, indexed 1 to 5). **Every paid task gives Rare Candies** (E 6–10 up to A 14–40; exact table in `docs/economy.md`); a **Super Candy bonus** comes on top with a chance by rank (E 10%, D 15%, C 20%, B 30%, A 40%, raised by the Super Candy chance perk) *(tune)*. The original app paid one or the other.
 - **Minimum task age** scales with the difficulty rank *(tune)*: **E 2 minutes, D 5, C 10, B 15, A 20**, counted from creation. A one-off task only pays after that, so tiny tasks done right away still pay, but big ones cannot be created and instantly ticked. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
 - **Recurring tasks are exempt:** their instances are created ahead of time by the schedule, so they pay when their day comes.
 - On-time bonus: finishing before the due date adds a bonus *(tune)*. **Overdue tasks pay the normal reward**, just without the bonus, so old tasks get finished rather than abandoned.
@@ -65,7 +65,7 @@ The app never mentions ADHD; it just removes friction and shame.
 |---|---|---|
 | Rookie (start) | 1 | tasks, habits, planner, focus and eggs, buddy, party and PC, Pokédex, Rare Candy |
 | Apprentice | 2 | Super Candy and evolution, the Bag, goals, the region picker (Plan or Care Region) |
-| Trainer | 5 | held items, party perks (Plan's and Care's alike, *0.43.1*), the Growth screen, Poké |
+| Trainer | 5 | held items, party perks (Plan's and Care's alike), the Growth screen, Poké |
 | Ace | 11 | Nature Mints, Bottle Caps, Ability Capsules and Tera Shards; stats and the IV judge |
 | Veteran | 22 | Guardians and legendary quests |
 
@@ -79,9 +79,9 @@ The app never mentions ADHD; it just removes friction and shame.
 ## Growth: goals, habits, insights
 
 - **Goals with milestones.** A goal ("Learn guitar", "Run a 10k") has an optional target date, ordered **milestones**, and linked tasks, habits, lists and focus time, with a progress bar. **Finishing a milestone grants a Super Candy** *(tune)*, so a real achievement evolves a Pokémon; finishing the goal grants a bonus item. Anti-farming: a milestone must exist for at least a day before it pays, and milestone rewards are capped per day *(tune: 3 Super Candies)*.
-- **Habits are a recurring-task type** (frequency targets retired 20 November 2026: a saved target becomes an ordinary recurring task, `GameStore.convertTargets`). Was: flexible targets: daily, chosen weekdays, or N times per week / month. Each habit has its own **forgiving streak** (counted in weeks for N-per-week habits) and a simple completion history. Completions pay like recurring tasks (once per day per habit). Habits appear in Today and in the widget.
-- **Weekly review (retired 20 November 2026: no review, payout or unlock entry; saved reviews stay in the save unread).** Was: a short Sunday ritual: what you finished, focus time, habit results, carry forward or reschedule unfinished tasks, and one optional line about how the week went. Completing it earns a small reward once a week *(tune: a berry)*. Notes are private. Not therapy, no diagnosis, no scores about the person.
-- **Growth screen** (under Me): a **balance wheel** across the lists (tasks finished and focus time, last 7 / 30 / 90 days), trends for focus hours and tasks per week, estimate accuracy, goal progress, habit streaks, review history and collection layers. Every metric states what it counts and over which days, and the trainer card says "all time" and how the streak counts.
+- **Habits are a recurring-task type** (no frequency targets). Each habit has its own **forgiving streak** and a simple completion history. Completions pay like recurring tasks (once per day per habit). Habits appear in Today and in the widget.
+- **No weekly review.** Notes and reflection are private; not therapy, no diagnosis, no scores about the person.
+- **Growth screen** (under Me): a **balance wheel** across the lists (tasks finished and focus time, last 7 / 30 / 90 days), trends for focus hours and tasks per week, estimate accuracy, goal progress, habit streaks and collection layers. Every metric states what it counts and over which days, and the trainer card says "all time" and how the streak counts.
 
 ## Planner (v1)
 
@@ -103,8 +103,8 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
   - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from Vitamins (below).
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
-- **Shiny:** rolled at hatch, base chance **1 in 128** per egg *(owner, rules version 13; version 12 briefly made it 1 in 192)*, with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
-- **Levelling:** Rare Candies per level grow with the level, the shape of the games' Medium Fast experience group: **2 + level² / 300**, rounded down *(tune; it was 150 before rules version 12)* (2 a level up to level 17, 5 at 30, 10 at 50, 34 at 99; 30 candies from level 1 to 16, 106 to 36, 1,249 to 100). A Pokémon more than 5 levels below your partner needs half the candies, rounded up *(tune)*, so new hatches catch up without outshining the partner.
+- **Shiny:** rolled at hatch, base chance **1 in 128** per egg *(owner)*, with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
+- **Levelling:** Rare Candies per level grow with the level, the shape of the games' Medium Fast experience group: **2 + level² / 300**, rounded down *(tune)* (2 a level up to level 17, 5 at 30, 10 at 50, 34 at 99; 30 candies from level 1 to 16, 106 to 36, 1,249 to 100). A Pokémon more than 5 levels below your partner needs half the candies, rounded up *(tune)*, so new hatches catch up without outshining the partner.
 - **Evolution:** Super Candy at the species' game evolution level (Charmander at 16). Evolution stones for the species that use them.
 
 ### Evolution
@@ -147,7 +147,7 @@ Tasks give no EVs (no training plans: picking focus stats was one more choice fo
 | Evolution stones | evolve stone species | drops |
 | Link Cord | trade-style evolutions without a trade | shop |
 | Ability Patch | switch to the hidden ability | shop (expensive), rare drop |
-| Berries | feed one for a little friendship (and, if Contests are ever built, a condition boost); also a mini-quest reward and the ingredient for Lures | drops from paid tasks, focus sessions, mini-quests |
+| Berries | feed one for a little friendship; also a mini-quest reward and the ingredient for Lures | drops from paid tasks, focus sessions, mini-quests |
 | Lure (by type) | bias the next hatch toward a type | crafted from berries, shop |
 | Form items (Arceus plates, Silvally memories, Rotom appliances, Griseous Orb, DNA splicers, etc.) | change a species' form | shop, drops (generated from species data) |
 
@@ -155,7 +155,7 @@ Tasks give no EVs (no training plans: picking focus stats was one more choice fo
 
 ### Duplicates → candy
 
-- Transfer any Pokémon you do not need for Rare Candies. Yields by rarity *(tune)*: Common 8, Uncommon 12, Rare 22, Super Rare 60, plus a fifth of the candies already fed. Perfect-IV or shiny ones show a warning first.
+- Transfer any Pokémon you do not need for Rare Candies. Yields by rarity and rank are in `docs/economy.md` *(tune)*. Perfect-IV or shiny ones show a warning first.
 - You cannot transfer your buddy or your last party member, and **legendaries and mythicals cannot be transferred**. Transferring the only copy of a species keeps its Pokédex entry: caught is permanent.
 - This is the sink for hatches, so the PC never needs to be a graveyard.
 
@@ -176,8 +176,8 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 - **Legendary quests:** each region has quests for its legendaries (the games' legendaries for that region). A quest unlocks at a trainer rank plus a share of that regional dex *(tune: about 80%)* and asks for a long strict focus session (Deep Focus) and a set number of paid tasks *(tune)*, with no deadline (see "Implemented" below). Finishing it grants that specific species (as a Guardian candidate; a Legendary Egg with its own hatch is not built yet). There is no extra pacing: the requirements set the pace.
 - **Mythical rewards:** *(superseded)* the first idea was one mythical per milestone (long streaks, task totals, top rank, full regional dex). What shipped instead is a long-term quest per mythical (below).
 - **Every legendary and mythical has a quest** *(decided by the owner; the ones World gives through its own region quests, Kanto, Johto and Hoenn's main legendaries and Mew, have no Plan quest, `Legends.coveredSpecies`; the rest keep theirs until a region or module gives them)*. Mythicals with no in-game encounter get **long-term quests**: available fairly early, but slow to finish (weeks of steady use, not a single push). Legendaries in the Plan Region are tied to its lore: the lake trio (Uxie, Mesprit, Azelf) stand for the core self-improvement ideas of the app, so their quests are written around those ideas (knowledge, emotion, willpower) rather than generic task counts. **Implemented (first pass, *(tune)*):** every legendary-class and mythical species has a quest, generated by rule with the lake trio hand-written.
-  - *Legendaries:* three requirements counted from when the quest is taken (Deep Focus sessions, paid tasks of rank B or A, active days), scaled by the strength of the species (tier 1, 2 or 3 at rank 4, 6 or 8) and unlocked by catching a share of their region's ordinary species (50%, 60%, 70%). Uxie, Mesprit and Azelf are written around knowledge (focus sessions, goal milestones), emotion (habit days, active days; the weekly reviews requirement of both was dropped 20 November 2026) and willpower (Deep Focus, hard tasks, a 7 day streak), all at rank 4.
-  - *Mythicals:* long-term quests from rank 2: 45 active days, 120 paid tasks, 1,200 focus minutes (the weekly reviews requirement was dropped 20 November 2026).
+  - *Legendaries:* three requirements counted from when the quest is taken (Deep Focus sessions, paid tasks of rank B or A, active days), scaled by the strength of the species (tier 1, 2 or 3 at rank 4, 6 or 8) and unlocked by catching a share of their region's ordinary species (50%, 60%, 70%). Uxie, Mesprit and Azelf are written around knowledge (focus sessions, goal milestones), emotion (habit days, active days) and willpower (Deep Focus, hard tasks, a 7 day streak), all at rank 4.
+  - *Mythicals:* long-term quests from rank 2: 45 active days, 120 paid tasks, 1,200 focus minutes.
   - Up to three quests at a time, no deadlines. Finishing one lets the player welcome the Pokémon (the button says "Welcome <name>"), which joins the collection as a Guardian candidate. Progress is derived from the player's history, so nothing extra is tracked.
   - The 26 quest-only species in the Plan list are confirmed as quest-only.
 - **Species with a tradition of being obtainable in the wild** (the pseudo-legendary lines, Absol, etc.) stay in the egg pools, in the Super Rare tier by the rule.
@@ -187,12 +187,12 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 - The **Plan Region** (`Region.PLAN`, stored as `HOME`) is a curated list kept in `tools/species/regions/plan.txt` (one name per line; edit it and run the generator). It is one of six module lists that together hold every one of the 1025 species exactly once (**Species lists**, below); it has 179 species in 68 hatchable lines plus 22 quest and milestone species. The dex is meant to be completed in about 2 months at about 5 eggs a day; the economy simulator checks that pace. Its rarities are re-derived by the rarity rule like every other region.
 - **Species lists** *(owner, 7 November 2026)*: the module regions are Plan, Care, Heal, Mint, Base (it was Home until 13 November 2026) and Link (`tools/species/regions/plan.txt`, `care.txt`, `heal.txt`, `mint.txt`, `base.txt`, `link.txt`). **No species is in two lists and none is left out**; a line (every stage of an evolution family) is never split; each list has about 65 to 75 hatchable lines, a hatchable line of every rarity and exactly two of the 12 Super Rare lines. Each list follows a mainline regional dex: its starters first (Plan: Unova and Paldea, Care: Kanto, Heal: Hoenn and Galar with Litten, Mint: Sinnoh, Base: Johto, Link: Kalos), then the lines by rarity in National Dex order with each stage beside its pre-evolution, then the ultra beasts, paradox, legendary and mythical species, and **its patrons last**: Uxie, Mesprit and Azelf (Plan), Cresselia and Shaymin (Care), Raikou, Entei and Suicune (Heal), Diancie and Melmetal (Mint), Tapu Bulu and Ogerpon (Base), Latias and Latios (Link). Themes: Plan everyday route Pokémon, workers and thinkers; Care soft Fairy, Grass, Water and Normal; Heal Fighting, Fire, Water and fast runners; Mint Steel, Rock, Ground, fossils, gems and hoarders; Base kitchen, garden, hearth, fridge, closet and pets; Link postal birds, loyal dogs, pairs, singers and gift-givers. All six are released with their modules (`Region.released`; `Region.BASE` is stored as `HOUSEHOLD` and `Region.PLAN` as `HOME`). To change a list, edit it, run `python3 -I tools/species/generate.py` and `./gradlew :pokemon-core:jvmTest`, and keep the numbers in this paragraph true.
 - **Module regions** *(owner's decision, October 2026)*: each life module gets its own curated region of about 150 species, named "<Module> Region". The Home Region became the **Plan Region**, and "Home Region" passed to the household module, now the Base Region (`Region.BASE`, stored as `HOUSEHOLD`); no species is in two module regions. Module regions are open to everyone from the start, once their module ships. The game regions below left the Plan module for World (they are no longer collected, below). Details and draft themes: docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, "Module regions".
-- **Only the module regions are collected** *(owner)*. The games' regional dexes (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) are retired early, ahead of the dungeon game: they stay in the generated data and in `Region` (never released, `Region.open` sends them to the Plan Region) only so old saves, sessions and events still load. Pokémon already hatched from them are kept, and the National Dex tab still lists every species.
+- **Only the module regions are collected** *(owner)*. The games' regional dexes (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) are not collected: they stay in the generated data and in `Region` (never released, `Region.open` sends them to the Plan Region) only so old saves, sessions and events still load. Pokémon already hatched from them are kept, and the National Dex tab still lists every species.
 - A Pokémon has one record with a **National Dex number**; a region is just a list of those. Regional forms hatch in their home region (Alolan forms in Alola, and so on).
-- **Soft pity:** within a rarity, species the player has not caught yet are 6 times as likely to be picked (`UNCAUGHT_WEIGHT`, 3 before rules version 12; rarity odds are unchanged), so the last few species do not take forever. "Caught" is permanent, even after a transfer.
+- **Soft pity:** within a rarity, species the player has not caught yet are 6 times as likely to be picked (`UNCAUGHT_WEIGHT`; rarity odds are unchanged), so the last few species do not take forever. "Caught" is permanent, even after a transfer.
 - **Where a region's eggs start:** a species can hatch in a region if its pre-evolution is not in that region's dex (a region that has Pikachu but not Pichu can hatch Pikachu), so no region depends on another to be completed. Hisui's dex is merged into Sinnoh, and Hisuian forms hatch there.
 - **Region picker:** `AppData.settings.region` (default the Plan Region) is the region focus and Task Eggs hatch from, and eggs hatch from that region's pool only; each module's own eggs come from its own region. No screen sets it in the current code (found 20 November 2026; the Settings picker this paragraph used to describe is gone). Each region has its own dex progress bar.
-- Mega / Gigantamax forms came through the region where they were introduced (Kalos, Galar); with those retired they have no source yet *(proposal)*.
+- Mega / Gigantamax forms have no region source yet *(proposal)*.
 
 ## Pacing and collection layers
 
@@ -200,7 +200,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 
 - **Easy to fill, hard to perfect** *(owner, October 2026)*: completing a Pokédex should be easy, with more Pokémon and Rare Candies a day in every region; what stays hard is a good version of a Pokémon (a shiny, high IVs, the right nature).
 - **Basic dex of the Plan Region (every species caught, including evolutions): about 6 weeks** *(tune)*. Every module region should give roughly as many Pokémon as Plan for comparable use (Care Eggs, docs/economy.md).
-- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex at a median of day 42 and the Care dex (through Plan's eggs alone) at about day 84, and earns enough Rare Candies to evolve the whole Plan Region in 15 to 27 days and enough Super Candies in about 13 (rules version 12; it was day 65, day 128, 45 to 84 and 20). The simulator does not play Care, mini-quests or the shop, which add more.
+- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex in about 6 weeks and evolves the whole Plan Region in weeks, not months. The simulator does not play Care, mini-quests or the shop, which add more.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
 | Layer | Goal |
@@ -211,7 +211,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 | Perfect dex | a "perfect build" of each species: 31 IVs, an EV spread of 252 / 252 / 6, a favourable nature, a chosen ability. Competitive-style building, and the endgame use for Nature Mints, Bottle Caps, Vitamins and Ability Capsules |
 | Ribbons | contest ribbons, legendary quests, mythical milestones |
 
-Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have no gameplay effect beyond perks and contests.
+Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have no gameplay effect beyond perks.
 
 ## Spin-off inspired features
 
@@ -219,9 +219,8 @@ Planned, with build order to be set later.
 
 - **Mission board (Mystery Dungeon):** tasks are shown as a job board using their difficulty rank. Presentation only; rewards stay as designed.
 - **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole save, earned in every module: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 points: **quick at first, slower after** (owner's direction). Each rank takes longer than the one before. Each rank reveals features (see "Gradual reveal"). Names and thresholds are *(tune)*; see `docs/economy-report.md` for the days.
-- ~~**Personality quiz starter (Mystery Dungeon)**~~ *(dropped from the Plan module, owner's decision)*: onboarding stays a starter picker. A personality quiz may come back in another module of the family (parked in `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md`, section 8).
+- **No personality quiz starter:** onboarding stays a starter picker.
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
-- **Weekly contests (Contests / Pokéathlon):** a friends-only weekly event scored by a buddy's stats, nature and training, with ribbons.
 - **Secret Base and photo mode (Secret Base, Pokémon-Amie, Snap):** decorate the buddy's home scene (with a berry garden) and take snapshots of the buddy or a hatch. After v1.
 - **Focus view for v1 is the egg only** (calm and distraction-free). An expedition view was considered and left out.
 
@@ -246,7 +245,7 @@ The **buddy** lives on the home screen and widget, reacts to real events only (s
 | Shiny hunter | Electric, Ice | small shiny chance bonus |
 | Streak keeper | Water, Fire, Poison | a second missed day forgiven per week (on top of the free one) |
 
-- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+3% Super Candy chance; it boosted EV training until training plans were dropped).
+- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+3% Super Candy chance).
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
 - **Caps:** total bonus from perks, held item and party assists stays below +25% *(tune)* so no single buddy breaks the economy.
 - **Shown, not hidden:** the Party screen has a **Party perks** card (each bucket's total, and opened, every part of it: the buddy's types, its ability, its held item, each assist and each Guardian, with when a conditional ability applies). Each Pokémon's page shows what it gives as the buddy and as an assist, and its held item with Give, Swap and Take. Items are also given from the Bag; the Bottle Cap and Nature Mint ask which stat or nature. Plan's and Care's pages (Modules) show the whole party in six equal slots with its perks, laid out alike (`PartyPanel.kt`); below the rank that opens party perks, Plan's say which rank shows them, since they already count.
@@ -289,8 +288,7 @@ state are marked *(proposed)*.
 - **Migration.** The existing party becomes Plan's party. Until Care's party has a lead, Care keeps paying the Plan lead as
   today, so nobody loses a reward by not setting it up. The Party page lists every module's party at once, each under its region's name with its lead first, over the shared PC.
 - **Reward engine and saved state.** `PlayerState` carries a party per module (a map keyed by module id) and the reward engine is passed
-  the party of the event's module. This was a rules version bump and a migration of saved state, with the golden vector
-  regenerated (the server and its `backend` skill were retired in 0.130.0).
+  the party of the event's module. The golden vector (`pokemon-core/src/jvmTest/resources/golden.json`) covers it.
 - **Economy check before release.** Run `./gradlew :plan-core:simulateEconomy`: Plan's numbers must not move; then add
   Care's befriending and perks and confirm Care's Pokémon income stays below Plan's and that a Care-only player is not
   stuck.
@@ -302,7 +300,6 @@ state are marked *(proposed)*.
 
 - **Forgiving daily streak:** kept alive by one paid task **or** one completed focus session that day. **Everyone gets one free missed day per week** that does not break it, and Home shows the streak as a line of text (a ring is not built). Weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.
 - Badges for milestones (tasks finished, focus hours), shown as gym badges.
-- ~~**First online release:** friends and profiles and weekly friends-only leaderboards; **daily gifts** between friends.~~ *(History: built as one weekly board of trainer points and a daily gift, then removed with the server in 0.130.0; PokéLife is local-only.)*
 
 ## Loop crossover
 
@@ -325,7 +322,6 @@ Studied: Forest and Tiimo (focus and planning), Finch and Pokémon Sleep (self-c
 - **Spotlight days.** Each day a featured type (rotating through all 18) has species weighted 2 times in hatches *(tune)*, announced the day before. Missing one costs nothing. Seasonal events and a featured species can be added later. Rank step 2.
 - **Party assists.** Non-buddy party members each add 25% of their type perk strength *(tune)*. Type perks only (no ability perks); the overall perk cap still applies, so the other five slots matter without breaking the economy.
 - **Bond styles (from Voidpet Garden).** A Pokémon's nature decides how it likes to bond. **Presence** (Attack and Speed natures): focus sessions with it as buddy give double friendship. **Comfort** (Defense and Sp. Def natures): petting gives double. **Gifts** (Sp. Atk natures): berries give double. The five neutral natures are **balanced** and get +50% from every source. The nature → style table is data *(tune)*. Other care always works; the matching style is just faster. Shown on the Pokémon page. Rank step 3.
-- **Weekly reflection prompt.** *(Retired 20 November 2026 with the weekly review.)* The weekly review asked one gentle question that rotates through a pool of about 50 ("What felt easier than expected?", "What are you proud of this week?", "What would make next week a little easier?"). Optional, private, no scoring and no analysis; answers are kept in the review history.
 - **Optional mood check-in.** A one-tap "how are you feeling?" (five faces) on Home. Never required, no reward, and off by default (a "Track mood" setting). The buddy answers with a line of text. If on, a simple mood trend appears on the Growth screen. Private. *(Care's mood check-in in `care-core` is the built version.)*
 - **Haptics.** Soft vibration when petting the buddy on Android (a setting turns it off). A **home garden** you grow from berries comes with the Secret Base scene after v1.
 - **Not a health product.** Voidpet is built with therapists; PokéLife borrows the warmth, not the claims. No diagnosis, treatment or scores about the person, and copy never promises a mental-health benefit.
@@ -377,38 +373,25 @@ Android is the only product platform (owner, 6 November 2026), with widgets. Des
 
 ## Platform and modules
 
-PokéLife is one app of life modules (PLAN, CARE, HEAL, MINT, BASE, LINK, GEAR and WORLD) over one Pokémon collection, one Bag, one ledger and one currency, Poké. *(The first design, a "family of personal Pokémon apps" on one account and one Supabase database, was dropped: the modules took its place, and the server was retired in 0.130.0.)*
+PokéLife is one app of life modules (PLAN, CARE, HEAL, MINT, BASE, LINK, GEAR and WORLD) over one Pokémon collection, one Bag, one ledger and one currency, Poké.
 
 - **A module:** its own data and screens. It turns its own activities into minimal events (`CareEvent`, `HealEvent`, `MintEvent`, `BaseEvent`, `LinkEvent`) and its store in `app-core` pays them through the `World` interface and the reward engine, idempotently. A module never writes Pokémon or currency rows itself, and an event never carries a figure, a name or a private word.
 - **One economy:** a single pool of candies, Poké and items, so effort anywhere strengthens the same Pokémon. The life modules have daily limits on what they pay (`docs/economy.md`, section 3), and every reward is a ledger row recording the module and the source, for auditing (`docs/economy.md`).
-- **The buddy works everywhere,** but it is cosmetic since 0.124.0; the perks come from each module's party (see "Buddy and perks").
+- **The buddy works everywhere,** but it is cosmetic; the perks come from each module's party (see "Buddy and perks").
 - **Privacy:** health and money data is sensitive. It lives in its own sealed tables on the phone (`docs/code-map.md`), and the game only sees reward events ("workout done"), never the details behind them. The no-health-claims rule applies to every module.
 - **Code:** Gradle modules `:pokemon-core` (species data, Pokémon, items, perks, engines), `:plan-core`, `:care-core`, `:heal-core`, `:mint-core`, `:base-core`, `:link-core` and `:world-core` (each module's rules), and `:app-core` (the stores and the rules engine). Nothing in `:pokemon-core` knows about tasks or focus sessions.
 
-## Rewards and the ledger (the Supabase backend is history)
+## Rewards and the ledger
 
-The backend this section used to describe (a Supabase project, guest and linked accounts, server-authoritative rewards, row-level security, the cloud save) was removed in 0.130.0 (REP-012). Today the phone decides every reward, every reward row records the rules version (`RewardRules.VERSION`) in the local ledger, and every reward source, use and cap is listed in `docs/economy.md`. Species, base stats, abilities and perk tables are data shipped with the app.
+The phone decides every reward. Every reward row records the rules version (`RewardRules.VERSION`) in the local ledger, and every reward source, use and cap is listed in `docs/economy.md`. Species, base stats, abilities and perk tables are data shipped with the app.
 
 ## Data to add
 
 - Per-species base stats, abilities, types, evolutions and forms for **every species through Gen 9**, generated at build time from a public dataset (needs the build environment to reach it). Species use National Dex numbers; each module region keeps its own local numbering.
 - Regional dex lists for all regions, as lists of National Dex numbers.
-- **Moves (done, 0.96.0):** all 919 standard-type moves (type, category, power, PP, accuracy, priority, generation) and, for each form, what it learns from the newest game it appears in, by level-up (with level), egg, tutor and machine (`Dex.move`, `Dex.learnset`, `Dex.movesOfType`). Mega and Gigantamax forms use their species' set. Nothing in the game uses them yet: they are for move-based skills and GEAR helpers that learn a tool's move.
+- **Moves:** all 919 standard-type moves (type, category, power, PP, accuracy, priority, generation) and, for each form, what it learns from the newest game it appears in, by level-up (with level), egg, tutor and machine (`Dex.move`, `Dex.learnset`, `Dex.movesOfType`). Mega and Gigantamax forms use their species' set. Nothing in the game uses them yet: they are for move-based skills and GEAR helpers that learn a tool's move.
 - A rarity for every species, assigned by rule (see Roster).
 - Ability → perk table, type → perk table, item table, all as plain data with tests.
-
-## Milestones
-
-1. **Shared core (done):** eggs, candy, levels, evolution, Pokédex. Split into `:pokemon-core` and `:plan-core` so more apps can reuse the Pokémon side.
-2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 became the Home Region (now the Plan Region); National Dex numbers.
-3. **Pokémon depth:** IVs, EVs, natures with stats, gender, abilities, shiny, friendship, items, evolution triggers, transfer yields, perk calculation. Unit tested in `:pokemon-core`.
-4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), habits and their streaks, goals and milestone rewards, reminders schedule, the quick-add parser, task-focus link, review and insight calculations. Pure Kotlin in `:plan-core`, heavily unit tested.
-5. **Economy simulator (done):** a JVM tool depending on both cores that plays months of tasks and focus sessions to tune every *(tune)* value against the pacing targets before the UI is built on them.
-6. **UI shell (done):** the shared Compose UI; desktop and web are dev conveniences.
-7. **Backend (retired 0.130.0):** the Supabase schema, RLS, reward functions and sync were built and then removed; the app is local-only.
-8. **Android app and widgets (done).**
-9. **Online (retired 0.130.0):** friends, weekly leaderboards, weekly contests, trading and co-op focus are not built.
-10. **After v1:** Secret Base decoration (done: Base's room, 0.196.0) and the Health Connect steps and sleep import (done, Heal, 0.162.0 and 0.186.0); photo mode is not built.
 
 ## Risks
 
@@ -416,25 +399,24 @@ The backend this section used to describe (a Supabase project, guest and linked 
 - **Health claims:** the app must not present itself as therapy or a treatment. Mood tracking and reflection are optional and private.
 - **Strict focus** can frustrate users with legitimate interruptions. Calls exempt; revisit after use.
 - **Balance:** perks, items and transfer yields compound. Simulate a few months of play before fixing numbers.
-- **Launch scope:** all regions at launch means a large data set to generate and test, and every region needs its theme, music and badge. Region content is data, so the code does not grow with it, but QA does.
 - **Planner scope:** a full drag-and-drop day / week planner, lists, recurrence with edit-this-or-all, and device calendar import make the planner a product on its own. It is the part users judge the app by, so it needs its own testing (recurrence and time zones especially).
 - **Scope:** stats, items, perks and widgets are a lot. The data pipeline and Pokémon depth should stay behind a clean interface so the UI work can start in parallel.
 
 ## Defaults (proposal, change if you disagree)
 
-- Streak day rolls over at 4am local time (`Streaks.streakDay`, 0.31.0).
+- Streak day rolls over at 4am local time (`Streaks.streakDay`).
 - A recurring task pays at most once per day, and recurrence is never more frequent than daily.
 - Completing a task from the widget finishes it at once and the reward is granted the next time the app opens (the undo window has passed by then; `GlanceWidgets.kt`).
 - Reminders are silenced during a focus session.
 - Settings include a complete backup, per-module exports and Erase this device (there are no accounts).
-- Cheating: no server checks (retired 0.130.0); one focus session at a time.
-- *(Retired 0.130.0: server-issued egg tickets for offline hatching, and running the game rules on the server by compiling the shared Kotlin module to JS.)*
+- One focus session at a time.
+- No third-party analytics. Crash reports only, opt-in.
 
 ### Planner defaults
 
 - **Time zones:** planned and due times are local wall-clock times. Changing time zone keeps the wall-clock time; recurring tasks keep it across daylight saving. Imported events keep their own zone.
 - **Recurrence:** every N days / weeks / months / years; chosen weekdays; monthly on a date, on the nth weekday or on the last day; on a **fixed schedule** or **N days after completion**; ends never, on a date, or after N times; skip one occurrence; edits ask "this one / this and following / all". Never more often than daily. Instances are generated 14 days ahead. A recurring task shows its own streak and completion history (no extra reward beyond the global streak).
-- **Reminders:** up to 3 per task, absolute or relative (at the time, 10 minutes, 1 hour or 1 day before); snooze (10 minutes, 1 hour, tomorrow; the notification shows Done, 10 min and 1 hour, Android's limit being three actions); quiet hours default 22:00 to 07:00 (set in Plan, More, Settings since 0.215.0); silenced during focus; local notifications on the phone (no web push and no multi-device sync).
+- **Reminders:** up to 3 per task, absolute or relative (at the time, 10 minutes, 1 hour or 1 day before); snooze (10 minutes, 1 hour, tomorrow; the notification shows Done, 10 min and 1 hour, Android's limit being three actions); quiet hours default 22:00 to 07:00 (set in Settings → Notifications); silenced during focus; local notifications on the phone (no web push and no multi-device sync).
 - **Calendar:** Plan → Calendar has Day, Week and Month. All-day items sit above the timeline. The Day shows today up to 13 days ahead; untimed tasks of the day (on today also the overdue ones) sit in a "To plan" tray above the hours; tap a task, then an hour, then nudge by 15 minutes (the picked task also gets Shorter and Longer). A block lasts its estimate (30 minutes without one) and overlapping blocks share the width; the waking window (08:00 to 22:00) is shown and stretches to fit. Holding a task (a long press on touch) and dragging it from the tray onto the Day or Week sets its planned date and time; dragging a block moves it (across days in the Week); dragging its lower edge (the bottom 12 dp) sets the estimate; everything snaps to 15 minutes, a block starts by 23:45 and never runs past midnight. While dragging, the slot is outlined and the page scrolls near an edge; tap-to-place stays as the accessible route. The Week is the next 7 days from today, blocks show their icon only, and tapping a day name opens that day. The Month is a grid of whole weeks (Monday or Sunday first, from General settings): all-day events are bars across their days (`SpanLayout`), timed events and open tasks are labels, at most four lanes a day then "+n"; tapping a day shows its agenda under the grid.
 - **Own events:** an event on Plan's own calendar (title, day, start, length; it starts at the next hour on today, 9:00 on other days, and lasts an hour) is for appointments and blocks of time that are not tasks: never ticked off, never paid. It can be all day (a first and last day, never busy time), has one of the eight list colours (teal by default), and can repeat (Once, Daily, Weekdays, Weekly, Every 2 weeks, Monthly, Yearly; never more often than daily; never ends or ends on an occurrence). Edits from the event panel apply to every occurrence; moving one on the calendar makes it a one-off; Delete asks this one or all; changing how a later occurrence repeats keeps the earlier ones. Saved in the save (`AppData.events`, `PlanEvent.occurrences`). Not written to the phone's calendars.
 - **Device calendars (Android):** Settings → Calendars asks for the calendar permission and lists the phone's visible calendars to tick (Google Calendar arrives through them). Events are read from the phone each time the day is shown, never saved or paid; recurring ones are expanded, declined and cancelled ones are left out, private ones show as "Busy" on widgets; the time they take inside the waking window counts as busy. Which calendars show is kept per phone. Desktop and web have no device calendars.
@@ -444,29 +426,23 @@ The backend this section used to describe (a Supabase project, guest and linked 
 - **Quick-add:** one natural-language parser shared by every platform, e.g. `Call mum tomorrow 5pm #Social !B` (`#` list, `!` rank); the box shows "Understood: …" under the field while typing and keeps the parsed time and "tonight". Also available from the widget and the share sheet.
 - **Task states:** open, done, **won't do** (no reward, hidden from stats), deleted (recoverable for 30 days). A reward is tied to one completion event; reopening and re-completing a task never pays twice.
 - **Task row and card:** every row starts with the check key (a finished task's is ticked in a quiet colour, a won't-do task's is a cross; either reopens it), then the title with the rank as a small framed tag. The open card's When tab holds the day and the list, and one "Time and repeat" row that unfolds the time, reminders and repeat. The Edit tab has a Goal row (None or an unfinished goal): a task counts toward one goal at a time (`GameStore.linkTaskToGoal`), a goal without milestones shows "N of M tasks", and the link pays nothing. A finished task's card has Reopen and Delete.
-- **Locale:** week start and 12 / 24 hour follow the system, with an override (the week-start toggle is in General settings since 0.215.0). English only for v1.
+- **Locale:** week start and 12 / 24 hour follow the system, with an override (the week-start toggle is in General settings). English only for v1.
 
 ### Pokémon defaults
 
 - **Gender:** stored per Pokémon, rolled at hatch from the species' ratio (genderless supported). Affects gendered forms and sprites and gender-dependent evolutions only.
-- **Friendship:** 0 to 255, starts at 70. Raised by petting (+2, up to +10 a day), a focus session with that buddy (+3), a paid task finished with that buddy as buddy (+1, up to +10 a day), a berry (+1) and each level gained (+1). Never lowered, no decay. Effects: perk strength scales from ×1.0 at 0 to ×1.2 at 255, friendship evolutions at 220, and the buddy's mood. The amounts above are doubled (or +50%) when the care matches the Pokémon's **bond style** (see Ideas adopted).
-- **Contests (not built; they needed the online release, retired 0.130.0):** five condition stats (Cool, Beautiful, Cute, Smart, Tough), 0 to 255 each, built from the species' base stats, training and nature, then raised by feeding berries (a berry liked by the nature gives double, a disliked one half; up to 5 a day). Each week one condition is judged; friends' buddies are ranked by it, plus ribbon bonuses. Prizes are coins and ribbons. Numbers *(tune)*.
+- **Friendship:** 0 to 255, starts at 70, never lowered, no decay; the sources and amounts are in `docs/economy.md` (doubled, or +50%, when the care matches the Pokémon's **bond style**, see Ideas adopted). Effects: perk strength scales from ×1.0 at 0 to ×1.2 at 255, and friendship evolutions at 220.
 - **Abilities and perks:** about 40 curated abilities have a perk; every other ability falls back to the type perk only.
-- **Endgame:** a level 100 Pokémon takes no more candies. Candies still level other Pokémon. Poké sinks: Tera Shards, Mega Stones, form items. Candy holdings cap at 9,999; excess converts to Poké at 1:1 *(tune)*. Contests, ribbons and a hall of fame give maxed Pokémon a purpose (Contests are not built).
-- **Pokédex text:** the latest English entry from the public dataset. **Seen** = appeared on an open quest (a friend's buddy was a source before 0.130.0) (`AppData.seenSpecies`, client-side, kept for good); **caught** = ever owned; **owned** = in the party or PC now (`DexState`). Caught species show their sprite and entry, with a Poké Ball on the owned ones; seen ones stay a silhouette but are named when tapped; the rest are a silhouette marked ???. Every tile names its state in words. Each caught species opens its own page: category (genus), height, weight and entry from the dataset, types, abilities (hidden marked), base stats, and its evolution line with how each step works in the app (`EvolutionRules.howTo`); members not found yet stay a silhouette marked ???. Previous and Next skip species not found yet. The list has a completion bar and All, Caught and Not caught filters.
+- **Endgame:** a level 100 Pokémon takes no more candies. Candies still level other Pokémon. Poké sinks: Tera Shards, Mega Stones, form items. Candy holdings cap at 9,999; excess converts to Poké at 1:1 *(tune)*. 
+- **Pokédex text:** the latest English entry from the public dataset. **Seen** = appeared on an open quest (`AppData.seenSpecies`, client-side, kept for good); **caught** = ever owned; **owned** = in the party or PC now (`DexState`). Caught species show their sprite and entry, with a Poké Ball on the owned ones; seen ones stay a silhouette but are named when tapped; the rest are a silhouette marked ???. Every tile names its state in words. Each caught species opens its own page: category (genus), height, weight and entry from the dataset, types, abilities (hidden marked), base stats, and its evolution line with how each step works in the app (`EvolutionRules.howTo`); members not found yet stay a silhouette marked ???. Previous and Next skip species not found yet. The list has a completion bar and All, Caught and Not caught filters.
 - **Pokédex entry scenes**: a caught species' entry shows it in the real battle scene its first type gets as a buddy on Home (`BuddyScene.of`: Water on the beach, Grass and Bug in the forest, Electric on the thunder plains...); a species only seen keeps the plain wallpaper, so the scene never gives its type away.
 - **Hatch and evolution scenes**: a hatch plays full screen, once per new egg wherever it came from (focus, Task Egg, widget): "Oh?", three ever harder wobbles of the egg, a flash, the Pokémon and its cry. An evolution shows "What? X is evolving!", the sprite as a white shape flickering between the two forms ever faster, a flash and "Congratulations!". A tap or Skip jumps to the end; Reduce motion shows only the end. Real sprites and the item egg only; the white shapes are the real sprites tinted.
 - **PC and bag:** unlimited PC boxes of 30; bag stacks to 999.
 
-### Platform and operations defaults
-
-- *(Retired 0.130.0: friend codes, blocking, friend profiles, row-level security and leaderboards.)*
-- No third-party analytics. Crash reports only, opt-in.
-
 ## Open questions
 
-Being settled in rounds before any Pokémon-depth code is written. Decided: everything above not marked *(tune)* or *(proposal)*.
+Decided: everything above not marked *(tune)* or *(proposal)*.
 
 - **To confirm:** the Screens and flows proposal; the Defaults above; Mega / G-Max region assignment; S rank staying non-selectable.
 - **To tune by simulation before release:** rarity rule parameters across ~1,025 species, Poké amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus, rank names and thresholds, region unlock order, legendary quest requirements, E to S rank mapping.
-- **To check:** Showdown sprite terms and build-time availability, whether the build environment can reach the data sources, Android permission flow for calendar import (built in 0.12.0).
+- **To check:** Showdown sprite terms and build-time availability, whether the build environment can reach the data sources.

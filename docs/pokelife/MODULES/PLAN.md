@@ -64,7 +64,7 @@ PLAN owns only its reminder requests and PLAN-specific preferences (section 7). 
 
 Use a small, stable navigation structure. Avoid a separate destination for every feature.
 
-**Layout (owner, 20 November 2026):** Modules → Plan opens a page with no on-page menu: the lead (112 dp), the overview (today's open tasks, five at most, each with a check key, and an "All N tasks" button; one title when nothing is planned), the action items (quick add, the task to do next with **Focus** and **Pick for me**), and the party last. Every Plan place (**Tasks**, **Calendar**, **Focus** on the phone, **Goals**, **Settings**) is in the shared Sections key in the header (`SectionsKey`). `PlanSection` is TASKS, CALENDAR, FOCUS, GOALS, SETTINGS.
+**Layout:** Modules → Plan opens a page with no on-page menu: the lead (112 dp), the overview (today's open tasks, five at most, each with a check key, and an "All N tasks" button; one title when nothing is planned), the action items (quick add, the task to do next with **Focus** and **Pick for me**), and the party last. Every Plan place (**Tasks**, **Calendar**, **Focus** on the phone, **Goals**, **Settings**) is in the shared Sections key in the header (`SectionsKey`). `PlanSection` is TASKS, CALENDAR, FOCUS, GOALS, SETTINGS.
 
 Primary destinations (the owner uses only these three, so nothing else is a destination):
 
@@ -230,7 +230,7 @@ Remain reliable through app backgrounding, screen lock, incoming calls, process 
 
 ### 6.3 Interruption behavior
 
-**Owner decision, 8 November 2026: focus is strict.** A focus session must hold: leaving the app for more than ten seconds, or the phone moving in Deep Focus, ends the session as not completed, and nothing is paid. The allowances are the existing ones: two emergency pauses a day of up to three minutes, a pause for a phone call, and Magic Guard. This replaces the earlier wording that every interruption is not a failure and that a session can be paused and resumed freely; gentle pause and resume belong to the Care calm break, not to focus. A session can still be ended by the player and the app can be returned to. When a session ends, publish the focus-state change so the shared reminder feature can re-evaluate eligible deferred requests under its policy.
+**Owner decision: focus is strict.** A focus session must hold: leaving the app for more than ten seconds, or the phone moving in Deep Focus, ends the session as not completed, and nothing is paid. The allowances are the existing ones: two emergency pauses a day of up to three minutes, a pause for a phone call, and Magic Guard. Gentle pause and resume belong to the Care calm break, not to focus. A session can still be ended by the player and the app can be returned to. When a session ends, publish the focus-state change so the shared reminder feature can re-evaluate eligible deferred requests under its policy.
 
 ### 6.4 History and rewards
 
@@ -262,7 +262,7 @@ Google/device calendar integration is read-only initially. PLAN may request perm
 
 PLAN may create its own events with title, start/end, optional location/description/reminder, and recurrence only if implemented reliably. Events are not tasks and have no task completion state or task rewards.
 
-**Event companion (owner, 20 November 2026):** an event can name a **companion**, a Pokémon from the **PLAN party** (the lead or one of the five; no new Pokémon place, so POKEMON_ECOSYSTEM.md 2.2 stands). After an occurrence **ends**, its companion gains exp and may bring back an item, with no tap. Rules *(numbers are tune; economy.md has them)*:
+**Event companion:** an event can name a **companion**, a Pokémon from the **PLAN party** (the lead or one of the five; no new Pokémon place, so POKEMON_ECOSYSTEM.md 2.2 stands). After an occurrence **ends**, its companion gains exp and may bring back an item, with no tap. Rules *(numbers are tune; economy.md has them)*:
 - **Pays once per occurrence.** A repeating event keeps the dates it has paid; a skipped occurrence never pays.
 - **Only what the companion was there for.** An occurrence pays only if it ends after the moment the companion was set, **or the event's day, time, length or repeat was last edited**. A companion added to a past event, an event made for a past time, and an event dragged into time that has passed, pay nothing.
 - **Exp by length:** one Exp Candy's worth of exp for each 30 minutes of a timed event (a quarter hour counts as one, four at most for one event), a daily cap on all events together, and a small chance of one item from the ordinary drop table when it paid. **An all-day event never pays** (it has no length).
@@ -280,7 +280,7 @@ Keep the hierarchy simple: goal describes outcome; project groups work; mileston
 
 Goals: ID, title, optional description, created date, optional target date, status (active/on hold/completed/archived), optional linked project, milestones, and tasks. Completion is deliberate.
 
-Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not generate *task* rewards. **Owner decision, 8 November 2026: the current payout stays**: a goal milestone reached pays a Super Candy, and a finished goal pays a bonus item (`Goal.kt`; `docs/design.md`). Goal completion is still to be made deliberate (see the implementation guide).
+Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not generate *task* rewards. **Owner decision: the current payout stays**: a goal milestone reached pays a Super Candy, and a finished goal pays a bonus item (`Goal.kt`; `docs/design.md`). Goal completion is still to be made deliberate (see the implementation guide).
 
 ### 9.1 Goal badges and the Hall of Fame (owner, 15 November 2026; REP-053 chunk 5)
 
@@ -334,7 +334,7 @@ Migrations are versioned, idempotent, recoverable where possible, tested against
 
 Potential PLAN reward-bearing actions are completing a PLAN task occurrence, completing a qualifying focus session, completing a qualifying PLAN milestone only if explicitly supported by progression rules, and (owner, 20 November 2026) the end of a PLAN event occurrence that has a companion (8.2).
 
-**Reward focus on a task (owner, 20 November 2026):** each task has a reward focus chosen when it is made (quick add under "More options", or the task editor): **Exp** (the default, and exactly what a task paid before), **Egg** or **Items**. The focus trades the same share of a task's payout for another kind: Egg pays half the candies and doubles the Egg points; Items pays half the candies and doubles the item-drop chance *(tune; economy.md)*. Poké and trainer points never change. A Settings default picks the focus a new task starts with; a repeating task's copies keep its focus; the focus is read when the task is ticked, so changing it during the undo window does not change the payout.
+**Reward focus on a task:** each task has a reward focus chosen when it is made (quick add under "More options", or the task editor): **Exp** (the default, and exactly what a task paid before), **Egg** or **Items**. The focus trades the same share of a task's payout for another kind: Egg pays half the candies and doubles the Egg points; Items pays half the candies and doubles the item-drop chance *(tune; economy.md)*. Poké and trainer points never change. A Settings default picks the focus a new task starts with; a repeating task's copies keep its focus; the focus is read when the task is ticked, so changing it during the undo window does not change the payout.
 
 Do not reward opening PLAN, viewing/editing/creating an empty task, moving tasks, generating occurrences, starting then immediately cancelling focus, viewing external events (a device calendar's events never pay and never take a companion), or completing CARE-owned routines.
 

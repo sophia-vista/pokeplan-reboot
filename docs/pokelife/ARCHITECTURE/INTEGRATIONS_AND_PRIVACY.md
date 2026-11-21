@@ -2,8 +2,6 @@
 
 **Version:** 1.1  
 **Status:** Approved target architecture (owner, 6 November 2026; implementation details such as the database choice stay subject to their stated feasibility spike)  
-**Baseline:** PokéLife `0.123.0`, updated through 0.162.0  
-**Review date:** 6 November 2026
 
 > This document defines cross-module Android integration, provider, permission, privacy, and security contracts. The Product Bible owns product principles; module specifications own domain behavior; `DATA_AND_MIGRATIONS.md` owns persistence, transactions, encryption implementation foundations, backup, restore, and migration; this Section 9 owns reminder scheduling and delivery. This document connects those authorities without duplicating their detailed rules.
 
@@ -125,7 +123,7 @@ Never repeatedly prompt after denial. Do not use a permission rationale to press
 | Background location | `ACCESS_BACKGROUND_LOCATION` | Not supported by the baseline product |
 | Microphone | `RECORD_AUDIO` | Only when starting an audio measurement/recording tool; no background capture |
 | Camera | Camera permission only for an implemented direct-camera workflow | Prefer system camera intents or scanner APIs where practical; request at capture time |
-| Contacts | `READ_CONTACTS` or platform contact picker | Only when user explicitly invokes LINK import; prefer picker-based selection. Built (0.201.0): `READ_CONTACTS`, asked at "Import contacts" after the list of what is read, nothing else |
+| Contacts | `READ_CONTACTS` or platform contact picker | Only when user explicitly invokes LINK import; prefer picker-based selection. Built: `READ_CONTACTS`, asked at "Import contacts" after the list of what is read, nothing else |
 | Photos/media | Android Photo Picker | Use selected-item access; no broad media permission for ordinary import |
 | Documents | Storage Access Framework (SAF) | User selects a file/folder; avoid broad storage access |
 | Bluetooth | Version-appropriate Bluetooth permissions | Only for a verified direct device integration; not needed merely because a watch exists |
@@ -136,23 +134,21 @@ Never repeatedly prompt after denial. Do not use a permission rationale to press
 
 The matrix is a policy map, not a declaration that every permission should be present in the manifest. Each manifest entry must have an implemented owner and documented purpose.
 
-### 4.3 Manifest audit from baseline 0.123.0
+### 4.3 Manifest audit
 
-The 0.123.0 manifest declared network, location, microphone, notification, calendar-read, boot, package-deletion, `QUERY_ALL_PACKAGES` and exact-alarm permissions, optional location/microphone hardware features, a home activity, widgets, reminder receivers and `android:allowBackup="true"` (set to `false` in 0.167.1, with `data_extraction_rules.xml`, so nothing goes to Android's cloud backup or another phone by itself; `CHANGELOG.md` 0.167.1). Today's manifest (`androidApp/src/main/AndroidManifest.xml`, 0.224.0) also declares: five `READ_*` health permissions (read only), the Health Connect package query, a rationale activity and the permission-usage alias; `READ_CONTACTS` (LINK's import, 0.201.0); `ACTIVITY_RECOGNITION` (the step counter, asked only when a walking evolution starts); `SET_ALARM` (hands a wake-up alarm to the clock app); `VIBRATE`; `EXPAND_STATUS_BAR`; `USE_EXACT_ALARM` (with `SCHEDULE_EXACT_ALARM` up to Android 12L); and `WRITE_SECURE_SETTINGS` for the optional one-tap Huawei read (5.2.2; the app cannot grant it, only the player over adb). No storage permission (the document picker is used). Exported components are the activities, the widget receivers and `ReminderBootReceiver`; the reminder receivers and `WidgetRefreshReceiver` are not exported. Every capability must still be checked against the shipped features before release:
+`androidApp/src/main/AndroidManifest.xml` declares: `INTERNET`, `ACCESS_NETWORK_STATE`, coarse and fine location and microphone (the matching hardware features optional), `POST_NOTIFICATIONS`, `READ_CALENDAR`, `READ_CONTACTS` (LINK's import), `ACTIVITY_RECOGNITION` (the step counter, asked only when a walking evolution starts), `SET_ALARM` (hands a wake-up alarm to the clock app), `VIBRATE`, `EXPAND_STATUS_BAR`, `RECEIVE_BOOT_COMPLETED`, `REQUEST_DELETE_PACKAGES`, `QUERY_ALL_PACKAGES` (the launcher), `USE_EXACT_ALARM` (with `SCHEDULE_EXACT_ALARM` up to Android 12L), five `READ_*` health permissions (read only, with the Health Connect package query, a rationale activity and the permission-usage alias), and `WRITE_SECURE_SETTINGS` for the optional one-tap Huawei read (5.2.2; the app cannot grant it, only the player over adb). `allowBackup` is `false` with `data_extraction_rules.xml`, so nothing goes to Android's cloud backup or another phone by itself; the user-controlled design is the app's own backups (10.1). No storage permission (the document picker is used). Exported components are the activities, the widget receivers, `ReminderBootReceiver`, the quick-settings tiles and the Huawei screen service (each of the last three behind the system's bind permission); the reminder receivers and `WidgetRefreshReceiver` are not exported. Every capability must still be checked against the shipped features before release:
 
-- Remove unused permissions and deprecated/duplicated alarm declarations; reassess exact-alarm eligibility and remove any declaration not justified by an approved use case.
+- Remove unused permissions and deprecated or duplicated alarm declarations; reassess exact-alarm eligibility and remove any declaration not justified by an approved use case.
 - Keep `QUERY_ALL_PACKAGES` only if the optional launcher genuinely requires broad app enumeration and distribution policy permits it; otherwise use launcher intent queries.
-- Replace uncontrolled Android Auto Backup with the reviewed user-controlled backup design in `DATA_AND_MIGRATIONS.md`. **Done in 0.167.1:** Auto Backup is off (`allowBackup="false"`); the user-controlled design is the app's own backups (sealing of Mint and Heal, section 10.4.1, also makes any copy unreadable elsewhere).
 - Keep nonessential hardware features `required="false"`.
 - Verify exported components, intent filters, URI grants and receiver permissions.
 
 ### 4.4 Signing and the release key
 
-All builds (local and CI, `debug` and `release` types) are signed by one `shared` config using the tracked `androidApp/pokeplan-debug.keystore`, with the store password, alias and key password in clear text in `androidApp/build.gradle.kts` (SHA-1 `1A:28:99:CD:34:46:02:04:1E:AF:7B:15:7F:D1:07:41:BC:30:F0:A5`). It is the only keystore ever tracked, and is a test-grade key documented as private-use; a code comment and `CLAUDE.md` say so.
+All builds (local and CI, `debug` and `release`) are signed by one `shared` config using the tracked `androidApp/pokeplan-debug.keystore`, with its passwords in clear text in `androidApp/build.gradle.kts` (SHA-1 `1A:28:99:CD:34:46:02:04:1E:AF:7B:15:7F:D1:07:41:BC:30:F0:A5`). It is the only keystore ever tracked and is a test-grade key for private use.
 
-- **While the repository and the APKs stay private** (owner decision, 6 November 2026), the shared key is acceptable: anyone who can read the repository can already change the code.
-- **It must not ship publicly.** Anyone with a clone could sign an update Android would accept for existing installs. Before any public build: generate a release key with a strong password and keep it and its password as CI secrets; sign `release` with it and keep `debug` on a separate debug key; create an APK Signature Scheme v3 rotation lineage from the old key (`apksigner rotate`) so installs signed with the old key accept the new one; then remove the clear-text passwords and the tracked keystore and add a CI check that fails if a keystore or a `storePassword` literal is tracked.
-- **Rotating is not free:** Android refuses an update signed with a different key, and without a lineage the app would have to be uninstalled and its data lost. Take a verified backup before rotating.
+- **While the repository and the APKs stay private** (owner decision, 6 November 2026) the shared key is acceptable: anyone who can read the repository can already change the code.
+- **It must not ship publicly:** anyone with a clone could sign an update Android would accept. Before any public build: generate a release key and keep it and its password as CI secrets; sign `release` with it and keep `debug` on a separate key; create an APK Signature Scheme v3 rotation lineage from the old key (`apksigner rotate`) so existing installs accept the new one (without it the app must be uninstalled and its data lost, so take a verified backup first); then remove the clear-text passwords and the tracked keystore and add a CI check that fails if a keystore or a `storePassword` literal is tracked.
 - **Not established:** whether the repository or any fork was ever public, GitHub secret-scanning alerts, and whether the debug SHA-1 is registered with an external service (a comment in `androidApp/build.gradle.kts` mentions Google sign-in).
 
 ## 5. Health Connect and wearable integrations
@@ -177,52 +173,44 @@ Health Connect's Android availability, permissions, background/historical access
 
 ### 5.2 Huawei Health and Huawei Watch Fit 4 Pro
 
-Treat Huawei Health integration as a feasibility workstream, not a committed product capability.
+Official and interoperability routes are a feasibility workstream, not a committed capability; the one built route is the on-phone reader (5.2.2). Investigate in this order:
 
-Investigate in this order:
+1. **Health Connect interoperability:** whether the installed Huawei Health version and account region write the required types into it.
+2. **Huawei Health Service Kit / official interfaces:** developer eligibility, app registration and approval, OAuth, scopes, region restrictions, distribution requirements and production access.
+3. **Huawei Health export:** user-assisted import if the official export format holds the required records and parses safely.
+4. **Maintained third-party bridge:** only as an optional, explicitly unofficial path after security, maintenance, licensing and data-flow review. HEAL never depends on it.
+5. **Direct Bluetooth/proprietary protocol:** unsupported unless Huawei documents and authorizes the interface. No reverse engineering, no promises.
 
-1. **Health Connect interoperability:** verify whether the installed Huawei Health version and account region can write the required data types into Health Connect.
-2. **Huawei Health Service Kit / official Huawei interfaces:** verify developer eligibility, app registration/approval, OAuth/account authorization, available scopes, region restrictions, cloud synchronization prerequisites, distribution requirements, and production access.
-3. **Huawei Health export:** provide user-assisted import if the official export format contains the required records and can be parsed safely.
-4. **Maintained third-party bridge:** consider only as an optional, explicitly unofficial path after security, maintenance, licensing, account, and data-flow review. Never make HEAL depend on it.
-5. **Direct Bluetooth/proprietary protocol:** unsupported unless Huawei documents and authorizes the interface and the actual device/firmware behavior is verified. Do not reverse-engineer or promise access.
-
-The feasibility matrix must be completed on the actual Huawei Watch Fit 4 Pro, paired Android phone, Philippine account/region, Huawei Health version, firmware, and any relevant Health Connect provider. Test each metric independently (steps, workouts, heart rate, sleep, weight, etc.). A successful account connection is not evidence that historical records or all metric types are accessible.
+The feasibility matrix is completed on the actual Huawei Watch Fit 4 Pro, paired phone, Philippine account/region, Huawei Health version, firmware and any relevant Health Connect provider, one metric at a time (steps and distance, workouts, heart rate, resting heart rate, HRV, sleep and stages, stress, calories, SpO2, weight), each with permission, history depth, timestamp behaviour, sync delay, units, region and firmware limits, cost and maintenance risk. HEAL has records for workouts, sleep, weight, body fat and drinks, so those come first. A successful account connection is not evidence that historical records or all metric types are accessible.
 
 Do not require HMS Core, AppGallery, a Huawei account, or cloud relay for core HEAL functionality. Explain any external Huawei account/cloud processing before the user connects.
 
-#### 5.2.1 Findings (desk research, 8 November 2026)
+#### 5.2.1 Route status (desk research only; nothing tested end to end)
 
-Public pages only (some are vendor pages); no watch, phone or Huawei account; nothing tested end to end, so nothing here makes a provider "supported".
-
-1. **Health Connect:** no official statement that Huawei Health writes into it, and reviews list "no Health Connect sync" for the Fit 4 Pro. *Unverified, probably absent*; settled only on the owner's phone (does `com.huawei.health` appear under Health Connect → App permissions after sharing is enabled, and does Heal's "Imported records" list it?).
-2. **Health Kit / Health Service Kit:** official, but needs a Huawei developer account, an app registered in AppGallery Connect and **Huawei's approval per app**, with user OAuth per data type (latest heart rate needs continuous monitoring on; sleep is historical only). *Blocked on the owner*: no key, scope list or proof it is open to an individual app in the Philippines. HEAL must not depend on HMS Core, AppGallery or a Huawei account.
+1. **Health Connect:** no official statement that Huawei Health writes into it, and reviews list "no Health Connect sync" for the Fit 4 Pro. *Unverified, probably absent*; settled on the owner's phone (does `com.huawei.health` appear under Health Connect → App permissions, and does Heal's "Imported records" list it?).
+2. **Health Kit / Health Service Kit:** needs a Huawei developer account, an app registered in AppGallery Connect and Huawei's approval per app, with user OAuth per data type. *Blocked on the owner*: no key, scope list or proof it is open to an individual app in the Philippines.
 3. **Huawei Health export:** no document names a format, history depth or stable ids. *Unverified*; the owner would request their data from Huawei's privacy centre and share a sample with personal values removed.
-4. **Third-party bridge (Health Sync):** reads Huawei Health and writes to Health Connect, one way for most data; Fit 4 Pro coverage undocumented. *Optional, unofficial, unverified*; it feeds the existing Health Connect import, needs no code and HEAL never depends on it.
-5. **Direct Bluetooth, or reading Huawei's cloud with a login:** *rejected* (no credential scraping or reverse engineering).
+4. **Third-party bridge (Health Sync):** reads Huawei Health and writes to Health Connect, one way for most data; Fit 4 Pro coverage undocumented. *Optional, unofficial, unverified*; it feeds the existing Health Connect import and needs no code.
+5. **Direct Bluetooth, or reading Huawei's cloud with a login:** *rejected*.
 
-HEAL already reads whatever reaches Health Connect and shows the writing app of every imported record; a direct connection waits for an approval only the owner can start, and the Huawei card in Heal → Connections says what is true. **Matrix still to fill on the real watch, phone and Philippine-region account, one metric at a time:** steps and distance, workouts, heart rate, resting heart rate, HRV, sleep and stages, stress, calories, SpO2, weight, each with route, permission, history depth, timestamp behaviour, sync delay, units, region and firmware limits, cost and maintenance risk. HEAL only has records for workouts, sleep, weight, body fat and drinks, so those five come first.
+HEAL reads whatever reaches Health Connect and shows the writing app of every imported record; the Huawei card in Heal → Connections says what is true.
 
-#### 5.2.2 Reading Huawei Health on the phone (owner decision, 14 November 2026)
+#### 5.2.2 Reading Huawei Health on the phone
 
-The owner chose a sixth route, on the phone only: **PokéLife reads what Huawei Health shows**, through an Android accessibility service and a notification listener the player turns on by hand. It needs no Huawei account, no cloud, no developer approval, no root and no reverse engineering of a protocol; it is unofficial and fragile (any Huawei Health update can break it), and that is accepted. It replaces the HEAL.md section 6 constraint "no fragile accessibility automation" for Huawei Health only. The rules:
+**PokéLife reads what Huawei Health shows**, on the phone only, through an Android accessibility service and a notification listener the player turns on by hand. It needs no Huawei account, cloud, developer approval, root or protocol reverse engineering; it is unofficial and fragile (any Huawei Health update can break it), and that is accepted. It is the one exception, for Huawei Health only, to HEAL.md section 6's "no fragile accessibility automation". The rules:
 
 1. **Huawei Health only.** The accessibility service is declared for the package `com.huawei.health` alone, so Android sends it no other app's screens. The notification listener cannot be narrowed by Android (it is offered every notification), so the code drops every notification from any other package on arrival, before reading a field. Nothing from another app is read, kept, counted or logged.
-2. **Off until the player turns it on, and off again after every read.** Each one is turned on separately in Android's own settings (Accessibility; Notification access). On Android 13 and later a sideloaded app's accessibility service is greyed out until App info → ⋮ → Allow restricted settings; the Connections page says so. **Banking apps refuse to open while a sideloaded accessibility service is on** (owner, 14 November 2026: MariBank locks its app until the service is off or PokéLife is uninstalled; GCash shows a security notice). So the screen reader turns itself off (`disableSelf`) as soon as a read ends, however it ends, and Connections has a Turn off button. It is never hidden, renamed or disguised from those apps' checks: it is simply off when they run. Optional one-tap reads: if the player grants `WRITE_SECURE_SETTINGS` once from a computer (`adb shell pm grant app.pokeplan android.permission.WRITE_SECURE_SETTINGS`), Read Huawei Health switches the service on itself for that one read, exactly as the Accessibility switch would, and it is off again afterwards. The notification listener stays on; if a banking app objects to it too, it is turned off the same way.
-3. **Active walk-through, on a tap only.** "Read Huawei Health" opens Huawei Health, waits for its Health page, scrolls it to the end capturing each step, then opens the **Sleep**, **Weight** and **Exercise records** cards one at a time (found by their title element, `function_set_items_title`), scrolls each card's page a little, and presses Back. It stops as soon as Back does not bring the Health page back, and returns to PokéLife (at most 90 seconds in all). Those three cards are the only things it taps; it never types or changes anything, and never opens settings, sharing, account or payment screens. Nothing runs on a timer. While screen reading is on, pages the player opens in Huawei Health themselves are captured too. Only elements visible on screen are captured (Huawei Health keeps its hidden Devices and Me tabs in the window).
-4. **What is saved (0.185.0).** Captures stay in memory. From them `HuaweiRecords` makes HEAL records in its existing families, provider `huawei-screen`, shown as a preview (to add, already here, flagged) before **Add them** saves anything (HEAL.md 10.3): workouts from Exercise records (type, start, duration, distance in km; the year from the month headers), weight and body fat from the Weight page (its own date and time; the year from the weekday), and **today's** night from the Sleep page (its length, ending at the Health page's get-up time: the page shows no bedtime, so another night has no times and is left out, never guessed). Ids come from each record's own time, so reading again adds nothing twice. **Save, numbers hidden** writes the capture to a `.txt` file (every digit of Huawei's text replaced by `#`), since a paste cannot hold the Weight page's date picker.
-5. **Rewards (owner decision, rules version 24):** a session read this way **pays like a manual one** (`HealRules.paysLikeManual`): the same length rule and the daily share of the session's own day, oldest first, but it may have ended up to **8 days** ago (`IMPORT_FRESH_MILLIS`), because reads are nightly to weekly; a session flagged as a possible repeat of one already here (logged by hand too) pays nothing, so nothing is paid twice. Sleep and measurements never pay, as by hand. Health Connect imports still pay nothing.
-5a. **Nightly to weekly (owner, 14 November 2026).** Heal → Connections → Huawei Health has **Remind me to read**: Off, Nightly or Weekly, at a time the player picks (21:00 by default). The reminder counts from the last read, follows the shared quiet hours and focus deferral, and says only "Time to read Huawei Health". Weekly keeps every workout (Exercise records is a list) and the latest weight; only a daily read keeps every night's sleep, because only today's night has times.
-6. **English only:** the parsers match Huawei Health's English labels.
-7. Like every HEAL record, anything saved is sealed (section 4), never logged and never sent anywhere.
+2. **Off until the player turns it on, and off again after every read.** Each is turned on separately in Android's own settings (Accessibility; Notification access). On Android 13 and later a sideloaded app's accessibility service is greyed out until App info → ⋮ → Allow restricted settings; the Connections page says so. **Banking apps refuse to open while a sideloaded accessibility service is on** (MariBank locks its app until the service is off or PokéLife is uninstalled; GCash shows a security notice). So the screen reader turns itself off (`disableSelf`) as soon as a read ends, however it ends, and Connections has a Turn off button. It is never hidden, renamed or disguised from those apps' checks: it is simply off when they run. Optional one-tap reads: if the player grants `WRITE_SECURE_SETTINGS` once from a computer (`adb shell pm grant app.pokeplan android.permission.WRITE_SECURE_SETTINGS`), Read Huawei Health switches the service on itself for that one read and it is off again afterwards. The notification listener stays on; if a banking app objects to it too, it is turned off the same way.
+3. **Active walk-through, on a tap only.** "Read Huawei Health" opens Huawei Health, waits for its Health page, scrolls it to the end capturing each step, then opens the **Sleep**, **Weight** and **Exercise records** cards one at a time (found by their title element, `function_set_items_title`), scrolls each card's page a little, taps the **Week** tab of a page that has one (captured, not parsed yet), and presses Back. It stops as soon as Back does not bring the Health page back, and returns to PokéLife (at most 90 seconds in all). Those three cards and that tab are the only things it taps; it never types or changes anything, and never opens settings, sharing, account or payment screens. Nothing runs on a timer. While screen reading is on, pages the player opens in Huawei Health themselves are captured too. Only elements visible on screen are captured (Huawei Health keeps its hidden Devices and Me tabs in the window).
+4. **What is saved.** Captures stay in memory. From them `HuaweiRecords` makes HEAL records in its existing families, provider `huawei-screen`, shown as a preview (to add, already here, flagged) before **Add them** saves anything (HEAL.md 10.3): workouts from Exercise records (type, start, duration, distance in km; the year from the month headers), weight and body fat from the Weight page (its own date and time; the year from the weekday), and **today's** night from the Sleep page (its length, ending at the Health page's get-up time: the page shows no bedtime, so another night has no times and is left out, never guessed). Ids come from each record's own time, so reading again adds nothing twice. **Save, numbers hidden** writes the capture to a `.txt` file (every digit of Huawei's text replaced by `#`), for probing a layout change without personal values.
+5. **Rewards.** A session read this way pays like a manual one (`HealRules.paysLikeManual`) but may have ended up to 8 days ago (`IMPORT_FRESH_MILLIS`), because reads are nightly to weekly; a session flagged as a possible repeat of one already here pays nothing. Sleep and measurements never pay, as by hand. Health Connect imports pay nothing. Amounts and caps are in `docs/economy.md`.
+6. **Nightly to weekly.** Heal → Connections → Huawei Health has **Remind me to read**: Off, Nightly or Weekly, at a time the player picks (21:00 by default). The reminder counts from the last read, follows the shared quiet hours and focus deferral, and says only "Time to read Huawei Health". Weekly keeps every workout (Exercise records is a list) and the latest weight; only a daily read keeps every night's sleep, because only today's night has times.
+7. **English only:** the parsers match Huawei Health's English labels and card titles (a card is a `function_set_items_title` element followed by its data, unit and bottom-left elements), not view ids, some of which are misleading. They use only the cards HEAL has records for and the step count, and skip the rest (Cycle Calendar included) even though the capture contains them.
+8. Like every HEAL record, anything saved is sealed (11), never logged and never sent anywhere.
 
-**Steps and readings (owner decisions, 14 November 2026; built in 0.186.0, `MODULES/HEAL.md` 22B):** Heal keeps daily **steps**, **heart rate**, resting heart rate, **SpO2**, **skin temperature**, Huawei's **stress** number and **sleep score** as their own records (schema 11), read from the Health page, the Sleep page and the step notification, as history only; Heal never says whether a reading is good or bad. **Steps pay per amount** (2,000 steps, at most 5 a day) and **reading records in pays** once a day per family of record (rules version 25); no reading pays for its value. The walk now also taps the **Week** tab of a page that has one (the Sleep page), to capture the week for the next probe; it is not parsed yet. Ids come from each record's day, so reads never duplicate.
+**Steps and readings** (`MODULES/HEAL.md` 22B): Heal keeps daily **steps**, **heart rate**, resting heart rate, **SpO2**, **skin temperature**, Huawei's **stress** number and **sleep score** as their own records, read from the Health page, the Sleep page and the step notification, as history only; Heal never says whether a reading is good or bad. Steps and reading records pay as `docs/economy.md` says; no reading pays for its value. Ids come from each record's day, so reads never duplicate.
 
-**What Huawei Health's home page shows** (owner's screenshot, English, 14 November 2026; labels only, no values kept): a top summary of Sleep (get-up time), Steps and Mood (stress); then cards for Exercise records (distance in km), Health Clovers, Heart (heart rate in bpm, "Recent avg RHR"), Weight (kg), Sleep (hours and minutes), Skin temperature (°C), Activity rings, Emotional wellbeing, SpO2 (%) and Cycle Calendar; Health insights below; bottom tabs Health, Exercise, Discover, Devices, Me. The parsers use only the cards HEAL has records for (exercise, sleep, weight) and the step count, and skip the rest, Cycle Calendar included, even though the walk's capture contains them. A screenshot shows the labels but not how the text is split into elements or the view ids, so the parsers waited for a probe capture (the first one is below; the record parsers are built, point 4).
-
-**First capture (owner, 14 November 2026, numbers hidden):** each Health page card is a `function_set_items_title` element followed by `function_set_items_data`, `function_set_items_unit` and `function_set_bottom_left` (Weight: `##.#` then `kg`; Sleep: `# h # min`; Heart: `Heart rate ## bpm`; Exercise records: `#.##` then `km`). The summary's get-up time is an element described `##:##, Get-up time` and its steps one described `#### steps` (`time_strength_layout_middle`); some ids are misleading (`stepsText` holds the get-up time), so the parser matches the words, not those ids. `HuaweiHome` reads all of this and Connections shows it; at that capture it saved nothing, because the page has no times (the sleep card is a length, the weight card has no date, the exercise card is the day's distance). The card pages the walk opens carry the times; those captures decided the record parsers (`HuaweiRecords`, point 4).
-
-**As built at 0.202.0 (step notification listener):** the listener reads the active notifications when Android binds it, then lets go (`requestUnbind`), so it does not sit in the resident list. It is bound again (`requestRebind`, only while notification access is granted) when the app or the PokéLife launcher comes to the front; both services stay normal enabled components, because Android binds a listener or accessibility service only after the player switches it on and disabling them saved nothing and risked losing granted access. Day boundary: a step count is dated by the notification's own post time, and the largest count of a day wins. A count posted late in the evening is therefore dated correctly even when it is read the next morning, but only the notification still showing when the listener next binds is read. If Huawei Health replaces it after midnight (a new day's count), and the app or launcher was not opened before then, that day's final count is not seen and the day keeps the last count that was read.
+**Step notification listener.** The listener reads the active notifications when Android binds it, then lets go (`requestUnbind`), so it does not sit in the resident list. It is bound again (`requestRebind`, only while notification access is granted) when the app or the PokéLife launcher comes to the front; both services stay normal enabled components, because Android binds a listener or accessibility service only after the player switches it on. A step count is dated by the notification's own post time, and the largest count of a day wins. Only the notification still showing when the listener next binds is read: if Huawei Health replaces it after midnight and the app or launcher was not opened before then, that day's final count is not seen and the day keeps the last count that was read.
 
 ## 6. Calendar integration and ownership
 
@@ -264,7 +252,7 @@ Investigate GCash, Maya, MariBank, GoTyme, and UnionBank independently. For each
 
 A public developer portal, sandbox, payment API, QR interface, or merchant API is not evidence of personal account aggregation. No bank/e-wallet auto-sync may be promised without a verified, approved, end-to-end mechanism for the exact use case and account type.
 
-#### 7.1.1 Findings (desk research, 8 November 2026)
+#### 7.1.1 Findings (desk research)
 
 Public pages only; nothing tested with a bank account. Every provider is **unsupported** until verified.
 
@@ -302,7 +290,7 @@ Therefore:
 
 ### 7.4 Financial privacy and progression
 
-MINT accounts, balances, transaction descriptions, merchants, budgets, debts, savings targets, bills, and payment status never enter WORLD, launcher surfaces, generic logs, telemetry, or other module payloads. MINT's Ledger Research may emit only its approved abstract administrative event metadata through the local shared reward contract. Financial outcomes and amounts never affect rewards or Pokémon access.
+MINT data never enters WORLD, launcher surfaces, generic logs or other module payloads (15). Financial outcomes and amounts never affect rewards or Pokémon access.
 
 ## 8. Contacts, files, media, location, sensors, and other Android capabilities
 
@@ -362,10 +350,10 @@ Initial participating modules:
 
 - **PLAN:** tasks, recurring-task occurrences, and supported PLAN-created events.
 - **CARE:** self-care routines and optional Diary Card reminders.
-- **BASE** (renamed from HOME, 13 November 2026): household chores, maintenance, and low-stock reminders when those capabilities are implemented.
+- **BASE:** household chores, maintenance, and low-stock reminders when those capabilities are implemented.
 - **LINK:** important dates and user-created follow-up reminders when implemented.
-- **HEAL:** explicitly enabled medication-schedule and appointment reminders; optional hydration or health-goal prompts. HEAL owns the source records and reminder preferences; medication instructions are user-entered and are never validated or changed by the scheduler.
-- **MINT:** bill-occurrence reminders. MINT owns bill records, occurrence/payment status, reminder preferences and source-action meaning; the shared feature owns scheduling and delivery. Financial amounts, account details and provider names are not stored in shared reminder metadata or exposed in lock-screen notifications by default.
+- **HEAL:** explicitly enabled medication-schedule and appointment reminders; optional hydration or health-goal prompts. HEAL owns the source records and preferences; the scheduler never validates or changes medication instructions.
+- **MINT:** bill-occurrence reminders. MINT owns the bill records, status, preferences and action meaning (9.13).
 - Other modules may integrate only through this contract and an approved module-specific specification.
 
 ### 9.2 Ownership and contracts
@@ -450,7 +438,7 @@ Requirements:
 
 Global quiet-hours settings are managed once in the app's shared settings surface. Module settings link to or summarize the policy but do not create independent copies.
 
-**As built (owner, 20 November 2026): one Notifications page** (Me, Settings, Notifications). It shows what Android allows (notifications and exact alarms: Allowed or Blocked, with a key to the phone's own screen while blocked, read again when the player returns to the app), the quiet hours, and one reminders switch per module (Plan tasks, Care routines, Base, Link, Mint bills, plus World jobs, the streak reminder and the weekly recap). A module keeps its own lead time, hour and naming choice in its settings, shown there only while its switch is on. Heal has no switch: its reminders are the times the player adds.
+**One Notifications page** (Me, Settings, Notifications). It shows what Android allows (notifications and exact alarms: Allowed or Blocked, with a key to the phone's own screen while blocked, read again when the player returns to the app), the quiet hours, and one reminders switch per module (Plan tasks, Care routines, Base, Link, Mint bills, plus World jobs, the streak reminder and the weekly recap). A module keeps its own lead time, hour and naming choice in its settings, shown there only while its switch is on. Heal has no switch: its reminders are the times the player adds.
 
 ### 9.5 Focus deferral
 
@@ -555,13 +543,13 @@ Reminder requests and delivery metadata follow the shared database, stable-ID, t
 
 ### 9.11 Migration from existing implementations
 
-HEAL, MINT, BASE (then HOME) and LINK used the shared contract from their first reminder. The migration of PLAN and CARE (done) followed these rules, which any later cutover of a source must repeat: inventory the sources, alarm ids, channels, receivers and persisted state; map each legacy identity to a stable reminder id; rebuild active requests from the canonical module records; preserve module enablement, schedule, snooze and action semantics; make sure old and new schedulers cannot deliver the same reminder; cut over by module with explicit version state; cancel legacy alarms only after the new request is registered; never replay completions or reward events; make every step idempotent; keep rollback information until verified. CARE retains routine ownership, completion and reward history and rhythm calculations; PLAN retains task/occurrence ownership and reward accounting; the shared layer owns neither.
+HEAL, MINT, BASE and LINK used the shared contract from their first reminder; PLAN and CARE have been cut over from their per-module alarms. A later cutover of a source repeats the same rules: map each legacy identity to a stable reminder id; rebuild active requests from the canonical module records; preserve enablement, schedule, snooze and action semantics; make sure old and new schedulers cannot deliver the same reminder; cancel legacy alarms only after the new request is registered; never replay completions or reward events; make every step idempotent. CARE keeps routine ownership, completion and reward history; PLAN keeps task and occurrence ownership and reward accounting; the shared layer owns neither.
 
 #### 9.11.1 As built
 
-- **One scheduler, one receiver.** `ReminderRequest` (stable id `MODULE|ref|kind|occurrence`), `ReminderPolicy.plan`/`deliverAt` (global quiet hours with midnight wrap and next eligible time; focus deferral re-checked at delivery, no loop), source adapters (`PlanReminderAdapter`, `CareReminderAdapter`, `HealReminderAdapter`, `BaseReminderAdapter`, `LinkReminderAdapter`), `ReminderRouter` (a stale or unknown source cannot mutate; snooze and dismiss never complete or pay), `ReminderSnooze`, and on Android `SharedReminders`, `SharedReminderReceiver` and `ReminderBootReceiver`. Active requests are rebuilt from the canonical module saves on every `reschedule`; the old per-module alarm codes are not reused.
-- **Persistence.** Only snoozes and repeats are stored, as opaque ids and times, in table `reminder_hold` (schema 3). The cutover marker is `reminder_migration` (version 1); `LegacyReminders.cancelOnce` runs after the new alarms are set and the old receivers show nothing.
-- **Nightly refresh.** The planner looks a bounded horizon ahead and was otherwise re-run only when the app opened or an alarm fired, so one inexact alarm a night at 04:00 local (`setAndAllowWhileIdle`, `ACTION_REFRESH`) plans everything again.
+- **One scheduler, one receiver.** `ReminderRequest` (stable id `MODULE|ref|kind|occurrence`), `ReminderPolicy.plan`/`deliverAt` (global quiet hours with midnight wrap and next eligible time; focus deferral re-checked at delivery, no loop), source adapters (`PlanReminderAdapter`, `CareReminderAdapter`, `HealReminderAdapter`, `BaseReminderAdapter`, `LinkReminderAdapter`), `ReminderRouter` (a stale or unknown source cannot mutate; snooze and dismiss never complete or pay), `ReminderSnooze`, and on Android `SharedReminders`, `SharedReminderReceiver` and `ReminderBootReceiver`. Active requests are rebuilt from the canonical module saves on every `reschedule`.
+- **Persistence.** Only snoozes and repeats are stored, as opaque ids and times, in table `reminder_hold`. `reminder_migration` marks the cutover; `LegacyReminders.cancelOnce` cancels the old alarms after the new ones are set.
+- **Nightly refresh.** The planner looks a bounded horizon ahead and runs when the app opens or an alarm fires; one inexact alarm a night at 04:00 local (`setAndAllowWhileIdle`, `ACTION_REFRESH`) plans everything again.
 - **Snoozes per module:** PLAN 10 min / 1 h / tomorrow (and its own repeat, bounded to 3); CARE 30 min; HEAL uses CARE's. A snooze survives a reboot because it is stored.
 - **Stay in `AppAlerts` on purpose:** focus halfway/end alerts (the session's own feedback), World jobs and GEAR timers (user-started timers, not reminders on a source record). The streak reminder and weekly recap are PLAN nudges on the shared scheduler (`PlanReminderAdapter` kinds `streak` and `recap`): a streak request for each of the next three days at the chosen hour, the recap for the next Sunday at 18:00; a request inside quiet hours is not made, and `isStillWanted` drops one whose day has gone by, so a nudge held until morning is dropped instead of nagging. No repeats, no actions.
 - **BASE and LINK reminders** are off by default, switched on per record behind a module master switch, with a lock-screen text that never names a record. A request holds an opaque record id, the kind and a day; unlocked text names a record only by the user's choice. A request that fires after the date it was made for has passed is stale and dropped. Notification actions never change a record except a chore's or follow-up's own completion ("Done"), which pays once like ticking it in the module; maintenance, restocking and warranties have no such action. Details are in `MODULES/BASE.md` and `MODULES/LINK.md`.
@@ -569,46 +557,14 @@ HEAL, MINT, BASE (then HOME) and LINK used the shared contract from their first 
 
 ### 9.12 Testing and acceptance criteria
 
-#### Shared policy
-
-- Quiet hours work across midnight and time-zone changes.
-- Every module respects global quiet hours.
-- Module toggles disable only that module's requests.
+- Quiet hours work across midnight and time-zone changes; every module respects them; a module toggle disables only that module's requests.
 - Focus deferral holds and releases eligible reminders without stale delivery or loops.
-- Notification permissions and channel disablement produce graceful behavior.
-
-#### Scheduling and lifecycle
-
-- Re-submitting a request does not duplicate an alarm.
-- Editing/rescheduling replaces the prior request.
-- Completion/archive/delete cancels active and snoozed notifications.
-- Reboot/app update/process death reconstructs active reminders correctly.
-- System time/time-zone changes reconcile local schedules.
-- Concurrent reminders from different modules remain independently addressable.
-
-#### Action routing
-
-- PLAN actions execute only through PLAN adapters.
-- CARE actions execute only through CARE adapters.
-- HEAL actions execute only through HEAL adapters; dismissing or snoozing a medication reminder never records a dose as taken.
-- Stale or invalid source references cannot mutate records.
-- Snooze does not create a new source record or reward event.
-- Dismissal does not accidentally complete a source record.
-- Reward processing remains owned by the source module and idempotent.
-
-#### Privacy
-
-- Shared reminder storage contains no unnecessary module content.
-- Private CARE content, HEAL measurements/medication/symptom/appointment/nutrition details, finance data, relationship notes, and task notes are not copied into scheduler logs or WORLD events.
-- Lock-screen notification content follows privacy settings.
-
-#### Migration
-
-- No duplicate notifications during or after cutover.
-- Legacy CARE reminder behavior is preserved where approved.
-- PLAN task reminder behavior is preserved.
-- Interrupted migration can safely resume.
-- Historical actions are not replayed as reward events.
+- Notification permission and channel disablement degrade gracefully.
+- Re-submitting a request does not duplicate an alarm; editing replaces the prior request; completion, archive or delete cancels active and snoozed notifications.
+- Reboot, app update, process death and system time or time-zone changes reconstruct and reconcile active reminders; concurrent reminders from different modules stay independently addressable.
+- Actions execute only through the owning module's adapter; a stale or invalid source reference cannot mutate a record; reward processing stays with the source module and is idempotent.
+- Snooze and dismissal never complete a source record, create a record or reward event, or record a dose as taken.
+- Shared reminder storage and scheduler logs contain no module content (9.9); lock-screen content follows privacy settings.
 
 ### 9.13 Module-specific requirements remain in module specifications
 
@@ -616,18 +572,16 @@ HEAL, MINT, BASE (then HOME) and LINK used the shared contract from their first 
 - `../MODULES/CARE.md` defines optional routine and Diary Card reminder preferences and CARE action semantics.
 - `../MODULES/BASE.md` defines BASE-owned chore, maintenance, low-stock and warranty reminder sources and their module-specific action semantics.
 - `../MODULES/LINK.md` may define important-date/follow-up reminder sources when LINK is specified.
-- `../MODULES/HEAL.md` defines optional medication, appointment, hydration and health-goal reminder sources and HEAL-specific action semantics. Medication details and instructions remain in HEAL and are not copied into shared scheduler storage.
-- `../MODULES/MINT.md` defines bill-occurrence reminder preferences and MINT-owned navigation/action semantics. Shared reminder metadata and lock-screen text must not contain amounts, account details, provider names or payment status; a reminder action does not mark a bill paid.
+- `../MODULES/HEAL.md` defines optional medication, appointment, hydration and health-goal reminder sources and HEAL-specific action semantics. 
+- `../MODULES/MINT.md` defines bill-occurrence reminder preferences and MINT-owned navigation/action semantics. Shared reminder metadata and lock-screen text hold no amounts, account details, provider names or payment status; a reminder action does not mark a bill paid.
 - `../MODULES/GEAR.md` defines user-created timer identity, duration and completion semantics. Timer completion notifications use the shared Android delivery/recovery infrastructure and must not create a second scheduler.
 - `../MODULES/WORLD.md` defines optional, event-driven WORLD notification requests and module-specific opt-in/rate limits. WORLD does not schedule independently or use private module activity as a notification trigger.
 
 This document owns shared scheduling, policy, delivery, recovery, privacy, and cross-module acceptance. Module specifications must not restate these shared requirements.
 
----
-
 ### 9.14 Testing reference
 
-Reminder policy, recurrence, idempotent scheduling, cancellation, quiet hours, reboot recovery, notification actions and permission-denied behavior must follow [`TEST_STRATEGY.md`](TEST_STRATEGY.md). Actual notification delivery and channel behavior require Android/device validation.
+Reminder tests follow [`TEST_STRATEGY.md`](TEST_STRATEGY.md); actual notification delivery and channel behavior need Android/device validation.
 
 ## 10. Backup, export, import, and deletion
 
@@ -644,7 +598,7 @@ Reminder policy, recurrence, idempotent scheduling, cancellation, quiet hours, r
 - Restore to staging, validate, and activate only after verification; preserve a recoverable pre-restore state.
 - Explain that copies exported by the user to other destinations are outside PokéLife's deletion control.
 
-As built: backups and Mint/Heal sealing are specified in `DATA_AND_MIGRATIONS.md` sections 10.4.1 and 10.5.1; the portable form is a passphrase-sealed file (PBKDF2-HMAC-SHA256, AES-256-GCM) separate from the device-sealed daily backups.
+Built form: `DATA_AND_MIGRATIONS.md` 10.4.1 and 10.5.1; the portable backup is a passphrase-sealed file (PBKDF2-HMAC-SHA256, AES-256-GCM), separate from the device-sealed daily backups.
 
 ### 10.2 Export and import
 
@@ -658,7 +612,7 @@ Provide controls to disconnect a provider, revoke provider tokens where supporte
 
 Disconnecting a provider stops future access but does not automatically erase previously imported data. Deleting active records must also remove associated attachments, thumbnails, search indexes, derived caches, and temporary files as specified by `DATA_AND_MIGRATIONS.md`. App-managed local backups must be included in full erase scope; user-exported copies are not.
 
-**Erase this device (as built, 20 November 2026)** clears the whole app, not only the save: every module's records and settings (Link and each sealed module included), the daily and kept-aside backups, the off-phone backup setup (folder permission released, sealed passphrase forgotten; what is already in the folder is the player's), the launcher's layout and weather cache, the reminder and alarm bookkeeping with every alarm already set, the crash guard, the widget's state and the old save files. It goes through every preferences file the app has, so a store added later is cleared too (`DeviceResetTest`). It does not revoke Health Connect grants (the player does that in Health Connect) or delete files the player saved elsewhere.
+**Erase this device** clears the whole app, not only the save: every module's records and settings (Link and each sealed module included), the daily and kept-aside backups, the off-phone backup setup (folder permission released, sealed passphrase forgotten; what is already in the folder is the player's), the launcher's layout and weather cache, the reminder and alarm bookkeeping with every alarm already set, the crash guard, the widget's state and the old save files. It goes through every preferences file the app has, so a store added later is cleared too (`DeviceResetTest`). It does not revoke Health Connect grants (the player does that in Health Connect) or delete files the player saved elsewhere.
 
 Deleting a module must not delete unrelated module records, shared Pokémon ownership, Bag, Poké balance, or reward history. Shared ledger integrity must be preserved using the retention/anonymization rules in `DATA_AND_MIGRATIONS.md` and the Pokémon/economy specification.
 
@@ -682,9 +636,6 @@ Deleting a module must not delete unrelated module records, shared Pokémon owne
 - Encrypt sensitive database content at rest using a maintained, authenticated encryption design (for example AES-256-GCM where appropriate).
 - Keep key material outside the database; use Android Keystore for local key protection.
 - Define key rotation, invalidation, recovery, and app-reinstall behavior. If a Keystore key becomes unavailable, do not silently reset the database or claim data recovery is possible.
-- Use independent passphrase-based encryption for portable backups.
-- Use TLS for network requests; reject cleartext traffic except a narrowly justified development-only configuration.
-- Use OAuth authorization code with PKCE where supported; request minimum scopes and store tokens only in secure platform storage.
 - Never log sensitive content, raw provider payloads, tokens, authorization headers, or full financial/health records.
 - Redact exception messages and diagnostics that could contain provider data.
 - Exclude sensitive data from clipboard, screenshots, recent-task previews, and lock-screen notifications where platform controls permit; respect user-visible OS behavior and avoid false guarantees.
@@ -692,7 +643,7 @@ Deleting a module must not delete unrelated module records, shared Pokémon owne
 
 A biometric/app lock may be offered as an optional additional UI gate, but it must not be confused with database encryption and must not be required for basic local use.
 
-**As built.** MINT and HEAL rows and every copy of them are sealed with separate Android Keystore keys (AES-256-GCM, non-exportable, fail closed without the key, no silent reset of a database the key does not open); portable backups are sealed under a passphrase (`DATA_AND_MIGRATIONS.md` section 10.4.1). CARE journals and diary, BASE and LINK are not yet sealed, so the Sensitive row above is met for Mint and Heal only. Open: whether to seal Care, Base and Link (an owner decision for each).
+**Built.** MINT and HEAL rows and every copy of them are sealed with separate Android Keystore keys (AES-256-GCM, non-exportable, fail closed without the key, no silent reset of a database the key does not open; `DATA_AND_MIGRATIONS.md` 10.4.1). CARE journals and diary, BASE and LINK are not yet sealed, so the Sensitive row above is met for Mint and Heal only. Open: whether to seal Care, Base and Link (an owner decision for each).
 
 ## 12. Network access and external dependencies
 
@@ -702,9 +653,9 @@ Potential network-dependent features include optional exchange-rate retrieval, w
 
 Requirements:
 
-- HTTPS/TLS; no sensitive data in URL query strings.
+- HTTPS/TLS only (cleartext only in a narrowly justified development configuration); no sensitive data in URL query strings.
 - No embedded private API secrets. Public client identifiers are not secrets.
-- Least-privilege OAuth scopes and explicit account/provider consent.
+- OAuth authorization code with PKCE where supported, least-privilege scopes, explicit account/provider consent, and tokens only in secure platform storage.
 - Request timeouts, bounded retries, rate-limit handling, and cancellation.
 - No hidden background refresh of sensitive data; refresh only when user-enabled and provider terms permit it.
 - No external SDK that introduces telemetry, ads, fingerprinting, or unapproved data collection.
@@ -751,6 +702,8 @@ Provide one Integrations destination in Settings. Each integration page shows:
 - Separate action to delete imported data.
 - Link to the owning module's data export/deletion controls.
 
+Not built yet: each module's page lists its own integrations; there is no single Integrations destination in Settings.
+
 Consent must be specific, informed, revocable, and not bundled with unrelated onboarding. If a provider changes scopes or starts collecting a new category, require renewed consent before using that capability. No preselected opt-ins for sensitive integrations.
 
 ## 15. Privacy boundaries: modules, shared services, and WORLD
@@ -760,7 +713,7 @@ The module ownership rules in `PRODUCT_BIBLE.md` and `DATA_AND_MIGRATIONS.md` re
 | Owner | Data that stays private to owner | Permitted cross-boundary output |
 |---|---|---|
 | CARE | Journal, diary cards, mood, urges, skills responses, private notes | Only explicitly approved non-sensitive activity metadata; never content-derived events |
-| HEAL | Measurements, body composition, calories, heart rate, sleep, nutrition, symptoms, diagnoses, medication, appointments, health notes | Minimal opaque eligible participation event evaluated within HEAL/reward boundary; WORLD receives generic reward result only. *As built (0.136.0): `HealEvent` = stable id, module, opaque record reference, `activity_logged` or `participation`, time; nothing else (`MODULES/HEAL.md` section 22).* |
+| HEAL | Measurements, body composition, calories, heart rate, sleep, nutrition, symptoms, diagnoses, medication, appointments, health notes | Minimal opaque eligible participation event evaluated within HEAL/reward boundary; WORLD receives generic reward result only. The `HealEvent` fields are in `MODULES/HEAL.md` section 22. |
 | MINT | Account names, balances, transactions, merchants, budgets, savings, debts, bills, payment state | Approved abstract administrative Ledger Research event only; no values/circumstances |
 | LINK | Contact names, IDs, phone/email/address, relationship categories, notes, associated-person identity | Opaque eligible follow-up ID, module, policy version, completion time inside local reward contract; no identity/context |
 | BASE | Household contents, inventory, maintenance details, saved locations, private notes | Approved minimal Habitat Discovery event; no inventory or location payload |
@@ -792,42 +745,25 @@ The shared reward service returns a generic committed result. WORLD may present 
 
 ### 16.2 Mitigations
 
-- Android app-private storage and encrypted sensitive data.
-- Keystore-protected local keys; independently encrypted portable backups.
-- Strict module repository boundaries and minimal typed event contracts.
-- SAF/Photo Picker, narrow runtime permissions, and no broad storage access.
-- Validated import parsing, archive path checks, size limits, checksums, and staging.
-- OAuth PKCE and least-privilege scopes where supported; no credential scraping.
-- Redacted logs, no telemetry, no analytics SDK, and dependency review.
-- Privacy-conscious notifications and late resolution of sensitive display text.
-- Idempotency keys and transactionally committed import/reward operations.
-- Staged restore/migration with verified pre-operation recovery point.
-- Explicit disconnect, revoke, selected-source deletion, module deletion, and full erase.
+Each threat is answered by a rule stated once above: app-private and sealed storage (11), user-controlled and passphrase-sealed backup and staged restore (10), validated imports and system pickers (8.2), narrow runtime permissions (4), minimal typed event contracts (15.1), redacted logs and dependency review (11.2, 12.1), late-resolved notification text (9.9), idempotent import and reward operations (8.2, 10.2), and explicit disconnect, deletion and full erase (10.3).
 
 ### 16.3 Limitations
 
 PokéLife cannot guarantee protection on a fully compromised/rooted device, against malware with equivalent privileges, against a compromised provider, or for plaintext copies the user exports to other applications or destinations. A forgotten backup passphrase may make an encrypted archive unrecoverable. Explain these limitations without implying that local encryption makes a device invulnerable.
 
-## 17. Existing implementation audit and target changes
+## 17. Reuse of existing code
 
-The 0.123.0 baseline was a Kotlin Multiplatform/Compose project with Android platform code: a read-only Android calendar implementation, on-demand sensor utilities, location/microphone/scanner abstractions, reminder receivers with reboot recovery, JSON persistence in two stores, and Supabase account/cloud-save pathways (retired in 0.130.0). Target actions still open:
-
-1. Reuse only platform adapters whose behavior and permission scope pass this specification; source presence is not release readiness.
-2. Preserve the read-only Calendar Provider foundation behind PLAN's provider-neutral adapter.
-3. Keep sensors on-demand and foreground; remove unused permission declarations.
-4. Replace uncontrolled Android Auto Backup with the reviewed user-controlled backup design (Auto Backup off since 0.167.1).
-5. Keep provider credentials in secure platform storage, not the general save model.
-6. Do not present Health Connect, Huawei, banking or contact capabilities as complete until real-device/provider tests pass.
+An existing adapter, permission or receiver is reused only if its behavior and scope pass this specification; source presence is not release readiness. Health Connect, Huawei, banking and contact capabilities are not presented as complete until real-device or provider tests pass (section 18).
 
 ## 18. Implementation phases and exit gates
 
 ### Phase 0 — Policy and source audit
 
-Inventory manifest permissions, exported components, SDKs, network destinations, account/cloud pathways and provider dependencies; reconcile module privacy boundaries and reminder contracts; record provider capability classifications and evidence. **Exit:** no undocumented permission, network destination or data owner remains.
+Inventory manifest permissions, exported components, SDKs, network destinations and provider dependencies; reconcile module privacy boundaries and reminder contracts; record provider capability classifications and evidence. **Exit:** no undocumented permission, network destination or data owner remains.
 
 ### Phase 1 — Local security and data foundation
 
-Implement the database and repository boundaries (`DATA_AND_MIGRATIONS.md`), sensitive-data encryption and Keystore key lifecycle, secure token storage, backup/export rules, consent/connection metadata and module-safe import contracts; remove uncontrolled Auto Backup and retire cloud pathways only after migration gates pass (cloud retired in 0.130.0; Auto Backup off since 0.167.1, section 4.3). **Exit:** local records, encrypted sensitive data, backup/restore and offline use pass tests before provider expansion.
+Database and repository boundaries (`DATA_AND_MIGRATIONS.md`), sensitive-data encryption and Keystore key lifecycle, secure token storage, backup/export rules, consent/connection metadata and module-safe import contracts. **Exit:** local records, encrypted sensitive data, backup/restore and offline use pass tests before provider expansion.
 
 ### Phase 2 — Shared platform services
 
@@ -835,57 +771,29 @@ Central permission coordinator and manifest cleanup; shared reminders and notifi
 
 ### Phase 3 — Health interoperability
 
-- Health Connect availability and selected record-type adapter.
-- Import preview, provenance, deduplication, freshness, disconnect and deletion.
-- Huawei Health Service Kit/Health Connect/export feasibility on actual Philippine-region devices.
-
-**Exit:** every advertised data type is verified; unsupported metrics are explicitly unavailable; manual HEAL remains complete.
+Built for HEAL: Health Connect availability and record-type adapter, import preview, provenance, deduplication, freshness, disconnect and deletion (`MODULES/HEAL.md` 22A), and the Huawei Health reader (5.2.2). **Exit not met:** every advertised data type verified on a real device (none yet), the Huawei feasibility matrix done (5.2), unsupported metrics explicitly unavailable, manual HEAL complete.
 
 ### Phase 4 — Financial import and provider research
 
-- MINT CSV/statement imports and reconciliation.
-- Individual provider due diligence for GCash, Maya, MariBank, GoTyme, UnionBank.
-- Build only adapters with verified personal-account access and approved terms.
-- Keep notification parsing out of scope unless a separate decision approves its broad-access/privacy burden.
-
-**Exit:** no unverified auto-sync claims; no credential scraping; MINT remains fully offline-capable.
+Built: MINT CSV import (`MODULES/MINT.md` 22A). Open: provider due diligence beyond desk research (7.1.1) for GCash, Maya, MariBank, GoTyme and UnionBank, building only adapters with verified personal-account access and approved terms. Notification parsing stays out of scope unless a separate decision approves its broad-access and privacy burden. **Exit:** no unverified auto-sync claims; no credential scraping; MINT remains fully offline-capable. Every provider is listed unsupported until then.
 
 ### Phase 5 — Contacts and optional platform capabilities
 
-- LINK selected-contact import and preview-first reconciliation.
-- Review optional launcher package visibility and system intents.
-- Verify location/sensor/audio/camera/Bluetooth tools are foreground, user-initiated, and minimally permissioned.
-
-**Exit:** no background collection, contact scraping, or unapproved data sharing.
+LINK selected-contact import is built (4.2). Open: review optional launcher package visibility and system intents; verify location, sensor, audio, camera and Bluetooth tools are foreground, user-initiated and minimally permissioned. **Exit:** no background collection, contact scraping, or unapproved data sharing.
 
 ### Phase 6 — Security verification and release
 
-- Threat-model review, dependency audit, network inspection, permission audit, backup recovery drills, deletion verification, and module-boundary tests.
-- Verify no telemetry, advertising, account, or PokéLife cloud endpoints remain.
-- Test airplane mode and provider outages on real devices.
-
-**Exit:** all acceptance criteria below pass; remaining provider limitations are documented honestly.
-
-### As built, 0.162.0 (Phase 5 contact import and the Huawei reader came later: 4.2, 5.2.2)
-
-Phase 3's Health Connect adapter and import preview, provenance, deduplication, freshness, disconnect and deletion are built for HEAL (`MODULES/HEAL.md` 22A), and Phase 4's CSV import for MINT (`MODULES/MINT.md` 22A). Each module's page lists its integrations with class and status; there is no single Settings destination yet (section 14). **Exit gates not met:** no advertised data type has been verified on a real device, the Huawei feasibility matrix is not done (5.2.1), and no provider due diligence beyond desk research has been done for GCash, Maya, MariBank, GoTyme or UnionBank (7.1.1), so every one of them is listed unsupported.
+Threat-model review, dependency audit, network inspection, permission audit, backup recovery drills, deletion verification, module-boundary tests, and a check that no telemetry, advertising, account or server endpoints remain. Test airplane mode and provider outages on real devices. **Exit:** all acceptance criteria below pass; remaining provider limitations are documented honestly.
 
 ## 19. Acceptance criteria
 
-### Product and privacy
+The principles in section 1, the permission policy in 4.1 and the reminder criteria in 9.12 are the criteria for those areas. The boxes below add what needs its own verification.
 
-- [ ] No mandatory account, cloud profile, telemetry, ads, analytics upload, or PokéLife cloud sync.
-- [ ] Core modules, local Pokémon collection, and local WORLD progression work offline.
-- [ ] No sensitive personal information affects Pokémon progression or is exposed to WORLD/launcher.
-- [ ] Every canonical record has one module owner; cross-module views use references/projections.
+### Platform and ownership
 
-### Permissions and Android platform
-
-- [ ] Permissions are requested only at point of use with a clear rationale.
-- [ ] Manifest permissions match implemented capabilities and distribution policy.
-- [ ] Denied/revoked permissions stop access without destroying local data.
+- [ ] Manifest permissions match implemented capabilities and distribution policy (4.3).
 - [ ] No background location, passive sensor collection, SMS reading, or broad notification access in the baseline.
-- [ ] File and contact access use system pickers/selected records where practical.
+- [ ] Every canonical record has one module owner; cross-module views use references or projections.
 
 ### Provider integrations
 
@@ -896,23 +804,14 @@ Phase 3's Health Connect adapter and import preview, provenance, deduplication, 
 - [ ] GCash/Maya/MariBank/GoTyme/UnionBank auto-sync is not advertised without verified personal-account access and approval.
 - [ ] Imports are previewed, validated, idempotent and provenance-preserving.
 
-### Notifications
-
-- [ ] Shared reminder infrastructure is the only scheduler/delivery authority.
-- [ ] Reminder storage contains only opaque source references and minimum timing/action metadata.
-- [ ] Sensitive lock-screen content is hidden by default.
-- [ ] Permission denial/channel disablement leaves in-app source records usable.
-- [ ] Dismissal/snooze never implies source completion, medication taken, payment, or reward.
-
 ### Security and data lifecycle
 
-- [ ] Sensitive local records are encrypted and keys are protected by Android Keystore.
+- [ ] Sensitive local records are encrypted and keys are protected by Android Keystore (11.2).
 - [ ] Provider tokens are not stored in ordinary domain tables or exports.
 - [ ] Portable backups use independent authenticated encryption.
 - [ ] Restore validates staged data and preserves the prior known-good state on failure.
 - [ ] Export/import and deletion include indexes, attachments, caches and app-managed backups as applicable.
-- [ ] No sensitive content appears in logs, crash diagnostics, analytics, or raw provider payload retention.
-- [ ] Network calls use TLS, bounded retries, and no hardcoded private secrets.
+- [ ] No sensitive content appears in logs, crash diagnostics or raw provider payload retention.
 
 ### Reliability
 
@@ -926,10 +825,10 @@ Phase 3's Health Connect adapter and import preview, provenance, deduplication, 
 | Document | Authoritative responsibility |
 |---|---|
 | `../PRODUCT_BIBLE.md` | Local-first/no-account principles, module ownership, product-wide privacy boundaries |
-| `../IMPLEMENTATION_GUIDE.md` | Baseline status, dependency order, cloud-path retirement and implementation phases |
+| `../IMPLEMENTATION_GUIDE.md` | Baseline status, dependency order and implementation phases |
 | `DATA_AND_MIGRATIONS.md` | SQLite/SQLDelight, repositories, transactions, encryption foundations, backup/restore, migrations, deletion and recovery |
 | this Section 9 | Shared scheduling, quiet hours, focus deferral, notification delivery, action routing, reboot recovery and reminder privacy |
-| `../FEATURES/POKEMON_ECOSYSTEM.md` | Canonical Pokémon identity, collection, acquisition, progression, reward and event contracts; reconcile its canonical file presence before implementation if missing |
+| `../FEATURES/POKEMON_ECOSYSTEM.md` | Canonical Pokémon identity, collection, acquisition, progression, reward and event contracts |
 | `../MODULES/PLAN.md` | PLAN records and calendar workflows |
 | `../MODULES/CARE.md` | Private CARE records and permitted non-sensitive activity metadata |
 | `../MODULES/HEAL.md` | Health records, Health Connect/Huawei feasibility, imports and Field Research boundary |
@@ -941,7 +840,7 @@ Phase 3's Health Connect adapter and import preview, provenance, deduplication, 
 | `../FEATURES/LAUNCHER.md` | Optional launcher package visibility and privacy-conscious surfaces |
 | `TEST_STRATEGY.md` | Cross-layer integration, permission, security, offline, migration and privacy test catalogue |
 
-This document owns cross-module integration and privacy contracts. Module specifications own their domain-specific workflows and must link here rather than duplicate provider/security policy. `DATA_AND_MIGRATIONS.md` remains authoritative for database and backup implementation details; this Section 9 remains authoritative for reminder behavior.
+This document owns cross-module integration and privacy contracts; module specifications own their domain workflows and link here rather than duplicate provider or security policy.
 
 ---
 

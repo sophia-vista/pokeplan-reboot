@@ -189,7 +189,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Berry | +1 friendship (more with the Gifts or Balanced style) | `GameStore.useItem` |
 | Lure | Used up when its session hatches; kept when the session fails | `RewardEngine.effort` |
 | Pokémon | Transferred for candy and Poké (never the buddy, the last party member, a starred one, or a legendary or mythical) | `Transfer.block` |
-| Trainer points | Never spent; they open features, Guardian slots and quests. Ranks at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 | `TrainerRank` |
+| Trainer points | Never spent; they open features, Guardian slots and quests. Ranks at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 (names in `docs/design.md`) | `TrainerRank` |
 
 ## 3. Caps
 
