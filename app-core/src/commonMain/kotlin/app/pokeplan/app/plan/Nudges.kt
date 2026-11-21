@@ -79,7 +79,7 @@ object Nudges {
     }
 
     /**
-     * The week behind [nowMillis] (the last seven days, today included): tasks finished, focus minutes and the category with
+     * The week behind [nowMillis] (the last seven days, today included): tasks finished, focus minutes and the list with
      * the most finished tasks. Null when it is switched off, it is quiet hours (unless [quietApplies] is false, when the shared scheduler has already
      * moved delivery out of them), or the week was empty (no scolding).
      */

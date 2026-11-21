@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import app.pokeplan.app.BuddyScene
 
 /**
- * One accent for each of the eight modules, in the order of the Modules menu: Pokégear first, World last, and the six between
+ * One accent for each of the eight modules, in the order of the Modules menu: Gear first, World last, and the six between
  * running down a quiet rainbow (docs/pokelife/FEATURES/DESIGN_SYSTEM.md, "Chrome and module accents"). [header] is the bar on the
  * module's pages (the same in both palettes, white text on it, 4.5:1 or better); [accent] tints its frames, menu card and primary
  * action, and is brighter in the dark palette so a frame stays visible on a dark panel. An accent never stands for success,
@@ -46,7 +46,7 @@ enum class RegionLook(val scene: String, private val module: ModuleAccent) {
     /** The Mint module (docs/pokelife MODULES/MINT.md): a quiet cave of ore, and ochre. A utility surface: the scene is only a backdrop and never sits behind a figure. */
     MINT(BuddyScene.MINT, ModuleAccent.MINT),
 
-    /** The Home module (docs/pokelife MODULES/BASE.md): the town, and green. A utility surface: the scene is only a quiet backdrop. */
+    /** The Base module (docs/pokelife MODULES/BASE.md): the town, and olive. A utility surface: the scene is only a quiet backdrop. */
     BASE(BuddyScene.BASE, ModuleAccent.BASE),
 
     /** The Link module (docs/pokelife MODULES/LINK.md): a route for the postcard trail, and blue. A utility surface: the scene is only a quiet backdrop. */

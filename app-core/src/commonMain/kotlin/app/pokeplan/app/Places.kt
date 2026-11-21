@@ -100,7 +100,7 @@ object Places {
     }
 
     /**
-     * A save from before the Guardians were per module (0.158.0): the old global slots, in order, become Plan's, Care's, Heal's, Mint's, Home's and Link's Guardian
+     * A save from before the Guardians were per module (0.158.0): the old global slots, in order, become Plan's, Care's, Heal's, Mint's, Base's and Link's Guardian
      * (the order the database already stored them in, so nothing moves in the tables), and the old list is emptied. A Pokémon that is not a Guardian species is dropped
      * to the PC. Nothing is removed from the collection and nothing is paid. Idempotent.
      */

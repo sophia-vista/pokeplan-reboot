@@ -200,7 +200,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 
 - **Easy to fill, hard to perfect** *(owner, October 2026)*: completing a Pokédex should be easy, with more Pokémon and Rare Candies a day in every region; what stays hard is a good version of a Pokémon (a shiny, high IVs, the right nature).
 - **Basic dex of the Plan Region (every species caught, including evolutions): about 6 weeks** *(tune)*. Every module region should give roughly as many Pokémon as Plan for comparable use (Care Eggs, docs/economy.md).
-- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex in about 6 weeks and evolves the whole Plan Region in weeks, not months. The simulator does not play Care, mini-quests or the shop, which add more.
+- **Checked by simulation** (`./gradlew :plan-core:simulateEconomy` writes the report): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex in about 6 weeks and evolves the whole Plan Region in weeks, not months. The simulator does not play Care, mini-quests or the shop, which add more.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
 | Layer | Goal |
@@ -218,7 +218,7 @@ Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have
 Planned, with build order to be set later.
 
 - **Mission board (Mystery Dungeon):** tasks are shown as a job board using their difficulty rank. Presentation only; rewards stay as designed.
-- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole save, earned in every module: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) (thresholds in `docs/economy.md`): **quick at first, slower after** (owner's direction). Each rank takes longer than the one before. Each rank reveals features (see "Gradual reveal"). Names and thresholds are *(tune)*; see `docs/economy-report.md` for the days.
+- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole save, earned in every module: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) (thresholds in `docs/economy.md`): **quick at first, slower after** (owner's direction). Each rank takes longer than the one before. Each rank reveals features (see "Gradual reveal"). Names and thresholds are *(tune)*; `./gradlew :plan-core:simulateEconomy` shows the days.
 - **No personality quiz starter:** onboarding stays a starter picker.
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
 - **Secret Base and photo mode (Secret Base, Pokémon-Amie, Snap):** decorate the buddy's home scene (with a berry garden) and take snapshots of the buddy or a hatch. After v1.

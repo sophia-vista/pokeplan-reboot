@@ -7,7 +7,7 @@ import java.nio.ByteOrder
 import javax.imageio.ImageIO
 
 /**
- * Test-only composer for the REP-053 scale test (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md section 7, chunk 2): one Hoenn
+ * Test-only composer for the REP-053 scale test (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md section 7): one Hoenn
  * Secret Base room put together from the pret/pokeemerald art in assets/hoenn, with decoration sprites and SpriteCollab
  * Pokémon standing in it. Nothing here ships; it reads the files straight from assets/.
  *

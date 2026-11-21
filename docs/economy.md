@@ -4,7 +4,7 @@
 
 Every reward source, every use and every cap, as the code has them under `RewardRules.VERSION` (in
 `pokemon-core`). This is principle 6 of `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` ("every reward source, cap and use is written down"). The
-reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
+reasons and pacing targets are in `docs/design.md`; the simulated pacing comes from `./gradlew :plan-core:simulateEconomy`.
 
 **Keep it true.** A change to anything below that changes what an event pays bumps `RewardRules.VERSION` and updates this
 file in the same PR (`GoldenVectorTest` refuses to regenerate `pokemon-core/src/jvmTest/resources/golden.json` with new outcomes under the old
@@ -225,7 +225,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Focus session | 5 minutes at least; 180 at most (the shiny bonus stops at 240 minutes, past the longest session) | `Egg.MIN_MINUTES`, `FocusRules.MAX_MINUTES` |
 | Trainer points, Poké | no cap; points never go down | `TrainerRank` |
 
-**Pacing of the life modules (not simulated; `simulateEconomy` plays only Plan, so none of this moves Plan's report).** At most about 1.35 Care friends a day (`BEFRIEND_DAILY_CAP` 4) plus Care Eggs (3 points: a routine 1, a calm break or skill 2), up to 5 a day on a full day. Heal: at most 1.75 Field Eggs a day (an activity 2 points, a drink 1); steps and reads add no Egg points or trainer points (a walker earns 1 to 7 Rare Candies a day, `docs/economy-report.md`). Mint: about one Ledger Egg on a very organised day, typically 1 to 2 a week. Base: a chore 1 point and maintenance 2, one Habitat Egg per 5 points, capped at 5 chores and 2 maintenance a day; the Decoration meter rides on the same payments (5 points a decoration, 42 in all). Link: at most one Postcard Egg a day (3 follow-ups). All of it is below Plan's several eggs a day, on purpose. *(tune: `CARE_EGG_METER_SIZE`, `HEAL_EGG_METER_SIZE`, `MINT_EGG_METER_SIZE`, `HOME_EGG_METER_SIZE`, `LINK_EGG_METER_SIZE`, `Visitors.CATCH_UP_DAYS`, `Decorations.METER_SIZE`, each module's `*_PAID_PER_DAY`.)*
+**Pacing of the life modules (not simulated; `simulateEconomy` plays only Plan, so none of this moves Plan's report).** At most about 1.35 Care friends a day (`BEFRIEND_DAILY_CAP` 4) plus Care Eggs (3 points: a routine 1, a calm break or skill 2), up to 5 a day on a full day. Heal: at most 1.75 Field Eggs a day (an activity 2 points, a drink 1); steps and reads add no Egg points or trainer points (a walker earns 1 to 7 Rare Candies a day). Mint: about one Ledger Egg on a very organised day, typically 1 to 2 a week. Base: a chore 1 point and maintenance 2, one Habitat Egg per 5 points, capped at 5 chores and 2 maintenance a day; the Decoration meter rides on the same payments (5 points a decoration, 42 in all). Link: at most one Postcard Egg a day (3 follow-ups). All of it is below Plan's several eggs a day, on purpose. *(tune: `CARE_EGG_METER_SIZE`, `HEAL_EGG_METER_SIZE`, `MINT_EGG_METER_SIZE`, `HOME_EGG_METER_SIZE`, `LINK_EGG_METER_SIZE`, `Visitors.CATCH_UP_DAYS`, `Decorations.METER_SIZE`, each module's `*_PAID_PER_DAY`.)*
 
 Care was the first module with a per-module daily cap on the world's side (`CARE_DAILY_CAP`); Heal, Mint, Base and Link followed (section 3). There is no daily cap on tasks, habits or focus sessions, on purpose (many real tasks always pay, `docs/design.md`): `RewardEngine` leaves daily limits to the caller.
 
@@ -247,7 +247,7 @@ Care was the first module with a per-module daily cap on the world's side (`CARE
 
 ## World
 
-World pays through `AppData.world` and the Bag only, not the reward engine's state, so `RewardRules.VERSION` does not cover it. Its Poké and items are written to the reward history as `World: exploring`, `jobs`, `research` and `treasure` (`Reward.Poke` is only ever written by World); items go straight into the Bag. All numbers *(tune)*; pace, yields and the year simulations are in the generated `docs/world-economy-report.md` (`./gradlew :world-core:simulateWorldEconomy`, re-run after changing any World number), not repeated here.
+World pays through `AppData.world` and the Bag only, not the reward engine's state, so `RewardRules.VERSION` does not cover it. Its Poké and items are written to the reward history as `World: exploring`, `jobs`, `research` and `treasure` (`Reward.Poke` is only ever written by World); items go straight into the Bag. All numbers *(tune)*; pace, yields and the year simulations come from `./gradlew :world-core:simulateWorldEconomy` (re-run after changing any World number), not repeated here.
 
 - **Sources:** per floor Exploration XP (`XP_BASE` + floor), Poké (5 + 2 × floor + 0 to 4), a berry (70%), a treasure box (6%) and a wild find (3%); a milestone (Rare Candies and Poké) once per dungeon floor, never repeated. Floors take `baseFloorSeconds / (1 + power / 100)` (never under a quarter of it); at most 12 hours of away time counts per open.
 - **Floor outcomes** (`Outcomes`, `MODULES/WORLD.md` 3.6): a floor a team is too weak for pays half the Poké and Exploration XP (a setback) or ends the expedition safely (a turn-back).
