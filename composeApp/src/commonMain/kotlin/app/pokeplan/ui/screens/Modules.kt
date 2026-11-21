@@ -58,7 +58,7 @@ private fun focusOn(model: AppModel, task: Task) { model.focusTaskId = task.id; 
 
 @Composable
 fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
-    val open = model.module?.takeIf { it != Module.CARE || model.data.settings.careModule }
+    val open = model.module
     androidx.compose.runtime.CompositionLocalProvider(LocalFocusTab provides focusTab) {
     ScreenSwitch(open, depth = { if (it == null) 0 else 1 }) { page ->
         when (page) {
@@ -99,7 +99,7 @@ private fun ModulesMenu(model: AppModel) {
                     MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.MINT.name, Module.MINT.icon, Module.MINT.label, mintSubtitle(model), tint = ModuleAccent.MINT.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.BASE.name, Module.BASE.icon, Module.BASE.label, baseSubtitle(model), tint = ModuleAccent.BASE.accent, sound = Sfx.DOOR_ENTER),
-                    if (!model.data.settings.careModule) null else MenuEntry(
+                    MenuEntry(
                         Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = ModuleAccent.CARE.accent,
                     ),
                     MenuEntry(Module.HEAL.name, Module.HEAL.icon, Module.HEAL.label, healSubtitle(model), tint = ModuleAccent.HEAL.accent, sound = Sfx.DOOR_ENTER),

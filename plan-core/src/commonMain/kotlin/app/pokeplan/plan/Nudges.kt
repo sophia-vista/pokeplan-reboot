@@ -4,14 +4,12 @@ import kotlinx.datetime.LocalDate
 import kotlin.random.Random
 
 object PickForMe {
-    const val BONUS_MULTIPLIER = 1.10
-
-    data class Pick(val task: Task, val bonusMultiplier: Double)
+    data class Pick(val task: Task)
 
     fun choose(candidates: List<Task>, rng: Random): Pick? {
         val open = candidates.filter { it.isOpen }
         if (open.isEmpty()) return null
-        return Pick(open[rng.nextInt(open.size)], BONUS_MULTIPLIER)
+        return Pick(open[rng.nextInt(open.size)])
     }
 }
 

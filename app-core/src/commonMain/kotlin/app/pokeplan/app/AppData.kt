@@ -206,7 +206,6 @@ data class Settings(
     val sound: Boolean = true,
     val effectsVolume: Int = 100,
     val criesVolume: Int = -1,
-    val musicVolume: Int = 70,
     val reduceMotion: Boolean = false,
     val haptics: Boolean = true,
     val weekStartsOnMonday: Boolean = true,
@@ -224,9 +223,7 @@ data class Settings(
     val streakReminder: Boolean = true,
     val streakReminderHour: Int = 20,
     val weeklyRecap: Boolean = true,
-    val careModule: Boolean = true,
     val worldScroll: Boolean = true,
-    val worldKeepPartyOut: Boolean = false,
     val defaultReward: app.pokeplan.core.reward.RewardFocus = app.pokeplan.core.reward.RewardFocus.EXP
 ) {
     val effectsLevel: Float get() = if (sound) effectsVolume / 100f else 0f
@@ -239,7 +236,6 @@ data class Settings(
         defaultFocusMinutes = defaultFocusMinutes.coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES),
         effectsVolume = effectsVolume.coerceIn(0, 100),
         criesVolume = criesVolume.coerceIn(-1, 100),
-        musicVolume = musicVolume.coerceIn(0, 100),
         streakReminderHour = streakReminderHour.coerceIn(0, 23),
     )
 }

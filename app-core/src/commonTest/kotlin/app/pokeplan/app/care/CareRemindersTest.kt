@@ -62,12 +62,10 @@ class CareRemindersTest {
     }
 
     @Test
-    fun nothingWhenCareOrItsRemindersAreOff() {
+    fun nothingWhenItsRemindersAreOff() {
         val care = CareData(routines = listOf(water))
         assertEquals(emptyList(), CareReminders.upcoming(care.copy(settings = CareSettings(reminders = false)), app, now, utc))
-        val careOff = app.copy(settings = app.settings.copy(careModule = false))
-        assertEquals(emptyList(), CareReminders.upcoming(care, careOff, now, utc))
-        assertFalse(CareReminders.stillWanted(care, careOff, "w", monday))
+        assertFalse(CareReminders.stillWanted(care.copy(settings = CareSettings(reminders = false)), app, "w", monday))
     }
 
     @Test

@@ -10,6 +10,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
 import app.pokeplan.app.storage.Clock
@@ -37,7 +38,7 @@ class SaveCompatibilityTest {
     fun aSaveFromBeforeWorldAndNewerSettingsLoadsWithTheirDefaults() {
         val full = GameStore.json.encodeToJsonElement(AppData.serializer(), store().data) as JsonObject
         val settings = full["settings"] as JsonObject
-        val old = JsonObject(full.filterKeys { it != "world" && it != "rewardLog" } + ("settings" to JsonObject(settings.filterKeys { it !in setOf("worldScroll", "careModule") })))
+        val old = JsonObject(full.filterKeys { it != "world" && it != "rewardLog" } + ("settings" to JsonObject(settings.filterKeys { it != "worldScroll" })))
         val loaded = GameStore.json.decodeFromJsonElement(AppData.serializer(), old)
         assertEquals(app.pokeplan.world.WorldData(), loaded.world)
         assertTrue(loaded.settings.worldScroll)
@@ -53,11 +54,17 @@ class SaveCompatibilityTest {
     }
 
     @Test
-    fun aCareSwitchedOffSaveComesBackOn() {
-        val storage = MemoryStorage()
-        val first = store(storage)
-        first.changeSettings { it.copy(careModule = false) }
-        assertTrue(store(storage).data.settings.careModule, "the Modules setting is gone, so Care is always shown")
+    fun aSaveWithRetiredSettingsStillLoads() {
+        // The retire of careModule, worldKeepPartyOut and musicVolume must not stop an older save (Json ignores unknown keys).
+        val full = GameStore.json.encodeToJsonElement(AppData.serializer(), store().data) as JsonObject
+        val settings = LinkedHashMap<String, JsonElement>(full["settings"] as JsonObject).apply {
+            put("careModule", JsonPrimitive(false))
+            put("worldKeepPartyOut", JsonPrimitive(true))
+            put("musicVolume", JsonPrimitive(0))
+        }
+        val root = LinkedHashMap<String, JsonElement>(full).apply { put("settings", JsonObject(settings)) }
+        val loaded = GameStore.json.decodeFromJsonElement(AppData.serializer(), JsonObject(root))
+        assertEquals(GameStore.json.decodeFromJsonElement(Settings.serializer(), full["settings"]!!), loaded.settings)
     }
 
     @Test

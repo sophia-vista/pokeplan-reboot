@@ -43,9 +43,9 @@ class Phase2Test {
 
     @Test
     fun oldSavesLoadWithTheNewFieldsAtTheirDefaults() {
-        val old = """{"teams":[{"id":1,"members":["a"]}],"journal":[{"at":5,"text":"Team 1 cleared Tiny Woods."}],"xp":10}"""
+        // worldVersion and shopCandies were retired: a save that still has them loads, because the JSON ignores unknown keys.
+        val old = """{"teams":[{"id":1,"members":["a"]}],"journal":[{"at":5,"text":"Team 1 cleared Tiny Woods."}],"xp":10,"worldVersion":1,"shopCandies":42}"""
         val d = json.decodeFromString(WorldData.serializer(), old)
-        assertEquals(1, d.worldVersion)
         assertEquals("Team 1", d.team(1)!!.title)
         assertEquals(JournalLine.KIND_NOTE, d.journal.first().kind)
         assertTrue(d.presets.isEmpty())
