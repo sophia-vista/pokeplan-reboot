@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -51,9 +52,12 @@ private fun parentOf(s: MeSection): MeSection? = when (s) {
 }
 
 @Composable
-fun MeScreen(model: AppModel, startSection: Int = -1) {
+fun MeScreen(model: AppModel, startSection: Int = -1, resetSignal: Int = 0) {
     // Saved, so the section you were in is still open after a tab switch (or the app being put away).
     var section by rememberSaveable { mutableStateOf(MeSection.entries.getOrNull(startSection)) }
+    // A second tap on the Me tab returns to the menu (the shell counts the taps so a restored place is not reset).
+    var handledReset by rememberSaveable { mutableStateOf(resetSignal) }
+    LaunchedEffect(resetSignal) { if (resetSignal != handledReset) { handledReset = resetSignal; section = null } }
     val data = model.data
     // Into a section and back slides; each page keeps its scroll position.
     ScreenSwitch(section, depth = { if (it == null) 0 else if (parentOf(it) != null) 2 else 1 }) { current ->

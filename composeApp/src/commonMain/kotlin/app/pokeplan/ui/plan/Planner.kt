@@ -97,6 +97,7 @@ import app.pokeplan.ui.screens.LocalReduceMotion
 import app.pokeplan.ui.screens.NextUp
 import app.pokeplan.ui.screens.PixelDateField
 import app.pokeplan.ui.screens.TypedValueField
+import app.pokeplan.ui.screens.UpTo
 import app.pokeplan.ui.screens.PixelDatePicker
 import app.pokeplan.ui.screens.PixelDateTimeField
 import app.pokeplan.ui.screens.PixelDurationField
@@ -229,6 +230,8 @@ internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?, listId: Stri
     val store = model.store
     val data = model.data
     val host = remember { CardHost() }
+    // An open task card closes before the page does.
+    host.expanded?.let { UpTo { host.expanded = null } }
     val card = taskCards(model, host)
     // With a list chosen, Today is that list's part of the day, counted the same way.
     val tasks = store.openTodayTasks().filter { listId == null || it.listId == listId }

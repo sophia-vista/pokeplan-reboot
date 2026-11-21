@@ -279,6 +279,9 @@ class AppModel(
     /** A Pokémon the Pokémon tab should open on (the buddy's level chip on Home, the widget's chip). Used once. */
     var openPokemonId: String? by mutableStateOf(null)
 
+    /** The tab a jump to a Pokémon started from: Back from that Pokémon returns there (null for a plain visit to the tab). */
+    var pokemonReturnTab: Tab? by mutableStateOf(null)
+
     /** Set by the "Party" shortcut: the Pokémon tab opens on the Party page. Used once. */
     var openParty: Boolean by mutableStateOf(false)
 
@@ -521,15 +524,24 @@ fun App(
 private val EXPANDED_WIDTH = 840.dp
 private val CONTENT_MAX_WIDTH = 640.dp
 
-/** Tapping the Modules tab while it is already open returns to the list of modules, the way a bottom tab usually does. */
-private fun backToModuleList(model: AppModel, tapped: Tab, current: Tab) {
-    if (tapped == Tab.MODULES && current == Tab.MODULES) model.module = null
-}
-
 @Composable
 private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches: Flow<AppLaunch>?) {
     var selected by rememberSaveable { mutableStateOf(start.tab.name) }
     val tab = Tab.entries.firstOrNull { it.name == selected } ?: Tab.HOME
+    // A second tap on the tab already open returns it to its first screen, the way a bottom tab usually does.
+    var collectionTaps by rememberSaveable { mutableStateOf(0) }
+    var meTaps by rememberSaveable { mutableStateOf(0) }
+    val onTab = { t: Tab ->
+        if (t == tab) {
+            when (t) {
+                Tab.MODULES -> model.module = null
+                Tab.COLLECTION -> { model.pokemonReturnTab = null; collectionTaps++ }
+                Tab.ME -> meTaps++
+                Tab.HOME -> {}
+            }
+        } else if (t == Tab.COLLECTION) model.pokemonReturnTab = null
+        selected = t.name
+    }
     val go = { to: Place ->
         model.open(to, focusTab)
         selected = to.tab.name
@@ -560,10 +572,10 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         // The tabs crossfade; each keeps its scroll position while another is open.
                         ScreenSwitch(tab) { page ->
                             when (page) {
-                                Tab.HOME -> HomeScreen(model, { id -> model.openPokemonId = id; go(Place.COLLECTION) }, go)
-                                Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
-                                Tab.COLLECTION -> CollectionScreen(model)
-                                Tab.ME -> MeScreen(model)
+                                Tab.HOME -> HomeScreen(model, { id -> model.openPokemonId = id; model.pokemonReturnTab = Tab.HOME; go(Place.COLLECTION) }, go)
+                                Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; model.pokemonReturnTab = Tab.MODULES; go(Place.COLLECTION) }
+                                Tab.COLLECTION -> CollectionScreen(model, resetSignal = collectionTaps, onReturnToTab = { selected = it.name })
+                                Tab.ME -> MeScreen(model, resetSignal = meTaps)
                             }
                         }
                         // One bar for how things went, and the undo bar under it: they stack, so neither hides the other.
@@ -593,7 +605,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.navigationBars)).padding(horizontal = Spacing.S, vertical = Spacing.M),
                     verticalArrangement = Arrangement.spacedBy(Spacing.S),
                 ) {
-                    Tab.entries.forEach { t -> NavButton(t.label, t.icon, selected = t == tab, onClick = { backToModuleList(model, t, tab); selected = t.name }, modifier = Modifier.fillMaxWidth()) }
+                    Tab.entries.forEach { t -> NavButton(t.label, t.icon, selected = t == tab, onClick = { onTab(t) }, modifier = Modifier.fillMaxWidth()) }
                 }
             }
             page(Modifier.weight(1f).fillMaxHeight())
@@ -606,7 +618,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
                     ) {
                         Tab.entries.forEach { t ->
-                            NavButton(t.label, t.icon, selected = t == tab, onClick = { backToModuleList(model, t, tab); selected = t.name }, modifier = Modifier.weight(1f))
+                            NavButton(t.label, t.icon, selected = t == tab, onClick = { onTab(t) }, modifier = Modifier.weight(1f))
                         }
                     }
                 }
