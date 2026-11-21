@@ -102,6 +102,8 @@ enum class FollowUpState(val label: String) { UPCOMING("Upcoming"), DUE("Due"), 
 @Serializable
 data class LinkSettings(
     val postcardTrail: Boolean = true,
+    /** Friend Safari (LINK.md 9.5): each person's small pool of Pokémon. Off here or with [postcardTrail] and no Safari is offered; no record is touched. */
+    val safari: Boolean = true,
     val tutorialSeen: Boolean = false,
     /** Relationship words the user added beside the starting ones. */
     val categories: List<String> = emptyList(),

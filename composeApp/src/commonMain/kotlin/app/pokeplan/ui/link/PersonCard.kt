@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +34,6 @@ import app.pokeplan.ui.Portrait
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
-import app.pokeplan.ui.theme.PixelDisc
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.PixelTitle
@@ -53,7 +51,10 @@ private val tint: Color @Composable get() = ModuleAccent.LINK.accent
 internal fun PersonCard(p: Person, onPicture: () -> Unit) {
     TextBox {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.L)) {
-            Avatar(p.avatar, 88.dp, if (p.avatar == 0) "Choose a picture" else "Change the picture", onPicture, badge = true)
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Avatar(p.avatar, 88.dp, "Change the picture", onPicture)
+                PixelButton(if (p.avatar == 0) "Choose" else "Change", onPicture, color = Pixel.InkSoft, compact = true)
+            }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(LinkRules.displayName(p), style = MaterialTheme.typography.titleMedium, color = Pixel.Ink)
                 if (p.preferred.isNotBlank() && !p.preferred.equals(p.name, ignoreCase = true)) Text(p.name, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -76,24 +77,13 @@ private fun Tag(text: String) {
 }
 
 /**
- * A round pixel picture of Pokémon [species] (0 for none: a Friend Ball). [onClick] makes it a button, and [badge] adds the small plus that says it can be changed.
+ * The picture of Pokémon [species] in the app's ordinary portrait frame (0 for none: a Friend Ball in the same plain frame). [onClick] makes it a button.
  */
 @Composable
-internal fun Avatar(species: Int, size: Dp, description: String, onClick: (() -> Unit)? = null, badge: Boolean = false) {
+internal fun Avatar(species: Int, size: Dp, description: String, onClick: (() -> Unit)? = null) {
     val click = if (onClick != null) Modifier.clickable(role = Role.Button, onClickLabel = description, onClick = onClick) else Modifier
-    Box(Modifier.size(size)) {
-        Box(
-            Modifier.size(size).then(click).background(tint.copy(alpha = 0.25f), PixelDisc).border(3.dp, tint, PixelDisc),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (species > 0) Portrait(Dex.defaultForm(species).id, false, Dex.species(species).name, size = size - 12.dp, framed = false)
-            else ItemIcon("friend-ball", size = size / 2, description = null)
-        }
-        if (badge) Box(
-            Modifier.align(Alignment.BottomEnd).size(26.dp).background(tint, CircleShape).border(2.dp, Pixel.Paper, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) { Text("+", style = MaterialTheme.typography.titleMedium, color = Color.White) }
-    }
+    if (species > 0) Portrait(Dex.defaultForm(species).id, false, Dex.species(species).name, Modifier.then(click), size = size)
+    else Box(Modifier.size(size).then(click).border(2.dp, Pixel.Outline), contentAlignment = Alignment.Center) { ItemIcon("friend-ball", size = size / 2, description = null) }
 }
 
 /** The most Pokémon the picker shows at once; a search narrows them. */
@@ -123,6 +113,38 @@ internal fun PersonPicture(model: AppModel, p: Person, onDone: () -> Unit) {
                 if (p.avatar != 0) PixelButton("No picture", { model.link.setAvatar(p.id, 0); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Back", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
+        }
+    }
+}
+
+/**
+ * A person's Friend Safari (LINK.md 9.5): the Pokémon their opaque key decides, and a free visit once a day that catches one of them. It pays only the
+ * Pokémon, never touches a record, and says nothing about the person. A caught species shows in full, one not caught yet as a Pokéball.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun SafariPanel(model: AppModel, p: Person) {
+    val link = model.link
+    model.linkData // the save changes, so the visit state is read again
+    val pool = link.safariPool(p.id)
+    if (pool.isEmpty()) return
+    val day = link.safariToday(p.id)
+    val caught = model.data.player.caught
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Friend Safari")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                pool.forEach { o ->
+                    val name = Dex.species(o.speciesId).name
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                        if (o.speciesId in caught) Avatar(o.speciesId, 64.dp, name) else Avatar(0, 64.dp, "Not met yet")
+                        Text(if (o.speciesId in caught) name else "?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
+                }
+            }
+            if (day.visited) Text("Come back tomorrow.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            else if (day.left <= 0) Text("Today's Safari visits are used.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            else PixelButton("Visit", { link.visitSafari(p.id)?.let { model.haptic() } }, Modifier.fillMaxWidth(), tint, compact = true)
         }
     }
 }

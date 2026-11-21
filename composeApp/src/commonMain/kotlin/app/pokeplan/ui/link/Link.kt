@@ -391,6 +391,7 @@ private fun PersonScreen(model: AppModel, personId: String) {
         else {
             PersonCard(p) { choosing = true }
             TextBox { PersonProfile(model, p, model.linkPersonTab, close) }
+            if (model.link.safariOn) SafariPanel(model, p)
         }
     }
 }
@@ -817,6 +818,7 @@ private fun LinkSettingsView(model: AppModel) {
             PixelTitle("Postcard Trail")
             // Help: a follow-up you finish counts once; people, notes, dates and edits never do.
             ToggleRow("Find Pokémon from finished follow-ups", data.settings.postcardTrail) { link.setPostcardTrail(it) }
+            if (data.settings.postcardTrail) ToggleRow("Friend Safari on each person", data.settings.safari) { link.setSafari(it) }
         }
     }
     if (data.settings.reminders) TextBox {

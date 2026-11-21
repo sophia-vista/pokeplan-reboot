@@ -154,6 +154,22 @@ object LinkRules {
 
     // --- people ------------------------------------------------------------------------------------------------------------
 
+    /** The people count that stops widening Friend Safaris (LINK.md 9.5). *(tune)* Keep equal to `SafariRules.PEOPLE_CAP` in pokemon-core. */
+    const val SAFARI_PEOPLE_CAP = 20
+
+    /** How many people widen a Safari: everyone but the Me card, never more than [SAFARI_PEOPLE_CAP], so made-up contacts buy nothing past it. */
+    fun safariSpread(data: LinkData): Int = data.people.count { !it.isMe }.coerceAtMost(SAFARI_PEOPLE_CAP)
+
+    /**
+     * The opaque reference a person's Safari is seeded by: a stable hash of their random record key (FNV-1a), so the key itself never leaves LINK. It carries no
+     * name, birthday, personality or chart, and is the same on every platform.
+     */
+    fun safariRef(personId: String): String {
+        var h = -3750763034362895579L
+        for (c in "safari:$personId") { h = h xor c.code.toLong(); h *= 1099511628211L }
+        return h.toULong().toString(16)
+    }
+
     fun displayName(p: Person): String = p.preferred.ifBlank { p.name }
 
     /** The directory (LINK.md 2.1): filtered, then sorted by name or by what changed last. Never ranked by anything else. */

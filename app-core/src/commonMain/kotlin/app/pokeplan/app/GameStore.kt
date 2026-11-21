@@ -48,6 +48,7 @@ import app.pokeplan.core.reward.BaseEvent
 import app.pokeplan.base.Decorations
 import app.pokeplan.core.reward.BaseKind
 import app.pokeplan.core.reward.LinkEvent
+import app.pokeplan.core.reward.SafariEvent
 import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.MintKind
@@ -515,6 +516,25 @@ class GameStore(
         }
         return rewards
     }
+
+    /**
+     * A visit to a person's Friend Safari (LINK.md 9.5): one catch from that Safari's pool, once per person a day and at most [SAFARI_PER_DAY] in all (so a pile
+     * of made-up contacts buys nothing). Entry costs nothing. It pays nothing but the Pokémon (and the usual new-species candies); the log says only "Friend
+     * Safari". The event holds an opaque seed and the capped people count: nothing about the person.
+     */
+    override fun safari(event: SafariEvent): List<Reward>? {
+        if (!data.onboarded || event.id in data.linkPaid) return null
+        val caughtToday = Counters.SAFARI.get(data.counters, today)
+        if (caughtToday >= SAFARI_PER_DAY) return null
+        val outcome = RewardEngine.safariVisit(data.player, event, newId(), rng) ?: return null
+        update { d ->
+            val counters = Counters.SAFARI.set(d.counters, today, caughtToday + 1)
+            noted(d, log(SAFARI_SOURCE, outcome.rewards, d.copy(player = outcome.state, counters = counters, linkPaid = (d.linkPaid + event.id).takeLast(LINK_PAID_KEPT)), origin = Origin(Origin.How.SAFARI, Region.LINK)), event.id, event.module, event.ref, "safari", event.nowMillis)
+        }
+        return outcome.rewards
+    }
+
+    override fun safariDay(eventId: String): SafariDay = SafariDay(eventId in data.linkPaid, (SAFARI_PER_DAY - Counters.SAFARI.get(data.counters, today)).coerceAtLeast(0))
 
     /** Points towards the next Postcard Egg, out of [RewardEngine.LINK_EGG_METER_SIZE]. */
     fun linkEggMeter(): Int = data.counters[Counters.LINK_EGG_METER] ?: 0
@@ -2006,6 +2026,10 @@ class GameStore(
 
         /** Every LINK entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val LINK_LOG_PREFIX = "Link: "
+
+        /** The most Friend Safari catches in a day across every Safari, one per person at most. *(tune)* */
+        const val SAFARI_PER_DAY = 5
+        const val SAFARI_SOURCE = LINK_LOG_PREFIX + "Friend Safari"
         private val LINK_SOURCES = mapOf(LinkMoment.FOLLOW_UP to "Postcard Trail").mapValues { LINK_LOG_PREFIX + it.value }
 
         /** How many paid LINK event ids the save remembers. */
