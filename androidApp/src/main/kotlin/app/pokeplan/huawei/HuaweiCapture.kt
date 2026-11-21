@@ -17,5 +17,6 @@ internal object HuaweiCapture {
     fun seen(): HuaweiSeen = synchronized(probe) { probe.seen }
     fun addScreen(c: ScreenCapture): Boolean = synchronized(probe) { probe.addScreen(c) }
     fun addNotification(n: NotificationCapture) = synchronized(probe) { probe.addNotification(n) }
+    fun log(line: String) = synchronized(probe) { probe.addLog(line) }
     fun clear() = synchronized(probe) { probe.clear() }
 }

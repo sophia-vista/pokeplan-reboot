@@ -188,6 +188,12 @@ class HealStore(
     fun deleteSteps(id: String) = update { d -> d.copy(steps = d.steps.filterNot { it.id == id }) }
     fun deleteVital(id: String) = update { d -> d.copy(vitals = d.vitals.filterNot { it.id == id }) }
 
+    /** Deletes a day of a reading group (every reading of its types on that day), or that day's steps. */
+    fun deleteReadingDay(group: app.pokeplan.heal.ReadingGroup, day: kotlinx.datetime.LocalDate) = update { d ->
+        if (group == app.pokeplan.heal.ReadingGroup.STEPS) d.copy(steps = d.steps.filterNot { it.day == day })
+        else d.copy(vitals = d.vitals.filterNot { it.type in group.types && it.day == day })
+    }
+
     // --- goals (optional; never pay, never punish) -----------------------------------------------------------------------
 
     fun addGoal(kind: GoalKind, target: Int): HealGoal? {
@@ -291,6 +297,29 @@ class HealStore(
         val records = HuaweiRecords.read(seen, nowMillis, zone)
         val from = records.minOfOrNull { (it as? app.pokeplan.heal.Imported.Exercise)?.startMillis ?: (it as? app.pokeplan.heal.Imported.Sleep)?.startMillis ?: (it as? app.pokeplan.heal.Imported.Body)?.atMillis ?: HealImport.happenedAt(it) } ?: nowMillis
         return ProviderRead(records, from, nowMillis)
+    }
+
+    /** What HEAL already holds from Huawei Health, so the next read skips what has nothing new (`HuaweiWalk.Known`). */
+    fun huaweiKnown(): HuaweiWalk.Known {
+        val d = data
+        fun huawei(p: app.pokeplan.heal.Provenance?) = p?.provider == HealImport.PROVIDER_HUAWEI_SCREEN
+        return HuaweiWalk.Known(
+            today = dayOf(nowMillis),
+            newestWorkoutStart = d.activities.filter { huawei(it.provenance) }.maxOfOrNull { it.startMillis },
+            nightDays = d.sleep.map { dayOf(it.endMillis) }.toSet(),
+            // The newest day of each All data list: only the rows that list gives (ranges, lengths, steps), not the single value the Health page shows for today.
+            newestDay = app.pokeplan.heal.ReadingGroup.entries.mapNotNull { g ->
+                val types = when (g) {
+                    app.pokeplan.heal.ReadingGroup.HEART -> setOf(app.pokeplan.heal.VitalType.HEART_RATE_LOW, app.pokeplan.heal.VitalType.HEART_RATE_HIGH)
+                    app.pokeplan.heal.ReadingGroup.SPO2 -> setOf(app.pokeplan.heal.VitalType.SPO2_LOW, app.pokeplan.heal.VitalType.SPO2_HIGH)
+                    app.pokeplan.heal.ReadingGroup.SKIN_TEMPERATURE -> setOf(app.pokeplan.heal.VitalType.SKIN_TEMPERATURE_LOW, app.pokeplan.heal.VitalType.SKIN_TEMPERATURE_HIGH)
+                    app.pokeplan.heal.ReadingGroup.SLEEP -> setOf(app.pokeplan.heal.VitalType.SLEEP_LENGTH)
+                    else -> g.types.toSet()
+                }
+                (if (g == app.pokeplan.heal.ReadingGroup.STEPS) d.steps.filter { huawei(it.provenance) }.map { it.day } else d.vitals.filter { it.type in types && huawei(it.provenance) }.map { it.day }).maxOrNull()?.let { g to it }
+            }.toMap(),
+            newestWeightDay = d.measurements.filter { it.type == app.pokeplan.heal.MeasureType.WEIGHT && huawei(it.provenance) }.maxOfOrNull { it.atMillis }?.let { dayOf(it) },
+        )
     }
 
     /** Huawei Health was just read: the reading reminder counts from now. */

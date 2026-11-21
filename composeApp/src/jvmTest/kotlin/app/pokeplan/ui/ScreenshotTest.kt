@@ -1248,7 +1248,11 @@ class ScreenshotTest {
                 heal.importFromProvider(app.pokeplan.heal.ProviderRead(listOf(
                     app.pokeplan.heal.Imported.Steps(p, app_, "steps:a", 8321, t - 60_000),
                     app.pokeplan.heal.Imported.Steps(p, app_, "steps:b", 12045, t - 86_400_000L),
-                    app.pokeplan.heal.Imported.Vital(p, app_, "hr:a", app.pokeplan.heal.VitalType.HEART_RATE, 72.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "hl:a", app.pokeplan.heal.VitalType.HEART_RATE_LOW, 54.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "hh:a", app.pokeplan.heal.VitalType.HEART_RATE_HIGH, 118.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "sl:a", app.pokeplan.heal.VitalType.SLEEP_LENGTH, 442.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "spl:a", app.pokeplan.heal.VitalType.SPO2_LOW, 94.0, t - 60_000),
+                    app.pokeplan.heal.Imported.Vital(p, app_, "sph:a", app.pokeplan.heal.VitalType.SPO2_HIGH, 99.0, t - 60_000),
                     app.pokeplan.heal.Imported.Vital(p, app_, "rhr:a", app.pokeplan.heal.VitalType.RESTING_HEART_RATE, 58.0, t - 60_000),
                     app.pokeplan.heal.Imported.Vital(p, app_, "spo2:a", app.pokeplan.heal.VitalType.SPO2, 97.0, t - 60_000),
                     app.pokeplan.heal.Imported.Vital(p, app_, "skin:a", app.pokeplan.heal.VitalType.SKIN_TEMPERATURE, 34.1, t - 60_000),
@@ -1668,7 +1672,7 @@ class ScreenshotTest {
             override fun state() = HuaweiReaderState(installed = true, screenReading = on, notificationReading = on, walking = false)
             override fun seen() = seen
             override fun clear() {}
-            override fun walk(done: (String?) -> Unit) = done(null)
+            override fun walk(known: app.pokeplan.app.heal.HuaweiWalk.Known, done: (String?) -> Unit) = done(null)
             override fun turnOff() {}
             override fun openScreenReadingSettings() {}
             override fun openNotificationSettings() {}

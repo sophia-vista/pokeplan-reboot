@@ -41,6 +41,8 @@ import app.pokeplan.heal.HydrationEntry
 import app.pokeplan.heal.Measurement
 import app.pokeplan.heal.SleepRecord
 import app.pokeplan.heal.MeasureType
+import app.pokeplan.heal.ReadingGroup
+import app.pokeplan.heal.ReadingGroups
 import app.pokeplan.heal.VitalType
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
@@ -53,6 +55,8 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelField
+import app.pokeplan.ui.ItemIcon
+import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.SectionLabel
@@ -602,46 +606,54 @@ private fun BodyView(model: AppModel) {
 }
 
 /**
- * Daily steps and the readings Huawei Health showed (heart rate, resting heart rate, SpO2, skin temperature, Huawei's own stress number and sleep score), as history only
- * (HEAL.md section 22B): the values as read, never called good, bad, high or low, and never edited; a wrong one is deleted.
+ * Heal's readings as modules (owner, 21 November 2026): one tile per kind of reading (steps, heart rate, blood oxygen, skin temperature, sleep length and score, stress) with its
+ * newest day, and tapping a tile opens that reading's own list, one line per day. History only (HEAL.md section 22B): values as read, never called good, bad, high or low, and
+ * never edited; a wrong day is deleted. Heart rate, blood oxygen and skin temperature are a range for the day.
  */
 @Composable
 private fun ReadingsView(model: AppModel) {
-    val heal = model.heal
     val data = model.healData
-    if (data.steps.isEmpty() && data.vitals.isEmpty()) { EmptyState("Nothing here", icon = HealSection.READINGS.icon); return }
-    var shown by remember { mutableStateOf(10) }
-    if (data.steps.isNotEmpty()) {
-        SectionLabel("Steps")
+    val groups = ReadingGroups.withData(data)
+    var open by remember { mutableStateOf<ReadingGroup?>(null) }
+    val group = open?.takeIf { it in groups }
+    if (group != null) { BackHandler(enabled = true, onBack = { open = null }); ReadingList(model, group, onBack = { open = null }); return }
+    if (groups.isEmpty()) { EmptyState("Nothing here", icon = HealSection.READINGS.icon); return }
+    groups.forEach { g ->
+        val latest = ReadingGroups.latest(data, g)
         HistoryBox {
-            data.steps.sortedByDescending { it.day }.take(shown).forEachIndexed { i, r ->
-                if (i > 0) HorizontalDivider(color = Pixel.Border)
-                HistoryRow(trail = {
-                    PixelButton("Delete", { val before = model.healData; heal.deleteSteps(r.id); model.offerUndo("Deleted: steps") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
-                }) {
-                    Text(r.steps.toString().reversed().chunked(3).joinToString(",").reversed() + " steps", style = MaterialTheme.typography.bodyLarge)
-                    Text(r.day.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            HistoryRow(onClick = { open = g }, onClickLabel = g.label, trail = { Text(">", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) }) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    ItemIcon(g.icon, size = 32.dp, description = null)
+                    Column(Modifier.weight(1f)) {
+                        Text(g.label, style = MaterialTheme.typography.bodyLarge)
+                        if (latest != null) Text(latest.line + " \u00B7 " + latest.day.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
                 }
             }
         }
     }
-    VitalType.entries.forEach { t ->
-        val own = data.vitals.filter { it.type == t }
-        if (own.isEmpty()) return@forEach
-        SectionLabel(t.label)
-        HistoryBox {
-            own.sortedByDescending { it.atMillis }.take(shown).forEachIndexed { i, v ->
-                if (i > 0) HorizontalDivider(color = Pixel.Border)
-                HistoryRow(trail = {
-                    PixelButton("Delete", { val before = model.healData; heal.deleteVital(v.id); model.offerUndo("Deleted: reading") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
-                }) {
-                    Text((HealRules.format(v.value) + " " + t.unit).trim(), style = MaterialTheme.typography.bodyLarge)
-                    Text(v.day.short() + " " + clockText(v.atMillis.localTime()), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                }
+}
+
+/** One reading's own list: a line per day, newest first, with Delete for a day. */
+@Composable
+private fun ReadingList(model: AppModel, group: ReadingGroup, onBack: () -> Unit) {
+    val heal = model.heal
+    val days = ReadingGroups.daily(model.healData, group)
+    var shown by remember { mutableStateOf(PAGE) }
+    PixelTitle(group.label)
+    HistoryBox {
+        days.take(shown).forEachIndexed { i, d ->
+            if (i > 0) HorizontalDivider(color = Pixel.Border)
+            HistoryRow(trail = {
+                PixelButton("Delete", { val before = model.healData; heal.deleteReadingDay(group, d.day); model.offerUndo("Deleted: ${group.label.lowercase()}") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
+            }) {
+                Text(d.line, style = MaterialTheme.typography.bodyLarge)
+                Text(d.day.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
     }
-    if (data.steps.size > shown || VitalType.entries.any { t -> data.vitals.count { it.type == t } > shown }) ShowOlder { shown += PAGE }
+    if (days.size > shown) ShowOlder { shown += PAGE }
+    PixelButton("Back to readings", onBack, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
 }
 
 /** One measurement with Edit for its value, unit and exact moment, and Delete. */

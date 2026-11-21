@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import app.pokeplan.app.heal.HuaweiControls
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.HuaweiReader
@@ -49,7 +50,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
     val settings = model.healData.settings
     var dismissed by remember { mutableStateOf(0) } // the number of pages seen when the player said Not now
     // Rechecked every second while the page is open: both readers are switched in Android's settings, and pages arrive while Huawei Health is in front.
-    LaunchedEffect(reader) { while (true) { state = reader.state(); seen = reader.seen(); delay(1_000) } }
+    LaunchedEffect(reader) { while (true) { state = reader.state(); seen = reader.seen(); delay(if (state.walking) 1_000 else 3_000) } }
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -58,7 +59,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
             else {
                 StatusLine("Screen reading", if (state.screenReading) "On" else "Off")
                 StatusLine("Notification reading", if (state.notificationReading) "On" else "Off")
-                val home = seen.home
+                val home = remember(seen) { seen.home }
                 (seen.latestSteps ?: home.steps)?.let { StatusLine("Steps", it.toString()) }
                 home.sleepMinutes?.let { StatusLine("Sleep", "${it / 60} h ${it % 60} min") }
                 home.getUpMinute?.let { StatusLine("Got up", "${it / 60}:${(it % 60).toString().padStart(2, '0')}") }
@@ -80,7 +81,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                     note = null
                     val before = reader.seen().screens.size
                     state = state.copy(walking = true)
-                    reader.walk { problem ->
+                    reader.walk(heal.huaweiKnown()) { problem ->
                         seen = reader.seen(); state = reader.state()
                         heal.markHuaweiRead()
                         val added = (seen.screens.size - before).coerceAtLeast(0)
@@ -91,7 +92,8 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                 Text("Off after each read, for banking apps", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
             // What the pages hold as Heal records, previewed before anything is saved (HEAL.md 10.3); Huawei sessions pay like ones logged by hand.
-            val read = remember(seen) { heal.readHuawei(seen) }
+            // Not while a read is running: pages arrive every second then, and parsing every captured page each time froze the screen (21 November 2026).
+            val read = remember(seen, state.walking) { if (state.walking) app.pokeplan.heal.ProviderRead(emptyList(), 0, 0) else heal.readHuawei(seen) }
             val plan = remember(read, model.healData) { heal.previewImport(read) }
             if (!plan.isEmpty && dismissed != seen.screens.size) ImportPreview(plan,
                 onAdd = { val p = heal.importFromProvider(read); note = "Added ${count(p.candidates.size, "record")}" }, // copy-ok: result
@@ -108,7 +110,19 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
             }
             if (!seen.isEmpty) {
                 StatusLine("Seen", "${count(seen.screens.size, "page")}, ${count(seen.notifications.size, "notification")}")
-                if (showing) seen.screens.forEach { s ->
+                if (showing) {
+                    ListRow {
+                        Text("Controls", style = MaterialTheme.typography.bodyLarge)
+                        Text(HuaweiControls.lines(seen).joinToString("\n"), style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = Pixel.InkSoft)
+                    }
+                    if (seen.log.isNotEmpty()) ListRow {
+                        Text("Walk log", style = MaterialTheme.typography.bodyLarge)
+                        Text(seen.log.joinToString("\n"), style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = Pixel.InkSoft)
+                    }
+                }
+                // Only the newest pages are drawn: a long read keeps up to 150, and laying out all their text made this page unresponsive. Save, numbers hidden has them all.
+                if (showing && seen.screens.size > SHOWN_PAGES) Text("The newest $SHOWN_PAGES of ${seen.screens.size} pages; Save, numbers hidden has all of them", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                if (showing) seen.screens.takeLast(SHOWN_PAGES).forEach { s ->
                     ListRow {
                         Text(s.title.ifBlank { "Page" }, style = MaterialTheme.typography.bodyLarge)
                         Text(s.nodes.joinToString("\n") { it.line() }, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = Pixel.InkSoft)
@@ -120,7 +134,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                         Text(listOf(n.title, n.text, n.subText, n.bigText).filter { it.isNotBlank() }.joinToString("\n"), style = MaterialTheme.typography.bodySmall, color = Pixel.InkSoft)
                     }
                 }
-                PixelButton(if (showing) "Hide what it saw" else "Show what it saw", { showing = !showing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                PixelButton(if (showing) "Hide controls and pages" else "Show controls and pages", { showing = !showing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 PixelButton("Save, numbers hidden", {
                     val text = seen.sample(AppVersion.NAME)
                     note = model.files?.save("pokelife-huawei-probe.txt", text) ?: run { clipboard.setText(AnnotatedString(text)); "Copied with every number hidden" } // copy-ok: result
@@ -131,6 +145,8 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
         }
     }
 }
+
+private const val SHOWN_PAGES = 6
 
 private fun count(n: Int, word: String) = "$n $word${if (n == 1) "" else "s"}"
 
