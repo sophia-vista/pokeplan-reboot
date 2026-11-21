@@ -164,6 +164,12 @@ object HuaweiRecords {
         return out
     }
 
+    /** The start of the oldest session [s] shows (an Exercise records capture), or null when it is another page or shows none. */
+    fun oldestExerciseStart(s: ScreenCapture, nowMillis: Long, zone: TimeZone): Long? {
+        if (!s.title.startsWith("SportHistory")) return null
+        return exercises(s, nowMillis.toLocalDateTime(zone).date, zone).filterIsInstance<Imported.Exercise>().minOfOrNull { it.startMillis }
+    }
+
     private fun session(type: String, date: String, time: String, duration: String, km: Double?, year: Int?, today: LocalDate, zone: TimeZone): Imported.Exercise? {
         if (type.isBlank()) return null
         val md = monthDay.matchEntire(date) ?: return null

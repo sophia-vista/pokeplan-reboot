@@ -8,6 +8,7 @@ import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import app.pokeplan.app.heal.HuaweiHealth
+import app.pokeplan.app.heal.HuaweiWalk
 import app.pokeplan.app.heal.ScreenCapture
 import app.pokeplan.app.heal.ScreenNode
 import kotlinx.coroutines.CoroutineScope
@@ -18,12 +19,13 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.datetime.TimeZone
 
 /**
  * Reads Huawei Health's screens (INTEGRATIONS_AND_PRIVACY.md 5.2.2). Declared for `com.huawei.health` only (res/xml/huawei_reader.xml), so Android sends it
  * no other app's events; the package is checked again on every event and every window. It captures what is visible on a page once the page settles (Huawei
  * Health keeps its hidden tabs in the window, and those are left out), keeps it in [HuaweiCapture] (memory only), and on the player's tap walks Huawei Health:
- * the Health page scrolled to the end, then the Sleep, Weight and Exercise records cards' own pages (and, where a page has Day / Week tabs, its Week tab), and back. The only things it taps are those three cards and that tab,
+ * one pass down the Health page that opens each card of [HuaweiWalk.CARDS] (Exercise records, Heart, Weight, Sleep) as it comes into view and goes Back, with a scroll budget per page (and, where a page has Day / Week tabs, its Week tab). The only things it taps are those cards and that tab,
  * found by their title; it never types or changes anything, and stops as soon as Back does not bring the Health page back. It never logs. After every walk it
  * turns itself off, because banking apps refuse to open while a sideloaded accessibility service is on.
  */
@@ -105,8 +107,8 @@ class HuaweiScreenService : AccessibilityService() {
     /** Whether [root] is Huawei Health's Health page (its card list and its Edit button), not a card's own page. */
     private fun isHealthPage(root: AccessibilityNodeInfo) = visible(root).any { it.id() == "id_recyclerview" } && visible(root).any { it.id() == "function_set_items_title" }
 
-    /** The visible card titled [title] on the Health page, by its title element. */
-    private fun card(root: AccessibilityNodeInfo, title: String) = visible(root).firstOrNull { it.id() == "function_set_items_title" && it.text?.toString()?.trim() == title }
+    /** The visible title element of [wanted] on the Health page, or null. */
+    private fun card(root: AccessibilityNodeInfo, wanted: HuaweiWalk.Card) = visible(root).firstOrNull { it.id() == "function_set_items_title" && wanted.matches(it.text?.toString().orEmpty()) }
 
     private fun clickableAncestor(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         var n: AccessibilityNodeInfo? = node
@@ -139,25 +141,52 @@ class HuaweiScreenService : AccessibilityService() {
         }
     }
 
-    /** Null when the walk got through; otherwise what stopped it, in words. */
+    /**
+     * Null when the walk got through; otherwise what stopped it, in words. One pass down the Health page: each wanted card ([HuaweiWalk.CARDS]) is opened as it
+     * comes into view and Back returns to the same place, so the page is not scrolled to its end and back up first. The pass ends when every card has been opened;
+     * a card that never came into view is looked for once, scrolling back up.
+     */
     private suspend fun runWalk(): String? {
         delay(FIRST_WAIT_MS)
         if (awaitHealthPage() == null) return "Huawei Health did not show its Health page" // copy-ok: result
-        scrollThrough(forward = true, MAX_SCROLLS)
-        for (title in DETAIL_CARDS) {
+        val opened = HashSet<String>()
+        capture()
+        var scrolls = 0
+        while (HuaweiWalk.remaining(opened).isNotEmpty()) {
             val root = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
-            val target = findCard(root, title) ?: continue
-            if (clickableAncestor(target)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) != true) continue
-            delay(PAGE_WAIT_MS)
-            val detail = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
-            if (isHealthPage(detail)) continue // the tap opened nothing
-            scrollThrough(forward = true, DETAIL_SCROLLS)
-            // A page with Day / Week / Month / Year tabs (the Sleep page): also capture its Week view, which is a tab of the same page, so Back below still leaves it.
-            if (openWeek()) { delay(PAGE_WAIT_MS); scrollThrough(forward = true, DETAIL_SCROLLS) }
-            performGlobalAction(GLOBAL_ACTION_BACK)
-            delay(BACK_WAIT_MS)
-            if (awaitHealthPage() == null) return "Stopped after $title: Back did not return to the Health page" // copy-ok: result
+            val next = HuaweiWalk.remaining(opened).firstOrNull { card(root, it) != null }
+            if (next != null) {
+                opened += next.title
+                visit(next, card(root, next)!!)?.let { return it }
+                continue
+            }
+            if (scrolls++ >= HuaweiWalk.HOME_SCROLLS) break
+            val before = capture(root)?.signature
+            if (mainScroller(root)?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) != true) break
+            delay(SCROLL_WAIT_MS)
+            if (capture()?.signature == before) break
         }
+        for (wanted in HuaweiWalk.remaining(opened)) {
+            val root = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
+            val target = findCard(root, wanted) ?: continue
+            visit(wanted, target)?.let { return it }
+        }
+        return null
+    }
+
+    /** Opens [target] (the title element of [wanted]), captures its page within the card's scroll budget, and goes Back; null, or what stopped the walk. */
+    private suspend fun visit(wanted: HuaweiWalk.Card, target: AccessibilityNodeInfo): String? {
+        if (clickableAncestor(target)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) != true) return null
+        delay(PAGE_WAIT_MS)
+        val detail = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
+        if (isHealthPage(detail)) return null // the tap opened nothing
+        val exercise = wanted.title == "Exercise records"
+        scrollThrough(wanted.scrolls) { exercise && HuaweiWalk.exerciseIsOldEnough(it, System.currentTimeMillis(), TimeZone.currentSystemDefault()) }
+        // A page with Day / Week / Month / Year tabs (the Sleep page): also capture its Week view, which is a tab of the same page, so Back below still leaves it.
+        if (wanted.week && openWeek()) { delay(PAGE_WAIT_MS); scrollThrough(wanted.scrolls) }
+        performGlobalAction(GLOBAL_ACTION_BACK)
+        delay(BACK_WAIT_MS)
+        if (awaitHealthPage() == null) return "Stopped after ${wanted.title}: Back did not return to the Health page" // copy-ok: result
         return null
     }
 
@@ -179,31 +208,33 @@ class HuaweiScreenService : AccessibilityService() {
         return null
     }
 
-    /** Captures the page, then scrolls its main list and captures again until it stops moving or [max] scrolls. */
-    private suspend fun scrollThrough(forward: Boolean, max: Int) {
-        var last = capture()?.signature
+    /** Captures the page, then scrolls its main list and captures again until it stops moving, [enough] says the captured page is far enough, or [max] scrolls. */
+    private suspend fun scrollThrough(max: Int, enough: (ScreenCapture) -> Boolean = { false }) {
+        var now = capture()
+        var last = now?.signature
         repeat(max) {
+            if (now != null && enough(now!!)) return
             val root = huaweiRoot() ?: return
             val scroller = mainScroller(root) ?: return
-            if (!scroller.performAction(if (forward) AccessibilityNodeInfo.ACTION_SCROLL_FORWARD else AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD)) return
+            if (!scroller.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)) return
             delay(SCROLL_WAIT_MS)
-            val now = capture()?.signature
-            if (now == last) return
-            last = now
+            now = capture()
+            if (now?.signature == last) return
+            last = now?.signature
         }
     }
 
-    /** The card titled [title], scrolling the Health page back up to find it (a list only holds the cards near the screen). */
-    private suspend fun findCard(start: AccessibilityNodeInfo, title: String): AccessibilityNodeInfo? {
-        card(start, title)?.let { return it }
-        for (direction in listOf(false, true)) repeat(MAX_SCROLLS) {
+    /** The title element of [wanted], scrolling the Health page back up and then down to find it (a list only holds the cards near the screen). */
+    private suspend fun findCard(start: AccessibilityNodeInfo, wanted: HuaweiWalk.Card): AccessibilityNodeInfo? {
+        card(start, wanted)?.let { return it }
+        for (direction in listOf(false, true)) repeat(HuaweiWalk.HOME_SCROLLS) {
             val root = huaweiRoot() ?: return null
-            card(root, title)?.let { return it }
+            card(root, wanted)?.let { return it }
             val scroller = mainScroller(root) ?: return null
             if (!scroller.performAction(if (direction) AccessibilityNodeInfo.ACTION_SCROLL_FORWARD else AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD)) return@repeat
             delay(SCROLL_WAIT_MS)
         }
-        return huaweiRoot()?.let { card(it, title) }
+        return huaweiRoot()?.let { card(it, wanted) }
     }
 
     /** Turns this service off in Android's settings, as the player would; it stays off until turned on again. */
@@ -218,8 +249,6 @@ class HuaweiScreenService : AccessibilityService() {
     }
 
     private companion object {
-        /** The only cards the walk opens: the ones HEAL has records for. */
-        val DETAIL_CARDS = listOf("Sleep", "Weight", "Exercise records")
         const val OK = ""
         const val SETTLE_MS = 800L
         const val FIRST_WAIT_MS = 2_500L
@@ -229,8 +258,6 @@ class HuaweiScreenService : AccessibilityService() {
         const val BACK_WAIT_MS = 1_500L
         const val TIMEOUT_MS = 90_000L
         const val MAX_TRIES = 4
-        const val MAX_SCROLLS = 12
-        const val DETAIL_SCROLLS = 6
         const val MAX_NODES = 400
         const val MAX_DEPTH = 40
         const val MAX_CHARS = 200

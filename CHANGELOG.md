@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.224.1
+
+Huawei Health read: less scrolling, one pass (HEAL, REP-046, owner feedback 21 November 2026). `RewardRules.VERSION` unchanged. No schema change.
+
+- **One pass down the Health page:** each wanted card is opened as it comes into view and Back returns to the same place, so the page is no longer scrolled to its end and back up before the cards are opened. The pass ends when every wanted card has been opened.
+- **Exercise records stops early:** the list is newest first, so scrolling ends at the first session older than a read can pay for (8 days), instead of always scrolling 6 times.
+- **Budgets per page:** Weight and Sleep 2 scrolls each (Sleep's Week tab 2), Heart 1, Exercise records up to 8 with the cut-off above. New pure `HuaweiWalk` (tested); the service only taps and scrolls.
+- **Heart card captured:** the walk now also opens the Heart card so its page can be parsed next (resting heart rate, the day's range). Nothing is saved from it yet. To confirm on the phone: the time of a read and that Back returns after every card.
+
 ## 0.224.0
 
 Me, Settings, Plan and Mint (owner, 20 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` unchanged.
