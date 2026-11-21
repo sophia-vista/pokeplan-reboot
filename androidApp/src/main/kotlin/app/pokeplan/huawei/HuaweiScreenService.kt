@@ -209,7 +209,7 @@ class HuaweiScreenService : AccessibilityService() {
         val launch = packageManager.getLaunchIntentForPackage(HuaweiHealth.PACKAGE) ?: run { done("Huawei Health is not installed"); return } // copy-ok: result
         main.removeCallbacks(settle)
         captureNanos = 0L; captures = 0
-        note("Walk started")
+        note("Walk started (Android ${android.os.Build.VERSION.SDK_INT}, accessibility tool ${if (android.os.Build.VERSION.SDK_INT >= 34) serviceInfo?.isAccessibilityTool else "n/a"})")
         var answered = false
         fun answer(problem: String?) { if (!answered) { answered = true; main.post { done(problem) } } }
         walkJob = scope.launch {
@@ -314,6 +314,7 @@ class HuaweiScreenService : AccessibilityService() {
             if (tapped) { delay(PAGE_WAIT_MS); scrollThrough(wanted.scrolls) }
         }
         if (wanted.allData) openAllData(wanted)
+        for (item in wanted.menuItems) openAllData(wanted, item)
         for (pill in wanted.pills) openPill(wanted, pill)
         // Back until the Health page shows, never pressing Back on the Health page itself (that would leave Huawei Health). A page whose All data was opened needs more presses (the
         // All data page, then the card page); a look-only card may open a layer of its own (an intro, a pop-up).
@@ -367,19 +368,19 @@ class HuaweiScreenService : AccessibilityService() {
         return awaitHealthPage() != null
     }
 
-    /** The "All data" item of an open menu (its text or description; a web page's menu exposes either), or null. */
-    private fun allDataItem(): AccessibilityNodeInfo? {
+    /** The [label] item of an open menu ("All data", "Period records") (its text or description; a web page's menu exposes either), or null. */
+    private fun menuItem(label: String): AccessibilityNodeInfo? {
         // The menu may be a window of its own (a pop-up), so every Huawei Health window is searched, not only the active one.
         val roots = (listOfNotNull(huaweiRoot()) + windows.mapNotNull { it.root }.filter { it.packageName?.toString() == HuaweiHealth.PACKAGE })
         return roots.firstNotNullOfOrNull { r ->
-            visible(r).firstOrNull { n -> listOf(n.text, n.contentDescription).any { it?.toString()?.trim().equals(HuaweiWalk.ALL_DATA, ignoreCase = true) } }
+            visible(r).firstOrNull { n -> listOf(n.text, n.contentDescription).any { it?.toString()?.trim().equals(label, ignoreCase = true) } }
         }
     }
 
     private fun onAllDataPage(root: AccessibilityNodeInfo) = visible(root).any { it.id() == "titleSpinner" || it.id() == "privacy_title" }
 
     /** On the open card page: the four-dots menu, then "All data", kept as history (scrolled until a row is old enough, [HuaweiWalk.allDataIsFarEnough]); a page without the menu is noted and left. */
-    private suspend fun openAllData(wanted: HuaweiWalk.Card) {
+    private suspend fun openAllData(wanted: HuaweiWalk.Card, label: String = HuaweiWalk.ALL_DATA) {
         // A web page (Weight, Cycle Calendar) draws its toolbar late: look for the button for a few seconds rather than once.
         val r = Rect()
         var menu: AccessibilityNodeInfo? = null
@@ -395,23 +396,34 @@ class HuaweiScreenService : AccessibilityService() {
         delay(MENU_WAIT_MS)
         capture() // the open menu, so its items show in the sample
         windows.mapNotNull { it.root }.filter { it.packageName?.toString() == HuaweiHealth.PACKAGE }.forEach { capture(it) }
-        var item = allDataItem()
+        var item = menuItem(label)
         var touched = false
         if (item == null && touch(button)) {
             // A web page may take a touch where an accessibility click did nothing; its menu then draws slowly, so look for it for a few seconds.
             touched = true
-            repeat(MENU_TRIES) { if (item == null) { delay(DETAIL_POLL_MS); item = allDataItem() } }
+            repeat(MENU_TRIES) { if (item == null) { delay(DETAIL_POLL_MS); item = menuItem(label) } }
             capture()
             note("${wanted.title}: menu touched (${if (item != null) "menu showed" else "still no menu"})")
         } else if (item == null) {
-            repeat(MENU_TRIES) { if (item == null) { delay(DETAIL_POLL_MS); item = allDataItem() } }
+            repeat(MENU_TRIES) { if (item == null) { delay(DETAIL_POLL_MS); item = menuItem(label) } }
         }
         val choice = item
-        if (choice == null) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' is not in the menu"); return }
-        if (!tap(choice)) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' tap refused"); return }
+        if (choice == null) { note("${wanted.title}: '$label' is not in the menu${windowSummary()}"); return }
+        if (!tap(choice)) { note("${wanted.title}: '$label' tap refused"); return }
         delay(PAGE_WAIT_MS)
-        note("${wanted.title}: ${HuaweiWalk.ALL_DATA} opened ${page.ifBlank { "a page" }}")
+        note("${wanted.title}: $label opened ${page.ifBlank { "a page" }}")
         capture()
+        if (label != HuaweiWalk.ALL_DATA) {
+            // Any other item of the menu (Period records): captured with a scroll or two, then back to the card page so the next item can be opened.
+            scrollThrough(2)
+            repeat(3) {
+                val r = huaweiRoot() ?: return
+                if (isHealthPage(r) || visible(r).any { HuaweiWalk.isMenuButton(it.contentDescription?.toString().orEmpty()) }) return@repeat
+                performGlobalAction(GLOBAL_ACTION_BACK)
+                delay(BACK_WAIT_MS)
+            }
+            return
+        }
         if (wanted.entries > 0) openEntries(wanted)
         val now = System.currentTimeMillis()
         val zone = TimeZone.currentSystemDefault()
@@ -515,6 +527,13 @@ class HuaweiScreenService : AccessibilityService() {
             delay(SCROLL_WAIT_MS)
         }
         return huaweiRoot()?.let { card(it, wanted) }
+    }
+
+    /** What windows exist when a menu does not show: how many Huawei Health ones and the kinds of window (ids only, never text), to tell a slow menu from one the service is not shown. */
+    private fun windowSummary(): String {
+        val all = windows
+        val mine = all.count { w -> w.root?.packageName?.toString() == HuaweiHealth.PACKAGE }
+        return "; ${all.size} windows, $mine Huawei Health, types ${all.map { it.type }.joinToString(",")}"
     }
 
     /** One line in the walk log (card titles and outcomes only; never Huawei's own text). */
