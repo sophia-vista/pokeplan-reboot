@@ -4,7 +4,7 @@ import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
 /**
- * Rescue Team arc, optional post-story episodes 101 to 105 (docs/world-story-rewrite.md, "Optional post-story episodes"). Each one stands on its own;
+ * Rescue Team arc, optional post-story episodes 101 to 105 (the code is the source of the story). Each one stands on its own;
  * none of them gives a prize in the script (rewards are never part of a scene) and none of them punishes. The Rescue Team is never staged.
  */
 internal object RescuePostStory {

@@ -4,7 +4,7 @@
 
 Every reward source, every use and every cap, as the code has them under `RewardRules.VERSION` (in
 `pokemon-core`). This is principle 6 of `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` ("every reward source, cap and use is written down"). The
-reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
+reasons and pacing targets are in `docs/design.md`; the simulated pacing comes from `./gradlew :plan-core:simulateEconomy`.
 
 **Keep it true.** A change to anything below that changes what an event pays bumps `RewardRules.VERSION` and updates this
 file in the same PR (`GoldenVectorTest` refuses to regenerate `pokemon-core/src/jvmTest/resources/golden.json` with new outcomes under the old
@@ -99,7 +99,7 @@ The Super Candy chance perk adds percentage points.
 - Deep Focus moves a session up one row. Egg luck then moves the rolled rarity up one with its chance (`luckyBump`).
 - A species' rarity comes from its evolution line's highest base stat total: 580 or more is Super Rare (`SUPER_RARE_LINE_BST`); the rest are split by rank, the bottom 30% Common, the next 40% Uncommon, the rest Rare. Legendaries and mythicals never hatch.
 - Within a rarity: a species not caught yet × 6 (`UNCAUGHT_WEIGHT`), the Lure's type × 3 (`LURE_WEIGHT`), the day's spotlight type × 2 (`SPOTLIGHT_WEIGHT`, one of 18 types by `epochDay % 18`).
-- The pool is the chosen region's dex, base forms only: the Plan or the Care Region, both open from the start. A save or event that names a retired game region hatches from the Plan Region (`Region.open`).
+- The pool is the dex of the Plan Region (for a module's own egg, that module's region), base forms only. An event that names any other region hatches from the Plan Region (`Region.open`).
 - Shiny chance: `1/128 × (1 + 0.5 × min(minutes, 240) / 240)` times the shiny perk (`Shiny.chance`); a Task Egg counts as 15 minutes.
 
 ### Item drops (`DropTable`, one roll per paid task or habit)
@@ -225,7 +225,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Focus session | 5 minutes at least; 180 at most (the shiny bonus stops at 240 minutes, past the longest session) | `Egg.MIN_MINUTES`, `FocusRules.MAX_MINUTES` |
 | Trainer points, Poké | no cap; points never go down | `TrainerRank` |
 
-**Pacing of the life modules (not simulated; `simulateEconomy` plays only Plan, so none of this moves Plan's report).** At most about 1.35 Care friends a day (`BEFRIEND_DAILY_CAP` 4) plus Care Eggs (3 points: a routine 1, a calm break or skill 2), up to 5 a day on a full day. Heal: at most 1.75 Field Eggs a day (an activity 2 points, a drink 1); steps and reads add no Egg points or trainer points (a walker earns 1 to 7 Rare Candies a day, `docs/economy-report.md`). Mint: about one Ledger Egg on a very organised day, typically 1 to 2 a week. Base: a chore 1 point and maintenance 2, one Habitat Egg per 5 points, capped at 5 chores and 2 maintenance a day; the Decoration meter rides on the same payments (5 points a decoration, 42 in all). Link: at most one Postcard Egg a day (3 follow-ups). All of it is below Plan's several eggs a day, on purpose. *(tune: `CARE_EGG_METER_SIZE`, `HEAL_EGG_METER_SIZE`, `MINT_EGG_METER_SIZE`, `HOME_EGG_METER_SIZE`, `LINK_EGG_METER_SIZE`, `Visitors.CATCH_UP_DAYS`, `Decorations.METER_SIZE`, each module's `*_PAID_PER_DAY`.)*
+**Pacing of the life modules (not simulated; `simulateEconomy` plays only Plan, so none of this moves Plan's report).** At most about 1.35 Care friends a day (`BEFRIEND_DAILY_CAP` 4) plus Care Eggs (3 points: a routine 1, a calm break or skill 2), up to 5 a day on a full day. Heal: at most 1.75 Field Eggs a day (an activity 2 points, a drink 1); steps and reads add no Egg points or trainer points (a walker earns 1 to 7 Rare Candies a day). Mint: about one Ledger Egg on a very organised day, typically 1 to 2 a week. Base: a chore 1 point and maintenance 2, one Habitat Egg per 5 points, capped at 5 chores and 2 maintenance a day; the Decoration meter rides on the same payments (5 points a decoration, 42 in all). Link: at most one Postcard Egg a day (3 follow-ups). All of it is below Plan's several eggs a day, on purpose. *(tune: `CARE_EGG_METER_SIZE`, `HEAL_EGG_METER_SIZE`, `MINT_EGG_METER_SIZE`, `HOME_EGG_METER_SIZE`, `LINK_EGG_METER_SIZE`, `Visitors.CATCH_UP_DAYS`, `Decorations.METER_SIZE`, each module's `*_PAID_PER_DAY`.)*
 
 Care was the first module with a per-module daily cap on the world's side (`CARE_DAILY_CAP`); Heal, Mint, Base and Link followed (section 3). There is no daily cap on tasks, habits or focus sessions, on purpose (many real tasks always pay, `docs/design.md`): `RewardEngine` leaves daily limits to the caller.
 
@@ -247,11 +247,11 @@ Care was the first module with a per-module daily cap on the world's side (`CARE
 
 ## World
 
-World pays through `AppData.world` and the Bag only, not the reward engine's state, so `RewardRules.VERSION` does not cover it. Its Poké and items are written to the reward history as `World: exploring`, `jobs`, `research` and `treasure` (`Reward.Poke` is only ever written by World); items go straight into the Bag. All numbers *(tune)*; pace, yields and the year simulations are in the generated `docs/world-economy-report.md` (`./gradlew :world-core:simulateWorldEconomy`, re-run after changing any World number), not repeated here.
+World pays through `AppData.world` and the Bag only, not the reward engine's state, so `RewardRules.VERSION` does not cover it. Its Poké and items are written to the reward history as `World: exploring`, `jobs`, `research` and `treasure` (`Reward.Poke` is only ever written by World); items go straight into the Bag. All numbers *(tune)*; pace, yields and the year simulations come from `./gradlew :world-core:simulateWorldEconomy` (re-run after changing any World number), not repeated here.
 
 - **Sources:** per floor Exploration XP (`XP_BASE` + floor), Poké (5 + 2 × floor + 0 to 4), a berry (70%), a treasure box (6%) and a wild find (3%); a milestone (Rare Candies and Poké) once per dungeon floor, never repeated. Floors take `baseFloorSeconds / (1 + power / 100)` (never under a quarter of it); at most 12 hours of away time counts per open.
 - **Floor outcomes** (`Outcomes`, `MODULES/WORLD.md` 3.6): a floor a team is too weak for pays half the Poké and Exploration XP (a setback) or ends the expedition safely (a turn-back).
-- **Missions:** nine jobs, each paying 60 to 400 Poké and 30 to 250 Exploration XP per claim, with an occasional berry; ordinary jobs pay 60% of that table and the daily berry run 100 Poké; ordinary jobs wait 14 days, daily jobs 1. The only Rare Candy from a job is a once-only rescue (Eevee, Bagon) and the weekly Mt. Steel patrol.
+- **Missions:** the job board and its pay and pace come from `./gradlew :world-core:simulateWorldEconomy`; the daily berry run pays 100 Poké; ordinary jobs wait 14 days, daily jobs 1. The only Rare Candy from a job is a once-only rescue (Eevee, Bagon) and the weekly Mt. Steel patrol.
 - **Member experience** (`MODULES/WORLD.md` 5.2): each Pokémon on a team gets `CandyRules.XP_PER_FLOOR` (1) XP for each floor the team climbs; `XP_PER_CANDY` (20) XP are one step of candy progress on the shared level curve. Guardians and level-100 Pokémon get none. Not simulated.
 - **Skills, facilities and abilities** add at most 20% Poké, +10 points berry chance, +3 points find chance, +5 points treasure chance and +50% Exploration XP; none changes floor time except the Guardian's Temporal Mastery (10% faster once the story is complete). Abilities add up to three levels to a skill (one per helper on the team).
 - **Poké sinks in World:** Camp and Lab (400 and 600 base, tripling over five levels), the Dojo (200 Poké for 60 skill XP), the Café (3 berries) and the Kecleon Shop (above); the Swap Shop is a convenience, not a sink or a source. The Poké Mart is in the Pokémon tab. Story chapters 3 to 6 need 3, 4, 5 and 7 different dungeons cleared.

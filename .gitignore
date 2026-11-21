@@ -14,3 +14,8 @@ tools/sprites/cache-pret
 
 __pycache__/
 *.pyc
+
+# Generated on demand by Gradle (simulateEconomy, simulateWorldEconomy, storyScript); not committed
+/docs/economy-report.md
+/docs/world-economy-report.md
+/docs/world-story-script.md

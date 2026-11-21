@@ -130,6 +130,9 @@ class HuaweiScreenService : AccessibilityService() {
     /** The visible title element of [wanted] on the Health page, or null. */
     private fun card(root: AccessibilityNodeInfo, wanted: HuaweiWalk.Card) = visible(root).firstOrNull { it.id() == "function_set_items_title" && wanted.matches(it.text?.toString().orEmpty()) }
 
+    /** Every visible card title element on the Health page, top to bottom. */
+    private fun titles(root: AccessibilityNodeInfo) = visible(root).filter { it.id() == "function_set_items_title" }.toList()
+
     private fun clickableAncestor(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         var n: AccessibilityNodeInfo? = node
         repeat(TAP_LEVELS) { if (n == null) return null; if (n!!.isClickable) return n; n = n!!.parent }
@@ -174,13 +177,13 @@ class HuaweiScreenService : AccessibilityService() {
         note("Health page found")
         capture()
         var scrolls = 0
-        while (HuaweiWalk.remaining(opened).isNotEmpty()) {
+        while (true) {
             val root = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
-            val next = HuaweiWalk.remaining(opened).firstOrNull { card(root, it) != null }
+            val next = titles(root).firstNotNullOfOrNull { el -> HuaweiWalk.cardFor(el.text?.toString().orEmpty())?.takeIf { it.title !in opened }?.let { it to el } }
             if (next != null) {
-                opened += next.title
-                note("${next.title}: in view")
-                visit(next, card(root, next)!!)?.let { return it }
+                opened += next.first.title
+                note("${next.first.title}: in view")
+                visit(next.first, next.second)?.let { return it }
                 continue
             }
             if (scrolls++ >= HuaweiWalk.HOME_SCROLLS) { note("Health page: scroll limit reached"); break }
@@ -215,6 +218,8 @@ class HuaweiScreenService : AccessibilityService() {
         }
         performGlobalAction(GLOBAL_ACTION_BACK)
         delay(BACK_WAIT_MS)
+        // A look-only card may open a page with a layer of its own (an intro, a pop-up): give Back two more tries before the walk gives up.
+        if (!HuaweiWalk.isWanted(wanted)) repeat(2) { if (huaweiRoot()?.let { isHealthPage(it) } != true) { performGlobalAction(GLOBAL_ACTION_BACK); delay(BACK_WAIT_MS) } }
         if (awaitHealthPage() == null) return "Stopped after ${wanted.title}: Back did not return to the Health page" // copy-ok: result
         note("${wanted.title}: Back to the Health page")
         return null
@@ -289,7 +294,7 @@ class HuaweiScreenService : AccessibilityService() {
         const val SCROLL_WAIT_MS = 1_000L
         const val PAGE_WAIT_MS = 2_500L
         const val BACK_WAIT_MS = 1_500L
-        const val TIMEOUT_MS = 90_000L
+        const val TIMEOUT_MS = 180_000L
         const val MAX_TRIES = 4
         const val MAX_NODES = 400
         const val MAX_DEPTH = 40

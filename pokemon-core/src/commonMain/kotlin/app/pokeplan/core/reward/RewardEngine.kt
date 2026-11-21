@@ -57,7 +57,7 @@ data class PlayerState(
     val healLeadId: String? = null,
     /** The lead of Mint's party (slot 1); null means its first member. */
     val mintLeadId: String? = null,
-    /** The lead of Home's party (slot 1); null means its first member. */
+    /** The lead of Base's party (slot 1); null means its first member. */
     @SerialName("homeLeadId") val baseLeadId: String? = null,
     /** The lead of Link's party (slot 1); null means its first member. */
     val linkLeadId: String? = null,
@@ -145,7 +145,7 @@ sealed interface Reward {
 @Serializable
 data class Outcome(val state: PlayerState, val rewards: List<Reward>)
 
-/** A stretch of effort from any app: a focus session, a workout, ... *(see "Platform and apps" in docs/design.md)* */
+/** A stretch of effort from any app: a focus session, a workout, ... *(see "Platform and modules" in docs/design.md)* */
 @Serializable
 data class EffortEvent(
     val minutes: Int,
@@ -721,7 +721,7 @@ object RewardEngine {
      * A friend made through Care. Usually it leaves an egg of its family's first stage, like an egg from the Day Care (a
      * Pikachu leaves a Pichu egg), which hatches at once into Care's party if there is room (else the PC); rarely the
      * visitor itself joins, with a high starting friendship. Both have a floor on their IVs. Visitor luck from Care's party
-     * raises the floor and the chance a little. [rng] is the egg ticket's seed when the device has one.
+     * raises the floor and the chance a little. [rng] rolls the egg.
      */
     fun befriend(state: PlayerState, e: BefriendEvent, rng: Random): Outcome {
         val luck = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE), state.guardianOf(PartyIds.CARE))[CareBucket.VISITOR_LUCK] ?: 0.0
@@ -1019,8 +1019,8 @@ object RewardEngine {
     }
 
     /**
-     * A Habitat Egg from a full Habitat Discovery meter ([HOME_EGG_POINTS]): rolled like a Task Egg from the Home Region (species not caught yet
-     * more likely), it hatches at once into Home's party if there is room (else the PC), and leads it if Home has no lead yet.
+     * A Habitat Egg from a full Habitat Discovery meter ([HOME_EGG_POINTS]): rolled like a Task Egg from the Base Region (species not caught yet
+     * more likely), it hatches at once into Base's party if there is room (else the PC), and leads it if Base has no lead yet.
      */
     fun homeEgg(state: PlayerState, newPokemonId: String, nowMillis: Long, rng: Random): Outcome {
         val known = state.caught + state.pokemon.map { it.speciesId }
@@ -1038,8 +1038,8 @@ object RewardEngine {
     }
 
     /**
-     * A HOME moment (Habitat Discovery): Home's lead gets a little friendship and the player [HOME_CANDIES] Rare Candies, a trainer point, and
-     * Home's own perks may add a second candy or more friendship. Nothing about the records is read: the event has no such field.
+     * A HOME moment (Habitat Discovery): Base's lead gets a little friendship and the player [HOME_CANDIES] Rare Candies, a trainer point, and
+     * Base's own perks may add a second candy or more friendship. Nothing about the records is read: the event has no such field.
      */
     fun base(state: PlayerState, e: BaseEvent, rng: Random): Outcome {
         val rewards = mutableListOf<Reward>()

@@ -582,7 +582,7 @@ This file is the single WORLD requirements source. Do not maintain parallel WORL
 
 ## 14. Mechanics (rules and numbers)
 
-The rules the code implements today, which code comments cite as the World rules. Numbers are starting values *(tune)*; the year-long simulation is `./gradlew :world-core:simulateWorldEconomy` (writes `docs/world-economy-report.md`; re-run it after any World number changes), and every reward source is in `docs/economy.md`.
+The rules the code implements today, which code comments cite as the World rules. Numbers are starting values *(tune)*; the year-long simulation is `./gradlew :world-core:simulateWorldEconomy` (re-run it after any World number changes), and every reward source is in `docs/economy.md`.
 
 ### 14.1 Layers and dungeons
 - A **layer** is data, not a new game: `WorldLayer` on `DungeonDef`. The layers are the two Mystery Dungeon arcs (Rescue Team, Explorers) and the mainline regions Kanto, Johto, Hoenn and Sinnoh, with Unova, Kalos, Alola, Galar, Paldea and Hisui added after them (14.7, decision 5; `WorldLayer`). Each has its own map picture, markers, story chapters and Guardians; teams, rank, Poké, Bag and Camp are shared. One layer shows at a time behind a switch on the map screen.

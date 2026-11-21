@@ -1,4 +1,4 @@
-> **Filed as evidence (15 November 2026).** The owner's own record of how they use PokéLife, kept as received; it is evidence, not authority (Product Bible section 10). It was written before the 13 November rename was carried through, so **"HOME" here means BASE**. The audit built on it is `AUDIT-0.199.0.md`; what it decided is in the specifications and `../IMPLEMENTATION_BACKLOG.md`.
+> **Filed as evidence (15 November 2026).** The owner's own record of how they use PokéLife, kept as received; it is evidence, not authority (Product Bible section 10). It was written before the 13 November rename was carried through, so **"HOME" here means BASE**. What it decided is in the specifications and `../IMPLEMENTATION_BACKLOG.md`.
 
 # PokéLife --- Personal Use Interview Synthesis
 

@@ -26,7 +26,10 @@ class HuaweiWalkTest {
         assertEquals(listOf("Heart", "Weight", "Sleep"), HuaweiWalk.remaining(setOf("Exercise records")).map { it.title })
         assertEquals(HuaweiWalk.CARDS.size, HuaweiWalk.remaining(emptySet()).size)
         assertTrue(HuaweiWalk.remaining(HuaweiWalk.CARDS.map { it.title }.toSet()).isEmpty(), "every card opened ends the pass")
-        assertNull(HuaweiWalk.cardFor("SpO2")); assertNull(HuaweiWalk.cardFor("Cycle Calendar"))
+        assertEquals(HuaweiWalk.LOOK_SCROLLS, HuaweiWalk.cardFor("Cycle Calendar")?.scrolls, "every card is opened, Cycle Calendar too"); assertNull(HuaweiWalk.cardFor("  "))
+        val look = HuaweiWalk.cardFor("SpO2")!!
+        assertEquals(HuaweiWalk.LOOK_SCROLLS, look.scrolls); assertFalse(HuaweiWalk.isWanted(look), "any other card is looked at, not read into records")
+        assertTrue(HuaweiWalk.isWanted(HuaweiWalk.cardFor("Heart")!!))
         assertEquals("Sleep", HuaweiWalk.cardFor(" Sleep ")?.title)
     }
 

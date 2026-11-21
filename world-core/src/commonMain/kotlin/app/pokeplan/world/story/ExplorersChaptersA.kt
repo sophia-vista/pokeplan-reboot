@@ -4,7 +4,7 @@ import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
 /**
- * Explorers of Time, Darkness & Sky, chapters 1 to 4 (docs/world-story-rewrite.md, "Optional adventure arc"): Hoopa's ring drops the Frontier
+ * Explorers of Time, Darkness & Sky, chapters 1 to 4 (the code is the source of the story): Hoopa's ring drops the Frontier
  * team on the beach near Treasure Town; they are given a visitors' place at Wigglytuff's Guild, meet Dusknoir, and see a Time Gear stolen.
  *
  * The frame, which every scene keeps: this is a real neighbouring world, not a memory. The guild's own newest recruits (one found on the beach

@@ -9,8 +9,8 @@ import javax.crypto.SecretKey
 /**
  * Mint's key: an AES-256-GCM key made inside the Android Keystore the first time Mint is opened, non-exportable (the app can ask the Keystore to
  * seal and open, never to show the key), in hardware where the phone has it. It needs no screen-lock prompt: the optional access gate of MINT.md 13.2 is a
- * separate feature. It does not travel with a copy of the database to another phone, which is the point: Android's own cloud backup of the app's files then
- * holds Mint only as text nobody else can open. Not yet exercised on a device.
+ * separate feature. It does not travel with a copy of the database to another phone, which is the point: a copy of the database restored on another phone (or a backup
+ * file the player saves) then holds Mint only as text nobody else can open. Android's own cloud backup is off (`allowBackup` is false). Not yet exercised on a device.
  */
 object KeystoreMintKey {
     fun cipher(): AesGcmCipher = KeystoreKeys.cipher("pokelife.mint.v1", "pokelife-mint")

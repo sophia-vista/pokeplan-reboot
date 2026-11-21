@@ -11,7 +11,7 @@ fun isWorldSource(source: String): Boolean = source.startsWith("World")
 /**
  * How a new Pokémon came to the player, which decides the scene and the words (owner, 8 November 2026: not everything is an egg). Only Plan's
  * eggs, a visitor's gift and anything unrecognised hatch from an egg; Care's friends wander over, Heal's are found on a route and Mint's
- * are catalogued by Ledger Research, Home's settle into the habitat and Link's come by postcard.
+ * are catalogued by Ledger Research, Base's settle into the habitat and Link's come by postcard.
  */
 enum class Acquisition { EGG, ARRIVAL, FIELD, LEDGER, HABITAT, POSTCARD, SAFARI }
 

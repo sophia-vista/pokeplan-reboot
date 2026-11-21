@@ -103,8 +103,6 @@ data class AppData(
     val seenSpecies: Set<Int> = emptySet(),
     /** Rare Candy rewards from subtasks and the like are counted per day here when a cap needs them. */
     val counters: Map<String, Int> = emptyMap(),
-    /** Egg tickets for hatching offline; kept on this device only. */
-    val eggTickets: EggTickets = EggTickets(),
     /** Which of this phone's calendars show on the day timeline (calendar ids differ per device, so this stays here). */
     val shownCalendars: Set<Long> = emptySet(),
     /** Audit record of the one-time merge of Plan's coins and World's Poké into one Poké balance; null until it has run. */

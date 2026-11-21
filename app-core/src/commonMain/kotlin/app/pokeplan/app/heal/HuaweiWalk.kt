@@ -6,8 +6,8 @@ import kotlinx.datetime.TimeZone
 /**
  * What the Huawei Health walk visits and when it has seen enough (INTEGRATIONS_AND_PRIVACY.md 5.2.2). Pure, so the Android service only taps and scrolls.
  *
- * The walk is one pass down the Health page: each wanted card is opened as it comes into view (then Back), and the pass ends when every wanted card
- * has been opened, so the page is not scrolled to its end first and back up again. Every card's page has its own scroll budget, and the Exercise
+ * The walk is one pass down the Health page: every card is opened as it comes into view (then Back), so the page is not scrolled to its end first and back
+ * up again. The wanted cards ([CARDS]) have their own budgets and are read into records; the others are looked at (captured) once. Every card's page has its own scroll budget, and the Exercise
  * records list stops as soon as it shows a session older than a read can pay for.
  */
 object HuaweiWalk {
@@ -28,14 +28,27 @@ object HuaweiWalk {
         Card(listOf("Sleep"), scrolls = 2, week = true),
     )
 
-    /** The scrolls of the Health page itself: a safety bound; the pass normally ends sooner, when every card has been opened. */
-    const val HOME_SCROLLS = 10
+    /** Every other card on the Health page is opened too, to capture its page (owner, 21 November 2026): one scroll each, nothing parsed from it yet. */
+    const val LOOK_SCROLLS = 1
 
-    /** The titles in [CARDS] that have not been opened yet. */
+    /** Cards never opened. Empty: the owner asked for every card, Cycle Calendar included (21 November 2026); its page is only held in memory like the rest. */
+    val SKIP = emptySet<String>()
+
+    /** The scrolls of the Health page itself: a safety bound; the pass ends sooner, at the end of the list. */
+    const val HOME_SCROLLS = 14
+
+    /** The wanted [CARDS] that have not been opened yet. */
     fun remaining(opened: Set<String>) = CARDS.filter { it.title !in opened }
 
-    /** The wanted card whose title element says [text], or null. */
-    fun cardFor(text: String) = CARDS.firstOrNull { it.matches(text) }
+    /** The card whose title element says [text]: a wanted one, any other card as a look-only visit, or null for an empty title or a skipped card. */
+    fun cardFor(text: String): Card? {
+        val t = text.trim()
+        if (t.isEmpty() || t in SKIP) return null
+        return CARDS.firstOrNull { it.matches(t) } ?: Card(listOf(t), LOOK_SCROLLS)
+    }
+
+    /** Whether [card] is one of the wanted [CARDS] (its page is read into records) rather than a look-only visit. */
+    fun isWanted(card: Card) = CARDS.any { it.title == card.title }
 
     /**
      * Whether an Exercise records capture already shows a session older than a read can pay for ([HealRules.IMPORT_FRESH_MILLIS]): the list is newest first, so

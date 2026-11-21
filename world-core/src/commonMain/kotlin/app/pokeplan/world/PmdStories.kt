@@ -1,7 +1,7 @@
 package app.pokeplan.world
 
 /**
- * The Rescue Team arc (docs/world-story-rewrite.md): Pokémon Square, the rumour about the team that arrived before the disasters, and the
+ * The Rescue Team arc (the code is the source of the story): Pokémon Square, the rumour about the team that arrived before the disasters, and the
  * meteor. Its Guardian dungeon is the Sky Tower. Six chapters; each opens with its rank and the number of this layer's dungeons cleared.
  */
 object RescueStory {

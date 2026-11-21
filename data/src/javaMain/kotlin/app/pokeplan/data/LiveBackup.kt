@@ -4,8 +4,8 @@ import java.io.File
 
 /**
  * Backups of the live documents as plain files, one folder per backup (`<millis>/save.json`, `care.json`, then a `DONE`
- * marker written last, so a folder cut short is never used). The files are the same JSON the app has always saved, so the
- * newest backup is also the rollback copy for an older build: put its `save.json` and `care.json` back in the app's files.
+ * marker written last, so a folder cut short is never used). The files are the same JSON the app has always saved, but each is sealed when [sealWith] is given
+ * (see [SEALED] below), so a backup is read back only by this class on a phone that has the key.
  * Each backup reads the database in one transaction, so it is consistent however the app is writing at the time.
  *
  * Which backups stay is [BackupRetention] (seven daily and four weekly), or simply the newest [keep] when that is given. With [sealWith] every

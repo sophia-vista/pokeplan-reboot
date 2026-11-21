@@ -75,28 +75,23 @@ A bill can link to a PLAN task when the user chooses. MINT remains the canonical
 
 ## 3. Information architecture
 
-MINT has six primary destinations. Overview is the default landing screen. Quick capture is globally available within MINT.
+The Overview is the landing screen: a lead box, the overview of the records, the Quick actions box, then the party. The other destinations are reached from the header's Sections key. Quick capture is available throughout MINT.
 
 | Destination | Purpose |
 |---|---|
-| Overview | Financial position, available money, upcoming obligations and recent activity |
+| Overview | Financial position, available money, upcoming obligations and recent activity (the landing screen) |
 | Accounts | Banks, e-wallets, cash, cards, assets and liabilities |
-| Activity | Transactions, transfers, search, filters and reconciliation |
+| Activity | Transactions, transfers, search and filters |
 | Budgets | Spending plans, category limits and savings targets |
-| Bills | Recurring and one-time obligations |
-| Reports | Cash flow, spending patterns and historical comparisons |
+| Bills and income | Recurring and one-time obligations and expected income |
+| Shared bills | Who owes whom |
+| Review | Reports (cash flow, spending patterns, historical comparisons) and reconciliation |
+| Import | Statement files (where the platform can open a file) |
+| Settings | Ledger Research, privacy, your data |
 
 ### 3.1 Navigation and quick actions
 
-Quick actions:
-- Add expense.
-- Add income.
-- Transfer.
-- Add bill.
-- Reconcile account.
-- Import statement.
-
-The primary quick action is **Add expense**. Do not make the user navigate through multiple screens to record an ordinary purchase.
+The Quick actions box holds Expense, Income and Transfer. The primary action is **Expense**: do not make the user navigate through multiple screens to record an ordinary purchase. Adding a bill, reconciling an account and importing a statement are reached from the Sections key.
 
 ### 3.2 Overview hierarchy
 

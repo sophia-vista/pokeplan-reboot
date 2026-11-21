@@ -4,7 +4,7 @@ import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
 /**
- * Explorers of Time, Darkness & Sky, the six optional post-story episodes (chapters 101 to 106; docs/world-story-rewrite.md, "Post-story episodes"):
+ * Explorers of Time, Darkness & Sky, the six optional post-story episodes (chapters 101 to 106; the code is the source of the story):
  * Bidoof's Wish, Igglybuff the Prodigy, Today's "Oh My Gosh", In the Future of Darkness, Manaphy's Return and The Marine Resort.
  * Each stands on its own, none changes the main ending, and none pays anything (the scripts hold no reward).
  */
