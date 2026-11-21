@@ -140,7 +140,7 @@ class HuaweiScreenService : AccessibilityService() {
         node.refresh()
         var n: AccessibilityNodeInfo? = node
         repeat(TAP_LEVELS) {
-            val c = n ?: return false
+            val c = n ?: return@repeat
             if (c.isClickable && c.performAction(AccessibilityNodeInfo.ACTION_CLICK)) return true
             n = c.parent
         }
@@ -296,8 +296,12 @@ class HuaweiScreenService : AccessibilityService() {
     }
 
     /** The "All data" item of an open menu (its text or description; a web page's menu exposes either), or null. */
-    private fun allDataItem(): AccessibilityNodeInfo? = huaweiRoot()?.let { r ->
-        visible(r).firstOrNull { n -> listOf(n.text, n.contentDescription).any { it?.toString()?.trim().equals(HuaweiWalk.ALL_DATA, ignoreCase = true) } && clickableAncestor(n) != null }
+    private fun allDataItem(): AccessibilityNodeInfo? {
+        // The menu may be a window of its own (a pop-up), so every Huawei Health window is searched, not only the active one.
+        val roots = (listOfNotNull(huaweiRoot()) + windows.mapNotNull { it.root }.filter { it.packageName?.toString() == HuaweiHealth.PACKAGE })
+        return roots.firstNotNullOfOrNull { r ->
+            visible(r).firstOrNull { n -> listOf(n.text, n.contentDescription).any { it?.toString()?.trim().equals(HuaweiWalk.ALL_DATA, ignoreCase = true) } && clickableAncestor(n) != null }
+        }
     }
 
     private fun onAllDataPage(root: AccessibilityNodeInfo) = visible(root).any { it.id() == "titleSpinner" || it.id() == "privacy_title" }
@@ -312,6 +316,7 @@ class HuaweiScreenService : AccessibilityService() {
         if (!tap(menu)) { note("${wanted.title}: menu tap refused"); return }
         delay(MENU_WAIT_MS)
         capture() // the open menu, so its items show in the sample
+        windows.mapNotNull { it.root }.filter { it.packageName?.toString() == HuaweiHealth.PACKAGE }.forEach { capture(it) }
         // A web page (Weight, Cycle Calendar) draws its menu a moment later than a native one.
         var item = allDataItem() ?: run { delay(MENU_WAIT_MS * 2); capture(); allDataItem() }
         if (item == null && touch(menu)) {

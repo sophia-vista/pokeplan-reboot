@@ -100,7 +100,7 @@ data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifi
 }
 
 /** Collects captures in memory: the same page twice is kept once, and only the newest [maxScreens] pages and [maxNotifications] notifications stay. */
-class HuaweiProbe(private val maxScreens: Int = 40, private val maxNotifications: Int = 5, private val maxLog: Int = 80) {
+class HuaweiProbe(private val maxScreens: Int = 150, private val maxNotifications: Int = 5, private val maxLog: Int = 400) {
     var seen: HuaweiSeen = HuaweiSeen()
         private set
 
