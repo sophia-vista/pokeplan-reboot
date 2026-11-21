@@ -15,8 +15,8 @@ import kotlinx.datetime.toLocalDateTime
  * records list stops as soon as it shows a session older than a read can pay for.
  */
 object HuaweiWalk {
-    /** A card the walk opens: its title on the Health page (any of [titles]), how many times its page is scrolled, and whether its Week tab is opened too, and whether its four-dots menu → "All data" is opened too, and how many of that list's newest rows are opened one by one ([entries]). */
-    data class Card(val titles: List<String>, val scrolls: Int, val week: Boolean = false, val allDataScrolls: Int = 0, val entries: Int = 0) {
+    /** A card the walk opens: its title on the Health page (any of [titles]), how many times its page is scrolled, and whether its Week tab is opened too, and whether its four-dots menu → "All data" is opened too, how many of that list's newest rows are opened one by one ([entries]), and the pills (tabs inside the page, each a list of the words it may be spelled with) tapped in turn, each captured and given its own All data. */
+    data class Card(val titles: List<String>, val scrolls: Int, val week: Boolean = false, val allDataScrolls: Int = 0, val entries: Int = 0, val pills: List<List<String>> = emptyList()) {
         /** Whether the card's page has a four-dots menu → "All data" worth opening (almost every one does; Exercise records is a list already). */
         val allData: Boolean get() = allDataScrolls > 0
         val title: String get() = titles.first()
@@ -34,6 +34,8 @@ object HuaweiWalk {
         Card(listOf("Sleep"), scrolls = 2, week = true, allDataScrolls = ALL_DATA_SCROLLS, entries = SLEEP_ENTRIES),
         Card(listOf("Skin temperature"), scrolls = 1, allDataScrolls = ALL_DATA_SCROLLS),
         Card(listOf("SpO₂", "SpO2"), scrolls = 1, allDataScrolls = ALL_DATA_SCROLLS),
+        // Emotional wellbeing has two pills inside its page, emotions and stress (owner, 21 November 2026): each is captured and has its own All data.
+        Card(listOf("Emotional wellbeing"), scrolls = 1, allDataScrolls = 3, pills = listOf(listOf("Emotion", "Emotions"), listOf("Stress"))),
     )
 
     /** The All data lists of Sleep, Skin temperature and SpO2 are kept as history (owner, 21 November 2026): scrolled until a row is [ALL_DATA_DAYS] old, at most this many times. */

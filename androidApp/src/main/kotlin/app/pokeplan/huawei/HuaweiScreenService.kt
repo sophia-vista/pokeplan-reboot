@@ -287,11 +287,17 @@ class HuaweiScreenService : AccessibilityService() {
             if (again == null || !tap(again)) { note("${wanted.title}: tap refused (${triedChain(again ?: target)}; touch ${lastTouch})"); return null }
         }
         delay(PAGE_WAIT_MS)
-        val detail = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
-        if (isHealthPage(detail)) { note("${wanted.title}: tap opened nothing"); return null }
-        // A page that shows no words yet (a web page, a slow card) gets one more wait; the log says how much of it there was.
+        var detail = awaitDetail() ?: return "Huawei Health closed" // copy-ok: result
+        if (isHealthPage(detail)) {
+            // The click was taken but nothing opened (a card that handles touches itself, like the Steps summary): a real touch, then wait for the page.
+            val touched = touch(target)
+            note("${wanted.title}: click opened nothing, touch ${if (touched) "sent" else lastTouch}")
+            if (!touched) return null
+            delay(PAGE_WAIT_MS)
+            detail = awaitDetail() ?: return "Huawei Health closed" // copy-ok: result
+            if (isHealthPage(detail)) { note("${wanted.title}: tap opened nothing"); return null }
+        }
         var shown = capture(detail)
-        if (shown == null || shown.nodes.none { it.text.isNotBlank() || it.description.isNotBlank() }) { delay(PAGE_WAIT_MS); shown = capture() }
         // Still no words: the page may be a window of its own (a dialog or sheet), so read every Huawei Health window.
         if (shown == null || shown.nodes.none { it.text.isNotBlank() || it.description.isNotBlank() }) {
             val others = windows.mapNotNull { it.root }.filter { it.packageName?.toString() == HuaweiHealth.PACKAGE }
@@ -308,11 +314,47 @@ class HuaweiScreenService : AccessibilityService() {
             if (tapped) { delay(PAGE_WAIT_MS); scrollThrough(wanted.scrolls) }
         }
         if (wanted.allData) openAllData(wanted)
+        for (pill in wanted.pills) openPill(wanted, pill)
         // Back until the Health page shows, never pressing Back on the Health page itself (that would leave Huawei Health). A page whose All data was opened needs more presses (the
         // All data page, then the card page); a look-only card may open a layer of its own (an intro, a pop-up).
         if (!backToHealth(if (wanted.allData) 4 else if (HuaweiWalk.isWanted(wanted)) 1 else 3)) return "Stopped after ${wanted.title}: Back did not return to the Health page" // copy-ok: result
         note("${wanted.title}: Back to the Health page")
         return null
+    }
+
+    /** The page a tap opened, once it shows words: a slow card or a web page draws after a moment, so look for a few seconds rather than once. */
+    private suspend fun awaitDetail(): AccessibilityNodeInfo? {
+        repeat(DETAIL_TRIES) {
+            val r = huaweiRoot()
+            if (r != null && !isHealthPage(r) && visible(r).count { !it.text.isNullOrBlank() || !it.contentDescription.isNullOrBlank() } >= DETAIL_WORDS) return r
+            delay(DETAIL_POLL_MS)
+        }
+        return huaweiRoot()
+    }
+
+    /** The visible pill (tab) of the open page whose text is one of [words]. */
+    private fun pillNode(words: List<String>): AccessibilityNodeInfo? = huaweiRoot()?.let { r ->
+        visible(r).firstOrNull { n -> words.any { it.equals(n.text?.toString()?.trim(), ignoreCase = true) } && n.id() != "action_bar_title" }
+    }
+
+    /** Taps the pill, captures what it shows and its own All data, then comes back to the card page so the next pill can be tapped. */
+    private suspend fun openPill(wanted: HuaweiWalk.Card, words: List<String>) {
+        val name = words.first()
+        val pill = pillNode(words) ?: run { note("${wanted.title}: pill $name not found"); return }
+        if (!tap(pill)) { note("${wanted.title}: pill $name tap refused"); return }
+        delay(PAGE_WAIT_MS)
+        val shown = capture()
+        note("${wanted.title}: pill $name opened (${shown?.nodes?.size ?: 0} elements)")
+        if (wanted.allData) {
+            openAllData(wanted)
+            // Back to the card page (its pills show again) before the next pill; never Back on the Health page.
+            repeat(3) {
+                val r = huaweiRoot() ?: return
+                if (isHealthPage(r) || pillNode(words) != null) return@repeat
+                performGlobalAction(GLOBAL_ACTION_BACK)
+                delay(BACK_WAIT_MS)
+            }
+        }
     }
 
     /** Presses Back up to [presses] times, only while the Health page is not showing; true once it is. */
@@ -338,26 +380,35 @@ class HuaweiScreenService : AccessibilityService() {
 
     /** On the open card page: the four-dots menu, then "All data", kept as history (scrolled until a row is old enough, [HuaweiWalk.allDataIsFarEnough]); a page without the menu is noted and left. */
     private suspend fun openAllData(wanted: HuaweiWalk.Card) {
-        val root = huaweiRoot() ?: return
+        // A web page (Weight, Cycle Calendar) draws its toolbar late: look for the button for a few seconds rather than once.
         val r = Rect()
-        val menu = visible(root).filter { n -> HuaweiWalk.isMenuButton(n.contentDescription?.toString().orEmpty()) && clickableAncestor(n) != null }
-            .minByOrNull { it.getBoundsInScreen(r); r.top * 10_000 - r.right }
-        if (menu == null) { note("${wanted.title}: no menu button found"); return }
-        if (!tap(menu)) { note("${wanted.title}: menu tap refused"); return }
+        var menu: AccessibilityNodeInfo? = null
+        repeat(MENU_TRIES) {
+            if (menu == null) {
+                menu = huaweiRoot()?.let { root -> visible(root).filter { n -> HuaweiWalk.isMenuButton(n.contentDescription?.toString().orEmpty()) && clickableAncestor(n) != null }.minByOrNull { it.getBoundsInScreen(r); r.top * 10_000 - r.right } }
+                if (menu == null) delay(DETAIL_POLL_MS)
+            }
+        }
+        val button = menu
+        if (button == null) { note("${wanted.title}: no menu button found"); return }
+        if (!tap(button)) { note("${wanted.title}: menu tap refused"); return }
         delay(MENU_WAIT_MS)
         capture() // the open menu, so its items show in the sample
         windows.mapNotNull { it.root }.filter { it.packageName?.toString() == HuaweiHealth.PACKAGE }.forEach { capture(it) }
-        // A web page (Weight, Cycle Calendar) draws its menu a moment later than a native one.
-        var item = allDataItem() ?: run { delay(MENU_WAIT_MS * 2); capture(); allDataItem() }
-        if (item == null && touch(menu)) {
-            // A web page (Weight, Cycle Calendar) may take a touch where an accessibility click did nothing.
-            delay(MENU_WAIT_MS * 2)
+        var item = allDataItem()
+        var touched = false
+        if (item == null && touch(button)) {
+            // A web page may take a touch where an accessibility click did nothing; its menu then draws slowly, so look for it for a few seconds.
+            touched = true
+            repeat(MENU_TRIES) { if (item == null) { delay(DETAIL_POLL_MS); item = allDataItem() } }
             capture()
-            item = allDataItem()
             note("${wanted.title}: menu touched (${if (item != null) "menu showed" else "still no menu"})")
+        } else if (item == null) {
+            repeat(MENU_TRIES) { if (item == null) { delay(DETAIL_POLL_MS); item = allDataItem() } }
         }
-        if (item == null) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' is not in the menu"); return }
-        if (!tap(item)) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' tap refused"); return }
+        val choice = item
+        if (choice == null) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' is not in the menu"); return }
+        if (!tap(choice)) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' tap refused"); return }
         delay(PAGE_WAIT_MS)
         note("${wanted.title}: ${HuaweiWalk.ALL_DATA} opened ${page.ifBlank { "a page" }}")
         capture()
@@ -490,6 +541,10 @@ class HuaweiScreenService : AccessibilityService() {
         const val BACK_WAIT_MS = 1_500L
         const val MENU_WAIT_MS = 1_000L
         const val RETAP_WAIT_MS = 800L
+        const val DETAIL_TRIES = 10
+        const val DETAIL_POLL_MS = 700L
+        const val DETAIL_WORDS = 4
+        const val MENU_TRIES = 6
         const val TOUCH_MS = 60L
         const val TIMEOUT_MS = 420_000L
         const val MAX_TRIES = 4
