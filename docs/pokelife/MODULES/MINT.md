@@ -84,7 +84,6 @@ The Overview is the landing screen: a lead box, the overview of the records, the
 | Activity | Transactions, transfers, search and filters |
 | Budgets | Spending plans, category limits and savings targets |
 | Bills and income | Recurring and one-time obligations and expected income |
-| Shared bills | Who owes whom |
 | Review | Reports (cash flow, spending patterns, historical comparisons) and reconciliation |
 | Import | Statement files (where the platform can open a file) |
 | Settings | Ledger Research, privacy, your data |
@@ -271,6 +270,8 @@ A `Transaction` may include:
 - Optional import/source reference.
 - Optional bill occurrence reference.
 - Optional receipt attachment reference.
+- Optional IOU: how much of this expense someone else owes back, and who (5.8A).
+- For a repayment, the expense whose IOU it settles (5.8A).
 - Created/updated timestamps.
 
 Store monetary values using exact decimal arithmetic or integer minor units with explicit currency scale. Never use binary floating-point arithmetic for money. Preserve original amount/currency even when a converted reporting value is calculated.
@@ -397,18 +398,18 @@ It supports:
 
 Imported records remain identifiable as imported. Reconciliation does not silently replace manual history or erase unmatched transactions.
 
-### 5.8A Shared bills
+### 5.8A IOUs: part of an expense someone owes back
 
-A small ledger of who owes whom for bills split with other people, as the player would keep it in Splitwise. It is **display only**: it moves no account balance, makes no transaction, changes no net position, available money, budget or report, and pays nothing (no `MintEvent`, 16.2). The player records the real payment as an ordinary transaction (5.4) and keeps this ledger beside it.
+A lightweight note on one transaction, not a ledger, not a screen and not a module. It answers one question: of this expense the player paid, how much belongs to someone else?
 
-- **Entry** (`SharedEntry`, kept in the sealed `mint_state` as the `shared` list, so no migration): a person's name (a plain word, at most 40 characters, matched without case and edge spaces), a kind, an amount in integer minor units above zero, its currency, a day and an optional note (at most 120 characters).
-- **Four kinds.** *I paid* (I footed the bill; their share is now owed to me), *They paid* (someone else footed it; my share is now owed to them), *They paid me back* and *I paid them back* (a settlement).
-- **Balance** per person and currency = I paid + I paid them back - They paid - They paid me back, in minor units. Above zero the person owes the player; below zero the player owes them; zero is square. A settlement larger than what is owed simply turns the balance round (a person can overpay); nothing is refused for it.
-- **Totals** per currency: *owed to me* is the sum of the positive balances, *I owe* the sum of the negative ones, both shown as positive amounts and never netted across people.
-- **Settle up** on a person's line adds the one settlement entry that brings the balance to zero (They paid me back when they owed me, I paid them back when I owed them), dated today. It records nothing in an account: the player records the money moving as a transaction if they want it in their books.
-- **Screen:** *Shared*, a Mint section. Balances first, one line per person with the amount and Settle up; then New entry; then the history, newest first, each entry deletable. Hide values (3.3) hides every amount here too.
-- **Export and erase:** a kind of its own (`MintKinds.SHARED`, "Shared bills"): exported and erased on its own, with the rest in "Export everything" and "Erase all". A names-only record, so it is as private as the rest of Mint and rides in the sealed table.
-- **Not built:** splitting one bill by share or percentage between several people at once, simplifying debts across a group, linking an entry to a transaction, and posting a settlement to an account.
+- **Fields.** `Transaction.iouMinor`: the part of an `EXPENSE` someone else owes back, above zero and never more than the amount. `Transaction.iouFor`: their name, a plain word of at most 40 characters (edges trimmed, inner runs of spaces made one). `Transaction.repaymentOf`: on a repayment, the expense whose IOU it settles. An expense without the first two is nobody else's.
+- **Add IOU.** The expense form's Additional details starts one, with the amount and who owes it, and a saved expense that has none offers **Add IOU** on its own row; Edit changes or removes it (zero removes it, and takes its repayments with it, so no repayment is left without an IOU). A record split across categories cannot carry one.
+- **Record repayment.** The record's own action settles what is still owed as **one income record linked to the expense**, in an account in the expense's currency, dated the day the money arrived. It may be part (several repayments are fine) and is refused above what is left.
+- **What it does to the books.** The expense moves its account by the whole amount, because the money really left; **spending, budgets, category totals and the review's spending count only the player's own share** (`MintRules.myShare`, the amount less the IOU). A repayment raises the balance and the net position by what came back, is **no income** (`MintRules.earned` leaves it out) and **pays nothing** (Ledger Research pays an expense or a transfer; a repayment is income). Cash flow keeps its shape: the whole expense out, the repayment in.
+- **What it does not do.** No who-owes-whom balance, no settle-up, no splitting one bill by share between several people, no IOU without an expense behind it, and no interest or due dates on one.
+- **What the row says:** who owes what, or "paid back" once the repayments add up; a repayment row reads "paid back".
+- **Deleting.** Deleting the expense deletes its repayments; voiding the expense does not, and a repayment can be voided on its own, which reopens the IOU.
+- **Private like the rest of Mint:** the fields ride in the transaction's own sealed row, so there is no table, no schema step and no migration, and an older save without them loads unchanged. No `MintEvent` and no figure leaves Mint for an IOU.
 
 ## 6. Categories and merchants
 
@@ -438,7 +439,7 @@ Support:
 - Optional account/category scope.
 - Active, paused and archived states.
 
-A budget stores the planned amount and period; both can be edited afterwards, and a change that would make a second budget for the same category, currency and period is refused. Actual spending is derived from eligible posted transactions. Transfers are excluded. Refund treatment is explicit and consistent (normally offsets the originating category's spending). Pending transactions may be shown separately or included by user preference, but must never be silently mixed with posted actuals.
+A budget stores the planned amount and period; both can be edited afterwards, and a change that would make a second budget for the same category, currency and period is refused. Actual spending is derived from eligible posted transactions (an expense with an IOU counts only the player's own share, 5.8A). Transfers are excluded. Refund treatment is explicit and consistent (normally offsets the originating category's spending). Pending transactions may be shown separately or included by user preference, but must never be silently mixed with posted actuals.
 
 ### 7.2 Budget display
 
@@ -759,7 +760,7 @@ Eligible activity events may include:
 - Reviewing upcoming bills as part of a periodic review.
 - Completing a defined periodic financial organization milestone.
 
-**Logging a purchase, a payment or a transfer is reward-bearing.** The event is `record_logged` (`MintKind.LOGGED`) and it **never depends on an amount**: the same flat reward whether the record is ₱5 or ₱50,000, and it carries no figure, account, category or payee (16.3). Only a record the player types or taps in today (dated today, manual; not an import, an interest estimate, a fee Mint made itself, an adjustment or a backdated entry) of type **Expense** (a purchase, including a bill or card installment paid) or **Transfer** (a payment to a card or loan, or money moved between accounts) pays; income, refunds, fees and balance adjustments do not. **There is no daily limit** (a frequent action pays about like a Plan focus egg or a Care visitor, and farming is the player's own responsibility); each record id pays once and adds a point to Ledger Research's Egg meter. The amounts are in `docs/economy.md`. Opening MINT, viewing balances, receiving income, changing an account balance, connecting a bank, increasing savings, empty records and repeated edits are still not reward-bearing; a micro-entry is allowed to pay, because the player chose that trade.
+**Logging a purchase, a payment or a transfer is reward-bearing.** The event is `record_logged` (`MintKind.LOGGED`) and it **never depends on an amount**: the same flat reward whether the record is ₱5 or ₱50,000, and it carries no figure, account, category or payee (16.3). Only a record the player types or taps in today (dated today, manual; not an import, an interest estimate, a fee Mint made itself, an adjustment or a backdated entry) of type **Expense** (a purchase, including a bill or card installment paid) or **Transfer** (a payment to a card or loan, or money moved between accounts) pays; income (a repayment of an IOU included), refunds, fees and balance adjustments do not. **There is no daily limit** (a frequent action pays about like a Plan focus egg or a Care visitor, and farming is the player's own responsibility); each record id pays once and adds a point to Ledger Research's Egg meter. The amounts are in `docs/economy.md`. Opening MINT, viewing balances, receiving income, changing an account balance, connecting a bank, increasing savings, empty records and repeated edits are still not reward-bearing; a micro-entry is allowed to pay, because the player chose that trade.
 
 
 Do not reward creating empty records, repeated edits, repeatedly opening the same review, or artificial micro-actions. Define eligibility thresholds and caps in the shared economy/progression ledger, not in UI code.

@@ -163,6 +163,15 @@ data class Transaction(
     val interestThrough: LocalDate? = null,
     /** One optional receipt image as base64 PNG, kept inside this transaction's sealed record. */
     val receiptImage: String = "",
+    /**
+     * An IOU started by this expense (MINT.md 5.8A): the part of [amountMinor] someone else owes the player back, above zero and never more than
+     * the amount. It changes no balance; spending counts only the player's own share, [amountMinor] less this. Splits and an IOU never meet on one record.
+     */
+    val iouMinor: Long = 0,
+    /** Who owes an IOU, a plain name as the player keeps it (at most [MintRules.NAME_MAX]); empty when there is no IOU. */
+    val iouFor: String = "",
+    /** On a repayment (an [TxType.INCOME] record): the expense whose IOU it settles. It counts as no income and pays no reward. */
+    val repaymentOf: String? = null,
 )
 
 /** How much of a repayment went to a plan; with [no] it went to that installment (a monthly bill's line), without it to the plan's earliest installments first. */
@@ -340,8 +349,6 @@ data class MintData(
     /** Installment plans (MINT.md 5.6A). Kept as one sealed list in `mint_state`, not a table of their own. */
     val plans: List<InstallmentPlan> = emptyList(),
     val creditStatements: List<CreditStatement> = emptyList(),
-    /** Who owes whom for bills split with other people (MINT.md 5.8A). Display only; kept in the sealed `mint_state`. */
-    val shared: List<SharedEntry> = emptyList(),
     val settings: MintSettings = MintSettings(),
 )
 
@@ -353,5 +360,4 @@ enum class MintKinds(val label: String) {
     BUDGETS("Budgets"),
     BILLS("Bills"),
     REVIEWS("Reconciliations and reviews"),
-    SHARED("Shared bills"),
 }

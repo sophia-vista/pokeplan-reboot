@@ -184,8 +184,33 @@ object MintRules {
             if (splitTotal != tx.amountMinor)
                 return Check.Refused("Split amounts must add up to the transaction.")
         }
+        if (tx.iouMinor != 0L) {
+            if (tx.iouMinor < 0 || tx.iouMinor > tx.amountMinor) return Check.Refused("An IOU is part of the expense, so it cannot be more than it.")
+            if (tx.type != TxType.EXPENSE) return Check.Refused("Only an expense can start an IOU.")
+            if (tx.splits.isNotEmpty()) return Check.Refused("An IOU cannot be added to a record split across categories.")
+            if (tx.iouFor.length > NAME_MAX) return Check.Refused("That name is too long.")
+        }
+        if (tx.repaymentOf != null) {
+            if (tx.type != TxType.INCOME) return Check.Refused("A repayment is recorded as money received.")
+            data.transactions.firstOrNull { it.id == tx.repaymentOf }?.let { if (it.iouMinor <= 0) return Check.Refused("That expense has no IOU to repay.") }
+                ?: return Check.Refused("The expense this repays is gone.")
+        }
         return Check.Ok
     }
+
+    /** The player's own share of [tx]: an expense less whatever someone else owes back for it (its IOU), everything else whole. */
+    fun myShare(tx: Transaction): Long = if (tx.type == TxType.EXPENSE) (tx.amountMinor - tx.iouMinor).coerceAtLeast(0) else tx.amountMinor
+
+    /** What is still owed to the player on [tx]'s IOU: its part of the expense less the repayments linked to it, never below zero. */
+    fun iouOwed(data: MintData, tx: Transaction): Long {
+        if (tx.iouMinor <= 0) return 0
+        val paid = data.transactions.filter { it.repaymentOf == tx.id && it.status != TxStatus.VOIDED }.sumOf { it.amountMinor }
+        return (tx.iouMinor - paid).coerceAtLeast(0)
+    }
+
+    /** Every expense with an IOU still open in [currency], newest first: who owes, what is left, and the record it belongs to. */
+    fun openIous(data: MintData, currency: String): List<Transaction> =
+        data.transactions.filter { it.type == TxType.EXPENSE && it.currency == currency && it.status == TxStatus.POSTED && iouOwed(data, it) > 0 }.sortedByDescending { it.day }
 
     // --- balances ----------------------------------------------------------------------------------------------------------
 
@@ -365,7 +390,7 @@ object MintRules {
                 if (direction == 0) 0L
                 else {
                     // A transfer's own amount is never spending; only the fee it was charged is (MINT.md 5.5).
-                    val whole = if (tx.type == TxType.TRANSFER) tx.feeMinor else tx.amountMinor
+                    val whole = if (tx.type == TxType.TRANSFER) tx.feeMinor else myShare(tx)
                     val amount = if (categoryId == null) whole
                     else if (tx.splits.isNotEmpty()) tx.splits.filter { it.categoryId == categoryId }.sumOf { it.amountMinor }
                     else if (tx.categoryId == categoryId) whole else 0L
@@ -373,9 +398,9 @@ object MintRules {
                 }
             }
 
-    /** Money received in the period (income only: a refund is not income, a transfer is not income). */
+    /** Money received in the period (income only: a refund is not income, a transfer is not income, and a repayment of an IOU is the player's own money coming back). */
     fun earned(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): Long =
-        data.transactions.filter { counts(it) && it.currency == currency && it.type == TxType.INCOME && it.day >= from && it.day < endExclusive }.sumOf { it.amountMinor }
+        data.transactions.filter { counts(it) && it.currency == currency && it.type == TxType.INCOME && it.repaymentOf == null && it.day >= from && it.day < endExclusive }.sumOf { it.amountMinor }
 
     /** Spending by category over the period, largest first; records with no category are one line with a null id. */
     fun spendingByCategory(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): List<Pair<String?, Long>> {
@@ -383,7 +408,7 @@ object MintRules {
         data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive && (it.type in setOf(TxType.EXPENSE, TxType.FEE, TxType.REFUND) || (it.type == TxType.TRANSFER && it.feeMinor > 0)) }
             .forEach { tx ->
                 val direction = if (tx.type == TxType.REFUND) -1 else 1
-                val parts = tx.splits.ifEmpty { listOf(TransactionSplit(tx.categoryId, if (tx.type == TxType.TRANSFER) tx.feeMinor else tx.amountMinor)) }
+                val parts = tx.splits.ifEmpty { listOf(TransactionSplit(tx.categoryId, if (tx.type == TxType.TRANSFER) tx.feeMinor else myShare(tx))) }
                 parts.forEach { part -> totals[part.categoryId] = (totals[part.categoryId] ?: 0L) + direction * part.amountMinor }
             }
         return totals.filterValues { it != 0L }.toList().sortedByDescending { it.second }

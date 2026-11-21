@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.226.0
+
+MINT: an IOU is part of a transaction, and the Shared bills ledger is gone (owner, 21 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged, because an IOU pays nothing.
+
+- **Removed: Shared bills** (`MINT.md` 5.8A). The display-only Splitwise-style ledger is deleted: the screen (`ui/mint/Shared.kt`), its Mint section and menu row, `SharedEntry`/`SharedKind`/`SharedRules`/`SharedBalance`, `MintStore.addShared/settleShared/deleteShared`, the `shared` list in `MintData` and `MintKinds.SHARED` (export and erase). An old save that still carries the `shared` key loads unchanged; the entries go on the next save.
+- **IOUs on the expense itself.** An expense can say how much of it someone else owes back and who (`Transaction.iouMinor`, `iouFor`), from Additional details when it is entered, from the record's own **Add IOU** action, or from Edit later. Spending, budgets, category totals and the review count only the player's own share (`MintRules.myShare`); the account still moves by the whole amount, because the money really left.
+- **Record repayment.** The record's own action books what came back as one income record linked to the expense (`repaymentOf`), in an account in the expense's currency: the balance and the net position rise, income does not (`MintRules.earned`), and Ledger Research pays nothing for it. Part payments are allowed and several can follow; nothing above what is left. A voided repayment reopens the IOU.
+- **No new storage:** the three fields ride inside the transaction's own row, so there is no `.sqm` migration and no schema step.
+- **Removing an IOU** (set it to zero) takes its repayments with it, and so does deleting the expense.
+- **Tests:** `IouRulesTest` (6), `MintIouTest` (6), and `ScreenshotTest.mintIou` in both palettes; `MintSharedTest`, `SharedRulesTest` and `SharedBillsSealedTest` are gone.
+
 ## 0.225.1
 
 Docs review and cleanup (owner, 21 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` numbers unchanged.
