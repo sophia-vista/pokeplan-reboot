@@ -525,21 +525,11 @@ Persist enough scheduler metadata to reconstruct pending requests, but treat mod
 
 ### 9.10 Implementation architecture
 
-Recommended platform-neutral interfaces (names are conceptual; align with actual codebase conventions):
-
-- `ReminderScheduler` — schedules, updates, cancels, and reconciles requests.
-- `ReminderPolicy` — applies quiet hours, focus deferral, permissions, and delivery eligibility.
-- `ReminderRepository` — stores stable scheduling metadata and notification identities.
-- `ReminderDelivery` — Android notification creation, update, cancellation, and action dispatch.
-- `ReminderSourceAdapter` — module-owned validation, display resolution, and action execution.
-- `FocusStateProvider` — exposes focus activity without coupling to PLAN classes.
-- `ReminderRecovery` — reconciles after reboot, update, process death, and system changes.
-
-Keep domain policy testable outside Android APIs. Android AlarmManager/WorkManager/notification implementation decisions belong in the Android adapter and must be selected based on exact timing needs, platform limits, and reliability tests. Do not commit to a specific scheduler API without validating the requirements and target Android versions.
+Platform-neutral roles: a scheduler (schedule, update, cancel, reconcile), a policy (quiet hours, focus deferral, permissions, eligibility), a repository (stable scheduling metadata and notification identities), a delivery layer (Android notification creation, update, cancellation and action dispatch), a source adapter per module (validation, display resolution, action execution), a focus-state provider that does not couple to PLAN classes, and a recovery step (reboot, update, process death, system changes). The classes that fill these roles are listed in 9.11.1. Domain policy stays testable outside Android APIs; the AlarmManager, WorkManager and notification choices belong in the Android adapter.
 
 #### 9.10.1 Shared persistence contract
 
-Reminder requests and delivery metadata follow the shared database, stable-ID, transaction, backup/restore and migration rules in `DATA_AND_MIGRATIONS.md`. Reminder records never replace the owning module’s canonical business record.
+Reminder requests and delivery metadata follow the shared database, stable-ID, transaction, backup/restore and migration rules in `DATA_AND_MIGRATIONS.md`. Reminder records never replace the owning module's canonical business record.
 
 ### 9.11 Migration from existing implementations
 

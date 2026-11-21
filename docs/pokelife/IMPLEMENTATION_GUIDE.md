@@ -86,7 +86,7 @@ The workstreams and gates are defined in section 5.
 
 | Bible rule | Status in the code |
 |---|---|
-| Module map (section 4) | Holds: eight modules (PLAN, CARE, HEAL, MINT, BASE, LINK, GEAR, WORLD), no Grow, no Explore |
+| Module map (section 4) | Holds: eight modules (PLAN, CARE, HEAL, MINT, BASE, LINK, GEAR, WORLD) |
 | One owner, one source of truth | Holds for the built modules (own tables and store, a minimal event). Open: Exploration XP and unopened treasure in World; the single `AppData` view over the split tables |
 | Utility first (principle 1) | Holds: Field Research, Ledger Research and Habitat Discovery can be turned off without losing a record (tested) |
 | Forgiving, no punishment (principles 4 and 9) | Holds in Base and Care. Focus is strict by the owner's decision (PLAN.md 6.3), an accepted exception; the Plan streak text has not been checked against the no-pressure rules |
@@ -143,6 +143,8 @@ Dependencies matter more than the phase number. Parallel work is allowed only wh
 | 12 | Release hardening | All intended workstreams | Full regression/migration suite, privacy/security, asset rights, accessibility, performance, backup/restore and device acceptance pass |
 
 ### Release gates
+
+Gate A (architecture approval) has passed.
 
 **Gate B — Data migration**
 - Representative real save fixtures migrate without loss or duplicate rewards.
@@ -201,7 +203,7 @@ The canonical set is the 17 documents listed in `PRODUCT_BIBLE.md` section 11; `
 - The `docs/pokelife/` tree is the only current specification authority.
 - Update the owning canonical document when a requirement changes, then dependent cross-references and backlog items in the same change.
 - Never infer implementation status from specification presence.
-- Still behind the code and not to be mistaken for current (re-checked 20 November 2026): `docs/design.md` (its own banners mark the retired cloud sections; habits as Today items, strict-mode and milestone text and Mega/Dynamax claims are older than the code), the acceptance boxes in `MODULES/BASE.md`, `MINT.md` and `WORLD.md` (all unticked and carrying no built or partial status; the other module files have none), `INTEGRATIONS_AND_PRIVACY.md` manifest sections (an open gap, not a done state), and `DATA_AND_MIGRATIONS.md` 10.5.1 (the documents list).
+- Still behind the code and not to be mistaken for current: `docs/design.md` (older than the code in places), the acceptance boxes in `MODULES/BASE.md`, `MINT.md` and `WORLD.md` (unticked, with no built or partial status), the manifest sections of `INTEGRATIONS_AND_PRIVACY.md` (an open gap, not a done state), and `DATA_AND_MIGRATIONS.md` 10.5.1 (the documents list).
 
 ## 9. Current unresolved issues
 
