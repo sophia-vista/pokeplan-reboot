@@ -71,13 +71,16 @@ class HealTables(private val store: DataStore) {
 
     /**
      * Heal's document, or null when it is empty or locked: the callers that must not fail inside a transaction (or that treat a locked Heal as empty) use this.
-     * The read itself opens every row, so a row this phone's key cannot open fails the transaction and is reported as null; a separate
+     * The read itself opens every row, so a row this phone's key cannot open is reported as null (caught inside the transaction, so a transaction around this call is not rolled back); a separate
      * `locked()` pass would decrypt every row a second time (and each open is a Keystore round trip).
      */
-    fun readOrNull(): String? = try {
-        read()
-    } catch (e: HealLockedException) {
-        null
+    fun readOrNull(): String? = store.transaction {
+        // Caught inside the transaction body: an exception leaving a (nested) transaction would roll back the one around it.
+        try {
+            assemble()?.let { JSON.encodeToString(JsonElement.serializer(), it) }
+        } catch (e: HealLockedException) {
+            null
+        }
     }
 
     /**

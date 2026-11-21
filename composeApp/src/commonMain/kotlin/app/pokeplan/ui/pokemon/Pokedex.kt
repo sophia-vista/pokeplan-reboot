@@ -112,19 +112,6 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
         rows.associate { (_, s) -> s.id to DexState.of(model.data, s.id) }
     }
     val caught = states.values.count { it.caught }
-    // The National Dex is the null entry; a region is itself.
-    PixelDropdown(
-        listOf<Region?>(null) + regions, if (view.national) null else view.region,
-        { it?.label ?: "National" },
-        { r -> change(if (r == null) view.copy(national = true) else view.copy(national = false, region = r)) },
-        Modifier.fillMaxWidth(),
-    )
-    if (view.national) PixelDropdown(
-        generations.indices.toList(), view.generation,
-        { i -> if (i == null) "" else generations[i].first },
-        { i -> if (i != null) change(view.copy(generation = i)) },
-        Modifier.fillMaxWidth(),
-    )
     val text = view.search.trim().lowercase().removePrefix("#")
     val shown = remember(rows, states, text, view.filter) {
         rows.filter { (number, s) ->
@@ -143,6 +130,19 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
             Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            // The National Dex is the null entry; a region is itself.
+            PixelDropdown(
+                listOf<Region?>(null) + regions, if (view.national) null else view.region,
+                { it?.label ?: "National" },
+                { r -> change(if (r == null) view.copy(national = true) else view.copy(national = false, region = r)) },
+                Modifier.fillMaxWidth(),
+            )
+            if (view.national) PixelDropdown(
+                generations.indices.toList(), view.generation,
+                { i -> if (i == null) "" else generations[i].first },
+                { i -> if (i != null) change(view.copy(generation = i)) },
+                Modifier.fillMaxWidth(),
+            )
             TextBox {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     Text("${view.title}: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)

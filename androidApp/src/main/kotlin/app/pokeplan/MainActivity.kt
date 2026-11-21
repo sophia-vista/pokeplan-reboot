@@ -129,6 +129,8 @@ class MainActivity : ComponentActivity() {
                 }
                 recovery = pending
                 ready = true
+                // The daily copy is WorkManager's job now; ask for a due one at every start (KEEP: at most one is queued).
+                if (!pending) runCatching { BackupWorker.runSoon(app) }
             }
             when {
                 !ready -> StartupLoading()
@@ -167,6 +169,8 @@ class MainActivity : ComponentActivity() {
     private fun keepWidgetsCurrent(data: AppData) {
         keepScreenOn(data.focus != null)
         keepRemindersCurrent(data)
+        // Any change to the save (World's timers, a task, the buddy) may show on a widget, whether or not it moved the signature below.
+        if (appData != null && data !== appData) widgetsDirty = true
         appData = data
         keepRoutineRemindersCurrent()
         val buddy = data.player.buddy
@@ -257,10 +261,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private var mintSignature: Int? = null
+    private var lastMint: MintData? = null
     private var mintRefresh: Job? = null
 
     /** Sets Mint's bill reminders again when a bill, a payment or a reminder setting changes, a moment after the last change. Nothing of Mint leaves the module but the reminder's own id and day. */
     private fun mintChanged(data: MintData) {
+        // The Mint widgets show balances and bills that are not part of the main signature.
+        if (lastMint != null && data !== lastMint) widgetsDirty = true
+        lastMint = data
         val app = appData ?: return
         val upcoming = MintReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
         if (upcoming.isNotEmpty()) askForNotifications()
