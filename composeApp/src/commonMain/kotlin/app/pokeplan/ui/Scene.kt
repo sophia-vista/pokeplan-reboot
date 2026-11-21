@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -39,19 +38,12 @@ internal fun isGroundMap(name: String): Boolean = app.pokeplan.ui.launcher.Frien
 
 @Composable
 internal fun rememberScene(name: String): ImageBitmap? {
-    val image by produceState(scenes[name], name) {
-        value = scenes[name]
-        if (value == null) {
-            val path = when {
-                app.pokeplan.ui.launcher.FriendAreas.isArea(name) -> app.pokeplan.ui.launcher.FriendAreas.file(name)
-                name.startsWith("map:") -> "files/maps/${name.removePrefix("map:")}.png"
-                else -> "files/scenes/$name.png"
-            }
-            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
-            scenes[name] = value
-        }
+    val path = when {
+        app.pokeplan.ui.launcher.FriendAreas.isArea(name) -> app.pokeplan.ui.launcher.FriendAreas.file(name)
+        name.startsWith("map:") -> "files/maps/${name.removePrefix("map:")}.png"
+        else -> "files/scenes/$name.png"
     }
-    return image
+    return rememberCachedImage(scenes, name) { orNull { Res.readBytes(path).decodeToImageBitmap() } }
 }
 
 @Composable

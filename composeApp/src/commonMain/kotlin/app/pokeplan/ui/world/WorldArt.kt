@@ -1,5 +1,6 @@
 package app.pokeplan.ui.world
 
+import app.pokeplan.ui.rememberCachedImage
 import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.drawPixelDisc
 import app.pokeplan.ui.theme.drawPixelRing
@@ -33,7 +34,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -70,13 +70,7 @@ private val worldArt = BitmapCache(CacheBudget.WORLD_ART)
 
 @Composable
 internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boolean = false, top: Boolean = false, anchorY: Float? = null) {
-    val image by produceState(worldArt[name], name) {
-        value = worldArt[name]
-        if (value == null) {
-            value = orNull { Res.readBytes(if (name.startsWith("map:")) "files/maps/${name.removePrefix("map:")}.png" else "files/world/$name.png").decodeToImageBitmap() }
-            worldArt[name] = value
-        }
-    }
+    val image = rememberCachedImage(worldArt, name) { orNull { Res.readBytes(if (name.startsWith("map:")) "files/maps/${name.removePrefix("map:")}.png" else "files/world/$name.png").decodeToImageBitmap() } }
     Canvas(modifier) {
         val picture = image ?: return@Canvas
         val cover = if (crop) max(size.width / picture.width, size.height / picture.height) else min(size.width / picture.width, size.height / picture.height)
@@ -185,13 +179,7 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
 @Composable
 internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Boolean, modifier: Modifier = Modifier, scrolls: Boolean = true, content: @Composable () -> Unit) {
     val tiles = dungeonTiles(dungeonId)
-    val atlas by produceState(tileAtlases[tiles], tiles) {
-        value = tileAtlases[tiles]
-        if (value == null) {
-            value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
-            tileAtlases[tiles] = value
-        }
-    }
+    val atlas = rememberCachedImage(tileAtlases, tiles) { orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() } }
     val alternates = remember(atlas) { atlas?.let { app.pokeplan.ui.launcher.alternatesFit(it) } ?: booleanArrayOf(true, false, false) }
     var onScreen by remember { mutableStateOf(true) }
     val foreground = rememberInForeground()
@@ -273,13 +261,7 @@ internal fun campTiles(level: Int): String = when {
 @Composable
 internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean) {
     val tiles = campTiles(level)
-    val atlas by produceState(tileAtlases[tiles], tiles) {
-        value = tileAtlases[tiles]
-        if (value == null) {
-            value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
-            tileAtlases[tiles] = value
-        }
-    }
+    val atlas = rememberCachedImage(tileAtlases, tiles) { orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() } }
     var onScreen by remember { mutableStateOf(true) }
     val foreground = rememberInForeground()
     val seconds = rememberRunningSeconds(animate && onScreen && foreground)
@@ -324,13 +306,7 @@ internal data class MapMarker(val id: String, val x: Int, val y: Int, val state:
 @Composable
 internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: String?, onSelect: (String) -> Unit, mapName: String? = null, pictureW: Float = MAP_W, pictureH: Float = MAP_H) {
     val name = mapName ?: "map-${stage.coerceIn(1, 8)}"
-    val image by produceState(worldArt[name], name) {
-        value = worldArt[name]
-        if (value == null) {
-            value = orNull { Res.readBytes(if (name.startsWith("map:")) "files/maps/${name.removePrefix("map:")}.png" else "files/world/$name.png").decodeToImageBitmap() }
-            worldArt[name] = value
-        }
-    }
+    val image = rememberCachedImage(worldArt, name) { orNull { Res.readBytes(if (name.startsWith("map:")) "files/maps/${name.removePrefix("map:")}.png" else "files/world/$name.png").decodeToImageBitmap() } }
     val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val widthPx = with(density) { maxWidth.toPx() }
@@ -399,13 +375,7 @@ private val fxFrames = mapOf("hit" to Triple(72, 72, 24), "welcome" to Triple(64
 @Composable
 internal fun FxBurst(name: String, key: Int, size: Dp, modifier: Modifier = Modifier, play: Boolean = true) {
     val (fw, fh, count) = fxFrames[name] ?: return
-    val sheet by produceState(fxSheets[name], name) {
-        value = fxSheets[name]
-        if (value == null) {
-            value = orNull { Res.readBytes("files/world/fx/$name.png").decodeToImageBitmap() }
-            fxSheets[name] = value
-        }
-    }
+    val sheet = rememberCachedImage(fxSheets, name) { orNull { Res.readBytes("files/world/fx/$name.png").decodeToImageBitmap() } }
     var frame by remember { mutableStateOf(-1) }
     LaunchedEffect(key, play) {
         if (key == 0 || !play) { frame = -1; return@LaunchedEffect }

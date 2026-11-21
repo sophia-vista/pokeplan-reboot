@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -31,13 +30,7 @@ private val strips = mutableMapOf<StatusKind, ImageBitmap?>()
 
 @Composable
 fun StatusIcon(kind: StatusKind, pixel: Int, modifier: Modifier = Modifier, loop: Boolean = false, animate: Boolean = true) {
-    val strip by produceState(strips[kind], kind) {
-        value = strips[kind]
-        if (value == null) {
-            value = orNull { Res.readBytes("files/status/${kind.file}.png").decodeToImageBitmap() }
-            strips[kind] = value
-        }
-    }
+    val strip = rememberCachedImage(strips, kind) { orNull { Res.readBytes("files/status/${kind.file}.png").decodeToImageBitmap() } }
     var frame by remember(kind) { mutableIntStateOf(if (loop) kind.start else 0) }
     // A one-shot icon holds its last frame and stops; a looping one also stops while the app is out of sight.
     val foreground = rememberInForeground()

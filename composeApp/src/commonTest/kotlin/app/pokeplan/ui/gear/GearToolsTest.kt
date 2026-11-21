@@ -10,23 +10,23 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GearToolsTest {
-    private fun unit(kind: String, symbol: String) = Units.kinds.first { it.label == kind }.units.first { it.symbol == symbol }
+    private fun unit(category: String, symbol: String) = UnitCatalog.category(category)!!.units.first { it.symbol == symbol }
     private fun close(a: Double, b: Double) = assertTrue(abs(a - b) < 1e-6, "$a is not $b")
 
     @Test
     fun convertsBetweenUnits() {
-        close(1.609344, Units.convert(1.0, unit("Length", "mi"), unit("Length", "km")))
-        close(12.0, Units.convert(1.0, unit("Length", "ft"), unit("Length", "in")))
-        close(2.2046226, Units.convert(1.0, unit("Mass", "kg"), unit("Mass", "lb")))
-        close(3.785411784, Units.convert(1.0, unit("Volume", "gal"), unit("Volume", "L")))
-        close(36.0, Units.convert(10.0, unit("Speed", "m/s"), unit("Speed", "km/h")))
+        close(1.609344, UnitCatalog.convert(1.0, unit("length", "mi"), unit("length", "km")))
+        close(12.0, UnitCatalog.convert(1.0, unit("length", "ft"), unit("length", "in")))
+        close(2.2046226, UnitCatalog.convert(1.0, unit("mass", "kg"), unit("mass", "lb")))
+        close(3.785411784, UnitCatalog.convert(1.0, unit("volume", "gal"), unit("volume", "L")))
+        close(36.0, UnitCatalog.convert(10.0, unit("speed", "m/s"), unit("speed", "km/h")))
     }
 
     @Test
     fun convertsTemperatures() {
-        close(212.0, Units.convert(100.0, unit("Temperature", "C"), unit("Temperature", "F")))
-        close(-40.0, Units.convert(-40.0, unit("Temperature", "F"), unit("Temperature", "C")))
-        close(273.15, Units.convert(0.0, unit("Temperature", "C"), unit("Temperature", "K")))
+        close(212.0, UnitCatalog.convert(100.0, unit("temperature", "C"), unit("temperature", "F")))
+        close(-40.0, UnitCatalog.convert(-40.0, unit("temperature", "F"), unit("temperature", "C")))
+        close(273.15, UnitCatalog.convert(0.0, unit("temperature", "C"), unit("temperature", "K")))
     }
 
     @Test

@@ -1,10 +1,10 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.ui.rememberCachedImage
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -29,13 +29,7 @@ private val sheets = BitmapCache(CacheBudget.SMALL)
 
 @Composable
 private fun weatherSheet(name: String): ImageBitmap? {
-    val sheet by produceState(sheets[name], name) {
-        value = sheets[name]
-        if (value == null) {
-            value = orNull { Res.readBytes("files/weather/$name.png").decodeToImageBitmap() }
-            sheets[name] = value
-        }
-    }
+    val sheet = rememberCachedImage(sheets, name) { orNull { Res.readBytes("files/weather/$name.png").decodeToImageBitmap() } }
     return sheet
 }
 

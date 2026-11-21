@@ -1,5 +1,6 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.ui.rememberCachedImage
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.VectorConverter
@@ -816,13 +817,7 @@ internal fun TownBackdrop(scene: String, modifier: Modifier = Modifier, darkness
 
 @Composable
 private fun TileTown(name: String, modifier: Modifier, darkness: Float, weather: Weather) {
-    val atlas by produceState(atlases[name], name) {
-        value = atlases[name]
-        if (value == null) {
-            value = orNull { Res.readBytes("files/tiles/$name.png").decodeToImageBitmap() }
-            atlases[name] = value
-        }
-    }
+    val atlas = rememberCachedImage(atlases, name) { orNull { Res.readBytes("files/tiles/$name.png").decodeToImageBitmap() } }
     val shown by produceState(atlas, atlas, weather) { value = atlas?.let { gradedFor(name, it, weather) } }
     val fade by rememberFadeIn(atlas != null)
     Box(
