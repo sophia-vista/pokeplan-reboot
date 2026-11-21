@@ -34,15 +34,19 @@ object HuaweiWalk {
     val STEPS = Card(listOf("Steps"), scrolls = 2, allDataScrolls = 4)
     const val STEPS_ID = "time_strength_layout_middle"
 
-    /** Almost every card page, and the Steps page, has a four-dots menu with "All data" (owner, 21 November 2026): the menu button is found by one of these descriptions, the item by its text. */
-    val MENU_DESCRIPTIONS = listOf("more", "more options", "more actions", "menu", "overflow", "options")
+    /**
+     * Almost every card page, and the Steps page, has a four-dots menu with "All data" (owner, 21 November 2026). From the owner's capture of the same day the
+     * button is the toolbar's last icon (`hwappbarpattern_ok_icon`) described **"More items"**; the icon beside it, `hwappbarpattern_menu_icon`, is Share or Stats
+     * and must never be tapped, so the button is found by this description alone, never by an id.
+     */
+    val MENU_DESCRIPTIONS = listOf("more items", "more", "more options", "more actions", "overflow")
     const val ALL_DATA = "All data"
+
+    /** Whether [description] names the four-dots menu button (exactly; "Share", "Stats", "Add" and "Edit" never do). */
+    fun isMenuButton(description: String) = description.trim().lowercase() in MENU_DESCRIPTIONS
 
     /** Scrolls of the All data page of a look-only card. */
     const val LOOK_ALL_DATA_SCROLLS = 2
-
-    /** Whether [description] names a four-dots / overflow menu button. */
-    fun isMenuButton(description: String) = description.trim().lowercase() in MENU_DESCRIPTIONS
 
     /** Every other card on the Health page is opened too, to capture its page (owner, 21 November 2026): one scroll each, nothing parsed from it yet. */
     const val LOOK_SCROLLS = 1

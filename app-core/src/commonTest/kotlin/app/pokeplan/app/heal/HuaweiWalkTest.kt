@@ -49,7 +49,8 @@ class HuaweiWalkTest {
         assertTrue(HuaweiWalk.STEPS.allData)
         assertEquals(listOf("Heart", "Weight", "Sleep"), HuaweiWalk.CARDS.filter { it.allData }.map { it.title }, "Exercise records is a list already")
         assertTrue(HuaweiWalk.cardFor("SpO2")!!.allData, "almost every other card has All data too")
-        assertTrue(HuaweiWalk.isMenuButton(" More options ") && HuaweiWalk.isMenuButton("Menu") && !HuaweiWalk.isMenuButton("Back"))
+        assertTrue(HuaweiWalk.isMenuButton("More items") && HuaweiWalk.isMenuButton(" More options "), "the owner's capture calls the button More items")
+        listOf("Share", "Stats", "Add", "Edit", "Go back", "Menu").forEach { assertFalse(HuaweiWalk.isMenuButton(it), it) }
         assertEquals("All data", HuaweiWalk.ALL_DATA)
     }
 }

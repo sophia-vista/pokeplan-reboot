@@ -133,6 +133,17 @@ class HuaweiScreenService : AccessibilityService() {
     /** Every visible card title element on the Health page, top to bottom. */
     private fun titles(root: AccessibilityNodeInfo) = visible(root).filter { it.id() == "function_set_items_title" }.toList()
 
+    /** Clicks [node] or, if that is refused, each clickable ancestor above it in turn (within 8 levels); true once one takes the click. */
+    private fun tap(node: AccessibilityNodeInfo): Boolean {
+        var n: AccessibilityNodeInfo? = node
+        repeat(TAP_LEVELS) {
+            val c = n ?: return false
+            if (c.isClickable && c.performAction(AccessibilityNodeInfo.ACTION_CLICK)) return true
+            n = c.parent
+        }
+        return false
+    }
+
     private fun clickableAncestor(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         var n: AccessibilityNodeInfo? = node
         repeat(TAP_LEVELS) { if (n == null) return null; if (n!!.isClickable) return n; n = n!!.parent }
@@ -177,10 +188,11 @@ class HuaweiScreenService : AccessibilityService() {
         note("Health page found")
         capture()
         // The Steps summary at the top comes first (the page starts at its top); it is not a card, so it is found by its own element.
-        huaweiRoot()?.let { root -> visible(root).firstOrNull { it.id() == HuaweiWalk.STEPS_ID }?.let { el ->
+        val stepsEl = huaweiRoot()?.let { root -> visible(root).firstOrNull { it.id() == HuaweiWalk.STEPS_ID } }
+        if (stepsEl == null) note("Steps: summary not found") else {
             note("Steps: in view")
-            visit(HuaweiWalk.STEPS, el)?.let { return it }
-        } ?: note("Steps: summary not found") }
+            visit(HuaweiWalk.STEPS, stepsEl)?.let { return it }
+        }
         var scrolls = 0
         while (true) {
             val root = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
@@ -208,7 +220,7 @@ class HuaweiScreenService : AccessibilityService() {
 
     /** Opens [target] (the title element of [wanted]), captures its page within the card's scroll budget, and goes Back; null, or what stopped the walk. */
     private suspend fun visit(wanted: HuaweiWalk.Card, target: AccessibilityNodeInfo): String? {
-        if (clickableAncestor(target)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) != true) { note("${wanted.title}: tap refused or no clickable ancestor"); return null }
+        if (!tap(target)) { note("${wanted.title}: tap refused or no clickable ancestor"); return null }
         delay(PAGE_WAIT_MS)
         val detail = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
         if (isHealthPage(detail)) { note("${wanted.title}: tap opened nothing"); return null }
@@ -243,16 +255,15 @@ class HuaweiScreenService : AccessibilityService() {
     private suspend fun openAllData(wanted: HuaweiWalk.Card) {
         val root = huaweiRoot() ?: return
         val r = Rect()
-        val menu = visible(root).filter { n -> HuaweiWalk.isMenuButton(n.contentDescription?.toString().orEmpty()) || n.id().let { it.contains("more", true) || it.contains("menu", true) || it.contains("overflow", true) } }
-            .filter { clickableAncestor(it) != null }
+        val menu = visible(root).filter { n -> HuaweiWalk.isMenuButton(n.contentDescription?.toString().orEmpty()) && clickableAncestor(n) != null }
             .minByOrNull { it.getBoundsInScreen(r); r.top * 10_000 - r.right }
         if (menu == null) { note("${wanted.title}: no menu button found"); return }
-        if (clickableAncestor(menu)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) != true) { note("${wanted.title}: menu tap refused"); return }
+        if (!tap(menu)) { note("${wanted.title}: menu tap refused"); return }
         delay(MENU_WAIT_MS)
         capture() // the open menu, so its items show in the sample
         val item = huaweiRoot()?.let { r2 -> visible(r2).firstOrNull { it.text?.toString()?.trim().equals(HuaweiWalk.ALL_DATA, ignoreCase = true) } }
         if (item == null) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' is not in the menu"); return }
-        if (clickableAncestor(item)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) != true) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' tap refused"); return }
+        if (!tap(item)) { note("${wanted.title}: '${HuaweiWalk.ALL_DATA}' tap refused"); return }
         delay(PAGE_WAIT_MS)
         note("${wanted.title}: ${HuaweiWalk.ALL_DATA} opened ${page.ifBlank { "a page" }}")
         scrollThrough(wanted.allDataScrolls)
