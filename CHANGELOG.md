@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.225.3
+
+Navigation audit (REP-074; the map and the findings are in `docs/pokelife/evidence/NAVIGATION_AUDIT-2026-11-21.md`). Back behaviour, tab places and the Pokégear overlay; no reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged.
+
+- **Back closes a page before it leaves its section.** `SectionScaffold` now knows the page opened inside it (`UpTo`), so the header's Back key and the system Back gesture do the same thing, one level at a time. World's Town facility and Journal pages use it: their header Back used to leave World while the system Back and the on-page "Back to the …" key only closed the page (`world/World.kt`).
+- **The Pokémon detail's system Back no longer leaves the app.** It drew a Back key but registered no handler (`pokemon/PokemonDetail.kt`).
+- **A jump to a Pokémon works while its tab is open.** The Pokémon tab reads the one-shot jump itself (Home's buddy chip, a widget's Pokémon, the Party shortcut), so it lands when the tab is already showing and wins over a saved place.
+- **The Pokémon and Me tabs keep their place.** A section, an open Pokémon, a Pokédex entry and the Me section are saved with `rememberSaveable`, so another tab, or the app being put away, finds them where they were, as the Modules tab already did for its module.
+- **A destination replaces the Pokégear.** A widget, shortcut or notification no longer opens its screen behind the overlay; only Gear opens it (`AppModel.open`).
+- **Mint starts a plain entry from outside.** A kind left by an earlier quick action (a transfer, say) no longer pre-fills the next entry reached from a widget or notification.
+- **Docs:** `DESIGN_SYSTEM.md` 6.7 gained the two rules (a page inside a section is one level up first; every tab keeps its place).
+- **Tests:** `BackChainTest` (a tab switch keeps the Me and Pokémon places; the Town's Back goes to the town, then out of World) and `NavigationTest` (the Pokégear and the Mint kind).
+
 ## 0.225.1
 
 Docs review and cleanup (owner, 21 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` numbers unchanged.

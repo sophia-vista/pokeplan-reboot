@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,7 +52,8 @@ private fun parentOf(s: MeSection): MeSection? = when (s) {
 
 @Composable
 fun MeScreen(model: AppModel, startSection: Int = -1) {
-    var section by remember { mutableStateOf(MeSection.entries.getOrNull(startSection)) }
+    // Saved, so the section you were in is still open after a tab switch (or the app being put away).
+    var section by rememberSaveable { mutableStateOf(MeSection.entries.getOrNull(startSection)) }
     val data = model.data
     // Into a section and back slides; each page keeps its scroll position.
     ScreenSwitch(section, depth = { if (it == null) 0 else if (parentOf(it) != null) 2 else 1 }) { current ->

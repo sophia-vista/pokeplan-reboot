@@ -341,13 +341,16 @@ class AppModel(
 
     /** Opens a module's screen for [place] (Plan's page, Planner, Focus, Care) inside Modules; Focus only where there is one ([focusTab]). */
     fun open(place: Place, focusTab: Boolean) {
+        // A destination replaces the Pokégear when it is open, or the new screen would open behind it; only Gear asks for it.
+        if (place != Place.GEAR) gearOpen = false
         when (place) {
             Place.PLAN -> { module = Module.PLAN; planSection = null }
             Place.PLANNER -> { module = Module.PLAN; planSection = null }
             Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
             Place.CARE -> { module = Module.CARE; careSection = null }
             Place.HEAL -> { module = Module.HEAL; healSection = null }
-            Place.MINT -> { module = Module.MINT; mintSection = null }
+            // The entry's kind is a one-shot from a quick action; arriving from outside Mint starts a plain expense.
+            Place.MINT -> { module = Module.MINT; mintSection = null; mintStartType = null; mintStartTo = null }
             Place.BASE -> { module = Module.BASE; baseSection = null }
             Place.LINK -> { module = Module.LINK; linkSection = null; linkPersonId = null }
             Place.PARTY -> openParty = true
@@ -559,12 +562,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                             when (page) {
                                 Tab.HOME -> HomeScreen(model, { id -> model.openPokemonId = id; go(Place.COLLECTION) }, go)
                                 Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
-                                Tab.COLLECTION -> {
-                                    val open = remember { model.openPokemonId }
-                                    val party = remember { model.openParty }
-                                    LaunchedEffect(Unit) { model.openPokemonId = null; model.openParty = false }
-                                    CollectionScreen(model, startParty = party, startOpen = open)
-                                }
+                                Tab.COLLECTION -> CollectionScreen(model)
                                 Tab.ME -> MeScreen(model)
                             }
                         }

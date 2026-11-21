@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Alignment
@@ -86,6 +87,7 @@ import app.pokeplan.ui.screens.Cutscene
 import app.pokeplan.ui.screens.MenuEntry
 import app.pokeplan.ui.screens.MenuGrid
 import app.pokeplan.ui.screens.SectionsKey
+import app.pokeplan.ui.screens.UpTo
 import app.pokeplan.ui.screens.MenuList
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
@@ -567,7 +569,7 @@ private enum class TownPage(val label: String, val icon: String) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun WorldTownView(model: AppModel) {
-    var page by remember { mutableStateOf(townPageToOpen?.let { TownPage.valueOf(it) }) }
+    var page by rememberSaveable { mutableStateOf(townPageToOpen?.let { TownPage.valueOf(it) }) }
     val world = model.data.world
     val open = page
     if (open == null) {
@@ -591,7 +593,7 @@ private fun WorldTownView(model: AppModel) {
         ) { key -> WorldSection.entries.firstOrNull { it.name == key && (it == WorldSection.BAG || it == WorldSection.SKILLS) }?.let { model.worldSection = it } ?: run { page = TownPage.valueOf(key) } }
         return
     }
-    BackHandler(enabled = true) { page = null }
+    UpTo { page = null }
     val store = model.store
     val play = !(model.data.settings.reduceMotion || model.powerSaving)
     PixelButton("Back to the town", { page = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -1096,7 +1098,7 @@ private enum class JournalPage(val label: String, val icon: String) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun WorldJournalView(model: AppModel) {
-    var page by remember { mutableStateOf<JournalPage?>(null) }
+    var page by rememberSaveable { mutableStateOf<JournalPage?>(null) }
     val world = model.data.world
     val open = page
     if (open == null) {
@@ -1113,7 +1115,7 @@ private fun WorldJournalView(model: AppModel) {
         ) { key -> page = JournalPage.valueOf(key) }
         return
     }
-    BackHandler(enabled = true) { page = null }
+    UpTo { page = null }
     PixelButton("Back to the journal", { page = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     when (open) {
         JournalPage.LOG -> ExpeditionLogPage(world)
