@@ -205,4 +205,18 @@ class HuaweiRecordsTest {
         val lengths = records.filterIsInstance<Imported.Vital>().filter { it.type == app.pokeplan.heal.VitalType.SLEEP_LENGTH }.map { it.id }
         assertEquals(listOf("sleeplength:362:2026-11-13"), lengths, "a day with real times keeps no length-only reading")
     }
+
+    @Test fun theStepsAllDataListBecomesADailyHistory() {
+        val list = ScreenCapture(14, "PrivacyDataModelActivity", listOf(n("action_bar_title", "All recorded data"), n("privacy_title", "November 2026")) +
+            rowOf("6,842 steps", "11/13") + rowOf("912 steps", "11/12") + listOf(n("privacy_title", "October 2026")) + rowOf("10,004 steps", "10/31"))
+        val steps = HuaweiRecords.read(HuaweiSeen(listOf(list)), now, utc).filterIsInstance<Imported.Steps>().associate { it.id to it.steps }
+        assertEquals(mapOf("steps:2026-11-13" to 6842, "steps:2026-11-12" to 912, "steps:2026-10-31" to 10004), steps)
+    }
+
+    @Test fun aDaysStepsKeepTheLargestCountSeen() {
+        val list = ScreenCapture(14, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) + rowOf("500 steps", "11/14"))
+        val live = ScreenCapture(15, "MainActivity", listOf(n("time_strength_layout_middle", description = "8432 steps")))
+        val steps = HuaweiRecords.read(HuaweiSeen(listOf(list, live.copy(atMillis = now))), now, utc).filterIsInstance<Imported.Steps>()
+        assertEquals(listOf(8432), steps.map { it.steps }, "one record for the day, the larger count")
+    }
 }

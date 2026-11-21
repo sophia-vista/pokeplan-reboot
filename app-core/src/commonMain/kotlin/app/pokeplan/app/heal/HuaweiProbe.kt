@@ -174,6 +174,8 @@ data class HuaweiHome(
 
         /** Reads the Health page's summary and cards from [capture]; an empty [HuaweiHome] when it is not that page. */
         fun read(capture: ScreenCapture): HuaweiHome {
+            // Only the Health page itself: an All data list's rows ("6,842 steps") and a detail page's lines are not today's figures.
+            if (capture.title.startsWith("PrivacyDataModel") || capture.title.startsWith("FitnessStepDetail")) return HuaweiHome()
             var home = HuaweiHome()
             var card = ""
             var data = ""

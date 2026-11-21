@@ -307,8 +307,16 @@ class HealStore(
             today = dayOf(nowMillis),
             newestWorkoutStart = d.activities.filter { huawei(it.provenance) }.maxOfOrNull { it.startMillis },
             nightDays = d.sleep.map { dayOf(it.endMillis) }.toSet(),
+            // The newest day of each All data list: only the rows that list gives (ranges, lengths, steps), not the single value the Health page shows for today.
             newestDay = app.pokeplan.heal.ReadingGroup.entries.mapNotNull { g ->
-                (if (g == app.pokeplan.heal.ReadingGroup.STEPS) d.steps.filter { huawei(it.provenance) }.map { it.day } else d.vitals.filter { it.type in g.types && huawei(it.provenance) }.map { it.day }).maxOrNull()?.let { g to it }
+                val types = when (g) {
+                    app.pokeplan.heal.ReadingGroup.HEART -> setOf(app.pokeplan.heal.VitalType.HEART_RATE_LOW, app.pokeplan.heal.VitalType.HEART_RATE_HIGH)
+                    app.pokeplan.heal.ReadingGroup.SPO2 -> setOf(app.pokeplan.heal.VitalType.SPO2_LOW, app.pokeplan.heal.VitalType.SPO2_HIGH)
+                    app.pokeplan.heal.ReadingGroup.SKIN_TEMPERATURE -> setOf(app.pokeplan.heal.VitalType.SKIN_TEMPERATURE_LOW, app.pokeplan.heal.VitalType.SKIN_TEMPERATURE_HIGH)
+                    app.pokeplan.heal.ReadingGroup.SLEEP -> setOf(app.pokeplan.heal.VitalType.SLEEP_LENGTH)
+                    else -> g.types.toSet()
+                }
+                (if (g == app.pokeplan.heal.ReadingGroup.STEPS) d.steps.filter { huawei(it.provenance) }.map { it.day } else d.vitals.filter { it.type in types && huawei(it.provenance) }.map { it.day }).maxOrNull()?.let { g to it }
             }.toMap(),
             newestWeightDay = d.measurements.filter { it.type == app.pokeplan.heal.MeasureType.WEIGHT && huawei(it.provenance) }.maxOfOrNull { it.atMillis }?.let { dayOf(it) },
         )

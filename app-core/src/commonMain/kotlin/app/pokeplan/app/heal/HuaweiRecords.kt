@@ -48,7 +48,10 @@ object HuaweiRecords {
         val nightDays = nights.map { it.endMillis.toLocalDateTime(zone).date.toString() }.toSet()
         if (nights.any { it.endMillis.toLocalDateTime(zone).date == today }) out.remove("sleep:$today")
         out.values.removeAll { it is Imported.Vital && it.type == VitalType.SLEEP_LENGTH && it.id.substringAfterLast(':') in nightDays }
-        return out.values.toList() + steps(seen, zone) + vitals(seen, today, zone)
+        // One record per day: a day's steps only grow, so the largest count seen wins (the live count of today, or a history row).
+        val stepRecords = (out.values.filterIsInstance<Imported.Steps>() + steps(seen, zone).filterIsInstance<Imported.Steps>()).groupBy { it.id }.values.map { l -> l.maxWith(compareBy({ it.steps }, { it.atMillis })) }
+        out.values.removeAll { it is Imported.Steps }
+        return out.values.toList() + stepRecords + vitals(seen, today, zone)
     }
 
     // --- steps and vitals (0.186.0) -----------------------------------------------------------------------------------------------
@@ -120,6 +123,7 @@ object HuaweiRecords {
 
     private val monthYear = Regex("""^([A-Za-z]+) (\d{4})$""")
     private val slashDate = Regex("""^(\d{1,2})/(\d{1,2})$""")
+    private val stepsRow = Regex("""^(\d{1,3}(?:,\d{3})+|\d+)\s*steps?$""", RegexOption.IGNORE_CASE)
     private val skinRange = Regex("""^(\d{2}(?:\.\d)?)\s*-\s*(\d{2}(?:\.\d)?)\s*°\s*C$""", RegexOption.IGNORE_CASE)
     private val spo2Range = Regex("""^SpO\S*\s*range\s*(\d{2,3})\s*%\s*-\s*(\d{2,3})\s*%$""", RegexOption.IGNORE_CASE)
 
@@ -196,7 +200,9 @@ object HuaweiRecords {
         for ((date, text) in allDataRows(s, today)) {
             val at = minOf(millis(date, LocalTime(12, 0), zone), nowMillis)
             fun put(type: VitalType, value: Double, key: String) { out += Imported.Vital(HuaweiHealth.PROVIDER, APP, "$key:$date", type, value, at) }
-            skinRange.matchEntire(text)?.let { m ->
+            stepsRow.matchEntire(text)?.let { m ->
+                m.groupValues[1].replace(",", "").toIntOrNull()?.let { out += Imported.Steps(HuaweiHealth.PROVIDER, APP, "steps:$date", it, at) }
+            } ?: skinRange.matchEntire(text)?.let { m ->
                 put(VitalType.SKIN_TEMPERATURE_LOW, m.groupValues[1].toDouble(), "skintemplow"); put(VitalType.SKIN_TEMPERATURE_HIGH, m.groupValues[2].toDouble(), "skintemphigh")
             } ?: spo2Range.matchEntire(text)?.let { m ->
                 put(VitalType.SPO2_LOW, m.groupValues[1].toDouble(), "spo2low"); put(VitalType.SPO2_HIGH, m.groupValues[2].toDouble(), "spo2high")

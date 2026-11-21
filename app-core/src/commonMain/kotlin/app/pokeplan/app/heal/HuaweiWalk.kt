@@ -44,7 +44,7 @@ object HuaweiWalk {
     const val SLEEP_ENTRIES = 14
 
     /** The Steps summary at the top of the Health page (not a card: its element is `time_strength_layout_middle`), opened first with two scrolls (owner, 21 November 2026). */
-    val STEPS = Card(listOf("Steps"), scrolls = 2, allDataScrolls = 4)
+    val STEPS = Card(listOf("Steps"), scrolls = 1, allDataScrolls = ALL_DATA_SCROLLS)
     const val STEPS_ID = "time_strength_layout_middle"
 
     /**
@@ -115,10 +115,13 @@ object HuaweiWalk {
     /** Whether the whole card needs no visit: tonight's sleep is already saved, today's skin temperature or SpO2 is, or today's weight is. Exercise and the rest are cheap to look at. */
     fun skipCard(card: Card, known: Known): Boolean {
         val today = known.today ?: return false
+        // An All data list gets a day's row the day after, so a newest saved row of yesterday means there is nothing new until tomorrow.
+        val yesterday = today.minus(1, kotlinx.datetime.DateTimeUnit.DAY)
         return when (card.title) {
             "Sleep" -> today in known.nightDays
-            "Skin temperature" -> known.newestDay[ReadingGroup.SKIN_TEMPERATURE]?.let { it >= today } == true
-            "SpO₂" -> known.newestDay[ReadingGroup.SPO2]?.let { it >= today } == true
+            "Skin temperature" -> known.newestDay[ReadingGroup.SKIN_TEMPERATURE]?.let { it >= yesterday } == true
+            "SpO₂" -> known.newestDay[ReadingGroup.SPO2]?.let { it >= yesterday } == true
+            "Steps" -> known.newestDay[ReadingGroup.STEPS]?.let { it >= yesterday } == true
             "Weight" -> known.newestWeightDay?.let { it >= today } == true
             else -> false
         }
@@ -129,6 +132,8 @@ object HuaweiWalk {
         "Skin temperature" -> known.newestDay[ReadingGroup.SKIN_TEMPERATURE]
         "SpO₂" -> known.newestDay[ReadingGroup.SPO2]
         "Sleep" -> known.nightDays.maxOrNull()
+        // The newest saved day of steps may be a partial count from the Health page, so the day before it is the newest one known to be whole.
+        "Steps" -> known.newestDay[ReadingGroup.STEPS]?.minus(1, kotlinx.datetime.DateTimeUnit.DAY)
         else -> null
     }
 

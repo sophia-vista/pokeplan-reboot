@@ -228,7 +228,8 @@ class HuaweiScreenService : AccessibilityService() {
         val stepsEl = huaweiRoot()?.let { root -> visible(root).firstOrNull { it.id() == HuaweiWalk.STEPS_ID } }
         if (stepsEl == null) note("Steps: summary not found") else {
             note("Steps: in view")
-            visit(HuaweiWalk.STEPS, stepsEl) { huaweiRoot()?.let { r -> visible(r).firstOrNull { it.id() == HuaweiWalk.STEPS_ID } } }?.let { return it }
+            if (HuaweiWalk.skipCard(HuaweiWalk.STEPS, known)) note("Steps: skipped, nothing new")
+            else visit(HuaweiWalk.STEPS, stepsEl) { huaweiRoot()?.let { r -> visible(r).firstOrNull { it.id() == HuaweiWalk.STEPS_ID } } }?.let { return it }
         }
         var scrolls = 0
         while (true) {
@@ -312,7 +313,7 @@ class HuaweiScreenService : AccessibilityService() {
         // The menu may be a window of its own (a pop-up), so every Huawei Health window is searched, not only the active one.
         val roots = (listOfNotNull(huaweiRoot()) + windows.mapNotNull { it.root }.filter { it.packageName?.toString() == HuaweiHealth.PACKAGE })
         return roots.firstNotNullOfOrNull { r ->
-            visible(r).firstOrNull { n -> listOf(n.text, n.contentDescription).any { it?.toString()?.trim().equals(HuaweiWalk.ALL_DATA, ignoreCase = true) } && clickableAncestor(n) != null }
+            visible(r).firstOrNull { n -> listOf(n.text, n.contentDescription).any { it?.toString()?.trim().equals(HuaweiWalk.ALL_DATA, ignoreCase = true) } }
         }
     }
 

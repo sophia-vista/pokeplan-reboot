@@ -76,7 +76,10 @@ class HuaweiWalkTest {
         fun card(t: String) = HuaweiWalk.cardFor(t)!!
         assertTrue(HuaweiWalk.skipCard(card("Sleep"), known), "tonight's sleep is saved")
         assertTrue(HuaweiWalk.skipCard(card("SpO2"), known), "today's SpO2 is saved")
-        assertFalse(HuaweiWalk.skipCard(card("Skin temperature"), known), "yesterday is the newest: look for today")
+        assertTrue(HuaweiWalk.skipCard(card("Skin temperature"), known), "yesterday is the newest row: a row comes the day after, so nothing is new until tomorrow")
+        assertFalse(HuaweiWalk.skipCard(card("Skin temperature"), known.copy(newestDay = mapOf(ReadingGroup.SKIN_TEMPERATURE to LocalDate(2026, 11, 12)))), "two days old: look for yesterday")
+        assertTrue(HuaweiWalk.skipCard(card("Steps"), known.copy(newestDay = mapOf(ReadingGroup.STEPS to LocalDate(2026, 11, 13)))))
+        assertEquals(LocalDate(2026, 11, 12), HuaweiWalk.knownDay(HuaweiWalk.STEPS, known.copy(newestDay = mapOf(ReadingGroup.STEPS to LocalDate(2026, 11, 13)))), "the newest saved steps day may be partial: the day before is whole")
         assertFalse(HuaweiWalk.skipCard(card("Exercise records"), known)); assertFalse(HuaweiWalk.skipCard(card("Sleep"), HuaweiWalk.Known()), "nothing known: visit everything")
         assertEquals(LocalDate(2026, 11, 13), HuaweiWalk.knownDay(card("Skin temperature"), known))
         fun list(vararg dates: String) = ScreenCapture(1, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) + dates.flatMap { listOf(n("privacy_content_title", "20.0-21.0°C"), n("privacy_time", it)) })
