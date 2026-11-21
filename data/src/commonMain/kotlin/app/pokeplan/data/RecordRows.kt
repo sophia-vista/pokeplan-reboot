@@ -22,8 +22,9 @@ internal class RecordRows(private val store: DataStore) {
         return if (codec == null) rows else rows.map { Row(it.key, it.position, it.day, codec.open(it.json)) }
     }
 
-    fun diffRecords(table: String, wanted: List<Row>, codec: Codec? = null) {
-        val have = records(table, codec).associateBy { it.key }
+    /** [known] is what the table holds, in the form [records] would give it (opened), when the caller already has it: nothing is read or opened then. */
+    fun diffRecords(table: String, wanted: List<Row>, codec: Codec? = null, known: Map<String, Row>? = null) {
+        val have = known ?: records(table, codec).associateBy { it.key }
         val keys = wanted.map { it.key }.toSet()
         for (gone in have.keys - keys) store.driver.execute(null, "DELETE FROM $table WHERE key = ?", 1) { bindString(0, gone) }
         for (row in wanted) {
@@ -46,8 +47,8 @@ internal class RecordRows(private val store: DataStore) {
         return if (codec == null) have else have.mapValues { codec.open(it.value) }
     }
 
-    fun diffState(table: String, wanted: Map<String, String>, codec: Codec? = null) {
-        val have = state(table, codec)
+    fun diffState(table: String, wanted: Map<String, String>, codec: Codec? = null, known: Map<String, String>? = null) {
+        val have = known ?: state(table, codec)
         for (gone in have.keys - wanted.keys) store.driver.execute(null, "DELETE FROM $table WHERE key = ?", 1) { bindString(0, gone) }
         for ((key, json) in wanted) if (have[key] != json) store.driver.execute(null, "INSERT OR REPLACE INTO $table(key, json) VALUES (?, ?)", 2) { bindString(0, key); bindString(1, codec?.seal?.invoke(json) ?: json) }
     }
