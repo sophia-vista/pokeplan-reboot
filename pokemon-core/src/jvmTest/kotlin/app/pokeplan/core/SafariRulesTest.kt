@@ -24,7 +24,6 @@ class SafariRulesTest {
             assertEquals(pool, SafariRules.pool(ref, SafariRules.PEOPLE_CAP))
             assertEquals(pool.size, pool.map { it.speciesId }.toSet().size)
             assertTrue(pool.all { it.speciesId in region })
-            // Fewer people give a prefix of the same pool: nothing reshuffles.
             assertEquals(pool.take(SafariRules.BASE_SLOTS), SafariRules.pool(ref, 0))
         }
     }

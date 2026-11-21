@@ -15,5 +15,3 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
-
-// ----- Quests --------------------------------------------------------------------------------------------------------

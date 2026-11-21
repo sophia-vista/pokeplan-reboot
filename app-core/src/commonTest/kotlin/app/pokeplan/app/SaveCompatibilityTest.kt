@@ -18,7 +18,6 @@ import app.pokeplan.app.world.worldAssign
 import app.pokeplan.app.world.worldSettle
 import app.pokeplan.app.world.worldStart
 
-/** An old save must still load when the app has grown new saved fields, and the stored names must not move. */
 class SaveCompatibilityTest {
     private class Clock(var millis: Long = 1_700_000_000_000L) : app.pokeplan.app.storage.Clock { override fun nowMillis() = millis }
 
@@ -31,8 +30,6 @@ class SaveCompatibilityTest {
             val without = JsonObject(full.filterKeys { it != key })
             runCatching { GameStore.json.decodeFromJsonElement(AppData.serializer(), without) }.isFailure
         }
-        // Every field added since the first release has a default, so a save from an older version loads. These are the fields
-        // that have always been there; if one is added to this list a newer field lost its default, which breaks old saves.
         assertTrue(refused.all { it in ALWAYS_THERE }, "fields an old save would not have but are required: ${refused - ALWAYS_THERE}")
     }
 
@@ -49,9 +46,7 @@ class SaveCompatibilityTest {
 
     @Test
     fun storedNamesDoNotMove() {
-        // The Plan Region keeps its first name in saves.
         assertEquals("\"HOME\"", GameStore.json.encodeToString(Region.serializer(), Region.PLAN))
-        // A reward kind from an older log still loads, and the new one round-trips.
         val log = listOf(app.pokeplan.core.reward.Reward.Poke(30), app.pokeplan.core.reward.Reward.Coins(2), app.pokeplan.core.reward.Reward.ItemDrop("rare-candy", 1))
         val ser = kotlinx.serialization.builtins.ListSerializer(app.pokeplan.core.reward.Reward.serializer())
         assertEquals(log, GameStore.json.decodeFromString(ser, GameStore.json.encodeToString(ser, log)))
@@ -78,7 +73,6 @@ class SaveCompatibilityTest {
         val exported = Json.parseToJsonElement(store.exportJson()) as JsonObject
         assertNotNull(exported["world"], "the export has World's save")
         assertNotNull(exported["rewardLog"], "and the reward history")
-        // One balance, and it is the player's: World's working copy of it is not part of a save.
         assertNull((exported["world"] as JsonObject)["poke"], "World's Poké is not stored")
         assertTrue(((exported["player"] as JsonObject)["coins"].toString().toInt()) > 0)
         store.eraseDevice()
@@ -88,7 +82,6 @@ class SaveCompatibilityTest {
     }
 
     private companion object {
-        /** The top-level fields of the very first saves. */
         val ALWAYS_THERE = setOf("player")
     }
 }

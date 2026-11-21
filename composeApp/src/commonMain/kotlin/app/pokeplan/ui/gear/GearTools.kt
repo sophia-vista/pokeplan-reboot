@@ -30,7 +30,6 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
-/** A labelled drop-down of [options] showing the one at [selected]. */
 @Composable
 internal fun OptionPicker(label: String, options: List<String>, selected: Int, modifier: Modifier = Modifier, short: List<String>? = null, onSelect: (Int) -> Unit) {
     var open by remember { mutableStateOf(false) }
@@ -38,7 +37,6 @@ internal fun OptionPicker(label: String, options: List<String>, selected: Int, m
         FieldLabel(label)
         Box {
             PixelButton((short ?: options).getOrElse(selected) { "" }, { open = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            // A pixel list in a dialogue frame, not Material's rounded menu: it opens under the key and scrolls when long.
             if (open) androidx.compose.ui.window.Popup(
                 alignment = Alignment.TopStart, offset = androidx.compose.ui.unit.IntOffset(0, with(androidx.compose.ui.platform.LocalDensity.current) { 52.dp.roundToPx() }),
                 onDismissRequest = { open = false }, properties = androidx.compose.ui.window.PopupProperties(focusable = true),

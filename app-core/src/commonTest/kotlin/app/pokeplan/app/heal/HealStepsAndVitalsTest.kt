@@ -22,10 +22,6 @@ import app.pokeplan.app.World
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/**
- * Steps and readings from Huawei Health (owner, 14 November 2026), laid out as in the probe capture of that day (values made up): parsed from the Health page, the Sleep
- * page and the step notification; one record per day; reading again adds nothing twice; steps pay per amount and reads pay once a day per family.
- */
 class HealStepsAndVitalsTest {
     private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
     private class Spy(val inner: GameStore) : World {
@@ -100,7 +96,6 @@ class HealStepsAndVitalsTest {
         assertEquals(before.steps, heal.data.steps); assertEquals(before.vitals, heal.data.vitals)
         assertEquals(1, heal.data.steps.size)
         assertEquals(1, heal.data.vitals.count { it.type == VitalType.SLEEP_SCORE }, "the Sleep page and the insights line are the same day's score")
-        // A third read minutes later with the same bpm and an unchanged day adds nothing either.
         heal.importFromProvider(heal.readHuawei(seen(page(at(20, 40), summary(5_120, 31), cards(), insights))))
         assertEquals(before.vitals.size, heal.data.vitals.size)
     }
@@ -114,7 +109,6 @@ class HealStepsAndVitalsTest {
         assertEquals(35.0, HealRules.latestVital(heal.data, VitalType.STRESS)!!.value)
         assertEquals(1, heal.data.vitals.count { it.type == VitalType.STRESS }); assertEquals(1, heal.data.vitals.count { it.type == VitalType.SPO2 })
         assertEquals(2, heal.data.vitals.count { it.type == VitalType.HEART_RATE }, "a different bpm is a different reading")
-        // A smaller count later (a glitch) never lowers the day.
         heal.importFromProvider(heal.readHuawei(seen(page(at(20, 30), summary(900, 35)))))
         assertEquals(listOf(7_400), heal.data.steps.map { it.steps })
     }
@@ -130,7 +124,6 @@ class HealStepsAndVitalsTest {
         heal.importFromProvider(heal.readHuawei(seen(page(at(20, 0), summary(25_000, 20)))))
         assertEquals(HealRules.STEPS_PAID_PER_DAY, spy.events.count { it.kind == HealKind.STEPS }, "capped at 5 amounts a day, 10,000 steps")
         assertEquals(HealRules.STEPS_PAID_PER_DAY, heal.data.steps.single().paidBuckets)
-        // Deleting the record and reading it again pays nothing a second time.
         heal.deleteSteps(heal.data.steps.single().id)
         heal.importFromProvider(heal.readHuawei(seen(page(at(20, 10), summary(25_000, 20)))))
         assertEquals(HealRules.STEPS_PAID_PER_DAY, spy.events.count { it.kind == HealKind.STEPS })

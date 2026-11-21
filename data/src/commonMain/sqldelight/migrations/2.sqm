@@ -1,4 +1,3 @@
--- Version 2 to 3: the shared reminder feature's held reminders (snoozes and repeats).
 CREATE TABLE reminder_hold (
     id TEXT NOT NULL PRIMARY KEY,
     module TEXT NOT NULL,

@@ -95,7 +95,6 @@ class NudgeStoreTest {
 
     @Test
     fun pettingTicksThePetQuest() {
-        // Find a day whose quests include petting.
         val day = (1..28).first { d -> MiniQuests.forDay(LocalDate(2026, 11, d)).any { it.id == MiniQuests.PET_QUEST } }
         clock.millis = LocalDateTime(2026, 11, day, 9, 0).toInstant(utc).toEpochMilliseconds()
         assertFalse(s.miniQuestDone(MiniQuests.PET_QUEST))

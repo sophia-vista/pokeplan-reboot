@@ -7,11 +7,6 @@ import androidx.core.content.FileProvider
 import app.pokeplan.ui.ImageViewer
 import java.io.File
 
-/**
- * Full brightness for the big QR and a share sheet for its picture (MINT.md 4.2). Brightness is the activity window's own override (no permission, no system setting
- * touched) and the screen is kept on while it is raised; both are undone when [bright] is called with false. The picture is written to the cache's `exports/` folder
- * (the one the FileProvider already serves), the older files there are removed, and Android's share sheet is opened: the player picks where it goes.
- */
 class AndroidImageViewer(private val activity: ComponentActivity) : ImageViewer {
     override fun bright(on: Boolean) {
         activity.runOnUiThread {

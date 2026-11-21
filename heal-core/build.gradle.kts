@@ -5,9 +5,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-// The Heal module's rules (docs/pokelife MODULES/HEAL.md): manual activity, hydration, sleep and body measurements, and optional goals. No UI and
-// no game: it knows nothing about Pokémon, rewards or the other modules. The app meets it through HealStore (app-core), which pays Field
-// Research through the minimal HealEvent only.
 kotlin {
     jvm()
 

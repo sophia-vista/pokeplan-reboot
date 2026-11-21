@@ -40,12 +40,6 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.app.gear.changeGear
 import app.pokeplan.app.gear.saveGearRates
 
-/**
- * The currency converter: a row for each currency you watch (your home currency first, the Philippine peso until you change it), each one an
- * amount you can type in, so typing in any row works out all the others; add a currency by name or code, move or remove one, a rate of your own (what a money changer offered) and a "what it really costs" panel that keeps the reference rate, the
- * rate you were offered and the fees apart. Rates are the European Central Bank's daily reference rates, kept for offline use with their age
- * and source shown (and a warning when they are old); they are not what a bank, card or changer gives, and the screen says so.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
@@ -60,10 +54,8 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
     fun refresh() = scope.launch {
         status = "Fetching today's rates"
         val fresh = client.latest(store.nowMillis)
-        // A failed fetch never touches the rates already kept.
         if (fresh != null) { store.saveGearRates(fresh); status = "" } else status = (client.lastError ?: "Offline.") + (if (rates != null) " Showing the last rates." else "")
     }
-    // The reference rates change once a working day, so a copy fetched in the last few hours is not fetched again on every opening.
     LaunchedEffect(Unit) { if (rates == null || (rates.date < store.today.toString().take(10) && store.nowMillis - rates.fetchedAtMillis !in 0..RATES_REFETCH_MS)) refresh() }
 
     TextBox {
@@ -76,7 +68,6 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
         }
         val codes = remember(rates) { rates.perUsd.keys.toList() }
         val rows = Currencies.rows(home, gear.currencyBoard, rates.perUsd.keys)
-        // One amount is being typed, in one currency: every other row is worked out from it (so rounding never drifts between rows).
         var active by remember { mutableStateOf(rows.firstOrNull() ?: home) }
         var text by remember { mutableStateOf("1000") }
         var adding by remember { mutableStateOf(false) }
@@ -84,7 +75,6 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
         var showCost by remember { mutableStateOf(false) }
         if (active !in rows && rows.isNotEmpty()) active = rows.first()
         val amount = (CalcEngine.evaluate(text.replace(',', '.')) as? CalcResult.Value)?.value
-        // The foreign currency for the fees and your own rate: the row being typed in, or else the first that is not home.
         val foreign = active.takeIf { it != home } ?: rows.firstOrNull { it != home } ?: active
         var manualText by remember(foreign) { mutableStateOf(gear.manualRates[foreign]?.let { CalcEngine.format(it) } ?: "") }
         val age = runCatching { LocalDate.parse(rates.date).daysUntil(store.today) }.getOrNull()
@@ -97,7 +87,6 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
             rows.forEachIndexed { i, code ->
                 val r = Currencies.rate(active, code, rates, home, gear.manualRates)
                 val shown = if (code == active) text else if (amount == null || r == null) "" else Currencies.plain(amount * r, code)
-                // The currency's name sits over its row; the amount and its buttons share one centre line.
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     Text(Currencies.label(code) + if (code == home) " (home)" else "", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -124,7 +113,6 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 }
             }
 
-            // Your own rate for the home pair: what the changer offered, in units of the other currency per one of the home currency.
             if (foreign != home) {
                 FieldLabel("Offered rate ($foreign per 1 $home)")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -141,7 +129,6 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 var fixedText by remember { mutableStateOf(if (gear.feeFixed > 0) CalcEngine.format(gear.feeFixed) else "") }
                 PixelField(priceText, { priceText = it.take(14) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Price in $foreign", error = if (priceText.isNotBlank() && priceText.replace(',', '.').toDoubleOrNull() == null) NOT_A_NUMBER else null)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    // A fee that is not a number is said so and leaves the saved fee as it was; it is never turned into 0.
                     fun fee(text: String): Double? = text.replace(',', '.').toDoubleOrNull()?.takeIf { v -> v >= 0 && v.isFinite() }
                     PixelField(
                         percentText, { percentText = it.take(8); if (it.isBlank()) store.changeGear { g -> g.copy(feePercent = 0.0) } else fee(it)?.let { v -> store.changeGear { g -> g.copy(feePercent = v) } } },

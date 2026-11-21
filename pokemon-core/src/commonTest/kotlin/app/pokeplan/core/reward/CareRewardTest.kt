@@ -22,7 +22,6 @@ class CareRewardTest {
         return PlayerState(pokemon = listOf(buddy), buddyId = buddy.id, trainerPoints = 10)
     }
 
-    /** A state whose Pikachu leads Care's party (Care warms only its own lead, never the global buddy or Plan's lead). */
     private fun careState(nature: Nature = Nature.HARDY): PlayerState {
         val lead = pokemon(Ids.PIKACHU, nature = nature).copy(inParty = true, partyId = PartyIds.CARE)
         return PlayerState(pokemon = listOf(lead), careLeadId = lead.id, trainerPoints = 10)

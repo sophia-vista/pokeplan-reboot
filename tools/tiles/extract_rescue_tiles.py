@@ -1,23 +1,4 @@
 #!/usr/bin/env python3
-"""Extract the dungeon tilesets of Pokémon Mystery Dungeon: Red Rescue Team (USA) from the ROM.
-
-The ROM is not in the repo: pass one whose SHA-1 is 9f4cfc5b5f4859d17169a485462e977c7aac2b89. Each tileset
-is read the way the game loads it (src/dungeon_map_access.c LoadDungeonTilesetAssets in pret/pmd-red):
-the dungeon file archive `gDungeonFileArchive` at ROM 0x83B0000 holds, per tileset, `bNNfon` (the 4bpp tile
-graphics, AT4PX-compressed), `bNNcel` (250 chunks of 3 x 3 tiles, so 24 x 24 pixels), `bNNcex` (the
-autotile table: chunk index = cex[variant + mask * 3]), `bNNpal` (the palette) and `bNNcanm` (animated
-colours; the first frame is used). `fon`, `cel` and `cex` use the file id `TILESET_FILE[tileset]`.
-
-For each tileset below 0x40 it writes assets/tiles/rr-NN.png in the layout of the Explorers of Sky atlases
-(tools/tiles/cut_tiles.py): 6 x 4 tiles of 24 x 24, the wall block (columns 0-2, rows 0-2), the water block
-(columns 3-5), and the ground tile with its two alternates (row 3, columns 0-2). The chunks are picked by
-running the game's own autotile rule on a small map, so the corners, edges and middles are the game's.
-Also writes assets/tiles/rr-tilesets.tsv (which dungeons use each tileset, from pret's floor data when
---pret is given) and, with --sheets, a sheet of all 250 chunks per tileset for reference.
-
-Usage: python3 -I tools/tiles/extract_rescue_tiles.py ROM.gba [--pret /path/to/pmd-red] [--sheets DIR]
-Needs Pillow. Nintendo / Chunsoft art: private use only.
-"""
 import argparse
 import hashlib
 import re
@@ -30,7 +11,6 @@ from PIL import Image
 ROM_SHA1 = "9f4cfc5b5f4859d17169a485462e977c7aac2b89"
 ARCHIVE = 0x3B0000
 OUT = Path(__file__).resolve().parents[2] / "assets" / "tiles"
-# gUnknown_8108EC0 in src/dungeon_info.c: which fon/cel/cex file id each tileset uses.
 TILESET_FILE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 16, 23, 24, 25, 20, 23, 28,
                 29, 30, 31, 32, 33, 28, 35, 36, 37, 30, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
                 55, 56, 45, 45, 59, 60, 48, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79]
@@ -52,13 +32,11 @@ class Archive:
         return self.d[ptr:self.d.index(b"\0", ptr)].decode("ascii")
 
     def get(self, name):
-        """A file's bytes from where the game reads them: past a SIRO header, else from the start."""
         o = self.files[name]
         return o + 0x10 if self.d[o:o + 4] in (b"SIRO", b"SIR0") else o
 
 
 def decompress_at(d, o):
-    """AT4PX / AT3PX, a port of DecompressAT in pret/pmd-red src/decompress_at.c."""
     src = d[o:o + 0x20000]
     length = src[5] + (src[6] << 8)
     if src[:4] == b"AT4P":
@@ -71,7 +49,6 @@ def decompress_at(d, o):
     flags = [src[7 + k] + 3 for k in range(9)]
     out = bytearray()
     cmd_bit, current = 8, 0
-    # the data may be longer than the 0x20000 slice for big files; fetch exactly what is needed
     src = d[o:o + max(length, 0x20) + 8]
     while i < length:
         if total and len(out) >= total:
@@ -115,9 +92,8 @@ def decompress_at(d, o):
 def palette(arc, tileset):
     o = arc.get(f"b{tileset:02d}pal")
     colors = [tuple(arc.d[o + 4 * k:o + 4 * k + 3]) for k in range(160)]
-    # Index 0 is the black backdrop; the file's colour k is palette index k (src/dungeon_vram.c sub_803E874).
     colors[0] = (0, 0, 0)
-    try:  # animated colours: palette index 160 + i takes the first frame of entry i
+    try:
         ptr = arc.files[f"b{tileset:02d}canm"]
         table = struct.unpack_from("<I", arc.d, ptr + 4)[0] & 0x1FFFFFF
         for i in range(32):
@@ -149,7 +125,6 @@ def render_chunk(chunk, tiles, colors):
 
 
 def mask(grid, x, y):
-    """The game's autotile mask for the cell (src/dungeon_map_access.c sub_80498A8): terrain 0 wall, 1 ground, 2 water."""
     def t(dx, dy):
         yy, xx = y + dy, x + dx
         return grid[yy][xx] if 0 <= yy < len(grid) and 0 <= xx < len(grid[0]) else 0
@@ -190,7 +165,6 @@ def atlas(cex, chunks, tiles, colors):
 
 
 def dungeons(pret):
-    """tileset -> dungeon names, from the floor data (FloorProperties.tileset is byte 2 of each 28-byte row)."""
     uses = {}
     for path in sorted(Path(pret, "data/dungeon").glob("*/main_data.inc")):
         name = re.sub(r"(?<!^)(?=[A-Z])", " ", path.parent.name)

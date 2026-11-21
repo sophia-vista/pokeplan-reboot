@@ -23,7 +23,6 @@ class LightTest {
         assertEquals(listOf(200L, 200, 200, 600, 600, 600, 200, 200, 200), on)
         assertTrue(!p.last().first && p.last().second == 1400L, "a long rest before it repeats")
         assertTrue(p.zipWithNext().none { (a, b) -> a.first && b.first }, "lights never run together")
-        // The quickest it flashes is five a second at most with the default unit: well below the rate that can trouble people.
         assertTrue(Sos.pattern().minOf { it.second } >= 200, "never faster than one change per 200 ms")
         assertEquals(5 * 60_000L, Sos.MAX_MS)
     }

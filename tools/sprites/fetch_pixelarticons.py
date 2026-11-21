@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""Rasterise a few Pixelarticons (MIT, https://github.com/halfmage/pixelarticons) into assets/pixelarticons/<name>.png.
-
-Each is a 24x24 white glyph on transparency, tinted at draw time (composeApp `Glyph`). Used for simple controls (arrows,
-edit, copy, trash...) where a word would be too long; the Pokémon item icons stay the main icons.
-Usage: python3 -I tools/sprites/fetch_pixelarticons.py [path to a pixelarticons clone]
-(clones the pinned commit when no path is given)."""
 import os, re, subprocess, sys, tempfile
 from PIL import Image, ImageChops, ImageDraw
 
@@ -50,7 +44,6 @@ def subpaths(d):
 def raster(svg):
     d = " ".join(re.findall(r' d="([^"]*)"', svg))
     big = 24 * SS
-    # even-odd: XOR every sub-polygon, which is how these icons cut their holes
     mask = Image.new("1", (big, big), 0)
     for poly in subpaths(d):
         m = Image.new("1", (big, big), 0)

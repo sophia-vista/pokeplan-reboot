@@ -18,7 +18,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/** Automatic backup off the phone (REP-034): a folder of verified copies, Mint and Heal sealed under the passphrase, the newest few kept, nothing else touched. Synthetic data only. */
 class OffPhoneBackupTest {
     private val sealer = Pbkdf2Sealer(iterations = 1_000)
     private val phrase = "correct horse battery"
@@ -41,7 +40,6 @@ class OffPhoneBackupTest {
         return s to g
     }
 
-    /** A real folder on disk, the way the Android folder behaves for this code. */
     private class DiskFolder(val dir: File) : BackupFolder {
         override fun names() = dir.list()?.toList().orEmpty()
         override fun write(name: String, text: String): Boolean { File(dir, name).writeText(text); return true }

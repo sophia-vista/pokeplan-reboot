@@ -5,23 +5,15 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.isoDayNumber
 
-/**
- * Forgiving streaks. Everyone gets [FREE_MISSES_PER_WEEK] missed day per week that does not break a streak (the Streak keeper
- * perk adds more), rest days are neutral, and a day that is not over yet never breaks it.
- */
 object Streaks {
     const val FREE_MISSES_PER_WEEK = 1
 
-    /** Rest days are capped per month so they stay a pause, not a way to hold a streak forever. *(tune)* */
     const val MAX_REST_DAYS_PER_MONTH = 14
 
-    /** The streak day rolls over at this hour: work done at 1am still counts for the day before. */
     const val ROLLOVER_HOUR = 4
 
-    /** The streak day [at] falls on (before [ROLLOVER_HOUR] it is still the previous day). */
     fun streakDay(at: kotlinx.datetime.LocalDateTime): LocalDate = if (at.hour < ROLLOVER_HOUR) at.date.plusDays(-1) else at.date
 
-    /** Days away after which the welcome-back gift is offered. */
     const val WELCOME_BACK_DAYS = 7
 
     fun weekStartOf(d: LocalDate, weekStart: DayOfWeek): LocalDate =
@@ -29,10 +21,6 @@ object Streaks {
 
     data class Result(val current: Int, val longest: Int)
 
-    /**
-     * The streak of days with activity. [active] are the days with a paid task or a finished session; [rest] are rest days.
-     * A missed day uses up one of the week's free misses; with none left the streak ends there.
-     */
     fun daily(
         active: Set<LocalDate>,
         rest: Set<LocalDate>,
@@ -47,10 +35,6 @@ object Streaks {
         )
     }
 
-    /**
-     * Walks back from [today] counting scheduled, active days. A scheduled day that was missed uses one of that week's free
-     * misses or ends the walk. Today does not count against the streak until it is over.
-     */
     internal fun walk(
         isActive: (LocalDate) -> Boolean,
         isRest: (LocalDate) -> Boolean,
@@ -88,17 +72,14 @@ object Streaks {
         return best
     }
 
-    /** Active days in the week containing [today], for the "active days this week" ring (out of 7). */
     fun activeDaysThisWeek(active: Set<LocalDate>, today: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): Int {
         val start = weekStartOf(today, weekStart)
         return (0..6).count { start.plusDays(it) in active }
     }
 
-    /** Whether adding [newDays] keeps rest days within the monthly cap. */
     fun canAddRestDays(existing: Set<LocalDate>, newDays: Set<LocalDate>): Boolean =
         (existing + newDays).groupBy { it.year * 100 + it.monthNumber }.values.all { it.size <= MAX_REST_DAYS_PER_MONTH }
 
-    /** After a long absence the player gets a gift and a fresh start, never a scolding. */
     fun welcomeBack(lastActive: LocalDate?, today: LocalDate): Boolean =
         lastActive != null && lastActive.daysUntil(today) >= WELCOME_BACK_DAYS
 }

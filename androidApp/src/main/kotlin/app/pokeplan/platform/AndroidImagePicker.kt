@@ -9,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import app.pokeplan.ui.ImageChooser
 import java.io.ByteArrayOutputStream
 
-/** The sides of a picture scaled so its longest side is at most [max], keeping the aspect ratio (never enlarged, never below 1 px). */
 fun fitSides(w: Int, h: Int, max: Int): Pair<Int, Int> {
     val longest = maxOf(w, h)
     if (longest <= max || longest <= 0) return w to h
@@ -17,10 +16,6 @@ fun fitSides(w: Int, h: Int, max: Int): Pair<Int, Int> {
     return maxOf(1, Math.round(w * scale).toInt()) to maxOf(1, Math.round(h * scale).toInt())
 }
 
-/**
- * Lets the player pick one picture through Android's Photo Picker (no storage permission) and hands the picture back **as picked** (PNG, JPEG or WebP up to 1 MB: a whole wallet screenshot is kept untouched); only a bigger or other kind of picture is re-encoded as a PNG, shrunk step by step until it fits.
- * The launcher is registered in `onCreate`.
- */
 class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser {
     private var waiting: ((ByteArray?, String?) -> Unit)? = null
 
@@ -78,7 +73,6 @@ class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser
     }
 }
 
-/** Whether [bytes] start like a PNG, a JPEG or a WebP, the three kinds an account may keep as picked (MINT.md 4.2). */
 internal fun isKeepableImage(bytes: ByteArray): Boolean {
     fun at(i: Int, vararg v: Int) = bytes.size >= i + v.size && v.indices.all { (bytes[i + it].toInt() and 0xFF) == v[it] }
     return at(0, 0x89, 0x50, 0x4E, 0x47) || at(0, 0xFF, 0xD8, 0xFF) || (at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50))

@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-/** The shared-bills ledger (MINT.md 5.8A): exact integers, one balance per person and currency, a settlement that squares it. */
 class SharedRulesTest {
     private val day = LocalDate(2026, 11, 20)
     private fun e(person: String, kind: SharedKind, minor: Long, currency: String = "PHP", id: String = "$person$kind$minor") = SharedEntry(id, person, kind, minor, currency, day)

@@ -12,7 +12,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.app.gear.assignGearHelper
 
-/** One Pokémon, one place (POKEMON_ECOSYSTEM.md section 2.2, owner decision 7 November 2026). */
 class PlacesTest {
     private class FakeClock(var millis: Long = 1_793_000_000_000L) : Clock { override fun nowMillis() = millis }
 
@@ -23,7 +22,6 @@ class PlacesTest {
         val s = store()
         val a = s.grantPokemon(25, "t"); val b = s.grantPokemon(74, "t"); val c = s.grantPokemon(10, "t"); val d = s.grantPokemon(16, "t")
         val d0 = s.data
-        // a: buddy + party + team + helper; b: party + helper; c: helper only (the buddy is a).
         val old = d0.copy(
             player = d0.player.copy(
                 buddyId = a.id,
@@ -39,14 +37,12 @@ class PlacesTest {
         assertEquals(Place.GearHelper("COIN"), Places.of(resolved, c.id))
         assertEquals(old.player.pokemon.size, resolved.player.pokemon.size, "nobody leaves the collection")
         assertEquals(Places.VERSION, resolved.placesVersion)
-        // Every Pokémon is in exactly one place: the references never overlap.
         val claims = buildList {
             resolved.player.buddyId?.let { add(it) }
             addAll(resolved.player.pokemon.filter { it.inParty }.map { it.id })
             addAll(resolved.player.guardians); addAll(resolved.player.moduleGuardians.values); addAll(resolved.world.assigned); addAll(resolved.gearHelpers.values)
         }
         assertEquals(claims.size, claims.toSet().size)
-        // The buddy was lost, so the best Pokémon in the PC takes it; it runs once.
         assertTrue(resolved.player.buddyId != null && Places.of(resolved, resolved.player.buddyId!!) == Place.Buddy)
         assertEquals(resolved, Places.resolve(resolved))
     }

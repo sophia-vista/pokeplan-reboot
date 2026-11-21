@@ -10,11 +10,9 @@ class HostedWidgetSpecTest {
 
     @Test
     fun startsAtTheRoomItAskedForRoundedUpSoNothingIsClipped() {
-        // 250 x 110 dp: with 4 dp of margin on each side, 4 columns of 82 dp (needs 258/82 = 3.1 -> 4) and 4 rows of 36 dp (118/36 = 3.3 -> 4).
         val l = HostedWidgetSpec(250, 110).limits(column)
         assertEquals(4, l.defW)
         assertEquals(4, l.defH)
-        // Room given is never below what was asked.
         assertTrue(l.defW * column - 8 >= 250)
         assertTrue(l.defH * WidgetGrid.ROW_DP - 8 >= 110)
     }
@@ -31,10 +29,8 @@ class HostedWidgetSpecTest {
     @Test
     fun resizingStopsAtTheProvidersMinimumAndMaximum() {
         val l = HostedWidgetSpec(200, 250, minResizeWidthDp = 80, minResizeHeightDp = 70, maxResizeWidthDp = 300, maxResizeHeightDp = 400).limits(column)
-        // 80 dp + 8 needs 2 columns of 82 (88/82); 70 dp + 8 needs 3 rows of 36 (78/36).
         assertEquals(2, l.minW)
         assertEquals(3, l.minH)
-        // 300 dp + 8 fits 3 columns of 82 (308/82 = 3.75), not 4; 408/36 = 11 rows.
         assertEquals(3, l.maxW)
         assertEquals(11, l.maxH)
         assertTrue(l.defW <= l.maxW && l.defW >= l.minW)
@@ -65,7 +61,6 @@ class HostedWidgetSpecTest {
         val smaller = WidgetGrid.resize(listOf(w), w, 1, 1, limits).single()
         assertEquals(limits.minW, smaller.w)
         assertEquals(limits.minH, smaller.h)
-        // The corner handle reports the same bounds.
         assertEquals(limits.maxW to limits.maxH, WidgetGrid.resizedTo(w, 10_000f, 10_000f, 82f, 36f, limits))
     }
 }
@@ -96,9 +91,7 @@ class LauncherSearchTest {
         assertEquals(listOf(Place.MINT), LauncherSearch.find("mint").map { it.place })
         assertEquals(Place.HEAL, LauncherSearch.find("sleep").single().place)
         assertEquals(Place.BASE, LauncherSearch.find("chores").single().place)
-        // Accents and case are ignored, as for apps.
         assertTrue(LauncherSearch.find("POKÉMON").any { it.place == Place.COLLECTION })
-        // A name that starts with the query comes before one that only has it in a keyword.
         val found = LauncherSearch.find("pl").map { it.label }
         assertEquals("Plan", found.first())
     }

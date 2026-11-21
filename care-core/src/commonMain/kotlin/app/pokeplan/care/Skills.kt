@@ -1,10 +1,5 @@
 package app.pokeplan.care
 
-/**
- * The four skill groups of dialectical behaviour therapy (DBT), the frame of Care's skills library. The how-tos are short
- * reminders in the app's own words, not a course: the library points to the well-known skills, and a therapist or a DBT
- * skills group teaches them.
- */
 enum class SkillGroup(val label: String, val line: String) {
     MINDFULNESS("Mindfulness", "Notice what is happening, here and now"),
     DISTRESS_TOLERANCE("Distress tolerance", "Get through a hard moment without making it worse"),
@@ -12,12 +7,10 @@ enum class SkillGroup(val label: String, val line: String) {
     INTERPERSONAL("Interpersonal effectiveness", "Ask, say no and keep your relationships and self-respect"),
 }
 
-/** One skill: what it is for and its steps. [calmBreak] marks the one practised as a calm break (it pays as that). */
 data class Skill(val id: String, val group: SkillGroup, val name: String, val use: String, val steps: List<String>, val calmBreak: Boolean = false)
 
 object Skills {
     val all: List<Skill> = listOf(
-        // Mindfulness
         Skill(
             "wise-mind", SkillGroup.MINDFULNESS, "Wise mind", "When feelings and facts pull in different directions.",
             listOf("Notice what your feelings say.", "Notice what the facts say.", "Breathe and ask: what do I know, deep down, is right here?", "Let the answer come; it is often quiet."),
@@ -38,7 +31,6 @@ object Skills {
             "non-judging", SkillGroup.MINDFULNESS, "Non-judgemental stance", "When you catch yourself calling things good, bad, stupid or awful.",
             listOf("Notice the judgement.", "Say the facts instead: what happened, what you feel.", "Don't judge yourself for judging."),
         ),
-        // Distress tolerance
         Skill(
             "stop", SkillGroup.DISTRESS_TOLERANCE, "STOP", "When you are about to act on an urge.",
             listOf("Stop: freeze for a moment.", "Take a step back: breathe.", "Observe what is going on, inside and around you.", "Proceed mindfully: what will help, not hurt?"),
@@ -67,7 +59,6 @@ object Skills {
             "pros-cons", SkillGroup.DISTRESS_TOLERANCE, "Pros and cons", "Before acting on a strong urge.",
             listOf("List the pros and cons of acting on the urge.", "List the pros and cons of not acting on it.", "Look at the short and the long term."),
         ),
-        // Emotion regulation
         Skill(
             "name-it", SkillGroup.EMOTION_REGULATION, "Name the emotion", "When you feel something but can't tell what.",
             listOf("What happened just before?", "What do you notice in your body?", "What do you want to do?", "Put a name to it: sad, scared, angry, ashamed..."),
@@ -88,7 +79,6 @@ object Skills {
             "build-positive", SkillGroup.EMOTION_REGULATION, "Build positive experiences", "To have more good moments, on purpose.",
             listOf("Do one small pleasant thing today.", "Be present while you do it.", "Plan something you look forward to."),
         ),
-        // Interpersonal effectiveness
         Skill(
             "dear-man", SkillGroup.INTERPERSONAL, "DEAR MAN", "To ask for something or say no.",
             listOf("Describe the situation; Express how you feel; Assert what you want; Reinforce why it helps them too.", "Stay Mindful of your goal, Appear confident, Negotiate."),

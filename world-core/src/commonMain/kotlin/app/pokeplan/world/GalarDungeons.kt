@@ -3,11 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Galar layer (docs/pokelife/MODULES/WORLD.md section 14, "Galar"), from Pokémon Sword and Shield. Their wild tables are the
- * Galar regional dex, by each place's habitat in the games; legendaries are never found (they are quests, [Legends]). Floors, floor times,
- * milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter of [GalarStory].
- */
 object GalarDungeons {
     private val G = WorldLayer.GALAR
 
@@ -69,11 +64,6 @@ object GalarDungeons {
     )
 }
 
-/**
- * Galar's story, "The Darkest Day" (docs/regional-storylines.md): Dynamax energy, the Wishing Stars of Chairman Rose and the Galar Mine's
- * Energy Plant, the hero's sword and shield and Eternatus. A chapter opens by rank and by how many different Galar dungeons have been
- * cleared, and is never lost.
- */
 object GalarStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "The Wild Area", "A new trainer leaves Postwick for the Wild Area. The grass is wide and the mines are close, but the weather feels odd.", "The Wild Area and Galar Mine", ExplorerRank.NORMAL, 0),
@@ -83,7 +73,6 @@ object GalarStory {
         Chapter(5, "The Darkest Day", "The Wishing Stars wake something that fell from the sky long ago, and the Energy Plant begins to burn.", "Slumbering Weald, the Energy Plant and Eternatus", ExplorerRank.PLATINUM, 7),
     )
 
-    /** The Guardian: Eternatus, in the Energy Plant. */
     const val GUARDIAN = "Eternatus"
     const val GUARDIAN_BONUS = "Dynamax Energy: Galar expeditions find treasure a little more often"
 }

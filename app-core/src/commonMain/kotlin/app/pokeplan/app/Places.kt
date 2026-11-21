@@ -5,16 +5,9 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.reward.PlayerState
 
-/**
- * Where an owned Pokémon is (docs/pokelife `FEATURES/POKEMON_ECOSYSTEM.md` section 2.2, owner decision 7 November 2026): **one place
- * only**. The place is derived from the references the save keeps (the buddy id, each Pokémon's party, the Guardian slots, the World
- * teams, the Pokégear helpers), so [vacate] first takes a Pokémon out of whatever it was in and every assignment starts with it:
- * no state with two places can be written.
- */
 sealed interface Place {
     data object Buddy : Place
     data class Party(val partyId: String) : Place
-    /** [module] is the party id of the module whose Guardian it is (`PartyIds`): a Guardian is one module's, in addition to a normal Pokémon. */
     data class Guardian(val module: String) : Place
     data class WorldTeam(val team: Int) : Place
     data class GearHelper(val tool: String) : Place
@@ -22,7 +15,6 @@ sealed interface Place {
 }
 
 object Places {
-    /** Where [id] is, by the priority that resolves a save with two ([resolve]): Guardian, World team, buddy, party, Pokégear helper, else the PC. */
     fun of(d: AppData, id: String): Place {
         val p = d.player.pokemon.firstOrNull { it.id == id } ?: return Place.Pc
         d.player.moduleGuardians.entries.firstOrNull { it.value == id }?.let { return Place.Guardian(it.key) }
@@ -33,16 +25,11 @@ object Places {
         return Place.Pc
     }
 
-    /** The name a player reads for a module's party: "Plan", "Care", "Heal", "Mint" or "Base". */
     private fun partyName(partyId: String): String = when (partyId) {
         PartyIds.PLAN -> "Plan"; PartyIds.CARE -> "Care"; PartyIds.HEAL -> "Heal"; PartyIds.MINT -> "Mint"; PartyIds.BASE -> "Base"
         else -> partyId.replaceFirstChar { it.uppercase() }
     }
 
-    /**
-     * Where [id] is, in words, for every place there is (the party and PC screens and the detail page read this one function, so no
-     * place is ever shown as "the PC" by mistake): the buddy, a party (and its lead), a Guardian slot, a World team, a tool it helps, the PC.
-     */
     fun label(d: AppData, id: String): String = when (val place = of(d, id)) {
         Place.Buddy -> "Your buddy"
         is Place.Party -> {
@@ -58,10 +45,6 @@ object Places {
         Place.Pc -> "Resting in the PC"
     }
 
-    /**
-     * Where [id] is in a word or two, for a PC tile when the PC shows every Pokémon: "Buddy", "Plan lead", "Care", "Heal Guardian",
-     * "World", "Pokégear"; null in the PC. [isLead] says whether it leads its party (the derived lead, which [PcPlace.all] works out).
-     */
     fun short(d: AppData, id: String, isLead: Boolean): String? = when (val place = of(d, id)) {
         Place.Buddy -> "Buddy"
         is Place.Party -> if (isLead) "${partyName(place.partyId)} lead" else partyName(place.partyId)
@@ -71,13 +54,8 @@ object Places {
         Place.Pc -> null
     }
 
-    /** Whether [id] can be taken from its place now: not while its World team is out on an expedition. */
     fun movable(d: AppData, id: String): Boolean = d.world.teams.none { id in it.members && it.expedition != null }
 
-    /**
-     * [d] with [id] out of every place it is in: no longer the buddy, in no party, not a Guardian, off its World team and not a helper.
-     * It goes to the PC. Leads are re-derived by the caller. A Pokémon on an expedition under way is left where it is.
-     */
     fun vacate(d: AppData, id: String): AppData {
         if (!movable(d, id)) return d
         val player = d.player.copy(
@@ -90,7 +68,6 @@ object Places {
         return d.copy(player = player, world = d.world.copy(teams = teams), gearHelpers = d.gearHelpers.filterValues { it != id })
     }
 
-    /** A party's lead and the chosen leads, after the members changed: the lead stays if it is still in the party, else the party's first member. */
     fun leads(p: PlayerState): PlayerState {
         fun lead(party: String, chosen: String?): String? {
             val members = p.pokemon.filter { it.inParty && it.partyId == party }
@@ -99,11 +76,6 @@ object Places {
         return p.copy(planLeadId = lead(PartyIds.PLAN, p.planLeadId), careLeadId = lead(PartyIds.CARE, p.careLeadId), healLeadId = lead(PartyIds.HEAL, p.healLeadId), mintLeadId = lead(PartyIds.MINT, p.mintLeadId), baseLeadId = lead(PartyIds.BASE, p.baseLeadId), linkLeadId = lead(PartyIds.LINK, p.linkLeadId))
     }
 
-    /**
-     * A save from before the Guardians were per module (0.158.0): the old global slots, in order, become Plan's, Care's, Heal's, Mint's, Base's and Link's Guardian
-     * (the order the database already stored them in, so nothing moves in the tables), and the old list is emptied. A Pokémon that is not a Guardian species is dropped
-     * to the PC. Nothing is removed from the collection and nothing is paid. Idempotent.
-     */
     fun guardiansToModules(d: AppData): AppData {
         if (d.player.guardians.isEmpty()) return d
         val taken = d.player.moduleGuardians.toMutableMap()
@@ -116,18 +88,11 @@ object Places {
         return d.copy(player = d.player.copy(guardians = emptyList(), moduleGuardians = taken))
     }
 
-    /** The version a save carries once [resolve] has run. */
     const val VERSION = 1
 
-    /**
-     * A save from before the rule (docs section 2.2.3): a Pokémon in two places keeps the highest by Guardian, World team, buddy, party,
-     * helper, and the others are taken from it. If the buddy is lost the best Pokémon in the PC (highest level, friendliest, then id) becomes
-     * the buddy; with none, the buddy stays empty. Nothing is removed from the collection, nothing is paid, and it runs once.
-     */
     fun resolve(d: AppData): AppData {
         if (d.placesVersion >= VERSION) return d
         var next = d
-        // A Pokémon on a team and in a party: the team wins; a Guardian that is also on a team or in a party: the Guardian wins.
         for (p in d.player.pokemon) {
             val keep = of(d, p.id)
             if (keep is Place.Guardian || keep is Place.WorldTeam || keep is Place.Party || keep is Place.GearHelper || keep is Place.Buddy) next = keepOnly(next, p.id, keep)
@@ -141,7 +106,6 @@ object Places {
         return next.copy(player = player, placesVersion = VERSION)
     }
 
-    /** [d] with [id] in [keep] only. */
     private fun keepOnly(d: AppData, id: String, keep: Place): AppData {
         var next = d
         if (keep !is Place.Buddy && next.player.buddyId == id) next = next.copy(player = next.player.copy(buddyId = null))

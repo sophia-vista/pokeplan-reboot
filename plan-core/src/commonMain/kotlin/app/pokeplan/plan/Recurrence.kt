@@ -18,12 +18,10 @@ internal fun daysInMonth(year: Int, month: Int): Int = when (month) {
     else -> 31
 }
 
-/** Never more often than daily. */
 @Serializable
 sealed interface Repeat {
     @Serializable
     data class Daily(val every: Int = 1) : Repeat
-    /** Chosen weekdays every [every] weeks; empty [days] means the weekday of the start date. */
     @Serializable
     data class Weekly(val every: Int = 1, val days: Set<DayOfWeek> = emptySet()) : Repeat
     @Serializable
@@ -34,10 +32,8 @@ sealed interface Repeat {
 
 @Serializable
 sealed interface MonthlyRule {
-    /** A day of the month; in shorter months it falls on the last day. */
     @Serializable
     data class DayOfMonth(val day: Int) : MonthlyRule
-    /** The [n]th (1 to 4) [weekday] of the month. */
     @Serializable
     data class NthWeekday(val n: Int, val weekday: DayOfWeek) : MonthlyRule
     @Serializable
@@ -47,10 +43,8 @@ sealed interface MonthlyRule {
 }
 
 enum class RepeatMode {
-    /** On the schedule, whether or not the last one was done. */
     FIXED,
 
-    /** The next one comes N days (weeks, months) after you finish the last one. */
     AFTER_COMPLETION,
 }
 
@@ -64,10 +58,6 @@ sealed interface RepeatEnd {
     data class After(val count: Int) : RepeatEnd
 }
 
-/**
- * A repeating schedule. Dates are wall-clock, so the time of day stays the same across daylight saving.
- * Skipped dates are not generated but still count towards [RepeatEnd.After].
- */
 @Serializable
 data class Recurrence(
     val repeat: Repeat,
@@ -107,7 +97,6 @@ data class Recurrence(
         }
     }
 
-    /** True if the schedule itself (ignoring skips and the end) lands on [d]. Fixed mode. */
     private fun scheduled(d: LocalDate): Boolean {
         if (d < start) return false
         return when (val r = repeat) {
@@ -124,7 +113,6 @@ data class Recurrence(
         }
     }
 
-    /** The last date allowed by [end], or null if it never ends. */
     private fun lastDate(): LocalDate? = when (val e = end) {
         RepeatEnd.Never -> null
         is RepeatEnd.On -> e.date
@@ -140,10 +128,6 @@ data class Recurrence(
         }
     }
 
-    /**
-     * Dates in [from]..[to] (inclusive) on which the task is due, in order. Fixed schedules only: for
-     * [RepeatMode.AFTER_COMPLETION] the next date depends on when the last one was finished, see [nextAfterCompletion].
-     */
     fun occurrences(from: LocalDate, to: LocalDate): List<LocalDate> {
         if (mode == RepeatMode.AFTER_COMPLETION) return if (from <= start && start <= to && start !in skipped) listOf(start) else emptyList()
         val limit = lastDate()?.let { minOf(it, to) } ?: to
@@ -156,14 +140,12 @@ data class Recurrence(
         return result
     }
 
-    /** For [RepeatMode.AFTER_COMPLETION]: the next date, one interval after [completedOn], or null once the end is reached. */
     fun nextAfterCompletion(completedOn: LocalDate): LocalDate? {
         val next = when (val r = repeat) {
             is Repeat.Daily -> completedOn.plusDays(r.every)
             is Repeat.Weekly -> completedOn.plusDays(7 * r.every)
             is Repeat.Monthly -> {
                 val m = completedOn.plus(DatePeriod(months = r.every))
-                // keep the day of month, clamped (31 Jan + 1 month = 28/29 Feb)
                 LocalDate(m.year, m.monthNumber, minOf(completedOn.day, daysInMonth(m.year, m.monthNumber)))
             }
             is Repeat.Yearly -> {
@@ -176,22 +158,15 @@ data class Recurrence(
     }
 }
 
-/** Creates the concrete tasks of a recurring series. */
 object RecurringTasks {
-    /** Instances are generated this many days ahead. */
     const val HORIZON_DAYS = 14
 
     fun instanceId(seriesId: String, date: LocalDate) = "$seriesId-$date"
 
-    /**
-     * Instances of [template] still to create for today through [HORIZON_DAYS] days ahead: one per due date that does not
-     * already exist in [existing]. Each is planned for its date at the template's time, with the series id so it pays straight away.
-     */
     fun instancesToCreate(template: Task, recurrence: Recurrence, existing: List<Task>, today: LocalDate, createdAtMillis: Long): List<Task> {
         val seriesId = requireNotNull(template.seriesId) { "a recurring template needs a series id" }
         val ours = existing.filter { it.seriesId == seriesId }
         val have = ours.mapNotNull { it.planned }.toSet()
-        // An instance the player moved to another day is still that date's instance: its id says so, and no second task may take the id.
         val ids = ours.mapTo(HashSet()) { it.id }
         return recurrence.occurrences(today, today.plusDays(HORIZON_DAYS)).filter { it !in have && instanceId(seriesId, it) !in ids }.map { date ->
             template.copy(
@@ -207,6 +182,5 @@ object RecurringTasks {
         }
     }
 
-    /** The real moment of a wall-clock [time] on [date]. In a daylight-saving gap the clock jumps forward past it. */
     fun momentOf(date: LocalDate, time: LocalTime, zone: TimeZone): Long = kotlinx.datetime.LocalDateTime(date, time).toEpochMillis(zone)
 }

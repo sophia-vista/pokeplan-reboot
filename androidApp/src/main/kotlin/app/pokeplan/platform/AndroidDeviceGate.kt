@@ -7,11 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import app.pokeplan.ui.DeviceGate
 
-/**
- * Mint's optional access gate on Android (MINT.md section 13.2): the phone's own confirm-credential screen (PIN, pattern, password or, where the phone offers it,
- * fingerprint or face), through the supported [KeyguardManager] API. It needs no extra library and makes no key or password of its own; the app is told only whether
- * the person passed. Created in `onCreate` because the result launcher is registered there; [left] is called when the activity goes out of sight.
- */
 class AndroidDeviceGate(private val activity: ComponentActivity) : DeviceGate {
     private var waiting: ((Boolean) -> Unit)? = null
     @Volatile private var leftAt = 0L

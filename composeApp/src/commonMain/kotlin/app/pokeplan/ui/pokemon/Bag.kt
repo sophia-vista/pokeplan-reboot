@@ -61,7 +61,6 @@ internal fun BagView(model: AppModel) {
                     val usable = holdable || ((!training || store.sees(Feature.TRAINING_ITEMS)) && player.party.any { store.canUse(id, it) })
                     val toggle = { open = if (open == id) null else id }
                     if (index > 0) HorizontalDivider(color = Pixel.Border)
-                    // A usable item says so with its own Use button, so it does not look the same as one that only sits in the bag.
                     Row(
                         Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target)
                             .let { if (usable) it.clickable(onClickLabel = "Use ${Items.name(id)}", role = Role.Button, onClick = toggle) else it }
@@ -80,10 +79,6 @@ internal fun BagView(model: AppModel) {
     }
 }
 
-/**
- * Using one bag item: who gets it, and for a Bottle Cap or Nature Mint which stat or nature. Held items are given to
- * hold (what the Pokémon held before goes back to the bag).
- */
 @Composable
 private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: () -> Unit) {
     val store = model.store
@@ -144,5 +139,3 @@ private fun ItemCategory?.bagLabel(): String = when (this) {
     ItemCategory.KEY -> "Key items"
     null -> "Other"
 }
-
-// ----- One Pokémon ---------------------------------------------------------------------------------------------------

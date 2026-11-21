@@ -1,6 +1,5 @@
 package app.pokeplan.link
 
-/** Plain-language readings for the Chinese zodiac, Four Pillars, Kua and Life Path (LINK.md 2.6). Fixed text for fun; never advice or a verdict. */
 object LoreChinese {
     fun animal(a: String): String = when (a) {
         "Rat" -> "Quick-witted, resourceful and charming; notices an opportunity before anyone else."
@@ -25,7 +24,6 @@ object LoreChinese {
         Element.WATER -> "Water: depth, adaptability and intuition; finds a way around."
     }
 
-    /** The Day Master (the day pillar's stem) is the Four Pillars' stand-in for the self. */
     fun dayMaster(s: Stem): String = when (s) {
         Stem.JIA -> "Jia, Yang Wood: a tall tree. Upright, principled and a natural starter; grows steadily and bends slowly."
         Stem.YI -> "Yi, Yin Wood: a vine or flower. Flexible, charming and persistent; finds a way around obstacles."
@@ -59,7 +57,6 @@ object LoreChinese {
         if (east) "East Group (1, 3, 4, 9): traditionally suited to North, East, Southeast and South."
         else "West Group (2, 6, 7, 8): traditionally suited to Southwest, West, Northwest and Northeast."
 
-    /** The four lucky directions in order. */
     val kuaDirections = listOf(
         "Sheng Qi (growth, success)", "Tian Yi (health, support)", "Yan Nian (relationships, longevity)", "Fu Wei (stability, inner peace)",
     )

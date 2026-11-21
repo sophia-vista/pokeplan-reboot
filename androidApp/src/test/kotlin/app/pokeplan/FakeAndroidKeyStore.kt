@@ -17,12 +17,6 @@ import javax.crypto.KeyGeneratorSpi
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
-/**
- * A stand-in for the Android Keystore under Robolectric, which has none (REP-033): `KeyStore.getInstance("AndroidKeyStore")` and
- * `KeyGenerator.getInstance("AES", "AndroidKeyStore")` work as the app calls them, with AES keys kept in memory. A key "survives" a simulated process death
- * (the map is kept) and is lost with [wipe], like a phone that was reset or a key the Keystore dropped; [available] false makes the Keystore fail as it does
- * on a phone whose Keystore cannot be reached, so the fail-closed paths can be tested.
- */
 object FakeAndroidKeyStore {
     private val keys = mutableMapOf<String, SecretKey>()
     @Volatile var available = true

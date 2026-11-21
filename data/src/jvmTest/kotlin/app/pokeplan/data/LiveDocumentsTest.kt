@@ -16,7 +16,6 @@ class LiveDocumentsTest {
         assertEquals(Activation.Imported(listOf("save", "care")), r)
         assertTrue(s.live.isActive())
         assertEquals("{\"a\":1}", s.live.read("save"))
-        // A second start does not import again, even if the files changed meanwhile.
         assertEquals(Activation.AlreadyActive, s.live.activate("{\"a\":999}", null, 20))
         assertEquals("{\"a\":1}", s.live.read("save"))
     }
@@ -49,7 +48,6 @@ class LiveDocumentsTest {
     fun aFailedActivationLeavesTheDatabaseAsItWas() {
         val s = JvmDatabase.open()
         s.live.write("save", "old", 1)
-        // Force the failure inside the transaction: a document name that is also the primary key is fine, so break the marker write.
         s.driver.execute(null, "CREATE TRIGGER no_marker BEFORE INSERT ON app_meta BEGIN SELECT RAISE(ABORT, 'no'); END", 0)
         runCatching { s.live.activate("new", null, 2) }
         assertFalse(s.live.isActive())
@@ -58,11 +56,9 @@ class LiveDocumentsTest {
 
     @Test
     fun anOlderVersionOneDatabaseMigratesAndKeepsItsRows() {
-        // The committed version 1 file is the schema every released database had; opening it must add the new table.
         val f = File.createTempFile("v1db", ".db").also { it.delete(); it.deleteOnExit() }
         val v1 = File("src/commonMain/sqldelight/databases/1.db")
         v1.copyTo(f, overwrite = true)
-        // SQLDelight's schema dump carries no PRAGMA user_version; a released database had it set to 1.
         java.sql.DriverManager.getConnection("jdbc:sqlite:${f.path}").use { it.createStatement().execute("PRAGMA user_version = 1") }
         val s = JvmDatabase.open(f.path)
         s.live.write("save", "{}", 1)
@@ -83,7 +79,7 @@ class LiveBackupTest {
         s.live.write("save", "{\"v\":2}", 2000)
         b.takeIfDue(s.live, 3000); b.takeIfDue(s.live, 5000); b.takeIfDue(s.live, 7000)
         assertEquals(3, b.newest()!!.parentFile.listFiles()!!.size, "only the newest three are kept")
-        s.live.write("save", "{\"v\":3}", 8000) // newer than the newest backup: lost on restore, but kept aside
+        s.live.write("save", "{\"v\":3}", 8000)
         assertTrue(b.restoreNewest(s.live, 9000))
         assertEquals("{\"v\":2}", s.live.read("save"))
         assertEquals("{\"v\":3}", s.live.read("aside:save:9000"))
@@ -93,7 +89,7 @@ class LiveBackupTest {
     @Test
     fun aBackupCutShortIsNeverUsedAndAnEmptyDatabaseMakesNone() {
         val d = dir()
-        java.io.File(d, "5000").mkdirs() // no DONE marker: interrupted
+        java.io.File(d, "5000").mkdirs()
         val s = JvmDatabase.open()
         val b = LiveBackup(d)
         assertEquals(null, b.newest())

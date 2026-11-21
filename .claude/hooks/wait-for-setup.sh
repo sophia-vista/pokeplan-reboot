@@ -1,6 +1,4 @@
 #!/bin/bash
-# Waits for the background session start hook (session-start.sh) to finish, so a build has the Android SDK and the
-# Maven mirror. Run it before the first Gradle command of a cloud session; it returns at once when setup is done.
 STATUS="$HOME/.pokeplan-setup"
 [ "${CLAUDE_CODE_REMOTE:-}" != "true" ] && exit 0
 for _ in $(seq 1 300); do

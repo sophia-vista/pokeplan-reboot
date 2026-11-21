@@ -6,16 +6,6 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.imageio.ImageIO
 
-/**
- * Test-only composer for the REP-053 scale test (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md section 7): one Hoenn
- * Secret Base room put together from the pret/pokeemerald art in assets/hoenn, with decoration sprites and SpriteCollab
- * Pokémon standing in it. Nothing here ships; it reads the files straight from assets/.
- *
- * The room is the game's own layout (`secret-base/layouts/<name>/map.bin`, 16-bit cells: metatile id in bits 0..9), and each
- * metatile is two layers of four 8 x 8 tiles (`metatiles.bin`: tile id bits 0..9, flip x 10, flip y 11, palette 12..15). The
- * primary tileset owns tile and metatile ids below 512 and palettes 0..5; the room's secondary tileset owns the rest.
- * `tiles.png` files are indexed PNGs whose index is the palette entry, so they are read as indices, not as the grey they show.
- */
 internal object HoennRoom {
     const val TILE = 16
     private val hoenn = listOf("../assets/hoenn", "assets/hoenn").map(::File).first { it.isDirectory }
@@ -40,7 +30,6 @@ internal object HoennRoom {
         return Array(img.height) { y -> IntArray(img.width) { x -> raster.getSample(x, y, 0) } } to img.width
     }
 
-    /** The room's floor and walls: [layout] (e.g. "SecretBase_Tree1") of [tileset] ("tree"), [width] x [height] metatiles. */
     fun floor(layout: String, tileset: String, width: Int, height: Int): BufferedImage {
         val primary = File(hoenn, "secret-base/primary")
         val secondary = File(hoenn, "secret-base/secondary/$tileset")
@@ -65,7 +54,7 @@ internal object HoennRoom {
                 val sy = index / (sheetWidth / 8) * 8
                 for (y in 0 until 8) for (x in 0 until 8) {
                     val colour = sheet[sy + (if (flipY) 7 - y else y)][sx + (if (flipX) 7 - x else x)]
-                    if (layer == 1 && colour == 0) continue // colour 0 of the top layer is see-through
+                    if (layer == 1 && colour == 0) continue
                     out.setRGB(n % width * TILE + quarter % 2 * 8 + x, n / width * TILE + quarter / 2 * 8 + y, colours[colour])
                 }
             }
@@ -73,7 +62,6 @@ internal object HoennRoom {
         return out
     }
 
-    /** A decoration sprite (assets/hoenn/decorations/<file>.png): palette colour 0 is the see-through colour. */
     private fun decoration(file: String): BufferedImage {
         val img = ImageIO.read(File(hoenn, "decorations/$file.png"))
         val clear = BufferedImage(img.width, img.height, BufferedImage.TYPE_INT_ARGB)
@@ -83,21 +71,15 @@ internal object HoennRoom {
         return clear
     }
 
-    /** The first frame of a SpriteCollab Idle sheet (assets/pmd/<formId>.png), whose frame size is in pmd.tsv, at its own pixels. */
     private fun pokemon(formId: Int): BufferedImage {
         val row = File(pmd, "pmd.tsv").readLines().map { it.split('\t') }.first { it[0] == formId.toString() }
         return ImageIO.read(File(pmd, "$formId.png")).getSubimage(0, 0, row[2].toInt(), row[3].toInt())
     }
 
-    /**
-     * [floor] with [decorations] (flat ones, such as mats, first) and [mons] on it, each placed by the pixel under its middle
-     * and the row of its feet, and drawn back to front so a nearer one covers a farther one.
-     */
     fun room(floor: BufferedImage, decorations: List<Placed>, mons: List<Mon>): BufferedImage {
         val out = BufferedImage(floor.width, floor.height, BufferedImage.TYPE_INT_ARGB)
         val g = out.createGraphics()
         g.drawImage(floor, 0, 0, null)
-        // A mat lies on the floor, so it is drawn before anything that stands.
         val (flat, upright) = decorations.partition { it.file.endsWith("_mat") }
         flat.forEach { g.drawImage(decoration(it.file), it.centre - 12, it.bottom - 24, null) }
         val things = upright.map { Triple(it.bottom, decoration(it.file), it.centre) } + mons.map { Triple(it.bottom, pokemon(it.formId), it.centre) }

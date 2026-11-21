@@ -3,12 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Hisui layer (docs/pokelife/MODULES/WORLD.md section 14, "Hisui"), from Pokémon Legends: Arceus, Sinnoh long ago. Their wild
- * tables are the Hisui dex (Sinnoh's Pokémon and the few that live nowhere else), by each place's habitat in the game; legendaries are never found
- * (they are quests, [Legends]). Floors, floor times, milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a
- * chapter of [HisuiStory].
- */
 object HisuiDungeons {
     private val H = WorldLayer.HISUI
 
@@ -70,10 +64,6 @@ object HisuiDungeons {
     )
 }
 
-/**
- * Hisui's story, "The Ancient Survey" (docs/regional-storylines.md): Sinnoh long ago, the Galaxy Expedition Team, the rift in the sky and Arceus,
- * the Original One. A chapter opens by rank and by how many different Hisui dungeons have been cleared, and is never lost.
- */
 object HisuiStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "The Fieldlands", "A stranger falls out of the sky into the wild land called Hisui. The fields and the marsh are the first thing they see.", "Obsidian Fieldlands and Crimson Mirelands", ExplorerRank.NORMAL, 0),
@@ -83,7 +73,6 @@ object HisuiStory {
         Chapter(5, "The Original One", "Above the Hallowed Tower the sky has torn. Beyond it, the Temple of Sinnoh waits for whoever finishes the survey.", "Hallowed Tower, the Temple of Sinnoh and Arceus", ExplorerRank.PLATINUM, 7),
     )
 
-    /** The Guardian: Arceus, in the Temple of Sinnoh. */
     const val GUARDIAN = "Arceus"
     const val GUARDIAN_BONUS = "Original One's Blessing: Hisui expeditions find treasure a little more often"
 }

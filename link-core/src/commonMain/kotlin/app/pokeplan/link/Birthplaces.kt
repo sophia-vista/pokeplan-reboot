@@ -1,9 +1,5 @@
 package app.pokeplan.link
 
-/**
- * Places to pick a birthplace from, with latitude, longitude and the **standard** UTC offset in minutes (daylight saving is the user's to add: the
- * offset field can be changed). Offline, so no search; a place not here is typed as coordinates.
- */
 object Birthplaces {
     val all: List<Place> = listOf(
         Place("Manila", 14.5995, 120.9842, 480), Place("Quezon City", 14.6760, 121.0437, 480), Place("Makati", 14.5547, 121.0244, 480),
@@ -31,7 +27,6 @@ object Birthplaces {
 
     fun named(name: String): Place? = all.firstOrNull { it.name.equals(name.trim(), ignoreCase = true) }
 
-    /** Latitude and longitude typed as decimals ("14.6", "-121.04"), or null if they are not within range. */
     fun coordinates(lat: String, lon: String): Pair<Double, Double>? {
         val la = lat.trim().toDoubleOrNull() ?: return null
         val lo = lon.trim().toDoubleOrNull() ?: return null

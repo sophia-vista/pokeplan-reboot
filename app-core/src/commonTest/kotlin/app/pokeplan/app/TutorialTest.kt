@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** Each module's first-run tutorial gives one Pokémon through its own method, once (POKEMON_ECOSYSTEM.md section 10.2.1). */
 class TutorialTest {
     private class FakeClock(var millis: Long = 1_793_000_000_000L) : Clock { override fun nowMillis() = millis }
 
@@ -39,13 +38,11 @@ class TutorialTest {
         assertEquals(egg.id, s.data.player.planLead?.id)
         assertEquals(2, s.data.player.pokemon.size)
         assertEquals(s.data.settings.region.open, s.data.origins[egg.id]?.region)
-        // No focus session, streak, meter or history came of it, and it cannot be done again or for pay twice.
         assertTrue(s.data.focusHistory.isEmpty() && s.data.activeDays.isEmpty() && s.data.player.eggMeter == 0)
         assertEquals(coins, s.data.player.coins)
         assertFalse(s.tutorialOffered(Tutorials.PLAN_FOCUS))
         assertNull(s.completeTutorial(Tutorials.PLAN_FOCUS))
         assertEquals(2, s.data.player.pokemon.size)
-        // Care's is still on offer: each module teaches its own way.
         assertTrue(s.tutorialOffered(Tutorials.CARE_BREATH))
     }
 

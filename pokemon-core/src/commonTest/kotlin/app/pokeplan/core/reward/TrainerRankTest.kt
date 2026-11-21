@@ -24,7 +24,6 @@ class TrainerRankTest {
 
     @Test
     fun onlyTheModuleRegionsOpen() {
-        // The games' regions are retired: they never open, at any rank, and send their eggs to the Plan Region.
         for (points in listOf(0, TrainerRank.thresholds[1], TrainerRank.thresholds.last())) {
             assertEquals(listOf(Region.PLAN, Region.CARE, Region.HEAL, Region.MINT, Region.BASE, Region.LINK), TrainerRank.unlockedRegions(points))
         }

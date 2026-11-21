@@ -11,12 +11,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/** The Explorers of Sky words and pictures the World screens use are the game's own, and exist. */
 class SkyVoiceTest {
     private val root = File("..").canonicalFile
     private val gradle = File(root, "composeApp/build.gradle.kts").readText()
 
-    /** The game's strings as one line each (its `\n` line breaks as spaces), for checking a line really is the game's. */
     private val game: Set<String> by lazy {
         File(root, "rip/sky/text/strings.tsv").readLines().drop(1).mapNotNull { it.split('\t').getOrNull(2) }
             .map { it.replace("\\n", " ").replace(Regex("\\s+"), " ").trim() }.toSet()
@@ -32,7 +30,6 @@ class SkyVoiceTest {
             assertTrue(SkyBarks.healthy(id) in SkyBarks.HEALTHY)
             assertTrue(SkyBarks.levelUp(id) in SkyBarks.LEVEL_UP)
         }
-        // Different species do not all say one thing.
         assertTrue((1..40).map { SkyBarks.healthy(it) }.toSet().size > 10)
         if (skipWithoutRip()) assertEquals(emptyList(), (SkyBarks.HEALTHY + SkyBarks.LEVEL_UP).filter { it !in game })
     }
@@ -53,7 +50,6 @@ class SkyVoiceTest {
         val shown = Dungeons.all.mapNotNull { d -> dungeonEntrance(d.id)?.let { d.id to it } }
         assertTrue(shown.size >= 6)
         for ((id, map) in shown) {
-            // Explorers of Sky maps are "map:sky-<code>"; Rescue Team's "sky-tower-entry" is not one (its code, SKY_TOWER_ENTRY, is longer than a map code).
             val sky = Regex("map:sky-[a-z][0-9]{2}p[0-9]{2}[a-z]?").matches(map)
             val code = (if (sky) map.removePrefix("map:sky-") else map.removePrefix("map:")).uppercase().replace('-', '_')
             assertTrue(code in (if (sky) listedSky else listedRescue), "$id: $map is not bundled")

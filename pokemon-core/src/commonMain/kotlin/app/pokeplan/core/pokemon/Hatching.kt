@@ -9,9 +9,7 @@ import app.pokeplan.core.dex.Egg
 import app.pokeplan.core.dex.Rarity
 import kotlin.random.Random
 
-/** Turns a finished egg into a new [OwnedPokemon]. */
 object Hatching {
-    /** Hatches an egg earned from [effortMinutes] of effort (a focus session, a workout, ...) for the player's chosen [region]. */
     fun hatch(
         id: String,
         effortMinutes: Int,
@@ -26,7 +24,6 @@ object Hatching {
         return hatchAtRarity(id, rarity, region, partySize, nowMillis, effortMinutes, rng, shinyMultiplier)
     }
 
-    /** Hatches a Pokémon of a known [rarity]; [sessionMinutes] only feeds the shiny bonus. */
     fun hatchAtRarity(
         id: String,
         rarity: Rarity,
@@ -38,7 +35,6 @@ object Hatching {
         shinyMultiplier: Double = 1.0,
     ): OwnedPokemon = create(id, HatchRules.roll(region, rarity, rng), partySize, nowMillis, sessionMinutes, rng, shinyMultiplier)
 
-    /** Builds the Pokémon for a chosen [option] (also used for quest rewards). */
     fun create(
         id: String,
         option: HatchOption,

@@ -3,7 +3,6 @@ package app.pokeplan.core.pokemon
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.Gender
 
-/** Species ids used across the tests. */
 object Ids {
     const val BULBASAUR = 1
     const val CHARMANDER = 4
@@ -23,7 +22,6 @@ object Ids {
     const val PANCHAM = 674
 }
 
-/** A level 1 Pokémon with fixed, easy-to-reason-about values. */
 fun pokemon(
     speciesId: Int,
     formIdentifier: String = Dex.defaultForm(speciesId).identifier,

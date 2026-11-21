@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
-/** How often a habit is meant to happen. */
 @Serializable
 sealed interface HabitTarget {
     @Serializable
@@ -17,12 +16,6 @@ sealed interface HabitTarget {
     data class PerMonth(val times: Int) : HabitTarget
 }
 
-/**
- * **Legacy shape.** A habit of a save from before 0.133.0. PLAN has no separate Habits record any more (PLAN.md section 5): when such a
- * save loads, each habit becomes a recurring task with a frequency target ([FrequencyTarget]) in the same id, creation day, completion days and
- * payment day, and the habit list is kept aside (`AppData.legacyHabits`). This class stays to read those saves and, as the one tested
- * implementation of the forgiving streak and of paying once a day, to compute them for the recurring task that replaced it.
- */
 @Serializable
 data class Habit(
     val id: String,
@@ -31,7 +24,6 @@ data class Habit(
     val target: HabitTarget,
     val createdOn: LocalDate,
     val completions: Set<LocalDate> = emptySet(),
-    /** The last day a completion paid, kept apart from [completions] so undoing and ticking again never pays twice. */
     val paidOn: LocalDate? = null,
 ) {
     init {
@@ -43,26 +35,19 @@ data class Habit(
         }
     }
 
-    /** Whether a completion on [date] earns a reward: only the first one each day, even after an undo. */
     fun paysOn(date: LocalDate): Boolean = date !in completions && date != paidOn
 
     fun complete(date: LocalDate): Habit = copy(completions = completions + date)
 
-    /** Marks [date] as paid; call it with the completion that earned the reward. */
     fun paid(date: LocalDate): Habit = copy(paidOn = date)
 
     fun undo(date: LocalDate): Habit = copy(completions = completions - date)
 
-    /** True if [date] is a day this habit is expected (always true for per-week and per-month habits). */
     fun isScheduledOn(date: LocalDate): Boolean = when (val t = target) {
         HabitTarget.Daily, is HabitTarget.PerWeek, is HabitTarget.PerMonth -> true
         is HabitTarget.Weekdays -> date.dayOfWeek in t.days
     }
 
-    /**
-     * The habit's streak. Daily and weekday habits count days (with the free miss per week); per-week and per-month habits
-     * count successful weeks or months, and a period one completion short still counts, so one slip never breaks them.
-     */
     fun streak(today: LocalDate, rest: Set<LocalDate> = emptySet(), extraFreeMisses: Int = 0, weekStart: DayOfWeek = DayOfWeek.MONDAY): Int =
         when (val t = target) {
             HabitTarget.Daily, is HabitTarget.Weekdays ->
@@ -82,8 +67,8 @@ data class Habit(
             val needed = (times - restDays.coerceAtMost(times)).coerceAtLeast(1)
             when {
                 done >= needed -> streak++
-                first -> {} // the current week is not over yet
-                done >= needed - 1 -> streak++ // one short is forgiven
+                first -> {}
+                done >= needed - 1 -> streak++
                 else -> break
             }
             first = false

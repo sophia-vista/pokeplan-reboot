@@ -5,9 +5,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-// The World module (docs/pokelife/MODULES/WORLD.md section 14): a Pokémon Mystery Dungeon style exploration game with idle and incremental
-// mechanics. Dungeons, expedition teams, offline progress, Exploration Finds, rank and the story. Rules only, no UI; it
-// knows nothing about Plan or Care and meets the shared collection through the Pokémon it is given and the finds it returns.
 kotlin {
     jvm()
 
@@ -27,7 +24,6 @@ kotlin {
     }
 }
 
-// Plays teams through the dungeon simulation and writes docs/world-economy-report.md (generated on demand, git-ignored).
 tasks.register<JavaExec>("simulateWorldEconomy") {
     group = "tools"
     val main = kotlin.targets.getByName("jvm").compilations.getByName("main")
@@ -37,7 +33,6 @@ tasks.register<JavaExec>("simulateWorldEconomy") {
     args(rootProject.file("docs/world-economy-report.md").absolutePath)
 }
 
-// Writes every chapter's summary and the scenes' scripts as readable Markdown: docs/world-story-script.md (generated on demand, git-ignored).
 tasks.register<JavaExec>("storyScript") {
     group = "tools"
     val main = kotlin.targets.getByName("jvm").compilations.getByName("main")

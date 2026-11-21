@@ -22,10 +22,6 @@ import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
-/**
- * The outbreaks a rare Mint moment opened (a reconciled account, a weekly review; POKEMON_ECOSYSTEM.md 10.0): three Pokémon to choose from, each caught
- * directly with the outbreak's extra shiny rolls. Shown on the Overview only while one waits; picking one uses the outbreak up.
- */
 @Composable
 internal fun OutbreakPanel(model: AppModel) {
     val pending = model.data.outbreaks

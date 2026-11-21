@@ -1,10 +1,5 @@
 name: Latest APK
 
-# Every merge to main builds the Android app and replaces the "latest" release with it, so the newest version can be
-# downloaded on a phone from the repository's Releases page. The first merge with a new number in the VERSION file also
-# creates that version's own release ("PokéPlan v0.2.0"), which stays as it was built.
-# Owner's rule (6 November 2026): fewer Actions runs. A merge that changes only docs, notes or the old app publishes nothing
-# new, and a build can be started by hand (Actions → Latest APK → Run workflow) or by merging a code change.
 on:
   workflow_dispatch:
   push:
@@ -19,7 +14,6 @@ on:
 permissions:
   contents: write
 
-# Two merges close together must not delete each other's release halfway; the newer one wins.
 concurrency:
   group: latest-apk
   cancel-in-progress: true
@@ -37,7 +31,6 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
         env:
-          # The same cache key as CI, so the pull requests that follow start from this build's downloads and compiled code.
           GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: pokeplan
           GRADLE_BUILD_ACTION_CACHE_KEY_JOB: gradle
       - name: Version
@@ -48,7 +41,6 @@ jobs:
           echo "name=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Build
         env:
-          # Becomes the Android versionCode and the "build N" shown in Settings → About.
           POKEPLAN_BUILD: ${{ github.run_number }}
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true

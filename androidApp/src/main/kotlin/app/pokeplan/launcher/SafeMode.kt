@@ -13,11 +13,6 @@ import android.widget.ListView
 import android.widget.TextView
 import app.pokeplan.ui.launcher.LauncherApp
 
-/**
- * The launcher after it crashed three times in a minute: a plain list of the installed apps and two buttons, so the phone can still open its apps.
- * Built from plain Android views on purpose, with nothing from the normal screen (no Compose, no save, no pictures, no widgets, no town), because the
- * normal screen is what keeps crashing.
- */
 internal class SafeModeView(
     private val activity: Activity,
     private val onOpen: (String) -> Unit,
@@ -49,7 +44,6 @@ internal class SafeModeView(
         }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
     }
 
-    /** Shows [apps] in the list, by name. */
     fun show(apps: List<LauncherApp>) {
         val sorted = apps.sortedBy { it.label.lowercase() }
         keys = sorted.map { it.key }

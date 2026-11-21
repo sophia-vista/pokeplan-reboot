@@ -65,7 +65,6 @@ import app.pokeplan.ui.screens.Cutscene
 import app.pokeplan.ui.screens.dayMonth
 import app.pokeplan.ui.screens.label
 
-/** The games' "judge" wording for a Pokémon's IVs, by their total (0 to 186). */
 private fun judge(total: Int) = when {
     total >= 186 -> "Can't be better"
     total >= 150 -> "Fantastic"
@@ -77,7 +76,6 @@ private fun judge(total: Int) = when {
 
 private fun String.titleCase() = lowercase().replaceFirstChar { it.uppercase() }
 
-/** "Adamant (+Attack, −Sp. Atk)", or "Hardy (no stat changes)" for the five neutral natures. */
 private fun natureText(p: OwnedPokemon): String {
     val up = p.nature.raised
     val down = p.nature.lowered
@@ -85,19 +83,16 @@ private fun natureText(p: OwnedPokemon): String {
     return "${p.nature.name.titleCase()} ($effect)"
 }
 
-/** Its best IVs, the way the games' judge names them ("Speed", "Attack and Speed"). */
 private fun bestStats(p: OwnedPokemon): String {
     val best = p.ivs.values.max()
     return Stat.entries.filter { p.ivs[it] == best }.joinToString(" and ") { it.label }
 }
 
-/** How it joined, and where: "Hatched from a Task Egg in the Plan Region". */
 private fun originText(origin: Origin): String {
     val egg = origin.how == Origin.How.FOCUS_EGG || origin.how == Origin.How.TASK_EGG
     return origin.how.label + (origin.region?.takeIf { egg }?.let { " in the ${it.label}" } ?: "")
 }
 
-/** A box on the detail page with its title. */
 @Composable
 private fun DetailBox(title: String, content: @Composable () -> Unit) = TextBox {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -106,11 +101,6 @@ private fun DetailBox(title: String, content: @Composable () -> Unit) = TextBox 
     }
 }
 
-/**
- * One Pokémon, read top to bottom (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): who it is, what kind of specimen it is, how it is
- * growing, how it evolves, its role in your world, and where it came from. Transfer, the one step that cannot be undone,
- * comes last.
- */
 @Composable
 internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     val store = model.store
@@ -119,14 +109,12 @@ internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     val stats = store.sees(Feature.STATS_DETAIL)
 
     Column(Modifier.fillMaxSize()) {
-        // The level and species are in the identity box below; the bar names the species only under a nickname.
         ScreenHeader(p.nickname, subtitle = p.species.name.takeIf { it != p.nickname }, onBack = back)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // A level gained while this page is open (a Rare Candy) turns it around once (its Rotate animation, else a hop).
             var spin by remember(p.id) { mutableStateOf(false) }
             var spinKey by remember(p.id) { mutableIntStateOf(0) }
             var shownLevel by remember(p.id) { mutableIntStateOf(p.level) }
@@ -158,7 +146,6 @@ internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     }
 }
 
-/** Who it is: its face, Pokédex number, species, level, and its nickname with Rename. */
 @Composable
 private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
     val store = model.store
@@ -167,7 +154,6 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
-                // Its face, the way a Mystery Dungeon team menu shows each member. The name and the types are in the bar and on the stage.
                 Portrait(p.form.id, p.isShiny, "${p.nickname}'s portrait", size = Sizes.SpriteM)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text("No. ${p.speciesId.toString().padStart(4, '0')}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -189,14 +175,9 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
     }
 }
 
-/** One move as a line: its name, then its category and power. */
 private fun moveText(m: app.pokeplan.core.dex.MoveInfo): String =
     m.name + " · " + m.category.name.lowercase().replaceFirstChar { it.uppercase() } + (m.power?.let { " · power $it" } ?: "")
 
-/**
- * Its moves (up to four). They are the natural ones, the last it has learned by its level, until some are chosen here; Choose lists what it may be
- * given and a tap puts a move in or out. Only WORLD reads them, to add to a team's power where a move fits the dungeon (WORLD.md 3.2).
- */
 @Composable
 private fun MovesBox(model: AppModel, p: OwnedPokemon) = DetailBox("Moves") {
     val store = model.store
@@ -231,7 +212,6 @@ private fun MovesBox(model: AppModel, p: OwnedPokemon) = DetailBox("Moves") {
     }
 }
 
-/** What kind of specimen it is: nature, ability, gender, shiny, and the IV judge. The things a good one is hard to get for. */
 @Composable
 private fun TraitsBox(p: OwnedPokemon, stats: Boolean) = DetailBox("Traits") {
     val body = MaterialTheme.typography.bodyLarge
@@ -245,7 +225,6 @@ private fun TraitsBox(p: OwnedPokemon, stats: Boolean) = DetailBox("Traits") {
     }
 }
 
-/** How it is growing: level and Exp. Candies, friendship and how it likes to bond, and its stats. */
 @Composable
 private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, stats: Boolean) = DetailBox("Growth") {
     val store = model.store
@@ -279,10 +258,8 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
         val values = p.stats.values
         Column(Modifier.padding(top = Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Stat.entries.forEachIndexed { i, stat ->
-                // The nature's raised and lowered stats are marked with an arrow, not only a colour.
                 val mark = when (stat) { p.nature.raised -> " ▲"; p.nature.lowered -> " ▼"; else -> "" }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    // Minimum widths, not fixed sizes, so large text grows the labels instead of clipping them.
                     Text(statNames[i] + mark, Modifier.widthIn(min = 92.dp), style = soft)
                     Box(Modifier.weight(1f)) { PixelBar(values[i] / 300f, color = if (i == 0) Pixel.Green else Pixel.Tone) }
                     Text("${values[i]}", Modifier.widthIn(min = 44.dp), style = soft, textAlign = TextAlign.End)
@@ -292,7 +269,6 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
     }
 }
 
-/** What it evolves from, and what it can evolve into with Evolve. */
 @Composable
 private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
     val store = model.store
@@ -305,7 +281,6 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
         from?.let { Text("Evolves from ${it.name}", style = soft, color = Pixel.InkSoft) }
         if (options.isEmpty()) Text("This is its final form.", style = soft, color = Pixel.InkSoft)
         if (p.heldItem == app.pokeplan.core.pokemon.Items.EVERSTONE && options.isNotEmpty()) Text("Holds an Everstone: it will not evolve.", style = soft, color = Pixel.InkSoft)
-        // Evolving asks first (the games' "Evolve?"), with Cancel; the scene that follows can still be stopped.
         var asking by remember(p.id) { mutableStateOf<app.pokeplan.core.pokemon.EvolutionOption?>(null) }
         val worldDone = model.data.world.evolutionTrials + model.data.completedTrials
         options.forEach { o ->
@@ -318,13 +293,11 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
                 PixelButton("Evolve", { asking = o }, color = Pixel.Green, enabled = o.available && asking == null, compact = true)
             }
             val key = app.pokeplan.core.pokemon.EvolutionTrials.doneKey(o.evolution, p.id)
-            // An Evolution Trial in WORLD: where it is, in the region it belongs to.
             app.pokeplan.world.EvolutionTrialSites.of(o.evolution)?.takeIf { key !in worldDone && p.heldItem != app.pokeplan.core.pokemon.Items.EVERSTONE }?.let { site ->
                 val d = app.pokeplan.world.Dungeons.byId(site.dungeonId)
                 Text("Evolution Trial: ${site.title}", style = soft)
                 Text("Floor ${site.floor}, ${d?.name ?: site.dungeonId} (${d?.layer?.label}), on a team", style = soft, color = Pixel.InkSoft)
             }
-            // Done with the phone: upside down, a spin, a walk.
             app.pokeplan.core.pokemon.EvolutionTrials.device(o.evolution)?.takeIf { key !in worldDone && p.heldItem != app.pokeplan.core.pokemon.Items.EVERSTONE }?.let { action ->
                 DeviceTrial(model, p, o, action)
             }
@@ -334,7 +307,6 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
                     PixelButton("Cancel", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     PixelButton("Evolve", {
                         asking = null
-                        // The scene makes the evolution at its end (Stop cancels it); this is what it will look like.
                         val after = app.pokeplan.core.pokemon.EvolutionRules.evolve(p, o).pokemon
                         model.cutscene = Cutscene.Evolve(p, after, o)
                     }, Modifier.weight(1f), Pixel.Green, compact = true)
@@ -344,17 +316,14 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
     }
 }
 
-/** Its role in your world: which party (or the PC, or the Guardian slots), lead or buddy, its region's dex, and the star. */
 @Composable
 private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = DetailBox(if (isGuardian) "Guardian" else "Role") {
     val store = model.store
     val player = model.data.player
     val isBuddy = p.id == player.buddyId
-    // A legendary or mythical Pokémon is a normal Pokémon (a party, a team, the PC); it can also be one module's Guardian.
     Text(app.pokeplan.app.Places.label(model.data, p.id), style = MaterialTheme.typography.bodyLarge)
     if (isGuardian) GuardianChoice(model, p)
     var moving by remember(p.id) { mutableStateOf(false) }
-    // A Pokémon on an expedition under way stays with its team until it ends (the label above says which team).
     val movable = app.pokeplan.app.Places.movable(model.data, p.id)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p) }, color = Pixel.InkSoft, enabled = !isBuddy && !isGuardian && movable, compact = true)
@@ -367,19 +336,16 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     if (moving && movable) PlacePicker(model, p)
 }
 
-/** Where it came from: how it joined and the day. Pokémon from before origins were kept show the day only. */
 @Composable
 private fun OriginBox(model: AppModel, p: OwnedPokemon) = DetailBox("Origin") {
     val day = model.store.dayOf(p.caughtAtMillis)
     model.data.origins[p.id]?.let {
         Text(originText(it), style = MaterialTheme.typography.bodyLarge)
-        // A friend's egg or a visitor that stayed keeps a small note of who it came from and what it took.
         it.visitor?.takeIf { v -> v.note.isNotBlank() }?.let { v -> Text(v.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
     }
     Text("Met on ${day.dayMonth()} ${day.year}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
-/** Transfer, the one step that cannot be undone: quiet until it is confirmed, so it never draws the eye first. */
 @Composable
 private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     val store = model.store
@@ -406,17 +372,10 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     }
 }
 
-/**
- * Where a Pokémon is kept, as one list instead of a pair of keys for every module (design review, 11 November 2026): the PC and each module's
- * party with how full it is. A Pokémon is in one place only, so moving it takes it from the old one; in the party it is in, the same row
- * makes it that module's lead. A full party is dimmed. The buddy, the Guardian slots and WORLD teams are set where they live.
- */
 @Composable
 private fun PlacePicker(model: AppModel, p: OwnedPokemon) {
     val store = model.store
     val player = model.data.player
-    // Where it is now, from the one place it holds: the PC row says "Here" only for a Pokémon that really is in the PC (not the buddy, a
-    // Guardian, a team member or a helper), and its button sends one of those back (the buddy is changed by choosing another).
     val place = store.placeOf(p.id)
     val here = (place as? app.pokeplan.app.Place.Party)?.partyId
     class Slot(val label: String, val partyId: String, val accent: androidx.compose.ui.graphics.Color, val lead: String?, val makeLead: () -> Unit)

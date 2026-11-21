@@ -1,13 +1,8 @@
--- Schema version 7 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
--- It holds the shared Pokémon and economy side and a legacy sidecar for every module that has no tables yet.
--- Every later change is a numbered migration (N.sqm) checked against the committed schema file (databases/N.db).
-
 CREATE TABLE app_meta (
     key TEXT NOT NULL PRIMARY KEY,
     value TEXT NOT NULL
 );
 
--- One owned Pokémon (POKEMON_ECOSYSTEM.md section 4). The id is the legacy id, kept as it was.
 CREATE TABLE owned_pokemon (
     id TEXT NOT NULL PRIMARY KEY,
     species_id INTEGER NOT NULL CHECK (species_id > 0),
@@ -38,15 +33,10 @@ CREATE TABLE owned_pokemon (
     cosmetic_form TEXT,
     personality INTEGER NOT NULL,
     caught_at_millis INTEGER NOT NULL,
-    -- Global favourite flag (POKEMON_ECOSYSTEM.md section 6.4).
     is_favorite INTEGER NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1)),
-    -- How it joined the collection (the legacy "origin"), null for Pokémon from before it was recorded.
     origin_how TEXT,
     origin_region TEXT,
-    -- Any field of the legacy record this version has no column for, kept as raw JSON, never dropped.
     extra_json TEXT,
-    -- Version 6: the place in the collection's list (the order the Pokémon were owned, which a party's member order follows), and the
-    -- origin exactly as the save keeps it (origin_how and origin_region are its lookup columns).
     position INTEGER NOT NULL DEFAULT 0,
     origin_json TEXT,
     CHECK (ev_hp + ev_attack + ev_defense + ev_sp_attack + ev_sp_defense + ev_speed <= 510)
@@ -54,10 +44,6 @@ CREATE TABLE owned_pokemon (
 
 CREATE INDEX owned_pokemon_species ON owned_pokemon(species_id, form_identifier);
 
--- Where a Pokémon is (POKEMON_ECOSYSTEM.md sections 2.2 and 6.2, owner decision 7 November 2026): **one place only**. The primary key is the
--- Pokémon, so a second row for it cannot exist; no row means the PC. A party is its module's party id in `ref` (the lower-case module id the save uses, `plan`) and the lead is slot 1; the buddy
--- is the one row of its kind (slot 0); a Guardian has its slot. A WORLD expedition team and a GEAR helper are the other two places: their
--- records stay with their module (the 'save' row), and the live write refuses a save that puts one of those Pokémon here as well.
 CREATE TABLE pokemon_place (
     owned_id TEXT NOT NULL PRIMARY KEY REFERENCES owned_pokemon(id) ON DELETE CASCADE,
     kind TEXT NOT NULL CHECK (kind IN ('buddy', 'party', 'guardian')),
@@ -67,7 +53,6 @@ CREATE TABLE pokemon_place (
     CHECK ((kind = 'buddy' AND ref = '' AND slot = 0) OR (kind = 'guardian' AND ref = '' AND slot >= 1) OR (kind = 'party' AND ref <> '' AND slot >= 1))
 );
 
--- Species and forms ever seen, caught or owned as a shiny; they survive a transfer (POKEMON_ECOSYSTEM.md section 5).
 CREATE TABLE dex_history (
     kind TEXT NOT NULL CHECK (kind IN ('caught_species', 'shiny_species', 'caught_form', 'shiny_form', 'seen_species')),
     ref INTEGER NOT NULL,
@@ -80,26 +65,21 @@ CREATE TABLE player_progress (
     trainer_points INTEGER NOT NULL CHECK (trainer_points >= 0)
 );
 
--- The player's single values that have no table of their own (version 6): the leads a party was given, the roles version and any field a
--- newer build adds to the player, the favourites and origins of Pokémon that are no longer owned. One row per key, as JSON.
 CREATE TABLE pokemon_state (
     key TEXT NOT NULL PRIMARY KEY,
     json TEXT NOT NULL
 );
 
--- The one Bag: candies, berries, evolution items and every other stack.
 CREATE TABLE bag_stack (
     item_id TEXT NOT NULL PRIMARY KEY,
     quantity INTEGER NOT NULL CHECK (quantity >= 0)
 );
 
--- The one currency, Poké.
 CREATE TABLE currency_balance (
     currency TEXT NOT NULL PRIMARY KEY CHECK (currency = 'poke'),
     amount INTEGER NOT NULL CHECK (amount >= 0)
 );
 
--- A settled event. event_id is the idempotency key: <module>:<source record>:<kind>[:<occurrence>].
 CREATE TABLE reward_event (
     event_id TEXT NOT NULL PRIMARY KEY,
     source_module TEXT NOT NULL,
@@ -110,7 +90,6 @@ CREATE TABLE reward_event (
     metadata_json TEXT
 );
 
--- Append-only: an entry is never changed or removed; a reversal is a new entry that points at the original.
 CREATE TABLE reward_ledger_entry (
     entry_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     event_id TEXT NOT NULL REFERENCES reward_event(event_id),
@@ -147,7 +126,6 @@ CREATE TABLE processed_event (
     PRIMARY KEY (consumer, outbox_id)
 );
 
--- One row per import or schema migration run.
 CREATE TABLE migration_history (
     migration_id TEXT NOT NULL PRIMARY KEY,
     kind TEXT NOT NULL CHECK (kind IN ('legacy_json_import')),
@@ -164,8 +142,6 @@ CREATE TABLE import_warning (
     detail TEXT NOT NULL
 );
 
--- Every legacy field that has no table yet (PLAN, CARE, WORLD, GEAR, settings), as raw JSON by its legacy path.
--- Written only by the importer; a module moves its fields out when it gets its own tables.
 CREATE TABLE legacy_sidecar (
     source TEXT NOT NULL CHECK (source IN ('save', 'care')),
     path TEXT NOT NULL,
@@ -173,19 +149,12 @@ CREATE TABLE legacy_sidecar (
     PRIMARY KEY (source, path)
 );
 
--- The live save (version 2, the cutover): the app's own JSON documents ('save' = AppData, 'care' = CareData) kept inside the
--- database so every write is one transaction and a backup is one file. This is the single authority once the activation
--- marker is set; the normalized tables above are not read by the app until each module is refactored onto them (REP-014).
--- Unreadable documents are kept aside under 'aside:<name>:<millis>' and never overwritten.
 CREATE TABLE live_document (
     name TEXT NOT NULL PRIMARY KEY,
     json TEXT NOT NULL,
     updated_at INTEGER NOT NULL
 );
 
--- The shared reminder feature's own records (INTEGRATIONS_AND_PRIVACY.md section 9): only reminders held back from what the modules
--- rebuild by themselves (a snooze, an unanswered-reminder repeat). Opaque references and times only, never a title or a note; the modules'
--- own records stay canonical and every other reminder is rebuilt from them (section 9.8).
 CREATE TABLE reminder_hold (
     id TEXT NOT NULL PRIMARY KEY,
     module TEXT NOT NULL,
@@ -197,11 +166,6 @@ CREATE TABLE reminder_hold (
     created_at INTEGER NOT NULL
 );
 
--- CARE's own records (version 4, REP-014): the Care save moved out of the live document into tables, one family per kind of
--- record so a private kind (the journal, the diary) can be read, exported or erased on its own. A record table keeps the
--- columns the app asks by (its key, its place in the list, its day) and the record itself as JSON in `json`, so the typed
--- model stays the one definition of a record and a field it does not know yet is never dropped. `position` is the order of the
--- list; a record without an id of its own is keyed by its position.
 CREATE TABLE care_routine (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -209,7 +173,6 @@ CREATE TABLE care_routine (
     json TEXT NOT NULL
 );
 
--- The days a routine was done, one row each (a routine's json holds everything but these).
 CREATE TABLE care_routine_completion (
     routine_key TEXT NOT NULL REFERENCES care_routine(key) ON DELETE CASCADE,
     day TEXT NOT NULL,
@@ -244,7 +207,6 @@ CREATE TABLE care_skill_practice (
     json TEXT NOT NULL
 );
 
--- Visitors in the meadow and in the queue (in arrival order), and the ones the player sent away (kept, so a dismissal can be undone).
 CREATE TABLE care_visitor (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -259,18 +221,11 @@ CREATE TABLE care_dismissed_visitor (
     json TEXT NOT NULL
 );
 
--- Everything else Care keeps that is one value rather than a list: its settings, the visit in progress, the journal draft, the
--- skipped prompts, the rhythm weeks, the visitor seed, and any field a newer build adds. One row per top-level field.
 CREATE TABLE care_state (
     key TEXT NOT NULL PRIMARY KEY,
     json TEXT NOT NULL
 );
 
--- PLAN's own records (version 5, REP-014): PLAN's part of the save document ('save' = AppData, which PLAN shares with the player) moved
--- into tables. Same shape as CARE's (key, position, day, and the record as JSON in `json`). What is not PLAN's stays in the 'save'
--- row of live_document. `plan_day` holds the rest days and the active days; `plan_state` the single values (the running focus
--- session, the completions waiting out their undo, the pick, the emergency pauses, the legacy habits kept after their merge into
--- recurring tasks, and any field a newer build adds).
 CREATE TABLE plan_task (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -331,10 +286,6 @@ CREATE TABLE plan_state (
     json TEXT NOT NULL
 );
 
--- HEAL's own records (version 7, REP-014): the Heal save kept in tables from the start, one family per kind of private record (activity,
--- hydration, sleep, body measurements, goals) so each can be read, exported or erased on its own. Same shape as CARE's and PLAN's (key,
--- position, day, and the record as JSON in `json`). `heal_state` holds the settings and any field a newer build adds. HEAL never has a
--- row in `live_document`: it is created in the tables.
 CREATE TABLE heal_activity (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -375,8 +326,6 @@ CREATE TABLE heal_state (
     json TEXT NOT NULL
 );
 
--- HEAL's steps and readings (version 11, 0.186.0): a daily step count, and heart rate, resting heart rate, SpO2, skin temperature, Huawei's stress and sleep
--- score, read from outside and kept as history only. Same shape and the same sealing as the other heal_* record tables.
 CREATE TABLE heal_steps (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -391,10 +340,6 @@ CREATE TABLE heal_vital (
     json TEXT NOT NULL
 );
 
--- MINT's own records (version 8, REP-014): the Mint save kept in tables from the start, one family per kind of private record (account, category,
--- transaction, budget, bill, bill payment, reconciliation, review) so each can be read, exported or erased on its own. Same shape as HEAL's (key,
--- position, day, and the record as JSON in `json`; every amount is an integer in minor units inside that JSON, never a floating-point number).
--- `mint_state` holds the settings and any field a newer build adds. MINT never has a row in `live_document`: it is created in the tables.
 CREATE TABLE mint_account (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -456,7 +401,6 @@ CREATE TABLE mint_state (
     json TEXT NOT NULL
 );
 
--- Owned Pokémon.
 insertPokemon:
 INSERT INTO owned_pokemon(
     id, species_id, form_identifier, nickname, nature, ability, gender,
@@ -490,7 +434,6 @@ WHERE id = ?;
 releasePokemon:
 DELETE FROM owned_pokemon WHERE id = ?;
 
--- Places: a Pokémon has at most one row.
 placeOf:
 SELECT kind, ref, slot FROM pokemon_place WHERE owned_id = ?;
 
@@ -524,21 +467,18 @@ SELECT count(*) FROM pokemon_place;
 moveSlot:
 UPDATE pokemon_place SET slot = ? WHERE owned_id = ?;
 
--- Dex history.
 addDex:
 INSERT OR IGNORE INTO dex_history(kind, ref) VALUES (?, ?);
 
 dexOf:
 SELECT ref FROM dex_history WHERE kind = ? ORDER BY ref;
 
--- Progress.
 setProgress:
 INSERT OR REPLACE INTO player_progress(id, egg_meter, trainer_points) VALUES (1, ?, ?);
 
 progress:
 SELECT egg_meter, trainer_points FROM player_progress WHERE id = 1;
 
--- Bag and Poké balances (changed only together with a ledger entry).
 ensureBalance:
 INSERT OR IGNORE INTO currency_balance(currency, amount) VALUES ('poke', 0);
 
@@ -551,7 +491,6 @@ UPDATE currency_balance SET amount = amount + ? WHERE currency = 'poke';
 bagQuantity:
 SELECT quantity FROM bag_stack WHERE item_id = ?;
 
--- No upsert: Android 8 (minSdk 26) ships SQLite 3.18.
 ensureStack:
 INSERT OR IGNORE INTO bag_stack(item_id, quantity) VALUES (?, 0);
 
@@ -564,7 +503,6 @@ DELETE FROM bag_stack WHERE quantity = 0;
 bag:
 SELECT item_id, quantity FROM bag_stack ORDER BY item_id;
 
--- Events and the ledger.
 eventById:
 SELECT * FROM reward_event WHERE event_id = ?;
 
@@ -593,7 +531,6 @@ SELECT count(*) FROM reward_ledger_entry;
 eventCount:
 SELECT count(*) FROM reward_event;
 
--- Outbox.
 insertOutbox:
 INSERT INTO outbox_event(outbox_id, event_kind, contract_version, payload_json, created_at) VALUES (?, ?, ?, ?, ?);
 
@@ -605,7 +542,6 @@ ORDER BY o.created_at, o.outbox_id;
 markProcessed:
 INSERT INTO processed_event(consumer, outbox_id, processed_at) VALUES (?, ?, ?);
 
--- Meta, migrations, warnings and the sidecar.
 setMeta:
 INSERT OR REPLACE INTO app_meta(key, value) VALUES (?, ?);
 
@@ -636,7 +572,6 @@ SELECT path, json FROM legacy_sidecar WHERE source = ? ORDER BY path;
 sidecarJson:
 SELECT json FROM legacy_sidecar WHERE source = ? AND path = ?;
 
--- The live documents.
 liveRead:
 SELECT json FROM live_document WHERE name = ?;
 
@@ -652,7 +587,6 @@ DELETE FROM live_document WHERE name = ?;
 liveDeleteAside:
 DELETE FROM live_document WHERE name LIKE 'aside:%';
 
--- Held reminders.
 holdPut:
 INSERT OR REPLACE INTO reminder_hold(id, module, source_ref, kind, occurrence, at_millis, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
@@ -668,10 +602,6 @@ DELETE FROM reminder_hold WHERE at_millis < ?;
 holdDeleteAll:
 DELETE FROM reminder_hold;
 
--- HOME's own records (version 9, REP-014): the Home save kept in tables from the start, one family per kind of private record (area, chore, chore entry,
--- supply, stock adjustment, restocking entry, asset, maintenance schedule, maintenance record, warranty, reference note) so each can be read, exported or erased
--- on its own. Same shape as HEAL's (key, position, day, and the record as JSON in `json`). `home_state` holds the settings and any field a newer build adds.
--- HOME never has a row in `live_document`: it is created in the tables. Nothing is sealed (that is MINT's alone).
 CREATE TABLE home_area (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -749,8 +679,6 @@ CREATE TABLE home_reference (
     json TEXT NOT NULL
 );
 
--- HOME's Secret Base room (version 12, REP-053, HOME.md 9.5): one row per placed decoration (key = the decoration's id, the record as JSON in `json`).
--- Not private and not sealed. Which decorations are owned lives in the game save, not here.
 CREATE TABLE home_room (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -763,10 +691,6 @@ CREATE TABLE home_state (
     json TEXT NOT NULL
 );
 
--- LINK's own records (version 10, REP-014): the Link save kept in tables from the start, one family per kind of private record (person, note about a
--- person, important date, follow-up) so each can be read, exported or erased on its own. Same shape as HOME's (key, position, day, and the record as JSON
--- in `json`). `link_state` holds the settings and any field a newer build adds. LINK never has a row in `live_document`: it is created in the tables.
--- Nothing is sealed (that is MINT's alone; no owner decision on encrypting LINK yet).
 CREATE TABLE link_person (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,

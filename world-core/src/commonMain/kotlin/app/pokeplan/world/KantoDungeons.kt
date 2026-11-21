@@ -3,12 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Kanto layer (docs/pokelife/MODULES/WORLD.md section 14, "Kanto, the first region layer"), from Pokémon Red, Blue, FireRed and LeafGreen.
- * Their wild tables are Kanto's regional dex (species 1 to 151), by each place's habitat in the games; legendaries are never found
- * (they are quests, [Legends]). Floors, floor times, milestones and the rank gates are starting values *(tune)*, checked with
- * `:world-core:simulateWorldEconomy`. [DungeonDef.chapter] is a chapter of [KantoStory].
- */
 object KantoDungeons {
     private val K = WorldLayer.KANTO
 
@@ -70,10 +64,6 @@ object KantoDungeons {
     )
 }
 
-/**
- * Kanto's story, "The Genetic Crisis" (docs/regional-storylines.md): arrival, investigation, awakening, confrontation, resolution. A
- * chapter opens by rank and by how many different Kanto dungeons have been cleared, and is never lost.
- */
 object KantoStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "Pallet Town", "A new explorer sets out from Pallet Town. Pokémon in the wild behave strangely.", "Viridian Forest and Mt. Moon", ExplorerRank.NORMAL, 0),
@@ -83,7 +73,6 @@ object KantoStory {
         Chapter(5, "The Ultimate Pokémon", "Beyond Cerulean City, a cave holds what Rocket made from Mew.", "Cerulean Cave, Mewtwo and Mew", ExplorerRank.PLATINUM, 8),
     )
 
-    /** The Guardian: Mewtwo, found at the end of Cerulean Cave. */
     const val GUARDIAN = "Mewtwo"
     const val GUARDIAN_BONUS = "Psychic Mastery: Kanto expeditions find Pokémon a little more often"
 }

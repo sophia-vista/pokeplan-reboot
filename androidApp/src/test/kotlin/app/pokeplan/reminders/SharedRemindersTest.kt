@@ -39,11 +39,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-/**
- * The shared reminder scheduler on Android (REP-033; INTEGRATIONS_AND_PRIVACY.md section 9): the alarms it sets, what an alarm shows, the buttons, quiet
- * hours, a reminder missed while the phone was off, and the boot and time-change receivers. These replace the phone checks of section 9.11.1 for what
- * Robolectric can reach (the alarm manager and the notification shade are its shadows, not a phone's).
- */
 @RunWith(RobolectricTestRunner::class)
 class SharedRemindersTest : AndroidTestBase() {
     private val title = "Call the dentist"
@@ -56,7 +51,6 @@ class SharedRemindersTest : AndroidTestBase() {
         zoneBefore = java.util.TimeZone.getDefault()
         java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"))
         ShadowAlarmManager.setCanScheduleExactAlarms(true)
-        // No quiet hours unless a test sets them (a start equal to its end is never inside), so the tests do not depend on the hour they run at.
         quietHours(QuietHours(LocalTime(3, 0), LocalTime(3, 0)))
     }
 
@@ -64,7 +58,6 @@ class SharedRemindersTest : AndroidTestBase() {
 
     private fun quietHours(q: QuietHours) = widgetStore(context).changeSettings { it.copy(quietHours = q, streakReminder = false, weeklyRecap = false) }
 
-    /** A task with one reminder at the time it is planned for, [at] rounded down to the minute. */
     private fun taskAt(at: LocalDateTime): Task {
         val store = widgetStore(context)
         val task = store.addTask(title)
@@ -76,7 +69,6 @@ class SharedRemindersTest : AndroidTestBase() {
 
     private class Alarm(val atMillis: Long, val type: Int, val intent: Intent)
 
-    /** The alarms of the shared scheduler for [taskId] (the nightly refresh and other features' alarms left out). */
     private fun alarmsFor(taskId: String): List<Alarm> = alarms.scheduledAlarms.mapNotNull { a ->
         val intent = shadowOf(a.operation).savedIntent
         if (intent.action == SharedReminders.ACTION_FIRE && intent.getStringExtra("ref") == taskId) Alarm(a.triggerAtMs, a.type, intent) else null
@@ -86,7 +78,6 @@ class SharedRemindersTest : AndroidTestBase() {
 
     private fun request(intent: Intent): ReminderRequest = assertNotNull(SharedReminders.requestOf(intent))
 
-    /** Taps the button [label] of the reminder on show for [taskId], the way the shade would send it. */
     private fun tap(taskId: String, label: String) {
         val n = assertNotNull(notificationFor(taskId), "the reminder is on show").notification
         val action = n.actions.firstOrNull { it.title == label } ?: fail("no \"$label\" button: ${n.actions.map { it.title }}")
@@ -153,7 +144,6 @@ class SharedRemindersTest : AndroidTestBase() {
 
     @Test fun aReminderThatCameDueWhileThePhoneWasOffShowsOnceWhenItIsBack() {
         val task = taskAt(minutesFromNow(-60))
-        // The last plan was made two hours ago; the phone was off since then.
         context.getSharedPreferences("shared_reminders", Context.MODE_PRIVATE).edit().putLong("last_planned", System.currentTimeMillis() - 2 * 3_600_000L).commit()
         val now = System.currentTimeMillis()
         SharedReminders.reschedule(context)
@@ -163,7 +153,6 @@ class SharedRemindersTest : AndroidTestBase() {
         SharedReminders.fire(context, request(owed.intent))
         assertNotNull(notificationFor(task.id), "the missed reminder is shown")
         SharedReminders.reschedule(context)
-        // What is left is the follow-up that repeats an unanswered reminder (Settings: repeat reminders), not the missed one again.
         assertEquals(listOf(PlanReminderAdapter.KIND_REPEAT), alarmsFor(task.id).map { request(it.intent).kind }, "the missed one is shown only once")
     }
 
@@ -194,7 +183,6 @@ class SharedRemindersTest : AndroidTestBase() {
     }
 
     @Test fun aRepeatingTasksNextInstanceIsPlannedEvenIfTheAppWasNotOpened() {
-        // A monthly task whose instance for the day after tomorrow was never made (the app has not opened since): the scheduler makes it and sets its alarm.
         val store = widgetStore(context)
         val day = minutesFromNow(0).date.plus(2, DateTimeUnit.DAY)
         val seriesId = "series-1"
@@ -213,7 +201,6 @@ class SharedRemindersTest : AndroidTestBase() {
     private fun awaitAlarm(taskId: String, ok: (Alarm) -> Boolean = { true }) =
         awaitUntil("an alarm for the task") { alarmsFor(taskId).any(ok) }
 
-    /** The receivers do their work off the main thread (`goAsync`); this waits for it, up to ten seconds. */
     private fun awaitUntil(what: String, done: () -> Boolean) {
         val until = System.currentTimeMillis() + 10_000
         while (System.currentTimeMillis() < until) {

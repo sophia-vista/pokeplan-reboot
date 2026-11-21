@@ -8,13 +8,6 @@ import android.content.Intent
 import app.pokeplan.app.reminders.ReminderActions
 import app.pokeplan.app.reminders.ReminderModule
 import app.pokeplan.app.reminders.ReminderRequest
-/**
- * The migration from the old Plan and Care alarms to the shared reminder feature (INTEGRATIONS_AND_PRIVACY.md section 9.11).
- * The old alarms are cancelled only after [SharedReminders.reschedule] has set the new ones, once (a marker keeps the step
- * idempotent if it is interrupted). An old alarm the app can no longer name (a snooze, a repeat) lands on the receivers below,
- * which show nothing, so the old and the new feature can never both deliver. Their notification buttons from before the update
- * still work: they are translated to the shared action keys.
- */
 internal object LegacyReminders {
     private const val MARKER_PREFS = "reminder_migration"
     private const val VERSION = 1
@@ -38,7 +31,6 @@ internal object LegacyReminders {
     }
 }
 
-/** The old task-reminder receiver: an old alarm shows nothing; a button on a notification posted before the update is translated. */
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext
@@ -57,7 +49,6 @@ class ReminderReceiver : BroadcastReceiver() {
     }
 }
 
-/** The old routine-reminder receiver, as above. */
 class RoutineReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext

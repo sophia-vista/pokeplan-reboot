@@ -37,7 +37,6 @@ class CalcEngineTest {
         assertEquals("0.333333333333", text("1 / 3"))
         assertEquals("-0.5", text("-1/2"))
         assertEquals("1,234,567.5", CalcEngine.format(1234567.5, group = true))
-        // Just below a power of ten, and a chosen number of significant digits.
         assertEquals("1000", CalcEngine.format(999.9999999999999))
         assertEquals("0.1", CalcEngine.format(0.09999999999999999))
         assertEquals("0.0172117", CalcEngine.formatSignificant(0.0172117039587, 6))

@@ -123,15 +123,9 @@ import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 
-/**
- * Mint's screens (docs/pokelife `MODULES/MINT.md`), the manual slice: accounts, activity (expense, income, transfer, refund, fee, adjustment), budgets,
- * bills, a review that holds the reports, the reconciliation and the weekly review, and settings. Every amount goes through `MintStore.show`, so
- * hiding values is one switch for the whole module (section 3.3). Nothing here judges: going over a budget is a number, not a failure.
- */
 enum class MintSection(val label: String, val icon: String) {
     ACCOUNTS("Accounts", "member-card"), ACTIVITY("Activity", "journal"), BUDGETS("Budgets", "heart-scale"), BILLS("Bills and income", "oaks-letter"),
     REVIEW("Review", "scope-lens"), IMPORT("Import", "town-map"), SETTINGS("Settings", "storage-key"),
-    /** Appended, so a saved index still opens the same section. */
     SHARED("Shared bills", "friend-ball"),
 }
 
@@ -146,7 +140,6 @@ internal fun percentText(basisPoints: Int): String {
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-/** A flat row for a list inside one box (rows are divided by [HorizontalDivider], never boxed): content at the left, [trail] at the right, one centre line. */
 @Composable
 internal fun MintLine(onClick: (() -> Unit)? = null, onClickLabel: String? = null, trail: @Composable () -> Unit = {}, content: @Composable () -> Unit) {
     Row(
@@ -160,7 +153,6 @@ internal fun MintLine(onClick: (() -> Unit)? = null, onClickLabel: String? = nul
     }
 }
 
-/** A label at the left and its value at the right. */
 @Composable
 internal fun MintValueRow(label: String, value: String, soft: Boolean = false) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -169,7 +161,6 @@ internal fun MintValueRow(label: String, value: String, soft: Boolean = false) {
     }
 }
 
-/** The line under Mint's card in Modules: how many accounts, or what it is for. Never an amount, so the Modules list shows no figure. */
 internal fun mintSubtitle(model: AppModel): String {
     val n = model.mintData.accounts.count { it.status == AccountStatus.ACTIVE }
     return if (n == 0) "money in and out" else if (n == 1) "1 account" else "$n accounts"
@@ -240,12 +231,6 @@ private fun billsDetail(model: AppModel): String {
     return if (model.mintData.bills.isEmpty() && model.mintData.plans.isEmpty()) "optional" else if (open == 0) "none due soon" else "$open to settle"
 }
 
-// ----- Overview ---------------------------------------------------------------------------------------------------------
-
-/**
- * The first screen (MINT.md section 3.2): net position when there is something to count, available money with its basis shown, the next bills, a few
- * accounts and budgets, then the three quick actions in a box of their own. With no account yet it is one title and one action.
- */
 @Composable
 internal fun OverviewCard(model: AppModel) {
     val data = model.mintData
@@ -264,7 +249,6 @@ internal fun OverviewCard(model: AppModel) {
     val currency = data.settings.currency
     val days = app.pokeplan.mint.OverviewCounts.days(data, today)
     val available = MintRules.available(data, currency, today, days)
-    // One bill's next date is enough here.
     val upcoming = MintRules.upcoming(data, today, days).filter { !it.bill.income }.distinctBy { it.bill.id }.take(3)
     val leadsWithAvailable = available.liquidMinor != 0L || available.billsCount > 0
     var breakdown by remember { mutableStateOf(false) }
@@ -274,7 +258,6 @@ internal fun OverviewCard(model: AppModel) {
     }
     val hidden = data.settings.hideValues
     TextBox {
-        // The whole box opens the breakdown; the buttons inside keep their own taps.
         Column(Modifier.clickable(onClickLabel = "Tap for the breakdown", role = Role.Button) { breakdown = true }, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f)) { PixelTitle("Overview") }
@@ -288,7 +271,6 @@ internal fun OverviewCard(model: AppModel) {
             upcoming.forEach { o ->
                 MintValueRow(o.bill.name, if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(), soft = true)
             }
-            // Accounts and budgets, a few of each; the full lists are in their own sections.
             val accounts = MintRules.balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal }.take(4)
             if (accounts.isNotEmpty()) {
                 SectionLabel("Accounts")
@@ -306,7 +288,6 @@ internal fun OverviewCard(model: AppModel) {
             }
         }
     }
-    // The action items sit below the overview and above the party.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
@@ -318,8 +299,6 @@ internal fun OverviewCard(model: AppModel) {
         }
     }
 }
-
-// ----- Accounts ---------------------------------------------------------------------------------------------------------
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -367,7 +346,6 @@ private fun AccountsView(model: AppModel) {
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else {
             message = null; name = ""; opening = ""; limit = ""; statementDay = ""; dueDay = ""; annualApr = ""; interestGraceDays = "0"; earn.rate = ""; earn.tax = ""; earn.schedule = EarnSchedule.OFF; earn.autoPost = false; suffix = ""; group = ""; card = ""; more = false; adding = false; model.haptic()
-            // The first account ends on the overview, where Expense is the one next action (REP-056).
             if (first) model.mintSection = null
         }
     }
@@ -418,7 +396,6 @@ private fun AccountsView(model: AppModel) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     CardColorPicker(card) { card = it }
                     PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
-                    // Help: the last digits are never a full number, a PIN or a code.
                     PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits", singleLine = true)
                 }
             }
@@ -429,7 +406,6 @@ private fun AccountsView(model: AppModel) {
     }
 }
 
-/** The colour of a card style in the current palette. Cosmetic: nothing reads it but the picker and the account list. */
 @Composable
 internal fun cardColor(style: CardStyle): Color = when (style) {
     CardStyle.PLAIN -> Pixel.InkSoft
@@ -441,7 +417,6 @@ internal fun cardColor(style: CardStyle): Color = when (style) {
 }
 
 
-/** What each account type means, behind the "?" on the new-account form and written once (MINT.md 4.1, REP-056). */
 private val accountTypeNotes = listOf(
     AccountType.BANK to "Money in a bank. The balance is what you have.",
     AccountType.EWALLET to "An app wallet such as GCash or Maya.",
@@ -511,7 +486,6 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 FormGroup {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelDropdown(accountTypes, type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.weight(2f), key = accent, label = "Type")
-                        // Help: the currency stays once the account has records.
                         if (!locked) PixelDropdown(
                             Money.common.take(6), currency, { it ?: "" },
                             { c -> if (c != null && c != currency) { opening = Money.parse(opening.ifBlank { "0" }, currency)?.let { m -> Money.plain(m, c) } ?: opening; currency = c } },
@@ -591,7 +565,6 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 "Open ${if (appLabel.length > 14) appLabel.take(13) + "…" else appLabel}",
                 { if (!launcher.open(a.appPackage)) refused = "That app could not be opened." }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true,
             )
-            // Two rows of two, so the longest label ("Archive") is never clipped at a large font.
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 if (a.status == AccountStatus.ACTIVE) PixelButton("Archive", { mint.setAccountStatus(a.id, AccountStatus.ARCHIVED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -673,7 +646,6 @@ private fun CreditStatements(model: AppModel, account: FinancialAccount) {
     }
 }
 
-/** "Receive money": the account's own picture (a QR code or a whole wallet screenshot), shown whole so another phone can scan it. Drawn only when there is one; it is added, replaced and removed in the account's Edit form. Stays on this phone like the rest of Mint. */
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
 private fun ReceiveMoney(model: AppModel, a: FinancialAccount, problem: (String?) -> Unit) {
@@ -714,7 +686,6 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, problem: (String?
     }
 }
 
-/** The Edit form's "Receive money" section: add, replace or remove the picture. It saves at once, not with Save. */
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
 private fun ReceiveMoneyEdit(model: AppModel, a: FinancialAccount, removing: Boolean, setRemoving: (Boolean) -> Unit, problem: (String?) -> Unit) {
@@ -741,22 +712,17 @@ private fun ReceiveMoneyEdit(model: AppModel, a: FinancialAccount, removing: Boo
     }
 }
 
-/** The share file name by the picture's own format: PNG, JPEG (FF D8 FF) or WebP (RIFF....WEBP). */
 private fun receiveName(b: ByteArray): String = when {
     b.size > 3 && b[0] == 0xFF.toByte() && b[1] == 0xD8.toByte() && b[2] == 0xFF.toByte() -> "receive-qr.jpg"
     b.size > 12 && b[0] == 'R'.code.toByte() && b[1] == 'I'.code.toByte() && b[8] == 'W'.code.toByte() && b[9] == 'E'.code.toByte() -> "receive-qr.webp"
     else -> "receive-qr.png"
 }
 
-/** A bare, roughly square QR is upscaled, so keep its modules crisp; a tall wallet screenshot is shrunk, so smooth it. */
 private fun qrFilter(b: androidx.compose.ui.graphics.ImageBitmap) =
     if (b.width.toFloat() / b.height in 0.9f..1.1f) FilterQuality.None else FilterQuality.Medium
 
-/** The receive-money image (a bare QR or a whole wallet screenshot) on a plain white page, fitted at its own aspect ratio and as large as fits, so another phone can scan it. Close and (when the platform can) Share sit at the bottom. */
 @Composable
 internal fun QrFullScreen(name: String, bitmap: androidx.compose.ui.graphics.ImageBitmap, onClose: () -> Unit, onShare: (() -> Unit)?) {
-    // The whole image, edge to edge at its own ratio: fitted when it fits the screen, otherwise full width and scrollable (never shrunk).
-    // The Close/Share bar sits below the image area, so nothing covers the image.
     Column(Modifier.fillMaxSize().background(Color.White)) {
         androidx.compose.foundation.layout.BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             val ratio = bitmap.width.toFloat() / bitmap.height
@@ -777,9 +743,6 @@ internal fun QrFullScreen(name: String, bitmap: androidx.compose.ui.graphics.Ima
     }
 }
 
-// ----- Activity ---------------------------------------------------------------------------------------------------------
-
-/** How many records the Activity list shows at a time; "Show more" adds another page. */
 private const val PAGE = 50
 
 private val mainTypes = listOf(TxType.EXPENSE, TxType.INCOME, TxType.TRANSFER)
@@ -829,7 +792,6 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var splitEnabled by remember { mutableStateOf(false) }
     var splitParts by remember { mutableStateOf(listOf(SplitDraft(), SplitDraft())) }
     var up by remember { mutableStateOf(true) }
-    // null: it happened just now (read when Save is pressed).
     var payAt by remember { mutableStateOf<Long?>(null) }
     var more by remember { mutableStateOf(false) }
     var showFilter by remember { mutableStateOf(false) }
@@ -844,7 +806,6 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var openId by remember { mutableStateOf<String?>(null) }
     val from = open.firstOrNull { it.id == accountId } ?: open.firstOrNull()
     val currency = from?.currency ?: data.settings.currency
-    // Where a transfer can go: another open account in the same currency. The one shown as chosen is the one saved.
     val targets = open.filter { it.id != from?.id && it.currency == from?.currency }
     val to = targets.firstOrNull { it.id == toId } ?: targets.firstOrNull()
     var limit by remember { mutableStateOf(PAGE) }
@@ -891,7 +852,6 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     val otherTypes = quickTypes.filter { it !in mainTypes }
     FormBox {
         FormStack {
-            // The figure first and largest, then the form's groups: what it is, where it goes, when, and the rest behind one row.
             PixelField(
                 amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = currency, placeholder = "0.00",
@@ -926,7 +886,6 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                 } else {
                     val kind = if (type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
                     val usable = data.categories.filter { it.kind == kind && !it.archived }
-                    // The few used last come first, then the rest.
                     val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
                     val ordered = (recent + usable).distinct()
                     val canSplit = !installmentMode && type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE)
@@ -1213,8 +1172,6 @@ private fun ReceiptAttachment(model: AppModel, transaction: Transaction, onChang
     }
 }
 
-// ----- Budgets ----------------------------------------------------------------------------------------------------------
-
 @Composable
 private fun SavingsAccountChoices(model: AppModel, currency: String, selected: List<String>, onSelected: (List<String>) -> Unit) {
     val mint = model.mint
@@ -1442,8 +1399,6 @@ private fun BudgetsView(model: AppModel) {
     }
 }
 
-// ----- Bills ------------------------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun BillsView(model: AppModel, openInstallments: Boolean = false, startAdding: Boolean = false, startIncome: Boolean = false, startFrequency: Frequency = Frequency.MONTHLY, startManage: Boolean = false) {
@@ -1478,16 +1433,13 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
     var moreBill by remember { mutableStateOf(false) }
     var moreEditBill by remember { mutableStateOf(false) }
     var incomeCategory by remember { mutableStateOf<String?>(null) }
-    // "Paid, record it": the occurrence whose small account picker is open, and the account chosen (the bill's own until another is tapped).
     var recordKey by remember { mutableStateOf<String?>(null) }
     var recordAccount by remember { mutableStateOf<String?>(null) }
-    // Settling takes the occurrence off the list, so every settlement offers an undo.
     fun settle(o: Occurrence, status: SettleStatus, paid: Long, label: String) {
         val before = model.mintData
         if (mint.settle(o.bill.id, o.dueDay, status, paid, paidDay = paidOn ?: defaultReceivedDay(o, today))) { paidOn = null; openKey = null; model.offerUndo("$label: ${o.bill.name}") { mint.restore(before) } }
     }
     val currency = data.settings.currency
-    // Only the next unsettled date of each bill.
     val upcoming = MintRules.upcoming(data, today, 45).distinctBy { it.bill.id }
     if (upcoming.isNotEmpty()) TextBox {
         Column {
@@ -1516,7 +1468,6 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                     }
                     Text("Paid/Received settles reminder only.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     Text("Record it to update balance.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    // Marking paid makes no transaction by itself; this path also writes the expense, linked to the bill, on the account chosen here.
                     val accounts = data.accounts.filter { it.status == AccountStatus.ACTIVE && it.currency == o.bill.currency }
                     val amountToRecord = if (anyAmount) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
                     if (accounts.isNotEmpty()) {
@@ -1539,7 +1490,6 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
         }
     }
     InstallmentsDueBox(model, openInstallments)
-    // Paid and skipped occurrences leave the list above; they stay here for a while, so a wrong amount or a slip can be settled again or taken back.
     val settled = MintRules.settled(data, today)
     if (settled.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -1574,7 +1524,6 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
     } else FormBox {
         FormStack {
             PixelTitle(if (incomeNew) "New income" else "New bill")
-            // Direction: something to pay, or money expected (a salary, an allowance); the schedule works the same.
             PixelChoice(listOf(false, true), incomeNew, { if (it == true) "Income expected" else "Bill to pay" }, { if (it != null) { incomeNew = it; if (!it) incomeCategory = null } }, label = "Kind", key = accent)
             PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
             PixelField(
@@ -1630,8 +1579,6 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                     }
                 }
                 if (editId == b.id) {
-                    // The name and the amount can change (rent goes up). The first due day and how often can change until a payment is
-                    // recorded against the bill, so no settled occurrence is ever rewritten.
                     val scheduleOpen = data.billPayments.none { it.billId == b.id }
                     val minor = if (editAmount.isBlank()) null else Money.parse(editAmount, b.currency)
                     FormStack(Modifier.padding(bottom = Spacing.S)) {
@@ -1656,7 +1603,6 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                                 if (b.income) ToggleRow("Estimated amount", editEstimate, detail = "You enter the real amount when it arrives") { editEstimate = it }
                             }
                         }
-                        // Help: the schedule is fixed once payments are recorded; to change it, pause this bill and add a new one.
                         FormSave("Save", { if (mint.updateBill(b.copy(name = editName, expectedMinor = minor, firstDue = editFirst ?: b.firstDue, frequency = editFrequency, days = if (editFrequency == Frequency.SEMI_MONTHLY) listOf(editDay1.toIntOrNull() ?: 15, editDay2.toIntOrNull() ?: 30) else b.days, workday = editWorkday, estimate = editEstimate && b.income)).let { r -> message = r.refused; r.record != null }) editId = null }, ModuleAccent.MINT.accent, enabled = editName.isNotBlank() && (editAmount.isBlank() || minor != null))
                     }
                 }
@@ -1670,19 +1616,15 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
     }
 }
 
-/** The "Received on" date a settlement starts with: an income's own payday once it has come, otherwise today. */
 private fun defaultReceivedDay(o: Occurrence, today: LocalDate): LocalDate = if (o.bill.income && o.payDay <= today) o.payDay else today
 
 @Composable
 private fun OccurrenceRow(model: AppModel, o: Occurrence, open: Boolean, paid: Boolean = false, onClick: () -> Unit) {
-    // A settled occurrence shows what was paid; one still to settle shows what is left.
     val amount = if (paid) o.payment?.paidMinor?.takeIf { o.state != OccurrenceState.SKIPPED } else o.remainingMinor ?: o.bill.expectedMinor
     val today = model.store.today
-    // An estimated amount reads "≈" after its sign.
     fun shown(m: Long) = (if (o.bill.income) "+" else "") + (if (o.bill.estimate && !paid) "≈ " else "") + model.mint.show(m, o.bill.currency)
     MintLine(
         trail = {
-            // A bill still to settle shows when it is due at the right; a settled one shows what was paid.
             Text(
                 if (paid) amount?.let { shown(it) }.orEmpty() else if (o.payDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.payDay.short(),
                 style = MaterialTheme.typography.titleSmall,
@@ -1697,8 +1639,6 @@ private fun OccurrenceRow(model: AppModel, o: Occurrence, open: Boolean, paid: B
         if (o.payDay != o.dueDay) Text("${o.payDay.short()} · for the ${ordinal(o.dueDay.dayOfMonth)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
 }
-
-// ----- Review: reports, reconcile, the weekly review -------------------------------------------------------------------------
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -1721,7 +1661,6 @@ private fun MintReviewView(model: AppModel) {
                 val flow = Installments.cashFlow(data, from, end, currency)
                 MintValueRow("Cash flow", "In ${mint.show(flow.inflowMinor, currency)} · Out ${mint.show(flow.outflowMinor, currency)} · Net ${mint.show(flow.netMinor, currency)}")
                 Text("Money that really moved through your wallets and banks; repaying a card or pay later counts as out.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                // Help: transfers between your accounts are left out; pending and excluded records are too.
                 MintRules.spendingByCategory(data, from, end, currency).take(6).forEach { (id, minor) ->
                     MintValueRow(data.categories.firstOrNull { it.id == id }?.name ?: "No category", mint.show(minor, currency), soft = true)
                 }
@@ -1770,7 +1709,6 @@ private fun ReconcileCard(model: AppModel) {
             }, ModuleAccent.MINT.accent, enabled = parsed != null)
             difference?.let { diff ->
                 Text("The statement is ${mint.show(kotlin.math.abs(diff), account.currency)} ${if (diff > 0) "higher" else "lower"} than Mint.", style = MaterialTheme.typography.bodyLarge)
-                // Help: accepting records the difference as a balance adjustment; nothing else changes.
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton("Accept the difference", {
                         parsed?.let { mint.reconcile(account.id, it, acceptAdjustment = true); model.effect(Sfx.ITEM_GET) }
@@ -1784,8 +1722,6 @@ private fun ReconcileCard(model: AppModel) {
     }
 }
 
-// ----- Settings ---------------------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MintSettingsView(model: AppModel) {
@@ -1794,8 +1730,6 @@ private fun MintSettingsView(model: AppModel) {
     var note by remember { mutableStateOf<String?>(null) }
     var asking by remember { mutableStateOf<MintKinds?>(null) }
     var askingAll by remember { mutableStateOf(false) }
-    // Help: Ledger Research can find a Ledger Egg from reconciling an account or finishing the weekly review; spending, income and balances never earn anything.
-    // Help: bill reminders are off by default, one per due bill, never show an amount and never mark a bill paid; quiet hours and focus sessions hold them back.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             ToggleRow("Ledger Research", settings.progression) { mint.setProgression(it) }
@@ -1810,7 +1744,6 @@ private fun MintSettingsView(model: AppModel) {
                     PixelDropdown(early.map { it.first }, settings.billReminderDays, { d -> early.firstOrNull { it.first == d }?.second ?: "" }, { d -> if (d != null) mint.setBillReminderDays(d) }, Modifier.weight(3f), key = accent, label = "How early")
                     PixelDropdown(listOf(8, 9, 12, 18, 20), settings.billReminderHour, { h -> if (h == null) "" else "${h.toString().padStart(2, '0')}:00" }, { h -> if (h != null) mint.setBillReminderHour(h) }, Modifier.weight(2f), key = accent, label = "At")
                 }
-                // Help: with "Name the bill" on, the notification names the bill after the phone is unlocked; the lock screen only says a bill is coming up.
                 ToggleRow("Name the bill", settings.billReminderNames) { mint.setBillReminderNames(it) }
             }
         }
@@ -1828,7 +1761,6 @@ private fun MintSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Your data")
-            // Help: exports are files you can read (amounts are whole minor units, like centavos, with their currency); erasing Mint never touches Pokémon, Poké, the Bag or other modules.
             val files = model.files
             if (files != null) {
                 PixelButton("Export everything", { note = files.save("pokelife-mint.json", mint.export()) }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
@@ -1849,7 +1781,6 @@ private fun MintSettingsView(model: AppModel) {
     }
 }
 
-/** A name field and an Add key for a new category of [kind]; [onAdded] gets it (the entry form selects it). */
 @Composable
 private fun NewCategoryRow(mint: app.pokeplan.app.mint.MintStore, kind: CategoryKind, onAdded: (app.pokeplan.mint.Category) -> Unit) {
     var name by remember { mutableStateOf("") }
@@ -1861,7 +1792,6 @@ private fun NewCategoryRow(mint: app.pokeplan.app.mint.MintStore, kind: Category
     if (refused) Text("There is already one with that name.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
-/** Mint, Settings: the categories of spending and income, to add, rename, put away or delete (MINT.md section 6). */
 @Composable
 private fun CategoriesBox(model: AppModel) {
     val mint = model.mint
@@ -1882,7 +1812,6 @@ private fun CategoriesBox(model: AppModel) {
             Column {
                 data.categories.filter { it.kind == kind }.sortedBy { it.archived }.forEachIndexed { i, c ->
                     if (i > 0) HorizontalDivider(color = Pixel.Border)
-                    // A category is a row; a tap opens its actions below it.
                     MintLine(onClick = { openId = if (openId == c.id) null else c.id; editing = null; deleting = null }, onClickLabel = "Show options") {
                         Text(if (c.archived) "${c.name} (put away)" else c.name, style = MaterialTheme.typography.bodyLarge, color = if (c.archived) Pixel.InkSoft else Pixel.Ink)
                     }

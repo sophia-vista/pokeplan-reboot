@@ -1,12 +1,6 @@
 package app.pokeplan.link
 
-/**
- * Test vectors made by independent reference code (not by the code under test): Four Pillars and Chinese New Year years from the `lunar_python` package
- * (Beijing clock, hour taken as written), planet, Sun and Moon longitudes in degrees from `ephem` (Sun to Pluto, apparent ecliptic of date), the
- * ascendant and midheaven (Julian Days on whole minutes) from a formula checked against `ephem` (the ascendant point sits on the eastern horizon). Regenerate only with a reason.
- */
 internal object BirthVectors {
-    /** year, month, day, minutes after midnight, then year stem, year branch, month stem, month branch, day stem, day branch, hour stem, hour branch (indexes). */
     val pillars = listOf(
         intArrayOf(2015, 10, 17, 750, 1, 7, 2, 10, 2, 2, 0, 6),
         intArrayOf(2086, 4, 23, 299, 2, 6, 8, 4, 8, 6, 8, 2),
@@ -241,7 +235,6 @@ internal object BirthVectors {
         intArrayOf(2098, 12, 30, 1420, 4, 6, 0, 0, 2, 8, 6, 0),
     )
 
-    /** year, month, day, the Chinese (lunar) year the date falls in. */
     val lunarYears = listOf(
         intArrayOf(1994, 1, 27, 1993),
         intArrayOf(1937, 3, 4, 1937),
@@ -495,7 +488,6 @@ internal object BirthVectors {
         intArrayOf(1929, 1, 18, 1928),
     )
 
-    /** JD (UT), latitude, longitude east, ascendant, midheaven, then the longitudes of Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto. */
     val sky = listOf(
         doubleArrayOf(2417583.360417, 40.28, -107.51, 58.553, 306.120, 286.431, 199.499, 271.232, 245.297, 223.028, 94.638, 340.936, 279.077, 101.105, 82.312),
         doubleArrayOf(2424915.043750, 50.76, 16.44, 104.422, 343.616, 313.723, 329.967, 318.074, 331.389, 50.942, 333.678, 246.191, 356.984, 145.937, 104.298),
@@ -579,7 +571,6 @@ internal object BirthVectors {
         doubleArrayOf(2425088.481944, 57.9, -68.01, 275.210, 231.579, 122.968, 101.724, 112.420, 165.569, 151.044, 3.512, 241.102, 3.296, 145.827, 105.937),
     )
 
-    /** year, month, day (all after Lichun), formula (0 male, 1 female), Kua number. */
     val kua = listOf(
         intArrayOf(2011, 8, 25, 0, 7),
         intArrayOf(2011, 8, 25, 1, 8),

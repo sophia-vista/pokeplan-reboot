@@ -29,14 +29,9 @@ import kotlin.math.roundToInt
 
 private val cache = BitmapCache(CacheBudget.SMALL)
 
-/**
- * A real game box wallpaper tiled behind [content], scaled by a whole number so the pixels stay sharp.
- * [name] is a file in assets/backgrounds without the extension ("bw01").
- */
 @Composable
 fun PixelBackground(name: String, modifier: Modifier = Modifier, scale: Int = 3, content: @Composable BoxScope.() -> Unit) {
     val bitmap by produceState(cache[name], name) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = cache[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/backgrounds/$name.png").decodeToImageBitmap() }
@@ -47,7 +42,6 @@ fun PixelBackground(name: String, modifier: Modifier = Modifier, scale: Int = 3,
         modifier.drawBehind {
             val image = bitmap ?: return@drawBehind
             val step = (scale * density).roundToInt().coerceAtLeast(1)
-            // The wallpapers carry a 2 pixel frame; drop it so the tiles run together, and mirror every other tile.
             val inner = IntSize(image.width - 2 * FRAME, image.height - 2 * FRAME)
             val tileW = inner.width * step
             val tileH = inner.height * step
@@ -77,14 +71,12 @@ fun PixelBackground(name: String, modifier: Modifier = Modifier, scale: Int = 3,
     )
 }
 
-/** A rounded wallpaper banner, the place a Pokémon or an egg stands. */
 @Composable
 fun Stage(name: String, height: Dp, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val shape = PixelShape
     PixelBackground(name, modifier.fillMaxWidth().height(height).clip(shape).border(1.dp, Pixel.Border, shape), content = content)
 }
 
-/** A rounded scene banner, like [Stage] but with a real battle scene ([SceneImage]) where the Pokémon stands. */
 @Composable
 fun SceneStage(scene: String, height: Dp, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val shape = PixelShape

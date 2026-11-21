@@ -7,12 +7,7 @@ import kotlin.math.log10
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-/**
- * The maths of the Sound meter: how loud a block of 16-bit samples is, and which pitches it holds. A phone microphone is not a calibrated
- * meter, so the level is "below full scale" plus an offset the player may adjust; it is a guide to compare sounds, not a measurement.
- */
 object SoundMath {
-    /** The level of [samples] in decibels below full scale (0 is the loudest the microphone can record), or -120 for silence. */
     fun dbFs(samples: ShortArray, count: Int = samples.size): Float {
         if (count <= 0) return -120f
         var sum = 0.0
@@ -21,10 +16,8 @@ object SoundMath {
         return if (rms < 1e-6) -120f else (20 * log10(rms)).toFloat().coerceAtLeast(-120f)
     }
 
-    /** An estimated sound level in dB for [dbFs] and a player's [offset] (the usual starting guess is 90), kept in 0 to 130. */
     fun estimate(dbFs: Float, offset: Float): Float = (dbFs + offset).coerceIn(0f, 130f)
 
-    /** What a level sounds like, in a few words. */
     fun describe(db: Float): String = when {
         db < 30 -> "Very quiet"
         db < 45 -> "Quiet, like a library"
@@ -35,7 +28,6 @@ object SoundMath {
         else -> "Painfully loud: protect your ears"
     }
 
-    /** In-place radix-2 FFT of [re] and [im] (their size must be a power of two). */
     fun fft(re: DoubleArray, im: DoubleArray) {
         val n = re.size
         require(n > 0 && n and (n - 1) == 0 && im.size == n) { "size must be a power of two" }
@@ -67,7 +59,6 @@ object SoundMath {
         }
     }
 
-    /** The magnitudes of the first half of the spectrum of the last [size] (a power of two) samples, with a Hann window: bin k is k * rate / size Hz. */
     fun spectrum(samples: ShortArray, size: Int = 1024): DoubleArray {
         val re = DoubleArray(size); val im = DoubleArray(size)
         val offset = (samples.size - size).coerceAtLeast(0)
@@ -79,19 +70,16 @@ object SoundMath {
         return DoubleArray(size / 2) { sqrt(re[it] * re[it] + im[it] * im[it]) }
     }
 
-    /** The loudest pitch in a spectrum in Hz, or null when it is too quiet to say. */
     fun dominantHz(spectrum: DoubleArray, sampleRate: Int, size: Int = spectrum.size * 2): Float? {
         var best = 1
         for (i in 2 until spectrum.size) if (spectrum[i] > spectrum[best]) best = i
         if (spectrum[best] < 0.5) return null
-        // Parabolic interpolation between the neighbours for a finer pitch than the bin.
         val a = spectrum[best - 1]; val b = spectrum[best]; val c = spectrum.getOrElse(best + 1) { b }
         val denom = a - 2 * b + c
         val shift = if (abs(denom) < 1e-9) 0.0 else 0.5 * (a - c) / denom
         return ((best + shift) * sampleRate / size).toFloat()
     }
 
-    /** The name of a pitch: "A4 (440 Hz)" style, from the nearest note. */
     fun noteName(hz: Float): String {
         if (hz <= 0f) return ""
         val midi = (69 + 12 * (kotlin.math.ln(hz / 440.0) / kotlin.math.ln(2.0))).let { kotlin.math.round(it).toInt() }

@@ -15,7 +15,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Shared bills (MINT.md 5.8A): kept, settled, exported and erased on their own, and touching nothing else in Mint or the game. */
 class MintSharedTest {
     private val utc = TimeZone.UTC
     private val day = LocalDate(2026, 11, 20)

@@ -1,23 +1,4 @@
 #!/usr/bin/env python3
-"""Audits which PMD (Pokémon Mystery Dungeon style) character sprites exist for the species PokéLife lacks, from the files of the
-public SpriteCollab-family repositories, and writes the machine-readable manifest in docs/ASSETS/.
-
-It is safe to rerun: it only reads (blobless git clones in a cache folder, nothing under assets/ is touched) and writes the manifest
-and the report you name. Nothing is overwritten unless you pass --write.
-
-  python3 -I tools/sprites/pmd_audit.py --cache ~/.cache/pokelife-pmd-audit [--write] [--markdown]
-
-What it does, per species and per repository (repositories.json-style table REPOS below):
-  1. enumerates the sprite folders (a folder is a sprite when it holds AnimData.xml) from `git ls-tree` (no checkout, no big download);
-  2. parses each AnimData.xml: animation names, CopyOf aliases (resolved), frame size;
-  3. reports which of Idle, Walk, Attack, Hurt, Sleep and Faint exist (and the other animations);
-  4. hashes (SHA-256) the upstream files it inspected, and the sheets already in assets/pmd, and lists duplicate files;
-  5. joins the file-level result with LEADS, the researched evidence for sources that are not plain SpriteCollab folders
-     (forks, Pokémon Auto Chess, Paldea overworld sheets...), and classifies every species.
-
-Classes (docs/ASSETS/PMD_SPRITE_ACQUISITION.md): COMPLETE_PMD, PARTIAL_PMD, PMD_STATIC, ALTERNATIVE_STYLE, PORTRAIT_ONLY, MISSING,
-PERMISSION_PENDING. In code they are lower case with underscores (`complete_pmd`).
-"""
 import argparse
 import csv
 import hashlib
@@ -43,7 +24,6 @@ REPOS = {
     'GameDataPacks': 'https://github.com/PokemonWorkshop/GameDataPacks',
     'pokemonAutoChess': 'https://github.com/keldaanCommunity/pokemonAutoChess',
 }
-# The 64 species this audit is about (national dex number: name).
 SPECIES = {
     514: 'Simisear', 516: 'Simipour', 520: 'Tranquill', 522: 'Blitzle', 523: 'Zebstrika', 538: 'Throh', 558: 'Crustle', 564: 'Tirtouga',
     565: 'Carracosta', 591: 'Amoonguss', 592: 'Frillish', 593: 'Jellicent', 616: 'Shelmet', 618: 'Stunfisk', 626: 'Bouffalant',
@@ -57,11 +37,8 @@ SPECIES = {
     1023: 'Iron Crown', 1025: 'Pecharunt',
 }
 WANTED = ('Idle', 'Walk', 'Attack', 'Hurt', 'Sleep', 'Faint')
-# Our form id -> (species, SpriteCollab folder under sprite/<dex>/, label), the forms assets/pmd holds or could hold (see fetch_pmd_new.py).
 OUR_FORMS = {10263: (999, '0001', 'Roaming'), 10268: (1008, '0001', 'Low Power Mode')}
 
-# Researched evidence that a plain folder listing cannot give. Each entry says what was found, where, and what is unknown. The
-# classification of a species whose only copy is here is PERMISSION_PENDING (not in the official collection, so no approved licence).
 LEADS = {
     'fork_sheets': {
         'repository': 'lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)',
@@ -104,7 +81,6 @@ LEADS = {
                 "to use in their Pokémon projects, please give credits'. The sheet files were not inspected.",
     },
 }
-# Species whose portraits exist in SpriteCollab (all of them: assets/pmd/portraits/portraits.tsv covers 1025 of 1025 species).
 
 
 def sh(*args, cwd=None):
@@ -134,7 +110,6 @@ def sha256(data):
 
 
 def parse_anim_data(xml):
-    """{name: (resolved name, frame width, frame height, durations)} with CopyOf aliases resolved."""
     root = ET.fromstring(xml)
     anims = {a.findtext('Name'): a for a in root.iter('Anim')}
 
@@ -155,7 +130,6 @@ def parse_anim_data(xml):
 
 
 def sprite_folders(paths, dex):
-    """{folder under sprite/<dex>/: [file names]} for the folders of one species that hold an AnimData.xml."""
     prefix = f'sprite/{dex:04d}/'
     folders = defaultdict(list)
     for p in paths:
@@ -167,7 +141,6 @@ def sprite_folders(paths, dex):
 
 
 def inspect(repo, paths, dex):
-    """Per folder: animations present, which WANTED ones, files and the SHA-256 of the AnimData.xml."""
     out = {}
     for folder, files in sorted(sprite_folders(paths, dex).items()):
         base = f'sprite/{dex:04d}/{folder + "/" if folder else ""}'
@@ -182,7 +155,6 @@ def inspect(repo, paths, dex):
 
 
 def local_sheets(fid):
-    """The sheets of one form already in assets/pmd, with their hashes."""
     out = []
     for sub in ('', 'sleep', 'hop', 'eat', 'walk-down', 'walk-side', 'walk-up'):
         for suffix in ('', '-shiny'):
@@ -193,7 +165,6 @@ def local_sheets(fid):
 
 
 def duplicates():
-    """Groups of files in assets/pmd with identical contents (SHA-256), to catch the same sheet stored twice."""
     seen = defaultdict(list)
     for dirpath, _, names in os.walk(ASSETS):
         for n in names:
@@ -204,7 +175,6 @@ def duplicates():
 
 
 def classify(dex, official, in_assets):
-    """(class, notes) for a species' default form from the official folders and the leads."""
     root = official.get('')
     pending = dex in LEADS['fork_sheets']['species'] or dex in LEADS['auto_chess']['only_here']
     if root:
@@ -251,7 +221,6 @@ def build(cache, quick=False):
                 rec['forms'].append({'form_id': fid, 'name': label, 'folder': folder, 'animations': info['animations'],
                                      'wanted': info['wanted'], 'integrated_in_pokelife': fid in ours,
                                      'files': local_sheets(fid)})
-        # Forms with sprites upstream that the app has no form for (kept out of the app, listed for the record).
         for folder, info in official.items():
             if folder not in ('', '0000/0001') and re.fullmatch(r'\d{4}', folder) and not any(f['folder'] == folder for f in rec['forms']):
                 rec['forms'].append({'form_id': None, 'name': f'upstream form {folder}', 'folder': folder,

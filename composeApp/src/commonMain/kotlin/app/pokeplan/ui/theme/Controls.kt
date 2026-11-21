@@ -28,33 +28,12 @@ import app.pokeplan.ui.LocalUiSound
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.pressScale
 
-/*
- * The control system. Every tappable thing that is a "key" (button, tab, chip, arrow, segment) is one [PixelKey]: the same
- * stair-cornered outline, the same states, the same 48 dp touch target. A control only chooses its key colour and its content.
- *
- *   state      face                       outline    letters            notes
- *   rest       panel                      key        key (ink if grey)
- *   hovered    key at 10% over the panel  key        key                pointer only (desktop, web)
- *   pressed    key                        key        white or ink (the better contrast)             also shrinks to 98% unless Reduce motion
- *   selected   key                        key        white              tabs, chips, segments; pressed goes darker
- *   focused    as above + a 2 dp blue ring round the touch target          keyboard and D-pad only
- *   disabled   panel                      border     ink-soft at 55%    not tappable, not announced as enabled
- *   loading    as disabled, three blinking pixels instead of the label     not tappable
- *
- * Colour is never the only signal: selected also sets the `selected` semantics and the white letters; disabled and loading
- * are announced by the semantics, not by colour.
- */
-
-/** The visual states of a [PixelKey] (focus is separate: it can sit on top of any of them). */
 enum class KeyState { Rest, Hovered, Pressed, Disabled, Loading }
 
-/** What a key draws in one state: the face, the outline and the letters. */
 class KeyLook(val face: Color, val edge: Color, val ink: Color, val tinted: Boolean)
 
-/** True for the neutral keys, which show a grey outline and ink letters instead of their own colour. */
 internal fun isNeutralKey(key: Color) = key == Pixel.InkSoft || key == Pixel.Ink || key == Pixel.Gray
 
-/** A light key colour (yellow) is too pale to read as letters on the panel, so its letters are a darker shade of it. */
 private fun legible(key: Color) = if (key.luminance() > 0.45f && !Pixel.dark) darker(key) else key
 
 private fun contrast(a: Color, b: Color): Float {
@@ -62,10 +41,8 @@ private fun contrast(a: Color, b: Color): Float {
     return (maxOf(la, lb) + 0.05f) / (minOf(la, lb) + 0.05f)
 }
 
-/** Letters on a filled key: white, or the dark ink when that reads better on [face] (a mid-tone fill in the dark palette, or yellow). */
 internal fun onFill(face: Color): Color = if (contrast(Color.White, face) >= contrast(Pixel.Outline, face)) Color.White else Pixel.Outline
 
-/** The look of a key of colour [key] in [state], [selected] or not. The one place where the table above is written in code. */
 fun keyLook(key: Color, state: KeyState, selected: Boolean = false): KeyLook {
     val neutral = isNeutralKey(key)
     val edgeKey = if (neutral) Pixel.InkSoft else key
@@ -83,10 +60,6 @@ fun keyLook(key: Color, state: KeyState, selected: Boolean = false): KeyLook {
     }
 }
 
-/**
- * Draws the key: an outline in whole 2 dp art pixels with stair-stepped corners, then the face. With [visible] set the key is
- * that tall and centred in a taller touch target; with null it fills the box.
- */
 fun Modifier.pixelFrame(face: Color, edge: Color, visible: Dp? = null): Modifier = drawBehind {
     val p = 2.dp.toPx()
     val h = if (visible == null) size.height else minOf(size.height, visible.toPx())
@@ -95,15 +68,8 @@ fun Modifier.pixelFrame(face: Color, edge: Color, visible: Dp? = null): Modifier
     drawPath(stairRect(p, p, top + p, size.width - p, top + h - p, intArrayOf(0)), face)
 }
 
-/** A state held still, for the component gallery and the screenshot test: [focused] draws the ring without a keyboard. */
 class KeyPreview(val state: KeyState, val focused: Boolean = false)
 
-/**
- * The key every button, tab and chip is built on (see the table at the top of this file). [onClick] null makes a key that only
- * shows (a legend). [fill] makes the key as tall as its 48 dp touch target (tabs and chips sit in wrapped rows and need no
- * gap of dead space); without it the key is 38 dp tall (32 dp when [compact]) inside the same 48 dp target. [quiet] leaves
- * the tap without a sound; [sound] overrides the confirm sound. [preview] holds one state still instead of reading the pointer.
- */
 @Composable
 fun PixelKey(
     onClick: (() -> Unit)?,
@@ -155,10 +121,8 @@ fun PixelKey(
     ) { content(look) }
 }
 
-/** The label of a key in the state's letters: the dialogue font, small. */
 @Composable
 fun KeyLabel(text: String, look: KeyLook) = PixelLabel(text, look.ink, small = true, tinted = look.tinted)
 
-/** A quiet panel-coloured plate with the pixel outline, for things that are not tappable (a notice, a stat): same corner as the keys. */
 fun Modifier.pixelPlate(face: Color = Color.Unspecified, edge: Color = Pixel.Border): Modifier =
     this.pixelFrame(if (face == Color.Unspecified) Pixel.Panel else face, edge)

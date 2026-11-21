@@ -12,25 +12,17 @@ import app.pokeplan.app.care.CareStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/**
- * Real saves written by version 0.123.0 (docs/pokelife, REP-003), kept so the next storage layer can be tested against
- * them: every one must still load today, untouched and without being set aside as damaged, and must keep what it holds.
- *
- * The fixtures are committed. To write them again (only when you mean to add a new baseline, in a new folder named after
- * the version that wrote them): `POKEPLAN_WRITE_FIXTURES=1 ./gradlew :app-core:jvmTest --tests "*SaveFixtureTest*"`.
- */
 class SaveFixtureTest {
     private class Clock(var millis: Long) : app.pokeplan.app.storage.Clock { override fun nowMillis() = millis }
 
     private val folder = File("src/jvmTest/resources/fixtures/0.123.0")
     private val day = 24 * 60 * 60 * 1000L
-    private val start = 1_793_491_200_000L // 1 November 2026, UTC
+    private val start = 1_793_491_200_000L
 
     private fun newStore(clock: Clock, text: String? = null) = GameStore(MemoryStorage(text), clock, TimeZone.UTC, Random(7))
 
     private fun encode(store: GameStore) = GameStore.json.encodeToString(AppData.serializer(), store.data)
 
-    /** One day of ordinary use: tasks added and finished, a focus session, a habit ticked. */
     private fun useADay(store: GameStore, clock: Clock, n: Int) {
         val tasks = (1..3).map { store.addTask("Task $n.$it", Rank.entries[it % Rank.entries.size]) }
         tasks.take(2).forEach { store.completeTask(it.id) }
@@ -45,10 +37,8 @@ class SaveFixtureTest {
     private fun scenarios(): Map<String, String> {
         val out = linkedMapOf<String, String>()
 
-        // 1. Nothing done yet.
         out["main-empty"] = encode(newStore(Clock(start)))
 
-        // 2. A week of ordinary use, with a repeating task, a goal, an open task and a finished focus session.
         val clock = Clock(start)
         val store = newStore(clock)
         store.addRecurring(app.pokeplan.plan.Task(id = "", title = "Stretch", createdAtMillis = start), app.pokeplan.plan.Recurrence(app.pokeplan.plan.Repeat.Daily(1), store.today))
@@ -57,11 +47,9 @@ class SaveFixtureTest {
         store.addTask("Still to do", Rank.B)
         out["main-typical-week"] = encode(store)
 
-        // 3. Seventy days, for a save with a long history.
         repeat(63) { useADay(store, clock, it + 7) }
         out["main-heavy-70-days"] = encode(store)
 
-        // 4. Caught mid-way: a focus session running and a task finished but not yet paid (what a widget leaves behind).
         val c2 = Clock(start)
         val s2 = newStore(c2)
         val t = s2.addTask("Widget task", Rank.C)
@@ -70,7 +58,6 @@ class SaveFixtureTest {
         c2.millis += 5 * 60_000
         out["main-focus-running-and-pending"] = encode(s2)
 
-        // 5. Care, a week of routines (Care pays nothing until the main save has started it, so the main save is unchanged).
         val c3 = Clock(start)
         val main = newStore(c3)
         val care = CareStore(MemoryStorage(), c3, main, TimeZone.UTC, rng = Random(7))

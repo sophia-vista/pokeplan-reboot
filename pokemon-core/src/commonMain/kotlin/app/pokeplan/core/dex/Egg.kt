@@ -2,7 +2,6 @@ package app.pokeplan.core.dex
 
 import kotlin.random.Random
 
-/** Percent chance of each rarity; the four values always add up to 100. */
 data class RarityRates(val common: Int, val uncommon: Int, val rare: Int, val superRare: Int) {
     init {
         require(common + uncommon + rare + superRare == 100) { "rates must add up to 100" }
@@ -19,7 +18,6 @@ data class RarityRates(val common: Int, val uncommon: Int, val rare: Int, val su
     }
 }
 
-/** An egg hatched by a finished focus session. Longer effort, and Deep Focus, shift the odds toward rarer species. */
 object Egg {
     private val tables = listOf(
         RarityRates(60, 30, 9, 1),
@@ -31,17 +29,13 @@ object Egg {
         RarityRates(0, 0, 30, 70),
     )
 
-    /** Session length bands (minutes) that each step up one table: 5, 20, 40, 60, 120, 240. */
     private val bandStarts = listOf(5, 20, 40, 60, 120, 240)
 
-    /** The shortest effort that hatches an egg. */
     const val MIN_MINUTES = 5
 
-    /** Odds for an egg earned from [minutes] of effort (a focus session, a workout, ...). */
     fun rates(minutes: Int, deepFocus: Boolean): RarityRates {
         require(minutes >= MIN_MINUTES) { "an egg needs at least $MIN_MINUTES minutes of effort" }
         val band = bandStarts.indexOfLast { minutes >= it }
-        // Deep Focus is worth one band.
         return tables[if (deepFocus) band + 1 else band]
     }
 }

@@ -7,20 +7,17 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.plus
 
-/** The Sunday ritual. Notes are private; nothing here scores the person. */
 @Serializable
 data class WeeklyReview(
     val weekStart: LocalDate,
     val completedAtMillis: Long,
     val prompt: String,
-    /** The optional answer to the week's reflection question. */
     val note: String?,
     val carriedForwardTaskIds: List<String>,
     val rewarded: Boolean,
 )
 
 object Reviews {
-    /** Completing the review earns this many berries, once a week. *(tune)* */
     const val REWARD_BERRIES = 1
 
     data class HabitResult(val habitId: String, val title: String, val completions: Int)
@@ -32,9 +29,7 @@ object Reviews {
         val sessionsCompleted: Int,
         val sessionsFailed: Int,
         val habits: List<HabitResult>,
-        /** Open tasks planned or due in the week (or overdue) that can be carried forward. */
         val unfinished: List<Task>,
-        /** Tasks finished in the week per list id (null: no list). */
         val listSplit: Map<String?, Int>,
     )
 
@@ -60,7 +55,6 @@ object Reviews {
 
     fun carryForward(task: Task, newDate: LocalDate): Task = task.copy(planned = newDate)
 
-    /** One review per week; it can be done during that week or after it. */
     fun canComplete(weekStart: LocalDate, today: LocalDate, existing: List<WeeklyReview>): Boolean =
         weekStart <= today && existing.none { it.weekStart == weekStart }
 
@@ -69,7 +63,6 @@ object Reviews {
         return WeeklyReview(weekStart, nowMillis, promptFor(weekStart), note?.trim()?.ifEmpty { null }, carried.map { it.id }, rewarded = true)
     }
 
-    /** The week's reflection question: the same for everyone, rotating through the pool. */
     fun promptFor(weekStart: LocalDate): String {
         val weekNumber = LocalDate(1970, 1, 1).daysUntil(weekStart) / 7
         return prompts[((weekNumber % prompts.size) + prompts.size) % prompts.size]

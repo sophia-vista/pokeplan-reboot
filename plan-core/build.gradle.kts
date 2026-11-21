@@ -24,7 +24,6 @@ kotlin {
     }
 }
 
-// Plays months of simulated players through the reward engine and writes docs/economy-report.md (generated on demand, git-ignored).
 tasks.register<JavaExec>("simulateEconomy") {
     group = "tools"
     val main = kotlin.targets.getByName("jvm").compilations.getByName("main")

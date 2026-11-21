@@ -23,7 +23,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** HEAL's records in their own tables from the start (REP-014): round trip, only changed rows written, one kind erased alone, backup and activation. */
 class HealTablesTest {
     private val start = 1_793_000_000_000L
     private class Tables(private val live: LiveDocuments) : Storage {
@@ -60,7 +59,7 @@ class HealTablesTest {
         assertTrue(s.healTables.isActive())
         assertNull(s.live.read("heal"))
         assertFalse("heal" in s.live.names())
-        s.live.moveHealToTables(9) // runs on every start
+        s.live.moveHealToTables(9)
         assertEquals("5", s.db.dataQueries.meta(HealTables.META_HEAL_TABLES_AT).executeAsOne(), "the first activation time is kept")
     }
 
@@ -68,7 +67,7 @@ class HealTablesTest {
     fun aDocumentRestoredBeforeActivationIsImportedReadBackEqualAndKeptAside() {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
         val doc = """{"activities":[{"id":"a1","type":"WALK","startMillis":5,"minutes":30,"day":"2026-11-07"}],"settings":{"fieldResearch":true},"future":{"x":1}}"""
-        s.live.write("heal", doc, 2) // not in tables yet: a plain row
+        s.live.write("heal", doc, 2)
         s.live.moveHealToTables(3)
         assertEquals(obj(doc), obj(s.live.read("heal")!!))
         assertEquals(doc, s.live.read("aside:heal:tables:3"))
@@ -90,7 +89,7 @@ class HealTablesTest {
     fun healRunsOnTablesAndEverythingComesBackAfterReopeningTheFile() {
         val f = File.createTempFile("heal", ".db").also { it.delete(); it.deleteOnExit() }
         val g = game()
-        g.heal(app.pokeplan.core.reward.HealEvent("x", app.pokeplan.core.reward.HealKind.ACTIVITY, start, "x")) // some game history to leave alone
+        g.heal(app.pokeplan.core.reward.HealEvent("x", app.pokeplan.core.reward.HealKind.ACTIVITY, start, "x"))
         val before: app.pokeplan.heal.HealData
         JvmDatabase.open(f.path).let { s ->
             s.live.activate(null, null, 1); s.live.moveHealToTables(2)
@@ -120,9 +119,9 @@ class HealTablesTest {
         heal.logDrink(250)
         heal.logSleep(start - 8 * 3_600_000L, start)
         countWrites(s)
-        heal.logDrink(250) // one new row in one table, nothing else rewritten
+        heal.logDrink(250)
         assertEquals(1L, writes(s))
-        heal.setShowMeasurementsOnToday(true) // the settings row
+        heal.setShowMeasurementsOnToday(true)
         assertEquals(2L, writes(s))
         val a = heal.data.activities.single()
         heal.updateActivity(a.copy(note = "x"))
@@ -144,7 +143,6 @@ class HealTablesTest {
         assertEquals(0, count(s, "heal_sleep"))
         assertEquals(1, count(s, "heal_activity")); assertEquals(1, count(s, "heal_hydration")); assertEquals(1, count(s, "heal_measurement"))
         assertEquals(saveBefore, s.live.read("save"), "the game's save is untouched")
-        // The same through the store's own erase, then read back through the tables.
         val fresh = healOn(s, g)
         fresh.erase(HealKinds.MEASUREMENTS)
         assertEquals(0, count(s, "heal_measurement"))
@@ -170,10 +168,8 @@ class HealTablesTest {
         val snap = s.live.snapshot()
         assertTrue("heal" in snap && snap.getValue("heal").contains("kept"))
         assertTrue("heal" in s.live.names())
-        // A backup made before HEAL existed holds no heal document: restoring it must not wipe health data.
         s.live.replaceAll(mapOf("save" to snap.getValue("save")), 9)
         assertEquals(1, healOn(s, g).data.activities.size)
-        // A backup with a heal document brings it back, and the replaced one is kept aside.
         heal.logDrink(500)
         s.live.replaceAll(snap, 11)
         assertEquals(0, healOn(s, g).data.hydration.size)
@@ -186,7 +182,7 @@ class HealTablesTest {
         val text = BackupBundle.encode(docs, DataStore.SCHEMA_VERSION, 7)
         val staged = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && staged.documents.keys == setOf("save", "heal"))
-        assertEquals(12, DataStore.SCHEMA_VERSION) // Heal made it 7 (0.136.0), Mint's tables 8 (0.141.0), Home's tables 9, Link's tables 10, Heal's steps and readings 11 (0.186.0)
+        assertEquals(12, DataStore.SCHEMA_VERSION)
         val bad = BackupBundle.encode(mapOf("save" to "{}"), 7, 7).replace("\"save\"", "\"health\"")
         assertTrue(BackupBundle.stage(bad, 7) is BackupBundle.Staged.Refused)
     }
@@ -220,7 +216,6 @@ class HealTablesTest {
         assertEquals(g.data.player.partyOf("heal").map { it.id }.toSet(), back.player.partyOf("heal").map { it.id }.toSet())
         assertEquals(second, back.player.healLead?.id, "the chosen lead leads, whatever order the members joined in")
         assertEquals(2, back.player.partyOf("heal").size)
-        // The Heal tables and the shared tables are separate: the player's side can be erased without touching a Heal record.
         val heal = healOn(s, g)
         heal.logActivity(ActivityType.WALK, 30)
         s.live.movePokemonToTables(8)

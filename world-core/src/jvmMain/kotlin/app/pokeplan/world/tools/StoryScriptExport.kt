@@ -8,10 +8,6 @@ import app.pokeplan.world.story.StoryCatalog
 import app.pokeplan.world.story.StoryScene
 import java.io.File
 
-/**
- * Writes every chapter's summary and the scenes' scripts as one readable Markdown file (docs/world-story-script.md), so the story can be
- * read and rewritten without opening the Kotlin. Run: `./gradlew :world-core:storyScript`.
- */
 fun main(args: Array<String>) {
     val out = StringBuilder()
     out.appendLine("# PokéLife: story and script (generated)").appendLine()

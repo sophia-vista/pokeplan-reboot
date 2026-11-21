@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""Finds which of the game's weather layers each of PokéLife's snow and blizzard sheets is, by comparing the shape of every opaque pixel of a frame with the same-sized
-window of every tile-animation frame of the layers decoded from the game's files (tools/weather/decode_bg.py).
-
-Usage: python3 -I tools/weather/match_sheets.py <pmd-red checkout>
-Prints, for frames 0 and 5 of each sheet, the layer, the animation frame and the offset of the exact match. Needs Pillow and numpy.
-"""
 import os
 import sys
 

@@ -51,7 +51,6 @@ class JohtoTest {
         val faced = whirl.copy(layersDone = setOf("johto"))
         assertEquals(setOf("johto-lugia", "johto-ho-oh"), Legends.ready(faced).map { it.id }.toSet())
         Legends.of(WorldLayer.JOHTO).forEach { assertTrue(Dex.species(it.speciesId).isSpecial, it.id) }
-        // Lugia makes Water and Flying dungeons of Johto faster; Ho-Oh adds treasure and finds there, and nothing in Kanto.
         val has = none.copy(legends = setOf("johto-lugia", "johto-ho-oh"))
         assertEquals(Legends.FASTER_PERCENT, has.legendFaster(Dungeons.byId("whirl-islands")!!))
         assertEquals(0, has.legendFaster(Dungeons.byId("sprout-tower")!!))

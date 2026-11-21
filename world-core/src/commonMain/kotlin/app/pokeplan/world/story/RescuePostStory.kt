@@ -3,10 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/**
- * Rescue Team arc, optional post-story episodes 101 to 105 (the code is the source of the story). Each one stands on its own;
- * none of them gives a prize in the script (rewards are never part of a scene) and none of them punishes. The Rescue Team is never staged.
- */
 internal object RescuePostStory {
     private val buddy = buddyCharacter()
     private val gengar = npc("gengar", "Gengar", 94)
@@ -22,7 +18,6 @@ internal object RescuePostStory {
 
     fun all(): List<StoryEpisode> = listOf(e101(), e102(), e103(), e104(), e105())
 
-    /** One sentence per episode for the archive. */
     val summaries: Map<Int, String> = mapOf(
         101 to "Gengar tells the square the true story, and begins the long work of earning back its trust",
         102 to "Articuno, Zapdos and Moltres each test the team in their own way, for their own reasons",

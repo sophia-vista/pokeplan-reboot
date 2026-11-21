@@ -53,11 +53,10 @@ class UnitCatalogTest {
         near(-40.0, conv(-40.0, "temperature:F", "temperature:C"))
         near(273.15, conv(0.0, "temperature:C", "temperature:K"))
         near(-459.67, conv(0.0, "temperature:K", "temperature:F"), 1e-9)
-        // 10 km/L is 10 L/100 km, and the other way round (it is its own inverse).
         near(10.0, conv(10.0, "fuel:km/L", "fuel:L/100km"))
         near(5.0, conv(20.0, "fuel:km/L", "fuel:L/100km"))
         near(23.5214583, conv(10.0, "fuel:L/100km", "fuel:mpg"), 1e-6)
-        near(1.2009499, conv(1.0, "fuel:mpg", "fuel:mpg (UK)"), 1e-6)  // a US mpg is 1.2 UK mpg
+        near(1.2009499, conv(1.0, "fuel:mpg", "fuel:mpg (UK)"), 1e-6)
     }
 
     @Test
@@ -69,7 +68,6 @@ class UnitCatalogTest {
         near(1.0, conv(8.0, "rate:Mbps", "rate:MB/s"))
         near(125.0, conv(1.0, "rate:Gbps", "rate:MB/s"))
         assertTrue(UnitCatalog.category("data")!!.note.contains("decimal") && UnitCatalog.category("rate")!!.note.contains("small b"))
-        // The units that are easy to mistake say so.
         assertTrue(u("volume:gal").note.contains("imperial") && u("volume:cup").note.contains("250"))
     }
 
@@ -104,7 +102,6 @@ class UnitCatalogTest {
         assertEquals("length:ft", first("feet")?.unit?.id)
         assertEquals("volume:tbsp", first("tablespoon")?.unit?.id)
         assertEquals("area:m²", first("sqm")?.unit?.id)
-        // One wrong letter in a longer word still finds it.
         assertTrue(UnitCatalog.search("kilogramm").any { it.unit?.id == "mass:kg" })
         assertTrue(UnitCatalog.search("metre").any { it.unit?.id == "length:m" })
         assertTrue(UnitCatalog.search("").isEmpty() && UnitCatalog.search("zzzzzz").isEmpty())

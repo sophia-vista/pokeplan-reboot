@@ -29,13 +29,6 @@ import kotlinx.datetime.toInstant
 import app.pokeplan.ui.plan.clock
 import app.pokeplan.ui.pokemon.label
 
-/**
- * A text box that holds a typed value (a date, a time, a length); when it loses focus it rewrites what was typed in the one
- * spelling the app uses, so there is no second line saying what it understood. Every valid
- * spelling is applied at once ([onChange]), so Save always reads what is on the screen; while the text is not yet a value
- * (`9:` on the way to `9:30`) the last good value stays and the field only says what it takes. When the value changes from
- * outside (a key, a stepper) the text is rewritten to match; typing is never rewritten under the cursor.
- */
 @Composable
 internal fun <T : Any> TypedValueField(
     value: T?, onChange: (T?) -> Unit, parse: (String) -> T?, format: (T) -> String,
@@ -67,10 +60,6 @@ internal fun <T : Any> TypedValueField(
     )
 }
 
-/**
- * A time of day you can type (`9`, `930`, `21:05`, `9pm`), with the common times as keys. With a [noneLabel] the time may be
- * missing ("Any time").
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PixelTimeField(
@@ -98,10 +87,6 @@ fun PixelTimeField(
     }
 }
 
-/**
- * A length you can type (`45`, `1h30`, `1:30`, `90m`) with the common lengths as keys. [minutes] is
- * null for none when [noneLabel] is given.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PixelDurationField(
@@ -122,7 +107,6 @@ fun PixelDurationField(
     }
 }
 
-/** A date and a time of day together: the date field above, the time below (a missing time is "Any time"). */
 @Composable
 fun PixelDateTimeField(
     day: kotlinx.datetime.LocalDate?, time: LocalTime?, today: kotlinx.datetime.LocalDate, accent: Color,
@@ -141,10 +125,6 @@ fun PixelDateTimeField(
     }
 }
 
-/**
- * One moment on the phone's clock, typed or picked as a day and a time (an activity's end, a night's wake-up, a drink). The
- * day is never after today and, unless [future] is true, the time is never later than [nowMillis].
- */
 @Composable
 fun PixelMomentField(
     millis: Long, onChange: (Long) -> Unit, nowMillis: Long, accent: Color, modifier: Modifier = Modifier, label: String? = null,

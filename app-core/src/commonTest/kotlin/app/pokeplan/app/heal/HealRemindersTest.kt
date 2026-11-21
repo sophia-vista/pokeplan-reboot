@@ -69,7 +69,6 @@ class HealRemindersTest {
         assertEquals("hyd-1200", request.sourceRef)
         assertTrue(adapter.isStillWanted(request))
         assertEquals(NudgeText("A moment for a drink?", ""), adapter.present(request))
-        // Not wanted once the player removes the time; an unknown slot is not wanted either.
         val removed = HealReminderAdapter({ heal(emptyList()) }, { app }, { day })
         assertFalse(removed.isStillWanted(request))
         assertFalse(adapter.isStillWanted(request.copy(sourceRef = "bogus")))

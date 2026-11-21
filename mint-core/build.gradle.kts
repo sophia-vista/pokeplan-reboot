@@ -5,9 +5,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-// The Mint module's rules (docs/pokelife MODULES/MINT.md): accounts, transactions, budgets, bills, reconciliation and review. No UI and
-// no game: it knows nothing about Pokémon, rewards or the other modules. The app meets it through MintStore (app-core), which pays Ledger
-// Research through the minimal MintEvent only.
 kotlin {
     jvm()
 

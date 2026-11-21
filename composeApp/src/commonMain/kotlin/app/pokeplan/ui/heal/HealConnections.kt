@@ -36,10 +36,6 @@ import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.shortDate
 
-/**
- * Heal → Connections (INTEGRATIONS_AND_PRIVACY.md sections 5 and 14, HEAL.md section 10): Health Connect, read on request, with a preview before anything is saved,
- * the source of every imported record, possible duplicates to look at, and separate Disconnect and Delete. Manual logging never depends on any of it.
- */
 @Composable
 internal fun HealConnectionsView(model: AppModel) {
     val heal = model.heal
@@ -53,12 +49,8 @@ internal fun HealConnectionsView(model: AppModel) {
     var note by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     var askingDelete by remember { mutableStateOf<String?>(null) }
-    // Android is asked again on every visit and every read: a permission is never assumed to still be there.
     LaunchedEffect(health, settings.healthKinds) { health?.granted { granted = it } }
 
-    // Help: Health Connect is read only, only on Read now, the 30 days before first access at most; imported records never earn a Field Research find.
-    // Help: Not read: steps, heart rate, blood oxygen, calories, sleep stages, nutrition. Huawei Health is read only if it writes into Health Connect.
-    // Help: Huawei Health (test): with screen and notification reading on, Read Huawei Health opens it, scrolls its first page and shows what it saw, held in memory only and never saved; Copy hides every number.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Integrations.heal(availability, settings.healthKinds, granted).forEachIndexed { i, info ->

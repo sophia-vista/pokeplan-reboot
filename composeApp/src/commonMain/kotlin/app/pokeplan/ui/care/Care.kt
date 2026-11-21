@@ -122,20 +122,10 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
-/**
- * Care's screens (docs/pokelife/MODULES/CARE.md section 3). Five places, reached from the Sections key in the header (owner, 20 November 2026; no row of keys on the page):
- * **Today** (the landing: the buddy, today's routines and the mood key), **Routines** (add, edit, skip and archive them), **Calm** (the breathing break and the guided DBT skills),
- * **Reflect** (the diary card and the journal, two modes of one place) and **Dream** (the dream world: the buddy and the dreamers asleep in one
- * scene, visiting, play and the party). Doing earns (a routine, a calm break, a practised skill, a week with a
- * rhythm); a diary card, a note or a journal entry never does, and the buddy never comments on them.
- *
- * [CareSection] holds the places other than Today (`model.careSection == null` is Today).
- */
 enum class CareSection(val label: String, val icon: String) {
     ROUTINES("Routines", "oaks-parcel"), CALM("Calm", "lunar-wing"), REFLECT("Reflect", "journal"), DREAM("Dream", "town-map"),
 }
 
-/** The header stays put; only the page under it changes. Back from a place goes to Today, from Today to the module list. */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
@@ -143,7 +133,6 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     val back = if (section == null) ({ model.module = null }) else ({ model.careSection = null })
     BackHandler(enabled = true, onBack = back)
     Column(Modifier.fillMaxSize()) {
-        // The five places are reached from the Sections key, as in every module's header; the page under it is the point.
         ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header, trailing = { SectionsKey(Module.CARE.label, careSections(model)) { key -> model.careSection = CareSection.entries.firstOrNull { it.name == key } } })
         ScreenSwitch(section) { page ->
             Column(
@@ -162,7 +151,6 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     }
 }
 
-/** The Sections sheet: the five places, each with its state for today. "TODAY" is the landing (`careSection == null`). */
 private fun careSections(model: AppModel): List<MenuEntry> {
     val today = model.care.todayRoutines()
     val done = today.count { it.doneOn(model.care.today) }
@@ -176,7 +164,6 @@ private fun careSections(model: AppModel): List<MenuEntry> {
     )
 }
 
-/** Care's main screen, in the order every module keeps: the short lead, the overview (today's routines, the mood key), Quick actions, then the party (it is in Dream too). The visitors and the egg are in Dream. */
 @Composable
 private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
     val care = model.careData
@@ -199,13 +186,10 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
         }
     }
     MoodRow(model)
-    // The action items, then the party last (the order every module's main screen keeps, DESIGN_SYSTEM.md 5.1).
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
-            // Keys at their natural width that wrap at a large text size, so no label is cut.
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                // What people do often: a calm break, today's check-in, a journal entry. Adding a routine is set-up, so it lives in Routines.
                 PixelButton("Calm", { model.careSection = CareSection.CALM }, color = ModuleAccent.CARE.accent, compact = true)
                 PixelButton("Check in", { model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
                 PixelButton("Write", { model.reflectJournal = true; model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
@@ -215,7 +199,6 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
     CarePartyPanel(model, openPokemon)
 }
 
-/** Reflect: the diary card and the journal stay separate records and separate modes of one place (CARE.md 3.3); a half-written journal entry opens on the journal. */
 @Composable
 private fun ReflectView(model: AppModel) {
     var journal by remember { mutableStateOf(model.reflectJournal || model.journalDraft.isNotEmpty()) }
@@ -227,22 +210,15 @@ private fun ReflectView(model: AppModel) {
     if (journal) JournalView(model) else DiaryView(model)
 }
 
-/** Calm: the breathing break, then the skills library; a skill opens as a guided walk-through that replaces both. */
 @Composable
 private fun CalmView(model: AppModel) {
     var skillId by remember { mutableStateOf<String?>(null) }
     val skill = skillId?.let { Skills.byId(it) }
     if (skill != null) { SkillGuide(model, skill) { skillId = null }; return }
     CalmBreakView(model)
-    // While a break runs nothing else is offered: the screen is for the breath.
     if (model.calmBreakStartedAt == null) SkillsList(model) { skillId = it }
 }
 
-/**
- * Care's buddy (Care's lead, else the Plan buddy) in the meadow, as on Home: pet it, give it a berry, and it celebrates Care's
- * own moments (a routine, a calm break, a skill, a friend) with its cry, its portrait and a hop. The visitors and Care's party
- * are in Dream, not here. It never comments on how the player feels.
- */
 @Composable
 private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
     val store = model.store
@@ -262,12 +238,6 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
     )
 }
 
-// ----- Routines -------------------------------------------------------------------------------------------------------
-
-/**
- * One routine line: its check key first, then its title and one quiet line (time and days), and a Skip key for a routine still to do today.
- * [day] is the day it is ticked for (today, or yesterday: that only records it). Rows of a list sit in one box.
- */
 @Composable
 private fun RoutineLine(model: AppModel, routine: Routine, day: LocalDate = model.care.today, onOpen: (() -> Unit)? = null) {
     val care = model.care
@@ -301,7 +271,6 @@ private fun RoutineLine(model: AppModel, routine: Routine, day: LocalDate = mode
     }
 }
 
-/** "Every day", "Weekdays", "Mon Wed Fri". */
 private fun routineDays(days: Set<DayOfWeek>): String = when {
     days.isEmpty() || days.size == 7 -> "Every day"
     days == WEEKDAYS -> "Weekdays"
@@ -342,11 +311,9 @@ private fun RoutinesView(model: AppModel) {
 
     val (archived, active) = data.routines.partition { it.archived }
     if (active.isEmpty()) EmptyState("No routines yet", icon = CareSection.ROUTINES.icon, addAbove = "Add a routine")
-    // Help: the first CareRules.ROUTINES_PAID_PER_DAY routines finished each day earn Exp. Candy and a little friendship; no streaks.
     val sorted = active.sortedWith(compareBy(nullsLast()) { it.time })
     if (sorted.isNotEmpty()) TextBox {
         Column {
-            // Yesterday can be ticked too, for a day that slipped by; it only records the routine, it never pays.
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 TabButton("Today", !yesterday, { yesterday = false }, Modifier.weight(1f))
                 TabButton("Yesterday", yesterday, { yesterday = true }, Modifier.weight(1f))
@@ -374,7 +341,6 @@ private fun RoutinesView(model: AppModel) {
     }
 }
 
-/** The time and the days of a routine, to set when it is added and when it is edited. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RoutineFields(time: LocalTime?, onTime: (LocalTime?) -> Unit, days: Set<DayOfWeek>, onDays: (Set<DayOfWeek>) -> Unit) {
@@ -389,7 +355,6 @@ private fun RoutineFields(time: LocalTime?, onTime: (LocalTime?) -> Unit, days: 
     }
 }
 
-/** Edit a routine's name, time and days (what it earned and when it was done stay), put it away (kept for trends) or back, or delete it, which asks first. */
 @Composable
 internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boolean = false, framed: Boolean = true, onDone: () -> Unit) {
     var asking by remember { mutableStateOf(false) }
@@ -427,9 +392,6 @@ internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boo
     }
 }
 
-// ----- Calm break -----------------------------------------------------------------------------------------------------
-
-/** One breath: in for 4 seconds, out for 6, about six breaths a minute. */
 private const val BREATHE_IN_MILLIS = 4_000
 private const val BREATH_MILLIS = 10_000
 
@@ -443,14 +405,12 @@ private fun CalmBreakView(model: AppModel) {
     val buddy = model.store.careBuddy
     var wake by remember { mutableStateOf(0) }
     var waking by remember { mutableStateOf(false) }
-    // Each breath it takes a deep one (its DeepBreath animation) in the middle of resting; a form without one just sleeps on.
     var breathing by remember { mutableStateOf(false) }
 
     fun finish(length: Int) {
         val short = length < CareRules.BREAK_MIN_SECONDS
         val paid = care.finishCalmBreak(length).isNotEmpty()
         startedAt = null
-        // It wakes up beside you: a stretch (its hop), its cry, and the healing chime when the break earned.
         buddy?.let { model.cry(it) }
         if (paid) model.effect(Sfx.CALM_BREAK_END)
         if (!reduce) { waking = true; wake++ }
@@ -464,7 +424,6 @@ private fun CalmBreakView(model: AppModel) {
     val start = startedAt
     val elapsed = if (start == null) 0L else (model.now - start).coerceAtLeast(0)
     val timeUp = start != null && elapsed >= seconds * 1000L
-    // A break left for much longer than its length (the screen was closed and opened later) is dropped, not paid.
     LaunchedEffect(timeUp) { if (timeUp) { if (elapsed > (seconds + 600) * 1000L) startedAt = null else finish(seconds) } }
 
     val breath = if (start == null) -1L else elapsed / BREATH_MILLIS
@@ -485,7 +444,6 @@ private fun CalmBreakView(model: AppModel) {
             },
             actionKey = wake, onActionDone = { waking = false; breathing = false },
         )
-        // The Zz while it rests.
         if (start != null) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XXL + 96.dp).offset(x = 36.dp), loop = true, animate = !reduce)
     }
     if (start == null) {
@@ -494,7 +452,6 @@ private fun CalmBreakView(model: AppModel) {
             FormStack {
                 PixelChoice(listOf(60, 120), seconds, { if (it == 60) "1 minute" else "2 minutes" }, { s -> if (s != null) seconds = s }, label = "How long", key = ModuleAccent.CARE.accent)
                 FormSave("Start", { result = null; waking = false; model.haptic(); model.effect(Sfx.CALM_BREAK_START); startedAt = model.now }, ModuleAccent.CARE.accent)
-                // Help: up to CareRules.BREAKS_PAID_PER_DAY calm breaks a day earn friendship and a berry.
             }
         }
     } else {
@@ -511,7 +468,6 @@ private fun CalmBreakView(model: AppModel) {
     }
 }
 
-/** A soft circle that grows while breathing in and shrinks while breathing out; with Reduce motion it stays still. */
 @Composable
 private fun BreathCircle(inhale: Boolean, still: Boolean) {
     val target = if (still || inhale) 1f else 0.55f
@@ -527,9 +483,6 @@ private fun BreathCircle(inhale: Boolean, still: Boolean) {
 }
 
 
-// ----- Diary card -----------------------------------------------------------------------------------------------------
-
-/** A 0 to 5 rating, as six small buttons; tapping the chosen one again clears it. */
 @Composable
 private fun Rating(label: String, value: Int?, onChange: (Int?) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
@@ -545,10 +498,8 @@ private fun Rating(label: String, value: Int?, onChange: (Int?) -> Unit) {
 private fun DiaryView(model: AppModel) {
     val care = model.care
     val data = model.careData
-    // The card of any day up to today: a forgotten day can be filled in and an earlier card corrected.
     var cardDay by remember { mutableStateOf(care.today) }
     val saved = care.diaryOn(cardDay)
-    // The skills practised today start ticked, so the card is quick to fill in.
     var feelings by remember(saved?.id, cardDay) { mutableStateOf(saved?.feelings ?: emptyMap()) }
     var urges by remember(saved?.id, cardDay) { mutableStateOf(saved?.urges ?: emptyMap()) }
     var skills by remember(saved?.id, cardDay) { mutableStateOf(saved?.skills ?: if (cardDay == care.today) care.practisedToday() else emptySet()) }
@@ -606,7 +557,6 @@ private fun DiaryView(model: AppModel) {
                         PixelIconButton("plus", "Add", ::add, Pixel.InkSoft, enabled = newUrge.isNotBlank())
                     }
                     if (tracked.isNotEmpty()) PixelButton(if (editingUrges) "Done" else "Edit urges", { editingUrges = !editingUrges; stopping = null }, color = Pixel.InkSoft, compact = true)
-                    // Taking an urge off the card is rare and asks first; the cards already saved keep it.
                     if (editingUrges) tracked.forEach { u ->
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             if (stopping == u) {
@@ -646,14 +596,10 @@ private fun DiaryView(model: AppModel) {
     if (pastAll.size > pastShown) PixelButton("Show older", { pastShown += 14 }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
 }
 
-// ----- Skills ---------------------------------------------------------------------------------------------------------
-
-/** The library, by DBT group: a tap opens the skill as a guided walk-through ([SkillGuide]). */
 @Composable
 private fun SkillsList(model: AppModel, onOpen: (String) -> Unit) {
-    model.careData // redraw when Care changes
+    model.careData
     val practised = model.care.practisedToday()
-    // Help: skills come from DBT; up to CareRules.SKILLS_PAID_PER_DAY a day earn friendship and a berry. A reminder, not therapy; in danger, call the local emergency number.
     app.pokeplan.care.SkillGroup.entries.forEach { group ->
         SectionLabel(group.label)
         TextBox {
@@ -672,15 +618,10 @@ private fun SkillsList(model: AppModel, onOpen: (String) -> Unit) {
     }
 }
 
-/**
- * A skill walked through the way the breathing break is: one page at a time with a bar, never the whole list of steps at once. Page 0 says what the
- * skill is for, pages 1 to n are its steps (Back and Next, no timer, no wrong answer), and the last page is the close: "I practised this" pays
- * through [care] as before (the breathing skill instead leads back to the break, which pays as a calm break). Leaving at any page costs nothing.
- */
 @Composable
 private fun SkillGuide(model: AppModel, skill: Skill, onClose: () -> Unit) {
     val care = model.care
-    model.careData // redraw when Care changes
+    model.careData
     val practised = skill.id in care.practisedToday()
     var page by remember(skill.id) { mutableStateOf(0) }
     val steps = skill.steps.size
@@ -716,8 +657,6 @@ private fun SkillGuide(model: AppModel, skill: Skill, onClose: () -> Unit) {
     }
 }
 
-// ----- Journal --------------------------------------------------------------------------------------------------------
-
 private val JOURNAL_TAGS = listOf("Gratitude", "People", "Work", "Rest", "Health", "Outside")
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -726,15 +665,12 @@ private fun JournalView(model: AppModel) {
     val care = model.care
     val data = model.careData
     val prompt = care.prompt()
-    // The half-written entry lives in the model, so leaving the screen (or a tab) and coming back finds it still there.
     var text by model::journalDraft
-    // The draft is also kept in Care's save (a moment after you stop typing), so it is there after the app is closed.
     LaunchedEffect(Unit) { if (model.journalDraft.isEmpty() && data.journalDraft.isNotEmpty()) model.journalDraft = data.journalDraft }
     LaunchedEffect(model.journalDraft) { kotlinx.coroutines.delay(1_200); care.setJournalDraft(model.journalDraft) }
     var answering by remember { mutableStateOf<String?>(null) }
     var tags by remember { mutableStateOf(emptySet<String>()) }
     var query by remember { mutableStateOf("") }
-    // null: written just now.
     var writtenAt by remember { mutableStateOf<Long?>(null) }
     var editingId by remember { mutableStateOf<String?>(null) }
     fun save() {
@@ -801,7 +737,6 @@ private fun JournalView(model: AppModel) {
     if (found.size > shown) PixelButton("Show older", { shown += 30 }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
 }
 
-/** An entry's words, tags and the exact moment it is dated to. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun JournalEditor(model: AppModel, e: JournalEntry, onDone: () -> Unit) {
@@ -828,16 +763,13 @@ private fun JournalEditor(model: AppModel, e: JournalEntry, onDone: () -> Unit) 
     }
 }
 
-// ----- Trends ---------------------------------------------------------------------------------------------------------
-
-/** Care's trends, shown in Me (owner, 20 November 2026). */
 @Composable
 internal fun CareTrendsView(model: AppModel) = app.pokeplan.ui.theme.ModuleTone(ModuleAccent.CARE) { TrendsView(model) }
 
 @Composable
 private fun TrendsView(model: AppModel) {
     val care = model.care
-    model.careData // redraw when Care changes
+    model.careData
     var emotion by remember { mutableStateOf(Emotion.JOY) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -891,7 +823,6 @@ private fun TrendsView(model: AppModel) {
 
 private val moodNames = listOf("Rough", "Low", "Okay", "Good", "Great")
 
-/** Five mood keys that wrap onto a second line rather than cut a word; tapping the chosen one again takes it back ([onPick] gets null). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun MoodKeys(chosen: Int?, onPick: (Int?) -> Unit) {
@@ -903,11 +834,9 @@ internal fun MoodKeys(chosen: Int?, onPick: (Int?) -> Unit) {
     }
 }
 
-/** "How is today?" in one tap: five keys, no card to fill in, nothing paid. */
 @Composable
 private fun MoodRow(model: AppModel) {
-    model.careData // redraw when Care changes
-    // One dialogue box like the Quick actions under it (BoxX by BoxY): a form box is 16 dp inside its frame, so this one looked tighter than its neighbours.
+    model.careData
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FormLabel("How is today?")

@@ -7,10 +7,6 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 
-/**
- * Reads the Dex tables, which are JSON files in the `dex` resources (see tools/species/generate.py): each an array of rows, a row an array of
- * numbers, text, nulls (nothing) and lists, in the column order read below. Read once, each when first asked for.
- */
 internal object DexParser {
     private fun table(name: String): List<JsonArray> = Json.parseToJsonElement(dexJson(name)).jsonArray.map { it.jsonArray }
 
@@ -77,10 +73,8 @@ internal object DexParser {
         )
     }
 
-    /** Pokédex text per species id. */
     fun entries(): Map<Int, String> = table("entries").associate { f -> f.number(0) to f.text(1) }
 
-    /** Region name to ordered species ids. Includes the extra "HISUI" list used to pick Hisuian variants. */
     fun regions(): Map<String, List<Int>> = table("regions").associate { f -> f.text(0) to f.numbers(1) }
 
     fun moves(): List<MoveInfo> = table("moves").map { f ->
@@ -98,7 +92,6 @@ internal object DexParser {
         )
     }
 
-    /** Form (Pokémon row) id to its learnset. */
     fun learnsets(): Map<Int, Learnset> = table("learnsets").associate { f ->
         f.number(0) to Learnset(
             levelUp = f[1].jsonArray.map { it.jsonArray.let { pair -> pair[0].jsonPrimitive.int to pair[1].jsonPrimitive.int } },

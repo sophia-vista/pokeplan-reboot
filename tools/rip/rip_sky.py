@@ -1,25 +1,4 @@
 #!/usr/bin/env python3
-"""Rip Pokémon Mystery Dungeon: Explorers of Sky (USA) into readable files, for reference and future work (owner, 14 November 2026).
-
-The ROM is not in the repo: pass one whose SHA-1 is 5fa96ca8d8dd6405d6cd2bad73ed68bc73a9d152. Everything is decoded with
-SkyTemple's file-format library (`pip install ndspy skytemple-files "pillow<11"`) into rip/sky/ (nothing there ships in the app):
-
-- text/strings.tsv: every string of MESSAGE/text_e.str, with the name of the block it is in (Pokémon, moves, items, dungeons,
-  menus, dialogue, help...);
-- scripts/<map>/<name>.exps: every cutscene and ground script (SCRIPT/**.ssb) decompiled to ExplorerScript, the language
-  SkyTemple edits them in; dialogue/<map>/<name>.txt: only what is said in each, in order, with who says it where the script
-  names them; dialogue/index.tsv: every script with its number of lines (the main story is the m01a.. to m25a.. scripts);
-- data/: the game's tables as TSV: Pokémon (BALANCE/monster.md), moves (waza_p.bin), items (item_p.bin), dungeon floors (mappa_s.bin);
-- portraits/<NNNN>.png: each Pokémon's portraits (FONT/kaomado.kao), one 40 x 40 per emotion in a row, missing ones left empty;
-- backgrounds/: the full-screen pictures (BACK, TOP, DUNGEON .bgp); textures/: the WTE textures (GROUND, FONT, DUNGEON).
-The effects are rendered by tools/sprites/extract_sky_effects.py (rip/sky/effects), the ground maps by
-tools/sprites/extract_sky_maps.py (assets/sky-maps), the dungeon tilesets by tools/tiles/extract_sky_tiles.py, the sound by
-tools/sprites/extract_sky_audio.py. Not ripped: the Pokémon sprites (MONSTER/*.bin; the PMD SpriteCollab sprites the app uses are
-these, redrawn and extended), the ground object sprites (GROUND/*.wan), music (approximate renders only, see extract_sky_audio.py).
-Nintendo / Chunsoft art and text: private use only.
-
-Usage: python3 tools/rip/rip_sky.py ROM.nds [--only text,scripts,story,data,portraits,backgrounds,textures] (story reads the dialogue scripts writes)
-"""
 import argparse
 import contextlib
 import hashlib
@@ -54,7 +33,6 @@ def tsv(path, header, rows):
 
 
 def fields(obj):
-    """The plain fields of a SkyTemple record (numbers, text, flags, enums), in a stable order."""
     out = {}
     for k, v in sorted(vars(obj).items()):
         if k.startswith("_"):
@@ -104,7 +82,6 @@ ENGLISH = re.compile(r'english="((?:[^"\\]|\\.)*)"')
 
 
 def transcript(source):
-    """The lines said in an ExplorerScript, in order, with the actor the script last named for the message box."""
     lines, who = [], ""
     current = None
     for raw in source.splitlines():
@@ -119,7 +96,6 @@ def transcript(source):
         if e and current:
             said = re.sub(r"\[[^\]]*\]", "", e.group(1)).replace("\\n", " ").strip()
             line = f"{(who.removeprefix('ACTOR_') or '-')}\t{current}\t{said}"
-            # The same line in each branch of a choice (one per partner or hero) is said once.
             if said and (not lines or lines[-1] != line):
                 lines.append(line)
     return lines
@@ -190,7 +166,6 @@ SAID = {"Talk", "Narration", "Monologue", "Mail", "Notice", "Explanation", "Spec
 
 
 def rip_story(rom, cfg):
-    """The main story in order: the scenario scripts m<chapter><letter><scene> (m01a0101 is the storm at sea), only what is said (no menus)."""
     story = sorted((p for p in (OUT / "dialogue").rglob("m[0-9][0-9][a-z]*.txt") if not p.stem.startswith("m00")), key=lambda p: (p.stem, p.parent.name))
     lines = 0
     with open(OUT / "dialogue" / "story.txt", "w", encoding="utf-8") as f:

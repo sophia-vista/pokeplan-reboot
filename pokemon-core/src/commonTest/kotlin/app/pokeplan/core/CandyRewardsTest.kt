@@ -42,7 +42,6 @@ class CandyRewardsTest {
             List(10_000) { CandyRewards.reward(p, rng) }.count { paid -> paid.any { it.type == CandyType.SUPER } } / 100.0
         }
         assertEquals(shares.sorted(), shares)
-        // 10%, 15%, 20%, 30%, 40%, the Super Candy shares of the original tables.
         listOf(10, 15, 20, 30, 40).zip(shares).forEach { (want, got) -> assertTrue(got in want - 2.0..want + 2.0, "$got vs $want") }
     }
 
@@ -56,7 +55,6 @@ class CandyRewardsTest {
 
     @Test
     fun topPriorityStillPaysARange() {
-        // The original table had min 7 above max 6 here, which always paid 7.
         val rng = Random(5)
         val amounts = List(5_000) { CandyRewards.reward(5, rng) }.flatten().filter { it.type == CandyType.SUPER }.map { it.amount }.toSet()
         assertEquals(setOf(6, 7), amounts)

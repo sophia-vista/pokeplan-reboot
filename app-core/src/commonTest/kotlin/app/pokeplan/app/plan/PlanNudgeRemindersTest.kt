@@ -22,7 +22,6 @@ import app.pokeplan.app.reminders.ReminderActions
 import app.pokeplan.app.reminders.ReminderCoordinator
 import app.pokeplan.app.reminders.ReminderPolicy
 
-/** The streak reminder and the Sunday recap on the shared scheduler, through Plan's adapter (they used to have alarms of their own). */
 class PlanNudgeRemindersTest {
     private val zone = TimeZone.UTC
     private val sunday = LocalDate(2026, 10, 25)
@@ -51,7 +50,6 @@ class PlanNudgeRemindersTest {
         val recap = requests.single { it.kind == "recap" }
         assertEquals(at(LocalDate(2026, 11, 1), 18), recap.atMillis)
         assertEquals("2026-11-01", recap.occurrence)
-        // The scheduler plans only what is still to come, in order, with the shared quiet-hours rule.
         val plan = ReminderPolicy.plan(requests, box.now, box.data.settings.quietHours, zone, null, box.now + 3 * 86_400_000L)
         assertEquals(3, plan.size)
     }
@@ -75,14 +73,11 @@ class PlanNudgeRemindersTest {
         val request = a.requests(at(monday, 9), zone).first { it.kind == "streak" }
         assertTrue(a.isStillWanted(request))
         assertEquals("Your 3-day streak is waiting", a.present(request)?.title)
-        // Something counted: nothing to remind about, whatever was planned.
         box.data = streaking(monday, counted = true)
         assertFalse(a.isStillWanted(request))
         assertNull(a.present(request).takeIf { a.isStillWanted(request) })
-        // A rest day takes it away too.
         box.data = streaking(monday).copy(restDays = setOf(monday))
         assertFalse(a.isStillWanted(request))
-        // Held out of quiet hours until the next morning it is a different day: the old request is stale.
         box.data = streaking(monday)
         box.now = at(after(monday, 1), 10)
         assertFalse(a.isStillWanted(request))
@@ -111,7 +106,6 @@ class PlanNudgeRemindersTest {
         assertIs<FireDecision.Defer>(decision)
         assertEquals(at(monday, 20, 30), decision.untilMillis)
         assertIs<FireDecision.Show>(coordinator.onFire(request, box.now, zone, box.data.settings.quietHours, null))
-        // An unanswered nudge never repeats, and ticking "Done" on one is not an action.
         assertNull(a.followUp(request, box.now))
         assertEquals(ActionResult.NOT_ALLOWED, coordinator.router.handle(request, ReminderActions.DONE))
         assertNotNull(coordinator)

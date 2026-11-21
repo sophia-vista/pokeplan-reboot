@@ -5,11 +5,6 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.round
 
-/**
- * One unit of the catalogue. [id] is stable (`category:symbol`, saved with favourites, never a translated label). [toBase] and [fromBase] go
- * to and from the category's base unit, as functions because temperature and fuel economy are not a simple factor. [note] explains an unit that is
- * easy to mistake (a US gallon is not an imperial one, a decimal kilobyte is not a binary one).
- */
 class UnitInfo(
     val category: String, val symbol: String, val name: String, val aliases: List<String>,
     val toBase: (Double) -> Double, val fromBase: (Double) -> Double, val note: String = "",
@@ -19,14 +14,8 @@ class UnitInfo(
 
 class UnitCategory(val id: String, val label: String, val units: List<UnitInfo>, val note: String = "", val aliases: List<String> = emptyList())
 
-/** A search result: a category, and a unit in it when the query named one. */
 data class UnitHit(val category: UnitCategory, val unit: UnitInfo?)
 
-/**
- * The unit catalogue (data, not screens): categories of units with the factors to a base unit, every definition tested against reference values.
- * Cooking quantities by volume are here with the cup and spoon standard named; **volume and weight are never converted into each other**
- * (a cup of flour and a cup of honey weigh differently), and bits and bytes, decimal and binary prefixes are separate units.
- */
 object UnitCatalog {
     private fun cat(id: String, label: String, note: String = "", aliases: List<String> = emptyList(), build: Builder.() -> Unit): UnitCategory {
         val b = Builder(id).apply(build)
@@ -36,7 +25,6 @@ object UnitCatalog {
     private class Builder(private val category: String) {
         val units = mutableListOf<UnitInfo>()
 
-        /** A unit that is [perBase] of the base unit... as a factor: 1 of this = [perBase] base units. */
         fun u(symbol: String, name: String, perBase: Double, vararg aliases: String, note: String = "") {
             units += UnitInfo(category, symbol, name, aliases.toList(), { it * perBase }, { it / perBase }, note)
         }
@@ -129,13 +117,8 @@ object UnitCatalog {
     fun category(id: String): UnitCategory? = categories.firstOrNull { it.id == id }
     fun unit(id: String): UnitInfo? = byId[id]
 
-    /** [value] of [from] in [to] (both in one category), going through the category's base unit. */
     fun convert(value: Double, from: UnitInfo, to: UnitInfo): Double = to.fromBase(from.toBase(value))
 
-    /**
-     * [value] as a result: rounded to [decimals] places (0 to 12), without a tail of zeros, and in `1.5e-8` style when it would otherwise show as zero
-     * or has too many digits.
-     */
     fun show(value: Double, decimals: Int): String {
         if (value.isNaN() || value.isInfinite()) return "—"
         val ax = abs(value)
@@ -144,7 +127,6 @@ object UnitCatalog {
         return CalcEngine.format(round(value * scale) / scale)
     }
 
-    /** Categories and units matching [query] (names, symbols and aliases, ignoring case and one wrong letter in a longer word), best matches first. */
     fun search(query: String): List<UnitHit> {
         val q = query.trim().lowercase()
         if (q.isEmpty()) return emptyList()
@@ -160,7 +142,6 @@ object UnitCatalog {
         return hits.sortedByDescending { it.first }.map { it.second }.take(12)
     }
 
-    /** 100 for an exact match, 60 for a start, 40 for a part, 20 for one wrong letter in a word of four or more (0 for none). */
     private fun score(q: String, names: List<String>): Int {
         var best = 0
         for (n in names) {

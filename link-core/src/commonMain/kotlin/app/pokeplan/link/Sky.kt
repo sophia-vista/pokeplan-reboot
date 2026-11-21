@@ -10,7 +10,6 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
 
-/** The twelve tropical signs. [element] and [modality] are the traditional groupings; [ruler] is the classical-modern ruling planet. */
 enum class Sign(val label: String, val element: String, val modality: String, val ruler: String) {
     ARIES("Aries", "Fire", "Cardinal", "Mars"), TAURUS("Taurus", "Earth", "Fixed", "Venus"), GEMINI("Gemini", "Air", "Mutable", "Mercury"),
     CANCER("Cancer", "Water", "Cardinal", "Moon"), LEO("Leo", "Fire", "Fixed", "Sun"), VIRGO("Virgo", "Earth", "Mutable", "Mercury"),
@@ -18,15 +17,10 @@ enum class Sign(val label: String, val element: String, val modality: String, va
     CAPRICORN("Capricorn", "Earth", "Cardinal", "Saturn"), AQUARIUS("Aquarius", "Air", "Fixed", "Uranus"), PISCES("Pisces", "Water", "Mutable", "Neptune");
 
     companion object {
-        /** The sign of an ecliptic longitude in degrees. */
         fun ofLongitude(lon: Double): Sign = entries[(floor(((lon % 360.0) + 360.0) % 360.0 / 30.0).toInt()).coerceIn(0, 11)]
 
-        /**
-         * The usual newspaper sign for a month and day, when the year (and so the exact Sun) is unknown. The cusp days move by a day from year to year;
-         * with a year, [Sky.chart] is exact.
-         */
         fun ofDate(month: Int, day: Int): Sign {
-            val cut = intArrayOf(20, 19, 21, 20, 21, 21, 23, 23, 23, 23, 22, 22) // first day of the next sign, January to December
+            val cut = intArrayOf(20, 19, 21, 20, 21, 21, 23, 23, 23, 23, 22, 22)
             val signs = arrayOf(Sign.CAPRICORN, Sign.AQUARIUS, Sign.PISCES, Sign.ARIES, Sign.TAURUS, Sign.GEMINI, Sign.CANCER, Sign.LEO, Sign.VIRGO, Sign.LIBRA, Sign.SCORPIO, Sign.SAGITTARIUS)
             val m = month.coerceIn(1, 12) - 1
             return if (day >= cut[m]) signs[(m + 1) % 12] else signs[m]
@@ -34,16 +28,13 @@ enum class Sign(val label: String, val element: String, val modality: String, va
     }
 }
 
-/** The bodies of a chart. [NORTH_NODE] is the mean node. */
 enum class Body(val label: String) {
     SUN("Sun"), MOON("Moon"), MERCURY("Mercury"), VENUS("Venus"), MARS("Mars"), JUPITER("Jupiter"), SATURN("Saturn"),
     URANUS("Uranus"), NEPTUNE("Neptune"), PLUTO("Pluto"), NORTH_NODE("North Node"),
 }
 
-/** Where a body sits: its ecliptic longitude, and whether it appears to move backwards. */
 data class Placement(val body: Body, val longitude: Double, val retrograde: Boolean) {
     val sign: Sign get() = Sign.ofLongitude(longitude)
-    /** Whole degrees into the sign, 0 to 29. */
     val degree: Int get() = (((longitude % 360.0) + 360.0) % 360.0 % 30.0).toInt()
 }
 
@@ -53,13 +44,8 @@ enum class AspectKind(val label: String, val angle: Double, val orb: Double) {
 
 data class Aspect(val a: Body, val b: Body, val kind: AspectKind, val orb: Double)
 
-/** A birthplace for the rising sign: latitude north and longitude east, in degrees. [name] is only a label. */
 data class Place(val name: String, val latitude: Double, val longitude: Double, val utcOffsetMinutes: Int = 0)
 
-/**
- * A Western natal chart. The rising sign and the houses exist only when the birth time and place were given. When the time is unknown, [maybe] lists
- * each body whose sign changes during that day, with the other sign it could be in, so the chart never claims more than it knows.
- */
 data class NatalChart(
     val placements: List<Placement>,
     val ascendant: Double?,
@@ -71,34 +57,25 @@ data class NatalChart(
     fun of(body: Body): Placement = placements.first { it.body == body }
     val rising: Sign? get() = ascendant?.let { Sign.ofLongitude(it) }
 
-    /** The whole-sign house (1 to 12) a body is in, counted from the rising sign. */
     fun house(body: Body): Int? = rising?.let { r -> ((of(body).sign.ordinal - r.ordinal + 12) % 12) + 1 }
 }
 
-/**
- * Low-precision sky maths for a chart "for fun" (LINK.md 2.6): the Sun, the planets from JPL's published mean elements for 1800 to 2050 and the Moon from
- * the Astronomical Almanac's low-precision series. Typical error is well under half a degree (the Moon at worst about 0.3°, Jupiter and Saturn 0.25°,
- * the others under 0.06°), which is more than a sign needs; a body within a fraction of a degree of a sign line may be in the next one. Years outside
- * 1800 to 2050 drift further. Pure arithmetic, no table, no network, and nothing here knows who the chart is for.
- */
 object Sky {
     private const val J2000 = 2451545.0
     private fun rad(d: Double) = d * PI / 180.0
     private fun deg(r: Double) = r * 180.0 / PI
     private fun norm(d: Double) = ((d % 360.0) + 360.0) % 360.0
 
-    /** The Julian Day of a calendar day at [minutes] after midnight local time, [utcOffsetMinutes] ahead of UTC. */
     fun julianDay(date: LocalDate, minutes: Int, utcOffsetMinutes: Int): Double {
         var y = date.year
         var m = date.monthNumber
         if (m <= 2) { y -= 1; m += 12 }
         val a = floor(y / 100.0)
         val b = 2 - a + floor(a / 4.0)
-        val dayStart = floor(365.25 * (y + 4716)) + floor(30.6001 * (m + 1)) + date.dayOfMonth + b - 1524.5 // JD at 0h
+        val dayStart = floor(365.25 * (y + 4716)) + floor(30.6001 * (m + 1)) + date.dayOfMonth + b - 1524.5
         return dayStart + (minutes - utcOffsetMinutes) / 1440.0
     }
 
-    // JPL "Approximate positions of the planets", Table 1 (1800 AD to 2050 AD): a, e, I, L, long. perihelion, long. node, each with its change per century.
     private val elements: Map<String, DoubleArray> = mapOf(
         "Mercury" to doubleArrayOf(0.38709927, 0.00000037, 0.20563593, 0.00001906, 7.00497902, -0.00594749, 252.25032350, 149472.67411175, 77.45779628, 0.16047689, 48.33076593, -0.12534081),
         "Venus" to doubleArrayOf(0.72333566, 0.00000390, 0.00677672, -0.00004107, 3.39467605, -0.00078890, 181.97909950, 58517.81538729, 131.60246718, 0.00268329, 76.67984255, -0.27769418),
@@ -111,7 +88,6 @@ object Sky {
         "Pluto" to doubleArrayOf(39.48211675, -0.00031596, 0.24882730, 0.00005170, 17.14001206, 0.00004818, 238.92903833, 145.20780515, 224.06891629, -0.04062942, 110.30393684, -0.01183482),
     )
 
-    /** Heliocentric x, y, z on the J2000 ecliptic, in astronomical units. */
     private fun helio(name: String, t: Double): DoubleArray {
         val e = elements.getValue(name)
         val a = e[0] + e[1] * t
@@ -135,7 +111,6 @@ object Sky {
         )
     }
 
-    /** General precession in longitude since J2000, in degrees. */
     private fun precession(t: Double) = 1.396971 * t + 0.0003086 * t * t
 
     private fun longitude(body: Body, t: Double): Double = when (body) {
@@ -160,7 +135,6 @@ object Sky {
         return norm(280.46061837 + 360.98564736629 * (jd - J2000) + 0.000387933 * t * t)
     }
 
-    /** The rising degree (ecliptic longitude) and the midheaven for a Julian Day and a place. */
     fun angles(jd: Double, latitude: Double, longitude: Double): Pair<Double, Double> {
         val t = (jd - J2000) / 36525.0
         val ramc = rad(norm(siderealDegrees(jd) + longitude))
@@ -174,10 +148,6 @@ object Sky {
 
     private fun signDiff(a: Double, b: Double) = (a - b + 540.0) % 360.0 - 180.0
 
-    /**
-     * The chart for [date]. With [minutes] (minutes after midnight, local clock) and [utcOffsetMinutes] the instant is exact; without, noon is used and
-     * [NatalChart.maybe] says which bodies could be in another sign that day. [place] adds the rising sign and midheaven (only with a time).
-     */
     fun chart(date: LocalDate, minutes: Int?, utcOffsetMinutes: Int, place: Place?): NatalChart {
         val known = minutes != null
         val jd = julianDay(date, minutes ?: 720, utcOffsetMinutes)

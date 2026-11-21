@@ -22,21 +22,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** How long the key is held, in milliseconds. */
 const val HOLD_TO_CONFIRM_MILLIS = 1200
 
-/** How long an armed key waits for its second tap with Reduce motion on, in milliseconds. */
 private const val ARMED_MILLIS = 4000L
 
-/** What the key says once the first tap armed it (Reduce motion). */
 const val TAP_AGAIN = "Tap again to confirm"
 
-/**
- * The key for a step that cannot be undone (design rule, REP-014): press and hold for about 1.2 seconds and a [PixelBar] under it fills; letting go
- * early empties it and nothing happens. With **Reduce motion** on there is no filling bar: the first tap arms the key ("Tap again to confirm") and a
- * second tap within a few seconds confirms, so no one needs to hold a finger still. A screen reader's own "activate" action confirms at once, because
- * it has already been chosen on purpose. [text] is the whole label ("Hold to transfer").
- */
 @Composable
 fun HoldToConfirm(
     text: String,
@@ -51,7 +42,6 @@ fun HoldToConfirm(
     var progress by remember { mutableFloatStateOf(0f) }
     var armed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    // An armed key that is not tapped again goes back to resting.
     LaunchedEffect(armed) { if (armed) { delay(ARMED_MILLIS); armed = false } }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         val explicit = Modifier.semantics { onClick(label = text) { if (enabled) { onConfirm(); true } else false } }

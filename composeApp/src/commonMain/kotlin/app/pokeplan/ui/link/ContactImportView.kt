@@ -46,7 +46,6 @@ private val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
 
 private enum class Stage { ASK, DENIED, PICK, DONE }
 
-/** The row's own key: the contact's lookup key, or its name when the phone gave none. */
 private fun ImportRow.key() = card.sourceId.ifBlank { card.name }
 
 private fun birthdayText(b: ContactBirthday) = "${b.day} ${monthNames[b.month - 1]}"
@@ -67,11 +66,6 @@ private fun resultLine(r: ImportResult): String = listOfNotNull(
     "${r.skipped} unchanged".takeIf { r.skipped > 0 },
 ).joinToString(" · ").ifEmpty { "Nothing to import." }
 
-/**
- * LINK's optional import from the phone's contacts (LINK.md 3.5 and 6.1), in four steps on one screen: say what is read, ask the permission only now, let the
- * user pick and see which contacts are new or may already be here, then write the picks in one save with an Undo. Nothing is picked for the user, a contact that
- * may already be here is a new person unless the user marks it "Same as" one of the matches, and then only that person's empty fields are filled, and a birthday carries its reminder when the user chose one. Denying the permission leaves LINK as it was.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: () -> Unit) {
@@ -82,11 +76,9 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
     var shown by remember { mutableStateOf(IMPORT_PAGE) }
     var remind by remember { mutableStateOf<Int?>(null) }
     var result by remember { mutableStateOf<ImportResult?>(null) }
-    // A contact that may already be here is a new person unless the user says it is the same one (nothing merges by itself).
     var sameAs by remember { mutableStateOf(mapOf<String, String>()) }
     var plan by remember { mutableStateOf<app.pokeplan.link.ImportPlan?>(null) }
 
-    // The address book and the matching against Link both run off the main thread: a large book is not a freeze.
     LaunchedEffect(stage) {
         if (stage == Stage.PICK && plan == null) plan = withContext(Dispatchers.Default) { model.link.planImport(source.contacts()) }
     }
@@ -95,7 +87,6 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
         PixelTitle("Import contacts")
         when (stage) {
             Stage.ASK, Stage.DENIED -> {
-                // Spec 3.5: say what is read before asking. Names, numbers, emails, companies and birthdays; nothing else.
                 Text("Link reads names, phone numbers, emails, companies and birthdays, once, when you choose.", style = MaterialTheme.typography.bodyLarge) // copy-ok: the permission's scope
                 if (stage == Stage.DENIED) Report(model, "Contacts were not allowed. Adding people by hand still works.", NoticeTone.WARNING)
                 Actions {

@@ -24,17 +24,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * The Back chains inside the modules, driven by real taps on the real Back button (the owner's open item): from a section Back
- * goes to its menu, from the menu Back goes to Modules, and nothing in between is skipped or loops. The screens are rendered in
- * an offscreen scene and the header's Back button (at the top left) is pressed with pointer events.
- */
 @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 class BackChainTest {
     private val clock = object : Clock { override fun nowMillis() = 1_760_000_000_000L }
     private fun model() = AppModel(GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25); it.markRewardsSeen() })
 
-    /** The screen in an offscreen scene; [block] drives it. */
     private fun scene(content: @Composable () -> Unit, block: (Scene) -> Unit) {
         val scene = ImageComposeScene(width = 540, height = 1080, density = Density(1.5f, 1f)) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content() } }
@@ -45,13 +39,11 @@ class BackChainTest {
     private class Scene(val scene: ImageComposeScene) {
         private var nanos = 0L
         fun settle(frames: Int = 40) = repeat(frames) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(8) }
-        /** Presses the Back button of the header: top left of the screen. */
         fun back() {
             val at = Offset(90f, 58f)
             scene.sendPointerEvent(PointerEventType.Press, at); settle(2)
             scene.sendPointerEvent(PointerEventType.Release, at); settle()
         }
-        /** The header strip as pixels, to tell one screen from another without reading its text. */
         fun header(): List<Int> {
             val image = org.jetbrains.skia.Image.makeFromEncoded(scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes)
             val bitmap = org.jetbrains.skia.Bitmap.makeFromImage(image)
@@ -61,7 +53,6 @@ class BackChainTest {
 
     @Test
     fun planSectionsGoBackToTodayThenToModules() {
-        // Every section goes back to Today, Plan's page.
         for (section in PlanSection.entries) {
             val m = model().also { it.module = Module.PLAN; it.planSection = section }
             scene({ app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }) { s ->

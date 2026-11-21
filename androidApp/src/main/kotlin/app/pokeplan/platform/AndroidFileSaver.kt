@@ -6,7 +6,6 @@ import androidx.core.content.FileProvider
 import app.pokeplan.ui.FileSaver
 import java.io.File
 
-/** Writes the file to the app's cache and opens the share sheet, so it can go to Drive, email or the Files app. */
 class AndroidFileSaver(private val context: Context) : FileSaver {
     override fun save(name: String, text: String): String = try {
         val dir = File(context.cacheDir, "exports").apply { mkdirs() }

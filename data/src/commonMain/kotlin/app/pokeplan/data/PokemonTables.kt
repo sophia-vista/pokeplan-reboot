@@ -12,44 +12,17 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.longOrNull
 import kotlinx.serialization.json.put
 
-/** A save that cannot be kept in the shared tables as it is (a Pokémon in two places, a buddy that is not owned...). Nothing was written. */
 class SaveNotRepresentableException(message: String) : IllegalStateException(message)
 
-/**
- * The player's side of the save in the shared tables (schema version 6, REP-014; docs/pokelife `FEATURES/POKEMON_ECOSYSTEM.md` sections
- * 4, 6 and 11 and `ARCHITECTURE/DATA_AND_MIGRATIONS.md` sections 7.3, 8 and 12). The same recipe as [PlanTables]: the app still reads and
- * writes one `AppData` document and [LiveDocuments] splits it, so the rules stay pure and tested, but the tables are the only authority
- * for what they hold and nothing is saved twice.
- *
- * What lives here ([PART_FIELDS]): the collection (`owned_pokemon`, in the order the Pokémon were owned), where each one is
- * (`pokemon_place`, **one row at most per Pokémon**: buddy, a module's party with the lead in slot 1, or a Guardian slot; none is the PC),
- * the Dex history (`dex_history`), the Egg meter and trainer points (`player_progress`), the Bag (`bag_stack`) and the Poké balance
- * (`currency_balance`) with the append-only ledger behind them, and a few single values (`pokemon_state`). A WORLD team and a GEAR helper
- * are the other two places; their records stay in the `save` row and [placesOutside] checks them against the rows here, so a save that has
- * a Pokémon in two places is refused before anything is written.
- *
- * **The ledger is the only writer of the balance and the Bag.** The save's `coins` and `inventory` are not stored as such: a write turns
- * the change since the last write into one ledger event in the same transaction (`EconomyRepository.settle`, idempotent, append-only) and
- * a read puts the balances back from the tables. The migration pays nothing: the balances it finds become one opening-balance event.
- *
- * It works on the JSON, not on the model, so `:data` stays independent of `pokemon-core`: a field of a Pokémon it has never heard of is
- * kept in `extra_json`, and a field of the player it has never heard of in `pokemon_state`.
- */
 class PokemonTables(private val store: DataStore) {
     private val q get() = store.db.dataQueries
     private val rows = RecordRows(store)
 
-    /** Whether the player's side lives here (set once by [activate]); before that it is inside the `save` row. */
     fun isActive(): Boolean = q.meta(META_POKEMON_TABLES).executeAsOneOrNull() == ACTIVE
 
-    /** Takes the player's fields out of [document] (the save without PLAN's part): `first` is for these tables, `second` the rest. */
     fun split(document: JsonObject): Pair<JsonObject, JsonObject> =
         JsonObject(document.filterKeys { it in PART_FIELDS }) to JsonObject(document.filterKeys { it !in PART_FIELDS })
 
-    /**
-     * Saves the player's part of a save: only the rows that changed are touched, and the balance and the Bag move by one ledger event.
-     * [rest] is the other part of the same save (for the one-place check). Call it inside a transaction.
-     */
     fun write(part: JsonObject, rest: JsonObject, nowMillis: Long, opening: Boolean = false) {
         val player = part["player"] as? JsonObject ?: JsonObject(emptyMap())
         val owned = (player["pokemon"] as? JsonArray).orEmpty().map { it as? JsonObject ?: throw SaveNotRepresentableException("a Pokémon is not an object") }
@@ -58,8 +31,6 @@ class PokemonTables(private val store: DataStore) {
         val idSet = ids.toSet()
 
         val buddy = player.text("buddyId")
-        // A module's Guardian (0.158.0): its slot is the module's place in GUARDIAN_MODULES. A save that still has the old global list (a restored backup) has it
-        // read into the free module slots in order, the same slots the old rows had.
         val moduleGuardians = linkedMapOf<Int, String>()
         (player["moduleGuardians"] as? JsonObject).orEmpty().forEach { (module, v) ->
             val slot = GUARDIAN_MODULES.indexOf(module) + 1
@@ -70,7 +41,6 @@ class PokemonTables(private val store: DataStore) {
         if (buddy != null && buddy !in idSet) throw SaveNotRepresentableException("the buddy is not an owned Pokémon")
         moduleGuardians.values.firstOrNull { it !in idSet }?.let { throw SaveNotRepresentableException("a Guardian is not an owned Pokémon") }
 
-        // Where each one is. A Pokémon can be named by only one place, here or on a World team or as a helper.
         val places = linkedMapOf<String, Place>()
         fun put(id: String, place: Place, what: String) { if (places.put(id, place) != null) throw SaveNotRepresentableException("$id is in two places ($what)") }
         buddy?.let { put(it, Place(KIND_BUDDY, "", 0), "the buddy") }
@@ -87,7 +57,6 @@ class PokemonTables(private val store: DataStore) {
         outside.groupBy { it }.filterValues { it.size > 1 }.keys.firstOrNull()?.let { throw SaveNotRepresentableException("$it is in two places (World teams and Pokégear helpers)") }
         outside.firstOrNull { it in places }?.let { throw SaveNotRepresentableException("$it is in two places (${places.getValue(it).kind} and a World team or a Pokégear helper)") }
 
-        // The collection.
         val favorites = part.textList("favorites").toSet()
         val origins = part["origins"] as? JsonObject ?: JsonObject(emptyMap())
         val have = store.pokemon.all().associateBy { it.id }
@@ -103,7 +72,6 @@ class PokemonTables(private val store: DataStore) {
         }
         writePlaces(places)
 
-        // The Dex history, the Egg meter and trainer points, and the single values.
         writeDex(DexKind.CAUGHT_SPECIES, player.longSet("caught"))
         writeDex(DexKind.SHINY_SPECIES, part.longSet("shinySpecies"))
         writeDex(DexKind.CAUGHT_FORM, part.longSet("caughtForms"))
@@ -113,20 +81,12 @@ class PokemonTables(private val store: DataStore) {
         if (store.pokemon.progress() != progress) store.pokemon.setProgress(progress)
         rows.diffState("pokemon_state", state(player, favorites - idSet, origins.filterKeys { it !in idSet }))
 
-        // The balance and the Bag: one ledger event for what changed.
         val coins = player.long("coins") ?: 0
         val counts = ((player["inventory"] as? JsonObject)?.get("counts") as? JsonObject).orEmpty().mapValues { (_, v) -> (v as? JsonPrimitive)?.longOrNull ?: throw SaveNotRepresentableException("a Bag count is not a number") }
-        // What a module reward really was is settled under its own event id first; whatever is still different after that is the net change below.
         if (!opening) settleNotes(rest["ledgerNotes"], nowMillis)
         settleChange(coins, counts, nowMillis, opening, rest["pokeMigration"])
     }
 
-    /**
-     * Settles the save's ledger notes (`AppData.ledgerNotes`): each is a module reward with its own event id (`home:chore:<id>:<day>`, source module and opaque
-     * reference), so the ledger says what really happened instead of only "net change of one save" (DATA_AND_MIGRATIONS.md section 7.3.0). The event id is the
-     * idempotency key: a note already settled is skipped, so a replay, a restore or a second write pays nothing twice. A note that cannot be applied (it would take
-     * a balance below zero, or is not a number) is left to the net change that follows, which always brings the tables to the document.
-     */
     private fun settleNotes(notes: JsonElement?, nowMillis: Long) {
         for (element in (notes as? JsonArray).orEmpty()) {
             val note = element as? JsonObject ?: continue
@@ -144,12 +104,10 @@ class PokemonTables(private val store: DataStore) {
                     ),
                 )
             } catch (e: InsufficientFundsException) {
-                // Left to the net change; nothing was applied (the repository checks before it writes).
             }
         }
     }
 
-    /** The player's fields as stored, to be put back into the save with the rest. Empty until the first save has been written. */
     fun read(): JsonObject {
         val progress = store.pokemon.progress() ?: return JsonObject(emptyMap())
         val records = store.pokemon.all()
@@ -191,11 +149,6 @@ class PokemonTables(private val store: DataStore) {
         )
     }
 
-    /**
-     * Marks the player's side as living here, after [write] has put [part] into the (empty) tables with the balances as one opening-balance
-     * event. The caller reads the save back and compares it before the transaction ends. Refuses tables that already hold something: they
-     * hold a legacy import, not this save.
-     */
     fun begin(part: JsonObject, rest: JsonObject, nowMillis: Long) {
         check(store.pokemon.count() == 0L && q.eventCount().executeAsOne() == 0L && q.ledgerCount().executeAsOne() == 0L) {
             "the Pokémon and ledger tables are not empty; they hold something that is not this save"
@@ -204,7 +157,6 @@ class PokemonTables(private val store: DataStore) {
         mark(nowMillis)
     }
 
-    /** Fresh install, no save yet: the tables are the store from the start. */
     fun beginEmpty(nowMillis: Long) = mark(nowMillis)
 
     private fun mark(nowMillis: Long) {
@@ -212,7 +164,6 @@ class PokemonTables(private val store: DataStore) {
         q.setMeta(META_POKEMON_TABLES_AT, nowMillis.toString())
     }
 
-    /** Erases the whole player side (the Pokémon, their places, the Dex, the single values), in one transaction. The ledger stays: it is history. */
     fun clear() {
         store.transaction {
             for (id in store.pokemon.all().map { it.id }) q.releasePokemon(id)
@@ -222,19 +173,15 @@ class PokemonTables(private val store: DataStore) {
         }
     }
 
-    // --- the one-place rule --------------------------------------------------------------------------------------------
-
     private class Place(val kind: String, val ref: String, val slot: Int)
 
     private fun writePlaces(wanted: Map<String, Place>) {
         val have = q.allPlaces().executeAsList().associateBy { it.owned_id }
         fun same(id: String): Boolean { val h = have[id] ?: return false; val w = wanted[id] ?: return false; return h.kind == w.kind && h.ref == w.ref && h.slot == w.slot.toLong() }
-        // Everything that moved goes first, so a slot another Pokémon takes over is free when it is written.
         for (id in have.keys) if (id in wanted && !same(id) || id !in wanted) q.removePlace(id)
         for ((id, p) in wanted) if (!same(id)) q.insertPlace(id, p.kind, p.ref, p.slot.toLong())
     }
 
-    /** The Pokémon ids named by a World team or a Pokégear helper (the other two places), read from the save's other part. */
     internal fun placesOutside(rest: JsonObject): List<String> {
         val teams = ((rest["world"] as? JsonObject)?.get("teams") as? JsonArray).orEmpty()
             .flatMap { team -> ((team as? JsonObject)?.get("members") as? JsonArray).orEmpty().mapNotNull { (it as? JsonPrimitive)?.contentOrNull } }
@@ -242,12 +189,9 @@ class PokemonTables(private val store: DataStore) {
         return teams + helpers
     }
 
-    // --- one Pokémon as a row and back ---------------------------------------------------------------------------------
-
     private fun record(o: JsonObject, position: Int, favorite: Boolean, origin: JsonObject?): OwnedPokemonRecord {
         val id = o.text("id")!!
         fun req(key: String) = o.text(key) ?: throw SaveNotRepresentableException("$id has no $key")
-        // Fields without a column are kept whole; so is the party id of a Pokémon that is not in a party (it means nothing, but it must come back).
         val extra = o.filterKeys { it !in KNOWN_POKEMON_FIELDS } + (if (o.bool("inParty") == true) emptyMap() else o["partyId"]?.let { mapOf("partyId" to it) } ?: emptyMap())
         return OwnedPokemonRecord(
             id = id,
@@ -298,7 +242,6 @@ class PokemonTables(private val store: DataStore) {
 
     private fun origin(r: OwnedPokemonRecord): JsonObject? = when {
         r.originJson != null -> JSON.parseToJsonElement(r.originJson) as JsonObject
-        // A row an older importer wrote has only the two lookup columns.
         r.originHow != null -> buildJsonObject { put("how", r.originHow); put("region", r.originRegion) }
         else -> null
     }
@@ -312,10 +255,6 @@ class PokemonTables(private val store: DataStore) {
         put("hp", s.hp); put("attack", s.attack); put("defense", s.defense); put("spAttack", s.spAttack); put("spDefense", s.spDefense); put("speed", s.speed)
     }
 
-    /**
-     * Where each Pokémon sits in the collection's list. Positions are kept as they are so that a change touches only its own row; they are
-     * renumbered from 1 only when an insert in the middle or a reorder makes the old ones disagree with the list.
-     */
     private fun positionsFor(ids: List<String>, have: Map<String, OwnedPokemonRecord>): List<Int> {
         val known = ids.mapNotNull { have[it]?.position }
         val inOrder = known.zipWithNext().all { (a, b) -> a < b }
@@ -339,8 +278,6 @@ class PokemonTables(private val store: DataStore) {
         )
     }
 
-    // --- Dex, single values -------------------------------------------------------------------------------------------
-
     private fun writeDex(kind: DexKind, wanted: Set<Long>) {
         val have = store.pokemon.dex(kind).toSet()
         for (gone in have - wanted) store.driver.execute(null, "DELETE FROM dex_history WHERE kind = ? AND ref = ?", 2) { bindString(0, kind.key); bindLong(1, gone) }
@@ -349,7 +286,6 @@ class PokemonTables(private val store: DataStore) {
 
     private fun numbers(kind: DexKind) = JsonArray(store.pokemon.dex(kind).map { JsonPrimitive(it) })
 
-    /** The player's fields that have no table (the leads, the roles version, anything a newer build adds), and the favourites and origins of Pokémon that are gone. */
     private fun state(player: JsonObject, strayFavorites: Set<String>, strayOrigins: Map<String, JsonElement>): Map<String, String> = buildMap {
         val leftover = player.filterKeys { it !in HANDLED_PLAYER_FIELDS } +
             ((player["inventory"] as? JsonObject)?.filterKeys { it != "counts" }?.takeIf { it.isNotEmpty() }?.let { mapOf("inventory" to JsonObject(it)) } ?: emptyMap())
@@ -358,13 +294,6 @@ class PokemonTables(private val store: DataStore) {
         if (strayOrigins.isNotEmpty()) put("origins", JSON.encodeToString(JsonObject.serializer(), JsonObject(strayOrigins)))
     }
 
-    // --- the ledger -----------------------------------------------------------------------------------------------------
-
-    /**
-     * Brings the balance and the Bag to [coins] and [counts] with one ledger event (nothing when they already agree). The event is a
-     * net change of one save, named by a running number, so a retry that finds the balances already right pays nothing. [opening] is the
-     * migration's: the balances found become the opening balance, with the two legacy source values kept as audit metadata.
-     */
     private fun settleChange(coins: Long, counts: Map<String, Long>, nowMillis: Long, opening: Boolean, pokeMigration: JsonElement?) {
         val dPoke = coins - store.economy.poke()
         val bag = store.economy.bag()
@@ -387,8 +316,6 @@ class PokemonTables(private val store: DataStore) {
         store.economy.settle(event)
     }
 
-    // --- JSON helpers --------------------------------------------------------------------------------------------------
-
     private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.takeIf { it !is JsonNull }?.contentOrNull
     private fun JsonObject.long(key: String): Long? = (this[key] as? JsonPrimitive)?.takeIf { it !is JsonNull }?.longOrNull
     private fun JsonObject.bool(key: String): Boolean? = (this[key] as? JsonPrimitive)?.takeIf { it !is JsonNull }?.booleanOrNull
@@ -407,33 +334,24 @@ class PokemonTables(private val store: DataStore) {
         private const val KIND_PARTY = PokemonRepository.KIND_PARTY
         private const val KIND_GUARDIAN = PokemonRepository.KIND_GUARDIAN
 
-        /** The modules that have a Guardian slot, in slot order (1 is the first): the same list as `Guardians.MODULES`; the table stores only the number. */
         internal val GUARDIAN_MODULES = listOf("plan", "care", "heal", "mint", "home", "link")
 
         private val JSON = Json { encodeDefaults = true }
 
-        /** The save's top-level fields that belong here; the rest of the save is not the player's. */
         val PART_FIELDS = setOf("player", "favorites", "origins", "shinySpecies", "caughtForms", "shinyForms", "seenSpecies")
 
         private val SET_FIELDS = setOf("favorites", "shinySpecies", "caughtForms", "shinyForms", "seenSpecies")
 
-        /** The fields of the player that have a table; every other field (the leads, the roles version, a newer build's) goes to `pokemon_state`. */
         private val HANDLED_PLAYER_FIELDS = setOf("pokemon", "buddyId", "inventory", "coins", "eggMeter", "trainerPoints", "caught", "guardians", "moduleGuardians")
 
-        /** The fields of a Pokémon that have a column (`inParty` and `partyId` are its place). */
         private val KNOWN_POKEMON_FIELDS = setOf(
             "id", "speciesId", "formIdentifier", "nickname", "nature", "ability", "gender", "ivs", "evs", "level", "candyProgress", "totalCandies",
             "friendship", "isShiny", "heldItem", "teraType", "cosmeticForm", "personality", "inParty", "caughtAtMillis", "partyId",
         )
 
-        /**
-         * The save with what a read back cannot tell apart left out: a set is a set (its order is not kept), and a Bag entry of zero is not
-         * a stack. Used to check that a save came back equal.
-         */
         internal fun canonical(document: JsonObject): JsonObject {
             fun sorted(e: JsonElement?): JsonElement? = (e as? JsonArray)?.let { a -> JsonArray(a.sortedBy { (it as? JsonPrimitive)?.contentOrNull.orEmpty() }.distinct()) } ?: e
             val player = (document["player"] as? JsonObject)?.let { p0 ->
-                // The Guardians (per module since 0.158.0): the old global list is the first modules' in order, and an empty list or map is the same as none.
                 val modules = linkedMapOf<String, JsonElement>()
                 (p0["moduleGuardians"] as? JsonObject)?.forEach { (m, v) -> modules[m] = v }
                 (p0["guardians"] as? JsonArray)?.forEach { v -> GUARDIAN_MODULES.firstOrNull { it !in modules }?.let { modules[it] = v } }

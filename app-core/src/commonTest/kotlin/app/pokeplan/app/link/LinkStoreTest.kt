@@ -46,7 +46,6 @@ class LinkStoreTest {
     private val saturday = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()
     private val today = LocalDate(2026, 11, 7)
 
-    /** A world that records every event it is sent, so a test can see exactly what crosses the boundary. */
     private class Spy(val inner: GameStore) : World {
         val events = mutableListOf<LinkEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)
@@ -73,8 +72,6 @@ class LinkStoreTest {
     private fun Setup.followUp(title: String) = assertNotNull(link.addFollowUp(title).record)
 
     private val secrets = listOf("Zorblax Quux", "+63 917 000 1234", "zorblax@example.com", "Quuxville", "zorblax-tag", "Zorblax-note-77", "Zorblax-follow-55", "Zorblax-date-9")
-
-    // --- importing contacts (LINK.md 6.1) ------------------------------------------------------------------------------------------
 
     private fun card(id: String, name: String, phone: String = "", email: String = "", org: String = "", b: app.pokeplan.link.ContactBirthday? = null) =
         app.pokeplan.link.ContactCard(id, name, listOfNotNull(phone.ifBlank { null }), listOfNotNull(email.ifBlank { null }), org, b)
@@ -152,8 +149,6 @@ class LinkStoreTest {
         assertNull(assertNotNull(s.link.addDate(DateKind.CUSTOM, "X", 1, 2, remindDays = 5).record).remindDays, "only the presets are accepted")
     }
 
-    // --- people ------------------------------------------------------------------------------------------------------------------
-
     @Test
     fun aPersonNeedsOnlyANameAndNothingPays() {
         val s = setup()
@@ -200,8 +195,6 @@ class LinkStoreTest {
         val bad = s.link.addDate(DateKind.BIRTHDAY, "Bad", 2, 30)
         assertNull(bad.record); assertNotNull(bad.refused)
     }
-
-    // --- follow-ups and Postcard Trail ----------------------------------------------------------------------------------------------
 
     @Test
     fun aFinishedFollowUpPaysOnceHoweverOftenItIsReopenedAndFinished() {
@@ -286,8 +279,6 @@ class LinkStoreTest {
         assertTrue(s.game.data.rewardLog.any { it.source == "Link: Postcard Trail" })
     }
 
-    // --- the track and the egg -----------------------------------------------------------------------------------------------------
-
     @Test
     fun threeFinishedFollowUpsFindAPostcardEggIntoLinksPartyAndTheTrackWraps() {
         val s = setup()
@@ -306,8 +297,6 @@ class LinkStoreTest {
         assertEquals(egg.id, s.game.data.player.linkLead?.id)
         assertEquals(0, s.game.linkEggMeter())
     }
-
-    // --- the tutorial ------------------------------------------------------------------------------------------------------------
 
     @Test
     fun thePostcardTutorialIsOfferedOnlyWhileLinkHasNoRecords() {
@@ -329,8 +318,6 @@ class LinkStoreTest {
         assertTrue(s.link.data.people.isEmpty() && s.link.data.followUps.isEmpty())
         assertNull(s.game.completeTutorial(Tutorials.LINK_POSTCARD))
     }
-
-    // --- export and erase -------------------------------------------------------------------------------------------------------------
 
     @Test
     fun exportAndEraseWorkByKindAndTouchNothingElse() {
@@ -386,8 +373,6 @@ class LinkStoreTest {
         assertTrue(s.game.data.linkPaid.isEmpty())
     }
 
-    // --- the follow-up that became a PLAN task (LINK.md 2.4, 9.2) ----------------------------------------
-
     @Test
     fun aConvertedFollowUpIsPlansToFinishAndLinkNeverPaysForIt() {
         val s = setup()
@@ -397,11 +382,9 @@ class LinkStoreTest {
         assertTrue(s.link.data.followUps.single().converted)
         assertEquals(task.taskId, s.link.convertToPlan(f.id)?.taskId, "the same follow-up gives the same task")
         assertEquals(1, s.game.data.tasks.count { !it.tutorial })
-        // One real action, one completion: LINK refuses to finish what PLAN owns.
         assertEquals(LinkStore.IN_PLAN, s.link.complete(f.id).refused)
         s.link.cancel(f.id)
         assertEquals(FollowUpStatus.OPEN, s.link.data.followUps.single().status)
-        // Finishing it in PLAN is mirrored in LINK, with no Postcard Trail event.
         s.clock.advanceMinutes(30)
         s.game.completeTask(task.taskId)
         s.clock.advanceMinutes(1); s.game.tick()
@@ -475,8 +458,6 @@ class LinkStoreTest {
         assertTrue(secrets.none { it in note.toString() })
     }
 
-    // --- my profile and the slambook details (LINK.md 2.6) -------------------------------------------------------------------------
-
     @Test
     fun myCardIsOneAndPinnedFirstAndTheProfileSurvivesAReopen() {
         val s = setup()
@@ -504,7 +485,6 @@ class LinkStoreTest {
         s.reopen()
         val again = s.link.data.people.first { it.isMe }
         assertEquals(saved, again.profile)
-        // The slambook words are searchable, and editing the person's contact details keeps the profile and the "me" mark.
         assertEquals(listOf(me.id), s.link.directory("zorblax").map { it.id })
         assertTrue(assertNotNull(s.link.updatePerson(again.copy(phone = "0917 000 1234")).record).isMe)
         assertEquals(saved, s.link.data.people.first { it.isMe }.profile)
@@ -535,7 +515,6 @@ class LinkStoreTest {
         s.link.setBirthday(me.id, 5, 17, 1999)
         assertTrue(s.spy.events.isEmpty())
         assertEquals(before, s.candies)
-        // And a profile is part of the export of People, so it can be taken out and erased.
         assertTrue("Zorblax-like" in s.link.export(setOf(LinkKinds.PEOPLE)))
         s.link.erase(LinkKinds.PEOPLE)
         assertTrue(s.link.data.people.isEmpty())

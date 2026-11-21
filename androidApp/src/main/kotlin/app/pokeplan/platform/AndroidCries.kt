@@ -8,11 +8,6 @@ import app.pokeplan.ui.CryPlayer
 import app.pokeplan.ui.Sfx
 import java.io.File
 
-/**
- * Plays the real cries and sound effects (assets/cries and assets/sfx, packaged with the Compose resources): up to [MAX_CRIES]
- * cries at once through MediaPlayer (two Pokémon meeting in the town both speak; the oldest is cut when a fourth starts), the short effects through a SoundPool (loaded on first use, several at once, so a run of taps
- * or the letter scroller never cuts itself off), and the one long jingle through MediaPlayer.
- */
 class AndroidCryPlayer(private val context: Context) : CryPlayer {
     private val cries = ArrayDeque<MediaPlayer>()
     private var effectPlayer: MediaPlayer? = null
@@ -39,14 +34,12 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
     override fun playVoiced(speciesId: Int, volume: Float, pitch: Float, speed: Float) =
         addCry(start("cries/$speciesId.ogg", "cry-$speciesId.ogg", volume, pitch, speed))
 
-    /** Keeps a started cry so the next ones can overlap it, releasing the oldest beyond [MAX_CRIES]. */
     private fun addCry(cry: MediaPlayer?) {
         if (cry == null) return
         cries += cry
         while (cries.size > MAX_CRIES) cries.removeFirst().let { runCatching { it.release() } }
     }
 
-    /** A cry that has finished (or failed) is released here and forgotten. */
     private fun finished(cry: MediaPlayer) {
         synchronized(this) { cries.remove(cry) }
         runCatching { cry.release() }
@@ -64,13 +57,11 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
         if (id in ready) pool.play(id, volume, volume, 1, 0, 1f) else waiting[id] = volume
     }
 
-    /** Starts loading a short effect; 0 when it cannot be read (it then stays silent). */
     private fun load(file: String): Int = try {
         val path = "composeResources/pokeplan.composeapp.generated.resources/files/sfx/$file.ogg"
         try {
             context.assets.openFd(path).use { pool.load(it, 1) }
         } catch (e: java.io.FileNotFoundException) {
-            // Packaged compressed: copy it out once and load the copy.
             val copy = File(context.cacheDir, "sfx-$file.ogg")
             if (!copy.exists()) context.assets.open(path).use { input -> copy.outputStream().use { input.copyTo(it) } }
             pool.load(copy.absolutePath, 1)
@@ -87,13 +78,11 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
                 try {
                     context.assets.openFd(path).use { setDataSource(it.fileDescriptor, it.startOffset, it.length) }
                 } catch (e: java.io.FileNotFoundException) {
-                    // Packaged compressed: copy it out once and play the copy.
                     val copy = File(context.cacheDir, cacheName)
                     if (!copy.exists()) context.assets.open(path).use { input -> copy.outputStream().use { input.copyTo(it) } }
                     setDataSource(copy.absolutePath)
                 }
                 setVolume(volume, volume)
-                // A voiced cry (CryVoice): pitch and speed apart. Setting them on a prepared player may start it, which start() then repeats harmlessly.
                 setOnPreparedListener { p ->
                     if (pitch != 1f || speed != 1f) runCatching { p.playbackParams = android.media.PlaybackParams().setPitch(pitch).setSpeed(speed) }
                     p.start()
@@ -103,7 +92,6 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
                 prepareAsync()
             }
         } catch (e: Exception) {
-            // A missing or unplayable sound is silent.
             null
         }
     }

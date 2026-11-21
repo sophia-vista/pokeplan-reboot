@@ -50,10 +50,6 @@ import app.pokeplan.ui.screens.short
 import app.pokeplan.app.gear.changeGear
 import app.pokeplan.app.gear.setPickerOptions
 
-/**
- * The Picker: a list you keep on this phone, each option with a weight (1 to 10), edited in place and moved up or down; pick one or several without
- * repeats, skip the last pick, shuffle the order, and (only if you turn it on) keep the last picks. The result is announced to a screen reader.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
@@ -75,10 +71,8 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
     fun pick() {
         if (options.size < 2 || picking) return
         picking = true
-        // The pick to skip is the one on show now, taken before the roll below puts other names up.
         val last = if (skipLast && count == 1) gear.pickerHistory.firstOrNull() ?: shown.singleOrNull() else null
         scope.launch {
-            // A quick roll through the list before it settles, unless motion is off.
             if (!reduce) repeat(8) { shown = listOf(options.random()); delay(70L + it * 18L) }
             val result = if (count == 1) listOfNotNull(Randomizer.pick(options, gear.pickerWeights, Random, avoid = last))
             else Randomizer.pickMany(options, gear.pickerWeights, count, Random)
@@ -140,7 +134,6 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** A coin that spins and lands, and dice (`2d6+3`, `d20`) with quick buttons and, if you turn it on, a short history. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
@@ -172,7 +165,6 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
                     flipping = true
                     val heads = Random.nextBoolean()
                     if (!reduce) {
-                        // Four whole turns from the last whole turn, plus a half turn for tails, so the coin always lands showing its face.
                         val to = (spin.value / 360f).toInt() * 360f + 1440f + if (heads) 0f else 180f
                         spin.animateTo(to, tween(900))
                     }

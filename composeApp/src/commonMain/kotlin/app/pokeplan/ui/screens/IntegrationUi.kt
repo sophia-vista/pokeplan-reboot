@@ -13,10 +13,6 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 
-/**
- * One integration as INTEGRATIONS_AND_PRIVACY.md section 14 asks: what it does, its class (official API, Android platform, user-assisted import, unsupported),
- * its status, the data it reads and what it cannot do. Shared by HEAL's and MINT's connection pages so both say the same things the same way.
- */
 @Composable
 internal fun IntegrationCard(info: IntegrationInfo) {
     TextBox {

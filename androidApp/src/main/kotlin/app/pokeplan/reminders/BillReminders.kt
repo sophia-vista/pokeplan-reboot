@@ -12,11 +12,6 @@ import app.pokeplan.app.reminders.ReminderActions
 import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.ui.Place
 
-/**
- * How a Mint bill reminder looks as a notification (the rules are in [app.pokeplan.app.mint.MintReminders]; MINT.md section 12). The lock screen shows the same words for every
- * bill whatever the user allowed ([MintReminders.PUBLIC_TEXT]); the full text, which names the bill only when the user said so, shows after unlocking. There is never an
- * amount, a balance, an account or a merchant. The notification opens Mint and has one button, "Tomorrow"; there is no "Paid", because a reminder never settles a bill.
- */
 object BillReminders {
     fun notificationId(ref: String) = ("bill" to ref).hashCode()
 

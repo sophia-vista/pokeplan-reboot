@@ -4,7 +4,6 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.FormKind
 import app.pokeplan.core.dex.PokemonType
 
-/** What a perk improves. See "Buddy and perks" in docs/design.md. */
 enum class PerkBucket {
     EGG_LUCK,
     CANDY_YIELD,
@@ -18,7 +17,6 @@ enum class PerkBucket {
 data class HeldPerk(val bucket: PerkBucket, val percent: Double)
 
 object HeldItems {
-    /** Held items give one small perk each. *(tune)* */
     val perks: Map<String, HeldPerk> = mapOf(
         "oval-charm" to HeldPerk(PerkBucket.EGG_LUCK, 4.0),
         "lucky-egg" to HeldPerk(PerkBucket.CANDY_YIELD, 4.0),
@@ -29,32 +27,24 @@ object HeldItems {
         "amulet-coin" to HeldPerk(PerkBucket.COINS, 10.0),
     )
 
-    /**
-     * What a held item adds to a WORLD team's power, in percent of its holder's level (the one place that reads it is `BattleIdentity` in world-core,
-     * and it says so when it counts). Only items that would help in a fight are here; the others keep their perk above and add nothing. *(tune)*
-     */
     val battle: Map<String, Int> = mapOf(
         "leftovers" to 4,
         "scope-lens" to 4,
     )
 
-    /** What a Mega Stone adds when its holder is the Pokémon it is for, in percent. *(tune)* */
     const val MEGA_STONE_BATTLE_PERCENT = 6
 }
 
-/** When an ability perk applies. */
 enum class PerkCondition { ALWAYS, FIRST_TASK_BEFORE_9AM, SHORT_SESSION, TOP_RANK_TASK }
 
 data class AbilityPerk(
     val bucket: PerkBucket? = null,
     val percent: Double = 0.0,
     val condition: PerkCondition = PerkCondition.ALWAYS,
-    /** A failed session keeps its egg once a week (Magic Guard). */
     val keepsFailedEgg: Boolean = false,
 )
 
 object AbilityPerks {
-    /** Curated abilities that give a perk; every other ability falls back to the type perk only. *(tune)* */
     val table: Map<String, AbilityPerk> = mapOf(
         "Serene Grace" to AbilityPerk(PerkBucket.EGG_LUCK, 4.0),
         "Compound Eyes" to AbilityPerk(PerkBucket.EGG_LUCK, 4.0),
@@ -95,7 +85,6 @@ object TypePerks {
         PokemonType.WATER, PokemonType.FIRE, PokemonType.POISON -> PerkBucket.STREAK_KEEPER
     }
 
-    /** The stat that powers each bucket's type perk. */
     fun stat(bucket: PerkBucket): Stat? = when (bucket) {
         PerkBucket.EGG_LUCK -> Stat.SPEED
         PerkBucket.CANDY_YIELD -> Stat.ATTACK
@@ -107,41 +96,31 @@ object TypePerks {
     }
 }
 
-/** The moment a perk is being applied: a task, a session, or neither. */
 data class PerkContext(
     val sessionMinutes: Int? = null,
-    /** The finished task's difficulty rank as 1 (E) to 5 (A). */
     val taskRank: Int? = null,
     val hourOfDay: Int? = null,
     val firstTaskOfDay: Boolean = false,
-    /** The buddy is in its Mega or Gigantamax form for this focus session. */
     val megaActive: Boolean = false,
 )
 
 data class PerkBonuses(
-    /** Percent bonus per bucket (4.0 means +4%). */
     val percent: Map<PerkBucket, Double> = emptyMap(),
     val keepsFailedEgg: Boolean = false,
 ) {
     operator fun get(bucket: PerkBucket): Double = percent[bucket] ?: 0.0
 
-    /** Extra missed days forgiven per week from the Streak keeper perk. */
     val extraForgivenDays: Int get() = if (this[PerkBucket.STREAK_KEEPER] >= Perks.STREAK_KEEPER_THRESHOLD) 1 else 0
 
-    /** As a multiplier, e.g. +4% is 1.04. */
     fun multiplier(bucket: PerkBucket): Double = 1.0 + this[bucket] / 100.0
 }
 
-/** Works out the perks of the buddy, its held item, its ability and the rest of the party. */
 object Perks {
-    /** Largest type perk a single Pokémon can give, before friendship and nature. *(tune)* */
     const val TYPE_PERK_MAX = 15.0
 
-    /** The second type gives half, assists a quarter. *(tune)* */
     const val SECOND_TYPE_SHARE = 0.5
     const val ASSIST_SHARE = 0.25
 
-    /** Total bonus per bucket stays below this. *(tune)* */
     const val BUCKET_CAP = 25.0
 
     const val MEGA_BOOST = 1.25
@@ -149,14 +128,12 @@ object Perks {
     private const val STAT_REFERENCE = 250.0
     private const val MAX_ASSISTS = 5
 
-    /** How strong [p]'s type perk is, 0..1, from its level and the relevant stat. */
     private fun power(p: OwnedPokemon, bucket: PerkBucket): Double {
         val stat = TypePerks.stat(bucket) ?: return 0.0
         val statFactor = (p.stats[stat] / STAT_REFERENCE).coerceIn(0.0, 1.0)
         return 0.5 * p.level / CandyRules.MAX_LEVEL + 0.5 * statFactor
     }
 
-    /** One Pokémon's type perks as percent per bucket (primary type full, second type half). */
     fun typePerks(p: OwnedPokemon): Map<PerkBucket, Double> {
         val result = mutableMapOf<PerkBucket, Double>()
         for ((index, type) in p.perkTypes.withIndex()) {
@@ -175,7 +152,6 @@ object Perks {
         return result
     }
 
-    /** True if the buddy holds the Mega Stone of one of its own Mega forms. */
     fun megaReady(p: OwnedPokemon): Boolean {
         val held = p.heldItem ?: return false
         return Dex.formsOf(p.speciesId).any { it.kind == FormKind.MEGA && Items.megaStone(it.identifier) == held }
@@ -188,10 +164,6 @@ object Perks {
         PerkCondition.TOP_RANK_TASK -> ctx.taskRank == 5
     }
 
-    /**
-     * The perks from the buddy, its held item and ability, and the party, plus the slotted [guardians]. Guardian perks are
-     * added on top of the ordinary cap (see [Guardians]), so they work even with no buddy.
-     */
     fun total(
         buddy: OwnedPokemon?,
         party: List<OwnedPokemon> = emptyList(),
@@ -218,10 +190,6 @@ object Perks {
         return PerkBonuses(combined, keeps)
     }
 
-    /**
-     * Where each perk comes from, for showing the player: the same parts [total] adds up, before the cap. Ability perks
-     * that only apply sometimes are listed with their [PerkSource.condition].
-     */
     fun sources(
         buddy: OwnedPokemon?,
         party: List<OwnedPokemon> = emptyList(),
@@ -241,7 +209,6 @@ object Perks {
     }
 }
 
-/** One part of the perk total: who or what gives it, to which bucket, and how much (in percent). */
 data class PerkSource(
     val from: String,
     val kind: Kind,
@@ -252,34 +219,23 @@ data class PerkSource(
     enum class Kind { BUDDY_TYPE, ABILITY, HELD_ITEM, ASSIST, GUARDIAN }
 }
 
-/**
- * The Guardian role of legendary-class and mythical Pokémon: a normal Pokémon (in the PC, a party or a World team like any other) that can also be a
- * module's Guardian, one slot per module (owner decision, 8 November 2026), with a big perk in that module only, outside the usual cap.
- * See "Guardians" in docs/design.md. Numbers are *(tune)*.
- */
 object Guardians {
-    /** The signature perk of a Guardian, percent. */
     const val SIGNATURE_PERCENT = 10.0
 
-    /** A second type gives this share of the signature perk. */
     const val SECOND_TYPE_SHARE = 0.5
 
-    /** The most Guardians can add to one bucket, on top of the ordinary cap. */
     const val BUCKET_CAP = 15.0
 
-    /** Where lore, rather than type, decides the signature bucket (by species identifier). */
     private val lore: Map<String, PerkBucket> = mapOf(
-        "uxie" to PerkBucket.SUPER_CANDY_CHANCE, // knowledge
-        "mesprit" to PerkBucket.STREAK_KEEPER, // emotion
-        "azelf" to PerkBucket.CANDY_YIELD, // willpower
-        "jirachi" to PerkBucket.EGG_LUCK, // wishes
-        "celebi" to PerkBucket.STREAK_KEEPER, // time
+        "uxie" to PerkBucket.SUPER_CANDY_CHANCE,
+        "mesprit" to PerkBucket.STREAK_KEEPER,
+        "azelf" to PerkBucket.CANDY_YIELD,
+        "jirachi" to PerkBucket.EGG_LUCK,
+        "celebi" to PerkBucket.STREAK_KEEPER,
     )
 
-    /** Only legendary-class and mythical Pokémon can be Guardians. */
     fun canBe(p: OwnedPokemon): Boolean = p.species.isSpecial
 
-    /** One Guardian's signature perk(s): percent per bucket. */
     fun signature(p: OwnedPokemon): Map<PerkBucket, Double> {
         val types = p.form.types
         val primary = lore[p.species.identifier] ?: TypePerks.bucket(types.first())
@@ -291,10 +247,8 @@ object Guardians {
         return result
     }
 
-    /** The modules that have a Guardian slot, in slot order (slot 1 is Plan's): `pokemon_place` stores the slot, so the order never changes. */
     val MODULES: List<String> = listOf(PartyIds.PLAN, PartyIds.CARE, PartyIds.HEAL, PartyIds.MINT, PartyIds.BASE, PartyIds.LINK)
 
-    /** A Guardian's signature in another module's buckets: its type perk at [SIGNATURE_PERCENT] (the second type half), by that module's [bucketOf]. */
     fun <B> signatureIn(p: OwnedPokemon, bucketOf: (PokemonType) -> B?): Map<B, Double> {
         val result = mutableMapOf<B, Double>()
         p.form.types.forEachIndexed { i, type ->
@@ -304,7 +258,6 @@ object Guardians {
         return result
     }
 
-    /** [base] (a module's party perks, already capped) plus the module's [guardian]'s signature in its buckets, that part capped at [BUCKET_CAP] on top of the ordinary cap. A Pokémon that is not a Guardian species adds nothing. */
     fun <B> addTo(base: Map<B, Double>, guardian: OwnedPokemon?, bucketOf: (PokemonType) -> B?): Map<B, Double> {
         if (guardian == null || !canBe(guardian)) return base
         val out = base.toMutableMap()
@@ -312,7 +265,6 @@ object Guardians {
         return out
     }
 
-    /** The combined Guardian perks, each bucket capped at [BUCKET_CAP]. Anything that is not a Guardian species is ignored. */
     fun perks(guardians: List<OwnedPokemon>): Map<PerkBucket, Double> {
         val sums = mutableMapOf<PerkBucket, Double>()
         guardians.filter(::canBe).forEach { g -> signature(g).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v } }
@@ -320,14 +272,12 @@ object Guardians {
     }
 }
 
-/** What Care's party can improve (docs/design.md, "Parties per module"). Perks only change what a kind of Care action pays. */
 enum class CareBucket(val label: String, val effect: String) {
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from routines, breaks and skills"),
     BERRY_FINDER("Berry finder", "a chance of a second berry"),
     VISITOR_LUCK("Visitor luck", "rarer, better befriended eggs"),
 }
 
-/** Care's perks: the lead gives its type perk in full, the rest of Care's party a quarter, each bucket capped like Plan's. */
 object CarePerks {
     fun bucket(type: PokemonType): CareBucket? = when (type) {
         PokemonType.NORMAL, PokemonType.FAIRY, PokemonType.WATER -> CareBucket.FRIENDSHIP_GAIN
@@ -336,7 +286,6 @@ object CarePerks {
         else -> null
     }
 
-    /** One Pokémon's Care perks as percent per bucket (primary type full, second type half), from its level and friendship. */
     fun typePerks(p: OwnedPokemon): Map<CareBucket, Double> {
         val result = mutableMapOf<CareBucket, Double>()
         val power = 0.5 * p.level / CandyRules.MAX_LEVEL + 0.5 * p.friendship / FriendshipRules.MAX
@@ -347,7 +296,6 @@ object CarePerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
     fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<CareBucket, Double> {
         if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<CareBucket, Double>()
@@ -359,13 +307,11 @@ object CarePerks {
     }
 }
 
-/** What Heal's party can improve (POKEMON_ECOSYSTEM.md section 2.2.1). Perks only change what Field Research pays, never anything in HEAL's records. */
 enum class HealBucket(val label: String, val effect: String) {
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from a logged activity"),
     BERRY_FINDER("Berry finder", "a chance of a second berry from a logged activity"),
 }
 
-/** Heal's perks: the lead gives its type perk in full, the rest of Heal's party a quarter, each bucket capped like Plan's. */
 object HealPerks {
     fun bucket(type: PokemonType): HealBucket? = when (type) {
         PokemonType.FIGHTING, PokemonType.NORMAL, PokemonType.FIRE, PokemonType.ELECTRIC, PokemonType.FLYING, PokemonType.DRAGON -> HealBucket.FRIENDSHIP_GAIN
@@ -373,7 +319,6 @@ object HealPerks {
         else -> null
     }
 
-    /** One Pokémon's Heal perks as percent per bucket (primary type full, second type half), from its level and friendship. */
     fun typePerks(p: OwnedPokemon): Map<HealBucket, Double> {
         val result = mutableMapOf<HealBucket, Double>()
         val power = 0.5 * p.level / CandyRules.MAX_LEVEL + 0.5 * p.friendship / FriendshipRules.MAX
@@ -384,7 +329,6 @@ object HealPerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
     fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<HealBucket, Double> {
         if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<HealBucket, Double>()
@@ -396,13 +340,11 @@ object HealPerks {
     }
 }
 
-/** What Mint's party can improve (POKEMON_ECOSYSTEM.md section 2.2.1). Perks only change what Ledger Research pays, never anything in MINT's records. */
 enum class MintBucket(val label: String, val effect: String) {
     CANDY_FINDER("Candy finder", "a chance of an extra Exp. Candy from a review or a reconciled account"),
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from a review or a reconciled account"),
 }
 
-/** Mint's perks: the lead gives its type perk in full, the rest of Mint's party a quarter, each bucket capped like Plan's. */
 object MintPerks {
     fun bucket(type: PokemonType): MintBucket? = when (type) {
         PokemonType.STEEL, PokemonType.ROCK, PokemonType.GROUND, PokemonType.NORMAL, PokemonType.ELECTRIC, PokemonType.PSYCHIC -> MintBucket.CANDY_FINDER
@@ -410,7 +352,6 @@ object MintPerks {
         else -> null
     }
 
-    /** One Pokémon's Mint perks as percent per bucket (primary type full, second type half), from its level and friendship. */
     fun typePerks(p: OwnedPokemon): Map<MintBucket, Double> {
         val result = mutableMapOf<MintBucket, Double>()
         val power = 0.5 * p.level / CandyRules.MAX_LEVEL + 0.5 * p.friendship / FriendshipRules.MAX
@@ -421,7 +362,6 @@ object MintPerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
     fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<MintBucket, Double> {
         if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<MintBucket, Double>()
@@ -433,13 +373,11 @@ object MintPerks {
     }
 }
 
-/** What Home's party can improve (POKEMON_ECOSYSTEM.md section 2.2.1). Perks only change what Habitat Discovery pays, never anything in HOME's records. */
 enum class BaseBucket(val label: String, val effect: String) {
     CANDY_FINDER("Candy finder", "a chance of an extra Exp. Candy from a chore or a piece of maintenance done"),
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from a chore or a piece of maintenance done"),
 }
 
-/** Home's perks: the lead gives its type perk in full, the rest of Home's party a quarter, each bucket capped like Plan's. */
 object BasePerks {
     fun bucket(type: PokemonType): BaseBucket? = when (type) {
         PokemonType.GRASS, PokemonType.NORMAL, PokemonType.BUG, PokemonType.GROUND, PokemonType.FIRE, PokemonType.WATER -> BaseBucket.CANDY_FINDER
@@ -447,7 +385,6 @@ object BasePerks {
         else -> null
     }
 
-    /** One Pokémon's Home perks as percent per bucket (primary type full, second type half), from its level and friendship. */
     fun typePerks(p: OwnedPokemon): Map<BaseBucket, Double> {
         val result = mutableMapOf<BaseBucket, Double>()
         val power = 0.5 * p.level / CandyRules.MAX_LEVEL + 0.5 * p.friendship / FriendshipRules.MAX
@@ -458,7 +395,6 @@ object BasePerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
     fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<BaseBucket, Double> {
         if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<BaseBucket, Double>()
@@ -470,13 +406,11 @@ object BasePerks {
     }
 }
 
-/** What Link's party can improve (POKEMON_ECOSYSTEM.md section 2.2.1). Perks only change what Postcard Trail pays, never anything in LINK's records. */
 enum class LinkBucket(val label: String, val effect: String) {
     CANDY_FINDER("Candy finder", "a chance of an extra Exp. Candy from a finished follow-up"),
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from a finished follow-up"),
 }
 
-/** Link's perks: the lead gives its type perk in full, the rest of Link's party a quarter, each bucket capped like Plan's. */
 object LinkPerks {
     fun bucket(type: PokemonType): LinkBucket? = when (type) {
         PokemonType.NORMAL, PokemonType.FLYING, PokemonType.WATER, PokemonType.GRASS, PokemonType.BUG, PokemonType.GROUND -> LinkBucket.CANDY_FINDER
@@ -484,7 +418,6 @@ object LinkPerks {
         else -> null
     }
 
-    /** One Pokémon's Link perks as percent per bucket (primary type full, second type half), from its level and friendship. */
     fun typePerks(p: OwnedPokemon): Map<LinkBucket, Double> {
         val result = mutableMapOf<LinkBucket, Double>()
         val power = 0.5 * p.level / CandyRules.MAX_LEVEL + 0.5 * p.friendship / FriendshipRules.MAX
@@ -495,7 +428,6 @@ object LinkPerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
     fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<LinkBucket, Double> {
         if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<LinkBucket, Double>()

@@ -1,19 +1,10 @@
 #!/usr/bin/env python3
-"""Decodes a Red Rescue Team ground background (the .bpl palette, .bpc tiles and chunks, .bma map and .bpa tile animation files of
-pret/pmd-red `data/map_bg`) into images, following the decompilation's own code (src/ground_bg.c: sub_80A2FBC, CopyBpcTilesToVram,
-_UncompressCell, BmaLayerNrlDecompressor, sub_80A4764). Used to check the weather art PokéLife draws against the game's own data.
-
-Usage: python3 -I tools/weather/decode_bg.py <pmd-red checkout> <out dir>
-Writes, for each weather background, its first frame as <name>.png and the tile animation as a strip <name>-anim.png, and prints the header facts.
-Needs Pillow.
-"""
 import os
 import struct
 import sys
 
 from PIL import Image
 
-# gMapFilesTable entries the weather kinds of src/ground_weather.c use (kind -> bpa files by slot), see docs/pokelife/FEATURES/LAUNCHER.md section 4.4.
 WEATHER_BGS = {
     'W01': [], 'W03P01': ['W03P011'], 'W03P02': ['W03P021'], 'W03P03': ['W03P031'], 'W04': ['W041'], 'W05': [], 'W06': [],
 }
@@ -29,12 +20,10 @@ class Bg:
         bpl = read('.bpl')
         self.num_palettes, self.has_pal_anim = bpl[0], bpl[2]
         rgb = bpl[4:]
-        # 15 colours of 4 bytes (r, g, b, unused) per palette; colour 0 is transparent.
         self.palettes = [[(0, 0, 0, 0)] + [tuple(rgb[p * 60 + i * 4: p * 60 + i * 4 + 3]) + (255,) for i in range(15)] for p in range(self.num_palettes)]
         bpc = read('c.bpc')
         h = u16s(bpc, 0, 8)
         self.chunk_w, self.chunk_h, self.num_tiles, self.slot_tiles, self.num_chunks = h[0], h[1], h[2], h[3:7], h[7]
-        # Tile 0 is blank and not stored; then numTiles - 1 tiles of 32 bytes (4 bits a pixel); then the chunk definitions.
         off = 16
         self.tiles = [bytes(32)] + [bpc[off + 32 * i: off + 32 * (i + 1)] for i in range(self.num_tiles - 1)]
         off += 32 * (self.num_tiles - 1)
@@ -53,7 +42,6 @@ class Bg:
                               'data': [[b[data + 32 * (f * per + t): data + 32 * (f * per + t + 1)] for t in range(per)] for f in range(frames)]})
 
     def nrl(self, bma, src):
-        """BmaLayerNrlDecompressor: rows of mapWidthChunks chunk numbers; the first row is plain, the others change the row above (xor), as the code does."""
         rows = []
         for j in range(self.map_h):
             above = rows[j - 1] if j else None
@@ -87,7 +75,6 @@ class Bg:
         return rows
 
     def tile_for(self, index, frames):
-        """The 32 bytes of local tile [index]: static tiles, then the animated slots in order (frame [frames][slot] of each)."""
         if index < self.num_tiles:
             return self.tiles[index]
         index -= self.num_tiles

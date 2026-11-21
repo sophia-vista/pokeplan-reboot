@@ -48,12 +48,6 @@ import app.pokeplan.app.storage.SavedDocument
 import app.pokeplan.app.storage.Storage
 import app.pokeplan.app.storage.newId
 
-/**
- * The Care module on this device (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): its own save in its own [storage] (`care.json`), apart
- * from Plan's. It reaches the shared world only through [world], with events that carry no text, mood or health value.
- * Doing earns (a routine, a calm break, a practised skill, a week with a rhythm); entering anything sensitive (a diary card,
- * a note, a journal entry) never does.
- */
 class CareStore(
     storage: Storage,
     private val clock: Clock,
@@ -72,30 +66,24 @@ class CareStore(
     val today: LocalDate get() = nowMillis.toLocalDateTime(zone).date
     private val thisWeek: LocalDate get() = CareRules.weekStartOf(today, weekStart())
 
-    /** Picks up a change another process made (a widget), without writing anything back; see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
-    /** Picks up what another store in this process (a widget, a notification) wrote; cheap when nothing was. */
     fun sync() = document.sync()
 
     private fun update(change: (CareData) -> CareData) = document.update(change)
 
-    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
     fun restore(snapshot: CareData) = update { snapshot }
 
     private fun newId(): String = newId(nowMillis, rng)
 
     private fun pay(kind: CareKind): List<Reward>? = world.care(CareEvent(kind, nowMillis))
 
-    /** Pays the week's rhythm milestone if this moment made it. */
     private fun rhythm(): List<Reward> {
         if (!CareRules.rhythmDue(data, thisWeek)) return emptyList()
         val rewards = pay(CareKind.WEEKLY_RHYTHM) ?: return emptyList()
         update { it.copy(rhythmWeeks = it.rhythmWeeks + thisWeek) }
         return rewards
     }
-
-    // --- routines -----------------------------------------------------------------------------------------------------
 
     fun addRoutine(title: String, time: LocalTime? = null, days: Set<DayOfWeek> = emptySet(), icon: String? = null): Routine {
         val routine = Routine(newId(), title.trim(), icon, time, days, today)
@@ -110,26 +98,15 @@ class CareStore(
 
     fun deleteRoutine(id: String) = update { d -> d.copy(routines = d.routines.filterNot { it.id == id }) }
 
-    /** Today's routines (not the ones skipped today), the ones with a time first, in time order. */
     fun todayRoutines(): List<Routine> = routinesOn(today)
 
-    /** The routines planned for [day] (due and not skipped), the ones with a time first, in time order. */
     fun routinesOn(day: LocalDate): List<Routine> =
         data.routines.filter { it.plannedOn(day) }.sortedWith(compareBy(nullsLast()) { it.time })
 
-    /** How many of [day]'s planned routines are done, and how many are planned: the "2 of 5 today" count. */
     fun routineCount(day: LocalDate = today): Pair<Int, Int> = routinesOn(day).let { list -> list.count { it.doneOn(day) } to list.size }
 
-    /** Whether [day] is one a routine can be ticked for: today, or yesterday. */
     private fun tickable(day: LocalDate): Boolean = day == today || day == today.minus(DatePeriod(days = 1))
 
-    /**
-     * Ticks a routine off for today. The first tick of the day pays, up to [CareRules.ROUTINES_PAID_PER_DAY] routines a
-     * day; ticking again after an undo never pays twice. Returns what it earned (empty when nothing).
-     *
-     * For yesterday ([forDay]) it only records the completion: nothing pays and no rhythm is counted for a day that is over.
-     * Any other day is ignored.
-     */
     fun completeRoutine(id: String, forDay: LocalDate = today): List<Reward> {
         if (!tickable(forDay)) return emptyList()
         val routine = data.routines.first { it.id == id }
@@ -150,22 +127,14 @@ class CareStore(
         update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.undo(forDay) else it }) }
     }
 
-    /** Sets a routine aside for [forDay] (today by default): no reward, no mark, it leaves the day's list. A done routine is left as it is. */
     fun skipRoutine(id: String, forDay: LocalDate = today) {
         if (!tickable(forDay)) return
         update { d -> d.copy(routines = d.routines.map { if (it.id == id && !it.doneOn(forDay)) it.skip(forDay) else it }) }
     }
 
-    /** Takes a routine back onto the day's list. */
     fun unskipRoutine(id: String, forDay: LocalDate = today) =
         update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.unskip(forDay) else it }) }
 
-    // --- calm breaks --------------------------------------------------------------------------------------------------
-
-    /**
-     * Records a finished calm break of [seconds]. One of at least [CareRules.BREAK_MIN_SECONDS] pays, up to
-     * [CareRules.BREAKS_PAID_PER_DAY] a day. Returns what it earned.
-     */
     fun finishCalmBreak(seconds: Int): List<Reward> {
         val length = seconds.coerceIn(0, CareRules.BREAK_MAX_SECONDS)
         val canPay = length >= CareRules.BREAK_MIN_SECONDS && CareRules.breaksPaidOn(data, today) < CareRules.BREAKS_PAID_PER_DAY
@@ -174,12 +143,6 @@ class CareStore(
         return rewards.orEmpty() + rhythm()
     }
 
-    // --- skills (practising pays) -------------------------------------------------------------------------------------
-
-    /**
-     * Records a practised skill from the library. The first practice of a skill each day pays, up to
-     * [CareRules.SKILLS_PAID_PER_DAY] skills a day; paced breathing is practised as a calm break instead. Returns what it earned.
-     */
     fun practiseSkill(skillId: String): List<Reward> {
         val skill = Skills.byId(skillId) ?: return emptyList()
         if (skill.calmBreak) return emptyList()
@@ -188,31 +151,17 @@ class CareStore(
         return rewards.orEmpty() + rhythm()
     }
 
-    /** The skills practised today, by id (calm breaks count as paced breathing). */
     fun practisedToday(): Set<String> =
         data.practices.filter { it.day == today }.map { it.skillId }.toSet() +
             (if (data.breaks.any { it.day == today }) Skills.all.filter { it.calmBreak }.map { it.id } else emptyList())
 
-    // --- visitors (befriending) ---------------------------------------------------------------------------------------
-    // docs/pokelife MODULES/CARE.md, section 6: visitors arrive on their own (never because of what was done in Care), four are in the
-    // meadow and the rest wait in a queue that never expires, a visitor can be visited at any time, every kind of care warms it at once
-    // and nothing is lost by being away. Visitors stay until they are befriended or sent away.
-
-    /** The berries Care can offer as a treat (from the shared bag). */
     fun berries(): Map<String, Int> = world.berries()
 
-    /** Whether [visitor] is resting from a visit just over: it can still be played with, but another visit would not count yet. */
     fun resting(visitor: Visitor): Boolean = Visitors.resting(visitor, nowMillis)
 
-    /** Whether [visitor] can be visited now: it is in the meadow, not resting, and no other visit is on. */
     fun canVisit(visitor: Visitor): Boolean =
         Visitors.meadow(data.visitors).any { it.id == visitor.id } && !resting(visitor) && (visit == null || visit?.speciesId == visitor.speciesId)
 
-    /**
-     * The visitors here (the first [Visitors.MAX_VISITORS] are in the meadow, the rest in the queue). The first time it is called
-     * on a new day the arrivals since the last are added, up to the room there is; the same on this device all day, so the day's
-     * arrivals are saved the first time they are seen.
-     */
     fun visitors(): List<Visitor> {
         val last = data.visitorsDay
         if (last == null || today > last) {
@@ -226,27 +175,15 @@ class CareStore(
         return data.visitors
     }
 
-    /**
-     * Brings the day's arrivals and a possible reunion, once per day. Care's landing page and the Meadow call this when they open, so the
-     * landing page knows a friend is back too; the getters below still do the same on first use, for callers that skip it.
-     */
     fun arrive() { visitors(); reunion() }
 
-    /** The visitors in the meadow, and the ones waiting for a place. */
     fun meadow(): List<Visitor> = Visitors.meadow(visitors())
     fun queued(): List<Visitor> = Visitors.queue(visitors())
 
-    /** Visitors sent away and not asked back, the newest first. */
     fun dismissed(): List<Visitor> = data.dismissed.asReversed()
 
-    /** The visit in progress, if there is one. It stays until it is finished or left. */
     val visit: Visit? get() = data.visit
 
-    /**
-     * Starts a visit with a visitor. Null when it cannot be done now: the visitor is gone, in the queue, resting, or another visit
-     * is on. A visit already started with that visitor carries on. No other care has to have been done first, and there is no
-     * limit to the visits in a day.
-     */
     fun startVisit(speciesId: Int): Visit? {
         visit?.takeIf { it.speciesId == speciesId }?.let { return it }
         val visitor = visitors().firstOrNull { it.speciesId == speciesId } ?: return null
@@ -254,17 +191,10 @@ class CareStore(
         return Visitors.start(speciesId, today).also { v -> update { it.copy(visit = v) } }
     }
 
-    /**
-     * Does [action] in the visit. What it warms the visitor is added to its progress at once, so leaving never loses it. A treat
-     * ([CareAction.GIFT]) can be a [berry] from the shared bag, spent at once; the berry the visitor likes adds a bonus once. The
-     * visit ends (see [leaveVisit]) when every kind of care is done or the visitor is warm enough to be a friend. Null when there is
-     * no visit to do it in.
-     */
     fun visitAct(action: CareAction, spot: PetSpot? = null, berry: String? = null): VisitStep? {
         val visit = visit ?: return null
         val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
         val (acted, reaction) = Visitors.act(visitor, visit, action, spot)
-        // Only a treat the visitor takes (not a repeat) uses up the berry.
         val given = berry?.takeIf { action == CareAction.GIFT && reaction != Reaction.FLAT && visit.berry == null && world.spendBerry(it) }
         val next = if (given != null) acted.copy(berry = given) else acted
         val bonus = given != null && Visitors.berryBonusDue(visitor, given)
@@ -276,7 +206,6 @@ class CareStore(
         return VisitStep(reaction, next, if (Visitors.finished(next) || Visitors.friend(warmer)) leaveVisit() else null)
     }
 
-    /** Turns toward the visitor's bid, if it made one: one more warmth. The step has a result when that made it a friend. */
     fun visitNotice(): VisitStep? {
         val visit = visit ?: return null
         if (visit.pendingBid == null) return null
@@ -287,11 +216,6 @@ class CareStore(
         return VisitStep(Reaction.LIKED, next, if (Visitors.friend(warmer)) leaveVisit() else null)
     }
 
-    /**
-     * Ends the visit now, whenever the player likes: a visitor that has become a friend is paid through the world (usually an
-     * egg of its family's first stage that hatches at once, rarely the visitor itself) and leaves; any other rests a while. What
-     * the visit warmed is already kept. A friend the world cannot pay today ([BefriendResult.waiting]) stays, ready. Null when there is no visit.
-     */
     fun leaveVisit(): BefriendResult? {
         val visit = visit ?: return null
         val visitor = data.visitors.firstOrNull { it.speciesId == visit.speciesId }
@@ -303,21 +227,15 @@ class CareStore(
         }
         val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis, visitor.id))
         if (rewards == null) {
-            // The world paid nothing now (its daily limit of friends): the visit still ends, and the visitor stays, ready, for the next one.
             update { d -> d.copy(visit = null, met = d.met + visit.speciesId) }
             return BefriendResult(visitor, friend = false, rewards = emptyList(), waiting = true)
         }
-        // The visitor itself joins with the high friendship only a direct join starts with; an egg starts low.
         val joinedNow = rewards.filterIsInstance<Reward.Hatched>().any { it.pokemon.speciesId == visitor.speciesId && it.pokemon.friendship >= RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }
         val friend = Friend(visitor.speciesId, visitor.formIdentifier, visitor.id, today, joinedNow)
         update { d -> d.copy(visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.id == visitor.id }, friends = d.friends + friend) }
         return BefriendResult(visitor, friend = true, rewards = rewards, joined = joinedNow)
     }
 
-    /**
-     * Sends [speciesId]'s visitor away, on purpose. What it earned stays (a Pokémon or egg already given is never taken back), the
-     * place goes to the next in the queue, and it is kept so it can be asked back ([restore]). A visit with it ends.
-     */
     fun dismiss(speciesId: Int): Boolean {
         val visitor = data.visitors.firstOrNull { it.speciesId == speciesId } ?: return false
         update { d ->
@@ -329,7 +247,6 @@ class CareStore(
         return true
     }
 
-    /** Asks a dismissed visitor back: it joins the end of the queue with its warmth. False when there is no room or its species is here again. */
     fun restore(id: String): Boolean {
         val visitor = data.dismissed.firstOrNull { it.id == id } ?: return false
         if (data.visitors.size >= Visitors.MAX_VISITORS + Visitors.MAX_QUEUE || data.visitors.any { it.speciesId == visitor.speciesId }) return false
@@ -337,12 +254,6 @@ class CareStore(
         return true
     }
 
-    // --- reunions (CARE.md section 6.7) -------------------------------------------------------------------------------
-
-    /**
-     * The befriended visitor that has come back to say hello, if one has. The first call on a new day may bring one (a chance, never because
-     * of what was done in Care); it holds no meadow place and waits, unexpired, until it is greeted.
-     */
     fun reunion(): Reunion? {
         val last = data.reunionDay
         if (last == null || today > last) {
@@ -353,29 +264,18 @@ class CareStore(
         return data.reunion
     }
 
-    /** Greets the friend who came back: its words, which remember the first visit. Pays nothing and awards no egg or Pokémon (it already gave them). Null when no one is waiting. */
     fun greetReunion(): String? {
         val r = reunion() ?: return null
         update { it.copy(reunion = null) }
         return Reunions.greeting(r, app.pokeplan.core.dex.Dex.species(r.friend.speciesId).name)
     }
 
-    // --- Care Play (CARE.md section 4) --------------------------------------------------------------------------------
-
-    /** What Care Play has found out about the Pokémon [key] (an owned Pokémon's id): only the ways of care it has shown it likes. */
     fun discoveredLikes(key: String): Set<CareAction> = CarePlay.discovered(data.play[key])
 
-    /** An activity to suggest for [key] today. It never expires and ignoring it costs nothing. */
     fun suggestion(key: String): PlayActivity = CarePlay.suggestion(key, data.play[key], today)
 
-    /** "Surprise me": an activity for [key]; it changes with the minute and with each time they have played, so it is not the same one for a whole minute. */
     fun surprise(key: String): PlayActivity = CarePlay.surprise(key, nowMillis / 60_000L + (data.play[key]?.times ?: 0) * 1009L)
 
-    /**
-     * Spends time with the owned Pokémon [pokemonId] doing [activity]. It always happens and can be repeated freely; the first time with each
-     * Pokémon on a day pays through the shared world (friendship to that Pokémon and a point towards Care's Egg), the rest pay nothing. The
-     * way of care it showed it likes becomes known. Returns how it took it, and what the first time paid (null when it paid nothing).
-     */
     fun playWith(pokemonId: String, activity: PlayActivity): Pair<PlayReaction, List<Reward>?> {
         val reaction = CarePlay.reaction(pokemonId, activity)
         val paying = CarePlay.pays(data.play[pokemonId], today)
@@ -384,17 +284,10 @@ class CareStore(
         return reaction to rewards
     }
 
-    // --- diary card, journal (private, never paid) --------------------------------------------------------------------
-
     fun diaryToday(): DiaryCard? = diaryOn(today)
 
-    /** The card kept for [day], or null. */
     fun diaryOn(day: LocalDate): DiaryCard? = data.diary.firstOrNull { it.day == day }
 
-    /**
-     * Saves the diary card for [forDay] (today by default; a day after today is today), replacing the one saved earlier for that day, so
-     * a forgotten day can be filled in or a card corrected. Ratings are kept from 0 to 5.
-     */
     fun saveDiary(feelings: Map<Emotion, Int>, urges: Map<String, Int> = emptyMap(), skills: Set<String> = emptySet(), note: String? = null, forDay: LocalDate = today): DiaryCard {
         val day = if (forDay > today) today else forDay
         val existing = diaryOn(day)
@@ -410,7 +303,6 @@ class CareStore(
         return card
     }
 
-    /** Today's one-tap mood, 1 (rough) to 5 (great), or null to take it back. It lives on today's diary card and keeps whatever else is on it; a card left with nothing is dropped. Never pays. */
     fun setMood(level: Int?) {
         val existing = diaryToday()
         val mood = level?.coerceIn(1, 5)
@@ -419,38 +311,29 @@ class CareStore(
         update { d -> d.copy(diary = d.diary.filterNot { it.day == today } + listOfNotNull(card.takeUnless { empty })) }
     }
 
-    /** The mood of each of the last [days] days ending today (oldest first), null where none was given. */
     fun moodDays(days: Int = 7): List<Pair<kotlinx.datetime.LocalDate, Int?>> =
         (days - 1 downTo 0).map { back -> today.minus(kotlinx.datetime.DatePeriod(days = back)).let { day -> day to data.diary.firstOrNull { it.day == day }?.mood } }
 
     fun deleteDiary(id: String) = update { d -> d.copy(diary = d.diary.filterNot { it.id == id }) }
 
-    /** Today's prompt, a starting point for the journal, or null when all are skipped or one is answered today. */
     fun prompt(): Prompt? =
         if (data.journal.any { it.day == today && it.promptId != null }) null else Prompts.forDay(today, data.skippedPrompts[today] ?: 0)
 
     fun skipPrompt() = update { d -> d.copy(skippedPrompts = mapOf(today to (d.skippedPrompts[today] ?: 0) + 1)) }
 
-    /** Adds a journal entry; [promptId] when it answers today's prompt. A blank entry is not kept. */
     fun write(text: String, promptId: String? = null, tags: Set<String> = emptySet(), atMillis: Long? = null): JournalEntry? {
         if (text.isBlank()) return null
-        // An entry can be dated to a moment that has passed (a forgotten day); never to one still to come.
         val at = (atMillis ?: nowMillis).coerceAtMost(nowMillis)
         val entry = JournalEntry(newId(), at, at.toLocalDateTime(zone).date, text.trim(), promptId, tags.map { it.trim() }.filter { it.isNotEmpty() }.toSet())
         update { it.copy(journal = it.journal + entry, journalDraft = "") }
         return entry
     }
 
-    /**
-     * Keeps the half-written journal entry on the device so it survives the app being closed. It is written straight to the save
-     * without marking Care as changed for the cloud: a draft changing as you type is not worth an upload.
-     */
     fun setJournalDraft(text: String) {
         if (text == data.journalDraft) return
         document.update { it.copy(journalDraft = text.take(5_000)) }
     }
 
-    /** Changes an entry's words and, when given, its tags and the moment it is dated to (never one still to come). */
     fun editEntry(id: String, text: String, atMillis: Long? = null, tags: Set<String>? = null) {
         if (text.isBlank()) return
         update { d ->
@@ -465,14 +348,11 @@ class CareStore(
 
     fun deleteEntry(id: String) = update { d -> d.copy(journal = d.journal.filterNot { it.id == id }) }
 
-    /** Journal entries whose text or tags contain [query], newest first. */
     fun searchJournal(query: String): List<JournalEntry> {
         val q = query.trim()
         return data.journal.filter { q.isEmpty() || it.text.contains(q, ignoreCase = true) || it.tags.any { t -> t.contains(q, ignoreCase = true) } }
             .sortedByDescending { it.atMillis }
     }
-
-    // --- trends, settings, export -------------------------------------------------------------------------------------
 
     fun feelingWeeks(weeks: Int = 8) = CareTrends.feelingWeeks(data.diary, today, weeks, weekStart())
 
@@ -486,16 +366,13 @@ class CareStore(
 
     fun changeSettings(change: (CareSettings) -> CareSettings) = update { it.copy(settings = change(it.settings)) }
 
-    /** Everything Care keeps on this device, as readable JSON. */
     fun exportJson(): String = Json(json) { prettyPrint = true }.encodeToString(CareData.serializer(), data)
 
-    /** Erases Care's save on this device. */
     fun erase() = update { CareData() }
 
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
-        /** What every Care save that comes in goes through: visitors of an old save get an id and their warm days become progress (kept, never lost). */
         internal fun tidy(d: CareData): CareData =
             if (d.visitors.all { Visitors.migrated(it) == it } && d.dismissed.all { Visitors.migrated(it) == it }) d
             else d.copy(visitors = d.visitors.map(Visitors::migrated), dismissed = d.dismissed.map(Visitors::migrated))

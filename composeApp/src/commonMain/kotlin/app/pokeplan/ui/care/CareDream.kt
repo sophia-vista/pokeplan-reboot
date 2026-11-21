@@ -73,19 +73,10 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
-/**
- * Dream (docs/pokelife `MODULES/CARE.md` sections 5 and 6): Care's one place for the buddy, its visitors and play, after the Pokémon dream world.
- * One dusk scene fitted to the width, the buddy asleep at the centre and up to four dreamers asleep at four fixed spots; nobody roams. Tap is a
- * light reaction with a short cooldown (the sleeper stirs for a moment, a tap during the cooldown changes nothing and plays no cry); long
- * press, or the "Details" action TalkBack offers, opens a compact panel with the Pokémon's identity, what Care Play found it likes and its
- * activities. Below the scene: the visit or play with a dreamer, time with any Pokémon of yours (Care Play), the dreamers and who is waiting,
- * and Care's party. The controls in the scene are the queue and the Care Egg progress.
- */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun DreamView(model: AppModel, openPokemon: (String) -> Unit) {
     val care = model.care
-    // The day's arrivals are made the first time they are asked for.
     androidx.compose.runtime.LaunchedEffect(care.today) { care.arrive() }
     val buddy = model.store.careBuddy ?: model.data.player.buddy
     val all = model.careData.visitors
@@ -94,30 +85,25 @@ internal fun DreamView(model: AppModel, openPokemon: (String) -> Unit) {
     val reunion = model.careData.reunion
     var panel by remember { mutableStateOf<String?>(null) }
     var line by remember { mutableStateOf<String?>(null) }
-    // A dreamer is visited or played with right here (the visit scene); Care Play below is for Pokémon you own.
     var playing by remember { mutableStateOf<Int?>(null) }
-    // null: Care Play is closed; otherwise the Pokémon it opens on ("" for the buddy).
     var timeWith by remember { mutableStateOf<String?>(null) }
     var awake by remember { mutableStateOf<String?>(null) }
     val visit = model.careData.visit
     val cooldown = remember { mutableStateOf(mapOf<String, Long>()) }
     val calm = model.data.settings.reduceMotion
-    // A tapped sleeper stirs for a moment, then drops off again.
     androidx.compose.runtime.LaunchedEffect(awake) { if (awake != null) { kotlinx.coroutines.delay(AWAKE_MS); awake = null } }
 
     fun tap(key: String, speciesId: Int) {
         val last = cooldown.value[key] ?: 0L
         val t = model.store.nowMillis
-        if (t - last < TAP_COOLDOWN_MS) return // a tap during the cooldown changes nothing and plays no cry
+        if (t - last < TAP_COOLDOWN_MS) return
         cooldown.value = cooldown.value + (key to t)
         awake = key
         model.haptic(); model.cry(speciesId)
     }
 
-    // The four fixed spots for dreamers, as shares of the scene (x, y of the sprite's bottom centre); the buddy has the centre.
     val spots = listOf(0.17f to 0.70f, 0.83f to 0.70f, 0.30f to 0.97f, 0.70f to 0.97f)
     androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth().height(300.dp).clip(PixelShape).border(Sizes.Hairline, Pixel.Border, PixelShape)) {
-        // Dusk over the garden: the same real scene as the rest of Care, darkened.
         SceneImage(Module.CARE.look.scene, Modifier.matchParentSize(), DREAM_DARKNESS)
         @Composable
         fun Resident(id: Int, shiny: Boolean, name: String, key: String, speciesId: Int, x: Float, y: Float, size: Int) {
@@ -145,7 +131,6 @@ internal fun DreamView(model: AppModel, openPokemon: (String) -> Unit) {
         meadow.zip(spots).forEach { (v, p) ->
             Resident(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, Dex.species(v.speciesId).name, v.id, v.speciesId, p.first, p.second, 72)
         }
-        // The queue and the Care Egg stay small in the corners.
         Text(
             if (waiting == 0) "No one waiting" else "$waiting waiting",
             style = MaterialTheme.typography.labelMedium, color = androidx.compose.ui.graphics.Color.White,
@@ -175,7 +160,6 @@ internal fun DreamView(model: AppModel, openPokemon: (String) -> Unit) {
     meadow.firstOrNull { it.speciesId == (visit?.speciesId ?: playing) }?.let { open ->
         VisitorScene(model, open, visit?.takeIf { it.speciesId == open.speciesId }, { line = it }) { playing = null }
     }
-    // The compact Pokémon panel (long press, or Details from the accessibility actions).
     val key = panel
     if (key != null) {
         val visitor = meadow.firstOrNull { it.id == key }
@@ -194,7 +178,6 @@ internal fun DreamView(model: AppModel, openPokemon: (String) -> Unit) {
             PokemonPlayPanel(model, key, Dex.species(speciesId).name, owned?.nickname, visitor?.let { it.progress to Visitors.FRIEND_PROGRESS }, { panel = null }, action)
         }
     }
-    // Time with any Pokémon of yours (Care Play): a button that opens it in place, so Dream is the only door to play.
     val chosen = timeWith
     if (chosen == null) PixelButton("Spend time", { timeWith = "" }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent)
     else {
@@ -208,15 +191,6 @@ internal fun DreamView(model: AppModel, openPokemon: (String) -> Unit) {
 private const val AWAKE_MS = 2_500L
 private const val DREAM_DARKNESS = 0.4f
 
-// ----- Dreamers (the visitors) -----------------------------------------------------------------------------------------------
-
-/**
- * Who has drifted into the dream (docs/pokelife `MODULES/CARE.md`, section 6). Dreamers arrive on their own, four are asleep in the scene and the
- * rest wait in a quiet queue that never expires. Any of them can be visited at any time, with nothing done first: each kind of care
- * warms it at once and the warmth is never lost, however long you are away. At sixteen it becomes a friend: usually an egg of its
- * family's first stage that hatches at once, rarely the dreamer itself. A dreamer can also be played with, which counts for
- * nothing, and sent away on purpose (it keeps what it earned and can be asked back).
- */
 @Composable
 private fun DreamersCard(model: AppModel, playing: Int?, setPlaying: (Int?) -> Unit, say: (String?) -> Unit) {
     val care = model.care
@@ -273,7 +247,6 @@ private fun DreamersCard(model: AppModel, playing: Int?, setPlaying: (Int?) -> U
                     waiting.forEach { v -> Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, "${Dex.species(v.speciesId).name}, waiting for a place", size = Sizes.IconL) }
                 }
             }
-            // Sending a dreamer away is a deliberate choice, not a chore: it asks once, keeps what it earned and can be undone.
             if (open != null && visit == null) {
                 if (sendAway == open.speciesId) {
                     Text("Send ${Dex.species(open.speciesId).name} away? It keeps what it has earned, and you can ask it back.", style = MaterialTheme.typography.bodyMedium) // copy-ok: result
@@ -300,7 +273,6 @@ private fun DreamersCard(model: AppModel, playing: Int?, setPlaying: (Int?) -> U
     }
 }
 
-/** A row inside a box that already frames it: [lead], [content] and [trail] on one centre line, no frame of its own. */
 @Composable
 private fun PlainRow(lead: @Composable () -> Unit, trail: @Composable () -> Unit, content: @Composable () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
@@ -310,7 +282,6 @@ private fun PlainRow(lead: @Composable () -> Unit, trail: @Composable () -> Unit
     }
 }
 
-/** The dreamers cared for so far, as small sprites: a quiet album with no counts to chase. */
 @Composable
 private fun MetAlbum(model: AppModel) {
     val met = model.careData.met.sorted()
@@ -323,7 +294,6 @@ private fun MetAlbum(model: AppModel) {
 
 private const val TAP_COOLDOWN_MS = 900L
 
-/** Identity, what Care Play found out (only what it has shown), and the way into the activities. */
 @Composable
 private fun PokemonPlayPanel(model: AppModel, key: String, species: String, nickname: String?, warmth: Pair<Int, Int>?, onClose: () -> Unit, action: Pair<String, () -> Unit>?) {
     val known = model.care.discoveredLikes(key)
@@ -352,13 +322,6 @@ private fun CareAction.playName() = when (this) {
     CareAction.TOUCH -> "a gentle touch"
 }
 
-// ----- Care Play ----------------------------------------------------------------------------------------------------------
-
-/**
- * Care Play (CARE.md section 4): time with the buddy, a visitor or any Pokémon invited from the collection (this changes nobody's party). Pick
- * an activity, suggested, from the browser or "Surprise me"; each is a short run of light taps that can be left at any time. Nothing is a
- * wrong answer, nothing is owed, and the first time with each Pokémon on a day pays through the shared world.
- */
 @Composable
 internal fun PlayView(model: AppModel, initial: String?) {
     val care = model.care
@@ -391,7 +354,6 @@ internal fun PlayView(model: AppModel, initial: String?) {
             if (inviting) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     val buddyId = model.data.player.buddyId
-                    // Anyone you own, the buddy first, then by friendship; "Show more" reaches the rest (a visitor is visited in the Meadow, not here).
                     val ordered = (listOfNotNull(all.firstOrNull { it.id == buddyId }) + all.sortedByDescending { it.friendship }).distinctBy { it.id }
                     PixelDropdown(
                         ordered.take(invited), ordered.firstOrNull { it.id == chosen }, { it?.nickname ?: "" },
