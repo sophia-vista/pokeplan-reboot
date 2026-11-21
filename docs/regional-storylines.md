@@ -1,6 +1,6 @@
 # PokéLife -- Regional Story Premises
 
-The premises of the mainline and spin-off regional stories, the five-stage frame they follow, and the box legendary's part in each. The region code comments cite this file for the story titles. `docs/pokelife/MODULES/WORLD.md` owns the structure and contracts (every region open from day one, the journey advancing only through WORLD's own teams, the stories told as Pokémon-only adventures: 4.3, 14.6). The Mystery Dungeon arcs built are Rescue Team and Explorers (`docs/world-story-rewrite.md`). Unova, Kalos and Alola have their own stories in the code (`UnovaChapters`, `KalosChapters`, `AlolaChapters`).
+The premises of the mainline and spin-off regional stories, the five-stage frame they follow, and the box legendary's part in each. The region code comments cite this file for the story titles. `docs/pokelife/MODULES/WORLD.md` owns the structure and contracts (every region open from day one, the journey advancing only through WORLD's own teams, the stories told as Pokémon-only adventures: 4.3, 14.6). The Mystery Dungeon arcs built are Rescue Team and Explorers (`docs/world-story-rewrite.md`).
 
 ## 1. Core Concept
 
@@ -107,6 +107,39 @@ The legendary does not have to become a recruitable Pokémon immediately.
                           reality from            
                           collapsing.             
 
+  **Unova**               **Truth and Ideals:**   Reshiram / Zekrom /
+                          Team Plasma, a band of  Kyurem
+                          Purrloin and Liepard,   
+                          frees Pokémon in the    
+                          name of liberty while   
+                          the two dragons of the  
+                          legend wait for a       
+                          partner; Kyurem is the  
+                          empty part of the       
+                          dragon.                 
+
+  **Kalos**               **The Beauty and the    Xerneas / Yveltal /
+                          Weapon:** Team Flare,   Zygarde
+                          Houndour and Houndoom,  
+                          wants a world made      
+                          beautiful for a chosen  
+                          few, and the ancient    
+                          weapon sleeps under the 
+                          land with the legends   
+                          of life, death and      
+                          order.                  
+
+  **Alola**               **The Island            Solgaleo / Lunala /
+                          Challenge:** The trials Necrozma
+                          of the four islands,    
+                          Team Skull's mischief   
+                          (Zubat and Salandit),   
+                          the Aether Foundation's 
+                          secret, and the         
+                          Pokémon of the sun, the 
+                          moon and the light that 
+                          was torn apart.         
+
   **Galar**               **The Darkest Day:**    Zacian / Zamazenta /
                           Investigate unstable    Eternatus
                           Dynamax energy, the     
@@ -126,11 +159,7 @@ The legendary does not have to become a recruitable Pokémon immediately.
 
 ### Historical setting
 
--   **Hisui:** Can be treated as a historical Sinnoh expedition or a
-    distinct time-period campaign. Its story can focus on the early
-    relationship between humans and Pokémon, the Galaxy Expedition Team,
-    regional nobles, and the space-time rift. Central legendary
-    mythology: Dialga, Palkia, Giratina, and Arceus.
+-   **Hisui:** "The Ancient Survey". Can be treated as a historical Sinnoh expedition or a distinct time-period campaign: the Survey Corps writes down the land, the frenzied lords (Kleavor and others) must be calmed, not fought, and the sky cracks open as time and space grow restless (Dialga and Palkia). It ends at the Temple of Sinnoh with Arceus, the Original One. Central legendary mythology: Dialga, Palkia, Giratina, and Arceus.
 
 ## 5. Spin-off Regional Story Concepts
 
