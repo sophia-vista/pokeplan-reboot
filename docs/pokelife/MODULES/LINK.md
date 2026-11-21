@@ -1,6 +1,5 @@
 # PokéLife LINK Module Specification
 
-**Version:** 1.0  
 **Status:** Specified / approved  
 **Module:** LINK  
 **Product Bible:** `../PRODUCT_BIBLE.md`, §§3–5  
@@ -83,6 +82,8 @@ A profile is the central place for one person's LINK-owned information.
 - Completion history is shown as a factual record, not a score or streak.
 - A follow-up may be linked to a PLAN task when the user explicitly chooses to convert it.
 
+The profile also has a **Profile** tab after Overview (about, mind and stars: section 2.6).
+
 Do not display inferred relationship health, contact frequency, response time, or activity charts.
 
 ### 2.3 Important Dates
@@ -145,7 +146,7 @@ A follow-up can be converted to a PLAN task through an explicit user action. Con
 - No automatic categorization based on message content or inferred identity.
 - Search indexes remain local and are rebuilt safely after migration.
 
-### 2.6 Profile, slambook and birth details (owner, 20 November 2026)
+### 2.6 Profile, slambook and birth details
 
 A person's profile is also a **slambook page**: the details the user chooses to write down, plus readings that are worked out from a birth date the user gave. The user has one card of their own, **Me**, pinned first in the directory, with the same page.
 
@@ -234,7 +235,7 @@ LINK owns the following canonical records:
 | Global Pokémon collection, Pokédex, Bag, Poké and reward ledger | Shared Pokémon/economy services | LINK emits eligible abstract progression events |
 | Journal, mood and self-care records | CARE | No access |
 | Health/activity/medical records | HEAL | No access |
-| Household and service records | HOME | May reference a LINK contact only through an explicit link |
+| Household and service records | BASE | May reference a LINK contact only through an explicit link |
 | Messaging/calls/social feeds | External apps | No ingestion or monitoring |
 
 LINK must not copy a PLAN task into a second independently editable task. A linked representation is a reference with clear navigation and status provenance.
@@ -262,7 +263,7 @@ LINK owns:
 - What opening a reminder should navigate to.
 - Whether a reminder is enabled, snoozed or dismissed at the LINK source level.
 
-**Choosing a reminder is the opt-in (as built, 0.201.0):** the first reminder chosen on a date, in the Add-a-date form, in an edit or in the contacts import, turns Link's master reminder switch on; nothing is on before that, and Settings can turn them all off again. Suggested date presets may include the day of, one day before, three days before and one week before. These are user choices, not mandatory defaults. Follow-up reminders are opt-in. Avoid duplicate reminders when a follow-up has been converted to a PLAN task; PLAN becomes the reminder source after conversion.
+**Choosing a reminder is the opt-in:** the first reminder chosen on a date, in the Add-a-date form, in an edit or in the contacts import, turns Link's master reminder switch on; nothing is on before that, and Settings can turn them all off again. Suggested date presets may include the day of, one day before, three days before and one week before. These are user choices, not mandatory defaults. Follow-up reminders are opt-in and fire on the follow-up's day; each reminder is one nudge, with quiet hours and focus sessions respected. Avoid duplicate reminders when a follow-up has been converted to a PLAN task; PLAN becomes the reminder source after conversion.
 
 Notification privacy:
 - Generic lock-screen text by default, such as “You have an upcoming reminder.”
@@ -414,14 +415,14 @@ The design-system document owns reusable component rules, typography, spacing, b
 
 Existing code is evidence, not authority. LINK reuses the shared module shell, local persistence, encryption, backup/export and migration foundations, the shared reminder scheduler (through LINK source adapters), the shared Pokémon collection, acquisition and reward services, the shared design-system components, and the Android Contacts provider only through a permission-aware platform adapter. LINK has its own domain (models, repositories, persistence, search, import reconciliation, Postcard Trail state); Android Contacts APIs stay in the Android platform layer and common LINK logic depends on no Android or Compose class.
 
-### 11.3 Avoid or retire
+### 11.1 Avoid
 
 - Do not add LINK records to PLAN or CARE persistence.
 - Do not use one unstructured global JSON object as the long-term data model.
 - Do not build a second reminder scheduler.
 - Do not request broad contacts access at app startup.
 - Do not add call/SMS monitoring, social scraping or background contact synchronization.
-- Do not use Supabase or other cloud pathways.
+- Do not add cloud pathways.
 - Do not create a separate Pokémon collection, currency, Bag or reward ledger.
 - Do not reward contact creation, note-taking, imports or passive interaction data.
 
@@ -429,7 +430,7 @@ Existing code is evidence, not authority. LINK reuses the shared module shell, l
 
 ## 12. Remaining work
 
-Phases 1 to 5, 7 and 8 of the former plan (domain and persistence, manual contacts, notes and search, dates, follow-ups and reminders, Postcard Trail, polish) are built; see section 15. The optional device-contact import (phase 6) is built in its first slice (section 15). What remains: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), upcoming dates on the launcher, sealing Link's rows, and the open question of "keep in touch" (D8). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
+Not built: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), a link from BASE to a contact, upcoming dates on the launcher, widgets, sealing Link's rows, a passphrase-sealed backup, and the open question of "keep in touch" (D8). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
 
 ---
 
@@ -475,32 +476,30 @@ Phases 1 to 5, 7 and 8 of the former plan (domain and persistence, manual contac
 
 ## 14. Documentation alignment
 
-This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion target: `PLAN.md`; HOME may reference a LINK-owned service contact: `BASE.md`; shared reminders and permissions: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; shared persistence, encryption boundary, export, backup and migration: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy: `../FEATURES/POKEMON_ECOSYSTEM.md`.
+This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion target: `PLAN.md`; BASE may reference a LINK-owned service contact: `BASE.md`; shared reminders and permissions: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; shared persistence, encryption boundary, export, backup and migration: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy: `../FEATURES/POKEMON_ECOSYSTEM.md`.
 
 ## 15. As built: the manual slice
 
-*Compiled for Android; not yet run on a device. No widget exists.*
+*Compiled for Android; not yet run on a device.*
 
-A menu with an overview on top and four destinations. **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form.
+A page with an overview on top and, behind the header's Sections key, four places (People, Dates, Follow-ups, Settings). **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Profile (2.6), Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form.
 
-**Postcard Trail (section 9), as built** *(numbers are *(tune)* starting values; `docs/economy.md`)*:
+**Postcard Trail (section 9)** *(numbers are *(tune)* starting values; `docs/economy.md`)*:
 - **On by default** (every acquisition method is), off in Settings without touching a record. Only one thing pays: a **follow-up finished** (2 Rare Candies; at most 3 paid a day). Adding or importing people, notes, dates, tags and favourites, editing, rescheduling, cancelling and reopening never pay.
 - **Idempotent by follow-up.** The event id is `link:followup:<follow-up id>`, the game remembers it (`AppData.linkPaid`, newest 1000) and the follow-up keeps `paid`, so reopening and finishing again, a restore or a replay pays once. Nothing is clawed back by a reopen.
 - **What leaves LINK** is exactly `LinkEvent`: id, module ("link"), an opaque `ref`, the broad kind (`followup_completed`), the time and the policy version. No name, number, email, organization, tag, note, date or follow-up title may reach the event, the shared save, the reward log or the shared tables.
 - A payment is candies, a little friendship for Link's lead, a trainer point and a point on the track; **3 points (three finished follow-ups) find a Postcard Egg** from the **Link Region** (`tools/species/regions/link.txt`) into Link's party. Link's party perks (Candy finder: Normal, Flying, Water, Grass, Bug, Ground; Friendship gain: Fairy, Fighting, Electric, Psychic, Fire, Dragon; capped at +25%) only change what Postcard Trail pays.
-- **First-run tutorial** (POKEMON_ECOSYSTEM.md 10.2.1): a 5-second postcard gives one Link Region Pokémon into Link's party, leading it, once per save. A new Pokémon arrives as "Postcard Trail delivered…" in a scene of its own (the route).
+- **First Pokémon** (POKEMON_ECOSYSTEM.md 10.2.1): the first person, date or follow-up gives one Common egg of the Link Region that hatches into Link's party, leading it, once per save. A new Pokémon arrives as "Postcard Trail delivered…" in a scene of its own (the route).
 
-**Data (section 4).** `link_*` tables: `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Home.
+**Data (section 4).** `link_*` tables: `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Base.
 
-**Reminders (5), built:** off until the user turns Link's reminders on, or chooses the first reminder on a date (which turns them on), then per date (the day of, or 1, 3 or 7 days before) and per follow-up (on its day); one nudge each, generic lock-screen text, quiet hours and focus sessions respected; a follow-up handed to Plan is Plan's to remind about.
+**Contacts import:** Android only (`ContactSource`, null elsewhere so the button is not offered; `AndroidContacts` reads names, phones, emails, companies and birthdays in one query). People → "Import contacts" says what is read, then asks `READ_CONTACTS`; denied, manual use is untouched. A pick list (search, 40 at a time, nothing preselected) marks rows New, Already in Link (same `Person.sourceId`) or Maybe already in Link (name, a phone or an email; starts unselected, and when picked fills only the matched person's empty fields). A reminder is chosen (No, On the day, 1, 3 or a week before; no default), then "Import N" makes one save, one result line and Undo. A birthday becomes a Birthday date unless the person has one; a second import changes nothing; empty phone, email and organization are filled, nothing is overwritten. Contacts with no name are counted and shown. Nothing is paid and nothing reaches `LinkEvent`. **Reminder in one step:** the Add-a-date form has "Remind me" keys, and the first reminder turns Link's reminders on. Known gap: the notification permission is asked only when a reminder is within 4 days.
 
-**Contacts import (0.201.0), as built:** Android only (`ContactSource`, null elsewhere so the button is not offered; `AndroidContacts` reads names, phones, emails, companies and birthdays in one query). People → "Import contacts" says what is read, then asks `READ_CONTACTS`; denied, manual use is untouched. A pick list (search, 40 at a time, nothing preselected) marks rows New, Already in Link (same `Person.sourceId`) or Maybe already in Link (name, a phone or an email; starts unselected, and when picked fills only the matched person's empty fields). A reminder is chosen (No, On the day, 1, 3 or a week before; no default), then "Import N" makes one save, one result line and Undo. A birthday becomes a Birthday date unless the person has one; a second import changes nothing; empty phone, email and organization are filled, nothing is overwritten. Contacts with no name are counted and shown. Nothing is paid and nothing reaches `LinkEvent`. **Reminder in one step:** the Add-a-date form has "Remind me" keys, and the first reminder turns Link's reminders on. Known gap: the notification permission is asked only when a reminder is within 4 days.
-
-**Profile, slambook and birth details (0.223.0), as built (section 2.6; not run on a device):** People → "Set up my profile" makes the Me card; every profile has a Profile tab (About, Mind, Stars) after Overview, so Notes is tab 3 and Follow-ups tab 4. `Person.isMe` and `Person.profile` live in the person's JSON (no schema step); `link-core`: `Profile`, `ProfileKit`, `Insights`, `Sky` (natal chart), `BaZi` and `BaZiTables` (Four Pillars, zodiac, Kua, Life Path), `Birthplaces`, `LoreWestern`, `LoreChinese`, `LorePersonality`; `LinkStore.createMe`, `updateProfile`, `setBirthday`. Verified against `ephem` (planets, Moon, ascendant) and `lunar_python` (pillars, New Year) in `BirthChartTest`. The birth date is the person's Birthday date. Nothing is paid and nothing reaches `LinkEvent`.
+**Profile, slambook and birth details (section 2.6):** People → "Set up my profile" makes the Me card; every profile has a Profile tab (About, Mind, Stars) after Overview, so Notes is tab 3 and Follow-ups tab 4. `Person.isMe` and `Person.profile` live in the person's JSON (no schema step); `link-core`: `Profile`, `ProfileKit`, `Insights`, `Sky` (natal chart), `BaZi` and `BaZiTables` (Four Pillars, zodiac, Kua, Life Path), `Birthplaces`, `LoreWestern`, `LoreChinese`, `LorePersonality`; `LinkStore.createMe`, `updateProfile`, `setBirthday`. Verified against `ephem` (planets, Moon, ascendant) and `lunar_python` (pillars, New Year) in `BirthChartTest`. The birth date is the person's Birthday date. Nothing is paid and nothing reaches `LinkEvent`.
 
 **A screen for each person, a profile card and Friend Safari (0.225.0), as built:** a person opens on a screen of their own inside People (header "Profile", or "My profile" for the Me card, back to the directory), no longer an accordion under their row; a search hit, a new person and "Set up my profile" open it too. It starts with a **profile card**: the Pokémon the user chose as their picture in the app's ordinary portrait frame (a Friend Ball when none; "Choose" or "Change" opens a picker of the Pokémon the player has caught, or a search of every species), the whole name wrapped, role and organization, and tags for Me, the relationship word and Pinned. Then the dialogue box of tabs (Overview, Profile in two rows, Notes, Follow-ups), then the **Friend Safari** box (9.5). `Person.avatar` (a species id, 0 for none) lives in the person's JSON, so there is no schema step; the picture is cosmetic and feeds nothing. `LinkSettings.safari` (on by default) is the Safari's own switch. Friend Safari: `SafariEvent`, `SafariRules` and `RewardEngine.safariVisit` in pokemon-core, `GameStore.safari` and `LinkStore.visitSafari`; `RewardRules.VERSION` 33.
 
-**Not built, not offered:** a chooser for changed fields on re-import, a link from HOME to a contact, upcoming dates on the launcher, widgets, sealing Link's rows and a passphrase-sealed backup. Data: `Person.sourceId` (the contact's lookup key, default empty) lives in the person's JSON, so there is no schema step.
+`Person.sourceId` (the contact's lookup key, default empty) lives in the person's JSON, so there is no schema step.
 
 ## Shared Pokémon ecosystem contract
 
