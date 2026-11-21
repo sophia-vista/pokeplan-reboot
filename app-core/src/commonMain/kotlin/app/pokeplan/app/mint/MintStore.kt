@@ -19,10 +19,6 @@ import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.FeeKind
 import app.pokeplan.mint.FeeRule
 import app.pokeplan.mint.InstallmentPlan
-import app.pokeplan.mint.SharedBalance
-import app.pokeplan.mint.SharedEntry
-import app.pokeplan.mint.SharedKind
-import app.pokeplan.mint.SharedRules
 import app.pokeplan.mint.Installments
 import app.pokeplan.mint.PlanEvery
 import app.pokeplan.mint.PlanView
@@ -33,6 +29,7 @@ import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.MintSettings
 import app.pokeplan.mint.MonthlyBill
+import app.pokeplan.mint.Money
 import app.pokeplan.mint.MonthlyBills
 import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.Reconciliation
@@ -287,13 +284,15 @@ class MintStore(
     fun record(
         type: TxType, amountMinor: Long, accountId: String, toAccountId: String? = null, categoryId: String? = null, payee: String = "", note: String = "",
         atMillis: Long = nowMillis, status: TxStatus = TxStatus.POSTED, up: Boolean = true, refundOf: String? = null, splits: List<TransactionSplit> = emptyList(), feeMinor: Long = 0,
+        iouMinor: Long = 0, iouFor: String = "",
     ): Logged<Transaction> {
         val currency = data.accounts.firstOrNull { it.id == accountId }?.currency ?: return Logged(null, "Choose an account.")
         if (type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == toAccountId }?.let { target ->
                 Installments.allowedFor(target.type) && Installments.views(data, today).any { it.plan.accountId == target.id && it.remainingMinor > 0 }
             } == true)
             return Logged(null, "Repayments to this account must be allocated to its unpaid installment plans.")
-        val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor)
+        val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor,
+            iouMinor = iouMinor, iouFor = if (iouMinor > 0) iouFor.trim().split(' ', '\n', '\t').filter { it.isNotEmpty() }.joinToString(" ").take(MintRules.NAME_MAX) else "")
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }
         return Logged(tx, rewards = payForLog(tx))
@@ -304,7 +303,7 @@ class MintStore(
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
         val next = t.copy(
             planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, planAllocations = old.planAllocations,
-            creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis,
+            creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis, repaymentOf = old.repaymentOf,
             importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint,
             day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
         )
@@ -471,7 +470,7 @@ class MintStore(
 
     private fun deleteTransactionRecord(id: String) = update { d ->
         d.copy(
-            transactions = d.transactions.filterNot { it.id == id },
+            transactions = d.transactions.filterNot { it.id == id || it.repaymentOf == id },
             reconciliations = d.reconciliations.map { if (it.adjustmentTxId == id) it.copy(adjustmentTxId = null) else it },
             billPayments = d.billPayments.map { if (it.txId == id) it.copy(txId = null) else it },
             creditStatements = d.creditStatements.map { if (it.estimatedInterestTxId == id) it.copy(estimatedInterestTxId = null) else it },
@@ -558,23 +557,46 @@ class MintStore(
     private fun cleanDays(frequency: Frequency, days: List<Int>): List<Int> =
         if (frequency != Frequency.SEMI_MONTHLY) emptyList() else days.filter { it in 1..31 }.distinct().sorted().take(4).let { if (it == listOf(15, 30)) emptyList() else it }
 
-    // --- shared bills (MINT.md 5.8A): display only, no account, transaction or reward --------------------------------------------
+    // --- IOUs (MINT.md 5.8A): part of one expense someone owes back, and the records that repay it -------------------------------
 
-    /** Keeps one shared-bill entry; null and a reason in words when it cannot be kept. */
-    fun addShared(person: String, kind: SharedKind, amountMinor: Long, day: LocalDate, note: String = "", currency: String = data.settings.currency): String? {
-        SharedRules.refusal(person, amountMinor, currency)?.let { return it }
-        val entry = SharedEntry(newId(), SharedRules.cleanPerson(person), kind, amountMinor, currency, day, note.trim().take(SharedRules.NOTE_MAX))
-        update { it.copy(shared = it.shared + entry) }
+    /**
+     * Starts, changes or removes the IOU on an expense: [amountMinor] of it is owed back by [person]; zero removes it, and removing it takes the
+     * repayments with it, because a repayment without an IOU would be money from nowhere. It moves no balance; spending counts the player's own share.
+     * Returns a reason in words when it cannot be kept.
+     */
+    fun setIou(txId: String, amountMinor: Long, person: String): String? {
+        val old = data.transactions.firstOrNull { it.id == txId } ?: return "That record is gone."
+        val name = person.trim().split(' ', '\n', '\t').filter { it.isNotEmpty() }.joinToString(" ").take(MintRules.NAME_MAX)
+        val next = old.copy(iouMinor = amountMinor, iouFor = if (amountMinor > 0) name else "")
+        (MintRules.checkTransaction(data, next) as? Check.Refused)?.let { return it.reason }
+        val paid = data.transactions.filter { it.repaymentOf == txId }.sumOf { it.amountMinor }
+        if (amountMinor != 0L && amountMinor < paid) return "More than that has already been paid back, so it cannot go lower; clear it instead."
+        update { d -> d.copy(transactions = d.transactions.map { if (it.id == txId) next else it }.filterNot { it.repaymentOf == txId && amountMinor == 0L }) }
         return null
     }
 
-    /** Settles [balance] with the one entry that brings it to zero, dated [day]. */
-    fun settleShared(balance: SharedBalance, day: LocalDate) {
-        val entry = SharedRules.settlement(balance, day, newId()) ?: return
-        update { it.copy(shared = it.shared + entry) }
+    /**
+     * Records what someone paid back on an expense's IOU (MINT.md 5.8A): one income record in [accountId] linked to the expense. It is the player's
+     * own money coming back, so it counts as no income and pays no reward; the balance and net position rise by it. Refused when it overshoots what is owed.
+     */
+    fun recordRepayment(txId: String, amountMinor: Long, accountId: String, atMillis: Long = nowMillis): Logged<Transaction> {
+        val parent = data.transactions.firstOrNull { it.id == txId } ?: return Logged(null, "That record is gone.")
+        if (parent.iouMinor <= 0) return Logged(null, "That expense has no IOU to repay.")
+        (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val owed = MintRules.iouOwed(data, parent)
+        if (amountMinor > owed) return Logged(null, "Only " + Money.format(owed, parent.currency) + " of that IOU is still owed.")
+        val account = data.accounts.firstOrNull { it.id == accountId } ?: return Logged(null, "Choose an account.")
+        if (account.currency != parent.currency) return Logged(null, "Put the repayment in an account in ${parent.currency}.")
+        val tx = Transaction(
+            newId(), TxType.INCOME, amountMinor, parent.currency, atMillis, dayOf(atMillis), accountId,
+            payee = (parent.iouFor.ifBlank { "Someone" }).take(MintRules.NAME_MAX * 2),
+            note = ("Paid back for " + parent.payee.ifBlank { "an expense" }).take(MintRules.NOTE_MAX),
+            createdMillis = nowMillis, repaymentOf = txId,
+        )
+        (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { it.copy(transactions = it.transactions + tx) }
+        return Logged(tx)
     }
-
-    fun deleteShared(id: String) = update { it.copy(shared = it.shared.filterNot { e -> e.id == id }) }
 
     fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null, income: Boolean = false, days: List<Int> = emptyList(), workday: Boolean = false, estimate: Boolean = false): Logged<Bill> {
         if (name.isBlank()) return Logged(null, "Give the bill a name.")
@@ -1116,7 +1138,6 @@ object MintExport {
         MintKinds.BUDGETS to listOf("budgets", "savingsTargets"),
         MintKinds.BILLS to listOf("bills", "billPayments"),
         MintKinds.REVIEWS to listOf("reconciliations", "reviews"),
-        MintKinds.SHARED to listOf("shared"),
     )
 
     fun json(data: MintData, kinds: Set<MintKinds>): String {
@@ -1146,7 +1167,6 @@ object MintExport {
         MintKinds.BUDGETS -> d.copy(budgets = emptyList(), savingsTargets = emptyList())
         MintKinds.BILLS -> d.copy(bills = emptyList(), billPayments = emptyList(), transactions = d.transactions.map { it.copy(billId = null, billDueDay = null) })
         MintKinds.REVIEWS -> d.copy(reconciliations = emptyList(), reviews = emptyList())
-        MintKinds.SHARED -> d.copy(shared = emptyList())
     }
 }
 /** What reading a statement file gave: the table, the columns and date order in use (guessed, or chosen), whether the order is certain, and the preview; or [refused], in words. */
