@@ -833,13 +833,10 @@ Define concise empty, loading, stale, offline, import error, connection error, r
 
 ## 18. Implementation phases
 
-Status is tracked in `../IMPLEMENTATION_BACKLOG.md`. Order:
+Status and the open work list are in `../IMPLEMENTATION_BACKLOG.md`. Order: P0 the foundation, accounts, transactions, budgets and bills; P1 the Overview, reports, financial review, CSV/statement import, reconciliation, complete local export and the Ledger Research event contract; P2 provider integrations, provider by provider.
 
-- **P0, foundation:** independent MINT domain and repositories; exact money and currency types; local persistence, schema versioning, migrations and integrity checks; sensitive-data handling, backup and export; provider interfaces that promise no live coverage. Accounts and transactions (lifecycle, groups, opening balances, snapshots, all transaction types, categories, fast entry, search, filters, atomic transfers and credit-card invariants). Budgets and bills (periods, rollover, optional savings targets, recurrence, occurrences, partial payments, payment linking, shared reminder contract).
-- **P1:** Overview (available money, privacy mode), cash-flow, category and account reports, stale-data disclosure, financial review; CSV/statement import with provenance and duplicate review, reconciliation sessions with explicit adjustments, complete local export and recovery tests; Ledger Research event contract, shared reward ledger integration and privacy tests, disable-progression behaviour.
-- **P2, provider integrations:** provider-by-provider feasibility; an official API or aggregation adapter only after documented access, consent, security and coverage validation; notification parsing only after policy and technical review; connection diagnostics, revocation and recovery.
+Provider integrations must not block complete manual finance functionality, and an official API or aggregation adapter comes only after documented access, consent, security and coverage validation; notification parsing only after policy and technical review.
 
-Provider integrations must not block complete manual finance functionality.
 
 ## 19. Acceptance criteria
 
