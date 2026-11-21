@@ -782,7 +782,7 @@ The principles in section 1, the permission policy in 4.1 and the reminder crite
 ### Platform and ownership
 
 - [ ] Manifest permissions match implemented capabilities and distribution policy (4.3).
-- [ ] No background location, passive sensor collection, SMS reading, or broad notification access in the baseline.
+- [ ] No background location, passive sensor collection, SMS reading, or broad notification access in the baseline (the opt-in Huawei Health reader, 5.2.2, is the one exception: off until the player turns it on, and it drops every other app's notifications).
 - [ ] Every canonical record has one module owner; cross-module views use references or projections.
 
 ### Provider integrations
