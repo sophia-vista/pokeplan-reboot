@@ -121,8 +121,20 @@ private class LinkJump(val section: LinkSection, val id: String? = null, val tab
 private var pendingLinkJump: LinkJump? = null
 
 private fun go(model: AppModel, section: LinkSection, id: String? = null, tab: Int? = null) {
+    if (section == LinkSection.PEOPLE) {
+        if (id != null) openPerson(model, id, tab ?: 0) else { model.linkPersonId = null; model.linkSection = section }
+        return
+    }
     pendingLinkJump = LinkJump(section, id, tab)
+    model.linkPersonId = null
     model.linkSection = section
+}
+
+/** Opens [id]'s own screen inside People, on [tab] (0 Overview, 1 Profile, 2 Notes, 3 Follow-ups). */
+private fun openPerson(model: AppModel, id: String, tab: Int = 0) {
+    model.linkPersonTab = tab
+    model.linkPersonId = id
+    model.linkSection = LinkSection.PEOPLE
 }
 
 private fun takeJump(section: LinkSection): LinkJump? = pendingLinkJump?.takeIf { it.section == section }?.also { pendingLinkJump = null }
@@ -138,16 +150,26 @@ internal fun linkSubtitle(model: AppModel): String {
 internal fun LinkScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     // A follow-up PLAN finished is finished here too, without a reward: PLAN paid once (LINK.md 2.4).
     LaunchedEffect(model.data.tasks, model.linkData.followUps) { model.link.syncFromPlan() }
-    ScreenSwitch(model.linkSection, depth = { if (it == null) 0 else 1 }) { section -> LinkPage(model, section, openPokemon) }
+    // A person has a screen of their own (People is depth 1, a person depth 2); a person who is no longer there is the directory again.
+    val personId = model.linkPersonId?.takeIf { id -> model.linkData.people.any { it.id == id } }
+    ScreenSwitch(LinkPlace(model.linkSection, personId.takeIf { model.linkSection == LinkSection.PEOPLE }), depth = { if (it.section == null) 0 else if (it.personId == null) 1 else 2 }) { place -> LinkPage(model, place, openPokemon) }
 }
+
+/** Where Link is: the menu (no section), a section, or one person's screen inside People. */
+private data class LinkPlace(val section: LinkSection?, val personId: String? = null)
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun LinkPage(model: AppModel, section: LinkSection?, openPokemon: (String) -> Unit) {
+private fun LinkPage(model: AppModel, place: LinkPlace, openPokemon: (String) -> Unit) {
+    val section = place.section
     if (section == null) {
         val toModules = { model.module = null }
         BackHandler(enabled = true, onBack = toModules)
         LinkMenu(model, toModules, openPokemon)
+        return
+    }
+    if (place.personId != null) {
+        PersonScreen(model, place.personId)
         return
     }
     SectionScaffold(section.label, null, onBack = { model.linkSection = null }, icon = section.icon, color = Module.LINK.look.header) {
@@ -295,17 +317,14 @@ private const val DIRECTORY_PAGE = 40
 private fun PeopleView(model: AppModel) {
     val link = model.link
     val data = model.linkData
-    val jump = remember { takeJump(LinkSection.PEOPLE) }
     var name by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<String?>(null) }
     var favorites by remember { mutableStateOf(false) }
     var sort by remember { mutableStateOf(Sort.NAME) }
-    var openId by remember { mutableStateOf(jump?.id) }
     var message by remember { mutableStateOf<String?>(null) }
     var shown by remember { mutableStateOf(DIRECTORY_PAGE) }
     var importing by remember { mutableStateOf(false) }
-    var openTab by remember { mutableStateOf<Int?>(null) }
     val contacts = model.contacts
     if (importing && contacts != null) {
         TextBox { ContactImportView(model, contacts) { importing = false } }
@@ -318,11 +337,11 @@ private fun PeopleView(model: AppModel) {
                 PixelField(name, { name = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Person", placeholder = "Add a person", singleLine = true, keyboardOptions = wordKeys)
                 FormSave("Add", {
                     val out = link.addPerson(name)
-                    if (out.record == null) message = out.refused else { name = ""; message = null; openId = out.record!!.id; model.haptic() }
+                    if (out.record == null) message = out.refused else { name = ""; message = null; model.haptic(); openPerson(model, out.record!!.id) }
                 }, accent, enabled = name.isNotBlank())
             }
             if (data.people.none { it.isMe }) PixelButton("Set up my profile", {
-                link.createMe(model.data.trainerName).record?.let { me -> openId = me.id; openTab = 1; model.haptic() }
+                link.createMe(model.data.trainerName).record?.let { me -> model.haptic(); openPerson(model, me.id, 1) }
             }, Modifier.fillMaxWidth(), accent, compact = true)
             if (contacts != null) PixelButton("Import contacts", { importing = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             message?.let { Report(model, it, NoticeTone.WARNING) }
@@ -342,15 +361,14 @@ private fun PeopleView(model: AppModel) {
             PixelButton(if (sort == Sort.NAME) "By name" else "Recent", { sort = if (sort == Sort.NAME) Sort.RECENT else Sort.NAME }, color = Pixel.InkSoft, compact = true)
             }
             if (people.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            // A long directory is shown a page at a time (the screen is one scrolling column, so every row shown is composed); an open profile is always in view.
-            val upTo = maxOf(shown, people.indexOfFirst { it.id == openId } + 1)
+            // A long directory is shown a page at a time (the screen is one scrolling column, so every row shown is composed).
+            val upTo = shown
             people.take(upTo).forEachIndexed { i, p ->
                 if (i > 0) Rule()
                 RecordRow(
                     LinkRules.displayName(p), listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · "),
-                    onClick = { openId = if (openId == p.id) null else p.id }, onClickLabel = if (openId == p.id) "Close the profile" else "Open the profile",
+                    onClick = { openPerson(model, p.id) }, onClickLabel = "Open their screen",
                 )
-                if (openId == p.id) PersonProfile(model, p, openTab?.takeIf { openId == p.id } ?: jump?.tab?.takeIf { jump.id == p.id }) { openId = null; openTab = null }
             }
             if (people.size > upTo) PixelButton("Show ${minOf(DIRECTORY_PAGE, people.size - upTo)} more of ${people.size - upTo}", { shown = upTo + DIRECTORY_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
@@ -358,16 +376,38 @@ private fun PeopleView(model: AppModel) {
     }
 }
 
+/** One person's own screen: a profile card (their picture, whole name and tags) over a dialogue box of their details; back returns to the directory. */
 @Composable
-private fun PersonProfile(model: AppModel, p: Person, firstTab: Int?, onClose: () -> Unit) {
-    var tab by remember(p.id) { mutableStateOf(firstTab ?: 0) }
+private fun PersonScreen(model: AppModel, personId: String) {
+    val p = model.linkData.people.firstOrNull { it.id == personId }
+    if (p == null) {
+        LaunchedEffect(personId) { model.linkPersonId = null }
+        return
+    }
+    val close = { model.linkPersonId = null }
+    var choosing by remember(p.id) { mutableStateOf(false) }
+    SectionScaffold(if (p.isMe) "My profile" else "Profile", null, onBack = close, icon = LinkSection.PEOPLE.icon, color = Module.LINK.look.header) {
+        if (choosing) PersonPicture(model, p) { choosing = false }
+        else {
+            PersonCard(p) { choosing = true }
+            TextBox { PersonProfile(model, p, model.linkPersonTab, close) }
+            if (model.link.safariOn) SafariPanel(model, p)
+        }
+    }
+}
+
+@Composable
+private fun PersonProfile(model: AppModel, p: Person, firstTab: Int, onClose: () -> Unit) {
+    var tab by remember(p.id) { mutableStateOf(firstTab) }
     var editing by remember(p.id) { mutableStateOf(false) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.padding(bottom = Spacing.S)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (editing) {
             PersonForm(model, p, onDone = { editing = false })
             return@Column
         }
-        ModuleTabs(listOf("Overview", "Profile", "Notes", "Follow-ups"), tab, accent) { tab = it }
+        // Two rows of two, so no label is clipped at a phone's width or a larger system font.
+        ModuleTabs(listOf("Overview", "Profile"), if (tab < 2) tab else -1, accent) { tab = it }
+        ModuleTabs(listOf("Notes", "Follow-ups"), tab - 2, accent) { tab = it + 2 }
         when (tab) {
             0 -> PersonOverview(model, p, onEdit = { editing = true }, onClose = onClose)
             1 -> PersonProfileTab(model, p)
@@ -409,9 +449,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         DateForm(model, null, onDone = { addingDate = false }, presetPerson = p.id)
         return
     }
-    val lines = listOf(
-        "Called" to p.preferred, "Phone" to p.phone, "Email" to p.email, "Organization" to p.organization, "Role" to p.role, "Address" to p.address,
-    ).filter { it.second.isNotBlank() }
+    val lines = listOf("Phone" to p.phone, "Email" to p.email, "Address" to p.address).filter { it.second.isNotBlank() }
     lines.forEach { (k, v) -> RecordRow(v, k) }
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     profileSummary(model, p).takeIf { it.isNotEmpty() }?.let { RecordRow(it, "Sign, animal, type") }
@@ -432,7 +470,6 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     }
     Actions {
         PixelButton("Add a date", { addingDate = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-        PixelButton("Close", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
     }
 }
 
@@ -781,6 +818,7 @@ private fun LinkSettingsView(model: AppModel) {
             PixelTitle("Postcard Trail")
             // Help: a follow-up you finish counts once; people, notes, dates and edits never do.
             ToggleRow("Find Pokémon from finished follow-ups", data.settings.postcardTrail) { link.setPostcardTrail(it) }
+            if (data.settings.postcardTrail) ToggleRow("Friend Safari on each person", data.settings.safari) { link.setSafari(it) }
         }
     }
     if (data.settings.reminders) TextBox {

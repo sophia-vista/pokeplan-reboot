@@ -3,6 +3,10 @@ package app.pokeplan.app.link
 import app.pokeplan.core.reward.LinkEvent
 import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.Reward
+import app.pokeplan.core.reward.SafariEvent
+import app.pokeplan.core.reward.SafariRules
+import app.pokeplan.core.reward.OutbreakOption
+import app.pokeplan.app.SafariDay
 import app.pokeplan.link.Check
 import app.pokeplan.link.DateKind
 import app.pokeplan.link.FollowUp
@@ -75,6 +79,25 @@ class LinkStore(
     private fun pay(id: String, ref: String): List<Reward>? =
         if (!data.settings.postcardTrail) null else world.link(LinkEvent("link:followup:$id", LinkMoment.FOLLOW_UP, nowMillis, ref))
 
+    // --- Friend Safari (LINK.md 9.5) -----------------------------------------------------------------------------------------
+
+    /** Whether Safaris are offered: Postcard Trail's switch and Friend Safari's own are both on. */
+    val safariOn: Boolean get() = data.settings.postcardTrail && data.settings.safari
+
+    /** [personId]'s Safari pool, from their opaque seed and the capped count of people alone. Empty for someone who is not in LINK. */
+    fun safariPool(personId: String): List<OutbreakOption> =
+        if (data.people.none { it.id == personId }) emptyList() else SafariRules.pool(LinkRules.safariRef(personId), LinkRules.safariSpread(data))
+
+    private fun safariEvent(personId: String) =
+        SafariEvent("link:safari:${LinkRules.safariRef(personId)}:${today.toEpochDays()}", nowMillis, LinkRules.safariRef(personId), LinkRules.safariSpread(data))
+
+    /** Whether today's visit to [personId]'s Safari is made, and how many Safari catches the day still has. */
+    fun safariToday(personId: String): SafariDay = world.safariDay(safariEvent(personId).id)
+
+    /** Visits [personId]'s Safari: free, once a day for each person. Null when nothing was caught. Adding or importing people never pays; only a visit can. */
+    fun visitSafari(personId: String): List<Reward>? =
+        if (!safariOn || data.people.none { it.id == personId }) null else world.safari(safariEvent(personId))
+
     // --- people ------------------------------------------------------------------------------------------------------------
 
     /** Saves a person; only the name is required. Nothing here pays: adding people is never a reward (LINK.md 9.2). */
@@ -129,6 +152,9 @@ class LinkStore(
     }
 
     /** A favourite is only a shortcut in the directory, never a ranking (LINK.md 2.1). */
+    /** Sets the Pokémon [speciesId] shown as [id]'s picture (0 clears it). Cosmetic: it pays nothing. */
+    fun setAvatar(id: String, speciesId: Int) = update { d -> d.copy(people = d.people.map { if (it.id == id) it.copy(avatar = speciesId.coerceAtLeast(0)) else it }) }
+
     fun setFavorite(id: String, favorite: Boolean) = update { d -> d.copy(people = d.people.map { if (it.id == id) it.copy(favorite = favorite) else it }) }
 
     /** People who may be the same as this, to suggest; never merged. */
@@ -348,6 +374,8 @@ class LinkStore(
 
     /** Turns Postcard Trail (the reward) on or off. Off never touches a record and never hides a feature (LINK.md 9.1). */
     fun setPostcardTrail(on: Boolean) = settings { it.copy(postcardTrail = on) }
+
+    fun setSafari(on: Boolean) = settings { it.copy(safari = on) }
 
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
 

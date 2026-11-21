@@ -436,6 +436,7 @@ data class Origin(val how: How, val region: Region? = null, val visitor: Visitor
         LEDGER_EGG("Found by Ledger Research"),
         HABITAT_EGG("Found by Habitat Discovery"),
         POSTCARD_EGG("Found by Postcard Trail"),
+        SAFARI("Found in a Friend Safari"),
         BEFRIENDED("Befriended on a Care visit"),
         QUEST("Earned on a quest"),
         WORLD("Found in the World"),

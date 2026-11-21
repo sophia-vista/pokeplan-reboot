@@ -83,6 +83,9 @@ internal object Counters {
     /** HOME moments of [kind] paid today. */
     fun base(kind: BaseKind): PeriodCounter = home.getValue(kind)
 
+    /** Friend Safari catches made today, across every Safari (LINK.md 9.5). */
+    val SAFARI = PeriodCounter("safari-")
+
     /** Points towards the next Habitat Egg. It carries over from day to day. */
     const val HOME_EGG_METER = "home-egg-meter"
 

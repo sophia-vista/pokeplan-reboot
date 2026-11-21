@@ -7,6 +7,10 @@ import app.pokeplan.core.reward.BaseEvent
 import app.pokeplan.core.reward.LinkEvent
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.Reward
+import app.pokeplan.core.reward.SafariEvent
+
+/** Today's Friend Safari: whether this visit is already made, and how many catches the day still has (across every Safari). */
+data class SafariDay(val visited: Boolean, val left: Int)
 
 /**
  * The shared world as a module sees it: a module sends its effort events and gets the rewards back, and never touches
@@ -42,6 +46,15 @@ interface World {
      * The world learns nothing but the event's id, module, opaque reference, kind, time and policy: no person, number, note, date or follow-up words.
      */
     fun link(event: LinkEvent): List<Reward>? = null
+
+    /**
+     * A visit to a person's Friend Safari (LINK.md 9.5): catches one Pokémon of that Safari's pool. Null when nothing was caught (not started, already visited
+     * today, or today's Safari catches are used). The world learns nothing but the event's id, module, an opaque seed reference, the capped people count and the time.
+     */
+    fun safari(event: SafariEvent): List<Reward>? = null
+
+    /** Whether Friend Safari visit [eventId] has been made, and how many more Safari catches today allows. */
+    fun safariDay(eventId: String): SafariDay = SafariDay(false, 0)
 
     /** The PLAN task a LINK follow-up was converted into (LINK.md 2.4), if one still exists: PLAN owns it, its completion and its reward. */
     fun followUpTask(followUpId: String): FollowUpTask? = null

@@ -35,6 +35,8 @@ data class Person(
     val isMe: Boolean = false,
     /** The slambook half: socials, likes, answers, personality and birth details (LINK.md 2.6). Lives in the person's JSON, so there is no schema step. */
     val profile: Profile = Profile(),
+    /** The Pokémon the user chose as this person's picture (a species id, 0 for none). Cosmetic and private to LINK: it feeds nothing and never leaves. */
+    val avatar: Int = 0,
 )
 
 /** A dated line of context about a person (LINK.md 2.2). Private to LINK: it never leaves in a notification or an event. */
@@ -100,6 +102,8 @@ enum class FollowUpState(val label: String) { UPCOMING("Upcoming"), DUE("Due"), 
 @Serializable
 data class LinkSettings(
     val postcardTrail: Boolean = true,
+    /** Friend Safari (LINK.md 9.5): each person's small pool of Pokémon. Off here or with [postcardTrail] and no Safari is offered; no record is touched. */
+    val safari: Boolean = true,
     val tutorialSeen: Boolean = false,
     /** Relationship words the user added beside the starting ones. */
     val categories: List<String> = emptyList(),
