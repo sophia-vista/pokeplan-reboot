@@ -27,8 +27,12 @@ import kotlin.test.assertFalse
 class LiveStoreTest : AndroidTestBase() {
     private val clock = Clock { System.currentTimeMillis() }
 
-    /** The one field a load stamps with the clock (when the old coins were merged into Poké), set aside so two loads compare. */
-    private fun app.pokeplan.app.AppData.timeless() = copy(pokeMigration = pokeMigration?.copy(migratedAtMillis = 0))
+    /** The fields a load stamps with the clock (when the old coins were merged into Poké, when habits became repeating tasks), set aside so two loads compare. */
+    private fun app.pokeplan.app.AppData.timeless() = copy(
+        pokeMigration = pokeMigration?.copy(migratedAtMillis = 0),
+        habitsMergedAtMillis = habitsMergedAtMillis?.let { 0 },
+        series = series.map { it.copy(template = it.template.copy(createdAtMillis = 0)) },
+    )
 
     private fun mainFixtures() = listOf("main-empty.json", "main-typical-week.json", "main-heavy-70-days.json", "main-focus-running-and-pending.json")
 
