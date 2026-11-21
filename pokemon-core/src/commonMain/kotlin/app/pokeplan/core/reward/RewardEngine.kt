@@ -721,7 +721,7 @@ object RewardEngine {
      * A friend made through Care. Usually it leaves an egg of its family's first stage, like an egg from the Day Care (a
      * Pikachu leaves a Pichu egg), which hatches at once into Care's party if there is room (else the PC); rarely the
      * visitor itself joins, with a high starting friendship. Both have a floor on their IVs. Visitor luck from Care's party
-     * raises the floor and the chance a little. [rng] is the egg ticket's seed when the device has one.
+     * raises the floor and the chance a little. [rng] rolls the egg.
      */
     fun befriend(state: PlayerState, e: BefriendEvent, rng: Random): Outcome {
         val luck = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE), state.guardianOf(PartyIds.CARE))[CareBucket.VISITOR_LUCK] ?: 0.0

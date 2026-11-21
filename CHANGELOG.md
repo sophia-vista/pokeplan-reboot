@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.225.1
+
+Docs review and cleanup (owner, 21 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` numbers unchanged.
+
+- **Docs pruned and realigned:** `docs/` lost about 4,500 lines of history, duplicated figures and retired material; names, versions and statuses were checked against the code; HOME reads BASE except in stored names. The Implementation Guide status table is rebuilt for 0.225.0. Specs now say: goals complete when all their milestones are done, Plan has no priority field, Mint's Quick actions are Expense, Income and Transfer, eggs hatch from the Plan Region (no picker).
+- **Deleted:** the UI review and the 0.199.0 audit under `docs/pokelife/evidence/`; `docs/economy-report.md`, `docs/world-economy-report.md` and `docs/world-story-script.md` (generated on demand by `simulateEconomy`, `simulateWorldEconomy` and `storyScript`, and now git-ignored).
+- **Plan:** the quick-add box on Plan's main page has the "Quick actions" title like the other modules.
+- **Dead code removed:** egg tickets (`EggTickets.kt`, `AppData.eggTickets`); nothing issued tickets. Old saves that still carry the key load unchanged.
+- **Comments:** stale comments in Kotlin and Python corrected (Base for Home, sealing, backups, candy curve numbers, story sources).
+
 ## 0.225.0
 
 LINK people and Friend Safari (REP-072; owner, 20 and 21 November 2026). `RewardRules.VERSION` 32 to 33; `docs/economy.md` updated.

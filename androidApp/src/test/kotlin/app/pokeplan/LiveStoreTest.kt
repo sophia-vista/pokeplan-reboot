@@ -52,7 +52,7 @@ class LiveStoreTest : AndroidTestBase() {
             val expected = GameStore(MemoryStorage(text), clock).data.timeless()
             assertEquals(expected, widgetStore(context).data.timeless(), "$name read from the database")
             assertEquals(CareStore(MemoryStorage(fixture("care-week.json")), clock, GameStore(MemoryStorage(text), clock)).data, careStore(context).data, "care-week.json with $name")
-            // And again after the process ends: the files are now only the rollback copy, the database is the save.
+            // And again after the process ends: the database is the save.
             processDeath()
             File(files, "save.json").writeText("{}")
             assertEquals(expected, widgetStore(context).data.timeless(), "$name after a process death")
