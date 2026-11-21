@@ -67,7 +67,7 @@ class HealStepsAndVitalsTest {
         val steps = rs.filterIsInstance<Imported.Steps>().single()
         assertEquals(5_120, steps.steps); assertEquals("steps:2026-11-14", steps.id)
         val v = rs.filterIsInstance<Imported.Vital>().associate { it.type to it.value }
-        assertEquals(mapOf(VitalType.HEART_RATE to 72.0, VitalType.SKIN_TEMPERATURE to 34.1, VitalType.SPO2 to 97.0, VitalType.STRESS to 31.0, VitalType.SLEEP_SCORE to 81.0), v)
+        assertEquals(mapOf(VitalType.HEART_RATE_LOW to 72.0, VitalType.HEART_RATE_HIGH to 72.0, VitalType.SKIN_TEMPERATURE to 34.1, VitalType.SPO2 to 97.0, VitalType.STRESS to 31.0, VitalType.SLEEP_SCORE to 81.0), v)
     }
 
     @Test fun theNotificationAndThePageMakeOneRecordWithTheLargerCount() {
@@ -113,7 +113,12 @@ class HealStepsAndVitalsTest {
         assertEquals(listOf(7_400), heal.data.steps.map { it.steps })
         assertEquals(35.0, HealRules.latestVital(heal.data, VitalType.STRESS)!!.value)
         assertEquals(1, heal.data.vitals.count { it.type == VitalType.STRESS }); assertEquals(1, heal.data.vitals.count { it.type == VitalType.SPO2 })
-        assertEquals(2, heal.data.vitals.count { it.type == VitalType.HEART_RATE }, "a different bpm is a different reading")
+        // Heart rate is a range for the day (owner, 21 November 2026): one lowest and one highest, widened by a later read, never one entry per bpm.
+        assertEquals(70.0, HealRules.latestVital(heal.data, VitalType.HEART_RATE_LOW)!!.value); assertEquals(88.0, HealRules.latestVital(heal.data, VitalType.HEART_RATE_HIGH)!!.value)
+        assertEquals(0, heal.data.vitals.count { it.type == VitalType.HEART_RATE })
+        // A later read that saw only a middle value does not narrow the day's range.
+        heal.importFromProvider(heal.readHuawei(seen(page(at(21, 0), summary(7_400, 35), cards(bpm = 75)))))
+        assertEquals(70.0, HealRules.latestVital(heal.data, VitalType.HEART_RATE_LOW)!!.value); assertEquals(88.0, HealRules.latestVital(heal.data, VitalType.HEART_RATE_HIGH)!!.value)
         // A smaller count later (a glitch) never lowers the day.
         heal.importFromProvider(heal.readHuawei(seen(page(at(20, 30), summary(900, 35)))))
         assertEquals(listOf(7_400), heal.data.steps.map { it.steps })

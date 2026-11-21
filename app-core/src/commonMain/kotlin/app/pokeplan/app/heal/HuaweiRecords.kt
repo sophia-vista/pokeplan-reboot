@@ -79,10 +79,12 @@ object HuaweiRecords {
             val old = out[key]
             if (old == null || at >= old.atMillis) out[key] = v
         }
+        // Heart rate is a range for the day (owner, 21 November 2026): the lowest and the highest bpm seen that day, stamped with the capture that showed each.
+        val hr = LinkedHashMap<LocalDate, MutableList<Pair<Int, Long>>>()
         for (s in seen.screens) {
             val day = dayOf(s.atMillis, zone)
             val h = HuaweiHome.read(s)
-            h.heartRate?.let { put(VitalType.HEART_RATE, it.toDouble(), day, s.atMillis, "heartrate:$day:$it") }
+            h.heartRate?.let { hr.getOrPut(day) { ArrayList() } += it to s.atMillis }
             h.restingHeartRate?.let { put(VitalType.RESTING_HEART_RATE, it.toDouble(), day, s.atMillis, "restingheartrate:$day") }
             h.spo2?.let { put(VitalType.SPO2, it.toDouble(), day, s.atMillis, "spo2:$day") }
             h.skinTemperature?.let { put(VitalType.SKIN_TEMPERATURE, it, day, s.atMillis, "skintemperature:$day") }
@@ -92,6 +94,11 @@ object HuaweiRecords {
                 // Stamped with the capture, or noon of that morning if the capture is later: it lands on the night's own day.
                 put(VitalType.SLEEP_SCORE, score.toDouble(), night, minOf(s.atMillis, millis(night, LocalTime(12, 0), zone)), "sleepscore:$night")
             }
+        }
+        for ((day, list) in hr) {
+            val low = list.minBy { it.first }; val high = list.maxBy { it.first }
+            put(VitalType.HEART_RATE_LOW, low.first.toDouble(), day, low.second, "heartlow:$day")
+            put(VitalType.HEART_RATE_HIGH, high.first.toDouble(), day, high.second, "hearthigh:$day")
         }
         return out.values.toList()
     }
@@ -166,6 +173,14 @@ object HuaweiRecords {
             out += Imported.Sleep(HuaweiHealth.PROVIDER, APP, "sleep:$start", start, end)
         }
         return out
+    }
+
+    /** The day an All data row's date text means ("11/12" or "November 12": the latest such date not in the future), or null. Used to see whether a row is already saved. */
+    fun rowDate(text: String, today: LocalDate): LocalDate? {
+        val t = text.trim()
+        val parsed = slashDate.matchEntire(t)?.let { m -> Month.entries.getOrNull(m.groupValues[1].toInt() - 1)?.let { it to m.groupValues[2].toInt() } }
+            ?: monthDay.matchEntire(t)?.let { m -> month(m.groupValues[1])?.let { it to m.groupValues[2].toInt() } }
+        return parsed?.let { (mo, d) -> latestYear(mo, d, today) }
     }
 
     /** The oldest day an All data capture shows, or null when it shows none: the list is newest first, so a read can stop scrolling once this is old enough. */

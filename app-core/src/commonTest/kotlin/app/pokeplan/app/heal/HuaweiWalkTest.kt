@@ -1,5 +1,7 @@
 package app.pokeplan.app.heal
 
+import app.pokeplan.heal.ReadingGroup
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -12,6 +14,7 @@ import kotlin.test.assertTrue
 /** The Huawei Health walk's plan: which cards, in page order, and when the Exercise records list is far enough (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
 class HuaweiWalkTest {
     private val utc = TimeZone.UTC
+    private fun at(y: Int, mo: Int, d: Int, h: Int, mi: Int) = LocalDateTime(y, mo, d, h, mi).toInstant(utc).toEpochMilliseconds()
     private val now = LocalDateTime(2026, 11, 14, 21, 0).toInstant(utc).toEpochMilliseconds()
     private fun n(id: String, text: String = "", description: String = "") = ScreenNode(text, description, if (id.isEmpty()) "" else "com.huawei.health:id/$id")
     private fun item(date: String) = listOf(
@@ -64,5 +67,23 @@ class HuaweiWalkTest {
         assertFalse(HuaweiWalk.allDataIsFarEnough(list(row("5 h 9 min", "11/12"), row("6 h 2 min", "11/5")), now, utc))
         assertTrue(HuaweiWalk.allDataIsFarEnough(ScreenCapture(1, "PrivacyDataModelActivity", listOf(n("privacy_title", "July 2026")) + row("5 h 9 min", "7/3")), now, utc), "134 days back")
         assertFalse(HuaweiWalk.allDataIsFarEnough(ScreenCapture(1, "KnitSleepDetailActivity", row("5 h", "7/3")), now, utc), "only an All data list counts")
+    }
+
+    @Test fun aReadSkipsWhatHealAlreadyHas() {
+        val today = LocalDate(2026, 11, 14)
+        val known = HuaweiWalk.Known(today = today, nightDays = setOf(today, LocalDate(2026, 11, 13)),
+            newestDay = mapOf(ReadingGroup.SPO2 to today, ReadingGroup.SKIN_TEMPERATURE to LocalDate(2026, 11, 13)), newestWorkoutStart = at(2026, 11, 12, 17, 40))
+        fun card(t: String) = HuaweiWalk.cardFor(t)!!
+        assertTrue(HuaweiWalk.skipCard(card("Sleep"), known), "tonight's sleep is saved")
+        assertTrue(HuaweiWalk.skipCard(card("SpO2"), known), "today's SpO2 is saved")
+        assertFalse(HuaweiWalk.skipCard(card("Skin temperature"), known), "yesterday is the newest: look for today")
+        assertFalse(HuaweiWalk.skipCard(card("Exercise records"), known)); assertFalse(HuaweiWalk.skipCard(card("Sleep"), HuaweiWalk.Known()), "nothing known: visit everything")
+        assertEquals(LocalDate(2026, 11, 13), HuaweiWalk.knownDay(card("Skin temperature"), known))
+        fun list(vararg dates: String) = ScreenCapture(1, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) + dates.flatMap { listOf(n("privacy_content_title", "20.0-21.0°C"), n("privacy_time", it)) })
+        assertFalse(HuaweiWalk.allDataIsKnown(list("11/14"), LocalDate(2026, 11, 13), now, utc), "a new day is on top")
+        assertTrue(HuaweiWalk.allDataIsKnown(list("11/14", "11/13"), LocalDate(2026, 11, 13), now, utc), "a row already saved: everything below is too")
+        assertFalse(HuaweiWalk.allDataIsKnown(list("11/14"), null, now, utc), "nothing saved yet")
+        assertTrue(HuaweiWalk.exerciseIsKnown(page("November 12", "November 10"), known, now, utc))
+        assertFalse(HuaweiWalk.exerciseIsKnown(page("November 14"), known, now, utc).also { }, "a newer session than the newest saved one is not known")
     }
 }

@@ -1668,7 +1668,7 @@ class ScreenshotTest {
             override fun state() = HuaweiReaderState(installed = true, screenReading = on, notificationReading = on, walking = false)
             override fun seen() = seen
             override fun clear() {}
-            override fun walk(done: (String?) -> Unit) = done(null)
+            override fun walk(known: app.pokeplan.app.heal.HuaweiWalk.Known, done: (String?) -> Unit) = done(null)
             override fun turnOff() {}
             override fun openScreenReadingSettings() {}
             override fun openNotificationSettings() {}

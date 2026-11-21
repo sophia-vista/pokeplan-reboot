@@ -10,6 +10,7 @@ import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import app.pokeplan.app.heal.HuaweiHealth
+import app.pokeplan.app.heal.HuaweiRecords
 import app.pokeplan.app.heal.HuaweiWalk
 import app.pokeplan.app.heal.ScreenCapture
 import app.pokeplan.app.heal.ScreenNode
@@ -21,7 +22,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 /**
  * Reads Huawei Health's screens (INTEGRATIONS_AND_PRIVACY.md 5.2.2). Declared for `com.huawei.health` only (res/xml/huawei_reader.xml), so Android sends it
@@ -39,6 +42,9 @@ class HuaweiScreenService : AccessibilityService() {
     private val settle = Runnable { capture() }
 
     val walking: Boolean get() = walkJob?.isActive == true
+
+    /** What HEAL already has from Huawei Health for this read, so cards and lists with nothing new are skipped (HuaweiWalk.Known). */
+    private var known = HuaweiWalk.Known()
 
     override fun onServiceConnected() { HuaweiCapture.screen = this }
 
@@ -183,7 +189,8 @@ class HuaweiScreenService : AccessibilityService() {
     // --- the walk ---------------------------------------------------------------------------------------------------------
 
     /** Opens Huawei Health and walks it (see the class comment), then brings PokéLife back. [done] gets null or what stopped it, on the main thread. */
-    fun walk(done: (String?) -> Unit) {
+    fun walk(known: HuaweiWalk.Known = HuaweiWalk.Known(), done: (String?) -> Unit) {
+        this.known = known
         if (walking) { done("Already reading Huawei Health"); return } // copy-ok: result
         val launch = packageManager.getLaunchIntentForPackage(HuaweiHealth.PACKAGE) ?: run { done("Huawei Health is not installed"); return } // copy-ok: result
         main.removeCallbacks(settle)
@@ -227,6 +234,11 @@ class HuaweiScreenService : AccessibilityService() {
         while (true) {
             val root = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
             val next = titles(root).firstNotNullOfOrNull { el -> HuaweiWalk.cardFor(el.text?.toString().orEmpty())?.takeIf { it.title !in opened }?.let { it to el } }
+            if (next != null && HuaweiWalk.skipCard(next.first, known)) {
+                opened += next.first.title
+                note("${next.first.title}: skipped, nothing new")
+                continue
+            }
             if (next != null) {
                 opened += next.first.title
                 note("${next.first.title}: in view")
@@ -270,7 +282,7 @@ class HuaweiScreenService : AccessibilityService() {
         }
         note("${wanted.title}: opened ${page.ifBlank { "a page" }} (${shown?.nodes?.size ?: 0} elements)")
         val exercise = wanted.title == "Exercise records"
-        scrollThrough(wanted.scrolls) { exercise && HuaweiWalk.exerciseIsOldEnough(it, System.currentTimeMillis(), TimeZone.currentSystemDefault()) }
+        scrollThrough(wanted.scrolls) { exercise && (HuaweiWalk.exerciseIsOldEnough(it, System.currentTimeMillis(), TimeZone.currentSystemDefault()) || HuaweiWalk.exerciseIsKnown(it, known, System.currentTimeMillis(), TimeZone.currentSystemDefault())) }
         // A page with Day / Week / Month / Year tabs (the Sleep page): also capture its Week view, which is a tab of the same page, so Back below still leaves it.
         if (wanted.week) {
             val tapped = openWeek()
@@ -333,7 +345,15 @@ class HuaweiScreenService : AccessibilityService() {
         capture()
         if (wanted.entries > 0) openEntries(wanted)
         val now = System.currentTimeMillis()
-        scrollThrough(wanted.allDataScrolls) { HuaweiWalk.allDataIsFarEnough(it, now, TimeZone.currentSystemDefault()) }
+        val zone = TimeZone.currentSystemDefault()
+        val knownDay = HuaweiWalk.knownDay(wanted, known)
+        scrollThrough(wanted.allDataScrolls) { HuaweiWalk.allDataIsFarEnough(it, now, zone) || HuaweiWalk.allDataIsKnown(it, knownDay, now, zone) }
+    }
+
+    /** The date text of an All data row ("11/12"), from the sibling of its value element. */
+    private fun rowDateText(title: AccessibilityNodeInfo): String? {
+        val p = title.parent ?: return null
+        return (0 until p.childCount).mapNotNull { p.getChild(it) }.firstOrNull { it.id() == "privacy_time" }?.text?.toString()
     }
 
     /** What identifies an All data row: the words of its container (value and date). */
@@ -350,6 +370,7 @@ class HuaweiScreenService : AccessibilityService() {
         val done = HashSet<String>()
         var opened = 0
         var rounds = 0
+        val today = Instant.fromEpochMilliseconds(System.currentTimeMillis()).toLocalDateTime(TimeZone.currentSystemDefault()).date
         while (opened < wanted.entries && rounds++ < wanted.entries * 3) {
             val root = huaweiRoot() ?: return
             if (!onAllDataPage(root)) return
@@ -362,6 +383,9 @@ class HuaweiScreenService : AccessibilityService() {
                 continue
             }
             done += rowKey(row)
+            // The list is newest first: a day already saved as a night means every day below it is saved too.
+            val day = rowDateText(row)?.let { HuaweiRecords.rowDate(it, today) }
+            if (day != null && day in known.nightDays) { note("${wanted.title}: reached a saved day, nothing older to open"); break }
             if (!tap(row)) { note("${wanted.title}: entry tap refused"); continue }
             delay(PAGE_WAIT_MS)
             val detail = capture()

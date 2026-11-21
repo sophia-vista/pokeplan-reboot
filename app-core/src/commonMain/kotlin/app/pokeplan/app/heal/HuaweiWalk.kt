@@ -1,6 +1,8 @@
 package app.pokeplan.app.heal
 
 import app.pokeplan.heal.HealRules
+import app.pokeplan.heal.ReadingGroup
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
@@ -94,5 +96,53 @@ object HuaweiWalk {
     fun exerciseIsOldEnough(capture: ScreenCapture, nowMillis: Long, zone: TimeZone): Boolean {
         val oldest = HuaweiRecords.oldestExerciseStart(capture, nowMillis, zone) ?: return false
         return oldest < nowMillis - HealRules.IMPORT_FRESH_MILLIS
+    }
+
+    // --- skipping what HEAL already has (owner, 21 November 2026) ---------------------------------------------------------------------
+
+    /**
+     * What HEAL already holds from Huawei Health, so a read does not scroll or open what has nothing new: the newest saved workout start, the wake days of saved nights,
+     * the newest day of each reading group, and the day of the newest weight. [today] is the local day the read runs on.
+     */
+    data class Known(
+        val today: LocalDate? = null,
+        val newestWorkoutStart: Long? = null,
+        val nightDays: Set<LocalDate> = emptySet(),
+        val newestDay: Map<ReadingGroup, LocalDate> = emptyMap(),
+        val newestWeightDay: LocalDate? = null,
+    )
+
+    /** Whether the whole card needs no visit: tonight's sleep is already saved, today's skin temperature or SpO2 is, or today's weight is. Exercise and the rest are cheap to look at. */
+    fun skipCard(card: Card, known: Known): Boolean {
+        val today = known.today ?: return false
+        return when (card.title) {
+            "Sleep" -> today in known.nightDays
+            "Skin temperature" -> known.newestDay[ReadingGroup.SKIN_TEMPERATURE]?.let { it >= today } == true
+            "SpO₂" -> known.newestDay[ReadingGroup.SPO2]?.let { it >= today } == true
+            "Weight" -> known.newestWeightDay?.let { it >= today } == true
+            else -> false
+        }
+    }
+
+    /** The newest day saved for the All data list of [card], or null (a Sleep row is "known" when its wake day is a saved night). */
+    fun knownDay(card: Card, known: Known): LocalDate? = when (card.title) {
+        "Skin temperature" -> known.newestDay[ReadingGroup.SKIN_TEMPERATURE]
+        "SpO₂" -> known.newestDay[ReadingGroup.SPO2]
+        "Sleep" -> known.nightDays.maxOrNull()
+        else -> null
+    }
+
+    /** Whether an All data capture already shows a row on or before [knownDay]: the list is newest first, so everything below is saved already. */
+    fun allDataIsKnown(capture: ScreenCapture, knownDay: LocalDate?, nowMillis: Long, zone: TimeZone): Boolean {
+        knownDay ?: return false
+        val oldest = HuaweiRecords.oldestAllDataDay(capture, nowMillis, zone) ?: return false
+        return oldest <= knownDay
+    }
+
+    /** Whether an Exercise records capture already shows a session at or before the newest saved one: the list is newest first, so the rest is saved already. */
+    fun exerciseIsKnown(capture: ScreenCapture, known: Known, nowMillis: Long, zone: TimeZone): Boolean {
+        val newest = known.newestWorkoutStart ?: return false
+        val oldest = HuaweiRecords.oldestExerciseStart(capture, nowMillis, zone) ?: return false
+        return oldest <= newest
     }
 }

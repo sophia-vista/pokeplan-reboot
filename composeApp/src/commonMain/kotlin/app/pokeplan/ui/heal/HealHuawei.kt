@@ -81,7 +81,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                     note = null
                     val before = reader.seen().screens.size
                     state = state.copy(walking = true)
-                    reader.walk { problem ->
+                    reader.walk(heal.huaweiKnown()) { problem ->
                         seen = reader.seen(); state = reader.state()
                         heal.markHuaweiRead()
                         val added = (seen.screens.size - before).coerceAtLeast(0)

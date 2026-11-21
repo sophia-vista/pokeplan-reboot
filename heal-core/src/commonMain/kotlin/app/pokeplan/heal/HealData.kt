@@ -205,6 +205,10 @@ enum class VitalType(val label: String, val unit: String) {
     SKIN_TEMPERATURE_LOW("Skin temperature, lowest", "°C"),
     SKIN_TEMPERATURE_HIGH("Skin temperature, highest", "°C"),
     SLEEP_LENGTH("Sleep length", "min"),
+
+    // Heart rate is kept as a range per day (owner, 21 November 2026), not as one entry per reading. [HEART_RATE] stays for what was saved before and for other providers.
+    HEART_RATE_LOW("Heart rate, lowest", "bpm"),
+    HEART_RATE_HIGH("Heart rate, highest", "bpm"),
 }
 
 /** One such reading. [atMillis] is when PokéLife read it (the Health page shows no time of its own); [day] is that local day, fixed when it was saved. */

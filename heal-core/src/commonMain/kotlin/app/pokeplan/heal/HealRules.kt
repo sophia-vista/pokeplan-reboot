@@ -61,7 +61,7 @@ object HealRules {
 
     /** The range a reading of [type] must be in to be one at all (never a judgement: a low or a high reading in range is kept like any other). Skin temperature is in °C. */
     fun vitalRange(type: VitalType): ClosedFloatingPointRange<Double> = when (type) {
-        VitalType.HEART_RATE -> 25.0..250.0
+        VitalType.HEART_RATE, VitalType.HEART_RATE_LOW, VitalType.HEART_RATE_HIGH -> 25.0..250.0
         VitalType.RESTING_HEART_RATE -> 25.0..150.0
         VitalType.SPO2, VitalType.SPO2_LOW, VitalType.SPO2_HIGH -> 50.0..100.0
         VitalType.SKIN_TEMPERATURE, VitalType.SKIN_TEMPERATURE_LOW, VitalType.SKIN_TEMPERATURE_HIGH -> 25.0..45.0
