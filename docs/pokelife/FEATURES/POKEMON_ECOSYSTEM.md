@@ -1,15 +1,12 @@
 # PokéLife Pokémon Ecosystem
 
-**Version:** 1.1  
-**Status:** Approved target specification  
-**Baseline reviewed:** Source archive `0.123.0`  
-**Last consolidated:** 6 November 2026
+**Status:** Authoritative specification. Open items carry REP ids in `IMPLEMENTATION_BACKLOG.md`.  
 
 > This document is the authoritative specification for the shared Pokémon domain: canonical species data, owned instances, collection and storage, module parties, buddy selection, progression, eggs, items, currency, rewards, acquisition contracts, and cross-module rules. Module specifications remain authoritative for their own acquisition triggers and local user workflows. The Product Bible defines product intent; the Data and Migrations architecture defines physical persistence and migration execution.
 
 ## 1. Purpose and invariants
 
-PokéLife has one Pokémon ecosystem shared by PLAN, CARE, HEAL, MINT, HOME, LINK, GEAR, WORLD, and the living launcher. The ecosystem must feel coherent while allowing each module to express a distinct regional identity and acquisition loop.
+PokéLife has one Pokémon ecosystem shared by PLAN, CARE, HEAL, MINT, BASE, LINK, GEAR, WORLD, and the living launcher. The ecosystem must feel coherent while allowing each module to express a distinct regional identity and acquisition loop.
 
 The following invariants are non-negotiable:
 
@@ -45,55 +42,50 @@ The following invariants are non-negotiable:
 
 No module may create a local shadow collection, local copy of a Pokémon's progression fields, private item inventory, or alternative currency balance. A module may cache read models for performance, but cache invalidation and source ownership must remain explicit.
 
-### 2.2 Pokémon roles *(owner decision, 6 November 2026)*
+### 2.2 Pokémon roles
 
-An owned Pokémon is in **exactly one place** at any time (owner decision, 7 November 2026, replacing the earlier "independent roles"): the global buddy, one module's party, a module's Guardian slot (one per module, owner decision 8 November 2026: a legendary or mythical is a normal Pokémon that can also be one module's Guardian, its perk applying in that module only), a WORLD expedition team, a GEAR tool as its helper, or the PC. A PLAN event's **companion** (PLAN.md 8.2) is not a place: it is a Pokémon already in the PLAN party that an event names, and naming it moves nothing. Putting a Pokémon in a place takes it out of the place it was in (the PC is the place of every Pokémon that holds no other); nothing is ever copied, and taking a Pokémon from a place never releases or deletes it. A Pokémon on an expedition under way cannot be moved until the expedition ends. The roles themselves stay independent of each other (changing one place never changes another place's other members).
+An owned Pokémon is in **exactly one place** at any time: the global buddy, one module's party, a module's Guardian slot (one per module: a legendary or mythical is a normal Pokémon that can also be one module's Guardian, its perk applying in that module only), a WORLD expedition team, a GEAR tool as its helper, or the PC. A PLAN event's **companion** (PLAN.md 8.2) is not a place: it is a Pokémon already in the PLAN party that an event names, and naming it moves nothing. Putting a Pokémon in a place takes it out of the place it was in (the PC is the place of every Pokémon that holds no other); nothing is ever copied, and taking a Pokémon from a place never releases or deletes it. A Pokémon on an expedition under way cannot be moved until the expedition ends. The roles themselves stay independent of each other (changing one place never changes another place's other members).
 
 | Role | Scope | What it does | What it never does |
 |---|---|---|---|
 | **Global buddy** | One for the whole app | The main companion: the face of the launcher, module headers, contextual scenes and WORLD's story | Multiply rewards, add combat stats, or gate a module action (section 2.3) |
-| **Module party** (lead + 5) | One per applicable module (PLAN, CARE, HEAL, MINT, HOME, LINK) | Six slots: the **lead** in slot 1 and five members. The party gives **bonuses to its own module** (section 2.2.1) | Affect another module, WORLD, or any utility |
+| **Module party** (lead + 5) | One per applicable module (PLAN, CARE, HEAL, MINT, BASE, LINK) | Six slots: the **lead** in slot 1 and five members. The party gives **bonuses to its own module** (section 2.2.1) | Affect another module, WORLD, or any utility |
 | **WORLD expedition team** | WORLD only | Goes on expeditions and dungeons under WORLD's own team-size and assignment rules | Count as a module party or share its bonuses |
 | **GEAR helper** | GEAR tools and the Pokégear menu | A visual helper: its sprite is the tool icon and menu decoration | Have any effect: aesthetics only (`MODULES/GEAR.md` section 6) |
 
-Places reference canonical owned IDs and never copy a Pokémon. **One Pokémon, one place:** no Pokémon is the buddy and in a party, in two parties, on a WORLD team and in a party, a Guardian and a helper, and so on. A GEAR helper helps one tool. The place is derived from the references (the buddy id, the party each Pokémon is in, the Guardian slots, the WORLD teams and the GEAR helpers) and every operation that assigns a place first vacates the old one in the same save, so no state with two places can be written; a save from before this rule is resolved once on load (section 2.2.3).
+Places reference canonical owned IDs and never copy a Pokémon. A GEAR helper helps one tool. The place is derived from the references (the buddy id, the party each Pokémon is in, the Guardian slots, the WORLD teams and the GEAR helpers) and every operation that assigns a place first vacates the old one in the same save, so no state with two places can be written; a save from before this rule is resolved once on load (section 2.2.3).
 
 #### 2.2.3 Resolving a save with a Pokémon in two places
 
-Done once, deterministically and without removing any Pokémon, by this priority: Guardian slot, then WORLD team, then **buddy** (owner, 7 November 2026: the starter stays the buddy), then module party, then GEAR helper. A Pokémon that holds several places keeps the highest and leaves the others. So a save whose buddy was also Plan's lead keeps the buddy and Plan's party loses it (an empty party is allowed; Plan's perks then come from whoever joins). If the buddy is lost this way (to a Guardian slot or a team) the buddy becomes the player's highest-level Pokémon that is in the PC (ties: friendliest, then id), so the app always has a face; with none in the PC the buddy stays empty until the player picks one. The resolution is recorded with the save (a version, so it runs once) and never pays or costs anything.
+Done once, deterministically and without removing any Pokémon, by this priority: Guardian slot, then WORLD team, then **buddy** (the starter stays the buddy), then module party, then GEAR helper. A Pokémon that holds several places keeps the highest and leaves the others. So a save whose buddy was also Plan's lead keeps the buddy and Plan's party loses it (an empty party is allowed; Plan's perks then come from whoever joins). If the buddy is lost this way (to a Guardian slot or a team) the buddy becomes the player's highest-level Pokémon that is in the PC (ties: friendliest, then id), so the app always has a face; with none in the PC the buddy stays empty until the player picks one. The resolution is recorded with the save (a version, so it runs once) and never pays or costs anything.
 
 #### 2.2.1 Module party bonuses
 
 - A party's bonuses apply **only to rewards and effects of its own module's activities** (for example PLAN's party affects PLAN's rewards, not CARE's). The party of one module never boosts another module or WORLD.
-- The **lead** (slot 1) carries the strongest bonus; the five members add smaller assists. The mechanics and values start from the current implementation (buddy types, abilities, held items and assists in `docs/design.md`, "Party perks") and move into this document with the first migration that touches them.
+- The **lead** (slot 1) carries the strongest bonus; the five members add smaller assists. The mechanics and values are those of the implementation (buddy types, abilities, held items and assists in `docs/design.md`, "Party perks").
 - Bonuses are **capped per bonus type** (starting value: +25% per bucket, a *tune* number) so no single Pokémon or build breaks the economy, and every bonus is **shown to the player**, not hidden.
-- **Owner decision, 8 November 2026: the Shiny hunter and Egg luck buckets and the Mega boost stay**, so a party bonus may raise shiny and egg-luck odds; they stay capped per bucket and shown. Bonuses **never make high IVs or a chosen nature easier** to obtain, and never gate or degrade a module's utility: every module works fully with an empty party.
+- The Shiny hunter and Egg luck buckets and the Mega boost are party bonuses, so a party bonus may raise shiny and egg-luck odds; they stay capped per bucket and shown. Bonuses **never make high IVs or a chosen nature easier** to obtain, and never gate or degrade a module's utility: every module works fully with an empty party.
 - Bonuses are settled through the shared reward ledger: the party composition and the bonus applied are recorded with the settled event, so settlement stays deterministic and idempotent. Anything locked at the start of an action (for example a focus session's egg luck) stays locked if the party changes mid-action.
 - Party bonuses are a Pokémon-side effect. They are never a reason for a module's private content to reach WORLD or the ledger.
 
 ### 2.2.2 Module parties and WORLD teams
 
-Each applicable module owns an independent party. This is not a single global active party.
+Each applicable module owns an independent party; there is no single global active party. PLAN, CARE, HEAL, MINT, BASE and LINK each keep their own membership and ordering. GEAR has no party, acquisition or progression (helpers are visual-only). WORLD keeps its own expedition teams, which are not a module party. The launcher may prioritize the global buddy; it owns no party.
 
-- PLAN, CARE, HEAL, MINT, HOME, and LINK each maintain their own party membership and ordering. GEAR has no party, acquisition or progression (helpers are visual-only). WORLD keeps its own expedition teams, which are not a module party.
-- The launcher may prioritize the selected global buddy; it does not own a party. The shared collection and PC stay global.
-
-A party stores an ordered list of canonical `ownedPokemonId` references. It never stores a copied Pokémon object. **A given owned Pokémon is in at most one party, and then in no other place** (section 2.2); adding it to a party moves it out of its previous place. A change to one party must not mutate another party or WORLD team assignment, except that the Pokémon being moved leaves its old place.
-
-Party capacity is **six for every applicable module: one lead and five members**. The lead is slot 1; a party can hold fewer than six and never auto-fills. Slot validation must reject unknown, released, or otherwise ineligible IDs, but party removal never releases or deletes the Pokémon.
+A party stores an ordered list of canonical `ownedPokemonId` references, never a copied Pokémon. Capacity is **six: one lead (slot 1) and five members**; a party can hold fewer and never auto-fills. Slot validation rejects unknown, released or otherwise ineligible IDs, but removing a Pokémon from a party never releases or deletes it. A change to one party must not mutate another party or WORLD team, except that the Pokémon being moved leaves its old place.
 
 ### 2.3 Global buddy
 
 There is one global buddy. It is a place of its own, not a membership of any party or WORLD expedition team.
 
 - Any currently owned Pokémon may be selected, including a Legendary or Mythical Pokémon if the collection rules permit it.
-- **Where it shows (owner, 8 November 2026):** on Home, in a scene of its own type, and in an empty state asleep. Module pages show their own party and lead, not the buddy, and the PC lists only Pokémon in no other place, so the buddy is never in the PC. **Show all Pokémon (owner, 14 November 2026):** a switch on the PC lists every owned Pokémon instead, each tile naming its place (Buddy, Plan lead, Care, Heal Guardian, World, Pokégear), with a Where filter (PC, Buddy, Leads, Parties, Guardians, World teams, Pokégear); it only shows them, and a Pokémon still has one place.
+- **Where it shows:** on Home, in a scene of its own type, and in an empty state asleep. Module pages show their own party and lead, not the buddy, and the PC lists only Pokémon in no other place, so the buddy is never in the PC. **Show all Pokémon:** a switch on the PC lists every owned Pokémon instead, each tile naming its place (Buddy, Plan lead, Care, Heal Guardian, World, Pokégear), with a Where filter (PC, Buddy, Leads, Parties, Guardians, World teams, Pokégear); it only shows them, and a Pokémon still has one place.
 - Switching is immediate and does not reset campaign progress or rewrite authored dialogue. The buddy is one of the Pokémon places (section 2.2): choosing a Pokémon that is in a party, a team or a helper role takes it from there, and the previous buddy goes to the PC.
 - Story continuity is maintained by using the selected Pokémon as the visual buddy while keeping dialogue semantically coherent.
 - The buddy is the main companion. Buddy selection is cosmetic/narrative; it is not a reward multiplier, combat stat bonus, or required participant in a module action. Bonuses come from module parties (section 2.2.1), not from the buddy.
 - No separate affection meter, daily maintenance, decay, or needy pet loop.
 - Outside WORLD, presentation is contextual and restrained. No unsolicited dialogue bubbles or text.
-- Each module's **lead** is slot 1 of that module's party (section 2.2), not a second buddy. CARE's legacy `careLeadId` and PLAN's legacy buddy migrate to their module party's lead; the global buddy starts as the current PLAN buddy. CARE-specific temporary interaction participants remain CARE state and must not impose a global buddy lock.
+- Each module's **lead** is slot 1 of that module's party (section 2.2), not a second buddy. CARE-specific temporary interaction participants remain CARE state and must not impose a global buddy lock.
 
 ### 2.4 Pokémon availability and references
 
@@ -189,7 +181,7 @@ Each life module has a distinct regional identity and regional dex view. WORLD h
 - `gear` (catalog/presentation only; no acquisition)
 - `world:<region-id>` for WORLD campaign regions
 
-**Species lists (owner, 7 November 2026; built in 0.139.0).** The six module regions (`plan`, `care`, `heal`, `mint`, `home`, `link`; in code `PLAN`, `CARE`, `HEAL`, `MINT`, `HOUSEHOLD`, `LINK`) divide the whole National Dex: every species is in exactly one module region and no evolution line is split. Each has about 65 to 75 hatchable lines, at least one of every rarity (two of the 12 Super Rare lines each), its starters first, its lines in regional-dex order, and its patrons (legendary-class and mythical Guardians) as the last entries. The lists are content in `tools/species/regions/`, summarised in `docs/design.md`; GEAR and WORLD have no module region. `mint`, `home` and `link` stay unreleased until their modules ship.
+**Species lists.** The six module regions (`plan`, `care`, `heal`, `mint`, `home`, `link`; in code `PLAN`, `CARE`, `HEAL`, `MINT`, `BASE` (saved as `HOUSEHOLD`), `LINK`) divide the whole National Dex: every species is in exactly one module region and no evolution line is split. Each has about 65 to 75 hatchable lines, at least one of every rarity (two of the 12 Super Rare lines each), its starters first, its lines in regional-dex order, and its patrons (legendary-class and mythical Guardians) as the last entries. The lists are content in `tools/species/regions/`, summarised in `docs/design.md`; GEAR and WORLD have no module region.
 
 Legendary-class and mythical species count towards regional dex completion, so a region is complete only with its quest-earned patrons; the Dex shows them as "earned by quest" so they never read as missing eggs, and economy simulations report both "hatchable done" and "fully complete".
 
@@ -199,7 +191,7 @@ A Pokémon can count toward multiple regional dexes only when the acquisition/en
 
 ### 5.3 Legacy region migration
 
-Legacy region identifiers require explicit mapping. In the current source, `PLAN` legacy data may have serialized as `HOME`; household `HOME` may have serialized as `HOUSEHOLD`. Migration must disambiguate by record provenance/type, not blindly map the string. WORLD game-region IDs retain their canonical campaign mapping. Unknown IDs are preserved as unresolved legacy metadata until mapped; never silently discard or coerce them.
+Region ids are stable machine ids (BASE is `home` in a region id and `HOUSEHOLD` in a saved record). A legacy `HOME` string is disambiguated by record provenance (PLAN or household), never mapped blindly; WORLD game-region IDs keep their campaign mapping. Unknown IDs are preserved as unresolved legacy metadata until mapped; never silently discard or coerce them.
 
 ## 6. Module parties, PC, and collection UI
 
@@ -209,20 +201,13 @@ The collection is the canonical list of all owned instances. PC/storage is a glo
 
 ### 6.2 Party data
 
-Each applicable module persists an independent `ModuleParty` or equivalent:
-
-- `moduleId`
-- ordered `ownedPokemonIds`
-- module-specific capacity/configuration if applicable
-- update/version metadata
-
-Capacity is six: slot 1 is the lead, slots 2 to 6 are members. Enforce unique IDs within one party and across all parties (one Pokémon, one place). A party can contain fewer than six. Do not auto-fill or auto-replace a party when a Pokémon evolves, changes buddy status, or is added to another module.
+Each applicable module persists an independent `ModuleParty` (`moduleId`, ordered `ownedPokemonIds`, update/version metadata), with the capacity and uniqueness rules of section 2.2.2 and one place per Pokémon across all parties. Do not auto-fill or auto-replace a party when a Pokémon evolves, changes buddy status, or is added to another module.
 
 **Storage:** a Pokémon's place is at most one row of `pokemon_place` (the Pokémon is its primary key, so two places cannot be stored; no row is the PC), with the lead in party slot 1 (`DATA_AND_MIGRATIONS.md` section 7.3). WORLD teams and GEAR helpers stay in their modules' records, and the live write refuses a save that names a Pokémon there and in the table. A Pokémon obtained from WORLD (a Guardian included) arrives in the PC until the player assigns it.
 
 ### 6.3 WORLD teams
 
-WORLD owns named or contextual expedition teams, assignments, active expedition membership and team-size limits, referencing canonical owned IDs. A Pokémon on a team is in no other place (section 2.2) and cannot be moved while its expedition is under way.
+WORLD owns named or contextual expedition teams, assignments, active expedition membership and team-size limits, referencing canonical owned IDs (place rules: section 2.2).
 
 ### 6.4 Favorites and protection
 
@@ -240,23 +225,20 @@ The global Pokémon area provides:
 - Shared Bag and Poké balance access.
 - Buddy selection independent of parties.
 
-The Pokémon detail reads in this order *(owner, October 2026)*: identity (sprite, number, name, types, level), the specimen (nature, ability, gender, shiny, IVs), growth (EXP, friendship, stats), evolution, its role (buddy, party, helper, team, favourite) and where it came from.
+The Pokémon detail reads in this order: identity (sprite, number, name, types, level), the specimen (nature, ability, gender, shiny, IVs), growth (EXP, friendship, stats), evolution, its role (buddy, party, helper, team, favourite) and where it came from.
 
 Keep module-party selection quick and contextual. Do not force the user into the full global collection for every simple party adjustment.
 
 ## 7. Buddy presentation and behavior
 
-The buddy is a global presentation preference. It can appear in the launcher, module headers, selected empty states, and contextual scenes when useful. Do not add it to every screen or repeat a buddy card in every module.
+The buddy is a global presentation preference. It can appear in the launcher, module headers, selected empty states and contextual scenes when useful; do not add it to every screen or repeat a buddy card in every module. It never affects task priority, rewards or productivity metrics.
 
-- In PLAN, a buddy may appear during focus or in a restrained contextual scene; it does not affect task priority, focus rewards, or productivity metrics.
-- In CARE, the buddy may appear in Care Play/Meadow and approved visitor interactions. CARE private content never becomes dialogue, personality inference, or reward input.
-- In HEAL, buddy presentation is optional and must not comment on body/health measurements or imply medical judgment.
-- In MINT, buddy presentation is decorative only; never expose financial amounts or account context through Pokémon dialogue.
-- In HOME and LINK, buddy presentation is optional and does not reveal household/contact data.
-- In GEAR, helper Pokémon may be used as tool icons or restrained visual reactions; they are not the global buddy unless separately displayed as such, and do not affect utility outputs.
-- In WORLD, buddy participates in authored story and scenes according to the selected narrative model. Buddy selection must not break scripted party roles.
+- PLAN: restrained appearance during focus or a contextual scene. CARE: Care Play/Meadow and approved visitor interactions. BASE and LINK: optional, revealing no household or contact data.
+- HEAL: optional; never comments on body or health measurements or implies medical judgment. MINT: decorative only; never exposes amounts or account context.
+- GEAR: helper Pokémon may be tool icons or restrained reactions; they are not the global buddy unless separately displayed as such and do not affect utility outputs.
+- WORLD: the buddy takes part in authored story and scenes; buddy selection must not break scripted party roles.
 
-Buddy presence is not consent to expose sensitive module information. No unsolicited dialogue bubbles or text outside WORLD.
+Buddy presence is not consent to expose sensitive module information (CARE private content never becomes dialogue; section 13.3). No unsolicited dialogue bubbles or text outside WORLD.
 
 ## 8. Progression model
 
@@ -270,11 +252,11 @@ Each owned Pokémon has individual XP and level progression. Keep the supported 
 - WORLD Exploration Rank XP remains a separate progression track owned by WORLD.
 - XP settlement must be idempotent and auditable.
 
-Existing `OwnedPokemon` supports levels 1–100 and Rare Candy progression but lacks a conventional individual XP field. Add canonical XP/progress representation without breaking legacy level-only saves. Do not conflate `WorldData.xp`/Exploration Rank with individual Pokémon XP.
+Individual XP is `OwnedPokemon.xp` (absent for a legacy level-only save). Do not conflate `WorldData.xp`/Exploration Rank with individual Pokémon XP.
 
 ### 8.2 Rare Candy and Super Candy
 
-**Naming (owner, 11 November 2026): the everyday level-up candy is shown as Exp. Candy**, with the Exp. Candy icon of the games, because a wage that is paid several times a day is not "rare". Its item id (`rare-candy`), its rules and every number below are unchanged, so saves, the ledger and the reward tables did not move; this section and the code still say "Rare Candy" for the item id and in older text. Super Candy stays as it is. A true Rare Candy (one full level, an occasional prize) is **not built**; it needs an owner decision on where it is earned and a `RewardRules.VERSION` bump.
+The everyday level-up candy is shown as **Exp. Candy**, with the Exp. Candy icon of the games. Its item id (`rare-candy`), its rules and every number below are unchanged, and this section and the code still say "Rare Candy" for the item id. Super Candy stays as it is. A true Rare Candy (one full level, an occasional prize) is **not built**; it needs an owner decision on where it is earned and a `RewardRules.VERSION` bump.
 
 Retain and reconcile existing Rare Candy and Super Candy semantics; do not introduce parallel candy types or progression currencies without approval.
 
@@ -294,7 +276,7 @@ Preserve official species identity, types, base-stat relationships, abilities, m
 - The existing Nature and StatCalculator logic is a starting point; audit and consolidate rather than reimplement blindly.
 - Nature remains a stable owned-Pokémon attribute and affects stats only through the selected documented model.
 - Abilities and moves must have clear deterministic expedition effects where supported; do not imply a move/ability is active if the simulator ignores it.
-- Keep an active moveset to a manageable four moves by default, with clear replacement and learning behavior. *(Implemented 0.159.0, `Moveset`: `OwnedPokemon.moves` holds the choice as move identifiers and is absent until one is made; absent means the last four level-up moves by level. A Pokémon may be given its level-up moves up to its level, its egg moves and, from level 30, its tutor and machine moves; choosing is free and can be undone with Natural. WORLD's team power is the only reader, see WORLD.md 3.2.)*
+- Keep an active moveset to a manageable four moves by default, with clear replacement and learning behavior. *(`Moveset`: `OwnedPokemon.moves` holds the choice as move identifiers and is absent until one is made; absent means the last four level-up moves by level. A Pokémon may be given its level-up moves up to its level, its egg moves and, from level 30, its tutor and machine moves; choosing is free and can be undone with Natural. WORLD's team power is the only reader, see WORLD.md 3.2.)*
 - Held items reference the shared Bag/inventory model and use one authoritative effect calculation.
 - No competitive PvP or breeding loop.
 
@@ -311,7 +293,7 @@ Evolution rules are centralized. Preserve meaningful canonical requirements but 
 - Apply item consumption, evolution, party read-model refresh, dex updates, and history in one transaction.
 - Preserve owned ID, acquisition origin, XP/level, nickname, favorite/protection, and applicable persistent state.
 - Evolution must not create a second Pokémon or reward event.
-- *(Owner, 14 November 2026)* Evolve asks first, with Cancel, and the evolution scene can be stopped (as B in the games) with nothing used up. A Pokémon holding an Everstone does not evolve. Special evolutions are checked on the spot (a known move, a held item, the party, the stats, the nature), done with the phone (Malamar upside down, Alcremie's spin with the gyroscope, 1,000 steps on the step counter) or done as an Evolution Trial in WORLD, in the region the evolution belongs to (docs/design.md, "Evolution").
+- Evolve asks first, with Cancel, and the evolution scene can be stopped (as B in the games) with nothing used up. A Pokémon holding an Everstone does not evolve. Special evolutions are checked on the spot (a known move, a held item, the party, the stats, the nature), done with the phone (Malamar upside down, Alcremie's spin with the gyroscope, 1,000 steps on the step counter) or done as an Evolution Trial in WORLD, in the region the evolution belongs to (docs/design.md, "Evolution").
 - Forms and regional evolutions resolve through canonical catalog definitions.
 
 ## 9. Eggs, hatching, and recruitment
@@ -340,7 +322,7 @@ Hatching creates one owned Pokémon atomically and updates the relevant Pokédex
 - User can view egg origin and any already-disclosed information.
 - Outcome resolution must be deterministic for a committed egg, including offline use and restore.
 - No network/server-issued ticket is required for ordinary local hatching.
-- **Shiny odds** are fixed at 1 in 128 per egg, with a small bonus for longer focus sessions (`Rules.BASE_ODDS`, `RewardRules.VERSION` 13; owner decision). There is no Shiny Charm, no step-based eggs and no Oval Charm. A granted legendary gets one ordinary shiny roll when created and is never rerolled; legendaries are not tradable.
+- **Shiny odds** are fixed at 1 in 128 per egg, with a small bonus for longer focus sessions (`Rules.BASE_ODDS`). There is no Shiny Charm, no step-based eggs and no Oval Charm. A granted legendary gets one ordinary shiny roll when created and is never rerolled; legendaries are not tradable.
 - Preserve the existing PLAN immediate-hatch behavior unless PLAN's approved spec explicitly changes it; do not introduce artificial incubation friction there.
 - CARE visitor eggs persist in the shared Egg collection and are hatched under user control.
 - Other module eggs follow their own approved progression/hatch rules while using the same shared lifecycle.
@@ -359,27 +341,18 @@ CARE private journal, Diary Card, mood, urges, therapy/skills responses and othe
 
 ### 9.4 WORLD encounters and recruitment
 
-WORLD uses Exploration Finds, deterministic floor encounters, authored story recruitment and guardian/boss outcomes. A Find is a discovery record, not yet an owned Pokémon. It can be reviewed in the notebook/Finds in Base or Journal and does not expire. Recruitment explicitly converts a Find into one canonical owned instance. Seen/discovered state can precede owned state.
-
-Story/Guardian direct recruitment is distinct from ordinary random encounters and must be authored, persistent, and idempotent. A Find or recruit action cannot silently replace a party member or change the global buddy.
+WORLD uses Exploration Finds, deterministic floor encounters, authored story recruitment and guardian/boss outcomes (section 14). A Find is a discovery record, not yet an owned Pokémon; recruitment explicitly converts it into one canonical owned instance. Seen/discovered state can precede owned state. A Find or recruit action cannot silently replace a party member or change the global buddy.
 
 ### 9.5 Other module acquisition families
 
-- PLAN: Focus Eggs and Task Eggs.
-- HEAL: Field Research.
-- MINT: Ledger Research.
-- HOME: Habitat Discovery.
-- LINK: Postcard Trail.
-- GEAR: no acquisition method; helper Pokémon are visual-only.
-
-Each module specification defines its own exact eligibility, pacing, caps and presentation. The shared system owns the Egg/recruitment record, reward settlement, canonical ownership, dex update and anti-duplication guarantees.
+The acquisition identity of each module is in the matrix of section 10.1; each module specification defines its own exact eligibility, pacing, caps and presentation. The shared system owns the Egg/recruitment record, reward settlement, canonical ownership, dex update and anti-duplication guarantees.
 
 ## 10. Acquisition contracts and reward generosity
 
-### 10.0 Reward cadence and the loop of each module *(owner, 20 November 2026)*
+### 10.0 Reward cadence and the loop of each module
 
-1. **A frequent action pays about as often as a Plan focus egg or a Care visitor** (an egg per finished session; about 1.35 visitors a day). Every module with an acquisition (PLAN, CARE, HEAL, MINT, HOME, LINK) has one such everyday action whose reward reaches the Egg meter often enough that an active day finds at least one Pokémon. These actions carry **no daily limit**: farming them is the player's own responsibility, and a cap is added only to guard the privacy contract or a bug, not to slow the player down. MINT's is logging a purchase, a payment or a transfer (a flat reward, never based on an amount: MINT.md 16.2).
-2. **A rarer action pays better, not just more**: a reconciled account, a weekly review, a finished goal or a long streak opens an **outbreak** (owner, 20 November 2026; built for MINT in 0.219.0, `MINT.md` 16.2A): a choice among three Pokémon of the module's region, drawn from better rarities than an egg gives, each **caught directly (no egg)**, with extra **shiny rolls** that a streak raises. The other modules adopt it for their own rare actions (backlog REP-069).
+1. **A frequent action pays about as often as a Plan focus egg or a Care visitor** (an egg per finished session; about 1.35 visitors a day). Every module with an acquisition (PLAN, CARE, HEAL, MINT, BASE, LINK) has one such everyday action whose reward reaches the Egg meter often enough that an active day finds at least one Pokémon. These actions carry **no daily limit**: farming them is the player's own responsibility, and a cap is added only to guard the privacy contract or a bug, not to slow the player down. MINT's is logging a purchase, a payment or a transfer (a flat reward, never based on an amount: MINT.md 16.2).
+2. **A rarer action pays better, not just more**: a reconciled account, a weekly review, a finished goal or a long streak opens an **outbreak** (built for MINT, `MINT.md` 16.2A): a choice among three Pokémon of the module's region, drawn from better rarities than an egg gives, each **caught directly (no egg)**, with extra **shiny rolls** that a streak raises. The other modules adopt it for their own rare actions (backlog REP-069).
 3. **Every module has a clear Pokémon influence and a gameplay loop of its own**, as Plan has one: a daycare-style egg that hatches over a cycle, filled by a Forest-style focus timer. What each other module's loop is, and what its Pokémon changes in the module, is designed one module at a time (backlog REP-068 to REP-070); until then a module keeps the loop it has.
 4. The privacy contracts of each module (what an event may carry) do not change.
 
@@ -391,16 +364,16 @@ Each module specification defines its own exact eligibility, pacing, caps and pr
 | CARE | Care Play; visitor befriending; Care Eggs | Shared Egg or rare direct recruitment | No sensitive CARE content in eligibility or outcome |
 | HEAL | Field Research | Approved egg/discovery/reward event | Participation only; no body/medical outcomes or biometric inputs |
 | MINT | Ledger Research | Approved egg/discovery/reward event | Abstract admin activity only; no amounts, balances, merchant or account data |
-| HOME | Habitat Discovery | Approved egg/discovery/reward event | Qualifying upkeep only; no household contents/notes/property identifiers |
+| BASE | Habitat Discovery | Approved egg/discovery/reward event | Qualifying upkeep only; no household contents/notes/property identifiers |
 | LINK | Postcard Trail | Approved egg/discovery/reward event | Distinct follow-up completions; no contact identifiers or message content |
 | GEAR | None | No Pokémon, egg, XP, currency or item rewards | Helper Pokémon are visual-only; Ranger-style capture minigame is entertainment only |
 | WORLD | Exploration Finds, encounters, expeditions, story/Guardian recruitment | Find record and/or canonical owned instance | WORLD owns adventure progress and Exploration Rank |
 
 ### 10.2 Module-specific acquisition rules
 
-#### 10.2.1 A module's first Pokémon *(owner, 7 November 2026; changed 13 November 2026)*
+#### 10.2.1 A module's first Pokémon
 
-The starter is the buddy and starts in no party, so each module that has a Pokémon acquisition method gives one Pokémon, once, **with the module's first real record** (owner, 13 November 2026: the 5-second demo cards were pretend actions and are gone). It hatches into the module's own party and leads it:
+The starter is the buddy and starts in no party, so each module that has a Pokémon acquisition method gives one Pokémon, once, **with the module's first real record**. It hatches into the module's own party and leads it:
 
 | Module | First real record | What it gives |
 |---|---|---|
@@ -408,62 +381,25 @@ The starter is the buddy and starts in no party, so each module that has a Poké
 | CARE | The first routine, calm break, skill, diary card or journal entry | A Common egg of the Care Region, into Care's party, leading it |
 | HEAL | The first activity, drink or night logged | A Common egg of the Heal Region, into Heal's party, leading it |
 | MINT | The first account or money record | A Common egg of the Mint Region, into Mint's party, leading it |
-| HOME | The first chore, supply or item | A Common egg of the Household Region, into its party, leading it |
+| BASE | The first chore, supply or item | A Common egg of the Base Region, into its party, leading it |
 | LINK | The first person, date or follow-up | A Common egg of the Link Region, into Link's party, leading it |
 | WORLD | Its authored opening (`MODULES/WORLD.md`) | Unchanged |
 | GEAR | None: GEAR has no acquisition (`MODULES/GEAR.md` section 6) | Nothing |
 
 Rules: nothing is shown before it (the module's empty state is its one add action); it is given once per save (`AppData.tutorials`, `GameStore.firstRecordEgg`), so reloading cannot pay twice; the egg is no focus session, calm break or logged record in itself and adds no history, streak, cap, meter, friendship or trainer points beyond what the record itself pays; the first of its species pays the usual new-species candies; a save that already has records receives it once, the next time the module opens; and it needs no permission. A new module adds its own row here.
 
-**How a new Pokémon arrives (owner, 8 November 2026: "all are egg, that was created mainly for Plan focus eggs; reuse it, but not too much").** The egg-hatching scene belongs to Plan's focus and task eggs and to the egg a Care visitor leaves (CARE.md section 6 says an egg). Every other acquisition has a scene in its own module's scenery, and its words, in `Acquisition` (`RewardText.kt`) and `Cutscenes.kt`: **Care** (a routine or break, the tutorial): a new friend wanders in over the meadow and settles ("A new friend wandered over"); **Heal** (Field Research): the Pokémon runs in along the route ("Field Research found"); **Mint** (Ledger Research): a Star Piece glints in the cave and the Pokémon rises from the floor ("Ledger Research catalogued"). **HOME** and **LINK** choose theirs when they are built (suggested: a habitat found and a postcard delivered); World keeps no scene. The origin line, the reward box and Home's Recently list use the same words, and Reduce motion goes straight to the Pokémon. The mechanics underneath are unchanged: it is still a shared record in one place, and the Origin keeps the egg kind (`Origin.How`) so history is not rewritten.
+**How a new Pokémon arrives.** The egg-hatching scene belongs to Plan's focus and task eggs and to the egg a Care visitor leaves (CARE.md section 6 says an egg). Every other acquisition has a scene in its own module's scenery, and its words, in `Acquisition` (`RewardText.kt`) and `Cutscenes.kt`: **Care** (a routine or break, the tutorial): a new friend wanders in over the meadow and settles ("A new friend wandered over"); **Heal** (Field Research): the Pokémon runs in along the route ("Field Research found"); **Mint** (Ledger Research): a Star Piece glints in the cave and the Pokémon rises from the floor ("Ledger Research catalogued"). **Base** (Habitat Discovery): the Pokémon settles into the habitat from above ("Habitat Discovery found"); **Link** (Postcard Trail): it arrives along the route from the upper right ("Postcard Trail delivered"); World keeps no scene. The origin line, the reward box and Home's Recently list use the same words, and Reduce motion goes straight to the Pokémon. Underneath it is still a shared record in one place, and the Origin keeps the egg kind (`Origin.How`).
 
-The ecosystem must preserve the approved module mechanics; it does not redefine them:
+The ecosystem preserves the approved module mechanics; it does not redefine them. Exact eligibility, pacing and caps are in each module spec; what follows is the shared contract. What an event may carry is in section 13.2.
 
-**PLAN — Focus Eggs and Task Eggs**
-- Eligible completed focus sessions and task occurrences are the canonical source events.
-- Preserve the existing session-duration rarity bands and Deep Focus rarity bonus where approved.
-- Lock the relevant buddy/session context at focus start so switching later cannot rewrite the event.
-- Task Eggs use eligible completed task progress, task tier weighting, a persistent meter, deterministic threshold crossing and carry-over.
-- Preserve the approved short-focus-equivalent rarity treatment and prevent tiny-session farming.
-- A HOME-owned chore linked to a PLAN task is paid by HOME for that canonical completion; it must not also generate a PLAN reward.
-
-**CARE — Care Play and visitor befriending**
-- Keep visitor arrival, queue/slots, interaction and befriending rules in `MODULES/CARE.md`.
-- Every successful befriending yields the approved egg or rare direct recruitment outcome.
-- Visitor egg lifecycle is shared and persistent.
-- Reunion/return visits are non-rewarding where specified and cannot duplicate an earlier outcome.
-
-**HEAL — Field Research**
-- Only user-completed eligible activities/sessions and approved capped participation events may qualify.
-- Manual and imported representations of the same activity must deduplicate to one canonical event.
-- Historical backfill, passive samples and repeated import must not pay.
-
-**MINT — Ledger Research**
-- Qualifying actions may include an intentional financial review, account reconciliation, meaningful transaction categorization batch, budget review milestone, bill review, or financial organization event as defined by `MODULES/MINT.md`.
-- Creating/viewing empty records or repeatedly toggling/reviewing the same data must not pay.
-
-**HOME — Habitat Discovery**
-- Qualifying events are completed chore occurrences, meaningful maintenance and approved household upkeep milestones.
-- Creating/editing/viewing a chore, changing inventory quantities, purchase/restocking, undo/re-complete, or schedule edits do not pay.
-- If a HOME chore is linked to a PLAN task, HOME owns the canonical completion event and reward.
-
-**LINK — Postcard Trail**
-- Qualifying events are distinct eligible follow-up completions under `MODULES/LINK.md`; the balancing target begins around three distinct follow-ups per encounter opportunity.
-- Adding/importing/editing/viewing contacts, notes, dates, call/message frequency, social media activity or responsiveness do not pay.
-- A PLAN-converted follow-up task remains one canonical event with a single reward owner.
-
-**GEAR — no acquisition**
-- Helper Pokémon may be icons, tool headers or restrained reactions.
-- They do not gain XP/friendship, grant items/Poké, alter utility results, or join a GEAR party.
-- Ranger-style capture gameplay is a standalone minigame only; it cannot recruit Pokémon or pay shared rewards.
-
-*Reward-input exclusions for each module are in section 13.2.*
-
-**WORLD — exploration and recruitment**
-- WORLD owns dungeon/floor progression, Exploration Rank, expedition rewards and recruitment resolution.
-- Floor settlements are deterministic and idempotent.
-- Finds do not expire and do not auto-slot/replace Pokémon.
-- Guardians/story recruits are distinct from random encounters.
+- **PLAN (Focus Eggs, Task Eggs):** completed focus sessions and task occurrences are the source events; the session rarity bands, Deep Focus bonus, task meter and the anti-tiny-session rules are `MODULES/PLAN.md`'s. The buddy/session context is locked at focus start so switching later cannot rewrite the event. A BASE-owned chore linked to a PLAN task is paid by BASE for that completion and never also by PLAN.
+- **CARE (Care Play, visitor befriending):** arrival, slots, interaction and befriending are `MODULES/CARE.md`'s. Every successful befriending yields the approved egg or rare direct recruitment; the visitor egg lifecycle is shared and persistent; a reunion visit cannot duplicate an earlier outcome.
+- **HEAL (Field Research):** only user-completed eligible activities and approved capped participation events qualify. A manual and an imported record of the same activity deduplicate to one event; historical backfill, passive samples and repeated import do not pay.
+- **MINT (Ledger Research):** the qualifying actions are those `MODULES/MINT.md` defines. Creating or viewing empty records, or repeating a review of the same data, does not pay.
+- **BASE (Habitat Discovery):** completed chore occurrences, meaningful maintenance and approved upkeep milestones qualify. Creating, editing or viewing a chore, changing inventory quantities, purchase/restocking, undo/re-complete and schedule edits do not pay.
+- **LINK (Postcard Trail):** distinct eligible follow-up completions under `MODULES/LINK.md` qualify (the balancing target begins around three distinct follow-ups per encounter opportunity). Adding, importing, editing or viewing contacts, notes, dates, call/message frequency, social media activity or responsiveness do not pay. A PLAN-converted follow-up task is one event with a single reward owner.
+- **GEAR:** no acquisition (section 2.2, 10.1); a Ranger-style capture minigame is entertainment only and cannot recruit or pay.
+- **WORLD:** exploration, Finds and recruitment follow section 14; floor settlements are deterministic and idempotent.
 
 ### 10.3 Generosity and balance
 
@@ -477,7 +413,7 @@ Measure:
 - effort/time and action count
 - progress retained after interruption or missed days
 
-**Easy to fill, hard to perfect** *(owner, October 2026)*: completing a Pokédex is easy, with plenty of Pokémon and Rare Candies a day; what stays hard is a good specimen (a shiny, high IVs, the right nature). Loosen pacing and caps that slow collecting, and never make shinies or IVs easier to compensate.
+**Easy to fill, hard to perfect**: completing a Pokédex is easy, with plenty of Pokémon and Rare Candies a day; what stays hard is a good specimen (a shiny, high IVs, the right nature). Loosen pacing and caps that slow collecting, and never make shinies or IVs easier to compensate.
 
 Favor generous progression. Avoid attendance streaks, decay, expiring meters, login rewards, daily hard gates, arbitrary cooldowns and FOMO. Limits may prevent obvious automation/farming but should not punish ordinary repeated use. Balance changes require simulation and documentation, not casual nerfs.
 
@@ -490,7 +426,7 @@ There is one global Bag/inventory. Every item stack has a canonical item ID, qua
 - Item definitions are catalog data; owned quantities are inventory state.
 - Held items are persistent equipment (section 11.1.1); consumables are a separate item class with explicit, atomic consumption.
 - Item grants, consumption, transfers and held-item changes are atomic and idempotent.
-- `WorldData.items` staging inventory must be reconciled into the shared Bag; do not preserve it as a second active inventory.
+- `WorldData.items` is only a staging list of what World collected, folded into the shared Bag; it is never a second active inventory.
 - Module-specific unlocks or rewards may grant shared items but cannot create duplicate inventory systems.
 
 ### 11.1.1 Persistent held-item equipment (non-consumable invariant)
@@ -501,19 +437,13 @@ Items canonically classified as consumables (for example, vitamins or evolution 
 
 ### 11.1.2 Item acquisition and provenance
 
-Every obtainable item definition must declare one or more acquisition sources. Valid source families include WORLD expedition loot, mission/request rewards, boss/Guardian rewards, shops/facilities, crafting/refinement, foraging/gathering, research milestones, capped Pokémon abilities/jobs, authored story events and explicitly approved module-origin reward contracts. All grants, purchases, crafting outputs, transfers, consumption and corrections use the shared inventory/economy transaction coordinator and durable ledger. A module may request a validated grant; it may not mutate Bag quantities directly. Essential evolution/progression materials require a reliable route and cannot depend exclusively on random drops. No paid item/gacha/expiring stock or real-life sensitive-data-driven reward is permitted.
+Every obtainable item definition declares one or more acquisition sources (taxonomy: section 20.2.1). All grants, purchases, crafting outputs, transfers, consumption and corrections go through the shared inventory/economy transaction coordinator and durable ledger; a module may request a validated grant but never mutates Bag quantities directly. Essential evolution/progression materials need a reliable route and cannot depend only on random drops. No paid item, gacha, expiring stock or real-life-sensitive-data-driven reward is permitted.
 
 ### 11.2 One universal currency: Poké
 
-Poké is the sole universal game currency. There is no separate PLAN Coins balance or parallel WORLD wallet after migration.
+Poké is the sole universal game currency: one shared balance, no PLAN Coins and no parallel WORLD wallet. UI labels use Poké consistently.
 
-**Approved legacy conversion:**
-
-`newPoké = legacyCoins + legacyWorldPoké`
-
-Conversion is 1:1, summing both legacy balances into the new shared Poké balance. Migration must preserve the two original source values, source save/version, conversion timestamp, and migration ID in migration/audit metadata so the conversion can be verified or recovered. It must be applied once, be idempotent, and never re-add balances after restore/retry. If one legacy balance is absent, treat it as zero. Do not round or reinterpret integer units.
-
-`PlayerState.coins` and `WorldData.poke` are legacy sources only; after migration all reads/writes use the shared economy repository. UI labels use Poké consistently.
+**Legacy balances:** an old save's two balances sum 1:1 (`newPoké = legacyCoins + legacyWorldPoké`, an absent one counts as zero, no rounding) into the shared balance once; the migration keeps both source values, the source save version, the conversion time and a migration ID as audit data, and never re-adds them after a restore or retry.
 
 **Storage:** the balance and the Bag (`currency_balance`, `bag_stack`) are written only by `EconomyRepository.settle` together with their `reward_ledger_entry` rows in one transaction; the migration's opening balance records the merge's two source values and pays nothing. `PlayerState.coins` is the balance as the app reads it. `WorldData.poke` is not stored: it is World's in-memory rule input, set from the balance on load and folded back after each action, and an old save's World balance is read once into `legacyPoke` for the merge (`DATA_AND_MIGRATIONS.md` section 7.3.0).
 
@@ -546,7 +476,7 @@ A deterministic idempotency key should be based on canonical source identity, e.
 
 ### 12.2 Ownership and settlement
 
-The source module owns the real-life record and decides whether the source action is eligible. The shared reward service owns reward policy execution, idempotent settlement and canonical reward creation. The Pokémon domain owns the resulting owned instance/egg/progression state. WORLD does not become the owner of a PLAN/CARE/HEAL/MINT/HOME/LINK source record merely because it displays the reward.
+The source module owns the real-life record and decides whether the source action is eligible. The shared reward service owns reward policy execution, idempotent settlement and canonical reward creation. The Pokémon domain owns the resulting owned instance/egg/progression state. WORLD does not become the owner of a PLAN/CARE/HEAL/MINT/BASE/LINK source record merely because it displays the reward.
 
 One event can settle once. Its settlement can grant multiple approved reward components, but every component must be linked to the same settled event. A source event cannot be submitted independently by two modules for the same real-world action.
 
@@ -562,11 +492,11 @@ Within one local database transaction (or equivalent atomic unit):
 
 If the transaction fails, none of its reward side effects may remain. If the same event is retried, return the existing settlement rather than granting again. If settlement is intentionally asynchronous, use an outbox/inbox pattern with unique IDs and recoverable states; never rely on best-effort UI callbacks.
 
-### 12.4 Durable local identity and sync
+### 12.4 Durable local identity
 
-Supabase and the server reward function are retired (0.130.0); rewards are decided on the phone. Durable local uniqueness and transaction guarantees replace the old `(user_id, app, idempotency_key)` constraint. If export/import or any future sync is used, event IDs remain stable across devices and imports.
+Rewards are decided on the phone. A unique event id in the local ledger, with the transaction guarantees of 12.3, gives idempotency. If export/import is used, event IDs remain stable across imports.
 
-Current `RewardEngine` is a pure deterministic calculator; caller-side idempotency alone is insufficient. `RewardRules.VERSION` and golden-vector tests should be retained and expanded. Current local `RewardEntry` needs durable event identity/settlement semantics equivalent to the shared ledger.
+`RewardEngine` is a pure deterministic calculator; idempotency lives in the ledger, not in callers. `RewardRules.VERSION` and the golden-vector tests are kept and extended with every rule change.
 
 ### 12.5 Undo, redo, and corrections
 
@@ -583,7 +513,7 @@ A module may publish only the minimum event data needed for approved eligibility
 - CARE: no journal, diary card, mood, urges, skills responses, therapy notes, prompts, or sensitive reflections.
 - HEAL: no weight/body composition/measurements, calorie or nutrient totals, biometrics, heart rate, sleep, recovery, diagnoses, symptoms, medications, appointments or medical records.
 - MINT: no amounts, account balances, transaction descriptions, merchant/provider/account/card/e-wallet IDs, income, spending, savings, debt, payment or connection status.
-- HOME: no room names, inventory contents/quantities, household notes, property identifiers, serial numbers or attachments.
+- BASE: no room names, inventory contents/quantities, household notes, property identifiers, serial numbers or attachments.
 - LINK: no contact names/IDs, phone numbers, addresses, relationship labels, message text, social activity or response frequency.
 - PLAN: no task titles/notes, project/goal names, calendar event descriptions, or private focus notes.
 - GEAR: no sensor readings or device data as reward input.
@@ -605,46 +535,30 @@ WORLD is the adventure/gameplay owner, not the owner of all Pokémon data.
 
 ### 14.1 Expedition XP
 
-Every Pokémon participating in an eligible completed expedition floor receives the full individual XP award. XP is not divided among team members. The floor settlement captures the exact participant owned IDs at settlement and creates one XP ledger effect per eligible participant. A Pokémon added after the floor settled receives no retroactive XP.
+The rules are in section 8.1. The floor settlement captures the exact participant owned IDs at settlement and creates one XP ledger effect per eligible participant.
 
 ### 14.2 Exploration Finds
 
-A Find is a durable WORLD discovery entity with its own stable ID, species/form reference, region/floor/source metadata, discovery timestamp and recruitment state. It can be inspected in the notebook/Finds in Base or Journal. It does not expire. Recruiting it creates one owned instance with origin provenance and updates the global dex. The Find remains in history as the source record.
+A Find is a durable WORLD discovery entity with its own stable ID, species/form reference, region/floor/source metadata, discovery timestamp and recruitment state. It can be inspected in the notebook/Finds in Town or Journal. It does not expire. Recruiting it creates one owned instance with origin provenance and updates the global dex. The Find remains in history as the source record.
 
 ### 14.3 Guardians and story recruits
 
 Guardian/Legendary/Mythical recruitment is authored and distinct from ordinary random encounter recruitment. Story state and reward settlement must be idempotent. Do not auto-add the recruited Pokémon to the current expedition team, a module party, or global buddy selection.
 
-**Where a legendary guards** *(owner, 1 November 2026; WORLD layers for Kanto to Sinnoh are built, the rest is direction)*:
+**Where a legendary guards:**
 - Guardians are legendary and mythical only. **Main legendaries guard their home region**: every box legendary of a region's games is one of its quests (both version legendaries are in the story) and each becomes a Guardian of that region, giving the region's permanent boost (as Primal Dialga does for the home layer). How several boosts in one region combine is open (assumed: they add up inside the cap on Guardian effects).
 - **Side legendaries guard in modules** (the lake trio for PLAN, others as each module is designed), not in a region.
 - **Primal Dialga is not Dialga**: the home layer's Temporal Tower Guardian is the separate form `dialga-primal` (id 20001, `tools/species/custom_forms.txt`, Dialga's base stats, SpriteCollab's "Primal" sprites); Sinnoh's Dialga quest pays the real Dialga, and Sinnoh's Guardians are Dialga, Palkia and Giratina.
-- **Hisui is its own layer** after Paldea (a historical era, *proposed*): it awards the Origin-form items (Adamant Crystal, Lustrous Globe, Griseous Core) and Arceus is its main quest and Guardian.
-- Proposed main legendaries, to correct before each region is built: Kanto Mewtwo and the three birds; Johto Ho-Oh and Lugia; Hoenn Groudon, Kyogre, Rayquaza; Sinnoh Dialga, Palkia, Giratina; Unova Reshiram, Zekrom, Kyurem; Kalos Xerneas, Yveltal, Zygarde; Alola Solgaleo, Lunala, Necrozma; Galar Zacian, Zamazenta, Eternatus; Paldea Koraidon, Miraidon, Terapagos.
+- **Hisui is its own layer** after Paldea (a historical era): it awards the Origin-form items (Adamant Crystal, Lustrous Globe, Griseous Core) and Arceus is its main quest and Guardian.
+- Main legendaries: Kanto Mewtwo and the three birds; Johto Ho-Oh and Lugia; Hoenn Groudon, Kyogre, Rayquaza; Sinnoh Dialga, Palkia, Giratina; Unova Reshiram, Zekrom, Kyurem; Kalos Xerneas, Yveltal, Zygarde; Alola Solgaleo, Lunala, Necrozma; Galar Zacian, Zamazenta, Eternatus; Paldea Koraidon, Miraidon, Terapagos.
 
-**Region layers** *(owner, 1 November 2026)*: each mainline region is its own layer behind the Map switch, open from the first day, beside the Mystery Dungeon layers; nothing existing is replaced. A region has eight to nine dungeons, its wild tables follow its regional dex (its Pokémon are found only there), and its extra areas (Sevii Islands, Isle of Armor, Crown Tundra, Kitakami, Blueberry Academy) are late dungeons of it. Special spaces (Hyperspace Lumiose, Ultra Space, Ultra Megalopolis, Battle Zone, Terarium, Area Zero) are Guardian-tier places inside their region, opened by its story. Regions release one at a time in order (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea, then Hisui), each after its own `:world-core:simulateWorldEconomy` run. The spin-off layer starts with the Ranger regions (Fiore, Almia, Oblivia) and Orre, after the mainline regions are under way; other settings stay on the owner's atlas list and are assumed one layer each.
+**Region layers:** each mainline region is its own layer behind the Map switch, open from the first day, beside the Mystery Dungeon layers. A region has eight to nine dungeons, its wild tables follow its regional dex (its Pokémon are found only there), and its extra areas (Sevii Islands, Isle of Armor, Crown Tundra, Kitakami, Blueberry Academy) are late dungeons of it. Special spaces (Hyperspace Lumiose, Ultra Space, Ultra Megalopolis, Battle Zone, Terarium, Area Zero) are Guardian-tier places inside their region, opened by its story. A region is released only after its own `:world-core:simulateWorldEconomy` run. The spin-off layer starts with the Ranger regions (Fiore, Almia, Oblivia) and Orre; other settings stay on the owner's atlas list and are assumed one layer each.
 
 ## 15. Local-first persistence, offline, and recovery
 
 ### 15.1 Repository contracts
 
-Expose domain repositories/services rather than direct cross-module table access. Conceptual contracts:
-
-- `SpeciesCatalogRepository`
-- `PokédexRepository`
-- `OwnedPokemonRepository`
-- `ModulePartyRepository`
-- `WorldTeamRepository`
-- `BuddyPreferenceRepository`
-- `EggRepository`
-- `EvolutionService`
-- `PokemonProgressionService`
-- `InventoryRepository`
-- `EconomyRepository`
-- `RewardLedgerRepository`
-- `AcquisitionService` or module-specific adapters
-
-The physical database schema and transaction model are defined by `ARCHITECTURE/DATA_AND_MIGRATIONS.md`. This document owns the domain invariants and contract semantics.
+Expose domain repositories and services rather than direct cross-module table access: species catalog, Pokédex, owned Pokémon, module party, WORLD team, buddy preference, egg, evolution, progression, inventory, economy, reward ledger, and acquisition adapters per module. The physical schema and transaction model are defined by `ARCHITECTURE/DATA_AND_MIGRATIONS.md`; this document owns the domain invariants and contract semantics.
 
 ### 15.2 Offline behavior
 
@@ -658,80 +572,19 @@ Backup/export includes owned instances, party references, WORLD teams, buddy pre
 
 Migrations are versioned, transactional where possible, idempotent and tested against real legacy save shapes. Use staging/recovery markers when multiple legacy stores must be merged. Do not delete legacy sources until canonical data and verification metadata are committed.
 
-Specific migrations:
-- Merge legacy PLAN Coins and WORLD Poké at 1:1 into shared Poké, preserving source values and conversion metadata.
-- Move `WorldData.items` staging inventory into shared Bag without double-counting.
-- Consolidate legacy shared Pokémon and any module-local/CARE references into canonical owned instances.
-- Convert `inParty`/`partyId` and module-specific party state into independent module party references; do not collapse all parties into one global party.
-- Preserve CARE `careLeadId` meaning as global buddy preference only if it truly represented the same selection; retain unrelated CARE participant state separately.
-- Add individual XP/progress fields while preserving legacy levels.
-- Convert eggs and server-ticket references to persistent local Egg records and deterministic hatch outcomes.
-- Map legacy region identifiers with record-type/provenance disambiguation.
-- Preserve reward history and add durable idempotency keys; never replay historical rewards.
+Legacy shapes (the shared collection and `inParty`/`partyId` flags, `careLeadId`, the two currency balances, `WorldData.items`, server-ticket eggs, legacy region ids, level-only Pokémon) are read once into the canonical records: parties become independent module party references (never one global party), eggs become persistent local Egg records with deterministic hatch outcomes, reward history gains durable idempotency keys and is never replayed.
 
 If any migration fails, retain recoverable source data and do not mark the migration complete. Migration verification must compare pre/post record counts, balances, inventory quantities, ownership references and reward totals.
 
 ## 16. UI, interaction, and shared components
 
-Use the PMD-inspired visual language defined by `FEATURES/DESIGN_SYSTEM.md`. Pokémon ecosystem surfaces should feel like a coherent collection and adventure system without forcing every practical module into immersive dialogue.
+Use the visual language of `FEATURES/DESIGN_SYSTEM.md`. The shared components are: Pokémon sprite/portrait with asset fallback, compact row/card, detail sections, party slot and editor, WORLD team selector (distinct from the party editor), collection filters/search and Pokédex entry, egg tile and hatch reveal, Find/recruitment card, item stack and held-item selector, Bag list, Poké balance history, and the reward box.
 
-Reusable components should include:
-- Pokémon sprite/portrait presentation with canonical asset fallback.
-- Compact Pokémon row/card with species/form, level and relevant status.
-- Pokémon detail/profile sections for stats, moves, ability, nature, held item and history.
-- Party slot, party editor and module selector.
-- WORLD expedition team selector distinct from module party editor.
-- Collection filters/search and Pokédex entry.
-- Egg tile/detail and hatch reveal.
-- Find/recruitment card and authored recruitment dialogue.
-- Item stack, held-item selector and Bag list.
-- Poké balance/transaction history.
-- Reward feedback/dialogue box.
+Rules: do not duplicate global collection information inside every module; do not show every stat on compact cards; do not use a module party as a hidden global active party; keep GEAR helpers non-interactive beyond their decorative behavior; support TalkBack, scalable text, reduced motion, focus navigation and legible dark mode; major hatching, recruitment and evolution moments may use expressive scenes, routine reward feedback stays brief.
 
-Rules:
-- Do not duplicate global collection information inside every module.
-- Do not show every stat on compact cards.
-- Do not use a module party as a hidden global active party.
-- Keep GEAR helper Pokémon non-interactive beyond their approved decorative behavior.
-- Support TalkBack, scalable text, reduced motion, keyboard/focus navigation where applicable, and legible dark mode.
-- Major hatching/recruitment/evolution moments may use expressive PMD scenes; routine reward feedback stays brief.
+## 17. Behaviours to preserve
 
-## 17. Existing implementation audit and direction
-
-Baseline source archive: `0.123.0` (3 November 2026). Audit current branch before implementation; do not assume the archive is newer than the working tree.
-
-### 17.1 Reuse and refactor
-
-| Existing source | Current value | Target action |
-|---|---|---|
-| `SpeciesInfo`, `FormInfo`, `Dex`, `DexParser` | Species/form catalog and dex foundation | Reuse; normalize stable IDs, versioning, aliases and regional indexes |
-| `OwnedPokemon` | Owned instance foundation, level 1–100, candy progression | Refactor into canonical durable instance; add individual XP and provenance; preserve compatible fields |
-| `Nature`, `StatCalculator` | Nature and derived stat logic | Reuse after audit; centralize deterministic calculation and tests |
-| `EvolutionRules` | Evolution requirement logic | Reuse/refactor into atomic evolution service and migration-safe history |
-| `HatchRules`, `Egg`, `Hatching` | Egg pools and hatch foundation | Reuse pool logic; replace transient/server-ticket assumptions with durable shared Egg lifecycle |
-| `Items`, `Inventory` | Item definitions/inventory logic | Consolidate into one shared Bag; eliminate `WorldData.items` parallel inventory |
-| `RewardEngine`, `RewardRules` | Pure deterministic reward calculation | Reuse; add durable event identity, local transactional ledger and replay protection |
-| `RewardRules.VERSION`, golden vectors | Reward policy versioning/tests | Preserve and expand with cross-module privacy/idempotency vectors |
-| `FormDex`, caught/shiny history | Form/shiny tracking | Reconcile into global dex and owned-origin/history records |
-| `GameStore`, `AppData`, `CareStore` | Existing app/save persistence | Refactor behind repositories; consolidate canonical Pokémon/economy state; preserve CARE domain ownership |
-| `PlayerState.pokemon`, `inParty`, `partyId` | Legacy shared collection and party flags | Migrate to owned instances plus independent module-party references and WORLD team references |
-| `careLeadId` | Legacy CARE buddy-like reference | Reconcile to global buddy preference only where semantically equivalent |
-| `PlayerState.coins`, `WorldData.poke` | Two legacy currency balances | Sum 1:1 into shared Poké once; retain migration audit values |
-| `WorldData.xp` | WORLD Exploration Rank XP | Keep distinct from individual Pokémon XP |
-
-### 17.2 Existing behaviors to preserve unless explicitly superseded
-
-- Level range 1–100 and current candy progression baseline.
-- Existing PLAN Focus Egg and Task Egg approved rarity/progress behavior.
-- CARE visitor and Care Egg approved lifecycle and rare direct recruitment.
-- WORLD deterministic floor settlement, four-member expedition team behavior where established, and full per-participant floor XP.
-- Exploration Rank distinct from individual Pokémon XP.
-- Existing species/form/evolution/nature/stat catalog behavior where canonical and tested.
-- No acquisition/reward loop in GEAR.
-
-### 17.3 Known architecture corrections
-
-The corrections (independent module parties and WORLD teams, one Poké balance, the shared Bag in place of `WorldData.items`, durable reward event identity, individual Pokémon XP apart from Exploration Rank XP, durable local eggs, provenance-based region aliases) are the migrations of section 15.4 and the rules of sections 2, 8, 9, 11 and 12.
+Unless a tested, approved rule change says otherwise: the level range 1 to 100 and the candy progression baseline; the approved PLAN Focus and Task Egg and CARE visitor lifecycles; WORLD's deterministic floor settlement and full per-participant floor XP, with Exploration Rank kept apart from individual Pokémon XP; no acquisition or reward loop in GEAR.
 
 ## 18. Testing and acceptance criteria
 
@@ -755,7 +608,7 @@ The corrections (independent module parties and WORLD teams, one Poké balance, 
 - Exploration Rank XP is not Pokémon XP.
 - Rare Candy and Super Candy work consistently across modules and WORLD facilities.
 - Regional and National dex state distinguish discovered from owned.
-- PLAN, CARE, HEAL, MINT, HOME, LINK and WORLD retain their approved acquisition identities.
+- PLAN, CARE, HEAL, MINT, BASE, LINK and WORLD retain their approved acquisition identities.
 - GEAR cannot grant Pokémon, XP, items or currency.
 - No module can reward the same canonical real-world event twice.
 - Acquisition generosity meets the approved simulation horizons without attendance pressure.
@@ -763,7 +616,7 @@ The corrections (independent module parties and WORLD teams, one Poké balance, 
 ### P1 — privacy
 - Reward payloads contain only approved minimal event metadata.
 - Automated tests assert sensitive fields are absent from module reward envelopes.
-- No CARE/HEAL/MINT/HOME/LINK private content appears in WORLD logs, launcher surfaces, notifications or buddy dialogue.
+- No CARE/HEAL/MINT/BASE/LINK private content appears in WORLD logs, launcher surfaces, notifications or buddy dialogue.
 - GEAR sensor/device readings never become Pokémon progression input.
 
 ### P2 — usability and content
@@ -774,7 +627,7 @@ The corrections (independent module parties and WORLD teams, one Poké balance, 
 
 ## 19. Implementation priorities
 
-Order and status live in `IMPLEMENTATION_GUIDE.md` and `IMPLEMENTATION_BACKLOG.md`. The dependency order is: **P0** shared foundation (stable IDs and repositories, one collection and dex, independent module parties and WORLD teams, global buddy, one Bag and Poké with audited 1:1 conversion, durable ledger with atomic settlement, durable offline eggs, individual XP and central evolution, recoverable migration); **P1** module acquisition (PLAN, CARE, HEAL, MINT, HOME, LINK through privacy-safe single-owner events, WORLD Finds and XP separation kept, GEAR verified free of acquisition); **P2** refinement (collection filters, regional dex browsing, safe duplicate management, hatch/recruit/evolution scenes, long-run generosity simulation, launcher and buddy presentation).
+Order and status live in `IMPLEMENTATION_GUIDE.md` and `IMPLEMENTATION_BACKLOG.md`.
 
 ## 20. Expanded Pokémon gameplay systems
 
@@ -858,7 +711,7 @@ Every item definition must declare at least one valid acquisition source before 
 | Research and discovery | Pokédex milestones, field research, fossils, form discoveries | Shared research service issues reward events; no sensitive real-life data as eligibility or quantity input |
 | Pokémon abilities/jobs | Pickup, Honey Gather, Harvest, Poké Jobs | Capped offline settlement, clear provenance and no duplicate job assignment |
 | Story and authored events | Campaign scenes, NPC gifts, regional events, postgame investigations | Replay-safe; no permanently missable essential item |
-| Module-origin rewards | Existing approved PLAN/CARE/HEAL/MINT/HOME/LINK acquisition/reward contracts | Only explicitly allowed item reward types; source modules publish minimal eligible events; no private content crosses boundaries |
+| Module-origin rewards | Existing approved PLAN/CARE/HEAL/MINT/BASE/LINK acquisition/reward contracts | Only explicitly allowed item reward types; source modules publish minimal eligible events; no private content crosses boundaries |
 | Exchange/collection milestones | Fossil restoration, contest awards, ribbons, Pokéathlon | Rewards are earned, not random paid draws; duplicates have a documented use or are prevented |
 
 #### 20.2.2 Item category acquisition matrix
@@ -880,8 +733,8 @@ Every item definition must declare at least one valid acquisition source before 
 
 - Shops are WORLD facilities backed by shared Bag and Poké repositories.
 - Purchase is a single transaction: validate price/stock/capacity, debit Poké, grant item, append ledger entries; rollback all if any step fails.
-- No expiring offers, countdowns or login-timed deals. *(Owner, 14 November 2026)* The Kecleon Shop has a fixed stock that is always sold (every evolution stone, the Link Cord, the Everstone, Gimmighoul Coins) and a daily shelf of five more items chosen for the player's local day; nothing is sold only on the shelf and every catalogue item comes round (`KecleonShop`, docs/economy.md).
-- *(Owner, 14 November 2026)* Two shops: the **Poké Mart**, the general store, its own section of the Pokémon tab (not in the Bag, not in World), selling Exp. Candy, Super Candy and berries; and the **Kecleon Shop**, the specialty shop in WORLD's Town, which sells no candy. Anything that grows one Pokémon (candies, stones, vitamins, mints, caps, held items) is priced generously, since a player keeps many Pokémon; permanent upgrades (WORLD's facilities, the Dojo) keep their prices (`Shop`, `KecleonShop`, docs/economy.md).
+- No expiring offers, countdowns or login-timed deals. The Kecleon Shop has a fixed stock that is always sold (every evolution stone, the Link Cord, the Everstone, Gimmighoul Coins) and a daily shelf of five more items chosen for the player's local day; nothing is sold only on the shelf and every catalogue item comes round (`KecleonShop`, docs/economy.md).
+- Two shops: the **Poké Mart**, the general store, its own section of the Pokémon tab (not in the Bag, not in World), selling Exp. Candy, Super Candy and berries; and the **Kecleon Shop**, the specialty shop in WORLD's Town, which sells no candy. Anything that grows one Pokémon (candies, stones, vitamins, mints, caps, held items) is priced generously, since a player keeps many Pokémon; permanent upgrades (WORLD's facilities, the Dojo) keep their prices (`Shop`, `KecleonShop`, docs/economy.md).
 - Essential evolution and progression materials must have a reliable path. Chance drops may supplement but cannot be the only route for an essential requirement.
 - Selling items is optional and never required to recover from ordinary play. Held items may be sold only after explicit confirmation and must be unequipped first; default UI should favor storage/equipment rather than liquidation.
 
@@ -951,32 +804,13 @@ Field Move paths must never become mandatory progression locks that strand the p
 |---|---|
 | Shared Pokémon domain | Species/form data, owned instance, abilities, nature, moves, evolution, ribbons/marks, research, item definitions, Bag/equipment assignment, transformation eligibility and shared interaction identity |
 | WORLD | Held-item loadout UI, item shops, crafting, training, jobs, contests, Pokéathlon, Berry Garden, camps, raids/bosses, fossils, outbreaks, Ranger-style field interactions and regional content |
-| CARE | Optional buddy/companion interactions and reflection presentation only; no separate friendship or held-item inventory |
-| HEAL | Optional non-sensitive field-research presentation; health biometrics never affect item drops or Pokémon combat rewards |
-| HOME | Optional cosmetic habitat/garden presentation; household inventory/property records never become Pokémon item inventory |
-| PLAN | Optional Focus/Task companion presentation; no item reward based on private task text |
-| MINT | No financial data or transaction content affects item drops, Poké rewards or Pokémon stats |
-| LINK | Optional postcard/story presentation; contact identity or message content never affects rewards |
+| PLAN, CARE, HEAL, MINT, BASE, LINK | Optional, restrained presentation of buddy, companion or field-research scenes only; no separate friendship or held-item inventory, and no private content (section 13.2) affects item drops, Poké rewards, Pokémon stats or rewards |
 | GEAR | Ranger-inspired utility/field support where approved; no separate Bag or Pokémon ownership |
 | Launcher | Ambient display and quick entry only; no independent progression/equipment state |
 
 ### 20.6 Shared services and logical contracts
 
-Recommended domain services (implementation may combine them where boundaries remain explicit):
-- `ItemCatalogRepository` — canonical definitions, categories, acquisition metadata and version.
-- `InventoryService` — shared Bag grants, spends, stack operations, provenance and ledger.
-- `HeldItemService` — equip, unequip, swap, compatibility and persistent assignment; no consume API for held items.
-- `ItemEffectRegistry` — deterministic effect definitions, evaluation scope, caps and runtime trigger state.
-- `AbilityService` — ability slots, Hidden Ability eligibility and effects.
-- `NatureService` — original nature, mint-adjusted effective modifier and derived stat calculation.
-- `TrainingService` — bounded training items, specialization and respec.
-- `MoveService` — learnsets, relearning, tutors/TMs and mastery.
-- `EvolutionService` — canonical requirements and atomic evolution.
-- `BallService` — ball metadata and acquisition provenance.
-- `TransformationService` — Mega/Z/Dynamax/Gigantamax/Tera state and eligibility.
-- `ResearchService` — species/form/individual research and optional objectives.
-- `RibbonMarkService` — canonical ribbon/mark history and PokéLife achievement separation.
-- `CraftingService`, `JobService`, `ContestService`, `InteractionService`, `EncounterService`, `FormService` — optional services as each gameplay system is delivered.
+Recommended domain services (an implementation may combine them where boundaries stay explicit): item catalog, inventory (Bag grants, spends, provenance, ledger), held item (equip, unequip, swap, compatibility; no consume API), item effect registry (deterministic effects, scope, caps, runtime trigger state), ability, nature (original nature, mint-adjusted modifier, derived stats), training, move (learnsets, relearning, tutors/TMs, mastery), evolution, ball, transformation (Mega/Z/Dynamax/Gigantamax/Tera), research, ribbon/mark, and, as each system is delivered, crafting, job, contest, interaction, encounter and form services.
 
 All mutation APIs validate ownership and compatibility and participate in the transaction coordinator. Services expose domain contracts, not Compose or Android framework types.
 

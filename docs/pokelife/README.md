@@ -12,9 +12,10 @@ Precedence follows the Product Bible (section 10). The older documents in `docs/
 
 | Older document | Still used for | Superseded by this folder in |
 |---|---|---|
-| `docs/design.md` | Rules the code implements today (Pokémon, rewards, perks) until each is migrated | Product direction, modules, buddy and party roles, accounts and cloud |
-| `docs/economy.md` | The numbers the code pays today (`RewardRules.VERSION`) | The single Poké currency (changes with the next reward-rules version) |
-| `docs/regional-storylines.md` | The story rewrite in progress | `MODULES/WORLD.md` for structure and contracts |
+| `docs/design.md` | Rules the code implements today (Pokémon, rewards, perks) until each is migrated | Product direction, modules, buddy and party roles |
+| `docs/economy.md` | The numbers the code pays today (`RewardRules.VERSION`) | The shape of the economy (one Bag, one currency, the ledger) in `FEATURES/POKEMON_ECOSYSTEM.md` |
+| `docs/regional-storylines.md` | The regional expedition and main-storyline design | `MODULES/WORLD.md` for structure and contracts |
+| `docs/world-story-engine.md`, `docs/world-story-rewrite.md` | How the story and scene engine works, and the writing brief with the scripts not yet in the code | `MODULES/WORLD.md` for structure and contracts |
 | `docs/assets.md` | Where each asset comes from | `FEATURES/ASSETS_AND_AUDIO.md` for the policy |
 | `legacy-android/` | Reference for the original rules | Unchanged: reference only |
 
@@ -28,9 +29,10 @@ Precedence follows the Product Bible (section 10). The older documents in `docs/
 | Pokégear | GEAR |
 | Explore region | Part of WORLD |
 | Grow region | Not a module (goals and milestones are PLAN's, reflection is CARE's) |
+| HOME (the household module) | BASE. Stored names keep `home_*` and `HOME`; WORLD's old "Base" destination is now Town |
+| PokéPlan as the name of the whole app | PokéLife. PLAN is the planning module; code packages, the repository and the Android application id keep `pokeplan` |
 | Plan coins, World Poké | One currency: Poké |
 | Plan's buddy, Care's lead | The global buddy; each module's party lead (`FEATURES/POKEMON_ECOSYSTEM.md` section 2.2) |
-| Coins, candies, eggs, `RewardRules` | Unchanged until the reward rules are versioned |
 
 ## Keeping it current
 

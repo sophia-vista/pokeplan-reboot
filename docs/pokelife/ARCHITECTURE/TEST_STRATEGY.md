@@ -1,6 +1,5 @@
 # PokéLife — Test Strategy
 
-**Version:** 1.0  
 **Status:** Approved testing strategy  
 **Location:** `ARCHITECTURE/TEST_STRATEGY.md`  
 **Scope:** All PokéLife modules, shared systems, Android application surfaces and release workflows
@@ -46,15 +45,15 @@ Use a layered testing pyramid. Most verification belongs in deterministic lower-
 
 The primary physical acceptance target is the **Samsung Galaxy S26 Ultra**. Record its exact Android release/build and app build for each acceptance run. Emulator and JVM results do not substitute for physical-device validation. Add a representative secondary Android device/API-level matrix as the supported deployment range is finalized.
 
-## 3. Existing test baseline and migration posture
+## 3. Test baseline, known gaps and migration posture
 
-The repository has about 150 Kotlin test files outside `legacy-android/` (Pokémon progression and ownership, rewards and the golden vector, PLAN, CARE, HEAL, MINT, HOME, LINK, WORLD, GEAR, persistence and compatibility, reminders, navigation, Compose screenshots). The database, sealing, backup/restore and importer tests run on the JVM against real SQLite files and the five committed 0.123.0 fixtures (`app-core/src/jvmTest/resources/fixtures/0.123.0/`). A file's existence is not an execution report; the run result is what counts (section 1).
+The repository's tests cover Pokémon progression and ownership, rewards and the golden vector, PLAN, CARE, HEAL, MINT, BASE, LINK, WORLD, GEAR, persistence and compatibility, reminders, navigation and Compose screenshots. The database, sealing, backup/restore and importer tests run on the JVM against real SQLite files and the five committed 0.123.0 fixtures (`app-core/src/jvmTest/resources/fixtures/0.123.0/`). A test file's existence is not an execution report.
 
-**Known gaps (still true):**
+**Known gaps:**
 
-- `androidApp` has a Robolectric test source set since 0.175.1 (REP-033; `./gradlew :androidApp:testDebugUnitTest`, run by CI's Android step): `LiveStore` on Android's own SQLite stack (the cutover on the five 0.123.0 fixtures, process death, a corrupt and a newer-schema database), Heal, Mint and backup sealing with a test Keystore (`FakeAndroidKeyStore`) and failing closed without it, the shared reminder scheduler (alarms, Done and snooze buttons, quiet hours, a reminder missed while the phone was off, the boot, alarm and time-zone receivers), the Today widget's tick against the app's store, and a focus session across a process death. Still untested off a device: Care, Heal, Mint, Home and Link reminder notifications, the Glance widgets' rendering, permissions, the launcher, and anything Robolectric's shadows only imitate (real alarm delivery, Doze, the real Keystore). There is no instrumented suite. Legacy example tests do not count as acceptance coverage.
-- `ScreenshotTest` renders screens to PNG and asserts only that the encoded image is larger than a minimum size (it protects against a blank screen, not a visual change). It is **not a golden test** and must not be counted as visual regression coverage in a release gate; approved golden images, font-scale and dark-mode comparisons do not exist yet.
-- The real kill during a write and low storage are proven on the JVM only (`DATA_AND_MIGRATIONS.md` section 4.5); the Keystore path runs under Robolectric against a stand-in Keystore, not the phone's.
+- `androidApp` has a Robolectric suite (REP-033; `./gradlew :androidApp:testDebugUnitTest`, run by CI's Android step): `LiveStore` on Android's own SQLite stack (the cutover on the five fixtures, process death, a corrupt and a newer-schema database), Heal, Mint and backup sealing with a test Keystore (`FakeAndroidKeyStore`) and failing closed without it, the shared reminder scheduler (alarms, Done and snooze buttons, quiet hours, a reminder missed while the phone was off, the boot, alarm and time-zone receivers), the Today widget's tick against the app's store, and a focus session across a process death. Still untested off a device: Care, Heal, Mint, Base and Link reminder notifications, the Glance widgets' rendering, permissions, the launcher, and anything Robolectric only imitates (real alarm delivery, Doze, the real Keystore). There is no instrumented suite. Legacy example tests do not count as acceptance coverage.
+- `ScreenshotTest` renders screens to PNG and asserts only that the image is larger than a minimum size: a smoke test, not a golden test (section 12). Approved golden images, font-scale and dark-mode comparisons do not exist yet.
+- The real kill during a write and low storage are proven on the JVM only (`DATA_AND_MIGRATIONS.md` section 4.5).
 
 When tests are replaced at a new ownership boundary: map each to the contract it protects, preserve meaningful regressions, update obsolete assumptions only with an explicit specification decision, and do not remove a test merely because it fails during migration (decide whether it exposes a regression or obsolete behavior).
 
@@ -96,7 +95,7 @@ Repository tests must exercise the real persistence implementation wherever prac
 
 Tests must assert authoritative records and derived projections separately. Rebuilding a projection must not mutate source records or create reward events.
 
-Required database-specific tests: foreign keys are read back as enabled on every connection and the store refuses to open without them; a schema edit without a numbered migration fails the build (`verifyCommonMainDataDbMigration` against the committed `data/databases/N.db`); a newer schema is left untouched; a save writes only the rows that changed (counted with triggers); the ledger cannot be edited or emptied even by raw SQL; an activation that cannot finish leaves the old row live; tests do not log or write Heal/Mint rows unsealed (`DATA_AND_MIGRATIONS.md` section 10.4.1).
+Required database-specific tests: foreign keys are read back as enabled on every connection and the store refuses to open without them; a schema edit without a numbered migration fails the build (`verifyCommonMainDataDbMigration` against the committed `data/src/commonMain/sqldelight/databases/N.db`); a newer schema is left untouched; a save writes only the rows that changed (counted with triggers); the ledger cannot be edited or emptied even by raw SQL; an activation that cannot finish leaves the old row live.
 
 ## 6. Data migrations, backup and recovery
 
@@ -135,7 +134,7 @@ Automated tests must prove:
 - Recruitment creates one persistent owned individual; retries do not create extra Pokémon.
 - Evolution, transfer and form changes preserve canonical individual identity and ownership invariants.
 
-Required cross-module scenarios include task completion through multiple surfaces, HOME-created tasks owned by PLAN, CARE routine completion, linked focus sessions, repeated WORLD expedition completion/resume, milestone claims and offline event replay. Assert both ledger rows and final balances/ownership. Include property/invariant tests for non-negative quantities, unique transaction IDs, unique event application and reconciliation.
+Required cross-module scenarios include task completion through multiple surfaces, BASE-created tasks owned by PLAN, CARE routine completion, linked focus sessions, repeated WORLD expedition completion/resume, milestone claims and offline event replay. Assert both ledger rows and final balances/ownership. Include property/invariant tests for non-negative quantities, unique transaction IDs, unique event application and reconciliation.
 
 ## 7.1 Held items, item acquisition and expanded Pokémon mechanics
 
@@ -152,7 +151,6 @@ Held-item behavior is a P0 data-integrity invariant and must have dedicated unit
 - Verify Ability, Hidden Ability, Nature/Mint, move, training, evolution, transformation, Ribbon/Mark and research effects are centralized, deterministic and eligibility-safe.
 - Verify transformations are temporary encounter state and never create duplicate owned Pokémon or permanent base-stat inflation.
 - Verify offline jobs, berries, outbreaks and research settlement are idempotent, non-expiring and free of attendance penalties.
-- Verify no real-life sensitive data from HEAL, MINT, CARE, LINK or HOME enters item acquisition, drop rates, combat or Pokémon progression.
 
 ## 8. Module ownership and integration contracts
 
@@ -305,7 +303,7 @@ Automate complete critical journeys and assert durable outcomes, not just transi
 | CARE routine | Completion, privacy boundary, reminder and reward ownership |
 | HEAL activity import | Permission, provenance, deduplication, local history and denial path |
 | MINT transaction | Create/edit, balance projection, persistence and private-data boundary |
-| HOME integration | Linked task/reference with PLAN retaining completion authority |
+| BASE integration | Linked task/reference with PLAN retaining completion authority |
 | LINK follow-up | Record, reminder, routing and duplicate-action safety |
 | GEAR utility | Input validation, calculation correctness and result persistence if applicable |
 | WORLD expedition | Team selection, deterministic simulation, pause/resume and single outcome/reward |
@@ -318,21 +316,7 @@ At least one cross-module journey must demonstrate that a completed real-life ac
 
 ## 19. CI and automation policy
 
-The following categories are mandatory automated checks:
-
-- Domain and business-rule tests.
-- Reward-ledger idempotency and ownership invariants.
-- Repository/database and serialization tests.
-- Migration, backup and recovery tests.
-- Module ownership and contract tests.
-- Reminder policy and scheduler logic.
-- External adapter behavior and failure handling.
-- Compose semantics and navigation tests.
-- Approved screenshot/golden comparisons.
-- Automated accessibility semantics checks.
-- Static analysis, dependency and security checks.
-- Critical end-to-end journeys.
-- Android compilation and instrumented emulator tests.
+Every test category in sections 4 to 18 is a mandatory automated check, plus static analysis, dependency and security checks, and Android compilation with instrumented emulator tests.
 
 Recommended CI sequence:
 
@@ -350,6 +334,8 @@ Recommended CI sequence:
 Run focused tests during development and the complete relevant regression suite before merge/release. Flaky tests must be diagnosed and corrected; do not silently skip, indefinitely retry until green or delete a test because it exposes nondeterminism. Associate results with commit, build variant, test environment and timestamp. Publish test reports and preserve failure artifacts such as screenshots/logs with sensitive data redacted.
 
 Physical-device tests remain a separate required acceptance activity and must be recorded in the release evidence.
+
+**As built (`.github/workflows/ci.yml`, `release-apk.yml`; owner's rule: spend as few Actions minutes as possible).** The local gate `./gradlew jvmTest compileKotlinWasmJs` is the normal check. `ci.yml` runs on a pull request only with the `ci`, `android` or `apk` label (or started by hand), and never for a PR that changes only `docs/`, `.md` files, `.claude/`, `.idea/` or `legacy-android/`. It checks `VERSION` and that the Dex data is regenerated unchanged, then runs `jvmTest compileKotlinWasmJs :composeApp:compileKotlinJvm -Pscreenshots`; the Android step (`:androidApp:testDebugUnitTest`, the Robolectric suite) runs when the PR touches `androidApp/`, an `androidMain` source set or the Gradle setup, or has the `android` label, and the `apk` label also builds and keeps the debug APK. `release-apk.yml` builds and publishes the APK on a merge to `main` (code changes only). **Mandatory categories not in CI yet:** formatting, lint and static analysis, dependency and security checks, Compose semantics and navigation tests (no test uses a Compose test rule), approved golden comparisons, automated accessibility checks and the instrumented emulator suite; wasm tests are not run (they need a browser).
 
 ## 20. Real-device acceptance
 
@@ -442,10 +428,8 @@ This document defines the shared framework. Feature specifications remain the so
 - [Data Architecture and Migrations](DATA_AND_MIGRATIONS.md)
 - [Integrations and Privacy](INTEGRATIONS_AND_PRIVACY.md)
 - [Pokémon Ecosystem](../FEATURES/POKEMON_ECOSYSTEM.md)
-- [Reminders](../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture)
 - [Design System](../FEATURES/DESIGN_SYSTEM.md)
 - [Assets and Audio](../FEATURES/ASSETS_AND_AUDIO.md)
 - [Launcher](../FEATURES/LAUNCHER.md)
 - Module specifications: `../MODULES/`
-
 - `../FEATURES/POKEMON_ECOSYSTEM.md` Section 20 — persistent held-item, item-acquisition, expanded Pokémon progression and WORLD activity acceptance requirements.
