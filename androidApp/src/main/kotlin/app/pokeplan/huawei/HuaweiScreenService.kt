@@ -79,9 +79,23 @@ class HuaweiScreenService : AccessibilityService() {
         val text = node.text?.toString()?.trim()?.take(MAX_CHARS).orEmpty()
         val description = node.contentDescription?.toString()?.trim()?.take(MAX_CHARS).orEmpty()
         if (text.isNotEmpty() || description.isNotEmpty() || node.isScrollable) {
-            out += ScreenNode(text, description, node.viewIdResourceName.orEmpty(), node.className?.toString()?.substringAfterLast('.').orEmpty(), depth, node.isClickable, node.isScrollable)
+            out += ScreenNode(text, description, node.viewIdResourceName.orEmpty(), node.className?.toString()?.substringAfterLast('.').orEmpty(), depth, node.isClickable, node.isScrollable, actionNames(node))
         }
         for (i in 0 until node.childCount) node.getChild(i)?.let { collect(it, depth + 1, out) }
+    }
+
+    /** The actions Android offers on [node] that matter to the walk (a debug aid in the capture: which controls can be manipulated). */
+    private fun actionNames(node: AccessibilityNodeInfo): List<String> = node.actionList.mapNotNull {
+        when (it.id) {
+            AccessibilityNodeInfo.ACTION_CLICK -> "click"
+            AccessibilityNodeInfo.ACTION_LONG_CLICK -> "long-click"
+            AccessibilityNodeInfo.ACTION_SCROLL_FORWARD -> "scroll-fwd"
+            AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD -> "scroll-back"
+            AccessibilityNodeInfo.ACTION_SET_TEXT -> "set-text"
+            AccessibilityNodeInfo.ACTION_EXPAND -> "expand"
+            AccessibilityNodeInfo.ACTION_COLLAPSE -> "collapse"
+            else -> null
+        }
     }
 
     /** The visible elements of [root], breadth first. */

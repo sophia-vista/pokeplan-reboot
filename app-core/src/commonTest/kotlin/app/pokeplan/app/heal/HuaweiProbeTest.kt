@@ -91,4 +91,10 @@ class HuaweiProbeTest {
         assertEquals(54.2, seen.home.weight)
         assertEquals(309, seen.home.sleepMinutes, "a field the newer page lacks keeps the older value")
     }
+
+    @Test fun aCaptureLineListsWhatCanBeDoneToAControl() {
+        val node = ScreenNode("Sleep", "", "com.huawei.health:id/function_set_items_title", "TextView", 1, clickable = true, actions = listOf("click", "long-click"))
+        assertEquals("  Sleep  [function_set_items_title, TextView, tap, do:click+long-click]", node.line())
+        assertEquals("Sleep  [TextView]", ScreenNode("Sleep", type = "TextView").line(), "no actions, no tag")
+    }
 }

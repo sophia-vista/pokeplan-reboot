@@ -12,6 +12,7 @@ Huawei Health read: less scrolling, one pass (HEAL, REP-046, owner feedback 21 N
 - **One pass down the Health page:** each wanted card is opened as it comes into view and Back returns to the same place, so the page is no longer scrolled to its end and back up before the cards are opened. The pass ends when every wanted card has been opened.
 - **Exercise records stops early:** the list is newest first, so scrolling ends at the first session older than a read can pay for (8 days), instead of always scrolling 6 times.
 - **Budgets per page:** Weight and Sleep 2 scrolls each (Sleep's Week tab 2), Heart 1, Exercise records up to 8 with the cut-off above. New pure `HuaweiWalk` (tested); the service only taps and scrolls.
+- **Controls debug script:** `python3 -I tools/huawei/controls.py` (needs `adb` and USB debugging, nothing switched on in the app) dumps the Huawei Health screen in front with `uiautomator`, digits hidden, and lists what can be tapped, long-pressed or scrolled, which label is tapped through which clickable ancestor, the main scroller, and whether each card the walk opens is found and tappable. `--file` reads a saved dump; `--out` saves the report. The app's own capture now also tags each control with the actions Android offers (`do:click+long-click`).
 - **Heart card captured:** the walk now also opens the Heart card so its page can be parsed next (resting heart rate, the day's range). Nothing is saved from it yet. To confirm on the phone: the time of a read and that Back returns after every card.
 ## 0.225.0
 

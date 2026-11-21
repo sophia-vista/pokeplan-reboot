@@ -42,6 +42,8 @@ data class ScreenNode(
     val depth: Int = 0,
     val clickable: Boolean = false,
     val scrollable: Boolean = false,
+    /** What Android says can be done to it, short names ("click", "long-click", "scroll-fwd", "scroll-back", "set-text", "expand", "collapse"); empty when none. A debug aid. */
+    val actions: List<String> = emptyList(),
 ) {
     /** One line of the capture: the depth as indent, what it says, then its id and kind. */
     fun line(): String = buildString {
@@ -49,7 +51,7 @@ data class ScreenNode(
         val words = listOf(text, description.takeIf { it != text } ?: "").filter { it.isNotBlank() }.joinToString(" | ")
         append(words.ifBlank { "-" })
         val tags = listOfNotNull(viewId.substringAfter(":id/").takeIf { it.isNotBlank() }, type.takeIf { it.isNotBlank() },
-            "tap".takeIf { clickable }, "scroll".takeIf { scrollable })
+            "tap".takeIf { clickable }, "scroll".takeIf { scrollable }, actions.takeIf { it.isNotEmpty() }?.joinToString("+", "do:"))
         if (tags.isNotEmpty()) append("  [").append(tags.joinToString(", ")).append(']')
     }
 }
