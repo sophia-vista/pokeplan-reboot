@@ -25,19 +25,42 @@ object WidgetArt {
 
     private const val RESOURCES = "composeResources/pokeplan.composeapp.generated.resources/files"
 
+    /**
+     * A widget is a RemoteViews payload, and its bitmaps travel through Binder: one 420dp x 200dp scene at 3x is ~3 MB and
+     * can make the update fail. A single picture is capped well under the ~1 MB transaction budget, and the cache is capped
+     * by bytes rather than by entry count so a few large scenes cannot keep tens of MB alive in the process.
+     */
+    private const val MAX_BITMAP_BYTES = 512 * 1024
+    private const val MAX_CACHE_BYTES = 16L * 1024 * 1024
+    private var cachedBytes = 0L
+
     private fun asset(context: Context, path: String): Bitmap? = try {
         context.assets.open("$RESOURCES/$path").use { BitmapFactory.decodeStream(it) }
     } catch (e: Exception) {
         null
     }
 
+    @Synchronized
     private fun remember(key: String, make: () -> Bitmap?): Bitmap? {
         cache[key]?.let { return it }
         val bitmap = make() ?: return null
-        // Widget bitmaps are small; keep the few that are asked for again and again.
-        if (cache.size > 24) cache.remove(cache.keys.first())
-        cache[key] = bitmap
-        return bitmap
+        val capped = capped(bitmap)
+        cache[key] = capped
+        cachedBytes += capped.byteCount.toLong()
+        while (cachedBytes > MAX_CACHE_BYTES && cache.size > 1) {
+            val oldest = cache.keys.first()
+            cachedBytes -= (cache.remove(oldest)?.byteCount ?: 0).toLong()
+        }
+        return capped
+    }
+
+    /** [bitmap] itself when it is small enough, else a nearest-neighbour smaller copy (the launcher scales it to the widget anyway). */
+    private fun capped(bitmap: Bitmap): Bitmap {
+        if (bitmap.byteCount <= MAX_BITMAP_BYTES) return bitmap
+        val scale = kotlin.math.sqrt(MAX_BITMAP_BYTES.toDouble() / bitmap.byteCount).toFloat()
+        val w = (bitmap.width * scale).toInt().coerceAtLeast(1)
+        val h = (bitmap.height * scale).toInt().coerceAtLeast(1)
+        return Bitmap.createScaledBitmap(bitmap, w, h, false)
     }
 
     /**

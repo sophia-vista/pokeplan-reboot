@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import app.pokeplan.ui.rememberInForeground
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,10 +52,15 @@ internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
     val lack = needs(model, Capability.ACCELEROMETER, Capability.MAGNETOMETER)
     if (feed == null || lack != null) return Missing(if (feed == null) "No compass on this device" else "No ${lack?.label?.lowercase()} on this device")
     var heading by remember { mutableStateOf<Float?>(null) }
-    DisposableEffect(feed) {
+    // Stops with the app: a sensor left registered behind a stopped Activity keeps sampling in the background.
+    val foreground = rememberInForeground()
+    DisposableEffect(feed, foreground) {
         var smooth: Float? = null
-        val stop = feed.orientation { g, m -> SensorMath.heading(g, m)?.let { smooth = SensorMath.smooth(smooth, it); heading = smooth } }
-        onUse()
+        var stop: (() -> Unit)? = null
+        if (foreground) {
+            stop = feed.orientation { g, m -> SensorMath.heading(g, m)?.let { smooth = SensorMath.smooth(smooth, it); heading = smooth } }
+            onUse()
+        }
         onDispose { stop?.invoke() }
     }
     val h = heading
@@ -88,10 +94,14 @@ internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
     if (feed == null || !model.capabilities.status(Capability.ACCELEROMETER).available) return Missing("No level on this device")
     var tilt by remember { mutableStateOf<SensorMath.Tilt?>(null) }
     var zero by remember { mutableStateOf(SensorMath.Tilt(0f, 0f)) }
-    DisposableEffect(feed) {
+    val foreground = rememberInForeground()
+    DisposableEffect(feed, foreground) {
         var last: SensorMath.Tilt? = null
-        val stop = feed.gravity { g -> SensorMath.tilt(g)?.let { n -> last = last?.let { SensorMath.Tilt(SensorMath.smooth(it.pitch + 180f, n.pitch + 180f, 0.25f) - 180f, SensorMath.smooth(it.roll + 180f, n.roll + 180f, 0.25f) - 180f) } ?: n; tilt = last } }
-        onUse()
+        var stop: (() -> Unit)? = null
+        if (foreground) {
+            stop = feed.gravity { g -> SensorMath.tilt(g)?.let { n -> last = last?.let { SensorMath.Tilt(SensorMath.smooth(it.pitch + 180f, n.pitch + 180f, 0.25f) - 180f, SensorMath.smooth(it.roll + 180f, n.roll + 180f, 0.25f) - 180f) } ?: n; tilt = last } }
+            onUse()
+        }
         onDispose { stop?.invoke() }
     }
     val t = tilt?.let { SensorMath.Tilt(it.pitch - zero.pitch, it.roll - zero.roll) }
@@ -126,10 +136,14 @@ internal fun BarometerTool(model: AppModel, onUse: () -> Unit) {
     val store = model.store
     if (feed == null || !model.capabilities.status(Capability.BAROMETER).available) return Missing("No barometer on this device")
     var hpa by remember { mutableStateOf<Float?>(null) }
-    DisposableEffect(feed) {
+    val foreground = rememberInForeground()
+    DisposableEffect(feed, foreground) {
         var avg: Float? = null
-        val stop = feed.pressure { p -> avg = avg?.let { it + (p - it) * 0.2f } ?: p; hpa = avg }
-        onUse()
+        var stop: (() -> Unit)? = null
+        if (foreground) {
+            stop = feed.pressure { p -> avg = avg?.let { it + (p - it) * 0.2f } ?: p; hpa = avg }
+            onUse()
+        }
         onDispose { stop?.invoke() }
     }
     val sea = model.data.gear.seaLevelHpa

@@ -72,7 +72,7 @@ class ReminderBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext
         doAsync {
-            SharedReminders.reschedule(app)
+            SharedReminders.rescheduleAfterReboot(app)
             AppAlerts.rescheduleFromSave(app)
         }
     }

@@ -289,7 +289,9 @@ internal fun OverviewCard(model: AppModel) {
                 MintValueRow(o.bill.name, if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(), soft = true)
             }
             // Accounts and budgets, a few of each; the full lists are in their own sections.
-            val accounts = MintRules.balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal }.take(4)
+            val accounts = remember(data.accounts, data.transactions) {
+                MintRules.balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal }.take(4)
+            }
             if (accounts.isNotEmpty()) {
                 SectionLabel("Accounts")
                 accounts.forEach { b -> MintValueRow(b.account.name, mint.show(b.postedMinor, b.account.currency), soft = true) }

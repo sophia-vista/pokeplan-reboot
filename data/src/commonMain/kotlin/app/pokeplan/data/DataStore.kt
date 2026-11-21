@@ -46,10 +46,14 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     /** Runs [body] in one transaction: it commits as a whole, or leaves nothing behind when it throws. */
     fun <T> transaction(body: () -> T): T = db.transactionWithResult { body() }
 
-    /** Anything the integrity checks object to; an empty list means the file and its references are sound. */
-    fun integrityIssues(): List<String> {
+    /**
+     * Anything the integrity checks object to; an empty list means the file and its references are sound.
+     * [full] runs the thorough `integrity_check` (a whole-file scan) for tests and recovery; the app's normal start uses
+     * `quick_check`, which catches the same damage without reading every page twice.
+     */
+    fun integrityIssues(full: Boolean = true): List<String> {
         val problems = mutableListOf<String>()
-        driver.executeQuery(null, "PRAGMA integrity_check", { c ->
+        driver.executeQuery(null, if (full) "PRAGMA integrity_check" else "PRAGMA quick_check", { c ->
             while (c.next().value) c.getString(0)?.takeIf { it != "ok" }?.let { problems += "integrity: $it" }
             QueryResult.Unit
         }, 0)

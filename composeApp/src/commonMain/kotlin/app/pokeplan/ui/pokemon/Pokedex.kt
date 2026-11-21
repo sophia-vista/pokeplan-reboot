@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -104,9 +106,12 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
     val player = model.data.player
     val regions = TrainerRank.unlockedRegions(player.trainerPoints)
     val rows = remember(view.region, view.national, view.generation) { view.rows() }
-    val states = rows.associate { (_, s) -> s.id to DexState.of(model.data, s.id) }
+    // The state of every species, built from the player's lists once: DexState.of scans the owned Pokémon, so asking it per
+    // row on every keystroke was O(rows x owned).
+    val states = remember(rows, player.pokemon, player.caught, model.data.seenSpecies) {
+        rows.associate { (_, s) -> s.id to DexState.of(model.data, s.id) }
+    }
     val caught = states.values.count { it.caught }
-
     // The National Dex is the null entry; a region is itself.
     PixelDropdown(
         listOf<Region?>(null) + regions, if (view.national) null else view.region,
@@ -120,65 +125,78 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
         { i -> if (i != null) change(view.copy(generation = i)) },
         Modifier.fillMaxWidth(),
     )
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            Text("${view.title}: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)
-            PixelBar(caught.toFloat() / rows.size.coerceAtLeast(1), color = if (caught == rows.size) Pixel.Warning else Pixel.Red)
-        }
-    }
-    PixelField(
-        view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
-        label = "Search by name or number",
-    )
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-        DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }
-    }
     val text = view.search.trim().lowercase().removePrefix("#")
-    val shown = rows.filter { (number, s) ->
-        val state = states.getValue(s.id)
-        val byFilter = when (view.filter) {
-            DexFilter.ALL -> true
-            DexFilter.CAUGHT -> state.caught
-            DexFilter.MISSING -> !state.caught
+    val shown = remember(rows, states, text, view.filter) {
+        rows.filter { (number, s) ->
+            val state = states.getValue(s.id)
+            val byFilter = when (view.filter) {
+                DexFilter.ALL -> true
+                DexFilter.CAUGHT -> state.caught
+                DexFilter.MISSING -> !state.caught
+            }
+            // A species not found yet matches by number only: its name would give it away.
+            byFilter && (text.isEmpty() || dexNumber(number).removePrefix("#").contains(text) || (state != DexState.UNKNOWN && s.name.lowercase().contains(text)))
         }
-        // A species not found yet matches by number only: its name would give it away.
-        byFilter && (text.isEmpty() || dexNumber(number).removePrefix("#").contains(text) || (state != DexState.UNKNOWN && s.name.lowercase().contains(text)))
     }
-    if (shown.isEmpty()) {
-        when {
-            text.isNotEmpty() -> EmptyState("Nothing matches", action = "Clear the search" to { change(view.copy(search = "")) })
-            view.filter == DexFilter.CAUGHT -> EmptyState("None caught here yet", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
-            else -> EmptyState("All caught!", action = "Show them all" to { change(view.copy(filter = DexFilter.entries.first())) })
+    Column(Modifier.fillMaxSize()) {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.L),
+            verticalArrangement = Arrangement.spacedBy(Spacing.M),
+        ) {
+            TextBox {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Text("${view.title}: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)
+                    PixelBar(caught.toFloat() / rows.size.coerceAtLeast(1), color = if (caught == rows.size) Pixel.Warning else Pixel.Red)
+                }
+            }
+            PixelField(
+                view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
+                label = "Search by name or number",
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }
+            }
         }
-    } else {
-        // An index, not a wall of cards: number, sprite, name and one quiet line per row, with a hairline between rows.
-        val shape = PixelShape
-        Column(Modifier.fillMaxWidth().clip(shape).background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape)) {
-            shown.forEachIndexed { i, (number, s) ->
-                val state = states.getValue(s.id)
-                // A seen species is named; one not found yet stays a mystery, so its name would give it away.
-                val name = if (state == DexState.UNKNOWN) "???" else s.name
-                val isShiny = s.id in model.data.shinySpecies
-                if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border))
-                Row(
-                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp)
-                        .quietClickable(enabled = state != DexState.UNKNOWN, onClickLabel = "Open entry") { open(s.id) }
-                        .semantics(mergeDescendants = true) {
-                            contentDescription = "Number $number, ${if (state == DexState.UNKNOWN) "Unknown" else s.name}, ${state.label}" + if (isShiny) ", shiny found" else ""
+        if (shown.isEmpty()) {
+            when {
+                text.isNotEmpty() -> EmptyState("Nothing matches", action = "Clear the search" to { change(view.copy(search = "")) })
+                view.filter == DexFilter.CAUGHT -> EmptyState("None caught here yet", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+                else -> EmptyState("All caught!", action = "Show them all" to { change(view.copy(filter = DexFilter.entries.first())) })
+            }
+        } else {
+            // An index, not a wall of cards: number, sprite, name and one quiet line per row, with a hairline between rows.
+            // A lazy list: only the rows on screen are composed and only their sprites are read.
+            val shape = PixelShape
+            LazyColumn(
+                Modifier.weight(1f).fillMaxWidth().padding(horizontal = Spacing.Page).clip(shape)
+                    .background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape),
+            ) {
+                itemsIndexed(shown, key = { _, (_, s) -> s.id }) { i, (number, s) ->
+                    val state = states.getValue(s.id)
+                    // A seen species is named; one not found yet stays a mystery, so its name would give it away.
+                    val name = if (state == DexState.UNKNOWN) "???" else s.name
+                    val isShiny = s.id in model.data.shinySpecies
+                    if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border))
+                    Row(
+                        Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp)
+                            .quietClickable(enabled = state != DexState.UNKNOWN, onClickLabel = "Open entry") { open(s.id) }
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = "Number $number, ${if (state == DexState.UNKNOWN) "Unknown" else s.name}, ${state.label}" + if (isShiny) ", shiny found" else ""
+                            }
+                            .padding(horizontal = Spacing.S, vertical = Spacing.XS),
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
+                    ) {
+                        Text(dexNumber(number), Modifier.width(52.dp), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                        // Species not caught yet show as a grey shape: the real sprite, tinted.
+                        Sprite(Dex.defaultForm(s.id).id, false, "", size = Spacing.Target, silhouette = if (state.caught) null else Pixel.Shade)
+                        Column(Modifier.weight(1f)) {
+                            Text(name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (state == DexState.UNKNOWN) Pixel.InkSoft else Pixel.Ink)
+                            // Words, not just the sprite's colour, tell the states apart.
+                            Text(if (state == DexState.UNKNOWN) "Not found yet" else state.label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
                         }
-                        .padding(horizontal = Spacing.S, vertical = Spacing.XS),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
-                ) {
-                    Text(dexNumber(number), Modifier.width(52.dp), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-                    // Species not caught yet show as a grey shape: the real sprite, tinted.
-                    Sprite(Dex.defaultForm(s.id).id, false, "", size = Spacing.Target, silhouette = if (state.caught) null else Pixel.Shade)
-                    Column(Modifier.weight(1f)) {
-                        Text(name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (state == DexState.UNKNOWN) Pixel.InkSoft else Pixel.Ink)
-                        // Words, not just the sprite's colour, tell the states apart.
-                        Text(if (state == DexState.UNKNOWN) "Not found yet" else state.label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
+                        if (isShiny) Glyph("star", Pixel.Warning, size = 18.dp, description = "Shiny")
+                        if (state == DexState.OWNED) ItemIcon("poke-ball", size = 20.dp, description = null)
                     }
-                    if (isShiny) Glyph("star", Pixel.Warning, size = 18.dp, description = "Shiny")
-                    if (state == DexState.OWNED) ItemIcon("poke-ball", size = 20.dp, description = null)
                 }
             }
         }

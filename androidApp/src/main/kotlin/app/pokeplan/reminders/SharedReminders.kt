@@ -104,11 +104,17 @@ object SharedReminders {
     private fun repo(context: Context): ReminderRepository? = LiveStore.get(context)?.reminders
 
     /** Plans every reminder again and sets the alarms; the one call the app, the boot receiver and every fired alarm make. */
+    fun reschedule(context: Context) = reschedule(context, null)
+
+    /**
+     * [known] is the plan the caller already built (a fired alarm), so a fire does not read and decrypt every module twice.
+     * [force] is for a reboot or a clock change, when the alarms the phone held are gone even though their times did not move.
+     */
     @Synchronized
-    fun reschedule(context: Context) {
+    private fun reschedule(context: Context, known: Live?, force: Boolean = false) {
         val app = context.applicationContext
         val now = System.currentTimeMillis()
-        val live = live(app)
+        val live = known ?: live(app)
         val repo = repo(app)
         repo?.dropOlderThan(now - HOLD_GRACE_MILLIS)
         val zone = TimeZone.currentSystemDefault()
@@ -129,6 +135,7 @@ object SharedReminders {
             app, PREFS, plan, { it.first.id }, { it.second },
             intent = { key, item, flags -> fireIntent(app, key, item?.first, flags) },
             legacy = { code -> PendingIntent.getBroadcast(app, code, Intent(app, SharedReminderReceiver::class.java).setAction(ACTION_FIRE), PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE) },
+            force = force,
         )
         // The next plan looks back to just before now, so a reminder that was on its way to fire() is not taken for missed.
         prefs.edit().putLong(LAST_PLANNED, maxOf(since ?: 0L, now - SETTLE_MILLIS)).putStringSet(DELIVERED, delivered).apply()
@@ -223,7 +230,7 @@ object SharedReminders {
                 }
             }
         }
-        reschedule(context)
+        reschedule(context, live)
     }
 
     /** Remembers that [key] went off, so the next plan does not take it for missed (kept as long as a missed one is looked for). */
@@ -249,6 +256,10 @@ object SharedReminders {
             else -> Unit
         }
     }
+
+    /** Plans again after a reboot or a clock/time-zone change: the alarms are gone even if their times did not move. */
+    @Synchronized
+    fun rescheduleAfterReboot(context: Context) = reschedule(context, null, force = true)
 
     /** A button was tapped (or an old notification's action arrived through a shim): route it to the owner, then plan again. */
     suspend fun act(context: Context, request: ReminderRequest, key: String) {

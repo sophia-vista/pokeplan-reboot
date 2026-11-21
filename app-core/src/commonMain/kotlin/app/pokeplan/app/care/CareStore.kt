@@ -139,9 +139,13 @@ class CareStore(
             return emptyList()
         }
         val canPay = routine.paysOn(today) && CareRules.routinesPaidOn(data, today) < CareRules.ROUTINES_PAID_PER_DAY
-        update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.complete(today) else it }) }
         val rewards = if (canPay) pay(CareKind.ROUTINE) else null
-        if (rewards != null) update { d -> d.copy(routines = d.routines.map { if (it.id == id) it.paid(today) else it }) }
+        // Completion and the paid mark in one save (the old code saved Care twice, plus the world write inside pay()).
+        update { d ->
+            d.copy(routines = d.routines.map { r ->
+                if (r.id != id) r else { val done = r.complete(today); if (rewards != null) done.paid(today) else done }
+            })
+        }
         return rewards.orEmpty() + rhythm()
     }
 

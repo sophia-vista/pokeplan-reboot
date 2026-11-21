@@ -1121,8 +1121,9 @@ class GameStore(
     /** Settles finished undo windows and the focus timer, and creates upcoming recurring tasks. Cheap to call often. */
     fun tick() {
         sync()
-        settlePending()
-        settleEvents()
+        // Most ticks have nothing to settle; checking the small lists first avoids building date/occurrence lists 2x a second.
+        if (data.pending.isNotEmpty()) settlePending()
+        if (data.events.any { it.companionId != null && !it.allDay }) settleEvents()
         tickFocus()
     }
 
@@ -1450,7 +1451,17 @@ class GameStore(
 
     // --- streak -------------------------------------------------------------------------------------------------------
 
-    val streak: Streaks.Result get() = data.streakAt(now)
+    // The answer only changes when the save does or the streak day rolls over, but Home and Me read it on every
+    // recomposition (including the 2 Hz clock tick). AppData is immutable and replaced as a whole, so identity is enough.
+    private var streakCache: Triple<AppData, LocalDate, Streaks.Result>? = null
+
+    val streak: Streaks.Result
+        get() {
+            val d = data
+            val day = streakDay
+            streakCache?.let { (cachedData, cachedDay, result) -> if (cachedData === d && cachedDay == day) return result }
+            return d.streakAt(now).also { streakCache = Triple(d, day, it) }
+        }
 
     val firstDayOfWeek: DayOfWeek get() = data.settings.weekStart
 

@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.HuaweiReader
 import app.pokeplan.ui.Report
@@ -49,7 +50,11 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
     val settings = model.healData.settings
     var dismissed by remember { mutableStateOf(0) } // the number of pages seen when the player said Not now
     // Rechecked every second while the page is open: both readers are switched in Android's settings, and pages arrive while Huawei Health is in front.
-    LaunchedEffect(reader) { while (true) { state = reader.state(); seen = reader.seen(); delay(1_000) } }
+    val foreground = rememberInForeground()
+    LaunchedEffect(reader, foreground) {
+        if (!foreground) return@LaunchedEffect
+        while (true) { state = reader.state(); seen = reader.seen(); delay(1_000) }
+    }
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
