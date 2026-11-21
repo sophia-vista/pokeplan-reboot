@@ -382,20 +382,20 @@ Open work, in order. Each step's exit condition is the matching items of section
 
 **P0 — safe shared foundation**
 
-1. A normalized asset manifest schema generated from the existing PMD TSVs, `assets/sprites/manifest.tsv`, the item manifest and source notes.
-2. Consolidated provenance, credits, pinned source commits and rights status; private-use and non-commercial assets ineligible for public release by default.
-3. A shared asset resolver keyed by canonical species/form/role with explicit exact, fallback and missing result states; no module depends on hard-coded asset filenames.
-4. Validation for paths, metadata, checksums, species/form IDs, cry files and SFX mappings. Built so far: `SfxAssetsTest` (every `Sfx` entry has a bundled file), `PmdAssetsTest` (every PMD table row against its sheet: size, frame times, shiny, portrait faces) and the story asset tests (the map files they use). Missing: manifest, checksum and rights validation.
-5. An audio audit of the current `Sfx` mapping; the sound inventory does not grow until mappings are trustworthy.
-6. Nearest-neighbor rendering, stable sprite anchors and no-smoothing rules in the shared renderer.
+1. A normalized asset manifest schema. Today each folder's TSV is read where it is used (`AnimatedSprite.kt`, `Portrait.kt`); there is no single schema.
+2. Consolidated rights status and a public-release gate. Credits and pinned source commits exist (`AnimatedSprite.kt`, `tools/sprites/fetch_*.py`); private-use and non-commercial assets must stay ineligible for public release by default.
+3. A shared asset resolver keyed by canonical species/form/role with explicit exact, fallback and missing result states. Not built: callers build asset paths themselves and fall back inline (`Portrait.kt`, `AnimatedSprite.kt`, `Sprite.kt`).
+4. Validation for paths, metadata, checksums, species/form IDs, cry files and SFX mappings. Built: `SfxAssetsTest` (every `Sfx` entry has a bundled file), `PmdAssetsTest` (every PMD table row against its sheet) and the story asset tests. Missing: manifest, checksum and rights validation.
+5. An audit of the current `Sfx` mapping (the mapping and its notes are in `Cries.kt`); the sound inventory does not grow until mappings are trustworthy.
+6. Stable sprite anchors in the shared renderer (nearest-neighbour rendering is built; the ground parameter of `AnimatedSprite` is the only anchor rule).
 
 **P1 — coverage and runtime quality**
 
-1. A species/form coverage report for idle, directions, sleep, hop, eat, portraits/expressions, shiny, cries and fallback stills.
-2. Centralized expression fallback mappings and story portrait QA.
-3. Audio channel controls, priority/ducking, lifecycle pause/release and a loudness audit.
+1. A species/form coverage report for idle, sleep, hop, eat, shiny and fallback stills (`tools/sprites/pmd_audit.py` reports portraits only).
+2. A centralized expression fallback table and story portrait QA (the `Emotion` enum is mapped from `Expression` in `StoryPlayer.kt`; no fallback table).
+3. A music channel, audio focus, ducking, lifecycle release and a loudness audit. Built: separate effects and cries volumes, `SoundPool` and `MediaPlayer` playback with a cap on simultaneous cries.
 4. Cache and package-size optimization; contact sheets and audio audition reports.
-5. WORLD and the launcher consuming the same registry and animation metadata.
+5. A shared registry for WORLD and the launcher. Both already use `AnimatedSprite` and its animation table; the registry itself is the missing part.
 
 **P2 — only where justified**
 

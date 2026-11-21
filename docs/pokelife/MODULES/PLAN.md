@@ -131,7 +131,7 @@ Project capabilities: name, optional description, optional icon/color, status (a
 
 Use `Goal → Milestones → Tasks`. A goal describes an outcome; a milestone is a meaningful checkpoint; a task is actionable work. A task may link to a goal/milestone but remains a normal PLAN task.
 
-Goal fields: title, optional description, optional target date, status, optional milestones, linked tasks. Milestone fields: title, optional target date, status, linked tasks, completion date. Goal completion is deliberate; do not infer it merely because currently linked tasks are complete. Avoid arbitrary numerical progress unless the user defines a measurable target.
+Goal fields: title, optional description, optional target date, status, optional milestones, linked tasks. Milestone fields: title, optional target date, status, linked tasks, completion date. A goal completes when all its milestones are done (a milestone is ticked by the user); linked tasks being complete does not complete it. Avoid arbitrary numerical progress unless the user defines a measurable target.
 
 ## 4. Task system
 
@@ -278,9 +278,9 @@ Calendar access is optional. Denial must not impair PLAN. Explain denial and pro
 
 Keep the hierarchy simple: goal describes outcome; project groups work; milestone marks checkpoint; task is actionable work. Not every goal needs a project or milestones.
 
-Goals: ID, title, optional description, created date, optional target date, status (active/on hold/completed/archived), optional linked project, milestones, and tasks. Completion is deliberate.
+Goals: ID, title, optional description, created date, optional target date, status (active/on hold/completed/archived), optional linked project, milestones, and tasks. A goal completes when all its milestones are done.
 
-Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not generate *task* rewards. **Owner decision: the current payout stays**: a goal milestone reached pays a Super Candy, and a finished goal pays a bonus item (`Goal.kt`; `docs/design.md`). Goal completion is still to be made deliberate (see the implementation guide).
+Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not generate *task* rewards. **Owner decision: the current payout stays**: a goal milestone reached pays a Super Candy, and a finished goal pays a bonus item (`Goal.kt`; `docs/design.md`).
 
 ### 9.1 Goal badges and the Hall of Fame (owner, 15 November 2026; REP-053 chunk 5)
 
