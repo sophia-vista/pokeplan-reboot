@@ -3,7 +3,7 @@
 Every life module with a region (Plan, Care, Heal, Mint, Base, Link) has its own: a hand-curated dex of 150 to 200 species (every species is in exactly one), open to every
 player once the module ships ("Module regions" in [POKEMON_ECOSYSTEM.md](pokelife/FEATURES/POKEMON_ECOSYSTEM.md)). This kit is how a region's
 list is chosen, in a separate chat or with Claude Code, and brought back. The lists live in `tools/species/regions/`
-(`plan.txt`, `care.txt`, `heal.txt`, `mint.txt`, `base.txt`, `link.txt`, one per `Region` entry). All six were curated together in 0.139.0 (docs/design.md, "Species lists"); this kit is for changing one.
+(`plan.txt`, `care.txt`, `heal.txt`, `mint.txt`, `base.txt`, `link.txt`, one per `Region` entry). This kit is for changing one.
 
 ## How to use it
 
@@ -27,12 +27,12 @@ To refresh the candidates table after any rule change or curation: `./gradlew :p
 - **Base Region** (`base.txt`): kitchen, garden, hearth, fridge, closet and pets. Patrons Tapu Bulu and Ogerpon. Super Rare lines: Gible and Larvitar.
 - **Link Region** (`link.txt`): postal birds, loyal dogs, pairs, singers and gift-givers. Patrons Latias and Latios. Super Rare lines: Dratini and Dreepy.
 
-(There is no Grow region any more.) The order of a list follows a mainline regional dex: starters, lines by rarity, quest species, patrons last.
+The order of a list follows a mainline regional dex: starters, lines by rarity, quest species, patrons last.
 
 ## The prompt
 
 ~~~~text
-You are helping me curate one module region's dex for my app PokéLife, a productivity and self-improvement app: finishing a focus session hatches a Pokémon egg, and finishing tasks, habits and goals earns candies and items that level up and evolve my Pokémon. Each life module of the app (Plan for tasks and focus, Care for self-care, Heal for health and fitness, Mint for money, Base for the household, Link for relationships) has its own region: a dex of Pokémon to collect there, and a species belongs to exactly one region. has its own region: a themed dex that every player can collect. Help me decide exactly which Pokémon go in the region below. Work with me in rounds and do not rush to a final list.
+You are helping me curate one module region's dex for my app PokéLife, a productivity and self-improvement app: finishing a focus session hatches a Pokémon egg, and finishing tasks, habits and goals earns candies and items that level up and evolve my Pokémon. Each life module of the app (Plan for tasks and focus, Care for self-care, Heal for health and fitness, Mint for money, Base for the household, Link for relationships) has its own region: a dex of Pokémon to collect there, and a species belongs to exactly one region. Help me decide exactly which Pokémon go in the region below. Work with me in rounds and do not rush to a final list.
 
 I will attach a table of every Pokémon line that can hatch from an egg, with its rarity tier and the module region it is already in. Use the names exactly as written there.
 
