@@ -29,6 +29,11 @@ class HuaweiControlsTest {
         assertEquals("No pages seen yet. Read Huawei Health first.", HuaweiControls.lines(HuaweiSeen()).single())
     }
 
+    @Test fun theStepsSummaryIsCheckedToo() {
+        val steps = ScreenCapture(2, "MainActivity", listOf(ScreenNode("", "8432 steps", "com.huawei.health:id/${HuaweiWalk.STEPS_ID}", "LinearLayout", 2, tapVia = "data_layout")))
+        assertTrue("Steps summary: tap via data_layout" in HuaweiControls.lines(HuaweiSeen(listOf(steps))).joinToString("\n"))
+    }
+
     @Test fun theSampleCarriesTheControlsAndTheWalkLogWithDigitsHidden() {
         val probe = HuaweiProbe()
         probe.addScreen(page)

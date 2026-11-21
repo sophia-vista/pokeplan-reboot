@@ -35,6 +35,8 @@ object HuaweiControls {
             scrollers.forEach { add("  scroll  ${name(it)}") }
             taps.take(MAX_LISTED).forEach { add("  tap  ${name(it)}${it.text.takeIf { t -> t.isNotBlank() }?.let { t -> "  \"$t\"" }.orEmpty()}") }
         }
+        val steps = seen.screens.flatMap { it.nodes }.filter { id(it) == HuaweiWalk.STEPS_ID }
+        if (steps.isNotEmpty()) add("Steps summary: ${if (steps.any { it.tapVia.isNotBlank() }) "tap via ${steps.first { it.tapVia.isNotBlank() }.tapVia}" else "NOT tappable"}")
         val cards = cards(seen)
         if (cards.isNotEmpty()) {
             add("Cards:")

@@ -44,4 +44,10 @@ class HuaweiWalkTest {
         assertFalse(HuaweiWalk.exerciseIsOldEnough(ScreenCapture(1, "SportHistoryActivity", emptyList()), now, utc), "nothing shown yet: keep scrolling")
         assertFalse(HuaweiWalk.exerciseIsOldEnough(ScreenCapture(1, "MainActivity", item("November 1")), now, utc), "another page is never the Exercise list")
     }
+
+    @Test fun theStepsPageOpensItsFourDotsMenuAndAllData() {
+        assertTrue(HuaweiWalk.STEPS.allData); assertTrue(HuaweiWalk.CARDS.none { it.allData })
+        assertTrue(HuaweiWalk.isMenuButton(" More options ") && HuaweiWalk.isMenuButton("Menu") && !HuaweiWalk.isMenuButton("Back"))
+        assertEquals("All data", HuaweiWalk.ALL_DATA)
+    }
 }

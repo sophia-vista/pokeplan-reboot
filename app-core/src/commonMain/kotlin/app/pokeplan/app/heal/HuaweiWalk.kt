@@ -11,8 +11,8 @@ import kotlinx.datetime.TimeZone
  * records list stops as soon as it shows a session older than a read can pay for.
  */
 object HuaweiWalk {
-    /** A card the walk opens: its title on the Health page (any of [titles]), how many times its page is scrolled, and whether its Week tab is opened too. */
-    data class Card(val titles: List<String>, val scrolls: Int, val week: Boolean = false) {
+    /** A card the walk opens: its title on the Health page (any of [titles]), how many times its page is scrolled, and whether its Week tab is opened too, and whether its four-dots menu → "All data" is opened too. */
+    data class Card(val titles: List<String>, val scrolls: Int, val week: Boolean = false, val allData: Boolean = false) {
         val title: String get() = titles.first()
         fun matches(text: String) = text.trim() in titles
     }
@@ -27,6 +27,18 @@ object HuaweiWalk {
         Card(listOf("Weight"), scrolls = 2),
         Card(listOf("Sleep"), scrolls = 2, week = true),
     )
+
+    /** The Steps summary at the top of the Health page (not a card: its element is `time_strength_layout_middle`), opened first with two scrolls (owner, 21 November 2026). */
+    val STEPS = Card(listOf("Steps"), scrolls = 2, allData = true)
+    const val STEPS_ID = "time_strength_layout_middle"
+
+    /** The Steps page has a four-dots menu with "All data" (owner, 21 November 2026): the menu button is found by one of these descriptions, the item by its text. */
+    val MENU_DESCRIPTIONS = listOf("more", "more options", "more actions", "menu", "overflow", "options")
+    const val ALL_DATA = "All data"
+    const val ALL_DATA_SCROLLS = 4
+
+    /** Whether [description] names a four-dots / overflow menu button. */
+    fun isMenuButton(description: String) = description.trim().lowercase() in MENU_DESCRIPTIONS
 
     /** Every other card on the Health page is opened too, to capture its page (owner, 21 November 2026): one scroll each, nothing parsed from it yet. */
     const val LOOK_SCROLLS = 1
