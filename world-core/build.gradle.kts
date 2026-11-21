@@ -27,7 +27,7 @@ kotlin {
     }
 }
 
-// Plays teams through the dungeon simulation and writes docs/world-economy-report.md.
+// Plays teams through the dungeon simulation and writes docs/world-economy-report.md (generated on demand, git-ignored).
 tasks.register<JavaExec>("simulateWorldEconomy") {
     group = "tools"
     val main = kotlin.targets.getByName("jvm").compilations.getByName("main")
@@ -37,7 +37,7 @@ tasks.register<JavaExec>("simulateWorldEconomy") {
     args(rootProject.file("docs/world-economy-report.md").absolutePath)
 }
 
-// Writes every chapter's summary and the scenes' scripts as readable Markdown: docs/world-story-script.md.
+// Writes every chapter's summary and the scenes' scripts as readable Markdown: docs/world-story-script.md (generated on demand, git-ignored).
 tasks.register<JavaExec>("storyScript") {
     group = "tools"
     val main = kotlin.targets.getByName("jvm").compilations.getByName("main")
