@@ -3,8 +3,8 @@ package app.pokeplan.app.mint
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
-import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.mint.AccountType
+import app.pokeplan.mint.CategoryKind
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.TxStatus
 import app.pokeplan.mint.TxType
@@ -16,12 +16,11 @@ import kotlinx.datetime.toInstant
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** IOUs as part of a transaction (MINT.md 5.8A): the player's own share in spending, a repayment that is no income, and no repayments left behind. */
+/** An IOU is income someone owes the player back (MINT.md 5.8A): it takes its amount off the spending it was for, is no income, pays nothing, and moves the balance only once received. */
 class MintIouTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
@@ -39,153 +38,68 @@ class MintIouTest {
     }
 
     @Test
-    fun anExpenseWithAnIouCountsOnlyThePlayerSHareInSpending() {
+    fun anIouStillOwedTakesItsAmountOffSpendingWithoutMovingTheBalance() {
         val m = mint()
         val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
-        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day).record)
-        assertEquals(400_000, MintRules.balances(m.data).single().postedMinor, "the money really left the wallet (500,000 less the dinner)")
+        val food = assertNotNull(m.addCategory("Food", CategoryKind.EXPENSE)).id
+        assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, categoryId = food, payee = "Dinner", atMillis = day).record)
+        val iou = assertNotNull(m.record(TxType.INCOME, 75_000, wallet, categoryId = food, payee = "Alex", atMillis = day, status = TxStatus.PENDING, iou = true).record)
 
-        assertNull(m.setIou(dinner.id, 75_000, "  Alex  "))
-
-        val saved = m.data.transactions.first { it.id == dinner.id }
-        assertEquals(75_000, saved.iouMinor)
-        assertEquals("Alex", saved.iouFor)
         val today = m.today
-        assertEquals(25_000, MintRules.spent(m.data, today, today.plus(1, DateTimeUnit.DAY), "PHP"), "only the player's own share is spending")
-        assertEquals(400_000, MintRules.balances(m.data).single().postedMinor, "the IOU changes no balance")
-        assertEquals(75_000, MintRules.iouOwed(m.data, saved))
-        assertEquals(1, MintRules.openIous(m.data, "PHP").size)
+        val tomorrow = today.plus(1, DateTimeUnit.DAY)
+        assertEquals(25_000, MintRules.spent(m.data, today, tomorrow, "PHP"), "the dinner less what Alex owes")
+        assertEquals(25_000, MintRules.spent(m.data, today, tomorrow, "PHP", food), "and in its own category, so a budget on it shrinks too")
+        assertEquals(listOf<Pair<String?, Long>>(food to 25_000L), MintRules.spendingByCategory(m.data, today, tomorrow, "PHP"))
+        assertEquals(0, MintRules.earned(m.data, today, tomorrow, "PHP"), "an IOU is not income")
+        val balance = MintRules.balances(m.data).single()
+        assertEquals(400_000, balance.postedMinor, "nothing has come back yet")
+        assertEquals(75_000, balance.pendingMinor, "it is expected")
+        assertTrue(iou.iou)
     }
 
     @Test
-    fun aRepaymentRaisesTheBalanceAndIsNoIncomeNorAReward() {
+    fun receivingAnIouRaisesTheBalanceAndChangesNoSpendingOrIncome() {
         val m = mint()
         val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
-        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day).record)
-        m.setIou(dinner.id, 75_000, "Alex")
-
-        val back = m.recordRepayment(dinner.id, 75_000, wallet, day)
-
-        val repayment = assertNotNull(back.record)
-        assertEquals(TxType.INCOME, repayment.type)
-        assertEquals(dinner.id, repayment.repaymentOf)
-        assertTrue(back.rewards.isEmpty(), "a repayment is the player's own money coming back, so Ledger Research does not pay")
-        assertEquals(475_000, MintRules.balances(m.data).single().postedMinor, "the repayment came back into the wallet")
+        assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day).record)
+        val iou = assertNotNull(m.record(TxType.INCOME, 75_000, wallet, payee = "Alex", atMillis = day, status = TxStatus.PENDING, iou = true).record)
         val today = m.today
-        assertEquals(0, MintRules.earned(m.data, today, today.plus(1, DateTimeUnit.DAY), "PHP"), "a repayment is not income")
-        assertEquals(25_000, MintRules.spent(m.data, today, today.plus(1, DateTimeUnit.DAY), "PHP"))
-        assertEquals(0, MintRules.iouOwed(m.data, m.data.transactions.first { it.id == dinner.id }))
-        assertTrue(MintRules.openIous(m.data, "PHP").isEmpty())
+        val tomorrow = today.plus(1, DateTimeUnit.DAY)
+        val before = MintRules.spent(m.data, today, tomorrow, "PHP")
+
+        assertTrue(m.setTransactionStatus(iou.id, TxStatus.POSTED))
+
+        assertEquals(475_000, MintRules.balances(m.data).single().postedMinor, "the money is back in the wallet")
+        assertEquals(before, MintRules.spent(m.data, today, tomorrow, "PHP"), "spending was already reduced while it was owed")
+        assertEquals(0, MintRules.earned(m.data, today, tomorrow, "PHP"), "still not income")
     }
 
     @Test
-    fun aRepaymentCannotOvershootAndPartPaymentsAreAllowed() {
+    fun anIouIsAlreadyReceivedWhenSavedThatWay_PaysNoRewardAndOnlyIncomeCanBeOne() {
         val m = mint()
         val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
-        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day).record)
-        m.setIou(dinner.id, 75_000, "Alex")
+        val received = m.record(TxType.INCOME, 50_000, wallet, payee = "Ana", atMillis = day, iou = true)
+        assertNotNull(received.record, received.refused)
+        assertTrue(received.rewards.isEmpty(), "money coming back pays no reward")
+        assertEquals(550_000, MintRules.balances(m.data).single().postedMinor)
 
-        assertNotNull(m.recordRepayment(dinner.id, 40_000, wallet, day).record, "a part payment is allowed")
-        assertEquals(35_000, MintRules.iouOwed(m.data, m.data.transactions.first { it.id == dinner.id }))
-        val tooMuch = m.recordRepayment(dinner.id, 40_000, wallet, day)
-        assertNull(tooMuch.record)
-        assertNotNull(tooMuch.refused)
-        assertEquals(35_000, MintRules.iouOwed(m.data, m.data.transactions.first { it.id == dinner.id }), "a refused repayment changes nothing")
+        assertNull(m.record(TxType.EXPENSE, 50_000, wallet, payee = "Taxi", atMillis = day, iou = true).record, "an expense cannot be an IOU")
+        val income = assertNotNull(m.addCategory("Side gigs", CategoryKind.INCOME)).id
+        assertNull(m.record(TxType.INCOME, 50_000, wallet, categoryId = income, payee = "Ana", atMillis = day, iou = true).record, "an IOU's category is a spending one")
     }
 
     @Test
-    fun clearingAnIouTakesItsRepaymentsWithItAndDeletingTheExpenseDoesToo() {
+    fun deletingAnIouTakesItOutOfSpendingAndAnEditKeepsItAnIou() {
         val m = mint()
         val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
-        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day).record)
-        m.setIou(dinner.id, 75_000, "Alex")
-        m.recordRepayment(dinner.id, 50_000, wallet, day)
-        assertEquals(2, m.data.transactions.size)
+        assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day).record)
+        val iou = assertNotNull(m.record(TxType.INCOME, 75_000, wallet, payee = "Alex", atMillis = day, status = TxStatus.PENDING, iou = true).record)
+        val edited = assertNotNull(m.updateTransaction(iou.copy(amountMinor = 60_000, iou = false)).record)
+        assertTrue(edited.iou, "an edit does not turn an IOU into plain income")
+        assertEquals(60_000, m.data.transactions.first { it.id == iou.id }.amountMinor)
 
-        assertNull(m.setIou(dinner.id, 0, ""))
-        assertEquals(1, m.data.transactions.size, "a repayment without an IOU would be money from nowhere")
-
-        m.setIou(dinner.id, 75_000, "Alex")
-        m.recordRepayment(dinner.id, 50_000, wallet, day)
-        assertTrue(m.deleteTransaction(dinner.id))
-        assertEquals(0, m.data.transactions.size)
-    }
-
-    @Test
-    fun anIouCannotBeAddedToASplitOrOvershootTheExpense() {
-        val m = mint()
-        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
-        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day).record)
-
-        assertNotNull(m.setIou(dinner.id, 150_000, "Alex"), "more than the expense is refused")
-        assertEquals(0, m.data.transactions.first { it.id == dinner.id }.iouMinor)
-
-        val split = assertNotNull(
-            m.record(
-                TxType.EXPENSE, 100_000, wallet, payee = "Market", atMillis = day,
-                splits = listOf(app.pokeplan.mint.TransactionSplit("cat-food", 60_000), app.pokeplan.mint.TransactionSplit(null, 40_000)),
-            ).record,
-        )
-        assertNotNull(m.setIou(split.id, 40_000, "Alex"), "a split record cannot carry an IOU")
-
-        val income = assertNotNull(m.record(TxType.INCOME, 100_000, wallet, payee = "Salary", atMillis = day).record)
-        assertNotNull(m.setIou(income.id, 10_000, "Alex"), "only an expense carries an IOU")
-    }
-
-    @Test
-    fun aVoidedRepaymentReopensTheIou() {
-        val m = mint()
-        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
-        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day).record)
-        m.setIou(dinner.id, 75_000, "Alex")
-        val back = assertNotNull(m.recordRepayment(dinner.id, 75_000, wallet, day).record)
-        assertEquals(0, MintRules.iouOwed(m.data, m.data.transactions.first { it.id == dinner.id }))
-
-        m.setTransactionStatus(back.id, TxStatus.VOIDED)
-
-        assertEquals(75_000, MintRules.iouOwed(m.data, m.data.transactions.first { it.id == dinner.id }), "a voided repayment no longer settles the IOU")
-        assertNotEquals(0, MintRules.openIous(m.data, "PHP").size)
-    }
-
-    @Test
-    fun anEditChangesTheAmountAndTheIouTogetherAndARefusalLeavesTheRecordAsItWas() {
-        val m = mint()
-        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
-        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day, iouMinor = 75_000, iouFor = "Alex").record)
-
-        // Lowering the expense below the old IOU is fine when the IOU comes down with it.
-        assertNotNull(m.updateTransaction(dinner.copy(amountMinor = 60_000, iouMinor = 40_000)).record)
-        assertEquals(60_000L to 40_000L, m.data.transactions.single().let { it.amountMinor to it.iouMinor })
-
-        // Part of it paid back: the IOU cannot go under that, and nothing else in the edit is saved either.
-        assertNotNull(m.recordRepayment(dinner.id, 30_000, wallet, day).record)
-        val before = m.data
-        val refused = m.updateTransaction(m.data.transactions.first { it.id == dinner.id }.copy(payee = "Lunch", iouMinor = 20_000))
-        assertNull(refused.record)
-        assertNotNull(refused.refused)
-        assertEquals(before, m.data, "a refused edit changes nothing")
-
-        // An IOU cannot be put on a record split across categories, and the refusal changes nothing.
-        val split = m.data.transactions.first { it.id == dinner.id }
-        assertNull(m.updateTransaction(split.copy(splits = listOf(app.pokeplan.mint.TransactionSplit(null, 30_000), app.pokeplan.mint.TransactionSplit(null, 30_000)))).record)
-        assertEquals(before, m.data)
-
-        // Clearing the IOU in an edit takes its repayments too.
-        assertNotNull(m.updateTransaction(split.copy(iouMinor = 0, iouFor = "")).record)
-        assertEquals(1, m.data.transactions.size)
-    }
-
-    @Test
-    fun aRepaymentCannotBeEditedPastWhatIsOwedOrIntoAnotherCurrency() {
-        val m = mint()
-        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
-        val usd = assertNotNull(m.addAccount("Dollars", AccountType.CASH, "USD", 10_000).record).id
-        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day, iouMinor = 75_000, iouFor = "Alex").record)
-        val back = assertNotNull(m.recordRepayment(dinner.id, 50_000, wallet, day).record)
-
-        assertNull(m.updateTransaction(back.copy(amountMinor = 80_000)).record, "more than the IOU")
-        assertNull(m.updateTransaction(back.copy(accountId = usd)).record, "another currency")
-        assertNotNull(m.updateTransaction(back.copy(amountMinor = 75_000)).record, "up to what is owed is fine")
-        assertEquals(0, MintRules.iouOwed(m.data, m.data.transactions.first { it.id == dinner.id }))
+        assertTrue(m.deleteTransaction(iou.id))
+        val today = m.today
+        assertEquals(100_000, MintRules.spent(m.data, today, today.plus(1, DateTimeUnit.DAY), "PHP"))
     }
 }

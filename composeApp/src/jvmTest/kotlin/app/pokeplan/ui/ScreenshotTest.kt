@@ -2482,17 +2482,15 @@ class ScreenshotTest {
             } }
         }
     }
-    /** An IOU on an expense (who owes what on the row) and the answer to one, both palettes. */
+    /** An IOU is income someone owes back: still owed and received, with the longest name, both palettes. */
     @Test
     fun mintIou() {
         for (dark in listOf(false, true)) {
-            mint("mint-iou" + if (dark) "-dark" else "", app.pokeplan.ui.mint.MintSection.ACTIVITY, height = 2200, dark = dark, settings = { m ->
+            mint("mint-iou" + if (dark) "-dark" else "", app.pokeplan.ui.mint.MintSection.ACTIVITY, height = 2900, dark = dark, settings = { m ->
                 val wallet = m.mint.addAccount("Wallet", app.pokeplan.mint.AccountType.CASH, "PHP", 5_000_00).record!!
-                val dinner = m.mint.record(app.pokeplan.mint.TxType.EXPENSE, 1_200_00, wallet.id, payee = "Dinner", atMillis = m.store.nowMillis).record!!
-                m.mint.setIou(dinner.id, 900_00, "Alexandria Montgomery-Santos")
-                val fare = m.mint.record(app.pokeplan.mint.TxType.EXPENSE, 250_00, wallet.id, payee = "Taxi", atMillis = m.store.nowMillis).record!!
-                m.mint.setIou(fare.id, 100_00, "Ana")
-                m.mint.recordRepayment(fare.id, 100_00, wallet.id, m.store.nowMillis)
+                m.mint.record(app.pokeplan.mint.TxType.EXPENSE, 1_200_00, wallet.id, payee = "Dinner", atMillis = m.store.nowMillis)
+                m.mint.record(app.pokeplan.mint.TxType.INCOME, 900_00, wallet.id, payee = "Alexandria Montgomery-Santos", atMillis = m.store.nowMillis, status = app.pokeplan.mint.TxStatus.PENDING, iou = true)
+                m.mint.record(app.pokeplan.mint.TxType.INCOME, 100_00, wallet.id, payee = "Ana", atMillis = m.store.nowMillis, iou = true)
             })
         }
     }

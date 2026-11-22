@@ -113,14 +113,11 @@ data class Transaction(
     val interestThrough: LocalDate? = null,
     val receiptImage: String = "",
     /**
-     * An IOU started by this expense (MINT.md 5.8A): the part of [amountMinor] someone else owes the player back, above zero and never more than
-     * the amount. It changes no balance; spending counts only the player's own share, [amountMinor] less this. Splits and an IOU never meet on one record.
+     * An IOU (MINT.md 5.8A): money received that someone owes the player back for something the player already paid. It is an [TxType.INCOME]
+     * record that counts as no income and pays no reward; the person is its [payee], and its category (a spending one) is the spending it takes
+     * away from, like a refund. It is [TxStatus.PENDING] while still owed (no balance change) and [TxStatus.POSTED] once received.
      */
-    val iouMinor: Long = 0,
-    /** Who owes an IOU, a plain name as the player keeps it (at most [MintRules.NAME_MAX]); empty when there is no IOU. */
-    val iouFor: String = "",
-    /** On a repayment (an [TxType.INCOME] record): the expense whose IOU it settles. It counts as no income and pays no reward. */
-    val repaymentOf: String? = null,
+    val iou: Boolean = false,
 )
 
 @Serializable
