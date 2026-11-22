@@ -10,6 +10,10 @@ already holds the rule and the entry only points to it.
 
 Documented in `CLAUDE.md Layout (Versioning)`.
 
+### versionCode comes from VERSION, never from a build number
+
+`versionCode` is `MAJOR * 1,000,000 + MINOR * 1,000 + PATCH`, read from `VERSION` alone; `POKEPLAN_BUILD` is only the "build N" label in About and in the release title. A hand build once used 9,001 as its build number to outrank the phone's installed copy, and every later release, numbered in the hundreds, was then refused with `INSTALL_FAILED_VERSION_DOWNGRADE`. Every build of one version deliberately shares its `versionCode`: Android accepts an equal code as an update, and a build that must outrank one already installed bumps `VERSION`.
+
 ### Robolectric dependency mirror
 
 The androidApp unit tests point `robolectric.dependency.repo.url` at Google's mirror of Maven Central, because Robolectric downloads its Android jars itself and Maven Central rate-limits the shared cloud proxy while the Google mirror does not.
