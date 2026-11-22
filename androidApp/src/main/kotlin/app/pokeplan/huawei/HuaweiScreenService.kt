@@ -656,7 +656,7 @@ class HuaweiScreenService : AccessibilityService() {
         const val DETAIL_TRIES = 20
         const val DETAIL_POLL_MS = 700L
         const val DETAIL_WORDS = 4
-        const val MENU_TRIES = 8
+        const val MENU_TRIES = 12
         const val TOUCH_MS = 60L
         const val TIMEOUT_MS = 420_000L
         const val TIMEOUT_ALL_MS = 900_000L
