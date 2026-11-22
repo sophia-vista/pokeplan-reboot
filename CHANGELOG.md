@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.231.1
+
+Huawei Health read: retry a card that opens a blank window, and a second way into Cycle Calendar's menu (HEAL, REP-046, probe 13 of 22 November 2026). No reward or schema change.
+
+- **Heart and Emotional wellbeing:** probe 13 opened both in two empty `FrameLayout` windows with no text, no four-dots button and no pills, so the walk could not open their All data. The walk now closes that blank page and taps the card once more **with a real touch at the card’s middle**, not another accessibility click, and logs whether the second try shows words. The owner’s screenshots (22 November 2026) show both pages and their native ⋮ menus with **All data** at the top; when the page still shows no words, the walk taps the top-right ⋮ position itself and reads that native menu.
+- **Cycle Calendar:** probe 13 reached the page but its `More options` menu never appeared after a click or a tap. The walk now also tries a long press on that button, then a real tap at the top-right ⋮ position, and accepts a menu item about periods whose wording is not exactly "Period records" ("Period record", "Period history", …) by its pop-up item text. The owner’s screenshot shows the menu: **Period records, Settings, All data, About**.
+- **Emotional wellbeing’s pills:** the page is scrolled only after both pills are read (a scroll had moved them away), and if the pills are still out of reach they are tapped by position — Emotion on the left, Stress on the right, about two thirds down the screen, from the owner’s screenshot.
+- **Docs:** `INTEGRATIONS_AND_PRIVACY.md` 5.2.2 3c records the probe 13 result, so the code no longer claims the all-window read alone fixed Heart and Emotional wellbeing.
+
 ## 0.231.0
 
 Every species and every regional form obtainable (REP-044 first slice): the Mothim evolution fix, regional forms from wild Finds, Galar's three birds and Mega Stones. No reward-rule change: World payments are outside the reward engine (docs/economy.md says so), no reward-engine outcome changed, `RewardRules.VERSION` stays and no golden vector was regenerated. No schema change.
