@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.234.1
+
+- **Modules rows are flush.** The module-colour wash now runs edge to edge inside the Modules list box, against the dialogue frame instead of floating in the box's inner margin; the row contents keep their usual inset. A `TextBox` may take its own `contentPadding` for this, and `dialogueFillInsetX`/`dialogueFillInsetY` state where a box's fill starts. Only `MenuList(rowTint = true)` uses it; every other list is unchanged. No reward or schema change.
+
 ## 0.234.0
 
 A pass on the bottom-tab screens (owner, 23 November 2026), UI only: no reward rule, schema or save-format change, `RewardRules.VERSION` stays and no golden vector was regenerated. The one settings addition (`weekStartDay`) is a serialized field with a default, so old saves load unchanged.
