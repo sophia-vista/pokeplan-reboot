@@ -30,8 +30,6 @@ object AppAlerts {
         END(9102, Channels.FOCUS_END, 7102),
         STREAK(9103, Channels.EVENING_NUDGES, 7103),
         RECAP(9104, Channels.EVENING_NUDGES, 7104),
-        STREAK_LATER(9105, Channels.EVENING_NUDGES, 7103),
-        RECAP_LATER(9106, Channels.EVENING_NUDGES, 7104),
 
         JOB(9107, Channels.WORLD_JOBS, 7107),
 
@@ -60,7 +58,6 @@ object AppAlerts {
         if (plan.sessionId == null) cancel(context, Kind.HALFWAY)
         set(context, alarms, Kind.HALFWAY, plan.halfway, plan.sessionId, exact = true)
         set(context, alarms, Kind.END, plan.end, plan.sessionId, exact = true)
-        for (legacy in listOf(Kind.STREAK, Kind.RECAP, Kind.STREAK_LATER, Kind.RECAP_LATER)) set(context, alarms, legacy, null, null, exact = false)
         set(context, alarms, Kind.JOB, plan.job, null, exact = false)
         set(context, alarms, Kind.TIMER, plan.timer, null, exact = true)
     }
@@ -171,7 +168,7 @@ class NudgeReceiver : BroadcastReceiver() {
                     AppAlerts.show(context, kind, "Focus time is up", "Open PokéLife to see your Egg hatch.", Place.FOCUS.name)
                 }
             }
-            AppAlerts.Kind.STREAK, AppAlerts.Kind.STREAK_LATER, AppAlerts.Kind.RECAP, AppAlerts.Kind.RECAP_LATER -> Unit
+            AppAlerts.Kind.STREAK, AppAlerts.Kind.RECAP -> Unit
             AppAlerts.Kind.TIMER -> {
                 store.timersTick()
                 val ringing = store.data.gear.timers.filter { it.finished }.map { it.label }
