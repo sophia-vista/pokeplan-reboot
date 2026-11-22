@@ -54,6 +54,7 @@ import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.isoDayNumber
@@ -74,10 +75,10 @@ private val fullMonthNames = listOf(
     "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December",
 )
 
-internal fun monthGrid(today: LocalDate, offset: Int, mondayFirst: Boolean): MonthGrid {
+internal fun monthGrid(today: LocalDate, offset: Int, weekStart: DayOfWeek = DayOfWeek.MONDAY): MonthGrid {
     val shifted = LocalDate(today.year, today.monthNumber, 1).plus(DatePeriod(months = offset))
     val first = LocalDate(shifted.year, shifted.monthNumber, 1)
-    val lead = (first.dayOfWeek.isoDayNumber - (if (mondayFirst) 1 else 7) + 7) % 7
+    val lead = (first.dayOfWeek.isoDayNumber - weekStart.isoDayNumber + 7) % 7
     val length = first.daysUntil(first.plus(DatePeriod(months = 1)))
     val weeks = (lead + length + 6) / 7
     val start = first.minus(DatePeriod(days = lead))

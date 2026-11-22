@@ -1,6 +1,14 @@
 package app.pokeplan.ui.screens
 
 import app.pokeplan.ui.theme.ModuleAccent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,8 +18,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Velocity
 import app.pokeplan.ui.BackHandler
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.plan.Task
@@ -75,6 +94,12 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
     }
 }
 
+/** The Modules search opens and closes in this long: snappy, and skipped when Reduce motion is on. */
+private const val SEARCH_MS = 140
+
+/** How far the current pull at the top of the list has gone, in pixels. */
+private class SearchPull { var pulled = 0f }
+
 @Composable
 private fun ModulesMenu(model: AppModel) {
     model.careData
@@ -83,17 +108,65 @@ private fun ModulesMenu(model: AppModel) {
     model.baseData
     model.linkData
     val today = model.store.todayTasks().size
+    val reduce = model.data.settings.reduceMotion
+    val scroll = rememberScrollState()
+    var searchOpen by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    val closeSearch = { searchOpen = false; query = "" }
+    BackHandler(enabled = searchOpen, onBack = closeSearch)
+    val pull = remember { SearchPull() }
+    val searchThreshold = with(LocalDensity.current) { Spacing.XXL.toPx() }
+    // A drag left over at the top of the list is the pull that opens the search; a swipe up there puts
+    // away a search with nothing typed in it yet. Both are consumed so the page does not bounce first.
+    val searchReveal = remember(scroll, searchThreshold) {
+        object : NestedScrollConnection {
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (source != NestedScrollSource.UserInput || scroll.value > 0 || available.y <= 0f) {
+                    pull.pulled = 0f
+                    return Offset.Zero
+                }
+                // A drag down at the top cannot scroll: before the search opens it is the pull that opens
+                // it, and while it is open the page simply stays still.
+                if (searchOpen) return Offset(0f, available.y)
+                pull.pulled += available.y
+                if (pull.pulled < searchThreshold) return Offset(0f, available.y)
+                pull.pulled = 0f
+                searchOpen = true
+                return Offset(0f, available.y)
+            }
+
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (source != NestedScrollSource.UserInput || !searchOpen || scroll.value > 0 || query.isNotBlank() || available.y >= 0f) return Offset.Zero
+                closeSearch()
+                return Offset(0f, available.y)
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                pull.pulled = 0f
+                return Velocity.Zero
+            }
+        }
+    }
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Modules", icon = "explorer-kit", trailing = {
             app.pokeplan.ui.theme.PixelKey({ model.gearOpen = true }, key = Pixel.InkSoft, compact = true, sound = Sfx.DOOR_ENTER) { look -> app.pokeplan.ui.theme.KeyLabel("Gear", look) }
         })
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.M),
+            Modifier.weight(1f).nestedScroll(searchReveal).verticalScroll(scroll).padding(horizontal = Spacing.Page, vertical = Spacing.L),
         ) {
             val routines = model.care.todayRoutines()
             val routinesLeft = routines.count { !it.doneOn(model.care.today) }
-            JumpSearch(model)
+            AnimatedVisibility(
+                visible = searchOpen,
+                enter = if (reduce) EnterTransition.None else expandVertically(tween(SEARCH_MS), expandFrom = Alignment.Top) + fadeIn(tween(SEARCH_MS)),
+                exit = if (reduce) ExitTransition.None else shrinkVertically(tween(SEARCH_MS), shrinkTowards = Alignment.Top) + fadeOut(tween(SEARCH_MS)),
+            ) {
+                // The bottom padding is inside the animated block, so the list starts at the page inset
+                // while the search is hidden and slides down as it opens, with the section gap.
+                Column(Modifier.padding(bottom = Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    JumpSearch(model, query, { query = it }, onDone = closeSearch)
+                }
+            }
             MenuList(
                 listOfNotNull(
                     MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
@@ -106,6 +179,7 @@ private fun ModulesMenu(model: AppModel) {
                     MenuEntry(Module.LINK.name, Module.LINK.icon, Module.LINK.label, linkSubtitle(model), tint = ModuleAccent.LINK.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = ModuleAccent.WORLD.accent, sound = Sfx.DOOR_ENTER),
                 ),
+                rowTint = true,
             ) { key -> model.module = Module.valueOf(key) }
         }
     }

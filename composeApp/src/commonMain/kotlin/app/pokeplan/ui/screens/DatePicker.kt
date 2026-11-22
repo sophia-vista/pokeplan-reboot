@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import app.pokeplan.app.ExactInput
@@ -30,15 +31,15 @@ import app.pokeplan.ui.pokemon.label
 @Composable
 fun PixelDatePicker(
     value: LocalDate, today: LocalDate, accent: Color, onChange: (LocalDate) -> Unit, modifier: Modifier = Modifier,
-    presets: List<Pair<String, Int>> = listOf("Today" to 0, "Yesterday" to -1), max: LocalDate? = today, min: LocalDate? = null, mondayFirst: Boolean = true, initiallyOpen: Boolean = false,
-) = PixelDateField(value, today, accent, { it?.let(onChange) }, modifier, presets, null, max, min, mondayFirst, initiallyOpen)
+    presets: List<Pair<String, Int>> = listOf("Today" to 0, "Yesterday" to -1), max: LocalDate? = today, min: LocalDate? = null, weekStart: DayOfWeek = DayOfWeek.MONDAY, initiallyOpen: Boolean = false,
+) = PixelDateField(value, today, accent, { it?.let(onChange) }, modifier, presets, null, max, min, weekStart, initiallyOpen)
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun PixelDateField(
     value: LocalDate?, today: LocalDate, accent: Color, onChange: (LocalDate?) -> Unit, modifier: Modifier = Modifier,
     presets: List<Pair<String, Int>> = listOf("Today" to 0, "Tomorrow" to 1), noneLabel: String? = null, max: LocalDate? = null, min: LocalDate? = null,
-    mondayFirst: Boolean = true, initiallyOpen: Boolean = false, typed: Boolean = true, pickLabel: String = "Pick a date",
+    weekStart: DayOfWeek = DayOfWeek.MONDAY, initiallyOpen: Boolean = false, typed: Boolean = true, pickLabel: String = "Pick a date",
 ) {
     var open by remember { mutableStateOf(initiallyOpen) }
     val shown = value ?: today
@@ -68,14 +69,14 @@ fun PixelDateField(
             )
         }
         if (open) {
-            val grid = monthGrid(today, offset, mondayFirst)
+            val grid = monthGrid(today, offset, weekStart)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelIconButton("chevron-left", "Earlier month", { offset -= 1 })
                 Text(grid.label, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
                 PixelIconButton("chevron-right", "Later month", { offset += 1 })
             }
             Row(Modifier.fillMaxWidth()) {
-                (if (mondayFirst) dayNames else dayNames.takeLast(1) + dayNames.dropLast(1)).forEach {
+                weekDayNames(weekStart).forEach {
                     Text(it.take(2), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, textAlign = TextAlign.Center)
                 }
             }
@@ -94,3 +95,6 @@ fun PixelDateField(
         }
     }
 }
+
+internal fun weekDayNames(start: DayOfWeek): List<String> =
+    (0 until 7).map { dayNames[(start.ordinal + it) % 7] }

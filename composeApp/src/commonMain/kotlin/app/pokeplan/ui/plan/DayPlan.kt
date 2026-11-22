@@ -230,7 +230,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     var picked by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf<Draft?>(null) }
     var monthOffset by remember { mutableStateOf(0) }
-    val month = monthGrid(store.today, monthOffset, model.data.settings.weekStartsOnMonday)
+    val month = monthGrid(store.today, monthOffset, model.data.settings.weekStart)
     val firstDow = model.data.settings.weekStart
     val narrow = LocalWindowInfo.current.containerSize.width < 600 * LocalDensity.current.density
     val span = if (narrow) 3 else 7

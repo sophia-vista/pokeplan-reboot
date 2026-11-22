@@ -209,6 +209,7 @@ data class Settings(
     val reduceMotion: Boolean = false,
     val haptics: Boolean = true,
     val weekStartsOnMonday: Boolean = true,
+    val weekStartDay: String = "",
     val dateFormat: String = "SHORT",
     val clock12Hour: Boolean = false,
     val theme: ThemeMode = ThemeMode.SYSTEM,
@@ -230,7 +231,12 @@ data class Settings(
 
     val criesLevel: Float get() = if (sound) (if (criesVolume < 0) effectsVolume else criesVolume) / 100f else 0f
 
-    val weekStart: DayOfWeek get() = if (weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY
+    val weekStart: DayOfWeek
+        get() = DayOfWeek.entries.firstOrNull { it.name == weekStartDay }
+            ?: if (weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY
+
+    fun withWeekStart(day: DayOfWeek): Settings =
+        copy(weekStartDay = day.name, weekStartsOnMonday = day == DayOfWeek.MONDAY)
 
     fun clamped(): Settings = copy(
         defaultFocusMinutes = defaultFocusMinutes.coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES),

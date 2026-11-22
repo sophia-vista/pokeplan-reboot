@@ -302,6 +302,9 @@ class LauncherDateTextTest {
         assertEquals("31 Oct 2026", formatDate(day, DateStyle.DAY_MONTH_YEAR))
         assertEquals("Oct 31", formatDate(day, DateStyle.MONTH_DAY))
         assertEquals("2026-10-31", formatDate(day, DateStyle.ISO))
+        assertEquals("10/31/2026", formatDate(day, DateStyle.MONTH_DAY_YEAR))
+        assertEquals("31/10/2026", formatDate(day, DateStyle.DAY_MONTH_YEAR_SLASH))
+        assertEquals(listOf("EEE d MMM", "EEEE d MMMM", "d MMM yyyy", "MMM d", "yyyy-MM-dd", "MM/dd/yyyy", "dd/MM/yyyy"), DateStyle.entries.map { it.pattern })
     }
 
     @Test
@@ -317,9 +320,18 @@ class LauncherDateTextTest {
     fun theNewChoicesSurviveTheRoundTripAndWeeksStartWhereAsked() {
         val prefs = LauncherPrefs().withShowSeconds(true)
         assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
-        assertEquals(kotlinx.datetime.DayOfWeek.SUNDAY, weekDays(true).first())
-        assertEquals(kotlinx.datetime.DayOfWeek.MONDAY, weekDays(false).first())
-        assertEquals(7, weekDays(true).distinct().size)
+        assertEquals(kotlinx.datetime.DayOfWeek.SUNDAY, weekDays(kotlinx.datetime.DayOfWeek.SUNDAY).first())
+        assertEquals(kotlinx.datetime.DayOfWeek.MONDAY, weekDays(kotlinx.datetime.DayOfWeek.MONDAY).first())
+        assertEquals(kotlinx.datetime.DayOfWeek.SATURDAY, weekDays(kotlinx.datetime.DayOfWeek.SATURDAY).first())
+        assertEquals(7, weekDays(kotlinx.datetime.DayOfWeek.SATURDAY).distinct().size)
+        assertEquals(
+            listOf(
+                kotlinx.datetime.DayOfWeek.SATURDAY, kotlinx.datetime.DayOfWeek.SUNDAY, kotlinx.datetime.DayOfWeek.MONDAY,
+                kotlinx.datetime.DayOfWeek.TUESDAY, kotlinx.datetime.DayOfWeek.WEDNESDAY, kotlinx.datetime.DayOfWeek.THURSDAY,
+                kotlinx.datetime.DayOfWeek.FRIDAY,
+            ),
+            weekDays(kotlinx.datetime.DayOfWeek.SATURDAY),
+        )
     }
 
     @Test

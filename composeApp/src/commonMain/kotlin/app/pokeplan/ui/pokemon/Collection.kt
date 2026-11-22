@@ -133,9 +133,10 @@ fun CollectionScreen(
                     val ready = store.activeQuests.count { store.questReady(it) }
                     MenuList(
                         listOfNotNull(
+                            // The canon start menu's order: Pokédex, then the Pokémon, then the Bag.
+                            MenuEntry("DEX", "great-ball", "Pokédex", count = "${player.caught.size} caught"),
                             MenuEntry("PARTY", "premier-ball", "Party", count = "${player.party.size} of 6"),
                             MenuEntry("PC", "storage-key", "PC boxes", count = "${player.pokemon.count { inPc(store, it) }}"),
-                            MenuEntry("DEX", "great-ball", "Pokédex", count = "${player.caught.size} caught"),
                             if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", count = "${player.inventory.counts.count { it.value > 0 }}") else null,
                             if (store.sees(Feature.COINS)) MenuEntry("MART", "amulet-coin", "Poké Mart", count = "${player.coins} Poké") else null,
                             if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", count = if (store.activeQuests.isEmpty()) "" else "${store.activeQuests.size}", badge = ready),

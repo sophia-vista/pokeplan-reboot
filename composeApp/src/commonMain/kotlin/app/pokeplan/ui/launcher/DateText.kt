@@ -2,8 +2,15 @@ package app.pokeplan.ui.launcher
 
 import kotlinx.datetime.LocalDate
 
-enum class DateStyle(val label: String) {
-    SHORT("Sat 31 Oct"), LONG("Saturday 31 October"), DAY_MONTH_YEAR("31 Oct 2026"), MONTH_DAY("Oct 31"), ISO("2026-10-31");
+enum class DateStyle(val pattern: String) {
+    SHORT("EEE d MMM"),
+    LONG("EEEE d MMMM"),
+    DAY_MONTH_YEAR("d MMM yyyy"),
+    MONTH_DAY("MMM d"),
+    ISO("yyyy-MM-dd"),
+    MONTH_DAY_YEAR("MM/dd/yyyy"),
+    DAY_MONTH_YEAR_SLASH("dd/MM/yyyy"),
+    ;
 
     fun next() = entries[(ordinal + 1) % entries.size]
 }
@@ -17,6 +24,8 @@ fun formatDate(date: LocalDate, style: DateStyle): String {
         DateStyle.DAY_MONTH_YEAR -> "${date.day} ${month.take(3)} ${date.year}"
         DateStyle.MONTH_DAY -> "${month.take(3)} ${date.day}"
         DateStyle.ISO -> "${date.year}-${two(date.monthNumber)}-${two(date.day)}"
+        DateStyle.MONTH_DAY_YEAR -> "${two(date.monthNumber)}/${two(date.day)}/${date.year}"
+        DateStyle.DAY_MONTH_YEAR_SLASH -> "${two(date.day)}/${two(date.monthNumber)}/${date.year}"
     }
 }
 

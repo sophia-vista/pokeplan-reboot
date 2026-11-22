@@ -74,6 +74,9 @@ data class MenuEntry(val key: String, val icon: String, val title: String, val d
 
 private val menuShape = DialogueShape
 
+/** A row wash for the Modules menu: the row's module accent at a whisper over the dialogue panel, a touch stronger in the dark palette. */
+private fun rowWash(accent: Color): Color = accent.copy(alpha = if (Pixel.dark) 0.18f else 0.13f)
+
 @Composable
 fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -92,19 +95,25 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
     }
 }
 
+/**
+ * A group of rows in one dialogue box. With [rowTint] each row carries a whisper of its
+ * [MenuEntry.tint] behind it (the Modules menu shows each module's colour this way); the default
+ * keeps every other list neutral.
+ */
 @Composable
-fun MenuList(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
-    app.pokeplan.ui.theme.TextBox { MenuRows(entries, onOpen) }
+fun MenuList(entries: List<MenuEntry>, rowTint: Boolean = false, onOpen: (String) -> Unit) {
+    app.pokeplan.ui.theme.TextBox { MenuRows(entries, rowTint, onOpen) }
 }
 
 @Composable
-fun MenuRows(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
+fun MenuRows(entries: List<MenuEntry>, rowTint: Boolean = false, onOpen: (String) -> Unit) {
     val ui = app.pokeplan.ui.LocalUiSound.current
     Column {
         entries.forEachIndexed { i, e ->
             if (i > 0) androidx.compose.material3.HorizontalDivider(color = Pixel.Border)
             Row(
                 Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+                    .then(if (rowTint) Modifier.background(rowWash(e.tint)) else Modifier)
                     .clickable(role = Role.Button, enabled = !e.pending) { ui(e.sound); onOpen(e.key) }
                     .semantics(mergeDescendants = true) { contentDescription = listOf(e.title, e.count).filter { it.isNotEmpty() }.joinToString(", ") }
                     .padding(vertical = Spacing.M),
