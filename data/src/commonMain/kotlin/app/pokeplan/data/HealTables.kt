@@ -50,7 +50,14 @@ class HealTables(private val store: DataStore) {
     }
 
     /** The cache, only if it still matches the database and the key; otherwise null. */
-    private fun validCache(): Cache? = cache?.takeIf { it.sealed == isSealed() && it.cipher === store.healCipher && it.fingerprint == fingerprint() }
+    private fun validCache(): Cache? {
+        val kept = cache ?: return null
+        if (kept.sealed == isSealed() && kept.cipher === store.healCipher && kept.fingerprint == fingerprint()) return kept
+        // No longer provably the same rows (another key, or a change behind the cache's back): drop the opened copy instead of keeping plain text around.
+        // The fingerprint cannot see a rewrite of the same length; the one connection and [write] being the only writer of these tables is what rules that out.
+        cache = null
+        return null
+    }
 
     private fun remember(records: Map<String, List<RecordRows.Row>>, state: Map<String, String>) {
         cache = Cache(isSealed(), store.healCipher, fingerprint(), records, state)
