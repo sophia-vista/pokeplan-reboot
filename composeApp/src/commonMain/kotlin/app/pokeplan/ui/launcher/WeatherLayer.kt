@@ -48,7 +48,7 @@ internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: 
     Canvas(modifier) {
         val t = if (calm) 0L else now
         when (weather) {
-            Weather.RAIN -> rain?.let { tile(it, pixel, 240, 160, (t / 70 % 61).toInt(), 5) }
+            Weather.RAIN -> rain?.let { tile(it, pixel, 240, 160, GbaWeather.rainFrame(t), 5) }
             Weather.SNOW -> snow?.let { tile(it, pixel, if (dungeon) 32 else 64, 32, GbaWeather.frame(t, GbaWeather.SNOW_TICKS), 4) }
             Weather.BLIZZARD -> blizzard?.let { tile(it, pixel, 32, 32, GbaWeather.frame(t, GbaWeather.BLIZZARD_TICKS), 4) }
             Weather.SANDSTORM -> {

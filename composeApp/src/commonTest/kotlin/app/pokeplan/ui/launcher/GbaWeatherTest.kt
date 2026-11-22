@@ -19,6 +19,20 @@ class GbaWeatherTest {
     }
 
     @Test
+    fun rainFramesLastTwoTicksAndLoopOverTheSixtyOneDrawnFrames() {
+        // Effect 16 is efbg004: every one of its 63 frame headers says 2 ticks, and the sheet holds the 61 frames that have art.
+        assertEquals(2, GbaWeather.RAIN_TICKS)
+        assertEquals(61, GbaWeather.RAIN_FRAMES)
+        val frameMillis = GbaWeather.RAIN_TICKS * GbaWeather.TICK_MILLIS
+        assertTrue(frameMillis in 33.0..34.0, "about 33.5 ms, not the 70 ms it was drawn at")
+        assertEquals(0, GbaWeather.rainFrame(0))
+        assertEquals(0, GbaWeather.rainFrame(33))
+        assertEquals(1, GbaWeather.rainFrame(34))
+        assertEquals(1, GbaWeather.rainFrame(66))
+        assertEquals(0, GbaWeather.rainFrame((61 * 2 * GbaWeather.TICK_MILLIS).toLong() + 1))
+    }
+
+    @Test
     fun theCloudsDriftRightAHalfPixelAndUpAQuarterPixelATick() {
         assertEquals(0 to 0, GbaWeather.cloudShift(0))
         assertEquals(0 to 0, GbaWeather.cloudShift(1))
