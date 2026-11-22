@@ -31,13 +31,17 @@ data class ScreenNode(
     val depth: Int = 0,
     val clickable: Boolean = false,
     val scrollable: Boolean = false,
+    /** What Android says can be done to it, short names ("click", "long-click", "scroll-fwd", "scroll-back", "set-text", "expand", "collapse"); empty when none. A debug aid. */
+    val actions: List<String> = emptyList(),
+    /** The element that takes a tap on this one: itself or its nearest clickable ancestor within 8 levels (how the walk taps a card by its title); empty when none. */
+    val tapVia: String = "",
 ) {
     fun line(): String = buildString {
         append("  ".repeat(depth.coerceAtMost(20)))
         val words = listOf(text, description.takeIf { it != text } ?: "").filter { it.isNotBlank() }.joinToString(" | ")
         append(words.ifBlank { "-" })
         val tags = listOfNotNull(viewId.substringAfter(":id/").takeIf { it.isNotBlank() }, type.takeIf { it.isNotBlank() },
-            "tap".takeIf { clickable }, "scroll".takeIf { scrollable })
+            "tap".takeIf { clickable }, "scroll".takeIf { scrollable }, actions.takeIf { it.isNotEmpty() }?.joinToString("+", "do:"), tapVia.takeIf { it.isNotBlank() && !clickable }?.let { "via:$it" })
         if (tags.isNotEmpty()) append("  [").append(tags.joinToString(", ")).append(']')
     }
 }
@@ -50,11 +54,12 @@ data class NotificationCapture(val atMillis: Long, val title: String, val text: 
     val steps: Int? get() = HuaweiHealth.stepsIn(title, text, bigText, subText)
 }
 
-data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifications: List<NotificationCapture> = emptyList()) {
+/** Everything the probe saw since it was last cleared. */
+data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifications: List<NotificationCapture> = emptyList(), val log: List<String> = emptyList()) {
     val latestSteps: Int? get() = notifications.lastOrNull { it.steps != null }?.steps
 
     val home: HuaweiHome get() = screens.fold(HuaweiHome()) { acc, s -> acc.then(HuaweiHome.read(s)) }
-    val isEmpty: Boolean get() = screens.isEmpty() && notifications.isEmpty()
+    val isEmpty: Boolean get() = screens.isEmpty() && notifications.isEmpty() && log.isEmpty()
 
     fun sample(version: String = ""): String = buildString {
         fun h(s: String) = HuaweiHealth.hideNumbers(s)
@@ -63,6 +68,8 @@ data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifi
             append("\n== Screen ${i + 1}: ${h(s.title).ifBlank { "untitled" }} (${s.nodes.size} elements) ==\n")
             s.nodes.forEach { append(it.copy(text = h(it.text), description = h(it.description)).line()).append('\n') }
         }
+        if (screens.isNotEmpty()) append('\n').append(HuaweiControls.summary(this@HuaweiSeen))
+        if (log.isNotEmpty()) { append("\n== Walk log ==\n"); log.forEach { append(h(it)).append('\n') } }
         notifications.forEachIndexed { i, n ->
             append("\n== Notification ${i + 1}${if (n.customLayout) " (custom layout)" else ""} ==\n")
             listOf("title" to n.title, "text" to n.text, "sub" to n.subText, "big" to n.bigText).filter { it.second.isNotBlank() }
@@ -72,7 +79,8 @@ data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifi
     }
 }
 
-class HuaweiProbe(private val maxScreens: Int = 40, private val maxNotifications: Int = 5) {
+/** Collects captures in memory: the same page twice is kept once, and only the newest [maxScreens] pages and [maxNotifications] notifications stay. */
+class HuaweiProbe(private val maxScreens: Int = 150, private val maxNotifications: Int = 5, private val maxLog: Int = 400) {
     var seen: HuaweiSeen = HuaweiSeen()
         private set
 
@@ -89,6 +97,9 @@ class HuaweiProbe(private val maxScreens: Int = 40, private val maxNotifications
         val list = if (last != null && last.title == n.title && last.text == n.text && last.subText == n.subText && last.bigText == n.bigText) seen.notifications.dropLast(1) else seen.notifications
         seen = seen.copy(notifications = (list + n).takeLast(maxNotifications))
     }
+
+    /** Adds one line to the walk log (what the reader did and what happened); only the newest [maxLog] stay. No Huawei text goes in, only titles of cards and outcomes. */
+    fun addLog(line: String) { seen = seen.copy(log = (seen.log + line).takeLast(maxLog)) }
 
     fun clear() { seen = HuaweiSeen() }
 }
@@ -128,6 +139,8 @@ data class HuaweiHome(
         private val sleepScoreText = Regex("""Sleep score is\s*(\d{1,3})\s*points?""", RegexOption.IGNORE_CASE)
 
         fun read(capture: ScreenCapture): HuaweiHome {
+            // Only the Health page itself: an All data list's rows ("6,842 steps") and a detail page's lines are not today's figures.
+            if (capture.title.startsWith("PrivacyDataModel") || capture.title.startsWith("FitnessStepDetail")) return HuaweiHome()
             var home = HuaweiHome()
             var card = ""
             var data = ""
