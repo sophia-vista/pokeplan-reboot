@@ -42,7 +42,9 @@ data class WorldTeam(
 }
 
 @Serializable
-data class Find(val speciesId: Int, val dungeonId: String, val floor: Int, val at: Long)
+data class Find(val speciesId: Int, val dungeonId: String, val floor: Int, val at: Long, val formIdentifier: String? = null) {
+    val name: String get() = RegionalForms.displayName(speciesId, formIdentifier)
+}
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable

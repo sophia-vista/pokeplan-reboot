@@ -49,15 +49,25 @@ jobs:
           ./gradlew :androidApp:assembleDebug --no-daemon
           cp androidApp/build/outputs/apk/debug/androidApp-debug.apk pokeplan.apk
           cp pokeplan.apk "pokeplan-v${{ steps.version.outputs.name }}.apk"
+      - name: Write the update manifest
+        env:
+          VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          # The app reads this small file first (Me -> Settings -> About -> Updates) to learn of the build, its size
+          # and its checksum without touching the 120 MB APK, and without the GitHub API's unauthenticated rate limit.
+          SHA="$(sha256sum pokeplan.apk | cut -d' ' -f1)"
+          SIZE="$(stat -c%s pokeplan.apk)"
+          printf '{"version":"%s","build":%s,"apk":"pokeplan.apk","size":%s,"sha256":"%s","commit":"%s","date":"%s"}\n' \
+            "$VERSION" "${{ github.run_number }}" "$SIZE" "$SHA" "${GITHUB_SHA::7}" "$(date -u +%F)" > update.json
       - name: Publish as the latest release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.name }}
         run: |
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest pokeplan.apk --prerelease --target "$GITHUB_SHA" \
+          gh release create latest pokeplan.apk update.json --prerelease --target "$GITHUB_SHA" \
             --title "Latest build (v$VERSION, build ${{ github.run_number }})" \
-            --notes "Version $VERSION, build ${{ github.run_number }}, from ${GITHUB_SHA::7} on $(date -u +%Y-%m-%d). Debug build for private use; download pokeplan.apk on your phone and install it."
+            --notes "Version $VERSION, build ${{ github.run_number }}, from ${GITHUB_SHA::7} on $(date -u +%Y-%m-%d). Debug build for private use. The app updates itself from this release (Me, Settings, About, Updates); an older app downloads pokeplan.apk here once."
       - name: Publish this version's own release (once per version)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,6 +77,6 @@ jobs:
             echo "v$VERSION already has its release; bump VERSION to publish a new one."
           else
             PRE=""; [ "${VERSION%%.*}" = "0" ] && PRE="--prerelease"
-            gh release create "v$VERSION" "pokeplan-v$VERSION.apk" $PRE --target "$GITHUB_SHA" \
+            gh release create "v$VERSION" "pokeplan-v$VERSION.apk" update.json $PRE --target "$GITHUB_SHA" \
               --title "PokéPlan v$VERSION" --generate-notes
           fi

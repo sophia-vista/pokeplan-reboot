@@ -77,7 +77,7 @@ Landing hierarchy:
 7. Current regional story progress.
 8. Facility shortcuts.
 
-The Town page opens on the headquarters picture, as big as the width allows (the team base of the first partner from the Rescue Team games, plain, under construction or finished as the Camp grows), then the rank strip and a menu of the places in it (Facilities, Café, Kecleon Shop, Swap Shop, Dojo), each on its own page with its own banner, plus Finds and Skills; Research is a Journal page, not a Town page (2.5). The primary action and the story, Finds and Guild lines of the landing hierarchy live on the WORLD menu above it, not on this page.
+The Town page opens on the headquarters picture, as big as the width allows (the team base of the first partner from the Rescue Team games, plain, under construction or finished as the Camp grows), then the rank strip and a menu of the places in it (Facilities, Café, Kecleon Shop, Mega Stones, Swap Shop, Dojo), each on its own page with its own banner, plus Finds and Skills; Research is a Journal page, not a Town page (2.5). The primary action and the story, Finds and Guild lines of the landing hierarchy live on the WORLD menu above it, not on this page.
 
 The primary action is state-dependent: begin the introductory adventure for a new save; prepare a team when none is active; review an expedition when teams are away; recruit a Pokémon when Finds are waiting; review a completed request when a claim is ready; or continue a chapter when a story scene is available. Do not show every available statistic and shortcut at once.
 
@@ -331,6 +331,8 @@ Flow:
 Finds do not expire, disappear because the user was absent, consume a party slot automatically or replace another Pokémon. Recruitment is a deliberate action. Duplicate species are allowed as separate individuals. The species can count as discovered before recruitment, but it counts as caught/owned only after the shared service confirms creation.
 
 Regional pools are configured per dungeon/region/floor. Regional forms retain canonical form identity. Mythical and legendary Pokémon are primarily story, investigation or Guardian acquisitions, not ordinary random floor finds. Cross-regional species require a permanent, justified special encounter.
+
+A Find in a region's layer takes that region's form (`RegionalForms`): Alolan forms in Alola, Galarian in Galar, Hisuian in Hisui (White-Striped Basculin included) and Paldean in Paldea. The wild table plus evolution covers every regional form in its home layer, so every regional form can be obtained there, and recruiting the Find grants the form (`Find.formIdentifier`). Legendary and mythical Pokémon still never appear as ordinary floor finds.
 
 ### 5.2 Individual Pokémon XP — approved distribution rule
 
@@ -602,7 +604,7 @@ The rules the code implements today, which code comments cite as the World rules
 ### 14.3 Skills, facilities and research
 - Skills (level 0 to 10, XP to reach a level = 30 x level squared), raised by use and by the Dojo: **Exploration** +2% Poké per level, **Foraging** +1% berry chance per level, **Scouting** +0.3% find chance per level.
 - Facilities (five levels each, cost = base x 3 per level already built): **Camp** (base 400 Poké) +1% treasure chance per level, its yard shows the Pokémon recruited from finds; **Research Lab** (base 600) +10% Exploration XP per level.
-- **Spinda's Café:** three berries from the Bag make a 3-hour brew (+30% Exploration XP, +5% treasure chance, +1% find chance). **Kecleon Shop:** Poké buys every evolution stone (400), a Link Cord (500), an Everstone (300), trade and held evolution items (500) and held perks (500; the Shiny Charm 1,500), plus a five-offer shelf that changes each day. Candies and berries are the Poké Mart's, not sold here (Rare Candy 5 Poké; no candy has been sold here since 0.187.0). **Croagunk Swap Shop:** three berries of one flavour for one of another. **Dojo:** 200 Poké for 60 skill XP in a chosen skill.
+- **Spinda's Café:** three berries from the Bag make a 3-hour brew (+30% Exploration XP, +5% treasure chance, +1% find chance). **Kecleon Shop:** Poké buys every evolution stone (400), a Link Cord (500), an Everstone (300), trade and held evolution items (500) and held perks (500; the Shiny Charm 1,500), plus a five-offer shelf that changes each day. Every Mega Stone is always sold too, on its own Mega Stones shelf (2,000 Poké, ten to a page in Town): all 99 Mega forms' stones, one each, and the daily five never carries them. Candies and berries are the Poké Mart's, not sold here (Rare Candy 5 Poké; no candy has been sold here since 0.187.0). Opening a silver or gold treasure box can also yield a Mega Stone (3% and 10%; only a stone the player does not own yet is picked). **Croagunk Swap Shop:** three berries of one flavour for one of another. **Dojo:** 200 Poké for 60 skill XP in a chosen skill.
 - **Research:** species discovered while exploring count towards milestones at 3, 6, 10, 15, 25, 35 and 45 species, each paying Poké, berries or Rare Candies (100 Poké; 200 and 3 Sweet berries; 400; 800 and 1 Rare Candy; 1,500; 3,000 and 2; 6,000 and 3).
 
 ### 14.4 Floor events, choices and modifiers
@@ -617,7 +619,7 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 
 ### 14.6 Story, quests and Guardians
 - Each layer has a chapter list (`Story.chaptersOf(layer)`) opened as in 14.1: the Rescue arc six chapters ending at the Sky Tower, the Explorers arc eight with the Temporal Tower as its seventh (Primal Dialga); the mainline layers five (Kanto "The Genetic Crisis", Johto "The Sacred Balance", Hoenn "The Primal Awakening", Sinnoh "The Distortion of Creation"). Primal Dialga, the home Guardian, is its own Dex form and does not stand in for Sinnoh's Dialga. A new rank and each chapter play a short scene once; the story archive replays them (and each legendary quest has its own scene) without re-awarding.
-- **Legendary quests** are given once, by clearing a dungeon enough times; a Guardian's quest is reaching the top floor of the layer's last dungeon, and "after the Guardian" means that layer's story is complete first. A quest never gives a legendary the player already owns (it still counts, so its boost applies). Boosts apply in their own layer, and a Guardian slotted in a module gives that module a matching bonus within the existing cap on Guardian effects *(tune)*.
+- **Legendary quests** are given once, by clearing a dungeon enough times; a Guardian's quest is reaching the top floor of the layer's last dungeon, and "after the Guardian" means that layer's story is complete first. A quest never gives a legendary the player already owns in the same form (it still counts, so its boost applies). Boosts apply in their own layer, and a Guardian slotted in a module gives that module a matching bonus within the existing cap on Guardian effects *(tune)*.
 
 | Layer | Legendary | Requirement | Boost |
 |---|---|---|---|
@@ -631,6 +633,8 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 | Hoenn | Rayquaza (Guardian) | Top floor of the Sky Pillar | Flying and Dragon dungeons 10% faster, a little more finds |
 | Sinnoh | Dialga / Palkia | Mt. Coronet / Spear Pillar 3 times | Steel / Water dungeons 10% faster |
 | Sinnoh | Giratina (Guardian) | Distortion World, after its Guardian | 3% more treasure boxes |
+
+- **Galar's three birds** are legend quests of the Galar layer: Galarian Articuno (Slumbering Weald cleared 3 times), Galarian Zapdos (Dusty Bowl 3) and Galarian Moltres (Galar Mine No. 2 3), each with no Guardian gate. The quest grants the Galarian form, not the Kanto one (`LegendQuest.form`), so owning the Kanto bird does not block it. They are quests like any other: legendary and mythical Pokémon never appear as ordinary floor Finds, only as quests, Guardians and story scenes.
 
 - **Plan has no quest for a legendary World gives:** Zapdos, Articuno, Moltres, Mewtwo, Mew, Lugia, Ho-Oh, Groudon, Kyogre, Rayquaza and the other World-given ones (`Legends.coveredSpecies`; the list is `Legends.all`). A finished Plan quest stays finished and its Pokémon owned. Every other legendary keeps its Plan quest until a World layer or a module's arc gives it.
 - A region's story follows five parts: Arrival, Investigation, Awakening, Confrontation, Resolution, with the box legendary felt from the start (signs, then mythology, then the encounter). The journey advances only through WORLD's teams: module quests and tasks never feed travel.

@@ -5,13 +5,37 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.229.1
+## 0.231.1
 
 Huawei Health read: retry a card that opens a blank window, and a second way into Cycle Calendar's menu (HEAL, REP-046, probe 13 of 22 November 2026). No reward or schema change.
 
 - **Heart and Emotional wellbeing:** probe 13 opened both in two empty `FrameLayout` windows with no text, no four-dots button and no pills, so the walk could not open their All data. The walk now closes that blank page and taps the card once more before giving up, and logs whether the second try shows words or not.
 - **Cycle Calendar:** probe 13 reached the page but its `More options` menu never appeared after a click or a tap. The walk now also tries a long press on that button, and accepts a menu item about periods whose wording is not exactly "Period records" ("Period record", "Period history", …) by its pop-up item text.
 - **Docs:** `INTEGRATIONS_AND_PRIVACY.md` 5.2.2 3c records the probe 13 result, so the code no longer claims the all-window read alone fixed Heart and Emotional wellbeing.
+
+## 0.231.0
+
+Every species and every regional form obtainable (REP-044 first slice): the Mothim evolution fix, regional forms from wild Finds, Galar's three birds and Mega Stones. No reward-rule change: World payments are outside the reward engine (docs/economy.md says so), no reward-engine outcome changed, `RewardRules.VERSION` stays and no golden vector was regenerated. No schema change.
+
+- **All 1,025 species and 57 regional forms now have a route.** Module eggs and evolution cover every default form, WORLD wild Finds in a region's layer give the 57 regional forms, and quests and WORLD legends give the 125 legendary, mythical, Ultra Beast and Paradox species.
+- **Mothim can be reached.** In `EvolutionRules.applicable`, a Pokémon in its species' default form now keeps the generic (`requiredForm == null`) evolutions beside its own form rows, so Burmy's Wormadam cloak rows no longer hide the Mothim branch (#414).
+- **A wild Find keeps its home region's form.** `RegionalForms` maps a regional form to its layer (Alolan to Alola, Galarian to Galar, Hisuian to Hisui, Paldean to Paldea, White-Striped Basculin to Hisui); the Find carries the form (`Find.formIdentifier`, `WorldEvent.Found.formIdentifier`) and recruiting it grants that form. The wild tables gained 15 species, so every regional form now has a home-layer encounter: Alola (Raticate, Sandshrew, Vulpix, Grimer), Galar (Meowth, Ponyta, Slowpoke, Farfetch'd, Corsola, Zigzagoon, Darumaka, Stunfisk), Hisui (Voltorb, Zorua) and Paldea (Tauros, its three breeds); every one is in that game region's dex.
+- **Nine blocked final evolutions open up:** Obstagoon, Perrserker, Cursola, Sirfetch'd, Runerigus, Basculegion, Sneasler, Overqwil and Clodsire now have their regional pre-evolution; Mothim is the tenth.
+- **Galar's three birds are legend quests.** Clearing Slumbering Weald, Dusty Bowl and Galar Mine No. 2 three times each grants Galarian Articuno, Zapdos and Moltres, with no Guardian gate; `LegendQuest.form` stores the granted form and `worldLegends` avoids a duplicate of the same species and form.
+- **Mega Stones have sources.** All 99 Mega forms' stones are sold on the Kecleon Shop's own always-sold Mega Stones shelf for 2,000 Poké each (ten to a page in Town; the daily five shelf never carries them), and can drop when a silver (3%) or gold (10%) treasure box is opened, only a stone not owned yet. The form dex counts the Mega form while its Pokémon holds the stone, so every Mega form can now be shown and collected.
+- **Tests:** `EvolutionRulesTest.burmyKeepsBothTheWormadamCloaksAndTheMothimBranch`, the new `world-core` `ReachabilityTest` (all non-special species, all regional forms, White-Striped Basculin, the ten formerly missing species and the wild-form mapping), `KecleonShopTest.everyMegaStoneIsAlwaysSoldOnItsOwnShelf` and `WorldStoreTest`'s Galar birds, regional find recruitment and gold-box Mega Stone tests. `jvmTest` (except composeApp, which needs libGL) and `compileKotlinWasmJs` pass.
+
+## 0.230.0
+
+- **The app updates itself (REP-075).** Me → Settings → About has an Updates box: opening Me checks the rolling "latest"
+  GitHub release once per app start, and About shows the new version and its size, downloads the APK into the app,
+  checks its size and SHA-256 against the release manifest, and hands it to the Android installer. The phone's "install
+  unknown apps" permission is asked for once, and the box leads to that page when it is missing. The repository is public,
+  so the check needs no token and the app keeps no account or credential; nothing is stored but the downloaded APK.
+  `release-apk.yml` now publishes `update.json` beside `pokeplan.apk` (version, build, size, checksum, commit, date) in the
+  "latest" release and in each version's own release, and the app falls back to the GitHub release API for a release
+  without the manifest. **The first install of v0.230.0 still comes from the release page**: the app that is on the phone
+  now has no updater yet; every build after this one installs in the app.
 
 ## 0.229.0
 

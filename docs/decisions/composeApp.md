@@ -572,6 +572,24 @@ Documented in `docs/pokelife/FEATURES/ASSETS_AND_AUDIO.md 6.1 Audio categories`.
 
 TAP_GAIN is 6% of the Sound effects volume because the owner found 10% still loud and 3% not audible at all; 6% is heard in a quiet room and never over a game sound. AppModel.tap is the only place it is applied.
 
+## `composeApp/src/commonMain/kotlin/app/pokeplan/ui/updates/Updates.kt`
+
+### Why the release, not a store or a server
+
+The app is installed from the repository's rolling "latest" GitHub release, so the updater reads that release rather
+than adding an update server, an account or a store listing (the repository is public; the app holds no token). The
+manifest is downloaded first because the API's unauthenticated limit is shared per IP and the manifest is tiny; the
+release API is the fallback for a release built before the manifest existed, and it reads the version and build from the
+release title.
+
+### A newer build number of the same VERSION is still an update
+
+`versionCode` comes from `VERSION` alone, so every build of a version shares it and Android accepts the reinstall while
+keeping the data. So an update is a higher version, or the same version with a higher build number (which is how a
+rebuild of the same version, e.g. a local dev build being replaced by the release build, still installs). The size and
+SHA-256 come from the manifest and are checked before the installer opens; a release without a checksum (the API
+fallback) is still installed, over HTTPS.
+
 ## `composeApp/src/commonMain/kotlin/app/pokeplan/ui/base/Base.kt`
 
 ### Base screens

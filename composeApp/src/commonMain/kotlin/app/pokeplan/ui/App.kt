@@ -81,6 +81,9 @@ import app.pokeplan.plan.TaskState
 import androidx.compose.ui.Alignment
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
+import app.pokeplan.ui.updates.UpdateAccess
+import app.pokeplan.ui.updates.UpdateRelease
+import app.pokeplan.ui.updates.isNewerRelease
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock as SystemClock
@@ -119,11 +122,38 @@ class AppModel(
     val images: ImageChooser? = null,
     val imageViewer: ImageViewer? = null,
     val appLauncher: AppLauncher? = null,
+    val updates: UpdateAccess? = null,
 ) {
     val moduleUnlockedAt: MutableMap<String, Long> = mutableMapOf()
     val moduleLeftAt: MutableMap<String, Long> = mutableMapOf()
 
     var gearOpen: Boolean by mutableStateOf(false)
+
+    /** The newest published build, once [checkForUpdate] has read one. */
+    var updateRelease: UpdateRelease? by mutableStateOf(null)
+        private set
+
+    /** What the last update check could not do, in words for the About screen. */
+    var updateProblem: String? by mutableStateOf(null)
+        private set
+
+    /** Whether a check has been made in this process, so opening Me or About does not ask GitHub again on every visit. */
+    var updateChecked: Boolean by mutableStateOf(false)
+        private set
+
+    /** The newer build waiting to be installed, or null. */
+    val updateAvailable: UpdateRelease?
+        get() = updateRelease?.takeIf { isNewerRelease(it, AppVersion.NAME, AppVersion.BUILD.toLong()) }
+
+    /** Reads the newest published build; false when it could not be read or there is nothing newer. */
+    suspend fun checkForUpdate(): Boolean {
+        val access = updates ?: return false
+        val release = access.check()
+        updateRelease = release
+        updateProblem = if (release == null) access.problem else null
+        updateChecked = true
+        return updateAvailable != null
+    }
 
     fun haptic() {
         if (data.settings.haptics) haptics?.tick()
@@ -329,6 +359,7 @@ fun App(
     images: ImageChooser? = null,
     imageViewer: ImageViewer? = null,
     appLauncher: AppLauncher? = null,
+    updates: UpdateAccess? = null,
     onDataChanged: ((AppData) -> Unit)? = null,
     onCareChanged: ((CareData) -> Unit)? = null,
     onHealChanged: ((HealData) -> Unit)? = null,
@@ -345,7 +376,7 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val base = BaseStore(baseStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher, updates).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
     }
     val foreground = rememberInForeground()
     // The phone's power saver is read now and then; World's animations stand still while it is on.

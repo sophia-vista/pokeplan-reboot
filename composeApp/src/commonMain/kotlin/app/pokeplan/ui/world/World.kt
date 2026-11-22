@@ -517,9 +517,11 @@ private fun WorldSkillsView(model: AppModel) {
 
 internal var townPageToOpen: String? = null
 
+private const val MEGA_PAGE = 10
+
 private enum class TownPage(val label: String, val icon: String) {
     FACILITIES("Facilities", "heart-scale"), CAFE("Café", "soothe-bell"),
-    KECLEON("Kecleon Shop", "rare-candy"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
+    KECLEON("Kecleon Shop", "rare-candy"), MEGA("Mega Stones", "shiny-stone"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -536,6 +538,7 @@ private fun WorldTownView(model: AppModel) {
                     TownPage.FACILITIES -> "Camp level ${world.facilityLevel(Facility.CAMP)}"
                     TownPage.CAFE -> "a brew for the road"
                     TownPage.KECLEON -> "stones ${app.pokeplan.world.KecleonShop.STONE_PRICE} Poké"
+                    TownPage.MEGA -> "${app.pokeplan.core.pokemon.Items.megaStones.size} stones, ${app.pokeplan.world.KecleonShop.MEGA_STONE_PRICE} Poké"
                     TownPage.SWAP -> "berry for berry"
                     TownPage.DOJO -> "${app.pokeplan.world.Dojo.COST} Poké a lesson"
                 }
@@ -595,6 +598,20 @@ private fun WorldTownView(model: AppModel) {
     val day = store.shopDay
     ShopShelf(model, "Today's shelf", app.pokeplan.world.KecleonShop.shelf(day)) { kecleonSays = if (it) ShopLines.KECLEON_BOUGHT else ShopLines.KECLEON_BROKE }
     ShopShelf(model, "Always in stock", app.pokeplan.world.KecleonShop.fixed) { kecleonSays = if (it) ShopLines.KECLEON_BOUGHT else ShopLines.KECLEON_BROKE }
+        }
+        TownPage.MEGA -> {
+            WorldBanner("map:sky-t01p01a", "Mega Stones", "One for every Mega form", top = true, height = 150.dp)
+            var kecleonSays by remember { mutableStateOf(ShopLines.KECLEON_WELCOME) }
+            ShopVoice(Keepers.KECLEON, "Kecleon", kecleonSays)
+    var megaPage by rememberSaveable { mutableStateOf(0) }
+    val offers = app.pokeplan.world.KecleonShop.megaStones
+    val pages = (offers.size + MEGA_PAGE - 1) / MEGA_PAGE
+    val at = megaPage.coerceIn(0, pages - 1)
+    ShopShelf(model, "Mega Stones ${at + 1} of $pages", offers.drop(at * MEGA_PAGE).take(MEGA_PAGE)) { kecleonSays = if (it) ShopLines.KECLEON_BOUGHT else ShopLines.KECLEON_BROKE }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+        PixelIconButton("arrow-left", "Previous", { megaPage = at - 1 }, Pixel.InkSoft, enabled = at > 0)
+        PixelIconButton("arrow-right", "Next", { megaPage = at + 1 }, Pixel.InkSoft, enabled = at < pages - 1)
+    }
         }
         TownPage.SWAP -> {
             WorldBanner("map:sky-t01p02a", "Croagunk Swap Shop", "Berry for berry", top = true, height = 150.dp)
@@ -775,10 +792,11 @@ internal fun RecruitCard(find: app.pokeplan.world.Find?, newcomer: app.pokeplan.
             }
         }
     } else if (find != null) {
-        val name = Dex.species(find.speciesId).name
+        val name = find.name
+        val form = find.formIdentifier?.let { Dex.form(it) } ?: Dex.defaultForm(find.speciesId)
         TextBox {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                Portrait(Dex.defaultForm(find.speciesId).id, false, name, emotion = Emotion.NORMAL, size = 88.dp)
+                Portrait(form.id, false, name, emotion = Emotion.NORMAL, size = 88.dp)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text(name, style = MaterialTheme.typography.titleSmall)
                     Text("A wild $name, met on floor ${find.floor} of ${Dungeons.byId(find.dungeonId)?.name}, wants to join your team. Recruit it?", style = MaterialTheme.typography.bodyLarge) // copy-ok: game
@@ -818,9 +836,10 @@ private fun WorldBagView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             world.finds.forEachIndexed { i, f ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Sprite(Dex.defaultForm(f.speciesId).id, false, Dex.species(f.speciesId).name, size = Spacing.Target)
+                    val form = f.formIdentifier?.let { Dex.form(it) } ?: Dex.defaultForm(f.speciesId)
+                    Sprite(form.id, false, f.name, size = Spacing.Target)
                     Column(Modifier.weight(1f)) {
-                        Text(Dex.species(f.speciesId).name, style = MaterialTheme.typography.bodyLarge)
+                        Text(f.name, style = MaterialTheme.typography.bodyLarge)
                         Text("Floor ${f.floor}, ${Dungeons.byId(f.dungeonId)?.name}", style = MaterialTheme.typography.bodyMedium)
                     }
                     PixelButton("Meet", { joined = null; meeting = i }, color = Module.WORLD.look.accent, compact = true)

@@ -114,7 +114,7 @@ The Super Candy chance perk adds percentage points.
 | Shiny Charm, Bottle Cap, Nature Mint, Ability Capsule | 0.5 |
 | 18 Tera Shards | 0.1 |
 
-Never dropped: Ability Patch, Mega Stones, the Dynamax Band. Focus sessions never drop items (they pay a berry).
+Never dropped: Ability Patch and the Dynamax Band (which is not read yet). Focus sessions never drop items (they pay a berry). Mega Stones are not in the ordinary drop table: every one is always sold at the Kecleon Shop on its own Mega Stones shelf for 2,000 Poké, and when a silver or gold treasure box is opened it has a 3% (silver) or 10% (gold) chance of a Mega Stone (`worldOpenTreasure`); only a stone the player does not own yet is picked.
 
 ### Module drops (`ModuleDrops`)
 
@@ -140,7 +140,7 @@ The everyday shop: Exp. Candy 5, Super Candy 100, a berry of any flavour 20 (`CO
 
 ### The Kecleon Shop (`KecleonShop`)
 
-The specialty shop in World's Town; it sells no candy. Prices are low on purpose, as everything here grows one Pokémon. **Always in stock** every evolution stone 400, the Link Cord 500, the Everstone 300, 50 Gimmighoul Coins 150; **today's shelf**, 5 items chosen for the player's local day from trade and held evolution items 500, vitamins 100, perk held items 500 (Shiny Charm 1,500), Tera Shards 1,000, Nature Mint 400, Ability Capsule 600, Bottle Cap 800, Ability Patch 2,000. No countdown, nothing sold only on the shelf (every catalogue item comes round). *(tune)*
+The specialty shop in World's Town; it sells no candy. Prices are low on purpose, as everything here grows one Pokémon. **Always in stock** every evolution stone 400, every Mega Stone 2,000 on its own Mega Stones shelf (ten to a page in Town), the Link Cord 500, the Everstone 300, 50 Gimmighoul Coins 150; **today's shelf**, 5 items chosen for the player's local day from trade and held evolution items 500, vitamins 100, perk held items 500 (Shiny Charm 1,500), Tera Shards 1,000, Nature Mint 400, Ability Capsule 600, Bottle Cap 800, Ability Patch 2,000. No countdown, nothing sold only on the shelf (every catalogue item comes round), and the daily five never carries a Mega Stone. A silver or gold treasure box can also hold one (3% and 10%; only a stone not owned yet). *(tune)*
 
 ### Friendship (`FriendshipRules`, 0 to 255, starts at 70)
 
@@ -242,14 +242,13 @@ Care was the first module with a per-module daily cap on the world's side (`CARE
 ## 5. Gaps between the code and docs/design.md
 
 - Lures bought or crafted from berries (design.md): not built. Lures are earned but Focus never passes one.
-- Mega Stones can be held but never drop.
 - Stack caps are uneven: transfers and the focus berry add without the cap; the app caps non-candies at 999.
 
 ## World
 
 World pays through `AppData.world` and the Bag only, not the reward engine's state, so `RewardRules.VERSION` does not cover it. Its Poké and items are written to the reward history as `World: exploring`, `jobs`, `research` and `treasure` (`Reward.Poke` is only ever written by World); items go straight into the Bag. All numbers *(tune)*; pace, yields and the year simulations come from `./gradlew :world-core:simulateWorldEconomy` (re-run after changing any World number), not repeated here.
 
-- **Sources:** per floor Exploration XP (`XP_BASE` + floor), Poké (5 + 2 × floor + 0 to 4), a berry (70%), a treasure box (6%) and a wild find (3%); a milestone (Rare Candies and Poké) once per dungeon floor, never repeated. Floors take `baseFloorSeconds / (1 + power / 100)` (never under a quarter of it); at most 12 hours of away time counts per open.
+- **Sources:** per floor Exploration XP (`XP_BASE` + floor), Poké (5 + 2 × floor + 0 to 4), a berry (70%), a treasure box (6%) and a wild find (3%); a milestone (Rare Candies and Poké) once per dungeon floor, never repeated. Opening a silver or gold box can also yield a Mega Stone (3% and 10%; only a stone not owned yet; section 1). Floors take `baseFloorSeconds / (1 + power / 100)` (never under a quarter of it); at most 12 hours of away time counts per open.
 - **Floor outcomes** (`Outcomes`, `MODULES/WORLD.md` 3.6): a floor a team is too weak for pays half the Poké and Exploration XP (a setback) or ends the expedition safely (a turn-back).
 - **Missions:** the job board and its pay and pace come from `./gradlew :world-core:simulateWorldEconomy`; the daily berry run pays 100 Poké; ordinary jobs wait 14 days, daily jobs 1. The only Rare Candy from a job is a once-only rescue (Eevee, Bagon) and the weekly Mt. Steel patrol.
 - **Member experience** (`MODULES/WORLD.md` 5.2): each Pokémon on a team gets `CandyRules.XP_PER_FLOOR` (1) XP for each floor the team climbs; `XP_PER_CANDY` (20) XP are one step of candy progress on the shared level curve. Guardians and level-100 Pokémon get none. Not simulated.
