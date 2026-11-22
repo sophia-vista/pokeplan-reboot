@@ -106,7 +106,14 @@ object HealImport {
     private fun newerThanStored(data: HealData, r: Imported): String? = when (r) {
         is Imported.Steps -> data.steps.firstOrNull { it.provenance?.provider == r.provider && it.provenance.externalId == r.id }?.takeIf { r.steps > it.steps }?.id
         is Imported.Vital -> if (r.type == VitalType.HEART_RATE) null
-            else data.vitals.firstOrNull { it.provenance?.provider == r.provider && it.provenance.externalId == r.id }?.takeIf { r.atMillis > it.atMillis && r.value != it.value }?.id
+            else data.vitals.firstOrNull { it.provenance?.provider == r.provider && it.provenance.externalId == r.id }?.takeIf { stored ->
+                when (r.type) {
+                    // A day's range only ever widens: a later read that saw less of the day must not narrow it.
+                    VitalType.HEART_RATE_LOW, VitalType.SPO2_LOW, VitalType.SKIN_TEMPERATURE_LOW -> r.value < stored.value
+                    VitalType.HEART_RATE_HIGH, VitalType.SPO2_HIGH, VitalType.SKIN_TEMPERATURE_HIGH -> r.value > stored.value
+                    else -> r.atMillis > stored.atMillis && r.value != stored.value
+                }
+            }?.id
         else -> null
     }
 

@@ -146,4 +146,71 @@ class HuaweiRecordsTest {
         assertEquals(LocalDate(2026, 11, 21), weekly.day)
         assertTrue(!HealReminders.huaweiStillWanted(heal.data, LocalDate(2026, 11, 15), LocalDate(2026, 11, 15), utc), "read since: not wanted before it is due")
     }
+
+    private fun rowOf(content: String, date: String) = listOf(n("privacy_content_title", content), n("privacy_time", date))
+    private val allData = ScreenCapture(9, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) +
+        rowOf("5 h 9 min", "11/12") + rowOf("42 min", "11/12") + rowOf("20.1-23.4°C", "11/11") + rowOf("SpO₂ range 94%-99%", "November 10") + rowOf("nonsense", "11/9") +
+        listOf(n("privacy_title", "October 2026")) + rowOf("6 h", "10/30") + rowOf("7 h 2 min", "11/30"))
+
+    @Test fun allDataRowsBecomeHistoryRecordsOnTheirOwnDays() {
+        val vitals = HuaweiRecords.read(HuaweiSeen(listOf(allData)), now, utc).filterIsInstance<Imported.Vital>().associateBy { it.id }
+        fun noon(m: Int, d: Int, y: Int = 2026) = at(y, m, d, 12, 0)
+        assertEquals(309.0, vitals["sleeplength:309:2026-11-12"]?.value); assertEquals(42.0, vitals["sleeplength:42:2026-11-12"]?.value, "a nap and a night are both kept")
+        assertEquals(360.0, vitals["sleeplength:360:2026-10-30"]?.value, "the October header gives the year of the rows under it")
+        assertEquals(noon(11, 12), vitals["sleeplength:309:2026-11-12"]?.atMillis)
+        assertEquals(20.1, vitals["skintemplow:2026-11-11"]?.value); assertEquals(23.4, vitals["skintemphigh:2026-11-11"]?.value)
+        assertEquals(94.0, vitals["spo2low:2026-11-10"]?.value); assertEquals(99.0, vitals["spo2high:2026-11-10"]?.value)
+        assertTrue(vitals.keys.none { "11-09" in it }, "a row that is not a value is left out")
+        assertTrue(vitals.keys.none { "2026-11-30" in it }, "a date in the future is left out")
+        assertEquals(app.pokeplan.heal.VitalType.SLEEP_LENGTH, vitals["sleeplength:309:2026-11-12"]?.type)
+    }
+
+    @Test fun allDataRowsReadAgainAddNothingTwice() {
+        val once = HuaweiRecords.read(HuaweiSeen(listOf(allData)), now, utc)
+        val twice = HuaweiRecords.read(HuaweiSeen(listOf(allData, allData.copy(atMillis = 99))), now, utc)
+        assertEquals(once.map { it.id }.sorted(), twice.map { it.id }.sorted())
+        assertEquals(LocalDate(2026, 10, 30), HuaweiRecords.oldestAllDataDay(allData, now, utc))
+    }
+
+    private val dayPage = ScreenCapture(10, "PrivacyDataModelActivity", listOf(
+        n("action_bar_title", "11/12/2026 data"),
+        n("privacy_content_title", "6 h 20 min"), n("privacy_time", "11/11, 11:30 PM-11/12, 5:50 AM"),
+        n("privacy_content_title", "42 min"), n("privacy_time", "11/12, 1:00 PM-1:42 PM"),
+        n("privacy_content_title", "oops"), n("privacy_time", "11/12, 9:00 AM-8:00 AM"),
+    ))
+
+    @Test fun aSleepDayPageGivesNightsAndNapsWithTheirOwnTimes() {
+        val sleeps = HuaweiRecords.read(HuaweiSeen(listOf(dayPage)), now, utc).filterIsInstance<Imported.Sleep>()
+        assertEquals(listOf(at(2026, 11, 11, 23, 30) to at(2026, 11, 12, 5, 50), at(2026, 11, 12, 13, 0) to at(2026, 11, 12, 13, 42)), sleeps.map { it.startMillis to it.endMillis })
+        assertTrue(sleeps.all { it.provider == HuaweiHealth.PROVIDER && it.id == "sleep:${it.startMillis}" })
+    }
+
+    @Test fun anAcrossYearsSpanAndAnOvernightWithoutADateEndRight() {
+        val newYear = ScreenCapture(11, "PrivacyDataModelActivity", listOf(n("action_bar_title", "01/01/2026 data"), n("privacy_content_title", "7 h"), n("privacy_time", "12/31, 11:00 PM-6:00 AM")))
+        val s = HuaweiRecords.read(HuaweiSeen(listOf(newYear)), now, utc).filterIsInstance<Imported.Sleep>().single()
+        assertEquals(at(2025, 12, 31, 23, 0) to at(2026, 1, 1, 6, 0), s.startMillis to s.endMillis, "a date after the page's day is the year before; no end date means the next morning")
+    }
+
+    @Test fun realNightsReplaceTheLengthOnlyReadingAndTodaysNightFromTheSleepPage() {
+        val today = ScreenCapture(12, "PrivacyDataModelActivity", listOf(n("action_bar_title", "11/14/2026 data"), n("privacy_content_title", "5 h 9 min"), n("privacy_time", "11/14, 2:00 AM-7:09 AM")))
+        val list = ScreenCapture(13, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) + rowOf("5 h 9 min", "11/14") + rowOf("6 h 2 min", "11/13"))
+        val records = HuaweiRecords.read(HuaweiSeen(listOf(home, sleepPage("Today"), list, today)), now, utc)
+        assertEquals(listOf("sleep:${at(2026, 11, 14, 2, 0)}"), records.filterIsInstance<Imported.Sleep>().map { it.id }, "the Sleep page's night for today is replaced")
+        val lengths = records.filterIsInstance<Imported.Vital>().filter { it.type == app.pokeplan.heal.VitalType.SLEEP_LENGTH }.map { it.id }
+        assertEquals(listOf("sleeplength:362:2026-11-13"), lengths, "a day with real times keeps no length-only reading")
+    }
+
+    @Test fun theStepsAllDataListBecomesADailyHistory() {
+        val list = ScreenCapture(14, "PrivacyDataModelActivity", listOf(n("action_bar_title", "All recorded data"), n("privacy_title", "November 2026")) +
+            rowOf("6,842 steps", "11/13") + rowOf("912 steps", "11/12") + listOf(n("privacy_title", "October 2026")) + rowOf("10,004 steps", "10/31"))
+        val steps = HuaweiRecords.read(HuaweiSeen(listOf(list)), now, utc).filterIsInstance<Imported.Steps>().associate { it.id to it.steps }
+        assertEquals(mapOf("steps:2026-11-13" to 6842, "steps:2026-11-12" to 912, "steps:2026-10-31" to 10004), steps)
+    }
+
+    @Test fun aDaysStepsKeepTheLargestCountSeen() {
+        val list = ScreenCapture(14, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) + rowOf("500 steps", "11/14"))
+        val live = ScreenCapture(15, "MainActivity", listOf(n("time_strength_layout_middle", description = "8432 steps")))
+        val steps = HuaweiRecords.read(HuaweiSeen(listOf(list, live.copy(atMillis = now))), now, utc).filterIsInstance<Imported.Steps>()
+        assertEquals(listOf(8432), steps.map { it.steps }, "one record for the day, the larger count")
+    }
 }
