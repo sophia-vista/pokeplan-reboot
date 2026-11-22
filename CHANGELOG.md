@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.233.0
+
+- **Small updates (REP-077, after REP-075).** The updater no longer downloads the whole 116 MB APK for every change: the
+  app now updates from the version's own release, and that release carries patches built from the last three versions'
+  APKs (`tools/update/make_patch.py`). A patch lists the unchanged entries (about 30,000 sprites, cries, maps) as copies
+  from the installed APK and carries only the changed dex, the signing block and the ZIP directory, gzipped: about 4 MB
+  from the next version, up to about 20 MB after a few versions, against 116 MB for the whole file. The app rebuilds the
+  exact signed APK from its own installed copy (no signing key is in the app), checks it against the release manifest's
+  size and SHA-256, and installs it; a missing or damaged patch, or a different installed build, falls back to the full
+  download. The release workflow now publishes the version's release, with its patches and its own `update.json`, before
+  the rolling "latest" release; the app reads the rolling release only to learn which version is newest. Still to do on a
+  phone: the patch download and the rebuilt APK installing over the running app. No reward rule changed.
+
 ## 0.232.0
 
 One loading vocabulary, drawn from tokens and text only (DESIGN_SYSTEM 5.6 and 6.10): `LoadingDots` (three pixels), `LoadingState` (three pixels and one short line), the `Skeleton` family (`Skeleton`, `SkeletonRows`, `SkeletonPanel`: static pixel placeholders of the shape that is coming, never a shimmer or a pulse), `LoadingScreen` (a full screen that has only tokens and text) and `LoadingOverlay` (a scrim that blocks the page). A button's loading state now keeps its label's width, so the row does not jump, and announces the action ("Save, working") instead of going silent.

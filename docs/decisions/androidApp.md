@@ -572,6 +572,15 @@ permission), hashed while it streams, and served to the installer through the ex
 `file_paths.xml`, authority `${applicationId}.files`). The previous build's file is deleted when a new one starts
 downloading, and free space is checked against the manifest's size before the download starts.
 
+### Patches are rebuilt here, never signed here
+
+`AndroidUpdates.download` first looks for a patch for the installed build. When there is one it downloads the patch,
+gunzips it (capped at [MAX_PATCH_BYTES]) and replays it with `parseUpdatePatch` against `applicationInfo.sourceDir`, the
+APK Android itself installed, streaming the result into `filesDir/updates` while hashing it. The rebuilt file must match
+the manifest's size and SHA-256, which is the same checksum the release's own signed APK has, so a patch either
+reproduces the published APK exactly or the whole APK is downloaded instead. The app holds no signing key. Free space is
+checked for the patch plus the rebuilt APK; the patch file is deleted afterwards, and the installed APK is only read.
+
 ### Installing over itself
 
 `install` refuses and opens the phone's "install unknown apps" page when `canRequestPackageInstalls()` is false; the

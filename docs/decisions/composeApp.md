@@ -576,11 +576,29 @@ TAP_GAIN is 6% of the Sound effects volume because the owner found 10% still lou
 
 ### Why the release, not a store or a server
 
-The app is installed from the repository's rolling "latest" GitHub release, so the updater reads that release rather
-than adding an update server, an account or a store listing (the repository is public; the app holds no token). The
+The app is installed from the repository's GitHub releases, so the updater reads them rather than adding an update
+server, an account or a store listing (the repository is public; the app holds no token). The rolling release's
 manifest is downloaded first because the API's unauthenticated limit is shared per IP and the manifest is tiny; the
 release API is the fallback for a release built before the manifest existed, and it reads the version and build from the
 release title.
+
+### The rolling release names the version; the version's own release is installed
+
+Patches can only be made from the exact APK a phone has, and builds of one version (or every merge's rolling build)
+would make that base unguessable. So the updater installs the version's own APK: it reads the rolling "latest" release
+only to learn the newest version, then reads `releases/download/vX.Y.Z/update.json` for the target and its patches, and
+keeps using that version's release as its base. A rolling build that is later than the versioned one is not offered,
+which is fine because the repository bumps `VERSION` for every shipped change.
+
+### A small patch instead of the whole APK
+
+Only the dex files, the signing block and the ZIP central directory change in an update; the 30,000 sprite, cry and map
+entries are byte-identical. `Patch.kt` parses a patch that copies those unchanged ranges from the installed APK
+(`applicationInfo.sourceDir`) and carries the changed bytes, then checks the rebuilt APK against the manifest's size and
+SHA-256. The format is a byte stream of COPY and LITERAL ops, gzipped, written by `tools/update/make_patch.py`; the
+applier only verifies the target size, and the SHA-256 check (in `AndroidUpdates`) is what makes a wrong base or a
+damaged patch safely fall back to the full download. Measured: 4.5 MB for the next version, about 17 MB after five
+versions, against 116 MB.
 
 ### A newer build number of the same VERSION is still an update
 

@@ -110,15 +110,26 @@ The release workflow runs in one concurrency group (`latest-apk`) with `cancel-i
 
 Documented in `CLAUDE.md Layout`.
 
-### The update manifest beside the APK
+### The update manifests beside the APK
 
-The rolling release carries `update.json` as well as `pokeplan.apk`: version, build, asset name, size, SHA-256, commit and
-date. It is a separate asset so the app can learn of a build without downloading 120 MB and without the GitHub API's
-unauthenticated rate limit, and it is attached under the fixed tag `latest`, which every merge deletes and recreates
-(the asset URL stays the same). `pokeplan.apk` itself is never renamed, because the app builds its download URL from
-that name. The repository is public, so the app reads both without a token; making it private again would need an
-authentication path before the updater could work. The manifest is also attached to each version's own `vX.Y.Z`
-release.
+Every release carries `update.json` as well as its APK: version, build, asset name, size, SHA-256, commit and date. It is
+a separate asset so the app can learn of a build without downloading 120 MB and without the GitHub API's
+unauthenticated rate limit. The rolling release's manifest is attached under the fixed tag `latest`, which every merge
+deletes and recreates (the asset URL stays the same); `pokeplan.apk` itself is never renamed, because the app builds its
+download URL from that name. A version's own release (`vX.Y.Z`, created the first time a VERSION is seen) carries a
+second manifest for the versioned APK (`pokeplan-vX.Y.Z.apk`), plus the small update patches. The repository is public,
+so the app reads them without a token; making it private again would need an authentication path before the updater
+could work.
+
+### The version's release is published before the rolling one
+
+The app reads the rolling release only to learn which version is newest, then reads that version's own release for the
+APK and the patches (the builds the updater installs are the versioned APKs, so a patch's base is a released APK rather
+than an arbitrary merge build). The workflow creates the version's release first and the rolling release last, so the
+app never sees a version whose release is not ready. Each version's release carries patches from the last three
+versioned APKs (`tools/update/make_patch.py`), about 4 to 20 MB each, and their `fromBuild` is read from the older
+release's `update.json`. The patches are byte-for-byte reconstructions of the signed APK, so no signing key is ever in
+the app; a patch that does not reproduce the manifest's SHA-256 is dropped and the full APK is downloaded instead.
 
 ## `build.gradle.kts`
 
