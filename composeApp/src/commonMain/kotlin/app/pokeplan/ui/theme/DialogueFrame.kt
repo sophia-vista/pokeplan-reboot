@@ -86,6 +86,14 @@ fun Modifier.dialogueBox(fill: Color = Pixel.Panel.copy(alpha = CARD_OPACITY), p
     return drawBehind { dialogueFrame(pixel.toPx(), fill, sideBand = 2, topBand = 1, edge = edge, band = band, deep = deep) }
 }
 
+/**
+ * How far a dialogue box's fill starts inside its outer edge: four art pixels sideways and three down
+ * at the default [pixel]. Content that must sit flush against the frame (a full-bleed row wash) is
+ * inset by these, so its colour reaches the frame and not over it.
+ */
+fun dialogueFillInsetX(pixel: Dp = 2.dp): Dp = pixel * 4
+fun dialogueFillInsetY(pixel: Dp = 2.dp): Dp = pixel * 3
+
 fun pixelDiscPath(c: Offset, radius: Float, p: Float): Path = Path().apply {
     if (radius <= 0f) return@apply
     val top = kotlin.math.floor((c.y - radius) / p) * p
