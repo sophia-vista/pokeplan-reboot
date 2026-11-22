@@ -11,6 +11,10 @@ One loading vocabulary, drawn from tokens and text only (DESIGN_SYSTEM 5.6 and 6
 
 It is applied to the app's opening screen, Settings' backup and restore (a blocking overlay while the save is replaced), Health Connect connect and disconnect, Gear's locating and connection check, the contact import list, and portraits while a face decodes. UI only: no reward rule, schema or save changed; `RewardRules.VERSION` stays and no golden vector was regenerated.
 
+## 0.231.2
+
+- **Emotional wellbeing’s All data:** the page’s All data carries the same **Emotion** and **Stress** tabs, so the walk opens it once and reads both tabs there (the emotion days and the stress averages); the card page is scrolled only after the pills. If the tabs are out of reach of accessibility they are tapped by position at the top left, from the owner’s 22 November 2026 screenshots. No reward or schema change.
+
 ## 0.231.1
 
 Huawei Health read: retry a card that opens a blank window, and a second way into Cycle Calendar's menu (HEAL, REP-046, probe 13 of 22 November 2026). No reward or schema change.
