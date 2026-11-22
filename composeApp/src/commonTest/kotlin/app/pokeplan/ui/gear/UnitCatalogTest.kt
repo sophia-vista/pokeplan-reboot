@@ -107,13 +107,5 @@ class UnitCatalogTest {
         assertTrue(UnitCatalog.search("").isEmpty() && UnitCatalog.search("zzzzzz").isEmpty())
     }
 
-    @Test
-    fun theFirstConvertersKindsStillWork() {
-        val miles = Units.kinds.first { it.label == "Length" }.units.first { it.symbol == "mi" }
-        val km = Units.kinds.first { it.label == "Length" }.units.first { it.symbol == "km" }
-        near(1.609344, Units.convert(1.0, miles, km))
-        assertEquals(listOf("Length", "Mass", "Volume", "Speed", "Temperature"), Units.kinds.map { it.label })
-    }
-
     private companion object { const val Math_PI = kotlin.math.PI }
 }

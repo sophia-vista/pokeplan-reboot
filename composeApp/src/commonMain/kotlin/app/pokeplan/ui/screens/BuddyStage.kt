@@ -24,6 +24,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Column
@@ -167,9 +168,10 @@ fun BuddyStage(
         Column(
             Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(PixelShape).background(Pixel.Scrim.copy(alpha = 0.33f))
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Open ${buddy.nickname}", role = Role.Button, onClick = onOpen)
-                .defaultMinSize(minHeight = 40.dp)
+                .defaultMinSize(minHeight = Spacing.Target)
                 .padding(horizontal = Spacing.M, vertical = 7.dp)
                 .semantics(mergeDescendants = true) { contentDescription = "${buddy.nickname}, level ${buddy.level}, ${(progress * 100).toInt()} percent to the next level" },
+            verticalArrangement = Arrangement.Center,
         ) {
             Text("${buddy.nickname}  Lv. ${buddy.level}", style = MaterialTheme.typography.labelMedium, color = Color.White)
             Box(Modifier.padding(top = 3.dp).width(84.dp).height(4.dp).background(Color.White.copy(alpha = 0.33f))) {

@@ -72,8 +72,11 @@ object LiveStore {
                 legacy(app, choice, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
                 s.live.moveHealToTables(now)
             }.onFailure { Log.w(TAG, "Heal tables not active this run: ${it.javaClass.simpleName}") }
-            val healSealedNow = runCatching { s.healTables.seal(now).also { if (it) s.healTables.scrub() } }
-                .onFailure { Log.w(TAG, "Heal rows not sealed this run: ${it.javaClass.simpleName}") }.getOrDefault(false)
+            val healSealedNow = runCatching {
+                val sealedNow = s.healTables.seal(now)
+                if (s.healTables.needsScrub() && !s.healTables.scrub()) Log.w(TAG, "The Heal file scrub did not finish; it is tried again at the next start")
+                sealedNow
+            }.onFailure { Log.w(TAG, "Heal rows not sealed this run: ${it.javaClass.simpleName}") }.getOrDefault(false)
             runCatching {
                 legacy(app, choice, "home.json")?.let { legacy -> if (!s.baseTables.isActive() && s.live.read("home") == null) s.live.write("home", legacy, now) }
                 s.live.moveBaseToTables(now)

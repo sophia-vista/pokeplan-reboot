@@ -145,10 +145,21 @@ class HealTables(private val store: DataStore) {
         for ((name, json, at) in copies) if (!name.startsWith("aside:heal:locked:") && !RowCipher.isSealed(json)) q.liveWrite(name, c.seal(json), at)
     }
 
-    fun scrub() {
-        runCatching { store.driver.execute(null, "VACUUM", 0) }
-        runCatching { store.driver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", { cur -> while (cur.next().value) Unit; QueryResult.Unit }, 0) }
+    /**
+     * After [seal]: forgets what the old plaintext rows left in the file's free pages and write-ahead log (VACUUM, then a truncating checkpoint). Outside any
+     * transaction, and it reports whether both steps succeeded: a failure leaves the plaintext recoverable from the file, so the caller keeps calling it at
+     * the next start until it returns true. On success it records a marker that holds no figure, date or path, so the scrub is not repeated ([needsScrub]).
+     */
+    fun scrub(): Boolean {
+        val vacuumed = runCatching { store.driver.execute(null, "VACUUM", 0) }.isSuccess
+        val checkpointed = runCatching { store.driver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", { cur -> while (cur.next().value) Unit; QueryResult.Unit }, 0) }.isSuccess
+        if (!vacuumed || !checkpointed) return false
+        runCatching { q.setMeta(META_HEAL_SCRUBBED, SCRUBBED) }
+        return true
     }
+
+    /** Whether a sealed Heal still needs [scrub]: it has not been recorded as done yet, or the last attempt failed. */
+    fun needsScrub(): Boolean = isSealed() && q.meta(META_HEAL_SCRUBBED).executeAsOneOrNull() != SCRUBBED
 
     fun activate(document: String?, nowMillis: Long): Boolean {
         if (isActive()) return false
@@ -239,7 +250,10 @@ class HealTables(private val store: DataStore) {
         const val META_HEAL_TABLES_AT = "heal_store_since"
         const val META_HEAL_SEALED = "heal_sealed"
         const val META_HEAL_SEALED_AT = "heal_sealed_since"
+        /** Set once [scrub] has succeeded; a marker only, never a date or a path. */
+        const val META_HEAL_SCRUBBED = "heal_scrubbed"
         const val SEALED = "sealed"
+        const val SCRUBBED = "done"
         const val ACTIVE = "tables"
 
         private val JSON = Json { encodeDefaults = true }

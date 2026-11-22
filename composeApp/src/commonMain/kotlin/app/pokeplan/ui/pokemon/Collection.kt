@@ -149,7 +149,7 @@ fun CollectionScreen(
         SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon, scroll = current != Section.DEX) {
             when (current) {
                 Section.PARTY -> {
-                    val regions = listOfNotNull(Region.PLAN, Region.CARE.takeIf { model.data.settings.careModule }, Region.HEAL, Region.MINT, Region.BASE, Region.LINK)
+                    val regions = listOf(Region.PLAN, Region.CARE, Region.HEAL, Region.MINT, Region.BASE, Region.LINK)
                     var shown by remember { mutableStateOf(Region.PLAN) }
                     val current = shown.takeIf { it in regions } ?: Region.PLAN
                     val at = regions.indexOf(current)

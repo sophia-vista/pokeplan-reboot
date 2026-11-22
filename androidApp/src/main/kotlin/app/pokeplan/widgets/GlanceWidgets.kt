@@ -515,7 +515,7 @@ class CompleteRoutineAction : ActionCallback {
     }
 }
 
-private data class CareState(val on: Boolean, val started: Boolean, val routines: List<Routine>, val done: Int, val diarySaved: Boolean, val today: kotlinx.datetime.LocalDate)
+private data class CareState(val started: Boolean, val routines: List<Routine>, val done: Int, val diarySaved: Boolean, val today: kotlinx.datetime.LocalDate)
 
 class CareWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) =
@@ -529,7 +529,7 @@ class CareWidget : GlanceAppWidget() {
         val dark = BuddyScene.darkness(game.now.hour, game.now.minute)
         val header = WidgetArt.scene(context, BuddyScene.CARE, dark, (420 * d).toInt(), (44 * d).toInt(), 20 * d, roundBottom = false)
         val state = CareState(
-            on = game.data.settings.careModule, started = game.data.onboarded,
+            started = game.data.onboarded,
             routines = today.sortedBy { it.doneOn(care.today) }.take(8),
             done = today.count { it.doneOn(care.today) }, diarySaved = care.diaryToday() != null, today = care.today,
         )
@@ -551,16 +551,16 @@ private fun CareContent(context: Context, state: CareState, header: Bitmap?) {
                 style = TextStyle(color = ColorProvider(green), fontSize = 15.sp, fontWeight = FontWeight.Bold),
             )
             Spacer(GlanceModifier.defaultWeight())
-            if (state.on && state.routines.isNotEmpty()) Text(
+            if (state.routines.isNotEmpty()) Text(
                 "${state.done} of ${state.routines.size} done", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
                 style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium),
             )
         }
         Column(GlanceModifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp)) {
-            if (!state.on || !state.started) {
+            if (!state.started) {
                 Text(
-                    if (!state.started) "Open PokéLife to start" else "Care is switched off. Turn it on in Me, Settings, Modules.",
-                    GlanceModifier.clickable(openApp(context, if (state.started) Place.ME.name else null)),
+                    "Open PokéLife to start",
+                    GlanceModifier.clickable(openApp(context, null)),
                     style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp),
                 )
                 return@Column

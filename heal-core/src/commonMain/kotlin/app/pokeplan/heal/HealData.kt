@@ -5,7 +5,7 @@ import kotlinx.datetime.LocalTime
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class SourceKind { MANUAL, IMPORTED, DERIVED, ESTIMATED }
+enum class SourceKind { MANUAL, IMPORTED }
 
 @Serializable
 data class Provenance(val provider: String, val app: String, val externalId: String, val importedMillis: Long, val possibleDuplicateOf: String? = null)

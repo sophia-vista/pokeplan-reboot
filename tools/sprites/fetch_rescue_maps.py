@@ -66,6 +66,10 @@ def palettes(bpl):
 
 
 def chunk_rows(bma, pos, wc, hc):
+    """One BMA tile-layer: run-length rows of 12-bit chunk ids, each row XORed with the row above.
+
+    Returns the rows and the position just after the layer, so the caller reads the next layer without walking this one twice.
+    """
     rows, previous = [], [0] * ((wc + 1) // 2 * 2)
     for _ in range(hc):
         row = []
@@ -86,7 +90,7 @@ def chunk_rows(bma, pos, wc, hc):
         row = [v ^ previous[i] for i, v in enumerate(row)]
         rows.append(row[:wc])
         previous = row
-    return rows
+    return rows, pos
 
 
 def render(bpl, bpc, bma, bpas):
@@ -101,8 +105,8 @@ def render(bpl, bpc, bma, bpas):
         raise ValueError("chunk size differs between BPC and BMA")
     pos, layers = 12, []
     for _ in range(nl):
-        layers.append(chunk_rows(bma, pos, wc, hc))
-        pos = skip_layer(bma, pos, wc, hc)
+        rows, pos = chunk_rows(bma, pos, wc, hc)
+        layers.append(rows)
     tiles = list(static)
     for i, n in enumerate(slots):
         if not n:
@@ -133,23 +137,6 @@ def render(bpl, bpc, bma, bpas):
                     tile = tile.point([v + bank * 16 if v else 0 for v in range(256)])
                     image.paste(tile, (cx * cw * 8 + t % cw * 8, cy * ch * 8 + t // cw * 8), mask)
     return image, nl
-
-
-def skip_layer(bma, pos, wc, hc):
-    for _ in range(hc):
-        got = 0
-        while got < wc:
-            cmd = bma[pos]
-            pos += 1
-            if cmd >= 192:
-                pos += 3 * (cmd - 191)
-                got += 2 * (cmd - 191)
-            elif cmd >= 128:
-                pos += 3
-                got += 2 * (cmd - 127)
-            else:
-                got += 2 * (cmd + 1)
-    return pos
 
 
 def to_rgba(indices, banks):

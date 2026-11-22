@@ -22,6 +22,19 @@ class QrCodeTest {
     }
 
     @Test
+    fun theChosenMaskIsTheOneTheStandardRulesPick() {
+        // Reference masks from an independent encoder (python-qrcode), byte mode, same version and level: with the four
+        // ISO/IEC 18004 penalty rules the mask with the lowest score is the same one that encoder chooses.
+        val cases = listOf(
+            Triple("Hi", QrCode.Level.L, 0), Triple("hello world", QrCode.Level.L, 0), Triple("PokeLife", QrCode.Level.L, 4), Triple("https://poke.life", QrCode.Level.L, 3),
+            Triple("Hi", QrCode.Level.M, 5), Triple("hello world", QrCode.Level.M, 3), Triple("PokeLife", QrCode.Level.M, 1), Triple("https://poke.life", QrCode.Level.M, 1),
+            Triple("Hi", QrCode.Level.Q, 7), Triple("hello world", QrCode.Level.Q, 3), Triple("PokeLife", QrCode.Level.Q, 1), Triple("https://poke.life", QrCode.Level.Q, 5),
+            Triple("Hi", QrCode.Level.H, 5), Triple("hello world", QrCode.Level.H, 2), Triple("PokeLife", QrCode.Level.H, 2), Triple("https://poke.life", QrCode.Level.H, 7),
+        )
+        for ((text, level, mask) in cases) assertEquals(mask, QrCode.encode(text, level)!!.mask, "$text at $level")
+    }
+
+    @Test
     fun codesReadBackAcrossVersionsAndLevels() {
         val samples = listOf(
             "A", "Hello, PokéLife!", "https://example.com/a?b=c&d=e", "x".repeat(40), "WIFI:T:WPA;S:Home network;P:correct horse battery;;",

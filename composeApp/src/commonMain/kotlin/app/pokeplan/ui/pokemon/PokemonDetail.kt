@@ -384,7 +384,7 @@ private fun PlacePicker(model: AppModel, p: OwnedPokemon) {
     class Slot(val label: String, val partyId: String, val accent: androidx.compose.ui.graphics.Color, val lead: String?, val makeLead: () -> Unit)
     val slots = listOfNotNull(
         Slot("Plan party", PartyIds.PLAN, app.pokeplan.ui.theme.ModuleAccent.PLAN.accent, player.planLead?.id) { store.setPlanLead(p.id) },
-        if (model.data.settings.careModule) Slot("Care party", PartyIds.CARE, app.pokeplan.ui.theme.ModuleAccent.CARE.accent, player.careLead?.id) { store.setCareLead(p.id) } else null,
+        Slot("Care party", PartyIds.CARE, app.pokeplan.ui.theme.ModuleAccent.CARE.accent, player.careLead?.id) { store.setCareLead(p.id) },
         Slot("Heal party", PartyIds.HEAL, app.pokeplan.ui.theme.ModuleAccent.HEAL.accent, player.healLead?.id) { store.setHealLead(p.id) },
         Slot("Mint party", PartyIds.MINT, app.pokeplan.ui.theme.ModuleAccent.MINT.accent, player.mintLead?.id) { store.setMintLead(p.id) },
         Slot("Base party", PartyIds.BASE, app.pokeplan.ui.theme.ModuleAccent.BASE.accent, player.baseLead?.id) { store.setBaseLead(p.id) },

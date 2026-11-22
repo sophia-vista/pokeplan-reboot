@@ -1,6 +1,7 @@
 package app.pokeplan.data
 
 import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.pokeplan.app.AppData
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.GameStore
@@ -314,12 +315,40 @@ class HealSealingTest {
         val f = File.createTempFile("heal", ".db").also { it.delete(); it.deleteOnExit() }
         val (s, g) = clearPhone(f.path)
         val before = healOn(s, g).data
-        s.healCipher = key(1); s.healTables.seal(10); s.healTables.scrub()
+        s.healCipher = key(1); assertTrue(s.healTables.seal(10)); assertTrue(s.healTables.scrub())
         s.close()
         val again = JvmDatabase.open(f.path).also { it.healCipher = key(1) }
         assertTrue(again.integrityIssues().isEmpty())
         assertTrue(again.healTables.isSealed())
         assertEquals(before, healOn(again, g).data)
         assertFalse(f.readBytes().decodeToString().contains("morning-secret"), "the file itself no longer holds the note")
+    }
+
+    @Test
+    fun aFailedScrubIsReportedAndRetriedAtTheNextStart() {
+        val properties = java.util.Properties().apply { setProperty("foreign_keys", "true") }
+        val driver = VacuumFails(JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY, properties))
+        val s = DataStore.open(driver)
+        s.live.activate(null, null, 1)
+        s.live.moveHealToTables(2)
+        healOn(s, game()).logDrink(300, "tea-secret")
+        s.healCipher = key(1)
+        assertTrue(s.healTables.seal(10))
+        assertTrue(s.healTables.needsScrub(), "a freshly sealed file has not been scrubbed")
+        assertFalse(s.healTables.scrub(), "a VACUUM that throws must be reported, not swallowed")
+        assertTrue(s.healTables.needsScrub(), "so the next start tries again")
+        driver.fail = false
+        assertTrue(s.healTables.scrub())
+        assertFalse(s.healTables.needsScrub(), "the marker keeps the next start from scrubbing again")
+    }
+}
+
+/** A database driver whose `VACUUM` can be made to fail, standing in for a file or phone that cannot complete it. */
+private class VacuumFails(private val driver: app.cash.sqldelight.db.SqlDriver) : app.cash.sqldelight.db.SqlDriver by driver {
+    var fail = true
+
+    override fun execute(identifier: Int?, sql: String, parameters: Int, binders: (app.cash.sqldelight.db.SqlPreparedStatement.() -> Unit)?): QueryResult<Long> {
+        if (fail && sql.trim().equals("VACUUM", ignoreCase = true)) error("simulated VACUUM failure")
+        return driver.execute(identifier, sql, parameters, binders)
     }
 }

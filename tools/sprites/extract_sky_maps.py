@@ -12,6 +12,21 @@ ROM_SHA1 = "5fa96ca8d8dd6405d6cd2bad73ed68bc73a9d152"
 OUT = Path(__file__).resolve().parents[2] / "assets" / "sky-maps"
 
 
+def entry_is_empty(level, get):
+    """Whether the ROM's own entry is a placeholder: a map whose palette, tile set or layout is missing or empty.
+
+    Those entries have nothing to decode. A decoding problem on real data is NOT one of these and must not be mistaken
+    for one, so the caller lets it through.
+    """
+    for name in (level.bpl_name + ".bpl", level.bpc_name + ".bpc", level.bma_name + ".bma"):
+        try:
+            if not get(name):
+                return True
+        except (ValueError, KeyError):
+            return True
+    return False
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("rom")
@@ -48,14 +63,22 @@ def main():
             rows.append((name, level.bpl_name, level.bpc_name, level.bma_name, base.width, base.height, len(layers),
                          sum(1 for b in bpas if b)))
             print(name, base.size, flush=True)
-        except Exception as e:
+        except (ValueError, KeyError, IndexError) as e:
+            # Only the ROM's own placeholder entries are skipped: real data that fails to decode is a bug and stops the run.
+            if not entry_is_empty(level, get):
+                raise
             skipped.append((name, repr(e)))
             print("SKIP", name, repr(e)[:100], file=sys.stderr)
     with open(out / "maps.tsv", "w", encoding="utf-8") as f:
         f.write("name\tbpl\tbpc\tbma\twidth\theight\tlayers\tbpa_slots\n")
         for r in rows:
             f.write("\t".join(map(str, r)) + "\n")
-    print(len(rows), "maps,", len(skipped), "skipped")
+    # The known skips are listed beside the maps, so a placeholder can never hide among them unnoticed.
+    with open(out / "skipped.tsv", "w", encoding="utf-8") as f:
+        f.write("name\treason\n")
+        for name, reason in skipped:
+            f.write(f"{name}\t{reason}\n")
+    print(len(rows), "maps,", len(skipped), "skipped:", ", ".join(name for name, _ in skipped) or "none")
 
 
 if __name__ == "__main__":

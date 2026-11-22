@@ -22,7 +22,7 @@ object CareReminders {
     const val DAYS_AHEAD = 2
 
     fun upcoming(care: CareData, app: AppData, nowMillis: Long, zone: TimeZone): List<RoutineReminder> {
-        if (!app.settings.careModule || !care.settings.reminders) return emptyList()
+        if (!care.settings.reminders) return emptyList()
         val session = app.focus?.takeIf { !it.isFinished }
         val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
         val today = nowMillis.toLocalDateTime(zone).date
@@ -39,7 +39,7 @@ object CareReminders {
     }
 
     fun stillWanted(care: CareData, app: AppData, routineId: String, day: LocalDate): Boolean {
-        if (!app.settings.careModule || !care.settings.reminders) return false
+        if (!care.settings.reminders) return false
         val r = care.routines.firstOrNull { it.id == routineId } ?: return false
         return r.plannedOn(day) && !r.doneOn(day)
     }

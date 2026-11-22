@@ -132,6 +132,12 @@ object CareRules {
 
     const val RHYTHM_DAYS = 4
 
+    /** "Kept a rhythm" moments that pay: one a week, since the rhythm is a weekly milestone (CARE.md 5). */
+    const val RHYTHMS_PAID_PER_WEEK = 1
+
+    /** Care Play moments that pay each day, one per Pokémon (CARE.md 4). */
+    const val PLAYS_PAID_PER_DAY = 6
+
     fun weekStartOf(date: LocalDate, weekStart: DayOfWeek): LocalDate =
         date.plus(DatePeriod(days = -((date.dayOfWeek.isoDayNumber - weekStart.isoDayNumber + 7) % 7)))
 

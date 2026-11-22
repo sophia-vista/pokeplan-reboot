@@ -86,9 +86,6 @@ object BuddyReaction {
     private val night = listOf(ReactionIcon.SLEEP, ReactionIcon.MOON)
     private val morning = listOf(ReactionIcon.SUN, ReactionIcon.TWINKLE)
 
-    fun petPool(buddy: OwnedPokemon, hour: Int): List<ReactionIcon> =
-        (byBond.getValue(buddy.bondStyle) + buddy.form.types.flatMap { byType[it].orEmpty() } + timeOfDay(hour)).distinct()
-
     private fun timeOfDay(hour: Int) = if (BuddyScene.isNight(hour)) night else if (hour in 6..9) morning else emptyList()
 
     fun pet(buddy: OwnedPokemon, hour: Int, random: Random = Random, avoid: ReactionIcon? = null): ReactionIcon {
