@@ -41,6 +41,8 @@ jobs:
           echo "name=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Build
         env:
+          # The "build N" shown in Settings -> About and in the release title. It is a label only: the Android
+          # versionCode comes from VERSION, so a run number can never leave a release unable to install (downgrade).
           POKEPLAN_BUILD: ${{ github.run_number }}
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true

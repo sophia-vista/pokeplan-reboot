@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.228.2
+
+- **New APKs install again after the hand-built 9,001 debug APKs.** The Android `versionCode` now comes from `VERSION`
+  (`0.228.2` becomes `228002`) and never from a CI run number or a hand-set `POKEPLAN_BUILD`: a debug APK built with build
+  number 9,001 had left every later release, numbered in the hundreds, refused by Android as a downgrade
+  (`INSTALL_FAILED_VERSION_DOWNGRADE`). `POKEPLAN_BUILD` still labels the build in Settings → About and in the release
+  title. Every build of one version shares its `versionCode`, which Android accepts as an update; bump `VERSION` to
+  outrank a build already installed.
+
 ## 0.228.1
 
 The comment-audit issues (GitHub #381 to #411): dead fields and constants removed, the QR mask picked by the standard's
