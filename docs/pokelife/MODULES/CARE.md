@@ -41,7 +41,7 @@ Primary areas (**owner decision: exactly these five, reached from the Sections k
 4. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
 5. **Dream** — the Pokémon interaction environment (5), where the visitors (6) and Care Play (4) now live too; it is a companion experience, not another task dashboard.
 
-The Sections key lists the five places with their state for today. Prior diary cards and the journal archive are secondary destinations inside Reflect. Care trends are in Me, next to Plan progress. Settings remain in CARE settings. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
+The Sections key lists the five places with their state for today. Prior diary cards and the journal archive are secondary destinations inside Reflect. Care trends are in Me, next to Plan progress. Care's reminder switch is in Me → Settings → Notifications, and tracked urges are edited on the Diary card. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
 
 ### 3.1 Today and routines
 
@@ -64,7 +64,7 @@ Diary Card and Journal remain separate data concepts and records while sharing o
 - **Journal:** free writing, prompts, tags and past entries. Search, edit, delete, export and linking should be straightforward.
 - A saved-state indicator and one clear action should make today's check-in status visible.
 - No streak or penalty for missing a check-in.
-- Never inspect or reward the emotion values, urge ratings, note content, positivity, or amount of personal disclosure. If a completion incentive is used, it may only recognize the act of saving a check-in with a fixed small increment; the contents are not inputs to rewards.
+- Never inspect or reward the emotion values, urge ratings, note content, positivity, or amount of personal disclosure. Saving a diary card or journal entry pays nothing at all (the contents are never inputs to rewards; a module's first-record egg is the only reward).
 
 ### 3.4 Privacy boundary
 
@@ -120,7 +120,7 @@ Each Pokémon may have one primary and one secondary preferred affection/interac
 ### 4.5 Rewards and sensitive-data isolation
 
 - Bond and relationship development belongs to Pokémon relationship state.
-- Meaningful Care Play interactions contribute to Care Egg progress.
+- Meaningful Care Play interactions pay candy and friendship, but fill no point of the Care Egg meter (rules version 29).
 - Visitor interactions may advance that visitor's recruitment relationship.
 - CARE grants no CARE module XP and introduces no new currency.
 - Use existing shared items/reward services only; do not create duplicate Bag, currency or ownership.
@@ -196,7 +196,7 @@ Visitors are a permanent, low-pressure recruitment and relationship loop. They a
 
 - A visitor can be interacted with directly; the user does not need to complete another CARE activity first.
 - Keep the visitor interaction scene, five interaction categories (kind words, sitting together, offering treats, tidying, gentle touch), species reactions, berry handling, cries and feedback where assets support them.
-- Meaningful interactions advance persistent visitor relationship progress and may contribute to Care Egg progress.
+- Meaningful interactions advance persistent visitor relationship progress; Care Play itself fills no point of the Care Egg meter (rules version 29).
 - Relationship progress never resets because of absence, app inactivity or a missed day.
 - No daily attendance quota, expiring visit, forced interaction count or prerequisite routine completion.
 - Favorite interactions can provide a stronger positive response or more efficient relationship progress, but no other interaction is a wrong choice.
@@ -214,7 +214,7 @@ Visitors are a permanent, low-pressure recruitment and relationship loop. They a
 When a visitor is befriended, resolve one of two outcomes:
 
 1. **Default outcome — visitor egg:** the visitor leaves an egg that hatches into that visitor species' first evolutionary stage.
-2. **Rare outcome — direct recruitment:** the actual visiting Pokémon joins the shared collection directly, at a notably higher starting level with stronger stats / a more developed starting build.
+2. **Rare outcome — direct recruitment:** the actual visiting Pokémon joins the shared collection directly, with a stronger starting friendship (150) as its only advantage: the starting level and the IV floor are the same as an egg's (rules version 29).
 
 Rules:
 - Every successful befriending permanently rewards a Pokémon, either through the egg or direct recruitment.
@@ -255,7 +255,7 @@ The sections above say what visitors are; these are the numbers the code uses an
 - **Dismissal:** asked once, keeps what the visitor earned (nothing already given is taken back), and the visitor is kept (the last twenty) so it can be asked back, to the end of the queue with its warmth.
 - **Reunions (6.7):** a befriended visitor is remembered (`CareData.friends`: species, form, visitor id, the day, whether it stayed). Once a day, with a 20% chance (the same for the same device and day), one friend may come back to say hello if none is waiting and it has not been back for 3 days. It holds no Dream place and does not count towards the four and the six, never expires, pays nothing and gives no egg or recruitment; greeting it says a line that remembers the day you became friends.
 - **Egg inheritance (6.6):** an egg a friend leaves (not a visitor that stays) may take a temperament from it: the visitor's nature (40%), its strong stat raised to an IV of at least 24 (40%), and, rarely (5%), a second strong stat to at least 28 along with the other two. A visitor's nature and strong stat come from its id, so they are stable; what an egg takes comes from the visitor and the egg together, so it is the same on a retry. Shininess, ability, species and level are never touched. The hatchling's origin record (`Origin.visitor`: visitor, day, traits, a note such as "Left by a Pikachu you befriended; it took Jolly nature") is shown on its page.
-- **Care Play (4):** time with the buddy, a visitor or any owned Pokémon (invited without touching a party). Six activities map to the five kinds of care (grooming, toy play, a treat, cheering on, gentle touch, quiet time), each a short run of taps that can be stopped any time; suggested (never expires), browsed or "Surprise me". Every Pokémon has a primary and a secondary liked kind from its id, undiscovered until it shows them (a delighted or happy reaction records the kind; any other reaction is pleasant and records nothing). The first time with each Pokémon on a day pays `CareKind.PLAY` (1 friendship step to that Pokémon, 1 Rare Candy, 1 point on Care's Egg meter, at most 6 a day); repeats pay nothing and are unlimited.
+- **Care Play (4):** time with the buddy, a visitor or any owned Pokémon (invited without touching a party). Six activities map to the five kinds of care (grooming, toy play, a treat, cheering on, gentle touch, quiet time), each a short run of taps that can be stopped any time; suggested (never expires), browsed or "Surprise me". Every Pokémon has a primary and a secondary liked kind from its id, undiscovered until it shows them (a delighted or happy reaction records the kind; any other reaction is pleasant and records nothing). The first time with each Pokémon on a day pays `CareKind.PLAY` (1 friendship step to that Pokémon, 1 Rare Candy, no point on Care's Egg meter (rules version 29), at most 6 a day); repeats pay nothing and are unlimited.
 - **Dream (5):** one fixed scene (Care → Dream, with Spend time, the dreamers and the party below it): the buddy asleep in the middle and four visitor spots, no scrolling or roaming; tap is a reaction with a 0.9 s cooldown (a tap during it changes nothing and plays no cry), long press (or the "Details" accessibility action) opens a compact panel with identity, discovered likes and the way into Care Play; the queue and Care Egg progress sit small in the corners; a returning friend appears below with "Say hello". Tapping a sleeper wakes it for 2.5 s. Reduced motion stops the animations.
 
 ## 7. Asset and animation policy

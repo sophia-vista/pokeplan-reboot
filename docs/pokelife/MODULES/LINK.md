@@ -430,7 +430,7 @@ Existing code is evidence, not authority. LINK reuses the shared module shell, l
 
 ## 12. Remaining work
 
-Not built: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), a link from BASE to a contact, upcoming dates on the launcher, widgets, sealing Link's rows, a passphrase-sealed backup, and the open question of "keep in touch" (D8). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
+Not built: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), a link from BASE to a contact, upcoming dates on the launcher, widgets, sealing Link's rows (a passphrase-sealed backup already ships and carries Link in clear), and the open question of "keep in touch" (D8). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
 
 ---
 

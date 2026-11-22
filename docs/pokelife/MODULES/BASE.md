@@ -93,6 +93,8 @@ Use a compact navigation structure with five primary destinations, plus a focuse
 5. **Reference** — searchable household notes and practical information.
 6. **Room** — the Secret Base room, a view of Base's party among earned decorations (section 9.5; a menu card, not a tab).
 
+**Shown as:** the app labels Inventory **Supplies** and Reference **Notes**, and durable items are the **Items** tab under Maintenance (the as-built list in 9.7 uses the shipped names).
+
 Search is available from the BASE shell and covers all BASE-owned record types. Settings remain a secondary destination, not a primary tab.
 
 ### 3.1 Overview
@@ -482,7 +484,7 @@ Art, scale and how decorations are earned: `../FEATURES/POKEMON_PLACES_IDEAS.md`
 | Others (5) | Breakable Door, Slide, Solid Board, Stand, Tire |
 
 **9.5.3 The room: grid and looks.**
-- **Grid.** The cells every size-1 Hoenn layout can walk on (the `SecretBase_*1` maps, 11 x 9 metatiles of 16 px; a cell is walkable where its collision bits in `map.bin` are 0 in all six): **44 cells**, rows of 3, 5, 8, 8, 8, 7 and 5 starting at row 1 (a generated table, checked by a test). Decorations sit on grid cells, at most **one per cell**, with no limit besides the cells. Because the grid is common to every look, a change of look never moves or loses a decoration.
+- **Grid.** The cells every size-1 Hoenn layout can walk on (the `SecretBase_*1` maps, 11 x 9 metatiles of 16 px; a cell is walkable where its collision bits in `map.bin` are 0 in all six): **44 cells**, rows of 3, 5, 8, 8, 8, 7 and 5 starting at row 1 (hand-derived from the six size-1 layouts; `RoomTest` checks the 44 cells and three of them in detail). Decorations sit on grid cells, at most **one per cell**, with no limit besides the cells. Because the grid is common to every look, a change of look never moves or loses a decoration.
 - **Looks (three room types, cave in four colours).** The look is derived from the **primary type of Base's lead** and is not stored (there is no choosing a look). With no lead the room is Shrub.
 
 | Look | Types |
@@ -497,13 +499,13 @@ Art, scale and how decorations are earned: `../FEATURES/POKEMON_PLACES_IDEAS.md`
 - **Size.** Only the size-1 layout of each look is used (11 x 9); the three larger layouts of each look (`layouts.tsv`) stay unused (the room does not grow).
 - **Where the Pokémon stand.** Base's party, in party order, on cells that hold no standing decoration: each of the first six has its own spot spread over the floor (back left, back right, middle, front left and right), or the free cell nearest to it when a decoration stands there, so the scene looks the same each time it opens. A mat does not block a cell. Their places are never stored.
 
-**9.5.4 Earning (BASE upkeep).** A **Decoration meter** fills from the payments Habitat Discovery already makes, under the same switch, the same daily caps and the same idempotent event id: a chore done adds **1 point**, a piece of maintenance done **2**. At **5 points** *(tune; the Habitat Egg meter's size)* the meter pays **one decoration** and carries the rest over. Which one: **a random decoration the player does not own yet**, drawn from the event id so a replay, restore or undo-and-redo gives the same one and pays once (one of each: a decoration is owned at most once). Once all 42 are owned the meter stops filling. Nothing is taken back by an undo, as for every Habitat Discovery payment. Creating, editing, skipping, quantities and the rest still pay nothing (9.2). A decoration reaches the player with a short line on the payment's result, never a dialogue to get past. The other two ways of getting one (bought at the Department Store, Mom's gifts, chunks 6 and A6) put a decoration into the same owned set and are specified with MINT; the order of the three never matters. A new save starts with **three** decorations (a doll, a mat and a plant: `snorlax_doll`, `thunder_mat`, `big_plant`), granted once and never again.
+**9.5.4 Earning (BASE upkeep).** A **Decoration meter** fills from the payments Habitat Discovery already makes, under the same switch, the same daily caps and the same idempotent event id: a chore done adds **1 point**, a piece of maintenance done **2**. At **5 points** *(tune; the Habitat Egg meter's size)* the meter pays **one decoration** and carries the rest over. Which one: **a random decoration the player does not own yet**, drawn from the event id so a replay, restore or undo-and-redo gives the same one and pays once (one of each: a decoration is owned at most once). Once all 42 are owned the meter stops filling. Nothing is taken back by an undo, as for every Habitat Discovery payment. Creating, editing, skipping, quantities and the rest still pay nothing (9.2). A decoration reaches the player with a short line on the payment's result, never a dialogue to get past. The other two ways of getting one (bought at the Department Store, Mom's gifts, chunks 6 and A6) put a decoration into the same owned set and are specified in REP-053 chunk 6 (no MINT.md section exists yet); the order of the three never matters. A new save starts with **three** decorations (a doll, a mat and a plant: `snorlax_doll`, `thunder_mat`, `big_plant`), granted once and never again.
 
 **9.5.5 Placing and removing.** *Arrange* is a mode of the Room screen. A tray lists the decorations the player owns and has not placed ("in the box"); tapping one and then an empty cell places it; tapping a placed one picks it up (into the box) or moves it to another empty cell. Placing, moving and removing cost nothing, can be repeated without limit, are one undo-able step each, and never lose or sell a decoration; a decoration can be placed only if it is owned and unplaced, on an empty grid cell (rules, not screens, refuse the rest). There is one room per save. Changing the party or the lead never changes what is placed.
 
 **9.5.6 Data and privacy.** *Owned decorations and the meter* are shared Pokémon-side state like the Bag and the Egg meters (three sources write to the owned set; the Bag's rules for a reward apply): `docs/economy.md` lists the reward and its meter. *Placement* is Base's own record: `home_room` rows (decoration id, cell), in Base's export and erase (`BaseKinds`), in the daily backup. A decoration id is public game content, so the reward event stays what 9.4 says (no household word), and nothing about a chore, an asset or an area reaches the room. Not sealed (the room is not private).
 
-**9.5.7 Not in this section.** Berry plots, badges, Department Store and Mom (their sections in MINT.md), the other places, Mail and Gimmighoul coins, rooms of the larger sizes, and any second room.
+**9.5.7 Not in this section.** Berry plots (a BASE.md section still to be written), badges (PLAN.md 9.1), Department Store and Mom (REP-053 chunk 6; no MINT.md section yet), the other places, Mail and Gimmighoul coins, rooms of the larger sizes, and any second room.
 
 **Acceptance.** The room shows exactly Base's party and nothing assigns or moves a Pokémon; the look follows the lead's type and every one of the 44 cells is placeable in every look; place, move and remove are rules in `base-core` with tests (owned and unplaced, empty cell, a cell outside the grid, a repeat); the meter pays once per event id however often an occurrence is undone and redone, honours the daily caps and the Habitat Discovery switch, and never pays a decoration already owned; a save from before this section opens with an empty room and the starter decorations; screenshots in both palettes for an empty room, a furnished room, the tray and a look of each type.
 
@@ -650,8 +652,8 @@ Do not start feature expansion while architecture, local data lifecycle, reminde
 - Shared Pokémon collection, regional dex, reward ledger, Bag, currency and acquisition balance: shared Pokémon/economy specification.
 - Data lifecycle, schema migrations, backup/restore and encryption: shared architecture specifications.
 - PLAN task ownership and explicit linked-task behavior: `PLAN.md`.
-- MINT transaction ownership: MINT module specification when finalized.
-- LINK contact ownership: LINK module specification when finalized.
+- MINT transaction ownership: `MINT.md`.
+- LINK contact ownership: `LINK.md`.
 
 This module document owns BASE-specific rules only. Shared feature documents remain authoritative for shared behavior.
 
@@ -659,7 +661,7 @@ This module document owns BASE-specific rules only. Shared feature documents rem
 
 *Compiled for Android; not yet run on a device. No attachment, camera or import exists.*
 
-Sections 3 and 4 are built as written (Overview, Chores, Supplies, Belongings, Maintenance, Warranties, Notes, Settings, search). What differs from, or is decided beyond, the spec:
+Sections 3 and 4 are built, with the differences below and the open items under "Not built" and in REP-061, REP-041 and REP-029 (Overview, Chores, Supplies, Belongings, Maintenance, Warranties, Notes, Settings, search). What differs from, or is decided beyond, the spec:
 - **Search** leaves out what no list shows (archived chores, supplies and items, finished one-time schedules, warranties of an archived item).
 - **Chores:** a repeating chore shows only its **latest** occurrence up to today, so a month away leaves one overdue chore, never a backlog; an occurrence done early counts; editing a chore never touches its entries, which are kept for a bounded time (`BaseRules.ENTRY_KEEP_DAYS`). The recurrence scope "this and future occurrences" is not offered: only the schedule definition changes, from a first date, and past entries stay.
 - **Supplies:** quantity is exact (thousandths of a unit, no floating point); a supply on the restocking list because it is low leaves it only with a new quantity; the adjustment history is bounded (`BaseRules.ADJUSTMENTS_KEPT`).
