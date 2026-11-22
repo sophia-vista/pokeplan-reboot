@@ -50,13 +50,7 @@ internal suspend fun decodeAsset(path: String): ImageBitmap? = withContext(Dispa
 @Composable
 fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, description: String? = itemId) {
     val path = if (itemId.startsWith("pmd2-")) "files/pmditems/$itemId.png" else "files/items/$itemId.png"
-    val bitmap by produceState(cache[path], path) {
-        value = cache[path]
-        if (value == null) {
-            value = decodeAsset(path)
-            cache[path] = value
-        }
-    }
+    val bitmap = rememberCachedImage(cache, path) { decodeAsset(path) }
     Box(modifier.size(size)) {
         bitmap?.let { Image(it, description, Modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None) }
     }
@@ -85,13 +79,7 @@ fun BadgeImage(badgeId: Int, modifier: Modifier = Modifier, size: Dp = 32.dp, de
 @Composable
 fun Glyph(name: String, tint: Color, modifier: Modifier = Modifier, size: Dp = 24.dp, description: String? = null) {
     val path = "files/pixelarticons/$name.png"
-    val bitmap by produceState(cache[path], path) {
-        value = cache[path]
-        if (value == null) {
-            value = decodeAsset(path)
-            cache[path] = value
-        }
-    }
+    val bitmap = rememberCachedImage(cache, path) { decodeAsset(path) }
     Box(modifier.size(size)) {
         bitmap?.let { Image(it, description, Modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None, colorFilter = ColorFilter.tint(tint)) }
     }
@@ -119,13 +107,7 @@ fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier 
         return
     }
     val name = if (shiny) "$formId-shiny" else "$formId"
-    val bitmap by produceState(cache[name], name) {
-        value = cache[name]
-        if (value == null) {
-            value = decodeAsset("files/sprites/$name.png")
-            cache[name] = value
-        }
-    }
+    val bitmap = rememberCachedImage(cache, name) { decodeAsset("files/sprites/$name.png") }
     Box(modifier.size(size)) {
         bitmap?.let {
             Image(
@@ -139,13 +121,7 @@ fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier 
 @Composable
 fun NpcPortrait(name: String, modifier: Modifier = Modifier, size: Dp = 200.dp) {
     val path = "files/npc/$name.png"
-    val bitmap by produceState(cache[path], path) {
-        value = cache[path]
-        if (value == null) {
-            value = decodeAsset(path)
-            cache[path] = value
-        }
-    }
+    val bitmap = rememberCachedImage(cache, path) { decodeAsset(path) }
     val image = bitmap
     if (image != null) Image(image, name, modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None)
     else ItemIcon("poke-ball", modifier, size = size / 2)
@@ -154,13 +130,7 @@ fun NpcPortrait(name: String, modifier: Modifier = Modifier, size: Dp = 200.dp) 
 @Composable
 fun TypePlate(type: app.pokeplan.core.dex.PokemonType, modifier: Modifier = Modifier, width: Dp = 72.dp) {
     val path = "files/types/${type.name.lowercase()}.png"
-    val bitmap by produceState(cache[path], path) {
-        value = cache[path]
-        if (value == null) {
-            value = decodeAsset(path)
-            cache[path] = value
-        }
-    }
+    val bitmap = rememberCachedImage(cache, path) { decodeAsset(path) }
     bitmap?.let {
         Image(it, type.label, modifier.size(width, width * it.height / it.width), contentScale = ContentScale.FillWidth, filterQuality = FilterQuality.None)
     }

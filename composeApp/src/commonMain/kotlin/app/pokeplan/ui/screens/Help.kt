@@ -35,7 +35,7 @@ internal val helpTopics = listOf(
         listOf(
             HelpItem("What is PokéLife?", "A Pokémon world for real life, made of modules that are each their own region: Plan (PokéPlan: a planner and focus timer) and Care (routines and calm breaks). Doing real things looks after your Pokémon. Finish a focus session to hatch an egg; finish tasks, habits and goals to earn candies and items that level up and evolve your Pokémon. There are no battles."),
             HelpItem("What is the buddy?", "One Pokémon from your party that stays with you on Home and in the widget. Pet it, feed it a berry, and it gets friendlier. Its type and nature give small bonuses to the rewards you earn."),
-            HelpItem("What is Care?", "A module under Modules for looking after yourself, inspired by journalling and DBT: small routines to tick off, a calm break to breathe with your buddy, a daily diary card, DBT skills with short how-tos, and a journal. Routines, calm breaks and practised skills earn friendship and berries; diary cards and journal entries never earn anything and stay on this device. It is a reminder, not therapy. Turn Care off in Me, Settings, Modules."),
+            HelpItem("What is Care?", "A module under Modules for looking after yourself, inspired by journalling and DBT: small routines to tick off, a calm break to breathe with your buddy, a daily diary card, DBT skills with short how-tos, and a journal. Routines, calm breaks and practised skills earn friendship and berries; diary cards and journal entries never earn anything and stay on this device. It is a reminder, not therapy."),
             HelpItem("How do I rank up?", "Every reward you earn also adds trainer points. New ranks open new things: Super Candies and evolution, new regions, Guardians and more quests."),
         ),
     ),
@@ -54,6 +54,7 @@ internal val helpTopics = listOf(
             HelpItem("Why did my task not pay?", "A task has to exist for a short while before it pays, longer for harder ranks, so a big task cannot be added and ticked in the same second. Finishing it sooner still completes it, just without a reward."),
             HelpItem("How do I plan my day by the hour?", "Open Plan, Calendar. Tasks without a time wait at the top: hold one and drag it onto an hour (with a mouse, just drag), or tap it and then tap an hour. Drag a task on the hours to move it, or its lower edge to change how long it takes; everything snaps to 15 minutes. Tap a task on the hours to nudge it, change its length or take its time away. Week shows seven days side by side, and you can drag tasks between them."),
             HelpItem("Can I add events that aren't tasks?", "Yes: New event on Plan, Calendar. Name it, tap an hour (or use -15 and +15) and Add. Events are for appointments and blocks of time; they never pay and can't be ticked off. Drag and resize them like tasks, or tap one to rename it, change its length or delete it. They stay in PokéPlan and aren't added to your phone's calendar."),
+            HelpItem("Do my phone's calendars show in my plan?", "Me, then Settings, then Calendars, lets you choose which of the phone's calendars show on Plan, Calendar. Their events are read-only: you can see them beside your tasks, but PokéLife never changes them and they never pay a reward."),
             HelpItem("Can I undo a task?", "For 10 seconds after you finish it. After that the reward is paid and it is final. A task finished from a widget is paid the next time you open the app."),
             HelpItem("How do I get a copy of my data, or delete it?", "Me, then Settings, then Your data. Export my data saves everything PokéLife keeps as a JSON file. Erase this device starts over."),
             HelpItem("How do reminders work?", "Open a task with a day and pick up to three times under Remind me: at the time, 10 minutes, an hour or a day before. They count from the time you planned it, or its deadline, or 9:00 on its day. A reminder waits during quiet hours (Settings), a focus session and rest days. Tap Done on the notification to finish the task, Snooze to hear again in an hour, or Tomorrow for 9:00 the next day. Set a time under At on the task to be reminded at that time."),
@@ -67,6 +68,12 @@ internal val helpTopics = listOf(
             HelpItem("How do I keep a Pokémon safe?", "Star it in its details. A starred Pokémon cannot be transferred by mistake."),
             HelpItem("What is a shiny?", "A rare colour variant. It plays like any other Pokémon; the Pokédex has a Shiny tab for the ones you have."),
             HelpItem("What are Guardians and quests?", "Legendary and mythical Pokémon are not found in eggs. Each has a quest, and once you have one it can sit in a Guardian slot for a bigger bonus."),
+        ),
+    ),
+    HelpTopic(
+        "Mint and bills",
+        listOf(
+            HelpItem("Why can't I change a bill's schedule?", "Once a payment is recorded for a bill, when it first falls due, how often it repeats and its days are fixed. To change them, pause the bill and add a new one with the schedule you want."),
         ),
     ),
     HelpTopic(

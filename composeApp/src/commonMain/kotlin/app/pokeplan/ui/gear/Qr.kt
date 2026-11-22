@@ -91,6 +91,16 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
                 for (i in 8..14) setFn(8, size - 15 + i, bit(i))
                 setFn(8, size - 8, true)
             }
+            // The format area is reserved but left light while the masks are scored: the standard evaluates the masked
+            // symbol before the format information is drawn, and a reference encoder does the same.
+            fun blankFormat() {
+                for (i in 0..5) setFn(8, i, false)
+                setFn(8, 7, false); setFn(8, 8, false); setFn(7, 8, false)
+                for (i in 9..14) setFn(14 - i, 8, false)
+                for (i in 0..7) setFn(size - 1 - i, 8, false)
+                for (i in 8..14) setFn(8, size - 15 + i, false)
+                setFn(8, size - 8, false)
+            }
             drawFormat(0)
             if (ver >= 7) {
                 var rem = ver
@@ -113,6 +123,7 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
                 }
                 right -= 2
             }
+            blankFormat()
             fun applyMask(mask: Int) {
                 for (y in 0 until size) for (x in 0 until size) {
                     val invert = when (mask) {
@@ -125,7 +136,7 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
             }
             var best = 0; var bestScore = Int.MAX_VALUE
             for (m in 0 until 8) {
-                applyMask(m); drawFormat(m)
+                applyMask(m)
                 val score = penalty(grid, size)
                 if (score < bestScore) { bestScore = score; best = m }
                 applyMask(m)
@@ -190,20 +201,42 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
         }
 
         private fun penalty(g: Array<BooleanArray>, size: Int): Int {
-            var p = 0
+            // The two 11-module windows N3 looks for: the 1:1:3:1:1 pattern with four light modules after it, or before it.
+            val lightAfterPattern = booleanArrayOf(true, false, true, true, true, false, true, false, false, false, false)
+            val lightBeforePattern = booleanArrayOf(false, false, false, false, true, false, true, true, true, false, true)
+            var n1 = 0
+            var n3 = 0
+            // N1 and N3 for one line, read as a whole row or a whole column.
+            fun line(read: (Int) -> Boolean) {
+                var run = 1
+                for (i in 1 until size) {
+                    if (read(i) == read(i - 1)) run++ else { if (run >= 5) n1 += run - 2; run = 1 }
+                }
+                if (run >= 5) n1 += run - 2
+                for (i in 0..size - 11) {
+                    var after = true
+                    var before = true
+                    for (k in 0..10) {
+                        val d = read(i + k)
+                        if (d != lightAfterPattern[k]) after = false
+                        if (d != lightBeforePattern[k]) before = false
+                    }
+                    if (after) n3 += 40
+                    if (before) n3 += 40
+                }
+            }
             for (y in 0 until size) {
-                var run = 1
-                for (x in 1 until size) { if (g[y][x] == g[y][x - 1]) { run++; if (run == 5) p += 3 else if (run > 5) p++ } else run = 1 }
+                line { x -> g[y][x] }
+                line { x -> g[x][y] }
             }
-            for (x in 0 until size) {
-                var run = 1
-                for (y in 1 until size) { if (g[y][x] == g[y - 1][x]) { run++; if (run == 5) p += 3 else if (run > 5) p++ } else run = 1 }
-            }
-            for (y in 0 until size - 1) for (x in 0 until size - 1) if (g[y][x] == g[y][x + 1] && g[y][x] == g[y + 1][x] && g[y][x] == g[y + 1][x + 1]) p += 3
+            // N2: every 2 x 2 block of one colour.
+            var n2 = 0
+            for (y in 0 until size - 1) for (x in 0 until size - 1) if (g[y][x] == g[y][x + 1] && g[y][x] == g[y + 1][x] && g[y][x] == g[y + 1][x + 1]) n2 += 3
+            // N4: 10 for each 5% the dark share is away from half.
             val dark = g.sumOf { row -> row.count { it } }
             val total = size * size
-            p += (kotlin.math.abs(dark * 20 - total * 10) + total - 1) / total * 10
-            return p
+            val n4 = kotlin.math.abs(dark * 20 - total * 10) / total * 10
+            return n1 + n2 + n3 + n4
         }
     }
 }

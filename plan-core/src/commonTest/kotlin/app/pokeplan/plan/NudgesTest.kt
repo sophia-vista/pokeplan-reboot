@@ -12,13 +12,12 @@ class NudgesTest {
     private fun task(id: String, state: TaskState = TaskState.OPEN) = Task(id = id, title = id, state = state, createdAtMillis = 0)
 
     @Test
-    fun pickForMeChoosesAnOpenTaskWithABonus() {
+    fun pickForMeChoosesAnOpenTask() {
         val tasks = listOf(task("a"), task("b"), task("done", TaskState.DONE))
         val rng = Random(1)
         val picks = (1..200).map { PickForMe.choose(tasks, rng)!! }
         assertTrue(picks.all { it.task.id in setOf("a", "b") })
         assertTrue(picks.map { it.task.id }.toSet().size == 2, "both get picked sometimes")
-        assertEquals(1.10, picks.first().bonusMultiplier)
         assertNull(PickForMe.choose(emptyList(), rng))
         assertNull(PickForMe.choose(listOf(task("done", TaskState.DONE)), rng))
     }

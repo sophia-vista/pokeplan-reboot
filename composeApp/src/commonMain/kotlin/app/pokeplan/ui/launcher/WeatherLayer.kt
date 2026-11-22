@@ -1,10 +1,10 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.ui.rememberCachedImage
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -29,13 +29,7 @@ private val sheets = BitmapCache(CacheBudget.SMALL)
 
 @Composable
 private fun weatherSheet(name: String): ImageBitmap? {
-    val sheet by produceState(sheets[name], name) {
-        value = sheets[name]
-        if (value == null) {
-            value = orNull { Res.readBytes("files/weather/$name.png").decodeToImageBitmap() }
-            sheets[name] = value
-        }
-    }
+    val sheet = rememberCachedImage(sheets, name) { orNull { Res.readBytes("files/weather/$name.png").decodeToImageBitmap() } }
     return sheet
 }
 
@@ -54,7 +48,7 @@ internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: 
     Canvas(modifier) {
         val t = if (calm) 0L else now
         when (weather) {
-            Weather.RAIN -> rain?.let { tile(it, pixel, 240, 160, (t / 70 % 61).toInt(), 5) }
+            Weather.RAIN -> rain?.let { tile(it, pixel, 240, 160, GbaWeather.rainFrame(t), 5) }
             Weather.SNOW -> snow?.let { tile(it, pixel, if (dungeon) 32 else 64, 32, GbaWeather.frame(t, GbaWeather.SNOW_TICKS), 4) }
             Weather.BLIZZARD -> blizzard?.let { tile(it, pixel, 32, 32, GbaWeather.frame(t, GbaWeather.BLIZZARD_TICKS), 4) }
             Weather.SANDSTORM -> {

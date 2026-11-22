@@ -9,11 +9,16 @@ internal object GbaWeather {
 
     const val BLIZZARD_TICKS = 2
 
+    const val RAIN_TICKS = 2
+    const val RAIN_FRAMES = 61
+
     const val TEXTURE_ALPHA = 4f / 16f
 
     fun ticks(millis: Long): Long = (millis / TICK_MILLIS).toLong()
 
     fun frame(millis: Long, ticksPerFrame: Int): Int = ((ticks(millis) / ticksPerFrame) % FRAMES).toInt()
+
+    fun rainFrame(millis: Long): Int = ((ticks(millis) / RAIN_TICKS) % RAIN_FRAMES).toInt()
 
     fun cloudShift(tick: Long): Pair<Int, Int> = (tick / 2).toInt() to -(tick / 4).toInt()
 

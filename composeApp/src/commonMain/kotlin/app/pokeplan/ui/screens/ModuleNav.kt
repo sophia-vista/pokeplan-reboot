@@ -83,16 +83,14 @@ fun NavSheet(title: String, onClose: () -> Unit, content: @Composable () -> Unit
 internal class JumpTarget(val title: String, val area: String, val icon: String, val go: () -> Unit)
 
 internal fun jumpTargets(model: AppModel, focus: Boolean): List<JumpTarget> = buildList {
-    val careOn = model.data.settings.careModule
     add(JumpTarget("Gear", "Tools", "explorer-kit") { model.gearOpen = true })
     Module.entries.forEach { m ->
-        if (m == Module.CARE && !careOn) return@forEach
         add(JumpTarget(m.label, "Module", m.icon) { model.open(Place.valueOf(m.name), focus) })
     }
     PlanSection.entries.filter { it != PlanSection.FOCUS || focus }.forEach { s ->
         add(JumpTarget(s.label, "Plan", s.icon) { model.open(Place.PLAN, focus); model.planSection = s })
     }
-    if (careOn) CareSection.entries.forEach { s -> add(JumpTarget(s.label, "Care", s.icon) { model.open(Place.CARE, focus); model.careSection = s }) }
+    CareSection.entries.forEach { s -> add(JumpTarget(s.label, "Care", s.icon) { model.open(Place.CARE, focus); model.careSection = s }) }
     HealSection.entries.forEach { s -> add(JumpTarget(s.label, "Heal", s.icon) { model.open(Place.HEAL, focus); model.healSection = s }) }
     MintSection.entries.filter { it != MintSection.IMPORT || model.textFiles != null }.forEach { s ->
         add(JumpTarget(s.label, "Mint", s.icon) { model.open(Place.MINT, focus); model.mintSection = s })
@@ -114,7 +112,7 @@ internal fun jumpMatches(targets: List<JumpTarget>, query: String, limit: Int = 
 fun JumpSearch(model: AppModel, onDone: () -> Unit = {}) {
     val focus = LocalFocusTab.current
     var query by remember { mutableStateOf("") }
-    val found = remember(query, model.data.settings.careModule, focus) { jumpMatches(jumpTargets(model, focus), query) }
+    val found = remember(query, focus) { jumpMatches(jumpTargets(model, focus), query) }
     PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Jump to")
     if (query.isBlank()) return
     if (found.isEmpty()) {

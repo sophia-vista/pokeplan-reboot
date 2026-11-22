@@ -53,6 +53,7 @@ import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.MintKind
 import app.pokeplan.heal.HealRules
+import app.pokeplan.care.CareRules
 import app.pokeplan.core.reward.EffortEvent
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
@@ -203,7 +204,7 @@ class GameStore(
 
     fun eraseDevice() = update { AppData() }
 
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(Places::guardiansToModules).let(::mergeHabits).let(::convertTargets).let(::startDecorations)
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped(), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(Places::guardiansToModules).let(::mergeHabits).let(::convertTargets).let(::startDecorations)
 
     private fun startDecorations(d: AppData): AppData =
         if (d.decorationStarters) d else d.copy(decorationStarters = true, decorations = d.decorations + Decorations.STARTERS.filter { it !in d.decorations })
@@ -1564,7 +1565,13 @@ class GameStore(
 
         const val BEFRIEND_DAILY_CAP = 4
 
-        val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.SKILL to 3, CareKind.WEEKLY_RHYTHM to 1, CareKind.PLAY to 6)
+        val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(
+            CareKind.ROUTINE to CareRules.ROUTINES_PAID_PER_DAY,
+            CareKind.CALM_BREAK to CareRules.BREAKS_PAID_PER_DAY,
+            CareKind.SKILL to CareRules.SKILLS_PAID_PER_DAY,
+            CareKind.WEEKLY_RHYTHM to CareRules.RHYTHMS_PAID_PER_WEEK,
+            CareKind.PLAY to CareRules.PLAYS_PAID_PER_DAY,
+        )
         const val CARE_LOG_PREFIX = "Care: "
 
         const val CARE_FRIEND_SOURCE = CARE_LOG_PREFIX + "made a friend"

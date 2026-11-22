@@ -245,7 +245,11 @@ private fun AppsWidget(title: String, apps: List<LauncherApp>, env: WidgetEnv, s
                 val labels = cells.h >= 3
                 val rows = apps.chunked(perRow)
                 val asked = when (size) { WidgetSize.SMALL -> 1; WidgetSize.MEDIUM -> 2; WidgetSize.LARGE -> rows.size }
-                val fit = ((cells.h * WidgetGrid.ROW_DP - 22) / if (labels) 80 else 56).coerceAtLeast(1)
+                val rowHeight = PinnedAppRow.height(env.pixel, density, labels)
+                val line = (PmdFont.LINE * env.pixel / density).dp
+                val titleRoom = if (title.isNotEmpty()) Spacing.S * 2 + line else 0.dp
+                val boxRoom = pmdBoxRoomY(env.pixel, density) * 2
+                val fit = (((cells.h * WidgetGrid.ROW_DP).dp - boxRoom - titleRoom) / rowHeight).toInt().coerceAtLeast(1)
                 val shown = minOf(asked, fit)
                 rows.take(shown).forEach { row ->
                     Row(Modifier.fillMaxWidth()) {

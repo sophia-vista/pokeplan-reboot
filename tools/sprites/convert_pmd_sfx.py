@@ -52,6 +52,12 @@ SOUNDS = {
 PEAK = 0.7
 MAX_GAIN = 4.0
 
+# The song ids the owner named by ear. Every other mapping was picked by the clip's length and pitch contour and still needs a
+# listen before it is trusted (assets/sfx/provenance.tsv, written by every run, says which is which).
+OWNER_NAMED = {
+    301, 302, 303, 331, 200, 201, 202, 203, 204, 207, 332, 333, 337, 342, 344, 356, 406, 421, 455, 457, 466, 468, 470, 471, 473, 516,
+}
+
 
 def main(folder):
     os.makedirs(OUT, exist_ok=True)
@@ -66,6 +72,10 @@ def main(folder):
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', found[0], '-ac', '1', '-ar', '22050', '-af', f'volume={gain:.3f}',
                         '-c:a', 'libvorbis', '-q:a', '3', os.path.join(OUT, f'{name}.ogg')], check=True)
         print(f'{name}: song{number}, gain {gain:.2f}')
+    with open(os.path.join(OUT, 'provenance.tsv'), 'w', encoding='utf-8') as f:
+        f.write('sound\tsong\tprovenance\n')
+        for name, number in SOUNDS.items():
+            f.write(f'{name}\t{number}\t{"owner-named" if number in OWNER_NAMED else "guessed"}\n')
 
 
 if __name__ == '__main__':

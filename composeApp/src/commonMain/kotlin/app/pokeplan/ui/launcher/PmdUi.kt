@@ -84,7 +84,7 @@ internal fun PmdBox(
     val fill = LocalGridFill.current
     Box(
         modifier.then(if (fill) Modifier.fillMaxHeight() else Modifier).entrance().drawBehind { pmdFrame(pixel, tone) }
-            .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = ((TOP + inset) * pixel / density).dp.let { if (compact || fill) it else maxOf(it, Spacing.BoxY) }),
+            .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = pmdBoxRoomY(pixel, density, inset).let { if (compact || fill) it else maxOf(it, Spacing.BoxY) }),
         content = if (!fill) content else { {
             Box(Modifier.fillMaxSize().clipToBounds(), contentAlignment = if (alignTop) Alignment.TopStart else Alignment.CenterStart) {
                 Box(Modifier.fillMaxWidth().wrapContentHeight(if (alignTop) Alignment.Top else Alignment.CenterVertically, unbounded = true)) { content() }
@@ -101,6 +101,9 @@ internal fun pmdRowPad(pixel: Int, density: Float) = (ROW_X * pixel / density).d
 
 private const val TOP = 3
 private const val SIDE = 7
+
+/** The room the frame takes above (or below) a box's content, as [PmdBox] pads it on the widget grid: in dp for this [pixel] size. */
+internal fun pmdBoxRoomY(pixel: Int, density: Float, inset: Int = 3) = ((TOP + inset) * pixel / density).dp
 
 private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) = dialogueFrame(pixel.toFloat(), PmdPalette.Fill, sideBand = 5, topBand = 1, edge = tone.edge, band = tone.band, deep = tone.deep)
 

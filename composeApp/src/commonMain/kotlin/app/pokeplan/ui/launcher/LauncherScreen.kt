@@ -474,14 +474,31 @@ private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * One app row as [PinnedApp] lays it out: the picture, the row's padding above and below, and, with a name, the gap and the
+ * name's line. The launcher's widgets count the rows that fit from this, so a change to the row moves the fit with it.
+ */
+internal object PinnedAppRow {
+    /** The picture's size. */
+    val Icon = 40.dp
+    /** The row's padding above and below. */
+    val Pad = Spacing.S
+    /** The gap under the picture before its name. */
+    val LabelGap = Spacing.M
+
+    /** A row's height for this pixel scale: [Icon] and [Pad] always, [LabelGap] and the name's line only when [labelled]. */
+    fun height(pixel: Int, density: Float, labelled: Boolean): androidx.compose.ui.unit.Dp =
+        Icon + Pad * 2 + if (labelled) LabelGap + (app.pokeplan.ui.theme.PmdFont.LINE * pixel / density).dp else 0.dp
+}
+
+/** A pinned app on the home page: its logo (or the game item chosen for it) over its name; tap opens it, press and hold manages it. */@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit, showLabel: Boolean = true) {
     val ui = LocalUiSound.current
     val density = LocalDensity.current.density
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Column(
-        modifier.pressScale(source).defaultMinSize(minHeight = if (showLabel) 72.dp else Spacing.Target).focusRing(rowShape, Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold() }, onClick = { ui(Sfx.CONFIRM); host.open(app.key) })
+        modifier.pressScale(source).defaultMinSize(minHeight = PinnedAppRow.height(pixel, density, showLabel)).focusRing(rowShape, Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold() }, onClick = { ui(Sfx.CONFIRM); host.open(app.key) })
             .semantics(mergeDescendants = true) {}.padding(vertical = Spacing.S),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {

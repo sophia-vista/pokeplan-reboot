@@ -18,7 +18,8 @@ class StorySoundTest {
     @Test
     fun everySoundHasItsFile() {
         val dir = assetsDir()
-        Sfx.entries.filter { !it.file.startsWith("jingle-") }
+        val checks = Sfx.entries.filter { !it.file.startsWith("jingle-") }
+        checks.forEach { assertTrue(File(dir, it.file + ".ogg").exists(), "${it.name}: ${it.file}.ogg") }
     }
 
     @Test

@@ -120,7 +120,7 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             QuickLogCard(model, go)
 
             PlanRegionCard(model, go)
-            if (data.settings.careModule) CareRegionCard(model, go)
+            CareRegionCard(model, go)
             AlsoTodayCard(model, go)
             WorldRegionCard(model, go)
 
@@ -237,7 +237,7 @@ private const val LINK_DATES_DAYS = 7
 private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
     model.careData; model.healData
     val locked = model.data.settings.lockedModules
-    val mood = if (model.data.settings.careModule && Module.CARE.name !in locked) model.care.diaryToday()?.mood else -1
+    val mood = if (Module.CARE.name !in locked) model.care.diaryToday()?.mood else -1
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Quick log")

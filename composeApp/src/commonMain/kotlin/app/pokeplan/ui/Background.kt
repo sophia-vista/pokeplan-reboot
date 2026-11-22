@@ -14,7 +14,6 @@ import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -31,13 +30,7 @@ private val cache = BitmapCache(CacheBudget.SMALL)
 
 @Composable
 fun PixelBackground(name: String, modifier: Modifier = Modifier, scale: Int = 3, content: @Composable BoxScope.() -> Unit) {
-    val bitmap by produceState(cache[name], name) {
-        value = cache[name]
-        if (value == null) {
-            value = orNull { Res.readBytes("files/backgrounds/$name.png").decodeToImageBitmap() }
-            cache[name] = value
-        }
-    }
+    val bitmap = rememberCachedImage(cache, name) { orNull { Res.readBytes("files/backgrounds/$name.png").decodeToImageBitmap() } }
     Box(
         modifier.drawBehind {
             val image = bitmap ?: return@drawBehind
