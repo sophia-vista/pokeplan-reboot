@@ -53,6 +53,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.display
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.NoticeTone
@@ -61,6 +62,8 @@ import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
+import app.pokeplan.ui.updates.UpdateRelease
+import app.pokeplan.ui.updates.updateSize
 
 @Composable
 internal fun GeneralSettings(model: AppModel) {
@@ -405,7 +408,7 @@ private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
 }
 
 @Composable
-internal fun AboutCard() {
+internal fun AboutCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             GlyphTitle("About", "info-box")
@@ -417,6 +420,106 @@ internal fun AboutCard() {
             var credits by remember { mutableStateOf(false) }
             PixelButton(if (credits) "Hide credits" else "Credits", { credits = !credits }, Modifier.fillMaxWidth())
             if (credits) CreditsList()
+        }
+    }
+    UpdatesCard(model)
+}
+
+/** The states the Updates box is in while it reads GitHub, downloads the APK and hands it to the installer. */
+private sealed interface UpdateUi {
+    data object Idle : UpdateUi
+    data object Checking : UpdateUi
+    data object Latest : UpdateUi
+    data class Available(val release: UpdateRelease) : UpdateUi
+    data class Downloading(val release: UpdateRelease, val percent: Int) : UpdateUi
+    data class Ready(val release: UpdateRelease) : UpdateUi
+    data class Problem(val text: String) : UpdateUi
+}
+
+private fun updateStateFor(model: AppModel): UpdateUi {
+    model.updateAvailable?.let { release ->
+        val updates = model.updates
+        return if (updates != null && updates.downloaded(release)) UpdateUi.Ready(release) else UpdateUi.Available(release)
+    }
+    model.updateProblem?.let { return UpdateUi.Problem(it) }
+    return UpdateUi.Latest
+}
+
+/** In-app updates from the rolling "latest" GitHub release: one box in Me → Settings → About. */
+@Composable
+private fun UpdatesCard(model: AppModel) {
+    val updates = model.updates ?: return
+    var ui by remember { mutableStateOf<UpdateUi>(UpdateUi.Idle) }
+    // "Install unknown apps" is granted outside the app; coming back to the screen picks it up.
+    var allowed by remember { mutableStateOf(updates.canInstall()) }
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { allowed = updates.canInstall() }
+    val scope = rememberCoroutineScope()
+
+    fun checkAgain() {
+        scope.launch {
+            ui = UpdateUi.Checking
+            model.checkForUpdate()
+            ui = updateStateFor(model)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (model.updateChecked) {
+            ui = updateStateFor(model)
+        } else {
+            ui = UpdateUi.Checking
+            model.checkForUpdate()
+            ui = updateStateFor(model)
+        }
+    }
+
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            GlyphTitle("Updates", "download")
+            when (val state = ui) {
+                UpdateUi.Idle, UpdateUi.Checking -> Text("Checking for updates…", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                UpdateUi.Latest -> {
+                    Text("Up to date.", style = MaterialTheme.typography.bodyLarge)
+                    PixelButton("Check again", { checkAgain() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                }
+                is UpdateUi.Available -> {
+                    val size = updateSize(state.release.sizeBytes)
+                    Text(if (size.isEmpty()) "PokéLife ${state.release.version} is out." else "PokéLife ${state.release.version} is out, $size.", style = MaterialTheme.typography.bodyLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        PixelButton("Download", {
+                            scope.launch {
+                                ui = UpdateUi.Downloading(state.release, 0)
+                                val ok = updates.download(state.release) { percent -> ui = UpdateUi.Downloading(state.release, percent) }
+                                ui = if (ok) UpdateUi.Ready(state.release) else UpdateUi.Problem(updates.problem ?: "The download stopped.")
+                            }
+                        }, Modifier.weight(1f), Pixel.Tone, compact = true)
+                        PixelButton("Release notes", { updates.openReleasePage() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+                is UpdateUi.Downloading -> {
+                    Text("Downloading ${state.percent}%", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                    PixelBar(state.percent / 100f, label = "Downloading ${state.percent}%")
+                }
+                is UpdateUi.Ready -> {
+                    Text("PokéLife ${state.release.version} is downloaded.", style = MaterialTheme.typography.bodyLarge)
+                    if (allowed) {
+                        PixelButton("Install update", {
+                            if (!updates.install(state.release)) {
+                                // The permission can be revoked between screens; then the box shows the settings key instead.
+                                allowed = updates.canInstall()
+                                if (allowed) ui = UpdateUi.Problem(updates.problem ?: "The installer did not open.")
+                            }
+                        }, Modifier.fillMaxWidth(), Pixel.Tone)
+                    } else {
+                        Text("Allow app installs first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning)
+                        PixelButton("Open settings", { updates.openInstallSettings() }, Modifier.fillMaxWidth(), Pixel.Tone)
+                    }
+                }
+                is UpdateUi.Problem -> {
+                    Text(state.text, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                    PixelButton("Try again", { checkAgain() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                }
+            }
         }
     }
 }

@@ -51,6 +51,7 @@ import app.pokeplan.app.world.worldEpisodeDone
 import app.pokeplan.app.world.worldRecruit
 import app.pokeplan.app.world.worldSettle
 import app.pokeplan.app.world.worldStart
+import app.pokeplan.ui.updates.UpdateRelease
 
 @OptIn(ExperimentalComposeUiApi::class)
 class ScreenshotTest {
@@ -1087,6 +1088,57 @@ class ScreenshotTest {
 
     @Test
     fun me() = me("me", -1)
+
+    private fun fakeUpdates(release: UpdateRelease? = null, downloaded: Boolean = false, allowInstall: Boolean = true) = object : app.pokeplan.ui.updates.UpdateAccess {
+        override var problem: String? = null
+            private set
+        override suspend fun check(): UpdateRelease? = release
+        override suspend fun download(release: UpdateRelease, onProgress: (Int) -> Unit): Boolean = true
+        override fun downloaded(release: UpdateRelease): Boolean = downloaded
+        override fun install(release: UpdateRelease): Boolean = true
+        override fun canInstall(): Boolean = allowInstall
+        override fun openInstallSettings() {}
+        override fun openReleasePage() {}
+    }
+
+    /** The About page and its Updates box in each state a player can meet. */
+    private fun meAbout(name: String, dark: Boolean = false, downloaded: Boolean = false, allowInstall: Boolean = true, release: UpdateRelease? = null) {
+        val model = AppModel(storeWithTeam(), updates = fakeUpdates(release, downloaded, allowInstall))
+        render(name, height = 1400) {
+            PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.MeScreen(model, 9) } }
+        }
+    }
+
+    @Test
+    fun meAboutPage() = meAbout("me-about")
+
+    @Test
+    fun meAboutPageDark() = meAbout("me-about-dark", dark = true)
+
+    /** A release one minor version above the one this build says it is, so the screenshots stay an update after a bump. */
+    private fun newerRelease(): UpdateRelease {
+        val parts = AppVersion.NAME.split('.').mapNotNull { it.toIntOrNull() }
+        val version = if (parts.size == 3) "${parts[0]}.${parts[1] + 1}.0" else "9.9.9"
+        return UpdateRelease(version, 400, 121_525_880L, "a".repeat(64))
+    }
+
+    @Test
+    fun meAboutUpdate() = meAbout("me-about-update", release = newerRelease())
+
+    @Test
+    fun meAboutUpdateDark() = meAbout("me-about-update-dark", dark = true, release = newerRelease())
+
+    @Test
+    fun meAboutInstallPermission() = meAbout("me-about-install-permission", downloaded = true, allowInstall = false, release = newerRelease())
+
+    /** The Me menu says Update beside Settings once a newer release is known. */
+    @Test
+    fun meUpdateBadge() {
+        val model = AppModel(storeWithTeam(), updates = fakeUpdates(newerRelease()))
+        render("me-update-badge") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.MeScreen(model, -1) } }
+        }
+    }
 
     @Test
     fun modulesMenu() = modules("modules", null)

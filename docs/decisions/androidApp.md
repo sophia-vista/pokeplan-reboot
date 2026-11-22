@@ -562,6 +562,24 @@ Switching on tries the first flash camera that accepts it, because a camera in u
 
 The lit and taken sets are only valid while the callback is registered. They are cleared on release and rebuilt when the callback registers again, because the system reports every flash's state at that moment.
 
+## `androidApp/src/main/kotlin/app/pokeplan/platform/AndroidUpdates.kt`
+
+### Why the APK is downloaded by hand instead of by DownloadManager
+
+DownloadManager would own the file and hand the installer a `content://downloads` URI, and the app would lose the
+checksum and progress control it needs. So the APK is streamed into `filesDir/updates` (internal storage, no external
+permission), hashed while it streams, and served to the installer through the existing FileProvider (`<files-path>` in
+`file_paths.xml`, authority `${applicationId}.files`). The previous build's file is deleted when a new one starts
+downloading, and free space is checked against the manifest's size before the download starts.
+
+### Installing over itself
+
+`install` refuses and opens the phone's "install unknown apps" page when `canRequestPackageInstalls()` is false; the
+About screen shows "Allow app installs first" and re-reads that permission when the player comes back (a lifecycle
+resume), so one grant is enough for later updates. `REQUEST_INSTALL_PACKAGES` is declared for it. The installer intent
+is `ACTION_VIEW` with the package-archive MIME type and a read grant on the FileProvider URI, which the system installer
+accepts; no `ACTION_INSTALL_PACKAGE` fallback is kept because that action is deprecated.
+
 ## `androidApp/src/main/kotlin/app/pokeplan/reminders/Alarms.kt`
 
 ### Notification channel ids with a -2 suffix

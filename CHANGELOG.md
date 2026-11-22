@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.230.0
+
+- **The app updates itself (REP-075).** Me → Settings → About has an Updates box: opening Me checks the rolling "latest"
+  GitHub release once per app start, and About shows the new version and its size, downloads the APK into the app,
+  checks its size and SHA-256 against the release manifest, and hands it to the Android installer. The phone's "install
+  unknown apps" permission is asked for once, and the box leads to that page when it is missing. The repository is public,
+  so the check needs no token and the app keeps no account or credential; nothing is stored but the downloaded APK.
+  `release-apk.yml` now publishes `update.json` beside `pokeplan.apk` (version, build, size, checksum, commit, date) in the
+  "latest" release and in each version's own release, and the app falls back to the GitHub release API for a release
+  without the manifest. **The first install of v0.230.0 still comes from the release page**: the app that is on the phone
+  now has no updater yet; every build after this one installs in the app.
+
 ## 0.228.3
 
 - **The off-phone backup folder is tested (REP-034, #382).** `SafBackupFolderTest` runs `SafBackupFolder` against a fake documents provider
