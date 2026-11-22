@@ -9,7 +9,7 @@ object HuaweiControls {
     private fun name(n: ScreenNode) = id(n).ifBlank { n.type }
 
     /** Cards the Health page lists, and whether the walk opens them. */
-    private val WALKED = HuaweiWalk.CARDS.flatMap { it.titles }.toSet()
+    private val WALKED = HuaweiWalk.CARDS.flatMap { it.titles }.map(HuaweiWalk::canonical).toSet()
     private val OTHERS = listOf("Health Clovers", "Skin temperature", "Activity rings", "Emotional wellbeing", "SpO2", "Cycle Calendar")
 
     /** One entry per card title element seen on any page: the card, whether the walk opens it, and what takes the tap ("" when nothing). */
@@ -18,7 +18,7 @@ object HuaweiControls {
     fun cards(seen: HuaweiSeen): List<CardCheck> {
         val found = LinkedHashMap<String, String>()
         for (s in seen.screens) for (n in s.nodes) if (id(n) == "function_set_items_title") {
-            val t = n.text.trim().let { if (it == "SpO₂") "SpO2" else it }
+            val t = HuaweiWalk.canonical(n.text)
             if (t.isNotEmpty() && (found[t].isNullOrEmpty())) found[t] = n.tapVia
         }
         return found.map { (t, via) -> CardCheck(t, t in WALKED, via) }
@@ -42,7 +42,7 @@ object HuaweiControls {
             add("Cards:")
             cards.forEach { add("  ${if (it.walked) "WALK " else "other"}  ${it.title}: ${if (it.tapVia.isBlank()) "NOT tappable" else "tap via ${it.tapVia}"}") }
         }
-        val missing = HuaweiWalk.CARDS.map { it.title }.filter { t -> cards.none { it.title == t } }
+        val missing = HuaweiWalk.CARDS.map { HuaweiWalk.canonical(it.title) }.filter { t -> cards.none { it.title == t } }
         if (missing.isNotEmpty()) add("Not seen on any page: ${missing.joinToString()}")
     }
 

@@ -43,8 +43,8 @@ class AndroidHuaweiReader(private val activity: ComponentActivity) : HuaweiReade
 
     override fun clear() = HuaweiCapture.clear()
 
-    override fun walk(known: app.pokeplan.app.heal.HuaweiWalk.Known, done: (String?) -> Unit) {
-        HuaweiCapture.screen?.let { return it.walk(known, done) }
+    override fun walk(known: app.pokeplan.app.heal.HuaweiWalk.Known, done: (String?) -> Unit, scan: app.pokeplan.app.heal.HuaweiWalk.Scan) {
+        HuaweiCapture.screen?.let { return it.walk(known, done, scan) }
         if (!canSwitch() || !switchOn()) return done("Turn on screen reading first") // copy-ok: result
         // Android binds the service a moment after the setting changes: wait for it (up to about 3 seconds), then walk; the walk turns it off again.
         val main = Handler(Looper.getMainLooper())
@@ -52,7 +52,7 @@ class AndroidHuaweiReader(private val activity: ComponentActivity) : HuaweiReade
         fun waitForIt() {
             val screen = HuaweiCapture.screen
             when {
-                screen != null -> screen.walk(known, done)
+                screen != null -> screen.walk(known, done, scan)
                 ++tries > 30 -> done("Screen reading did not start") // copy-ok: result
                 else -> main.postDelayed(::waitForIt, 100)
             }
