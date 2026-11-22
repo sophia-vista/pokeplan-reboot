@@ -54,6 +54,8 @@ fun MeScreen(model: AppModel, startSection: Int = -1, resetSignal: Int = 0) {
     // A second tap on the Me tab returns to the menu (the shell counts the taps so a restored place is not reset).
     var handledReset by rememberSaveable { mutableStateOf(resetSignal) }
     LaunchedEffect(resetSignal) { if (resetSignal != handledReset) { handledReset = resetSignal; section = null } }
+    // Once per app start, when Me is opened: a newer GitHub release is then shown beside About without a tap.
+    LaunchedEffect(Unit) { if (model.updates != null && !model.updateChecked) model.checkForUpdate() }
     val data = model.data
     ScreenSwitch(section, depth = { if (it == null) 0 else if (parentOf(it) != null) 2 else 1 }) { current ->
         if (current == null) {
@@ -67,7 +69,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1, resetSignal: Int = 0) {
                     MenuList(
                         listOf(
                             MenuEntry("STATS", MeSection.STATS.icon, MeSection.STATS.label),
-                            MenuEntry("SETTINGS", "gb-sounds", "Settings"),
+                            MenuEntry("SETTINGS", "gb-sounds", "Settings", count = if (model.updateAvailable != null) "Update" else ""),
                             MenuEntry("HELP", "town-map", "Help"),
                         ),
                     ) { key -> section = MeSection.valueOf(key) }
@@ -78,12 +80,14 @@ fun MeScreen(model: AppModel, startSection: Int = -1, resetSignal: Int = 0) {
         SectionScaffold(current.label, null, onBack = { section = parentOf(current) }, icon = current.icon) {
             when (current) {
                 MeSection.STATS -> StatsView(model) { section = it }
-                MeSection.SETTINGS -> MenuList(settingsPages.map { MenuEntry(it.name, it.icon, it.label) }) { key -> section = MeSection.valueOf(key) }
+                MeSection.SETTINGS -> MenuList(settingsPages.map {
+                    MenuEntry(it.name, it.icon, it.label, count = if (it == MeSection.ABOUT && model.updateAvailable != null) "Update" else "")
+                }) { key -> section = MeSection.valueOf(key) }
                 MeSection.GENERAL -> GeneralSettings(model)
                 MeSection.PRIVACY -> PrivacySettings(model)
                 MeSection.NOTIFICATIONS -> NotificationSettings(model)
                 MeSection.BACKUPS -> { BackupsCard(model); ModuleExportsCard(model); ResetCard(model) }
-                MeSection.ABOUT -> AboutCard()
+                MeSection.ABOUT -> AboutCard(model)
                 MeSection.HELP -> HelpView()
                 MeSection.PROGRESS -> app.pokeplan.ui.plan.ProgressView(model)
                 MeSection.TRENDS -> app.pokeplan.ui.care.CareTrendsView(model)

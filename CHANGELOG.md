@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.230.0
+## 0.231.0
 
 Every species and every regional form obtainable (REP-044 first slice): the Mothim evolution fix, regional forms from wild Finds, Galar's three birds and Mega Stones. No reward-rule change: World payments are outside the reward engine (docs/economy.md says so), no reward-engine outcome changed, `RewardRules.VERSION` stays and no golden vector was regenerated. No schema change.
 
@@ -16,6 +16,18 @@ Every species and every regional form obtainable (REP-044 first slice): the Moth
 - **Galar's three birds are legend quests.** Clearing Slumbering Weald, Dusty Bowl and Galar Mine No. 2 three times each grants Galarian Articuno, Zapdos and Moltres, with no Guardian gate; `LegendQuest.form` stores the granted form and `worldLegends` avoids a duplicate of the same species and form.
 - **Mega Stones have sources.** All 99 Mega forms' stones are sold on the Kecleon Shop's own always-sold Mega Stones shelf for 2,000 Poké each (ten to a page in Town; the daily five shelf never carries them), and can drop when a silver (3%) or gold (10%) treasure box is opened, only a stone not owned yet. The form dex counts the Mega form while its Pokémon holds the stone, so every Mega form can now be shown and collected.
 - **Tests:** `EvolutionRulesTest.burmyKeepsBothTheWormadamCloaksAndTheMothimBranch`, the new `world-core` `ReachabilityTest` (all non-special species, all regional forms, White-Striped Basculin, the ten formerly missing species and the wild-form mapping), `KecleonShopTest.everyMegaStoneIsAlwaysSoldOnItsOwnShelf` and `WorldStoreTest`'s Galar birds, regional find recruitment and gold-box Mega Stone tests. `jvmTest` (except composeApp, which needs libGL) and `compileKotlinWasmJs` pass.
+
+## 0.230.0
+
+- **The app updates itself (REP-075).** Me → Settings → About has an Updates box: opening Me checks the rolling "latest"
+  GitHub release once per app start, and About shows the new version and its size, downloads the APK into the app,
+  checks its size and SHA-256 against the release manifest, and hands it to the Android installer. The phone's "install
+  unknown apps" permission is asked for once, and the box leads to that page when it is missing. The repository is public,
+  so the check needs no token and the app keeps no account or credential; nothing is stored but the downloaded APK.
+  `release-apk.yml` now publishes `update.json` beside `pokeplan.apk` (version, build, size, checksum, commit, date) in the
+  "latest" release and in each version's own release, and the app falls back to the GitHub release API for a release
+  without the manifest. **The first install of v0.230.0 still comes from the release page**: the app that is on the phone
+  now has no updater yet; every build after this one installs in the app.
 
 ## 0.229.0
 
