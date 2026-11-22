@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -59,6 +60,8 @@ import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.dialogueBox
+import app.pokeplan.ui.theme.dialogueFillInsetX
+import app.pokeplan.ui.theme.dialogueFillInsetY
 import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
@@ -98,11 +101,13 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
 /**
  * A group of rows in one dialogue box. With [rowTint] each row carries a whisper of its
  * [MenuEntry.tint] behind it (the Modules menu shows each module's colour this way); the default
- * keeps every other list neutral.
+ * keeps every other list neutral. A tinted row is full-bleed: its wash starts at the frame's fill
+ * edge, not at the content inset, while its contents keep the usual dialogue-box inset.
  */
 @Composable
 fun MenuList(entries: List<MenuEntry>, rowTint: Boolean = false, onOpen: (String) -> Unit) {
-    app.pokeplan.ui.theme.TextBox { MenuRows(entries, rowTint, onOpen) }
+    if (rowTint) app.pokeplan.ui.theme.TextBox(contentPadding = PaddingValues(horizontal = dialogueFillInsetX(), vertical = dialogueFillInsetY())) { MenuRows(entries, rowTint, onOpen) }
+    else app.pokeplan.ui.theme.TextBox { MenuRows(entries, rowTint, onOpen) }
 }
 
 @Composable
@@ -116,7 +121,7 @@ fun MenuRows(entries: List<MenuEntry>, rowTint: Boolean = false, onOpen: (String
                     .then(if (rowTint) Modifier.background(rowWash(e.tint)) else Modifier)
                     .clickable(role = Role.Button, enabled = !e.pending) { ui(e.sound); onOpen(e.key) }
                     .semantics(mergeDescendants = true) { contentDescription = listOf(e.title, e.count).filter { it.isNotEmpty() }.joinToString(", ") }
-                    .padding(vertical = Spacing.M),
+                    .padding(horizontal = if (rowTint) Spacing.L else 0.dp, vertical = Spacing.M),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
             ) {
                 ItemIcon(e.icon, size = Sizes.Icon, description = null)

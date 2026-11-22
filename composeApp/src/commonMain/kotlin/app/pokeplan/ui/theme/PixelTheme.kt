@@ -167,13 +167,13 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
 private val cardShape = PixelShape
 
 @Composable
-fun TextBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+fun TextBox(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues(horizontal = Spacing.BoxX, vertical = Spacing.BoxY), content: @Composable () -> Unit) {
     Box(
         modifier
             .fillMaxWidth()
             .dialogueBox()
             .clip(DialogueShape)
-            .padding(horizontal = Spacing.BoxX, vertical = Spacing.BoxY),
+            .padding(contentPadding),
     ) { content() }
 }
 
