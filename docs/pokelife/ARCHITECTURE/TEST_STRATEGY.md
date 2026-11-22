@@ -43,7 +43,7 @@ Use a layered testing pyramid. Most verification belongs in deterministic lower-
 
 ### 2.2 Target platforms
 
-The primary physical acceptance target is the **Samsung Galaxy S26 Ultra**. Record its exact Android release/build and app build for each acceptance run. Emulator and JVM results do not substitute for physical-device validation. Add a representative secondary Android device/API-level matrix as the supported deployment range is finalized.
+The primary physical acceptance target is the **Samsung Galaxy S26 Ultra**. Record its exact Android release/build and app build for each acceptance run. Emulator and JVM results do not substitute for physical-device validation. The supported deployment range is Android 8.0 (API 26) through Android 16 (API 36), matching `minSdk = 26` and `targetSdk = 36`; the S26 Ultra is the only device that must be tested, and no secondary device is required (owner decision, 22 November 2026).
 
 ## 3. Test baseline, known gaps and migration posture
 
