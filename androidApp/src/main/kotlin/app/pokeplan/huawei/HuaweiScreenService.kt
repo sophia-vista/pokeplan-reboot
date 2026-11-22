@@ -333,14 +333,23 @@ class HuaweiScreenService : AccessibilityService() {
             note("${wanted.title}: Week tab ${if (tapped) "tapped" else "not tapped"}")
             if (tapped) { delay(PAGE_WAIT_MS); scrollThrough(HuaweiWalk.pageScrolls(wanted, scan)) }
         }
-        // Each pill is its own tab with its own All data: open it, read it and come back to the card page before the next one.
+        // A page with pills (Emotional wellbeing): its All data page has the same Emotion/Stress tabs, so open All data once and read both tabs there.
         var pillsOpened = 0
-        for (pill in wanted.pills) if (openPill(wanted, pill)) pillsOpened++
+        var allDataOpened = false
+        if (wanted.pills.isNotEmpty()) {
+            if (wanted.allData && openAllData(wanted)) {
+                allDataOpened = true
+                for (pill in wanted.pills) if (openPillOnAllData(wanted, pill)) pillsOpened++
+                backToCardPage()
+            } else {
+                for (pill in wanted.pills) if (openPill(wanted, pill)) pillsOpened++
+            }
+        }
         if (pillsFirst) scrollThrough(HuaweiWalk.pageScrolls(wanted, scan))
         // Other menu items (Cycle Calendar's Period records) before the page's own All data; each comes back to the card page.
         for (item in wanted.menuItems) openMenuItem(wanted, item)
         // The page's own All data last. A page whose pills opened gave each pill its own All data; if no pill was found, still open the page's.
-        if (wanted.allData && (wanted.pills.isEmpty() || pillsOpened == 0)) {
+        if (wanted.allData && !allDataOpened && (wanted.pills.isEmpty() || pillsOpened == 0)) {
             openAllData(wanted)
             backToCardPage()
         }
@@ -415,6 +424,29 @@ class HuaweiScreenService : AccessibilityService() {
         note("${wanted.title}: pill $name opened (${shown?.nodes?.size ?: 0} elements)")
         if (wanted.allData) openAllData(wanted)
         backToCardPage()
+        return true
+    }
+
+    /** On the All data page of a page with pills (Emotional wellbeing), taps one tab and reads its list. */
+    private suspend fun openPillOnAllData(wanted: HuaweiWalk.Card, words: List<String>): Boolean {
+        val name = words.first()
+        val pill = pillNode(words)
+        if (pill != null) {
+            if (!tap(pill)) { note("${wanted.title}: pill $name tap refused on All data"); return false }
+        } else if (HuaweiWalk.canonical(wanted.title) == HuaweiWalk.canonical("Emotional wellbeing") &&
+            tapAtFraction(if (words.any { it.startsWith("Emotion", true) }) 0.15f else 0.37f, 0.245f)) {
+            // The All data page can be out of reach of accessibility too: its two tabs sit at the top left, under the title (owner's screenshot).
+            note("${wanted.title}: pill $name tapped by position on All data")
+        } else {
+            note("${wanted.title}: pill $name not on the All data page${windowSummary()}")
+            return false
+        }
+        delay(PAGE_WAIT_MS)
+        val shown = captureAll()
+        note("${wanted.title}: pill $name opened on All data (${shown?.nodes?.size ?: 0} elements)")
+        scrollThrough(HuaweiWalk.allDataBudget(wanted, scan)) {
+            HuaweiWalk.stopAllData(it, wanted, known, scan, System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        }
         return true
     }
 
@@ -507,7 +539,7 @@ class HuaweiScreenService : AccessibilityService() {
      * (scrolled until a row is old enough, [HuaweiWalk.stopAllData]); a page without the menu is noted and left. A click refused by a web page's
      * toolbar is retried with a real touch.
      */
-    private suspend fun openAllData(wanted: HuaweiWalk.Card, label: String = HuaweiWalk.ALL_DATA) {
+    private suspend fun openAllData(wanted: HuaweiWalk.Card, label: String = HuaweiWalk.ALL_DATA): Boolean {
         val windowsBefore = windows.size
         val button = findMenuButton()
         var item: AccessibilityNodeInfo? = null
@@ -519,7 +551,7 @@ class HuaweiScreenService : AccessibilityService() {
                 item = awaitMenuItem(label)
             }
         } else {
-            if (!tap(button)) { note("${wanted.title}: menu tap refused"); return }
+            if (!tap(button)) { note("${wanted.title}: menu tap refused"); return false }
             delay(MENU_WAIT_MS)
             captureAll() // the open menu, so its items show in the sample
             item = awaitMenuItem(label)
@@ -546,9 +578,9 @@ class HuaweiScreenService : AccessibilityService() {
             // Close a menu that opened (Back for a pop-up window), so the next pill or menu item starts from the card page.
             if (windows.size > windowsBefore) { performGlobalAction(GLOBAL_ACTION_BACK); delay(BACK_WAIT_MS) }
             note("${wanted.title}: '$label' is not in the menu${windowSummary()}")
-            return
+            return false
         }
-        if (!tap(choice)) { note("${wanted.title}: '$label' tap refused"); return }
+        if (!tap(choice)) { note("${wanted.title}: '$label' tap refused"); return false }
         delay(PAGE_WAIT_MS)
         note("${wanted.title}: $label opened ${page.ifBlank { "a page" }}")
         captureAll()
@@ -556,18 +588,21 @@ class HuaweiScreenService : AccessibilityService() {
             // Any other item of the menu (Period records): captured with a scroll or two, then back to the card page so the next item can be opened.
             scrollThrough(2)
             repeat(3) {
-                val r = huaweiRoot() ?: return
+                val r = huaweiRoot() ?: return true
                 if (isHealthPage(r) || visible(r).any { HuaweiWalk.isMenuButton(it.contentDescription?.toString().orEmpty()) }) return@repeat
                 performGlobalAction(GLOBAL_ACTION_BACK)
                 delay(BACK_WAIT_MS)
             }
-            return
+            return true
         }
+        // A page with pills (Emotional wellbeing) opens its All data at the top and the caller reads each pill tab there.
+        if (wanted.pills.isNotEmpty()) return true
         val entries = HuaweiWalk.entryBudget(wanted, scan)
         if (entries > 0) openEntries(wanted, entries)
         scrollThrough(HuaweiWalk.allDataBudget(wanted, scan)) {
             HuaweiWalk.stopAllData(it, wanted, known, scan, System.currentTimeMillis(), TimeZone.currentSystemDefault())
         }
+        return true
     }
 
     /** A real tap at the top-right four-dots button, for a page whose toolbar accessibility cannot see (Heart and Emotional wellbeing in probe 13). */
