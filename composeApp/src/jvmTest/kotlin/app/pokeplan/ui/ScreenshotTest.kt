@@ -2486,13 +2486,17 @@ class ScreenshotTest {
             } }
         }
     }
+    /** An IOU is income someone owes back: still owed and received, with the longest name, both palettes. */
     @Test
-    fun mintSharedBills() {
-        mint("mint-shared", app.pokeplan.ui.mint.MintSection.SHARED, height = 1700, settings = { m ->
-            val day = m.store.today
-            m.mint.addShared("Alexandria Montgomery-Santos", app.pokeplan.mint.SharedKind.THEY_PAID, 1_234_567, day, "Groceries and the weekend trip", "PHP")
-            m.mint.addShared("Ana", app.pokeplan.mint.SharedKind.I_PAID, 50_000, day, "Dinner", "PHP")
-        })
+    fun mintIou() {
+        for (dark in listOf(false, true)) {
+            mint("mint-iou" + if (dark) "-dark" else "", app.pokeplan.ui.mint.MintSection.ACTIVITY, height = 2900, dark = dark, settings = { m ->
+                val wallet = m.mint.addAccount("Wallet", app.pokeplan.mint.AccountType.CASH, "PHP", 5_000_00).record!!
+                m.mint.record(app.pokeplan.mint.TxType.EXPENSE, 1_200_00, wallet.id, payee = "Dinner", atMillis = m.store.nowMillis)
+                m.mint.record(app.pokeplan.mint.TxType.INCOME, 900_00, wallet.id, payee = "Alexandria Montgomery-Santos", atMillis = m.store.nowMillis, status = app.pokeplan.mint.TxStatus.PENDING, iou = true)
+                m.mint.record(app.pokeplan.mint.TxType.INCOME, 100_00, wallet.id, payee = "Ana", atMillis = m.store.nowMillis, iou = true)
+            })
+        }
     }
 
     @Test

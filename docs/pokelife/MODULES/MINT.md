@@ -84,7 +84,6 @@ The Overview is the landing screen: a lead box, the overview of the records, the
 | Activity | Transactions, transfers, search and filters |
 | Budgets | Spending plans, category limits and savings targets |
 | Bills and income | Recurring and one-time obligations and expected income |
-| Shared bills | Who owes whom |
 | Review | Reports (cash flow, spending patterns, historical comparisons) and reconciliation |
 | Import | Statement files (where the platform can open a file) |
 | Settings | Ledger Research, privacy, your data |
@@ -271,6 +270,7 @@ A `Transaction` may include:
 - Optional import/source reference.
 - Optional bill occurrence reference.
 - Optional receipt attachment reference.
+- IOU flag on an income: the money is owed back by the person in the payee field (5.8A).
 - Created/updated timestamps.
 
 Store monetary values using exact decimal arithmetic or integer minor units with explicit currency scale. Never use binary floating-point arithmetic for money. Preserve original amount/currency even when a converted reporting value is calculated.
@@ -327,7 +327,7 @@ A **Pay later** account (`AccountType.PAY_LATER`, such as SPayLater) is a credit
 **Installment plan** (`InstallmentPlan`, saved as the `plans` list in the sealed `mint_state` table). A plan belongs to one credit account and holds: the purchase record, the price, the first and every later due day, and the generated **schedule** of installments (`no`, due day, principal, fee). Generating the schedule is automatic from the price, the number of installments (1 to 36), the interval (every week, every 2 weeks, every month) and the first due day: the principal is split evenly (the leftover minor units go one each to the first installments, so the sum is exact); the fee is none, a fixed amount per installment, a total spread evenly, or a **rate per period on the principal still unpaid** (basis points, rounded half up); a monthly due day that a month lacks falls on its last day. The purchase/order name can be changed later. Before any installment has a payment or recorded fee, the player can edit the plan's principal, count, interval, first due day and fee rule; the purchase record changes with its plan. After that, a payment or recorded fee locks only the installment it reached; other unpaid installments can still have their principal, due day and fee edited without rewriting history. Everything else is **derived, not stored**: what each installment still owes is its principal plus its fee plus its late fees, less repayments. A repayment to an account with unpaid plans is allocated **installment by installment** in due-date order, then by plan creation order (5.6C), so it settles the earliest monthly bill and never one purchase's whole schedule before another purchase's earlier month. Any amount beyond all scheduled balances is an ordinary account repayment. The states are Upcoming, Due, Overdue, Partly paid, Paid and Cancelled. Voiding or deleting a repayment therefore reopens the installment by itself. A plan may be deleted: its records stay (unlinked), and its purchase record cannot be deleted while the plan exists.
 
 **What it does to the reports (one rule each, tested)**
-- **Spending** (7.1) = posted `EXPENSE` and `FEE` less `REFUND`, on any account: the purchase once, plus fees, interest and late fees; a repayment never counts.
+- **Spending** (7.1) = posted `EXPENSE` and `FEE` less `REFUND`, on any account: the purchase once, plus fees, interest and late fees; a repayment never counts. An IOU income (pending or posted) lowers spending in its category like a refund (5.8A).
 - **Cash flow** is what really moves through the **liquid** accounts (wallets, banks, cash): income in, expenses and fees paid from them out, and **a repayment to a credit account is cash out** (the cash really leaves); a purchase on credit is not cash flow until it is repaid; a transfer between two liquid accounts is neither.
 - **Net position** (assets less liabilities): a purchase on credit lowers it at once by the price (the liability), a fee lowers it by the fee, a repayment changes it by nothing (cash and liability fall together), a refund raises it.
 - **Available money** (3.2, 4.5) also subtracts the installments due within the window (14 days by default, 3.2B; overdue ones included) with the unpaid bills.
@@ -397,18 +397,17 @@ It supports:
 
 Imported records remain identifiable as imported. Reconciliation does not silently replace manual history or erase unmatched transactions.
 
-### 5.8A Shared bills
+### 5.8A IOUs: income someone owes back
 
-A small ledger of who owes whom for bills split with other people, as the player would keep it in Splitwise. It is **display only**: it moves no account balance, makes no transaction, changes no net position, available money, budget or report, and pays nothing (no `MintEvent`, 16.2). The player records the real payment as an ordinary transaction (5.4) and keeps this ledger beside it.
+A lightweight flag on one income transaction, not a ledger, not a screen and not a module. It answers one question: money someone owes the player back, where does it sit?
 
-- **Entry** (`SharedEntry`, kept in the sealed `mint_state` as the `shared` list, so no migration): a person's name (a plain word, at most 40 characters, matched without case and edge spaces), a kind, an amount in integer minor units above zero, its currency, a day and an optional note (at most 120 characters).
-- **Four kinds.** *I paid* (I footed the bill; their share is now owed to me), *They paid* (someone else footed it; my share is now owed to them), *They paid me back* and *I paid them back* (a settlement).
-- **Balance** per person and currency = I paid + I paid them back - They paid - They paid me back, in minor units. Above zero the person owes the player; below zero the player owes them; zero is square. A settlement larger than what is owed simply turns the balance round (a person can overpay); nothing is refused for it.
-- **Totals** per currency: *owed to me* is the sum of the positive balances, *I owe* the sum of the negative ones, both shown as positive amounts and never netted across people.
-- **Settle up** on a person's line adds the one settlement entry that brings the balance to zero (They paid me back when they owed me, I paid them back when I owed them), dated today. It records nothing in an account: the player records the money moving as a transaction if they want it in their books.
-- **Screen:** *Shared*, a Mint section. Balances first, one line per person with the amount and Settle up; then New entry; then the history, newest first, each entry deletable. Hide values (3.3) hides every amount here too.
-- **Export and erase:** a kind of its own (`MintKinds.SHARED`, "Shared bills"): exported and erased on its own, with the rest in "Export everything" and "Erase all". A names-only record, so it is as private as the rest of Mint and rides in the sealed table.
-- **Not built:** splitting one bill by share or percentage between several people at once, simplifying debts across a group, linking an entry to a transaction, and posting a settlement to an account.
+- **What it is.** A `Transaction` of type `INCOME` with `iou = true`. The person who owes is its `payee`; its category is a *spending* category, the one it takes spending off, like a refund. Only an income can be an IOU, and it cannot be split.
+- **Entering it.** The Income form has the toggle "Someone owes me this (IOU)", "Who owes it" and "They paid me already". The record is `PENDING` while still owed (the balance is unchanged; it shows as expected) and `POSTED` once received ("They paid me already" saves it `POSTED`). The existing Mark posted action reads "Mark received" for an IOU, and "Mark owed" to undo it.
+- **What it does to the books.** It counts as **no income** (`MintRules.earned` leaves it out). **Spending, budgets, category totals and the review's spending fall by its amount in its category from the moment it is recorded, owed or received** (`countsForSpending`, direction -1 like a `REFUND`); excluded and voided records do not count. The account balance rises only when it is `POSTED`.
+- **Rewards.** None: Ledger Research pays an expense or a transfer, and an IOU is income.
+- **Editing.** An edit keeps `iou` as it was; a plain income cannot be turned into an IOU by editing.
+- **What it does not do.** No who-owes-whom balance, no settle-up, no splitting one bill by share between several people (REP-073), no interest or due dates.
+- **Private like the rest of Mint:** the flag rides in the transaction's own sealed row, so there is no table, no schema step and no migration, and an older save without it loads unchanged. No `MintEvent` and no figure leaves Mint for an IOU. The earlier Shared bills ledger is removed.
 
 ## 6. Categories and merchants
 
@@ -438,7 +437,7 @@ Support:
 - Optional account/category scope.
 - Active, paused and archived states.
 
-A budget stores the planned amount and period; both can be edited afterwards, and a change that would make a second budget for the same category, currency and period is refused. Actual spending is derived from eligible posted transactions. Transfers are excluded. Refund treatment is explicit and consistent (normally offsets the originating category's spending). Pending transactions may be shown separately or included by user preference, but must never be silently mixed with posted actuals.
+A budget stores the planned amount and period; both can be edited afterwards, and a change that would make a second budget for the same category, currency and period is refused. Actual spending is derived from eligible posted transactions (an IOU income takes its amount off its category from the moment it is recorded, owed or received, 5.8A). Transfers are excluded. Refund treatment is explicit and consistent (normally offsets the originating category's spending). Pending transactions may be shown separately or included by user preference, but must never be silently mixed with posted actuals.
 
 ### 7.2 Budget display
 
@@ -759,7 +758,7 @@ Eligible activity events may include:
 - Reviewing upcoming bills as part of a periodic review.
 - Completing a defined periodic financial organization milestone.
 
-**Logging a purchase, a payment or a transfer is reward-bearing.** The event is `record_logged` (`MintKind.LOGGED`) and it **never depends on an amount**: the same flat reward whether the record is ₱5 or ₱50,000, and it carries no figure, account, category or payee (16.3). Only a record the player types or taps in today (dated today, manual; not an import, an interest estimate, a fee Mint made itself, an adjustment or a backdated entry) of type **Expense** (a purchase, including a bill or card installment paid) or **Transfer** (a payment to a card or loan, or money moved between accounts) pays; income, refunds, fees and balance adjustments do not. **There is no daily limit** (a frequent action pays about like a Plan focus egg or a Care visitor, and farming is the player's own responsibility); each record id pays once and adds a point to Ledger Research's Egg meter. The amounts are in `docs/economy.md`. Opening MINT, viewing balances, receiving income, changing an account balance, connecting a bank, increasing savings, empty records and repeated edits are still not reward-bearing; a micro-entry is allowed to pay, because the player chose that trade.
+**Logging a purchase, a payment or a transfer is reward-bearing.** The event is `record_logged` (`MintKind.LOGGED`) and it **never depends on an amount**: the same flat reward whether the record is ₱5 or ₱50,000, and it carries no figure, account, category or payee (16.3). Only a record the player types or taps in today (dated today, manual; not an import, an interest estimate, a fee Mint made itself, an adjustment or a backdated entry) of type **Expense** (a purchase, including a bill or card installment paid) or **Transfer** (a payment to a card or loan, or money moved between accounts) pays; income (an IOU included), refunds, fees and balance adjustments do not. **There is no daily limit** (a frequent action pays about like a Plan focus egg or a Care visitor, and farming is the player's own responsibility); each record id pays once and adds a point to Ledger Research's Egg meter. The amounts are in `docs/economy.md`. Opening MINT, viewing balances, receiving income, changing an account balance, connecting a bank, increasing savings, empty records and repeated edits are still not reward-bearing; a micro-entry is allowed to pay, because the player chose that trade.
 
 
 Do not reward creating empty records, repeated edits, repeatedly opening the same review, or artificial micro-actions. Define eligibility thresholds and caps in the shared economy/progression ledger, not in UI code.

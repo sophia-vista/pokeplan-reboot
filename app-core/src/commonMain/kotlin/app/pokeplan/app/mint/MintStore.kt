@@ -19,10 +19,6 @@ import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.FeeKind
 import app.pokeplan.mint.FeeRule
 import app.pokeplan.mint.InstallmentPlan
-import app.pokeplan.mint.SharedBalance
-import app.pokeplan.mint.SharedEntry
-import app.pokeplan.mint.SharedKind
-import app.pokeplan.mint.SharedRules
 import app.pokeplan.mint.Installments
 import app.pokeplan.mint.PlanEvery
 import app.pokeplan.mint.PlanView
@@ -239,13 +235,15 @@ class MintStore(
     fun record(
         type: TxType, amountMinor: Long, accountId: String, toAccountId: String? = null, categoryId: String? = null, payee: String = "", note: String = "",
         atMillis: Long = nowMillis, status: TxStatus = TxStatus.POSTED, up: Boolean = true, refundOf: String? = null, splits: List<TransactionSplit> = emptyList(), feeMinor: Long = 0,
+        iou: Boolean = false,
     ): Logged<Transaction> {
         val currency = data.accounts.firstOrNull { it.id == accountId }?.currency ?: return Logged(null, "Choose an account.")
         if (type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == toAccountId }?.let { target ->
                 Installments.allowedFor(target.type) && Installments.views(data, today).any { it.plan.accountId == target.id && it.remainingMinor > 0 }
             } == true)
             return Logged(null, "Repayments to this account must be allocated to its unpaid installment plans.")
-        val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor)
+        val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor,
+            iou = iou)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }
         return Logged(tx, rewards = payForLog(tx))
@@ -255,10 +253,11 @@ class MintStore(
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
         val next = t.copy(
             planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, planAllocations = old.planAllocations,
-            creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis,
+            creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis, iou = old.iou,
             importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint,
             day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
         )
+        // A record an installment plan counts on keeps its type, amount and accounts; the plan is what changes (MINT.md 5.6A).
         if ((old.planId != null || old.planAllocations.isNotEmpty()) && (next.type != old.type || next.amountMinor != old.amountMinor || next.accountId != old.accountId || next.toAccountId != old.toAccountId))
             return Logged(null, "This record belongs to an installment plan. Change the plan instead.")
         (MintRules.checkAmount(next.amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -471,20 +470,6 @@ class MintStore(
 
     private fun cleanDays(frequency: Frequency, days: List<Int>): List<Int> =
         if (frequency != Frequency.SEMI_MONTHLY) emptyList() else days.filter { it in 1..31 }.distinct().sorted().take(4).let { if (it == listOf(15, 30)) emptyList() else it }
-
-    fun addShared(person: String, kind: SharedKind, amountMinor: Long, day: LocalDate, note: String = "", currency: String = data.settings.currency): String? {
-        SharedRules.refusal(person, amountMinor, currency)?.let { return it }
-        val entry = SharedEntry(newId(), SharedRules.cleanPerson(person), kind, amountMinor, currency, day, note.trim().take(SharedRules.NOTE_MAX))
-        update { it.copy(shared = it.shared + entry) }
-        return null
-    }
-
-    fun settleShared(balance: SharedBalance, day: LocalDate) {
-        val entry = SharedRules.settlement(balance, day, newId()) ?: return
-        update { it.copy(shared = it.shared + entry) }
-    }
-
-    fun deleteShared(id: String) = update { it.copy(shared = it.shared.filterNot { e -> e.id == id }) }
 
     fun addBill(name: String, currency: String, frequency: Frequency, firstDue: LocalDate, expectedMinor: Long? = null, categoryId: String? = null, accountId: String? = null, income: Boolean = false, days: List<Int> = emptyList(), workday: Boolean = false, estimate: Boolean = false): Logged<Bill> {
         if (name.isBlank()) return Logged(null, "Give the bill a name.")
@@ -928,7 +913,6 @@ object MintExport {
         MintKinds.BUDGETS to listOf("budgets", "savingsTargets"),
         MintKinds.BILLS to listOf("bills", "billPayments"),
         MintKinds.REVIEWS to listOf("reconciliations", "reviews"),
-        MintKinds.SHARED to listOf("shared"),
     )
 
     fun json(data: MintData, kinds: Set<MintKinds>): String {
@@ -958,7 +942,6 @@ object MintExport {
         MintKinds.BUDGETS -> d.copy(budgets = emptyList(), savingsTargets = emptyList())
         MintKinds.BILLS -> d.copy(bills = emptyList(), billPayments = emptyList(), transactions = d.transactions.map { it.copy(billId = null, billDueDay = null) })
         MintKinds.REVIEWS -> d.copy(reconciliations = emptyList(), reviews = emptyList())
-        MintKinds.SHARED -> d.copy(shared = emptyList())
     }
 }
 data class StatementPreview(

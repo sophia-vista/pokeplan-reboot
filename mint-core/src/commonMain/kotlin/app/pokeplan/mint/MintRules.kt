@@ -137,7 +137,7 @@ object MintRules {
             return Check.Refused("A transfer's category is for its fee, and it has to be a spending category.")
         tx.categoryId?.let { id ->
             val c = data.categories.firstOrNull { it.id == id } ?: return Check.Refused("That category is gone.")
-            val wanted = when (tx.type) { TxType.INCOME -> CategoryKind.INCOME; TxType.EXPENSE, TxType.FEE, TxType.REFUND -> CategoryKind.EXPENSE; else -> null }
+            val wanted = when (tx.type) { TxType.INCOME -> if (tx.iou) CategoryKind.EXPENSE else CategoryKind.INCOME; TxType.EXPENSE, TxType.FEE, TxType.REFUND -> CategoryKind.EXPENSE; else -> null }
             if (wanted != null && c.kind != wanted) return Check.Refused("That category does not fit ${tx.type.label.lowercase()}.")
         }
         if (tx.splits.isNotEmpty()) {
@@ -159,9 +159,20 @@ object MintRules {
             if (splitTotal != tx.amountMinor)
                 return Check.Refused("Split amounts must add up to the transaction.")
         }
+        if (tx.iou) {
+            if (tx.type != TxType.INCOME) return Check.Refused("Only money received can be an IOU.")
+            if (tx.splits.isNotEmpty()) return Check.Refused("An IOU cannot be split across categories.")
+        }
         return Check.Ok
     }
 
+    // --- balances ----------------------------------------------------------------------------------------------------------
+
+    /**
+     * What [tx] does to [account]'s balance, or null when it does not touch it. An asset's balance is money held (in raises it, out lowers it);
+     * a liability's balance is money owed (out raises it, in lowers it), so a card purchase and a card payment are each one record that moves the
+     * right way once (MINT.md section 5.6).
+     */
     fun effect(tx: Transaction, account: FinancialAccount): Long? {
         val flow: Long = when (tx.type) {
             TxType.EXPENSE, TxType.FEE -> if (tx.accountId == account.id) -tx.amountMinor else return null
@@ -299,12 +310,16 @@ object MintRules {
 
     private fun counts(t: Transaction) = t.status == TxStatus.POSTED
 
+    /** What spending reads: every posted record, and an IOU still owed too (it already takes its amount off the spending it was for). */
+    private fun countsForSpending(t: Transaction) = counts(t) || (t.iou && t.status == TxStatus.PENDING)
+
     fun spent(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String, categoryId: String? = null): Long =
-        data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive }
+        data.transactions.filter { countsForSpending(it) && it.currency == currency && it.day >= from && it.day < endExclusive }
             .sumOf { tx ->
-                val direction = when (tx.type) { TxType.EXPENSE, TxType.FEE -> 1; TxType.REFUND -> -1; TxType.TRANSFER -> if (tx.feeMinor > 0) 1 else 0; else -> 0 }
+                val direction = when (tx.type) { TxType.EXPENSE, TxType.FEE -> 1; TxType.REFUND -> -1; TxType.INCOME -> if (tx.iou) -1 else 0; TxType.TRANSFER -> if (tx.feeMinor > 0) 1 else 0; else -> 0 }
                 if (direction == 0) 0L
                 else {
+                    // A transfer's own amount is never spending; only the fee it was charged is (MINT.md 5.5).
                     val whole = if (tx.type == TxType.TRANSFER) tx.feeMinor else tx.amountMinor
                     val amount = if (categoryId == null) whole
                     else if (tx.splits.isNotEmpty()) tx.splits.filter { it.categoryId == categoryId }.sumOf { it.amountMinor }
@@ -313,14 +328,15 @@ object MintRules {
                 }
             }
 
+    /** Money received in the period (income only: a refund is not income, a transfer is not income, and a repayment of an IOU is the player's own money coming back). */
     fun earned(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): Long =
-        data.transactions.filter { counts(it) && it.currency == currency && it.type == TxType.INCOME && it.day >= from && it.day < endExclusive }.sumOf { it.amountMinor }
+        data.transactions.filter { counts(it) && it.currency == currency && it.type == TxType.INCOME && !it.iou && it.day >= from && it.day < endExclusive }.sumOf { it.amountMinor }
 
     fun spendingByCategory(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): List<Pair<String?, Long>> {
         val totals = mutableMapOf<String?, Long>()
-        data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive && (it.type in setOf(TxType.EXPENSE, TxType.FEE, TxType.REFUND) || (it.type == TxType.TRANSFER && it.feeMinor > 0)) }
+        data.transactions.filter { countsForSpending(it) && it.currency == currency && it.day >= from && it.day < endExclusive && (it.type in setOf(TxType.EXPENSE, TxType.FEE, TxType.REFUND) || it.iou || (it.type == TxType.TRANSFER && it.feeMinor > 0)) }
             .forEach { tx ->
-                val direction = if (tx.type == TxType.REFUND) -1 else 1
+                val direction = if (tx.type == TxType.REFUND || tx.iou) -1 else 1
                 val parts = tx.splits.ifEmpty { listOf(TransactionSplit(tx.categoryId, if (tx.type == TxType.TRANSFER) tx.feeMinor else tx.amountMinor)) }
                 parts.forEach { part -> totals[part.categoryId] = (totals[part.categoryId] ?: 0L) + direction * part.amountMinor }
             }

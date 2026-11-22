@@ -112,6 +112,12 @@ data class Transaction(
     val paid: Boolean = false,
     val interestThrough: LocalDate? = null,
     val receiptImage: String = "",
+    /**
+     * An IOU (MINT.md 5.8A): money received that someone owes the player back for something the player already paid. It is an [TxType.INCOME]
+     * record that counts as no income and pays no reward; the person is its [payee], and its category (a spending one) is the spending it takes
+     * away from, like a refund. It is [TxStatus.PENDING] while still owed (no balance change) and [TxStatus.POSTED] once received.
+     */
+    val iou: Boolean = false,
 )
 
 @Serializable
@@ -250,7 +256,6 @@ data class MintData(
     val reviews: List<ReviewRecord> = emptyList(),
     val plans: List<InstallmentPlan> = emptyList(),
     val creditStatements: List<CreditStatement> = emptyList(),
-    val shared: List<SharedEntry> = emptyList(),
     val settings: MintSettings = MintSettings(),
 )
 
@@ -261,5 +266,4 @@ enum class MintKinds(val label: String) {
     BUDGETS("Budgets"),
     BILLS("Bills"),
     REVIEWS("Reconciliations and reviews"),
-    SHARED("Shared bills"),
 }
