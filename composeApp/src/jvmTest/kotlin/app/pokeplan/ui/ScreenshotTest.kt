@@ -52,6 +52,7 @@ import app.pokeplan.app.world.worldEpisodeDone
 import app.pokeplan.app.world.worldRecruit
 import app.pokeplan.app.world.worldSettle
 import app.pokeplan.app.world.worldStart
+import app.pokeplan.ui.updates.UpdatePatch
 import app.pokeplan.ui.updates.UpdateRelease
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -1106,7 +1107,7 @@ class ScreenshotTest {
         override fun install(release: UpdateRelease): Boolean = true
         override fun canInstall(): Boolean = allowInstall
         override fun openInstallSettings() {}
-        override fun openReleasePage() {}
+        override fun openReleasePage(release: UpdateRelease) {}
     }
 
     /** The About page and its Updates box in each state a player can meet. */
@@ -1127,7 +1128,15 @@ class ScreenshotTest {
     private fun newerRelease(): UpdateRelease {
         val parts = AppVersion.NAME.split('.').mapNotNull { it.toIntOrNull() }
         val version = if (parts.size == 3) "${parts[0]}.${parts[1] + 1}.0" else "9.9.9"
-        return UpdateRelease(version, 400, 121_525_880L, "a".repeat(64))
+        return UpdateRelease(
+            version, 400, 121_591_547L, "a".repeat(64), tag = "v$version",
+            patches = listOf(
+                UpdatePatch(
+                    fromVersion = AppVersion.NAME, fromBuild = AppVersion.BUILD.toLong(),
+                    asset = "patch-${AppVersion.NAME}-to-$version.patch.gz", sizeBytes = 4_461_963L, sha256 = "b".repeat(64),
+                ),
+            ),
+        )
     }
 
     @Test

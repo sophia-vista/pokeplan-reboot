@@ -518,7 +518,8 @@ private fun UpdatesCard(model: AppModel) {
                     PixelButton("Check again", { checkAgain() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 }
                 is UpdateUi.Available -> {
-                    val size = updateSize(state.release.sizeBytes)
+                    val patch = state.release.patchFor(AppVersion.NAME, AppVersion.BUILD.toLong())
+                    val size = updateSize(patch?.sizeBytes ?: state.release.sizeBytes)
                     Text(if (size.isEmpty()) "PokéLife ${state.release.version} is out." else "PokéLife ${state.release.version} is out, $size.", style = MaterialTheme.typography.bodyLarge)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         PixelButton("Download", {
@@ -528,7 +529,7 @@ private fun UpdatesCard(model: AppModel) {
                                 ui = if (ok) UpdateUi.Ready(state.release) else UpdateUi.Problem(updates.problem ?: "The download stopped.")
                             }
                         }, Modifier.weight(1f), Pixel.Tone, compact = true)
-                        PixelButton("Release notes", { updates.openReleasePage() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        PixelButton("Release notes", { updates.openReleasePage(state.release) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
                 is UpdateUi.Downloading -> {

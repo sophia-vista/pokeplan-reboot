@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.233.0
+## 0.234.0
 
 A pass on the bottom-tab screens (owner, 23 November 2026), UI only: no reward rule, schema or save-format change, `RewardRules.VERSION` stays and no golden vector was regenerated. The one settings addition (`weekStartDay`) is a serialized field with a default, so old saves load unchanged.
 
@@ -13,6 +13,19 @@ A pass on the bottom-tab screens (owner, 23 November 2026), UI only: no reward r
 - **Modules:** the "Jump to" search is hidden until the list is pulled down at its top (140 ms expand, instant under Reduce motion; the close key, Back or an upward swipe with nothing typed puts it away and clears the query). Each module row now carries a light wash of its module's accent inside the list's one dialogue box, and a search result is tinted by the module it opens.
 - **Pokémon:** the menu follows the canon start-menu order: Pokédex, Party, PC boxes, Bag, Poké Mart, Quests.
 - **Me → Settings → Date and time:** "Week starts on" is a dropdown (Sunday, Monday, Saturday) instead of a Monday toggle, and the choice now reaches the date picker, the Plan month grid and the launcher calendar widget. "Date format" is a dropdown of pattern strings, adding `MM/dd/yyyy` and `dd/MM/yyyy` to the existing styles.
+
+## 0.233.0
+
+- **Small updates (REP-077, after REP-075).** The updater no longer downloads the whole 116 MB APK for every change: the
+  app now updates from the version's own release, and that release carries patches built from the last three versions'
+  APKs (`tools/update/make_patch.py`). A patch lists the unchanged entries (about 30,000 sprites, cries, maps) as copies
+  from the installed APK and carries only the changed dex, the signing block and the ZIP directory, gzipped: about 4 MB
+  from the next version, up to about 20 MB after a few versions, against 116 MB for the whole file. The app rebuilds the
+  exact signed APK from its own installed copy (no signing key is in the app), checks it against the release manifest's
+  size and SHA-256, and installs it; a missing or damaged patch, or a different installed build, falls back to the full
+  download. The release workflow now publishes the version's release, with its patches and its own `update.json`, before
+  the rolling "latest" release; the app reads the rolling release only to learn which version is newest. Still to do on a
+  phone: the patch download and the rebuilt APK installing over the running app. No reward rule changed.
 
 ## 0.232.0
 

@@ -836,6 +836,28 @@ A tileset has far fewer than 256 colours, so its autotile PNG is saved as a pale
 
 To find which dungeons use each tileset, the game's dungeon list (arm9) gives each dungeon's floors in mappa_s.bin and each floor layout names its tileset; ids of 170 and up are the pit and boss floors, which have none here.
 
+## `tools/update/make_fixture.py`
+
+### make_fixture.py
+
+tools/update/make_fixture.py rebuilds the two tiny APK-like ZIPs and the patch under `composeApp/src/jvmTest/resources/update/` that `UpdatePatchTest` replays, so the Python writer and the Kotlin applier cannot drift apart. Run it after changing the patch format; the patch is tiny (under 1 KB) and committed.
+
+## `tools/update/make_patch.py`
+
+### make_patch.py
+
+tools/update/make_patch.py writes the small update patch from one signed APK to another (`--from`, `--to`, `--out`). It walks both ZIPs' local headers (name, offset, extra field and compressed size), keeps every unchanged entry as a COPY of its old range, carries the changed entries, the APK signing block and the central directory as literals, gzips the stream and then replays it to prove the target's size and SHA-256. It is the source of the format documented in `composeApp/.../ui/updates/Patch.kt`; the release workflow runs it for the last three versioned APKs.
+
+### make_patch.py and the signature
+
+The patch rebuilds the new APK byte for byte, including the signature block, from the old signed APK. That is why the app needs no signing key and why a copy must be made from the exact APK installed on the phone (the versioned APK), which is the reason the updater installs versioned APKs rather than rolling merge builds. A patch whose replay does not match is never written (the script exits non-zero, the workflow just publishes the release without that patch).
+
+## `tools/update/write_release_manifest.py`
+
+### write_release_manifest.py
+
+tools/update/write_release_manifest.py writes the versioned release's `update.json`: the versioned APK's name, size and SHA-256, plus one patch entry per `patches/*.patch.gz` (its `from` version, the older release's `build` read from that release's `update.json` for `fromBuild`, its size and SHA-256). It is separate from the shell so the workflow has no JSON quoting to get wrong, and the app's parser is tested against the same shape.
+
 ## `tools/weather/decode_bg.py`
 
 ### decode_bg.py
