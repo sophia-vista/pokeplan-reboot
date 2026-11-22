@@ -345,15 +345,8 @@ class HuaweiScreenService : AccessibilityService() {
         return out
     }
 
-    /** Captures every Huawei Health window (the first one returned is the active window's), so a page drawn in its own window is kept. */
-    private fun captureAll(): ScreenCapture? {
-        var first: ScreenCapture? = null
-        for (root in huaweiRoots()) {
-            val c = capture(root) ?: continue
-            if (first == null) first = c
-        }
-        return first
-    }
+    /** Captures every Huawei Health window, so a page drawn in its own window is kept; the richest capture is returned (the page, not a blank overlay). */
+    private fun captureAll(): ScreenCapture? = huaweiRoots().mapNotNull { capture(it) }.maxByOrNull { it.nodes.size }
 
     private fun wordCount(root: AccessibilityNodeInfo) = visible(root).count { !it.text.isNullOrBlank() || !it.contentDescription.isNullOrBlank() }
 
