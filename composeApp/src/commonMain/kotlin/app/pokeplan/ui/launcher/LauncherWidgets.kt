@@ -328,9 +328,9 @@ private fun CalendarWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) 
             }
             PmdRule(pixel)
             Row(Modifier.fillMaxWidth().padding(top = Spacing.S)) {
-                weekDays(!env.model.data.settings.weekStartsOnMonday).forEach { Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { PmdText(dayName(it).take(2), pixel, alpha = 0.7f) } }
+                weekDays(env.model.data.settings.weekStart).forEach { Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { PmdText(dayName(it).take(2), pixel, alpha = 0.7f) } }
             }
-            val lead = weekDays(!env.model.data.settings.weekStartsOnMonday).indexOf(state.month.dayOfWeek)
+            val lead = weekDays(env.model.data.settings.weekStart).indexOf(state.month.dayOfWeek)
             val days = (0 until 42).map { state.month.plus(DatePeriod(days = it - lead)) }
             val all = days.chunked(7).filter { w -> w.any { it.month == state.month.month } }
             val room = (LocalCells.current.h * WidgetGrid.ROW_DP - 104).coerceAtLeast(24)
@@ -440,5 +440,8 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
 
 private class AgendaLine(val time: String, val title: String, val sort: Int)
 
-internal fun weekDays(sundayFirst: Boolean): List<DayOfWeek> =
-    if (sundayFirst) listOf(DayOfWeek.SUNDAY) + DayOfWeek.entries.filter { it != DayOfWeek.SUNDAY } else DayOfWeek.entries
+internal fun weekDays(start: DayOfWeek): List<DayOfWeek> {
+    val all = DayOfWeek.entries
+    val first = all.indexOf(start)
+    return all.drop(first) + all.take(first)
+}

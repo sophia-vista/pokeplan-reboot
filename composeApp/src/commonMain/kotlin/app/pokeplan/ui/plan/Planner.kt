@@ -428,7 +428,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
             if (picking) {
                 PixelDatePicker(
                     day ?: today, today, Pixel.Tone, { day = it; noDate = false; picking = false },
-                    presets = emptyList(), max = null, mondayFirst = model.store.data.settings.weekStartsOnMonday, initiallyOpen = true,
+                    presets = emptyList(), max = null, weekStart = model.store.data.settings.weekStart, initiallyOpen = true,
                 )
             }
             PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
@@ -514,7 +514,7 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
             task.planned, store.today, Pixel.Tone,
             { day -> store.updateTask(task.copy(planned = day, plannedTime = if (day == null) null else task.plannedTime)) },
             presets = PlanDays.presets(store.today), noneLabel = "No date", pickLabel = "Pick a day",
-            mondayFirst = store.data.settings.weekStartsOnMonday,
+            weekStart = store.data.settings.weekStart,
         )
         task.instanceDay()?.takeIf { task.movedOccurrence }?.let { from ->
             Text("Moved from ${from.short()}: this one only.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

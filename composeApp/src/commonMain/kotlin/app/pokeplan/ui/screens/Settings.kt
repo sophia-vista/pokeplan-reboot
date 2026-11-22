@@ -24,6 +24,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.semantics.heading
 import app.pokeplan.ui.theme.ToggleRow
+import app.pokeplan.ui.launcher.DateStyle
+import app.pokeplan.ui.launcher.dateStyle
+import kotlinx.datetime.DayOfWeek
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -108,16 +111,25 @@ internal fun GeneralSettings(model: AppModel) {
         ToggleRow("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
     SettingsGroup("Date and time", "calendar") {
-        ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
+        FieldLabel("Week starts on")
+        PixelDropdown(
+            weekStartChoices, settings.weekStart, { it?.let(::fullDayName) ?: "" },
+            { day -> if (day != null) store.changeSettings { s -> s.withWeekStart(day) } },
+            Modifier.fillMaxWidth(),
+        )
         ToggleRow("12-hour clock (AM and PM)", settings.clock12Hour) { store.changeSettings { s -> s.copy(clock12Hour = it) } }
         FieldLabel("Date format")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            app.pokeplan.ui.launcher.DateStyle.entries.forEach { style ->
-                TabButton(style.label, settings.dateFormat == style.name, { store.changeSettings { s -> s.copy(dateFormat = style.name) } })
-            }
-        }
+        PixelDropdown(
+            DateStyle.entries, settings.dateStyle, { it?.pattern ?: "" },
+            { style -> if (style != null) store.changeSettings { s -> s.copy(dateFormat = style.name) } },
+            Modifier.fillMaxWidth(),
+        )
     }
 }
+
+private val weekStartChoices = listOf(DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.SATURDAY)
+
+private fun fullDayName(day: DayOfWeek): String = day.name.lowercase().replaceFirstChar { it.uppercase() }
 
 @Composable
 internal fun NotificationSettings(model: AppModel) {
