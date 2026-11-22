@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.os.StrictMode
 import app.pokeplan.app.CrashLedger
 import app.pokeplan.app.CrashLog
 import java.io.File
@@ -50,6 +52,25 @@ class PokeLifeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         CrashGuard.install(this)
-        try { BackupWorker.schedule(this); OffPhone.schedule(this) } catch (e: Exception) {  }
+        if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            // Catch a disk, SQLite or Keystore call that slips back onto the UI thread during development; a debug
+            // violation is logged, never crashes the app.
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder().detectDiskReads().detectDiskWrites().detectCustomSlowCalls().penaltyLog().build(),
+            )
+        }
+        // WorkManager's own database is opened by the first getInstance(); doing the two enqueues on every process start
+        // (a widget or reminder wake included) is avoidable. The periodic work survives restarts, so once per install is enough.
+        val workers = getSharedPreferences("workers", MODE_PRIVATE)
+        if (!workers.getBoolean("scheduled", false)) {
+            try {
+                BackupWorker.schedule(this)
+                BackupWorker.runSoon(this)
+                OffPhone.schedule(this)
+                workers.edit().putBoolean("scheduled", true).apply()
+            } catch (e: Exception) {
+                // WorkManager could not start: the daily job is tried again at the next start.
+            }
+        }
     }
 }

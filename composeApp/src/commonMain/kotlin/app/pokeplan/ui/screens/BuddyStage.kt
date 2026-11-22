@@ -127,8 +127,11 @@ fun BuddyStage(
         react(event.event.icon, emotion = event.event.emotion(), long = event.event == BuddyEvent.SHINY)
     }
 
-    val drift by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(2_600, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse))
-    val bob = if (calm || resting) 0f else -3f * drift
+    // Species without an animation drift up and down very slowly so the scene is never frozen. The value is read in the
+    // offset lambda below (layout), not in composition: otherwise the whole stage would recompose every frame.
+    val drift = if (calm || resting) null else rememberInfiniteTransition().animateFloat(
+        0f, 1f, infiniteRepeatable(tween(2_600, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse),
+    )
 
     val shape = PixelShape
     Box(modifier.fillMaxWidth().height(stageHeight).clip(shape).border(Sizes.Hairline, Pixel.Border, shape)) {
@@ -146,7 +149,10 @@ fun BuddyStage(
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}",
             Modifier.align(Alignment.BottomCenter).padding(bottom = feet)
-                .offset { IntOffset(0, (hop.value + bob).dp.roundToPx()) }
+                .offset {
+                    val bob = if (calm || resting) 0f else -3f * (drift?.value ?: 0f)
+                    IntOffset(0, (hop.value + bob).dp.roundToPx())
+                }
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Pet ${buddy.nickname}", role = Role.Button) {
                     onHaptic()
                     react(onPet(lastReaction))

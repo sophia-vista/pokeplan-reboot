@@ -85,7 +85,8 @@ object LiveStore {
             runCatching { s.live.moveMintToTables(now) }.onFailure { s.mintCipher = null; Log.w(TAG, "Mint tables not active this run: ${it.javaClass.simpleName}") }
             runCatching { s.live.movePokemonToTables(now) }.onFailure { Log.w(TAG, "Pokémon tables not active this run: ${it.javaClass.simpleName}") }
             if (healSealedNow) runCatching { backups.refreshAfterSealing(s.live, now) }.onFailure { Log.w(TAG, "backup refresh failed: ${it.javaClass.simpleName}") }
-            runCatching { backups.takeIfDue(s.live, now) }.onFailure { Log.w(TAG, "backup failed: ${it.javaClass.simpleName}") }
+            // The daily copy is WorkManager's job (BackupWorker.runSoon at start, and its daily periodic run): taking it here
+            // would put AES sealing of every document on whichever thread first opened the store, often the main one.
             backupStore = backups
             store = s
             if (choice != null) File(app.filesDir, RECOVERY_FLAG).delete()
@@ -152,7 +153,7 @@ object LiveStore {
     }
 
     private fun openOrRecover(context: Context, backups: LiveBackup, now: Long, choice: Recovery?): DataStore {
-        val first = runCatching { AndroidDatabase.open(context).also { check(it.integrityIssues().isEmpty()) { "integrity" } } }
+        val first = runCatching { AndroidDatabase.open(context).also { check(it.integrityIssues(full = false).isEmpty()) { "integrity" } } }
         first.getOrNull()?.let { return it }
         val error = first.exceptionOrNull()!!
         if (error is NewerSchemaException) throw error

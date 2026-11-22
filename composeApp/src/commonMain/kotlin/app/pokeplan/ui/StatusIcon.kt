@@ -39,10 +39,15 @@ fun StatusIcon(kind: StatusKind, pixel: Int, modifier: Modifier = Modifier, loop
         }
     }
     var frame by remember(kind) { mutableIntStateOf(if (loop) kind.start else 0) }
-    if (animate) LaunchedEffect(kind, loop) {
+    // A one-shot icon holds its last frame and stops; a looping one also stops while the app is out of sight.
+    val foreground = rememberInForeground()
+    if (animate) LaunchedEffect(kind, loop, foreground) {
+        if (!foreground) return@LaunchedEffect
+        frame = if (loop) kind.start else 0
         while (true) {
+            if (!loop && frame >= kind.frames - 1) break
             delay(kind.millis)
-            frame = if (loop) (if (frame + 1 >= kind.frames) kind.start else frame + 1) else minOf(frame + 1, kind.frames - 1)
+            frame = if (loop) (if (frame + 1 >= kind.frames) kind.start else frame + 1) else (frame + 1).coerceAtMost(kind.frames - 1)
         }
     }
     val cell = kind.cell

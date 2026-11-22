@@ -77,6 +77,10 @@ internal class SavedDocument<T>(
     }
 
     fun reload() {
+        // Nothing another store in this process wrote: skip the whole read and deep comparison. This is what a resume does
+        // for six documents, and almost every resume has nothing new in them.
+        val key = shareKey
+        if (key != null && SharedDocuments.revision(key) == seen) return
         val changed = lock.withLock {
             markCurrent()
             val fresh = current()

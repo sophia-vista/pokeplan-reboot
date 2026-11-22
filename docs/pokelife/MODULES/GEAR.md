@@ -404,7 +404,7 @@ GEAR uses the **utility presentation** defined by `../FEATURES/DESIGN_SYSTEM.md`
 - Trace each of the 18 tools end-to-end: UI → state → persistence → common domain logic → platform adapter → permissions → lifecycle → tests.
 - Preserve stable serialized names and existing `GearRates` compatibility. Add explicit migrations/adapters for schema changes.
 - Review the current currency multi-row board and manual rate implementation before redesign. Extend it into the multi-row editable Currency Converter Pro workspace; do not throw away the existing board without evidence.
-- Verify the `GameStore.DEVICE_ONLY` list (the cached rates, the Picker's list and what the tools remember stay on the device; the "Export my data" file leaves out only the rates). Current behavior must be proven by tests, not assumed.
+- Verify the `GameStore.DEVICE_ONLY` list (the cached rates, the Picker's list and what the tools remember stay on the device; the "Export my data" file leaves out the cached rates and the calendars shown). Current behavior must be proven by tests, not assumed.
 - Do not rely on code presence as evidence of release readiness.
 
 **Suggested delivery order**

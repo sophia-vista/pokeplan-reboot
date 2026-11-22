@@ -100,7 +100,7 @@
         <receiver android:name=".reminders.NudgeReceiver" android:exported="false" />
         <receiver android:name=".reminders.TimerActionReceiver" android:exported="false" />
         <receiver android:name=".reminders.RoutineReminderReceiver" android:exported="false" />
-        <receiver android:name=".reminders.ReminderBootReceiver" android:exported="true">
+        <receiver android:name=".reminders.ReminderBootReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />

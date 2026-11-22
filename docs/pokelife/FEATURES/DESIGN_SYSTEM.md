@@ -139,7 +139,7 @@ Every tappable key (button, tab, chip, arrow, segment) is one `PixelKey` (`theme
 | Selected | key colour | key colour | white | tabs, chips, segments; announced as `selected`; pressed goes darker |
 | Focused | any of the above | plus a 2 dp blue ring on the touch target (`Modifier.focusRing`, placed before the `clickable`) | | keyboard and D-pad only |
 | Disabled | panel | border | ink-soft at 55% | not tappable |
-| Loading | as disabled | border | three blinking pixels | not tappable; blinks even under Reduce motion |
+| Loading | as disabled | border | three blinking pixels | not tappable; holds three solid pixels under Reduce motion |
 
 Neutral keys (`InkSoft`, `Ink`, `Gray`) look grey with ink letters; a light key colour (yellow) gets darker letters; colour is never the only signal; keys in wrapped rows fill their 48 dp target and buttons are 38 dp (32 compact) inside it. Rows (`ChoiceRow`, `ListRow`), `Notice` and `StatChip` share the key outline. `PixelField` (`theme/Fields.kt`) has the same idea: rest (panel, border), focused (2 dp blue), error (2 dp danger; the error text replaces the helper line and is announced), disabled (shade, letters at 55%), read-only. Use a label when the field is alone on a line and a placeholder beside a button. `ListRow` (when tappable) and `NavButton` also hover (a faint tint) and press (98% scale).
 
@@ -365,3 +365,7 @@ Changes to shared tokens, component anatomy, border language, typography, naviga
 ## Testing reference
 
 Shared components and representative screens require semantic Compose tests, approved light/dark golden images, responsive/font-scale coverage and accessibility verification as defined in [`../ARCHITECTURE/TEST_STRATEGY.md`](../ARCHITECTURE/TEST_STRATEGY.md). Golden updates require explicit review.
+
+### 6.12 What's New card
+
+After an update, Home shows one card titled **What's new in `<version>`**: one bullet per line from `WhatsNew`, and a single **Got it** key that marks the version seen (`AppData.lastSeenVersion`, `GameStore.markVersionSeen`). It appears only while the running version has an entry and has not been seen; a version with no entry shows no card. It has no other dismissal and never covers the screen.

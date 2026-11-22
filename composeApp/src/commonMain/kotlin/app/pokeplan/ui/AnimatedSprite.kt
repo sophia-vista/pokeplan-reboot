@@ -22,7 +22,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 import kotlin.math.min
@@ -41,30 +46,39 @@ internal fun pixelScale(boxPx: Float, a: Animation): Int {
 private var animations: Map<Int, Animation>? = null
 private val sheets = BitmapCache(CacheBudget.SPRITE_SHEETS)
 
-private suspend fun table(dir: String, file: String): Map<Int, Animation> = orNull {
-    Res.readBytes("files/$dir/$file").decodeToString().lines().filter { it.isNotBlank() }.associate { line ->
-        val c = line.split('\t')
-        c[0].toInt() to Animation(dir, c[1].toInt(), c[2].toInt(), c[3].toInt(), c[4].split(',').map { it.toInt() }.toIntArray(), c[5] == "1")
-    }
-} ?: emptyMap()
+/** A sheet table: `id, frames, width, height, comma separated frame times, shiny`. */
+private suspend fun table(dir: String, file: String): Map<Int, Animation> = withContext(Dispatchers.Default) {
+    orNull {
+        Res.readBytes("files/$dir/$file").decodeToString().lines().filter { it.isNotBlank() }.associate { line ->
+            val c = line.split('\t')
+            c[0].toInt() to Animation(dir, c[1].toInt(), c[2].toInt(), c[3].toInt(), c[4].split(',').map { it.toInt() }.toIntArray(), c[5] == "1")
+        }
+    } ?: emptyMap()
+}
+
+/**
+ * Every form's animation, read once: the Mystery Dungeon style sprite (assets/pmd) where SpriteCollab has one, else the
+ * Black/White animation (assets/animated).
+ */
+private val tablesLock = Mutex()
 
 internal suspend fun animations(): Map<Int, Animation> {
     animations?.let { return it }
-    val parsed = table("animated", "animated.tsv") + table("pmd", "pmd.tsv")
-    animations = parsed
-    return parsed
+    return tablesLock.withLock {
+        animations ?: (table("animated", "animated.tsv") + table("pmd", "pmd.tsv")).also { animations = it }
+    }
 }
 
 private var credits: Map<Int, String>? = null
 
 suspend fun spriteCredit(formId: Int): String? {
-    val all = credits ?: (
+    val all = credits ?: withContext(Dispatchers.Default) {
         orNull {
             Res.readBytes("files/pmd/credits.tsv").decodeToString().lines().filter { '\t' in it }.associate { line ->
                 line.substringBefore('\t').toInt() to line.substringAfter('\t')
             }
         } ?: emptyMap()
-    ).also { credits = it }
+    }.also { credits = it }
     return all[formId]
 }
 
@@ -91,11 +105,26 @@ internal fun loadedAnimations(): Map<Int, Animation>? = animations
 
 internal fun loadedSheet(name: String): ImageBitmap? = sheets[name]
 
+/** Sheets being decoded now, so several sprites asking for the same one share a single read. Main-thread only, like the cache. */
+private val decoding = mutableMapOf<String, CompletableDeferred<ImageBitmap?>>()
+
+/** A sheet by [Animation.sheetName], decoded once, off the UI dispatcher. */
 internal suspend fun sheet(name: String): ImageBitmap? {
-    if (name in sheets) return sheets[name]
-    val image = orNull { Res.readBytes("files/$name.png").decodeToImageBitmap() }
-    sheets[name] = image
-    return image
+    sheets[name]?.let { return it }
+    decoding[name]?.let { return it.await() }
+    val pending = CompletableDeferred<ImageBitmap?>()
+    decoding[name] = pending
+    return try {
+        val image = withContext(Dispatchers.Default) { orNull { Res.readBytes("files/$name.png").decodeToImageBitmap() } }
+        sheets[name] = image
+        pending.complete(image)
+        image
+    } catch (e: Throwable) {
+        pending.complete(null)
+        throw e
+    } finally {
+        decoding.remove(name)
+    }
 }
 
 private class Picked(val formId: Int, val shiny: Boolean, val action: SpriteAction, val animation: Animation?, val sheet: ImageBitmap?)
@@ -138,13 +167,17 @@ fun AnimatedSprite(
     val a = special?.animation ?: idle
     val image = special?.sheet ?: idleImage
     var frame by remember(formId) { mutableIntStateOf(0) }
-    LaunchedEffect(a, animate, actionKey) {
+    // A stopped Activity keeps its composition: without this gate every visible sprite would keep waking the CPU at
+    // its frame rate with the screen off. Coming back to the front restarts the animation from its first frame.
+    val foreground = rememberInForeground()
+    LaunchedEffect(a, animate, actionKey, foreground) {
         val oneOff = special != null && action.plays > 0
         frame = 0
         if (!animate) {
             if (oneOff) done()
             return@LaunchedEffect
         }
+        if (!foreground) return@LaunchedEffect
         var i = 0
         var loops = 0
         while (true) {

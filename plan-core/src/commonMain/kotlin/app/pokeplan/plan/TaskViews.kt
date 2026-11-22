@@ -47,9 +47,12 @@ object TaskViews {
         }
     }
 
-    fun overdue(tasks: List<Task>, now: LocalDateTime): List<Task> = open(tasks).filter {
-        val due = it.due
-        if (due != null) due < now else it.planned != null && it.planned < now.date
+    /** Past due, or planned for an earlier day and not finished. */
+    fun overdue(tasks: List<Task>, now: LocalDateTime): List<Task> = open(tasks).filter { isOverdue(it, now) }
+
+    private fun isOverdue(t: Task, now: LocalDateTime): Boolean {
+        val due = t.due
+        return if (due != null) due < now else t.planned != null && t.planned < now.date
     }
 
     fun today(tasks: List<Task>, now: LocalDateTime): List<Task> {
@@ -75,8 +78,8 @@ object TaskViews {
         }.sortedWith(order(now))
     }
 
-    private fun order(now: LocalDateTime): Comparator<Task> {
-        val overdue = { t: Task -> if (overdue(listOf(t), now).isNotEmpty()) 0 else 1 }
-        return compareBy<Task>({ overdue(it) }, { it.planned ?: it.due?.date ?: now.date }, { timeOf(it) ?: LocalTime(23, 59) }, { -it.rank.tier })
-    }
+    /** Overdue first, then by time of day (untimed last), then harder ranks first. */
+    private fun order(now: LocalDateTime): Comparator<Task> =
+        // No list allocation per comparison: a sort calls this O(n log n) times and the old lambda built a list every time.
+        compareBy<Task>({ if (isOverdue(it, now)) 0 else 1 }, { it.planned ?: it.due?.date ?: now.date }, { timeOf(it) ?: LocalTime(23, 59) }, { -it.rank.tier })
 }

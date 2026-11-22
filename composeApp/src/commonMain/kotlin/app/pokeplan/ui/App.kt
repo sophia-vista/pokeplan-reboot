@@ -347,7 +347,12 @@ fun App(
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
         AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
     }
-    LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }
+    val foreground = rememberInForeground()
+    // The phone's power saver is read now and then; World's animations stand still while it is on.
+    LaunchedEffect(model, foreground) {
+        if (!foreground) return@LaunchedEffect
+        while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) }
+    }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
         val stop = store.observe(onDataChanged)
@@ -390,7 +395,10 @@ fun App(
         }
     }
 
-    LaunchedEffect(Unit) {
+    // Only while the app is in sight: a stopped Activity keeps its composition, and a 2 Hz tick would otherwise go on
+    // waking the CPU (and settling events) with the screen off. Coming back to the front picks up where it left off.
+    LaunchedEffect(foreground) {
+        if (!foreground) return@LaunchedEffect
         store.refresh()
         while (true) {
             model.tick()
