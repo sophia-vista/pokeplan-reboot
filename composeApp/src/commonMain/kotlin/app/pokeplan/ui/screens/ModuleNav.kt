@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -16,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -36,9 +40,11 @@ import app.pokeplan.ui.link.LinkSection
 import app.pokeplan.ui.mint.MintSection
 import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.KeyLabel
+import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelField
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.PixelKey
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.Spacing
@@ -80,24 +86,25 @@ fun NavSheet(title: String, onClose: () -> Unit, content: @Composable () -> Unit
     }
 }
 
-internal class JumpTarget(val title: String, val area: String, val icon: String, val go: () -> Unit)
+internal class JumpTarget(val title: String, val area: String, val icon: String, val tint: Color, val go: () -> Unit)
 
+/** Every place the Modules search can open, carrying the colour of the module it belongs to. */
 internal fun jumpTargets(model: AppModel, focus: Boolean): List<JumpTarget> = buildList {
-    add(JumpTarget("Gear", "Tools", "explorer-kit") { model.gearOpen = true })
+    add(JumpTarget("Gear", "Tools", "explorer-kit", ModuleAccent.GEAR.accent) { model.gearOpen = true })
     Module.entries.forEach { m ->
-        add(JumpTarget(m.label, "Module", m.icon) { model.open(Place.valueOf(m.name), focus) })
+        add(JumpTarget(m.label, "Module", m.icon, m.look.accent) { model.open(Place.valueOf(m.name), focus) })
     }
     PlanSection.entries.filter { it != PlanSection.FOCUS || focus }.forEach { s ->
-        add(JumpTarget(s.label, "Plan", s.icon) { model.open(Place.PLAN, focus); model.planSection = s })
+        add(JumpTarget(s.label, "Plan", s.icon, ModuleAccent.PLAN.accent) { model.open(Place.PLAN, focus); model.planSection = s })
     }
-    CareSection.entries.forEach { s -> add(JumpTarget(s.label, "Care", s.icon) { model.open(Place.CARE, focus); model.careSection = s }) }
-    HealSection.entries.forEach { s -> add(JumpTarget(s.label, "Heal", s.icon) { model.open(Place.HEAL, focus); model.healSection = s }) }
+    CareSection.entries.forEach { s -> add(JumpTarget(s.label, "Care", s.icon, ModuleAccent.CARE.accent) { model.open(Place.CARE, focus); model.careSection = s }) }
+    HealSection.entries.forEach { s -> add(JumpTarget(s.label, "Heal", s.icon, ModuleAccent.HEAL.accent) { model.open(Place.HEAL, focus); model.healSection = s }) }
     MintSection.entries.filter { it != MintSection.IMPORT || model.textFiles != null }.forEach { s ->
-        add(JumpTarget(s.label, "Mint", s.icon) { model.open(Place.MINT, focus); model.mintSection = s })
+        add(JumpTarget(s.label, "Mint", s.icon, ModuleAccent.MINT.accent) { model.open(Place.MINT, focus); model.mintSection = s })
     }
-    BaseSection.entries.forEach { s -> add(JumpTarget(s.label, "Base", s.icon) { model.open(Place.BASE, focus); model.baseSection = s }) }
-    LinkSection.entries.forEach { s -> add(JumpTarget(s.label, "Link", s.icon) { model.open(Place.LINK, focus); model.linkPersonId = null; model.linkSection = s }) }
-    WorldSection.entries.forEach { s -> add(JumpTarget(s.label, "World", s.icon) { model.open(Place.WORLD, focus); model.worldSection = s }) }
+    BaseSection.entries.forEach { s -> add(JumpTarget(s.label, "Base", s.icon, ModuleAccent.BASE.accent) { model.open(Place.BASE, focus); model.baseSection = s }) }
+    LinkSection.entries.forEach { s -> add(JumpTarget(s.label, "Link", s.icon, ModuleAccent.LINK.accent) { model.open(Place.LINK, focus); model.linkPersonId = null; model.linkSection = s }) }
+    WorldSection.entries.forEach { s -> add(JumpTarget(s.label, "World", s.icon, ModuleAccent.WORLD.accent) { model.open(Place.WORLD, focus); model.worldSection = s }) }
 }
 
 internal fun jumpMatches(targets: List<JumpTarget>, query: String, limit: Int = 8): List<JumpTarget> {
@@ -108,18 +115,27 @@ internal fun jumpMatches(targets: List<JumpTarget>, query: String, limit: Int = 
         .take(limit)
 }
 
+/**
+ * The "Jump to" field and, once something is typed, the places it matches. The caller owns [query]
+ * so it can clear it when the search closes, and the field takes focus as soon as it appears, so
+ * typing starts straight away.
+ */
 @Composable
-fun JumpSearch(model: AppModel, onDone: () -> Unit = {}) {
+fun JumpSearch(model: AppModel, query: String, onQuery: (String) -> Unit, onDone: () -> Unit = {}) {
     val focus = LocalFocusTab.current
-    var query by remember { mutableStateOf("") }
-    val found = remember(query, focus) { jumpMatches(jumpTargets(model, focus), query) }
-    PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Jump to")
+    val field = remember { FocusRequester() }
+    LaunchedEffect(Unit) { field.requestFocus() }
+    val found = remember(query, focus, Pixel.dark) { jumpMatches(jumpTargets(model, focus), query) }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(query, { onQuery(it.take(30)) }, Modifier.weight(1f).focusRequester(field), singleLine = true, placeholder = "Jump to")
+        PixelIconButton("close", "Close search", onDone)
+    }
     if (query.isBlank()) return
     if (found.isEmpty()) {
         Text("Nothing by that name", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
         return
     }
-    val rows = found.mapIndexed { i, t -> MenuEntry(i.toString(), t.icon, t.title, count = t.area) }
+    val rows = found.mapIndexed { i, t -> MenuEntry(i.toString(), t.icon, t.title, count = t.area, tint = t.tint) }
     val open: (String) -> Unit = { key -> found[key.toInt()].go(); onDone() }
-    MenuList(rows, open)
+    MenuList(rows, rowTint = true, onOpen = open)
 }
