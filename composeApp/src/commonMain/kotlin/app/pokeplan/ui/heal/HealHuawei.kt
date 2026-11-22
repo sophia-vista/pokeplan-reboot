@@ -34,10 +34,6 @@ import app.pokeplan.ui.screens.PixelTimeField
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 
-/**
- * Heal → Connections → Huawei Health, probe stage (INTEGRATIONS_AND_PRIVACY.md 5.2.2): turn on the two readers in Android's settings, read Huawei Health on a
- * tap, see what was seen, and copy it with every number hidden. Nothing here is saved or paid.
- */
 @Composable
 internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing: Boolean = false) {
     var state by remember { mutableStateOf(reader.state()) }
@@ -47,8 +43,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
     val clipboard = LocalClipboardManager.current
     val heal = model.heal
     val settings = model.healData.settings
-    var dismissed by remember { mutableStateOf(0) } // the number of pages seen when the player said Not now
-    // Rechecked every second while the page is open: both readers are switched in Android's settings, and pages arrive while Huawei Health is in front.
+    var dismissed by remember { mutableStateOf(0) }
     LaunchedEffect(reader) { while (true) { state = reader.state(); seen = reader.seen(); delay(1_000) } }
 
     TextBox {
@@ -90,7 +85,6 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                 if (state.screenReading && !state.walking) PixelButton("Turn off screen reading", { reader.turnOff() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 Text("Off after each read, for banking apps", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
-            // What the pages hold as Heal records, previewed before anything is saved (HEAL.md 10.3); Huawei sessions pay like ones logged by hand.
             val read = remember(seen) { heal.readHuawei(seen) }
             val plan = remember(read, model.healData) { heal.previewImport(read) }
             if (!plan.isEmpty && dismissed != seen.screens.size) ImportPreview(plan,

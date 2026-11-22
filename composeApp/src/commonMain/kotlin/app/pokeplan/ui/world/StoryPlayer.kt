@@ -94,11 +94,9 @@ import app.pokeplan.app.world.worldEpisodeDone
 import app.pokeplan.app.world.worldSceneDone
 import app.pokeplan.app.world.worldStoryProgress
 
-/** Columns across a stage or dungeon scene; rows are six. */
 private const val GRID_COLUMNS = 10
 private const val GRID_ROWS = 6
 
-/** Who a character is on screen: its form, name and whether it is shiny. The buddy is whoever the player chose (never a fixed partner). */
 private class Face(val formId: Int, val shiny: Boolean, val name: String)
 
 private fun faceOf(model: AppModel, scene: StoryScene, who: String): Face? {
@@ -119,20 +117,13 @@ private fun fill(model: AppModel, text: String): String =
 private fun emotionOf(e: Expression): Emotion = when (e) {
     Expression.HAPPY -> Emotion.HAPPY; Expression.JOYOUS -> Emotion.JOYOUS; Expression.INSPIRED -> Emotion.INSPIRED
     Expression.DETERMINED -> Emotion.DETERMINED; Expression.SURPRISED -> Emotion.SURPRISED
-    // A form without the face falls back to a near one (Portrait): sad to teary, worried to surprised, then Normal.
     Expression.WORRIED -> Emotion.WORRIED; Expression.SAD -> Emotion.SAD; Expression.ANGRY -> Emotion.ANGRY; Expression.TEARY -> Emotion.TEARY
     Expression.NORMAL -> Emotion.NORMAL
 }
 
-/**
- * Plays [episode]: its scenes one after another, each from its script (dialogue with portraits, a stage with walking sprites, a scripted
- * walk across a dungeon's own tiles). Tap to advance, Skip for a scene's end state, Close to leave; each scene watched to its end is recorded
- * (a record for the Story archive, never a reward, so replaying changes nothing).
- */
 @Composable
 internal fun StoryPlayer(model: AppModel, episode: StoryEpisode, onClose: () -> Unit, fromStart: Boolean = false) {
     var index by remember(episode.key) { mutableStateOf(if (fromStart) 0 else (model.data.world.storyResume[episode.key] ?: 0).coerceIn(0, episode.scenes.lastIndex)) }
-    // The answers given in this watching, kept with the next scene to start from (so leaving mid-episode resumes at the next scene).
     var flags by remember(episode.key) { mutableStateOf(model.data.world.storyFlags) }
     val scene = episode.scenes.getOrNull(index)
     if (scene == null) { LaunchedEffect(episode.key) { model.store.worldEpisodeDone(episode.key, flags); onClose() }; return }
@@ -176,13 +167,11 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
 
     LaunchedEffect(scene.id, skipped) {
         if (skipped) { val end = SceneState.finalOf(scene, startFlags); state = end; positions.clear(); walking.clear(); blackout = 0f; onEnd(end.flags); return@LaunchedEffect }
-        // Who is speaking, for the cries: the species on the stage (the player's buddy for the buddy), and the seed of their personal voice.
         fun buddyOf() = model.data.player.buddy ?: model.data.player.pokemon.firstOrNull()
         fun speciesOf(who: String): Int? = faceSpecies(scene, who) ?: if (who == app.pokeplan.world.story.BUDDY) buddyOf()?.speciesId else null
         fun voiceSeed(who: String): String = if (who == app.pokeplan.world.story.BUDDY) buddyOf()?.id ?: who else who
         var lineNo = 0
         val criedAt = mutableMapOf<String, Int>()
-        // What the scene opens with: the stairs of a dungeon, the place's ambience (StoryCues).
         if (!still) StoryCues.opening(scene).forEach { model.effect(it) }
         suspend fun runEvent(e: SceneEvent) {
             when (e) {
@@ -201,7 +190,6 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
                     state = state.apply(e)
                 }
                 is SceneEvent.Say -> {
-                    // A speaker whose face changes gets the sound of that feeling (StoryCues).
                     val said = e.expression
                     val who = e.who
                     lineNo++
@@ -209,7 +197,6 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
                         val before = state.actors[who]?.expression
                         val species = speciesOf(who)
                         if (species != null && StoryCues.cries(before, said) && lineNo - (criedAt[who] ?: -StoryCues.CRY_COOLDOWN_LINES) >= StoryCues.CRY_COOLDOWN_LINES) {
-                            // The cry comes just before the feeling is shown (what the games do), in the speaker's own voice.
                             criedAt[who] = lineNo
                             model.cry(species, CryVoice.of(voiceSeed(who), said, StoryCues.distance(scene, state.actors[who])))
                             if (!still) delay(StoryCues.CRY_LEAD_MILLIS)
@@ -230,7 +217,6 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
                 is SceneEvent.Shake -> if (!still) { model.effect(StoryCues.shake(e.millis)); for (k in 0 until e.millis / 50) { shake = if (k % 2 == 0) 6f else -6f; delay(50) }; shake = 0f }
                 is SceneEvent.Flash -> if (!still) { model.effect(StoryCues.flash()); flash = 1f; Animatable(1f).animateTo(0f, tween(450)) { flash = value } }
                 is SceneEvent.Cry -> {
-                    // The cry of whoever it is, with their own small detune, the feeling they last showed and how far they stand (CryVoice).
                     val voice = CryVoice.of(voiceSeed(e.who), state.actors[e.who]?.expression, StoryCues.distance(scene, state.actors[e.who]))
                     (speciesOf(e.who) ?: buddyOf()?.speciesId)?.let { model.cry(it, voice) }
                 }
@@ -257,8 +243,6 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
             when (scene.type) {
                 SceneType.DIALOGUE -> DialogueView(model, scene, state, still)
                 SceneType.CINEMATIC -> Box(Modifier.fillMaxSize().offset(x = shake.dp)) { CinematicView(model, scene, state, positions, walking, still) }
-                // A stage or a dungeon is a ten by six grid, centred in the space with a black band round it.
-                // ... except on a ground map, which fills the screen through a camera (MapStage) like the games' own scenes.
                 else -> if (onMap(scene)) StageView(model, scene, state, positions, walking, still)
                 else Box(Modifier.align(Alignment.Center).fillMaxWidth().aspectRatio(GRID_COLUMNS.toFloat() / GRID_ROWS)) { StageView(model, scene, state, positions, walking, still) }
             }
@@ -266,7 +250,6 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
             if (blackout > 0f) Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = blackout)))
         }
         val line = state.line
-        // The games' dialogue box: a dark box in a blue frame, the speaker's name in yellow and then what is said, in white.
         val boxPixel = app.pokeplan.ui.launcher.townScale(widthPx)
         app.pokeplan.ui.launcher.PmdBox(boxPixel, Modifier.fillMaxWidth().height(112.dp)) {
             val name = line?.who?.let { speakerName(model, scene, it) }?.let { fill(model, it) }
@@ -289,17 +272,12 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
     }
 }
 
-/**
- * A conversation, as the games stage it: the place with the speakers standing in it as sprites, and the speaker's small framed portrait at its
- * side of the screen, over the scene and just above the dialogue box. Narration shows no portrait.
- */
 @Composable
 private fun DialogueView(model: AppModel, scene: StoryScene, state: SceneState, still: Boolean) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val cell = maxWidth / GRID_COLUMNS
         val onStage = state.actors.values.toList().take(2)
         if (onMap(scene)) {
-            // On a ground map the two stand close together, at the map's own pixel scale, in the middle of the camera's view.
             val spots = onStage.indices.map { Offset(if (it == 0) 3.6f else 6.4f, 3.6f) }
             MapStage(scene.background, spots, null, still) { map ->
                 onStage.forEachIndexed { i, a ->
@@ -330,19 +308,13 @@ private fun DialogueView(model: AppModel, scene: StoryScene, state: SceneState, 
     }
 }
 
-// ----- the camera on a ground map ---------------------------------------------------------------------------------------
-
-/** The size of a ground map's tile, in the pixels of the art, and the size of the box a character's sprite is drawn in (three tiles). */
 private const val MAP_TILE = 24
 private const val SPRITE_BOX = MAP_TILE * 3
 
-/** How many map pixels one cell of a script's grid is on a ground map (about a tile and a half: people stand near each other, as in the games). */
 private const val STAGE_CELL = 40f
 
-/** From the feet up to about the middle of a sprite, in map pixels: the camera looks at the middle of a character, not at its feet. */
 private const val SPRITE_MIDDLE = 20f
 
-/** Where on a map the script's grid of [GRID_COLUMNS] by [GRID_ROWS] cells lies: centred, [cell] map pixels a cell (smaller on a map too small for it). */
 private class StageGrid(val cell: Float, private val x0: Float, private val y0: Float) {
     fun mapX(x: Float) = x0 + x * cell
     fun mapY(y: Float) = y0 + y * cell
@@ -355,29 +327,16 @@ private class StageGrid(val cell: Float, private val x0: Float, private val y0: 
     }
 }
 
-/**
- * What a scene on a ground map draws with: the map's [pixel] (screen pixels per pixel of the art, one whole number for the map and every
- * sprite, so all the art has the same pixel size), and where the camera is, to put a character's feet on a whole map pixel.
- */
 private class MapScope(val pixel: Int, private val originX: Int, private val originY: Int, private val grid: StageGrid, private val density: Float) {
-    /** The size of a sprite's box on the screen, in pixels. */
     val box: Int = SPRITE_BOX * pixel
 
-    /** The screen pixel of the feet of a character standing at ([x], [y]) of the script's grid. */
     fun feet(x: Float, y: Float) = IntOffset((grid.mapX(x).roundToInt() - originX) * pixel, (grid.mapY(y).roundToInt() - originY) * pixel)
 
     fun dp(px: Int): Dp = (px / density).dp
 }
 
-/** Is the scene set on a ground map (shown through the camera) rather than a stock scene, or a dungeon's own tiles? */
 private fun onMap(scene: StoryScene) = scene.dungeonId == null && isGroundMap(scene.background)
 
-/**
- * A ground map seen the way the games show it: at a whole-number pixel scale (about 256 pixels of the art across, so a tile is about a
- * tenth of the width), never squeezed to fit, with a camera that looks at the characters. When they all fit in the view it centres on
- * them; when they are further apart it follows the speaker. The camera glides, stays inside the map and always rests on a whole map pixel.
- * [actorsAt] and [speakerAt] are positions of the script's grid; [zoom] steps the pixel up for a closer view.
- */
 @Composable
 private fun MapStage(
     background: String, actorsAt: List<Offset>, speakerAt: Offset?, still: Boolean, modifier: Modifier = Modifier.fillMaxSize(),
@@ -388,7 +347,6 @@ private fun MapStage(
         val w = constraints.maxWidth
         val h = constraints.maxHeight
         if (image == null) { Box(Modifier.fillMaxSize().background(Color(0xFF8FCB7F))); return@BoxWithConstraints }
-        // Not smaller than the games' own scale, and large enough that the map covers the screen.
         val pixel = max(max((w / 256f).roundToInt(), ceil(w / image.width.toFloat()).toInt()), ceil(h / image.height.toFloat()).toInt()).coerceAtLeast(1) + zoom
         val viewW = ceil(w / pixel.toFloat()).toInt().coerceAtMost(image.width)
         val viewH = ceil(h / pixel.toFloat()).toInt().coerceAtMost(image.height)
@@ -419,10 +377,8 @@ private fun actionOf(move: Facing?) = when (move) {
     Facing.UP -> SpriteAction.WALK_UP; Facing.DOWN -> SpriteAction.WALK_DOWN; Facing.LEFT, Facing.RIGHT -> SpriteAction.WALK_SIDE; null -> SpriteAction.IDLE
 }
 
-/** Where everyone on the stage stands (the grid), by where they are now: walking ones are between cells. */
 private fun spotsOf(state: SceneState, positions: Map<String, Offset>): List<Offset> = state.actors.values.map { positions[it.id] ?: Offset(it.x, it.y) }
 
-/** The characters of a scene on a ground map, back to front, each at the map's pixel scale (a "big_" one of a cinematic at twice it). */
 @Composable
 private fun MapActors(model: AppModel, scene: StoryScene, state: SceneState, positions: Map<String, Offset>, walking: Map<String, Facing>, map: MapScope, still: Boolean, big: Boolean = false) {
     state.actors.values.sortedBy { positions[it.id]?.y ?: it.y }.forEach { a ->
@@ -440,13 +396,11 @@ private fun MapActors(model: AppModel, scene: StoryScene, state: SceneState, pos
     }
 }
 
-/** A stage or a dungeon walk: the place, the items on the floor and the sprites at their cells, walking when they move. */
 @Composable
 private fun StageView(model: AppModel, scene: StoryScene, state: SceneState, positions: Map<String, Offset>, walking: Map<String, Facing>, still: Boolean) {
     if (onMap(scene)) {
         val speaker = state.line?.who?.let { who -> state.actors[who] }?.let { positions[it.id] ?: Offset(it.x, it.y) }
         MapStage(scene.background, spotsOf(state, positions), speaker, still) { map ->
-            // The items on the floor stand on a cell like a character does.
             state.items.forEach { (id, p) -> ItemIcon(id, Modifier.offset { map.feet(p.first, p.second) - IntOffset(map.box / 6, map.box / 3) }, size = map.dp(map.box / 3), description = null) }
             MapActors(model, scene, state, positions, walking, map, still)
         }
@@ -458,7 +412,6 @@ private fun StageView(model: AppModel, scene: StoryScene, state: SceneState, pos
         state.items.forEach { (id, p) ->
             ItemIcon(id, Modifier.offset(x = cell * p.first - cell * 0.4f, y = cell * p.second - cell * 0.8f), size = cell * 0.8f, description = null)
         }
-        // Back to front: the one further down the screen is drawn over the one above.
         state.actors.values.sortedBy { positions[it.id]?.y ?: it.y }.forEach { a ->
             val face = faceOf(model, scene, a.id) ?: return@forEach
             val at = positions[a.id] ?: Offset(a.x, a.y)
@@ -476,7 +429,6 @@ private fun StageView(model: AppModel, scene: StoryScene, state: SceneState, pos
     }
 }
 
-/** A dungeon's own tiles as a floor with walls above and below, at a whole-number pixel scale, for a scripted walk. */
 @Composable
 private fun DungeonFloor(dungeonId: String) {
     val tiles = dungeonTiles(dungeonId)
@@ -494,7 +446,6 @@ private fun DungeonFloor(dungeonId: String) {
         val seed = dungeonId.hashCode()
         val fit = alternates
         val map = app.pokeplan.ui.launcher.DungeonFloorLayout.build(cols, rows, seed, floorRows = 4)
-        // Centred on a whole tile, like the town, so the same columns show whatever the width.
         val shift = ((cols * tilePx - size.width) / 2).toInt() / pixel * pixel
         for (r in 0 until rows) for (c in 0 until cols) {
             val (ax, ay) = map.atlas(c, r, seed).let { t -> if (t.second == 3 && !fit[t.first]) 0 to 3 else t }
@@ -504,18 +455,12 @@ private fun DungeonFloor(dungeonId: String) {
     }
 }
 
-/** The species of a character in a scene (null for the buddy, whose cry is its own: the buddy's form). */
 private fun faceSpecies(scene: StoryScene, who: String): Int? = scene.cast.firstOrNull { it.id == who }?.speciesId
 
-/**
- * A cinematic: the place with black bars above and below, and the characters drawn large and low, for a legendary's appearance or a villain's
- * reveal. The same script and sprites as a stage, with a bigger scale and the effects (shake, flash) the runtime plays over it.
- */
 @Composable
 private fun CinematicView(model: AppModel, scene: StoryScene, state: SceneState, positions: Map<String, Offset>, walking: Map<String, Facing>, still: Boolean) {
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         if (onMap(scene)) {
-            // A step closer than a stage, filling the screen under the bars.
             MapStage(scene.background, spotsOf(state, positions), state.line?.who?.let { who -> state.actors[who] }?.let { positions[it.id] ?: Offset(it.x, it.y) }, still, darkness = 0.3f, zoom = 1) { map ->
                 MapActors(model, scene, state, positions, walking, map, still, big = true)
             }
@@ -526,7 +471,6 @@ private fun CinematicView(model: AppModel, scene: StoryScene, state: SceneState,
                 state.actors.values.sortedBy { positions[it.id]?.y ?: it.y }.forEach { a ->
                     val face = faceOf(model, scene, a.id) ?: return@forEach
                     val at = positions[a.id] ?: Offset(a.x, a.y)
-                    // Big ones are named by a leading "big_" in the character id: they fill the frame.
                     val size = cell * if (a.id.startsWith("big_")) 4.6f else 2.2f
                     val move = walking[a.id]
                     Box(Modifier.offset(x = cell * at.x - size / 2, y = cell * at.y - size)) {

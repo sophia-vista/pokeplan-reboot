@@ -46,7 +46,6 @@ import kotlinx.datetime.LocalDate
 import app.pokeplan.ui.plan.clock
 import app.pokeplan.ui.pokemon.label
 
-/** The newest rewards nobody has looked at yet, with an OK button. Shows nothing when there are none. Home is the only place that draws it: a module page never shows another module's payout (a World Pokémon in Care). */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun RewardBox(model: AppModel) {
@@ -56,7 +55,6 @@ fun RewardBox(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             fresh.forEach { entry ->
                 Text(entry.source.removePrefix("Task: "), style = MaterialTheme.typography.titleMedium)
-                // A new Pokémon keeps its own row; everything else runs together as small icon-and-words pieces, so a payout is two lines, not a list.
                 entry.rewards.filterIsInstance<Reward.Hatched>().forEach { r ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = Sizes.SpriteM, animate = !model.data.settings.reduceMotion, ground = 4.dp)
@@ -77,10 +75,6 @@ fun RewardBox(model: AppModel) {
     }
 }
 
-/**
- * A text box with the buddy's portrait at its start, the way the Mystery Dungeon games put a face beside a line of text.
- * The face only listens and cheers: the words are the app's, never the buddy talking. Without a buddy it is a plain text box.
- */
 @Composable
 fun SpeakerBox(model: AppModel, emotion: Emotion, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val buddy = model.data.player.buddy
@@ -93,14 +87,8 @@ fun SpeakerBox(model: AppModel, emotion: Emotion, modifier: Modifier = Modifier,
     }
 }
 
-/** One thing just deleted that the undo bar can bring back: its [label] ("Deleted: Rent") and what [undo] does. */
 class UndoItem(val label: String, val undo: () -> Unit)
 
-/**
- * Tasks just ticked off, still inside the 10 second window where Undo cancels the reward, and a task just deleted. Shown in
- * one bar pinned above the tabs, near the thumb that tapped Done, on every tab; it floats over the page, so nothing on the
- * page moves when it comes and goes.
- */
 @Composable
 fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
     val deleted = model.deletedTask
@@ -113,7 +101,6 @@ fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
             if (model.undoItem === other) model.undoItem = null
         }
     }
-    // A deleted task can be brought back for as long as a finished one can be undone.
     var deletedAt by remember { mutableLongStateOf(model.store.nowMillis) }
     LaunchedEffect(deleted?.id) {
         if (deleted != null) {
@@ -122,7 +109,6 @@ fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
             model.deletedTask = null
         }
     }
-    // How much of the time left to undo is left, for the bar under each row; it follows the clock ten times a second, and only while something can be undone.
     var now by remember { mutableLongStateOf(model.store.nowMillis) }
     val foreground = rememberInForeground()
     val anyRows = model.data.pending.isNotEmpty() || deleted != null || other != null
@@ -144,7 +130,6 @@ fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
                 Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = Pixel.OnInk, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 PixelIconButton("undo", "Undo", undo, Pixel.Tone)
             }
-            // The time left to undo, draining to the right; it carries no words, the row already says what can be undone.
             Box(Modifier.fillMaxWidth().height(Spacing.XS).background(Pixel.InkSoft.copy(alpha = 0.4f))) {
                 Box(Modifier.fillMaxWidth(fraction).height(Spacing.XS).background(Pixel.Tone))
             }
@@ -158,16 +143,12 @@ private const val UNDO_TICK_MILLIS = 100L
 internal val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 private val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
-/** "19 Oct" */
 fun LocalDate.dayMonth(): String = "$dayOfMonth ${monthNames[monthNumber - 1]}"
 
-/** "Mon 19 Oct" */
 fun LocalDate.short(): String = "${dayNames[dayOfWeek.ordinal]} $dayOfMonth ${monthNames[monthNumber - 1]}"
 
-/** "Mon 19 Oct 2026": the year too, for a date that was typed and is read back. */
 fun LocalDate.long(): String = "${short()} $year"
 
-/** The bag item whose real icon stands for a reward. */
 fun Reward.iconItem(): String? = when (this) {
     is Reward.Candies -> if (type == CandyType.SUPER) "super-candy" else "rare-candy"
     is Reward.Coins -> "amulet-coin"
@@ -177,5 +158,5 @@ fun Reward.iconItem(): String? = when (this) {
     is Reward.Friendship -> "friend-ball"
     is Reward.Hatched -> null
     is Reward.Exp -> "rare-candy"
-    is Reward.Decoration -> null // drawn with its own sprite (BaseRoom.kt), not a Bag icon
+    is Reward.Decoration -> null
 }

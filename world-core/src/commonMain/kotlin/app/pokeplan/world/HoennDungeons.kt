@@ -3,12 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Hoenn layer (docs/pokelife/MODULES/WORLD.md section 14, "Hoenn"), from Pokémon Ruby, Sapphire, Emerald, Omega Ruby and Alpha Sapphire.
- * Their wild tables are the Hoenn regional dex, by each place's habitat in the games; legendaries are never found (they are quests,
- * [Legends]). Floors, floor times, milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter of
- * [HoennStory].
- */
 object HoennDungeons {
     private val H = WorldLayer.HOENN
 
@@ -70,10 +64,6 @@ object HoennDungeons {
     )
 }
 
-/**
- * Hoenn's story, "The Primal Awakening" (docs/regional-storylines.md): Team Magma and Team Aqua, the weather and the three ancient
- * Pokémon. A chapter opens by rank and by how many different Hoenn dungeons have been cleared, and is never lost.
- */
 object HoennStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "Littleroot Town", "A new explorer sets out from Littleroot Town. Pokémon in the woods and caves behave strangely, and the weather is odd.", "Petalburg Woods and Granite Cave", ExplorerRank.NORMAL, 0),
@@ -83,7 +73,6 @@ object HoennStory {
         Chapter(5, "The Sky Pillar", "Only one Pokémon can end the fighting between land and sea, and it waits at the top of the Sky Pillar.", "Sky Pillar and Rayquaza", ExplorerRank.PLATINUM, 8),
     )
 
-    /** The Guardian: Rayquaza, at the top of the Sky Pillar. */
     const val GUARDIAN = "Rayquaza"
     const val GUARDIAN_BONUS = "Delta Stream: Hoenn expeditions find Pokémon a little more often"
 }

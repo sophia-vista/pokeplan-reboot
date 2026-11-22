@@ -18,18 +18,14 @@ class LandingTest {
 
     @Test
     fun thePrimaryActionIsTheMostUsefulThingInOrder() {
-        // Nothing yet: explore the first dungeon.
         val fresh = WorldGuide.primaryAction(WorldData())
         assertEquals(PrimaryKind.EXPLORE, fresh.kind)
         assertEquals("tiny-woods", fresh.dungeonId)
-        // The layer on show decides which dungeon.
         assertEquals("viridian-forest", WorldGuide.primaryAction(WorldData(), WorldLayer.KANTO).dungeonId)
-        // A job waiting to be claimed comes before exploring; Pokémon waiting come before both.
         val job = WorldData(xp = 400, missions = listOf(MissionProgress("explore-woods-3", 1, true)))
         assertEquals(PrimaryKind.CLAIM_JOB, WorldGuide.primaryAction(job).kind)
         val find = job.copy(finds = listOf(Find(25, "tiny-woods", 2, 0L)))
         assertEquals(PrimaryKind.REVIEW_FINDS, WorldGuide.primaryAction(find).kind)
-        // Every team out: go and look.
         val out = WorldData().assign(1, listOf("a"))!!.assign(2, listOf("b"))!!.start(1, "tiny-woods", 0L)!!.start(2, "tiny-woods", 0L)!!
         assertEquals(PrimaryKind.CONTINUE, WorldGuide.primaryAction(out).kind)
     }
@@ -42,7 +38,6 @@ class LandingTest {
         val silver = ExplorerRank.BRONZE.nextRankOpens()
         assertTrue(silver.any { "3 expedition teams (now 2)" in it }, silver.toString())
         assertTrue(ExplorerRank.DIAMOND.nextRankOpens().isEmpty(), "nothing after the top rank")
-        // Rank gates match the dungeons: every dungeon is named by exactly one rank's list.
         val named = ExplorerRank.entries.flatMap { r -> r.nextRankOpens().filter { it.startsWith("the dungeons") } }
         assertTrue(named.isNotEmpty())
     }
@@ -64,7 +59,6 @@ class LandingTest {
         assertEquals("Daily", board.getValue("daily-berries").repeats)
         assertEquals("Weekly", board.getValue("weekly-steel").repeats)
         assertEquals("Repeats every 14 days", board.getValue("explore-woods-5").repeats)
-        // The available ones are exactly what the board has always offered.
         assertEquals(Missions.available(open, now).map { it.id }.toSet(), board.values.filter { it.state == Missions.BoardState.AVAILABLE }.map { it.mission.id }.toSet())
     }
 
@@ -76,14 +70,11 @@ class LandingTest {
         val summary = ReportSummary.of(report, report.data.xp - start.xp)
         assertTrue(summary.floors > 0 && summary.floors == report.events.count { it is WorldEvent.FloorCleared })
         assertEquals(summary.xp, report.data.xp - start.xp)
-        // Poké: what every floor gave plus the milestones' Poké is all the data gained.
         assertEquals(report.data.pokeEarned - start.pokeEarned, summary.poke + summary.milestones.sumOf { it.second.poke })
-        // Berries found by chance are in the data's items (milestone berries come on top).
         val milestoneBerries = summary.milestones.filter { it.second.itemId?.startsWith("berry") == true }.sumOf { it.second.count }
         assertEquals(report.data.items.filterKeys { it.startsWith("berry") }.values.sum(), summary.berries + milestoneBerries)
         assertEquals(report.data.treasure.values.sum(), summary.treasure.values.sum())
         assertEquals(report.data.finds.size, summary.finds.size)
-        // Reports add up, and an empty one is empty.
         val twice = summary + summary
         assertEquals(summary.floors * 2, twice.floors)
         assertTrue(ReportSummary().isEmpty && !summary.isEmpty)

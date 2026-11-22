@@ -3,16 +3,10 @@ package app.pokeplan.ui.gear
 import app.pokeplan.core.pokemon.GearTool
 import kotlin.math.abs
 
-/** The groups of tools on the Pokégear's home. */
 enum class ToolCategory(val label: String) { CALCULATE("Calculate"), CONVERT("Convert"), TIME("Time"), LIGHT("Light"), CHOOSE("Choose"), MEASURE("Measure") }
 
-/** A tool as the home lists it: its [category], a short [description] and the words people look for it by ([keywords]). Bundled, so searching needs no network. */
 class ToolInfo(val tool: GearTool, val category: ToolCategory, val description: String, val keywords: List<String>)
 
-/**
- * The Pokégear's tools in one place for the home screen: what groups they are in, what they are for, and a search that is tolerant of slips and
- * synonyms ("lbs" finds Units, "yen" finds Currency, "torch" finds the Flashlight). Favourites and the tools used lately come first.
- */
 object ToolCatalog {
     val all: List<ToolInfo> = listOf(
         ToolInfo(GearTool.CALCULATOR, ToolCategory.CALCULATE, "Sums with brackets and percentages, scientific functions, memory", listOf("calc", "math", "maths", "percent", "percentage", "tip", "sum", "add", "plus", "multiply", "sin", "cos", "sqrt", "scientific")),
@@ -37,10 +31,6 @@ object ToolCatalog {
 
     fun info(tool: GearTool): ToolInfo = all.first { it.tool == tool }
 
-    /**
-     * The tools matching [query] (name, keywords, category, one wrong letter in a longer word), best first; favourites and recents win ties. With no
-     * query, [favorites] then [recents] then the rest in the catalogue's order.
-     */
     fun search(query: String, favorites: List<String> = emptyList(), recents: List<String> = emptyList()): List<ToolInfo> {
         val q = query.trim().lowercase()
         fun bonus(t: ToolInfo) = (if (t.tool.name in favorites) 10 else 0) + (if (t.tool.name in recents) 5 - recents.indexOf(t.tool.name).coerceAtMost(4) else 0)

@@ -59,7 +59,6 @@ class LinkRemindersTest {
         assertEquals("2026-11-09", r.occurrence)
         s.link.setDateRemind(date.id, null)
         assertTrue(s.upcoming().isEmpty())
-        // Only the offered presets are accepted.
         s.link.setDateRemind(date.id, 2)
         assertNull(s.link.data.dates.single().remindDays)
     }
@@ -70,9 +69,8 @@ class LinkRemindersTest {
         val day = s.link.addDate(DateKind.ANNIVERSARY, "Us", 11, 8).record!!
         s.link.setDateRemind(day.id, 0)
         assertEquals(at(2026, 11, 8), s.upcoming().single().atMillis)
-        s.clock.advanceDays(2) // 9 November evening: 8 November has passed
+        s.clock.advanceDays(2)
         assertTrue(s.upcoming().isEmpty(), "this year's day has passed and next year's is far away")
-        // A one-time date in the past asks nothing at all.
         val once = s.link.addDate(DateKind.MILESTONE, "Graduation", 1, 5, year = 2026, annual = false).record!!
         s.link.setDateRemind(once.id, 0)
         assertTrue(s.upcoming().isEmpty())
@@ -98,7 +96,6 @@ class LinkRemindersTest {
         val noDay = s.link.addFollowUp("Call back").record!!
         s.link.setFollowUpRemind(noDay.id, true)
         assertEquals(1, s.upcoming().size, "no day, no reminder")
-        // Handing it to Plan hands the reminders over too: Link neither asks nor can be switched on again.
         assertNotNull(s.link.convertToPlan(f.id))
         assertTrue(s.upcoming().isEmpty())
         s.link.setFollowUpRemind(f.id, true)
@@ -135,11 +132,9 @@ class LinkRemindersTest {
         val followUp = requests.first { it.kind == "followup" }
         val date = requests.first { it.kind == "date" }
         assertTrue(adapter.isStillWanted(followUp) && adapter.isStillWanted(date))
-        // Rescheduling the follow-up makes the old request stale.
         s.link.updateFollowUp(s.link.data.followUps.single().copy(due = LocalDate(2026, 11, 12)))
         assertFalse(adapter.isStillWanted(followUp))
         assertNull(adapter.present(followUp))
-        // Editing the date's day makes its old request stale too.
         s.link.updateDate(s.link.data.dates.single().copy(day = 20))
         assertFalse(adapter.isStillWanted(date))
         s.link.updateDate(s.link.data.dates.single().copy(day = 9))
@@ -189,7 +184,7 @@ class LinkRemindersTest {
         s.link.setFollowUpRemind(f.id, true)
         val d = s.link.addDate(DateKind.BIRTHDAY, "Mum", 11, 8).record!!
         s.link.setDateRemind(d.id, 0)
-        s.clock.advanceHours(-10) // morning of the 7th is irrelevant: use the 8th at 09:00 instead
+        s.clock.advanceHours(-10)
         s.clock.millis = at(2026, 11, 8, 8)
         val adapter = s.adapter()
         val router = ReminderRouter(listOf(adapter))
@@ -200,7 +195,6 @@ class LinkRemindersTest {
         assertEquals(ActionResult.DONE, router.handle(followUp, ReminderActions.DONE))
         assertEquals(FollowUpStatus.COMPLETED, s.link.data.followUps.single().status)
         assertTrue(s.link.data.followUps.single().paid)
-        // The same notification tapped again is stale; a dismiss changes nothing.
         assertEquals(ActionResult.STALE, router.handle(followUp, ReminderActions.DONE))
         assertEquals(ActionResult.DISMISSED, router.handle(date, ReminderActions.DISMISS))
         assertEquals(1, s.link.data.dates.size)

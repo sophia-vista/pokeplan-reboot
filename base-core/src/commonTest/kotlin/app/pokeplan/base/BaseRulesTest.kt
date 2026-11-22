@@ -12,7 +12,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BaseRulesTest {
-    /** A Saturday. */
     private val today = d("2026-11-07")
 
     private fun d(s: String): LocalDate = LocalDate.parse(s)
@@ -34,8 +33,6 @@ class BaseRulesTest {
         MaintenanceSchedule(id, id, recurrence = r, policy = policy, firstDue = d(first), nextDue = d(next), status = status)
 
     private fun view(c: Chore, vararg entries: ChoreEntry, on: LocalDate = today) = BaseRules.view(BaseData(chores = listOf(c), entries = entries.toList()), c, on)
-
-    // --- schedules: daily ----------------------------------------------------------------------------------------------
 
     @Test
     fun dailyEveryDayOccursFromTheAnchorOn() {
@@ -65,7 +62,7 @@ class BaseRulesTest {
     @Test
     fun beforeTheAnchorNothingOccursAndTheFirstOccurrenceIsTheAnchor() {
         for (r in listOf(rec(RepeatKind.DAILY, 3), rec(RepeatKind.MONTHLY), rec(RepeatKind.YEARLY), rec(RepeatKind.ONCE), rec(RepeatKind.WEEKLY, 2))) {
-            val a = d("2026-11-05") // a Thursday: an occurrence of the weekly rule too
+            val a = d("2026-11-05")
             val before = d("2026-10-20")
             assertFalse(Schedules.occursOn(r, a, before), "$r")
             assertNull(Schedules.lastOnOrBefore(r, a, before), "$r")
@@ -73,8 +70,6 @@ class BaseRulesTest {
             assertEquals(a, Schedules.nextAfter(r, a, d("2026-11-04")), "$r")
         }
     }
-
-    // --- schedules: weekly ---------------------------------------------------------------------------------------------
 
     @Test
     fun weeklyWithoutWeekdaysUsesTheAnchorsWeekday() {
@@ -124,14 +119,11 @@ class BaseRulesTest {
 
     @Test
     fun weeklyOnWeekdaysCountsFromAnAnchorInTheMiddleOfTheWeek() {
-        // anchor Thursday 5 Nov; Monday 2 Nov of the same week is before the anchor and never occurs
         val r = rec(RepeatKind.WEEKLY, 1, 1, 4)
         val thursday = d("2026-11-05")
         assertFalse(Schedules.occursOn(r, thursday, d("2026-11-02")))
         assertEquals(d("2026-11-09"), Schedules.nextAfter(r, thursday, thursday))
     }
-
-    // --- schedules: monthly and yearly ---------------------------------------------------------------------------------
 
     @Test
     fun monthlyOnThe31stClampsToTheLastDayAndNeverDrifts() {
@@ -143,11 +135,9 @@ class BaseRulesTest {
         assertFalse(Schedules.occursOn(r, a, d("2026-04-29")))
         val seq = generateSequence(a) { Schedules.nextAfter(r, a, it) }.take(7).toList()
         assertEquals(listOf("2026-01-31", "2026-02-28", "2026-03-31", "2026-04-30", "2026-05-31", "2026-06-30", "2026-07-31").map(::d), seq)
-        // a leap year gives the 29th
         val leap = d("2028-01-31")
         assertEquals(d("2028-02-29"), Schedules.nextAfter(r, leap, leap))
         assertEquals(d("2028-03-31"), Schedules.nextAfter(r, leap, d("2028-02-29")))
-        // jumping straight to a date gives the same answers as stepping
         assertEquals(d("2026-02-28"), Schedules.lastOnOrBefore(r, a, d("2026-03-30")))
         assertEquals(d("2026-01-31"), Schedules.lastOnOrBefore(r, a, d("2026-02-27")))
         assertEquals(d("2026-04-30"), Schedules.firstOnOrAfter(r, a, d("2026-04-01")))
@@ -220,7 +210,7 @@ class BaseRulesTest {
         )
         val anchors = listOf("2026-01-31", "2024-02-29", "2026-11-02", "2026-11-05", "2026-03-15", "2025-12-30").map(::d)
         for (r in recurrences) for (a in anchors) {
-            if (!Schedules.occursOn(r, a, a)) continue // a weekday rule whose chosen days leave out the anchor's own day: see anchorOutsideTheChosenWeekdays
+            if (!Schedules.occursOn(r, a, a)) continue
             val occ = (0..1900).map { a.plus(it, DateTimeUnit.DAY) }.filter { Schedules.occursOn(r, a, it) }
             fun firstIndexAtOrAfter(day: LocalDate): Int { val i = occ.binarySearch(day); return if (i >= 0) i else -i - 1 }
             for (offset in -3..900) {
@@ -238,8 +228,6 @@ class BaseRulesTest {
 
     @Test
     fun anchorOutsideTheChosenWeekdaysIsNotAnOccurrence() {
-        // BUG PROBE: a weekly rule on Monday + Thursday whose first date is a Wednesday. occursOn says the Wednesday is not an occurrence
-        // (correct), but a lookup from before the anchor returns the anchor itself instead of the first real occurrence (Thursday 5 Nov).
         val r = rec(RepeatKind.WEEKLY, 1, 1, 4)
         val wednesday = d("2026-11-04")
         assertFalse(Schedules.occursOn(r, wednesday, wednesday))
@@ -254,11 +242,8 @@ class BaseRulesTest {
         val first = (0 until 200).map { Schedules.nextAfter(r, a, a.plus(it * 3, DateTimeUnit.DAY)) }
         val second = (0 until 200).map { Schedules.nextAfter(r, a, a.plus(it * 3, DateTimeUnit.DAY)) }
         assertEquals(first, second)
-        // counting from "today" would drift; counting from the anchor lands on the same dates whichever day you start on
         assertEquals(Schedules.firstOnOrAfter(r, a, d("2027-03-01")), generateSequence(a) { Schedules.nextAfter(r, a, it) }.first { it >= d("2027-03-01") })
     }
-
-    // --- chores --------------------------------------------------------------------------------------------------------
 
     @Test
     fun aTitleOnlyChoreIsWheneverUntilItIsDone() {
@@ -266,10 +251,8 @@ class BaseRulesTest {
         assertEquals(ChoreView(c, ChoreState.ANYTIME, null, null, null), view(c))
         val done = entry("e1", "sweep", "2026-11-06", day = "2026-11-06")
         assertEquals(ChoreView(c, ChoreState.DONE, d("2026-11-06"), d("2026-11-06"), done), view(c, done))
-        // only a DONE entry settles it
         assertEquals(ChoreState.ANYTIME, view(c, entry("e2", "sweep", "2026-11-06", EntryStatus.SKIPPED)).state)
         assertEquals(ChoreState.ANYTIME, view(c, entry("e3", "sweep", "2026-11-06", EntryStatus.DEFERRED)).state)
-        // the latest DONE entry is the one shown, and another chore's entries are ignored
         val later = entry("e4", "sweep", "2026-11-07")
         assertEquals(later, view(c, done, later, entry("x", "other", "2026-11-07")).entry)
     }
@@ -288,7 +271,6 @@ class BaseRulesTest {
         assertEquals(ChoreView(c, ChoreState.DONE, d("2026-11-01"), d("2026-11-01"), done), view(c, done))
         val skipped = entry("s", "a", "2026-11-01", EntryStatus.SKIPPED)
         assertEquals(ChoreView(c, ChoreState.SKIPPED, d("2026-11-01"), d("2026-11-01"), skipped), view(c, skipped))
-        // the latest entry for the occurrence wins
         assertEquals(ChoreState.DONE, view(c, skipped, done).state)
     }
 
@@ -299,7 +281,6 @@ class BaseRulesTest {
         assertEquals(ChoreView(c, ChoreState.UPCOMING, d("2026-11-01"), d("2026-11-09"), deferred), view(c, deferred))
         assertEquals(ChoreView(c, ChoreState.DUE, d("2026-11-01"), d("2026-11-09"), deferred), view(c, deferred, on = d("2026-11-09")))
         assertEquals(ChoreState.OVERDUE, view(c, deferred, on = d("2026-11-10")).state)
-        // a deferral without a day keeps the original date
         val bare = entry("b", "a", "2026-11-01", EntryStatus.DEFERRED)
         assertEquals(ChoreState.OVERDUE, view(c, bare).state)
         assertEquals(d("2026-11-01"), view(c, bare).dueDay)
@@ -307,7 +288,7 @@ class BaseRulesTest {
 
     @Test
     fun aRecurringChoreAMonthBehindShowsOneOverdueOccurrenceNotABacklog() {
-        val weekly = chore("w", "2026-10-01", rec(RepeatKind.WEEKLY)) // Thursdays; the latest one before Saturday 7 Nov is 5 Nov
+        val weekly = chore("w", "2026-10-01", rec(RepeatKind.WEEKLY))
         val data = BaseData(chores = listOf(weekly, chore("m", "2026-08-15", rec(RepeatKind.MONTHLY))), entries = listOf(entry("e", "m", "2026-08-15")))
         val views = BaseRules.views(data, today)
         assertEquals(2, views.size)
@@ -334,7 +315,6 @@ class BaseRulesTest {
         val c = chore("w", "2026-10-01", rec(RepeatKind.WEEKLY))
         val late = entry("e", "w", "2026-11-05", day = "2026-11-07")
         assertEquals(ChoreView(c, ChoreState.UPCOMING, d("2026-11-12"), d("2026-11-12"), null), view(c, late))
-        // an older entry does not hide the latest occurrence
         assertEquals(ChoreState.OVERDUE, view(c, entry("old", "w", "2026-10-29")).state)
     }
 
@@ -403,8 +383,6 @@ class BaseRulesTest {
         assertTrue(BaseRules.history(edited, "nope").isEmpty())
     }
 
-    // --- supplies ------------------------------------------------------------------------------------------------------
-
     @Test
     fun aSupplyIsLowOnlyWhenTheQuantityAndTheThresholdAreKnownAndTheQuantityIsAtOrUnderIt() {
         assertFalse(BaseRules.isLow(supply("a", qty = null, low = 2000)), "unknown is not zero")
@@ -446,8 +424,6 @@ class BaseRulesTest {
         assertTrue(BaseRules.restockList(BaseData()).isEmpty())
     }
 
-    // --- quantity ------------------------------------------------------------------------------------------------------
-
     @Test
     fun quantitiesAreParsedInThousandths() {
         assertEquals(12_000L, Quantity.parse("12"))
@@ -478,8 +454,6 @@ class BaseRulesTest {
         }
     }
 
-    // --- maintenance ---------------------------------------------------------------------------------------------------
-
     @Test
     fun aCalendarScheduleDoneOnTimeMovesToTheNextDate() {
         val s = schedule("boiler", next = "2026-11-15", first = "2026-01-15")
@@ -498,7 +472,6 @@ class BaseRulesTest {
         val s = schedule("boiler", next = "2026-11-15", first = "2026-01-15")
         assertEquals(d("2027-01-15"), BaseRules.advance(s, d("2026-12-20")).nextDue, "done after the 15 Dec date: the next is 15 Jan, nothing is owed for December")
         assertEquals(d("2026-12-15"), BaseRules.advance(s, d("2026-11-20")).nextDue)
-        // a month-end schedule does not drift after being done on the clamped day
         val end = schedule("gutters", next = "2026-02-28", first = "2026-01-31")
         assertEquals(d("2026-03-31"), BaseRules.advance(end, d("2026-02-28")).nextDue)
         val twice = BaseRules.advance(BaseRules.advance(end, d("2026-02-28")), d("2026-03-31"))
@@ -548,9 +521,9 @@ class BaseRulesTest {
     fun aWarrantyIsUndatedCoveredEndingOrExpired() {
         fun state(end: String?) = BaseRules.warrantyState(Warranty("w", "a", expiryDay = end?.let(::d)), today)
         assertEquals(WarrantyState.UNDATED, state(null))
-        assertEquals(WarrantyState.ACTIVE, state("2026-12-08")) // 31 days
-        assertEquals(WarrantyState.ENDING, state("2026-12-07")) // 30 days
-        assertEquals(WarrantyState.ENDING, state("2026-11-07")) // today
+        assertEquals(WarrantyState.ACTIVE, state("2026-12-08"))
+        assertEquals(WarrantyState.ENDING, state("2026-12-07"))
+        assertEquals(WarrantyState.ENDING, state("2026-11-07"))
         assertEquals(WarrantyState.EXPIRED, state("2026-11-06"))
     }
 
@@ -561,8 +534,6 @@ class BaseRulesTest {
         assertEquals(listOf("c", "b", "a", "d"), BaseRules.maintenanceHistory(data).map { it.id })
         assertEquals(listOf("c", "a"), BaseRules.maintenanceHistory(data, "x").map { it.id })
     }
-
-    // --- what the app accepts ------------------------------------------------------------------------------------------
 
     private fun refused(c: Check): String = assertIs<Check.Refused>(c).reason
 
@@ -611,8 +582,6 @@ class BaseRulesTest {
         assertIs<Check.Refused>(BaseRules.checkQuantity(-5))
     }
 
-    // --- the overview --------------------------------------------------------------------------------------------------
-
     @Test
     fun theOverviewListsOnlyWhatNeedsAttention() {
         val data = BaseData(
@@ -652,8 +621,6 @@ class BaseRulesTest {
         )
         assertFalse(BaseRules.overview(calm, today).needsAttention)
     }
-
-    // --- search --------------------------------------------------------------------------------------------------------
 
     private val searchData = BaseData(
         areas = listOf(BaseArea("kit", "Kitchen")),
@@ -725,11 +692,8 @@ class BaseRulesTest {
         assertEquals(listOf("held", "live", "Dust filter"), BaseRules.search(data, "dust").map { it.id })
     }
 
-    // --- Habitat Discovery: what may pay -------------------------------------------------------------------------------
-
     @Test
     fun theDailyShareIsCountedByTheGameNotByTheRules() {
-        // the cap lives once (GameStore.BASE_CAPS, tested in BaseStoreTest); the rules only ask whether Habitat Discovery is on
         val many = (1..BaseRules.CHORES_PAID_PER_DAY + 2).map { entry("p$it", "c", "2026-11-01", day = "2026-11-07", paid = true) }
         assertTrue(BaseRules.chorePays(BaseData(entries = many), today))
         assertTrue(BaseRules.maintenancePays(BaseData(), today))
@@ -752,8 +716,6 @@ class BaseRulesTest {
         assertFalse(BaseRules.chorePays(off, today))
         assertFalse(BaseRules.maintenancePays(off, today))
     }
-
-    // --- the saved document --------------------------------------------------------------------------------------------
 
     private val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 

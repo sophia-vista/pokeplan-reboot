@@ -113,73 +113,54 @@ private val LabelWidth = 48.dp
 
 private val blockShape = PixelShape
 
-/** How far ahead the day view goes (recurring tasks are generated 14 days ahead). */
-
-/** The player's lists (App provides them), from which a task takes its colour and icon; a task in no list is grey with the heart scale. */
 val LocalTaskLists = androidx.compose.runtime.staticCompositionLocalOf<List<TaskList>> { emptyList() }
 
 @Composable
 internal fun taskColor(t: Task): Color = LocalTaskLists.current.firstOrNull { it.id == t.listId }?.let { Color(it.color) } ?: Pixel.Gray
 
-/** The real item icon a task shows on the timeline: its own, or its list's. */
 @Composable
 private fun taskIcon(t: Task): String = t.icon ?: LocalTaskLists.current.firstOrNull { it.id == t.listId }?.icon ?: "heart-scale"
 
-/** "2 h 15 min", "45 min" */
 internal fun duration(minutes: Int): String = when {
     minutes < 60 -> "$minutes min"
     minutes % 60 == 0 -> "${minutes / 60} h"
     else -> "${minutes / 60} h ${minutes % 60} min"
 }
 
-/** A calendar event's own colour, or grey. */
 internal fun eventColor(e: CalendarEvent): Color = e.color?.let { Color(it or 0xFF000000L) } ?: if (e.isOwn) OwnEventColor else Pixel.Gray
 
-/** The colour of PokéPlan's own events on the hours. */
 internal val OwnEventColor get() = Pixel.Teal
 
-/**
- * What a drag carries: a task, or one of PokéPlan's own events ([event]), with when it is now: [day] and [start]
- * minutes after midnight (null for a task without a time), lasting [minutes].
- */
 private data class Item(val id: String, val title: String, val event: Boolean, val day: LocalDate?, val start: Int?, val minutes: Int)
 
 private fun Task.item() = Item(id, title, false, planned, plannedTime?.let { it.hour * 60 + it.minute }, DayTimeline.minutes(this))
 
 private fun PlanEvent.item() = Item(id, title, true, day, startMinute, minutes)
 
-/** What is being dragged and where the finger is (root coordinates). [resize] drags the block's lower edge instead. */
 private class Drag(val item: Item, val resize: Boolean, val grabMinutes: Int, pointer: Offset) {
     var pointer by mutableStateOf(pointer)
 }
 
-/** A new event being set up: its title so far, and when. */
 internal data class Draft(
     val title: String, val day: LocalDate, val start: Int, val minutes: Int,
     val allDay: Boolean = false, val lastDay: LocalDate = day, val color: Long? = null, val repeat: EventRepeat? = null,
-    /** The PLAN party Pokémon that keeps the event company (a timed event only; PLAN.md 8.2). */
     val companion: String? = null,
 ) {
-    /** The same draft starting on [first], an all-day one keeping its length. */
     fun movedTo(first: LocalDate): Draft = copy(day = first, lastDay = first.plus(DatePeriod(days = day.daysUntil(lastDay))))
 
-    /** Adds it to PokéPlan's own calendar. */
     fun addTo(store: app.pokeplan.app.GameStore) {
         if (allDay) store.addAllDayEvent(title, day, lastDay, color, repeat)
         else store.addEvent(title, day, LocalTime(start / 60, start % 60), minutes, color, repeat).also { e -> companion?.let { store.setEventCompanion(e.id, it) } }
     }
 }
 
-/** Where a drop lands: [day] at [start] minutes after midnight, lasting [minutes]. */
 private data class Target(val day: LocalDate, val start: Int, val minutes: Int)
 
-/** Where an element is on screen, so a finger position inside it becomes a root position. */
 private class Anchor {
     var coords: LayoutCoordinates? = null
     fun root(local: Offset): Offset = coords?.takeIf { it.isAttached }?.localToRoot(local) ?: local
 }
 
-/** The hours on screen: turns a finger position into a day column and a minute, and holds the drag in progress. */
 private class Grid {
     var coords: LayoutCoordinates? = null
     var page: LayoutCoordinates? = null
@@ -188,7 +169,6 @@ private class Grid {
     var hourPx = 1f
     var drag by mutableStateOf<Drag?>(null)
 
-    /** Counts the hours moving under a drag (the page scrolling while the finger stays still), so the preview follows. */
     var scrolled by mutableStateOf(0)
 
     fun place(c: LayoutCoordinates) {
@@ -196,14 +176,12 @@ private class Grid {
         if (drag != null) scrolled++
     }
 
-    /** [pointer] in the hours' own coordinates. */
     fun local(pointer: Offset): Offset? = coords?.takeIf { it.isAttached }?.let { pointer - it.positionInRoot() }
 
     fun minuteAt(y: Float): Int = firstMinute + (y / hourPx * 60).roundToInt()
 
-    /** Where [d] would land now, or null while the finger is off the hours. */
     fun target(d: Drag): Target? {
-        scrolled // read, so the preview recomposes when the page scrolls
+        scrolled
         val c = coords?.takeIf { it.isAttached } ?: return null
         val p = local(d.pointer) ?: return null
         if (d.resize) {
@@ -217,12 +195,6 @@ private class Grid {
     }
 }
 
-/**
- * Lets the element be dragged: after a long press on touch, or as soon as it moves with the mouse. [onStart] gets the
- * finger in the element's own coordinates and the element's size, [onMove] the finger in root coordinates; [onEnd] says
- * whether it was dropped (released after moving) rather than cancelled. Moving consumes the pointer, so a drag never
- * also counts as a tap, and the page does not scroll under it.
- */
 private fun Modifier.dragToPlan(
     key: Any,
     anchor: Anchor,
@@ -247,17 +219,10 @@ private fun Modifier.dragToPlan(
     }
 }
 
-/**
- * The day timeline, or seven days side by side: the tasks with a time sit on the hours, the rest wait in a tray. Hold a
- * task (in the tray or on the hours) and drag it to an hour, or tap it and then tap an hour; drag a block's lower edge
- * to change how long it takes. Everything snaps to 15 minutes. PokéPlan's own events (New event) are placed, dragged
- * and resized the same way but never pay. Events from the calendars shown in Settings sit on the hours too, read-only.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = false, startMode: Int = if (startWeek) 1 else 0) {
     val store = model.store
-    // Day, Week or Month, as in TickTick and Google Calendar.
     var mode by remember { mutableStateOf(startMode) }
     val week = mode == 1
     var offset by remember { mutableStateOf(0) }
@@ -266,16 +231,13 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     var draft by remember { mutableStateOf<Draft?>(null) }
     var monthOffset by remember { mutableStateOf(0) }
     val month = monthGrid(store.today, monthOffset, model.data.settings.weekStartsOnMonday)
-    // A week is the calendar week (it starts on the day set in Settings), and the arrows page freely, back and forward.
     val firstDow = model.data.settings.weekStart
-    // On a phone the "week" shows three days at a time (from today, paging by three), so each column has room for a title.
     val narrow = LocalWindowInfo.current.containerSize.width < 600 * LocalDensity.current.density
     val span = if (narrow) 3 else 7
     val weekFirst = if (narrow) store.today.plus(DatePeriod(days = weekOffset * span))
     else app.pokeplan.plan.Streaks.weekStartOf(store.today, firstDow).plus(DatePeriod(days = weekOffset * 7))
     val days = if (week) (0 until span).map { weekFirst.plus(DatePeriod(days = it)) }
     else listOf(store.today.plus(DatePeriod(days = offset)))
-    // The days whose phone events are read: the grid's in a month.
     val range = if (mode == 2) month.days else days
     val tasks = model.data.tasks.filter { it.id !in hidden }
     val source = model.calendars
@@ -286,7 +248,6 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
         else withContext(Dispatchers.Default) { source.events(shown, range.first(), range.last()) }
     }
     val own = model.data.events
-    // A repeating event is shown as each of its occurrences on the days shown, each with an id of its own.
     val ownShown = own.flatMap { it.occurrences(range.first(), range.last()) }
     val shownEvents = events + ownShown.map { it.toCalendarEvent() }
     val plans: List<DayTimeline.Plan>
@@ -334,8 +295,6 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
 
     Box(Modifier.fillMaxWidth().onGloballyPositioned { grid.page = it }) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            // Like Fantastical and Google Calendar: what is shown and the arrows on one line, the view switch and the one
-            // action under it, then (for a day) a strip of the week's days to jump between, then straight to the hours.
             val away = if (week) weekOffset != 0 else offset != 0
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).semantics(mergeDescendants = true) { heading() }) {
@@ -368,10 +327,8 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, { picked = it }) { picked = null }
 
-            // How to place a task is said on the tray until the first one has a time (then it is in Help only).
             Tray(tray + undated, picked, pick, grid, ::drop, hint = model.data.tasks.none { it.plannedTime != null })
 
-            // The calendar itself, on one panel: the days (in a week), the all-day row, then the hours.
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -398,7 +355,6 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     }
 }
 
-/** The task under the finger while it is dragged, just above it, with where it would land. */
 @Composable
 private fun Carried(d: Drag, grid: Grid) {
     val origin = grid.page?.takeIf { it.isAttached }?.positionInRoot() ?: return
@@ -423,7 +379,6 @@ private fun Carried(d: Drag, grid: Grid) {
     )
 }
 
-/** A ‹ or › key that steps a day or a week. */
 @Composable
 internal fun ArrowButton(symbol: String, label: String, enabled: Boolean, onClick: () -> Unit) {
     PixelKey(onClick, Modifier.semantics { contentDescription = label }, key = Pixel.InkSoft, enabled = enabled, fill = true, sound = app.pokeplan.ui.Sfx.CURSOR, horizontal = Spacing.S) { look ->
@@ -431,7 +386,6 @@ internal fun ArrowButton(symbol: String, label: String, enabled: Boolean, onClic
     }
 }
 
-/** A segmented control: a row of equal keys, the chosen one filled. */
 @Composable
 internal fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -439,7 +393,6 @@ internal fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> 
     }
 }
 
-/** One day in a strip of days: its short name over its date, the date in a filled circle when chosen, red when today. */
 @Composable
 private fun DayCell(day: LocalDate, today: LocalDate, chosen: Boolean, busy: Boolean, enabled: Boolean, label: String, onClick: () -> Unit, modifier: Modifier) {
     val isToday = day == today
@@ -475,13 +428,8 @@ private fun DayCell(day: LocalDate, today: LocalDate, chosen: Boolean, busy: Boo
     }
 }
 
-/**
- * The seven days around the one shown, like Fantastical's day ticker and Apple Calendar's week row: tap a day to open it;
- * a dot marks a day that has something planned. Days past how far the planner looks ahead are greyed out.
- */
 @Composable
 private fun DayStrip(today: LocalDate, offset: Int, weekStart: kotlinx.datetime.DayOfWeek, busy: (LocalDate) -> Boolean, open: (Int) -> Unit) {
-    // The calendar week the day is in, starting on the day set in Settings.
     val first = today.daysUntil(app.pokeplan.plan.Streaks.weekStartOf(today.plus(DatePeriod(days = offset)), weekStart))
     Row(Modifier.fillMaxWidth()) {
         (first until first + 7).forEach { i ->
@@ -491,7 +439,6 @@ private fun DayStrip(today: LocalDate, offset: Int, weekStart: kotlinx.datetime.
     }
 }
 
-/** The week's days over their columns, lined up with the hours; tapping one opens that day. */
 @Composable
 private fun WeekHeader(days: List<LocalDate>, today: LocalDate, open: (LocalDate) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(start = LabelWidth)) {
@@ -501,11 +448,6 @@ private fun WeekHeader(days: List<LocalDate>, today: LocalDate, open: (LocalDate
     }
 }
 
-/**
- * All-day calendar events in a band above the hours, as in Google Calendar: in a week an event over several days is one
- * bar across their columns (stacked in lanes when they overlap), in a day they wrap beside the "all day" label. Tapping
- * one of PokéPlan's own events picks it, to edit it.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AllDayRow(plans: List<DayTimeline.Plan>, picked: String?, pick: (String) -> Unit) {
@@ -540,10 +482,6 @@ internal val BarHeight = 22.dp
 
 internal val BarGap = 2.dp
 
-/**
- * An all-day event as a solid bar in its colour with its title in white, as Google Calendar and TickTick draw them; a
- * PokéPlan event can be tapped to edit it.
- */
 @Composable
 internal fun AllDayBar(e: CalendarEvent, selected: Boolean, pick: (String) -> Unit, modifier: Modifier = Modifier, small: Boolean = false) {
     val shape = PixelShape
@@ -565,7 +503,6 @@ internal fun AllDayBar(e: CalendarEvent, selected: Boolean, pick: (String) -> Un
     )
 }
 
-/** What to do with the picked task: put it on an hour, nudge it or its length by 15 minutes, or take its time away. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, close: () -> Unit) {
@@ -595,11 +532,6 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
     }
 }
 
-/**
- * The tasks still waiting for an hour, on one panel like Structured's inbox and Sunsama's backlog: a wrapping run of chips,
- * each with its list's colour.
- */
-// Help says how too: hold a chip and drag it to an hour, or tap it, then an hour; [hint] says it here until the first placement.
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Tray(tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit, hint: Boolean) {
@@ -628,7 +560,6 @@ private fun Tray(tasks: List<Task>, picked: String?, pick: (String) -> Unit, gri
     }
 }
 
-/** A task waiting for an hour: its real item icon and title on a soft chip, filled dark while picked. */
 @Composable
 private fun TrayChip(t: Task, selected: Boolean, onClick: () -> Unit, modifier: Modifier) {
     val shape = PixelShape
@@ -654,10 +585,6 @@ private fun TrayChip(t: Task, selected: Boolean, onClick: () -> Unit, modifier: 
     }
 }
 
-/**
- * The hours, one column per day in [plans], with the timed tasks and events drawn on top. While a task is picked each
- * hour of each day is a target; while one is dragged, where it would land is outlined and the page scrolls to follow.
- */
 @Composable
 private fun Hours(
     model: AppModel,
@@ -690,8 +617,6 @@ private fun Hours(
         }
     }
     val half = Pixel.Border.copy(alpha = 0.6f)
-    // Hour labels sit on their line in a narrow gutter, the lines run only across the days, and a faint dashed line marks
-    // each half hour (Google Calendar, Apple Calendar).
     Box(
         Modifier
             .fillMaxWidth()
@@ -792,10 +717,8 @@ private fun Hours(
     }
 }
 
-/** How wide a block in a week must be to show its title; a narrower one shows only its icon. */
 private val MinTitleWidth = 36.dp
 
-/** The lower edge of a block that resizes it when dragged. */
 private val ResizeEdge = 12.dp
 
 @Composable
@@ -861,10 +784,6 @@ private fun TimelineBlock(
     }
 }
 
-/**
- * An event on the hours, with no icon (it is not a task). One from the phone is read-only, in its calendar's colour;
- * one of PokéPlan's own ([own]) can be picked, dragged and resized like a task.
- */
 @Composable
 private fun EventBlock(
     block: DayTimeline.EventBlock,
@@ -924,22 +843,18 @@ private fun EventBlock(
     }
 }
 
-/** The solid strip on a block's left edge, in its colour (Google Calendar, Notion Calendar). */
 private val AccentWidth = 4.dp
 
-/** How far an hour label reaches above its line (half its height), so it sits centred on the line. */
 private val LabelLift = 9.dp
 
 private val panelShape = PixelShape
 
-/** A block's look: a soft tint of [color] with a solid accent strip on the left; a dark outline while [selected]. */
 private fun Modifier.blockLook(color: Color, fill: Float, accent: Float, selected: Boolean): Modifier = this
     .clip(blockShape)
     .background(color.copy(alpha = fill), blockShape)
     .drawBehind { drawRect(color.copy(alpha = accent), size = Size(AccentWidth.toPx(), size.height)) }
     .let { if (selected) it.border(Sizes.Line, Pixel.Ink, blockShape) else it }
 
-/** A block's title: bold enough to read at a glance; [small] for the narrow columns of a week. */
 @Composable
 private fun BlockTitle(title: String, color: Color, lines: Int, decoration: TextDecoration, small: Boolean = false) {
     Text(
@@ -949,13 +864,11 @@ private fun BlockTitle(title: String, color: Color, lines: Int, decoration: Text
         ),
         color = color,
         maxLines = lines.coerceAtLeast(1),
-        // In a week's narrow columns one line is cut off rather than broken letter by letter (Google Calendar's way).
         softWrap = !small,
         overflow = if (small) TextOverflow.Clip else TextOverflow.Ellipsis,
     )
 }
 
-/** "9:00 – 10:30" under a block's title. */
 @Composable
 private fun BlockTime(start: LocalTime, endMinute: Int) {
     val end = if (endMinute >= 24 * 60) LocalTime(0, 0) else LocalTime(endMinute / 60, endMinute % 60)

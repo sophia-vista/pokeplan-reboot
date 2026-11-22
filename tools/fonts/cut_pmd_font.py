@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-"""Measures the glyphs of assets/fonts/pmd-dialogue.png, the Pokemon dialogue bitmap font (white letters with a black drop
-shadow, ripped by John2k4 from Game Freak's sprites) and writes assets/fonts/pmd-dialogue.tsv:
-`char <TAB> x <TAB> y <TAB> width <TAB> height <TAB> dy`, the glyph's box in the sheet and its distance below (positive) or
-above (negative) the baseline of its row's capital letters, so letters sit on one line. Only the sheet's own pixels are used.
-
-Usage: python3 -I tools/fonts/cut_pmd_font.py
-"""
 import os
 
 from PIL import Image
@@ -14,7 +7,6 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 SHEET = os.path.join(ROOT, 'assets/fonts/pmd-dialogue.png')
 OUT = os.path.join(ROOT, 'assets/fonts/pmd-dialogue.tsv')
 COLUMNS = 13
-# The rows of the sheet, top to bottom, 13 glyphs each ('_' is not a letter here: the last cell of row 5 is the underline).
 ROWS = [
     ('abcdefghijklm', 0),
     ('nopqrstuvwxyz', 1),
@@ -24,7 +16,6 @@ ROWS = [
     (',.¡!¿?‘’“”♂♀_', 5),
     ('àáâãäåæçèéêëì', 6),
 ]
-# Which glyph of each row sits on the baseline (its bottom edge is the baseline), so descenders hang below it.
 BASE = {0: 'a', 1: 'n', 2: 'A', 3: 'N', 4: '1', 5: '?', 6: 'à'}
 
 
@@ -48,7 +39,6 @@ def main():
     cell = w / COLUMNS
     lines = []
     for chars, r in ROWS:
-        # The accent rows come after a gap: bands 6 and on are the ones at index 6 (a to m accents) ... see the sheet.
         y0, y1 = band[r] if r < 6 else band[6]
         boxes = {}
         for i, ch in enumerate(chars):

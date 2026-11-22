@@ -1,10 +1,8 @@
 package app.pokeplan.data
 
-/** A spend or reversal that would take the Poké balance or a Bag stack below zero. Nothing was changed. */
 class InsufficientFundsException(val asset: String, val have: Long, val delta: Long) :
     IllegalStateException("not enough $asset: have $have, change $delta")
 
-/** An event to settle once. [eventId] is the idempotency key (`<module>:<source record>:<kind>[:<occurrence>]`). */
 data class RewardEventInput(
     val eventId: String,
     val sourceModule: String,
@@ -15,7 +13,6 @@ data class RewardEventInput(
     val poke: Long = 0,
     val items: Map<String, Long> = emptyMap(),
     val metadataJson: String? = null,
-    /** A minimal, privacy-free payload for downstream consumers, written in the same transaction. */
     val outboxJson: String? = null,
 )
 
@@ -25,18 +22,11 @@ sealed interface Settlement {
     val eventId: String
     val entries: List<LedgerEntry>
 
-    /** The event was new and has been applied. */
     data class Applied(override val eventId: String, override val entries: List<LedgerEntry>) : Settlement
 
-    /** The same key had been settled before: its recorded result is returned and nothing changed. */
     data class AlreadySettled(override val eventId: String, override val entries: List<LedgerEntry>) : Settlement
 }
 
-/**
- * The one Bag, the one Poké balance and the append-only ledger behind them.
- *
- * Balances change only here, only with a ledger entry in the same transaction (DATA_AND_MIGRATIONS.md section 8).
- */
 class EconomyRepository internal constructor(private val store: DataStore) {
     private val q get() = store.db.dataQueries
 
@@ -52,11 +42,6 @@ class EconomyRepository internal constructor(private val store: DataStore) {
 
     fun hasEvent(eventId: String): Boolean = q.eventById(eventId).executeAsOneOrNull() != null
 
-    /**
-     * Settles [event] atomically: records it, appends its ledger entries and moves the balances. Settling a key that
-     * already exists returns its recorded entries and changes nothing, so a retry after a crash cannot pay twice.
-     * A change that would go below zero throws [InsufficientFundsException] and leaves everything as it was.
-     */
     fun settle(event: RewardEventInput): Settlement = store.transaction {
         if (hasEvent(event.eventId)) return@transaction Settlement.AlreadySettled(event.eventId, ledgerOf(event.eventId))
         val deltas = buildMap {
@@ -68,10 +53,6 @@ class EconomyRepository internal constructor(private val store: DataStore) {
         Settlement.Applied(event.eventId, ledgerOf(event.eventId))
     }
 
-    /**
-     * Reverses a settled event with a compensating event of its own (it never reuses the original key and never edits
-     * the ledger). An event can be reversed once.
-     */
     fun reverse(reversalEventId: String, originalEventId: String, reason: String, occurredAt: Long): Settlement = store.transaction {
         if (hasEvent(reversalEventId)) return@transaction Settlement.AlreadySettled(reversalEventId, ledgerOf(reversalEventId))
         val original = ledgerOf(originalEventId)
@@ -85,7 +66,6 @@ class EconomyRepository internal constructor(private val store: DataStore) {
         Settlement.Applied(reversalEventId, ledgerOf(reversalEventId))
     }
 
-    /** Where the stored balances disagree with the ledger; empty means they reconcile. */
     fun reconcile(): List<String> {
         val totals = q.ledgerTotals().executeAsList().associate { it.asset to (it.total ?: 0L) }
         val problems = mutableListOf<String>()

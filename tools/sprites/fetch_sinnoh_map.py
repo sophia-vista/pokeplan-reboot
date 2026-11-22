@@ -1,16 +1,4 @@
 #!/usr/bin/env python3
-"""Builds assets/world/map-sinnoh.png, the Sinnoh Town Map of Pokémon Platinum, from the game's own tiles.
-
-Usage: python3 -I tools/sprites/fetch_sinnoh_map.py   (needs Pillow)
-
-The pret/pokeplatinum decomposition (pinned commit below) keeps the Town Map's bottom screen as a sheet of 4-bit tiles
-(bottom_screen_map_tiles.png, grey levels of 17 per palette index), 32 colours (bottom_screen_map.pal) and a 512 x 512 tilemap
-(bottom_screen_region_map_tilemap.NSCR: four 32 x 32 screen blocks in the order top-left, top-right, bottom-left, bottom-right,
-16-bit entries of tile, flips and palette bank). This puts them together, brightens the palette (the file's values are dim; the
-game shows them brighter), repaints the one orange "you are here" cursor tile in the brown of its route, crops to the region and
-halves it (every other pixel) so it matches the size of the other regional maps. Nothing is drawn by hand. Private use only
-(Nintendo / Game Freak art, as the rest of assets/world); listed in docs/assets.md.
-"""
 import io
 import os
 import struct
@@ -53,7 +41,6 @@ def main():
                 c = colours[bank * 16 + v]
                 out.putpixel((cx * 8 + x, cy * 8 + y), tuple(min(255, int(ch * BRIGHTEN)) for ch in c))
     crop = out.crop(CROP)
-    # The orange cursor tile of the game's own map becomes the route's brown.
     brown = (151, 107, 55)
     cp = crop.load()
     for y in range(crop.height):

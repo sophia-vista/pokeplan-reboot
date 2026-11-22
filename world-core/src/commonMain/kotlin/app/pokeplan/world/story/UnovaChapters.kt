@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Unova, "Truth and Ideals": Osh the Oshawott guides the buddy; Team Plasma is Purrloin and Liepard; Reshiram, Zekrom and Kyurem are the dragons of the legend. */
 internal object UnovaChapters {
     private val buddy = buddyCharacter()
     private val osh = npc("osh", "Osh", 501)

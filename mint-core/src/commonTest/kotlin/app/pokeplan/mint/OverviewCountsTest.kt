@@ -9,7 +9,6 @@ class OverviewCountsTest {
 
     private fun acct(id: String, t: AccountType, opening: Long) = FinancialAccount(id, id, t, "PHP", opening, LocalDate(2026, 1, 1))
 
-    /** A bank with 100,000, a Pay later line owing 90,000 as three installments of 30,000 (due 20 Nov, 20 Dec, 20 Jan), and a 500 bill due on the 18th. */
     private fun data(window: OverviewWindow = OverviewWindow.DAYS_14, payLater: PayLaterCount = PayLaterCount.WHOLE) = MintData(
         accounts = listOf(acct("bank", AccountType.BANK, 100_000), acct("later", AccountType.PAY_LATER, 90_000)),
         plans = listOf(
@@ -26,8 +25,8 @@ class OverviewCountsTest {
     fun theWindowsEndWhereTheirNamesSay() {
         assertEquals(14, OverviewWindow.DAYS_14.days(today))
         assertEquals(30, OverviewWindow.DAYS_30.days(today))
-        assertEquals(14, OverviewWindow.THIS_MONTH.days(today)) // 16 to 30 November
-        assertEquals(45, OverviewWindow.NEXT_MONTH.days(today)) // to 31 December
+        assertEquals(14, OverviewWindow.THIS_MONTH.days(today))
+        assertEquals(45, OverviewWindow.NEXT_MONTH.days(today))
         assertEquals(0, OverviewWindow.THIS_MONTH.days(LocalDate(2026, 11, 30)))
     }
 
@@ -62,12 +61,12 @@ class OverviewCountsTest {
     fun theSummaryFollowsTheWindow() {
         val short = OverviewCounts.summary(data(), today)
         assertEquals(14, short.windowDays)
-        assertEquals(2, short.dueCount) // the bill and the 20 Nov installment
+        assertEquals(2, short.dueCount)
         assertEquals(30_500L, short.dueMinor)
         assertEquals(100_000L - 30_500L, short.availableMinor)
         assertEquals(listOf("Internet", "later"), short.next.map { it.name })
         val long = OverviewCounts.summary(data(OverviewWindow.NEXT_MONTH), today)
-        assertEquals(60_000L + 500L * 2, long.dueMinor) // two installments and the bill on 18 Nov and 18 Dec
+        assertEquals(60_000L + 500L * 2, long.dueMinor)
     }
 
     @Test
@@ -75,7 +74,7 @@ class OverviewCountsTest {
         val salary = Bill("b2", "Salary", "PHP", Frequency.MONTHLY, LocalDate(2026, 11, 20), expectedMinor = 20_000, accountId = "bank", income = true)
         val d = data().let { it.copy(bills = it.bills + salary) }
         val s = OverviewCounts.summary(d, today)
-        assertEquals(2, s.dueCount) // still just the Internet bill and the installment
+        assertEquals(2, s.dueCount)
         assertEquals(30_500L, s.dueMinor)
         assertEquals(100_000L - 30_500L, s.availableMinor)
         assertEquals(listOf("Internet", "later"), s.next.map { it.name })

@@ -5,15 +5,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import kotlinx.datetime.LocalTime
 
-/**
- * Typed dates, times and durations for every module (owner, 12 November 2026: "I would prefer to input specific dates and
- * times"). Pure text rules with no UI, so each accepted spelling is tested once and every field reads the same way.
- *
- * A date is never guessed from a number that could be read two ways: `2026-11-07` (year first, `-`, `/` or `.`), `7/11/2026`
- * (day first, four-digit year) and `7 Nov 2026` / `Nov 7` are accepted; a month name with no year takes the year of [reference].
- * A time is `9`, `930`, `9:30`, `09:30`, `21:05`, `9pm`, `9:30 pm`, `noon` or `midnight`. A duration is `90`, `90m`, `1h`, `1h30`,
- * `1:30`, `1.5h` or `45s`. Anything else is null, never a near miss.
- */
 object ExactInput {
 
     private val MONTHS = listOf("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
@@ -24,7 +15,6 @@ object ExactInput {
     private val DAY_NAME = Regex("""(\d{1,2})(?:st|nd|rd|th)?\s*-?\s*([a-z]{3,9})\.?,?\s*(\d{4})?""")
     private val NAME_DAY = Regex("""([a-z]{3,9})\.?\s*(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})?""")
 
-    /** The date [text] says, or null. [reference] gives the year when it is left out and the meaning of today, tomorrow and yesterday. */
     fun parseDate(text: String, reference: LocalDate): LocalDate? {
         val s = text.trim().lowercase()
         if (s.isEmpty()) return null
@@ -47,14 +37,12 @@ object ExactInput {
         return null
     }
 
-    /** Year-month-day with `-`, which sorts, never reads two ways and is what a typed field shows back. */
     fun formatDate(d: LocalDate): String = d.toString()
 
     private fun month(name: String): Int? {
         if (name.length < 3) return null
         val i = MONTHS.indexOfFirst { name.startsWith(it) }
         if (i < 0) return null
-        // "march" and "mar" are March; "marx" is not a month.
         val full = FULL_MONTHS[i]
         return if (full.startsWith(name) || name == "sept") i + 1 else null
     }
@@ -72,10 +60,6 @@ object ExactInput {
     private val CLOCK = Regex("""(\d{1,2})[:.h](\d{2})""")
     private val DIGITS = Regex("""\d{1,4}""")
 
-    /**
-     * The minute of the day [text] says (0 to 1439), or null. With [allowEndOfDay] `24:00` is 1440, for the end of a block that
-     * runs to midnight.
-     */
     fun parseMinuteOfDay(text: String, allowEndOfDay: Boolean = false): Int? {
         val s = text.trim().lowercase()
         if (s.isEmpty()) return null
@@ -103,7 +87,6 @@ object ExactInput {
 
     fun parseTime(text: String): LocalTime? = parseMinuteOfDay(text)?.let { LocalTime(it / 60, it % 60) }
 
-    /** `09:30`: 24 hours, two digits each, the one spelling every field shows back. */
     fun formatTime(t: LocalTime): String = formatMinuteOfDay(t.hour * 60 + t.minute)
 
     fun formatMinuteOfDay(minute: Int): String = (minute / 60).toString().padStart(2, '0') + ":" + (minute % 60).toString().padStart(2, '0')
@@ -111,11 +94,6 @@ object ExactInput {
     private val TOKEN = Regex("""(\d+(?:\.\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)?""")
     private val COLONS = Regex("""(\d+):(\d{1,2})(?::(\d{1,2}))?""")
 
-    /**
-     * Whole seconds [text] says, or null. A bare number counts in [bareUnit] ("minutes" for an estimate, "seconds" for a short
-     * timer). `1:30` is one hour thirty for [bareUnit] minutes (hours:minutes) and minutes:seconds for seconds; `1:30:00` is always
-     * hours, minutes, seconds.
-     */
     fun parseDurationSeconds(text: String, bareUnit: Char = 'm'): Long? {
         val s = text.trim().lowercase()
         if (s.isEmpty()) return null
@@ -128,7 +106,6 @@ object ExactInput {
                 if (z > 59) null else x * 3600 + y * 60 + z
             } else if (bareUnit == 's') x * 60 + y else x * 3600 + y * 60
         }
-        // "1h30" or "1h 30": a bare number after an hour counts as minutes.
         var total = 0.0
         var pos = 0
         var seen = 0
@@ -150,11 +127,9 @@ object ExactInput {
         return if (total - whole < 1e-9 && total >= 0.0) whole else null
     }
 
-    /** Whole minutes, or null when [text] is not a whole number of minutes (`90s` is not). */
     fun parseDurationMinutes(text: String): Int? =
         parseDurationSeconds(text, 'm')?.takeIf { it % 60 == 0L && it / 60 <= 24 * 60 }?.let { (it / 60).toInt() }
 
-    /** `1 h 30 min`, `45 min`, `2 h`: the spelling a duration field shows back. */
     fun formatMinutes(minutes: Int): String = when {
         minutes < 60 -> "$minutes min"
         minutes % 60 == 0 -> "${minutes / 60} h"

@@ -35,9 +35,6 @@ import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 
-/**
- * The search box with its Filter panel (list, difficulty, and with [withStatus] the status and the Done preset), shared by the Tasks workspace's Open and Done views. Tap a chosen chip again to drop it.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskFilter) -> Unit, withStatus: Boolean) {
@@ -50,7 +47,6 @@ internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskF
                     placeholder = "Search",
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 )
-                // The Done preset (finished and won't-do tasks, latest first), as Things' Logbook; tap again for open tasks.
                 if (withStatus) TabButton("Done", filter.status == TaskFilter.Status.FINISHED, { onChange(filter.copy(status = if (filter.status == TaskFilter.Status.FINISHED) TaskFilter.Status.OPEN else TaskFilter.Status.FINISHED)) })
                 PixelButton("Filter", { filtering = !filtering }, compact = true)
             }

@@ -1,19 +1,4 @@
 #!/usr/bin/env python3
-"""Gives a Mystery Dungeon form that SpriteCollab has no shiny for a shiny made from the form's real still sprites.
-
-Usage: python3 -I tools/sprites/derive_shiny.py [--dry-run]
-
-assets/sprites holds each form's regular and shiny sprite (PokeAPI/sprites), drawn pixel for pixel on the same shapes. For a
-form whose assets/pmd sheets have no `<id>-shiny.png`, this reads which of the regular sprite's colours the shiny changes and by
-how much (hue, saturation, value), then recolours the form's own PMD sheets (every folder in assets/pmd, and its portrait strip)
-the same way: each pixel takes the change of the nearest colour of the regular still sprite, and a pixel that is nearest to a
-colour the shiny leaves alone (the outline, a belly, the eyes) stays as it is. Only recolouring of real pixels: no pixel is drawn.
-A form whose shiny still is the regular one is left without a shiny. The sheet tables (pmd.tsv, sleep.tsv...) and portraits.tsv
-get their shiny flag set, and assets/pmd/derived-shiny.tsv lists `id <TAB> folders` for the forms that got one, so a real
-SpriteCollab shiny (a later fetch_pmd.py run) can replace it. The credits are the regular sprite's artists', unchanged.
-
-Needs Pillow. Run it after fetch_pmd.py: a fetch writes the real shinies and the tables afresh, so delete derived-shiny.tsv before a re-run and only what is still missing is derived again.
-"""
 import colorsys
 import io
 import os
@@ -24,11 +9,8 @@ from PIL import Image
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 PMD = os.path.join(ROOT, 'assets/pmd')
 STILLS = os.path.join(ROOT, 'assets/sprites')
-# folder -> table name (the idle sheets are the folder itself)
 FOLDERS = ['', 'sleep', 'eat', 'hop', 'walk-down', 'walk-side', 'walk-up', 'idle-side', 'idle-up', 'rotate', 'wake', 'deep-breath', 'pose']
-# The furthest a pixel may be from a colour of the regular still (redmean distance) to take its change.
 NEAREST = 110.0
-# A colour counts as changed when its shiny is this far from it, or this far round the hue circle (degrees).
 CHANGED = 48.0
 HUE_CHANGED = 12.0
 
@@ -44,14 +26,11 @@ def hsv(c):
 
 
 def hue_gap(a, b):
-    """The distance round the hue circle, in degrees (0 to 180)."""
     return abs((a - b + 0.5) % 1.0 - 0.5) * 360
 
 
-# Below these a colour is a grey, a white or a near-black: its hue means nothing, so it is matched by its lightness alone.
 GREY_SATURATION = 0.18
 DARK_VALUE = 0.2
-# The furthest round the hue circle a pixel may be from the colour of the regular still it takes its change from.
 HUE_REACH = 32.0
 
 
@@ -60,11 +39,6 @@ def chromatic(h_s_v):
 
 
 def anchors(fid):
-    """The regular still's colours with what the shiny does to each, or None without a usable pair or when the shiny looks the same.
-
-    A list of (h, s, v, change) of the regular colours, change being None when the shiny keeps the colour, else the
-    (hue turn, saturation difference, value ratio) that turns it into the shiny's.
-    """
     regular, shiny = os.path.join(STILLS, f'{fid}.png'), os.path.join(STILLS, f'{fid}-shiny.png')
     if not (os.path.exists(regular) and os.path.exists(shiny)):
         return None
@@ -93,7 +67,6 @@ def anchors(fid):
 
 
 def recolour_map(colours, table):
-    """{colour: recoloured colour} for the distinct RGB [colours] of a sheet."""
     found = {}
     for c in colours:
         h, s, v = hsv(c)
@@ -102,7 +75,6 @@ def recolour_map(colours, table):
             ah, as_, av, _ = anchor
             if chromatic((h, s, v)) != chromatic((ah, as_, av)):
                 continue
-            # Chromatic colours are matched by hue first, then how pale and how light; greys by lightness (and a little by tint).
             d = (hue_gap(h, ah) + 70 * abs(s - as_) + 70 * abs(v - av)) if chromatic((h, s, v)) else (200 * abs(v - av) + 40 * abs(s - as_))
             if d < near:
                 best, near = anchor, d
@@ -113,7 +85,6 @@ def recolour_map(colours, table):
         if chromatic((h, s, v)):
             h = (h + dh) % 1.0
         else:
-            # A grey the shiny tints (a white that goes lilac): take the shiny's hue, and as much saturation as it gained.
             h = hb
         s = min(1.0, max(0.0, s + ds))
         v = min(1.0, v * vr)
@@ -152,8 +123,6 @@ def main():
     portraits_path = os.path.join(PMD, 'portraits', 'portraits.tsv')
     portraits = read_table(portraits_path)
     todo = {}
-    # Only a form whose idle sheet has no real shiny gets its other sheets derived (a form with a real idle shiny and a missing one
-    # for another row, because the frames differ, keeps showing the real one there as before: the app falls back to its idle).
     plain = {int(r[0]) for r in tables[''][1] if r[5] == '0'}
     for sub, (_, rows) in tables.items():
         for r in rows:
@@ -194,7 +163,6 @@ def main():
     with open(portraits_path, 'w', encoding='utf-8') as fh:
         for r in portraits:
             fh.write('\t'.join(r) + '\n')
-    # A form derived by an earlier run keeps its line (its flags are set now, so this run does not see it as missing a shiny).
     listed = os.path.join(PMD, 'derived-shiny.tsv')
     if os.path.exists(listed):
         for fid, subs in read_table(listed):

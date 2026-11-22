@@ -18,8 +18,6 @@ class MintRulesTest {
     private fun data(vararg accounts: FinancialAccount, txs: List<Transaction> = emptyList(), bills: List<Bill> = emptyList(), payments: List<BillPayment> = emptyList(), budgets: List<Budget> = emptyList()) =
         MintData(accounts = accounts.toList(), categories = MintRules.seedCategories(), transactions = txs, bills = bills, billPayments = payments, budgets = budgets)
 
-    // --- money ---------------------------------------------------------------------------------------------------------
-
     @Test
     fun moneyIsParsedExactlyAndNeverRounded() {
         assertEquals(125050L, Money.parse("1,250.50", "PHP"))
@@ -45,8 +43,6 @@ class MintRulesTest {
         assertEquals("\u20B1••••", Money.format(125050, "PHP", hidden = true))
         assertEquals("1250.50", Money.plain(125050, "PHP"))
     }
-
-    // --- balances ------------------------------------------------------------------------------------------------------
 
     @Test
     fun aBalanceIsTheOpeningBalanceAndPostedTransactionsOnly() {
@@ -141,8 +137,6 @@ class MintRulesTest {
         assertEquals(Check.Ok, MintRules.checkTransaction(s, tx("9", TxType.TRANSFER, 10, "a", to = "b")))
     }
 
-    // --- budgets -------------------------------------------------------------------------------------------------------
-
     @Test
     fun aBudgetIsDerivedFromPostedSpendingInItsPeriodAndOverspendingIsJustANumber() {
         val a = account("a")
@@ -159,12 +153,10 @@ class MintRulesTest {
 
     @Test
     fun weeksStartWhereTheyAreAskedTo() {
-        val (start, end) = MintRules.periodOf(BudgetPeriod.WEEKLY, LocalDate(2026, 11, 7)) // a Saturday
+        val (start, end) = MintRules.periodOf(BudgetPeriod.WEEKLY, LocalDate(2026, 11, 7))
         assertEquals(LocalDate(2026, 11, 2), start); assertEquals(LocalDate(2026, 11, 9), end)
         assertEquals(LocalDate(2026, 2, 1) to LocalDate(2026, 3, 1), MintRules.periodOf(BudgetPeriod.MONTHLY, LocalDate(2026, 2, 28)))
     }
-
-    // --- bills ---------------------------------------------------------------------------------------------------------
 
     private fun bill(freq: Frequency, first: LocalDate, expected: Long? = 100_000) = Bill("bill", "Internet", "PHP", freq, first, expected)
 
@@ -231,8 +223,6 @@ class MintRulesTest {
         val a = MintRules.available(s, "PHP", d)
         assertEquals(100_000, a.liquidMinor); assertEquals(15_000, a.billsMinor); assertEquals(1, a.billsCount); assertEquals(85_000, a.availableMinor)
     }
-
-    // --- Ledger Research -----------------------------------------------------------------------------------------------
 
     @Test
     fun anEmptyMintNeverPays() {

@@ -13,7 +13,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Care's records in their own tables (REP-014): the document goes in as rows and comes back equal, and a write changes only what changed. */
 class CareTablesTest {
     private fun fixture(name: String) = javaClass.getResource("/fixtures/0.123.0/$name")!!.readText()
     private fun obj(text: String) = Json.parseToJsonElement(text) as JsonObject
@@ -22,7 +21,6 @@ class CareTablesTest {
     private fun count(s: DataStore, table: String): Long =
         s.driver.executeQuery(null, "SELECT count(*) FROM $table", { c -> app.cash.sqldelight.db.QueryResult.Value(if (c.next().value) c.getLong(0) else null) }, 0).value ?: 0L
 
-    /** Counts every row written to the Care tables from now on, so a test can tell which writes a save made. */
     private fun countWrites(s: DataStore) {
         s.driver.execute(null, "CREATE TABLE write_log(t TEXT NOT NULL)", 0)
         for (t in listOf("care_routine", "care_routine_completion", "care_diary_card", "care_journal_entry", "care_state", "care_visitor")) {
@@ -42,9 +40,7 @@ class CareTablesTest {
             assertTrue(s.careTables.isActive())
             val back = obj(s.live.read("care")!!)
             val src = obj(fixture(name))
-            // Empty lists are not stored, and come back as nothing, which the app reads as the same empty list.
             for ((k, v) in src) if (!(v is JsonArray && v.isEmpty() && k != "met" && k != "rhythmWeeks")) assertEquals(v, back[k] ?: JsonArray(emptyList()).takeIf { v is JsonArray && v.isEmpty() }, "$name: $k")
-            // The old row is kept aside, never deleted, and the snapshot still has Care as 'care'.
             assertEquals(fixture(name), s.live.read("aside:care:tables:6"))
             assertEquals(back, obj(s.live.snapshot().getValue("care")))
         }
@@ -57,7 +53,7 @@ class CareTablesTest {
             "diary":[{"id":"d1","day":"2026-11-03","atMillis":5,"note":"private"}],"breaks":[{"atMillis":1,"day":"2026-11-03","seconds":60},{"atMillis":2,"day":"2026-11-04","seconds":90}],
             "journal":[{"id":"j1","atMillis":9,"day":"2026-11-05","text":"hello"}],"visitors":[{"id":"v1","speciesId":25,"arrivedDay":"2026-11-05"}],
             "settings":{"reminders":true},"journalDraft":"half","skippedPrompts":{"2026-11-05":1},"someNewField":{"x":1}}"""
-        s.live.write("care", doc, 2) // not in tables yet: a plain row
+        s.live.write("care", doc, 2)
         s.live.moveCareToTables(3)
         val back = obj(s.live.read("care")!!)
         val src = obj(doc)
@@ -78,26 +74,21 @@ class CareTablesTest {
         val base = """{"routines":[{"id":"r1","title":"Water","createdOn":"2026-11-01","completions":["2026-11-01"]}],"journal":[{"id":"j1","atMillis":1,"day":"2026-11-01","text":"one"}],"journalDraft":"","settings":{"reminders":true}}"""
         s.live.write("care", base, 1); s.live.moveCareToTables(2)
         countWrites(s)
-        // Nothing changed: nothing written.
         s.live.write("care", s.live.read("care")!!, 3)
         assertEquals(0, writes(s))
-        // A routine ticked on a new day: one completion row, nothing else.
         val ticked = obj(s.live.read("care")!!).let { d ->
             val r = (d["routines"] as JsonArray)[0] as JsonObject
             JsonObject(d + ("routines" to JsonArray(listOf(JsonObject(r + ("completions" to JsonArray(listOf(JsonPrimitive("2026-11-01"), JsonPrimitive("2026-11-02")))))))))
         }
         s.live.write("care", ticked.toString(), 4)
         assertEquals(1, writes(s))
-        // A draft typed: one state row, not the journal.
         s.live.write("care", JsonObject(ticked + ("journalDraft" to JsonPrimitive("typing"))).toString(), 5)
         assertEquals(2, writes(s))
-        // An entry written (and the draft cleared): one journal row and one state row.
         val journal = JsonArray((ticked["journal"] as JsonArray) + obj("""{"id":"j2","atMillis":2,"day":"2026-11-02","text":"two"}"""))
         s.live.write("care", JsonObject(ticked + ("journal" to journal)).toString(), 6)
         assertEquals(2 + 2, writes(s))
-        // An entry deleted: one row.
         s.live.write("care", ticked.toString(), 7)
-        assertEquals(2 + 2 + 1, writes(s)) // the entry's row only
+        assertEquals(2 + 2 + 1, writes(s))
     }
 
     @Test
@@ -148,7 +139,6 @@ class CareTablesTest {
         val again = JvmDatabase.open(f.path)
         assertTrue(again.careTables.isActive())
         assertEquals(obj("""{"routines":[{"id":"r","title":"Stretch","createdOn":"2026-11-01","completions":["2026-11-01"]}],"journalDraft":"d"}"""), obj(again.live.read("care")!!))
-        // The marker is set, so another start does nothing.
         again.live.moveCareToTables(99)
         assertEquals(1, count(again, "care_routine"))
         assertTrue(again.integrityIssues().isEmpty())

@@ -58,11 +58,6 @@ import app.pokeplan.app.gear.gearFavorite
 import app.pokeplan.app.gear.gearHelper
 import app.pokeplan.app.gear.gearUsed
 
-/**
- * Gear (docs/pokelife/MODULES/GEAR.md): a hub of handy tools. Every tool works from the first day; a helper Pokémon (one of the
- * tool's signature line that the player chose) is looks only: its sprite over the tool and one reaction when the tool is used.
- * Nothing here pays anything or is read by any other module.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.GEAR) { GearBody(model, start, onClose) }
@@ -70,7 +65,6 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) = 
 @Composable
 private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
     var open by remember { mutableStateOf(start) }
-    // Each use of a tool pings its helper, which answers with its one reaction.
     var used by remember { mutableIntStateOf(0) }
     val tool = open
     val store = model.store
@@ -79,7 +73,6 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
         var query by remember { mutableStateOf("") }
         var category by remember { mutableStateOf<ToolCategory?>(null) }
         SectionScaffold("Gear", null, onClose, icon = "explorer-kit", color = ModuleAccent.GEAR.header) {
-            // The home: search first, then what you starred and used lately, then every tool by group. Search works offline.
             PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search")
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
             if (query.isNotBlank()) {
@@ -100,7 +93,6 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
             }
         }
     } else {
-        // Opening a tool puts it first among the ones used lately (a short list kept on this phone).
         LaunchedEffect(tool) { store.gearUsed(tool) }
         SectionScaffold(tool.label, null, { open = null }, icon = tool.icon, color = ModuleAccent.GEAR.header) {
             HelperBar(model, tool, used)
@@ -129,10 +121,6 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
     }
 }
 
-/**
- * One row over a tool: its helper (only when one was chosen: a small sprite and one reaction after a use), a way to choose one when the player
- * owns a Pokémon that can help, and the star. A tool with no helper shows no placeholder. [used] changes on each use of the tool.
- */
 @Composable
 private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
     val store = model.store
@@ -159,7 +147,6 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
                 ChoiceRow(selected = helper?.id == p.id, onClick = { store.assignGearHelper(tool, p.id); choosing = false }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
                     Column {
                         Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
-                        // Choosing one takes it from where it is (one place only), so a party member or the buddy says so before the tap.
                         if (helper?.id != p.id && store.placeOf(p.id) != app.pokeplan.app.Place.Pc) {
                             Text(app.pokeplan.app.Places.label(model.data, p.id), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         }
@@ -171,7 +158,6 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
     }
 }
 
-/** The picture over the helper after a use: (true, item id) or (false, Pixelarticons glyph). */
 private fun reactionFor(tool: GearTool): Pair<Boolean, String> = when (tool) {
     GearTool.FLASHLIGHT -> false to "zap"
     GearTool.CALCULATOR -> false to "check"

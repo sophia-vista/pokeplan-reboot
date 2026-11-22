@@ -9,11 +9,6 @@ import app.pokeplan.link.ContactCard
 import app.pokeplan.link.ContactImport
 import app.pokeplan.ui.ContactSource
 
-/**
- * The phone's address book through Android's contacts provider, read-only and one query: name, phones, emails, organization and birthday, nothing else
- * (no photos, no call log). Contacts are keyed by their lookup key, which survives a sync. Must be made in the activity's onCreate, since it registers
- * the permission request.
- */
 class AndroidContacts(private val activity: ComponentActivity) : ContactSource {
     private var pending: ((Boolean) -> Unit)? = null
     private val launcher = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -43,7 +38,6 @@ class AndroidContacts(private val activity: ComponentActivity) : ContactSource {
         val email = ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE
         val org = ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE
         val event = ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE
-        // The name row too, so a contact with nothing but a name is still offered.
         val name = ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
         val columns = arrayOf(
             ContactsContract.Contacts.LOOKUP_KEY, ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,

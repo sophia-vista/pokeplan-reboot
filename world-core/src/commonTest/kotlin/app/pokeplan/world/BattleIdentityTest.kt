@@ -77,7 +77,6 @@ class BattleIdentityTest {
 
     @Test
     fun theWholeIdentityIsCappedAndLevelStaysTheMainThing() {
-        // A team of the same levels never differs by more than the cap in power from its levels plus the type bonus.
         for (d in Dungeons.all) for (s in listOf(3, 6, 9, 94, 149, 248, 373)) {
             val p = mon(s, 60)
             val b = BattleIdentity.breakdown(p, d)

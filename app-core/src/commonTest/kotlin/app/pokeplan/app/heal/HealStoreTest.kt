@@ -38,7 +38,6 @@ class HealStoreTest {
     private val utc = TimeZone.UTC
     private val saturday = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()
 
-    /** A world that records every event it is sent, so a test can see exactly what crosses the boundary. */
     private class Spy(val inner: GameStore) : World {
         val events = mutableListOf<HealEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)
@@ -86,7 +85,6 @@ class HealStoreTest {
             assertEquals(e.ref, e.id.substringAfterLast(':'))
         }
         assertEquals(listOf(HealKind.ACTIVITY, HealKind.PARTICIPATION), s.spy.events.map { it.kind })
-        // And nothing in the shared save names a record, a type, a duration or a volume.
         val saved = GameStore.json.encodeToString(AppData.serializer(), s.game.data)
         assertTrue("secret" !in saved && "distanceMeters" !in saved && "RUN" !in saved)
     }
@@ -140,15 +138,12 @@ class HealStoreTest {
         val s = setup()
         val a = assertNotNull(s.heal.logActivity(ActivityType.WALK, 30).record)
         val candies = s.candies
-        // Edit: paid flag kept, nothing paid.
         s.heal.updateActivity(a.copy(minutes = 90, type = ActivityType.RUN))
         assertTrue(s.heal.data.activities.single().paid)
         assertEquals(candies, s.candies)
-        // Delete and re-log is a new session (it pays under the day's cap), but the deleted one's event id can not pay twice.
         s.heal.deleteActivity(a.id)
         assertNull(s.game.heal(HealEvent("heal:activity:${a.id}", HealKind.ACTIVITY, saturday, a.id)), "the same event id never pays twice")
         assertEquals(candies, s.candies)
-        // Restoring the document (a backup) and logging nothing new pays nothing either.
         val restored = HealStore(MemoryStorage(s.storage.text), s.clock, s.spy, utc)
         assertEquals(0, restored.data.activities.size)
         assertEquals(candies, s.candies)
@@ -255,8 +250,6 @@ class HealStoreTest {
         assertFalse(a.paid, "no trainer yet: tracking still works, the world pays nothing")
     }
 
-    // --- the tutorial ---------------------------------------------------------------------------------------------------------
-
     @Test
     fun theHealWalkGivesOneFieldPokemonIntoHealsPartyOnceWithNoRecordStreakOrCap() {
         val s = setup()
@@ -272,7 +265,6 @@ class HealStoreTest {
         assertFalse(s.game.tutorialOffered(Tutorials.HEAL_WALK))
         assertNull(s.game.completeTutorial(Tutorials.HEAL_WALK))
         assertEquals(2, s.game.data.player.pokemon.size)
-        // The next real activity still pays in full.
         assertTrue(assertNotNull(s.heal.logActivity(ActivityType.WALK, 30).record).paid)
     }
 
@@ -289,7 +281,6 @@ class HealStoreTest {
         s.game.completeTutorial(Tutorials.HEAL_WALK)
         assertEquals(buddy, s.game.data.player.buddyId)
         assertTrue(s.game.data.player.party.isEmpty() && s.game.data.player.partyOf(PartyIds.CARE).isEmpty())
-        // A Pokémon put in Heal's party is taken from where it was (one place only).
         assertTrue(s.game.setInParty(buddy!!, true, PartyIds.HEAL))
         assertEquals(Place.Party(PartyIds.HEAL), s.game.placeOf(buddy))
         assertNull(s.game.data.player.buddyId)

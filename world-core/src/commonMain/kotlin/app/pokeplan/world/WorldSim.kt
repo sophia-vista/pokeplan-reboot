@@ -7,7 +7,6 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import kotlin.math.min
 import kotlin.random.Random
 
-/** One thing that happened on an expedition, for the report the player reads when they come back. */
 sealed interface WorldEvent {
     data class FloorCleared(val dungeonId: String, val floor: Int) : WorldEvent
     data class Found(val speciesId: Int, val dungeonId: String, val floor: Int) : WorldEvent
@@ -16,108 +15,61 @@ sealed interface WorldEvent {
     data class Treasure(val tier: Int) : WorldEvent
     data class Milestone(val dungeonId: String, val floor: Int, val reward: MilestoneReward) : WorldEvent
     data class Cleared(val dungeonId: String) : WorldEvent
-    /** A floor the team was too weak for (see [Outcomes]): not cleared, half the Poké and Exploration XP, nothing else. */
     data class Setback(val dungeonId: String, val floor: Int) : WorldEvent
-    /** The team turned back at [floor] and came home safely: the expedition is over. */
     data class Retreat(val dungeonId: String, val floor: Int) : WorldEvent
     data class MissionDone(val missionId: String) : WorldEvent
-    /** A team member did its Evolution Trial ([EvolutionTrialSites]): [pokemonName] can now evolve into [into]. */
     data class TrialDone(val pokemonName: String, val into: String, val title: String) : WorldEvent
-    /** A floor event: [user] opened it (null: the team went around), and [gave] says what it gave. */
-    /** A floor offered a choice, now waiting for an answer (or the default). */
     data class ChoiceOffered(val kind: ChoiceKind, val dungeonId: String, val floor: Int) : WorldEvent
     data class FloorEvent(val kind: FloorEventKind, val dungeonId: String, val floor: Int, val userName: String?, val gave: String) : WorldEvent
-    /** The Guardian was faced: the story is complete. */
     data object GuardianFaced : WorldEvent
-    /** The Guardian of another layer was faced: that layer's story is complete. */
     data class LayerGuardianFaced(val layer: WorldLayer) : WorldEvent
 }
 
-/** A team's fit for a dungeon (see [WorldSim.suitability]). */
 data class Suitability(val floorMillis: Long, val favored: Int, val size: Int)
 
-/**
- * How long a floor takes a team, step by step, from the same numbers [WorldSim.floorMillis] uses (so what the player reads is what happens).
- * [skillHelp] is what the members' abilities add to World's skills (more berries, finds or Poké); it does not change [floorMillis].
- */
 data class SpeedExplanation(
     val levels: Int,
     val favoredMembers: Int,
-    /** The extra power from members of a favoured type: 20% of their levels. */
     val favoredBonus: Double,
-    /** What the members' moves, abilities and held items add ([BattleIdentity]); [levels] + [favoredBonus] + [identityBonus] is [power]. */
     val identityBonus: Double = 0.0,
-    /** Each member's named parts of that, as lines ("Pikachu: Thunderbolt (electric, favoured here) +6%"). */
     val identityLines: List<String> = emptyList(),
     val power: Double,
     val baseMillis: Long,
-    /** The time after power alone, never under a quarter of [baseMillis]. */
     val afterPowerMillis: Long,
     val atMinimum: Boolean,
-    /** Temporal Mastery (the home Guardian) and the legendaries given for the layer, in percent faster. */
     val masteryPercent: Int,
     val legendPercent: Int,
     val floorMillis: Long,
     val skillHelp: Map<WorldSkill, Int>,
 )
 
-/** What settling did: the new data and, per team, the floors climbed and what happened. */
 data class WorldReport(
     val data: WorldData,
     val perTeam: Map<Int, List<WorldEvent>>,
-    /**
-     * The floors each member climbed in this settle, by Pokémon id: the members of the team at settlement, one count per completed floor
-     * (WORLD.md 5.2). The app gives every one of them the full per-floor experience for each. A floor is counted once: the same step that
-     * counts it moves the team's cursor (`floorsClimbed` and `settledTo`), so the floor's id (team, expedition start, floor index) is never settled twice.
-     */
     val memberFloors: Map<String, Int> = emptyMap(),
 ) {
     val events: List<WorldEvent> get() = perTeam.values.flatten()
     val isEmpty: Boolean get() = events.isEmpty()
 }
 
-/**
- * The dungeon simulation (docs/pokelife/MODULES/WORLD.md section 14). A team climbs one floor after another on its own, and a floor
- * takes [floorMillis] given the team and the dungeon. What each floor gives is rolled from a random generator seeded by the
- * team, the expedition and the floor's number alone, so the result is the same whether the app settles every second or once
- * after a day away (offline progress is exactly as good as staying). Progress while away is capped at [MAX_AWAY_MILLIS].
- *
- * Numbers marked *(tune)* are starting values. Nothing here pays anything itself; the app takes the report and puts items
- * in the Bag, finds in the collection and so on.
- */
 object WorldSim {
-    /** The longest stretch of away time that counts at once. *(tune)* */
     const val MAX_AWAY_MILLIS = 12L * 60 * 60 * 1000
 
-    /** Exploration XP for each floor: its number plus [XP_BASE]. *(tune)* */
     const val XP_BASE = 4
 
-    /** The chance a floor shows a wild Pokémon that joins the finds, in percent. *(tune)* */
     const val FIND_PERCENT = 3
 
-    /** The chance a floor has a berry, and the chance of a treasure box, in percent. *(tune)* */
     const val BERRY_PERCENT = 70
     const val TREASURE_PERCENT = 6
 
-    /** The chance a Paldea floor has Gimmighoul Coins, in percent, and the most in one pile. *(tune)* */
     const val COIN_PERCENT = 30
     const val COIN_MAX = 8
 
-    /**
-     * A team's power: the sum of its members' [contribution]s, each its level, 20% more for a type the dungeon favors, and what its moves, ability and
-     * held item add ([BattleIdentity], at most 25% of the level).
-     */
     fun power(members: List<OwnedPokemon>, dungeon: DungeonDef): Double =
         members.sumOf { contribution(it, dungeon) }
 
-    /** What [p] adds to a team's power in [dungeon] (the one term of [power]); [BattleIdentity.breakdown] says what it is made of. */
     fun contribution(p: OwnedPokemon, dungeon: DungeonDef): Double = BattleIdentity.breakdown(p, dungeon).power
 
-    /**
-     * The strongest team of up to [size] from [candidates] for [dungeon]: [power] is a sum of each member's [contribution], so the best
-     * team is simply the biggest contributors (a favored type of a lower level can beat a higher level of another type). Ties go to the
-     * favored type, then the higher level, then the id, so the choice is the same every time.
-     */
     fun bestTeam(dungeon: DungeonDef, candidates: List<OwnedPokemon>, size: Int = WorldTeam.MAX_MEMBERS): List<OwnedPokemon> =
         candidates.sortedWith(
             compareByDescending<OwnedPokemon> { contribution(it, dungeon) }
@@ -125,7 +77,6 @@ object WorldSim {
                 .thenByDescending { it.level }.thenBy { it.id },
         ).take(size)
 
-    /** How long a floor takes a team of [power], in milliseconds: faster as the power grows, never under a quarter of the base. */
     fun floorMillis(dungeon: DungeonDef, power: Double, mastery: Boolean = false, fasterPercent: Int = 0): Long {
         val base = dungeon.baseFloorSeconds * 1000L
         val factor = 1.0 + power / 100.0
@@ -134,10 +85,6 @@ object WorldSim {
         return if (fasterPercent > 0) withMastery * (100 - fasterPercent.coerceAtMost(50)) / 100 else withMastery
     }
 
-    /**
-     * Settles every team at [now]: the floors each has climbed since it was last settled (at most [MAX_AWAY_MILLIS] of them), their
-     * finds, items, Poké, treasure, XP and milestones. [roster] is the player's Pokémon, to read the members' levels and types.
-     */
     fun settle(data: WorldData, roster: List<OwnedPokemon>, now: Long): WorldReport {
         var out = data
         val perTeam = mutableMapOf<Int, List<WorldEvent>>()
@@ -148,14 +95,11 @@ object WorldSim {
             val dungeon = Dungeons.byId(stored.dungeonId) ?: continue
             val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
             if (members.isEmpty()) continue
-            // A clock set back (or a time zone change on a phone that keeps local time) must not freeze the climb until it catches up,
-            // so the settle point follows it back; the moment it came from is kept, so the same stretch of clock is not counted again later.
             if (stored.settledTo > now) {
                 rewound = maxOf(rewound, stored.settledTo)
                 out = out.withTeam((out.team(team.id) ?: team).copy(expedition = stored.copy(settledTo = now)))
                 continue
             }
-            // The clock is back past where it was set back from: the time before that moment was settled once already (WORLD.md 3.1).
             val trip = if (rewound in (stored.settledTo + 1)..now) stored.copy(settledTo = rewound) else stored
             if (trip != stored) out = out.withTeam((out.team(team.id) ?: team).copy(expedition = trip))
             val per = floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon))
@@ -170,15 +114,12 @@ object WorldSim {
                 if (events.lastOrNull() is WorldEvent.Retreat) { retreated = true; break }
                 done = n + 1
             }
-            // The rest of the time carries over (unless the cap cut it, when the clock jumps to now).
             val settled = if (now - trip.settledTo > MAX_AWAY_MILLIS) now else trip.settledTo + floors * per
             val current = out.team(team.id) ?: team
-            // A team that turned back is home (WORLD.md 3.6): the expedition ends, the floors before it keep what they paid.
             out = out.withTeam(current.copy(expedition = if (retreated) null else trip.copy(settledTo = settled, floorsClimbed = trip.floorsClimbed + floors)))
             perTeam[team.id] = events
             members.forEach { memberFloors[it.id] = (memberFloors[it.id] ?: 0) + done }
         }
-        // A dungeon cleared again and again in one stretch is one line ("... (3 times)"), not three.
         val lines = perTeam.flatMap { (teamId, events) -> events.mapNotNull { journalLine(out.team(teamId)?.title ?: "Team $teamId", it, now) } }
             .fold(mutableListOf<Pair<JournalLine, Int>>()) { acc, l ->
                 if (acc.lastOrNull()?.first?.text == l.text) acc[acc.lastIndex] = acc.last().first to acc.last().second + 1 else acc += l to 1
@@ -188,10 +129,6 @@ object WorldSim {
         return WorldReport(out.copy(lastSeenAt = now, rewoundFrom = if (rewound <= now) 0 else rewound, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam, memberFloors)
     }
 
-    /**
-     * The moment the next floor of any team that is out will be done, or null when no team is exploring (WORLD.md 3.1: the screen waits for this instant
-     * instead of polling). A team whose clock was set back is due at [now], so it is settled and its cursor moved at once; a team is never due before [now].
-     */
     fun nextFloorAt(data: WorldData, roster: List<OwnedPokemon>, now: Long): Long? {
         var next: Long? = null
         for (team in data.teams) {
@@ -205,12 +142,6 @@ object WorldSim {
         return next
     }
 
-    /**
-     * When each accepted, unfinished job will be done if its team keeps exploring, by job id: the moment a team in the job's
-     * dungeon climbs to the job's floor (and meets its team size or power). A job no team can finish, and a [MissionKind.COLLECT]
-     * job (it depends on what the floors give), has no entry. This is what the "job done" alarm is set for; the alarm settles
-     * World, and only a job that really is done is announced.
-     */
     fun jobsDoneAt(data: WorldData, roster: List<OwnedPokemon>): Map<String, Long> {
         val out = mutableMapOf<String, Long>()
         for (p in data.missions) {
@@ -222,12 +153,9 @@ object WorldSim {
                 val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
                 if (members.isEmpty()) continue
                 val power = power(members, dungeon)
-                // A team too weak to clear the job's floor never finishes it (WORLD.md 3.6: a setback floor does not move a job on, and a team that turns back is home).
                 if (m.floor > 0 && Outcomes.of(power, dungeon, m.floor) != Outcomes.Outcome.CLEARED) continue
-                // An investigation depends on what the floors hold and a story request on the story, so neither has a forecast.
                 if (m.kind == MissionKind.INVESTIGATION || m.kind == MissionKind.STORY) continue
                 if ((m.kind == MissionKind.ESCORT && members.size < m.count) || (m.kind == MissionKind.DEFEAT && power < m.count) || (m.kind == MissionKind.CHALLENGE && members.size > m.count)) continue
-                // The next floor to climb is index floorsClimbed; floors rise to the top of the dungeon, then start again at 1.
                 val next = trip.floorsClimbed % dungeon.floors
                 val floors = maxOf(0, m.floor - 1 - next) + 1
                 val at = doneAt(data, trip, floors, floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon)))
@@ -237,19 +165,13 @@ object WorldSim {
         return out
     }
 
-    /**
-     * When [trip] will have climbed [floors] more floors of [per]: from its settle point, but a floor that would pass the moment the clock was set back
-     * from counts from that moment (the time before it was settled already). Only a forecast; [settle] moves the settle point itself.
-     */
     private fun doneAt(data: WorldData, trip: Expedition, floors: Int, per: Long): Long {
         val plain = trip.settledTo + floors * per
         val mark = data.rewoundFrom
         if (mark <= trip.settledTo || plain <= mark) return plain
-        // The floors that fit before the mark are climbed on the earlier clock; the rest count from the mark.
         return mark + (floors - (mark - trip.settledTo) / per).toInt() * per
     }
 
-    /** What the player reads in the expedition log for [event], or null for the many floors that are not worth a line. */
     private fun journalLine(title: String, event: WorldEvent, now: Long): JournalLine? {
         var kind = JournalLine.KIND_NOTE
         var place = ""
@@ -269,7 +191,6 @@ object WorldSim {
         return JournalLine(now, text, kind, place)
     }
 
-    /** The speed of a team of [members] in [dungeon] for [data] explained in steps; [SpeedExplanation.floorMillis] equals what [floorMillis] gives. */
     fun explainSpeed(dungeon: DungeonDef, members: List<OwnedPokemon>, data: WorldData): SpeedExplanation {
         val power = power(members, dungeon)
         val base = dungeon.baseFloorSeconds * 1000L
@@ -288,11 +209,9 @@ object WorldSim {
         )
     }
 
-    /** What a team of [members] brings to [dungeon]: how long a floor takes it, and how many of its members are of a favoured type. */
     fun suitability(dungeon: DungeonDef, members: List<OwnedPokemon>, mastery: Boolean = false, fasterPercent: Int = 0): Suitability =
         Suitability(floorMillis(dungeon, power(members, dungeon), mastery, fasterPercent), members.count { p -> p.form.types.any { it in dungeon.favored } }, members.size)
 
-    /** One floor climbed: the floor number in the dungeon is its index modulo the floors, so a cleared dungeon starts again. */
     private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, members: List<OwnedPokemon>, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>): WorldData {
         val teamSize = members.size
         val firstEvent = events.size
@@ -300,7 +219,6 @@ object WorldSim {
         val random = Random(seed(teamId, trip, index))
         var d = data
         val brewed = at < d.brewUntil
-        // WORLD.md 3.6: the floor is cleared in full, a setback (half the Poké and Exploration XP, no treasure, find, milestone, side path or choice), or the team turns back.
         val outcome = Outcomes.of(power, dungeon, floor)
         if (outcome == Outcomes.Outcome.RETREAT) { events += WorldEvent.Retreat(dungeon.id, floor); return data }
         val partial = outcome == Outcomes.Outcome.SETBACK
@@ -316,7 +234,6 @@ object WorldSim {
             events += WorldEvent.Item(berry, 1)
             d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 1))
         }
-        // Paldea's floors: Gimmighoul Coins lie about (Gimmighoul needs 999). Their own dice, so nothing else a floor gives changes. *(tune)*
         if (!partial && dungeon.layer == WorldLayer.PALDEA) {
             val coinDice = Random(seed(teamId, trip, index) xor 0x6A09E667L)
             if (coinDice.nextInt(100) < COIN_PERCENT) {
@@ -338,14 +255,12 @@ object WorldSim {
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }
-        // A floor choice: choices whose time is up (by this floor's own time) take their default first; then this floor may offer one.
         d = Choices.expire(d, at)
         if (!partial) Choices.kindAt(teamId, trip, floor, index)?.let { ck ->
             val pending = PendingChoice(Choices.idFor(teamId, trip, index, dungeon.id), ck.name, dungeon.id, floor, at, at + Choices.WAIT_MILLIS)
             d = if (d.choices.size >= Choices.MAX_PENDING) Choices.answer(d.copy(choices = d.choices + pending), pending, 0, at) else d.copy(choices = d.choices + pending)
             events += WorldEvent.ChoiceOffered(ck, dungeon.id, floor)
         }
-        // A floor event, if the floor has one: a bonus when a team member can open it, nothing lost when none can.
         if (!partial) FloorEvents.kindAt(teamId, trip, floor, index)?.let { kind ->
             val user = FloorEvents.opener(kind, members)
             var gave = ""
@@ -384,7 +299,6 @@ object WorldSim {
         return d
     }
 
-    /** The wild Pokémon a floor shows, if it shows one: only ones that can hatch (never a legendary or mythical, which are story discoveries). */
     private fun findFor(dungeon: DungeonDef, floor: Int, random: Random, permille: Int): Int? {
         if (random.nextInt(1000) >= permille) return null
         val pool = dungeon.wild.filter { floor in it.fromFloor..it.toFloor && Dex.speciesOrNull(it.speciesId)?.let { s -> !s.isSpecial } == true && HatchRules.rarity(it.speciesId) != null }
@@ -395,7 +309,6 @@ object WorldSim {
         return null
     }
 
-    /** A seed for a floor's event, apart from the floor's own so adding events never changes what a floor gave before. */
     internal fun eventSeed(teamId: Int, trip: Expedition, index: Int): Long = seed(teamId, trip, index) xor 0x5F3759DFL
 
     private fun seed(teamId: Int, trip: Expedition, index: Int): Long = (trip.dungeonId.hashCode().toLong() * 31 + teamId) * 1_000_003L + trip.startedAt * 7 + index

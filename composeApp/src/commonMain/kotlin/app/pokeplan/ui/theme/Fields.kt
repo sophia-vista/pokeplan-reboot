@@ -28,20 +28,6 @@ import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.VisualTransformation
 
-/*
- * The text field of the control system (the sibling of [PixelKey]; states in docs/pokelife/FEATURES/DESIGN_SYSTEM.md section 5.6), drawn like a key: a
- * stair-cornered 2 dp outline round a panel face, no rounding and no floating label.
- *
- *   state     face       outline        text                  notes
- *   rest      panel      border         ink                   placeholder in ink-soft
- *   focused   panel      blue           ink                   the same blue as a key's focus ring
- *   error     panel      danger         ink                   [error] replaces [helper], is announced, and says what to do
- *   disabled  shade      border at half ink-soft at 55%       not editable, not focusable
- *   read-only panel      border         ink                   selectable, not editable
- *
- * A label is a small line above the field (use it when the field is alone on a line); a placeholder shows the example inside it
- * (use it beside a button). One line of text is centred in the field's 48 dp, so a field and a key beside it share a centre line.
- */
 @Composable
 fun PixelField(
     value: String,
@@ -49,9 +35,7 @@ fun PixelField(
     modifier: Modifier = Modifier,
     label: String? = null,
     placeholder: String? = null,
-    /** A quiet line under the field (a rule said up front: "At least 6 characters"). */
     helper: String? = null,
-    /** What went wrong and what to do; turns the field red and is read out. Never blames the user. */
     error: String? = null,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -61,7 +45,6 @@ fun PixelField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    /** The one figure a form is about (an amount): larger letters and a taller field, with [prefix] (a currency sign) in front. */
     large: Boolean = false,
     prefix: String? = null,
 ) {
@@ -87,7 +70,6 @@ fun PixelField(
             singleLine = singleLine, minLines = minLines, maxLines = maxLines, interactionSource = interaction,
             decorationBox = { inner ->
                 Box(Modifier.defaultMinSize(minHeight = Spacing.Target).padding(horizontal = Spacing.M, vertical = Spacing.S), contentAlignment = Alignment.CenterStart) {
-                    // A text field draws its own text, which ignores the style's baseline shift, so the same lift is made here.
                     Box(Modifier.offset(y = (-2.25).dp)) {
                         if (prefix != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             Text(prefix, style = body.copy(color = Pixel.InkSoft))

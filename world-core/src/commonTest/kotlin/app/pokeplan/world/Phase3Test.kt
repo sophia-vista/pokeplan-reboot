@@ -15,10 +15,8 @@ class Phase3Test {
     private fun mon(id: String, species: Int, level: Int = 20): OwnedPokemon =
         Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
 
-    /** A species that can use [move] (found in the Dex, so the test does not depend on a hand-picked list). */
     private fun user(move: FieldMove): Int = (1..1025).first { sp -> Dex.speciesOrNull(sp) != null && Dex.learnset(sp).learns(move.moveId!!) }
 
-    /** A species that cannot use any field move. */
     private val nobody: Int = (1..1025).first { sp -> Dex.speciesOrNull(sp) != null && FieldMove.entries.none { m -> m.moveId?.let { Dex.learnset(sp).learns(it) } == true } }
 
     private val trip = Expedition("tiny-woods", startedAt = 1_000L, settledTo = 1_000L)
@@ -104,14 +102,12 @@ class WorldMomentsTest {
             episodesDone = setOf("home:1", "home:2", "kanto:1"), storyResume = mapOf("home:3" to 1, "kanto:2" to 1), seenChapters = mapOf("home" to 4, "kanto" to 1),
         )
         val migrated = WorldMoments.migratedFromHome(home)
-        // The opening counts as the new opening; the old chapters 2 to 6 are gone; everything else stays.
         assertEquals(setOf("intro:1", "kanto:1"), migrated.episodesDone)
         assertEquals(mapOf("kanto:2" to 1), migrated.storyResume)
         assertEquals(mapOf("kanto" to 1), migrated.seenChapters)
         assertTrue(migrated.guardianDone && migrated.layerDone(WorldLayer.EXPLORERS) && migrated.clears == home.clears)
         assertEquals(migrated, WorldMoments.migratedFromHome(migrated), "migrating twice changes nothing")
         assertTrue(WorldMoment.Welcome !in WorldMoments.pending(WorldMoments.adopted(home)), "a player who watched the old opening is not shown the new one again")
-        // One who never did is shown it first.
         assertEquals(WorldMoment.Welcome, WorldMoments.pending(WorldMoments.adopted(WorldData())).first())
     }
 
@@ -122,7 +118,6 @@ class WorldMomentsTest {
         assertEquals(old.rank.ordinal, adopted.seenRank)
         assertTrue(WorldMoments.pending(adopted).isEmpty(), "nothing replays")
         assertEquals(adopted, WorldMoments.adopted(adopted), "adopting twice changes nothing")
-        // Rank up: Gold needs 6000.
         val up = adopted.copy(xp = 6_500)
         val first = WorldMoments.pending(up).first()
         assertEquals(WorldMoment.RankUp(ExplorerRank.GOLD), first)
@@ -158,7 +153,6 @@ class ChoicesTest {
         val offered = r.events.filterIsInstance<WorldEvent.ChoiceOffered>()
         assertTrue(offered.isNotEmpty(), "a long trip offers choices")
         assertTrue(r.data.choices.size <= Choices.MAX_PENDING, "never more than three wait")
-        // Long after, with nobody answering, every choice has taken its default and nothing is waiting.
         val later = WorldSim.settle(r.data, roster, 1_000L + 8 * 3_600_000L + Choices.WAIT_MILLIS + 1)
         assertTrue(later.data.choices.none { it.expiresAt <= 1_000L + 8 * 3_600_000L + Choices.WAIT_MILLIS })
         assertTrue(later.data.journal.any { it.kind == JournalLine.KIND_EVENT && (it.text.contains("wide, safe path") || it.text.contains("Rest and drink")) }, "the default is in the log")
@@ -203,7 +197,6 @@ class StoryArchiveTest {
         assertTrue(reached.filterIsInstance<WorldMoment.ChapterOpened>().all { it.chapter.number <= Story.opened(data, it.layer) })
         assertTrue(reached.filterIsInstance<WorldMoment.LegendJoined>().any { it.quest.id == "kanto-zapdos" })
         assertTrue(reached.none { it is WorldMoment.ChapterOpened && it.chapter.number > Story.opened(data, it.layer) }, "no chapter that is not open is listed")
-        // An older save has no record of legends shown: it adopts the ones it has, so nothing replays; a new one then plays once.
         val adopted = WorldMoments.adopted(data)
         assertEquals(setOf("kanto-zapdos"), adopted.legendsSeen)
         assertTrue(WorldMoments.pending(adopted).none { it is WorldMoment.LegendJoined })

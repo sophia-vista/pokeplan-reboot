@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""Cuts the UI sounds from the Pokémon Mystery Dungeon: Red Rescue Team sound-effects dump into assets/sfx/<name>.ogg.
-
-Usage: python3 -I tools/sprites/convert_pmd_sfx.py <folder with songNNN.mp3>
-
-The dump is 478 unlabelled songNNN.mp3 files (not in the repo; the owner has the zip). SOUNDS maps our name (the Sfx enum in
-composeApp, Cries.kt) to the song number: 301, 302, 303, 331, 200 to 204, 207, 332, 333, 337, 342, 344, 356, 406, 421, 455, 457, 466, 468, 470, 471, 473 and 516 were named by the owner, the rest were picked by their
-length and pitch contour and may need swapping after a listen. Each becomes a small mono Ogg Vorbis file, peak-normalised
-so the quiet ones are not lost. Needs ffmpeg and numpy.
-"""
 import glob
 import os
 import subprocess
@@ -18,44 +9,43 @@ import numpy as np
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'assets/sfx')
 SOUNDS = {
-    'cursor': 301,  # cursor, switches and the letter scroller's tick
+    'cursor': 301,
     'confirm': 302,
     'back': 303,
     'error': 331,
-    'drawer-open': 330,  # rising
-    'drawer-close': 337,  # fall
+    'drawer-open': 330,
+    'drawer-close': 337,
     'long-press': 354,
     'pin': 306,
-    'unpin': 342,  # status down
-    'hide': 333,  # escape
+    'unpin': 342,
+    'hide': 333,
     'move-pickup': 307,
     'move-drop': 343,
     'uninstall-warn': 405,
     'focus-lock': 404,
     'habit-tick': 311,
     'focus-start': 414,
-    'focus-end': 200,  # default success
+    'focus-end': 200,
     'egg-get': 478,
-    'level-up': 201,  # shares the rank-up clip; 216 was a guess and is the dungeon wind sound (assets/pmd-sfx/README.md)
-    'rank-up': 201,  # super success
-    'candy': 332,  # money
-    'item-get': 203,  # got something good
-    'unlock': 204,  # unlocked something
+    'level-up': 201,
+    'rank-up': 201,
+    'candy': 332,
+    'item-get': 203,
+    'unlock': 204,
     'calm-start': 353,
-    # Emotes, for the buddy's reactions.
     'damage': 344,
-    'surprise': 356,  # mild surprise
+    'surprise': 356,
     'confusion-status': 406,
     'quick-escape': 421,
     'shock': 455,
     'urgent-shock': 457,
-    'curious': 466,  # curious / suspicion
+    'curious': 466,
     'confused': 468,
-    'sad': 470,  # "oh." (the teardrop)
+    'sad': 470,
     'mad': 471,
     'great-shock': 473,
-    'eating': 516,  # a berry given to the buddy
-    'calm-end': 202,  # mellow success
+    'eating': 516,
+    'calm-end': 202,
     'reminder': 207,
     'timer-done': 207,
 }

@@ -39,7 +39,7 @@ class FinishTest {
 
     @Test
     fun chapterAndStoryGateDungeons() {
-        val high = WorldData(xp = 1_000_000, clears = mapOf("tiny-woods" to 1)) // rank Diamond, one clear: only chapter 2
+        val high = WorldData(xp = 1_000_000, clears = mapOf("tiny-woods" to 1))
         val d = high.assign(1, ids)!!
         assertNull(d.start(1, "temporal-tower", 0L), "chapter 7 needs four different Explorers dungeons cleared")
         assertNull(d.start(1, "waterfall-cave", 0L), "chapter 3 needs an Explorers dungeon cleared (Tiny Woods is Rescue Team's)")
@@ -66,7 +66,6 @@ class FinishTest {
 
     @Test
     fun cafeShopAndDojoSpendPoke() {
-        // The rules hold no balance: they are given it, and charge nothing (the app charges the price).
         val d = WorldData()
         val trained = d.train(WorldSkill.FORAGING, 10_000)!!
         assertNull(d.train(WorldSkill.FORAGING, Dojo.COST - 1))
@@ -142,7 +141,6 @@ class ClockAndDayTest {
     @Test
     fun aClockSetBackDoesNotFreezeTheClimb() {
         val trip = WorldData().assign(1, listOf("a", "b"))!!.start(1, "tiny-woods", 10L * 3_600_000)!!
-        // The phone's clock is now earlier than the moment the expedition last settled.
         val back = WorldSim.settle(trip, roster, 2L * 3_600_000).data
         assertEquals(2L * 3_600_000, back.team(1)!!.expedition!!.settledTo, "the settle point follows the clock back")
         val later = WorldSim.settle(back, roster, 8L * 3_600_000).data
@@ -155,7 +153,6 @@ class ClockAndDayTest {
         val start = WorldData().assign(1, listOf("a", "b"))!!.start(1, "tiny-woods", 0L)!!
         val honest = WorldSim.settle(start, roster, 10 * hour).data
         val climbed = honest.team(1)!!.expedition!!.floorsClimbed
-        // Set back eight hours, then forward to the real time again a moment later: nothing really passed.
         val back = WorldSim.settle(honest, roster, 2 * hour).data
         val mark = honest.team(1)!!.expedition!!.settledTo
         assertEquals(mark, back.rewoundFrom, "the settle point it came from is kept")
@@ -163,7 +160,6 @@ class ClockAndDayTest {
         assertEquals(climbed, forward.team(1)!!.expedition!!.floorsClimbed, "the eight hours were counted once already")
         assertEquals(0L, forward.rewoundFrom, "and the mark is cleared once the clock is past it")
         assertEquals(mark, forward.team(1)!!.expedition!!.settledTo)
-        // From there the climb goes on as usual, and the next floor is forecast from the real settle point.
         assertEquals(WorldSim.nextFloorAt(honest, roster, 10 * hour), WorldSim.nextFloorAt(forward, roster, 10 * hour))
         assertTrue(WorldSim.settle(forward, roster, 14 * hour).data.team(1)!!.expedition!!.floorsClimbed > climbed)
     }
@@ -174,7 +170,6 @@ class ClockAndDayTest {
         val start = WorldData().assign(1, listOf("a", "b"))!!.start(1, "tiny-woods", 0L)!!
         val back = WorldSim.settle(WorldSim.settle(start, roster, 10 * hour).data, roster, 2 * hour).data
         val before = back.team(1)!!.expedition!!.floorsClimbed
-        // Four real hours on the earlier clock: the team climbs (no freeze), and the forecast does not wait for the old clock.
         assertTrue(WorldSim.nextFloorAt(back, roster, 2 * hour)!! < 10 * hour)
         val stay = WorldSim.settle(back, roster, 6 * hour).data
         assertTrue(stay.team(1)!!.expedition!!.floorsClimbed > before)
@@ -185,12 +180,10 @@ class ClockAndDayTest {
     fun aDailyJobComesBackAtThePlayersMidnightNotUtcs() {
         val hour = 3_600_000L
         val day = 24 * hour
-        val plus10 = 10 * hour   // a player ten hours ahead of UTC
-        // Claimed at 20:00 UTC on day 5, which is 06:00 on day 6 for them.
+        val plus10 = 10 * hour
         val claimedAt = 5 * day + 20 * hour
         val d = WorldData(xp = 400, clears = mapOf("tiny-woods" to 1), lastSeenAt = claimedAt, missions = listOf(MissionProgress("daily-berries", 15, true))).claimMission("daily-berries", plus10)!!
         assertEquals(6L, d.missionClaimedDay["daily-berries"])
-        // 13:00 UTC on day 6 is 23:00 on day 6 for them: still the same day. 14:00 UTC is their midnight.
         assertTrue(Missions.available(d, now = 6 * day + 13 * hour, utcOffsetMillis = plus10).none { it.id == "daily-berries" })
         assertTrue(Missions.available(d, now = 6 * day + 14 * hour, utcOffsetMillis = plus10).any { it.id == "daily-berries" })
     }
@@ -218,8 +211,6 @@ class AbilityPerksTest {
     }
 }
 
-/** Seven different dungeons cleared: every chapter that rank allows. */
-/** Every dungeon of the Rescue Team arc and the Explorers ones before the Temporal Tower, cleared once. */
 private val CLEARED = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "frosty-forest", "sky-tower", "beach-cave", "drenched-bluff", "waterfall-cave", "crystal-cave", "glacier-palace", "ancient-ruins", "hidden-land").associateWith { 1 }
 
 class GuideAndLogTest {
@@ -228,7 +219,6 @@ class GuideAndLogTest {
     @Test
     fun theNextStepFollowsProgress() {
         assertEquals("Explore Tiny Woods", WorldGuide.nextStep(WorldData()).title)
-        // Everything open is cleared: the next closed one says what it waits for.
         val cleared = WorldData(clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1))
         val step = WorldGuide.nextStep(cleared)
         assertEquals("Work towards Mt. Steel", step.title)
@@ -240,8 +230,8 @@ class GuideAndLogTest {
     @Test
     fun aTeamsFitIsItsSpeedAndHowManyAreFavoured() {
         val woods = Dungeons.byId("tiny-woods")!!
-        val grass = mon("a", 1, 20)   // Bulbasaur: Grass, favoured in the woods
-        val rock = mon("b", 74, 20)   // Geodude: not
+        val grass = mon("a", 1, 20)
+        val rock = mon("b", 74, 20)
         val fit = WorldSim.suitability(woods, listOf(grass, rock))
         assertEquals(1, fit.favored)
         assertEquals(2, fit.size)

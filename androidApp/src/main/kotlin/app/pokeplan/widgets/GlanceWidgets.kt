@@ -98,8 +98,6 @@ private val soft = Color(0xFF666B7E)
 private val shade = Color(0xFFE9E9EF)
 private val green = Color(0xFF1E7F52)
 
-// Widget text uses two sizes: 15 sp for a widget's title and the tick, 13 sp for everything else (the reaction is a picture).
-
 private fun rankColor(rank: Rank) = when (rank) {
     Rank.E -> Color(0xFF666B7E)
     Rank.D -> Color(0xFF1E7F52)
@@ -116,7 +114,6 @@ private fun openApp(context: Context, tab: String? = null, pokemon: String? = nu
     },
 )
 
-/** The 44 dp strip on top of the Today and Care widgets: the header picture, or a flat [fallback] colour without one, with [content] laid over it. */
 @Composable
 private fun WidgetHeader(header: Bitmap?, fallback: Color, onClick: Action, content: @Composable RowScope.() -> Unit) {
     Box(GlanceModifier.fillMaxWidth().height(44.dp).clickable(onClick)) {
@@ -126,7 +123,6 @@ private fun WidgetHeader(header: Bitmap?, fallback: Color, onClick: Action, cont
     }
 }
 
-/** The round tick at the end of a task or routine row: green and tappable, or grey and inert once [done]. */
 @Composable
 private fun TickButton(description: String, done: Boolean = false, onClick: Action? = null) {
     val button = GlanceModifier.size(36.dp).background(if (done) shade else green).cornerRadius(18.dp).semantics { contentDescription = description }
@@ -135,7 +131,6 @@ private fun TickButton(description: String, done: Boolean = false, onClick: Acti
     }
 }
 
-/** Brings every widget up to date; called when the app is left and after a tap on a widget. */
 suspend fun updateWidgets(context: Context) {
     for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget(), CareWidget(), WorldWidget(), MintWidget(), MintDueWidget())) {
         val stamp = System.currentTimeMillis()
@@ -148,12 +143,6 @@ suspend fun updateWidgets(context: Context) {
 
 private val RefreshKey = longPreferencesKey("refresh")
 
-/**
- * Shows what [load] gives and loads it again on every [updateWidgets]. Glance runs provideGlance once per session (about
- * 45 seconds); an update to a widget whose session is still open only recomposes. Values worked out in provideGlance then
- * never change, which froze the buddy on its still picture after a pet. So [updateWidgets] stamps each widget's Glance
- * state, and a new stamp loads the data again inside the composition.
- */
 private suspend fun <T> GlanceAppWidget.provideFresh(context: Context, id: GlanceId, load: suspend () -> T, content: @Composable (T) -> Unit): Nothing {
     val first = load()
     val firstStamp = getAppWidgetState<Preferences>(context, id)[RefreshKey]
@@ -169,7 +158,6 @@ private val TaskIdKey = ActionParameters.Key<String>("taskId")
 
 private fun density(context: Context) = context.resources.displayMetrics.density
 
-/** The buddy's scene (Plan's town, dimmed at dusk) as a [heightDp] strip for the other widgets, or null before there is a buddy. */
 private fun buddyScene(context: Context, store: GameStore, heightDp: Int, roundBottom: Boolean = true): Bitmap? {
     val buddy = store.data.player.buddy ?: return null
     val d = density(context)
@@ -179,12 +167,8 @@ private fun buddyScene(context: Context, store: GameStore, heightDp: Int, roundB
     )
 }
 
-/** The soft pill the names and counts sit on, so text stays readable over a wallpaper. */
 private fun GlanceModifier.pill(color: Color = panel) = background(color).cornerRadius(14.dp)
 
-// ----- Today's tasks --------------------------------------------------------------------------------------------------
-
-/** A tap on a task's tick: finishes it. The reward is granted the next time the app opens (the undo window has passed by then). */
 class CompleteTaskAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val id = parameters[TaskIdKey] ?: return
@@ -266,7 +250,6 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                             }
                             Spacer(GlanceModifier.width(10.dp))
                             Text(
-                                // Tapping a task finishes it from the widget (it is paid when the app next opens); the header opens the Planner.
                                 t.title, GlanceModifier.defaultWeight().clickable(actionRunCallback<CompleteTaskAction>(actionParametersOf(TaskIdKey to t.id))),
                                 style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp), maxLines = 2,
                             )
@@ -280,17 +263,10 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
     }
 }
 
-// ----- Buddy ----------------------------------------------------------------------------------------------------------
-
-/**
- * The buddy's reaction after a tap or an event, kept for a few seconds so the widget can show it: one status icon above its
- * head, like a game emote. Outside these moments the buddy only idles.
- */
 private object BuddyTalk {
     private const val FILE = "buddy_widget"
     private const val SHOWN_MILLIS = 4_000L
 
-    /** The last reaction shown, so a pet never repeats it straight away. */
     fun last(context: Context): ReactionIcon? = ReactionIcon.of(context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getString("icon", null))
 
     fun show(context: Context, icon: ReactionIcon) {
@@ -298,18 +274,15 @@ private object BuddyTalk {
             .putString("icon", icon.key).putLong("until", System.currentTimeMillis() + SHOWN_MILLIS).apply()
     }
 
-    /** The icon to show now, or null once the moment has passed. */
     fun current(context: Context): ReactionIcon? {
         val prefs = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
         if (System.currentTimeMillis() > prefs.getLong("until", 0)) return null
         return ReactionIcon.of(prefs.getString("icon", null))
     }
 
-    /** Milliseconds until the current reaction ends, 0 if none. */
     fun remaining(context: Context): Long =
         (context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getLong("until", 0) - System.currentTimeMillis()).coerceAtLeast(0)
 
-    /** The last event the widget reacted to, so one event is reacted to once. */
     fun celebrated(context: Context): Long = context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getLong("celebrated", 0)
     fun celebrate(context: Context, at: Long) = context.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit().putLong("celebrated", at).apply()
 
@@ -319,7 +292,6 @@ private object BuddyTalk {
     }
 }
 
-/** Called when the app is left: an event that just happened (an egg hatched, a payout) gets a few seconds of reaction. */
 suspend fun announceBuddyEvent(context: Context) {
     val store = widgetStore(context)
     val event = store.buddyEvent()
@@ -334,13 +306,11 @@ suspend fun announceBuddyEvent(context: Context) {
 }
 
 
-/** A tap on the buddy: the same petting as in the app, with a heart and the cry. */
 class PetAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val store = widgetStore(context)
         store.pet()
         if (store.data.settings.haptics) app.pokeplan.platform.AndroidHaptics(context).tick()
-        // The callback stays alive while the hearts show (settleLater), long enough for the cry to play out.
         store.data.player.buddy?.takeIf { store.data.settings.criesLevel > 0f }?.let { AndroidCryPlayer(context).play(it.speciesId, store.data.settings.criesLevel) }
         BuddyTalk.show(context, store.data.player.buddy?.let { BuddyReaction.pet(it, store.now.hour, avoid = BuddyTalk.last(context)) } ?: ReactionIcon.HEART)
         updateWidgets(context)
@@ -348,7 +318,6 @@ class PetAction : ActionCallback {
     }
 }
 
-/** The berry button: gives the buddy a berry from the bag. */
 class FeedAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val store = widgetStore(context)
@@ -376,15 +345,11 @@ class BuddyWidget : GlanceAppWidget() {
         val store = widgetStore(context)
         val buddy = store.data.player.buddy
         val moment = BuddyTalk.current(context)
-        // An alarm refreshes the widget when the reaction ends, to take the icon away.
         if (moment != null) scheduleWidgetRefresh(context, BuddyTalk.remaining(context) + 300)
         val berry = store.buddyBerry()
         val d = density(context)
         val darkness = BuddyScene.darkness(store.now.hour, store.now.minute)
         val focusing = store.data.focus != null
-        // The idle animation plays by itself in a flipper and keeps playing under a reaction. During a focus session the
-        // buddy sleeps (its SpriteCollab Sleep animation; one still picture for a form without it); Reduce motion shows
-        // one still picture.
         val sleep = if (buddy != null && focusing) WidgetArt.sleepFrames(context, buddy.form.id, buddy.isShiny) else null
         val animated = when {
             buddy == null || store.data.settings.reduceMotion -> null
@@ -413,7 +378,6 @@ class BuddyWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = BuddyWidget()
 }
 
-/** The buddy in its scene. Nothing else is loud: a small level chip in the corner, a berry if there is one, and a status-icon reaction only for a real moment. */
 @Composable
 private fun BuddyContent(context: Context, s: BuddyState) {
     val height = LocalSize.current.height
@@ -433,7 +397,6 @@ private fun BuddyContent(context: Context, s: BuddyState) {
                 else if (s.still != null) Image(ImageProvider(s.still), contentDescription = s.description, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.Fit)
             }
         }
-        // Level and progress: small, bottom left.
         Box(GlanceModifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.BottomStart) {
             Column(
                 GlanceModifier.background(Color(0x66000000)).cornerRadius(12.dp).padding(horizontal = 8.dp, vertical = 5.dp)
@@ -455,18 +418,14 @@ private fun BuddyContent(context: Context, s: BuddyState) {
                 contentAlignment = Alignment.Center,
             ) { Image(ImageProvider(s.berryIcon), contentDescription = null, modifier = GlanceModifier.size(28.dp)) }
         }
-        // The reaction: one status icon above the buddy, only for a moment after a pet, a berry or an event.
         if (s.reaction != null) Box(GlanceModifier.fillMaxSize().padding(top = 6.dp), contentAlignment = Alignment.TopCenter) {
             Image(ImageProvider(s.reaction), contentDescription = "reaction", modifier = GlanceModifier.size(36.dp))
         }
     }
 }
 
-// ----- Start focus ----------------------------------------------------------------------------------------------------
-
 private data class FocusState(
     val running: Boolean, val title: String, val detail: String, val wallpaper: Bitmap?, val egg: Bitmap?,
-    /** A ticking countdown to the end of the session, built as a Chronometer so the system keeps it right. */
     val countdown: RemoteViews? = null,
 )
 
@@ -482,7 +441,6 @@ class FocusWidget : GlanceAppWidget() {
         val backdrop = buddyScene(context, store, 200)
             ?: WidgetArt.wallpaper(context, "bw11", (420 * density(context)).toInt(), (200 * density(context)).toInt(), 20 * density(context), density(context))
         return if (session != null && !session.isFinished) {
-            // The session ends this long after it started, plus time spent paused; shown as a clock time so it never goes stale.
             val end = session.startedAtMillis + session.durationMillis + session.pausedMillis
             val paused = session.phase is Phase.Paused
             FocusState(
@@ -540,11 +498,8 @@ private fun FocusContent(context: Context, s: FocusState) {
     }
 }
 
-// ----- Care: today's routines -----------------------------------------------------------------------------------------
-
 private val RoutineIdKey = ActionParameters.Key<String>("routineId")
 
-/** A tap on a routine's tick: ticks it off for today and pays it, exactly as on the Care screen (into the shared save). */
 class CompleteRoutineAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val id = parameters[RoutineIdKey] ?: return
@@ -556,7 +511,6 @@ class CompleteRoutineAction : ActionCallback {
 
 private data class CareState(val on: Boolean, val started: Boolean, val routines: List<Routine>, val done: Int, val diarySaved: Boolean, val today: kotlinx.datetime.LocalDate)
 
-/** Care's routines for today with a tick, and whether today's diary card is saved (what the launcher's home page will show too). */
 class CareWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) =
         provideFresh(context, id, { load(context) }) { (state, header) -> CareContent(context, state, header) }
@@ -570,7 +524,6 @@ class CareWidget : GlanceAppWidget() {
         val header = WidgetArt.scene(context, BuddyScene.CARE, dark, (420 * d).toInt(), (44 * d).toInt(), 20 * d, roundBottom = false)
         val state = CareState(
             on = game.data.settings.careModule, started = game.data.onboarded,
-            // Not done first, so the ticks stay at the top; then the ones done today.
             routines = today.sortedBy { it.doneOn(care.today) }.take(8),
             done = today.count { it.doneOn(care.today) }, diarySaved = care.diaryToday() != null, today = care.today,
         )
@@ -638,20 +591,16 @@ private fun CareContent(context: Context, state: CareState, header: Bitmap?) {
 }
 
 
-// ----- World: the expedition teams ------------------------------------------------------------------------------------
-
 private val teal = Color(0xFF0E8F85)
 
 private data class WorldState(val started: Boolean, val rank: String, val lines: List<String>, val finds: Int, val jobsReady: Int)
 
-/** Where each World team is (dungeon and floor), the Finds waiting to be recruited and the jobs ready to claim; a tap opens World. */
 class WorldWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) =
         provideFresh(context, id, { load(context) }) { (state, header) -> WorldContent(context, state, header) }
 
     private suspend fun load(context: Context): Pair<WorldState, Bitmap?> {
         val game = widgetStore(context)
-        // The teams keep climbing while the phone is idle: settle them to now, as opening the screen would.
         game.worldSettle()
         val world = game.data.world
         val d = density(context)
@@ -704,15 +653,8 @@ private fun WorldContent(context: Context, state: WorldState, header: Bitmap?) {
 }
 
 
-// ----- Mint: the overview and what is due ---------------------------------------------------------------------------------
-
 private val gold = Color(0xFF8A6700)
 
-/**
- * What a Mint widget shows. [summary] is null when there is nothing to show: Mint has no account yet, or its records cannot be read. [locked] is the
- * screen-lock gate (MINT.md 13.2): a widget cannot ask for the lock, so with the gate on it shows no figure at all. [hidden] is "hide amounts" (3.3): the
- * layout, the dates and the counts stay, every amount is dots.
- */
 private data class MintState(
     val started: Boolean, val locked: Boolean, val hidden: Boolean, val summary: app.pokeplan.mint.OverviewSummary?,
     val windowLabel: String, val today: kotlinx.datetime.LocalDate,
@@ -737,7 +679,6 @@ private fun dueDay(state: MintState, item: app.pokeplan.mint.DueItem): String = 
     else -> "${item.day.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${item.day.day}"
 }
 
-/** The Mint overview: available money, net position and what is due in the window the player chose in Mint Settings. */
 class MintWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) =
         provideFresh(context, id, { loadMint(context) }) { (state, header) -> MintOverviewContent(context, state, header) }
@@ -747,7 +688,6 @@ class MintWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = MintWidget()
 }
 
-/** The next bills and installments due, soonest first. */
 class MintDueWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) =
         provideFresh(context, id, { loadMint(context) }) { (state, header) -> MintDueContent(context, state, header) }
@@ -757,7 +697,6 @@ class MintDueWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = MintDueWidget()
 }
 
-/** The words a Mint widget shows instead of figures, or null when it has figures to show. */
 private fun mintNotice(state: MintState): String? = when {
     !state.started -> "Open PokéLife to start"
     state.locked -> "Locked. Open Mint to see your money."

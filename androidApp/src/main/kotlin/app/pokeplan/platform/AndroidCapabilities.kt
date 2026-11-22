@@ -12,11 +12,6 @@ import app.pokeplan.ui.gear.CapabilityStatus
 import app.pokeplan.ui.gear.DeviceCapabilities
 import app.pokeplan.ui.gear.PermissionNeed
 
-/**
- * What this phone really has, asked of Android at the moment (sensors from `SensorManager`, the rest from the package manager's features
- * and the camera service), never guessed from the model. Nothing here starts a sensor, opens the camera or asks for a permission: it only reads
- * what exists and whether the permission is already granted.
- */
 class AndroidCapabilities(context: Context) : DeviceCapabilities {
     private val app = context.applicationContext
     private val sensors = app.getSystemService(Context.SENSOR_SERVICE) as? SensorManager

@@ -13,7 +13,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Where each place the app can be sent (a widget, shortcut or notification) lands: the right tab, module and section. */
 class NavigationTest {
     private val clock = object : Clock { override fun nowMillis() = 1_700_000_000_000L }
     private fun model() = AppModel(GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25) })
@@ -42,7 +41,6 @@ class NavigationTest {
 
     @Test
     fun theNamesWidgetsAndShortcutsSendResolveToPlaces() {
-        // The Android side looks a place up by its name; every name it uses must exist.
         listOf("PLANNER", "FOCUS", "CARE", "HEAL", "MINT", "BASE", "LINK", "WORLD", "ME", "HOME", "COLLECTION", "GEAR").forEach { name ->
             assertTrue(Place.entries.any { it.name == name }, "$name is a place")
         }

@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Sinnoh, "The Distortion of Creation": Pip the Piplup guides the buddy; Team Galactic is Stunky and Skuntank; Dialga, Palkia and Giratina are the three creators. */
 internal object SinnohChapters {
     private val buddy = buddyCharacter()
     private val pip = npc("pip", "Pip", 393)

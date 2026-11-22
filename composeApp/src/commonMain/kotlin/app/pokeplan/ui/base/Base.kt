@@ -109,11 +109,6 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.plural
 import app.pokeplan.ui.screens.short
 
-/**
- * The household module's screens (docs/pokelife `MODULES/BASE.md`): chores, supplies, maintenance with the belongings it is done on, reference
- * notes, and settings. Utility presentation (BASE.md section 11): a few panels, plain rows with a 48 dp target, no box per record. Nothing here
- * judges: overdue is a word, never a failure, and no screen shows money.
- */
 enum class BaseSection(val label: String, val icon: String) {
     CHORES("Chores", "cracked-pot"), SUPPLIES("Supplies", "seal-bag"), MAINTENANCE("Maintenance", "iron"), NOTES("Notes", "oaks-letter"),
     ROOM("Room", "star-piece"), SETTINGS("Settings", "storage-key"),
@@ -126,7 +121,6 @@ private val decimalKeys = KeyboardOptions(keyboardType = KeyboardType.Decimal)
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
 
-/** Three tappable examples that fill an empty add field (the placeholder stays); shown only while the list and the field are empty. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ExampleChips(examples: List<String>, onPick: (String) -> Unit) {
@@ -138,16 +132,12 @@ private fun ExampleChips(examples: List<String>, onPick: (String) -> Unit) {
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-// ----- Ticking work off ---------------------------------------------------------------------------------------------------------
-
-/** Marks a chore done from any list, and offers to take it back: a tick on the overview or on an overdue chore leaves no row to undo it from. */
 private fun tickChore(model: AppModel, v: ChoreView) {
     val entry = model.base.complete(v.chore.id).record ?: return
     model.haptic()
     model.offerUndo("Done: ${v.chore.title}") { model.base.undo(entry.id) }
 }
 
-/** Records a schedule's work as done, and offers to take it back (the record goes and the schedule returns to its date; nothing is paid twice). */
 private fun tickMaintenance(model: AppModel, s: MaintenanceSchedule, notes: String = "", cost: String = "") {
     val before = model.baseData
     if (model.base.completeMaintenance(s.id, notes, cost).record == null) return
@@ -155,11 +145,8 @@ private fun tickMaintenance(model: AppModel, s: MaintenanceSchedule, notes: Stri
     model.offerUndo("Done: ${s.title}") { model.base.restore(before) }
 }
 
-// ----- Moving between sections ------------------------------------------------------------------------------------------------
-
 private class Jump(val section: BaseSection, val id: String? = null, val tab: Int? = null)
 
-/** Where the next section should open (a search hit, an overview line); read once when the section appears. */
 private var pendingJump: Jump? = null
 
 private fun go(model: AppModel, section: BaseSection, id: String? = null, tab: Int? = null) {
@@ -169,7 +156,6 @@ private fun go(model: AppModel, section: BaseSection, id: String? = null, tab: I
 
 private fun takeJump(section: BaseSection): Jump? = pendingJump?.takeIf { it.section == section }?.also { pendingJump = null }
 
-/** The line under the household's card in Modules: how much waits today, or what the module is for. Never a private word of the household. */
 internal fun baseSubtitle(model: AppModel): String {
     val n = BaseRules.overview(model.baseData, model.store.today).chores.size
     return if (n > 0) "$n to do today" else "chores, supplies, upkeep"
@@ -201,8 +187,6 @@ private fun BasePage(model: AppModel, section: BaseSection?, openPokemon: (Strin
     }
 }
 
-// ----- Menu -------------------------------------------------------------------------------------------------------------------
-
 @Composable
 private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.baseData
@@ -232,9 +216,6 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     }
 }
 
-// ----- Overview ---------------------------------------------------------------------------------------------------------------
-
-/** Only what needs attention (BASE.md 3.1): chores due or overdue, maintenance due or soon, low supplies and warranties ending soon; never a count of everything. */
 @Composable
 private fun BaseOverview(model: AppModel, o: Overview) {
     val data = model.baseData
@@ -292,7 +273,6 @@ private fun BaseOverview(model: AppModel, o: Overview) {
             }
         }
     }
-    // The action items sit below the overview and above the party.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
@@ -335,8 +315,6 @@ private fun openHit(model: AppModel, kind: HitKind, id: String) {
     }
 }
 
-// ----- Shared words and fields ------------------------------------------------------------------------------------------------
-
 private fun repeatText(r: Recurrence): String {
     if (r.kind == RepeatKind.ONCE) return ""
     val base = if (r.every <= 1) r.kind.label else "Every ${r.every} ${r.kind.unit}s"
@@ -346,7 +324,6 @@ private fun repeatText(r: Recurrence): String {
 private fun areaName(data: app.pokeplan.base.BaseData, id: String?): String? = id?.let { a -> data.areas.firstOrNull { it.id == a }?.name }
 
 private fun quantityText(s: Supply): String {
-    // "1 bottles" reads wrong: one of a plural unit drops its s (a unit like "kg" or "L" has none to drop).
     val unit = if (s.quantityMilli == 1000L && s.unit.length > 3 && s.unit.endsWith("s")) s.unit.dropLast(1) else s.unit
     return Quantity.format(s.quantityMilli) + if (s.quantityMilli != null && unit.isNotEmpty()) " $unit" else ""
 }
@@ -373,7 +350,6 @@ private fun scheduleLine(data: app.pokeplan.base.BaseData, v: app.pokeplan.base.
     return listOfNotNull(when_, data.assets.firstOrNull { it.id == s.assetId }?.name, repeatText(s.recurrence).takeIf { it.isNotEmpty() }).joinToString(" · ")
 }
 
-/** The one full-width save of a form ([addLabel] when adding, "Save" when editing) and, when editing, a quiet Cancel under it. */
 @Composable
 private fun FormActions(adding: Boolean, addLabel: String, enabled: Boolean, onSave: () -> Unit, onCancel: (() -> Unit)?) {
     FormSave(if (adding) addLabel else "Save", onSave, accent, enabled = enabled)
@@ -418,11 +394,8 @@ private fun AssetChips(assets: List<Asset>, selected: String?, onPick: (String?)
     PixelDropdown(listOf<String?>(null) + shown.map { it.id }, selected, { id -> shown.firstOrNull { it.id == id }?.name ?: "None" }, onPick, Modifier.fillMaxWidth(), key = accent, label = "Item")
 }
 
-// ----- Chores -----------------------------------------------------------------------------------------------------------------
-
 private val openStates = setOf(ChoreState.OVERDUE, ChoreState.DUE, ChoreState.ANYTIME)
 
-/** The Due tab: what waits, and what was done or skipped today (so a tick can be taken back where it was made). */
 private fun inDueTab(v: ChoreView, today: LocalDate): Boolean = v.state in openStates || ((v.state == ChoreState.DONE || v.state == ChoreState.SKIPPED) && v.entry?.day == today)
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -531,7 +504,6 @@ private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone
             if (v.state == ChoreState.PAUSED) PixelButton("Resume", { home.setChoreStatus(id, RecordStatus.ACTIVE); onDone() }, Modifier.weight(1f), accent, compact = true)
             else PixelButton("Pause", { home.setChoreStatus(id, RecordStatus.PAUSED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        // Making the responsibility visible in Plan is the user's choice and never moves the chore: Home still completes and pays it (BASE.md 2.1).
         val linked = model.data.tasks.any { it.link?.kind == LinkKind.HOME_CHORE && it.link?.ref == id && it.state != TaskState.DELETED }
         if (linked || (waiting && v.chore.status == RecordStatus.ACTIVE)) Actions {
             if (linked) PixelButton("Remove from Plan", { model.store.data.tasks.firstOrNull { it.link?.ref == id && it.state != TaskState.DELETED }?.let { t -> model.store.unlinkTask(t.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -547,7 +519,6 @@ private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone
     }
 }
 
-/** Adds a chore (title and an Add key; the rest behind a toggle) or, with [initial], edits one. */
 @Composable
 private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCancel: (() -> Unit)? = null) {
     val home = model.base
@@ -592,8 +563,6 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
-
-// ----- Supplies ---------------------------------------------------------------------------------------------------------------
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -784,8 +753,6 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
     }
 }
 
-// ----- Maintenance ------------------------------------------------------------------------------------------------------------
-
 @Composable
 private fun MaintenanceView(model: AppModel) {
     val home = model.base
@@ -902,7 +869,6 @@ private fun ScheduleOptions(model: AppModel, s: MaintenanceSchedule, onDone: () 
     }
 }
 
-/** Adds a maintenance schedule or, with [initial], edits one (its next date is where it stands). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone: () -> Unit, onCancel: (() -> Unit)? = null) {
@@ -945,7 +911,6 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
     }
 }
 
-/** Corrects a record of work: what was done, the exact day, the item, notes and cost. */
 @Composable
 private fun MaintenanceRecordForm(model: AppModel, r: MaintenanceRecord, onDone: () -> Unit) {
     val today = model.store.today
@@ -1024,7 +989,7 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
     val today = model.store.today
     var editing by remember(a.id) { mutableStateOf(false) }
     var asking by remember(a.id) { mutableStateOf(false) }
-    var warranty by remember(a.id) { mutableStateOf<String?>(null) } // the warranty being edited, or "" for a new one
+    var warranty by remember(a.id) { mutableStateOf<String?>(null) }
     var editingRecord by remember(a.id) { mutableStateOf<String?>(null) }
     if (editing) { AssetForm(model, a, onDone = { editing = false }, onCancel = { editing = false }); return }
     val warranties = data.warranties.filter { it.assetId == a.id }
@@ -1148,8 +1113,6 @@ private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCa
     }
 }
 
-// ----- Notes ------------------------------------------------------------------------------------------------------------------
-
 @Composable
 private fun NotesView(model: AppModel) {
     val home = model.base
@@ -1226,8 +1189,6 @@ private fun NoteEditor(model: AppModel, n: Reference, onDone: () -> Unit) {
     }
 }
 
-// ----- Settings ---------------------------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun BaseSettingsView(model: AppModel) {
@@ -1240,7 +1201,6 @@ private fun BaseSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Habitat Discovery")
-            // Help: a chore or a piece of maintenance you finish can find a Habitat Egg; adding, editing, quantities and notes never do.
             ToggleRow("Find Pokémon from finished work", settings.progression) { home.setProgression(it) }
         }
     }

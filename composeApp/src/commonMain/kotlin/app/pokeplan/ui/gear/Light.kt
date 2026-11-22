@@ -1,8 +1,6 @@
 package app.pokeplan.ui.gear
 
-/** A colour of the screen light, by saved name, as red, green and blue (0 to 255). */
 class LightColor(val id: String, val label: String, val red: Int, val green: Int, val blue: Int, val note: String = "") {
-    /** The colour scaled to [brightness] (0.05 to 1), as one number a screen can paint: 0xAARRGGBB with full opacity. */
     fun argb(brightness: Float): Long {
         val b = brightness.coerceIn(MIN_BRIGHTNESS, 1f)
         fun c(v: Int) = (v * b).toInt().coerceIn(0, 255).toLong()
@@ -12,7 +10,6 @@ class LightColor(val id: String, val label: String, val red: Int, val green: Int
     companion object { const val MIN_BRIGHTNESS = 0.05f }
 }
 
-/** The colours the screen light offers: white, a warm one for the eyes at night, red to keep night vision and amber. */
 object LightColors {
     val all = listOf(
         LightColor("white", "White", 255, 255, 255), LightColor("warm", "Warm", 255, 214, 153, "Easier on the eyes in the evening."),
@@ -22,7 +19,6 @@ object LightColors {
     fun byId(id: String): LightColor = all.firstOrNull { it.id == id } ?: all.first()
 }
 
-/** The SOS signal as flashes: pairs of (light on, how long in milliseconds), in Morse (three short, three long, three short, then a long rest), one unit [unitMs] long. */
 object Sos {
     fun pattern(unitMs: Long = 250): List<Pair<Boolean, Long>> {
         fun letter(dashes: Boolean): List<Pair<Boolean, Long>> {
@@ -36,6 +32,5 @@ object Sos {
         return letter(false) + (false to 3 * unitMs) + letter(true) + (false to 3 * unitMs) + letter(false) + (false to 7 * unitMs)
     }
 
-    /** The signal runs for at most this long before it stops by itself, so a forgotten SOS cannot drain the battery. */
     const val MAX_MS = 5 * 60_000L
 }

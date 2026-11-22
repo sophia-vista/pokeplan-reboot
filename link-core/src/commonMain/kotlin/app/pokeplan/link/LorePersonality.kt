@@ -1,9 +1,5 @@
 package app.pokeplan.link
 
-/**
- * Plain-language readings for the personality systems a person can note (LINK.md 2.6). The user types the result of a test they took elsewhere; these only
- * explain the label, in the spirit of each system. They are not scores, diagnoses or judgments, and LINK never infers a type for anyone.
- */
 object LorePersonality {
     fun mbti(code: String): String = when (code) {
         "INTJ" -> "The Architect: strategic, independent and long-range; likes a plan and high standards."

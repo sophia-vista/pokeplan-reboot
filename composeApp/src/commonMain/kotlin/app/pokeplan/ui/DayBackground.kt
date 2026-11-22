@@ -17,16 +17,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlin.math.floor
 
-/**
- * The page behind every screen: a soft pixel-dithered gradient whose colours follow the time of day (peach at dawn, mint in
- * the morning, warm cream in the afternoon, rose at dusk, blue-grey at night). The tones stay light so the dark text on it
- * is always readable; only the mood changes. In dark mode the same hues are pulled down to deep navy so the light text is readable. Drawn once as a tiny bitmap of coarse "pixels" and scaled up without smoothing.
- */
 @Composable
 fun DayBackground(hour: Int, minute: Int, modifier: Modifier = Modifier, dark: Boolean = false) {
     val (top, bottom) = DayPalette.at(hour + minute / 60f, dark)
     val cell = with(LocalDensity.current) { 4.dp.toPx() }
-    // The dither is for the light page; on the dark page it reads as noise, so dark is a smooth, quiet gradient.
     if (dark) {
         Canvas(modifier.fillMaxSize()) { drawRect(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(top, bottom))) }
         return
@@ -43,9 +37,7 @@ private val bayer = arrayOf(intArrayOf(0, 8, 2, 10), intArrayOf(12, 4, 14, 6), i
 
 private val cache = HashMap<String, ImageBitmap>()
 
-/** A [cols] x [rows] picture that dithers from [top] to [bottom] with an ordered (Bayer) pattern. */
 private fun dithered(cols: Int, rows: Int, top: Color, bottom: Color): ImageBitmap {
-    // Colours move slowly through the day, so round them to keep a handful of pictures instead of one per minute.
     val key = "$cols:$rows:${top.toArgb8()}:${bottom.toArgb8()}"
     cache[key]?.let { return it }
     if (cache.size > 6) cache.clear()
@@ -53,7 +45,6 @@ private fun dithered(cols: Int, rows: Int, top: Color, bottom: Color): ImageBitm
     val canvas = ComposeCanvas(bitmap)
     val paintTop = Paint().apply { color = top; isAntiAlias = false }
     val paintBottom = Paint().apply { color = bottom; isAntiAlias = false }
-    // A faint grain: now and then a "pixel" a shade darker, in the same hue, so even the flat areas have texture.
     val grainTop = Paint().apply { color = shade(top); isAntiAlias = false }
     val grainBottom = Paint().apply { color = shade(bottom); isAntiAlias = false }
     for (y in 0 until rows) {
@@ -73,18 +64,17 @@ private fun shade(c: Color) = Color(c.red * 0.955f, c.green * 0.955f, c.blue * 0
 
 private fun Color.toArgb8(): Int = ((red * 31).toInt() shl 10) or ((green * 31).toInt() shl 5) or (blue * 31).toInt()
 
-/** The page colours through the day: (top, bottom) at each key hour, blended between them. Always light. */
 internal object DayPalette {
     private data class Key(val hour: Float, val top: Color, val bottom: Color)
 
     private val keys = listOf(
-        Key(0f, Color(0xFFD3D9EE), Color(0xFFE8EBF6)),   // night
+        Key(0f, Color(0xFFD3D9EE), Color(0xFFE8EBF6)),
         Key(5f, Color(0xFFD3D9EE), Color(0xFFE8EBF6)),
-        Key(7f, Color(0xFFF5D8C8), Color(0xFFF7EEE4)),   // dawn
-        Key(10f, Color(0xFFDCEFE6), Color(0xFFF3F5EE)),  // morning
-        Key(14f, Color(0xFFF6EED6), Color(0xFFF6F3EA)),  // afternoon
+        Key(7f, Color(0xFFF5D8C8), Color(0xFFF7EEE4)),
+        Key(10f, Color(0xFFDCEFE6), Color(0xFFF3F5EE)),
+        Key(14f, Color(0xFFF6EED6), Color(0xFFF6F3EA)),
         Key(18f, Color(0xFFF2E0CE), Color(0xFFF5EFE6)),
-        Key(20f, Color(0xFFF0CFD2), Color(0xFFF3EAE6)),  // dusk
+        Key(20f, Color(0xFFF0CFD2), Color(0xFFF3EAE6)),
         Key(22f, Color(0xFFD3D9EE), Color(0xFFE8EBF6)),
         Key(24f, Color(0xFFD3D9EE), Color(0xFFE8EBF6)),
     )
@@ -93,7 +83,6 @@ internal object DayPalette {
 
     fun at(hour: Float, dark: Boolean = false): Pair<Color, Color> {
         val (top, bottom) = lightAt(hour)
-        // Keep a trace of the hour's hue so the day still shows, at about an eighth of the light strength.
         return if (dark) lerp(night, top, 0.12f) to lerp(night, bottom, 0.1f) else top to bottom
     }
 

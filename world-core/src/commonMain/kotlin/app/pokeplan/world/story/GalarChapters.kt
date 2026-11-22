@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Galar, "The Darkest Day": Scor the Scorbunny guides the buddy; the rowdy crowd is Impidimp, the Chairman's company is Copperajah; Zacian, Zamazenta and Eternatus are the three of the legend. */
 internal object GalarChapters {
     private val buddy = buddyCharacter()
     private val scor = npc("scor", "Scor", 813)

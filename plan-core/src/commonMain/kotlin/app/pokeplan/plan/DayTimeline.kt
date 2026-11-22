@@ -6,23 +6,11 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
 
-/**
- * The day view: tasks with a time on that day are blocks on the hours, and the day's tasks without one wait in a tray
- * to be given an hour. Tapping a tray task and then an hour plans it, or it is dragged there; dragging a block moves it
- * and dragging its bottom edge sets its estimate, both in [SNAP_MINUTES] steps. Events from the phone's calendars sit on
- * the same hours, read-only; all-day ones sit above them. The week view is seven of these side by side ([week]).
- */
 object DayTimeline {
-    /** A task on the hours, from [startMinute] to [endMinute] after midnight. Overlapping blocks sit side by side: this one is [lane] of [lanes]. */
     data class Block(val task: Task, val startMinute: Int, val endMinute: Int, val lane: Int, val lanes: Int)
 
-    /** A calendar event on the hours, placed in the same lanes as the task blocks. */
     data class EventBlock(val event: CalendarEvent, val startMinute: Int, val endMinute: Int, val lane: Int, val lanes: Int)
 
-    /**
-     * The hours shown are [firstHour] up to (not including) [endHour]. [undated] holds the tasks with no day at all.
-     * [busyMinutes] is how much of the waking window the timed events take (overlaps counted once).
-     */
     data class Plan(
         val day: LocalDate,
         val blocks: List<Block>,
@@ -35,44 +23,25 @@ object DayTimeline {
         val busyMinutes: Int = 0,
     )
 
-    /**
-     * The week view: [days] from the first day on, sharing the same hours ([firstHour] to [endHour]). The [tray] holds
-     * every day's tasks without a time (on today also the overdue ones), [undated] the tasks with no day at all.
-     */
     data class Week(val days: List<Plan>, val tray: List<Task>, val undated: List<Task>, val firstHour: Int, val endHour: Int)
 
     private const val DAY_END = 24 * 60
 
-    /** The step a dragged or resized block snaps to. */
     const val SNAP_MINUTES = 15
 
-    /** The latest a block can start: the last step before midnight. */
     const val LAST_START = DAY_END - SNAP_MINUTES
 
-    /** Rounds [minute] after midnight to the nearest [SNAP_MINUTES] step, from 0:00 to [LAST_START]. */
     fun snap(minute: Int): Int = ((minute + SNAP_MINUTES / 2).floorDiv(SNAP_MINUTES) * SNAP_MINUTES).coerceIn(0, LAST_START)
 
-    /**
-     * The estimate a block starting at [startMinute] gets when its bottom edge is dragged to [endMinute]: whole
-     * [SNAP_MINUTES] steps, at least one, and never past midnight.
-     */
     fun resized(startMinute: Int, endMinute: Int): Int {
         val end = (endMinute + SNAP_MINUTES / 2).floorDiv(SNAP_MINUTES) * SNAP_MINUTES
         return (end - startMinute).coerceIn(SNAP_MINUTES, (DAY_END - startMinute).coerceAtLeast(SNAP_MINUTES))
     }
 
-    /** Tasks without an estimate take this many minutes on the hours. *(tune)* */
     const val DEFAULT_ESTIMATE_MINUTES = 30
 
-    /** How long a block lasts: its estimate, or [DEFAULT_ESTIMATE_MINUTES]; it stops at midnight. */
     fun minutes(t: Task): Int = t.estimateMinutes ?: DEFAULT_ESTIMATE_MINUTES
 
-    /**
-     * The plan for [day]. Blocks are the open and finished tasks planned that day at a time; the tray is the open ones
-     * planned or due that day without a time (and, on today, everything overdue). The hours cover the waking window
-     * ([wakeStart] to [wakeEnd]) and stretch to fit any block outside it. [events] are the calendar events to show; the
-     * ones not on [day] are left out.
-     */
     fun build(
         tasks: List<Task>,
         day: LocalDate,
@@ -103,7 +72,6 @@ object DayTimeline {
         )
     }
 
-    /** The week from [from]: [days] day plans side by side, on the same hours so the columns line up. */
     fun week(
         tasks: List<Task>,
         from: LocalDate,
@@ -120,13 +88,8 @@ object DayTimeline {
         )
     }
 
-    /** A task or an event on the hours, from [start] to [end] minutes after midnight. */
     private class Span(val task: Task?, val event: CalendarEvent?, val start: Int, val end: Int)
 
-    /**
-     * Places the spans: each group of overlapping ones shares the width, each in the first lane that is free. Returns each
-     * span with its lane and the number of lanes in its group.
-     */
     private fun lanes(spans: List<Span>): List<Triple<Span, Int, Int>> {
         val sorted = spans.sortedWith(compareBy({ it.start }, { -it.end }))
         val out = mutableListOf<Triple<Span, Int, Int>>()

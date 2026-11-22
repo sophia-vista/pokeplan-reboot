@@ -69,8 +69,6 @@ import app.pokeplan.ui.screens.PixelTimeField
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 
-// Help: events never pay; with a repeating event, changes are made to every one, and moving it on the calendar moves just that one.
-/** Setting up a new event: its title, all day or at a time, its colour, then when (its days, or tap an hour and nudge it), then Add. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Unit, today: LocalDate = draft.day, party: List<app.pokeplan.core.pokemon.OwnedPokemon> = emptyList(), cancel: () -> Unit) {
@@ -89,7 +87,6 @@ internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Uni
                         FieldLabel("Colour")
                         EventColors(draft.color) { change(draft.copy(color = it)) }
                         RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
-                        // An all-day event has no length to pay for, so only a timed one takes a companion.
                         if (!draft.allDay) CompanionPicker(party, draft.companion) { change(draft.copy(companion = it)) }
                     }
                 }
@@ -125,12 +122,6 @@ internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Uni
     }
 }
 
-/**
- * What to do with a picked event of PokéPlan's own: rename it, nudge it or its length, change its colour or how it
- * repeats, or delete it. For an occurrence of a repeating event the changes are made to every one (moving it on the
- * calendar moves just that one), and Delete asks this one or all. [follow] gets the id the event has after a change
- * that gives it a new one.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> Unit, close: () -> Unit) {
@@ -181,20 +172,14 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
     }
 }
 
-/** How an event repeats: Once or one of [EventRepeat], as a row of choices (the chosen one bold with a thicker border). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RepeatPicker(selected: EventRepeat?, pick: (EventRepeat?) -> Unit) {
     PixelChoice(listOf<EventRepeat?>(null) + EventRepeat.entries, selected, { it?.label ?: "Once" }, pick, label = "Repeats")
 }
 
-/** How many occurrences Set an end keeps, counting the one shown. */
 private const val END_AFTER = 10
 
-/**
- * When a repeating event ends: never, or on one of its occurrences, stepped with ‹ › (never before the one [shown]).
- * Set an end picks the tenth from the one shown.
- */
 @Composable
 private fun RepeatEnd(series: PlanEvent, shown: PlanEvent, set: (LocalDate?) -> Unit) {
     val until = series.until
@@ -217,10 +202,8 @@ private fun RepeatEnd(series: PlanEvent, shown: PlanEvent, set: (LocalDate?) -> 
     }
 }
 
-/** The colour names, for screen readers, in the order of [TaskList.COLORS]. */
 private val eventColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Purple", "Pink", "Slate")
 
-/** An event's colour: the eight list colours as swatches (teal is the own events' usual colour). */
 @Composable
 private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -237,7 +220,6 @@ private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
     }
 }
 
-/** The first and last day of an all-day event, each typed or picked; the last never comes before the first. */
 @Composable
 private fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, setFirst: (LocalDate) -> Unit, setLast: (LocalDate) -> Unit) {
     FieldLabel("Starts")
@@ -246,10 +228,6 @@ private fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, s
     PixelDateField(last, today, Pixel.Tone, { it?.let(setLast) }, presets = emptyList(), min = first)
 }
 
-/**
- * The companion of an event (PLAN.md 8.2): one Pokémon of the PLAN party, or none. After the event ends it gains exp, and may find an item.
- * Nothing shows with no party to choose from.
- */
 @Composable
 internal fun CompanionPicker(party: List<app.pokeplan.core.pokemon.OwnedPokemon>, chosen: String?, onChange: (String?) -> Unit) {
     if (party.isEmpty()) return

@@ -3,12 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Sinnoh layer (docs/pokelife/MODULES/WORLD.md section 14, "Sinnoh"), from Pokémon Diamond, Pearl, Platinum, Brilliant Diamond and Shining
- * Pearl. Their wild tables are the Sinnoh regional dex, by each place's habitat in the games; legendaries are never found (they are
- * quests, [Legends]). Floors, floor times, milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter
- * of [SinnohStory].
- */
 object SinnohDungeons {
     private val S = WorldLayer.SINNOH
 
@@ -70,10 +64,6 @@ object SinnohDungeons {
     )
 }
 
-/**
- * Sinnoh's story, "The Distortion of Creation" (docs/regional-storylines.md): disturbances in space and time, Team Galactic and the
- * Distortion World. A chapter opens by rank and by how many different Sinnoh dungeons have been cleared, and is never lost.
- */
 object SinnohStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "Twinleaf Town", "A new explorer sets out from Twinleaf Town. The forests and mines are quiet, but something in the sky is wrong.", "Eterna Forest and Oreburgh Mine", ExplorerRank.NORMAL, 0),
@@ -83,7 +73,6 @@ object SinnohStory {
         Chapter(5, "The Distortion World", "At the Spear Pillar the creators answer, and behind them a world turned inside out waits for you.", "Spear Pillar, the Distortion World, Palkia and Giratina", ExplorerRank.PLATINUM, 7),
     )
 
-    /** The Guardian: Giratina, in the Distortion World. */
     const val GUARDIAN = "Giratina"
     const val GUARDIAN_BONUS = "Reverse World: Sinnoh expeditions find treasure a little more often"
 }

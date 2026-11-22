@@ -129,31 +129,21 @@ import app.pokeplan.app.Places
 import app.pokeplan.app.RewardEntry
 import app.pokeplan.app.World
 
-/** World's actions on the shared save (the rules are in world-core; docs/pokelife `MODULES/WORLD.md` section 14). Split out of [GameStore]. */
-// ----- World: the dungeon game (docs/pokelife/MODULES/WORLD.md section 14). Its rules are in world-core; this keeps its save and moves what it finds into the shared collection and Bag -----
-
 fun GameStore.worldReport(): ReportSummary? = worldSummary?.takeIf { !it.isEmpty }
 
-/** The player has read the report: it starts again from nothing. */
 fun GameStore.worldReportDismiss() { worldSummary = null }
 
-/** Settles every World team to now (floors climbed, finds, items) and returns what happened, or null when nothing did. */
 fun GameStore.worldSettle(): WorldReport? {
-    // A Pokémon transferred away leaves its team (an empty team comes home), so no slot is held by someone who is gone.
     val kept = data.world.pruned(data.player.pokemon.map { it.id }.toSet())
     if (kept !== data.world) update { it.copy(world = kept) }
     val before = data.world
     val report = WorldSim.settle(before, data.player.pokemon, nowMillis)
     if (report.isEmpty) {
-        // A clock set back moves a team's settle point to now without any floor (WORLD.md 3.1): keep that, or the team waits for the clock to catch up.
         if (report.data.teams != before.teams) update { it.copy(world = it.world.copy(teams = report.data.teams)) }
         worldGuardian()
         worldLegends()
         return null
     }
-    // One write carries the floors, the members' experience, the Poké, the items in the Bag and the ledger note (event id below), so the database
-    // settles this climb as one event of its own. The id names each team's expedition and the floors it covers; the cursor moves with them, so a
-    // floor has one id and is never settled twice.
     val id = "world:expedition:" + report.perTeam.keys.sorted().joinToString("+") { t ->
         val from = before.team(t)?.expedition
         "$t.${from?.startedAt}.${from?.floorsClimbed}-${report.data.team(t)?.expedition?.floorsClimbed}"
@@ -162,7 +152,6 @@ fun GameStore.worldSettle(): WorldReport? {
         val partner = d.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
         d.copy(world = report.data, player = d.player.copy(pokemon = d.player.pokemon.map { p ->
             val floors = report.memberFloors[p.id] ?: return@map p
-            // Every Pokémon that climbed floors gets the full experience for each (WORLD.md 5.2): [CandyRules.XP_PER_FLOOR] a floor, not divided among the team.
             p.gainXp(floors * CandyRules.XP_PER_FLOOR, partner ?: p.level)
         }))
     }
@@ -172,29 +161,18 @@ fun GameStore.worldSettle(): WorldReport? {
     return report
 }
 
-/** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/pokelife/MODULES/WORLD.md section 14). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
 private fun GameStore.worldGuardian() {
     val w = data.world
     if (!w.guardianDone || w.guardianGranted) return
-    // The flag and the Pokémon are one write that re-checks the flag under the store's lock, so the widget and the app cannot both grant it.
     update { d ->
         if (!d.world.guardianDone || d.world.guardianGranted) d
         else grantIn(d.copy(world = d.world.copy(guardianGranted = true)), app.pokeplan.world.Story.GUARDIAN_SPECIES, GameStore.WORLD_SOURCE, form = app.pokeplan.world.Story.GUARDIAN_FORM).first
     }
 }
 
-/**
- * The legendary quests of the layers (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, "World regions"): each Pokémon whose quest is met (its dungeon cleared enough
- * times, and for the end of a layer's story its Guardian faced) joins the Guardian collection once. They are not eggs; the reward line
- * is in the log.
- */
 private fun GameStore.worldLegends() {
     for (quest in app.pokeplan.world.Legends.ready(data.world)) {
-        // Every legendary also has a quest in the Plan side's quest list (Quests): a Pokémon already owned from there is not given twice,
-        // and the quest still counts as done in World, so its boost for the layer applies either way.
-        // Dialga is the exception: Primal Dialga (the home Guardian) is a form of its own, so owning it does not stand in for Sinnoh's Dialga.
         val own = app.pokeplan.core.dex.Dex.defaultForm(quest.speciesId).identifier
-        // One write that re-checks the quest under the store's lock, like the Guardian above.
         update { d ->
             if (quest.id in d.world.legends) d
             else {
@@ -205,13 +183,6 @@ private fun GameStore.worldLegends() {
     }
 }
 
-/**
- * Applies a World change that pays (floors, a job, research, a treasure box) as ONE write: the change, the Poké it earned
- * (`WorldData.pokeEarned`, folded into the balance by [update]), the items World staged moved into the shared Bag, the line in the reward log
- * and a [LedgerNote] under [eventId], so the database ledger records this event by its own stable id instead of a net change
- * (DATA_AND_MIGRATIONS.md section 7.3.0; WORLD.md 3.1 and 6). Entries of the same [source] within ten minutes share a log line, so a team that
- * climbs while the screen is open does not flood the log.
- */
 private fun GameStore.worldPay(source: String, eventId: String, ref: String, kind: String, change: (AppData) -> AppData) {
     update { d ->
         val changed = change(d)
@@ -220,7 +191,6 @@ private fun GameStore.worldPay(source: String, eventId: String, ref: String, kin
         val paid = mutableListOf<Reward>()
         earned.takeIf { it > 0 }?.let { paid += Reward.Poke(it) }
         staged.forEach { (id, n) -> (n - (d.world.items[id] ?: 0)).takeIf { it > 0 }?.let { paid += Reward.ItemDrop(id, it) } }
-        // The staging area is emptied into the Bag in the same write (one inventory).
         val moved = changed.copy(
             player = changed.player.copy(inventory = staged.entries.fold(changed.player.inventory) { bag, (id, n) -> bag.add(id, n) }),
             world = changed.world.copy(items = emptyMap()),
@@ -237,17 +207,12 @@ private fun GameStore.worldPay(source: String, eventId: String, ref: String, kin
     }
 }
 
-/**
- * Sets who is on World team [team]; false when the rank, the team or the Pokémon do not allow it. A Pokémon newly put on a team is taken
- * from its party, the buddy, a Guardian slot, another team or a helper job (one place only), unless that team is out on an expedition.
- */
 fun GameStore.worldAssign(team: Int, members: List<String>): Boolean {
     if (members.any { id -> data.player.pokemon.none { it.id == id } }) return false
     val already = data.world.team(team)?.members.orEmpty().toSet()
     val incoming = members.filter { it !in already }
     if (incoming.any { !Places.movable(data, it) }) return false
     if (incoming.fold(data) { d, id -> Places.vacate(d, id) }.world.assign(team, members) == null) return false
-    // Built from the document being changed, not from the copy checked above: the save may have moved on in between (a widget, a notification).
     update { d ->
         val moved = incoming.fold(d) { m, id -> Places.vacate(m, id) }
         moved.world.assign(team, members)?.let { moved.copy(player = Places.leads(moved.player), world = it) } ?: d
@@ -255,21 +220,18 @@ fun GameStore.worldAssign(team: Int, members: List<String>): Boolean {
     return true
 }
 
-/** Names World team [team] (empty goes back to "Team n"). */
 fun GameStore.worldRenameTeam(team: Int, name: String): Boolean {
     val next = data.world.renameTeam(team, name) ?: return false
     update { it.copy(world = next) }
     return true
 }
 
-/** Gives World team [team] the accent number [accent]. */
 fun GameStore.worldRecolourTeam(team: Int, accent: Int): Boolean {
     val next = data.world.recolourTeam(team, accent) ?: return false
     update { it.copy(world = next) }
     return true
 }
 
-/** Saves who is on World team [team] as a preset called [name]. */
 fun GameStore.worldSavePreset(team: Int, name: String): Boolean {
     val members = data.world.team(team)?.members ?: return false
     val next = data.world.savePreset(name, members) ?: return false
@@ -279,7 +241,6 @@ fun GameStore.worldSavePreset(team: Int, name: String): Boolean {
 
 fun GameStore.worldDeletePreset(name: String) = update { it.copy(world = it.world.deletePreset(name)) }
 
-/** Puts the preset [name] on World team [team]: whoever of it is still owned and in the PC (or already on this team): a Pokémon in a party, slotted or helping is not taken. */
 fun GameStore.worldApplyPreset(team: Int, name: String): Boolean {
     val onTeam = data.world.team(team)?.members.orEmpty().toSet()
     val owned = data.player.pokemon.map { it.id }.filter { it in onTeam || Places.of(data, it) == Place.Pc }.toSet()
@@ -295,12 +256,6 @@ fun GameStore.worldStart(team: Int, dungeonId: String): Boolean {
     return true
 }
 
-/**
- * Sends the strongest team to [dungeonId] in one step: the first team slot that is not out takes the best (up to four) of its own
- * members and the idle Pokémon (see [worldIdle]) **for that dungeon**, so a type the dungeon favors counts for its 20% more
- * ([WorldSim.bestTeam]) rather than levels alone; a Guardian candidate is never picked. The team keeps its members when they are
- * already the best. False when every team is out, no one is free, or the dungeon is not open.
- */
 fun GameStore.worldQuickSend(dungeonId: String): Boolean {
     worldSettle()
     val dungeon = app.pokeplan.world.Dungeons.byId(dungeonId) ?: return false
@@ -312,15 +267,10 @@ fun GameStore.worldQuickSend(dungeonId: String): Boolean {
     return worldStart(slot.id, dungeonId)
 }
 
-/**
- * The Pokémon free to join a World team, strongest first: in the PC: not the buddy, not in a party, not slotted as a Guardian, not helping a tool and not on a team
- * (one place only; choosing one for a team moves it, so the others are offered by moving them first).
- */
 fun GameStore.worldIdle(): List<OwnedPokemon> = data.player.pokemon
     .filter { Places.of(data, it.id) == Place.Pc }
     .sortedWith(compareByDescending<OwnedPokemon> { it.level }.thenBy { it.id })
 
-/** Answers the World choice [id] with [option] (0 or 1), after settling what is due; false when there is no such choice. */
 fun GameStore.worldChoose(id: String, option: Int): Boolean {
     worldSettle()
     val next = data.world.resolveChoice(id, option, nowMillis) ?: return false
@@ -328,44 +278,35 @@ fun GameStore.worldChoose(id: String, option: Int): Boolean {
     return true
 }
 
-/** Counts a story scene as watched to its end (only the record: replaying grants nothing). */
 fun GameStore.worldSceneDone(id: String) { if (id !in data.world.scenesDone) update { it.copy(world = it.world.copy(scenesDone = it.world.scenesDone + id)) } }
 
-/** Counts a chapter's episode as watched to its end (and forgets where it left off). */
 fun GameStore.worldEpisodeDone(key: String, flags: Set<String> = emptySet()) {
     if (key !in data.world.episodesDone || key in data.world.storyResume || !data.world.storyFlags.containsAll(flags)) update { it.copy(world = it.world.copy(episodesDone = it.world.episodesDone + key, storyResume = it.world.storyResume - key, storyFlags = it.world.storyFlags + flags)) }
-    // Mew keeps its word: having agreed to join in the opening, it waits in Finds, once (the gift flag stops a replay from giving a second).
     val world = data.world
     if (key == app.pokeplan.world.WorldMoments.INTRO_KEY && app.pokeplan.world.story.IntroMewChapter.MEW_JOINED in world.storyFlags && GameStore.MEW_GIFT !in world.storyFlags) {
         update { it.copy(world = it.world.copy(storyFlags = it.world.storyFlags + GameStore.MEW_GIFT, finds = it.world.finds + app.pokeplan.world.Find(151, "tiny-woods", 1, nowMillis))) }
     }
 }
 
-/** Notes the story flags set so far (answers to choices) and the next scene of an unfinished episode, so it can start there next time. */
 fun GameStore.worldStoryProgress(key: String, nextScene: Int, flags: Set<String>) {
     if (data.world.storyResume[key] != nextScene || !data.world.storyFlags.containsAll(flags)) update { it.copy(world = it.world.copy(storyResume = it.world.storyResume + (key to nextScene), storyFlags = it.world.storyFlags + flags)) }
 }
 
-/** The next World moment to show (a new rank, a chapter opening) or null; first counts what an older save already reached as seen. */
 fun GameStore.worldMoment(): app.pokeplan.world.WorldMoment? {
     val adopted = app.pokeplan.world.WorldMoments.adopted(data.world)
     if (adopted != data.world) update { it.copy(world = adopted) }
     return app.pokeplan.world.WorldMoments.pending(adopted).firstOrNull()
 }
 
-/** Counts [moment] as shown, so it plays once. */
 fun GameStore.worldMomentSeen(moment: app.pokeplan.world.WorldMoment) = update { it.copy(world = app.pokeplan.world.WorldMoments.seen(it.world, moment)) }
 
-/** Brings a team home after settling what it found. */
 fun GameStore.worldRecall(team: Int) {
     worldSettle()
     data.world.recall(team)?.let { next -> update { it.copy(world = next) } }
 }
 
-/** Recruits the find at [index] into the shared collection: the same persistent Pokémon as any other (docs/pokelife/MODULES/WORLD.md section 14). Null when there is none. */
 fun GameStore.worldRecruit(index: Int): OwnedPokemon? {
     val find = data.world.finds.getOrNull(index) ?: return null
-    // Taking the find off the list and granting the Pokémon are one write, so an interruption between them cannot leave a Pokémon both joined and still waiting.
     var mon: OwnedPokemon? = null
     update { d ->
         if (d.world.finds.getOrNull(index)?.speciesId != find.speciesId) d
@@ -374,7 +315,6 @@ fun GameStore.worldRecruit(index: Int): OwnedPokemon? {
     return mon
 }
 
-/** Takes a job from the World mission board; false when it is not offered or three are held. */
 fun GameStore.worldAcceptMission(id: String): Boolean {
     worldSettle()
     val next = data.world.copy(lastSeenAt = nowMillis).acceptMission(id, utcOffsetMillis) ?: return false
@@ -386,20 +326,17 @@ fun GameStore.worldAbandonMission(id: String) {
     data.world.abandonMission(id)?.let { next -> update { it.copy(world = next) } }
 }
 
-/** Claims a finished job: Poké and Exploration XP go to World, its item to the shared Bag, and the reward log records it. */
 fun GameStore.worldClaimMission(id: String): Boolean {
     worldSettle()
     val give = Missions.byId(id)?.takeIf { it.give != null }
     if (give != null && !data.player.inventory.has(give.give!!, give.giveCount)) return false
     val next = data.world.copy(lastSeenAt = nowMillis).claimMission(id, utcOffsetMillis) ?: return false
-    // A job can come back on another day, so the day (in the player's zone) is part of its event id.
     worldPay("World: jobs", "world:job:$id:${(nowMillis + utcOffsetMillis).floorDiv(86_400_000L)}", id, "job") { d ->
         d.copy(world = next, player = if (give != null) d.player.copy(inventory = d.player.inventory.remove(give.give!!, give.giveCount)) else d.player)
     }
     return true
 }
 
-/** Builds the next level of a World facility for Poké. False when it is at the top or Poké is short. */
 fun GameStore.worldUpgrade(facility: app.pokeplan.world.Facility): Boolean {
     worldSettle()
     val cost = data.world.upgradeCost(facility)
@@ -408,7 +345,6 @@ fun GameStore.worldUpgrade(facility: app.pokeplan.world.Facility): Boolean {
     return true
 }
 
-/** Claims the World research milestone at [species] discovered species. */
 fun GameStore.worldClaimResearch(species: Int): Boolean {
     worldSettle()
     val next = data.world.claimResearch(species) ?: return false
@@ -416,7 +352,6 @@ fun GameStore.worldClaimResearch(species: Int): Boolean {
     return true
 }
 
-/** Brews at the Café: three berries from the Bag, then three hours of luckier floors. False without the berries. */
 fun GameStore.worldBrew(): Boolean {
     worldSettle()
     val bag = data.player.inventory
@@ -430,13 +365,8 @@ fun GameStore.worldBrew(): Boolean {
     return true
 }
 
-/** Today's day number at the Kecleon Shop (the player's local day), for its daily shelf. */
 val GameStore.shopDay: Long get() = (nowMillis + utcOffsetMillis).floorDiv(86_400_000L)
 
-/**
- * Buys [itemId] at the Kecleon Shop for Poké, from the fixed stock or today's shelf ([app.pokeplan.world.KecleonShop]): the price comes off the
- * balance and the items go into the Bag in one update. False when it is not on sale today or Poké is short.
- */
 fun GameStore.worldBuy(itemId: String): Boolean {
     val offer = app.pokeplan.world.KecleonShop.offer(shopDay, itemId) ?: return false
     if (data.player.coins < offer.price) return false
@@ -447,7 +377,6 @@ fun GameStore.worldBuy(itemId: String): Boolean {
     return true
 }
 
-/** The Swap Shop: three berries of the flavour [from] for one of the flavour [to]. False without the berries or when the flavours are the same. */
 fun GameStore.worldSwap(from: String, to: String): Boolean {
     if (from == to || from !in app.pokeplan.world.SwapShop.flavors || to !in app.pokeplan.world.SwapShop.flavors) return false
     val give = Items.berry(from)
@@ -456,21 +385,18 @@ fun GameStore.worldSwap(from: String, to: String): Boolean {
     return true
 }
 
-/** Dojo training: Poké into skill XP. */
 fun GameStore.worldTrain(skill: app.pokeplan.world.WorldSkill): Boolean {
     val next = data.world.train(skill, data.player.coins) ?: return false
     update { it.copy(world = next, player = it.player.copy(coins = it.player.coins - app.pokeplan.world.Dojo.COST)) }
     return true
 }
 
-/** Opens a treasure box of [tier]: berries, and from the silver tier a chance of a Rare Candy; what is inside goes to the Bag and the reward log. Returns what was found. *(tune)* */
 fun GameStore.worldOpenTreasure(tier: Int): Map<String, Int> {
     if ((data.world.treasure[tier] ?: 0) <= 0) return emptyMap()
     val random = Random(nowMillis xor (tier.toLong() shl 40) xor data.world.xp.toLong())
     val found = mutableMapOf<String, Int>()
     fun add(id: String, n: Int) { found[id] = (found[id] ?: 0) + n }
     repeat(1 + tier) { add(Items.berry(listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)), 1) }
-    // A Rare Candy: 15% from a silver box, 35% from a gold one (the simulation showed the first guesses of 60% and 175% paid hundreds a year).
     if (tier >= 2 && random.nextInt(100) < (if (tier >= 3) 35 else 15)) add(Items.RARE_CANDY, 1)
     worldPay("World: treasure", "world:treasure:$tier:$nowMillis", "treasure:$tier", "treasure") { d ->
         d.copy(world = d.world.copy(
@@ -481,17 +407,12 @@ fun GameStore.worldOpenTreasure(tier: Int): Map<String, Int> {
     return found
 }
 
-/**
- * The team [TeamAdvice] would put on World team [team] for [dungeonId]: chosen from the idle PC Pokémon and the team's own members, never the
- * buddy, a party, a Guardian slot or another place. Null for an unknown dungeon or team.
- */
 fun GameStore.worldRecommend(dungeonId: String, team: Int? = null): app.pokeplan.world.TeamRecommendation? {
     val dungeon = app.pokeplan.world.Dungeons.byId(dungeonId) ?: return null
     val own = team?.let { data.world.team(it) }?.members.orEmpty().mapNotNull { id -> data.player.pokemon.firstOrNull { it.id == id } }
     return app.pokeplan.world.TeamAdvice.recommend(dungeon, (own + worldIdle()).distinctBy { it.id })
 }
 
-/** "Replace team": puts the recommended team for [dungeonId] on World team [team] in one action (through [worldAssign], so each pick leaves its old place). False while the team is out, or when there is nobody. */
 fun GameStore.worldReplaceTeam(team: Int, dungeonId: String): Boolean {
     worldSettle()
     val slot = data.world.team(team) ?: return false

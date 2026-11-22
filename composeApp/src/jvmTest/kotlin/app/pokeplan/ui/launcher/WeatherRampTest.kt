@@ -5,7 +5,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** The ramps are the game's own (assets/weather/ramps.tsv, from data/dungeon/colvec.inc): each weather moves the colours of a tile its own way. */
 class WeatherRampTest {
     private val ramps = WeatherRamp.parse(File("../assets/weather/ramps.tsv").readText())
 

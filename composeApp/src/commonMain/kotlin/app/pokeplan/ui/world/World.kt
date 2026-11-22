@@ -126,16 +126,6 @@ import app.pokeplan.app.world.worldSwap
 import app.pokeplan.app.world.worldTrain
 import app.pokeplan.app.world.worldUpgrade
 
-/**
- * World (docs/pokelife/MODULES/WORLD.md section 14): the dungeon game. Send expedition teams into dungeons; they climb floors on their own, offline
- * too, and bring back items, treasure and Pokémon to recruit. The map, the expeditions, the camp and the finds and bag are
- * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
- */
-/**
- * World's five destinations (WORLD.md section 2): Town, Atlas ([MAP]), Expeditions ([TEAMS]), Guild ([MISSIONS]) and Journal ([ARCHIVE]).
- * [SKILLS] and [BAG] (Finds) are reached from the Town, [SETTINGS] from the small button under the destinations; they stay sections of their own so a
- * shortcut (the landing's "Open Finds") can open them directly.
- */
 enum class WorldSection(val label: String, val icon: String) {
     MAP("Atlas", "town-map"), MISSIONS("Guild", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), TOWN("Town", "scope-lens"), ARCHIVE("Journal", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
@@ -148,8 +138,6 @@ internal fun WorldScreen(model: AppModel, openPokemon: (String) -> Unit = {}) = 
 
 @Composable
 private fun WorldBody(model: AppModel, openPokemon: (String) -> Unit) {
-    // Settlement is by timestamp (WORLD.md 3.1): once on opening, which counts the time away, then at the moment the next floor of a team that is out
-    // is done (the screen waits for that instant; it does not poll). The wait is cut into short naps so a clock that jumped or a phone that slept is noticed.
     LaunchedEffect(Unit) { model.store.worldSettle(); model.worldNow = model.store.nowMillis }
     val roster = model.data.player.pokemon
     val due = remember(model.data.world, roster) { WorldSim.nextFloorAt(model.data.world, roster, model.store.nowMillis) }
@@ -200,9 +188,6 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.WORLD.label, onBack = onBack, color = Module.WORLD.look.header, trailing = { SectionsKey(Module.WORLD.label, sections) { key -> model.worldSection = WorldSection.valueOf(key) } })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            // The order of the page: where you are and the one thing worth doing (the region, its chapter, the next step), what the teams
-            // are doing and brought back, then the places to go. Rank sits in one quiet strip. The first time, one card says what World is.
-            // The lead of the team out exploring (else the first team with members), in World's own scene; nothing before a team has a member.
             val stageTeam = world.teams.firstOrNull { it.expedition != null && it.members.isNotEmpty() } ?: world.teams.firstOrNull { it.members.isNotEmpty() }
             val stageLead = stageTeam?.members?.firstNotNullOfOrNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
             ModuleLeadStage(model, Module.WORLD, stageLead, null, openPokemon = openPokemon)
@@ -221,15 +206,10 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
                 RegionCard(model)
                 ExpeditionOverview(model)
             }
-            // The five destinations, big (WORLD.md section 2); Settings is the one small button.
         }
     }
 }
 
-/**
- * The landing's main card: the region on show (with its switch), its chapter in one line, what is worth doing now and why (Pokémon to
- * recruit, a job to claim, the next dungeon, or a look at the teams) with its one button, and what the next chapter asks, quietly.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RegionCard(model: AppModel) {
@@ -259,7 +239,6 @@ private fun RegionCard(model: AppModel) {
     }
 }
 
-/** The exploration team's rank in one quiet strip: badge, rank, the way to the next one, and the Poké in hand. */
 @Composable
 private fun RankStrip(model: AppModel) {
     val world = model.data.world
@@ -276,21 +255,16 @@ private fun RankStrip(model: AppModel) {
     } }
 }
 
-// ----- World: the map -------------------------------------------------------------------------------------------------
-
 @Composable
 private fun WorldMapView(model: AppModel) {
     val world = model.data.world
     val ready = world.slots().filter { it.members.isNotEmpty() && it.expedition == null }
-    // The map: more of it is uncovered with each dungeon cleared; a tap on a marker brings that dungeon to the top of the list.
     var selected by remember { mutableStateOf<String?>(null) }
     val layer = model.worldLayer
     val dungeons = Dungeons.of(layer)
     val clearedCount = dungeons.count { (world.clears[it.id] ?: 0) > 0 }
-    // The layer switch: every layer is open from the first day.
     WorldLayerSwitch(model) { selected = null }
     val spots = when (layer) { WorldLayer.RESCUE, WorldLayer.EXPLORERS -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots; WorldLayer.SINNOH -> sinnohSpots; else -> emptyMap() }
-    // A later region with no map art yet shows its dungeons as the list below only.
     if (layer.hasMap) WorldMapPicture(
         stage = 1 + clearedCount * 7 / dungeons.size.coerceAtLeast(1),
         markers = dungeons.mapNotNull { d ->
@@ -311,7 +285,6 @@ private fun WorldMapView(model: AppModel) {
         val wild = d.wild.sortedByDescending { it.weight }.map { it.speciesId }.distinct().take(4)
             .map { TileWalker(Dex.defaultForm(it).id, false, Dex.species(it).name, sample = true) }
         dungeonEntrance(d.id)?.let { EntranceStrip(it) }
-        // The dungeon is drawn in its own tiles, the wild Pokémon that live there walking its floor; the text is on its walls.
         TileBox(d.id, wild, animate = !model.data.settings.reduceMotion, modifier = Modifier.alpha(if (open) 1f else 0.75f), scrolls = false) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(d.name, style = MaterialTheme.typography.titleSmall)
@@ -322,7 +295,6 @@ private fun WorldMapView(model: AppModel) {
                 PixelBar(deepest.toFloat() / d.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "deepest floor $deepest of ${d.floors}")
                 (world.clears[d.id] ?: 0).takeIf { it > 0 }?.let { Text("Cleared $it ${if (it == 1) "time" else "times"}", style = MaterialTheme.typography.bodyMedium) }
                 val warn = Color(0xFFFFB4A8)
-                // Every requirement not met yet, each on its own line with how far along it is.
                 val reasons = app.pokeplan.world.WorldGuide.lockReasons(world, d)
                 when {
                     reasons.isNotEmpty() -> reasons.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = warn) }
@@ -330,7 +302,6 @@ private fun WorldMapView(model: AppModel) {
                         PixelButton("Send my strongest", { model.store.worldQuickSend(d.id); model.effect(Sfx.STAIRS_DOWN) }, color = Module.WORLD.look.accent, compact = true)
                     ready.isEmpty() -> Text("Every team is out. Recall one in Expeditions.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
                     else -> {
-                        // Why a team suits the place: how long a floor takes it, and how many of its members are of a favoured type.
                         ready.forEach { team ->
                             val members = team.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
                             val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d))
@@ -346,7 +317,6 @@ private fun WorldMapView(model: AppModel) {
     }
 }
 
-/** Where each dungeon is on the world map picture (504 x 336 pixels). */
 private val mapSpots = mapOf(
     "tiny-woods" to (235 to 123), "thunderwave-cave" to (179 to 107), "mt-steel" to (347 to 139), "waterfall-cave" to (299 to 67),
     "glacier-palace" to (107 to 291), "ancient-ruins" to (411 to 227), "sky-tower" to (459 to 43), "temporal-tower" to (59 to 179),
@@ -354,7 +324,6 @@ private val mapSpots = mapOf(
     "frosty-forest" to (72 to 270), "hidden-land" to (346 to 288),
 )
 
-/** The layer buttons (every layer is open from the first day): the one on show is lit; [onChange] runs after a switch. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun WorldLayerSwitch(model: AppModel, onChange: () -> Unit = {}) {
@@ -365,22 +334,18 @@ private fun WorldLayerSwitch(model: AppModel, onChange: () -> Unit = {}) {
     }
 }
 
-/** Where each Kanto dungeon is on the Kanto map picture (192 x 128 pixels), read from its towns and routes. */
 private val kantoSpots = mapOf(
     "viridian-forest" to (44 to 68), "mt-moon" to (82 to 44), "rock-tunnel" to (153 to 52), "pokemon-tower" to (156 to 67),
     "power-plant" to (150 to 80), "seafoam-islands" to (72 to 121), "mt-ember" to (40 to 122), "victory-road" to (28 to 62),
     "cerulean-cave" to (136 to 40),
 )
 
-/** Where each Johto dungeon is on the Johto map picture (144 x 128 pixels), read from its towns and landmarks. */
 private val johtoSpots = mapOf(
     "sprout-tower" to (76 to 52), "ilex-forest" to (44 to 52), "union-cave" to (20 to 84), "ruins-of-alph" to (68 to 68),
     "slowpoke-well" to (44 to 84), "mt-mortar" to (76 to 36), "burned-tower" to (60 to 36), "whirl-islands" to (20 to 108),
     "tin-tower" to (70 to 24),
 )
 
-/** Where each Hoenn dungeon is on the Hoenn map picture (256 x 152 pixels), read from its towns and landmarks. */
-/** Where each Sinnoh dungeon's marker stands on the Platinum Town Map (240 x 200 pixels), placed by eye from where the games put the places. */
 private val sinnohSpots = mapOf(
     "eterna-forest" to (42 to 118), "oreburgh-mine" to (75 to 143), "wayward-cave" to (97 to 120), "old-chateau" to (75 to 100),
     "iron-island" to (26 to 82), "mt-coronet" to (97 to 95), "victory-road-sinnoh" to (210 to 127), "spear-pillar" to (97 to 70),
@@ -393,7 +358,6 @@ private val hoennSpots = mapOf(
     "sky-pillar" to (160 to 100),
 )
 
-/** The legendary quests of [layer]: what each asks and how far it is, and the ones already given. */
 @Composable
 private fun LegendsCard(model: AppModel, layer: WorldLayer) {
     val quests = Legends.of(layer)
@@ -424,7 +388,6 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
     }
 }
 
-/** A job's reward as icons: the Poké coin and amount, the XP, and the item if there is one. */
 @Composable
 private fun MissionReward(m: app.pokeplan.world.MissionDef) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -447,8 +410,6 @@ private fun missionIcon(kind: MissionKind): String = when (kind) {
     MissionKind.STORY -> "oaks-letter"
 }
 
-
-// ----- Missions -------------------------------------------------------------------------------------------------------
 
 @Composable
 private fun WorldMissionsView(model: AppModel) {
@@ -499,7 +460,6 @@ private fun WorldMissionsView(model: AppModel) {
     FieldLabel("On the board")
     val board = Missions.board(world, model.worldNow.takeIf { it > 0 } ?: store.nowMillis, store.utcOffsetMillis)
     val available = board.filter { it.state == Missions.BoardState.AVAILABLE }
-    // Jobs are grouped by region: all of them, or one region's.
     var region by remember { mutableStateOf<app.pokeplan.world.WorldLayer?>(null) }
     val regions = available.map { Missions.layerOf(it.mission) }.distinct()
     if (regions.size > 1) PixelDropdown(listOf<app.pokeplan.world.WorldLayer?>(null) + regions, region, { it?.label ?: "All" }, { region = it }, Modifier.fillMaxWidth())
@@ -522,7 +482,6 @@ private fun WorldMissionsView(model: AppModel) {
             }
         }
     }
-    // The jobs that cannot be taken now, each with why (rank, a wait, or done for good), out of the way until asked for.
     val others = board.filter { it.state == Missions.BoardState.UNAVAILABLE }
     var showOthers by remember { mutableStateOf(false) }
     if (others.isNotEmpty()) {
@@ -530,8 +489,6 @@ private fun WorldMissionsView(model: AppModel) {
         if (showOthers) others.forEach { Text("${it.mission.kind.label}: ${it.mission.title}. ${it.reason} ${it.repeats}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
     }
 }
-
-// ----- Skills, base and research --------------------------------------------------------------------------------------------
 
 @Composable
 private fun WorldSkillsView(model: AppModel) {
@@ -557,8 +514,6 @@ private fun WorldSkillsView(model: AppModel) {
     }
 }
 
-/** The pages of the Town: its landing is the headquarters map and a menu, so nothing but the one page you opened is on screen (docs/pokelife/MODULES/WORLD.md section 2.1). */
-/** The Town page (a [TownPage] name) a screenshot test opens on; null in the app, which opens on the menu. */
 internal var townPageToOpen: String? = null
 
 private enum class TownPage(val label: String, val icon: String) {
@@ -573,7 +528,6 @@ private fun WorldTownView(model: AppModel) {
     val world = model.data.world
     val open = page
     if (open == null) {
-        // The headquarters: the team base of your first partner as big as the screen allows, growing with the Camp, then rank and the places in it.
         WorldMapHero(baseMap(starterSpecies(model.data), world.facilityLevel(Facility.CAMP)), "Exploration base", "Camp level ${world.facilityLevel(Facility.CAMP)} of ${Facility.MAX_LEVEL}")
         MenuGrid(
             TownPage.entries.map { p ->
@@ -586,7 +540,6 @@ private fun WorldTownView(model: AppModel) {
                 }
                 MenuEntry(p.name, p.icon, p.label, detail, tint = Module.WORLD.look.accent)
             } + listOf(
-                // Finds wait in the Town (WORLD.md 2.1); skills are the explorers' rank work. Both are sections of their own, opened from here.
                 MenuEntry(WorldSection.BAG.name, WorldSection.BAG.icon, WorldSection.BAG.label, if (world.finds.isEmpty()) "no one waiting" else "${world.finds.size} to meet", badge = world.finds.size, tint = Module.WORLD.look.accent),
                 MenuEntry(WorldSection.SKILLS.name, WorldSection.SKILLS.icon, WorldSection.SKILLS.label, "${app.pokeplan.world.WorldSkill.entries.size} skills", tint = Module.WORLD.look.accent),
             ),
@@ -601,7 +554,6 @@ private fun WorldTownView(model: AppModel) {
         TownPage.FACILITIES -> {
     Facility.entries.forEach { f ->
         val level = world.facilityLevel(f)
-        // The Camp: the Pokémon recruited from your finds live in its yard (they are in your collection too, with the rest).
         if (f == Facility.CAMP) {
             val data = model.data
             val residents = data.player.pokemon.filter { data.origins[it.id]?.how == Origin.How.WORLD }
@@ -639,7 +591,6 @@ private fun WorldTownView(model: AppModel) {
             WorldBanner("map:sky-t01p01a", "Kecleon Shop", "Items, for Poké", top = true, height = 150.dp)
             var kecleonSays by remember { mutableStateOf(ShopLines.KECLEON_WELCOME) }
             ShopVoice(Keepers.KECLEON, "Kecleon", kecleonSays)
-    // Today's shelf first (it changes each day), then the stock that is always sold.
     val day = store.shopDay
     ShopShelf(model, "Today's shelf", app.pokeplan.world.KecleonShop.shelf(day)) { kecleonSays = if (it) ShopLines.KECLEON_BOUGHT else ShopLines.KECLEON_BROKE }
     ShopShelf(model, "Always in stock", app.pokeplan.world.KecleonShop.fixed) { kecleonSays = if (it) ShopLines.KECLEON_BOUGHT else ShopLines.KECLEON_BROKE }
@@ -683,8 +634,6 @@ private fun WorldTownView(model: AppModel) {
     }
 }
 
-// ----- Expeditions ------------------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun WorldTeamsView(model: AppModel) {
@@ -693,7 +642,6 @@ private fun WorldTeamsView(model: AppModel) {
     val roster = model.data.player.pokemon
     ChoicesCard(model)
     ExpeditionOverview(model)
-    // The dungeons the player can enter on the map on show; the editor suits the team to the chosen one (UI only, not saved).
     val enterable = Dungeons.of(model.worldLayer).filter { app.pokeplan.world.WorldGuide.lockReasons(world, it).isEmpty() }
     val fallback = app.pokeplan.world.WorldGuide.primaryAction(world, model.worldLayer).dungeonId?.let { Dungeons.byId(it) } ?: enterable.firstOrNull() ?: Dungeons.all.first()
     world.slots().forEach { team ->
@@ -701,13 +649,11 @@ private fun WorldTeamsView(model: AppModel) {
         val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
         val outAt = team.expedition?.let { Dungeons.byId(it.dungeonId) }
         val chosen = outAt ?: model.worldTeamDungeon?.let { Dungeons.byId(it) } ?: fallback
-        // A team that is out is shown in a box made of its dungeon's own tiles; any other team in a plain one.
         val body: @Composable () -> Unit = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Box(Modifier.size(14.dp).background(teamAccent(team.accent)))
                     Text(team.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
-                    // Few of this team like the chosen place: a quiet mark, no sentence (the editor's Recommend team fixes it).
                     if (app.pokeplan.world.TeamAdvice.isPoorMatch(chosen, members)) {
                         Box(Modifier.semantics { contentDescription = "Few of this team suit ${chosen.name}" }) { app.pokeplan.ui.StatusIcon(app.pokeplan.ui.StatusKind.ALERT, pixel = 2, animate = false) }
                     }
@@ -741,10 +687,8 @@ private fun WorldTeamsView(model: AppModel) {
         }
         if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
     }
-    // Help: side paths (field moves, hazards), forks that wait 12 hours for an answer, and bountiful days are explained in Help.
 }
 
-/** The team editor: pick a dungeon, Recommend or Replace the team for it, or choose by hand (favoured types first; search reaches the whole PC). [initialAdvice] and [initialSearch] let a screenshot open it in a state. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, chosen: app.pokeplan.world.DungeonDef, enterable: List<app.pokeplan.world.DungeonDef>, initialAdvice: Boolean = false, initialSearch: String = "", onDone: () -> Unit) {
@@ -769,7 +713,6 @@ internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, cho
         if (advice?.noMatch == true) Text("No one free likes ${chosen.name}: the strongest instead.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
         FieldLabel("Up to ${WorldTeam.MAX_MEMBERS} Pokémon")
         PixelField(search, { search = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search the PC")
-        // The chosen slots stay on top; then the PC with the types the place favours first (the 20 strongest, or, searching, the whole PC by name).
         val idle = store.worldIdle()
         val query = search.trim()
         val pool = if (query.isEmpty()) idle.take(20) else idle.filter { it.nickname.contains(query, ignoreCase = true) || it.species.name.contains(query, ignoreCase = true) }
@@ -786,7 +729,6 @@ internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, cho
             }
         }
         if (shown.isEmpty() || (query.isNotEmpty() && pool.isEmpty())) Text("No one found.", style = MaterialTheme.typography.bodyMedium)
-        // A name, an accent colour and saved teams: put one together again in a tap.
         var name by remember(team.id, team.name) { mutableStateOf(team.name) }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
             PixelField(name, { name = it.take(WorldTeam.NAME_MAX) }, Modifier.weight(1f), singleLine = true, label = "Name (up to ${WorldTeam.NAME_MAX} letters)", placeholder = "Team ${team.id}")
@@ -814,9 +756,6 @@ internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, cho
     }
 }
 
-// ----- Camp -----------------------------------------------------------------------------------------------------------
-
-/** The recruiting scene: the wild Pokémon's face beside the question ([find]), or, once it has joined, beside the welcome ([newcomer]). */
 @Composable
 internal fun RecruitCard(find: app.pokeplan.world.Find?, newcomer: app.pokeplan.core.pokemon.OwnedPokemon?, onRecruit: () -> Unit, onLater: () -> Unit, onOk: () -> Unit) {
     if (newcomer != null) {
@@ -852,15 +791,12 @@ internal fun RecruitCard(find: app.pokeplan.world.Find?, newcomer: app.pokeplan.
     }
 }
 
-// ----- Finds and Bag -------------------------------------------------------------------------------------------------
-
 @Composable
 private fun WorldBagView(model: AppModel) {
     val store = model.store
     val world = model.data.world
     var message by remember { mutableStateOf("") }
     var sparkle by remember { mutableStateOf(0) }
-    // Recruiting is a short scene, as in the dungeon games: the Pokémon's face beside a question, then beside the welcome.
     var meeting by remember { mutableStateOf<Int?>(null) }
     var joined by remember { mutableStateOf<app.pokeplan.core.pokemon.OwnedPokemon?>(null) }
     val meetFind = meeting?.let { world.finds.getOrNull(it) }
@@ -893,7 +829,6 @@ private fun WorldBagView(model: AppModel) {
     }
     if (world.treasure.isNotEmpty() || worldLog.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            // The latest World entries of the reward history, so what a trip brought is still there after it.
             worldLog.forEach { entry ->
                 val tag = entry.source.removePrefix("World").removePrefix(":").trim().replaceFirstChar { it.uppercase() }
                 Text((if (tag.isEmpty()) "" else "$tag: ") + entry.rewards.joinToString { it.describe(entry.source) }, style = MaterialTheme.typography.bodyMedium)
@@ -913,7 +848,6 @@ private fun WorldBagView(model: AppModel) {
     }
 }
 
-/** A team's accent colour by number (the six a team can choose from). */
 private fun teamAccent(i: Int): androidx.compose.ui.graphics.Color = when (i) {
     1 -> Pixel.Green
     2 -> Pixel.Red
@@ -934,7 +868,6 @@ private fun journalKindLabel(kind: String) = when (kind) {
     else -> "Notes"
 }
 
-/** The research notebook by region: each layer's species as sprites, met ones in colour, unmet ones as shadows, with a tick for those you own. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun NotebookCard(model: AppModel) {
@@ -965,7 +898,6 @@ private fun NotebookCard(model: AppModel) {
     }
 }
 
-/** Floor choices waiting for an answer: two ways on, each a reward, with the first taken by itself when the time is up. Nothing is lost either way. */
 @Composable
 private fun ChoicesCard(model: AppModel) {
     val world = model.data.world
@@ -996,13 +928,6 @@ private fun rewardText(r: app.pokeplan.world.EventReward): String = when (r) {
     app.pokeplan.world.EventReward.TREASURE -> "a treasure box"
 }
 
-// ----- Story archive --------------------------------------------------------------------------------------------------
-
-/**
- * Every story moment reached, to watch again: the ranks, each layer's chapters and the legendary quests that joined. Playing one again changes
- * nothing (it is a scene, not a reward). Chapters not opened yet are not listed, so nothing is given away.
- */
-/** Research (WORLD.md 2.5): the species discovered, the steps that pay and each layer's notebook. A page of the Journal. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ResearchPage(model: AppModel) {
@@ -1026,7 +951,6 @@ private fun ResearchPage(model: AppModel) {
     NotebookCard(model)
 }
 
-/** The expedition log (WORLD.md 2.5): what the teams found and did, newest first, kept through a night away; filter it by kind. A page of the Journal. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ExpeditionLogPage(world: WorldData) {
@@ -1047,7 +971,6 @@ private fun ExpeditionLogPage(world: WorldData) {
     }
 }
 
-/** Dungeon records (WORLD.md 2.5): the deepest floor and the clears of every dungeon entered, and the Pokémon World's finds brought into the collection. */
 @Composable
 private fun RecordsPage(model: AppModel) {
     val world = model.data.world
@@ -1065,7 +988,6 @@ private fun RecordsPage(model: AppModel) {
         }
     }
     val recruited = model.data.player.pokemon.filter { model.data.origins[it.id]?.how == Origin.How.WORLD }
-    // The game's Adventure Log wording (Explorers of Sky "Adventure Log Entries") for the counters World keeps.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("Adventure Log")
@@ -1089,12 +1011,10 @@ private fun RecordsPage(model: AppModel) {
     }
 }
 
-/** The pages of the Journal (WORLD.md section 2.5): a menu, so only the page you opened is on screen. */
 private enum class JournalPage(val label: String, val icon: String) {
     LOG("Log", "exp-share"), RESEARCH("Research", "journal"), STORY("Story", "oaks-letter"), RECORDS("Records", "town-map"),
 }
 
-/** The Journal: the expedition log, research, the story archive and the records, one at a time. */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun WorldJournalView(model: AppModel) {
@@ -1142,7 +1062,6 @@ private fun WorldArchiveView(model: AppModel) {
             }
         }
     }
-    // The people met in the scenes watched, with their sprites.
     val people = app.pokeplan.world.story.StoryCatalog.peopleMet(world.scenesDone)
     if (people.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -1173,7 +1092,6 @@ private fun WorldArchiveView(model: AppModel) {
             }
         }
     }
-    // The optional episodes after a story: each opens when its layer's story is complete.
     WorldLayer.entries.forEach { layer ->
         val specials = app.pokeplan.world.story.StoryCatalog.specialsOf(layer)
         if (specials.isEmpty() || !world.layerDone(layer)) return@forEach
@@ -1200,7 +1118,6 @@ private fun ArchiveRow(title: String, detail: String, moment: app.pokeplan.world
     }
 }
 
-/** A shelf of the Kecleon Shop: each item with its icon, how many the Bag holds, and its price. */
 @Composable
 private fun ShopShelf(model: AppModel, title: String, offers: List<app.pokeplan.world.ShopOffer>, said: (Boolean) -> Unit = {}) {
     val store = model.store

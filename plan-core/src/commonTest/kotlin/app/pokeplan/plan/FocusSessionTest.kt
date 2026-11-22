@@ -35,11 +35,9 @@ class FocusSessionTest {
 
     @Test
     fun aTimerThatRunsOutInsideTheGracePeriodIsAFinishedSession() {
-        // Left with 5 seconds to go and came back much later: the timer ended before the 10 second grace did.
         val left = start().apply(FocusEvent.Left, 25 * minute - 5 * second)
         assertEquals(Phase.Completed(25 * minute), left.tick(40 * minute).phase)
         assertEquals(Phase.Completed(25 * minute), left.apply(FocusEvent.Returned, 40 * minute).phase)
-        // Left with 11 seconds to go: the grace ran out first, so it still fails.
         val early = start().apply(FocusEvent.Left, 25 * minute - 11 * second)
         assertEquals(Phase.Failed(FailReason.LEFT_APP, 25 * minute - 1 * second), early.tick(40 * minute).phase)
     }
@@ -49,7 +47,6 @@ class FocusSessionTest {
         val s = start().apply(FocusEvent.Left, 5 * minute)
         val failed = s.tick(5 * minute + 10 * second + 1)
         assertEquals(Phase.Failed(FailReason.LEFT_APP, 5 * minute + 10 * second), failed.phase)
-        // coming back too late does not rescue it
         assertEquals(failed.phase, start().apply(FocusEvent.Left, 5 * minute).apply(FocusEvent.Returned, 5 * minute + 11 * second).phase)
     }
 
@@ -58,7 +55,6 @@ class FocusSessionTest {
         val s = start().apply(FocusEvent.ScreenLocked, 5 * minute)
         assertIs<Phase.Running>(s.phase)
         assertEquals(Phase.Completed(25 * minute), s.tick(26 * minute).phase)
-        // The app pauses as the screen goes off, so the lock can arrive a moment after the leave.
         val late = start().apply(FocusEvent.Left, 5 * minute).apply(FocusEvent.ScreenLocked, 5 * minute + 200)
         assertIs<Phase.Running>(late.tick(10 * minute).phase)
         assertEquals(10 * minute, late.focusedMillis(10 * minute), "time with the screen off counts")

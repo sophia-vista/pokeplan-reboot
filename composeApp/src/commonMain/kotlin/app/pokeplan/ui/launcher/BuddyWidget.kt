@@ -26,13 +26,8 @@ import app.pokeplan.ui.theme.PmdText
 import app.pokeplan.ui.theme.Spacing
 import kotlinx.coroutines.delay
 
-/** Who is meeting the buddy in the town, with the face each makes. */
 internal class Visitor(val pokemon: OwnedPokemon, val emotion: Emotion)
 
-/**
- * How the buddy feels, shown only as faces on the Buddy widget (no words): its own portrait changes with what happens, and
- * the Pokémon it meets in the town shows up beside it with its own face for a few seconds. The town and a tap on the portrait set it.
- */
 internal class BuddyMood {
     var emotion by mutableStateOf(Emotion.NORMAL)
         private set
@@ -48,19 +43,15 @@ internal class BuddyMood {
     fun settle() { emotion = Emotion.NORMAL; visitor = null }
 }
 
-/** The buddy's portrait, its name and level, and, while one is near, the portrait of the Pokémon it is meeting. A tap on the portrait gets a cry and a smile; the name opens PokéLife. */
 @Composable
 internal fun BuddyWidget(env: WidgetEnv) {
     val data = env.model.data
     val buddy = data.player.buddy
     if (!data.onboarded || buddy == null) return
     val mood = env.mood
-    // A face lasts a few seconds, then goes back to a calm one.
     LaunchedEffect(mood.version) { if (mood.version > 0) { delay(4_000); mood.settle() } }
     val density = LocalDensity.current.density
-    // A face is 40 art pixels; drawn at twice the town's pixel scale it stays crisp, and the frame hugs it (no room inside but the frame's own).
     val face = (40 * 2 * env.pixel / density).dp
-    // The frame is 3 art pixels of room above and below the face, so the name box is made that tall (no intrinsic sizes: the text is measured lazily).
     val frameHeight = ((40 * 2 + 2 * 3) * env.pixel / density).dp
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = Alignment.CenterVertically) {
         PmdBox(env.pixel, Modifier.clickable(role = Role.Button, onClickLabel = "Pet ${buddy.nickname}") { env.model.cry(buddy); mood.feel(Emotion.HAPPY) }, inset = 0, compact = true) {

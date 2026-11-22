@@ -7,18 +7,6 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.plus
 
-/**
- * Turns a line like `Call mum tomorrow 5pm #Social !B` into task fields. Understood words:
- *
- * - `!A` to `!E`: difficulty rank. `#Groceries` (a list name).
- * - Dates: `today`, `tomorrow`, `tonight`, weekdays (`friday`, `next mon`: the next one after today), `in 3 days`,
- *   `in 2 weeks`, `2026-11-01`, `oct 25`, `25 oct`.
- * - Times: `5pm`, `5:30pm`, `17:30` (optionally after `at`).
- * - Durations: `30m`, `45 min`, `2h`, `1h30`, `for 90 minutes`.
- * - `by` or `due` before a date or time makes it the deadline instead of the day you plan to do it.
- *
- * Everything else is the title.
- */
 object QuickAdd {
     data class Result(
         val title: String,
@@ -49,14 +37,12 @@ object QuickAdd {
     private val unit = Regex("^(m|min|mins|minutes?|h|hr|hrs|hours?)$", RegexOption.IGNORE_CASE)
     private val iso = Regex("^\\d{4}-\\d{2}-\\d{2}$")
 
-    /** The longest estimate quick add reads: a day. Anything longer, or 0, stays in the title as typed. */
     private const val MAX_ESTIMATE_MINUTES = 24 * 60
 
     private fun minutesOf(amount: String, unit: String): Int? = estimate(amount.toIntOrNull()?.takeIf { it <= MAX_ESTIMATE_MINUTES }?.let {
         if (unit.lowercase().startsWith("h")) it * 60 else it
     })
 
-    /** The minutes "1h30", "45m" or "2h" stand for, or null when [token] is not a duration quick add accepts. */
     private fun durationOf(token: String): Int? {
         durationHm.matchEntire(token)?.let { m ->
             val hours = m.groupValues[1].toIntOrNull()?.takeIf { it <= 24 } ?: return null
@@ -82,7 +68,6 @@ object QuickAdd {
 
     private fun safeDate(year: Int, month: Int, day: Int): LocalDate? = try { LocalDate(year, month, day) } catch (e: IllegalArgumentException) { null }
 
-    /** A date starting at token [i]; returns it and how many tokens it used. */
     private fun parseDate(t: List<String>, i: Int, today: LocalDate): Pair<LocalDate, Int>? {
         val w = t[i].lowercase()
         when (w) {
@@ -103,11 +88,9 @@ object QuickAdd {
             }
         }
         if (iso.matches(t[i])) return runCatching { LocalDate.parse(t[i]) }.getOrNull()?.let { it to 1 }
-        // "oct 25"
         monthNames[w]?.let { month ->
             if (i + 1 <= t.lastIndex) t[i + 1].toIntOrNull()?.let { day -> return resolveMonthDay(month, day, today)?.let { it to 2 } }
         }
-        // "25 oct"
         t[i].toIntOrNull()?.let { day ->
             if (i + 1 <= t.lastIndex) monthNames[t[i + 1].lowercase()]?.let { month -> return resolveMonthDay(month, day, today)?.let { it to 2 } }
         }
@@ -130,10 +113,6 @@ object QuickAdd {
 
     private fun clock(t: LocalTime) = "${t.hour.toString().padStart(2, '0')}:${t.minute.toString().padStart(2, '0')}"
 
-    /**
-     * What [result] was understood as, in plain words and in the order a person says them ("Tomorrow", "17:00", "List Social",
-     * "Difficulty B", "30 min"), so the quick-add box can show it before the task is made. Empty when the line is only a title.
-     */
     fun hints(result: Result, today: LocalDate): List<String> = buildList {
         result.planned?.let { add(dayLabel(it, today)) }
         result.plannedTime?.let { add(clock(it)) }

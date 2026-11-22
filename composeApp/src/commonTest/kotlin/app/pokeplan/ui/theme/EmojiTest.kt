@@ -16,7 +16,6 @@ class EmojiTest {
     fun anEmojiIsOneRunWithItsJoinersAndTheTextAroundItIsKept() {
         assertEquals(listOf("" to false).drop(1) + listOf("🏠" to true, "Home" to false), splitEmoji("🏠Home").map { it.text to it.emoji })
         assertEquals(listOf("🏠" to true, " WFH" to false), splitEmoji("🏠 WFH").map { it.text to it.emoji })
-        // A family (person, joiner, person) and a heart with its variation selector are single runs.
         val family = "👨‍👩‍👧"
         assertEquals(listOf(family to true), splitEmoji(family).map { it.text to it.emoji })
         assertEquals(listOf("❤️" to true), splitEmoji("❤️").map { it.text to it.emoji })

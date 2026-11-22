@@ -21,7 +21,6 @@ operator fun BaseStats.get(stat: Stat): Int = when (stat) {
     Stat.SPEED -> speed
 }
 
-/** Six per-stat numbers: IVs, EVs or computed stats. */
 @Serializable
 data class StatSpread(
     val hp: Int = 0,
@@ -58,7 +57,6 @@ data class StatSpread(
 
         fun of(value: Int) = StatSpread(value, value, value, value, value, value)
 
-        /** Each stat independently random in 0..[max]. */
         fun random(max: Int, rng: kotlin.random.Random) = StatSpread(
             rng.nextInt(max + 1), rng.nextInt(max + 1), rng.nextInt(max + 1),
             rng.nextInt(max + 1), rng.nextInt(max + 1), rng.nextInt(max + 1),

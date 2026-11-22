@@ -8,13 +8,13 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BitmapCacheTest {
-    private fun image() = ImageBitmap(100, 100) // 40,000 bytes
+    private fun image() = ImageBitmap(100, 100)
 
     @Test
     fun theLongestUnusedPictureGoesFirstWhenOverTheBudget() {
         val cache = BitmapCache(100_000)
         cache["a"] = image(); cache["b"] = image()
-        assertNotNull(cache["a"]) // a is used now, so b is the oldest
+        assertNotNull(cache["a"])
         cache["c"] = image()
         assertTrue("a" in cache)
         assertTrue("b" !in cache)

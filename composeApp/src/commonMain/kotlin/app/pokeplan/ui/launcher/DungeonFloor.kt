@@ -5,45 +5,26 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
 
-/** A square of a [DungeonFloor]: column [x], row [y]. */
 data class Cell(val x: Int, val y: Int)
 
-/**
- * The gentle traps of Explorers of Sky a floor can hide (LAUNCHER.md 4.5), by their index in `assets/tiles/floor-traps.png` (the game's
- * own trap numbers). What each does is for show: a warp, a spin that leaves the Pokémon confused, sleep, a gust, slowness, a trip or poison, each
- * for a while and then it wears off (see [Town] and [Condition]); nothing is ever lost.
- */
 enum class FloorTrap(val tile: Int) {
     WARP(6), SPIN(8), SLUMBER(9), GUST(7), SLOW(10), TRIP(22), POISON(12),
 
-    /** Always shown, as in the games. */
     WONDER(17),
 }
 
-/** The stairs tile in `floor-traps.png`. */
 internal const val STAIRS_TILE = 27
 
-/**
- * How a Pokémon gets about the floor, as in the games (owner, 14 November 2026): every one on the floor; [water] also into water (Water
- * types swim, Flying types fly over it); [walls] also through walls (Ghost types only).
- */
 data class Mover(val water: Boolean = false, val walls: Boolean = false) {
     companion object {
         val WALKER = Mover()
         val WADER = Mover(water = true)
         val GHOST = Mover(walls = true)
 
-        /** Anywhere at all: the way to the stairs for a Guardian that is leaving, wherever it stands. */
         val ANYWHERE = Mover(water = true, walls = true)
     }
 }
 
-/**
- * A Mystery Dungeon floor for the launcher's town (LAUNCHER.md 4.5, REP-052): rooms joined by corridors across [screens] pages of
- * [colsPerScreen] squares, walls everywhere else, a pond in some rooms and water in some walls, the stairs, hidden traps and the spots
- * where the day's finds lie. Made from a seed, so the same seed always gives the same floor. Nothing is drawn here: [map] says what
- * each square is, and the tiles are the game's own ([TownMap.atlas], or the full autotile set when [organic]).
- */
 class DungeonFloor(
     val map: TownMap,
     val rooms: List<Room>,
@@ -63,7 +44,6 @@ class DungeonFloor(
 
     fun inside(c: Cell) = c.x in 0 until cols && c.y in 0 until rows
 
-    /** The floor and nothing else. */
     fun isFloor(c: Cell) = inside(c) && map.at(c.x, c.y) == TownCell.GROUND
 
     fun canStand(c: Cell, mover: Mover): Boolean {
@@ -75,30 +55,21 @@ class DungeonFloor(
         }
     }
 
-    /** Whether a widget covers [c]: nobody stops there, and a path goes round it when it can. */
     fun isSoft(c: Cell) = soft(c)
 
-    /** The room [c] is in, if any. */
     fun roomOf(c: Cell): Room? = rooms.firstOrNull { c in it }
 
-    /** Whether [mover] may stop on [c]: it can stand there, no widget covers it, it is not the stairs or a trap, and it is not a wall (a ghost passes through one, but never rests or sleeps in it). */
     fun canRest(c: Cell, mover: Mover): Boolean = canStand(c, mover) && !isSoft(c) && c != stairs && c !in traps && map.at(c.x, c.y) != TownCell.WALL
 
-    /**
-     * Every square [mover] could stop on ([canRest]) and walk to from the stairs: a pocket it cannot get out of (a lake in the rock for a
-     * swimmer, a hollow in a wall for a ghost) is no place to start, to be warped to or to head for, or the Pokémon there would be stuck.
-     */
     fun restingCells(mover: Mover): List<Cell> {
         val region = region(mover)
         return (0 until rows).flatMap { y -> (0 until cols).map { Cell(it, y) } }.filter { canRest(it, mover) && it in region }
     }
 
-    /** Whether [mover] may stop on [c] and can walk from there to the rest of the floor. */
     fun canRoam(c: Cell, mover: Mover): Boolean = canRest(c, mover) && c in region(mover)
 
     private val regions = HashMap<Mover, Set<Cell>>()
 
-    /** Every square [mover] can walk to from the stairs, by the same steps as [path] (eight directions, no cutting a corner). */
     fun region(mover: Mover): Set<Cell> = regions.getOrPut(mover) {
         val seen = HashSet<Cell>()
         val queue = ArrayDeque<Cell>()
@@ -116,12 +87,6 @@ class DungeonFloor(
         seen
     }
 
-    /**
-     * The shortest way from [from] to [to] for [mover], in eight directions without cutting a wall's corner, a square under a widget costing
-     * [SOFT_COST] times as much (so a path goes round one when it can), and so does a trap in [known] (a Pokémon steps round a trap it knows is
-     * there, but walks into one when there is no other way); null if there is none. A square in [blocked] (where another Pokémon stands) is not
-     * walked through, as if it were a wall. Both ends are included.
-     */
     fun path(from: Cell, to: Cell, mover: Mover, known: Set<Cell> = emptySet(), blocked: Set<Cell> = emptySet()): List<Cell>? {
         if (!canStand(to, mover) || !inside(from)) return null
         if (from == to) return listOf(from)
@@ -142,7 +107,6 @@ class DungeonFloor(
             for (dy in -1..1) for (dx in -1..1) {
                 if (dx == 0 && dy == 0) continue
                 val next = Cell(c.x + dx, c.y + dy)
-                // The start may be off the floor (a wall a ghost rests in): leaving it is always allowed.
                 if (!canStand(next, mover) || (next in blocked && next != to)) continue
                 if (dx != 0 && dy != 0 && (!canStand(Cell(c.x + dx, c.y), mover) || !canStand(Cell(c.x, c.y + dy), mover))) continue
                 val step = (if (dx != 0 && dy != 0) 1.414f else 1f) * (if (isSoft(next) || next in known) SOFT_COST else 1f) *
@@ -162,11 +126,6 @@ class DungeonFloor(
         return way.asReversed()
     }
 
-    /**
-     * Where a Pokémon blown from [from] ends up by a Gust Trap: it flies in a straight line in direction ([dx], [dy]) until the next square is a wall
-     * (or water it cannot cross), a square in [blocked] (another Pokémon) or [max] squares have passed, as a blown-away Pokémon does in the
-     * games, and lands on the last square along the way that it can rest on (not a trap, the stairs or under a widget); [from] if there is none.
-     */
     fun blownTo(from: Cell, dx: Int, dy: Int, mover: Mover, blocked: Set<Cell> = emptySet(), max: Int = GUST_RANGE): Cell {
         var at = from
         var landing = from
@@ -180,7 +139,6 @@ class DungeonFloor(
         return landing
     }
 
-    /** [way] with only its turns kept (and both ends): one stroll per straight run. */
     fun turns(way: List<Cell>): List<Cell> {
         if (way.size <= 2) return way
         val out = arrayListOf(way.first())
@@ -192,7 +150,6 @@ class DungeonFloor(
         return out
     }
 
-    /** Every floor square [from] can reach on foot. */
     fun reachable(from: Cell): Set<Cell> {
         val seen = HashSet<Cell>()
         val queue = ArrayDeque<Cell>()
@@ -208,22 +165,14 @@ class DungeonFloor(
     }
 
     companion object {
-        /** How much more a square under a widget costs to walk through. */
         const val SOFT_COST = 8f
 
-        /** How far a Gust Trap blows a Pokémon at most, in squares. *(tune)* */
         const val GUST_RANGE = 10
 
-        /** How many traps a floor hides (and a Wonder Tile half the time). *(tune)* */
         const val TRAPS = 4
 
         private val STEPS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
 
-        /**
-         * Lays a floor out: [screens] pages side by side, each [colsPerScreen] squares wide, [rows] tall; [home] is the page the stairs and
-         * the finds favour. [soft] says which squares a widget covers. [organic] when the tileset has its full autotile set: then water may
-         * take any shape and walls may be thin; otherwise every wall is at least two squares thick and water is a rectangle.
-         */
         fun build(
             screens: Int, colsPerScreen: Int, rows: Int, seed: Long, home: Int = 0, organic: Boolean = true,
             finds: Int = 3, soft: (Cell) -> Boolean = { false },
@@ -234,9 +183,6 @@ class DungeonFloor(
             fun set(c: Cell, t: TownCell) { if (c.x in 1 until cols - 1 && c.y in 1 until rows - 1) cells[c.y * cols + c.x] = t }
             fun at(c: Cell) = if (c.x in 0 until cols && c.y in 0 until rows) cells[c.y * cols + c.x] else TownCell.WALL
 
-            // Rooms: two columns a page, two rooms in each (three on a tall screen), big, as on the games' floors; now and then one as wide as the
-            // page (owner, 14 November 2026: bigger rooms). A room may sit anywhere down its column, and of a few tries the one that shows the most
-            // floor no widget covers wins, so the rooms fill the open bands between the widgets. Rooms keep two squares of wall between them.
             val columns = screens * 2
             val cw = cols / columns.toFloat()
             val perColumn = if (rows >= 36) 3 else 2
@@ -267,7 +213,6 @@ class DungeonFloor(
             }
             if (made.isEmpty()) Room(2, 2, min(6, cols - 4), min(5, rows - 4)).let { r -> made += r; r.cells.forEach { set(it, TownCell.GROUND) } }
 
-            // Corridors: the shortest links that join every room (so all of the floor is one piece), and a few more for loops.
             fun corridor(a: Cell, b: Cell) {
                 val bend = if (random.nextBoolean()) Cell(b.x, a.y) else Cell(a.x, b.y)
                 for (leg in listOf(a to bend, bend to b)) {
@@ -296,7 +241,6 @@ class DungeonFloor(
                 made.filter { it != a }.minByOrNull { gap(a, it) + random.nextInt(8) }?.let { corridor(door(a), door(it)) }
             }
 
-            // With only the 3 x 3 block a wall must be two squares thick: a wall with floor on both sides becomes floor.
             if (!organic) {
                 var changed = true
                 while (changed) {
@@ -311,7 +255,6 @@ class DungeonFloor(
                 }
             }
 
-            // Water: a pond in some big rooms, kept off the room's edge so the room stays one piece; with the full tile set, lakes in the walls too.
             for (r in made) {
                 if (r.w < 6 || r.h < 5 || random.nextInt(100) >= 35) continue
                 val pw = random.nextInt(2, r.w - 3)
@@ -319,7 +262,6 @@ class DungeonFloor(
                 val px = random.nextInt(r.x + 1, r.x + r.w - pw)
                 val py = random.nextInt(r.y + 1, r.y + r.h - ph)
                 for (y in py until py + ph) for (x in px until px + pw) {
-                    // A round pond with the full set: the corners stay floor.
                     val corner = organic && (x == px || x == px + pw - 1) && (y == py || y == py + ph - 1) && pw > 2 && ph > 2
                     if (!corner) set(Cell(x, y), TownCell.WATER)
                 }
@@ -336,7 +278,6 @@ class DungeonFloor(
             }
 
             val map = TownMap(cols, rows, cells)
-            // Stairs, traps and finds lie in rooms, on floor no widget covers; the stairs and finds on Home if it has room.
             fun pick(from: List<Cell>, taken: Set<Cell>): Cell? = from.filter { at(it) == TownCell.GROUND && !soft(it) && it !in taken }.randomOrNull(random)
             val inRooms = made.flatMap { it.cells }
             val onHome = inRooms.filter { it.x / colsPerScreen == home }
@@ -355,11 +296,6 @@ class DungeonFloor(
     }
 }
 
-/**
- * The full autotile set's column for a square of [map] ([TownCell.WALL] or [TownCell.WATER]): the 47 neighbourhoods of
- * `tools/tiles/extract_sky_tiles.py` (`blob_masks`), bits N 1, NE 2, E 4, SE 8, S 16, SW 32, W 64, NW 128 set where the neighbour is the
- * same, a diagonal kept only when both squares beside it are. Squares beyond the map count as the same, so walls run off the edge.
- */
 internal object Autotile {
     val masks: IntArray = (0 until 256).map(::reduce).distinct().sorted().toIntArray()
     private val column = IntArray(256) { masks.indexOf(reduce(it)) }

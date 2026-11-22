@@ -41,7 +41,6 @@ class GearToolsTest {
 
     @Test
     fun theRatesAnswerIsValidatedAndNormalisedToTheDollar() {
-        // Another base: the dollar's own rate is used to turn everything into dollars (1 EUR = 1.25 USD, so 1 USD = 0.8 EUR).
         val eur = parseRates("""{"base":"EUR","date":"2026-10-30","rates":{"USD":1.25,"PHP":70.0,"JPY":200.0}}""", 123)!!
         close(0.8, eur.perUsd.getValue("EUR"))
         close(56.0, eur.perUsd.getValue("PHP"))
@@ -49,9 +48,7 @@ class GearToolsTest {
         assertEquals(1.0, eur.perUsd["USD"])
         assertEquals(123L, eur.fetchedAtMillis)
         assertEquals(RATES_SOURCE, eur.source)
-        // Without the dollar among the rates of another base there is nothing to normalise by.
         assertNull(parseRates("""{"base":"EUR","date":"2026-10-30","rates":{"PHP":70.0}}"""))
-        // Bad rates are dropped, a bad date, base or an answer with nothing usable is refused.
         val mixed = parseRates("""{"base":"USD","date":"2026-10-30","rates":{"EUR":0.5,"AB1":3.0,"JPY":-1.0,"PHP":0.0,"KRW":1e999,"xyz":2.0,"CNY":7.2}}""")!!
         assertEquals(setOf("USD", "EUR", "CNY"), mixed.perUsd.keys)
         assertNull(parseRates("""{"base":"USD","date":"2026-13-45","rates":{"EUR":0.5}}"""))
@@ -69,7 +66,6 @@ class GearToolsTest {
         assertTrue("Rates of 2026-10-30, fetched 3 h ago" in text && "European Central Bank" in text && "not what a bank" in text, text)
         assertTrue("fetched 2 days ago" in ratesFreshness(fresh.copy(fetchedAtMillis = now - 49 * 3_600_000L), now))
         assertTrue("just now" in ratesFreshness(fresh.copy(fetchedAtMillis = now - 10_000L), now))
-        // A cache from before the fetch time was kept says only its date, and a clock behind it says nothing about age.
         assertTrue("fetched" !in ratesFreshness(GearRates("2026-10-30", mapOf("USD" to 1.0)), now))
         assertTrue("fetched" !in ratesFreshness(fresh, now - 10 * 3_600_000L))
     }
@@ -143,12 +139,10 @@ class CurrenciesTest {
     fun ratesGoThroughTheDollarAndAManualRateWinsForTheHomePair() {
         near(150.0 / 58.0, Currencies.rate("PHP", "JPY", rates, "PHP", emptyMap())!!)
         near(1.0, Currencies.rate("PHP", "PHP", rates, "PHP", emptyMap())!!)
-        // A money changer gives 2.5 yen per peso: used one way, and inverted the other, for the home pair only.
         val manual = mapOf("JPY" to 2.5)
         near(2.5, Currencies.rate("PHP", "JPY", rates, "PHP", manual)!!)
         near(0.4, Currencies.rate("JPY", "PHP", rates, "PHP", manual)!!)
         near(7.0 / 150.0, Currencies.rate("JPY", "CNY", rates, "PHP", manual)!!)
-        // Unknown currencies and a manual rate that is not a positive number give nothing, or fall back to the reference.
         assertNull(Currencies.rate("PHP", "XXX", rates, "PHP", emptyMap()))
         assertNull(Currencies.rate("PHP", "JPY", null, "PHP", emptyMap()))
         near(150.0 / 58.0, Currencies.rate("PHP", "JPY", rates, "PHP", mapOf("JPY" to -1.0))!!)
@@ -156,11 +150,9 @@ class CurrenciesTest {
 
     @Test
     fun whatItReallyCostsKeepsTheReferenceTheRateAndTheFeesApart() {
-        // 15,000 yen at a reference of 2.5 yen per peso is 6,000 pesos. The changer gives 2.4: 6,250 pesos. A 3% card fee and 50 fixed.
         val c = Travel.estimate(15_000.0, 2.5, 2.4, 3.0, 50.0)!!
         near(6_000.0, c.reference); near(6_250.0, c.atQuotedRate); near(6_250.0 * 0.03 + 50.0, c.fees)
         near(6_250.0 + 6_250.0 * 0.03 + 50.0, c.total); near(c.total - 6_000.0, c.extra); near(c.extra / 6_000.0 * 100.0, c.extraPercent)
-        // With no quote the reference is used, and no fees means no extra.
         val plain = Travel.estimate(15_000.0, 2.5, null, 0.0, 0.0)!!
         near(0.0, plain.extra); near(plain.reference, plain.total)
         assertNull(Travel.estimate(-1.0, 2.5, null, 0.0, 0.0)); assertNull(Travel.estimate(10.0, 0.0, null, 0.0, 0.0))

@@ -50,7 +50,6 @@ class BaseStoreTest {
     private val saturday = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()
     private val today = LocalDate(2026, 11, 7)
 
-    /** A world that records every event it is sent, so a test can see exactly what crosses the boundary. */
     private class Spy(val inner: GameStore) : World {
         val events = mutableListOf<BaseEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)
@@ -79,8 +78,6 @@ class BaseStoreTest {
 
     private val secrets = listOf("Zorblax-9000 sweep", "Quuxville-Annex", "Zorblax-instr-77", "Zorblax-note-55", "Zorblax-supply", "Zorblax-asset", "SN-ZORBLAX-0042", "Zorblax-cost-4500")
 
-    // --- areas ------------------------------------------------------------------------------------------------------------------
-
     @Test
     fun theStartingAreasAreSeededOnceAndDeletingThemAllDoesNotBringThemBack() {
         val s = setup()
@@ -90,13 +87,10 @@ class BaseStoreTest {
         assertTrue(s.home.data.areas.isEmpty())
         s.reopen()
         assertTrue(s.home.data.areas.isEmpty(), "deleted starting areas stay deleted after reopening")
-        // Reopening an untouched store does not duplicate them either.
         val t = setup()
         t.reopen(); t.reopen()
         assertEquals(BaseRules.STARTING_AREAS.size, t.home.data.areas.size)
     }
-
-    // --- chores -----------------------------------------------------------------------------------------------------------------
 
     @Test
     fun aTitleOnlyChoreIsAWheneverChoreAndARecurringOneStartsToday() {
@@ -221,7 +215,7 @@ class BaseStoreTest {
     fun aRecurringChoreAMonthLaterShowsOneOverdueOccurrenceAndCompletingItWorks() {
         val s = setup()
         val c = s.chore("Bins", weekly, today)
-        s.clock.advanceDays(17) // Tuesday 24 November
+        s.clock.advanceDays(17)
         val views = s.home.choreViews()
         assertEquals(1, views.size)
         val v = views.single()
@@ -284,8 +278,6 @@ class BaseStoreTest {
         assertEquals("Vacuum the floor", s.home.data.chores.single().title)
     }
 
-    // --- supplies ---------------------------------------------------------------------------------------------------------------
-
     @Test
     fun quantityChangesLeaveATraceAndGoingBelowZeroIsRefused() {
         val s = setup()
@@ -347,8 +339,6 @@ class BaseStoreTest {
         assertTrue(s.spy.events.isEmpty(), "supply, quantity and restock edits never send an event")
     }
 
-    // --- belongings, warranties, maintenance --------------------------------------------------------------------------------------
-
     @Test
     fun aWarrantyThatEndsBeforeItStartsIsRefused() {
         val s = setup()
@@ -365,7 +355,7 @@ class BaseStoreTest {
     fun editingAScheduleKeepsTheDateItCountsFromUnlessTheDateOrTheKindOfRepeatChanged() {
         val s = setup()
         val made = assertNotNull(s.home.addSchedule("Filter", LocalDate(2026, 1, 31), Recurrence(RepeatKind.MONTHLY)).record)
-        val moved = made.copy(nextDue = LocalDate(2026, 2, 28)) // where a month-end schedule stands after its first service
+        val moved = made.copy(nextDue = LocalDate(2026, 2, 28))
         s.home.restore(s.home.data.copy(schedules = listOf(moved)))
         val renamed = assertNotNull(s.home.updateSchedule(moved.copy(title = "Water filter", firstDue = LocalDate(2026, 2, 28))).record)
         assertEquals(LocalDate(2026, 1, 31), renamed.firstDue, "a rename does not make the 31st drift to the 28th")
@@ -393,7 +383,6 @@ class BaseStoreTest {
         val text = GameStore.json.encodeToString(BaseEvent.serializer(), e)
         val shared = GameStore.json.encodeToString(AppData.serializer(), s.game.data)
         for (secret in secrets) { assertTrue(secret !in text, "event leaked $secret"); assertTrue(secret !in shared, "save holds $secret") }
-        // Put the schedule back on the same due date: the second completion of that date is not paid again.
         val back = s.home.data.schedules.single().copy(nextDue = today)
         assertNotNull(s.home.updateSchedule(back).record)
         val again = s.home.completeMaintenance(sched.id)
@@ -452,8 +441,6 @@ class BaseStoreTest {
         assertEquals(1, d.references.size); assertNull(d.references.single().assetId)
     }
 
-    // --- references and search ------------------------------------------------------------------------------------------------------
-
     @Test
     fun referencesAreAddedUpdatedDeletedAndSearchFindsAcrossKinds() {
         val s = setup()
@@ -476,8 +463,6 @@ class BaseStoreTest {
         assertTrue(s.home.data.references.isEmpty())
         assertTrue(s.spy.events.isEmpty())
     }
-
-    // --- export and erase ---------------------------------------------------------------------------------------------------------
 
     private fun Setup.fill(): String {
         val area = assertNotNull(home.addArea("Quuxville-Annex")).id
@@ -557,8 +542,6 @@ class BaseStoreTest {
         assertTrue("crates" in s.home.data.settings.units)
     }
 
-    // --- persistence ----------------------------------------------------------------------------------------------------------------
-
     @Test
     fun aReopenedStoreReadsBackIdenticalData() {
         val s = setup()
@@ -571,8 +554,6 @@ class BaseStoreTest {
         assertEquals(before, s.home.data)
         assertEquals(before, BaseStore(MemoryStorage(BaseStore.json.encodeToString(app.pokeplan.base.BaseData.serializer(), before)), s.clock, s.spy, utc).data)
     }
-
-    // --- the tutorial -------------------------------------------------------------------------------------------------------------------
 
     @Test
     fun theTidyTutorialIsOfferedAfterOnboardingOnlyWhileHomeHasNoRecords() {
@@ -600,8 +581,6 @@ class BaseStoreTest {
         assertEquals(1, s.game.data.player.partyOf(PartyIds.BASE).size)
         assertEquals(2, s.game.data.player.pokemon.size)
     }
-
-    // --- the Habitat Egg ----------------------------------------------------------------------------------------------------------
 
     @Test
     fun enoughPaidChoresFindAHabitatEggIntoBasesPartyAndTheMeterWraps() {
@@ -674,7 +653,6 @@ class BaseStoreTest {
         assertEquals(LocalDate(2026, 11, 14), weekly.nextDue)
         s.home.data.schedules.forEach { assertTrue(BaseRules.scheduleView(it, today).state != app.pokeplan.base.DueState.OVERDUE && BaseRules.scheduleView(it, today).state != app.pokeplan.base.DueState.DUE) }
         assertTrue(BaseRules.overview(s.home.data, today).maintenance.none { it.state == app.pokeplan.base.DueState.OVERDUE || it.state == app.pokeplan.base.DueState.DUE })
-        // Even with a reminder asked for, nothing fires now: the first one is after today.
         s.home.setScheduleRemind(weekly.id, true)
         val ups = BaseReminders.upcoming(s.home.data, s.game.data, saturday, utc)
         assertTrue(ups.all { it.atMillis > saturday })

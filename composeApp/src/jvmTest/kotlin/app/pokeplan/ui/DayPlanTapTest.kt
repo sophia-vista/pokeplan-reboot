@@ -18,10 +18,6 @@ import java.io.File
 import kotlin.test.Test
 
 @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
-/**
- * The way to plan a task on the calendar without dragging (Plan usability, Phase 3): tap the task in "To plan", then tap an hour.
- * Done with real pointer events. The drag stays, for anyone who likes it; this is for anyone who cannot or would rather not.
- */
 class DayPlanTapTest {
     @Test
     fun tapATaskThenAnHour() {
@@ -40,8 +36,6 @@ class DayPlanTapTest {
         shot("daytap-0")
         tap(180f, 604f)
         shot("daytap-1")
-        // With a task picked, its panel sits above "To plan" (with its how-to line, shown until a task has a time) and the hours start
-        // under both: 8:00 is at about y 1046 and every hour is 96 px, so 14:00 starts at about 1622.
         tap(300f, 1640f)
         shot("daytap-2")
         scene.close()

@@ -3,11 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Kalos layer (docs/pokelife/MODULES/WORLD.md section 14, "Kalos"), from Pokémon X and Y. Their wild tables are the Kalos
- * regional dex, by each place's habitat in the games; legendaries are never found (they are quests, [Legends]). Floors, floor times, milestones and
- * the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter of [KalosStory].
- */
 object KalosDungeons {
     private val K = WorldLayer.KALOS
 
@@ -69,10 +64,6 @@ object KalosDungeons {
     )
 }
 
-/**
- * Kalos's story, "The Beauty and the Weapon": Team Flare wants a world made beautiful for a chosen few, and the ancient weapon sleeps under the
- * land with the legendary Pokémon of life and destruction. A chapter opens by rank and by how many different Kalos dungeons have been cleared, and is never lost.
- */
 object KalosStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "Vaniville Town", "A new explorer sets out from Vaniville Town. The forests and caves are bright, and the sky above Lumiose City is oddly red.", "Santalune Forest and Connecting Cave", ExplorerRank.NORMAL, 0),
@@ -82,7 +73,6 @@ object KalosStory {
         Chapter(5, "The Ultimate Weapon", "Below Lysandre Labs the other legend wakes, and beneath the whole region something older keeps order.", "Lysandre Labs, Terminus Cave, Yveltal and Zygarde", ExplorerRank.PLATINUM, 7),
     )
 
-    /** The Guardian: Zygarde, in the Terminus Cave. */
     const val GUARDIAN = "Zygarde"
     const val GUARDIAN_BONUS = "Order of the Land: Kalos expeditions find treasure a little more often"
 }

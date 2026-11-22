@@ -3,44 +3,28 @@ package app.pokeplan.link
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
-/**
- * The slambook half of a person (LINK.md 2.6): what the user chooses to write down about someone, and about themselves (the person marked
- * [Person.isMe]). Every field is optional and typed in by the user; nothing is inferred and nothing here ever leaves LINK. A reading in [Insights] is
- * worked out from these when it is shown and never stored.
- */
 @Serializable
 data class Profile(
     val socials: List<Social> = emptyList(),
     val likes: List<String> = emptyList(),
     val dislikes: List<String> = emptyList(),
-    /** Slambook questions and the person's answers, in the order written. */
     val answers: List<Answer> = emptyList(),
-    /** Four letters such as "INFP", or empty. */
     val mbti: String = "",
-    /** The Enneagram type 1 to 9, or 0 for none, and the wing (also 1 to 9; 0 for none). */
     val enneagram: Int = 0,
     val enneagramWing: Int = 0,
-    /** Love languages, most meaningful first (up to five, no repeats). */
     val loveLanguages: List<LoveLanguage> = emptyList(),
     val attachment: Attachment? = null,
-    /** DISC style letters, the main one first (one or two). */
     val disc: List<Disc> = emptyList(),
     val bigFive: Map<Trait, Level> = emptyMap(),
     val birth: Birth = Birth(),
 )
 
-/** A place online: the platform's own name or the user's, and the handle or link, kept as typed. */
 @Serializable
 data class Social(val platform: String, val handle: String)
 
 @Serializable
 data class Answer(val question: String, val answer: String)
 
-/**
- * What a birth chart needs besides the date (which is the person's Birthday date, so it is kept once): the clock time as written on the birth record
- * ([minutes] after midnight), the birthplace for the rising sign, and the UTC offset that clock was on. [kuaFormula] picks the traditional formula for
- * the Kua number; empty means none was chosen.
- */
 @Serializable
 data class Birth(
     val minutes: Int? = null,
@@ -73,11 +57,9 @@ enum class Trait(val label: String) {
 @Serializable
 enum class Level(val label: String) { LOW("Lower"), MID("Middle"), HIGH("Higher") }
 
-/** What the profile sheet offers as starting points; the user can always type their own. */
 object ProfileKit {
     val socialPlatforms = listOf("Instagram", "Facebook", "TikTok", "X", "Snapchat", "Discord", "YouTube", "LinkedIn", "Telegram", "Messenger", "Website")
 
-    /** The classic slambook questions, to tap and answer. */
     val questions = listOf(
         "Nickname", "Favourite colour", "Favourite food", "Favourite song", "Favourite movie or show", "Favourite Pokémon", "Hobby",
         "Dream job", "Dream place to visit", "Best memory with me", "Motto", "Pet peeve", "Hidden talent", "Biggest fear", "Comfort food", "One word for me",
@@ -91,10 +73,8 @@ object ProfileKit {
     const val ANSWER_MAX = 300
     const val MAX_ITEMS = 40
 
-    /** Cleans a typed list: trimmed, no blanks, no repeats, at most [MAX_ITEMS]. */
     fun clean(items: List<String>): List<String> = items.map { it.trim().take(TEXT_MAX) }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() }.take(MAX_ITEMS)
 
-    /** A UTC offset typed as hours ("8", "+5.5", "-3:30"), in minutes, or null if it is not one. Offsets run from -12:00 to +14:00. */
     fun parseOffset(text: String): Int? {
         val t = text.trim().removePrefix("UTC").removePrefix("GMT").trim()
         if (t.isEmpty()) return null
@@ -113,7 +93,6 @@ object ProfileKit {
         return (if (minutes < 0) "-" else "+") + (a / 60) + if (a % 60 != 0) ":" + (a % 60).toString().padStart(2, '0') else ""
     }
 
-    /** "13:05" → 785, or null. */
     fun parseTime(text: String): Int? {
         val parts = text.trim().split(':', '.')
         if (parts.size != 2) return null
@@ -124,7 +103,6 @@ object ProfileKit {
 
     fun timeText(minutes: Int) = (minutes / 60).toString().padStart(2, '0') + ":" + (minutes % 60).toString().padStart(2, '0')
 
-    /** A tidy profile: lists cleaned, repeats dropped. */
     fun tidy(p: Profile): Profile = p.copy(
         socials = p.socials.map { Social(it.platform.trim().take(40), it.handle.trim().take(TEXT_MAX)) }.filter { it.handle.isNotEmpty() }.take(MAX_ITEMS),
         likes = clean(p.likes), dislikes = clean(p.dislikes),
@@ -136,8 +114,6 @@ object ProfileKit {
     )
 }
 
-/** Where a person's birth date lives: the Birthday date record that has them, so the date and its reminder are kept once. */
 fun LinkData.birthdayOf(personId: String): ImportantDate? = dates.firstOrNull { it.personId == personId && it.kind == DateKind.BIRTHDAY }
 
-/** The birth date with its year, or null if there is no birthday or its year is unknown. */
 fun ImportantDate.birthDate(): LocalDate? = year?.let { y -> runCatching { LocalDate(y, month, day) }.getOrNull() }

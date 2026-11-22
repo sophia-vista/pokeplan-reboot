@@ -1,13 +1,10 @@
 #!/bin/bash
-# Cloud sessions only: installs what the builds need and the container lacks, so a session does not spend its first
-# steps on it. Safe to run again: each step is skipped when its result is already there.
 set -euo pipefail
 
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
-# Runs in the background so the session starts at once; .claude/hooks/wait-for-setup.sh waits for it before a build.
 echo '{"async": true, "asyncTimeout": 600000}'
 STATUS="$HOME/.pokeplan-setup"
 rm -f "$STATUS.done" "$STATUS.failed"
@@ -16,7 +13,6 @@ trap 'echo "failed at line $LINENO" > "$STATUS.failed"' ERR
 SDK="$HOME/android-sdk"
 REPO="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-# Android SDK: compileSdk 37 (see androidApp/build.gradle.kts).
 if [ ! -d "$SDK/platforms/android-37.0" ] || [ ! -d "$SDK/build-tools/37.0.0" ]; then
   mkdir -p "$SDK/cmdline-tools"
   if [ ! -x "$SDK/cmdline-tools/latest/bin/sdkmanager" ]; then
@@ -34,8 +30,6 @@ if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   echo "export ANDROID_HOME=\"$SDK\"" >> "$CLAUDE_ENV_FILE"
 fi
 
-# Maven Central rate-limits the shared proxy: try Google's mirror of it first. Only where repositories are already
-# declared, so the settings repositories (Google's Maven among them) stay in use.
 INIT="$HOME/.gradle/init.d/mirror.gradle.kts"
 if [ ! -f "$INIT" ]; then
   mkdir -p "$(dirname "$INIT")"
@@ -57,7 +51,6 @@ allprojects {
 EOF
 fi
 
-# The Gradle distribution, so the first build does not wait for it.
 cd "$REPO" && ./gradlew --version > /dev/null 2>&1 || echo "Gradle warm-up skipped; the first build downloads it." >&2
 
 touch "$STATUS.done"

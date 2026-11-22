@@ -102,7 +102,7 @@ class RewardEngineTest {
 
     @Test
     fun eggLuckPushesRaritiesUp() {
-        val snorlax = 143 // Normal: Egg luck
+        val snorlax = 143
         val lucky = highRarityShare({ stateWithBuddy(snorlax) }, 5)
         val plain = highRarityShare({ stateWithBuddy(Ids.CHARMANDER, level = 1, friendship = 70) }, 5)
         assertTrue(lucky > plain + 0.02, "lucky $lucky, plain $plain")
@@ -132,7 +132,7 @@ class RewardEngineTest {
     @Test
     fun onTimeAndFocusedBonusesAddUp() {
         fun rareCandies(e: AchievementEvent, seed: Int) =
-            RewardEngine.achievement(PlayerState(), e, Random(seed)).rewards.filterIsInstance<Reward.Candies>().first { it.type == CandyType.RARE }.amount // the task's own, before a Task Egg's
+            RewardEngine.achievement(PlayerState(), e, Random(seed)).rewards.filterIsInstance<Reward.Candies>().first { it.type == CandyType.RARE }.amount
         val plain = (1..400).sumOf { i -> rareCandies(achievement(5), i) }
         val both = (1..400).sumOf { i -> rareCandies(achievement(5, onTime = true, focused = true), i) }
         assertTrue(both > plain * 1.1, "plain $plain, both $both")
@@ -179,7 +179,6 @@ class RewardEngineTest {
 
     @Test
     fun speciesYouHaveNotCaughtAreThreeTimesAsLikely() {
-        // Catch everything in the Kanto Common tier except one species, then see how often that one still turns up.
         val commons = HatchRules.pool(Region.KANTO, Rarity.COMMON).map { it.speciesId }
         val missing = commons.first()
         val state = PlayerState(caught = commons.drop(1).toSet())
@@ -193,7 +192,6 @@ class RewardEngineTest {
                 if (p.speciesId == missing) hits++
             }
         }
-        // Day 0's spotlight type is also in play, so work the expected share out from the real weights.
         val spotlight = Spotlight.typeFor(0)
         fun weight(id: Int) = (if (spotlight in Dex.defaultForm(id).types) RewardEngine.SPOTLIGHT_WEIGHT else 1.0) *
             (if (id == missing) RewardEngine.UNCAUGHT_WEIGHT else 1.0)

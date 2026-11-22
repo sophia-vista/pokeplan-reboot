@@ -1,27 +1,15 @@
 package app.pokeplan.mint
 
-/**
- * Money as integer minor units with an explicit currency scale (MINT.md sections 5.2 and 15.2): parsing and showing never touch a binary
- * floating-point number, so 0.10 + 0.20 is exactly 0.30.
- */
 object Money {
-    /** Digits after the decimal point: whole units for yen, won and dong, two for everything else Mint offers. */
     fun scale(currency: String): Int = when (currency) { "JPY", "KRW", "VND" -> 0; else -> 2 }
 
     private const val PESO_CODE = "PHP"
     private const val PESO = "\u20B1"
 
-    /** The currencies offered when an account is made; PHP first (MINT.md section 1). Any other three-letter code can be typed. */
     val common: List<String> = listOf("PHP", "USD", "EUR", "JPY", "GBP", "SGD", "AUD", "CAD", "HKD", "KRW")
 
-    /** The most one amount can be, in minor units (a hundred billion of a unit), so sums can never overflow a Long. */
     const val MAX_MINOR: Long = 100_000_000_000_000L
 
-    /**
-     * Reads what a person typed: `1250`, `1,250.50`, `1.250,50`, `₱1,250`, `12,5` (a lone comma with one or two digits after it is a decimal
-     * comma; with three it is a thousands separator). Returns the amount in minor units, or null when it is not a number, has more decimals
-     * than the currency has, is negative, or is too large. Never rounds.
-     */
     fun parse(text: String, currency: String): Long? {
         val scale = scale(currency)
         val cleaned = text.trim().filter { it.isDigit() || it == '.' || it == ',' }
@@ -55,8 +43,6 @@ object Money {
         return minor.takeIf { it in 0..MAX_MINOR }
     }
 
-    /** `₱1,250.50` for the peso (the app's font carries that glyph since 0.166.0) and `USD 1,250.50` for the rest: a code is never ambiguous and
-     *  no font has to carry a symbol for it. [hidden] gives `₱••••` or `USD ••••` (MINT.md section 3.3). */
     fun format(minor: Long, currency: String, hidden: Boolean = false): String {
         if (hidden) return if (currency == PESO_CODE) "$PESO••••" else "$currency ••••"
         val negative = minor < 0
@@ -69,10 +55,8 @@ object Money {
         return (if (negative) "-" else "") + (if (currency == PESO_CODE) PESO else "$currency ") + "$whole$fraction"
     }
 
-    /** How a currency is named in a sentence: `₱` for the peso (the stored code stays PHP), the code for any other. */
     fun label(currency: String): String = if (currency == PESO_CODE) PESO else currency
 
-    /** The plain number for an edit field: `1250.50`, no separators and no code. */
     fun plain(minor: Long, currency: String): String {
         val scale = scale(currency)
         var divisor = 1L

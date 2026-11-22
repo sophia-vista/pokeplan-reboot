@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""Downloads Pokemon sprites from the public PokeAPI/sprites repository into assets/sprites.
-
-Usage: python3 -I tools/sprites/fetch.py [--check] [--with-back]
-
-For every Pokemon form id in the PokeAPI dataset it fetches the front and shiny PNGs (whatever exists)
-as assets/sprites/<id>.png and <id>-shiny.png (--with-back adds <id>-back.png and <id>-back-shiny.png),
-and writes assets/sprites/manifest.tsv (id, identifier, and which variants exist).
-Existing files are skipped, so it can be re-run. --check only verifies the files against the manifest.
-"""
 import concurrent.futures
 import csv
 import os
@@ -19,17 +10,14 @@ import urllib.request
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 CACHE = os.path.join(ROOT, 'tools/species/cache')
 OUT = os.path.join(ROOT, 'assets/sprites')
-# Pinned to one commit for reproducibility. To update: git ls-remote https://github.com/PokeAPI/sprites refs/heads/master
 SPRITES_COMMIT = '7a7d66b1620e646f69afd48dc1273da9033ede9c'
 BASE = f'https://raw.githubusercontent.com/PokeAPI/sprites/{SPRITES_COMMIT}/sprites/pokemon/'
 ALL_VARIANTS = [('front', '{id}.png', '{id}.png'), ('shiny', 'shiny/{id}.png', '{id}-shiny.png'),
                 ('back', 'back/{id}.png', '{id}-back.png'), ('back-shiny', 'back/shiny/{id}.png', '{id}-back-shiny.png')]
-# The app has no battles, so back sprites are skipped unless asked for (they double the size).
 VARIANTS = ALL_VARIANTS if '--with-back' in sys.argv else ALL_VARIANTS[:2]
 
 
 def download(url, path):
-    """Returns True if saved, False if the sprite does not exist."""
     for attempt in range(6):
         try:
             with urllib.request.urlopen(url, timeout=30) as r:
@@ -54,7 +42,6 @@ def pokemon_rows():
         sys.exit('Run tools/species/generate.py first; it downloads the dataset into tools/species/cache.')
     with open(path, encoding='utf-8', newline='') as fh:
         rows = [(int(r['id']), r['identifier']) for r in csv.DictReader(fh)]
-    # Forms PokeAPI lacks (no PokeAPI sprite, so the manifest lists them with no variants)
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'species', 'custom_forms.txt'), encoding='utf-8') as fh:
         rows += [(int(l.split('|')[0]), l.split('|')[1]) for l in fh if l.strip() and not l.startswith('#')]
     return rows

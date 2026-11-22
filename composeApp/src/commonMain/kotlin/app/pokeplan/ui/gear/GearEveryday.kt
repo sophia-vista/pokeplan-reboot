@@ -28,12 +28,10 @@ import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 
-/** What a number field says when its text is not a number. */
 internal const val NOT_A_NUMBER = "Enter a number, like 12.5."
 
 private enum class Sum(val label: String) { TIP("Tip and split"), PERCENT("Percent"), SALE("Sale and tax"), LOAN("Loan"), SAVINGS("Savings"), TRIP("Trip cost") }
 
-/** Everyday sums: each a few numbers in and a plain answer out, nothing kept. A comma works as the decimal point. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
@@ -41,7 +39,6 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
     val inputs = remember(sum) { mutableStateOf(List(4) { "" }) }
     var values by inputs
     fun num(i: Int): Double? = values[i].trim().replace(',', '.').toDoubleOrNull()
-    // Text that is not a number is said so under its field and gives no answer; it is never read as 0 or as the field's default.
     fun bad(i: Int): Boolean = values[i].isNotBlank() && num(i) == null
     @Composable
     fun field(i: Int, label: String, hint: String? = null) {
@@ -90,7 +87,6 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** A number without trailing zeros, at most two decimals ("12.5", "3"). */
 private fun trim(x: Double): String {
     val c = (x * 100).roundToLong() / 100.0
     return if (c == c.toLong().toDouble()) c.toLong().toString() else c.toString()

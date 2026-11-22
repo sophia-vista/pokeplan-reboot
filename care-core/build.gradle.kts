@@ -5,8 +5,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-// The Care module (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): routines, calm breaks, mood check-ins and prompts. It meets the shared
-// world only through CareEvent (pokemon-core) and knows nothing about Plan.
 kotlin {
     jvm()
 

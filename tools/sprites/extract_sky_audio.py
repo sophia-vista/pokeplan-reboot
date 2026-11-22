@@ -1,20 +1,4 @@
 #!/usr/bin/env python3
-"""Render the sound of Pokémon Mystery Dungeon: Explorers of Sky (USA) from the ROM.
-
-The ROM is not in the repo: pass one whose SHA-1 is 5fa96ca8d8dd6405d6cd2bad73ed68bc73a9d152 (pret/pmd-sky's
-pmdsky.us.nds). The game's sound is Procyon Studio's DSE: `.swd` banks (wavetables, programs, splits), `.smd`
-songs and `.sed` sound-effect files (sequences of tracks). Written from the community's documentation of the
-format (PsyCommando's ppmdu `dse` sources), as an independent parser and a small numpy mixer. No SkyTemple code
-is used (its library has no DSE support).
-
-This is an approximation of the DS's sound engine, not an emulation: IMA-ADPCM and PCM samples play through a
-simple per-note envelope and linear pitch shift; vibrato/LFO, reverb, pan and most rarely used events are ignored.
-Listen before trusting a clip.
-
-Usage: python3 tools/sprites/extract_sky_audio.py ROM.nds OUTDIR [--kinds se,me,bgm] [--ogg]
-Output: OUTDIR/<kind>/<file>-<track>.wav|ogg, and sounds.tsv (file, track, seconds, preset(s)).
-Needs numpy and `pip install ndspy`; --ogg needs ffmpeg. Nintendo / Chunsoft / Procyon audio: private use only.
-"""
 import argparse
 import hashlib
 import struct
@@ -35,8 +19,6 @@ IMA_STEP = [7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31, 34, 37,
             6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899, 15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767]
 IMA_INDEX = [-1, -1, -1, -1, 2, 4, 6, 8]
 
-# DSE envelope times, ppmdu's dse_common.cpp (Duration_Lookup_Table, in ms times the split's multiplier; and, for a multiplier of 0,
-# Duration_Lookup_Table_NullMulti in ms)
 DUR = [
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
     16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
@@ -57,7 +39,7 @@ DUR_NULL = [
     123245, 126727, 130272, 133879, 137551, 141286, 145086, 148951, 152882, 156879, 160942, 165072, 169270, 173536, 177870, 182274,
     213424, 218616, 223888, 229241, 234676, 240193, 245793, 251476, 257242, 263093, 269029, 275050, 281157, 287351, 293632, 2147483647,
 ]
-DELAY = [96, 72, 64, 48, 36, 32, 24, 18, 16, 12, 9, 8, 6, 4, 4, 3]  # 0x80..0x8F, in ticks at 48 per quarter note
+DELAY = [96, 72, 64, 48, 36, 32, 24, 18, 16, 12, 9, 8, 6, 4, 4, 3]
 PARAMS = {0x90: 0, 0x91: 1, 0x92: 1, 0x93: 2, 0x94: 3, 0x95: 0, 0x98: 0, 0x99: 0, 0x9C: 1, 0x9D: 0, 0x9E: 0, 0xA0: 1, 0xA1: 1,
           0xA4: 1, 0xA5: 1, 0xA8: 2, 0xA9: 1, 0xAA: 1, 0xAB: 1, 0xAC: 1, 0xAF: 3, 0xB0: 0, 0xB1: 1, 0xB2: 1, 0xB3: 1, 0xB4: 2,
           0xB5: 1, 0xB6: 1, 0xBC: 1, 0xBE: 1, 0xBF: 1, 0xC0: 0, 0xC3: 1, 0xCB: 2, 0xD0: 1, 0xD1: 1, 0xD2: 1, 0xD3: 2, 0xD4: 3,
@@ -75,7 +57,6 @@ def u32(d, o):
 
 
 def chunks(d, start):
-    """DSE chunks: 16-byte header (label, two params, data length) then the data, 4-byte aligned."""
     o = start
     while o + 16 <= len(d):
         label = bytes(d[o:o + 4])
@@ -116,13 +97,13 @@ class Sample:
         self.env = info["env"]
         nbytes = (loopbeg + looplen) * 4
         raw = bytes(pcmd[pos:pos + nbytes])
-        if self.fmt == 0x200:  # IMA ADPCM, a 4-byte preamble then nibbles
+        if self.fmt == 0x200:
             self.pcm = decode_ima(raw).astype(np.float32) / 32768.0
             self.loopstart = max(0, (loopbeg * 4 - 4) * 2)
-        elif self.fmt == 0x100:  # PCM16
+        elif self.fmt == 0x100:
             self.pcm = np.frombuffer(raw[:len(raw) // 2 * 2], dtype="<i2").astype(np.float32) / 32768.0
             self.loopstart = loopbeg * 2
-        elif self.fmt == 0x000:  # PCM8
+        elif self.fmt == 0x000:
             self.pcm = np.frombuffer(raw, dtype=np.int8).astype(np.float32) / 128.0
             self.loopstart = loopbeg * 4
         else:
@@ -131,7 +112,6 @@ class Sample:
 
 
 class Bank:
-    """A .swd: samples (wavi + pcmd) and programs (prgi) with their key/velocity splits."""
 
     def __init__(self, data, main=None):
         self.d = data
@@ -250,8 +230,7 @@ def render_note(bank, program, key, vel, n_on, volume):
 
 
 def parse_track(data, start, length):
-    """The events of a trk chunk: (type, ...)"""
-    o = start + 4  # trkid, chanid, two unknowns
+    o = start + 4
     end = start + length
     events = []
     lastpause = 0
@@ -318,9 +297,8 @@ def parse_track(data, start, length):
 
 
 def render_track(bank, events, tpqn, max_seconds, one_loop=True):
-    """Mix a single track of events to a float array."""
     tempo = 120.0
-    t = 0.0  # seconds
+    t = 0.0
     program, vol, expr = 0, 100, 127
     notes = []
     for ev in events:
@@ -382,7 +360,6 @@ def write_wav(path, audio, gain=0.5):
 
 
 def trk_chunks(data, start, end):
-    """The `trk ` chunks between two offsets: (events offset, length)."""
     o = start
     out = []
     while True:
@@ -395,12 +372,11 @@ def trk_chunks(data, start, end):
 
 
 def parse_sequence(data):
-    """[(tpqn, [track events])] of a .smd (one song) or a .sed (one sound effect per entry of its table)."""
     songs = []
     if bytes(data[:4]) == b"sedl":
         base = 0x50
         offsets = []
-        for i in range(1, 256):  # the table ends at its first zero
+        for i in range(1, 256):
             o = u16(data, base + 2 * i)
             if o == 0:
                 break
@@ -460,7 +436,7 @@ def main():
             bank = Bank(get(swd), main) if swd else main
             base = Path(seq).stem
             (out / kind).mkdir(exist_ok=True)
-            units = parse_sequence(get(seq))  # a sound-effect file holds many sounds, a song file one
+            units = parse_sequence(get(seq))
             for idx, (tpqn, trk) in enumerate(units):
                 audio = mix(bank, trk, tpqn, args.max_seconds)
                 if np.abs(audio).max() < 1e-4:

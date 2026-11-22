@@ -33,18 +33,15 @@ import app.pokeplan.ui.launcher.TownScenes
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.Spacing
 
-/** Places of Pokémon Mystery Dungeon: Explorers of Sky (assets/sky-maps, bundled as `files/maps/sky-<code>`), named by their game map code. */
 private val SkyPlaces: List<Pair<String, String>> = listOf(
     "map:sky-t00p01" to "Treasure Town", "map:sky-t00p02" to "Treasure Town, east", "map:sky-t01p01a" to "Treasure Town, south", "map:sky-t01p02a" to "Treasure Town, north",
     "map:sky-p01p04a" to "Spinda's Café", "map:sky-t00p04a" to "Wigglytuff's Guild summit", "map:sky-h01p99c" to "Sea cliff at dusk", "map:sky-h02p99a" to "Seaside cliff",
     "map:sky-d73p11a" to "Flower meadow", "map:sky-p02p01a" to "Forest clearing", "map:sky-v31p01a" to "Night sky", "map:sky-v38p06c" to "Sunrise over the peaks",
 )
 
-/** The page's background choices: the day gradient, then the real scenes, the dungeon towns and the Rescue Team Friend Areas. */
 val AppBackgrounds: List<Pair<String, String>> = listOf("day" to "Day") + TownScenes.all + FriendAreas.all + SkyPlaces
 
 
-/** The choices in the groups the picker shows, each with its heading (none for the first). */
 private val BackgroundGroups: List<Pair<String?, List<Pair<String, String>>>> = listOf(
     null to (listOf("day" to "Day") + TownScenes.scenes),
     "Dungeons" to TownScenes.dungeons,
@@ -54,10 +51,6 @@ private val BackgroundGroups: List<Pair<String?, List<Pair<String, String>>>> = 
     "Explorers of Sky places" to SkyPlaces,
 )
 
-/**
- * The page behind every screen: the time-of-day gradient ([DayBackground], the default) or a scene or dungeon town drawn
- * like the launcher's, under a veil of the page colour so the text on top stays readable.
- */
 @Composable
 fun AppBackdrop(name: String, hour: Int, minute: Int, dark: Boolean) {
     if (AppBackgrounds.none { it.first == name } || name == "day") {
@@ -70,13 +63,11 @@ fun AppBackdrop(name: String, hour: Int, minute: Int, dark: Boolean) {
     }
 }
 
-/** Small pictures of the page backgrounds, two to a row, with the chosen one outlined (Settings → Look). */
 @Composable
 fun BackgroundChoices(current: String, hour: Int, minute: Int, dark: Boolean, onPick: (String) -> Unit) {
     val shape = PixelShape
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         BackgroundGroups.forEach { (heading, choices) ->
-            // The long groups start closed (unless the chosen one is in them): only an open group draws its pictures.
             ChoiceGroup(heading, choices.size, initiallyOpen = heading == null || choices.any { it.first == current }) {
                 choices.chunked(2).forEach { row -> BackgroundRow(row, current, hour, minute, dark, shape, onPick) }
             }
@@ -100,7 +91,6 @@ private fun BackgroundRow(row: List<Pair<String, String>>, current: String, hour
     }
 }
 
-/** A heading that opens and closes the choices under it; a group without a heading is always open. */
 @Composable
 internal fun ChoiceGroup(heading: String?, count: Int, initiallyOpen: Boolean, content: @Composable () -> Unit) {
     var open by remember { mutableStateOf(initiallyOpen) }

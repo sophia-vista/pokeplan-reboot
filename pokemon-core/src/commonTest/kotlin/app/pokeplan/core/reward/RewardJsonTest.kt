@@ -53,7 +53,6 @@ class RewardJsonTest {
     fun anEmptyStateIsValidAndBadInputIsRefused() {
         assertEquals(PlayerState(), json.decodeFromString(PlayerState.serializer(), RewardJson.emptyState()))
         assertFailsWith<Exception> { RewardJson.effort(RewardJson.emptyState(), "{}", 1) }
-        // A Pokémon that breaks the rules (31+ IVs) is rejected on the way in.
         val bad = json.encodeToString(PlayerState.serializer(), state).replace("\"hp\":31", "\"hp\":99")
         assertFailsWith<Exception> { json.decodeFromString(PlayerState.serializer(), bad) }
     }

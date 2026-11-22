@@ -6,7 +6,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Every picture a story scene is set on exists in `assets/` and is in the lists `composeApp/build.gradle.kts` bundles (a missing one would draw a plain green box). */
 class StoryMapsAssetTest {
     private val root = File("..").canonicalFile
     private val gradle = File(root, "composeApp/build.gradle.kts").readText()

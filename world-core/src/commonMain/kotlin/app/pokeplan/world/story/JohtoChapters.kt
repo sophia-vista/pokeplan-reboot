@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Johto, "The Sacred Balance": Marin the Marill guides the buddy; Elder Amp (Ampharos) knows the old stories; Lugia and Ho-Oh are the sea and the sky. */
 internal object JohtoChapters {
     private val buddy = buddyCharacter()
     private val marin = npc("marin", "Marin", 183)

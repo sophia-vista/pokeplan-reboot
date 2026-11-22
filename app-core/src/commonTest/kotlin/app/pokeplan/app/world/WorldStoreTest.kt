@@ -33,7 +33,6 @@ class WorldStoreTest {
         clock.millis += 8L * 60 * 60 * 1000
         val report = assertNotNull(store.worldSettle())
         assertTrue(report.data.xp > 0)
-        // Finds are rare (about 3% of floors), so keep exploring, half a day at a time, until one comes.
         repeat(20) { if (store.data.world.finds.isEmpty()) { clock.millis += 12L * 60 * 60 * 1000; store.worldSettle() } }
         assertTrue(store.data.world.xp > 0 && store.data.player.coins > 0)
         assertTrue(store.data.world.finds.isNotEmpty(), "a few days find someone")
@@ -79,10 +78,8 @@ class WorldStoreTest {
         val report = assertNotNull(store.worldSettle())
         val floors = report.events.count { it is app.pokeplan.world.WorldEvent.FloorCleared || it is app.pokeplan.world.WorldEvent.Setback }
         assertTrue(floors > 0)
-        // Each member got all of it (not a share), through the Pokémon's own rule; the Pokémon outside the team got nothing.
         listOf(one, two, three).forEach { assertEquals(before.getValue(it).gainXp(floors * CandyRules.XP_PER_FLOOR, partner ?: before.getValue(it).level), mon(it), "member $it") }
         assertEquals(before.getValue(outside), mon(outside))
-        // Settling again without time passing pays nothing more.
         val after = listOf(one, two, three).associateWith(::mon)
         store.worldSettle()
         assertEquals(after, listOf(one, two, three).associateWith(::mon))
@@ -104,10 +101,8 @@ class WorldStoreTest {
     @Test
     fun mewJoinsOnceWhenTheOpeningIsFinished() {
         val store = store()
-        // Finishing the episode without Mew's yes (the flag) gives nothing.
         store.worldEpisodeDone("intro:1")
         assertTrue(store.data.world.finds.none { it.speciesId == 151 })
-        // With it, Mew waits in Finds, once, however often the episode is finished again.
         val said = setOf(app.pokeplan.world.story.IntroMewChapter.MEW_JOINED)
         store.worldEpisodeDone("intro:1", said)
         store.worldEpisodeDone("intro:1", said)
@@ -130,7 +125,6 @@ class WorldStoreTest {
     fun kantosLegendsJoinTheCollectionOnceWhenTheirQuestsAreMet() {
         val storage = MemoryStorage()
         val first = GameStore(storage, Clock(), TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }
-        // Zapdos (the Power Plant cleared three times) and Mewtwo (the Guardian faced) are met; Articuno is not.
         val world = app.pokeplan.world.WorldData(
             xp = 1_000_000, clears = mapOf("power-plant" to 3, "seafoam-islands" to 1, "cerulean-cave" to 1), layersDone = setOf("kanto"),
         )
@@ -185,7 +179,6 @@ class WorldStoreTest {
         val json = kotlinx.serialization.json.Json { encodeDefaults = true; ignoreUnknownKeys = true }
         storage.text = json.encodeToString(AppData.serializer(), first.data.copy(world = world))
         val store = GameStore(storage, Clock(), TimeZone.UTC, Random(5))
-        // Mewtwo came from the Plan side's quest first.
         store.grantPokemon(150, "Quest: Earn the trust of Mewtwo")
         store.worldSettle()
         assertEquals(1, store.data.player.pokemon.count { it.speciesId == 150 }, "still one Mewtwo")
@@ -199,12 +192,10 @@ class WorldStoreTest {
         val grant = store.grantPokemon(25, "test")
         assertTrue(store.setInParty(grant.id, true))
         assertTrue(store.worldIdle().none { it.id == grant.id || it.id == buddy }, "the PC only: the buddy and a party member are not offered")
-        // Putting the party member on a team takes it out of the party; the buddy on a team stops being the buddy.
         assertTrue(store.worldAssign(1, listOf(grant.id, buddy)))
         assertEquals(Place.WorldTeam(1), store.placeOf(grant.id))
         assertTrue(store.data.player.party.isEmpty())
         assertNull(store.data.player.buddyId)
-        // Coming home to the party takes it off the team.
         assertTrue(store.setInParty(grant.id, true))
         assertEquals(listOf(buddy), store.data.world.team(1)!!.members)
         assertEquals(Place.Party(app.pokeplan.core.pokemon.PartyIds.PLAN), store.placeOf(grant.id))
@@ -243,7 +234,6 @@ class WorldStoreTest {
         val both = assertNotNull(store.worldReport())
         assertTrue(both.floors > first.floors && both.xp > first.xp, "the second settle adds to the first")
         assertEquals(store.data.world.xp, both.xp, "all the XP so far came since the start")
-        // Reading it changes nothing; dismissing clears it, and the Bag and the reward log are untouched by both.
         val bag = store.data.player.inventory.counts.values.sum()
         val log = store.data.rewardLog.size
         store.worldReportDismiss()
@@ -286,19 +276,16 @@ class WorldStoreTest {
         store.worldStart(1, "tiny-woods")
         clock.millis += 12L * 60 * 60 * 1000
         store.worldSettle()
-        // One inventory: nothing waits in World's own stock, and the Bag has what the floors gave.
         assertTrue(store.data.world.items.isEmpty())
         assertTrue(store.data.player.inventory.counts.values.sum() > bagBefore)
         val entry = store.data.rewardLog.lastOrNull { it.source.startsWith("World") }
         assertNotNull(entry, "the trip is in the reward history")
         assertTrue(entry.rewards.any { it is app.pokeplan.core.reward.Reward.Poke } && entry.rewards.any { it is app.pokeplan.core.reward.Reward.ItemDrop })
         assertTrue(entry.seen, "World's entries never pop up a reveal")
-        // Settling again soon after merges into the same entry instead of flooding the log.
         val entries = store.data.rewardLog.count { it.source.startsWith("World") }
         clock.millis += 60_000L
         store.worldSettle()
         assertEquals(entries, store.data.rewardLog.count { it.source.startsWith("World") })
-        // A treasure box found along the way opens into the Bag and is logged once.
         val tier = store.data.world.treasure.keys.firstOrNull()
         if (tier != null) {
             val bag = store.data.player.inventory.counts.values.sum()
@@ -335,7 +322,6 @@ class WorldStoreTest {
         assertTrue(store.worldQuickSend("tiny-woods"))
         val team = store.data.world.team(1)!!
         assertTrue(team.members.isNotEmpty() && team.members.size <= 4 && team.expedition != null)
-        // A legendary is a normal Pokémon: it is picked like any other, by power for the dungeon.
         assertTrue(team.members.all { id -> store.data.player.pokemon.any { it.id == id } })
         assertTrue(store.worldQuickSend("tiny-woods").not() || store.data.world.team(2) != null)
     }

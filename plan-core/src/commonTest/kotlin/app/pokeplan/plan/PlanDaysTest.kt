@@ -9,7 +9,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PlanDaysTest {
-    // 16 November 2026 is a Monday.
     private fun day(d: Int) = LocalDate(2026, 11, d)
 
     @Test
@@ -20,11 +19,8 @@ class PlanDaysTest {
 
     @Test
     fun aKeyThatNamesTheSameDayAsAnEarlierOneIsLeftOut() {
-        // Friday: tomorrow is the weekend.
         assertEquals(listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 3), PlanDays.presets(day(20)))
-        // Saturday: the weekend is today.
         assertEquals(listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 2), PlanDays.presets(day(21)))
-        // Sunday: the weekend is today and tomorrow is next week.
         assertEquals(listOf("Today" to 0, "Tomorrow" to 1), PlanDays.presets(day(22)))
     }
 

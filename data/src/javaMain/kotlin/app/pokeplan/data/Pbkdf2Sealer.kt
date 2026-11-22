@@ -9,11 +9,6 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
-/**
- * [PassphraseSealer] with PBKDF2WithHmacSHA256 and AES-256-GCM (available on every Android the app supports, API 26 and later, and on the JVM). The text is
- * `p1.<salt>.<iterations>.<iv, ciphertext and tag>`, the parts URL-safe Base64 (so none contains a dot). The passphrase is normalised (NFKC) first, so the same
- * words typed on another keyboard open the same backup. The context string is associated data, so a text sealed for another use never opens here.
- */
 class Pbkdf2Sealer(private val iterations: Int = ITERATIONS, private val random: SecureRandom = SecureRandom()) : PassphraseSealer {
     override fun seal(plain: String, passphrase: String): String {
         require(PassphraseSealer.refusal(passphrase) == null) { "the passphrase is too short" }
@@ -35,7 +30,6 @@ class Pbkdf2Sealer(private val iterations: Int = ITERATIONS, private val random:
                 val salt = d.decode(parts[0])
                 val count = parts[1].toInt()
                 val raw = d.decode(parts[2])
-                // A file cannot make the phone work for minutes: an absurd count is refused rather than run.
                 if (count !in 1..MAX_ITERATIONS || salt.size < SALT_BYTES || raw.size <= IV_BYTES) null else {
                     val c = Cipher.getInstance(TRANSFORM)
                     c.init(Cipher.DECRYPT_MODE, key(passphrase, salt, count), GCMParameterSpec(TAG_BITS, raw, 0, IV_BYTES))
@@ -54,7 +48,6 @@ class Pbkdf2Sealer(private val iterations: Int = ITERATIONS, private val random:
     }
 
     companion object {
-        /** OWASP's 2023 figure for PBKDF2-HMAC-SHA256; well under a second on a phone, and the count is stored in each text. */
         const val ITERATIONS = 600_000
         const val MAX_ITERATIONS = 5_000_000
         private const val TRANSFORM = "AES/GCM/NoPadding"

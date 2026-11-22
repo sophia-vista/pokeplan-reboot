@@ -19,8 +19,6 @@ class StoryEngineTest {
         val ch1 = StoryCatalog.intro()
         assertEquals("intro:1", ch1.key)
         assertEquals(setOf(SceneType.STAGE, SceneType.DUNGEON), ch1.scenes.map { it.type }.toSet())
-        // Every chapter of every layer has its episode, matching the chapter's number and title.
-        // (Rescue Team and Explorers have their episodes since 0.156.0, ported from the owner's brief.)
         for (layer in WorldLayer.entries) for (c in app.pokeplan.world.Story.chaptersOf(layer)) {
             val ep = assertNotNull(StoryCatalog.episodeFor(layer, c.number), "${layer.id} chapter ${c.number}")
             assertEquals(c.title, ep.title, "${layer.id}:${c.number} title")
@@ -38,7 +36,6 @@ class StoryEngineTest {
         assertTrue(BUDDY !in end.actors, "who walked off is gone")
         assertTrue("mew" in end.actors && "sentret" in end.actors, "who stayed is still there")
         assertTrue(IntroMewChapter.MEW_JOINED in SceneState.finalOf(StoryCatalog.scene("intro-mew-6")!!).flags, "Mew agrees to join in the last test")
-        // A walk faces the way it goes: east, then south-west to the apple.
         val mid = SceneState.start(scene).apply(SceneEvent.Show(BUDDY, 0f, 0f)).apply(SceneEvent.Move(BUDDY, listOf(3f to 0f)))
         assertEquals(Facing.RIGHT, mid.actors.getValue(BUDDY).facing)
         assertEquals(Facing.UP, SceneState.facingOf(0f to 2f, 0f to 1f, Facing.RIGHT)); assertEquals(Facing.LEFT, SceneState.facingOf(5f to 1f, 3f to 1f, Facing.RIGHT)); assertEquals(Facing.DOWN, SceneState.facingOf(1f to 1f, 1.2f to 3f, Facing.LEFT))
@@ -59,10 +56,8 @@ class StoryEngineTest {
     fun choicesSetFlagsAndBranchesFollowThem() {
         val scene = StoryCatalog.scene("kanto-4-camp")!!
         assertTrue(scene.events.any { it is SceneEvent.Choice } && scene.events.any { it is SceneEvent.Branch })
-        // Skipped, the first answer is taken and its branch applies.
         val end = SceneState.finalOf(scene)
         assertTrue("protect" in end.flags && "truth" !in end.flags)
-        // An earlier flag carries into the scene.
         assertTrue("truth" in SceneState.start(scene, setOf("truth")).flags)
         val s = SceneState(background = "x").apply(SceneEvent.Letterbox(true)).apply(SceneEvent.Choice(null, listOf(StoryChoice("A", "a"), StoryChoice("B", "b"))))
         assertTrue(s.letterbox && "a" in s.flags)
@@ -101,7 +96,6 @@ class StoryEngineTest {
         assertEquals(listOf(101, 102, 103, 104, 105, 106), explorers.map { it.chapter })
         (rescue + explorers).forEach { ep ->
             assertTrue(ep.special && ep.summary.isNotBlank() && ep.scenes.isNotEmpty(), ep.key)
-            // Never a prize in a scene: nothing on the floor to take.
             assertTrue(ep.scenes.flatMap { it.events }.none { it is SceneEvent.TakeItem }, ep.key)
         }
         for (layer in listOf(WorldLayer.RESCUE, WorldLayer.EXPLORERS)) {

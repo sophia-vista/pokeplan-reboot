@@ -44,44 +44,30 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * PokéLife as the phone's home screen, opt-in: it does nothing until the user picks it as the home app (the home page
- * has a button to Android's settings for that). The apps come from `LauncherApps` (work profiles included), pins and
- * hidden apps stay on the device, and nothing here pays: the save is only read, and a task ticked here is paid when the
- * app opens, like the widgets'. During a focus session, Home brings the Focus screen back (strict focus).
- */
 class LauncherActivity : ComponentActivity(), LauncherHost {
     private lateinit var launcherApps: LauncherApps
     private lateinit var users: UserManager
     private val store by lazy { widgetStore(this) }
 
-    /** The launchable activities by key, for opening; [apps] is the same list in the shape the screens use. */
     private var entries: Map<String, LauncherActivityInfo> = emptyMap()
     private var apps by mutableStateOf<List<LauncherApp>>(emptyList())
     private var prefs by mutableStateOf(LauncherPrefs())
     private var isDefault by mutableStateOf(false)
     private lateinit var model: AppModel
 
-    /** True when the launcher started after a crash loop ([app.pokeplan.CrashGuard.safeMode]): a plain app list, and nothing that opens the save. */
     private var safeMode = false
     private var safeView: SafeModeView? = null
 
-    /** How many times Home was pressed while this was open: the screens go back to the home page on each. */
     private var homePresses by mutableIntStateOf(0)
 
-    /** False while the launcher is out of sight, so the town's Pokémon stop walking and the battery is left alone. */
     private var active by mutableStateOf(true)
-    /** Bumped when a widget's provider may have changed (an app was updated, removed or came back), so the hosted widgets are looked up again. */
     private var widgetEpoch by mutableIntStateOf(0)
     private var reloading: Job? = null
-    /** Packages whose icons may have changed (installed, updated): only those pictures are drawn again. */
     private val staleIcons = mutableSetOf<String>()
     private var lastReload = 0L
-    /** The drawn icons, bounded by the memory they take (about 8 MB), not by their number. */
     private val icons = object : LruCache<String, ImageBitmap>(8 * 1024 * 1024) {
         override fun sizeOf(key: String, value: ImageBitmap): Int = value.width * value.height * 4
     }
-    /** What each hosted widget asks of its host, kept until a provider changes (reading it is a call to the system). */
     private val specs = HashMap<Int, HostedWidgetSpec?>()
 
     private val packageChanges = object : LauncherApps.Callback() {
@@ -98,7 +84,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         launcherApps = getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
         users = getSystemService(Context.USER_SERVICE) as UserManager
         if (app.pokeplan.CrashGuard.safeMode(this)) {
-            // A crash loop: nothing of the normal launcher is started (not the save, not the widgets), only the list of apps and the log.
             safeMode = true
             launcherApps.registerCallback(packageChanges)
             reloadApps()
@@ -122,7 +107,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // Home pressed while this is the home app: back to the home page, from the app list, a sheet or the town picker.
         homePresses++
         if (!safeMode) keepFocusScreen()
     }
@@ -130,9 +114,9 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override fun onStart() {
         super.onStart()
         active = true
-        app.pokeplan.huawei.HuaweiComponents.rebind(this) // the step-notification listener unbinds after each read (REP-055)
+        app.pokeplan.huawei.HuaweiComponents.rebind(this)
         if (safeMode) return
-        try { widgetHost.startListening() } catch (e: Exception) { /* a widget host that cannot listen just shows what it has */ }
+        try { widgetHost.startListening() } catch (e: Exception) {  }
     }
 
     override fun onStop() {
@@ -145,7 +129,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override fun onResume() {
         super.onResume()
         if (safeMode) return reloadApps()
-        // A widget, or the app, may have changed the save, or the user may just have chosen this as the home app.
         reloadSave()
         isDefault = isDefaultHome()
         reloadApps()
@@ -156,8 +139,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         super.onDestroy()
     }
 
-    /** Strict focus: Home during a focus session keeps the Focus screen on instead of leaving it. */
-    /** Reads the save again unless that was done a moment ago (Home pressed arrives as a new intent and then a resume: one read, not two). */
     private fun reloadSave() {
         val now = System.currentTimeMillis()
         if (now - lastReload < 400) return
@@ -167,9 +148,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     private fun keepFocusScreen() {
         reloadSave()
-        // Only a timer that is still running holds Home: a session that has ended (completed or failed, waiting to be dismissed) must not pull Home back into the app.
         if (store.data.focus?.isFinished == false) {
-            // The low buzz says Home is shut while the timer runs.
             if (::model.isInitialized) model.effect(Sfx.FOCUS_LOCK)
             openApp(Place.FOCUS)
         }
@@ -185,7 +164,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putString(PREFS_KEY, next.encode()).apply()
     }
 
-    /** Reads the app list off the main thread, a moment after the last change so a burst of package events loads it once. */
     private fun reloadApps() {
         reloading?.cancel()
         reloading = lifecycleScope.launch {
@@ -194,7 +172,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
                 try {
                     users.userProfiles.flatMap { user -> launcherApps.getActivityList(null, user) }
                 } catch (e: Exception) {
-                    null // keep the list that is showing rather than crash the home screen
+                    null
                 }
             } ?: return@launch
             entries = found.associateBy { key(it) }
@@ -207,9 +185,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
                     removable = removable,
                 )
             }
-            // Home and every return to the launcher reload the list: when nothing changed, keep the list and the drawn icons as they are (re-drawing every icon each time was the slowest part of coming back to the home screen).
             if (next == apps && staleIcons.isEmpty()) return@launch
-            // An updated app may have a new icon; one that stayed the same keeps its picture.
             val stale = staleIcons.toSet()
             staleIcons.clear()
             icons.snapshot().keys.filter { it !in entries || stale.any { pkg -> it.startsWith("$pkg/") } }.forEach { icons.remove(it) }
@@ -221,8 +197,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     private fun key(info: LauncherActivityInfo) = "${info.componentName.flattenToString()}|${users.getSerialNumberForUser(info.user)}"
 
-    // ----- LauncherHost -----
-
     override suspend fun icon(key: String): ImageBitmap? {
         icons.get(key)?.let { return it }
         val info = entries[key] ?: return null
@@ -233,7 +207,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
                 val canvas = Canvas(bitmap)
                 val drawable = info.getBadgedIcon(0)
                 if (drawable is android.graphics.drawable.AdaptiveIconDrawable) {
-                    // Without the phone's mask (round or squircle): the layers fill the square, and the launcher cuts it to its own pixel shape. Only the middle two thirds of an adaptive icon are meant to show, so they are drawn 1.5 times as big.
                     val grow = (size * 0.25f).toInt()
                     listOfNotNull(drawable.background, drawable.foreground).forEach { layer -> layer.setBounds(-grow, -grow, size + grow, size + grow); layer.draw(canvas) }
                 } else {
@@ -252,7 +225,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         try {
             launcherApps.startMainActivity(info.componentName, info.user, null, null)
         } catch (e: Exception) {
-            reloadApps() // uninstalled or disabled since the list was read
+            reloadApps()
         }
     }
 
@@ -276,13 +249,11 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         }
     }
 
-    // Other apps' widgets: the launcher is their host. The system picker returns a widget id; some widgets then ask to be set up before they can show.
     private val widgetManager by lazy { android.appwidget.AppWidgetManager.getInstance(this) }
     private val widgetHost by lazy { android.appwidget.AppWidgetHost(this, WIDGET_HOST_ID) }
     private var pendingWidget: Int = -1
     private var onWidgetPicked: ((Int) -> Unit)? = null
 
-    /** The provider's set-up screen is started by the host (it may not be exported to other apps); its answer comes to [onActivityResult]. */
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -294,17 +265,15 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     }
 
     private val chooseWidget = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
-        // After the process was killed while the picker was open, the callback below is gone; the id is then released at the next start.
         val recovered = pendingWidget < 0
         val id = if (recovered) getSharedPreferences(PREFS, MODE_PRIVATE).getInt(PREFS_PENDING_WIDGET, -1) else pendingWidget
-        // Nothing is waiting for the widget any more (the process was killed meanwhile): let its id go rather than keep one no slot names.
         if (recovered || result.resultCode != RESULT_OK || id < 0) { if (id >= 0) widgetHost.deleteAppWidgetId(id); setPendingWidget(-1); return@registerForActivityResult }
         val info = widgetManager.getAppWidgetInfo(id)
         if (info?.configure != null) {
             try {
                 widgetHost.startAppWidgetConfigureActivityForResult(this, id, 0, CONFIGURE_WIDGET, null)
             } catch (e: Exception) {
-                onWidgetPicked?.invoke(id) // it can be used without its set-up screen
+                onWidgetPicked?.invoke(id)
                 setPendingWidget(-1)
             }
         } else {
@@ -313,7 +282,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         }
     }
 
-    /** The id being chosen is kept on the device too, so one that the process never got to use (it was killed with the picker open) is let go of at the next start instead of staying allocated for ever. */
     private fun setPendingWidget(id: Int) {
         pendingWidget = id
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putInt(PREFS_PENDING_WIDGET, id).apply()
@@ -345,9 +313,8 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     override val hostsWidgets: Boolean get() = true
 
-    /** The provider's sizes are in pixels (not dp, as they look): these are converted with the screen's density, once, here. */
     override fun widgetSpec(id: Int): HostedWidgetSpec? {
-        widgetEpoch // read so a provider that came or went draws again
+        widgetEpoch
         if (specs.containsKey(id)) return specs[id]
         return readSpec(id).also { specs[id] = it }
     }
@@ -369,10 +336,8 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override fun HostedWidget(id: Int, size: Int, widthDp: Int, heightDp: Int, modifier: androidx.compose.ui.Modifier) {
         val info = widgetManager.getAppWidgetInfo(id) ?: return
         val spec = widgetSpec(id) ?: return
-        // On the grid the widget is told the room its cells really give it. In a list it has the height it asks for, times 1, 1.5 or 2 for small, medium and large.
         val onGrid = heightDp > 0 && widthDp > 0
         val height = if (onGrid) heightDp else (spec.minHeightDp.coerceAtLeast(48) * (1f + size.coerceIn(0, 2) / 2f)).toInt().coerceAtMost(640)
-        // A new provider (the app was updated) is a new view, so the old one's size and layout are not kept.
         androidx.compose.runtime.key(id, info.provider) {
             androidx.compose.ui.viewinterop.AndroidView(
                 factory = { context ->
@@ -385,7 +350,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
                     }
                 },
                 modifier = modifier,
-                // Told again whenever the room changes, so a resized or re-laid-out widget never keeps a stale size.
                 update = { view ->
                     if (onGrid) view.tellSize(widthDp, heightDp, widthDp, heightDp)
                     else view.tellSize(spec.minWidthDp, spec.minHeightDp, spec.minWidthDp * 2, height)
@@ -423,13 +387,12 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         startActivity(Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.COLLECTION.name).putExtra(MainActivity.EXTRA_POKEMON, id))
     }
 
-    /** Pulls the notification shade down with the status bar service (the EXPAND_STATUS_BAR permission); a phone that refuses just does nothing. */
     @android.annotation.SuppressLint("WrongConstant")
     override fun expandNotifications() {
         try {
             val bar = getSystemService("statusbar") ?: return
             Class.forName("android.app.StatusBarManager").getMethod("expandNotificationsPanel").invoke(bar)
-        } catch (e: Exception) { /* not allowed on this phone */ }
+        } catch (e: Exception) {  }
     }
 
     override fun openApp(place: Place) {
@@ -445,7 +408,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     }
 }
 
-/** Tells a hosted widget the room it has: the size-list call from Android 12 on (the four-number one is deprecated there), the old one below it. */
 private fun android.appwidget.AppWidgetHostView.tellSize(minW: Int, minH: Int, maxW: Int, maxH: Int) {
     if (android.os.Build.VERSION.SDK_INT >= 31) {
         updateAppWidgetSize(android.os.Bundle(), listOf(android.util.SizeF(minW.toFloat(), minH.toFloat()), android.util.SizeF(maxW.toFloat(), maxH.toFloat())))

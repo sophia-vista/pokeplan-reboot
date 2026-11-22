@@ -11,11 +11,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 
-/**
- * The launcher's forecast, from Open-Meteo (no account or key; it is sent only the coordinates of the place the user
- * chose, never the phone's location). A forecast is kept on the device for [FRESH_MS]; when the network is down the last
- * one is shown however old it is.
- */
 internal class WeatherClient(private val context: Context) {
     private val prefs get() = context.getSharedPreferences("weather", Context.MODE_PRIVATE)
 

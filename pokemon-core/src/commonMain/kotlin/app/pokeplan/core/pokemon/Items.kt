@@ -10,7 +10,6 @@ enum class ItemCategory { CANDY, VITAMIN, TRAINING, EVOLUTION, HELD, BERRY, LURE
 
 data class Item(val id: String, val name: String, val category: ItemCategory)
 
-/** The item catalogue. Item ids are plain strings so they match the ids used in the evolution data. */
 object Items {
     const val RARE_CANDY = "rare-candy"
     const val SUPER_CANDY = EvolutionRules.SUPER_CANDY
@@ -23,13 +22,11 @@ object Items {
     const val EVERSTONE = EvolutionTrials.EVERSTONE
     const val GIMMIGHOUL_COIN = EvolutionTrials.GIMMIGHOUL_COIN
 
-    /** Vitamins: +10 EVs in one stat. */
     val vitamins: Map<String, Stat> = mapOf(
         "hp-up" to Stat.HP, "protein" to Stat.ATTACK, "iron" to Stat.DEFENSE,
         "calcium" to Stat.SP_ATTACK, "zinc" to Stat.SP_DEFENSE, "carbos" to Stat.SPEED,
     )
 
-    /** The five berry flavours; a nature likes the flavour of its raised stat and dislikes that of its lowered stat. */
     val flavors: Map<Stat, String> = mapOf(
         Stat.ATTACK to "spicy", Stat.DEFENSE to "sour", Stat.SPEED to "sweet",
         Stat.SP_ATTACK to "dry", Stat.SP_DEFENSE to "bitter",
@@ -37,7 +34,6 @@ object Items {
 
     fun berry(flavor: String) = "berry-$flavor"
 
-    /** A berry of a random flavour. */
     fun randomBerry(rng: Random): String = berry(flavors.values.toList()[rng.nextInt(flavors.size)])
     fun lure(type: PokemonType) = "lure-${type.name.lowercase()}"
     fun teraShard(type: PokemonType) = "tera-shard-${type.name.lowercase()}"
@@ -60,7 +56,6 @@ object Items {
     )
 
     private fun pretty(id: String): String {
-        // "berry-sweet" reads "Sweet Berry"; "lure-fire" "Fire Lure"; "tera-shard-fire" "Fire Tera Shard".
         val words = when {
             id.startsWith("berry-") -> id.removePrefix("berry-") + "-berry"
             id.startsWith("lure-") -> id.removePrefix("lure-") + "-lure"
@@ -70,26 +65,19 @@ object Items {
         return words.split('-').joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
     }
 
-    /** Evolution items taken from the evolution data (stones and the like). */
     val evolutionItems: List<String> by lazy {
         Dex.evolutions.filter { it.kind == EvolutionKind.STONE || (it.kind == EvolutionKind.GENDER && it.item != null) }
             .mapNotNull { it.item }.distinct().sorted()
     }
 
-    /** Items a Pokémon holds to evolve when traded (a Metal Coat, a King's Rock...), taken from the evolution data. */
     val tradeItems: List<String> by lazy {
         Dex.evolutions.filter { it.kind == EvolutionKind.TRADE }.mapNotNull { it.heldItem }.distinct().sorted()
     }
 
-    /** Items a Pokémon holds to evolve in a special evolution (an Oval Stone, a Razor Claw, a Sweet), taken from the evolution data. */
     val heldEvolutionItems: List<String> by lazy {
         Dex.evolutions.filter { it.kind == EvolutionKind.TRIAL }.mapNotNull { it.heldItem }.distinct().sorted()
     }
 
-    /**
-     * Whether a Pokémon can hold [id]: a perk item, a Mega Stone, an item it needs to hold for a trade or special evolution, or the Everstone
-     * (which stops it evolving).
-     */
     fun holdable(id: String): Boolean = id in HeldItems.perks || id.startsWith("mega-stone-") || id in tradeItems || id in heldEvolutionItems || id == EVERSTONE
 
     fun category(id: String): ItemCategory? = when {
@@ -108,7 +96,6 @@ object Items {
     fun name(id: String): String = get(id)?.name ?: pretty(id)
 }
 
-/** What the player owns. Immutable: every change returns a new inventory. */
 @Serializable
 data class Inventory(val counts: Map<String, Int> = emptyMap()) {
     operator fun get(id: String): Int = counts[id] ?: 0
@@ -127,10 +114,6 @@ data class Inventory(val counts: Map<String, Int> = emptyMap()) {
         return Inventory(if (left == 0) counts - id else counts + (id to left))
     }
 
-    /**
-     * Adds with the stack limits: 999 per item, 9,999 for candies. What does not fit becomes coins 1:1 *(tune)*;
-     * returns the new inventory and the coins gained.
-     */
     fun addCapped(id: String, n: Int): Pair<Inventory, Int> {
         val limit = if (Items.category(id) == ItemCategory.CANDY) MAX_CANDIES else MAX_STACK
         val room = (limit - this[id]).coerceAtLeast(0)
@@ -144,11 +127,9 @@ data class Inventory(val counts: Map<String, Int> = emptyMap()) {
     }
 }
 
-/** One use of a bag item on a Pokémon, with the choice the item needs: the stat a Bottle Cap perfects, a Mint's nature. */
 sealed interface ItemUse {
     val itemId: String
 
-    /** An item that needs no choice: a vitamin, a berry, the Ability Capsule or Patch, a Tera Shard (it sets its own type). */
     data class Plain(override val itemId: String) : ItemUse
 
     data class BottleCap(val stat: Stat) : ItemUse {
@@ -160,14 +141,12 @@ sealed interface ItemUse {
     }
 }
 
-/** What using an item does to a Pokémon. Each function returns the changed Pokémon; the caller removes the item. */
 object ItemEffects {
     const val VITAMIN_EVS = 10
 
     fun useVitamin(p: OwnedPokemon, itemId: String): OwnedPokemon =
         p.gainEv(requireNotNull(Items.vitamins[itemId]) { "$itemId is not a vitamin" }, VITAMIN_EVS)
 
-    /** A Bottle Cap raises one IV to the maximum. */
     fun useBottleCap(p: OwnedPokemon, stat: Stat): OwnedPokemon {
         check(p.ivs[stat] < StatCalculator.MAX_IV) { "${stat.label} is already perfect" }
         return p.withIv(stat, StatCalculator.MAX_IV)
@@ -178,7 +157,6 @@ object ItemEffects {
         return p.withNature(nature)
     }
 
-    /** Swaps to the other regular ability (only for forms with two). */
     fun useAbilityCapsule(p: OwnedPokemon): OwnedPokemon {
         val options = p.form.abilities
         check(options.size == 2 && p.ability in options) { "${p.nickname} has no other regular ability" }
@@ -196,14 +174,12 @@ object ItemEffects {
         return p.withTeraType(type)
     }
 
-    /** [p] after [use], or null when it would do nothing (an IV already perfect, the nature it has, not a usable item). */
     fun apply(p: OwnedPokemon, use: ItemUse): OwnedPokemon? = when (use) {
         is ItemUse.BottleCap -> if (p.ivs[use.stat] < StatCalculator.MAX_IV) useBottleCap(p, use.stat) else null
         is ItemUse.NatureMint -> if (p.nature != use.nature) useNatureMint(p, use.nature) else null
         is ItemUse.Plain -> applyPlain(p, use.itemId)
     }
 
-    /** Whether [itemId] can do anything for [p] with some choice, for the bag's list of who can use it. */
     fun canUse(itemId: String, p: OwnedPokemon): Boolean = when (itemId) {
         Items.BOTTLE_CAP -> p.ivs.values.any { it < StatCalculator.MAX_IV }
         Items.NATURE_MINT -> true
@@ -218,10 +194,8 @@ object ItemEffects {
         else -> PokemonType.entries.firstOrNull { Items.teraShard(it) == itemId }?.takeIf { it != p.teraType }?.let { useTeraShard(p, it) }
     }
 
-    /** Feeds a berry: a little friendship now (and, with Contests, a condition boost). */
     fun feedBerry(p: OwnedPokemon): OwnedPokemon = p.gainFriendship(FriendshipRules.Source.BERRY)
 
-    /** Whether [p] likes, dislikes or is neutral about [flavor]. */
     fun taste(p: OwnedPokemon, flavor: String): Int = when (flavor) {
         Items.flavors[p.nature.raised] -> 1
         Items.flavors[p.nature.lowered] -> -1

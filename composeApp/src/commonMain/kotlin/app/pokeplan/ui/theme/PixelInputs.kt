@@ -16,10 +16,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/**
- * The on/off switch, drawn in pixels: a stair-cornered track with a square knob that sits left (off, grey track) or right (on,
- * green track). It is only a picture of the state; the row that holds it takes the tap and speaks the state.
- */
 @Composable
 fun PixelToggle(on: Boolean, modifier: Modifier = Modifier) {
     val track = if (on) Pixel.Green else Pixel.Shade
@@ -29,7 +25,6 @@ fun PixelToggle(on: Boolean, modifier: Modifier = Modifier) {
     }
 }
 
-/** A slider in pixels: a flat stair-cornered track filled to the value, and a square knob. [steps] works as in Material's. */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun PixelSlider(value: Float, onChange: (Float) -> Unit, modifier: Modifier = Modifier, steps: Int = 0, valueRange: ClosedFloatingPointRange<Float> = 0f..1f, color: Color = Pixel.Blue) {

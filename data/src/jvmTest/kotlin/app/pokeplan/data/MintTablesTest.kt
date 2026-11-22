@@ -30,7 +30,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** MINT's records in their own tables from the start (REP-014): round trip, only changed rows written, one kind erased alone, backup and activation. */
 class MintTablesTest {
     private val start = 1_793_000_000_000L
     private class Tables(private val live: LiveDocuments) : Storage {
@@ -134,11 +133,11 @@ class MintTablesTest {
         val s = live()
         val mint = mintOn(s, game())
         val a = mint.fill()
-        mint.setProgression(false) // a logged record would also mark itself paid (a second write); this test counts plain saves
+        mint.setProgression(false)
         countWrites(s)
-        mint.record(TxType.EXPENSE, 100, a) // one new row in one table
+        mint.record(TxType.EXPENSE, 100, a)
         assertEquals(1L, writes(s))
-        mint.setHideValues(true) // the settings row
+        mint.setHideValues(true)
         assertEquals(2L, writes(s))
         mint.updateTransaction(mint.data.transactions.first().copy(note = "x"))
         assertEquals(3L, writes(s), "only the changed transaction row was replaced")
@@ -224,7 +223,6 @@ class MintTablesTest {
         val exported = obj(MintExport.json(mint.data, setOf(MintKinds.ACCOUNTS)))
         assertEquals(setOf("format", "unit", "accounts", "plans", "creditStatements"), exported.keys)
         assertEquals(2, (exported["accounts"] as JsonArray).size)
-        // The accounts kind carries the installment plans and credit statements that belong to them (MINT.md 5.6A, 5.6B).
         assertEquals(obj(s.mintTables.readKind("accounts").let { """{"a":$it}""" })["a"], exported["accounts"], "the table family and the export agree")
     }
 
@@ -280,7 +278,6 @@ class MintTablesTest {
         for (secret in listOf("Savings", "Market", "100000")) assertFalse(secret in snap.getValue("mint"))
         val staged = BackupBundle.stage(BackupBundle.encode(snap, DataStore.SCHEMA_VERSION, 7), DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && "mint" in staged.documents.keys, "a bundle with sealed Mint passes its checks")
-        // Restoring it on the same phone brings Mint back, and what it replaced is kept aside sealed.
         mint.addAccount("Later", AccountType.CASH, "PHP")
         s.live.replaceAll(snap, 11)
         assertEquals(2, mintOn(s, g).data.accounts.size)
@@ -301,21 +298,18 @@ class MintTablesTest {
             snap = s.live.snapshot()
             s.close()
         }
-        // The same file on a phone with another key (a database restored from the cloud): Mint reads as empty, nothing is destroyed.
         val other = JvmDatabase.open(f.path).also { it.mintCipher = cipher(2) }
         assertTrue(other.mintTables.locked())
         assertNull(other.live.read("mint"))
         assertFalse("mint" in other.live.names())
         val fresh = mintOn(other, g)
         assertTrue(fresh.data.accounts.isEmpty())
-        fresh.addAccount("New", AccountType.CASH, "PHP", 100) // the first write sets the sealed rows aside first
+        fresh.addAccount("New", AccountType.CASH, "PHP", 100)
         assertEquals(1, other.live.names().count { it.startsWith("aside:mint:locked:") })
         assertEquals(1, mintOn(other, g).data.accounts.size)
-        // A backup sealed with the first key does not open here either: it is kept aside and the new Mint is untouched.
         other.live.replaceAll(snap, 21)
         assertEquals(1, mintOn(other, g).data.accounts.size)
         assertTrue(other.live.read("aside:mint:locked:21") != null)
-        // The right key opens everything again from that backup.
         val home = JvmDatabase.open().also { it.mintCipher = cipher(1) }
         home.live.activate(null, null, 1); home.live.moveMintToTables(2)
         home.live.replaceAll(snap, 5)
@@ -348,7 +342,6 @@ class MintTablesTest {
         val again = JvmDatabase.open(f.path).also { it.mintCipher = cipher() }
         assertTrue(again.integrityIssues().isEmpty())
         assertEquals(before, mintOn(again, g).data, "the plan, its schedule and its linked records are back field for field")
-        // The plan list is in the sealed state row: nothing readable in the file.
         assertFalse(f.readBytes().toString(Charsets.ISO_8859_1).contains("Headphones"), "the plan is sealed")
     }
 }

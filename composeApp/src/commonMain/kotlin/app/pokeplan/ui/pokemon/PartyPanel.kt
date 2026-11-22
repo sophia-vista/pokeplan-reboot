@@ -68,16 +68,12 @@ import app.pokeplan.ui.theme.pixelFont
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 
-/** The most a party holds, as in the games. */
 private const val PARTY_SIZE = 6
 
-/** One perk line of a party panel: its name and its total now. */
 private class PerkLine(val label: String, val percent: Double)
 
-/** What the perks screen says before the rank that shows them. */
 internal val PERKS_LOCKED = "Opens at rank ${TrainerRank.names[Feature.PERKS.step]}"
 
-/** Plan's party in its module: its lead first, and its perks once the rank has opened them. */
 @Composable
 fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val store = model.store
@@ -91,7 +87,6 @@ fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     )
 }
 
-/** Care's party in its module: its lead first, and its three perks (which only change what Care pays) once the rank opens them, as Plan's. */
 @Composable
 fun CarePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
@@ -105,7 +100,6 @@ fun CarePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     )
 }
 
-/** Heal's party in its module: its lead first, and its two perks (which only change what Field Research pays) once the rank opens them, as Care's. */
 @Composable
 fun HealPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
@@ -119,7 +113,6 @@ fun HealPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     )
 }
 
-/** Mint's party in its module: its lead first, and its two perks (which only change what Ledger Research pays) once the rank opens them, as Care's. */
 @Composable
 fun MintPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
@@ -133,11 +126,6 @@ fun MintPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     )
 }
 
-/**
- * A module's party in one row of six sprites, the lead first and outlined, the free places a faint Poké Ball. Tapping one plays its
- * cry and a hop; holding it opens its page (the Pokémon tab shows names and levels). Below, the party's perks once the rank opens them.
- */
-/** A sprite in a module page's party row: smaller than on the Pokémon tab, so the party takes less of the page. */
 private val COMPACT_SPRITE = 40.dp
 
 @Composable
@@ -148,7 +136,6 @@ private fun PartyPanel(
     val ordered = members.sortedByDescending { it.id == leadId }.take(PARTY_SIZE)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            // Two sizes on one row share a baseline, not a centre line (BaselineTest).
             Row {
                 Text("Party", Modifier.weight(1f).alignByBaseline(), style = MaterialTheme.typography.titleSmall)
                 Text("${ordered.size} of $PARTY_SIZE", Modifier.alignByBaseline(), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
@@ -177,16 +164,11 @@ private fun PartyPanel(
     }
 }
 
-/**
- * The party's six places, two rows of three equal slots, the lead first and named by its role, free ones a faint Poké Ball. With [tapOpens] a tap opens the
- * Pokémon (and a long press plays its cry), as on the Pokémon tab; otherwise a tap plays the cry and a long press opens it, as inside a module.
- */
 @Composable
 internal fun PartyGrid(model: AppModel, members: List<OwnedPokemon>, leadId: String?, lead: String, onOpen: (String) -> Unit, tapOpens: Boolean = false) {
     val ordered = members.sortedByDescending { it.id == leadId }.take(PARTY_SIZE)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         (0 until PARTY_SIZE).chunked(3).forEach { row ->
-            // Every slot in a row is as tall as the tallest, so a long name never puts the row out of line.
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 row.forEach { i ->
                     val p = ordered.getOrNull(i)
@@ -208,13 +190,11 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
     var action by remember(p.id) { mutableStateOf(SpriteAction.IDLE) }
     val lift = remember(p.id) { Animatable(0f) }
     LaunchedEffect(hops) {
-        // Its own Hop animation where SpriteCollab has one; a small hop in code for the rest; none with Reduce motion.
         if (hops == 0 || calm || hasAction(p.form.id, p.isShiny, SpriteAction.HOP)) return@LaunchedEffect
         lift.animateTo(-10f, tween(110))
         lift.animateTo(0f, tween(150))
     }
     val leads = role != null
-    // The lead wears the module's own colour inside a module page (its frame tone), the brand red elsewhere.
     val leadColor = app.pokeplan.ui.theme.LocalFrameTone.current?.band ?: Pixel.Red
     Box(
         modifier
@@ -243,7 +223,6 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
                 maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
             )
             if (compact) Unit
-            // The lead's level is on the stage just above, so its slot names its role there instead.
             else if (role != null) Text(role, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = leadColor)
             else Text(
                 "Lv. ${p.level}" + if (p.isShiny) " · Shiny" else "", style = MaterialTheme.typography.labelMedium,
@@ -253,16 +232,11 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
     }
 }
 
-/** A Pokémon's cry and, unless motion is reduced, its hop. */
 private inline fun hear(model: AppModel, p: OwnedPokemon, calm: Boolean, hop: () -> Unit) {
     model.cry(p)
     if (!calm) hop()
 }
 
-/**
- * A free place in the party: a faint Poké Ball, the way the games leave an empty slot. It is laid out like a filled slot
- * (a sprite's room and two lines), so a row of free places is as tall as a full one at any font size.
- */
 @Composable
 private fun EmptySlot(modifier: Modifier, compact: Boolean = false) {
     Box(
@@ -280,7 +254,6 @@ private fun EmptySlot(modifier: Modifier, compact: Boolean = false) {
     }
 }
 
-/** Home's party in its module: its lead first, and its two perks (which only change what Habitat Discovery pays) once the rank opens them, as Mint's. */
 @Composable
 fun BasePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
@@ -294,7 +267,6 @@ fun BasePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     )
 }
 
-/** Link's party in its module: its lead first, and its two perks (which only change what Postcard Trail pays) once the rank opens them, as Home's. */
 @Composable
 fun LinkPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
