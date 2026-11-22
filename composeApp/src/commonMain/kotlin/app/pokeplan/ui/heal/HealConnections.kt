@@ -48,6 +48,8 @@ internal fun HealConnectionsView(model: AppModel) {
     var pending by remember { mutableStateOf<ProviderRead?>(null) }
     var note by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
+    var allowing by remember { mutableStateOf(false) }
+    var revoking by remember { mutableStateOf(false) }
     var askingDelete by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(health, settings.healthKinds) { health?.granted { granted = it } }
 
@@ -75,8 +77,11 @@ internal fun HealConnectionsView(model: AppModel) {
                 val connected = settings.healthKinds.isNotEmpty()
                 PixelButton(if (connected) "Change what Heal may read" else "Allow in Health Connect", {
                     heal.setHealthKinds(draft)
-                    if (draft.isNotEmpty()) health.request(draft) { granted = it; note = if (it.isEmpty()) "Nothing was allowed. Heal reads nothing, and everything you logged is still here." else null } // copy-ok: result
-                }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = draft.isNotEmpty(), compact = true)
+                    if (draft.isNotEmpty()) {
+                        allowing = true
+                        health.request(draft) { granted = it; allowing = false; note = if (it.isEmpty()) "Nothing was allowed. Heal reads nothing, and everything you logged is still here." else null } // copy-ok: result
+                    }
+                }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = draft.isNotEmpty(), compact = true, loading = allowing)
                 if (connected) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         TabButton("Last 7 days", days == 7, { days = 7 }, Modifier.weight(1f))
@@ -105,8 +110,9 @@ internal fun HealConnectionsView(model: AppModel) {
                     PixelButton("Open Health Connect", { health.openSettings() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     if (connected) PixelButton("Disconnect", {
                         heal.setHealthKinds(emptySet()); pending = null
-                        health.revoke { ok -> granted = emptySet(); note = if (ok) "Disconnected. Heal reads nothing now. The records already added stay until you delete them." else "Heal stopped reading. Android did not take the permissions back: open Health Connect to do that." } // copy-ok: result
-                    }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                        revoking = true
+                        health.revoke { ok -> revoking = false; granted = emptySet(); note = if (ok) "Disconnected. Heal reads nothing now. The records already added stay until you delete them." else "Heal stopped reading. Android did not take the permissions back: open Health Connect to do that." } // copy-ok: result
+                    }, Modifier.weight(1f), Pixel.Danger, compact = true, loading = revoking)
                 }
             }
         }

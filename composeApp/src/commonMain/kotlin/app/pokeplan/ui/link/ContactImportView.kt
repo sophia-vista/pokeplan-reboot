@@ -37,6 +37,7 @@ import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelToggle
 import app.pokeplan.ui.theme.SectionLabel
+import app.pokeplan.ui.theme.SkeletonRows
 import app.pokeplan.ui.theme.Spacing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -99,7 +100,7 @@ internal fun ContactImportView(model: AppModel, source: ContactSource, onClose: 
             Stage.PICK -> {
                 val plan = plan
                 if (plan == null) {
-                    Text("Reading contacts", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    SkeletonRows(count = 4)
                     return@Column
                 }
                 val q = query.trim().lowercase()

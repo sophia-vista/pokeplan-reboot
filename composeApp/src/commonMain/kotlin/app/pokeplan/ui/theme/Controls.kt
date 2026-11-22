@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.LocalUiSound
@@ -115,7 +116,11 @@ fun PixelKey(
                     if (!quiet) ui(sound ?: if (role == Role.Tab) Sfx.CURSOR else Sfx.CONFIRM)
                 }
             }
-            .semantics { if (role == Role.Tab || selected) this.selected = selected }
+            .semantics {
+                if (role == Role.Tab || selected) this.selected = selected
+                // The key holds its label while the loading pixels show, so the action keeps its name for TalkBack (5.6).
+                if (loading) stateDescription = "Working"
+            }
             .padding(PaddingValues(horizontal = horizontal, vertical = Spacing.S)),
         contentAlignment = Alignment.Center,
     ) { content(look) }

@@ -1,9 +1,6 @@
 package app.pokeplan.ui.theme
 
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.ui.graphics.luminance
 import app.pokeplan.ui.pressScale
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -15,7 +12,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
@@ -197,7 +193,13 @@ fun PixelButton(
         onClick, modifier, key = color, enabled = enabled, loading = loading, compact = compact, preview = preview,
         sound = sound ?: if (text.endsWith("Back")) app.pokeplan.ui.Sfx.BACK else app.pokeplan.ui.Sfx.CONFIRM,
     ) { look ->
-        if (loading || preview?.state == KeyState.Loading) LoadingPixels(Pixel.InkSoft) else KeyLabel(text, look)
+        if (loading || preview?.state == KeyState.Loading) {
+            Box(contentAlignment = Alignment.Center) {
+                // The label stays where it was, unseen, so the key keeps its width while the pixels blink (5.6).
+                KeyLabel(text, KeyLook(look.face, look.edge, Color.Transparent, look.tinted))
+                LoadingDots(color = Pixel.InkSoft, description = null)
+            }
+        } else KeyLabel(text, look)
     }
 }
 
@@ -209,23 +211,14 @@ fun PixelIconButton(
     color: Color = Pixel.InkSoft,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
+    loading: Boolean = false,
 ) {
     PixelKey(
-        onClick, modifier.width(Spacing.Target).semantics { contentDescription = description }, key = color, enabled = enabled, compact = true,
-        horizontal = 0.dp, sound = app.pokeplan.ui.Sfx.CONFIRM,
-    ) { look -> app.pokeplan.ui.Glyph(glyph, look.ink, size = 20.dp) }
-}
-
-@Composable
-private fun LoadingPixels(color: Color) {
-    val calm = app.pokeplan.ui.screens.LocalReduceMotion.current
-    val phase = if (calm) 3 else {
-        val transition = androidx.compose.animation.core.rememberInfiniteTransition()
-        val tick by transition.animateFloat(0f, 3f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(900, easing = androidx.compose.animation.core.LinearEasing)))
-        tick.toInt()
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.semantics { contentDescription = "Working" }) {
-        repeat(3) { i -> Box(Modifier.size(6.dp).background(color.copy(alpha = if (phase == 3 || phase == i) 1f else 0.3f))) }
+        onClick, modifier.width(Spacing.Target).semantics { contentDescription = description }, key = color, enabled = enabled,
+        loading = loading, compact = true, horizontal = 0.dp, sound = app.pokeplan.ui.Sfx.CONFIRM,
+    ) { look ->
+        if (loading) Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) { LoadingDots(color = look.ink, dot = 4.dp, gap = 3.dp, description = null) }
+        else app.pokeplan.ui.Glyph(glyph, look.ink, size = 20.dp)
     }
 }
 
