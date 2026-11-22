@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
@@ -1982,6 +1983,50 @@ class ScreenshotTest {
         app.pokeplan.ui.care.CareSection.entries.forEach { care("care-xl-${it.name.lowercase()}", it, height = 1500, fontScale = 1.3f) }
         (0..3).forEach { collection("collection-xl-$it", it, hatched = 6, fontScale = 1.3f, height = 1500) }
         collection("collection-xl-menu", -1, fontScale = 1.3f)
+    }
+
+    @Test
+    fun loadingStates() {
+        for ((suffix, dark, scale) in listOf(Triple("", false, 1f), Triple("-dark", true, 1f), Triple("-xl", false, 1.3f))) {
+            render("loading$suffix", height = 1200, fontScale = scale) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { LoadingGallery() } } }
+        }
+        render("loading-screen") { PixelTheme(false) { app.pokeplan.ui.theme.LoadingScreen("PokéLife", status = "Opening your save…") } }
+        render("loading-screen-dark") { PixelTheme(true) { app.pokeplan.ui.theme.LoadingScreen("PokéLife", status = "Opening your save…") } }
+    }
+
+    @Composable
+    private fun LoadingGallery() {
+        val A = androidx.compose.foundation.layout.Arrangement
+        Column(Modifier.padding(Spacing.L), verticalArrangement = A.spacedBy(Spacing.L)) {
+            Text("A loading key keeps the label's width", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = A.spacedBy(Spacing.S)) {
+                app.pokeplan.ui.theme.PixelButton("Save a copy", {})
+                app.pokeplan.ui.theme.PixelButton("Save a copy", {}, loading = true)
+            }
+            Row(horizontalArrangement = A.spacedBy(Spacing.S)) {
+                app.pokeplan.ui.theme.PixelButton("Restore from a file", {}, color = Pixel.Warning)
+                app.pokeplan.ui.theme.PixelButton("Restore from a file", {}, color = Pixel.Warning, loading = true)
+            }
+            Row(horizontalArrangement = A.spacedBy(Spacing.S)) {
+                app.pokeplan.ui.theme.PixelIconButton("close", "Close", {})
+                app.pokeplan.ui.theme.PixelIconButton("close", "Close", {}, loading = true)
+                app.pokeplan.ui.theme.PixelButton("Save", {}, compact = true)
+                app.pokeplan.ui.theme.PixelButton("Save", {}, compact = true, loading = true)
+            }
+            Text("Skeletons hold a list, a card and a paragraph", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            app.pokeplan.ui.theme.TextBox {
+                Column(verticalArrangement = A.spacedBy(Spacing.M)) {
+                    app.pokeplan.ui.theme.PixelTitle("Automatic backups")
+                    app.pokeplan.ui.theme.SkeletonRows(count = 2)
+                }
+            }
+            Row(horizontalArrangement = A.spacedBy(Spacing.S)) {
+                app.pokeplan.ui.theme.SkeletonPanel(Modifier.weight(1f), height = 72.dp)
+                app.pokeplan.ui.theme.SkeletonText(Modifier.weight(1f), lines = 3)
+            }
+            app.pokeplan.ui.theme.LoadingState("Reading contacts")
+            Box(Modifier.fillMaxWidth().height(150.dp)) { app.pokeplan.ui.theme.LoadingOverlay("Restoring your save…") }
+        }
     }
 
     @Test

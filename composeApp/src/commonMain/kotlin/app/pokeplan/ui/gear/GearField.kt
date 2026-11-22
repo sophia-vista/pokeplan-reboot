@@ -87,7 +87,7 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton(if (busy) "Looking..." else "Mark this place", { if (!busy) locate(true) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = !busy)
+                PixelButton("Mark this place", { if (!busy) locate(true) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = !busy, loading = busy)
                 PixelButton("Where am I", { if (!busy) locate(false) }, Modifier.weight(1f), Pixel.InkSoft, compact = true, enabled = !busy)
             }
             if (message.isNotEmpty()) Text(message, style = MaterialTheme.typography.bodyMedium)
@@ -244,7 +244,7 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
                 if (i.online) Text((if (i.metered) "Metered" else "Not metered") + if (i.validated) ", online" else ", not confirmed", style = MaterialTheme.typography.bodyMedium)
                 PixelIconButton("reload", "Look again", { info = feed?.info() })
             }
-            PixelButton(if (busy) "Checking..." else "Check the connection", {
+            PixelButton("Check the connection", {
                 if (!busy) scope.launch {
                     busy = true; onUse()
                     val http = RatesClient.newHttpClient()
@@ -256,7 +256,7 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
                     http.close()
                     result = NetworkCheck.Result(times); busy = false
                 }
-            }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true, enabled = !busy)
+            }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true, enabled = !busy, loading = busy)
             result?.let { r ->
                 Text(NetworkCheck.verdict(r), style = MaterialTheme.typography.bodyLarge)
                 r.median?.let { Text("Answers in about $it ms" + (r.jitter?.let { j -> ", varying by up to $j ms" } ?: "") + ".", style = MaterialTheme.typography.bodyMedium) }

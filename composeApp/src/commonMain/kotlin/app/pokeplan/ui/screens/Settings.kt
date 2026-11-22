@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import kotlinx.datetime.toLocalDateTime
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import app.pokeplan.app.ThemeMode
@@ -35,6 +36,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -56,6 +58,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
+import app.pokeplan.ui.theme.LoadingOverlay
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.PixelButton
@@ -225,57 +228,76 @@ internal fun BackupsCard(model: AppModel) {
     var again by remember { mutableStateOf("") }
     var shown by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
+    var copying by remember { mutableStateOf(false) }
+    var backingUp by remember { mutableStateOf(false) }
+    var saving by remember { mutableStateOf<Long?>(null) }
+    var restoring by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val hide = if (shown) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation()
     fun restored(text: String) { model.store.reload(); model.care.reload(); model.heal.reload(); model.mint.reload(); model.base.reload(); model.link.reload(); entries = backups.automatic(); note = text }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            GlyphTitle("Complete backup", "download")
-            if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
-            Text(entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}" } ?: "No backup yet", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Tone, compact = true)
-                PixelButton("Save a copy", { backups.saveCopy(null) { note = it } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            }
-            PixelButton(if (portable) "Not now" else "Export a backup", { portable = !portable; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            if (portable) {
-                PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase (at least ${backups.minPassphrase} characters)", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
-                PixelField(again, { again = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase again", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    error = if (again.isNotEmpty() && again != pass) "The two do not match." else null)
+    Box {
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                GlyphTitle("Complete backup", "download")
+                if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
+                Text(entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}" } ?: "No backup yet", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelButton("Save the copy", {
-                        busy = true
-                        backups.saveCopy(null, pass) { busy = false; note = it; if (it == "Saved.") { portable = false; pass = ""; again = "" } }
-                    }, Modifier.weight(1f), Pixel.Tone, enabled = !busy && pass.length >= backups.minPassphrase && pass == again, compact = true)
-                    PixelButton(if (shown) "Hide" else "Show", { shown = !shown }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Back up now", {
+                        backingUp = true
+                        // The backup is written on this thread; wait one frame so the key can show its pixels before it starts (5.6).
+                        scope.launch { withFrameNanos { }; note = backups.backupNow(); entries = backups.automatic(); backingUp = false }
+                    }, Modifier.weight(1f), Pixel.Tone, loading = backingUp, compact = true)
+                    PixelButton("Save a copy", { copying = true; backups.saveCopy(null) { copying = false; note = it } }, Modifier.weight(1f), Pixel.InkSoft, loading = copying, compact = true)
                 }
-            }
-            entries.forEach { e ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Text(backupLabel(e.millis), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                    PixelButton("Save", { backups.saveCopy(e.millis) { note = it } }, color = Pixel.InkSoft, compact = true)
-                    PixelButton("Restore", { asking = e.millis; chosen = null }, color = Pixel.Warning, compact = true)
+                PixelButton(if (portable) "Not now" else "Export a backup", { portable = !portable; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                if (portable) {
+                    PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase (at least ${backups.minPassphrase} characters)", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
+                    PixelField(again, { again = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase again", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        error = if (again.isNotEmpty() && again != pass) "The two do not match." else null)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        PixelButton("Save the copy", {
+                            busy = true
+                            backups.saveCopy(null, pass) { busy = false; note = it; if (it == "Saved.") { portable = false; pass = ""; again = "" } }
+                        }, Modifier.weight(1f), Pixel.Tone, enabled = !busy && pass.length >= backups.minPassphrase && pass == again, loading = busy, compact = true)
+                        PixelButton(if (shown) "Hide" else "Show", { shown = !shown }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
                 }
-            }
-            asking?.let { millis ->
-                Text("Put the backup from ${backupLabel(millis)} back? What is on this phone now is kept aside, so this can be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelButton("Restore", { restored(backups.restoreAutomatic(millis)); asking = null }, Modifier.weight(1f), Pixel.Warning, compact = true)
-                    PixelButton("Keep what I have", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                entries.forEach { e ->
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Text(backupLabel(e.millis), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        PixelButton("Save", { saving = e.millis; backups.saveCopy(e.millis) { saving = null; note = it } }, color = Pixel.InkSoft, loading = saving == e.millis, compact = true)
+                        PixelButton("Restore", { asking = e.millis; chosen = null }, color = Pixel.Warning, compact = true)
+                    }
                 }
-            }
-            PixelButton("Restore from a file", { asking = null; chosen = null; pass = ""; backups.chooseFile { staged, why -> chosen = staged; note = why } }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            chosen?.let { c ->
-                Text("This file is a backup from ${backupLabel(c.createdAtMillis)} (${c.documents.joinToString(", ")}). Replace what is on this phone with it? What is here now is kept aside.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
-                if (c.needsPassphrase) PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Backup passphrase", singleLine = true, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelButton("Restore", { busy = true; backups.applyChosen(pass.takeIf { c.needsPassphrase }) { busy = false; restored(it); if (it.startsWith("Restored")) { chosen = null; pass = "" } } }, Modifier.weight(1f), Pixel.Warning, enabled = !busy && (!c.needsPassphrase || pass.isNotEmpty()), compact = true)
-                    PixelButton("Cancel", { chosen = null; pass = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                asking?.let { millis ->
+                    Text("Put the backup from ${backupLabel(millis)} back? What is on this phone now is kept aside, so this can be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        PixelButton("Restore", {
+                            restoring = true
+                            // Putting the save back runs on this thread; wait one frame so the blocking overlay is drawn first.
+                            scope.launch { withFrameNanos { }; restored(backups.restoreAutomatic(millis)); asking = null; restoring = false }
+                        }, Modifier.weight(1f), Pixel.Warning, loading = restoring, compact = true)
+                        PixelButton("Keep what I have", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
                 }
+                PixelButton("Restore from a file", { asking = null; chosen = null; pass = ""; backups.chooseFile { staged, why -> chosen = staged; note = why } }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                chosen?.let { c ->
+                    Text("This file is a backup from ${backupLabel(c.createdAtMillis)} (${c.documents.joinToString(", ")}). Replace what is on this phone with it? What is here now is kept aside.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
+                    if (c.needsPassphrase) PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Backup passphrase", singleLine = true, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        PixelButton("Restore", {
+                            restoring = true
+                            backups.applyChosen(pass.takeIf { c.needsPassphrase }) { restored(it); restoring = false; if (it.startsWith("Restored")) { chosen = null; pass = "" } }
+                        }, Modifier.weight(1f), Pixel.Warning, enabled = !restoring && (!c.needsPassphrase || pass.isNotEmpty()), loading = restoring, compact = true)
+                        PixelButton("Cancel", { chosen = null; pass = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+                if (backups.hasOffPhone) OffPhoneSection(backups, nowMillis = model.store.nowMillis,
+                    onNote = { note = it; entries = backups.automatic() }, onStaged = { staged, why -> chosen = staged; note = why; asking = null; pass = "" })
+                note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
             }
-            if (backups.hasOffPhone) OffPhoneSection(backups, nowMillis = model.store.nowMillis,
-                onNote = { note = it; entries = backups.automatic() }, onStaged = { staged, why -> chosen = staged; note = why; asking = null; pass = "" })
-            note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
         }
+        if (restoring) LoadingOverlay("Restoring your save…", Modifier.matchParentSize())
     }
 }
 
@@ -288,6 +310,7 @@ internal fun OffPhoneSection(backups: app.pokeplan.ui.BackupAccess, nowMillis: L
     var shown by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var stopping by remember { mutableStateOf(false) }
+    var picking by remember { mutableStateOf(false) }
     val hide = if (shown) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation()
     fun done(text: String) { busy = false; state = backups.offPhone(); onNote(text) }
     val current = state
@@ -299,7 +322,7 @@ internal fun OffPhoneSection(backups: app.pokeplan.ui.BackupAccess, nowMillis: L
                 error = if (again.isNotEmpty() && again != pass) "The two do not match." else null)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Choose the folder", { busy = true; backups.setUpOffPhone(pass) { setting = false; pass = ""; again = ""; done(it) } }, Modifier.weight(1f), Pixel.Tone,
-                    enabled = !busy && pass.length >= backups.minPassphrase && pass == again, compact = true)
+                    enabled = !busy && pass.length >= backups.minPassphrase && pass == again, loading = busy, compact = true)
                 PixelButton(if (shown) "Hide" else "Show", { shown = !shown }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
@@ -313,8 +336,8 @@ internal fun OffPhoneSection(backups: app.pokeplan.ui.BackupAccess, nowMillis: L
         current.problem?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) } // copy-ok: warning or legal
             ?: if (stale && last != null) Text("No copy for ${((nowMillis - last) / (24 * 60 * 60 * 1000L))} days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) else Unit
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Copy now", { busy = true; backups.backUpOffPhoneNow(::done) }, Modifier.weight(1f), Pixel.Tone, enabled = !busy, compact = true)
-            PixelButton("Restore copy", { backups.chooseOffPhoneCopy(onStaged) }, Modifier.weight(1f), Pixel.Warning, enabled = !busy, compact = true)
+            PixelButton("Copy now", { busy = true; backups.backUpOffPhoneNow(::done) }, Modifier.weight(1f), Pixel.Tone, enabled = !busy, loading = busy, compact = true)
+            PixelButton("Restore copy", { picking = true; backups.chooseOffPhoneCopy { staged, why -> picking = false; onStaged(staged, why) } }, Modifier.weight(1f), Pixel.Warning, enabled = !busy && !picking, loading = picking, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelButton("Change folder", { setting = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

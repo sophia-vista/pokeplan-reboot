@@ -91,6 +91,6 @@ fun FormDisclosure(title: String, open: Boolean, onToggle: () -> Unit, modifier:
 }
 
 @Composable
-fun FormSave(label: String, onClick: () -> Unit, accent: Color, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    PixelButton(label, onClick, modifier.fillMaxWidth(), accent, enabled = enabled)
+fun FormSave(label: String, onClick: () -> Unit, accent: Color, modifier: Modifier = Modifier, enabled: Boolean = true, loading: Boolean = false) {
+    PixelButton(label, onClick, modifier.fillMaxWidth(), accent, enabled = enabled, loading = loading)
 }
