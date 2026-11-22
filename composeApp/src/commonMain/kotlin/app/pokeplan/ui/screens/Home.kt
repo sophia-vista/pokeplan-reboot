@@ -32,7 +32,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,8 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Size
 import app.pokeplan.ui.SceneImage
 import app.pokeplan.ui.theme.RegionLook
 import androidx.compose.ui.platform.LocalDensity
@@ -56,7 +53,6 @@ import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.FocusRules
 import app.pokeplan.plan.MiniQuest
 import app.pokeplan.plan.Task
-import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
@@ -69,11 +65,9 @@ import app.pokeplan.ui.theme.ExpBar
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTitle
-import androidx.compose.ui.geometry.Offset
 import app.pokeplan.ui.theme.dialogueBox
 import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.DialogueShape
-import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.RankBadge
@@ -82,11 +76,24 @@ import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.StatChip
 import app.pokeplan.ui.theme.TextBox
-import app.pokeplan.ui.theme.title
 import app.pokeplan.ui.care.CareSection
 import app.pokeplan.ui.care.MoodKeys
 import app.pokeplan.ui.plan.taskMeta
-import app.pokeplan.ui.pokemon.label
+import app.pokeplan.base.BaseRules
+import app.pokeplan.base.ChoreState
+import app.pokeplan.base.DueState
+import app.pokeplan.heal.HealRules
+import app.pokeplan.mint.MintRules
+import app.pokeplan.mint.OccurrenceState
+import app.pokeplan.plan.Rank
+import app.pokeplan.plan.TaskViews
+import app.pokeplan.ui.base.BaseSection
+import app.pokeplan.ui.link.LinkSection
+import app.pokeplan.ui.mint.MintSection
+import app.pokeplan.ui.mint.mintSubtitle
+import app.pokeplan.ui.world.WorldSection
+import app.pokeplan.world.Dungeons
+import androidx.compose.runtime.key
 
 @Composable
 fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) -> Unit) {
@@ -117,12 +124,8 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             WelcomeBackCard(model)
             HomeBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
             RewardBox(model)
+            ModuleCards(model, go)
             QuickLogCard(model, go)
-
-            PlanRegionCard(model, go)
-            CareRegionCard(model, go)
-            AlsoTodayCard(model, go)
-            WorldRegionCard(model, go)
 
             if (store.sees(Feature.MINI_QUESTS)) MiniQuestsCard(model, go)
             RecentCard(model, go)
@@ -182,55 +185,220 @@ private fun StepRow(text: String, action: String?, color: Color = Pixel.Green, l
 
 private fun leadLine(p: OwnedPokemon) = "${p.nickname}, Lv. ${p.level}"
 
-@Composable
-private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
-    val store = model.store
-    val data = model.data
-    val lead = data.player.planLead
-    val open = store.openTodayTasks()
-    val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.firstOrNull()
-    val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
-    val total = doneToday + open.size
-    RegionCard(
-        Module.PLAN.label, Module.PLAN.icon, Module.PLAN.look, BuddyScene.darkness(store.now.hour, store.now.minute), lead,
-        if (total == 0) null else "$doneToday of $total tasks done today",
-        still = data.settings.reduceMotion, onOpen = { go(Place.PLAN) },
-    ) {
-        when {
-            data.focus != null -> StepRow("An egg is incubating", "Open", Pixel.Tone) { go(Place.FOCUS) }
-            next != null -> StepRow(next.title, "Done", lead = { RankBadge(next.rank) }) { model.completeTask(next.id) }
-            doneToday > 0 -> StepRow("All done for today", null)
-            else -> StepRow("Nothing planned for today", "Add a task", ModuleAccent.PLAN.accent) { model.addTaskRequested = true; go(Place.PLANNER) }
-        }
-    }
-}
-
-@Composable
-private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
-    model.careData
-    val care = model.care
-    val player = model.data.player
-    val lead = player.careLead
-    val today = care.todayRoutines()
-    val done = today.count { it.doneOn(care.today) }
-    val next = today.firstOrNull { !it.doneOn(care.today) }
-    RegionCard(
-        Module.CARE.label, Module.CARE.icon, Module.CARE.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), lead,
-        if (today.isEmpty()) null else "$done of ${today.size} routines today",
-        still = model.data.settings.reduceMotion, onOpen = { go(Place.CARE) },
-    ) {
-        val open = { section: CareSection -> go(Place.CARE); model.careSection = section }
-        when {
-            next != null -> StepRow(next.title, "Done") { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(next.id) }
-            today.isNotEmpty() -> StepRow("Routines done for today", "Calm break", Pixel.Tone) { open(CareSection.CALM) }
-            model.careData.routines.none { !it.archived } -> StepRow("No routines yet", "Add a routine", Pixel.Green) { open(CareSection.ROUTINES) }
-            else -> StepRow("No routines today", "Calm break", Pixel.Tone) { open(CareSection.CALM) }
-        }
-    }
-}
+/** One module on Home: how urgent it is, the status it shows, and the one thing worth doing from here. */
+private data class ModuleConcern(
+    val module: Module,
+    val severity: Int,
+    val status: String?,
+    val step: String,
+    val action: String? = null,
+    val actionTone: Color = Pixel.Green,
+    val rank: Rank? = null,
+    val onAction: () -> Unit = {},
+)
 
 private const val SOON_DAYS = 3
 private const val LINK_DATES_DAYS = 7
+
+private fun countOf(n: Int, one: String, many: String) = if (n == 1) "1 $one" else "$n $many"
+
+private fun placeOf(module: Module): Place = when (module) {
+    Module.PLAN -> Place.PLAN
+    Module.MINT -> Place.MINT
+    Module.BASE -> Place.BASE
+    Module.CARE -> Place.CARE
+    Module.HEAL -> Place.HEAL
+    Module.LINK -> Place.LINK
+    Module.WORLD -> Place.WORLD
+}
+
+@Composable
+private fun ModuleCards(model: AppModel, go: (Place) -> Unit) {
+    val darkness = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)
+    // Built in the canonical order, then a stable sort puts the modules with something due first.
+    val concerns = listOf(
+        planConcern(model, go),
+        mintConcern(model, go),
+        baseConcern(model, go),
+        careConcern(model, go),
+        healConcern(model, go),
+        linkConcern(model, go),
+        worldConcern(model, go),
+    ).sortedByDescending { it.severity }
+    concerns.forEach { concern -> key(concern.module.name) { ModuleCard(model, concern, darkness, go) } }
+}
+
+@Composable
+private fun ModuleCard(model: AppModel, concern: ModuleConcern, darkness: Float, go: (Place) -> Unit) {
+    RegionCard(
+        concern.module.label, concern.module.icon, concern.module.look, darkness, leadOf(model, concern.module),
+        concern.status, still = model.data.settings.reduceMotion, onOpen = { go(placeOf(concern.module)) },
+    ) {
+        StepRow(concern.step, concern.action, concern.actionTone, lead = { concern.rank?.let { RankBadge(it) } }, onClick = concern.onAction)
+    }
+}
+
+private fun leadOf(model: AppModel, module: Module): OwnedPokemon? {
+    val player = model.data.player
+    return when (module) {
+        Module.PLAN -> player.planLead
+        Module.MINT -> player.mintLead
+        Module.BASE -> player.baseLead
+        Module.CARE -> player.careLead
+        Module.HEAL -> player.healLead
+        Module.LINK -> player.linkLead
+        Module.WORLD -> {
+            val world = model.data.world
+            val team = world.teams.firstOrNull { it.expedition != null } ?: world.teams.firstOrNull { it.members.isNotEmpty() }
+            team?.members?.firstNotNullOfOrNull { id -> player.pokemon.firstOrNull { it.id == id } }
+        }
+    }
+}
+
+private fun planConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    val store = model.store
+    val data = model.data
+    val open = store.openTodayTasks()
+    val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.firstOrNull()
+    val doneToday = store.doneToday()
+    val total = doneToday + open.size
+    val overdue = TaskViews.overdue(data.tasks, store.now).size
+    val status = if (total == 0) null else "$doneToday of $total tasks done today"
+    return when {
+        data.focus != null -> ModuleConcern(Module.PLAN, if (overdue > 0) 3 else 2, status, "An egg is incubating", "Open", ModuleAccent.PLAN.accent) { go(Place.FOCUS) }
+        next != null -> ModuleConcern(Module.PLAN, if (overdue > 0) 3 else 2, status, next.title, "Done", Pixel.Green, next.rank) { model.completeTask(next.id) }
+        doneToday > 0 -> ModuleConcern(Module.PLAN, 0, status, "All done for today", "Open", ModuleAccent.PLAN.accent) { go(Place.PLAN) }
+        else -> ModuleConcern(Module.PLAN, 0, null, "Nothing planned for today", "Add a task", ModuleAccent.PLAN.accent) { model.addTaskRequested = true; go(Place.PLANNER) }
+    }
+}
+
+private fun mintConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    val data = model.mintData
+    val today = model.store.today
+    if (data.settings.gate) return ModuleConcern(Module.MINT, 0, null, "Locked", "Open", ModuleAccent.MINT.accent) { go(Place.MINT) }
+    val due = MintRules.upcoming(data, today, 0).count { !it.bill.income && (it.state == OccurrenceState.DUE || it.state == OccurrenceState.OVERDUE) }
+    val soon = MintRules.upcoming(data, today, SOON_DAYS).filter { !it.bill.income && it.state == OccurrenceState.UPCOMING }
+    val bills = { go(Place.MINT); model.mintSection = MintSection.BILLS }
+    val summary = mintSubtitle(model)
+    val soonStep = if (soon.size == 1) {
+        val days = today.daysUntil(soon.first().payDay)
+        "1 bill due ${if (days <= 1) "tomorrow" else "in $days days"}"
+    } else {
+        countOf(soon.size, "bill", "bills") + " due within $SOON_DAYS days"
+    }
+    return when {
+        due > 0 -> ModuleConcern(Module.MINT, 3, summary, "${countOf(due, "bill", "bills")} to settle", "Settle", ModuleAccent.MINT.accent) { bills() }
+        soon.isNotEmpty() -> ModuleConcern(Module.MINT, 2, summary, soonStep, "Settle", ModuleAccent.MINT.accent) { bills() }
+        else -> ModuleConcern(Module.MINT, 0, summary, "No bills due", "Open", ModuleAccent.MINT.accent) { go(Place.MINT) }
+    }
+}
+
+private fun baseConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    val data = model.baseData
+    if (Module.BASE.name in model.data.settings.lockedModules) return ModuleConcern(Module.BASE, 0, null, "Locked", "Open", ModuleAccent.BASE.accent) { go(Place.BASE) }
+    val overview = BaseRules.overview(data, model.store.today)
+    val chores = overview.chores
+    val upkeep = overview.maintenance
+    val overdue = chores.count { it.state == ChoreState.OVERDUE } + upkeep.count { it.state == DueState.OVERDUE }
+    val dueToday = chores.count { it.state == ChoreState.DUE } + upkeep.count { it.state == DueState.DUE }
+    val total = chores.size + upkeep.size
+    val parts = buildList {
+        if (chores.isNotEmpty()) add(countOf(chores.size, "chore", "chores"))
+        if (upkeep.isNotEmpty()) add(countOf(upkeep.size, "upkeep", "upkeep"))
+    }.joinToString(" and ")
+    val openSection = {
+        go(Place.BASE)
+        model.baseSection = if (chores.isNotEmpty()) BaseSection.CHORES else BaseSection.MAINTENANCE
+    }
+    return when {
+        overdue > 0 -> ModuleConcern(Module.BASE, 3, null, parts + if (overdue == total) " overdue" else " due", "Open", ModuleAccent.BASE.accent) { openSection() }
+        dueToday > 0 -> ModuleConcern(Module.BASE, 2, null, "$parts due", "Open", ModuleAccent.BASE.accent) { openSection() }
+        total > 0 -> ModuleConcern(Module.BASE, 2, null, "$parts due soon", "Open", ModuleAccent.BASE.accent) { openSection() }
+        else -> ModuleConcern(Module.BASE, 0, null, "Nothing due today", "Open", ModuleAccent.BASE.accent) { go(Place.BASE) }
+    }
+}
+
+private fun careConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    if (Module.CARE.name in model.data.settings.lockedModules) return ModuleConcern(Module.CARE, 0, null, "Locked", "Open", ModuleAccent.CARE.accent) { go(Place.CARE) }
+    val careData = model.careData
+    val care = model.care
+    val today = care.todayRoutines()
+    val done = today.count { it.doneOn(care.today) }
+    val next = today.firstOrNull { !it.doneOn(care.today) }
+    val status = if (today.isEmpty()) null else "$done of ${today.size} routines today"
+    val openSection = { section: CareSection -> go(Place.CARE); model.careSection = section }
+    return when {
+        next != null -> ModuleConcern(Module.CARE, 2, status, next.title, "Done", Pixel.Green) { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(next.id) }
+        today.isNotEmpty() -> ModuleConcern(Module.CARE, 0, status, "Routines done for today", "Calm break", ModuleAccent.CARE.accent) { openSection(CareSection.CALM) }
+        careData.routines.none { !it.archived } -> ModuleConcern(Module.CARE, 0, null, "No routines yet", "Add a routine", ModuleAccent.CARE.accent) { openSection(CareSection.ROUTINES) }
+        else -> ModuleConcern(Module.CARE, 0, null, "No routines today", "Calm break", ModuleAccent.CARE.accent) { openSection(CareSection.CALM) }
+    }
+}
+
+private fun healConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    if (Module.HEAL.name in model.data.settings.lockedModules) return ModuleConcern(Module.HEAL, 0, null, "Locked", "Open", ModuleAccent.HEAL.accent) { go(Place.HEAL) }
+    val data = model.healData
+    val ml = HealRules.hydrationOn(data, model.store.today)
+    val target = data.settings.hydrationTargetMl
+    val step = when {
+        ml == null -> "No water logged today"
+        target != null -> "${waterText(ml)} of ${waterText(target)}"
+        else -> "${waterText(ml)} so far"
+    }
+    val behind = target != null && (ml ?: 0) < target
+    return ModuleConcern(Module.HEAL, if (behind) 1 else 0, null, step, "+250 ml", ModuleAccent.HEAL.accent) {
+        model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL)
+    }
+}
+
+private fun waterText(ml: Int): String = if (ml >= 1000) HealRules.format(ml / 1000.0) + " L" else "$ml ml"
+
+private fun linkConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    if (Module.LINK.name in model.data.settings.lockedModules) return ModuleConcern(Module.LINK, 0, null, "Locked", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) }
+    model.linkData
+    val due = model.link.dueNow()
+    val dates = model.link.upcoming(LINK_DATES_DAYS)
+    val step = buildList {
+        if (due.isNotEmpty()) add("${countOf(due.size, "follow-up", "follow-ups")} due")
+        if (dates.isNotEmpty()) add("${countOf(dates.size, "date", "dates")} this week")
+    }.joinToString(", ").ifEmpty { "No follow-ups due" }
+    val openSection = {
+        go(Place.LINK)
+        model.linkSection = when {
+            due.isNotEmpty() -> LinkSection.FOLLOW_UPS
+            dates.isNotEmpty() -> LinkSection.DATES
+            else -> null
+        }
+    }
+    return when {
+        due.isNotEmpty() -> ModuleConcern(Module.LINK, 3, null, step, "Open", ModuleAccent.LINK.accent) { openSection() }
+        dates.isNotEmpty() -> ModuleConcern(Module.LINK, 1, null, step, "Open", ModuleAccent.LINK.accent) { openSection() }
+        else -> ModuleConcern(Module.LINK, 0, null, "No follow-ups due", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) }
+    }
+}
+
+private fun worldConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    val world = model.data.world
+    val out = world.teams.count { it.expedition != null }
+    val finds = world.finds.size
+    val jobs = world.missions.count { it.done }
+    val openSection = { section: WorldSection? ->
+        go(Place.WORLD)
+        model.worldSection = section
+    }
+    return when {
+        jobs > 0 -> ModuleConcern(Module.WORLD, 3, null, "${countOf(jobs, "job", "jobs")} ready to report", "Open", ModuleAccent.WORLD.accent) { openSection(WorldSection.MISSIONS) }
+        finds > 0 -> ModuleConcern(Module.WORLD, 2, null, "${countOf(finds, "Pokémon", "Pokémon")} waiting to meet", "Open", ModuleAccent.WORLD.accent) { openSection(WorldSection.BAG) }
+        out > 0 -> {
+            val where = world.teams.firstNotNullOfOrNull { team -> team.expedition?.let { Dungeons.byId(it.dungeonId)?.name } }
+            ModuleConcern(
+                Module.WORLD, 1, "${countOf(out, "team", "teams")} out exploring", if (where != null) "Exploring $where" else "Out in a dungeon",
+                "Open", ModuleAccent.WORLD.accent,
+            ) { openSection(WorldSection.TEAMS) }
+        }
+        else -> ModuleConcern(Module.WORLD, 0, null, "Send a team into a dungeon", "Open", ModuleAccent.WORLD.accent) { go(Place.WORLD) }
+    }
+}
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
@@ -249,74 +417,6 @@ private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
             if (mood != -1) MoodKeys(mood) { model.care.setMood(it); model.haptic() }
             RestDayRow(model)
         }
-    }
-}
-
-@Composable
-private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
-    model.mintData; model.baseData; model.linkData; model.healData
-    val today = model.store.today
-    val locked = model.data.settings.lockedModules
-    fun count(n: Int, one: String, many: String) = if (n == 1) "1 $one" else "$n $many"
-    val rows = buildList<@Composable () -> Unit> {
-        if (!model.mintData.settings.gate) {
-            val due = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, 0).count { !it.bill.income && (it.state == app.pokeplan.mint.OccurrenceState.DUE || it.state == app.pokeplan.mint.OccurrenceState.OVERDUE) }
-            val soon = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, SOON_DAYS).count { !it.bill.income && it.state == app.pokeplan.mint.OccurrenceState.UPCOMING }
-            if (due > 0) add { TodayRow(Module.MINT, "${count(due, "bill", "bills")} to settle") { go(Place.MINT) } }
-            else if (soon > 0) add { TodayRow(Module.MINT, "${count(soon, "bill", "bills")} due in $SOON_DAYS days") { go(Place.MINT) } }
-        }
-        if (Module.BASE.name !in locked) {
-            val o = app.pokeplan.base.BaseRules.overview(model.baseData, today)
-            val n = o.chores.size + o.maintenance.size
-            if (n > 0) add { TodayRow(Module.BASE, "${count(n, "thing", "things")} to do") { go(Place.BASE) } }
-        }
-        if (Module.LINK.name !in locked) {
-            val n = model.link.dueNow().size
-            if (n > 0) add { TodayRow(Module.LINK, "${count(n, "follow-up", "follow-ups")} due") { go(Place.LINK) } }
-            val dates = model.link.upcoming(LINK_DATES_DAYS).size
-            if (dates > 0) add { TodayRow(Module.LINK, "${count(dates, "date", "dates")} this week") { go(Place.LINK) } }
-        }
-        if (Module.HEAL.name !in locked && (model.healData.hydration.isNotEmpty() || model.healData.settings.hydrationTargetMl != null)) {
-            val ml = app.pokeplan.heal.HealRules.hydrationOn(model.healData, today) ?: 0
-            add { TodayRow(Module.HEAL, "$ml ml of water so far") { go(Place.HEAL) } }
-        }
-    }
-    if (rows.isEmpty()) return
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Also today")
-            rows.forEach { it() }
-        }
-    }
-}
-
-@Composable
-private fun TodayRow(module: Module, text: String, onOpen: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).clickable(onClickLabel = "Open ${module.label}", role = Role.Button, onClick = onOpen),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
-    ) {
-        ItemIcon(module.icon, size = Sizes.IconS, description = module.label)
-        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Text("›", style = MaterialTheme.typography.titleLarge, color = Pixel.InkSoft)
-    }
-}
-
-@Composable
-private fun WorldRegionCard(model: AppModel, go: (Place) -> Unit) {
-    val data = model.data
-    val world = data.world
-    val team = world.teams.firstOrNull { it.expedition != null } ?: world.teams.firstOrNull { it.members.isNotEmpty() }
-    val lead = team?.members?.firstNotNullOfOrNull { id -> data.player.pokemon.firstOrNull { it.id == id } }
-    val out = world.teams.count { it.expedition != null }
-    RegionCard(
-        Module.WORLD.label, Module.WORLD.icon, Module.WORLD.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), lead,
-        if (out == 0) null else if (out == 1) "1 team out exploring" else "$out teams out exploring",
-        still = data.settings.reduceMotion, onOpen = { go(Place.WORLD) },
-    ) {
-        val where = team?.expedition?.let { app.pokeplan.world.Dungeons.byId(it.dungeonId)?.name }
-        if (where != null) StepRow("Exploring $where", "Open") { go(Place.WORLD) }
-        else StepRow("Send a team into a dungeon", "Open", ModuleAccent.WORLD.accent) { go(Place.WORLD) }
     }
 }
 
