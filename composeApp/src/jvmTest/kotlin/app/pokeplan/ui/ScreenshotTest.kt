@@ -904,6 +904,9 @@ class ScreenshotTest {
     @Test
     fun datePickerAndNumbers() {
         val today = kotlinx.datetime.LocalDate(2026, 11, 11)
+        render("date-picker-saturday", height = 900) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.PixelDatePicker(kotlinx.datetime.LocalDate(2026, 11, 3), today, app.pokeplan.ui.theme.ModuleAccent.MINT.accent, {}, initiallyOpen = true, weekStart = kotlinx.datetime.DayOfWeek.SATURDAY) } }
+        }
         listOf(false, true).forEach { dark ->
             render("date-picker-${if (dark) "dark" else "light"}", height = 900) {
                 PixelTheme(dark) {
@@ -920,7 +923,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun homeAlsoToday() {
+    fun homeModules() {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.markVersionSeen(AppVersion.NAME)
@@ -929,12 +932,16 @@ class ScreenshotTest {
         mint.addAccount("Daily", app.pokeplan.mint.AccountType.BANK, "PHP", 1_000_000)
         mint.addBill("Internet", "PHP", app.pokeplan.mint.Frequency.MONTHLY, store.today, 149_900)
         model.heal.logDrink(250)
+        model.care.addRoutine("Stretch for five minutes")
         model.base.addChore("Take out the bins")
         model.link.addFollowUp("Reply to Ana", due = store.today)
         listOf(false, true).forEach { dark ->
-            render("home-also-today-${if (dark) "dark" else "light"}", height = 2300) {
+            render("home-modules-${if (dark) "dark" else "light"}", height = 4800) {
                 PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.HomeScreen(model) {} } }
             }
+        }
+        render("home-modules-large-text", fontScale = 1.8f, height = 6600) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.HomeScreen(model) {} } }
         }
         render("plan-compact-lead", height = 1100) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } }
@@ -1070,7 +1077,7 @@ class ScreenshotTest {
     private fun modules(name: String, module: app.pokeplan.ui.screens.Module?, plan: app.pokeplan.ui.screens.PlanSection? = null) =
         meStore(name, prepare = { it.module = module; it.planSection = plan }) { model -> app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
 
-    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, height: Int = 1080, fontScale: Float = 1f, content: @Composable (AppModel) -> Unit) {
+    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, height: Int = 1080, fontScale: Float = 1f, dark: Boolean = false, interact: (ImageComposeScene) -> Unit = {}, content: @Composable (AppModel) -> Unit) {
         val store = storeWithTeam()
         store.addGoal("Learn guitar").also { g ->
             store.addMilestone(g.id, "Buy a guitar")
@@ -1082,8 +1089,8 @@ class ScreenshotTest {
         clock.millis += 11_000
         store.tick()
         val model = AppModel(store).also(prepare)
-        render(name, fontScale = fontScale, height = height) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content(model) } }
+        render(name, fontScale = fontScale, height = height, interact = interact) {
+            PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content(model) } }
         }
     }
 
@@ -1145,6 +1152,11 @@ class ScreenshotTest {
     fun modulesMenu() = modules("modules", null)
 
     @Test
+    fun modulesMenuDark() = meStore("modules-dark", prepare = { it.module = null }, dark = true) { model ->
+        app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
+    }
+
+    @Test
     fun planMenu() = modules("plan", app.pokeplan.ui.screens.Module.PLAN)
 
     @Test
@@ -1154,8 +1166,20 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.NavSheet("Heal", {}) { app.pokeplan.ui.screens.MenuRows(rows) {} }
     }
 
+    /** A finger pull down at the top of the Modules list: the search bar is revealed from there. */
+    private fun pullToSearch(scene: ImageComposeScene) {
+        val x = 270f
+        var y = 420f
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(x, y), type = androidx.compose.ui.input.pointer.PointerType.Touch)
+        repeat(30) {
+            y += 8f
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Move, androidx.compose.ui.geometry.Offset(x, y), type = androidx.compose.ui.input.pointer.PointerType.Touch)
+        }
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(x, y), type = androidx.compose.ui.input.pointer.PointerType.Touch)
+    }
+
     @Test
-    fun modulesJump() = meStore("modules-jump", prepare = { it.module = null }) { model ->
+    fun modulesSearch() = meStore("modules-search", prepare = { it.module = null }, interact = ::pullToSearch) { model ->
         app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
     }
 
@@ -2146,6 +2170,13 @@ class ScreenshotTest {
 
     @Test
     fun meSettingsGeneral() = me("me-settings-general", 5)
+
+    @Test
+    fun meSettingsDateTime() = listOf(false, true).forEach { dark ->
+        meStore("me-settings-date-time${if (dark) "-dark" else ""}", height = 3600, dark = dark) { model ->
+            app.pokeplan.ui.screens.MeScreen(model, 5)
+        }
+    }
 
     @Test
     fun meSettingsPrivacy() = me("me-settings-privacy", 6)

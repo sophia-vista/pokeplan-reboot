@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.233.0
+
+A pass on the bottom-tab screens (owner, 23 November 2026), UI only: no reward rule, schema or save-format change, `RewardRules.VERSION` stays and no golden vector was regenerated. The one settings addition (`weekStartDay`) is a serialized field with a default, so old saves load unchanged.
+
+- **Home shows every module.** The three module cards and the "Also today" rows are replaced by one card per module (PLAN, MINT, BASE, CARE, HEAL, LINK, WORLD) in the module's own accent, with its lead, a truthful status line and one in-place action. A card with something due or overdue floats above the quiet ones; ties stay in the rainbow order, so what needs the owner is never below a quiet module. A screen-locked module and gated MINT show only "Locked" and an Open key, never a count.
+- **Modules:** the "Jump to" search is hidden until the list is pulled down at its top (140 ms expand, instant under Reduce motion; the close key, Back or an upward swipe with nothing typed puts it away and clears the query). Each module row now carries a light wash of its module's accent inside the list's one dialogue box, and a search result is tinted by the module it opens.
+- **Pokémon:** the menu follows the canon start-menu order: Pokédex, Party, PC boxes, Bag, Poké Mart, Quests.
+- **Me → Settings → Date and time:** "Week starts on" is a dropdown (Sunday, Monday, Saturday) instead of a Monday toggle, and the choice now reaches the date picker, the Plan month grid and the launcher calendar widget. "Date format" is a dropdown of pattern strings, adding `MM/dd/yyyy` and `dd/MM/yyyy` to the existing styles.
+
 ## 0.232.0
 
 One loading vocabulary, drawn from tokens and text only (DESIGN_SYSTEM 5.6 and 6.10): `LoadingDots` (three pixels), `LoadingState` (three pixels and one short line), the `Skeleton` family (`Skeleton`, `SkeletonRows`, `SkeletonPanel`: static pixel placeholders of the shape that is coming, never a shimmer or a pulse), `LoadingScreen` (a full screen that has only tokens and text) and `LoadingOverlay` (a scrim that blocks the page). A button's loading state now keeps its label's width, so the row does not jump, and announces the action ("Save, working") instead of going silent.
