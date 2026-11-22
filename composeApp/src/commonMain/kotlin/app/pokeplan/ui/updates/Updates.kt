@@ -41,13 +41,33 @@ const val UPDATE_MANIFEST_URL = "https://github.com/$UPDATE_REPO/releases/downlo
 
 const val UPDATE_RELEASE_API = "https://api.github.com/repos/$UPDATE_REPO/releases/tags/$UPDATE_TAG"
 
-const val UPDATE_RELEASE_PAGE = "https://github.com/$UPDATE_REPO/releases/tag/$UPDATE_TAG"
+/** The tag of a version's own release, `v0.233.0`. */
+fun versionTag(version: String): String = "v$version"
+
+/** Where one asset of a release is downloaded from. */
+fun updateAssetUrl(tag: String, name: String): String = "https://github.com/$UPDATE_REPO/releases/download/$tag/$name"
+
+/** The page of one release. */
+fun updateReleasePage(tag: String): String = "https://github.com/$UPDATE_REPO/releases/tag/$tag"
 
 private const val UPDATER_USER_AGENT = "PokeLife-Updater"
 
 private val SEMVER = Regex("^(\\d{1,4})\\.(\\d{1,3})\\.(\\d{1,3})$")
 private val SHA256 = Regex("^[0-9a-fA-F]{64}$")
 private val APK_NAME = Regex("^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\\.apk$")
+private val PATCH_NAME = Regex("^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\\.patch\\.gz$")
+
+/**
+ * One patch that rebuilds the new APK from an older one: about 4 to 20 MB instead of the whole 116 MB download. The
+ * release workflow builds it from the versioned APKs, so the update chain is version to version.
+ */
+data class UpdatePatch(
+    val fromVersion: String,
+    val fromBuild: Long = 0,
+    val asset: String,
+    val sizeBytes: Long = 0,
+    val sha256: String = "",
+)
 
 /** One published build of PokéLife, as the release's `update.json` describes it. */
 data class UpdateRelease(
@@ -58,12 +78,25 @@ data class UpdateRelease(
     val apkName: String = UPDATE_APK,
     val commit: String = "",
     val date: String = "",
+    /** The release the assets are downloaded from: `latest`, or a version's own `vX.Y.Z`. */
+    val tag: String = UPDATE_TAG,
+    val patches: List<UpdatePatch> = emptyList(),
 ) {
     /** Where the APK is downloaded from: the same release, so a new build can never point at another file. */
-    val apkUrl: String get() = updateApkUrl(apkName)
-}
+    val apkUrl: String get() = updateAssetUrl(tag, apkName)
 
-fun updateApkUrl(apkName: String): String = "https://github.com/$UPDATE_REPO/releases/download/$UPDATE_TAG/$apkName"
+    /** Where the patch asset is downloaded from. */
+    fun patchUrl(patch: UpdatePatch): String = updateAssetUrl(tag, patch.asset)
+
+    /**
+     * The patch that applies to this installed build, if the release has one. A build number identifies the versioned
+     * APK exactly; a patch with no build number (a release from before the build label was written) matches by version.
+     * A patch that does not reproduce the manifest's APK is dropped and the full download is used instead.
+     */
+    fun patchFor(installedVersion: String, installedBuild: Long): UpdatePatch? =
+        patches.firstOrNull { it.fromVersion == installedVersion && it.fromBuild > 0 && it.fromBuild == installedBuild }
+            ?: patches.firstOrNull { it.fromVersion == installedVersion && it.fromBuild == 0L }
+}
 
 /** The version as three numbers, or null when [text] is not `MAJOR.MINOR.PATCH`. */
 fun versionParts(text: String): Triple<Int, Int, Int>? {
@@ -90,14 +123,14 @@ fun isNewerRelease(release: UpdateRelease, installedVersion: String, installedBu
 }
 
 /** Reads the `update.json` the release workflow writes, or null when it is not a manifest this build understands. */
-fun parseUpdateManifest(text: String): UpdateRelease? = try {
+fun parseUpdateManifest(text: String, tag: String = UPDATE_TAG): UpdateRelease? = try {
     val root = Json.parseToJsonElement(text).jsonObject
-    manifestRelease(root)
+    manifestRelease(root, tag)
 } catch (e: Exception) {
     null
 }
 
-private fun manifestRelease(root: JsonObject): UpdateRelease? {
+private fun manifestRelease(root: JsonObject, tag: String): UpdateRelease? {
     val version = root["version"]?.jsonPrimitive?.contentOrNull?.trim() ?: return null
     versionParts(version) ?: return null
     val apkName = root["apk"]?.jsonPrimitive?.contentOrNull?.trim() ?: UPDATE_APK
@@ -117,14 +150,37 @@ private fun manifestRelease(root: JsonObject): UpdateRelease? {
         apkName = apkName,
         commit = root["commit"]?.jsonPrimitive?.contentOrNull?.trim() ?: "",
         date = root["date"]?.jsonPrimitive?.contentOrNull?.trim() ?: "",
+        tag = tag,
+        patches = manifestPatches(root),
     )
+}
+
+/** A patch entry whose file name or checksum is malformed is dropped; the full download still works. */
+private fun manifestPatches(root: JsonObject): List<UpdatePatch> {
+    val array = try {
+        root["patches"]?.jsonArray ?: return emptyList()
+    } catch (e: Exception) {
+        return emptyList()
+    }
+    return array.mapNotNull { element ->
+        val patch = element as? JsonObject ?: return@mapNotNull null
+        val from = patch["from"]?.jsonPrimitive?.contentOrNull?.trim() ?: return@mapNotNull null
+        versionParts(from) ?: return@mapNotNull null
+        val asset = patch["asset"]?.jsonPrimitive?.contentOrNull?.trim() ?: return@mapNotNull null
+        if (!PATCH_NAME.matches(asset)) return@mapNotNull null
+        val fromBuild = patch["fromBuild"]?.jsonPrimitive?.longOrNull ?: 0
+        val size = patch["size"]?.jsonPrimitive?.longOrNull ?: 0
+        val sha = patch["sha256"]?.jsonPrimitive?.contentOrNull?.trim()?.lowercase() ?: ""
+        if (sha.isNotEmpty() && !SHA256.matches(sha)) return@mapNotNull null
+        UpdatePatch(fromVersion = from, fromBuild = fromBuild.coerceAtLeast(0), asset = asset, sizeBytes = size.coerceAtLeast(0), sha256 = sha)
+    }
 }
 
 /**
  * Reads a GitHub `releases/tags/latest` answer: the fallback for a release that has no `update.json` yet. The workflow
  * titles every build "Latest build (vX.Y.Z, build N)", and the APK is always the `pokeplan.apk` asset.
  */
-fun parseReleaseApi(text: String): UpdateRelease? = try {
+fun parseReleaseApi(text: String, tag: String = UPDATE_TAG): UpdateRelease? = try {
     val root = Json.parseToJsonElement(text).jsonObject
     if (root["draft"]?.jsonPrimitive?.booleanOrNull == true) return null
     val title = root["name"]?.jsonPrimitive?.contentOrNull ?: root["tag_name"]?.jsonPrimitive?.contentOrNull ?: return null
@@ -134,7 +190,7 @@ fun parseReleaseApi(text: String): UpdateRelease? = try {
         it["name"]?.jsonPrimitive?.contentOrNull == UPDATE_APK
     } ?: return null
     val size = apk["size"]?.jsonPrimitive?.longOrNull ?: 0
-    UpdateRelease(version = version, build = build, sizeBytes = size.coerceAtLeast(0))
+    UpdateRelease(version = version, build = build, sizeBytes = size.coerceAtLeast(0), tag = tag)
 } catch (e: Exception) {
     null
 }
@@ -158,11 +214,19 @@ class UpdateClient(private val http: HttpClient = newHttpClient()) {
     suspend fun latest(): UpdateRelease? {
         problem = null
         val manifest = fetch(UPDATE_MANIFEST_URL)
-        if (manifest != null) parseUpdateManifest(manifest)?.let { return it }
-        val api = fetch(UPDATE_RELEASE_API, accept = "application/vnd.github+json")
-        if (api != null) parseReleaseApi(api)?.let { return it }
-        problem = if (api == null && manifest == null) "GitHub could not be reached." else "The release could not be read."
-        return null
+        val rolling = manifest?.let { parseUpdateManifest(it, UPDATE_TAG) }
+        val api = if (rolling == null) fetch(UPDATE_RELEASE_API, accept = "application/vnd.github+json") else null
+        val release = rolling ?: api?.let { parseReleaseApi(it, UPDATE_TAG) }
+        if (release == null) {
+            problem = if (api == null && manifest == null) "GitHub could not be reached." else "The release could not be read."
+            return null
+        }
+        // The rolling release carries the newest merge's APK; patches are built from the versioned APKs, which are the
+        // builds this updater installs. So read the version's own release when it is there, and fall back to the rolling
+        // APK for a release that predates it (no smaller update then, but the plain download still works).
+        val tag = versionTag(release.version)
+        val versioned = fetch(updateAssetUrl(tag, UPDATE_MANIFEST))?.let { parseUpdateManifest(it, tag) }
+        return versioned ?: release
     }
 
     private suspend fun fetch(url: String, accept: String = "application/json"): String? = try {
@@ -195,7 +259,10 @@ interface UpdateAccess {
     /** What the last check or download ended on, in words for the screen. */
     val problem: String?
 
-    /** Downloads and checks the APK, reporting 0 to 100; true when it is ready to install. */
+    /**
+     * Gets the new APK, reporting 0 to 100; true when it is ready to install. A patch for the installed build is
+     * downloaded and replayed when the release has one; the whole APK is the fallback.
+     */
     suspend fun download(release: UpdateRelease, onProgress: (Int) -> Unit): Boolean
 
     /** True when a checked, complete APK for [release] is already on the phone. */
@@ -210,6 +277,6 @@ interface UpdateAccess {
     /** Opens the phone's "install unknown apps" page for PokéLife. */
     fun openInstallSettings()
 
-    /** Opens the rolling "latest" release page in a browser. */
-    fun openReleasePage()
+    /** Opens the release's page in a browser. */
+    fun openReleasePage(release: UpdateRelease)
 }
