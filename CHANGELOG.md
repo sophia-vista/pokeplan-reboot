@@ -5,6 +5,45 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.225.5
+
+The comment-audit issues (GitHub #381 to #411): dead fields and constants removed, the QR mask picked by the standard's
+rules, one cached-image helper, honest Heal scrubbing, Help text that used to live only in comments, and the tool fixes.
+No reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged.
+
+- **Retired settings removed:** `Settings.musicVolume` (nothing played music), `Settings.worldKeepPartyOut` and
+  `Settings.careModule` (forced on at every load) are gone, with the branches that read them (Home, Modules, Jump to,
+  Collection, Pokémon detail, Care reminders, the Care widget). Old saves still load: the JSON ignores unknown keys, and a
+  test covers a save that still carries all three.
+- **Dead code:** `BuddyReaction.petPool` (only a test called it), `PickForMe.BONUS_MULTIPLIER` (a copy of
+  `RewardEngine.PICKED_BONUS` that never paid), `SourceKind.DERIVED`/`ESTIMATED`, `WorldData.shopCandies` and
+  `WorldData.worldVersion` (nothing read or wrote them; old saves load), the `Units` shim, and the legacy
+  `STREAK_LATER`/`RECAP_LATER` alarm kinds and their cancel loop.
+- **Numbers in one place:** `GameStore.CARE_DAILY_CAP` uses the `CareRules` limits (which gained the rhythm and Play
+  numbers), the Plan colour names live beside `TaskList.COLORS` for both editors, the launcher widgets size app rows from
+  `PinnedAppRow` (the row's own layout, including the pixel font's line) instead of guessed 80/56 dp, and `:data`'s
+  Guardian slot order is tested against `Guardians.MODULES`.
+- **Heal:** `HealTables.scrub` now reports whether VACUUM and the checkpoint succeeded, records a non-sensitive marker,
+  and is retried at the next start until both pass; a test makes VACUUM throw.
+- **QR:** the mask penalty follows ISO/IEC 18004 N1 to N4 exactly and is scored with the format area still light, as
+  reference encoders do; the chosen mask matches python-qrcode for a set of texts (its codewords match ours byte for byte).
+- **Images:** one `rememberCachedImage(cache, key) { … }` holds the reseed-then-load-then-cache rule that about fifteen
+  composables copied with the same explanation.
+- **Rain:** the town's rain now runs at the game's own pace: effect 16 is the `efbg004` background effect, 2 ticks (about
+  33.5 ms) a frame, not the guessed 70 ms, looping the sheet's 61 drawn frames (`GbaWeather.RAIN_TICKS`); the source trace is
+  in `LAUNCHER.md` 4.4.
+- **Help:** the bill-schedule rule (a payment locks the schedule; pause the bill and add a new one) and the phone-calendar
+  rule (read-only, never pays) are in Help, and the comments that held them on the Mint and Settings screens are gone.
+  The stale "turn Care off" line is gone too. The buddy stage's level chip is a full 48 dp target.
+- **Tools:** `fetch_rescue_maps.py` returns the position from `chunk_rows` instead of re-walking every BMA layer;
+  `extract_sky_maps.py` only skips entries whose own data is empty (a real decode failure stops the run) and writes
+  `skipped.tsv`; `convert_pmd_sfx.py` names the songs the owner confirmed and writes `assets/sfx/provenance.tsv`.
+- **Signing:** debug builds keep the tracked debug key; `release` takes its key from CI secrets and is unsigned without
+  them, never quietly signed with the debug key (`INTEGRATIONS_AND_PRIVACY.md` 4.4).
+- **Still needs a person:** auditioning the guessed UI sounds and the story cues (#390, #403), the renderer's vibrato,
+  pan and reverb (#404), the PMD-inspired dungeon species (#407), the later regions' map art (#408), a real phone for
+  Health Connect and the SAF backup folder (#383, #382), and the owner's release key (#381).
+
 ## 0.225.4
 
 Performance and battery pass (static audit, no device trace; owner, 21 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged.
