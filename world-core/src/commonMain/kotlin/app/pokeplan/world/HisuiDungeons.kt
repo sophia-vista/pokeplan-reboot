@@ -10,7 +10,7 @@ object HisuiDungeons {
         DungeonDef(
             "obsidian-fieldlands", "Obsidian Fieldlands", WorldRegion.GREENLANDS, floors = 8, favored = setOf(PokemonType.GRASS, PokemonType.NORMAL, PokemonType.BUG),
             baseFloorSeconds = 2880, needs = ExplorerRank.NORMAL, layer = H, chapter = 1,
-            wild = listOf(WildEntry(399, 5), WildEntry(396, 5), WildEntry(403, 3), WildEntry(265, 3), WildEntry(77, 3), WildEntry(234, 3), WildEntry(133, 2, fromFloor = 3), WildEntry(412, 3), WildEntry(401, 3), WildEntry(446, 2, fromFloor = 4), WildEntry(63, 2), WildEntry(190, 2)),
+            wild = listOf(WildEntry(399, 5), WildEntry(396, 5), WildEntry(403, 3), WildEntry(265, 3), WildEntry(77, 3), WildEntry(234, 3), WildEntry(133, 2, fromFloor = 3), WildEntry(412, 3), WildEntry(401, 3), WildEntry(446, 2, fromFloor = 4), WildEntry(63, 2), WildEntry(190, 2), WildEntry(100, 2, fromFloor = 3)),
             milestones = mapOf(4 to MilestoneReward(Items.berry("sweet"), 2), 8 to MilestoneReward(Items.RARE_CANDY, 2, poke = 200)),
         ),
         DungeonDef(
@@ -46,7 +46,7 @@ object HisuiDungeons {
         DungeonDef(
             "turnback-cave", "Turnback Cave", WorldRegion.UNDERGROUND, floors = 18, favored = setOf(PokemonType.GHOST, PokemonType.ROCK, PokemonType.DARK),
             baseFloorSeconds = 10800, needs = ExplorerRank.PLATINUM, layer = H, chapter = 4,
-            wild = listOf(WildEntry(355, 3), WildEntry(356, 2, fromFloor = 6), WildEntry(92, 3), WildEntry(93, 2, fromFloor = 5), WildEntry(200, 3), WildEntry(429, 2, fromFloor = 8), WildEntry(442, 3), WildEntry(41, 3), WildEntry(42, 2, fromFloor = 5), WildEntry(169, 1, fromFloor = 10), WildEntry(74, 2), WildEntry(477, 1, fromFloor = 12)),
+            wild = listOf(WildEntry(355, 3), WildEntry(356, 2, fromFloor = 6), WildEntry(92, 3), WildEntry(93, 2, fromFloor = 5), WildEntry(200, 3), WildEntry(429, 2, fromFloor = 8), WildEntry(442, 3), WildEntry(41, 3), WildEntry(42, 2, fromFloor = 5), WildEntry(169, 1, fromFloor = 10), WildEntry(74, 2), WildEntry(477, 1, fromFloor = 12), WildEntry(570, 2, fromFloor = 3)),
             milestones = mapOf(9 to MilestoneReward(Items.berry("spicy"), 4), 18 to MilestoneReward(Items.RARE_CANDY, 6, poke = 2_000)),
         ),
         DungeonDef(

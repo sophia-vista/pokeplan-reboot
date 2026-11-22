@@ -13,6 +13,7 @@ object KecleonShop {
     const val STONE_PRICE = 400
     const val LINK_CORD_PRICE = 500
     const val EVERSTONE_PRICE = 300
+    const val MEGA_STONE_PRICE = 2_000
 
     val fixed: List<ShopOffer> by lazy {
         Items.evolutionItems.map { ShopOffer(it, STONE_PRICE) } + listOf(
@@ -34,9 +35,12 @@ object KecleonShop {
             )
     }
 
+    /** Every Mega form's stone, always sold on its own shelf (the catalogue would take months to cycle). */
+    val megaStones: List<ShopOffer> by lazy { Items.megaStones.map { ShopOffer(it, MEGA_STONE_PRICE) } }
+
     fun shelf(day: Long): List<ShopOffer> = catalogue.shuffled(Random(day * 2_654_435_761L + 17)).take(SHELF_SIZE)
 
-    fun onSale(day: Long): List<ShopOffer> = fixed + shelf(day)
+    fun onSale(day: Long): List<ShopOffer> = fixed + megaStones + shelf(day)
 
     fun offer(day: Long, itemId: String): ShopOffer? = onSale(day).firstOrNull { it.itemId == itemId }
 }

@@ -339,6 +339,50 @@ class WorldStoreTest {
         assertNull(store.worldRecommend("no-such-dungeon", 1))
     }
 
+    private val json = kotlinx.serialization.json.Json { encodeDefaults = true; ignoreUnknownKeys = true }
+
+    private fun storeWith(clock: Clock, world: app.pokeplan.world.WorldData): GameStore {
+        val storage = MemoryStorage()
+        val first = GameStore(storage, clock, TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }
+        storage.text = json.encodeToString(AppData.serializer(), first.data.copy(world = world))
+        return GameStore(storage, clock, TimeZone.UTC, Random(5))
+    }
+
+    @Test
+    fun galarsRegionalBirdsJoinAsTheirOwnForms() {
+        val store = storeWith(Clock(), app.pokeplan.world.WorldData(
+            xp = 1_000_000,
+            clears = mapOf("slumbering-weald" to 3, "dusty-bowl" to 3, "galar-mine-2" to 3),
+        ))
+        store.worldSettle()
+        val birds = store.data.player.pokemon.filter { it.speciesId in setOf(144, 145, 146) }
+        assertEquals(setOf("articuno-galar", "zapdos-galar", "moltres-galar"), birds.map { it.formIdentifier }.toSet())
+        assertEquals(setOf("galar-articuno", "galar-zapdos", "galar-moltres"), store.data.world.legends)
+        store.worldSettle()
+        assertEquals(3, store.data.player.pokemon.count { it.speciesId in setOf(144, 145, 146) }, "given once")
+    }
+
+    @Test
+    fun aGoldTreasureBoxCanHoldAMegaStone() {
+        val clock = Clock()
+        val store = storeWith(clock, app.pokeplan.world.WorldData(xp = 1, treasure = mapOf(3 to 60)))
+        val found = mutableSetOf<String>()
+        repeat(60) { clock.millis += 1_000; found += store.worldOpenTreasure(3).keys.filter { it.startsWith("mega-stone-") } }
+        assertTrue(found.isNotEmpty(), "a gold box holds a Mega Stone sometimes")
+        found.forEach { assertEquals(1, store.data.player.inventory[it], it) }
+    }
+
+    @Test
+    fun aRegionalFindRecruitsTheRegionsForm() {
+        val store = storeWith(Clock(), app.pokeplan.world.WorldData(
+            finds = listOf(app.pokeplan.world.Find(19, "verdant-cavern", 1, 0L, "rattata-alola")),
+            discovered = setOf(19),
+        ))
+        val mon = assertNotNull(store.worldRecruit(0))
+        assertEquals("rattata-alola", mon.formIdentifier)
+        assertTrue(store.data.player.pokemon.any { it.id == mon.id && it.formIdentifier == "rattata-alola" })
+    }
+
     @Test
     fun replaceTeamTakesThePicksFromTheirPlacesAndRefusesWhileTheTeamIsOut() {
         val store = store()

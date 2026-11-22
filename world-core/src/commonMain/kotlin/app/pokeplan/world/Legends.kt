@@ -14,6 +14,8 @@ data class LegendQuest(
     val types: Set<PokemonType> = emptySet(),
     val findPermille: Int = 0,
     val treasurePercent: Int = 0,
+    /** The regional form this quest grants, when it is not the species' default form. */
+    val form: String? = null,
 )
 
 fun LegendQuest.bonusText(): String {
@@ -54,6 +56,9 @@ object Legends {
         LegendQuest("galar-zacian", 888, "Zacian", WorldLayer.GALAR, "route-10", 3, false, "The sword's old hero waits where the snow is deepest. Clear Route 10 three times.", setOf(PokemonType.FAIRY)),
         LegendQuest("galar-zamazenta", 889, "Zamazenta", WorldLayer.GALAR, "giants-seat", 3, false, "The shield's old hero waits at Giant's Seat. Clear it three times.", setOf(PokemonType.FIGHTING)),
         LegendQuest("galar-eternatus", 890, "Eternatus", WorldLayer.GALAR, "energy-plant", 1, true, "Galar's Guardian waits in the Energy Plant.", setOf(PokemonType.POISON), treasurePercent = 3),
+        LegendQuest("galar-articuno", 144, "Articuno", WorldLayer.GALAR, "slumbering-weald", 3, false, "A ghostly blue flame haunts the Slumbering Weald: Galar's Articuno. Clear it three times.", setOf(PokemonType.PSYCHIC), findPermille = 5, form = "articuno-galar"),
+        LegendQuest("galar-zapdos", 145, "Zapdos", WorldLayer.GALAR, "dusty-bowl", 3, false, "A fighting bird's cry rolls over the Dusty Bowl: Galar's Zapdos. Clear it three times.", setOf(PokemonType.FIGHTING), findPermille = 5, form = "zapdos-galar"),
+        LegendQuest("galar-moltres", 146, "Moltres", WorldLayer.GALAR, "galar-mine-2", 3, false, "A dark bird circles Galar Mine No. 2: Galar's Moltres. Clear it three times.", setOf(PokemonType.DARK), treasurePercent = 3, form = "moltres-galar"),
         LegendQuest("paldea-koraidon", 1007, "Koraidon", WorldLayer.PALDEA, "socarrat-trail", 3, false, "An old partner runs the Socarrat Trail. Clear it three times.", setOf(PokemonType.DRAGON)),
         LegendQuest("paldea-miraidon", 1008, "Miraidon", WorldLayer.PALDEA, "zero-lab", 3, false, "A future partner hums inside the Zero Lab. Clear it three times.", setOf(PokemonType.ELECTRIC)),
         LegendQuest("paldea-terapagos", 1024, "Terapagos", WorldLayer.PALDEA, "area-zero", 1, true, "Paldea's Guardian waits at the bottom of Area Zero.", setOf(PokemonType.NORMAL), treasurePercent = 3),

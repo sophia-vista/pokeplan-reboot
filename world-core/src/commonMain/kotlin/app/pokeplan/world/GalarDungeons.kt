@@ -10,7 +10,7 @@ object GalarDungeons {
         DungeonDef(
             "wild-area", "The Wild Area", WorldRegion.GREENLANDS, floors = 8, favored = setOf(PokemonType.GRASS, PokemonType.NORMAL, PokemonType.BUG),
             baseFloorSeconds = 2880, needs = ExplorerRank.NORMAL, layer = G, chapter = 1,
-            wild = listOf(WildEntry(819, 5), WildEntry(831, 5), WildEntry(821, 4), WildEntry(109, 3, fromFloor = 2), WildEntry(835, 3), WildEntry(827, 3, fromFloor = 2), WildEntry(10, 3), WildEntry(736, 2, fromFloor = 3), WildEntry(759, 2, fromFloor = 4), WildEntry(822, 1, fromFloor = 6)),
+            wild = listOf(WildEntry(819, 5), WildEntry(831, 5), WildEntry(821, 4), WildEntry(109, 3, fromFloor = 2), WildEntry(835, 3), WildEntry(827, 3, fromFloor = 2), WildEntry(10, 3), WildEntry(736, 2, fromFloor = 3), WildEntry(759, 2, fromFloor = 4), WildEntry(822, 1, fromFloor = 6), WildEntry(52, 2, fromFloor = 2), WildEntry(79, 2, fromFloor = 4), WildEntry(83, 2, fromFloor = 3), WildEntry(263, 2, fromFloor = 2)),
             milestones = mapOf(4 to MilestoneReward(Items.berry("sweet"), 2), 8 to MilestoneReward(Items.RARE_CANDY, 2, poke = 200)),
         ),
         DungeonDef(
@@ -22,13 +22,13 @@ object GalarDungeons {
         DungeonDef(
             "glimwood-tangle", "Glimwood Tangle", WorldRegion.GREENLANDS, floors = 10, favored = setOf(PokemonType.FAIRY, PokemonType.GRASS, PokemonType.POISON),
             baseFloorSeconds = 4320, needs = ExplorerRank.BRONZE, layer = G, chapter = 2,
-            wild = listOf(WildEntry(755, 5), WildEntry(856, 4), WildEntry(859, 4), WildEntry(173, 3), WildEntry(840, 3), WildEntry(590, 3), WildEntry(546, 3), WildEntry(761, 2, fromFloor = 4), WildEntry(742, 2, fromFloor = 4), WildEntry(857, 2, fromFloor = 7), WildEntry(860, 2, fromFloor = 7), WildEntry(315, 2, fromFloor = 5)),
+            wild = listOf(WildEntry(755, 5), WildEntry(856, 4), WildEntry(859, 4), WildEntry(173, 3), WildEntry(840, 3), WildEntry(590, 3), WildEntry(546, 3), WildEntry(761, 2, fromFloor = 4), WildEntry(742, 2, fromFloor = 4), WildEntry(857, 2, fromFloor = 7), WildEntry(860, 2, fromFloor = 7), WildEntry(315, 2, fromFloor = 5), WildEntry(77, 2, fromFloor = 3)),
             milestones = mapOf(5 to MilestoneReward(Items.berry("sour"), 3), 10 to MilestoneReward(Items.RARE_CANDY, 3, poke = 400)),
         ),
         DungeonDef(
             "dusty-bowl", "Dusty Bowl", WorldRegion.ANCIENT, floors = 12, favored = setOf(PokemonType.GROUND, PokemonType.GHOST, PokemonType.ROCK),
             baseFloorSeconds = 5760, needs = ExplorerRank.SILVER, layer = G, chapter = 3,
-            wild = listOf(WildEntry(562, 5), WildEntry(343, 4), WildEntry(449, 3), WildEntry(328, 3), WildEntry(843, 4), WildEntry(874, 2, fromFloor = 6), WildEntry(622, 3, fromFloor = 3), WildEntry(551, 3), WildEntry(749, 3), WildEntry(450, 1, fromFloor = 9)),
+            wild = listOf(WildEntry(562, 5), WildEntry(343, 4), WildEntry(449, 3), WildEntry(328, 3), WildEntry(843, 4), WildEntry(874, 2, fromFloor = 6), WildEntry(622, 3, fromFloor = 3), WildEntry(551, 3), WildEntry(749, 3), WildEntry(450, 1, fromFloor = 9), WildEntry(222, 2, fromFloor = 4), WildEntry(618, 2, fromFloor = 4)),
             milestones = mapOf(6 to MilestoneReward(Items.berry("bitter"), 3), 12 to MilestoneReward(Items.RARE_CANDY, 3, poke = 600)),
         ),
         DungeonDef(
@@ -40,7 +40,7 @@ object GalarDungeons {
         DungeonDef(
             "route-10", "Route 10", WorldRegion.FROZEN, floors = 16, favored = setOf(PokemonType.ICE, PokemonType.STEEL, PokemonType.ROCK),
             baseFloorSeconds = 9000, needs = ExplorerRank.GOLD, layer = G, chapter = 4,
-            wild = listOf(WildEntry(439, 5), WildEntry(872, 4), WildEntry(361, 4), WildEntry(712, 3), WildEntry(875, 2, fromFloor = 4), WildEntry(582, 3), WildEntry(459, 3), WildEntry(613, 3), WildEntry(215, 2, fromFloor = 5), WildEntry(220, 3), WildEntry(614, 1, fromFloor = 9), WildEntry(866, 1, fromFloor = 10), WildEntry(713, 1, fromFloor = 11)),
+            wild = listOf(WildEntry(439, 5), WildEntry(872, 4), WildEntry(361, 4), WildEntry(712, 3), WildEntry(875, 2, fromFloor = 4), WildEntry(582, 3), WildEntry(459, 3), WildEntry(613, 3), WildEntry(215, 2, fromFloor = 5), WildEntry(220, 3), WildEntry(614, 1, fromFloor = 9), WildEntry(866, 1, fromFloor = 10), WildEntry(713, 1, fromFloor = 11), WildEntry(554, 2, fromFloor = 4)),
             milestones = mapOf(8 to MilestoneReward(Items.berry("dry"), 4), 16 to MilestoneReward(Items.RARE_CANDY, 5, poke = 1_400)),
         ),
         DungeonDef(

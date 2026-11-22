@@ -2,6 +2,7 @@ package app.pokeplan.core.pokemon
 
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.EvolutionKind
+import app.pokeplan.core.dex.FormKind
 import app.pokeplan.core.dex.PokemonType
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
@@ -38,6 +39,20 @@ object Items {
     fun lure(type: PokemonType) = "lure-${type.name.lowercase()}"
     fun teraShard(type: PokemonType) = "tera-shard-${type.name.lowercase()}"
     fun megaStone(formIdentifier: String) = "mega-stone-$formIdentifier"
+
+    fun megaStoneForm(id: String) = Dex.form(id.removePrefix("mega-stone-"))
+
+    /** Every Mega form the form dex counts, as the stone that shows it (Mega, Primal and Mega Rayquaza). */
+    val megaStones: List<String> by lazy {
+        Dex.forms.filter { it.kind == FormKind.MEGA }.map { megaStone(it.identifier) }.sorted()
+    }
+
+    private fun megaStoneName(id: String): String = when (id) {
+        megaStone("kyogre-primal") -> "Blue Orb"
+        megaStone("groudon-primal") -> "Red Orb"
+        megaStone("rayquaza-mega") -> "Mega Rayquaza Stone"
+        else -> megaStoneForm(id)?.let { "${it.name} Stone" } ?: pretty(id)
+    }
 
     private val special = mapOf(
         RARE_CANDY to ("Exp. Candy" to ItemCategory.CANDY),
@@ -91,7 +106,10 @@ object Items {
         else -> null
     }
 
-    fun get(id: String): Item? = category(id)?.let { Item(id, special[id]?.first ?: pretty(id), it) }
+    fun get(id: String): Item? = category(id)?.let {
+        val name = special[id]?.first ?: if (id.startsWith("mega-stone-")) megaStoneName(id) else pretty(id)
+        Item(id, name, it)
+    }
 
     fun name(id: String): String = get(id)?.name ?: pretty(id)
 }

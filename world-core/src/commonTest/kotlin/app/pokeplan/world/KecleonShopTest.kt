@@ -1,5 +1,6 @@
 package app.pokeplan.world
 
+import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,6 +17,20 @@ class KecleonShopTest {
             assertNotNull(KecleonShop.offer(day, Items.LINK_CORD))
             assertNotNull(KecleonShop.offer(day, Items.EVERSTONE))
         }
+    }
+
+    @Test
+    fun everyMegaStoneIsAlwaysSoldOnItsOwnShelf() {
+        val stones = Items.megaStones
+        assertTrue(stones.size >= 90, "${stones.size} stones")
+        assertEquals(stones.toSet(), KecleonShop.megaStones.map { it.itemId }.toSet())
+        assertEquals(stones.size, KecleonShop.megaStones.size, "one offer per stone")
+        stones.forEach { id ->
+            assertEquals(KecleonShop.MEGA_STONE_PRICE, KecleonShop.offer(12, id)?.price, id)
+            assertEquals(ItemCategory.FORM, Items.category(id), id)
+            assertTrue(Items.megaStoneForm(id) != null, id)
+        }
+        assertTrue(KecleonShop.catalogue.none { c -> c.itemId in stones }, "the shelf would take months to cycle")
     }
 
     @Test
