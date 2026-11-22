@@ -47,3 +47,10 @@ Checked against the code (the dump numbering equals these ids):
 - **No trigger found, so unverified:** 311, 405, 414 (and the guesses 342, 343, 353, 354, 356,
   406, 421, 455, 457, 466, 468, 470, 471, 473, 478, 516 that only reach scripts, moves or
   cutscenes). Treat as "sounds plausible", not "is the cue for".
+
+## What the app's UI sounds map to, and how sure that is
+
+`assets/sfx/provenance.tsv` lists every sound the app uses (`SOUNDS` in `tools/sprites/convert_pmd_sfx.py`), the Red
+Rescue Team song id it comes from, and whether the owner named that id by ear (`owner-named`) or it was picked by the
+clip's length and pitch contour and still needs a listen (`guessed`). The script rewrites the file on every run, so the
+two can never drift apart. A `guessed` row is a lead, not a definition: swap it only after hearing the clip.
