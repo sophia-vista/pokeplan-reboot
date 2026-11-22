@@ -110,6 +110,16 @@ The release workflow runs in one concurrency group (`latest-apk`) with `cancel-i
 
 Documented in `CLAUDE.md Layout`.
 
+### The update manifest beside the APK
+
+The rolling release carries `update.json` as well as `pokeplan.apk`: version, build, asset name, size, SHA-256, commit and
+date. It is a separate asset so the app can learn of a build without downloading 120 MB and without the GitHub API's
+unauthenticated rate limit, and it is attached under the fixed tag `latest`, which every merge deletes and recreates
+(the asset URL stays the same). `pokeplan.apk` itself is never renamed, because the app builds its download URL from
+that name. The repository is public, so the app reads both without a token; making it private again would need an
+authentication path before the updater could work. The manifest is also attached to each version's own `vX.Y.Z`
+release.
+
 ## `build.gradle.kts`
 
 ### Test logging in root build
