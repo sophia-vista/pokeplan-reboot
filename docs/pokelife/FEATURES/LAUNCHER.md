@@ -128,7 +128,7 @@ Provide app drawer, global search, global module navigation, Pokémon collection
 
 ### 5.3 App drawer
 
-Support installed applications, search, alphabetical ordering, optional categories, user-created folders, automatic categorization with manual overrides, hidden applications, pinning and application information/uninstall routes where Android permits. Usage-based suggestions are optional and require explicit opt-in if they depend on Usage Access. External applications remain first-class; PokéLife must not make its own apps artificially privileged.
+Support installed applications, search, alphabetical ordering, optional categories (Games, Messages and calls, Social, Music, video and photos, Productivity, Money, Health and fitness, Shopping, Maps and travel, News, Tools and system, and Other, taken from each app's declared Android category), user-created folders, automatic categorization with manual overrides, hidden applications, pinning and application information/uninstall routes where Android permits. Usage-based suggestions are optional and require explicit opt-in if they depend on Usage Access. External applications remain first-class; PokéLife must not make its own apps artificially privileged.
 
 ### 5.4 Folders and shortcuts
 
