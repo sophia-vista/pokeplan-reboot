@@ -3,9 +3,7 @@ package app.pokeplan.plan
 import kotlinx.datetime.LocalDate
 import kotlin.random.Random
 
-/** "Pick for me": a random task from today's list, for when choosing is the hard part. */
 object PickForMe {
-    /** Taking the pick earns a small bonus on the task's candies (the engine's `RewardEngine.PICKED_BONUS`). *(tune)* */
     const val BONUS_MULTIPLIER = 1.10
 
     data class Pick(val task: Task, val bonusMultiplier: Double)
@@ -17,7 +15,6 @@ object PickForMe {
     }
 }
 
-/** A small action the app suggests each day; each is worth a berry and a few Rare Candies. */
 data class MiniQuest(val id: String, val text: String, val kind: Kind = Kind.PLAIN) {
     enum class Kind { PLAIN, AVOIDED_TASK }
 }
@@ -26,14 +23,11 @@ object MiniQuests {
     const val PER_DAY = 3
     const val REROLLS_PER_DAY = 1
 
-    /** Finishing all of a day's quests adds a small bonus. *(tune)* */
     const val ALL_THREE_BONUS_BERRIES = 1
 
-    /** Rare Candies for each quest, and the bonus for all three. *(tune)* */
     const val RARE_CANDIES = 2
     const val ALL_THREE_BONUS_CANDIES = 5
 
-    /** "Pet your buddy": petting ticks it by itself. */
     const val PET_QUEST = "pet"
 
     val pool: List<MiniQuest> = listOf(
@@ -69,7 +63,6 @@ object MiniQuests {
         MiniQuest("smile", "Do something that makes you smile"),
     )
 
-    /** The day's quests: the same for everyone on a date. A reroll gives three others, none of the first three again. */
     fun forDay(date: LocalDate, rerolled: Boolean = false): List<MiniQuest> {
         val first = pick(date, 0, emptySet())
         return if (rerolled) pick(date, 17, first.map { it.id }.toSet()) else first

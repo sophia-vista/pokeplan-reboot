@@ -18,7 +18,7 @@ class StorySoundTest {
     @Test
     fun everySoundHasItsFile() {
         val dir = assetsDir()
-        Sfx.entries.filter { !it.file.startsWith("jingle-") } // the Explorers of Sky jingles are in assets/sky-sfx, which SfxAssetsTest checks.forEach { assertTrue(File(dir, it.file + ".ogg").exists(), "${it.name}: ${it.file}.ogg") }
+        Sfx.entries.filter { !it.file.startsWith("jingle-") }
     }
 
     @Test
@@ -75,12 +75,10 @@ class StorySoundTest {
         }
         assertEquals(CryVoice.NEUTRAL, CryVoice.mood(Expression.NORMAL))
         assertTrue(CryVoice.mood(Expression.JOYOUS).pitch > 1f && CryVoice.mood(Expression.SAD).pitch < 1f && CryVoice.mood(Expression.SAD).speed < 1f)
-        // The levels of the games' sound design: default 100%, loud 120%, low 80%, injured 95%, seriously injured 85%.
         assertEquals(listOf(1f, 1.2f, 0.8f, 0.95f, 0.85f), CryVoice.Condition.entries.map { it.gain })
         assertTrue(CryVoice.mood(Expression.ANGRY).gain == CryVoice.Condition.LOUD.gain && CryVoice.mood(Expression.SAD).gain == CryVoice.Condition.LOW.gain)
         assertTrue(CryVoice.of("x", Expression.NORMAL, CryVoice.Distance.FAR).gain < CryVoice.of("x", Expression.NORMAL, CryVoice.Distance.MEDIUM).gain)
         assertTrue(CryVoice.of("x", Expression.JOYOUS, CryVoice.Distance.NEAR, CryVoice.Condition.LOUD).gain <= CryVoice.LOUD, "never past the loudest")
-        // However it feels, it is still the cry: never far from the recording.
         Expression.entries.forEach { e ->
             val v = CryVoice.of("x", e)
             assertTrue(v.pitch in CryVoice.MIN..CryVoice.MAX && v.speed in CryVoice.MIN..CryVoice.MAX, "$e $v")

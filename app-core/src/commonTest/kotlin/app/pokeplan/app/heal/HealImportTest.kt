@@ -24,7 +24,6 @@ import app.pokeplan.app.World
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** Reading Health Connect (INTEGRATIONS_AND_PRIVACY.md 5.1, HEAL.md 10): previewed, idempotent, provenance-keeping, never a reward, and never touching what the player wrote. */
 class HealImportTest {
     private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
     private class Spy(val inner: GameStore) : World {

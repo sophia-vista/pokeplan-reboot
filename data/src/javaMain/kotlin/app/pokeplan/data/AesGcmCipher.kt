@@ -5,11 +5,6 @@ import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-/**
- * AES-256-GCM with a fresh random IV for every text, the IV chosen by the provider (the Android Keystore refuses an IV the caller picks), and a fixed
- * context string as associated data so a sealed text from another use of the same key does not open here. The text is `m1.` and the URL-safe Base64 of
- * IV, ciphertext and tag. The key comes from the caller: the Keystore on Android, a fixed test key on the JVM.
- */
 class AesGcmCipher(private val key: SecretKey, private val context: String = "pokelife-mint") : RowCipher {
     override fun seal(plain: String): String {
         val c = Cipher.getInstance(TRANSFORM)

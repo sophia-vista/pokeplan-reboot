@@ -1,9 +1,5 @@
 package app.pokeplan.core.dex
 
-/**
- * Species the source data does not flag as legendary but that are treated as legendary-class:
- * Ultra Beasts and Paradox Pokémon. They are quest rewards, never egg drops.
- */
 object SpecialSpecies {
     val ultraBeasts: Set<String> = setOf(
         "nihilego", "buzzwole", "pheromosa", "xurkitree", "celesteela", "kartana",

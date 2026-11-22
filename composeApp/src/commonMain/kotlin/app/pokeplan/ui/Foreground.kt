@@ -18,17 +18,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 
-/**
- * Whether the app is in sight (started, not stopped). A loop that only paints or polls for the screen should run while this is true:
- * a stopped Activity keeps its composition, so a `while (true)` in a `LaunchedEffect` would otherwise keep waking the CPU in the background.
- */
 @Composable
 internal fun rememberInForeground(): Boolean {
     val state by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     return state.isAtLeast(Lifecycle.State.STARTED)
 }
 
-/** Calls [onChange] with whether this element overlaps the window, whenever that changes, so what it shows can stop moving when it is scrolled out of sight. */
 @Composable
 internal fun Modifier.onScreen(onChange: (Boolean) -> Unit): Modifier {
     val window = LocalWindowInfo.current.containerSize
@@ -39,10 +34,6 @@ internal fun Modifier.onScreen(onChange: (Boolean) -> Unit): Modifier {
     }
 }
 
-/**
- * Seconds that pass only while [running]: one frame callback at a time, and none at all when it is false. Read the value in a draw or layout
- * block (`{ seconds.value }`) so a frame redraws or re-lays-out instead of recomposing the screen. It carries on from where it stopped.
- */
 @Composable
 internal fun rememberRunningSeconds(running: Boolean): State<Float> {
     val seconds = remember { mutableFloatStateOf(0f) }

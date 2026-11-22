@@ -28,7 +28,6 @@ import app.pokeplan.app.reminders.ReminderSnooze
 
 private fun LocalDate.plusDays(n: Int) = LocalDate.fromEpochDays(toEpochDays() + n)
 
-/** Bill reminders (MINT.md section 12). Synthetic bills and figures only. */
 class MintRemindersTest {
     private val utc = TimeZone.UTC
     private val day = LocalDate(2026, 11, 7)
@@ -51,7 +50,6 @@ class MintRemindersTest {
         val r = MintReminders.upcoming(mint(days = 1, hour = 9, bills = arrayOf(water)), app, now, utc)
         assertEquals(listOf(at(day.plusDays(1), 9)), r.map { it.atMillis }, "one day before the due day, at 9")
         assertEquals(listOf(day.plusDays(2)), r.map { it.dueDay })
-        // On the day itself, and a week ahead, and a reminder that would already be past is not set.
         assertEquals(listOf(at(day.plusDays(2), 9)), MintReminders.upcoming(mint(days = 0, bills = arrayOf(water)), app, now, utc).map { it.atMillis })
         assertTrue(MintReminders.upcoming(mint(days = 7, bills = arrayOf(water)), app, now, utc).isEmpty(), "a week before is already past")
     }

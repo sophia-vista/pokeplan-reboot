@@ -26,11 +26,6 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.plan.monthGrid
 import app.pokeplan.ui.pokemon.label
 
-/**
- * One date field for every module (design review, 11 November 2026): the days people reach for as keys ([presets], days back from
- * [today]), and "Pick a date" opening a month to tap, so a record can be made for any day and no date is ever typed as `2026-11-07`.
- * Days after [max] are dimmed and cannot be chosen (a payment is not made in the future); [min] likewise. [accent] colours the keys.
- */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun PixelDatePicker(
@@ -38,11 +33,6 @@ fun PixelDatePicker(
     presets: List<Pair<String, Int>> = listOf("Today" to 0, "Yesterday" to -1), max: LocalDate? = today, min: LocalDate? = null, mondayFirst: Boolean = true, initiallyOpen: Boolean = false,
 ) = PixelDateField(value, today, accent, { it?.let(onChange) }, modifier, presets, null, max, min, mondayFirst, initiallyOpen)
 
-/**
- * [PixelDatePicker] for a date that may be missing: with a [noneLabel] ("None", "No deadline") the field gets a key for no date and
- * [value] may be null. Without a limit ([max] and [min] null) any day can be chosen, for a due date or a warranty end. [pickLabel]
- * names the key that opens the month (Plan says "Pick a day").
- */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun PixelDateField(

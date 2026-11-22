@@ -2,17 +2,12 @@ package app.pokeplan.ui.launcher
 
 import kotlin.math.roundToInt
 
-/**
- * The pages widgets can stand on: the home page (over the town), Today, and up to three pages of the user's own (Page 3 to 5),
- * made and deleted in edit mode. Pages are saved by name; their order (any of the user's own may stand left of Home) is [LauncherPrefs.pageOrder].
- */
 enum class WidgetPage(val label: String) {
     HOME("Home"), TODAY("Today"), PAGE3("Page 3"), PAGE4("Page 4"), PAGE5("Page 5");
 
     companion object { const val MAX = 5; const val MIN = 2 }
 }
 
-/** How small, how large and how big at first a widget of a kind may be, in grid cells (4 columns wide; a row is [WidgetGrid.ROW_DP] tall, so heights are in rows). */
 class WidgetLimits(val minW: Int, val minH: Int, val maxW: Int, val maxH: Int, val defW: Int, val defH: Int)
 
 fun WidgetKind.limits(): WidgetLimits = when (this) {
@@ -27,33 +22,20 @@ fun WidgetKind.limits(): WidgetLimits = when (this) {
     WidgetKind.ANDROID -> WidgetLimits(1, 2, 4, 16, 4, 4)
 }
 
-/**
- * One widget on a page's grid: its [kind] (and a folder's name or an Android widget's id as [arg]), its top-left cell
- * ([col], [row]) and its size in cells ([w] wide, [h] tall). Rows grow downwards without end.
- */
 data class GridWidget(val page: WidgetPage, val kind: WidgetKind, val arg: String = "", val col: Int = 0, val row: Int = 0, val w: Int = 4, val h: Int = 2) {
-    /** The identity of a widget, whatever its place or size. */
     fun sameAs(o: GridWidget) = page == o.page && kind == o.kind && arg == o.arg
     val right: Int get() = col + w
     val bottom: Int get() = row + h
     fun overlaps(o: GridWidget) = page == o.page && col < o.right && o.col < right && row < o.bottom && o.row < bottom
 }
 
-/**
- * The layout rules of the launcher's widget grid (4 columns, like Smart Launcher's): where a new widget goes, moving one
- * (what it bumps moves down out of the way), resizing between its limits, and turning the old stacked layout into a grid.
- * Pure, so it is tested without a screen; the screens only draw it and report where a finger dropped a widget.
- */
 object WidgetGrid {
     const val COLUMNS = 4
 
-    /** A column's width in dp on a typical phone (a 360 dp screen less its margins), for sizing a widget before the grid is on screen to measure. */
     const val NOMINAL_COLUMN_DP = 82f
 
-    /** The margin kept round each widget inside its cells, in dp (the grid draws it as [CELL_GAP]). */
     const val CELL_GAP_DP = 4
 
-    /** One row, in dp: about a twelfth of a phone's width, so the old stacked layout (about 17 rows) fits one screen, and a half-width widget is not tall and thin. */
     const val ROW_DP = 36
 
     fun onPage(all: List<GridWidget>, page: WidgetPage) = all.filter { it.page == page }
@@ -64,10 +46,6 @@ object WidgetGrid {
         return w.copy(w = width, h = height, col = w.col.coerceIn(0, COLUMNS - width), row = maxOf(0, w.row))
     }
 
-    /**
-     * Makes room: keeping [fixed] where it is, any other widget it overlaps goes down below it, and what that bumps goes down
-     * in turn. Widgets are settled top to bottom, so the order they had is kept.
-     */
     private fun settle(all: List<GridWidget>, fixed: GridWidget): List<GridWidget> {
         val others = all.filterNot { it.sameAs(fixed) }.sortedWith(compareBy({ it.page }, { it.row }, { it.col }))
         val placed = mutableListOf(fixed)
@@ -84,7 +62,6 @@ object WidgetGrid {
         return placed.sortedWith(compareBy({ it.page }, { it.row }, { it.col }))
     }
 
-    /** Adds [widget] (its own size, within limits) in the first free spot of its page, scanning from the top left; none is added twice. */
     fun add(all: List<GridWidget>, widget: GridWidget): List<GridWidget> {
         if (all.any { it.sameAs(widget) }) return all
         val sized = clamped(widget)
@@ -100,49 +77,32 @@ object WidgetGrid {
 
     fun remove(all: List<GridWidget>, widget: GridWidget) = all.filterNot { it.sameAs(widget) }
 
-    /** Drops [widget] with its top-left cell at ([col], [row]); anything in the way goes down. */
     fun move(all: List<GridWidget>, widget: GridWidget, col: Int, row: Int): List<GridWidget> {
         val current = all.firstOrNull { it.sameAs(widget) } ?: return all
         return settle(all, clamped(current.copy(col = col, row = row)))
     }
 
-    /**
-     * Gives [widget] the size [w] by [h] cells, within its kind's limits (or [limits], which another app's widget takes from
-     * what its provider allows); it stays at its top-left cell (shifting left only to stay on the grid) and anything in the way goes down.
-     */
     fun resize(all: List<GridWidget>, widget: GridWidget, w: Int, h: Int, limits: WidgetLimits = widget.kind.limits()): List<GridWidget> {
         val current = all.firstOrNull { it.sameAs(widget) } ?: return all
         return settle(all, clamped(current.copy(w = w, h = h), limits))
     }
 
-    /**
-     * Moves [widget] to [page], keeping its column and row where they fit (anything it lands on goes down). Its identity
-     * includes its page, so the old copy is taken out first.
-     */
     fun toPage(all: List<GridWidget>, widget: GridWidget, page: WidgetPage): List<GridWidget> {
         val current = all.firstOrNull { it.sameAs(widget) } ?: return all
         if (current.page == page) return all
         return settle(all.filterNot { it.sameAs(current) }, clamped(current.copy(page = page)))
     }
 
-    /** The cell a widget lands on when a finger has carried it ([dxPx], [dyPx]) from where it stood, on a grid of [colPx] by [rowPx] cells. */
     fun droppedAt(w: GridWidget, dxPx: Float, dyPx: Float, colPx: Float, rowPx: Float): Pair<Int, Int> =
         (w.col + (dxPx / colPx).roundToInt()).coerceIn(0, COLUMNS - w.w) to maxOf(0, w.row + (dyPx / rowPx).roundToInt())
 
-    /** The size a widget takes when its corner handle has been dragged ([dxPx], [dyPx]), within its kind's limits. */
     fun resizedTo(w: GridWidget, dxPx: Float, dyPx: Float, colPx: Float, rowPx: Float, l: WidgetLimits = w.kind.limits()): Pair<Int, Int> {
         val width = (w.w + (dxPx / colPx).roundToInt()).coerceIn(l.minW, minOf(l.maxW, COLUMNS - w.col))
         return width to (w.h + (dyPx / rowPx).roundToInt()).coerceIn(l.minH, l.maxH)
     }
 
-    /** The rows a page needs: below its lowest widget. */
     fun rows(all: List<GridWidget>, page: WidgetPage) = onPage(all, page).maxOfOrNull { it.bottom } ?: 0
 
-    /**
-     * The grid for a launcher that has only the old stacked layout: each page's widgets keep their order, one under the
-     * other and full width; a widget's old size (Small, Medium, Large) becomes a height between its limits. On the home page
-     * the bottom widgets end at row [homeRows], as they sat at the foot of the screen, with the town between.
-     */
     fun fromSlots(slots: List<WidgetSlot>, homeRows: Int = 16): List<GridWidget> {
         fun heightOf(s: WidgetSlot): Int {
             val l = s.kind.limits()
@@ -165,7 +125,6 @@ object WidgetGrid {
     }
 }
 
-/** A grid widget as the old slot the widget bodies are drawn from: its size is Small at its least height, Large at its starting height or more, Medium between. */
 fun GridWidget.asSlot(): WidgetSlot {
     val l = kind.limits()
     val size = when { h >= l.defH -> WidgetSize.LARGE; h <= l.minH -> WidgetSize.SMALL; else -> WidgetSize.MEDIUM }

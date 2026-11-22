@@ -8,15 +8,6 @@ import app.pokeplan.world.story.Expression.NORMAL
 import app.pokeplan.world.story.Expression.SURPRISED
 import app.pokeplan.world.story.Expression.WORRIED
 
-/**
- * The opening of World: Mew's Unofficial Welcome (the code is the source of the story). A Mythical Pokémon's prank
- * is the tutorial: a chase out of town, a short first dungeon, a job, a team, and a test at dusk, after which Mew joins. It
- * replaces the old chapter 1 (the guild letter); the scenes are `intro-mew-*`. Mew is added to Finds by [MEW_JOINED] once
- * the episode is finished (GameStore.worldEpisodeDone), so replaying it never gives a second Mew.
- *
- * What the rest of the story leans on (keep it when rewriting): what Mew takes is the pair's lunch; Pelly keeps the request board
- * and Braviary the team register; every other arc begins with a Mythical turning up and ends with the pair walking back to this board.
- */
 object IntroMewChapter {
     private val buddy = buddyCharacter()
     private val mew = npc("mew", "Mew", 151)
@@ -157,6 +148,5 @@ object IntroMewChapter {
         emote("mew", "?")
     }
 
-    /** The story flag set when Mew has agreed to join; the episode's end then puts Mew in Finds, once. */
     const val MEW_JOINED = "intro-mew-joined"
 }

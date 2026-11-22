@@ -12,7 +12,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** A finished goal remembers the Plan party of that day for the Hall of Fame (PLAN.md section 9.1); it pays nothing extra. */
 class GoalHallOfFameTest {
     private class FakeClock(var millis: Long = 1_793_000_000_000L) : Clock { override fun nowMillis() = millis }
 
@@ -33,7 +32,6 @@ class GoalHallOfFameTest {
         assertNotNull(done.completedAtMillis)
         assertEquals(listOf(egg.form.id), done.hallOfFameParty.map { it.formId })
         assertEquals(egg.level, done.hallOfFameParty.single().level)
-        // The buddy is not in the party.
         assertTrue(s.data.player.pokemon.filter { it.partyId == PartyIds.PLAN && it.inParty }.size == 1)
     }
 }

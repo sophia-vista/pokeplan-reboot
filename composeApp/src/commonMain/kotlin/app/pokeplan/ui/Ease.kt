@@ -15,11 +15,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import app.pokeplan.ui.screens.LocalReduceMotion
 
-/**
- * The app's one set of easing curves; the default easings are not used. They are tuned by feel, so change them here and
- * everything follows. [Smooth] is for almost everything, [Out] for decorative entrances, [Spring] for things that pop (a
- * tiny overshoot) and [InOut] for symmetric moves and loops.
- */
 object Ease {
     val Smooth = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
     val Out = CubicBezierEasing(0.17f, 1f, 0.32f, 0.9999f)
@@ -27,11 +22,9 @@ object Ease {
     val InOut = CubicBezierEasing(0.66f, 0f, 0.34f, 1f)
 }
 
-/** The press response: a tap shrinks what was pressed to 98%, quickly, so it feels firm (not a collapse). */
 const val PRESS_SCALE = 0.98f
 const val PRESS_MS = 120
 
-/** Scales down to [PRESS_SCALE] while [source] is pressed; nothing under Reduce motion. */
 @Composable
 fun Modifier.pressScale(source: InteractionSource): Modifier {
     if (LocalReduceMotion.current) return this
@@ -41,10 +34,6 @@ fun Modifier.pressScale(source: InteractionSource): Modifier {
     return graphicsLayer { scaleX = scale.value; scaleY = scale.value }
 }
 
-/**
- * An entrance: the content rises 6 dp while it fades in over 280 ms on [Ease.Smooth], so it settles into place rather
- * than flicking on. (No blur: the art is crisp pixels, and a blur would smear it.) At once under Reduce motion.
- */
 @Composable
 fun Modifier.entrance(): Modifier {
     val calm = LocalReduceMotion.current

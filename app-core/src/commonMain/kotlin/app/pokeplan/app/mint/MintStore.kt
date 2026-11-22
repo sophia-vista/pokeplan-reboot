@@ -61,16 +61,6 @@ import app.pokeplan.app.storage.SavedDocument
 import app.pokeplan.app.storage.Storage
 import app.pokeplan.app.storage.newId
 
-/**
- * The Mint module on this device (docs/pokelife `MODULES/MINT.md`): its own save in its own [storage], apart from every other module's, kept by
- * `MintTables` in the live database. Everything in it is private: it reaches the shared world only through [world], with a [MintEvent] that carries
- * a stable id, the module, an opaque record reference, the broad kind and the time, and **never** an amount, a currency, an account, a merchant,
- * a category or a note.
- *
- * Only abstract organisation can earn, and only while Ledger Research is on: a reconciled account (paid once per account a day) and a finished
- * review (once a week). Spending, income, transfers, balances, budgets and bills never pay, whatever they say. A record is paid when it is created
- * and never again: the record keeps `paid`, and the game remembers the event id, so a restore or a replay can not pay twice.
- */
 class MintStore(
     storage: Storage,
     private val clock: Clock,
@@ -88,20 +78,16 @@ class MintStore(
     private val nowMillis: Long get() = clock.nowMillis()
     val today: LocalDate get() = nowMillis.toLocalDateTime(zone).date
 
-    /** Picks up a change another process made, without writing anything back; see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
-    /** Picks up what another store in this process (a widget, a notification) wrote; cheap when nothing was. */
     fun sync() = document.sync()
 
     private fun update(change: (MintData) -> MintData) = document.update(change)
 
-    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
     fun restore(snapshot: MintData) = update { snapshot }
 
     private fun newId(): String = newId(nowMillis, rng)
 
-    /** Noon of [day] on this phone, for a record made for a day other than today (it keeps its day whatever the zone changes). */
     fun noonOf(day: LocalDate): Long = day.atStartOfDayIn(zone).toEpochMilliseconds() + 12 * 3_600_000L
 
     private fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
@@ -109,7 +95,6 @@ class MintStore(
     private fun pay(kind: MintKind, recordId: String, streak: Int = 0): List<app.pokeplan.core.reward.Reward>? =
         if (!data.settings.progression) null else world.mint(MintEvent("mint:${kind.name.lowercase()}:$recordId", kind, nowMillis, recordId, streak = streak))
 
-    /** How many weeks in a row, this one included, had a paid review (the count that adds shiny rolls to a review's outbreak). Counts weeks only. */
     private fun reviewStreak(): Int {
         val weeks = data.reviews.filter { it.paid }.map { MintRules.weekStartOf(it.day, weekStart()) }.toSet()
         var week = MintRules.weekStartOf(today, weekStart()).minus(DatePeriod(days = 7))
@@ -118,10 +103,6 @@ class MintStore(
         return streak
     }
 
-    /**
-     * Pays the flat "logged a record" reward for [tx] (already saved) when [MintRules.logPays] allows, and marks it paid. The event holds no amount (MINT.md 16.2, 16.3).
-     * Returns the rewards, empty when nothing was paid.
-     */
     private fun payForLog(tx: Transaction): List<app.pokeplan.core.reward.Reward> {
         if (!MintRules.logPays(data, tx, today)) return emptyList()
         val rewards = pay(MintKind.LOGGED, tx.id) ?: return emptyList()
@@ -129,10 +110,7 @@ class MintStore(
         return rewards
     }
 
-    /** Every amount on a screen goes through this, so hiding values (MINT.md section 3.3) is one switch and covers all of Mint. */
     fun show(minor: Long, currency: String): String = app.pokeplan.mint.Money.format(minor, currency, data.settings.hideValues)
-
-    // --- accounts ----------------------------------------------------------------------------------------------------
 
     fun addAccount(
         name: String, type: AccountType, currency: String, openingMinor: Long = 0, institution: String = "", suffix: String = "",
@@ -160,10 +138,6 @@ class MintStore(
         return Logged(account)
     }
 
-    /**
-     * Keeps [base64Png] as the account's receive-money QR image, or removes it when empty (MINT.md 4.2). The caller has already shrunk the picture; it is checked
-     * for size and PNG form only, never decoded or read. Works on an archived account too; nothing else about the account changes and nothing leaves Mint.
-     */
     fun setReceiveQr(accountId: String, base64Png: String): Logged<FinancialAccount> {
         val old = data.accounts.firstOrNull { it.id == accountId } ?: return Logged(null, "That account is gone.")
         (MintRules.checkReceiveQr(base64Png) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -172,10 +146,6 @@ class MintStore(
         return Logged(next)
     }
 
-    /**
-     * Puts the accounts named in [orderedIds] in that order, in the slots those accounts already hold in the list (the others stay where they are), so a group or an
-     * account can be moved without touching the rest. The Accounts list shows the list's order (MINT.md 4.3). Refused (false) when an id is unknown or repeated.
-     */
     fun arrangeAccounts(orderedIds: List<String>): Boolean {
         if (orderedIds.toSet().size != orderedIds.size) return false
         val slots = data.accounts.withIndex().filter { it.value.id in orderedIds }.map { it.index }
@@ -189,17 +159,10 @@ class MintStore(
         return true
     }
 
-    /** Whether [id] has records that depend on its currency: a transaction, a reconciliation or a bill paid from it. */
     fun hasHistory(id: String): Boolean =
         data.transactions.any { it.accountId == id || it.toAccountId == id } || data.plans.any { it.accountId == id } ||
             data.creditStatements.any { it.accountId == id } || data.reconciliations.any { it.accountId == id } || data.bills.any { it.accountId == id }
 
-    /**
-     * Edits an account: its name, type (only to another type on the same side, an asset stays an asset and a liability a liability), institution, group, last
-     * digits and **opening balance** (a mistake made when the account was added; the balance is derived, so the shown balance moves by the difference and no
-     * record is rewritten). The **currency** can change only while the account has no history ([hasHistory]); with history it stays, because every record and
-     * bill linked to it is in that currency (MINT.md section 5.2). Nothing is paid, and nothing about the edit leaves Mint.
-     */
     fun updateAccount(a: FinancialAccount): Logged<FinancialAccount> {
         val old = data.accounts.firstOrNull { it.id == a.id } ?: return Logged(null, "That account is gone.")
         if ((data.plans.any { it.accountId == old.id } || data.creditStatements.any { it.accountId == old.id }) && !Installments.allowedFor(a.type))
@@ -230,11 +193,9 @@ class MintStore(
         return Logged(next)
     }
 
-    /** Active, archived (hidden from default views, history kept) or closed (takes no new records). Never touches a transaction. */
     fun setAccountStatus(id: String, status: AccountStatus) =
         update { d -> d.copy(accounts = d.accounts.map { if (it.id == id) it.copy(status = status) else it }) }
 
-    /** Deletes an account with no history; one with history is refused and should be archived instead (MINT.md section 4.6). Returns the reason, or null when deleted. */
     fun deleteAccount(id: String): String? {
         if (data.transactions.any { it.accountId == id || it.toAccountId == id } ||
             data.reconciliations.any { it.accountId == id } ||
@@ -248,8 +209,6 @@ class MintStore(
         ) }
         return null
     }
-
-    // --- categories --------------------------------------------------------------------------------------------------
 
     fun addCategory(name: String, kind: CategoryKind): Category? {
         val n = name.trim().take(MintRules.NAME_MAX)
@@ -266,7 +225,6 @@ class MintStore(
 
     fun setCategoryArchived(id: String, archived: Boolean) = update { d -> d.copy(categories = d.categories.map { if (it.id == id) it.copy(archived = archived) else it }) }
 
-    /** Deletes a category nothing uses; one in use is refused and should be archived (MINT.md section 6: no history is lost). Returns the reason, or null. */
     fun deleteCategory(id: String): String? {
         if (data.transactions.any { it.categoryId == id || it.splits.any { split -> split.categoryId == id } } ||
             data.budgets.any { it.categoryId == id } || data.bills.any { it.categoryId == id })
@@ -275,12 +233,6 @@ class MintStore(
         return null
     }
 
-    // --- transactions ------------------------------------------------------------------------------------------------
-
-    /**
-     * Saves one transaction. An amount is in minor units of the account's currency; a transfer is one record with two legs, so it can never be saved
-     * one-sided. Nothing here pays: money moving is never a reward (MINT.md section 16.2).
-     */
     fun record(
         type: TxType, amountMinor: Long, accountId: String, toAccountId: String? = null, categoryId: String? = null, payee: String = "", note: String = "",
         atMillis: Long = nowMillis, status: TxStatus = TxStatus.POSTED, up: Boolean = true, refundOf: String? = null, splits: List<TransactionSplit> = emptyList(), feeMinor: Long = 0,
@@ -298,7 +250,6 @@ class MintStore(
         return Logged(tx, rewards = payForLog(tx))
     }
 
-    /** Changes what was written down. The account's currency can not change under a record; a source of [TxSource.ADJUSTMENT] stays an adjustment. */
     fun updateTransaction(t: Transaction): Logged<Transaction> {
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
         val shaped = t.copy(
@@ -322,7 +273,6 @@ class MintStore(
         // A record an installment plan counts on keeps its type, amount and accounts; the plan is what changes (MINT.md 5.6A).
         if ((old.planId != null || old.planAllocations.isNotEmpty()) && (next.type != old.type || next.amountMinor != old.amountMinor || next.accountId != old.accountId || next.toAccountId != old.toAccountId))
             return Logged(null, "This record belongs to an installment plan. Change the plan instead.")
-        // Editing a record on an account that was since closed is allowed to keep its history readable; only the amount rules apply there.
         (MintRules.checkAmount(next.amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val open = data.copy(accounts = data.accounts.map { it.copy(status = AccountStatus.ACTIVE) })
         (MintRules.checkTransaction(open, next) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -337,16 +287,8 @@ class MintStore(
         return Logged(next)
     }
 
-    // --- interest earned by a deposit account (MINT.md 4.3E) ---------------------------------------------------------------------
-
-    /** The estimates waiting for the player: pending income records [accrueInterest] made, oldest first. */
     fun interestToReview(): List<Transaction> = data.transactions.filter { it.interestThrough != null && it.status == TxStatus.PENDING }.sortedBy { it.day }
 
-    /**
-     * Makes the estimates now due for every deposit account that earns interest (complete days only; a catch-up after days away is one record). Each is an income
-     * record in the Interest category: pending, so it waits for [confirmInterest], or posted at once for an account set to post without review. Nothing is paid
-     * (16.2). Safe to call as often as wanted: a period already made, in any status, is not made again. Returns how many were made.
-     */
     fun accrueInterest(): Int {
         var working = data
         val made = mutableListOf<Transaction>()
@@ -371,7 +313,6 @@ class MintStore(
         return made.size
     }
 
-    /** Posts an estimate, optionally at the amount the bank really credited. */
     fun confirmInterest(id: String, amountMinor: Long? = null): Logged<Transaction> {
         val old = data.transactions.firstOrNull { it.id == id && it.interestThrough != null && it.status == TxStatus.PENDING } ?: return Logged(null, "That estimate is gone.")
         if (amountMinor != null) (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -380,25 +321,18 @@ class MintStore(
         return Logged(next)
     }
 
-    /** Posts every estimate waiting, at its estimated amount. */
     fun confirmAllInterest(): Int = interestToReview().count { confirmInterest(it.id).record != null }
 
-    /** Leaves an estimate out (kept as a voided record so the same days are not estimated again). */
     fun skipInterest(id: String): Boolean {
         if (data.transactions.none { it.id == id && it.interestThrough != null && it.status == TxStatus.PENDING }) return false
         setStatus(id, TxStatus.VOIDED)
         return true
     }
 
-    // --- statement import (a user-assisted import of a CSV file; no provider is connected) -----------------------------------
-
-    /** What an import did, for the screen: the records added, and the rows left out because they were already here, looked like one of yours, or could not be read. */
     data class ImportResult(val batch: String?, val added: Int, val skipped: Int, val note: String)
 
-    /** One import as it stands now: the records still in it, derived from the records themselves (nothing else is kept). */
     data class ImportBatchInfo(val id: String, val label: String, val importedMillis: Long, val accountId: String, val count: Int, val unreviewed: Int)
 
-    /** Reads the file's text and proposes the columns, the date order and the preview for [accountId]; nothing is saved. [refused] is the reason, in words, when it can not be read at all. */
     fun previewStatement(text: String, accountId: String, columns: StatementImport.Columns? = null, order: StatementImport.DateOrder? = null): StatementPreview {
         val account = data.accounts.firstOrNull { it.id == accountId } ?: return StatementPreview(refused = "Choose an account first.")
         val table = when (val p = StatementImport.parse(text)) { is StatementImport.Parsed.Refused -> return StatementPreview(refused = p.reason); is StatementImport.Parsed.Table -> p.rows }
@@ -410,11 +344,6 @@ class MintStore(
         return StatementPreview(table = table, columns = cols, order = used, orderCertain = order != null || detected != null || dates.any { it.trim().length >= 4 && it.trim().take(4).all(Char::isDigit) }, preview = preview)
     }
 
-    /**
-     * Saves the rows of [preview] listed in [keep] (their line numbers) as posted transactions of the preview's account, in **one write**, each tagged with a new
-     * batch, [label] (the file's name) and its fingerprint, and marked unreviewed. A row whose fingerprint is already here is never added, so a retry or a second
-     * import of the same file changes nothing (idempotent). **Nothing is paid** and nothing leaves Mint: an import is not a reward event (MINT.md section 16.2).
-     */
     fun importStatement(preview: StatementImport.Preview, keep: Set<Int>, label: String): ImportResult {
         val account = data.accounts.firstOrNull { it.id == preview.account.id } ?: return ImportResult(null, 0, 0, "That account is gone.")
         if (account.status != AccountStatus.ACTIVE) return ImportResult(null, 0, 0, "That account is not open.")
@@ -436,19 +365,13 @@ class MintStore(
         return ImportResult(batch, added.size, preview.rows.size - added.size, "Added ${added.size} ${if (added.size == 1) "record" else "records"}.")
     }
 
-    /** The imports still holding records, newest first. */
     fun importBatches(): List<ImportBatchInfo> =
         data.transactions.filter { it.importBatch != null }.groupBy { it.importBatch!! }.map { (id, list) ->
             ImportBatchInfo(id, list.first().importLabel, list.first().createdMillis, list.first().accountId, list.size, list.count { it.unreviewed })
         }.sortedByDescending { it.importedMillis }
 
-    /** Marks every record of a batch as looked at (MINT.md 9.1); changes nothing else about them. */
     fun markBatchReviewed(batch: String) = update { d -> d.copy(transactions = d.transactions.map { if (it.importBatch == batch) it.copy(unreviewed = false) else it }) }
 
-    /**
-     * Removes **only** the records that one import added (INTEGRATIONS_AND_PRIVACY.md 10.3): a record the player wrote, a reconciliation and a bill stay. A bill payment
-     * or reconciliation that pointed to one of them loses only that link. Returns how many were removed.
-     */
     fun removeImportBatch(batch: String): Int {
         val ids = data.transactions.filter { it.importBatch == batch }.map { it.id }.toSet()
         if (ids.isEmpty()) return 0
@@ -462,7 +385,6 @@ class MintStore(
         return ids.size
     }
 
-    /** Pending, posted, excluded (kept in history, left out of spending) or voided (kept, counted nowhere). */
     fun setTransactionStatus(id: String, status: TxStatus): Boolean {
         if (data.transactions.none { it.id == id } || (status != TxStatus.POSTED && planOfPurchase(id) != null)) return false
         setStatus(id, status)
@@ -471,7 +393,6 @@ class MintStore(
 
     private fun setStatus(id: String, status: TxStatus) = update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) it.copy(status = status) else it }) }
 
-    /** The installment plan whose purchase record is [id], if any: that record cannot be deleted or voided while the plan exists (MINT.md 5.6A). */
     fun planOfPurchase(id: String): InstallmentPlan? = data.plans.firstOrNull { it.purchaseTxId != null && it.purchaseTxId == id }
 
     fun deleteTransaction(id: String): Boolean {
@@ -489,8 +410,6 @@ class MintStore(
         )
     }
 
-    // --- budgets -----------------------------------------------------------------------------------------------------
-
     fun addBudget(plannedMinor: Long, currency: String, period: BudgetPeriod, categoryId: String? = null): Logged<Budget> {
         (MintRules.checkAmount(plannedMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         (MintRules.checkCurrency(currency) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -502,7 +421,6 @@ class MintStore(
         return Logged(b)
     }
 
-    /** Changes a budget's planned amount and its period. Spending is derived, so nothing else moves; a second budget for the same category and period is refused. */
     fun updateBudget(id: String, plannedMinor: Long, period: BudgetPeriod): Logged<Budget> {
         val old = data.budgets.firstOrNull { it.id == id } ?: return Logged(null, "That budget is gone.")
         (MintRules.checkAmount(plannedMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -563,9 +481,6 @@ class MintStore(
     fun deleteSavingsTarget(id: String) =
         update { d -> d.copy(savingsTargets = d.savingsTargets.filterNot { it.id == id }) }
 
-    // --- bills -------------------------------------------------------------------------------------------------------
-
-    /** The days of a twice-a-month bill: 1 to 31, distinct, sorted, at most four; empty (15 and 30) for any other frequency or none given (MINT.md 8.3B). */
     private fun cleanDays(frequency: Frequency, days: List<Int>): List<Int> =
         if (frequency != Frequency.SEMI_MONTHLY) emptyList() else days.filter { it in 1..31 }.distinct().sorted().take(4).let { if (it == listOf(15, 30)) emptyList() else it }
 
@@ -621,10 +536,6 @@ class MintStore(
         return Logged(bill)
     }
 
-    /**
-     * Edits a bill's name, amount, account and category. The first due day and the frequency change only while no occurrence has been settled, so no
-     * past occurrence is rewritten (MINT.md section 8.3); with payments recorded they are kept as they were.
-     */
     fun updateBill(b: Bill): Logged<Bill> {
         val old = data.bills.firstOrNull { it.id == b.id } ?: return Logged(null, "That bill is gone.")
         if (b.name.isBlank()) return Logged(null, "Give the bill a name.")
@@ -641,10 +552,6 @@ class MintStore(
 
     fun deleteBill(id: String) = update { d -> d.copy(bills = d.bills.filterNot { it.id == id }, billPayments = d.billPayments.filterNot { it.billId == id }) }
 
-    /**
-     * Settles one occurrence: paid, partly paid or skipped. For an estimated bill (`Bill.estimate`, MINT.md 8.3B) the amount is only a guess, so any amount settles it as paid. **It creates no transaction** (MINT.md section 8.2); [txId] only links one the user chose.
-     * Settling again replaces the earlier settlement, so a mistake can be put right. A part payment that covers the whole expected amount is saved as paid.
-     */
     fun settle(billId: String, dueDay: LocalDate, status: SettleStatus, paidMinor: Long = 0, txId: String? = null, paidDay: LocalDate = today): Boolean {
         val bill = data.bills.firstOrNull { it.id == billId } ?: return false
         if (paidDay > today) return false
@@ -657,11 +564,6 @@ class MintStore(
         return true
     }
 
-    /**
-     * "Paid, record it" (MINT.md section 8.2): settles one occurrence as paid **and** writes the matching expense, linked both ways (the transaction's
-     * `billId` and due day, the payment's `txId`), in one save. The account is [accountId] or else the bill's own; the amount is [paidMinor]. Nothing is
-     * written when the bill or account is missing or closed, the currencies differ, or the amount is refused. A bill settled without this still works.
-     */
     fun settleAndRecord(billId: String, dueDay: LocalDate, paidMinor: Long, accountId: String? = null, paidDay: LocalDate = today): Logged<Transaction> {
         val bill = data.bills.firstOrNull { it.id == billId } ?: return Logged(null, "That bill is gone.")
         if (paidDay > today) return Logged(null, "A payment cannot be dated in the future.")
@@ -676,12 +578,8 @@ class MintStore(
         return Logged(tx, rewards = payForLog(tx))
     }
 
-    /** Takes a settlement back, so the occurrence is upcoming, due or overdue again. */
     fun unsettle(billId: String, dueDay: LocalDate) = update { d -> d.copy(billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay }) }
 
-    // --- credit lines, pay later and installment plans (MINT.md 5.6A) -----------------------------------------------------------
-
-    /** Every plan as it stands today, derived from the ledger. */
     fun planViews(): List<PlanView> = Installments.views(data, today)
 
     fun planView(planId: String): PlanView? = data.plans.firstOrNull { it.id == planId }?.let { Installments.view(data, it, today) }
@@ -696,12 +594,6 @@ class MintStore(
         return MintRules.checkTransaction(paymentData, tx)
     }
 
-    /**
-     * A purchase paid later (MINT.md 5.6A): writes **one** expense at the full [totalMinor] on the credit account, on [day], and the plan with its generated schedule,
-     * in one save. The outstanding rises by the price, the purchase counts in spending once, and nothing is repaid yet. The fee of each installment is recorded
-     * later, when it is billed or reached by a payment. A limit is information only, so a purchase beyond it is still recorded. A null [firstDue] is worked out
-     * from the account's statement and due days ([MonthlyBills.firstDue]) so the purchase lands on the account's next bill without the player typing a date.
-     */
     fun addPlanPurchase(
         accountId: String, name: String, totalMinor: Long, categoryId: String?, count: Int, every: PlanEvery, firstDue: LocalDate?, fee: FeeRule = FeeRule.None,
         feeKind: FeeKind = FeeKind.FEE, day: LocalDate = today,
@@ -724,11 +616,6 @@ class MintStore(
         return Logged(plan, rewards = payForLog(tx))
     }
 
-    /**
-     * Installments already owed (MINT.md 5.6A): a plan with no purchase record for a schedule that was running before tracking began. [rows] are the upcoming
-     * installments (due day, amount still owed, optional fee, in due-day order). Nothing is recorded as spending. With [addToStartingBalance] the account's
-     * starting balance owed (opening balance) rises by what the schedule asks, so the outstanding equals it; leave it off when the opening balance already holds that.
-     */
     fun addExistingPlan(accountId: String, name: String, rows: List<app.pokeplan.mint.Installment>, addToStartingBalance: Boolean = true, feeKind: FeeKind = FeeKind.FEE): Logged<InstallmentPlan> {
         val account = creditAccount(accountId) ?: return Logged(null, "Choose a credit card or pay later account that is open.")
         if (name.isBlank()) return Logged(null, "Give the installments a name.")
@@ -746,11 +633,6 @@ class MintStore(
         return Logged(plan)
     }
 
-    /**
-     * A repayment toward a plan (MINT.md 5.6A): one **transfer** from [fromAccountId] (the payment source) to the plan's account, so cash and the outstanding fall
-     * together and nothing is spent. Any amount up to what is still owed (a partial or an early payment); it is applied to the earliest installment first. Every
-     * installment it reaches whose fee is not yet recorded gets that fee recorded, dated [day], so the outstanding carries it before it is paid off.
-     */
     fun payPlan(planId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today): Logged<Transaction> {
         val view = planView(planId) ?: return Logged(null, "That plan is gone.")
         val plan = view.plan
@@ -768,25 +650,15 @@ class MintStore(
         return Logged(tx, rewards = payForLog(tx))
     }
 
-    /** The bills of a credit account that still have something owed, earliest month first (MINT.md 5.6C). */
     fun openBills(accountId: String): List<MonthlyBill> = MonthlyBills.open(data, accountId, today)
 
-    /** Every bill of a credit account, paid months too. */
     fun bills(accountId: String): List<MonthlyBill> = MonthlyBills.of(data, accountId, today)
 
-    /**
-     * A repayment of one monthly bill (MINT.md 5.6C): a transfer to the account allocated to that month's installments first; anything beyond the bill spills
-     * forward into the next bills, and anything beyond every scheduled balance is an ordinary repayment.
-     */
     fun payBill(accountId: String, month: BillMonth, amountMinor: Long, fromAccountId: String, day: LocalDate = today, feeMinor: Long = 0): Logged<Transaction> {
         if (openBills(accountId).none { it.month == month }) return Logged(null, "That bill has nothing left to pay.")
         return payPlans(accountId, amountMinor, fromAccountId, day, month, feeMinor)
     }
 
-    /**
-     * A repayment is allocated installment by installment in due-date order across every unpaid plan on the credit account, so it settles the earliest bill first
-     * (or [firstBill] first), never one purchase's whole schedule before another purchase's earlier month.
-     */
     fun payPlans(accountId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today, firstBill: BillMonth? = null, feeMinor: Long = 0): Logged<Transaction> {
         val to = creditAccount(accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
         val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
@@ -814,7 +686,6 @@ class MintStore(
     private fun feeRecord(plan: InstallmentPlan, no: Int, amount: Long, day: LocalDate, kind: FeeKind): Transaction =
         Transaction(newId(), TxType.FEE, amount, plan.currency, atMillis(day), day, plan.accountId, payee = plan.name.take(MintRules.NAME_MAX * 2), createdMillis = nowMillis, planId = plan.id, planNo = no, feeKind = kind)
 
-    /** "Bill it": records installment [no]'s fee (or interest) as a `FEE` record on [day] without a payment. Refused when it has no fee or is already recorded. */
     fun billInstallmentFee(planId: String, no: Int, day: LocalDate = today): Logged<Transaction> {
         val view = planView(planId) ?: return Logged(null, "That plan is gone.")
         val inst = view.installments.firstOrNull { it.no == no } ?: return Logged(null, "That installment is gone.")
@@ -827,7 +698,6 @@ class MintStore(
         return Logged(tx)
     }
 
-    /** A late fee for installment [no] (MINT.md 5.6A): a `FEE` record of kind late on the credit account; it raises the outstanding and is owed with that installment. */
     fun addLateFee(planId: String, no: Int, amountMinor: Long, day: LocalDate = today): Logged<Transaction> {
         val view = planView(planId) ?: return Logged(null, "That plan is gone.")
         if (view.installments.none { it.no == no }) return Logged(null, "That installment is gone.")
@@ -839,10 +709,6 @@ class MintStore(
         return Logged(tx)
     }
 
-    /**
-     * A refund on a plan's purchase (MINT.md 5.6A): one `REFUND` on the credit account, linked to the purchase, which lowers the outstanding and spending; it
-     * cancels the unpaid installments from the last one backwards. At most the price less what was refunded already.
-     */
     fun refundPlan(planId: String, amountMinor: Long, day: LocalDate = today): Logged<Transaction> {
         val view = planView(planId) ?: return Logged(null, "That plan is gone.")
         val plan = view.plan
@@ -857,10 +723,6 @@ class MintStore(
         return Logged(tx)
     }
 
-    /**
-     * Changes the due day or fee of an installment that is unpaid and whose fee is not recorded yet (MINT.md 5.6A); nothing that happened is rewritten. The
-     * installments stay in order of due day.
-     */
     fun updateInstallment(planId: String, no: Int, dueDay: LocalDate, feeMinor: Long): Boolean {
         val installment = planView(planId)?.installments?.firstOrNull { it.no == no } ?: return false
         return updateInstallment(planId, no, dueDay, installment.principalMinor, feeMinor)
@@ -891,7 +753,6 @@ class MintStore(
         return true
     }
 
-    /** The plans of [accountId] with their unpaid monthly installments moved onto the account's due day, and how many moved (see [alignInstallmentsToDueDay]). */
     private fun alignment(accountId: String): Pair<Map<String, InstallmentPlan>, Int> {
         val account = creditAccount(accountId, allowInactive = true)?.takeIf { it.dueDay in 1..31 } ?: return emptyMap<String, InstallmentPlan>() to 0
         var moved = 0
@@ -907,14 +768,8 @@ class MintStore(
         return changed to moved
     }
 
-    /** How many unpaid monthly installments are not on the account's due day. */
     fun misalignedInstallments(accountId: String): Int = alignment(accountId).second
 
-    /**
-     * Moves the unpaid installments of the account's monthly plans onto the account's due day (MINT.md 5.6C), so one bill has one due day: the player sets that day
-     * once on the account and does not edit each purchase. A plan is left alone when an installment already paid, billed or fined in that month would end up after
-     * a moved one. Returns how many installments moved.
-     */
     fun alignInstallmentsToDueDay(accountId: String): Int {
         val (changed, moved) = alignment(accountId)
         if (changed.isNotEmpty()) update { d -> d.copy(plans = d.plans.map { changed[it.id] ?: it }) }
@@ -968,7 +823,6 @@ class MintStore(
         return Logged(updated)
     }
 
-    /** Removes the plan and leaves every record it made (the purchase, fees, repayments, refunds) in place, unlinked; they are ordinary records again. */
     fun deletePlan(planId: String) = update { d ->
         d.copy(
             plans = d.plans.filterNot { it.id == planId },
@@ -979,7 +833,6 @@ class MintStore(
         )
     }
 
-    /** What an account did over a period: purchases, fees, interest, late fees, refunds and repayments (MINT.md 5.6A). */
     fun creditActivity(accountId: String, from: LocalDate, endExclusive: LocalDate): CreditActivity = Installments.activity(data, accountId, from, endExclusive)
 
     fun recordCreditStatement(
@@ -1025,16 +878,8 @@ class MintStore(
         return Logged(statement)
     }
 
-    // --- reconciliation and review (the only things that can pay) -----------------------------------------------------------
-
-    /** What Mint's records say the account holds now, for the reconcile screen to set beside the statement. */
     fun bookBalance(accountId: String): Long? = data.accounts.firstOrNull { it.id == accountId }?.let { MintRules.balance(data, it).postedMinor }
 
-    /**
-     * Reconciles an account with a [statementMinor] the user read off a statement or an app. A match is recorded as it is. A difference is recorded
-     * only when the user accepts it ([acceptAdjustment]), as an explicit adjustment record (MINT.md section 15.2, item 8); otherwise nothing is saved.
-     * It is paid by Ledger Research when that is on and the account has real history; the same account pays once a day.
-     */
     fun reconcile(accountId: String, statementMinor: Long, acceptAdjustment: Boolean = false): Logged<Reconciliation> {
         val account = data.accounts.firstOrNull { it.id == accountId } ?: return Logged(null, "That account is gone.")
         if (account.status != AccountStatus.ACTIVE) return Logged(null, "That account is not open.")
@@ -1056,7 +901,6 @@ class MintStore(
         return Logged(data.reconciliations.first { it.id == record.id }, rewards = rewards.orEmpty())
     }
 
-    /** Finishes the periodic review: one record with no figure in it. Paid once a week when Ledger Research is on and there is something to review. */
     fun finishReview(): Logged<ReviewRecord> {
         val record = ReviewRecord(newId(), today, nowMillis)
         val pays = MintRules.reviewPays(data, today, weekStart())
@@ -1066,82 +910,55 @@ class MintStore(
         return Logged(data.reviews.first { it.id == record.id }, rewards = rewards.orEmpty())
     }
 
-    // --- settings ------------------------------------------------------------------------------------------------------
-
     private fun settings(change: (MintSettings) -> MintSettings) = update { it.copy(settings = change(it.settings)) }
 
-    /** Turns Ledger Research (the reward) on or off. Off never touches a record and never hides a feature. */
     fun setProgression(on: Boolean) = settings { it.copy(progression = on) }
 
-    /** Hides every amount across Mint (MINT.md section 3.3). */
     fun setHideValues(on: Boolean) = settings { it.copy(hideValues = on) }
 
-    /** How far ahead the Overview and the widgets look for what is due (MINT.md 3.2B). */
     fun setOverviewWindow(window: app.pokeplan.mint.OverviewWindow) = settings { it.copy(overviewWindow = window) }
 
-    /** How much of a Pay later account the Overview's net position counts (MINT.md 3.2B). */
     fun setOverviewPayLater(count: app.pokeplan.mint.PayLaterCount) = settings { it.copy(overviewPayLater = count) }
 
-    /** Turns bill reminders on or off (MINT.md section 12). Off by default; turning them off never touches a bill. */
     fun setBillReminders(on: Boolean) = settings { it.copy(billReminders = on) }
 
-    /** How many days before the due day a reminder is for, 0 to [MAX_REMIND_DAYS]. */
     fun setBillReminderDays(days: Int) = settings { it.copy(billReminderDays = days.coerceIn(0, MAX_REMIND_DAYS)) }
 
-    /** The hour a reminder goes off, 0 to 23. */
     fun setBillReminderHour(hour: Int) = settings { it.copy(billReminderHour = hour.coerceIn(0, 23)) }
 
-    /** Whether a reminder names its bill (never an amount). */
     fun setBillReminderNames(on: Boolean) = settings { it.copy(billReminderNames = on) }
 
-    /** Lets one bill ask for a reminder, or not. */
     fun setBillRemind(billId: String, on: Boolean) = update { d -> d.copy(bills = d.bills.map { if (it.id == billId) it.copy(remind = on) else it }) }
 
-    /** Turns the optional access gate on or off. The caller has already proved the phone can ask for its screen lock; the gate holds no key and no password. */
     fun setGate(on: Boolean) = settings { it.copy(gate = on) }
 
-    /** Whether the built-in Philippine holidays count as days off for paydays (MINT.md 8.3B). */
     fun setBuiltInHolidays(on: Boolean) = settings { it.copy(builtInHolidays = on) }
 
-    /** Counts or stops counting one built-in holiday (for example one that was not observed that year). */
     fun setHolidayCounted(day: LocalDate, counted: Boolean) = settings { it.copy(holidaysIgnored = if (counted) it.holidaysIgnored - day else (it.holidaysIgnored + day).distinct().sorted()) }
 
-    /** Adds or removes a day off of the player's own (Eid, a proclaimed day); at most 200. */
     fun setDayOff(day: LocalDate, off: Boolean) = settings { it.copy(daysOff = if (off) (it.daysOff + day).distinct().sorted().takeLast(200) else it.daysOff - day) }
 
     fun setCurrency(code: String) = settings { if (MintRules.checkCurrency(code.trim().uppercase()) is Check.Ok) it.copy(currency = code.trim().uppercase()) else it }
 
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
 
-    // --- export and erase (one kind at a time, or all) ----------------------------------------------------------------------
-
-    /** The chosen kinds of record (all by default) as readable JSON, exactly as saved, amounts in minor units with their currency. Nothing of the game is in it. */
     fun export(kinds: Set<MintKinds> = MintKinds.entries.toSet()): String = MintExport.json(data, kinds)
 
-    /**
-     * Erases every record of [kind]. Erasing accounts takes the records that point at them with it (transactions, reconciliations); nothing else is
-     * touched: other kinds, the settings, Pokémon, Poké, the Bag and the other modules stay.
-     */
     fun erase(kind: MintKinds) = update { MintExport.without(it, kind) }
 
-    /** Erases all of MINT's records (not its settings, not what Ledger Research paid). Categories come back as the starting set. */
     fun eraseAll() = update { d -> tidy(MintKinds.entries.fold(d) { acc, k -> MintExport.without(acc, k) }) }
 
-    /** The full-device reset: MINT as new, its records and its settings (the starting categories come back). */
     fun resetAll() = update { tidy(MintData()) }
 
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
-        /** The furthest ahead of its due day a bill reminder may be set (a week). */
         const val MAX_REMIND_DAYS = 7
 
-        /** A document with no categories gets the starting set, with stable ids, so a fresh install can record an expense at once. */
         internal fun tidy(d: MintData): MintData = if (d.categories.isEmpty()) d.copy(categories = MintRules.seedCategories()) else d
     }
 }
 
-/** Export and erase by kind, pure and free of the game: one place that knows which fields of the document each kind is. */
 object MintExport {
     private val pretty = Json { encodeDefaults = true; prettyPrint = true }
 
@@ -1183,7 +1000,6 @@ object MintExport {
         MintKinds.REVIEWS -> d.copy(reconciliations = emptyList(), reviews = emptyList())
     }
 }
-/** What reading a statement file gave: the table, the columns and date order in use (guessed, or chosen), whether the order is certain, and the preview; or [refused], in words. */
 data class StatementPreview(
     val table: List<List<String>> = emptyList(),
     val columns: StatementImport.Columns = StatementImport.Columns(),

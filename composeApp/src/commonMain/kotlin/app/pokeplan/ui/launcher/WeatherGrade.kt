@@ -11,17 +11,7 @@ import app.pokeplan.ui.CacheBudget
 import app.pokeplan.ui.orNull
 import pokeplan.composeapp.generated.resources.Res
 
-/**
- * The colour grading of the dungeon's weather (pret/pmd-red `src/weather.c`, `src/bg_palette_buffer.c`, data/dungeon/colvec.inc, extracted to `assets/weather/ramps.tsv`
- * by `tools/weather/extract_ramps.py`): every colour of the dungeon's tile palettes goes through a table of 256 entries for each of red, green and blue that belongs to the
- * weather. Sandstorm lifts red and green and crushes blue (a yellow-brown light), rain sinks the reds and greens and lifts the blues, cloudy cools everything and darkens the
- * blacks, hail and snow cool the picture, fog lifts the blacks and takes the whites down (a flat grey). Where the town is made of a dungeon's tiles it is graded the same way.
- */
 internal class WeatherRamp(val red: IntArray, val green: IntArray, val blue: IntArray) {
-    /**
-     * [argb] as the game would show it: a colour of 5 bits a channel is `v * 8 + 7` in the game's palettes (which is what the ramp is indexed by) and `v * 255 / 31` in our
-     * tile pictures; the result is `ramp[...] * 31 / 256` as 5 bits again (the brightness is at its full 31), shown as 8. The alpha stays.
-     */
     fun grade(argb: Int): Int {
         val a = argb ushr 24
         if (a == 0) return argb
@@ -35,7 +25,6 @@ internal class WeatherRamp(val red: IntArray, val green: IntArray, val blue: Int
     }
 
     companion object {
-        /** The ramps of [text] (`NAME<TAB>r|g|b<TAB>256 numbers` a line, see `ramps.tsv`) by weather name. */
         fun parse(text: String): Map<String, WeatherRamp> {
             val channels = mutableMapOf<String, MutableMap<String, IntArray>>()
             for (line in text.lineSequence()) {
@@ -50,7 +39,6 @@ internal class WeatherRamp(val red: IntArray, val green: IntArray, val blue: Int
     }
 }
 
-/** The game's weather the town's [Weather] is graded like, or null for one the game's ramps do not cover (a clear sky is graded by nothing). */
 internal fun Weather.rampName(): String? = when (this) {
     Weather.RAIN -> "RAIN"
     Weather.SNOW -> "SNOW"
@@ -63,23 +51,16 @@ internal fun Weather.rampName(): String? = when (this) {
 private var ramps: Map<String, WeatherRamp>? = null
 private val graded = BitmapCache(CacheBudget.TILES)
 
-/** The game's ramps, read once. */
 internal suspend fun weatherRamps(): Map<String, WeatherRamp> =
     ramps ?: (orNull { WeatherRamp.parse(Res.readBytes("files/weather/ramps.tsv").decodeToString()) } ?: emptyMap()).also { ramps = it }
 
-/** [atlas] (named [name]) graded for [weather], or itself when the weather has no ramp; made once for each pair. */
 internal suspend fun gradedFor(name: String, atlas: ImageBitmap, weather: Weather): ImageBitmap {
     val ramp = weather.rampName()?.let { weatherRamps()[it] } ?: return atlas
     val key = "$name|${weather.rampName()}"
     if (key in graded) return graded[key] ?: atlas
-    // The colours are worked out off the main thread (a big atlas has thousands of points to draw); the cache is read and written on the caller's.
     return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { atlas.graded(ramp) }.also { graded[key] = it }
 }
 
-/**
- * A copy of this picture with every colour sent through [ramp]. Every pixel of one colour is drawn with one call (a tileset has a few dozen colours), so it needs no
- * pixel buffer to write: it reads the pixels and draws points.
- */
 internal fun ImageBitmap.graded(ramp: WeatherRamp): ImageBitmap {
     val w = width
     val h = height

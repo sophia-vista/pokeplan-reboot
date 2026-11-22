@@ -48,23 +48,14 @@ import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 
-/** The party id (`PartyIds`) of a module's region: where its party, its lead and its Guardian are kept. */
 internal fun partyIdOf(region: Region): String = when (region) {
     Region.CARE -> PartyIds.CARE; Region.HEAL -> PartyIds.HEAL; Region.MINT -> PartyIds.MINT; Region.BASE -> PartyIds.BASE; Region.LINK -> PartyIds.LINK; else -> PartyIds.PLAN
 }
 
-/** A module's short name: "Plan", "Care", "Heal", "Mint", "Base" or "Link". */
 internal fun moduleName(region: Region): String = if (region == Region.BASE) "Base" else region.label.removeSuffix(" Region")
 
-/** A module's short name from its party id, for the detail page and the Guardian lists. */
 internal fun moduleNameOf(partyId: String): String = partyId.replaceFirstChar { it.uppercase() }
 
-/**
- * Chooses which module's party to look at. Six names do not fit as tabs on a phone (they came out as "Pl...", "Ca..."), and a dropdown would hide the choices, so it works
- * the way the games' box screens do: the module's full name and count in its own colour between two arrows that go to the one before and the one after (they wrap round),
- * six small squares for where you are (and a swipe along the party does the same), and a tap on the name opens all six in a list at once, with their leads and Guardians,
- * to jump to one. Nothing is only in the colour: the name and the count are always written.
- */
 @Composable
 internal fun PartySwitcher(
     model: AppModel, regions: List<Region>, selected: Region, party: (Region) -> List<OwnedPokemon>, lead: (Region) -> OwnedPokemon?,
@@ -82,7 +73,6 @@ internal fun PartySwitcher(
             )
             PixelIconButton("arrow-right", "Next module's party", { go(1) }, Pixel.InkSoft)
         }
-        // Where you are among the six: a square each, filled for the open one.
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S, Alignment.CenterHorizontally)) {
             regions.forEach { r ->
                 val on = r == selected
@@ -108,7 +98,6 @@ internal fun PartySwitcher(
     }
 }
 
-/** A swipe sideways over [content] goes to the next module's party (left) or the one before (right), like the games' box screens; the arrows do the same. */
 internal fun Modifier.swipeBetween(key: Any?, onPrevious: () -> Unit, onNext: () -> Unit): Modifier = pointerInput(key) {
     var travelled = 0f
     detectHorizontalDragGestures(
@@ -120,7 +109,6 @@ internal fun Modifier.swipeBetween(key: Any?, onPrevious: () -> Unit, onNext: ()
 
 private const val SWIPE_PX = 120f
 
-/** What [p] gives [partyId]'s module as its Guardian, in words: "+10% Visitor luck, +5% Berry finder". */
 internal fun guardianPerkText(p: OwnedPokemon, partyId: String): String {
     fun <B> words(map: Map<B, Double>, label: (B) -> String) = map.entries.joinToString(", ") { (b, v) -> "+${v.toInt()}% ${label(b)}" }
     return when (partyId) {
@@ -133,7 +121,6 @@ internal fun guardianPerkText(p: OwnedPokemon, partyId: String): String {
     }.ifEmpty { "no perk in this module" }
 }
 
-/** On a Guardian's own page: which module it is the Guardian of (a chip each, the one it holds filled; a tap sets it, a tap on the filled one empties the slot). */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 internal fun GuardianChoice(model: AppModel, p: OwnedPokemon) {
@@ -148,11 +135,6 @@ internal fun GuardianChoice(model: AppModel, p: OwnedPokemon) {
     if (model.data.player.moduleGuardians.containsValue(p.id)) Text(guardianPerkText(p, model.data.player.moduleGuardians.entries.first { it.value == p.id }.key), style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
 }
 
-/**
- * A module's Guardian slot, under its party: who it is and what it gives this module, with a button to choose or change it from the legendaries and mythicals owned. A Guardian is
- * a normal Pokémon (it is in the PC, can be in any party or World team) that can also be one module's Guardian; choosing it takes it from where it was. Hidden until the player
- * owns one.
- */
 @Composable
 internal fun GuardianSlot(model: AppModel, region: Region, accent: Color) {
     val store = model.store

@@ -1,18 +1,4 @@
 #!/usr/bin/env python3
-"""Adds the PMD SpriteCollab sprites that were drawn after the commit `fetch_pmd.py` is pinned to, for a short list of forms,
-without re-fetching (or changing) anything else.
-
-Why a second script: SpriteCollab's `tracker.json` still marks most of these species as "no sprite" (sprite_complete 0) although
-their folders hold approved animation sheets, and `fetch_pmd.py` trusts the tracker. Here the folders are the evidence: a form is
-listed in FORMS below only after its `AnimData.xml` and sheets were inspected (docs/ASSETS/PMD_SPRITE_ACQUISITION.md).
-
-Usage: python3 -I tools/sprites/fetch_pmd_new.py [--commit SHA] [--dry-run]
-
-For each form it writes the same files as `fetch_pmd.py` (assets/pmd/<form id>.png and -shiny.png, the Sleep, Eat, Hop and Walk
-rows into their folders, and the rows of pmd.tsv, sleep.tsv and so on) and adds the artists to credits.tsv. Existing rows of other
-forms are kept; a form already in the tables is NOT overwritten unless --replace is given. Only the sprites' own pixels are copied.
-SpriteCollab sprites are CC BY-NC 4.0: non-commercial use, with credit.
-"""
 import argparse
 import csv
 import json
@@ -23,11 +9,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import fetch_pmd as base  # noqa: E402  (its helpers; its main() is not run)
 
-# The SpriteCollab master commit these forms were inspected at (2026-11-08, "Update credits.").
 COMMIT = '709f2e32ae4b21d11628883fd2356bb2d5f75244'
 
-# our form id -> (species folder, the form's own folder under sprite/<dex>/ or '' for the species' regular form, name)
-# Shiny coats live in `<folder>/0000/0001` for the regular form and `<folder>/0001` for a numbered form (checked in the tree).
 FORMS = {
     593: ('0593', '', 'Jellicent (male)'), 618: ('0618', '', 'Stunfisk'), 683: ('0683', '', 'Aromatisse'), 733: ('0733', '', 'Toucannon'),
     837: ('0837', '', 'Rolycoly'), 865: ('0865', '', "Sirfetch'd"), 868: ('0868', '', 'Milcery'), 874: ('0874', '', 'Stonjourner'),

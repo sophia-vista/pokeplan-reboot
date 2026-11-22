@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""Generates the species data for :pokemon-core from the public PokeAPI CSV dataset.
-
-Usage: python3 -I tools/species/generate.py [cache_dir]
-
-Downloads the CSV files it needs (once) into the cache directory, then writes the Dex tables as JSON, one file per
-table, in pokemon-core/src/commonMain/resources/dex/ (species, forms, evolutions, regions, entries, moves, learnsets).
-Each file is an array of rows, one row per line; a row is an array of numbers, strings, nulls and lists, in the column
-order that DexParser.kt reads.
-Only plain facts are written here. Rules (rarity, hatch pools) live in Kotlin
-so they are tested and tunable.
-"""
 import collections
 import csv
 import os
@@ -18,8 +7,6 @@ import sys
 import urllib.request
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-# Pinned to one commit so the generated data is reproducible (and CI does not break when upstream changes).
-# To update: git ls-remote https://github.com/PokeAPI/pokeapi refs/heads/master, change the SHA, regenerate, review the diff.
 POKEAPI_COMMIT = '6fd69dfe90465ba96534f6816fc817737d1f97f6'
 BASE = f'https://raw.githubusercontent.com/PokeAPI/pokeapi/{POKEAPI_COMMIT}/data/v2/csv/'
 FILES = ['pokemon', 'pokemon_species', 'pokemon_species_names', 'pokemon_stats', 'pokemon_types', 'types',
@@ -27,13 +14,10 @@ FILES = ['pokemon', 'pokemon_species', 'pokemon_species_names', 'pokemon_stats',
          'pokedexes', 'pokemon_dex_numbers', 'items', 'moves', 'locations', 'pokemon_species_flavor_text',
          'move_names', 'pokemon_moves', 'version_groups']
 OUT_DIR = os.path.join(ROOT, 'pokemon-core/src/commonMain/resources/dex')
-# Module regions, hand-curated (docs/region-curation-prompt.md): Region entry -> list file. A missing file is a region
-# not curated yet, which gets no row (an empty dex). A species is in at most one module region.
 MODULE_REGIONS = {'PLAN': 'plan', 'CARE': 'care', 'HEAL': 'heal', 'MINT': 'mint', 'BASE': 'base', 'LINK': 'link'}
 REGION_LIST_DIR = os.path.join(ROOT, 'tools/species/regions')
 KIND_RANK = {'LEVEL': 0, 'STONE': 1, 'FRIENDSHIP': 2, 'LEVEL_TIME': 3, 'GENDER': 4, 'TRADE': 5, 'RANDOM': 6, 'TRIAL': 7}
 
-# Regional dexes (PokeAPI pokedex ids) merged into one list per region, in order.
 REGION_DEXES = {
     'KANTO': [2], 'JOHTO': [7], 'HOENN': [15], 'SINNOH': [6, 30], 'UNOVA': [9],
     'KALOS': [12, 13, 14], 'ALOLA': [21], 'GALAR': [27, 28, 29], 'PALDEA': [31, 32, 33],
@@ -119,7 +103,6 @@ def main():
     move_ident = {int(r['id']): r['identifier'] for r in R('moves')}
     loc_ident = {int(r['id']): r['identifier'] for r in R('locations')}
 
-    # ---- species
     species_lines = []
     default_pokemon = {}
     for pid, r in pokemon.items():
@@ -136,7 +119,6 @@ def main():
             gender, r['is_baby'], r['is_legendary'], r['is_mythical'], ','.join(cosmetic) or '-',
             clean(genus.get(sid) or '') or '-', pokemon[dp]['height'], pokemon[dp]['weight']]))
 
-    # ---- forms (every pokemon row)
     form_lines = []
     for pid in sorted(pokemon):
         r = pokemon[pid]
@@ -167,7 +149,6 @@ def main():
         form_lines.append('|'.join([str(pid), ident, str(sid), kind, clean(name),
                                     ','.join(types[pid]) or '-', statstr, abil, hid]))
 
-    # Forms that PokeAPI does not have (tools/species/custom_forms.txt)
     with open(os.path.join(ROOT, 'tools/species/custom_forms.txt'), encoding='utf-8') as fh:
         for line in fh:
             if line.strip() and not line.startswith('#'):
@@ -175,7 +156,6 @@ def main():
                 assert len(parts) == 9 and int(parts[0]) not in pokemon, line
                 form_lines.append('|'.join(parts))
 
-    # ---- evolutions
     evo_best = {}
     for r in R('pokemon_evolution'):
         trig = int(r['evolution_trigger_id'])
@@ -185,7 +165,7 @@ def main():
         item = item_ident.get(int(r['trigger_item_id'])) if r['trigger_item_id'] else None
         held = item_ident.get(int(r['held_item_id'])) if r['held_item_id'] else None
         tod = r['time_of_day'] or '-'
-        odd_time = tod not in ('-', 'day', 'night', 'dusk')  # e.g. full-moon: not a time of day, so a trial
+        odd_time = tod not in ('-', 'day', 'night', 'dusk')
         gender = {'1': 'F', '2': 'M'}.get(r['gender_id'], '-')
         friend = r['minimum_happiness'] or '-'
         extras = []
@@ -244,12 +224,10 @@ def main():
         key = (from_sid, to_sid, req_form, to_form)
         row = [str(from_sid), str(to_sid), kind, level, item or '-', held or '-', tod, gender,
                friend, req_form, to_form, chance, ';'.join(extras) or '-']
-        # The dataset has one row per version / location; keep the simplest valid trigger per evolution.
         if key not in evo_best or KIND_RANK[kind] < KIND_RANK[evo_best[key][2]]:
             evo_best[key] = row
     evo_lines = ['|'.join(row) for row in evo_best.values()]
 
-    # ---- regions
     dex_numbers = collections.defaultdict(list)
     for r in R('pokemon_dex_numbers'):
         dex_numbers[int(r['pokedex_id'])].append((int(r['pokedex_number']), int(r['species_id'])))
@@ -262,7 +240,6 @@ def main():
                     seen.add(sid)
                     order.append(sid)
         region_lines.append(region + '|' + ','.join(map(str, order)))
-    # Module regions: the curated lists in tools/species/regions
     owner = {}
     for i, (region, file) in enumerate(MODULE_REGIONS.items()):
         path = os.path.join(REGION_LIST_DIR, file + '.txt')
@@ -274,10 +251,8 @@ def main():
                 sys.exit(f'{path}: {names[sid]} is already in the {owner[sid]} region; a species is in at most one module region')
             owner[sid] = region
         region_lines.insert(i, region + '|' + ','.join(map(str, ids)))
-    # Species whose Hisuian form is the one found in the Hisui dex (used to pick the variant in Sinnoh)
     region_lines.append('HISUI|' + ','.join(str(sid) for _, sid in sorted(dex_numbers[30])))
 
-    # ---- Pokedex text: the most recent game's English entry for each species
     latest = {}
     for r in R('pokemon_species_flavor_text'):
         if r['language_id'] != '9':
@@ -298,13 +273,10 @@ def main():
 
 
 DAMAGE_CLASS = {'1': 'STATUS', '2': 'PHYSICAL', '3': 'SPECIAL'}
-METHODS = {'1': 'L', '2': 'E', '3': 'T', '4': 'M'}  # level-up, egg, tutor, machine
+METHODS = {'1': 'L', '2': 'E', '3': 'T', '4': 'M'}
 
 
 def moves_and_learnsets(R, type_ident, pokemon):
-    """Moves: id|identifier|name|type|class|power|pp|accuracy|priority|generation. Learnsets: one row per Pokemon row
-    that has moves, taken from the newest version group where it learns anything:
-    pokemon id|level-up (move@level,...)|egg|tutor|machine (move ids). Moves of a non-standard type are left out."""
     mname = {int(r['move_id']): r['name'] for r in R('move_names') if r['local_language_id'] == '9'}
     moves, keep = [], set()
     for r in R('moves'):
@@ -364,29 +336,24 @@ def read_region_list(path, species, names):
 
 
 def scalar(text):
-    """One field of a pipe row: '-' is null, a whole number is a number, anything else stays text."""
     if text == '-':
         return None
     return int(text) if re.fullmatch(r'-?\d+', text) else text
 
 
 def listed(text, separator=',', numbers=False):
-    """A list field: '-' is the empty list; with numbers=True every item is a whole number."""
     if text == '-':
         return []
     return [int(t) for t in text.split(separator)] if numbers else text.split(separator)
 
 
 def table_rows(name, lines):
-    """The rows of one table as JSON-ready values (see DexParser.kt for what each column means)."""
     rows = []
     for line in lines:
         f = line.split('|')
         if name == 'species':
-            # id, identifier, name, generation, evolves from, female eighths, baby, legendary, mythical, cosmetic forms, genus, height, weight
             rows.append([scalar(x) for x in f[:9]] + [listed(f[9])] + [f[10] if f[10] != '-' else None] + [scalar(x) for x in f[11:]])
         elif name == 'forms':
-            # id, identifier, species id, kind, name, types, base stats (6), abilities, hidden ability
             rows.append([scalar(f[0]), f[1], scalar(f[2]), f[3], f[4], listed(f[5]), listed(f[6], numbers=True), listed(f[7]), scalar(f[8])] + [scalar(x) for x in f[9:]])
         elif name == 'evolutions':
             rows.append([scalar(x) for x in f[:12]] + [listed(f[12], ';')] + [scalar(x) for x in f[13:]])

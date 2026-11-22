@@ -46,32 +46,18 @@ import app.pokeplan.ui.pokemon.PlanPartyPanel
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.world.WorldScreen
 
-/**
- * The life modules (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md), each a section of the Modules tab. Each one is a different part of
- * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
- */
 enum class Module(val label: String, val icon: String, val look: RegionLook) {
     PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), BASE("Base", "chipped-pot", RegionLook.BASE), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
 }
 
-/**
- * Plan's places (PLAN.md section 3): the three it is made of, Tasks, Calendar and Focus, then the More key's Progress (with the weekly
- * review), Goals, Targets and Settings. Plan's own page (null) is the module layout: lead, the three places, action items, party.
- */
 enum class PlanSection(val label: String, val icon: String) {
     TASKS("Tasks", "journal"), CALENDAR("Calendar", "town-map"), FOCUS("Focus", "mystery-egg"), GOALS("Goals", "star-piece"), SETTINGS("Settings", "oaks-letter"),
 }
 
-/** Start the Focus screen on [task] (Focus exists only on the phone). */
 private fun focusOn(model: AppModel, task: Task) { model.focusTaskId = task.id; model.planSection = PlanSection.FOCUS }
 
-/**
- * The Modules tab: the list of modules, or the one open in [AppModel.module], which stays open while other tabs are
- * used. [focusTab] is false where there is no Focus (desktop and the web).
- */
 @Composable
 fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
-    // Care switched off in Settings hides it; what it saved is kept.
     val open = model.module?.takeIf { it != Module.CARE || model.data.settings.careModule }
     androidx.compose.runtime.CompositionLocalProvider(LocalFocusTab provides focusTab) {
     ScreenSwitch(open, depth = { if (it == null) 0 else 1 }) { page ->
@@ -91,11 +77,11 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
 
 @Composable
 private fun ModulesMenu(model: AppModel) {
-    model.careData // redraw when Care changes
-    model.healData // and when Heal does
-    model.mintData // and Mint
-    model.baseData // and Home
-    model.linkData // and Link
+    model.careData
+    model.healData
+    model.mintData
+    model.baseData
+    model.linkData
     val today = model.store.todayTasks().size
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Modules", icon = "explorer-kit", trailing = {
@@ -107,8 +93,6 @@ private fun ModulesMenu(model: AppModel) {
         ) {
             val routines = model.care.todayRoutines()
             val routinesLeft = routines.count { !it.doneOn(model.care.today) }
-            // Gear is the key in the header (a tool drawer, not a life module). The modules follow as compact rows in the order of the
-            // accent rainbow (ModuleAccent), World last; "Jump to" opens any section by name.
             JumpSearch(model)
             MenuList(
                 listOfNotNull(
@@ -142,7 +126,6 @@ private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, 
             BackHandler(enabled = true, onBack = toModules)
             PlanHome(model, focusTab, toModules, openPokemon)
         }
-        // Focus has its own header; the screens it opens inside handle Back before this does.
         PlanSection.FOCUS -> {
             BackHandler(enabled = true, onBack = back)
             FocusScreen(model, openPokemon, onBack = back)
@@ -152,11 +135,6 @@ private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, 
     }
 }
 
-/**
- * Plan's page, in the layout every module shares (PLAN.md section 3): its lead in Plan's town, an overview of today's tasks, the action items
- * (quick add to the Inbox, the task to do next) and the party as one row. Every place Plan has (Tasks, Calendar, Focus, Goals, Settings) is in
- * the Sections key in the header; its progress and trends are in Me.
- */
 @Composable
 private fun PlanHome(model: AppModel, focusTab: Boolean, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.data

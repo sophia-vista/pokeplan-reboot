@@ -1,36 +1,11 @@
 #!/usr/bin/env python3
-"""Fetch the Generation 3 (Hoenn) art the module places use, from pret/pokeemerald.
-
-REP-053 (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md). Rule 4.0 of ASSETS_AND_AUDIO.md: a life module's rooms, furniture
-and items are mainline art, mostly Generation 3. pret/pokeemerald commits the game's graphics and map data as plain files,
-so no ROM is needed; everything comes through raw.githubusercontent.com at a pinned commit.
-
-Output (`assets/hoenn/`):
-  decorations/<name>.png       the 43 Secret Base decoration sprites (indexed PNG, palette inside), plus brendan.pal,
-                               may.pal and decoration_menu.pal (the 16-colour JASC palettes of the player dolls and the menu)
-  secret-base/primary/         the shared tileset: tiles.png (greyscale indices, drawn with palettes/NN.pal), unknown_tiles.png,
-                               metatiles.bin, metatile_attributes.bin, palettes/00.pal .. 15.pal
-  secret-base/secondary/       metatiles.bin and metatile_attributes.bin shared by the five rooms, and for each of blue_cave,
-                               brown_cave, red_cave, yellow_cave, shrub and tree: tiles.png, unused_tiles.png, palettes/NN.pal
-  secret-base/layouts/<Name>/  map.bin and border.bin of the 24 room layouts (six rooms, four sizes) (u16 metatile id | collision << 10 | elevation << 12
-                               per cell), and secret-base/layouts.tsv (name, size, tilesets)
-  berry-trees/<name>.png       the 32 Berry tree growth sheets (sprout, dirt pile and the 30 trees; six 16 x 32 frames side by side)
-  manifest.tsv                 every file: path, source URL, sha256 (the receipt)
-
-Existing files are skipped; downloads are cached in tools/sprites/cache-pret (git-ignored). Nintendo / Game Freak art, private
-use only like the rest of assets/ (docs/assets.md).
-
-Usage: python3 -I tools/sprites/fetch_pret.py
-
-The PokeAPI berry and mail icons and the badges are fetched by `python3 -I tools/sprites/fetch_items.py extras`.
-"""
 import hashlib
 import json
 import sys
 import urllib.request
 from pathlib import Path
 
-REV = "9103e529c2fbdd7add4a1ff3350c6c1f92112c42"  # pret/pokeemerald master on 14 November 2026, pinned
+REV = "9103e529c2fbdd7add4a1ff3350c6c1f92112c42"
 RAW = f"https://raw.githubusercontent.com/pret/pokeemerald/{REV}/"
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parents[1] / "assets" / "hoenn"
@@ -57,7 +32,7 @@ def get(rel):
 
 
 def main():
-    wanted = {}  # path under assets/hoenn -> repo path
+    wanted = {}
 
     for name in DECORATIONS:
         wanted[f"decorations/{name}.png"] = f"graphics/decorations/{name}.png"

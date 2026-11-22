@@ -38,7 +38,7 @@ class ItemsTest {
 
     @Test
     fun abilityCapsuleSwapsBetweenTwoRegularAbilities() {
-        val rattata = pokemon(Ids.RATTATA) // Run Away / Guts
+        val rattata = pokemon(Ids.RATTATA)
         val swapped = ItemEffects.useAbilityCapsule(rattata)
         assertEquals(Dex.form("rattata")!!.abilities.last(), swapped.ability)
         assertEquals(rattata.ability, ItemEffects.useAbilityCapsule(swapped).ability)

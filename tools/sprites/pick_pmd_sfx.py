@@ -1,16 +1,4 @@
 #!/usr/bin/env python3
-"""Copies a few Red Rescue Team sound effects from assets/pmd-sfx (the renders of the game's own sound ids) into assets/sfx/<name>.ogg.
-
-Usage: python3 -I tools/sprites/pick_pmd_sfx.py
-
-Each id is chosen for an event the game itself plays it for (assets/pmd-sfx/triggers.tsv, read from pret/pmd-red's source), not by guess:
-  206  a monster joins the team (`MonsterJoinSequence_Async`, `HandleSpecialEntityJoinSequence`)      -> recruit: a Pokémon arrives or joins a party
-  340  stairs, the ascending sound                                                                    -> stairs-up: a team comes back from an expedition
-  341  stairs, the descending sound                                                                   -> stairs-down: a team goes out on an expedition
-  312  a monster learns a new move (read by hand in dungeon_leveling.c)                               -> learn: a skill trained or practised
-They are renders, an approximation of the GBA sound engine, and nobody has listened to them yet (assets/pmd-sfx/README.md): swap an id here if one sounds wrong.
-Peak-normalised like the clips cut by convert_pmd_sfx.py. Needs ffmpeg and numpy.
-"""
 import os
 import subprocess
 import sys

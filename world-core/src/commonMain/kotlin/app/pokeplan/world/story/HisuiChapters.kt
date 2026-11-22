@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Hisui, "The Ancient Survey": Row the Rowlet guides the buddy; the frenzied noble is Kleavor; Dialga, Palkia and Arceus are the powers of the rift. */
 internal object HisuiChapters {
     private val buddy = buddyCharacter()
     private val row = npc("row", "Row", 722)

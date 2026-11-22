@@ -30,7 +30,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -59,26 +65,18 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
 import app.pokeplan.ui.pokemon.label
 
-/** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
-/** One card of a menu. [detail] is no longer drawn (the owner wants every card the same: icon and title only); it is kept as what a screen reader says after the title. */
 data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String = "", val badge: Int = 0, val tint: Color = Pixel.Blue,
-    /** A module not built yet: a quiet card in its own colour that opens nothing. */
     val pending: Boolean = false,
-    /** What a tap sounds like (a door for the module list); the menu cursor by default. */
     val sound: app.pokeplan.ui.Sfx = app.pokeplan.ui.Sfx.CURSOR,
-    /** Takes a whole row to itself, laid out sideways. */
     val wide: Boolean = false,
-    /** What a row of [MenuList] shows at its end: how many records the section holds ("4", "2 due"); empty for none. */
     val count: String = "",
 )
 
 private val menuShape = DialogueShape
 
-/** The menu of a tab: big cards, two to a row, like the start menu of the games. */
 @Composable
 fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        // A wide entry stands alone on its row; the others go two to a row, and a lone last card takes the whole row too.
         val rows = mutableListOf<List<MenuEntry>>()
         var pair = mutableListOf<MenuEntry>()
         entries.forEach { e ->
@@ -94,16 +92,11 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
     }
 }
 
-/**
- * A section menu as rows in one dialogue box (owner, 13 November 2026: rows where the sections hold records, like a list of
- * lists): the item icon, the title and the section's [MenuEntry.count] on one centre line, a line between rows.
- */
 @Composable
 fun MenuList(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
     app.pokeplan.ui.theme.TextBox { MenuRows(entries, onOpen) }
 }
 
-/** The rows of [MenuList] without a box of their own, for a sheet that is already one box (no box in a box). */
 @Composable
 fun MenuRows(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
     val ui = app.pokeplan.ui.LocalUiSound.current
@@ -165,45 +158,69 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
 }
 
 /**
+ * The page one level below the section now shown, if any. A section can open a page of its own (a town's facility, a journal
+ * page); while it is open this holds its Back, so the header's Back key and the system Back gesture go up one level at a time
+ * instead of leaving the section (and losing the draft or the place).
+ */
+internal class UpSlot { var up: (() -> Unit)? by mutableStateOf(null) }
+private val LocalUpSlot = staticCompositionLocalOf<UpSlot?> { null }
+
+/** The slot for the page one level below the screen now shown; [UpProvider] gives it to the content. */
+@Composable
+internal fun rememberUpSlot(): UpSlot = remember { UpSlot() }
+
+/** Hands [slot] to the content, so a page inside it can register its Back with [UpTo]. */
+@Composable
+internal fun UpProvider(slot: UpSlot, content: @Composable () -> Unit) = CompositionLocalProvider(LocalUpSlot provides slot) { content() }
+
+/**
+ * Makes [onUp] the screen's one-level-up while this page is shown; the Back that the screen draws and its system Back
+ * gesture run it, then the screen's own Back once the page has gone. Call it from the page's own composable, next to the
+ * content it belongs to.
+ */
+@Composable
+fun UpTo(onUp: () -> Unit) {
+    val slot = LocalUpSlot.current ?: return
+    val current by rememberUpdatedState(onUp)
+    DisposableEffect(slot) {
+        slot.up = { current() }
+        onDispose { slot.up = null }
+    }
+}
+
+/**
  * A screen reached from a menu: the header with Back at its start, and scrolling content. The system back gesture also
- * goes back. [subtitle] is where the section sits ("Planner"), so the way back is never something to remember.
+ * goes back, and so does a page opened inside the section ([UpTo]). [subtitle] is where the section sits ("Planner"), so
+ * the way back is never something to remember.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SectionScaffold(
     title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, color: Color = Pixel.Chrome,
-    /** A key at the end of the header (Upcoming's Calendar) in place of the section's icon. */
     trailing: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    BackHandler(enabled = true, onBack = onBack)
+    val slot = rememberUpSlot()
+    val back = { slot.up?.invoke() ?: onBack() }
+    BackHandler(enabled = true, onBack = back)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = onBack, color = color, trailing = trailing ?: { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.M),
-        ) { content() }
+        ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = back, color = color, trailing = trailing ?: { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
+        UpProvider(slot) {
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
+                verticalArrangement = Arrangement.spacedBy(Spacing.M),
+            ) { content() }
+        }
     }
 }
 
-/** The Reduce motion setting, for screens that move without being handed the model; `App` provides it. */
 val LocalReduceMotion = staticCompositionLocalOf { false }
 
-/** The global buddy, for screens that show it without being handed the model (an empty state's sleeping buddy); `App` provides it. */
 val LocalBuddy = staticCompositionLocalOf<app.pokeplan.core.pokemon.OwnedPokemon?> { null }
 
-/** Ordinary navigation, inside the 160 to 240 ms of docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md; game moments take longer on their own. */
 private const val FADE_MS = 180
 private const val SLIDE_MS = 220
 
-/**
- * Switches between screens with the transitions of docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md: going deeper ([depth] grows: into a
- * module, a section or a detail) slides a short way in from the end, and coming back slides out the other way; screens
- * at the same depth (the bottom tabs, the sections of a collection) crossfade. With Reduce motion the switch is instant.
- * Each screen keeps its saved state, such as its scroll position, while another is shown, so coming back finds it where
- * it was. [content] must draw the page it is given, not read the current one, because the old page is still drawn
- * while it leaves.
- */
 @Composable
 fun <T> ScreenSwitch(target: T, modifier: Modifier = Modifier, depth: (T) -> Int = { 0 }, content: @Composable (T) -> Unit) {
     val reduce = LocalReduceMotion.current
@@ -213,21 +230,17 @@ fun <T> ScreenSwitch(target: T, modifier: Modifier = Modifier, depth: (T) -> Int
         modifier.fillMaxSize().clipToBounds(),
         transitionSpec = {
             val step = depth(targetState).compareTo(depth(initialState))
-            // Every page fills the screen, so there is no size to animate.
             screenTransition(if (reduce) null else step) using null
         },
         label = "screen",
     ) { page ->
-        // A string key, so the saved state survives on Android, which keeps it in a Bundle.
         saved.SaveableStateProvider(page.toString()) { content(page) }
     }
 }
 
-/** [step] is 1 going deeper, -1 coming back, 0 to the side, null for no motion. */
 private fun screenTransition(step: Int?): ContentTransform {
     if (step == null) return EnterTransition.None togetherWith ExitTransition.None
     if (step == 0) return fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS))
-    // A short slide, an eighth of the width, under a fade: enough to say which way, never a whole page sweeping past.
     val slide = tween<IntOffset>(SLIDE_MS, easing = app.pokeplan.ui.Ease.Smooth)
     val enter = slideInHorizontally(slide) { w -> step * w / 8 } + fadeIn(tween(SLIDE_MS))
     val exit = slideOutHorizontally(slide) { w -> -step * w / 8 } + fadeOut(tween(SLIDE_MS / 2))

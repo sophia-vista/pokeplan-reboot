@@ -14,7 +14,6 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 
-/** INTEGRATIONS_AND_PRIVACY.md 5.2.2, rule 1: the listener keeps Huawei Health's notifications and drops every other app's before reading them. */
 @RunWith(RobolectricTestRunner::class)
 class HuaweiNotificationServiceTest {
     @Before @After fun forget() = HuaweiCapture.clear()

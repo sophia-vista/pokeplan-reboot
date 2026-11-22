@@ -63,32 +63,20 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 
 internal object PmdPalette {
-    /** The pale hairline on the outside of the frame. */
     val Edge = DialogueColors.Edge
-    /** The frame's main band. */
     val Band = DialogueColors.Band
-    /** The one-pixel line between the band and the inside. */
     val Deep = DialogueColors.Deep
-    /** The inside: black, see-through, so the town shows behind the words. */
     val Fill = Color(0xA6000010)
-    /** Behind a town while its tiles load. */
     val Loading = Color(0xFF3B4A3A)
 }
 
-/** The frame's colours: the pale hairline, the band and the deep line. Every panel uses the same ones. */
 internal enum class PmdTone(val edge: Color, val band: Color, val deep: Color) {
     BLUE(PmdPalette.Edge, PmdPalette.Band, PmdPalette.Deep),
 }
 
-/**
- * A dialogue box like the game's: a see-through black panel in a rounded, layered frame (a pale hairline, a blue band that is
- * thicker at the sides than at the top and bottom, and a deep-blue line), every part a whole number of art pixels at [pixel].
- * [inset] is the room, in art pixels, between the frame and what is inside (rules and buttons run to it; text lines add 6 more, where the cursor goes, so text is 9 in). The frame is drawn in code (UI chrome).
- */
 @Composable
 internal fun PmdBox(
     pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 3, compact: Boolean = false,
-    /** On the widget grid, start the content at the top of the cells instead of their middle (a list, which reads from the top). */
     alignTop: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -96,11 +84,8 @@ internal fun PmdBox(
     val fill = LocalGridFill.current
     Box(
         modifier.then(if (fill) Modifier.fillMaxHeight() else Modifier).entrance().drawBehind { pmdFrame(pixel, tone) }
-            // Room inside the frame is the design system's own (Spacing.BoxX and BoxY, 24 and 18 dp), never less than the frame itself needs.
-            // A compact box (a portrait's frame) keeps only the frame's own room, and so does a box on the widget grid: its content is centred in the cells, so the room above and below is whatever the cells leave, never more than they have.
             .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = ((TOP + inset) * pixel / density).dp.let { if (compact || fill) it else maxOf(it, Spacing.BoxY) }),
         content = if (!fill) content else { {
-            // On the widget grid the frame is as tall as its cells, and what does not fit is cut off inside it, never squeezed; the content sits in the middle, so a box taller than its lines has the same room above and below.
             Box(Modifier.fillMaxSize().clipToBounds(), contentAlignment = if (alignTop) Alignment.TopStart else Alignment.CenterStart) {
                 Box(Modifier.fillMaxWidth().wrapContentHeight(if (alignTop) Alignment.Top else Alignment.CenterVertically, unbounded = true)) { content() }
             }
@@ -108,21 +93,17 @@ internal fun PmdBox(
     )
 }
 
-/** True while a widget is drawn on the grid: its [PmdBox] then fills the cells it was given. */
 internal val LocalGridFill = androidx.compose.runtime.staticCompositionLocalOf { false }
 
-/** The room at the side of a line of text in a box, in art pixels: every row (a menu line, a slider's label and bar) starts and ends this far in, so they line up. */
 private const val ROW_X = 6
 
 internal fun pmdRowPad(pixel: Int, density: Float) = (ROW_X * pixel / density).dp
 
-/** The frame's thickness in art pixels: pale line 1 + band 1 + deep line 1 at the top and bottom, 1 + 5 + 1 at the sides. */
 private const val TOP = 3
 private const val SIDE = 7
 
 private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) = dialogueFrame(pixel.toFloat(), PmdPalette.Fill, sideBand = 5, topBand = 1, edge = tone.edge, band = tone.band, deep = tone.deep)
 
-/** One line of a dialogue menu: a touch target at least 48 dp tall with [text] in it, a small cursor in front when [selected]. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, onHold: (() -> Unit)? = null, icon: String? = null, onClick: () -> Unit) {
@@ -138,9 +119,7 @@ internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier
             drawPath(Path().apply { moveTo(0f, 0f); lineTo(3 * p, 2.5f * p); lineTo(0f, 5 * p); close() }, Color.White)
         }
         if (icon == null) PmdText(text, pixel, Modifier.padding(horizontal = pmdRowPad(pixel, density)), alpha = if (dim) 0.75f else 1f)
-        // With an icon, a real item picture (a small bag or ball for the setting) leads the line and the words follow it.
         else Row(Modifier.padding(horizontal = pmdRowPad(pixel, density)), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy((3 * pixel / density).dp)) {
-            // "pa-name" is a Pixelarticons glyph (assets/pixelarticons) in the menu's white; anything else is an item picture.
             if (icon.startsWith("pa-")) app.pokeplan.ui.Glyph(icon.removePrefix("pa-"), Color.White, size = 24.dp, modifier = Modifier.alpha(if (dim) 0.75f else 1f))
             else app.pokeplan.ui.ItemIcon(icon, size = (9 * pixel / density).dp.coerceAtLeast(24.dp), description = null, modifier = Modifier.alpha(if (dim) 0.75f else 1f))
             PmdText(text, pixel, alpha = if (dim) 0.75f else 1f)
@@ -148,14 +127,12 @@ internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier
     }
 }
 
-/** A one-pixel rule across a dialogue box, between its parts. */
 @Composable
 internal fun PmdRule(pixel: Int, modifier: Modifier = Modifier) {
     val density = LocalDensity.current.density
     Box(modifier.fillMaxWidth().height((pixel / density).dp).background(Color.White.copy(alpha = 0.3f)))
 }
 
-/** A navigation entry of the world register: a real item icon over a label, at least 56 dp tall, the whole thing one touch target. */
 @Composable
 internal fun PmdNavItem(label: String, icon: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, showLabel: Boolean = true, onClick: () -> Unit) {
     val density = LocalDensity.current.density

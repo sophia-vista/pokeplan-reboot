@@ -7,36 +7,24 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
-/** Why a record was not accepted, in words for the screen. */
 sealed interface Check {
     data object Ok : Check
     data class Refused(val reason: String) : Check
 }
 
-/** What is in the account today, split so nothing is hidden: the recorded balance (posted only), and what is still pending. */
 data class AccountBalance(val account: FinancialAccount, val postedMinor: Long, val pendingMinor: Long)
 
-/** How much of a budget is used. [percent] is null when nothing is planned. Going over is information, never a failure. */
 data class BudgetProgress(val budget: Budget, val start: LocalDate, val endExclusive: LocalDate, val spentMinor: Long, val remainingMinor: Long, val percent: Int?)
 data class SavingsProgress(val target: SavingsTarget, val savedMinor: Long, val remainingMinor: Long, val percent: Int)
 
-/** The estimate of what can be spent, with its basis shown (MINT.md section 4.5): liquid accounts less bills still to pay soon. Never a guarantee. */
 data class Available(val currency: String, val liquidMinor: Long, val billsMinor: Long, val billsCount: Int, val availableMinor: Long, val installmentsMinor: Long = 0, val installmentsCount: Int = 0)
 
-/**
- * MINT's rules, all pure. Principles (MINT.md sections 1.1, 5, 15.2): **exact arithmetic** (minor units), **one canonical owner** of each fact
- * (a balance is derived from the opening balance and the transactions, never stored twice), **no silent conversion** (an amount keeps its
- * currency; nothing is added across currencies), **nothing judged** (going over a budget is information), and **only abstract organisation can
- * ever earn** (what pays is decided here and carries no figure).
- */
 object MintRules {
     const val NAME_MAX = 40
-    /** The most characters of base64 an account's receive-money picture may take (about 1 MB as picked), MINT.md 4.2. */
     const val QR_MAX_CHARS = 1_400_000
     const val MAX_APR_BASIS_POINTS = 100_000
     const val MAX_GRACE_DAYS = 365
 
-    /** Whether [base64] can be kept as an account's receive-money picture: empty (none) or standard base64 of a PNG, JPEG or WebP, small enough. Never decoded or read for its contents. */
     fun checkReceiveQr(base64: String): Check = when {
         base64.isEmpty() -> Check.Ok
         base64.length > QR_MAX_CHARS -> Check.Refused("That picture is too big to keep (1 MB at most).")
@@ -44,7 +32,6 @@ object MintRules {
         else -> Check.Ok
     }
 
-    /** The most characters of an app package name an account may keep (MINT.md 4.3C), and what one may contain: letters, digits, dots and underscores. */
     const val PACKAGE_MAX = 150
 
     fun cleanPackage(raw: String): String {
@@ -52,16 +39,10 @@ object MintRules {
         return if (t.length in 3..PACKAGE_MAX && t.contains('.') && t.all { it.isLetterOrDigit() && it.code < 128 || it == '.' || it == '_' }) t else ""
     }
 
-    /** The first characters of a base64-encoded PNG (its 8-byte signature). */
     const val PNG_BASE64_PREFIX = "iVBORw0KGgo"
 
-    /** The picture kinds an account may keep: PNG, JPEG and WebP (RIFF), by their signatures in base64. */
     val IMAGE_BASE64_PREFIXES = listOf(PNG_BASE64_PREFIX, "/9j/", "UklGR")
 
-    /**
-     * The saved form of an account card colour (MINT.md 4.2): one of the [CardStyle] ids, or a custom colour as `#RRGGBB` in capitals; anything else is the plain card.
-     * Cosmetic only.
-     */
     fun cardId(raw: String): String {
         val t = raw.trim()
         if (t.length == 7 && t[0] == '#' && t.drop(1).all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) return t.uppercase()
@@ -70,8 +51,6 @@ object MintRules {
 
     const val NOTE_MAX = 500
     const val SUFFIX_MAX = 4
-
-    // --- what the app accepts ---------------------------------------------------------------------------------------------
 
     fun checkAmount(minor: Long): Check = when {
         minor <= 0 -> Check.Refused("Enter an amount above zero.")
@@ -82,7 +61,6 @@ object MintRules {
     fun checkCurrency(code: String): Check =
         if (code.length == 3 && code.all { it in 'A'..'Z' }) Check.Ok else Check.Refused("A currency is three capital letters, like PHP.")
 
-    /** A credit limit is kept only for a credit card or a pay later account, never negative and within the money range; 0 is none (MINT.md 4.3D). */
     fun checkLimit(type: AccountType, limitMinor: Long): Check = when {
         limitMinor == 0L -> Check.Ok
         !Installments.allowedFor(type) -> Check.Refused("Only a credit card or a pay later account has a limit.")
@@ -90,7 +68,6 @@ object MintRules {
         else -> Check.Ok
     }
 
-    /** A statement or due day is 0 (none) or 1 to 31, and only a credit card or pay later account keeps one (MINT.md 4.3D). */
     fun checkCardDay(type: AccountType, day: Int): Check = when {
         day == 0 -> Check.Ok
         !Installments.allowedFor(type) -> Check.Refused("Only a credit card or a pay later account has a statement or due day.")
@@ -98,7 +75,6 @@ object MintRules {
         else -> Check.Ok
     }
 
-    /** The next date on or after [today] that falls on [day] of a month, a day the month lacks falling on its last day; null for day 0 (none). */
     fun nextOnDay(day: Int, today: LocalDate): LocalDate? {
         if (day !in 1..31) return null
         fun inMonth(y: Int, m: Int): LocalDate {
@@ -111,7 +87,6 @@ object MintRules {
         return inMonth(next.year, next.monthNumber)
     }
 
-    /** What is left to spend on a card with a limit: the limit less what is owed, never below zero; null when the account has no limit. */
     fun leftToSpend(account: FinancialAccount, owedMinor: Long): Long? = account.limitMinor.takeIf { it > 0 }?.let { (it - owedMinor).coerceAtLeast(0) }
 
     fun checkAccount(name: String, currency: String, openingMinor: Long, suffix: String): Check = when {
@@ -123,7 +98,6 @@ object MintRules {
         else -> Check.Ok
     }
 
-    /** Whether [tx] can be saved as the data stands: the accounts exist and are open, the currencies agree, a transfer has two different legs. */
     fun checkTransaction(data: MintData, tx: Transaction): Check {
         (checkAmount(tx.amountMinor) as? Check.Refused)?.let { return it }
         if (tx.note.length > NOTE_MAX || tx.payee.length > NAME_MAX * 2) return Check.Refused("That text is too long.")
@@ -226,7 +200,7 @@ object MintRules {
             TxType.ADJUSTMENT -> if (tx.accountId == account.id) (if (tx.up) tx.amountMinor else -tx.amountMinor) else return null
             TxType.TRANSFER -> when (account.id) { tx.accountId -> -(tx.amountMinor + tx.feeMinor); tx.toAccountId -> tx.amountMinor; else -> return null }
         }
-        if (tx.type == TxType.ADJUSTMENT) return flow // an adjustment moves the displayed balance in the direction given, for either kind
+        if (tx.type == TxType.ADJUSTMENT) return flow
         return if (account.type.liability) -flow else flow
     }
 
@@ -240,7 +214,6 @@ object MintRules {
         return AccountBalance(account, posted, pending)
     }
 
-    /** Every account's balance in one pass over the records (the same figures as [balance] for each), so a long history costs one walk, not one per account. */
     fun balances(data: MintData): List<AccountBalance> {
         val byId = data.accounts.associateBy { it.id }
         val posted = HashMap<String, Long>()
@@ -253,13 +226,11 @@ object MintRules {
         return data.accounts.map { AccountBalance(it, it.openingMinor + (posted[it.id] ?: 0L), pending[it.id] ?: 0L) }
     }
 
-    /** A simple daily APR/365 estimate in minor units, rounded half up once for the whole period. */
     fun simpleInterestEstimate(data: MintData, account: FinancialAccount, from: LocalDate, through: LocalDate): Long {
         if (!account.type.liability) return 0
         return dailyInterest(data, account, account.annualAprBasisPoints, from, through)
     }
 
-    /** Simple daily interest at [apr] basis points a year on the positive balance of [account] for each day of `[from, through]`, rounded half up once for the period. */
     private fun dailyInterest(data: MintData, account: FinancialAccount, apr: Int, from: LocalDate, through: LocalDate): Long {
         if (apr <= 0 || apr > MAX_APR_BASIS_POINTS || from > through) return 0
         val denominator = 3_650_000L
@@ -291,14 +262,10 @@ object MintRules {
         return rounded.coerceAtMost(Money.MAX_MINOR)
     }
 
-    // --- interest earned by a deposit account (MINT.md 4.3E) ----------------------------------------------------------------
-
     const val MAX_TAX_BASIS_POINTS = 5_000
 
-    /** The income category earned-interest estimates are filed under (added on first use when an older save lacks it). */
     const val INTEREST_CATEGORY = "cat-interest"
 
-    /** Whether the earned-interest settings fit [type]: only a deposit account (not cash, not a liability) can have a rate or a schedule. */
     fun checkEarn(type: AccountType, rateBasisPoints: Int, schedule: EarnSchedule, taxBasisPoints: Int): Check {
         val any = rateBasisPoints != 0 || schedule != EarnSchedule.OFF || taxBasisPoints != 0
         if (any && (type.liability || type == AccountType.CASH)) return Check.Refused("Interest earned is for bank, wallet and other deposit accounts.")
@@ -310,27 +277,17 @@ object MintRules {
     private const val MAX_ACCRUAL_PERIODS = 12
     private const val MAX_ACCRUAL_DAYS = 366
 
-    /** The days one earned-interest estimate covers. */
     data class InterestPeriod(val from: LocalDate, val through: LocalDate)
 
-    /** Whether [account] estimates earned interest at all: an open deposit account with a rate and a schedule. */
     fun earnsInterest(account: FinancialAccount): Boolean =
         !account.type.liability && account.type != AccountType.CASH && account.earnSchedule != EarnSchedule.OFF && account.earnRateBasisPoints > 0 && account.status == AccountStatus.ACTIVE
 
-    /**
-     * What a deposit account earned over `[from, through]` after the tax its bank withholds: the daily balance times the yearly rate over 365, rounded half up once,
-     * less the tax rounded half up. Posted records only, so an estimate still waiting for review never compounds. It is an estimate, not the bank's figure.
-     */
     fun earnedInterest(data: MintData, account: FinancialAccount, from: LocalDate, through: LocalDate): Long {
         if (account.type.liability) return 0
         val gross = dailyInterest(data, account, account.earnRateBasisPoints, from, through)
         return gross - (gross * account.earnTaxBasisPoints.coerceIn(0, MAX_TAX_BASIS_POINTS) + 5_000) / 10_000
     }
 
-    /**
-     * The estimates still to make for [account] as of [today]: complete days only, from the day after the last one made (a record of any status counts, so a skipped
-     * estimate is not made again) or from the day interest was switched on. A daily schedule is one catch-up period; a monthly one is one per calendar month that has ended.
-     */
     fun interestPeriods(data: MintData, account: FinancialAccount, today: LocalDate): List<InterestPeriod> {
         if (!earnsInterest(account)) return emptyList()
         val last = data.transactions.filter { it.accountId == account.id && it.interestThrough != null }.maxOfOrNull { it.interestThrough!! }
@@ -352,12 +309,10 @@ object MintRules {
         return periods
     }
 
-    /** Assets less liabilities, per currency, over active accounts. Never converted across currencies: each currency has its own line. */
     fun netPosition(data: MintData, today: LocalDate? = null): Map<String, Long> {
         val result = linkedMapOf<String, Long>()
         for (b in balances(data)) {
             if (b.account.status != AccountStatus.ACTIVE || b.account.hideFromTotal) continue
-            // With a day given, a Pay later account counts as Mint Settings says (3.2B); without one, in full.
             val owed = if (b.account.type.liability && today != null) OverviewCounts.liabilityCounted(data, b.account, b.postedMinor, today) else b.postedMinor
             val signed = if (b.account.type.liability) -owed else owed
             result[b.account.currency] = (result[b.account.currency] ?: 0L) + signed
@@ -365,24 +320,16 @@ object MintRules {
         return result
     }
 
-    /** Money in liquid accounts of [currency], less the bills (not recurring income) with a known amount still unpaid in the next [withinDays] days. Credit limits never count. */
     fun available(data: MintData, currency: String, today: LocalDate, withinDays: Int = 14): Available {
         val liquid = balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal && it.account.type.liquid && it.account.currency == currency }.sumOf { it.postedMinor }
-        // A recurring income (a salary) is money expected, not a bill to pay: it is never taken off available money (8.3A).
         val due = upcoming(data, today, withinDays).filter { !it.bill.income && it.bill.currency == currency && it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
         val bills = due.sumOf { it.remainingMinor ?: 0L }
         val (plans, plansCount) = Installments.dueWithin(data, currency, today, withinDays)
         return Available(currency, liquid, bills, due.size, liquid - bills - plans, plans, plansCount)
     }
 
-    // --- spending, cash flow and budgets -----------------------------------------------------------------------------------
-
     private fun counts(t: Transaction) = t.status == TxStatus.POSTED
 
-    /**
-     * What was spent in `[from, endExclusive)` in [currency] (overall, or in one [categoryId]): posted expenses and fees (a transfer's fee included, never its amount), less refunds. A transfer
-     * is never spending; an excluded, voided or pending record is left out (MINT.md sections 5.4, 7.1). May be negative if refunds exceed spending.
-     */
     fun spent(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String, categoryId: String? = null): Long =
         data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive }
             .sumOf { tx ->
@@ -402,7 +349,6 @@ object MintRules {
     fun earned(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): Long =
         data.transactions.filter { counts(it) && it.currency == currency && it.type == TxType.INCOME && it.repaymentOf == null && it.day >= from && it.day < endExclusive }.sumOf { it.amountMinor }
 
-    /** Spending by category over the period, largest first; records with no category are one line with a null id. */
     fun spendingByCategory(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): List<Pair<String?, Long>> {
         val totals = mutableMapOf<String?, Long>()
         data.transactions.filter { counts(it) && it.currency == currency && it.day >= from && it.day < endExclusive && (it.type in setOf(TxType.EXPENSE, TxType.FEE, TxType.REFUND) || (it.type == TxType.TRANSFER && it.feeMinor > 0)) }
@@ -421,7 +367,6 @@ object MintRules {
         return day.minus(DatePeriod(days = back))
     }
 
-    /** The period [period] that contains [day]: its first day and the day after its last (months follow the calendar, so month length is exact). */
     fun periodOf(period: BudgetPeriod, day: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): Pair<LocalDate, LocalDate> = when (period) {
         BudgetPeriod.MONTHLY -> monthStart(day).let { it to it.plus(1, DateTimeUnit.MONTH) }
         BudgetPeriod.WEEKLY -> weekStartOf(day, weekStart).let { it to it.plus(7, DateTimeUnit.DAY) }
@@ -444,14 +389,8 @@ object MintRules {
         return SavingsProgress(target, saved, (target.targetMinor - saved).coerceAtLeast(0), (saved * 100 / target.targetMinor).coerceAtMost(9_999).toInt())
     }
 
-    // --- bills -------------------------------------------------------------------------------------------------------------
-
     private fun daysInMonth(year: Int, month: Int): Int = LocalDate(year, month, 1).plus(1, DateTimeUnit.MONTH).minus(1, DateTimeUnit.DAY).dayOfMonth
 
-    /**
-     * The due date of occurrence [index] (0 is [Bill.firstDue]), counted from the first date so nothing drifts: a bill first due on the 31st
-     * is due on the last day of a short month and on the 31st again in a long one; one due on 29 February is due on 28 February in other years.
-     */
     fun dueDay(bill: Bill, index: Int): LocalDate {
         val first = bill.firstDue
         return when (bill.frequency) {
@@ -481,20 +420,16 @@ object MintRules {
                     val month = total.mod(12) + 1
                     return LocalDate(year, month, minOf(days[k % days.size], daysInMonth(year, month)))
                 }
-                // The dates of the first month that come before the first due day are not part of the schedule.
                 val skip = (0 until days.size).count { at(it) < first }
                 at(index + skip)
             }
         }
     }
 
-    /** The days of the month of a twice-a-month bill: its own, sorted and distinct (1 to 31), or 15 and 30. */
     fun semiDays(bill: Bill): List<Int> = bill.days.filter { it in 1..31 }.distinct().sorted().take(4).ifEmpty { listOf(15, 30) }
 
-    /** The date an occurrence really falls on: [due] itself, or the nearest working day on or before it when the bill asks (MINT.md 8.3B). */
     fun payDay(data: MintData, bill: Bill, due: LocalDate): LocalDate = if (bill.workday) Payday.onOrBefore(due, data.settings) else due
 
-    /** Occurrences of [bill] due in `[from, to]`, in order. A paused or archived bill makes none; settled history is read from [MintData.billPayments]. */
     fun occurrences(data: MintData, bill: Bill, from: LocalDate, to: LocalDate, today: LocalDate): List<Occurrence> {
         if (bill.status != PlanStatus.ACTIVE || to < from) return emptyList()
         val out = mutableListOf<Occurrence>()
@@ -522,20 +457,14 @@ object MintRules {
         return Occurrence(bill, due, state, payment, pay)
     }
 
-    /** How far back an unsettled occurrence is still shown as overdue; older ones are history, not a standing reproach. */
     const val OVERDUE_DAYS = 60
     private const val MAX_OCCURRENCES = 5_000
 
-    /** What needs attention: unsettled occurrences from [OVERDUE_DAYS] ago to [withinDays] ahead, soonest first, plus partly paid ones. Settled ones are left out. */
     fun upcoming(data: MintData, today: LocalDate, withinDays: Int = 30): List<Occurrence> =
         data.bills.flatMap { occurrences(data, it, today.minus(DatePeriod(days = OVERDUE_DAYS)), today.plus(withinDays, DateTimeUnit.DAY), today) }
             .filter { it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
             .sortedBy { it.payDay }
 
-    /**
-     * Occurrences settled as paid or skipped and due in the last [OVERDUE_DAYS] days or ahead, latest first: the ones [upcoming] leaves out, so a wrong
-     * amount or a slip of the finger can still be settled again or taken back. Partly paid ones are in [upcoming] already.
-     */
     fun settled(data: MintData, today: LocalDate): List<Occurrence> {
         val from = today.minus(DatePeriod(days = OVERDUE_DAYS))
         return data.billPayments.filter { it.dueDay >= from && it.status != SettleStatus.PARTIAL }
@@ -543,35 +472,21 @@ object MintRules {
             .sortedByDescending { it.payDay }
     }
 
-    // --- reconciliation ----------------------------------------------------------------------------------------------------
-
-    /** The difference the user would be accepting: what the statement says minus what Mint's records say (positive means Mint is short). */
     fun reconcileDifference(statementMinor: Long, bookMinor: Long): Long = statementMinor - bookMinor
 
-    // --- Ledger Research: what may pay (MINT.md section 16) -------------------------------------------------------------------
-
-    /** Reconciled accounts paid in a day; the rest are still kept. *(tune)* */
     const val RECONCILES_PAID_PER_DAY = 2
 
-    /** Logged purchases, payments and transfers paid in a day: no limit (owner, 20 November 2026: frequent actions pay like a Plan focus egg, and farming is the player's own business). */
     const val RECORDS_PAID_PER_DAY = Int.MAX_VALUE
 
-    /**
-     * Whether logging [tx] pays the flat reward: Ledger Research is on, it is a purchase (expense) or a transfer (a payment to a card or loan counts), posted,
-     * typed by the player and dated today. Never reads the amount, and there is no daily limit ([RECORDS_PAID_PER_DAY]).
-     */
     fun logPays(data: MintData, tx: Transaction, today: LocalDate): Boolean =
         data.settings.progression && (tx.type == TxType.EXPENSE || tx.type == TxType.TRANSFER) && tx.status == TxStatus.POSTED && tx.source == TxSource.MANUAL &&
             tx.importBatch == null && tx.day == today
 
-    /** A review pays at most once a week. *(tune)* */
     const val REVIEWS_PAID_PER_WEEK = 1
 
-    /** Whether Mint has anything worth organising: an open account and at least one transaction. Empty records are never rewarded (section 16.2). */
     fun hasSubstance(data: MintData): Boolean =
         data.accounts.any { it.status == AccountStatus.ACTIVE } && data.transactions.any { it.status == TxStatus.POSTED }
 
-    /** Whether a reconciliation of [accountId] on [day] may be paid: Ledger Research is on, the account has real history, and the day's share is not used. */
     fun reconcilePays(data: MintData, accountId: String, day: LocalDate): Boolean {
         if (!data.settings.progression) return false
         if (data.transactions.none { it.status == TxStatus.POSTED && (it.accountId == accountId || it.toAccountId == accountId) && it.source == TxSource.MANUAL }) return false
@@ -579,16 +494,12 @@ object MintRules {
         return today.none { it.accountId == accountId } && today.size < RECONCILES_PAID_PER_DAY
     }
 
-    /** Whether a finished review on [day] may be paid: Ledger Research is on, there is something to review, and this week's review has not paid yet. */
     fun reviewPays(data: MintData, day: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): Boolean {
         if (!data.settings.progression || !hasSubstance(data)) return false
         val start = weekStartOf(day, weekStart)
         return data.reviews.count { it.paid && weekStartOf(it.day, weekStart) == start } < REVIEWS_PAID_PER_WEEK
     }
 
-    // --- search and the starting categories ----------------------------------------------------------------------------------
-
-    /** Transactions matching a text (payee, note, category name, account name or amount) and optional filters, newest first. */
     fun search(
         data: MintData,
         text: String = "",
@@ -613,7 +524,6 @@ object MintRules {
             data.accounts.firstOrNull { it.id == t.accountId }?.name?.lowercase()?.contains(q) == true ||
             Money.plain(t.amountMinor, t.currency).contains(q.replace(",", ""))
 
-    /** A compact set for Philippine use, with stable ids; every one can be renamed or archived. */
     fun seedCategories(): List<Category> = listOf(
         "food" to "Groceries", "dining" to "Eating out", "transport" to "Transport", "bills" to "Bills and utilities", "rent" to "Rent and housing",
         "health" to "Health", "shopping" to "Shopping", "school" to "School", "fun" to "Fun", "family" to "Family and gifts", "care" to "Personal care", "other" to "Other",

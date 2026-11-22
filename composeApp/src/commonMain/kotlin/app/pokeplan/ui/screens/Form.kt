@@ -29,38 +29,21 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.dialogueBox
 import app.pokeplan.ui.theme.focusRing
 
-/*
- * The form kit (owner's principles, 16 November 2026; docs/pokelife/FEATURES/DESIGN_SYSTEM.md 6.4A): every form is built from these so
- * they share one label style, one field height (48 dp), one gap between fields and one gap between groups.
- *
- *   FormBox       the dialogue frame of a form, with less inner padding than a text box so a field has room on a phone
- *   FormStack     the form's groups, [Spacing.L] apart
- *   FormGroup     related fields, [Spacing.S] apart, with an optional small heading
- *   FormLabel     the one small label above every field, dropdown and choice (PixelField draws the same)
- *   PixelChoice   one of a few: a segmented row for up to four short options, otherwise a dropdown, never a wall of pills
- *   FormDisclosure  optional or advanced fields behind one "Additional details" row
- *   FormSave      the one full-width primary action at the bottom
- */
-
-/** The label above a field: small, soft, the same as [app.pokeplan.ui.theme.PixelField]'s own. */
 @Composable
 fun FormLabel(text: String, modifier: Modifier = Modifier, color: Color = Pixel.InkSoft) {
-    Text(text, modifier, style = MaterialTheme.typography.bodyMedium, color = color) // the same voice as FieldLabel and PixelField's label
+    Text(text, modifier, style = MaterialTheme.typography.bodyMedium, color = color)
 }
 
-/** The dialogue frame of a form: the same box as a text box, but 16 dp inside the frame's edge instead of 24 so fields keep their width. */
 @Composable
 fun FormBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(modifier.fillMaxWidth().dialogueBox().clip(DialogueShape).padding(horizontal = Spacing.XL - Spacing.XS, vertical = Spacing.L)) { content() }
 }
 
-/** The groups of one form, [Spacing.L] apart. */
 @Composable
 fun FormStack(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.L)) { content() }
 }
 
-/** Related fields: [Spacing.S] apart under an optional heading in the form's label voice. */
 @Composable
 fun FormGroup(modifier: Modifier = Modifier, title: String? = null, content: @Composable () -> Unit) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -69,16 +52,11 @@ fun FormGroup(modifier: Modifier = Modifier, title: String? = null, content: @Co
     }
 }
 
-/** A thin rule between the figure a form is about and the rest of it. */
 @Composable
 fun FormDivider() {
     HorizontalDivider(Modifier.padding(vertical = Spacing.XS), color = Pixel.Border)
 }
 
-/**
- * One of a few options. Up to four options with short labels ([SEGMENT_LABEL_MAX] letters) are a segmented row of equal keys filling the width; anything
- * else is a [PixelDropdown]. A null entry is an "All" or "None" choice written by [text]. [label] sits above it like every field's.
- */
 @Composable
 fun <T> PixelChoice(
     options: List<T?>, selected: T?, text: (T?) -> String, onSelect: (T?) -> Unit, modifier: Modifier = Modifier, label: String? = null,
@@ -94,10 +72,8 @@ fun <T> PixelChoice(
     }
 }
 
-/** The longest label a segmented key holds on a 360 dp phone with four keys. */
 const val SEGMENT_LABEL_MAX = 9
 
-/** Optional or advanced fields behind one quiet row with a chevron: closed until asked for (or until [open] is forced by what the form holds). */
 @Composable
 fun FormDisclosure(title: String, open: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -114,7 +90,6 @@ fun FormDisclosure(title: String, open: Boolean, onToggle: () -> Unit, modifier:
     }
 }
 
-/** The one primary action of a form: full width, in the module's colour. */
 @Composable
 fun FormSave(label: String, onClick: () -> Unit, accent: Color, modifier: Modifier = Modifier, enabled: Boolean = true) {
     PixelButton(label, onClick, modifier.fillMaxWidth(), accent, enabled = enabled)

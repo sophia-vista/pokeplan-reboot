@@ -32,16 +32,13 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.app.world.worldReport
 import app.pokeplan.app.world.worldReportDismiss
 
-/** A number with one decimal ("152.4"), without `String.format`, which the web build does not have. */
 internal fun oneDecimal(x: Double): String = (kotlin.math.round(x * 10) / 10.0).toString()
 
-/** "12 min 30 s", "45 s": a duration in words. */
 internal fun durationText(millis: Long): String {
     val seconds = millis / 1000
     return if (seconds >= 60) "${seconds / 60} min" + if (seconds % 60 != 0L) " ${seconds % 60} s" else "" else "$seconds s"
 }
 
-/** The steps of [SpeedExplanation] as plain lines, in the order the numbers are used. Abilities are listed last, as help for skills and not for speed. */
 internal fun speedLines(e: SpeedExplanation): List<String> = buildList {
     add("Levels of the team: ${e.levels}.")
     add(if (e.favoredMembers == 0) "No one is of a type this place favours (+0)." else "${e.favoredMembers} of the team ${if (e.favoredMembers == 1) "is" else "are"} of a favoured type: +20% of their levels, +${oneDecimal(e.favoredBonus)}.") // copy-ok: game
@@ -56,7 +53,6 @@ internal fun speedLines(e: SpeedExplanation): List<String> = buildList {
     if (e.skillHelp.isNotEmpty()) add("Abilities help skills, not speed: ${e.skillHelp.entries.joinToString(", ") { "${it.key.label} +${it.value}" }}.")
 }
 
-/** A "How fast?" toggle that opens the steps of [members]' speed in [dungeon]. */
 @Composable
 internal fun SpeedExplainer(members: List<OwnedPokemon>, dungeon: DungeonDef, world: WorldData) {
     var open by remember(dungeon.id, members.map { it.id }) { mutableStateOf(false) }
@@ -65,13 +61,11 @@ internal fun SpeedExplainer(members: List<OwnedPokemon>, dungeon: DungeonDef, wo
         if (open) {
             val explained = WorldSim.explainSpeed(dungeon, members, world)
             speedLines(explained).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
-            // What the floors ask of this team (WORLD.md 3.6): how far it clears in full, and what happens beyond.
             Text(Outcomes.explain(explained.power, dungeon), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
-/** What every team is doing, in one place: a line each with where it is and how far, then the Finds waiting. Nothing here is saved or changes any rule. */
 @Composable
 internal fun ExpeditionOverview(model: AppModel) {
     val world = model.data.world
@@ -103,11 +97,6 @@ internal fun ExpeditionOverview(model: AppModel) {
     }
 }
 
-/**
- * What the teams brought back since the player last looked, in three kinds so a chance is never read as a promise: what every floor gives,
- * the fixed milestone rewards, and the chance finds. Berries, Poké and milestone items are already in the Bag; Pokémon wait in Finds.
- * Shown until dismissed; not saved (the reward log is the record).
- */
 @Composable
 internal fun WorldReportCard(model: AppModel) {
     val report = model.store.worldReport() ?: return
@@ -116,7 +105,6 @@ internal fun WorldReportCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed", style = MaterialTheme.typography.titleSmall)
-            // The haul at a glance, with the games' own art: the coin for Poké, a berry, and a box for each treasure tier.
             if (report.poke > 0 || report.berries > 0 || report.treasure.isNotEmpty()) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (report.poke > 0) {
                     app.pokeplan.ui.ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = 28.dp, description = null)

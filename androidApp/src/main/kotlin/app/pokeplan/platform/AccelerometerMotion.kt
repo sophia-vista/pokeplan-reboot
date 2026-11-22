@@ -9,10 +9,6 @@ import app.pokeplan.ui.MotionSource
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-/**
- * Deep Focus: the phone has to stay still. Watches the accelerometer and calls back when the total acceleration moves
- * away from gravity by more than [THRESHOLD]. It waits a second after starting so putting the phone down does not count.
- */
 class AccelerometerMotion(context: Context) : MotionSource {
     private val manager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private var listener: SensorEventListener? = null

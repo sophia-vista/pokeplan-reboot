@@ -24,7 +24,6 @@ import app.pokeplan.app.base.BaseStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** Cross-module links (PRODUCT_BIBLE.md section 4): one completion and one reward owner for a HOME chore and for a converted LINK follow-up. */
 class TaskLinksTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
@@ -43,7 +42,6 @@ class TaskLinksTest {
 
     private class Setup(val game: GameStore, val home: BaseStore, val spy: Spy, val clock: FakeClock)
 
-    /** The app wires this the same way: the owner is registered once and Home's changes sync the projections. */
     private fun setup(): Setup {
         val clock = FakeClock(saturday)
         val game = GameStore(MemoryStorage(), clock, utc, Random(7)).also { it.start("Sophia", 25) }
@@ -67,7 +65,6 @@ class TaskLinksTest {
         assertEquals(chore.id, task.link?.ref)
         assertEquals(task.id, s.game.linkChore(chore.id)?.id)
         assertEquals(1, s.tasks.size)
-        // The words follow HOME: a rename there is shown here without PLAN keeping a second copy of the truth.
         s.home.updateChore(chore.copy(title = "Vacuum the stairs"))
         assertEquals("Vacuum the stairs", s.tasks.single().title)
     }
@@ -81,12 +78,10 @@ class TaskLinksTest {
         assertFalse(pending.pays)
         s.clock.advanceMinutes(1)
         s.game.tick()
-        // HOME recorded the one completion and paid it once.
         assertEquals(1, s.spy.events.size)
         assertEquals(1, s.home.data.entries.count { it.choreId == chore.id })
         assertTrue(s.home.data.entries.single().paid)
         assertEquals(TaskState.DONE, s.tasks.single().state)
-        // PLAN's own reward path ran for nothing: no activity day, no task entry in the reward log.
         assertEquals(before.second, s.game.data.activeDays)
         assertTrue(s.game.data.rewardLog.none { it.source.startsWith("Task:") })
     }
@@ -98,7 +93,6 @@ class TaskLinksTest {
         s.home.complete(chore.id)
         assertEquals(TaskState.DONE, s.tasks.single().state)
         assertEquals(1, s.spy.events.size)
-        // Ticking the done task again does nothing and pays nothing.
         s.game.completeTask(s.tasks.single().id)
         assertEquals(1, s.spy.events.size)
     }
@@ -116,11 +110,9 @@ class TaskLinksTest {
         assertEquals("chore", note.kind)
         assertEquals(s.game.data.player.coins - coins, note.poke.toInt())
         assertEquals((s.game.data.player.inventory.counts.values.sum() - candies).toLong(), note.items.values.sum())
-        // Doing it again for the same occurrence pays nothing and leaves no second note.
         s.game.undoCompletion(task.id)
         s.game.completeTask(task.id)
         assertEquals(1, s.game.data.ledgerNotes.size)
-        // Nothing the user typed is in the note.
         assertTrue(!note.toString().contains("Vacuum"))
     }
 
@@ -134,7 +126,6 @@ class TaskLinksTest {
         assertTrue(s.home.data.entries.isEmpty())
         s.game.completeTask(task.id)
         s.clock.advanceMinutes(1); s.game.tick()
-        // HOME was asked twice but its event id names the occurrence, so the game paid one.
         assertEquals(1, s.game.data.basePaid.size)
     }
 
@@ -179,7 +170,6 @@ class TaskLinksTest {
         assertEquals(TaskState.DELETED, s.tasks.single().state)
         assertNull(s.game.linkedTask(LinkKind.HOME_CHORE, chore.id))
         assertEquals(1, s.home.data.chores.size)
-        // A new link makes a new projection.
         assertNotNull(s.game.linkChore(chore.id))
     }
 
@@ -214,7 +204,6 @@ class TaskLinksTest {
         val chore = home.addChore("Vacuum", Recurrence(RepeatKind.WEEKLY), LocalDate(2026, 11, 7)).record!!
         game.registerLinkOwner(BaseLinkOwner(home))
         val task = game.linkChore(chore.id)!!
-        // A store that has no owner (a widget before it knows Home) leaves the task and the chore exactly as they were.
         val widget = GameStore(shared, clock, utc, Random(1))
         widget.completeTask(task.id)
         assertEquals(TaskState.OPEN, widget.data.tasks.filter { !it.tutorial }.single().state)
@@ -226,7 +215,6 @@ class TaskLinksTest {
         val task = assertNotNull(s.game.convertFollowUp("fu-1", "Send the photos", planned = LocalDate(2026, 11, 9)))
         assertEquals(LinkKind.LINK_FOLLOW_UP, task.link?.kind)
         assertFalse(task.ownedElsewhere)
-        // The same follow-up converts to the same task, never a second one.
         assertEquals(task.id, s.game.convertFollowUp("fu-1", "Send the photos")?.id)
         assertEquals(1, s.tasks.size)
         assertEquals(TaskState.OPEN, s.game.linkedTask(LinkKind.LINK_FOLLOW_UP, "fu-1")?.state)
@@ -235,11 +223,9 @@ class TaskLinksTest {
         assertTrue(pending.pays)
         s.clock.advanceMinutes(1); s.game.tick()
         assertEquals(TaskState.DONE, s.game.linkedTask(LinkKind.LINK_FOLLOW_UP, "fu-1")?.state)
-        // Reopening and finishing again never pays a second time.
         s.game.reopen(task.id)
         s.clock.advanceMinutes(30)
         assertFalse(s.game.completeTask(task.id).pays)
-        // Unlinking keeps a normal PLAN task.
         s.game.unlinkTask(task.id)
         assertNull(s.tasks.single().link)
         assertTrue(s.tasks.single().paid)

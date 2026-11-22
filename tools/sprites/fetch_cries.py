@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""Downloads the real Pokemon cries from the public PokeAPI/cries repository into assets/cries/<species id>.ogg.
-
-Usage: python3 -I tools/sprites/fetch_cries.py
-
-One cry per species (National Dex number 1 to 1025), the latest ones. Existing files are skipped, so it can be re-run.
-"""
 import concurrent.futures
 import os
 import sys
@@ -14,7 +8,6 @@ import urllib.request
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'assets/cries')
-# Pinned for reproducibility. To update: git ls-remote https://github.com/PokeAPI/cries refs/heads/main
 CRIES_COMMIT = 'b3a9044bb839b5e3152aaa536c7b463a0fcf0140'
 BASE = f'https://raw.githubusercontent.com/PokeAPI/cries/{CRIES_COMMIT}/cries/pokemon/latest/'
 LAST_ID = 1025

@@ -2,7 +2,6 @@ package app.pokeplan.core.pokemon
 
 import app.pokeplan.core.dex.BaseStats
 
-/** The Gen 3+ stat formula. */
 object StatCalculator {
     const val MAX_IV = 31
     const val MAX_EV_PER_STAT = 252
@@ -13,7 +12,7 @@ object StatCalculator {
         fun stat(s: Stat): Int {
             val core = (2 * base[s] + ivs[s] + evs[s] / 4) * level / 100
             return if (s == Stat.HP) {
-                if (base.hp == 1) 1 else core + level + 10 // Shedinja always has 1 HP
+                if (base.hp == 1) 1 else core + level + 10
             } else {
                 (core + 5) * nature.percent(s) / 100
             }

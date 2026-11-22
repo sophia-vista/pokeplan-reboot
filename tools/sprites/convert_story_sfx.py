@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""Cuts the story's sound effects from the Explorers of Sky clips in assets/sky-sfx into assets/sfx/story-<name>.ogg.
-
-Usage: python3 -I tools/sprites/convert_story_sfx.py
-
-The clips are the game's own cutscene sounds (rumbling, wind, flood, electricity, fire, an ominous string note, the Waterfall
-Cave vision, the Temporal Pinnacle, the team charm jingle...), rendered by extract_sky_audio.py. They came out 6 to 20 dB
-quieter than the cries and the UI sounds (the renderer does not level them), so each one is trimmed to MAXLEN with a short
-fade-out, raised to a common RMS level (TARGET_RMS_DB, near the cries and the other effects) and limited at -1 dBFS.
-Needs ffmpeg. Private use only, like the clips they come from.
-"""
 import os
 import re
 import subprocess
@@ -19,9 +9,8 @@ SRC = os.path.join(ROOT, 'assets/sky-sfx')
 OUT = os.path.join(ROOT, 'assets/sfx')
 TARGET_RMS_DB = -15.0
 LIMIT_DB = -1.0
-MAXLEN = 4.5  # seconds; a longer clip is cut with a fade
+MAXLEN = 4.5
 
-# our name (Sfx enum in composeApp, Cries.kt) -> sky-sfx clip
 SOUNDS = {
     'story-rumble': 'jingle-rumbling-louder-sfx',
     'story-rumble-loud': 'jingle-rumbling-loudest-sfx',

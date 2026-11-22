@@ -47,18 +47,11 @@ import app.pokeplan.ui.theme.KeyLabel
 import app.pokeplan.ui.theme.PixelKey
 import app.pokeplan.ui.pokemon.label
 
-/** A filter or choice key (the planner's views, pickers): the selected one is filled, the others outlined. Same states as every key. */
 @Composable
 fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, key: Color = LocalFrameTone.current?.band ?: Pixel.Blue) {
     PixelKey(onClick, modifier, key = key, selected = selected, enabled = enabled, fill = true, role = Role.Tab, horizontal = Spacing.M) { look -> KeyLabel(label, look) }
 }
 
-/**
- * A one-of-many choice that would be too long for a row of [TabButton]s (a list the person made, a name, more than about five
- * options, or labels that wrap): one key showing the current choice and a chevron, opening a pixel list in a dialogue frame under
- * it as wide as the key, scrolling when long. A `null` entry is the "All" or "None" choice, written by [text]. [selected] null
- * with no null entry shows [placeholder]. The chosen row is ticked as well as tinted.
- */
 @Composable
 fun <T> PixelDropdown(
     options: List<T?>, selected: T?, text: (T?) -> String, onSelect: (T?) -> Unit, modifier: Modifier = Modifier,
@@ -107,7 +100,6 @@ fun <T> PixelDropdown(
     }
 }
 
-/** A bottom navigation item: a real item icon over the label; the selected one has a filled pill and a bold label. */
 @Composable
 fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val ui = app.pokeplan.ui.LocalUiSound.current

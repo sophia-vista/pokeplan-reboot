@@ -5,14 +5,12 @@ import androidx.compose.ui.window.ComposeViewport
 import app.pokeplan.app.storage.Storage
 import kotlinx.browser.localStorage
 
-/** The save lives in the browser's local storage, under [key] (Care keeps its own). */
 class BrowserStorage(private val key: String = "pokeplan.save") : Storage {
     override fun load(): String? = localStorage.getItem(key)
     override fun save(text: String) = localStorage.setItem(key, text)
     override fun keepAside(text: String) = localStorage.setItem("$key.unreadable", text)
 }
 
-/** Downloads the data export through the browser. */
 class BrowserFileSaver : FileSaver {
     override fun save(name: String, text: String): String {
         download(name, text)

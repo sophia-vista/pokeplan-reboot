@@ -32,13 +32,11 @@ class CareStoreTest {
     private val monday = LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds()
 
     private class Setup(val game: GameStore, val care: CareStore, val clock: FakeClock, val storage: MemoryStorage, val gameStorage: MemoryStorage) {
-        /** Puts items in the shared bag, as if earned elsewhere. */
         fun give(item: String, n: Int) {
             gameStorage.save(GameStore.json.encodeToString(AppData.serializer(), game.data.let { d -> d.copy(player = d.player.copy(inventory = d.player.inventory.add(item, n))) }))
             game.reload()
         }
 
-        /** Puts a second Pokémon in Care's party as its lead: Care warms only its own lead, never the Plan buddy. */
         fun giveCareLead() {
             val d = game.data
             val starter = d.player.pokemon.first()
@@ -169,7 +167,6 @@ class CareStoreTest {
         val before = s.game.data.player.inventory
         s.care.setMood(4)
         assertEquals(4, s.care.diaryToday()?.mood)
-        // Filling in the card afterwards keeps the mood; tapping it again takes it back and drops a card left with nothing.
         s.care.saveDiary(mapOf(Emotion.CALM to 2))
         assertEquals(4, s.care.diaryToday()?.mood)
         s.care.setMood(null)
@@ -222,7 +219,6 @@ class CareStoreTest {
         assertEquals(listOf("A walk by the river"), s.care.searchJournal("OUTSIDE").map { it.text })
         s.care.editEntry(s.care.data.journal.first().id, "A long walk")
         assertEquals(listOf("A long walk"), s.care.searchJournal("long").map { it.text })
-        // Tags change with the text; a blank text changes nothing.
         val id = s.care.data.journal.first().id
         s.care.editEntry(id, "A long walk", tags = setOf("Rest"))
         assertEquals(setOf("Rest"), s.care.data.journal.first { it.id == id }.tags)
@@ -262,7 +258,6 @@ class CareStoreTest {
 
     private val rest get() = app.pokeplan.care.Visitors.REST_MILLIS + 1
 
-    /** A visit with [species]: its favourite first, then every other kind of care, until the visit comes to its end. The last step carries what it came to. */
     private fun fullVisit(s: Setup, species: Int): app.pokeplan.care.VisitStep {
         val visitor = s.care.visitors().first { it.speciesId == species }
         assertNotNull(s.care.startVisit(species))
@@ -270,7 +265,7 @@ class CareStoreTest {
         var step: app.pokeplan.care.VisitStep? = null
         for (kind in kinds) {
             step = assertNotNull(s.care.visitAct(kind))
-            if (step.result != null) break // warm enough to be a friend before every kind was done
+            if (step.result != null) break
         }
         return step!!
     }
@@ -280,7 +275,6 @@ class CareStoreTest {
     @Test
     fun visitorsArriveOnTheirOwnAndNeedNoCareFirst() {
         val s = setup()
-        // Nothing has been done in Care: visitors are here, each with its own id, and a visit can start at once.
         val here = s.care.visitors()
         assertEquals(app.pokeplan.care.Visitors.FIRST_ARRIVALS, here.size)
         assertEquals(here.size, here.map { it.id }.toSet().size)
@@ -409,7 +403,7 @@ class CareStoreTest {
 
     @Test
     fun aFriendTheWorldCannotPayTodayStaysReadyAndTheVisitIsNotStranded() {
-        val s = setup(started = false) // the world pays nothing before the game has started, the same refusal as its daily limit of friends
+        val s = setup(started = false)
         val species = s.care.visitors().first().speciesId
         var step: app.pokeplan.care.VisitStep
         do {
@@ -431,7 +425,6 @@ class CareStoreTest {
     fun theMeadowHoldsFourTheRestWaitInAQueueThatNeverExpiresAndNothingIsDisplaced() {
         val s = setup()
         val V = app.pokeplan.care.Visitors
-        // A year of not opening Care: arrivals pause once the meadow and the queue are full, and nobody is dropped.
         var seen = s.care.visitors().map { it.id }
         repeat(60) {
             s.clock.advanceDays(1)
@@ -446,7 +439,6 @@ class CareStoreTest {
         assertEquals(V.MAX_QUEUE, s.care.queued().size)
         val queued = s.care.queued().first()
         assertEquals(null, s.care.startVisit(queued.speciesId), "a visitor in the queue waits for a place")
-        // Befriending frees a place, and the next in the queue takes it.
         val gone = s.care.meadow().first()
         assertTrue(s.care.dismiss(gone.speciesId))
         assertEquals(queued.id, s.care.meadow().last().id)
@@ -500,7 +492,6 @@ class CareStoreTest {
         assertEquals(app.pokeplan.care.CareAction.GIFT, three.favorite)
         assertTrue(here.all { it.id.isNotEmpty() })
         assertEquals(0, here.first { it.speciesId == 16 }.progress)
-        // Loading it again changes nothing more.
         assertEquals(here, CareStore(s.storage, s.clock, s.game, utc, rng = Random(9)).visitors())
     }
 

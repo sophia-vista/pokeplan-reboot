@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Alola, "The Island Challenge": Roo the Rowlet guides the buddy; Team Skull is Zubat and Salandit; Solgaleo, Lunala and Necrozma are the sun, the moon and the light. */
 internal object AlolaChapters {
     private val buddy = buddyCharacter()
     private val roo = npc("roo", "Roo", 722)

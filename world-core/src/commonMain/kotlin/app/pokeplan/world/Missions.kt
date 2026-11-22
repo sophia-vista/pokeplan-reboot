@@ -3,41 +3,25 @@ package app.pokeplan.world
 import app.pokeplan.core.pokemon.Items
 import kotlinx.serialization.Serializable
 
-/** What a mission asks (docs/pokelife/MODULES/WORLD.md section 14). */
 enum class MissionKind(val label: String) {
     EXPLORE("Explore"), COLLECT("Find items"), RESCUE("Rescue"), DELIVER("Deliver"), ESCORT("Escort"), DEFEAT("Defeat"),
     INVESTIGATION("Investigate"), CHALLENGE("Challenge"), STORY("Story"),
 }
 
-/**
- * A job on the board. [EXPLORE] is done when any team reaches [floor] of [dungeonId] while it is accepted; [COLLECT] when
- * [count] berries have been found anywhere; [RESCUE] when a team reaches [floor] of [dungeonId], and the lost Pokémon
- * ([rescued], a species id) then waits among the Finds; [ESCORT] is an Explore job that only counts for a team of at least [count]
- * Pokémon, and [DEFEAT] one that only counts for a team whose power is at least [count] (docs/pokelife/MODULES/WORLD.md section 14). The three kinds of WORLD.md 2.4:
- * [INVESTIGATION] is done when [count] side paths (floor events a team member could open) were opened in [dungeonId] while it is accepted;
- * [CHALLENGE] is an Explore job that only counts for a team of at most [count] Pokémon (a small team on purpose, the opposite of an Escort);
- * [STORY] is done when the story of [dungeonId]'s region has opened chapter [count] (its progress is the story's own, not floors). A job that is [once] never comes back; the others are repeatable.
- * Rewards are paid when the player claims the finished job. Numbers are *(tune)*.
- */
 data class MissionDef(
     val id: String, val title: String, val story: String, val kind: MissionKind, val needs: ExplorerRank, val once: Boolean,
     val dungeonId: String? = null, val floor: Int = 0, val count: Int = 0, val rescued: Int? = null,
     val poke: Int, val xp: Int, val itemId: String? = null, val itemCount: Int = 0,
-    /** A [DELIVER] job reaches [floor] like an Explore job, and is claimed by handing over [giveCount] of [give] from the Bag. */
     val give: String? = null, val giveCount: Int = 0,
-    /** Days before the job can be claimed again: 1 for a daily job, 7 for the weekly one, 14 for the ordinary jobs (so repeating them is no faster than exploring), 0 for a one-time job. */
     val period: Int = 0,
 )
 
-/** Progress on an accepted mission. A finished one stays until it is claimed. */
 @Serializable
 data class MissionProgress(val id: String, val progress: Int = 0, val done: Boolean = false)
 
 object Missions {
-    /** The most jobs a team of explorers can hold at once. *(tune)* */
     const val MAX_ACTIVE = 3
 
-    /** The mission board opens with Story chapter 2. */
     const val BOARD_CHAPTER = 2
 
     val all: List<MissionDef> = listOf(
@@ -97,7 +81,6 @@ object Missions {
         MissionDef("sinnoh-island-14", "Escort a collector to Iron Island", "A collector wants to see the mine's old steel, with company.", MissionKind.ESCORT, ExplorerRank.GOLD, false, "iron-island", floor = 14, count = 3, poke = 590, xp = 295, period = 14),
         MissionDef("sinnoh-road-18", "Walk Victory Road", "The road to the League needs a patrol.", MissionKind.EXPLORE, ExplorerRank.PLATINUM, false, "victory-road-sinnoh", floor = 18, poke = 970, xp = 485, period = 14),
         MissionDef("sinnoh-pillar-18", "Climb to the Spear Pillar", "The pillar hums. Go and see why.", MissionKind.EXPLORE, ExplorerRank.PLATINUM, false, "spear-pillar", floor = 18, poke = 970, xp = 485, period = 14),
-        // Investigations (open side paths), challenges (a small team on purpose) and story requests (a chapter of the region's story), WORLD.md 2.4.
         MissionDef("investigate-woods", "Look into the side paths of Tiny Woods", "Travellers talk of hidden ways off the trail. Open two of them.", MissionKind.INVESTIGATION, ExplorerRank.NORMAL, false, "tiny-woods", count = 2, poke = 90, xp = 45, period = 14),
         MissionDef("investigate-cave", "Look into Thunderwave Cave", "Something blocks the side tunnels. Open three of them.", MissionKind.INVESTIGATION, ExplorerRank.BRONZE, false, "thunderwave-cave", count = 3, poke = 220, xp = 110, period = 14),
         MissionDef("kanto-investigate-moon", "Look into Mt. Moon's side tunnels", "Strange marks lead off the main path. Open two side paths.", MissionKind.INVESTIGATION, ExplorerRank.BRONZE, false, "mt-moon", count = 2, poke = 180, xp = 90, period = 14),
@@ -122,24 +105,19 @@ object Missions {
 
     private val byId = all.associateBy { it.id }
 
-    /** The region a job belongs to: its dungeon's layer, or the home region for a job that is not tied to a dungeon (berries). */
     fun layerOf(m: MissionDef): WorldLayer = m.dungeonId?.let { Dungeons.byId(it)?.layer } ?: WorldLayer.RESCUE
 
     fun byId(id: String): MissionDef? = byId[id]
 
-    /** Whether the board is open at all for [data]. */
     fun boardOpen(data: WorldData): Boolean = Story.opened(data, WorldLayer.RESCUE) >= BOARD_CHAPTER || Story.opened(data, WorldLayer.EXPLORERS) >= BOARD_CHAPTER
 
-    /** Whether a team could enter [m]'s dungeon now (its story chapter is open and a post-story place is unlocked); jobs with no dungeon are always open. */
     fun dungeonOpen(data: WorldData, m: MissionDef): Boolean {
         val d = m.dungeonId?.let { Dungeons.byId(it) } ?: return true
         return Story.opened(data, d.layer) >= d.chapter && (!d.postStory || data.layerDone(d.layer))
     }
 
-    /** A [MissionKind.STORY] job whose chapter is already open has nothing left to ask. */
     private fun told(data: WorldData, m: MissionDef): Boolean = m.kind == MissionKind.STORY && Story.opened(data, layerOf(m)) >= m.count
 
-    /** The jobs [data] can take at [now] (the settle time unless given: the screens pass the clock, which a quiet World would not have stored): the board is open, the rank is reached, and a one-time job is not done or already taken. */
     fun available(data: WorldData, now: Long = data.lastSeenAt, utcOffsetMillis: Long = 0): List<MissionDef> =
         if (!boardOpen(data)) emptyList()
         else all.filter { m ->
@@ -147,18 +125,12 @@ object Missions {
                 (m.period == 0 || data.missionClaimedDay[m.id].let { it == null || day(now, utcOffsetMillis) - it >= m.period })
         }
 
-    /** A job's place on the board for the player: can it be taken, is it held or done, or why not. */
     enum class BoardState { AVAILABLE, HELD, DONE, UNAVAILABLE }
 
-    /** One line of the board: the job, its [state] and, when it cannot be taken, the [reason]; [repeats] says how often it comes back. */
     data class BoardEntry(val mission: MissionDef, val state: BoardState, val reason: String? = null) {
         val repeats: String get() = when (mission.period) { 0 -> "One time"; 1 -> "Daily"; 7 -> "Weekly"; else -> "Repeats every ${mission.period} days" }
     }
 
-    /**
-     * The whole board for [data] at [now], every job with its state: held (taken, not done), done (to claim), available, or unavailable with
-     * the reason (rank not reached, a one-time job already done, or the days before a repeatable one comes back). Empty when the board is shut.
-     */
     fun board(data: WorldData, now: Long = data.lastSeenAt, utcOffsetMillis: Long = 0): List<BoardEntry> {
         if (!boardOpen(data)) return emptyList()
         return all.map { m ->
@@ -179,13 +151,10 @@ object Missions {
         }
     }
 
-    /** The day number World thinks it is: the last time it settled, in whole days. */
     fun day(data: WorldData): Long = data.lastSeenAt / 86_400_000L
 
-    /** The day number at [now] for a player [utcOffsetMillis] from UTC, so a daily job comes back at the player's midnight. */
     fun day(now: Long, utcOffsetMillis: Long): Long = (now + utcOffsetMillis).floorDiv(86_400_000L)
 
-    /** What one climbed floor does to the accepted jobs. [berries] is how many berries it gave. Reports each job it finishes. */
     internal fun advance(data: WorldData, dungeonId: String, floor: Int, berries: Int, at: Long, teamSize: Int, power: Double, events: MutableList<WorldEvent>, opened: Int = 0): WorldData {
         if (data.missions.isEmpty()) return data
         var d = data

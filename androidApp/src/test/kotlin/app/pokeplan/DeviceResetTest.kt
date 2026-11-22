@@ -9,10 +9,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** "Erase this device" leaves nothing behind in the app's private preferences or its old save files (owner, 20 November 2026). */
 @RunWith(RobolectricTestRunner::class)
 class DeviceResetTest : AndroidTestBase() {
-    // The files the app writes today, and one nobody has written yet: the reset goes through the folder, so a store added later is cleared without being listed.
     private val names = listOf("launcher", "weather", "offphone", "shared_reminders", "task_reminders", "reminder_migration", "crash_guard", "buddy_widget", "a_store_added_later")
 
     private fun fill() = names.forEach { n -> context.getSharedPreferences(n, Context.MODE_PRIVATE).edit().putString("k", "v").putLong("n", 7).commit() }

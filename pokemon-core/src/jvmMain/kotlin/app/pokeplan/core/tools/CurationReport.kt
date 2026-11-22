@@ -7,10 +7,6 @@ import app.pokeplan.core.dex.SpeciesInfo
 import app.pokeplan.core.dex.Rarity
 import java.io.File
 
-/**
- * Writes the candidates report used to curate a module region (docs/region-candidates.md).
- * Run with `./gradlew :pokemon-core:curationReport`.
- */
 fun main(args: Array<String>) {
     val out = File(args.firstOrNull() ?: "docs/region-candidates.md")
     out.parentFile?.mkdirs()

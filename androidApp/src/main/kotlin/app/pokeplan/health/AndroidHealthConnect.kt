@@ -29,16 +29,6 @@ import java.time.Instant
 import kotlin.math.roundToInt
 import kotlin.reflect.KClass
 
-/**
- * HEAL's Health Connect adapter (INTEGRATIONS_AND_PRIVACY.md sections 3.2 and 5.1). **Android platform API, read-only, foreground, on the player's tap.**
- *
- * - Permissions: only the read permission of each record type the player chose; no write, no background read and no history permission, so Android itself limits
- *   what can be read to the 30 days before the first grant. They are asked through Android's own screen (the launcher is registered in `onCreate`) and rechecked on
- *   every call; nothing is remembered as granted.
- * - Provider objects stop here: every record becomes a provider-neutral [Imported] with the provider's id and the writing app's package name (its provenance).
- *   Raw payloads are not kept; no exception text is logged or shown (it could carry a health value), only its class.
- * - Not run on a device: Health Connect needs a real phone (Android 14+ has it built in; earlier needs the Health Connect app).
- */
 class AndroidHealthConnect(private val activity: ComponentActivity) : HealthSource {
     private var waiting: ((Set<HealthKind>) -> Unit)? = null
     private var asked: Set<HealthKind> = emptySet()
@@ -99,7 +89,7 @@ class AndroidHealthConnect(private val activity: ComponentActivity) : HealthSour
                         response.records.forEach { r -> convert(r)?.let { out += it } }
                         token = response.pageToken
                     } while (token != null && ++pages < MAX_PAGES && out.size < MAX_RECORDS)
-                    if (token != null) failed = true // more existed than one read takes: say so, import what came
+                    if (token != null) failed = true
                 } catch (e: Exception) {
                     warn("read", e); failed = true
                 }
@@ -118,8 +108,6 @@ class AndroidHealthConnect(private val activity: ComponentActivity) : HealthSour
         val intent = Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         runCatching { activity.startActivity(intent) }.onFailure { warn("settings", it) }
     }
-
-    // --- provider record -> provider-neutral record -------------------------------------------------------------------------
 
     private fun convert(r: Record): Imported? {
         val id = r.metadata.id
@@ -145,7 +133,6 @@ class AndroidHealthConnect(private val activity: ComponentActivity) : HealthSour
         else -> ActivityType.OTHER
     }
 
-    /** Only the failing step and the exception's class: its message could hold a record. */
     private fun warn(step: String, e: Throwable) { Log.w("HealthConnect", "$step failed: ${e.javaClass.simpleName}") }
 
     private companion object {

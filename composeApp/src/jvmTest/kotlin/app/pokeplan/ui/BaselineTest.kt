@@ -22,11 +22,6 @@ import org.jetbrains.skia.Bitmap
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-/**
- * Two texts of different sizes on one row (a title and its count, a name and its value) must sit on one baseline, not one centre line (the owner saw
- * "Party" and "6 of 6" at different heights on the phone). Measured on a rendered image with capitals that have no descenders: the ink of both ends on
- * the same row, within 1 dp.
- */
 @OptIn(ExperimentalComposeUiApi::class)
 class BaselineTest {
     private fun bottoms(content: @Composable RowScope.() -> Unit): Pair<Int, Int> {
@@ -47,7 +42,6 @@ class BaselineTest {
     private val pairs = listOf<Pair<(Typography) -> TextStyle, (Typography) -> TextStyle>>(
         ({ t: Typography -> t.titleSmall } to { t: Typography -> t.labelMedium }),
         ({ t: Typography -> t.bodyLarge } to { t: Typography -> t.bodyMedium }),
-        // (24 sp titles are centred by their letters alone, TextCentreTest; they are not set on a row with a smaller text.)
     )
 
     private fun ends(left: (Typography) -> TextStyle, right: (Typography) -> TextStyle, aligned: Boolean) = bottoms {

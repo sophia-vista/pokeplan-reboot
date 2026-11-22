@@ -27,11 +27,6 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PmdText
 import app.pokeplan.ui.theme.Spacing
 
-/**
- * The launcher's widgets, listed by where they sit (the top of the home page, its bottom, the Today page): each with Up,
- * Down and Remove, and Add to put one more in the area. A folder widget is a labelled folder with its apps; "New folder"
- * makes the folder and its widget together, and the folder's apps are chosen from the long-press sheet in All apps.
- */
 @Composable
 internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, host: LauncherHost, pixel: Int, onClose: () -> Unit) {
     val density = LocalDensity.current.density
@@ -98,7 +93,6 @@ private fun Action(label: String, enabled: Boolean, pixel: Int, onClick: () -> U
     ) { PmdText(label, pixel, alpha = if (enabled) 0.9f else 0.3f) }
 }
 
-/** The grid's widgets listed by page: each with Remove (moving and resizing are done on the page itself), and Add a widget to put one more on that page. */
 @Composable
 private fun GridSections(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, host: LauncherHost, pixel: Int) {
     val density = LocalDensity.current.density

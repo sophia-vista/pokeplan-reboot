@@ -6,12 +6,13 @@ import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.ui.care.CareSection
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.PlanSection
+import app.pokeplan.mint.TxType
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Where each place the app can be sent (a widget, shortcut or notification) lands: the right tab, module and section. */
 class NavigationTest {
     private val clock = object : Clock { override fun nowMillis() = 1_700_000_000_000L }
     private fun model() = AppModel(GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25) })
@@ -40,10 +41,34 @@ class NavigationTest {
 
     @Test
     fun theNamesWidgetsAndShortcutsSendResolveToPlaces() {
-        // The Android side looks a place up by its name; every name it uses must exist.
         listOf("PLANNER", "FOCUS", "CARE", "HEAL", "MINT", "BASE", "LINK", "WORLD", "ME", "HOME", "COLLECTION", "GEAR").forEach { name ->
             assertTrue(Place.entries.any { it.name == name }, "$name is a place")
         }
+    }
+
+    @Test
+    fun arrivingSomewhereClosesThePokegearAndOnlyGearOpensIt() {
+        val m = model()
+        m.open(Place.GEAR, true)
+        assertTrue(m.gearOpen, "Gear opens the Pokégear")
+        m.open(Place.CARE, true)
+        assertFalse(m.gearOpen, "a destination from a widget or notification replaces the Pokégear instead of opening behind it")
+        m.open(Place.GEAR, true)
+        m.open(Place.HOME, true)
+        assertFalse(m.gearOpen, "Home closes it too")
+        m.open(Place.GEAR, true)
+        m.open(Place.GEAR, true)
+        assertTrue(m.gearOpen, "Gear still opens it")
+    }
+
+    @Test
+    fun arrivingAtMintStartsAPlainExpenseWhateverALeftoverQuickActionAskedFor() {
+        val m = model()
+        m.mintStartType = TxType.TRANSFER
+        m.mintStartTo = "acc-1"
+        m.open(Place.MINT, true)
+        assertNull(m.mintStartType, "a kind left by an earlier quick action does not become the next entry's")
+        assertNull(m.mintStartTo)
     }
 
     @Test

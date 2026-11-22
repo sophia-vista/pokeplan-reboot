@@ -60,17 +60,10 @@ import app.pokeplan.ui.theme.dialogueBox
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 
-/*
- * The Secret Base room (docs/pokelife `MODULES/HOME.md` 9.5): Base's party standing in a Hoenn room among the decorations the player placed. A view of the
- * party, never a place a Pokémon is assigned to. The room, the decorations and the Pokémon are drawn at one pixel size (a whole-number scale, 5x on a phone
- * and 4x when narrower), flush with the dialogue frame (8 dp at the sides, 6 dp above and below), as the owner chose on 15 November 2026.
- */
-
-/** The room's own pixels: 11 x 9 cells of 16 px. */
 private const val ROOM_W = RoomGrid.WIDTH * RoomGrid.CELL_PX
 private const val ROOM_H = RoomGrid.HEIGHT * RoomGrid.CELL_PX
 private const val DECORATION_PX = 24
-private const val SPRITE_BOX_PX = 48 // the box a Pokémon is drawn in (a frame of up to 48 art pixels); it stands on the bottom edge
+private const val SPRITE_BOX_PX = 48
 
 private val bitmaps = mutableMapOf<String, ImageBitmap?>()
 
@@ -86,17 +79,10 @@ private fun rememberHoenn(path: String): ImageBitmap? {
     return image
 }
 
-/** The room's look for [lead] (BASE.md 9.5.3): the primary type of Base's lead picks a tree, a shrub or a cave; with no lead, a shrub. */
 internal fun roomLook(lead: OwnedPokemon?): RoomLook = RoomLook.forType(lead?.form?.types?.firstOrNull()?.name)
 
-/** The whole-number scale that fits [availablePx] pixels across: 5 at most (a phone), fewer when narrower. */
 internal fun roomScale(availablePx: Float): Int = (availablePx / ROOM_W).toInt().coerceIn(1, 5)
 
-/**
- * The room as a picture: the floor of [look], the flat decorations, then the standing ones and the Pokémon of [party] in order from the back of the room to
- * the front. With [arrange] a dot marks every empty cell, the cell of [held] is outlined, and a tap on a cell calls [onCell]. [scale] fixes the scale (a test);
- * by default it is the largest that fits.
- */
 @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 internal fun RoomPicture(
@@ -163,7 +149,6 @@ internal fun RoomPicture(
     }
 }
 
-/** One decoration, its sprite centred on [centre] with its feet on row [bottom] (the room's own pixels), at [scale] screen pixels each. */
 @Composable
 private fun DecorationImage(id: String, centre: Int, bottom: Int, scale: Int) {
     val image = rememberHoenn("files/hoenn/decorations/$id.png") ?: return
@@ -175,7 +160,6 @@ private fun DecorationImage(id: String, centre: Int, bottom: Int, scale: Int) {
     )
 }
 
-/** The Room card's screen: the room, and under it a box to arrange from. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun RoomView(model: AppModel, startArranging: Boolean = false, startHeld: String? = null) {

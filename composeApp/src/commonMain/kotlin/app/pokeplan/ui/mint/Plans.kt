@@ -72,7 +72,6 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.LocalDate
 
-/** "1.5" or "1,5" as basis points (150), with plain digit parsing, no floats; null when it is not a percentage with at most two decimals. */
 internal fun percentToBasisPoints(raw: String): Int? {
     val t = raw.trim().replace(',', '.')
     if (t.isEmpty()) return null
@@ -90,10 +89,6 @@ private fun <T> Logged<T>.note(): String? = if (record == null) (refused ?: "Tha
 
 internal fun money(raw: String) = raw.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16)
 
-/**
- * The "Credit line" box of a credit card or pay later account (MINT.md 4.3D, 5.6A): limit, what is owed, what is available, this month's activity, the statement
- * and due days, then the installment plans with a button to add one.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?) -> Unit) {
@@ -190,10 +185,6 @@ private const val BILLS_SHOWN = 3
 
 private fun BillMonth.label(): String = "${first.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} $year"
 
-/**
- * One monthly bill of a credit account (MINT.md 5.6C): what falls due in the month across every purchase, its due day and what is left. It opens to the purchases
- * that make it up (each opens its own plan to inspect or edit) and to the one place to pay it.
- */
 @Composable
 internal fun BillRow(model: AppModel, bill: MonthlyBill, open: Boolean, toggle: () -> Unit, problem: (String?) -> Unit) {
     val mint = model.mint
@@ -226,7 +217,6 @@ internal fun BillRow(model: AppModel, bill: MonthlyBill, open: Boolean, toggle: 
     }
 }
 
-/** Pay toward a plan: the amount (the next installment's remaining by default), where from, the day, and the Pay button. Early or part payments go to the earliest installment first. */
 @Composable
 internal fun PayArea(model: AppModel, v: PlanView, defaultMinor: Long, resetKey: Any, onResult: (String?) -> Unit) {
     PayForm(model, v.plan.id, v.plan.currency, defaultMinor, resetKey, "Early or part payments go to the earliest installment first.", onResult) { minor, source, day ->
@@ -234,7 +224,6 @@ internal fun PayArea(model: AppModel, v: PlanView, defaultMinor: Long, resetKey:
     }
 }
 
-/** The amount, payment source, day and Pay button shared by paying one plan and paying one monthly bill; [pay] returns the reason it was refused, or null when saved. */
 @Composable
 private fun PayForm(
     model: AppModel, key: String, cur: String, defaultMinor: Long, resetKey: Any, caption: String?, onResult: (String?) -> Unit, pay: (Long, String, LocalDate) -> String?,
@@ -263,7 +252,6 @@ private fun PayForm(
     }
 }
 
-/** One plan's schedule with each installment's state, the payments so far, and the actions: pay, bill a fee, add a late fee, edit, refund, delete. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> Unit) {
@@ -400,7 +388,6 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
 
 internal enum class FeeChoice(val label: String) { NONE("None"), PER("Per installment"), TOTAL("Total"), RATE("Rate per period") }
 
-/** How an installment purchase is split: how many, how often, when the first falls due, and the fee or interest. Shared by the purchase form and the Activity form. */
 internal class TermsState(count: String = "3", fee: String = "") {
     var countText by mutableStateOf(count)
     var every by mutableStateOf(PlanEvery.MONTH)
@@ -410,7 +397,6 @@ internal class TermsState(count: String = "3", fee: String = "") {
     var interest by mutableStateOf(false)
     val count: Int? get() = countText.toIntOrNull()?.takeIf { it in 1..Installments.MAX_COUNT }
     val kind: FeeKind get() = if (interest) FeeKind.INTEREST else FeeKind.FEE
-    /** The first due day the player picked, else the one the account's statement and due days give (MINT.md 5.6C), else a step after [date]. */
     fun firstDue(a: FinancialAccount, date: LocalDate): LocalDate = firstOverride ?: MonthlyBills.firstDue(a, date, every)
     fun fee(cur: String): FeeRule? = when (choice) {
         FeeChoice.NONE -> FeeRule.None
@@ -451,7 +437,6 @@ private fun termsFor(plan: InstallmentPlan): TermsState = TermsState(plan.instal
     }
 }
 
-/** The new installment purchase form (MINT.md 5.6A): the purchase, how it is split, an optional fee or interest, and the live schedule it will get. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun NewPurchaseForm(
@@ -502,7 +487,6 @@ private fun PurchaseFields(model: AppModel, a: FinancialAccount, startName: Stri
     }
 }
 
-/** Saves an installment purchase from the form values; returns the reason it was refused, or null once it is saved. */
 internal fun createPlanPurchase(mint: app.pokeplan.app.mint.MintStore, a: FinancialAccount, name: String, total: Long?, categoryId: String?, date: LocalDate, t: TermsState): String? {
     val count = t.count
     val fee = t.fee(a.currency)
@@ -512,7 +496,6 @@ internal fun createPlanPurchase(mint: app.pokeplan.app.mint.MintStore, a: Financ
     else mint.addPlanPurchase(a.id, name, total, categoryId, count, t.every, t.firstDue(a, date), fee, t.kind, date).let { if (it.record != null) null else (it.refused ?: "That could not be saved.") }
 }
 
-/** The terms of an installment purchase: how many, how often, the first due date, a fee or interest, the live schedule, and the one caption. [total] and [date] come from the form around it. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun InstallmentTerms(model: AppModel, a: FinancialAccount, t: TermsState, total: Long?, date: LocalDate) {
@@ -523,7 +506,6 @@ internal fun InstallmentTerms(model: AppModel, a: FinancialAccount, t: TermsStat
     val firstDue = t.firstDue(a, date)
     val schedule = if (total != null && total > 0 && count != null && fee != null && Installments.checkRequest(a.type, total, count, fee) == app.pokeplan.mint.Check.Ok) Installments.generate(total, count, t.every, firstDue, fee) else null
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        // One control for the count (any number, 1 to the maximum), paired with how often it falls due.
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelField(t.countText, { t.countText = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Installments (1 to ${Installments.MAX_COUNT})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
             PixelDropdown(PlanEvery.entries.toList(), t.every, { it?.label ?: "" }, { e -> if (e != null) t.every = e }, Modifier.weight(1f), key = ModuleAccent.MINT.accent, label = "Every")
@@ -547,7 +529,6 @@ internal fun InstallmentTerms(model: AppModel, a: FinancialAccount, t: TermsStat
     }
 }
 
-/** No, due, principal, fee and total of each installment, with a totals row. */
 @Composable
 private fun ScheduleTable(model: AppModel, rows: List<app.pokeplan.mint.Installment>, cur: String) {
     val mint = model.mint
@@ -572,7 +553,6 @@ private fun ScheduleTable(model: AppModel, rows: List<app.pokeplan.mint.Installm
 
 private data class OweRow(val due: LocalDate, val amount: String = "", val fee: String = "", val feeOpen: Boolean = false)
 
-/** Installments already owed (MINT.md 5.6A): a schedule without a purchase, for what was bought before tracking began. */
 @Composable
 private fun ExistingScheduleForm(model: AppModel, a: FinancialAccount, amounts: List<String>, fees: List<String>, onClose: () -> Unit) {
     val mint = model.mint
@@ -636,10 +616,8 @@ private fun ExistingScheduleForm(model: AppModel, a: FinancialAccount, amounts: 
     }
 }
 
-/** The monthly bill of a credit account that falls due within a window (or is overdue). */
 internal class DueBill(val account: FinancialAccount, val bill: MonthlyBill)
 
-/** The monthly bills of every credit account with something still owed, due within [withinDays] or overdue, soonest first (MINT.md 5.6C). */
 internal fun dueBills(model: AppModel, withinDays: Int): List<DueBill> {
     val limit = kotlinx.datetime.LocalDate.fromEpochDays(model.store.today.toEpochDays() + withinDays)
     return model.mintData.accounts.filter { Installments.allowedFor(it.type) }
@@ -647,7 +625,6 @@ internal fun dueBills(model: AppModel, withinDays: Int): List<DueBill> {
         .sortedBy { it.bill.dueDay }
 }
 
-/** The "Credit bills due" box of the Bills screen: one row per account and month, each opening to its purchases and to paying it. */
 @Composable
 internal fun InstallmentsDueBox(model: AppModel, startOpenFirst: Boolean = false) {
     val mint = model.mint
@@ -687,7 +664,6 @@ internal fun InstallmentsDueBox(model: AppModel, startOpenFirst: Boolean = false
     }
 }
 
-/** How a credit card or pay-later account works, in the order a month goes (MINT.md 5.6D). */
 @Composable
 private fun CardFlowInfo(onClose: () -> Unit) {
     val steps = listOf(

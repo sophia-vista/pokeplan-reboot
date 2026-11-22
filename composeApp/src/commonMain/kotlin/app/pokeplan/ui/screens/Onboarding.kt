@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GameStore
+import app.pokeplan.ui.BackHandler
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.ItemIcon
@@ -53,7 +54,6 @@ import kotlinx.coroutines.delay
 
 private enum class Step { GREETING, NAME, CONFIRM_NAME, STARTER, CONFIRM_STARTER, FAREWELL }
 
-/** What the Professor says before asking for a name. Written for this app, in the cadence of the games' intro. */
 private val greeting = listOf(
     "Hello there! Welcome to the world of PokéLife!",
     "I am Professor Oak. People around here just call me the Professor.",
@@ -63,16 +63,25 @@ private val greeting = listOf(
     "But first, tell me a little about yourself.",
 )
 
-/** An intro in the style of the old games: a Professor, a text box that types itself out, a name, a first partner. */
 @Composable
 fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
     var step by remember { mutableStateOf(Step.entries[startStep]) }
     var line by remember { mutableStateOf(0) }
     var name by remember { mutableStateOf(if (startStep > 1) "Sophia" else "") }
     var starter by remember { mutableStateOf(GameStore.starters.first()) }
+    // Back goes to the step before (the greeting line by line, then the step); on the very first line it leaves the app.
+    BackHandler(enabled = step != Step.GREETING || line > 0) {
+        when (step) {
+            Step.GREETING -> if (line > 0) line--
+            Step.NAME -> { line = greeting.lastIndex; step = Step.GREETING }
+            Step.CONFIRM_NAME -> step = Step.NAME
+            Step.STARTER -> step = Step.NAME
+            Step.CONFIRM_STARTER -> step = Step.STARTER
+            Step.FAREWELL -> step = Step.CONFIRM_STARTER
+        }
+    }
 
     Column(Modifier.fillMaxSize().padding(Spacing.M), verticalArrangement = Arrangement.SpaceBetween) {
-        // The upper part: the Professor, or the Pokémon being considered.
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             when (step) {
                 Step.STARTER -> StarterPicker(starter) { starter = it }
@@ -127,11 +136,9 @@ private fun YesNo(onYes: () -> Unit, onNo: () -> Unit) {
     }
 }
 
-/** All the starters, by game, as tappable sprites under a big preview of the one picked. */
 @Composable
 private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        // The pick stays on show; only the list of starters scrolls.
         Sprite(Dex.defaultForm(selected).id, false, Dex.species(selected).name, size = 128.dp)
         Text(Dex.species(selected).name, style = MaterialTheme.typography.titleMedium)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -153,10 +160,6 @@ private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
 }
 
 
-/**
- * A text box that types its line out. Tap while it types to show the rest; tap when it is complete to go on.
- * A small Poké Ball blinks at the corner when there is more.
- */
 @Composable
 private fun Dialogue(text: String, onNext: () -> Unit) {
     var shown by remember(text) { mutableStateOf(0) }

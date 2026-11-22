@@ -34,7 +34,6 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.ToggleRow
 
-/** "Paydays and holidays" (MINT.md 8.3B): which days a working-day bill skips: the Philippine holidays, each switchable, and the player's own days off. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PaydaysAndHolidays(model: AppModel) {

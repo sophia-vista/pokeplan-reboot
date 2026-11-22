@@ -13,7 +13,6 @@ import app.pokeplan.app.World
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** WORLD settles under stable ledger event ids (WORLD.md 3.1 and 6; DATA_AND_MIGRATIONS.md 7.3.0). */
 class WorldLedgerNotesTest {
     private class Clock(var millis: Long = 1_700_000_000_000L) : app.pokeplan.app.storage.Clock { override fun nowMillis() = millis }
 
@@ -51,7 +50,7 @@ class WorldLedgerNotesTest {
         val first = store.data.world.team(1)!!.expedition!!.floorsClimbed
         clock.millis += 4L * 60 * 60 * 1000
         store.worldSettle()
-        store.worldSettle() // nothing new: no event
+        store.worldSettle()
         val ids = store.data.ledgerNotes.filter { it.module == "WORLD" }.map { it.eventId }
         assertEquals(2, ids.size)
         assertEquals(ids.size, ids.toSet().size)

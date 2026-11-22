@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""Cuts the Mystery Dungeon weather effects out of assets/weather/source (the owner's rips of the Red Rescue Team sheets)
-into assets/weather/<name>.png, transparent where the sheet's panel colour (90, 90, 120) was.
-
-Usage: python3 -I tools/sprites/cut_weather.py
-
-rain    5 x 13 grid of 240 x 160 frames (61 used): rain streaks and splashes, play in order and tile
-snow    4 x 4 grid of 64 x 32 frames, snow-dungeon and blizzard 4 x 4 grids of 32 x 32: tiles that repeat across the screen
-sand    two 120 x 32 textures, one above the other, that scroll sideways
-clouds  the 720 x 408 shadow of drifting clouds in the game's own colour (82, 115, 189: the 5-bit colour 10, 14, 23 of W01.bpl), blended in at the game's 4/16 when drawn
-Needs Pillow.
-"""
 import os
 
 from PIL import Image
@@ -40,7 +29,6 @@ def grid(sheet, xs, ys, w, h):
 def main():
     misc = Image.open(os.path.join(DIR, 'source/misc.png')).convert('RGBA')
     rain = Image.open(os.path.join(DIR, 'source/rain.png')).convert('RGBA')
-    # Rain: 13 rows of 5 frames from (8, 8), 248 px and 168 px apart; the last row holds one.
     rain_xs = [8 + 248 * i for i in range(5)]
     rain_ys = [8 + 168 * i for i in range(13)]
     sheet = grid(rain, rain_xs, rain_ys, 240, 160)

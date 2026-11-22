@@ -1,9 +1,5 @@
 package app.pokeplan.ui.gear
 
-/**
- * What a scanned QR code says it is, and anything about it worth a second look (GEAR.md, QR safety). The code is never opened or sent
- * anywhere by Gear: it is shown as text first, with this note, and the player decides.
- */
 object QrPayload {
     enum class Kind(val label: String) {
         WEB("Web link"), WIFI("Wi-Fi network"), CONTACT("Contact card"), EMAIL("Email address"), PHONE("Phone number"), MESSAGE("Message"), TEXT("Plain text")

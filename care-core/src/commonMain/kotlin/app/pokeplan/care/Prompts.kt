@@ -2,10 +2,8 @@ package app.pokeplan.care
 
 import kotlinx.datetime.LocalDate
 
-/** One gratitude or reflection prompt. */
 data class Prompt(val id: String, val text: String)
 
-/** Optional prompts, one at a time and skippable. They turn with the day, so each day opens on a different one. */
 object Prompts {
     val all: List<Prompt> = listOf(
         Prompt("thanks-small", "What small thing went well today?"),
@@ -20,7 +18,6 @@ object Prompts {
         Prompt("comfort", "What comforts you when a day is hard?"),
     )
 
-    /** Today's prompt, after [skipped] skips; null once every prompt has been skipped today. */
     fun forDay(day: LocalDate, skipped: Int = 0): Prompt? =
         if (skipped >= all.size) null else all[(day.toEpochDays().toLong() + skipped).mod(all.size.toLong()).toInt()]
 

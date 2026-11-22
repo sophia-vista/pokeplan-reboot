@@ -85,30 +85,17 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
-/** Where the ground is on a scene backdrop, as fractions of the screen's height. */
 private const val SCENE_TOP = 0.14f
 private const val SCENE_BOTTOM = 0.74f
 
-/** How many Pokémon walk the town at once: the buddy first, then the highest levels, so a big collection never slows the home screen. */
 internal const val TOWN_CAP = 24
 
-/** The size of a dungeon tile, in the pixels of the art. */
 private const val TILE = 24
 
-/** How many tiles wide the screen is, to the nearest whole pixel scale. */
 private const val TILES_ACROSS = 14f
 
-/**
- * The town's pixel scale: screen pixels per pixel of the art, a whole number. The tiles, the Pokémon and every position
- * use it, so all the art in the town has the same pixel size and sits on the same pixel grid.
- */
 internal fun townScale(widthPx: Float): Int = (widthPx / (TILE * TILES_ACROSS)).roundToInt().coerceAtLeast(1)
 
-/**
- * Who lives in the town (LAUNCHER.md 6.1): the buddy first, then the Guardian, then the favourites, then the others; inside each of the last
- * two, Pokémon with a sprite sheet ([hasSprite]) before those without one, then by level (highest first), up to [TOWN_CAP]. At most one Guardian
- * walks the town ([shownGuardian] among [guardianIds]); the other Guardians stay in their modules.
- */
 internal fun townResidents(
     all: List<OwnedPokemon>, buddyId: String?, cap: Int = TOWN_CAP, favorites: Set<String> = emptySet(), hasSprite: (OwnedPokemon) -> Boolean = { true },
     guardianIds: Collection<String> = emptySet(), rotation: Int = 0,
@@ -120,41 +107,26 @@ internal fun townResidents(
     ).take(cap.coerceAtMost(TOWN_CAP))
 }
 
-/**
- * The home screen's town: a real scene or a town of a dungeon's tiles, with every Pokémon you own (up to [TOWN_CAP])
- * wandering its ground with its own idle and walking animations. A tap gives its cry and a hop. With Reduce motion they
- * stand still. Everything is drawn at one whole-number [townScale] without smoothing, on one pixel grid.
- */
 @Composable
 internal fun Town(
     model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP, weather: Weather = Weather.CLEAR,
     screens: Int = 1, interactive: Boolean = true, gather: Int = 0, mood: BuddyMood? = null,
-    /** Whether now and then one of them chirps (its cry, quietly, with a hop); see [TownChirps]. */
     chirps: Boolean = false,
-    /** Which of the [screens] is Home: the one a gathering calls to and where meetings happen. */
     home: Int = 0,
-    /** Where widgets cover the town (x in screens, y as a fraction of the height): a Pokémon prefers to walk elsewhere. */
     avoid: List<Rect> = emptyList(),
-    /** Hands taps on Pokémon to the town when something drawn over it (the widget pages) would otherwise swallow them. */
     tapper: TownTapper? = null,
-    /** Which Guardian of the day is shown when the buddy is not one (see [shownGuardian]); a change of it is a departure and an arrival. */
     rotation: Int = 0,
-    /** The weather the Pokémon react to (a twinkle for one at home in it, a drop of sweat for one that is not). */
     reactions: Boolean = true,
-    /** How lively they are, 1 (sleepy) to 10 (restless): Settings → Town → How lively. */
     activity: Int = TownBehavior.ACTIVITY_DEFAULT,
-    /** Which of the day's dungeon floors shows (Launcher settings → Town → New layout; [LauncherPrefs.layoutRollOn]). */
     layoutRoll: Int = 0,
 ) {
     val data = model.data
-    // The sprite sheets are read once; until then everyone counts as having one, and the town re-picks when they arrive.
     val sheets by produceState(loadedAnimations()) { value = animations() }
     val guardianIds = data.player.moduleGuardians.values
     val residents = remember(data.player.pokemon, data.player.buddy?.id, size, data.favorites, sheets, guardianIds, rotation) {
         townResidents(data.player.pokemon, data.player.buddy?.id, size, data.favorites, hasSprite = { m -> sheets?.containsKey(m.form.id) ?: true }, guardianIds = guardianIds, rotation = rotation)
     }
     val guardian = shownGuardian(residents, guardianIds, data.player.buddy?.id, rotation)
-    // When the Guardian changes (the day turned, or the buddy became one), the old one walks off the edge of the screen and the new one walks in; the first one shown just stands there.
     var seen by remember { mutableStateOf(guardian) }
     var departing by remember { mutableStateOf<OwnedPokemon?>(null) }
     var arriving by remember { mutableStateOf<String?>(null) }
@@ -162,18 +134,15 @@ internal fun Town(
         val density = LocalDensity.current.density
         val widthPx = maxWidth.value * density
         val heightPx = maxHeight.value * density
-        // The town may be [screens] screens wide: the launcher's pages are windows onto it, and a Pokémon can wander from one to the next.
         val screenPx = widthPx / screens
         val pixel = townScale(screenPx)
         val dungeon = TownScenes.isDungeon(scene)
-        // A dungeon town is one Mystery Dungeon floor across every page (LAUNCHER.md 4.5): a new one each day, laid out away from the widgets it can see when it is made.
         val day = model.store.today.toEpochDays().toLong()
         val avoidLatest by rememberUpdatedState(avoid)
         val geo = if (!dungeon) null else {
             val (perScreen, rows) = FloorGeometry.size(screenPx, heightPx, pixel)
             val tilePx = (TILE * pixel).toFloat()
             val floor = remember(scene, day, layoutRoll, screens, home, perScreen, rows, avoid.isEmpty()) {
-                // A square is under a widget if any of it is: a find at a widget's edge would be half hidden.
                 DungeonFloor.build(screens, perScreen, rows, TownTiles.seed(scene, day, layoutRoll), home, TownTiles.organic(scene)) { c ->
                     val l = c.x * tilePx / screenPx
                     val r = (c.x + 1) * tilePx / screenPx
@@ -185,12 +154,9 @@ internal fun Town(
             remember(floor, screenPx, heightPx, pixel) { FloorGeometry.of(floor, pixel, screenPx, heightPx) }
         }
         val life = remember { TownLife() }
-        // How big each Pokémon is drawn (its sprite's frame), so a big one is given more room than a small one.
         life.sheets = sheets
         val pickups = remember { FloorPickups() }
-        // Reading the counters makes a collected find disappear at once.
         val finds = if (geo == null) emptyList() else remember(data.counters, day) { model.store.townFinds() }
-        /** Today's find [i] into the Bag: tapped ([heard] always) or picked up by a Pokémon walking onto it (heard only on Home). */
         fun collect(i: Int, heard: Boolean = true): Boolean {
             val g = geo ?: return false
             val find = finds.getOrNull(i) ?: return false
@@ -199,7 +165,6 @@ internal fun Town(
             pickups.add(g.floor.finds[i], find)
             return true
         }
-        // The finds still lying on the floor, by square, for the Pokémon to pick up as they walk over them (as a team does in the games).
         SideEffect {
             life.finds = if (geo == null) emptyMap() else finds.withIndex().filter { it.value != null }.mapNotNull { (i, _) -> geo.floor.finds.getOrNull(i)?.let { it to i } }.toMap()
             life.pickUp = { i, heard -> collect(i, heard) }
@@ -214,10 +179,8 @@ internal fun Town(
         } else androidx.compose.foundation.layout.Row(Modifier.fillMaxSize()) {
             repeat(screens) { TownBackdrop(scene, Modifier.weight(1f).fillMaxHeight(), weather = weather) }
         }
-        // The night tint is one sheet over every screen of the town, not one per backdrop, so it reaches the right edge whatever the backdrops' widths.
         val dark = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)
         if (dark > 0f) Box(Modifier.matchParentSize().background(Pixel.Night.copy(alpha = dark.coerceIn(0f, 1f))))
-        // On a floor the Pokémon walk the whole height (walls and widgets decide where); on a scene, its ground band.
         val top = if (geo != null) 0f else SCENE_TOP
         val bottom = if (geo != null) 1f else SCENE_BOTTOM
         val calm = data.settings.reduceMotion || !active
@@ -227,13 +190,11 @@ internal fun Town(
             val before = seen
             seen = guardian
             if (before == null || guardian == null || before.id == guardian.id) return@LaunchedEffect
-            // Only a Pokémon that is still owned has anywhere to walk off from; with Reduce motion, or off the screen, the change is just a change.
             if (!calm && data.player.pokemon.any { it.id == before.id }) departing = before
             if (!calm) arriving = guardian.id
         }
         LaunchedEffect(arriving) {
             val id = arriving ?: return@LaunchedEffect
-            // It has walked in: the ones near it notice, a little (the Guardian is not startled back).
             delay(2_500)
             life.startleAround(id, residents.filter { !TownBehavior.asleep(it, darkNow) }.map { it.id }, Random(id.hashCode()), chance = 70, max = 3)
             delay(8_000)
@@ -251,14 +212,12 @@ internal fun Town(
         val boxPx = TILE * 3 * pixel
         if (tapper != null) SideEffect {
             tapper.hit = hit@{ at ->
-                // Front ones first: they are drawn over the ones behind.
                 val ids = residents.mapNotNull { m -> life.spots[m.id]?.let { m.id to it() } }.sortedByDescending { it.second.y }
                 for ((id, spot) in ids) {
                     val feetX = screenPx * spot.x
                     val feetY = heightPx * (top + (bottom - top) * spot.y)
                     if (at.x in (feetX - boxPx / 2)..(feetX + boxPx / 2) && at.y in (feetY - boxPx)..feetY) { life.pets[id]?.invoke(); return@hit true }
                 }
-                // Then the day's finds on the floor: a tap near one picks it up.
                 if (geo != null) finds.forEachIndexed { i, f ->
                     val c = geo.floor.finds.getOrNull(i) ?: return@forEachIndexed
                     if (f == null) return@forEachIndexed
@@ -270,7 +229,6 @@ internal fun Town(
             }
         }
         val buddyId = data.player.buddy?.id
-        // Who a disguised one (Ditto, Zorua...) looks like: another species of the town, the same one each time.
         val disguises = remember(residents) { residents.filter { TownQuirks.of(it) == Quirk.DISGUISED }.associate { it.id to TownQuirks.disguiseFor(it, residents) } }
         residents.forEachIndexed { i, mon ->
             key(mon.id) {
@@ -281,14 +239,12 @@ internal fun Town(
                 )
             }
         }
-        // The Guardian that is leaving walks off the edge and is gone.
         departing?.let { gone -> key("leaving-" + gone.id) {
             Resident(
                 model, gone, screenPx, heightPx, pixel, top, bottom, calm = calm, index = 0, life = life, asleep = false, screens = screens, interactive = false, gather = gather,
                 onMenu = onMenu, home = home, avoid = avoid, tapperOn = tapper != null, buddy = false, guardian = true, leaving = true, onGone = { departing = null }, exposed = false, geo = geo,
             )
         } }
-        // The weather is over everything and never takes a touch.
         WeatherLayer(weather, pixel, dungeon, calm, Modifier.fillMaxSize().zIndex(10f))
     }
 }
@@ -297,21 +253,13 @@ internal fun Town(
 private fun Resident(
     model: AppModel, mon: OwnedPokemon, widthPx: Float, heightPx: Float, pixel: Int, groundTop: Float, groundBottom: Float, calm: Boolean, index: Int, life: TownLife, asleep: Boolean, screens: Int,
     interactive: Boolean, gather: Int, onMenu: (OwnedPokemon) -> Unit, home: Int, avoid: List<Rect>, tapperOn: Boolean, buddy: Boolean, guardian: Boolean, exposed: Boolean,
-    /** Walks in from the edge of Home instead of standing where it is. */
     entering: Boolean = false,
-    /** Walks off the edge of Home, then calls [onGone]. */
     leaving: Boolean = false, onGone: () -> Unit = {},
-    /** The town's liveliness, 0 (sleepy) to 1 (restless): see [TownBehavior.liveliness]. */
     lively: Float = TownBehavior.liveliness(TownBehavior.ACTIVITY_DEFAULT),
-    /** The dungeon floor it walks, square by square (null on a scene, where it wanders the ground band). */
     geo: FloorGeometry? = null,
-    /** Who it looks like until it is touched (a Ditto, a Zoroark: [Quirk.DISGUISED]), if anyone. */
     disguise: OwnedPokemon? = null,
 ) {
-    // Where it starts is its own and the same every time (the floor stays put); what it does next is never the same twice, or every Pokémon would
-    // act out the same script at the same moments each time the town starts walking again.
     life.movers[mon.id] = moverOf(mon)
-    // A disguised one is touched to show what it is, and puts the disguise back on after a while.
     var unmasked by remember(mon.id) { mutableStateOf(false) }
     val shown = if (disguise != null && !unmasked) disguise else mon
     life.sizes[mon.id] = life.sheets?.get(shown.form.id)?.let { it.width to it.height } ?: TownLife.MEDIAN
@@ -323,13 +271,10 @@ private fun Resident(
     val pace = remember(mon.id, quirk) { TownBehavior.pace(mon.id) * TownQuirks.pace(quirk) }
     val temper = remember(mon.id, quirk) { TownBehavior.temper(mon.id) * TownQuirks.temper(quirk) }
     val livelyNow by rememberUpdatedState(lively)
-    // Whether it is in a restless spell (pottering about) or resting, and the way it was last heading: a walk carries on from the last one.
     var restless by remember(mon.id) { mutableStateOf(random.nextInt(4) == 0) }
     var heading by remember(mon.id) { mutableStateOf(random.nextFloat() * 2f * kotlin.math.PI.toFloat()) }
-    // Position as fractions of the ground: x across the screen, y from the back of the ground (0) to the front (1).
     val spot = remember(mon.id, geo?.floor) {
         val start = when {
-            // On a floor an arriving Guardian comes up the stairs; the rest start on a square of their own.
             geo != null && entering -> geo.spotOf(geo.floor.stairs)
             geo != null -> geo.restingCell(startRandom, mover, crowded = life.crowded(geo, mon.id, life.claimedOn(geo.floor)), roomsOnly = TownQuirks.stays(quirk)).let { c -> life.claims[mon.id] = c; geo.spotOf(c) }
             entering -> TownBehavior.entrance(startRandom, home)
@@ -337,14 +282,11 @@ private fun Resident(
         }
         Animatable(start, Offset.VectorConverter)
     }
-    // What a trap did to it, for show (LAUNCHER.md 4.5): asleep a moment, turning on the spot, slowed, or faded out and back by a warp.
     var napping by remember(mon.id) { mutableStateOf(false) }
-    // What a trap left it with (confused, poisoned): it wears off by itself after a while, with a twinkle.
     var ailment by remember(mon.id) { mutableStateOf<Condition?>(null) }
     var ailmentStamp by remember(mon.id) { mutableIntStateOf(0) }
     var spinning by remember(mon.id) { mutableStateOf<SpriteAction?>(null) }
     var slowUntil by remember(mon.id) { mutableStateOf<TimeMark?>(null) }
-    // The game's own effect for the trap it stepped on, playing at its feet (and which play it is, so the same trap twice plays twice).
     var trapFx by remember(mon.id) { mutableStateOf<TrapFx?>(null) }
     var trapFxPlay by remember(mon.id) { mutableIntStateOf(0) }
     val fade = remember(mon.id) { Animatable(1f) }
@@ -352,11 +294,8 @@ private fun Resident(
     var hopKey by remember(mon.id) { mutableIntStateOf(0) }
     var hopping by remember(mon.id) { mutableStateOf(false) }
     var grazing by remember(mon.id) { mutableStateOf(false) }
-    // How it is walking now (null while it stands): to the side, towards the viewer or away, whichever way it mostly goes.
     var walk by remember(mon.id) { mutableStateOf<SpriteAction?>(null) }
-    // Which way it stands once it stops: the way it last went (its Idle facing the side or away, front where a form has no such row).
     var facing by remember(mon.id) { mutableStateOf(SpriteAction.IDLE) }
-    // The last gathering this one answered, so a meeting or a sleep does not send it off again.
     var gathered by remember(mon.id) { mutableIntStateOf(gather) }
     var entered by remember(mon.id) { mutableStateOf(!entering) }
     val scope = rememberCoroutineScope()
@@ -366,13 +305,8 @@ private fun Resident(
     }
     val avoidNow by rememberUpdatedState(avoid)
     val taps = remember(mon.id) { mutableListOf<TimeMark>() }
-    // What shows over its head while it carries on (a trap's alert, a Guardian's aura): it does not stop the walk, or a trap's own effect would be cut short by its icon.
     var ownIcon by remember(mon.id) { mutableStateOf<StatusKind?>(null) }
     var ownStamp by remember(mon.id) { mutableIntStateOf(0) }
-    /**
-     * A short feeling over its head, if nothing else holds it now. By default it stands still for it ([stay]); with [stay] off it only shows the icon
-     * and goes on with what it is doing.
-     */
     fun feel(icon: StatusKind, millis: Long = 1_100, stay: Boolean = true) {
         if (!stay) {
             val mine = ++ownStamp
@@ -393,25 +327,21 @@ private fun Resident(
         ailment = null
         feel(StatusKind.TWINKLE, 1_000)
     }
-    // A tap (from the Pokémon itself, or handed over by the launcher): its cry and one of a few brief reactions; the ones next to it may notice.
     SideEffect {
         life.pets[mon.id] = {
             taps.removeAll { it.elapsedNow() > 2.seconds }
             taps += TimeSource.Monotonic.markNow()
             if (disguise != null && !unmasked) {
-                // Touched, the disguise drops: its own cry, a hop and a start.
                 unmasked = true; model.cry(mon); hopping = true; hopKey++; feel(StatusKind.ALERT, 900, stay = false)
             } else when (TownBehavior.tapReaction(random, taps.size)) {
                 TapReaction.HOP -> { model.cry(mon); hopping = true; hopKey++ }
                 TapReaction.HAPPY -> { model.cry(mon); hopping = true; hopKey++; feel(StatusKind.TWINKLE) }
                 TapReaction.TURN -> { facingLeft = !facingLeft; model.cry(mon); hopping = true; hopKey++ }
-                // Tapped over and over it is flustered and says nothing, rather than a cry per tap.
                 TapReaction.FLUSTERED -> { feel(StatusKind.SWEAT, 1_400); model.effect(Sfx.CONFUSION_STATUS) }
             }
             life.ripple(mon.id)
         }
     }
-    // The next leg of a walk: one that no widget covers and that does not stop on top of another Pokémon, if a few tries find one.
     fun pickLeg(short: Boolean): TownBehavior.Leg {
         val others = life.spots.filterKeys { it != mon.id }.values.map { it() }
         var leg = TownBehavior.leg(random, spot.value, heading, anchor, screens, guardian, short, livelyNow)
@@ -425,9 +355,7 @@ private fun Resident(
         return leg
     }
     val hold = life.holds[mon.id]
-    // A Pokémon stands still while it sleeps or meets another.
     val still = asleep || hold != null
-    // A shy one ([Quirk.TIMID]) is scared off by whoever comes close: [scareFrom] is where from, and [scare] restarts its walk.
     var scare by remember(mon.id) { mutableIntStateOf(0) }
     var scareFrom by remember(mon.id) { mutableStateOf<Offset?>(null) }
     if (quirk == Quirk.TIMID && !calm && !leaving && interactive) LaunchedEffect(mon.id, geo, still) {
@@ -445,9 +373,7 @@ private fun Resident(
             if (near != null) { last = TimeSource.Monotonic.markNow(); scareFrom = near; scare++ }
         }
     }
-    // Touched, a disguised one shows what it is; it puts the disguise back on after a minute.
     LaunchedEffect(unmasked) { if (unmasked) { delay(60_000); unmasked = false } }
-    // A Guardian carries its power about now and then: the stat icon of its type over its head, and a hop.
     if (guardian && !calm && !leaving && interactive) LaunchedEffect(mon.id) {
         val icon = TownQuirks.aura(mon.form.types)
         delay(8_000L + random.nextLong(15_000))
@@ -457,7 +383,6 @@ private fun Resident(
         }
     }
     LaunchedEffect(hold?.hop) { if (hold != null && hold.hop > 0) { hopping = true; hopKey++ } }
-    // Waking up: a hop and a stretch, then a bite of breakfast.
     var wasAsleep by remember(mon.id) { mutableStateOf(asleep) }
     LaunchedEffect(asleep) {
         if (wasAsleep && !asleep && !calm) { hopping = true; hopKey++; delay(1_000); grazing = true; hopKey++ }
@@ -467,18 +392,14 @@ private fun Resident(
         val dx = to.x - spot.value.x
         val dy = to.y - spot.value.y
         facingLeft = dx < 0
-        // The ground is deeper than it looks (a step in depth covers more screen than a step across), so weigh it up before choosing a side or a front view.
         walk = if (abs(dx) * 2f >= abs(dy)) SpriteAction.WALK_SIDE else if (dy < 0) SpriteAction.WALK_UP else SpriteAction.WALK_DOWN
         facing = when (walk) { SpriteAction.WALK_SIDE -> SpriteAction.IDLE_SIDE; SpriteAction.WALK_UP -> SpriteAction.IDLE_UP; else -> SpriteAction.IDLE }
-        // An unhurried stroll, about 7 seconds for the width of the screen, a little quicker or slower for each Pokémon and for a livelier town, along a
-        // gentle curve that eases in and out (TownBehavior.path), not a ruler line at one speed.
         val seconds = (0.9f + abs(dx) * 7f + abs(dy) * 2.4f) / (speed * (0.85f + 0.3f * livelyNow))
         val millis = (seconds * 1000).toInt()
         val way = TownBehavior.path(random, spot.value, to)
         spot.animateTo(to, keyframes { durationMillis = millis; way.forEachIndexed { i, p -> p at millis * (i + 1) / way.size using LinearEasing } })
         walk = null
     }
-    /** One straight run on a floor, at a steady walk (the games' Pokémon do not ease in and out of a step). */
     suspend fun stepTo(g: FloorGeometry, to: Offset, speed: Float = pace) {
         val dx = (to.x - spot.value.x) * widthPx
         val dy = (to.y - spot.value.y) * heightPx
@@ -491,11 +412,9 @@ private fun Resident(
         spot.animateTo(to, tween(millis, easing = LinearEasing))
     }
 
-    /** What a trap does when it steps on one: for show only, and found for the day (the Wonder Tile was never hidden). */
     suspend fun spring(g: FloorGeometry, at: Cell, trap: FloorTrap, walked: List<Cell>) {
         if (trap != FloorTrap.WONDER) life.revealed[at] = true
         TrapFx.of(trap)?.let { trapFx = it; trapFxPlay++ }
-        // The game's sound for it, only for one on Home (the page in view), so a far-off trap is not heard.
         if (interactive) model.effect(when (trap) {
             FloorTrap.WARP -> Sfx.QUICK_ESCAPE
             FloorTrap.SPIN -> Sfx.CONFUSION_STATUS
@@ -522,13 +441,11 @@ private fun Resident(
                     }
                 }
                 spinning = null
-                // Dizzy for a while (the games' Spin Trap confuses): it stumbles about, then it wears off.
                 afflict(Condition.CONFUSED)
             }
             FloorTrap.POISON -> { afflict(Condition.POISONED); hopping = true; hopKey++; feel(StatusKind.SWEAT, 1_000) }
             FloorTrap.SLUMBER -> { napping = true; delay(3_500); napping = false; hopping = true; hopKey++ }
             FloorTrap.GUST -> {
-                // Blown away as in the games: in a random direction, in a straight line, until it meets a wall or another Pokémon (at most GUST_RANGE squares).
                 feel(StatusKind.ALERT, 900, stay = false)
                 hopping = true; hopKey++
                 val (dx, dy) = GUST_DIRECTIONS.random(random)
@@ -545,10 +462,6 @@ private fun Resident(
         }
     }
 
-    /**
-     * Swaps places with [other], standing in the square this one is about to step into: it is sent to the square this one is on, as the games' team
-     * members trade places. False if it cannot be (asleep, already stopped for a meeting, or it cannot stand on this square).
-     */
     fun swapWith(g: FloorGeometry, other: String): Boolean {
         if (other in life.sleeping || other in life.holds) return false
         val here = g.cellOf(spot.value)
@@ -556,32 +469,23 @@ private fun Resident(
         val theirs = life.spots[other]?.invoke()?.let { g.cellOf(it) } ?: return false
         val hold = Hold(null, faceLeft = theirs.x > here.x, approach = g.spotOf(here))
         life.holds[other] = hold
-        // It walks over (the town's hold takes it there), then is let go.
         scope.launch { delay(900); if (life.holds[other] === hold) life.holds.remove(other) }
         return true
     }
 
-    /** Walks the floor towards [target]: to the nearest free square it can stop on, along a path over the floor; a trap on the way stops it there. */
     suspend fun roamFloor(g: FloorGeometry, target: Offset, speed: Float = pace, tries: Int = 0, phase: Boolean = false) {
         val others = life.occupiedCells(g, mon.id)
-        // A Ghost type goes round the walls like the rest, and only now and then ([phase]) takes a short cut through one.
         val going = if (mover.walls && !phase) mover.copy(walls = false) else mover
         val goal = g.nearestResting(g.cellOf(Offset(target.x.coerceIn(0f, screens - 0.01f), target.y.coerceIn(0f, 0.999f))), going, others, life.crowded(g, mon.id)) ?: return
-        // Where it is heading is taken too, so two Pokémon do not choose the same spot while both are still walking to it.
         life.goals[mon.id] = goal
         try {
-            // They step round the traps they know about (found ones and the Wonder Tile) when they can; any trap stepped on springs, as in the games.
             val known = life.revealed.keys + g.floor.traps.filterValues { it == FloorTrap.WONDER }.keys
-            // The others are walls: it goes round them, and only where there is no way round (a corridor with someone in it) does it go through, swapping places as the games' team does.
             val standing = life.standing(g, mon.id)
-            // Worked out off the main thread: two dozen Pokémon setting off together when the home screen comes back must not hold up its first frames.
             val from = g.cellOf(spot.value)
             val way = withContext(Dispatchers.Default) { g.floor.path(from, goal, going, known, standing) ?: g.floor.path(from, goal, going, known) ?: if (mover.walls) g.floor.path(from, goal, mover, known) else null } ?: return
             val hit = way.drop(1).indexOfFirst { it in g.floor.traps }
             val walked = if (hit >= 0) way.take(hit + 2) else way
-            // One square at a time (the same steady walk, in one tween after another), so who is in the way is looked at before each step.
             for (c in walked.drop(1)) {
-                // Confused, it sometimes stumbles one square to the side, then finds its way again from there.
                 if (random.nextInt(100) < TownQuirks.stumble(quirk, ailment == Condition.CONFUSED)) {
                     val here = g.cellOf(spot.value)
                     val taken = life.standing(g, mon.id)
@@ -595,13 +499,10 @@ private fun Resident(
                 }
                 val there = life.occupantOf(g, c, mon.id)
                 if (there != null && !swapWith(g, there)) {
-                    // Whoever it is cannot be passed (asleep, in a meeting, or it could not stand where this one does): wait a moment, then look for another way.
                     walk = null
                     delay(500)
                     if (life.occupantOf(g, c, mon.id) != null) { if (tries < 2) return roamFloor(g, g.spotOf(goal), speed, tries + 1) else return }
                 }
-                // Through a wall it is faint, as a ghost is. Only when the shade changes, and beside the step, never before it: an animation to the value it already has
-                // still waits out its whole time, which put a pause before every square (they went tile by tile, 0.221.0).
                 val shade = if (g.floor.map.at(c.x, c.y) == TownCell.WALL) 0.5f else 1f
                 if (fade.targetValue != shade) scope.launch { fade.animateTo(shade, tween(160)) }
                 stepTo(g, g.spotOf(c), speed * if (quirk == Quirk.ERRATIC) 0.6f + random.nextFloat() else 1f)
@@ -617,7 +518,6 @@ private fun Resident(
         }
     }
 
-    // Leaving the town: off the edge of Home at a walk (on a floor, down the stairs), then gone. (With Reduce motion it is simply gone.)
     LaunchedEffect(leaving, calm, geo) {
         if (!leaving) return@LaunchedEffect
         if (!calm) {
@@ -629,10 +529,7 @@ private fun Resident(
         }
         onGone()
     }
-    // Walking stops with Reduce motion and whenever the launcher is out of sight, and starts again when it is back. A new floor (the widgets
-    // measured, a new day, New floor layout) starts it again too, so nobody walks the paths of the floor that was there before.
     if (!calm && !leaving) LaunchedEffect(mon.id, still, gather, geo, scare) {
-        // A ghost never rests in a wall (a trap, a hold or the night may have caught it in one): it comes out first, or is simply put on the floor if it is asleep.
         if (geo != null && geo.floor.map.at(geo.cellOf(spot.value).x, geo.cellOf(spot.value).y) == TownCell.WALL) {
             if (still) { geo.nearestResting(geo.cellOf(spot.value), mover, emptySet())?.let { spot.snapTo(geo.spotOf(it)) }; fade.snapTo(1f) }
             else roamFloor(geo, spot.value, phase = true)
@@ -640,7 +537,6 @@ private fun Resident(
         if (still) {
             walk = null
             scareFrom = null
-            // Meeting someone: step up to them, then stand turned towards them. On a floor only onto a square it can stand on (else it just turns).
             hold?.approach?.takeIf { to -> geo == null || geo.floor.canStand(geo.cellOf(to), mover) }?.let { to ->
                 facingLeft = hold.faceLeft ?: facingLeft
                 walk = SpriteAction.WALK_SIDE
@@ -649,7 +545,6 @@ private fun Resident(
             }
             return@LaunchedEffect
         }
-        // Something came too close to a shy one: it goes away from it, quickly.
         scareFrom?.let { from ->
             scareFrom = null
             feel(StatusKind.ALERT, 700, stay = false)
@@ -661,13 +556,11 @@ private fun Resident(
             } else strollTo(Offset((spot.value.x + (if (from.x < spot.value.x) 0.3f else -0.3f)).coerceIn(0f, screens.toFloat()), spot.value.y), pace * 1.7f)
             heading = if (from.x < spot.value.x) 0f else kotlin.math.PI.toFloat()
         }
-        // Walked in from the edge: on into the main screen.
         if (!entered) {
             entered = true
             if (geo != null) roamFloor(geo, geo.spotOf(geo.restingCell(random, mover, home)), 0.85f)
             else strollTo(Offset(home + 0.15f + random.nextFloat() * 0.7f, random.nextFloat()), 0.85f)
         }
-        // Called together (three taps on the screen): each one, after a moment of its own, strolls over to the main screen, where it can be touched.
         if (gather != gathered && quirk == Quirk.ROOTED) gathered = gather
         else if (gather != gathered) {
             gathered = gather
@@ -677,7 +570,6 @@ private fun Resident(
         } else delay(300L + index * 150L + random.nextLong(3_000))
         while (true) {
             restless = TownBehavior.spell(random, restless, livelyNow, temper, guardian)
-            // A rooted one never walks: where the others would, it only stands and turns.
             val rolled = TownBehavior.next(random, guardian, facingLeft, restless, livelyNow)
             when (val beat = if (quirk == Quirk.ROOTED && rolled is Beat.Roam) Beat.Turn(!facingLeft, 2_000 + random.nextLong(3_000)) else rolled) {
                 is Beat.Stand -> delay(beat.millis)
@@ -685,10 +577,8 @@ private fun Resident(
                 Beat.Graze -> { grazing = true; hopKey++; delay(2_800) }
                 Beat.Hop -> { hopping = true; hopKey++; delay(1_200) }
                 is Beat.Roam -> if (geo != null) repeat(beat.legs) { leg ->
-                    // On a floor: the same wandering, but along the floor to the nearest square it can stop on; now and then it heads for a find it has spotted.
                     val next = TownBehavior.leg(random, spot.value, heading, anchor, screens, guardian, beat.short, livelyNow)
                     val find = life.finds.keys.minByOrNull { c -> abs(c.x - geo.cellOf(spot.value).x) + abs(c.y - geo.cellOf(spot.value).y) }
-                    // Now and then a ghost takes a short cut through the rock to a room not far off.
                     val shortcut = if (mover.walls && !beat.short && random.nextInt(100) < PHASE_PERCENT) {
                         val here = geo.cellOf(spot.value)
                         geo.floor.restingCells(mover).filter { c -> maxOf(abs(c.x - here.x), abs(c.y - here.y)) in 3..9 }.randomOrNull(random)
@@ -698,13 +588,11 @@ private fun Resident(
                     heading = next.heading
                     if (leg < beat.legs - 1) { if (random.nextInt(4) == 0) facingLeft = !facingLeft; delay(400L + random.nextLong(1_000)) }
                 } else repeat(beat.legs) { leg ->
-                    // The town has no side walls: a Pokémon may walk off one edge and come back in at the other.
                     val next = pickLeg(beat.short)
                     strollTo(next.to)
                     heading = next.heading
                     val x = spot.value.x
                     if (x > screens + 0.15f) spot.snapTo(Offset(x - (screens + 0.3f), spot.value.y)) else if (x < -0.15f) spot.snapTo(Offset(x + (screens + 0.3f), spot.value.y))
-                    // A look about between the legs, now and then the other way.
                     if (leg < beat.legs - 1) { if (random.nextInt(4) == 0) facingLeft = !facingLeft; delay(400L + random.nextLong(1_000)) }
                 }
             }
@@ -715,9 +603,7 @@ private fun Resident(
             TrapEffect(fx, { spot.value.let { at -> Offset(widthPx * at.x, heightPx * groundTop + heightPx * (groundBottom - groundTop) * at.y) } }, pixel) { trapFx = null }
         }
     }
-    // Every Pokémon is drawn at the town's pixel scale in a box of three tiles, standing on its feet; the front ones are drawn over those behind.
     val box = TILE * 3 * pixel
-    // The depth only in coarse steps for the drawing order, and the position read where it is drawn: a walking Pokémon moves without recomposing every frame.
     val depthRow by remember { derivedStateOf { (spot.value.y * 24).toInt() } }
     val sizeDp = (box / LocalDensity.current.density).dp
     Box(
@@ -725,11 +611,9 @@ private fun Resident(
             val at = spot.value
             IntOffset(snap(widthPx * at.x, pixel) - box / 2, snap(heightPx * groundTop + heightPx * (groundBottom - groundTop) * at.y, pixel) - box)
         }.size(sizeDp).zIndex(depthRow / 24f).graphicsLayer { alpha = fade.value }
-            // Only on the main screen can a Pokémon be touched; wandering over the other pages, it is just scenery.
             .then(if (interactive) Modifier.pointerInput(mon.id, tapperOn) {
                 detectTapGestures(onLongPress = { onMenu(mon) }, onTap = if (tapperOn) null else ({ life.pets[mon.id]?.invoke() }))
             } else Modifier)
-            // Screen readers get the buddy, the Guardian and the favourites by name, with the tap and the menu as actions; the rest of the crowd is scenery.
             .then(if (exposed && interactive) Modifier.semantics(mergeDescendants = true) {
                 contentDescription = "${mon.nickname}, level ${mon.level}"
                 role = Role.Button
@@ -737,7 +621,6 @@ private fun Resident(
                 onLongClick("Open ${mon.nickname}'s menu") { onMenu(mon); true }
             } else Modifier.clearAndSetSemantics {}),
     ) {
-        // A soft shadow under its feet, as the games draw one: wider for a bigger Pokémon, in whole art pixels.
         val frame = life.sizes[mon.id] ?: TownLife.MEDIAN
         Canvas(Modifier.fillMaxSize()) { drawShadow(frame.first, pixel) }
         AnimatedSprite(
@@ -745,30 +628,23 @@ private fun Resident(
             action = if (hopping) SpriteAction.HOP else if (asleep || napping) SpriteAction.SLEEP else if (grazing) SpriteAction.EAT else spinning ?: walk ?: if (hold != null) SpriteAction.IDLE_SIDE else facing, actionKey = hopKey, onActionDone = { hopping = false; grazing = false },
             fixedScale = pixel, mirror = if (hold != null) hold.faceLeft ?: facingLeft else if (spinning != null) facingLeft && spinning == SpriteAction.IDLE_SIDE else facingLeft && (walk == SpriteAction.WALK_SIDE || (walk == null && facing != SpriteAction.IDLE_UP)),
         )
-        // Over its head: the Zz of sleep, or what the meeting makes it feel.
         val icon = if (hold != null) hold.icon else if (asleep || napping) StatusKind.SLEEP else ownIcon ?: ailment?.icon
         if (icon != null) key(icon) {
-            // Just over its head, on one line whatever the icon's size: the Pokémon stands at the bottom of the box, so the icon is measured up from its feet (the top of its
-            // frame, less a little), and a bigger icon (24 or 32 px) is lowered by half the difference so its centre is where a 16 px icon's would be.
             val rise = ((frame.second * 0.8f).toInt()).coerceIn(ICON_RISE_MIN, ICON_RISE_MAX) - (icon.cell - 16) / 2
             StatusIcon(icon, pixel, Modifier.align(Alignment.BottomCenter).offset(y = (-rise * pixel / LocalDensity.current.density).dp), loop = icon == StatusKind.SLEEP || (hold == null && ownIcon == null && icon == ailment?.icon), animate = !calm)
         }
     }
 }
 
-/** The eight directions a Gust Trap can blow a Pokémon. */
 private val GUST_DIRECTIONS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1, 1 to 1, 1 to -1, -1 to 1, -1 to -1)
 
-/** How far above its feet an icon sits, in art pixels: four fifths of its frame's height, between these two. */
 private const val ICON_RISE_MIN = 16
 private const val ICON_RISE_MAX = 52
 
-/** A shadow under a Pokémon's feet: a flat ellipse of whole art pixels ([frameWidth] wide at most, a half to two thirds of it), dark and see-through. */
 private fun DrawScope.drawShadow(frameWidth: Int, pixel: Int) {
     val w = (frameWidth * 0.55f).toInt().coerceIn(10, 44) / 2 * 2
     val h = (w / 4).coerceAtLeast(3)
     val cx = size.width / 2f
-    // The feet are at the bottom of the box; the shadow is centred on them.
     val cy = size.height - h * pixel / 2f
     val colour = Color.Black.copy(alpha = 0.28f)
     for (row in 0 until h) {
@@ -778,74 +654,49 @@ private fun DrawScope.drawShadow(frameWidth: Int, pixel: Int) {
     }
 }
 
-/** How often (in a hundred long legs) a Ghost type takes a short cut through the walls instead of walking round them. *(tune)* */
 private const val PHASE_PERCENT = 12
 
-/** How often (in a hundred legs) a Pokémon on a floor heads for the nearest find instead of wandering. *(tune)* */
 private const val FIND_SEEK_PERCENT = 15
 
-/** Where the night starts for the town: the darkness at which the sleepy ones lie down. */
 internal const val NIGHT = 0.5f
 
-/** Whether this Pokémon is one of those that sleep at night: a third of them, always the same ones. */
 internal fun sleepsAtNight(mon: OwnedPokemon): Boolean = (mon.id.hashCode() and 0x7fffffff) % 3 == 0
 
-/**
- * What a Pokémon does instead of walking: it walks to [approach] if given, then stands turned to [faceLeft] (towards whoever
- * it is meeting), shows [icon] over its head and hops once for each new [hop].
- */
 internal class Hold(val icon: StatusKind?, val hop: Int = 0, val faceLeft: Boolean? = null, val approach: Offset? = null)
 
-/** What the residents are doing together: where each stands (for meetings) and who has stopped to meet someone. */
 internal class TownLife {
     val spots = mutableMapOf<String, () -> Offset>()
     val holds = mutableStateMapOf<String, Hold>()
-    /** What a tap on each does (its cry and a brief reaction). */
     val pets = mutableMapOf<String, () -> Unit>()
-    /** Called with the id of a Pokémon that was tapped: the ones next to it may notice (set by the town). */
     var ripple: (String) -> Unit = {}
 
-    /** Today's finds still on the floor, by square (the index is the find's), and how one is picked up: true when it was (set by the town). */
     var finds: Map<Cell, Int> = emptyMap()
     var pickUp: (Int, Boolean) -> Boolean = { _, _ -> false }
 
-    /** The traps found on today's floor (a Pokémon stepped on them): shown from then on. */
     val revealed = mutableStateMapOf<Cell, Boolean>()
 
-    /** The square each one is walking to, and where each was set down on the floor. */
     val goals = mutableMapOf<String, Cell>()
     val claims = mutableMapOf<String, Cell>()
     private var claimedFloor: Any? = null
 
-    /** How each one gets about, and who is lying asleep: a Pokémon is a wall to the others, but one that is awake and can stand where the other is swaps places. */
     val movers = mutableMapOf<String, Mover>()
     val sleeping = mutableSetOf<String>()
 
-    /** The Pokémon other than [self] standing on [c] (or caught between it and the next square), if any. */
     fun occupantOf(g: FloorGeometry, c: Cell, self: String): String? = spots.entries.firstOrNull { (id, s) -> id != self && g.cellOf(s()) == c }?.key
 
-    /** The squares others stand on right now (walls to a walking Pokémon). */
     fun standing(g: FloorGeometry, self: String): Set<Cell> = spots.entries.filter { it.key != self }.map { g.cellOf(it.value()) }.toSet()
 
-    /** The sprite sheets (each form's frame size), and how big each Pokémon is drawn here: its frame's width and height in art pixels. */
     var sheets: Map<Int, Animation>? = null
     val sizes = mutableMapOf<String, Pair<Int, Int>>()
 
-    /** The squares others stand on or are heading for on [g]'s floor, other than [self]'s. */
     fun occupiedCells(g: FloorGeometry, self: String): Set<Cell> =
         spots.filterKeys { it != self }.values.map { g.cellOf(it()) }.toSet() + goals.filterKeys { it != self }.values
 
-    /** The squares already claimed on [floor] (the claims of an earlier floor are dropped). */
     fun claimedOn(floor: Any): Map<String, Cell> {
         if (claimedFloor !== floor) { claims.clear(); claimedFloor = floor }
         return claims.toMap()
     }
 
-    /**
-     * Whether [self] standing on a square would overlap another Pokémon: where each other one stands, is heading for or (not yet placed) was set
-     * down, and how big the two are drawn, so a Wailord is given more room than a Pidgey. Sprites meet edge to edge at a square's width, so the
-     * gap is the two half-widths (and half-heights, a little less since the one behind is only partly covered) and a quarter of a square.
-     */
     fun crowded(g: FloorGeometry, self: String, claimed: Map<String, Cell> = claims): (Cell) -> Boolean {
         val others = buildList {
             spots.forEach { (id, s) -> if (id != self) add(id to g.cellOf(s())) }
@@ -855,11 +706,6 @@ internal class TownLife {
         return { c -> others.any { (id, at) -> overlap(self, c, id, at) } }
     }
 
-    /**
-     * Whether the Pokémon [a] on [at] and [b] on [to] would cover each other. Across, their half-widths and a quarter of a square; down, a Pokémon
-     * stands on its feet and its body rises above them, so each covers the squares behind it (the top of the screen) by most of its height and the
-     * ones in front of it by none: a Wailord hides what stands behind it, not what stands before it.
-     */
     fun overlap(a: String, at: Cell, b: String, to: Cell): Boolean {
         val (wa, ha) = sizes[a] ?: MEDIAN
         val (wb, hb) = sizes[b] ?: MEDIAN
@@ -869,15 +715,10 @@ internal class TownLife {
     }
 
     companion object {
-        /** A typical Pokémon's frame (width, height in art pixels), for one whose sheet is not read yet. */
         val MEDIAN = 23 to 27
     }
 }
 
-/**
- * The ones among [candidates] standing near [sourceId] are startled for a moment (the alert mark and a hop, turned towards it), each with [chance] in a hundred, at most [max] of them.
- * Their holds are taken off in a finally, as every hold is.
- */
 internal suspend fun TownLife.startleAround(sourceId: String, candidates: List<String>, random: Random, chance: Int, max: Int) {
     val at = spots[sourceId]?.invoke() ?: return
     val near = candidates.filter { it != sourceId && it !in holds }.filter { id ->
@@ -896,15 +737,8 @@ internal suspend fun TownLife.startleAround(sourceId: String, candidates: List<S
 private const val STARTLE_RANGE_X = 0.16f
 private const val STARTLE_RANGE_Y = 0.2f
 
-/** The launcher's way to a tap on a Pokémon when widget pages are drawn over the town: [hit] takes a point in the town's pixels and says whether a Pokémon was there. */
 internal class TownTapper { var hit: (Offset) -> Boolean = { false } }
 
-/**
- * Two Pokémon that walk up to each other stop and react, like in a Mystery Dungeon town: a greeting (one is curious, the
- * other startled), a quarrel (one is cross, the other startled) or both startled at once, with the matching emote sounds
- * (not more than one every few seconds, and not in Reduce motion or while the launcher is out of sight). Each pair meets
- * again after a while.
- */
 @Composable
 private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedPokemon>, calm: Boolean, mood: BuddyMood?, home: Int, guardianId: String?, geo: FloorGeometry? = null) {
     val scope = rememberCoroutineScope()
@@ -912,22 +746,18 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
     if (!calm) LaunchedEffect(residents.map { it.id }) {
         val random = Random(Random.nextLong())
         val last = mutableMapOf<String, kotlin.time.TimeMark>()
-        // They meet now and then, not all day: one meeting at a time, and a pause of half a minute or more after each.
         var nextMeeting = TimeSource.Monotonic.markNow() + (10 + random.nextInt(15)).seconds
         while (true) {
             delay(900)
             if (!nextMeeting.hasPassedNow()) continue
-            // The Guardian takes no part in these meetings (the others notice it in TownGuardianAwe, and rarely): it would be stopped by every Pokémon that walked past.
             val dark = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)
             val free = residents.filter { it.id !in life.holds && it.id != guardianId && !TownBehavior.asleep(it, dark) }
             val shuffled = free.shuffled(random)
-            // One meeting at a time: a crowd standing together does not all react in the same moment.
             pairs@ for (a in shuffled) for (b in shuffled) {
                 if (a.id >= b.id || a.id in life.holds || b.id in life.holds) continue
                 val pa = life.spots[a.id]?.invoke() ?: continue
                 val pb = life.spots[b.id]?.invoke() ?: continue
                 if (pa.x !in (home + 0.05f)..(home + 0.95f) || pb.x !in (home + 0.05f)..(home + 0.95f)) continue
-                // On a floor they meet where they stand, on their own squares, if they are within a square of each other (one square between them is fine); they do not step off the grid.
                 val close = if (geo != null) geo.cellOf(pa).let { ca -> geo.cellOf(pb).let { cb -> maxOf(abs(ca.x - cb.x), abs(ca.y - cb.y)) <= 2 } } else abs(pa.x - pb.x) <= 0.09f && abs(pa.y - pb.y) <= 0.12f
                 if (!close) continue
                 val pair = a.id + b.id
@@ -936,9 +766,7 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                 nextMeeting = TimeSource.Monotonic.markNow() + (30 + random.nextInt(40)).seconds
                 val withBuddy = a.id == buddy || b.id == buddy
                 val other = if (a.id == buddy) b else a
-                // The one on the left speaks first.
                 val (first, second) = if (pa.x <= pb.x) a to b else b to a
-                // They step up to each other, side by side at the midpoint, and face one another.
                 val mid = Offset((pa.x + pb.x) / 2f, (pa.y + pb.y) / 2f)
                 val towardsFirst = if (geo != null) null else Offset(mid.x - 0.045f, mid.y)
                 val towardsSecond = if (geo != null) null else Offset(mid.x + 0.045f, mid.y)
@@ -947,20 +775,17 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                         in 0..5 -> {
                             life.holds[first.id] = Hold(StatusKind.QUESTION, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
-                            // Each icon has the games' own sound beside it, but only when the buddy is in the meeting (the Pokémon the person is watching).
                             if (withBuddy) { model.effect(Sfx.CURIOUS); mood?.meet(other, Emotion.NORMAL, Emotion.NORMAL) }
                             delay(800)
                             life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true)
                             if (withBuddy) { model.effect(Sfx.SURPRISE); mood?.meet(other, Emotion.SURPRISED, Emotion.SURPRISED) }
                             delay(900)
-                            // Then they are pleased to meet.
                             life.holds[first.id] = Hold(StatusKind.TWINKLE, faceLeft = false); life.holds[second.id] = Hold(StatusKind.TWINKLE, faceLeft = true)
                             if (withBuddy) mood?.meet(other, Emotion.HAPPY, Emotion.JOYOUS)
                         }
                         in 6..7 -> {
                             life.holds[first.id] = Hold(StatusKind.CROSS, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
-                            // The one that is cross is the other Pokémon if the buddy is not the one that started it.
                             if (withBuddy) { model.effect(Sfx.MAD); mood?.meet(other, if (first.id == buddy) Emotion.NORMAL else Emotion.DETERMINED, if (first.id == buddy) Emotion.DETERMINED else Emotion.SURPRISED) }
                             delay(700)
                             life.holds[second.id] = Hold(StatusKind.SWEAT, hop = 1, faceLeft = true)
@@ -980,35 +805,26 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
     }
 }
 
-/** [value] rounded to a multiple of [pixel], so a position always falls on the pixel grid of the art. */
 internal fun snap(value: Float, pixel: Int): Int = (value / pixel).roundToInt() * pixel
 
 private val atlases = BitmapCache(CacheBudget.TILES)
 
-/** The town's backdrop: a real Pokémon scene (whole-number scale, no smoothing), or a town laid out from a dungeon's tiles. */
 @Composable
 internal fun TownBackdrop(scene: String, modifier: Modifier = Modifier, darkness: Float = 0f, weather: Weather = Weather.CLEAR) {
     if (TownScenes.isDungeon(scene)) TileTown(scene, modifier, darkness, weather) else SceneImage(scene, modifier.graphicsLayer {}, darkness, crisp = true)
 }
 
-/**
- * A town of a dungeon's tiles (assets/tiles): [TownLayout]'s map drawn at the [townScale], without smoothing, centred on a
- * multiple of the scale, with the day's darkness over it like [SceneImage].
- */
 @Composable
 private fun TileTown(name: String, modifier: Modifier, darkness: Float, weather: Weather) {
     val atlas by produceState(atlases[name], name) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = atlases[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/tiles/$name.png").decodeToImageBitmap() }
             atlases[name] = value
         }
     }
-    // The dungeon's weather grades the colours of its tiles (WeatherGrade.kt); the picture shows as it was until the graded one is made.
     val shown by produceState(atlas, atlas, weather) { value = atlas?.let { gradedFor(name, it, weather) } }
     val fade by rememberFadeIn(atlas != null)
-    // The map is worked out once per size (not on every draw) and the backdrop has a layer of its own, so a walking sprite's frame never draws every tile again.
     Box(
         modifier.graphicsLayer {}.drawWithCache {
             val pixel = townScale(size.width)

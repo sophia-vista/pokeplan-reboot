@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Kanto, "The Genetic Crisis": Nia the Eevee guides the buddy; Team Rocket is Meowth and Koffing; the birds, Mewtwo and Mew are cameos. */
 internal object KantoChapters {
     private val buddy = buddyCharacter()
     private val nia = npc("nia", "Nia", 133)

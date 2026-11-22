@@ -3,11 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/**
- * Explorers of Time, Darkness & Sky, the six optional post-story episodes (chapters 101 to 106; the code is the source of the story):
- * Bidoof's Wish, Igglybuff the Prodigy, Today's "Oh My Gosh", In the Future of Darkness, Manaphy's Return and The Marine Resort.
- * Each stands on its own, none changes the main ending, and none pays anything (the scripts hold no reward).
- */
 internal object ExplorersPostStory {
     private val buddy = buddyCharacter()
     private val bidoof = npc("bidoof", "Bidoof", 399)
@@ -31,7 +26,6 @@ internal object ExplorersPostStory {
 
     fun all(): List<StoryEpisode> = listOf(c101(), c102(), c103(), c104(), c105(), c106())
 
-    /** One sentence for each episode's card (a hundred characters at most, no final period). */
     val summaries: Map<Int, String> = mapOf(
         101 to "Bidoof tells how a clumsy newcomer learned to notice what others walk past",
         102 to "Young Igglybuff and the explorer Armaldo walk the ruins that shaped a guildmaster",
@@ -41,7 +35,6 @@ internal object ExplorersPostStory {
         106 to "A seaside holiday for the whole guild, with treasure maps and quiet talk at sunset",
     )
 
-    // ---- 101: Bidoof's Wish ----
     private fun c101() = StoryEpisode(WorldLayer.EXPLORERS, 101, "Special Episode: Bidoof's Wish", listOf(
         dialogue("explorers-post-101-steps", "Stars over the guild", StoryPlaces.GUILD_GATE_NIGHT, listOf(buddy, bidoof)) {
             narr("Night over the guild. The lookout hole is empty. Bidoof sits on the top step, watching the stars, and pats the stone beside him.")
@@ -106,7 +99,6 @@ internal object ExplorersPostStory {
         },
     ))
 
-    // ---- 102: Igglybuff the Prodigy ----
     private fun c102() = StoryEpisode(WorldLayer.EXPLORERS, 102, "Special Episode: Igglybuff the Prodigy", listOf(
         stage("explorers-post-102-valley", "A tiny wanderer", StoryPlaces.MEADOW_VALLEY, listOf(buddy, igglybuff, armaldo)) {
             narr("Wigglytuff once told {buddy} about the Pokémon he used to be. Long before any guild, in a quiet valley, a very small Igglybuff was singing to the flowers.")
@@ -180,7 +172,6 @@ internal object ExplorersPostStory {
         },
     ))
 
-    // ---- 103: Today's "Oh My Gosh" ----
     private fun c103() = StoryEpisode(WorldLayer.EXPLORERS, 103, "Special Episode: Today's 'Oh My Gosh'", listOf(
         stage("explorers-post-103-barrel", "The empty barrel", StoryPlaces.GUILD_MESS, listOf(buddy, sunflora, chatot, loudred)) {
             narr("Early morning in the guild's mess hall. Sunflora has already been up an hour, practising her daily announcement.")
@@ -276,7 +267,6 @@ internal object ExplorersPostStory {
         },
     ))
 
-    // ---- 104: In the Future of Darkness ----
     private fun c104() = StoryEpisode(WorldLayer.EXPLORERS, 104, "Special Episode: In the Future of Darkness", listOf(
         dialogue("explorers-post-104-tower", "What is left to do", StoryPlaces.TEMPORAL_TOWER_CALM, listOf(dusknoir, celebi, buddy)) {
             narr("The present day. Temporal Tower is calm again, its gears turning with a soft, even sound. Dusknoir stands alone at the edge of the platform.")
@@ -343,7 +333,6 @@ internal object ExplorersPostStory {
         },
     ))
 
-    // ---- 105: Manaphy's Return ----
     private fun c105() = StoryEpisode(WorldLayer.EXPLORERS, 105, "Manaphy's Return", listOf(
         stage("explorers-post-105-bubble", "A bubble on the beach", StoryPlaces.SEA_CLIFF, listOf(buddy, manaphy, wigglytuff, chatot)) {
             narr("Early morning on the beach below Treasure Town. A pale blue bubble rolls up the sand with the tide and pops.")
@@ -432,7 +421,6 @@ internal object ExplorersPostStory {
         },
     ))
 
-    // ---- 106: The Marine Resort ----
     private fun c106() = StoryEpisode(WorldLayer.EXPLORERS, 106, "The Marine Resort", listOf(
         stage("explorers-post-106-arrival", "Welcome to the shore", StoryPlaces.SEA_CLIFF, listOf(buddy, wigglytuff, chatot, loudred, sunflora, kecleon, marill, azurill)) {
             narr("Warm sand, bright water, and a large striped umbrella planted in the middle of the beach. The whole guild is on holiday.")

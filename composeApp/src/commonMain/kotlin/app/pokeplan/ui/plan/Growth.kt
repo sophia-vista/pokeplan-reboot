@@ -70,7 +70,6 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.plural
 import app.pokeplan.ui.screens.short
 
-/** The ranges the balance wheel can show (design.md, Growth). */
 private val growthRanges = listOf(7, 30, 90)
 
 @Composable
@@ -101,8 +100,6 @@ internal fun GrowthView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Where your effort went")
-            // Help: the share counts ${"$"}{Insights.MINUTES_PER_TASK_POINT} minutes of focus as one task; focus without a task counts as no list.
-            // Only the areas with something in them get a row.
             val lists = model.data.lists
             val busy = wheel.lists.filter { wheel.score(it) > 0 }.sortedByDescending { wheel.score(it) }
             fun nameOf(id: String?) = lists.firstOrNull { it.id == id }?.name ?: "No list"
@@ -136,7 +133,6 @@ internal fun GrowthView(model: AppModel) {
     GoalsSummary(model)
 }
 
-/** A small bar chart of the last weeks, with the number above each bar and the week's first day below it. */
 @Composable
 private fun WeekBars(
     title: String, weeks: List<Insights.WeekPoint>, value: (Insights.WeekPoint) -> Int, label: (Int) -> String, color: Color,
@@ -163,7 +159,6 @@ private fun WeekBars(
     }
 }
 
-/** Goal progress, kept apart from tasks and time: a goal moves only when its milestones (or linked tasks) are done. */
 @Composable
 private fun GoalsSummary(model: AppModel) {
     val goals = model.data.goals
@@ -182,8 +177,6 @@ private fun GoalsSummary(model: AppModel) {
         }
     }
 }
-
-// ----- Goals ----------------------------------------------------------------------------------------------------------
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -207,7 +200,6 @@ internal fun GoalsView(model: AppModel) {
             )
             FormDisclosure("Additional details", more, { more = !more }) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    // Optional, and only a date to aim for: nothing happens when it passes.
                     FieldLabel("Target date")
                     PixelDateField(
                         targetDate, store.today, Pixel.Tone, { targetDate = it },
@@ -218,17 +210,14 @@ internal fun GoalsView(model: AppModel) {
             FormSave("Add goal", ::add, Pixel.InkSoft, enabled = title.isNotBlank())
         }
     }
-    // Goals are bigger aims; break one into small milestones and each finished one earns a Super Candy and a badge for its case.
     val (done, open) = model.data.goals.partition { it.completedAtMillis != null }
     open.forEach { g -> GoalCard(model, g) }
-    // The Hall of Fame: finished goals, newest first, each with the Plan party of the day it was finished.
     if (done.isNotEmpty()) {
         TextBox { PixelTitle("Hall of Fame") }
         GoalRules.hallOfFame(done).forEach { g -> GoalCard(model, g) }
     }
 }
 
-/** One goal: title, area, progress, its badge case, its milestones and (once finished) the Plan party of that day. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun GoalCard(model: AppModel, g: Goal) {
@@ -242,8 +231,6 @@ private fun GoalCard(model: AppModel, g: Goal) {
             }
             if (editing) GoalEditor(model, g) { editing = false }
             g.targetDate?.let { Text("aiming for ${it.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-            // The words beside the bar say how close the goal is; the nearer it looks, the likelier it gets finished.
-            // A goal with no milestones counts the tasks linked to it (from a task's Edit tab) instead.
             val linked = model.data.tasks.filter { it.id in g.linkedTaskIds && it.state != TaskState.DELETED && it.state != TaskState.WONT_DO }
             val progress = if (g.milestones.isEmpty() && linked.isNotEmpty()) "${linked.count { it.state == TaskState.DONE }} of ${linked.size} tasks"
                 else "${g.milestones.count { it.isDone }} of ${g.milestones.size} milestones"
@@ -259,7 +246,6 @@ private fun GoalCard(model: AppModel, g: Goal) {
             g.milestones.forEach { m ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
-                    // Unticking keeps "paid", so ticking again pays nothing more.
                     if (m.isDone) PixelIconButton("undo", "Untick ${m.title}", { store.reopenMilestone(g.id, m.id) }, Pixel.InkSoft)
                     else PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
                 }
@@ -278,7 +264,6 @@ private fun GoalCard(model: AppModel, g: Goal) {
     }
 }
 
-/** A goal's badge case: one Gym badge per milestone, in colour once the milestone is done and a flat shape until then. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun BadgeCase(g: Goal) {
@@ -292,7 +277,6 @@ private fun BadgeCase(g: Goal) {
     }
 }
 
-/** A goal's title and target date, and its milestones' names; Save applies all of it, Delete removes the goal. */
 @Composable
 private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
     val store = model.store
@@ -322,12 +306,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
     }
 }
 
-// ----- Progress -------------------------------------------------------------------------------------------------------
-
-/** Plan's progress and trends, shown in Me (owner, 20 November 2026; the weekly review is scrapped). */
 @Composable
 internal fun ProgressView(model: AppModel) {
     app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.PLAN) { GrowthView(model) }
 }
-
-// ----- Settings -------------------------------------------------------------------------------------------------------

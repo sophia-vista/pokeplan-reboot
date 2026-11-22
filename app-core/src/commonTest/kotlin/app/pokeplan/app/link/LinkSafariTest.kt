@@ -17,7 +17,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Friend Safari (docs/pokelife `MODULES/LINK.md` 9.5): free entry, one visit to a person's Safari a day, a seed from nothing but the opaque id. */
 class LinkSafariTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
@@ -45,7 +44,6 @@ class LinkSafariTest {
         val again = s.link.safariPool(ana.id)
         assertEquals(again, s.link.safariPool(ana.id))
         assertEquals(SafariRules.BASE_SLOTS, again.size)
-        // The same key gives the same pool whatever else the person's card says.
         s.link.updatePerson(ana.copy(name = "Someone Else", organization = "Elsewhere"))
         assertEquals(again, s.link.safariPool(ana.id))
         assertFalse(LinkRules.safariRef(ana.id).contains(ana.id))
@@ -59,7 +57,7 @@ class LinkSafariTest {
         s.link.people(SafariRules.PEOPLE_PER_SLOT)
         val wider = s.link.safariPool(ana.id)
         assertEquals(SafariRules.BASE_SLOTS + 1, wider.size)
-        assertEquals(before, wider.take(before.size)) // the first slots never move
+        assertEquals(before, wider.take(before.size))
         s.link.people(60)
         assertEquals(SafariRules.slots(SafariRules.PEOPLE_CAP), s.link.safariPool(ana.id).size)
         assertTrue(s.link.safariPool(ana.id).size <= SafariRules.MAX_SLOTS)
@@ -87,7 +85,7 @@ class LinkSafariTest {
         assertEquals(coins, s.game.data.player.coins)
         assertEquals(app.pokeplan.app.Origin.How.SAFARI, s.game.data.origins[out.filterIsInstance<Reward.Hatched>().single().pokemon.id]?.how)
         assertTrue(s.link.safariToday(ana.id).visited)
-        assertNull(s.link.visitSafari(ana.id)) // a second visit the same day catches nothing
+        assertNull(s.link.visitSafari(ana.id))
         s.clock.advanceDays(1)
         assertFalse(s.link.safariToday(ana.id).visited)
         assertNotNull(s.link.visitSafari(ana.id))
@@ -114,9 +112,9 @@ class LinkSafariTest {
         s.link.setSafari(false)
         assertNull(s.link.visitSafari(ana.id))
         s.link.setSafari(true); s.link.setPostcardTrail(false)
-        assertNull(s.link.visitSafari(ana.id)) // Postcard Trail's switch turns it off too
+        assertNull(s.link.visitSafari(ana.id))
         assertEquals(before, s.game.data.player.pokemon.size)
-        assertEquals("Ana", s.link.data.people.first { it.id == ana.id }.name) // no record was touched
+        assertEquals("Ana", s.link.data.people.first { it.id == ana.id }.name)
     }
 
     @Test

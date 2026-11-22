@@ -26,7 +26,6 @@ class GearTest {
     fun aToolHasNoHelperUntilThePlayerChoosesAnOwnedOne() {
         val store = store()
         assertIs<GearHelper.None>(store.gearHelper(GearTool.FLASHLIGHT))
-        // Owning one who could help does not make it the helper by itself (it would take the Pokémon out of the PC).
         store.grantPokemon(179, "test")
         assertIs<GearHelper.None>(store.gearHelper(GearTool.FLASHLIGHT))
     }
@@ -42,7 +41,6 @@ class GearTest {
         assertTrue(store.assignGearHelper(GearTool.FLASHLIGHT, ampharos.id))
         assertEquals(ampharos.id, assertIs<GearHelper.Owned>(store.gearHelper(GearTool.FLASHLIGHT)).pokemon.id)
         assertEquals(Place.Pc, store.placeOf(mareep.id), "the one it replaced goes back to the PC")
-        // Only the tools its line fits.
         assertFalse(store.assignGearHelper(GearTool.COIN, ampharos.id))
         assertFalse(store.assignGearHelper(GearTool.FLASHLIGHT, "nobody"))
         store.clearGearHelper(GearTool.FLASHLIGHT)
@@ -59,7 +57,6 @@ class GearTest {
         store.assignGearHelper(GearTool.FLASHLIGHT, first.id)
         val inventory = store.data.player.inventory
         assertTrue(store.transfer(first.id), "a duplicate Mareep can be transferred")
-        // The other Mareep does not take over by itself, and the tool has no helper.
         assertIs<GearHelper.None>(store.gearHelper(GearTool.FLASHLIGHT))
         assertTrue(store.data.player.inventory != inventory, "the transfer itself pays (it is not a tool)")
         assertEquals(setOf(second.id), store.gearCandidates(GearTool.FLASHLIGHT).map { it.id }.toSet())

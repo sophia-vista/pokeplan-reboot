@@ -57,7 +57,6 @@ class BaseRemindersTest {
         val r = s.upcoming().single()
         assertEquals(BaseReminderKind.CHORE, r.kind)
         assertEquals(at(2026, 11, 8), r.atMillis)
-        // A chore whose own reminder is off never asks, whatever the switch says.
         s.home.setChoreRemind(chore.id, false)
         assertTrue(s.upcoming().isEmpty())
     }
@@ -70,12 +69,10 @@ class BaseRemindersTest {
         assertTrue(s.upcoming().isEmpty(), "an overdue chore never nags")
         val weekly = s.home.addChore("Vacuum", Recurrence(RepeatKind.WEEKLY), LocalDate(2026, 11, 7)).record!!
         s.home.setChoreRemind(weekly.id, true)
-        // Due today at 09:00 has already passed this evening; once it is done the next Saturday is the one that asks, when it comes into the window.
         assertTrue(s.upcoming().isEmpty())
         s.home.complete(weekly.id)
         s.clock.advanceDays(4)
         assertEquals(at(2026, 11, 14), s.upcoming().single().atMillis)
-        // Done early for that very day: nothing is waiting for it any more.
         s.home.complete(weekly.id)
         assertTrue(s.upcoming().none { it.recordId == weekly.id && it.occurrence == "2026-11-14" })
     }
@@ -91,11 +88,9 @@ class BaseRemindersTest {
         val w = s.home.addWarranty(asset.id, expiryDay = LocalDate(2026, 12, 7)).record!!
         s.home.setWarrantyRemind(w.id, true)
         s.home.setWarrantyLeadDays(40)
-        // Forty days before the 7th of December is already past; a month-long lead would not be in the days the scheduler plans over either.
         assertEquals(1, s.upcoming().size)
         s.home.setWarrantyLeadDays(29)
         assertEquals(at(2026, 11, 8), s.upcoming().single { it.kind == BaseReminderKind.WARRANTY }.atMillis)
-        // Doing the maintenance moves the schedule on: the old reminder is no longer wanted.
         assertTrue(BaseReminders.stillWanted(s.home.data, BaseReminderKind.MAINTENANCE, sch.id, "2026-11-10", s.home.today))
         s.home.completeMaintenance(sch.id)
         assertFalse(BaseReminders.stillWanted(s.home.data, BaseReminderKind.MAINTENANCE, sch.id, "2026-11-10", s.home.today))
@@ -111,10 +106,8 @@ class BaseRemindersTest {
         val r = s.upcoming().single()
         assertEquals(BaseReminderKind.LOW_STOCK, r.kind)
         assertEquals(at(2026, 11, 8), r.atMillis, "the first 09:00 after it became low (it is evening)")
-        // Once its hour is past it never repeats by itself.
         s.clock.advanceHours(24)
         assertTrue(s.upcoming().isEmpty())
-        // Quieting it removes the request; restocking does too.
         s.clock.advanceHours(-24)
         s.home.dismissLow(sup.id)
         assertTrue(s.upcoming().isEmpty())
@@ -165,12 +158,9 @@ class BaseRemindersTest {
         val router = ReminderRouter(listOf(adapter))
         assertEquals(ActionResult.DONE, router.handle(request, ReminderActions.DONE))
         assertEquals(1, s.game.data.basePaid.size)
-        // The same notification tapped again is stale: nothing waits, nothing is paid.
         assertEquals(ActionResult.STALE, router.handle(request, ReminderActions.DONE))
         assertEquals(1, s.game.data.basePaid.size)
-        // A snooze and a dismiss are not reward-bearing and touch no record.
         assertEquals(ActionResult.DISMISSED, router.handle(request, ReminderActions.DISMISS))
-        // Maintenance offers no Done.
         val sch = s.home.addSchedule("Boiler", today.let { LocalDate(2026, 11, 9) }).record!!
         s.home.setScheduleRemind(sch.id, true)
         val m = adapter.requests(s.clock.nowMillis(), utc).first { it.kind == "maintenance" }

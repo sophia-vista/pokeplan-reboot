@@ -34,7 +34,7 @@ class DataStoreTest {
         assertFailsWith<IllegalArgumentException>("the same Pokémon twice") { store.pokemon.setParty(ModuleIds.PLAN, listOf("a", "a")) }
         assertFailsWith<IllegalArgumentException>("a module with no party") { store.pokemon.setParty("WORLD", listOf("a")) }
         store.pokemon.setParty(ModuleIds.PLAN, listOf("a"))
-        store.pokemon.setParty(ModuleIds.CARE, listOf("a")) // one place only: Care's party takes it from Plan's
+        store.pokemon.setParty(ModuleIds.CARE, listOf("a"))
         assertEquals(emptyList(), store.pokemon.party(ModuleIds.PLAN))
         store.pokemon.setBuddy("a")
         store.pokemon.setGuardians(listOf("a"))

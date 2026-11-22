@@ -99,12 +99,10 @@ class LauncherModelTest {
     fun dungeonTownsAreWallsAndWaterInWholeRectanglesWithGroundWhereThePokemonWalk() {
         for (seed in 0 until 200) {
             val map = TownLayout.build(13, 26, seed)
-            // The band along the top is wall, and no pond or clump reaches the strip the Pokémon walk in.
             assertEquals(TownCell.WALL, map.at(6, 0))
             val walkTop = (26 * TownLayout.WALK_TOP).toInt()
             val walkBottom = (26 * TownLayout.WALK_BOTTOM).toInt()
             for (y in walkTop..walkBottom) for (x in 0 until 13) assertEquals(TownCell.GROUND, map.at(x, y), "seed $seed at $x,$y")
-            // Wall and water squares take their tiles from the atlas blocks on rows 0 to 2, ground from row 3.
             for (y in 0 until 26) for (x in 0 until 13) {
                 val (ax, ay) = map.atlas(x, y, seed)
                 assertTrue(ax in 0..5 && ay in 0..3)
@@ -139,7 +137,6 @@ class LauncherModelTest {
         assertEquals(AppCategory.TOOLS, AppCategory.guess(-1, "com.android.settings", "Settings", true))
         assertEquals(AppCategory.TOOLS, AppCategory.guess(-1, "com.android.something", "Mystery", true))
         assertEquals(AppCategory.OTHER, AppCategory.guess(-1, "org.example.app", "Mystery", false))
-        // A declared category wins over the words.
         assertEquals(AppCategory.PRODUCTIVITY, AppCategory.guess(7, "com.instagram.notes", "Notes", false))
     }
 
@@ -367,7 +364,6 @@ class LauncherGestureTest {
         assertEquals(GestureAction.APPS, p.action(GestureTrigger.EDGE_DRAG))
         assertEquals(GestureAction.GATHER, p.action(GestureTrigger.TRIPLE_TAP))
         assertEquals(GestureAction.NONE, p.action(GestureTrigger.DOUBLE_TAP))
-        // A save from before the choices: the old off switches mean "nothing".
         val old = LauncherPrefs.decode("K edgeDrag\t0\nK gatherTap\t0\n")
         assertEquals(GestureAction.NONE, old.action(GestureTrigger.EDGE_DRAG))
         assertEquals(GestureAction.NONE, old.action(GestureTrigger.TRIPLE_TAP))
@@ -379,7 +375,6 @@ class LauncherGestureTest {
         val back = LauncherPrefs.decode(p.encode())
         assertEquals(GestureAction.GEAR, back.action(GestureTrigger.DOUBLE_TAP))
         assertEquals(GestureAction.NONE, back.action(GestureTrigger.TRIPLE_TAP))
-        // A job it does not know is ignored, not a crash.
         assertEquals(GestureAction.NONE, LauncherPrefs.decode("K gesture.DOUBLE_TAP\tFLY\nK gesture.SHAKE\tAPPS\n").action(GestureTrigger.DOUBLE_TAP))
     }
 
@@ -396,7 +391,6 @@ class LauncherGestureTest {
             listOf(spriteless, weak, strong, fav, buddy), "buddy", favorites = setOf("fav"), hasSprite = { it.id != "none" },
         ).map { it.id }
         assertEquals(listOf("buddy", "fav", "strong", "weak", "none"), order)
-        // A cap keeps the ones with sprites.
         assertEquals(listOf("buddy", "fav"), townResidents(listOf(spriteless, weak, fav, buddy), "buddy", cap = 2, favorites = setOf("fav"), hasSprite = { it.id != "none" }).map { it.id })
     }
 
@@ -411,11 +405,8 @@ class LauncherGestureTest {
         val plain = townMon("plain", 25, 5)
         val all = listOf(plain, kyogre, groudon, rayquaza)
         val guardians = listOf("kyogre", "groudon", "rayquaza")
-        // The strongest Guardian walks the town; the others stay in their modules.
         assertEquals(listOf("groudon", "plain"), townResidents(all, null, guardianIds = guardians).map { it.id })
-        // A Guardian that is the buddy is the one shown.
         assertEquals(listOf("kyogre", "plain"), townResidents(all, "kyogre", guardianIds = guardians).map { it.id })
-        // No Guardians: nothing changes.
         assertEquals(4, townResidents(all, null).size)
     }
 
@@ -423,7 +414,6 @@ class LauncherGestureTest {
     fun theGuardiansTakeTurnsADayAtATimeUnlessTheBuddyIsOne() {
         val all = listOf(townMon("kyogre", 382, 40), townMon("groudon", 383, 60), townMon("rayquaza", 384, 50), townMon("plain", 25, 5))
         val guardians = listOf("kyogre", "groudon", "rayquaza")
-        // By level: groudon, rayquaza, kyogre, then round again.
         assertEquals(listOf("groudon", "rayquaza", "kyogre", "groudon"), (0..3).map { shownGuardian(all, guardians, null, it)?.id })
         assertEquals("kyogre", shownGuardian(all, guardians, "kyogre", 1)?.id)
         assertEquals(listOf("rayquaza", "plain"), townResidents(all, null, guardianIds = guardians, rotation = 1).map { it.id })

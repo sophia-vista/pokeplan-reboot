@@ -68,15 +68,9 @@ import kotlin.math.min
 private val worldArt = BitmapCache(CacheBudget.WORLD_ART)
 
 
-/**
- * A real Mystery Dungeon picture from assets/world (docs/assets.md): the town, the guild room, the summit, the camp cave and a
- * tileset preview per dungeon. Drawn with square pixels. [crop] fills the box and shows the bottom middle; otherwise the whole
- * picture sits centred inside it.
- */
 @Composable
 internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boolean = false, top: Boolean = false, anchorY: Float? = null) {
     val image by produceState(worldArt[name], name) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = worldArt[name]
         if (value == null) {
             value = orNull { Res.readBytes(if (name.startsWith("map:")) "files/maps/${name.removePrefix("map:")}.png" else "files/world/$name.png").decodeToImageBitmap() }
@@ -86,7 +80,6 @@ internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boo
     Canvas(modifier) {
         val picture = image ?: return@Canvas
         val cover = if (crop) max(size.width / picture.width, size.height / picture.height) else min(size.width / picture.width, size.height / picture.height)
-        // Whole-number scale up where it fits, so pixels stay sharp; a smooth scale down otherwise.
         val scale = if (cover >= 1f) kotlin.math.floor(cover).coerceAtLeast(1f).let { if (crop) kotlin.math.ceil(cover) else it } else cover
         val w = (picture.width * scale).toInt()
         val h = (picture.height * scale).toInt()
@@ -94,7 +87,6 @@ internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boo
         val srcH = if (h > size.height) (size.height / scale).toInt().coerceAtMost(picture.height) else picture.height
         val dstW = (srcW * scale).toInt()
         val dstH = (srcH * scale).toInt()
-        // Which part of a cropped picture shows: [anchorY] 0 the top, 1 the bottom, 0.5 the middle (else [top] picks the top or the bottom).
         val ay = anchorY ?: if (top) 0f else 1f
         drawImage(
             picture,
@@ -105,10 +97,6 @@ internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boo
     }
 }
 
-/**
- * A whole map picture as big as the width allows, for a screen's headquarters: the picture is scaled by a whole number that covers the
- * box (so its pixels stay square) and its edges, which are plain margins in these maps, are trimmed. The caption sits on a plate along the bottom.
- */
 @Composable
 internal fun WorldMapHero(name: String, title: String, subtitle: String? = null, aspect: Float = 1f) {
     Box(Modifier.fillMaxWidth().aspectRatio(aspect).border(Sizes.Line, Pixel.Ink).background(Color(0xFF0B0B12)).clipToBounds()) {
@@ -122,7 +110,6 @@ internal fun WorldMapHero(name: String, title: String, subtitle: String? = null,
     }
 }
 
-/** The team base of the first partner's line (assets/rescue-maps, bundled as `team-base-<partner>-<stage>`): the Rescue Team games' sixteen partners. */
 private val partnerLines: Map<String, List<Int>> = mapOf(
     "bulbasaur" to listOf(1, 2, 3), "charmander" to listOf(4, 5, 6), "squirtle" to listOf(7, 8, 9), "pikachu" to listOf(172, 25, 26),
     "meowth" to listOf(52, 53, 863), "psyduck" to listOf(54, 55), "machop" to listOf(66, 67, 68), "cubone" to listOf(104, 105, 105),
@@ -131,18 +118,15 @@ private val partnerLines: Map<String, List<Int>> = mapOf(
     "skitty" to listOf(300, 301),
 )
 
-/** The species of the player's first partner, if they still have it. */
 internal fun starterSpecies(data: app.pokeplan.app.AppData): Int? =
     data.origins.entries.firstOrNull { it.value.how == app.pokeplan.app.Origin.How.STARTER }?.key?.let { id -> data.player.pokemon.firstOrNull { it.id == id }?.speciesId }
 
-/** The Base's picture: the first partner's team base (Eevee's when it is not one of the sixteen), plain, then under construction, then finished as the Camp grows. */
 internal fun baseMap(starter: Int?, campLevel: Int): String {
     val partner = partnerLines.entries.firstOrNull { starter != null && starter in it.value }?.key ?: "eevee"
     val stage = when { campLevel >= 4 -> "final"; campLevel >= 2 -> "construction"; else -> "basic" }
     return "team-base-$partner-$stage"
 }
 
-/** A framed picture ([top] shows the top of it, where a scene's sky and buildings are) with a caption plate along its bottom, to open a World screen. */
 @Composable
 internal fun WorldBanner(name: String, title: String, subtitle: String? = null, sky: Color = Color(0xFFBFE3F2), height: Dp = 132.dp, top: Boolean = false) {
     Box(Modifier.fillMaxWidth().height(height).border(Sizes.Line, Pixel.Ink).background(sky).clipToBounds()) {
@@ -156,7 +140,6 @@ internal fun WorldBanner(name: String, title: String, subtitle: String? = null, 
     }
 }
 
-/** The game's picture of a dungeon's entrance (a "map:" name for [WorldPicture]: Red Rescue Team's `*_ENTRY` maps and Explorers of Sky's Beach Cave), or null where none is bundled. */
 internal fun dungeonEntrance(dungeonId: String): String? = when (dungeonId) {
     "tiny-woods" -> "map:tiny-woods-entry"
     "thunderwave-cave" -> "map:thunderwave-cave-entry"
@@ -168,7 +151,6 @@ internal fun dungeonEntrance(dungeonId: String): String? = when (dungeonId) {
     else -> null
 }
 
-/** [name] (a ground map) as a framed strip showing the middle of the picture, where a dungeon's entrance is. */
 @Composable
 internal fun EntranceStrip(name: String, height: Dp = 140.dp) {
     Box(Modifier.fillMaxWidth().height(height).border(Sizes.Line, Pixel.Ink).clipToBounds()) {
@@ -179,7 +161,6 @@ internal fun EntranceStrip(name: String, height: Dp = 140.dp) {
 private val tileAtlases = BitmapCache(CacheBudget.TILES)
 private val layouts = mutableMapOf<Pair<Int, Int>, app.pokeplan.ui.launcher.TownMap>()
 
-/** The tileset atlas (assets/tiles) a dungeon is drawn with: its own where the game's Explorers of Sky sheet is here, else a Red Rescue Team one by theme; the rifts use the World Abyss. */
 internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
     "tiny-woods" -> "tiny-woods"
     "thunderwave-cave" -> "thunderwave-cave"
@@ -189,9 +170,7 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
     "ancient-ruins" -> "wish-cave"
     "sky-tower" -> "sky-tower"
     "temporal-tower" -> "temporal-tower"
-    // The two Mystery Dungeon arcs' other places: the game's own sheet where one is here (Explorers), else the Rescue Team tileset of the same name.
     "beach-cave" -> "beach-cave"; "drenched-bluff" -> "drenched-bluff"; "crystal-cave" -> "crystal-cave"; "hidden-land" -> "ex-042"; "frosty-forest" -> "rr-36"
-    // The other dungeons borrow the Red Rescue Team tileset (assets/tiles/rr-NN) closest to their look; the rifts keep the World Abyss.
     "viridian-forest" -> "rr-11"; "ilex-forest" -> "rr-20"; "petalburg-woods" -> "rr-26"; "eterna-forest" -> "rr-32"
     "mt-moon" -> "rr-28"; "meteor-falls" -> "rr-10"; "rock-tunnel" -> "rr-05"; "mt-mortar" -> "rr-05"; "oreburgh-mine" -> "rr-05"
     "pokemon-tower" -> "rr-57"; "power-plant" -> "rr-42"; "seafoam-islands" -> "rr-47"; "shoal-cave" -> "rr-15"
@@ -203,17 +182,10 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
     else -> "world-abyss"
 }
 
-/**
- * A team's expedition box: the app's dialogue border round the dungeon's own tiles. The top is a floor that scrolls past while the
- * team walks to the right on it with their walking animations (the leader in front); below it, [content] is set on wall tiles
- * (under a dark veil, in white) like writing on the dungeon's wall. Whole-number pixel scale, no smoothing. With Reduce motion
- * ([animate] false) nothing moves; with [scrolls] false only the Pokémon move (a screen of many boxes, such as the map, does not redraw them all every frame).
- */
 @Composable
 internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Boolean, modifier: Modifier = Modifier, scrolls: Boolean = true, content: @Composable () -> Unit) {
     val tiles = dungeonTiles(dungeonId)
     val atlas by produceState(tileAtlases[tiles], tiles) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = tileAtlases[tiles]
         if (value == null) {
             value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
@@ -221,7 +193,6 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
         }
     }
     val alternates = remember(atlas) { atlas?.let { app.pokeplan.ui.launcher.alternatesFit(it) } ?: booleanArrayOf(true, false, false) }
-    // Moves only while the app is in sight and this box is on the screen; the time is read in the draw block, so a frame redraws and recomposes nothing.
     var onScreen by remember { mutableStateOf(true) }
     val foreground = rememberInForeground()
     val seconds by rememberRunningSeconds(animate && scrolls && onScreen && foreground)
@@ -232,7 +203,6 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
         val pixel = (widthPx / (TILE_PX * 8)).toInt().coerceAtLeast(1)
         val tilePx = TILE_PX * pixel
         val tile = with(density) { tilePx.toDp() }
-        // Dark fill, so a pixel the tiles do not reach shows dark and never the white of a plain box.
         Box(Modifier.fillMaxWidth().dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
             Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME - 2.dp, bottom = FRAME - 2.dp).clipToBounds()) {
                 Canvas(Modifier.fillMaxSize()) {
@@ -244,7 +214,6 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                     val scrollTiles = travelled / tilePx
                     fun put(ax: Int, ay: Int, x: Int, y: Int) =
                         drawImage(image, IntOffset(ax * TILE_PX, ay * TILE_PX), IntSize(TILE_PX, TILE_PX), IntOffset(x, y), IntSize(tilePx, tilePx), filterQuality = FilterQuality.None)
-                    // The floor: the dungeon's own layout, 40 squares wide and repeated along the strip (the ponds and bays sit well inside, so the wrap shows no seam).
                     val seed = dungeonId.hashCode()
                     val fit = alternates
                     val map = layouts.getOrPut(seed to rows) { app.pokeplan.ui.launcher.DungeonFloorLayout.build(40, rows, seed, STRIP_ROWS) }
@@ -257,17 +226,14 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                     }
                     drawRect(Color(0xB3141C28), Offset(0f, (STRIP_ROWS + 3) * tilePx.toFloat()), Size(size.width, size.height))
                 }
-                // The team on the floor rows, leader on the right: feet on the floor, never on a wall.
                 val shown = walkers.take(4)
                 val size = tile * 1.5f
                 val step = tile * 1.3f
-                // The group is centred along the strip, whatever its size (the leader still on the right).
                 val left = ((stripWidth - (step * (shown.size - 1) + size)) / 2).coerceAtLeast(0.dp)
                 shown.forEachIndexed { i, p ->
                     val order = shown.size - 1 - i
                     val feet = tile * (if (i % 2 == 0) 2.2f else 2.9f)
                     Box(Modifier.offset(x = left + step * order, y = feet - size)) {
-                        // A sample (the wild Pokémon of a dungeon on the map) is a dark shape standing still: it is a hint, not someone you have.
                         if (p.sample) app.pokeplan.ui.Sprite(p.formId, p.shiny, p.name, size = size, silhouette = Color.Black.copy(alpha = 0.85f))
                         else app.pokeplan.ui.AnimatedSprite(p.formId, p.shiny, p.name, size = size, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE)
                     }
@@ -278,10 +244,8 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
     }
 }
 
-/** Someone who walks on a [TileBox]'s floor. */
 internal data class TileWalker(val formId: Int, val shiny: Boolean, val name: String, val sample: Boolean = false)
 
-/** [content] in white, for writing on a dark wall. */
 @Composable
 private fun onWall(content: @Composable () -> Unit) {
     val t = MaterialTheme.typography
@@ -298,25 +262,18 @@ private fun onWall(content: @Composable () -> Unit) {
 private val FRAME = 8.dp
 
 private const val TILE_PX = 24
-/** Rows of floor the team walks on. */
 private const val STRIP_ROWS = 2
 
-/** The tileset the Camp is drawn with: a woodland clearing that grows into a meadow, then an orchard, as the Camp is built up. */
 internal fun campTiles(level: Int): String = when {
     level >= 4 -> "apple-woods"
     level >= 2 -> "lush-prairie"
     else -> "tiny-woods"
 }
 
-/**
- * The Camp's yard: the dialogue border round a clearing of tiles where the recruited Pokémon roam, each walking back and forth
- * at its own pace and facing the way it goes, on its own strip of floor. Still under Reduce motion.
- */
 @Composable
 internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean) {
     val tiles = campTiles(level)
     val atlas by produceState(tileAtlases[tiles], tiles) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = tileAtlases[tiles]
         if (value == null) {
             value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
@@ -344,12 +301,10 @@ internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean)
                 }
                 val spriteSize = tile * 1.5f
                 residents.take(8).forEachIndexed { i, p ->
-                    // Each walks a sine path along its own strip of floor; the cosine says which way it faces.
                     val speed = 0.35f + (i * 7 % 5) * 0.08f
                     val phase = i * 1.7f
                     val span = (inner - spriteSize).value.coerceAtLeast(1f)
                     val feet = tile * (1.5f + (i % 3) * 0.95f)
-                    // The time is read where it is laid out and where the facing is derived: a frame moves the Pokémon without recomposing the yard.
                     val facingLeft by remember(animate, speed, phase) { derivedStateOf { animate && kotlin.math.cos(seconds.value * speed + phase) < 0f } }
                     Box(Modifier.offset { IntOffset((span / 2f * (1f + kotlin.math.sin(seconds.value * speed + phase))).dp.roundToPx(), (feet - spriteSize).roundToPx()) }) {
                         app.pokeplan.ui.AnimatedSprite(p.formId, p.shiny, p.name, size = spriteSize, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE, mirror = facingLeft)
@@ -362,27 +317,14 @@ internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean)
 
 private const val YARD_ROWS = 5
 
-/**
- * What a dungeon's marker on the world map says: open and not cleared, cleared at least once, not yet open, or a team is exploring it.
- * Each has its own shape as well as its colour (a diamond, a circle with a tick, a square, a circle with an arrow).
- */
 internal enum class MarkerState { OPEN, CLEARED, LOCKED, EXPLORING }
 
-/** A dungeon's place on the world map (in pixels of the map picture), its state, and whether it holds a Guardian (a red ring). */
 internal data class MapMarker(val id: String, val x: Int, val y: Int, val state: MarkerState, val guardian: Boolean = false)
 
-/**
- * The world map of the dungeon games (assets/world/map-1 to map-8: the same map with more of it uncovered each time, the way the
- * game uncovers it as the team explores), with a marker on each dungeon: yellow when it is open, green when cleared, grey when
- * not yet open, ringed in white when [selected]. Tapping near a marker calls [onSelect]. Drawn at a whole-number scale where the
- * width allows, without smoothing.
- */
 @Composable
 internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: String?, onSelect: (String) -> Unit, mapName: String? = null, pictureW: Float = MAP_W, pictureH: Float = MAP_H) {
-    // [mapName] names another map (the Kanto layer's own, assets/world/map-kanto.png); the home map is map-1 to map-8, uncovered by [stage].
     val name = mapName ?: "map-${stage.coerceIn(1, 8)}"
     val image by produceState(worldArt[name], name) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = worldArt[name]
         if (value == null) {
             value = orNull { Res.readBytes(if (name.startsWith("map:")) "files/maps/${name.removePrefix("map:")}.png" else "files/world/$name.png").decodeToImageBitmap() }
@@ -420,25 +362,21 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
                 if (m.id == selected) drawPixelDisc(Color.White, c, r + 6.dp.toPx())
                 if (m.guardian) drawPixelRing(Color(0xFFE53935), c, r + 4.dp.toPx(), 2.dp.toPx())
                 when (m.state) {
-                    // A diamond: open.
                     MarkerState.OPEN -> {
                         val d = Path().apply { moveTo(c.x, c.y - r - 2.dp.toPx()); lineTo(c.x + r + 2.dp.toPx(), c.y); lineTo(c.x, c.y + r + 2.dp.toPx()); lineTo(c.x - r - 2.dp.toPx(), c.y); close() }
                         drawPath(d, ink)
                         val inner = Path().apply { moveTo(c.x, c.y - r); lineTo(c.x + r, c.y); lineTo(c.x, c.y + r); lineTo(c.x - r, c.y); close() }
                         drawPath(inner, fill)
                     }
-                    // A circle with a tick: cleared.
                     MarkerState.CLEARED -> {
                         drawPixelDisc(ink, c, r + 2.dp.toPx()); drawPixelDisc(fill, c, r)
                         val tick = Path().apply { moveTo(c.x - r * 0.5f, c.y); lineTo(c.x - r * 0.1f, c.y + r * 0.45f); lineTo(c.x + r * 0.55f, c.y - r * 0.4f) }
                         drawPath(tick, Color.White, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()))
                     }
-                    // A square: not open yet.
                     MarkerState.LOCKED -> {
                         drawRect(ink, Offset(c.x - r - 2.dp.toPx(), c.y - r - 2.dp.toPx()), androidx.compose.ui.geometry.Size((r + 2.dp.toPx()) * 2, (r + 2.dp.toPx()) * 2))
                         drawRect(fill, Offset(c.x - r, c.y - r), androidx.compose.ui.geometry.Size(r * 2, r * 2))
                     }
-                    // A circle with an arrow: a team is there.
                     MarkerState.EXPLORING -> {
                         drawPixelDisc(ink, c, r + 2.dp.toPx()); drawPixelDisc(fill, c, r)
                         val arrow = Path().apply { moveTo(c.x - r * 0.3f, c.y - r * 0.5f); lineTo(c.x + r * 0.55f, c.y); lineTo(c.x - r * 0.3f, c.y + r * 0.5f); close() }
@@ -456,19 +394,12 @@ private const val MAP_H = 336f
 
 private val fxSheets = BitmapCache(CacheBudget.SMALL)
 
-/** The strips of attack-effect frames in assets/world/fx: name, frame width and height, frame count (fx.tsv). */
 private val fxFrames = mapOf("hit" to Triple(72, 72, 24), "welcome" to Triple(64, 64, 24), "steam" to Triple(60, 60, 22), "sparkle" to Triple(24, 24, 24))
 
-/**
- * A one-shot effect from the Mystery Dungeon games' attack animations (assets/world/fx: "hit", "welcome", "steam", "sparkle"):
- * whenever [key] changes to a new non-zero value it plays once, at 20 frames a second and without smoothing, over a box of
- * [size]; the rest of the time it draws nothing. Skipped under Reduce motion and the phone's power saver ([play] false).
- */
 @Composable
 internal fun FxBurst(name: String, key: Int, size: Dp, modifier: Modifier = Modifier, play: Boolean = true) {
     val (fw, fh, count) = fxFrames[name] ?: return
     val sheet by produceState(fxSheets[name], name) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = fxSheets[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/world/fx/$name.png").decodeToImageBitmap() }

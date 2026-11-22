@@ -3,11 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Alola layer (docs/pokelife/MODULES/WORLD.md section 14, "Alola"), from Pokémon Sun, Moon, Ultra Sun and Ultra Moon. Their wild
- * tables are the Alola regional dex, by each place's habitat in the games; legendaries are never found (they are quests, [Legends]). Floors, floor
- * times, milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter of [AlolaStory].
- */
 object AlolaDungeons {
     private val A = WorldLayer.ALOLA
 
@@ -69,10 +64,6 @@ object AlolaDungeons {
     )
 }
 
-/**
- * Alola's story, "The Island Challenge": the trials of the four islands, Team Skull's mischief, the Aether Foundation's secret and the Pokémon of
- * the sun, the moon and the light that was torn apart. A chapter opens by rank and by how many different Alola dungeons have been cleared, and is never lost.
- */
 object AlolaStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "Iki Town", "A new explorer sets out from Iki Town to take the island challenge. A cavern and a stream on Melemele Island are the first trials.", "Verdant Cavern and Brooklet Hill", ExplorerRank.NORMAL, 0),
@@ -82,7 +73,6 @@ object AlolaStory {
         Chapter(5, "The Aether Paradise", "The foundation that protects Pokémon hides something in the sky, and beyond it a city of ultra light waits.", "Aether Paradise, Ultra Megalopolis, Lunala and Necrozma", ExplorerRank.PLATINUM, 7),
     )
 
-    /** The Guardian: Necrozma, in the Ultra Megalopolis. */
     const val GUARDIAN = "Necrozma"
     const val GUARDIAN_BONUS = "Prism Light: Alola expeditions find treasure a little more often"
 }

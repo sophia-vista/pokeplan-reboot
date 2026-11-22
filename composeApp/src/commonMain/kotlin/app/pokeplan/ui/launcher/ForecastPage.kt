@@ -27,7 +27,6 @@ import app.pokeplan.ui.theme.Spacing
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
-/** The forecast on a screen of its own: where, the temperature now and the days ahead. Change place goes to [PlacePage]. */
 @Composable
 internal fun ForecastPage(forecast: Forecast?, prefs: LauncherPrefs, pixel: Int, onPlace: () -> Unit, onClose: () -> Unit) {
     val density = LocalDensity.current.density
@@ -76,7 +75,6 @@ internal fun ForecastPage(forecast: Forecast?, prefs: LauncherPrefs, pixel: Int,
 private fun dayLabel(date: String, index: Int): String =
     if (index == 0) "Today" else runCatching { dayName(LocalDate.parse(date).dayOfWeek).take(3) }.getOrDefault(date)
 
-/** Choosing where the forecast is for: type a town or city, and tap the match. */
 @Composable
 internal fun PlacePage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, host: LauncherHost, pixel: Int, onClose: () -> Unit) {
     val density = LocalDensity.current.density

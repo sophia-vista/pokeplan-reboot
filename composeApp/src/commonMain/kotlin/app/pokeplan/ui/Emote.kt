@@ -7,10 +7,6 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.ReactionIcon
 import app.pokeplan.ui.theme.Pixel
 
-/**
- * A small reaction picture, drawn from real assets (an item icon, or a Pixelarticons glyph tinted in a colour), where the app
- * once used an emoji. [item] is an ItemIcon id; otherwise [glyph] names a Pixelarticons glyph drawn in [tint].
- */
 enum class Emote(val item: String? = null, val glyph: String? = null, private val tintOf: () -> androidx.compose.ui.graphics.Color = { Pixel.Pink }) {
     HEART(glyph = "heart"),
     LOVE(glyph = "heart", tintOf = { Pixel.Red }),
@@ -26,17 +22,12 @@ enum class Emote(val item: String? = null, val glyph: String? = null, private va
     val tint get() = tintOf()
 }
 
-/** [emote] at [size]. */
 @Composable
 fun EmoteIcon(emote: Emote, modifier: Modifier = Modifier, size: Dp = 28.dp) {
     if (emote.item != null) ItemIcon(emote.item, modifier, size, description = null)
     else Glyph(emote.glyph!!, emote.tint, modifier, size)
 }
 
-/**
- * A [ReactionIcon] at [size]: the Mystery Dungeon status icon where the games have one (looping for the flame, the ice and the like,
- * once for the "!", the "?" and the sparkle), else a real item icon or glyph. [animate] off shows one still frame (Reduce motion).
- */
 @Composable
 fun ReactionMark(icon: ReactionIcon, modifier: Modifier = Modifier, size: Dp = 40.dp, animate: Boolean = true) {
     val kind = icon.status()
@@ -48,7 +39,6 @@ fun ReactionMark(icon: ReactionIcon, modifier: Modifier = Modifier, size: Dp = 4
 
 private val PLAYS_ONCE = setOf(StatusKind.ALERT, StatusKind.QUESTION, StatusKind.TWINKLE)
 
-/** The status icon a reaction is drawn with, or null for one drawn from an item icon or a glyph. */
 fun ReactionIcon.status(): StatusKind? = when (this) {
     ReactionIcon.TWINKLE -> StatusKind.TWINKLE; ReactionIcon.ALERT -> StatusKind.ALERT; ReactionIcon.QUESTION -> StatusKind.QUESTION
     ReactionIcon.SLEEP -> StatusKind.SLEEP; ReactionIcon.FLAME -> StatusKind.FLAME; ReactionIcon.ZAP -> StatusKind.ZAP
@@ -56,7 +46,6 @@ fun ReactionIcon.status(): StatusKind? = when (this) {
     else -> null
 }
 
-/** The item icon or glyph a reaction without a status icon is drawn with. */
 fun ReactionIcon.emote(): Emote? = when (this) {
     ReactionIcon.HEART -> Emote.HEART; ReactionIcon.NOTE -> Emote.MUSIC; ReactionIcon.SUN -> Emote.HAPPY; ReactionIcon.MOON -> Emote.MOON
     ReactionIcon.STAR -> Emote.PARTY; ReactionIcon.APPLE -> Emote.YUM

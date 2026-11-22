@@ -34,17 +34,14 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.ToggleRow
 
-/** Whether an account of [type] can earn interest (MINT.md 4.3E): a deposit account, not cash and not a liability. */
 internal fun canEarn(type: AccountType): Boolean = !type.liability && type != AccountType.CASH
 
-/** What the earned-interest fields hold while a form is open; [rate] and [tax] are percent text. */
 internal class EarnDraft(rate: String = "", schedule: EarnSchedule = EarnSchedule.OFF, tax: String = "", autoPost: Boolean = false) {
     var rate by mutableStateOf(rate)
     var schedule by mutableStateOf(schedule)
     var tax by mutableStateOf(tax)
     var autoPost by mutableStateOf(autoPost)
 
-    /** The rate and tax in basis points, or null when either is not a percentage. Both are zero for an account that cannot earn. */
     fun basisPoints(type: AccountType): Pair<Int, Int>? {
         if (!canEarn(type)) return 0 to 0
         val r = if (rate.isBlank()) 0 else percentToBasisPoints(rate) ?: return null
@@ -53,7 +50,6 @@ internal class EarnDraft(rate: String = "", schedule: EarnSchedule = EarnSchedul
     }
 }
 
-/** The "Interest earned" fields of a deposit account's form: how often the bank credits it, the yearly rate, the tax withheld, and whether estimates post without review. */
 @Composable
 internal fun EarnFields(type: AccountType, draft: EarnDraft) {
     if (!canEarn(type)) return
@@ -73,10 +69,6 @@ internal fun EarnFields(type: AccountType, draft: EarnDraft) {
     }
 }
 
-/**
- * The interest estimates waiting for the player (MINT.md 4.3E): one row per estimate with Confirm, Adjust (type what the bank really credited) and Skip, and a
- * Confirm all. Shown on the Overview only while something waits. Making the estimates is automatic and happens when Mint opens.
- */
 @Composable
 internal fun InterestReview(model: AppModel) {
     val mint = model.mint

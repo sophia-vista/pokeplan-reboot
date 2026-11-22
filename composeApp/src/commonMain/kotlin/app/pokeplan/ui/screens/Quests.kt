@@ -37,11 +37,9 @@ internal fun QuestsView(model: AppModel) {
     val available = store.availableQuests
     val done = data.quests.count { it.value.completedAtMillis != null }
     val locked = Quests.all.filter { it.id !in data.quests && Quests.lockedReason(it, data) != null }.sortedBy { it.unlockRank }.take(3)
-    // A quest shows its Pokémon, so the Pokédex counts it as seen (locked ones stay grey shapes).
     val questSpecies = (active + available.take(12)).map { it.speciesId }
     LaunchedEffect(questSpecies) { store.markSeen(questSpecies) }
 
-    // World's jobs are World's own (a module owns its quests and its story); the shared list only says where they stand.
     val world = data.world
     if (app.pokeplan.world.Missions.boardOpen(world)) TextBox {
         Text(
@@ -97,5 +95,3 @@ private fun QuestCard(model: AppModel, quest: Quest) {
         }
     }
 }
-
-// ----- Bag -----------------------------------------------------------------------------------------------------------

@@ -55,9 +55,9 @@ class StatementImportTest {
         assertEquals(125_050, StatementImport.parseSigned("1.250,50 CR", "PHP"))
         assertEquals(-125_050, StatementImport.parseSigned("1250.50-", "PHP"))
         assertEquals(30, StatementImport.parseSigned("0.30", "PHP"))
-        assertNull(StatementImport.parseSigned("1.234", "PHP"))     // more decimals than centavos: never rounded
+        assertNull(StatementImport.parseSigned("1.234", "PHP"))
         assertNull(StatementImport.parseSigned("n/a", "PHP"))
-        assertNull(StatementImport.parseSigned("12 USD", "PHP"))     // a foreign code is not silently read as pesos
+        assertNull(StatementImport.parseSigned("12 USD", "PHP"))
         assertNull(StatementImport.parseSigned("", "PHP"))
     }
 

@@ -16,13 +16,6 @@ import app.pokeplan.data.LiveDocuments
 import app.pokeplan.data.OffPhoneBackup
 import java.util.concurrent.TimeUnit
 
-/**
- * Automatic backup off the phone (REP-034, `DATA_AND_MIGRATIONS.md` section 10.7): the folder the player picked once, the passphrase kept sealed with a Keystore key
- * on this phone only, when the last verified copy was made, and the last problem. The copies themselves are [OffPhoneBackup]'s.
- *
- * The passphrase is what opens a copy on any other phone; here it is kept only so the daily job can seal without asking, as `m1.` text no other phone can open.
- * Nothing in the log but what failed.
- */
 object OffPhone {
     private const val TAG = "OffPhone"
     private const val PREFS = "offphone"
@@ -37,7 +30,6 @@ object OffPhone {
 
     fun isSetUp(context: Context): Boolean = treeOf(context) != null && prefs(context).contains(PASS)
 
-    /** What the Settings card shows. [lastMillis] is the newest verified copy this phone made; [problem] is the last thing that went wrong, cleared by the next good copy. */
     data class Status(val folderName: String, val lastMillis: Long?, val problem: String?)
 
     fun status(context: Context): Status? {
@@ -53,14 +45,12 @@ object OffPhone {
     private fun hasPermission(context: Context, tree: Uri): Boolean =
         context.contentResolver.persistedUriPermissions.any { it.uri == tree && it.isReadPermission && it.isWritePermission }
 
-    /** Remembers the folder and the sealed passphrase. False if the Keystore cannot seal it here, in which case nothing is kept. */
     fun configure(context: Context, tree: Uri, passphrase: String): Boolean {
         val sealed = runCatching { KeystoreOffPhoneKey.cipher().seal(passphrase) }.onFailure { Log.w(TAG, "no key to keep the passphrase: ${it.javaClass.simpleName}") }.getOrNull() ?: return false
         prefs(context).edit().putString(TREE, tree.toString()).putString(PASS, sealed).remove(LAST_OK).remove(PROBLEM).apply()
         return true
     }
 
-    /** Stops the copies and forgets the folder and the passphrase. What is already in the folder is the player's and is left there. */
     fun forget(context: Context) {
         val tree = treeOf(context)
         prefs(context).edit().clear().apply()
@@ -70,7 +60,6 @@ object OffPhone {
     private fun passphrase(context: Context): String? =
         prefs(context).getString(PASS, null)?.let { sealed -> runCatching { KeystoreOffPhoneKey.cipher().open(sealed) }.getOrNull() }
 
-    /** The newest copy in the folder, for a restore to stage; null (with a reason) if there is none. */
     fun newestCopy(context: Context, folder: BackupFolder? = null): Pair<String?, String?> {
         val f = folder ?: treeOf(context)?.takeIf { hasPermission(context, it) }?.let { SafBackupFolder(context, it) } ?: return null to "The folder is not available. Choose it again."
         val b = OffPhoneBackup(f)
@@ -79,9 +68,6 @@ object OffPhone {
         return text to null
     }
 
-    /**
-     * Makes a copy if one is due (or [force]d) and returns a short note for the player. Never throws. [folder] is for tests; the app uses the chosen folder.
-     */
     @Synchronized
     fun run(context: Context, force: Boolean, now: Long = System.currentTimeMillis(), folder: BackupFolder? = null): String {
         val p = prefs(context)
@@ -106,11 +92,9 @@ object OffPhone {
 
     private fun problem(p: android.content.SharedPreferences, why: String): String { p.edit().putString(PROBLEM, why).apply(); return why }
 
-    /** The daily job. */
     class Worker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
         override suspend fun doWork(): Result {
             if (!isSetUp(applicationContext)) return Result.success()
-            // A folder that is gone or a passphrase that cannot be read will not mend by retrying; the card says so. Only a store that is not open yet is retried.
             if (LiveStore.get(applicationContext) == null) return Result.retry()
             run(applicationContext, force = false)
             return Result.success()
@@ -119,7 +103,6 @@ object OffPhone {
 
     private const val WORK = "offphone-backup"
 
-    /** Makes sure the daily job is queued (a second call changes nothing). It does nothing until the player has set the backup up. */
     fun schedule(context: Context) {
         val request = PeriodicWorkRequestBuilder<Worker>(1, TimeUnit.DAYS).setConstraints(Constraints.Builder().setRequiresStorageNotLow(true).build()).build()
         WorkManager.getInstance(context.applicationContext).enqueueUniquePeriodicWork(WORK, ExistingPeriodicWorkPolicy.KEEP, request)

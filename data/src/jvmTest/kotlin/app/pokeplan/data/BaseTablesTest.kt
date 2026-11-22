@@ -13,7 +13,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** HOME's records in their own tables from the start (REP-014): round trip, only changed rows written, one kind erased alone, backup and activation. */
 class BaseTablesTest {
     private fun obj(text: String) = Json.parseToJsonElement(text) as JsonObject
     private fun live(): DataStore = JvmDatabase.open().also { it.live.activate(null, null, 1); it.live.moveBaseToTables(2) }
@@ -36,7 +35,6 @@ class BaseTablesTest {
 
     private fun writes(s: DataStore) = count(s, "write_log")
 
-    /** A realistic HOME document: every kind of record once, the settings, and a field a newer build might add. */
     private val doc = """{
         "areas":[{"id":"ar1","name":"Kitchen"}],
         "chores":[{"id":"c1","title":"Vacuum","areaId":"ar1","recurrence":{"kind":"WEEKLY","every":1,"weekdays":[6]},"firstDue":"2026-11-07","minutes":20,"status":"ACTIVE","createdMillis":10,"updatedMillis":10}],
@@ -62,14 +60,14 @@ class BaseTablesTest {
         assertTrue(s.baseTables.isActive())
         assertNull(s.live.read("home"))
         assertFalse("home" in s.live.names())
-        s.live.moveBaseToTables(9) // runs on every start
+        s.live.moveBaseToTables(9)
         assertEquals("5", s.db.dataQueries.meta(BaseTables.META_HOME_TABLES_AT).executeAsOne(), "the first activation time is kept")
     }
 
     @Test
     fun aDocumentRestoredBeforeActivationIsImportedReadBackEqualAndKeptAside() {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
-        s.live.write("home", doc, 2) // not in tables yet: a plain row
+        s.live.write("home", doc, 2)
         s.live.moveBaseToTables(3)
         assertEquals(obj(doc), obj(s.live.read("home")!!))
         assertEquals(doc, s.live.read("aside:home:tables:3"))
@@ -109,14 +107,14 @@ class BaseTablesTest {
         val s = live()
         s.live.write("home", doc, 3)
         countWrites(s)
-        s.live.write("home", doc, 4) // nothing changed
+        s.live.write("home", doc, 4)
         assertEquals(0L, writes(s))
         val more = obj(doc).toMutableMap()
         more["restock"] = JsonArray((more.getValue("restock") as JsonArray) + obj("""{"id":"r2","name":"Soap","createdMillis":12}"""))
-        s.live.write("home", Json.encodeToString(JsonObject.serializer(), JsonObject(more)), 5) // one new row in one table
+        s.live.write("home", Json.encodeToString(JsonObject.serializer(), JsonObject(more)), 5)
         assertEquals(1L, writes(s))
         more["settings"] = obj("""{"progression":false,"tutorialSeen":true,"units":["kg","pcs"],"hidden":[]}""")
-        s.live.write("home", Json.encodeToString(JsonObject.serializer(), JsonObject(more)), 6) // the settings row
+        s.live.write("home", Json.encodeToString(JsonObject.serializer(), JsonObject(more)), 6)
         assertEquals(2L, writes(s), "only the settings row was replaced")
     }
 
@@ -163,11 +161,9 @@ class BaseTablesTest {
         val snap = s.live.snapshot()
         assertTrue("home" in snap && snap.getValue("home").contains("Washing machine"))
         assertTrue("home" in s.live.names())
-        // A backup made before HOME existed holds no home document: restoring it must not wipe household records.
         val left = s.live.replaceAll(mapOf("save" to snap.getValue("save")), 9)
         assertEquals(1, count(s, "home_chore"))
         assertTrue("home" in left && "save" !in left, "and the restore says what it left as it was")
-        // A backup with a home document brings it back, and the replaced one is kept aside.
         val changed = obj(doc).toMutableMap().also { it["references"] = JsonArray(emptyList()) }
         s.live.write("home", Json.encodeToString(JsonObject.serializer(), JsonObject(changed)), 10)
         assertEquals(0, count(s, "home_reference"))

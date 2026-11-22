@@ -38,7 +38,6 @@ import app.pokeplan.ui.theme.Spacing
 
 private val fieldShape = PixelShape
 
-/** A one-line text field in the launcher's look, with [hint] while it is empty. */
 @Composable
 internal fun PmdField(value: String, onChange: (String) -> Unit, hint: String, modifier: Modifier = Modifier) {
     Box(modifier.fillMaxWidth().height(Spacing.Target).background(Color.White.copy(alpha = 0.14f), fieldShape).padding(horizontal = Spacing.L), contentAlignment = Alignment.CenterStart) {
@@ -50,11 +49,6 @@ internal fun PmdField(value: String, onChange: (String) -> Unit, hint: String, m
     }
 }
 
-/**
- * Folders, on a screen of their own over the town: the list of your folders with a field to make a new one, and, once one
- * is open, its apps (tap to open one, Remove to take it out), a field to rename it and a line to delete it. Apps are added
- * from the long-press sheet in All apps ("Add to folder").
- */
 @Composable
 internal fun FoldersPage(
     apps: List<LauncherApp>, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, host: LauncherHost, openFolder: String?, onOpenFolder: (String?) -> Unit,

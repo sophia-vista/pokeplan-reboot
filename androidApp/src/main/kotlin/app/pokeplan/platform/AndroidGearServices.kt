@@ -26,16 +26,10 @@ import app.pokeplan.ui.gear.NetworkInfo
 import app.pokeplan.ui.gear.SoundFeed
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 
-/**
- * The phone's location, microphone, network state and QR scanner for the Pokégear's field tools. Permissions are asked for only when a tool is
- * used (the screen has said why first); nothing runs in the background. Create it in `onCreate`, before the activity starts, because it
- * registers the permission launchers.
- */
 fun androidGearServices(activity: ComponentActivity): GearServices = GearServices(
     location = AndroidLocationFeed(activity), sound = AndroidSoundFeed(activity), network = AndroidNetworkFeed(activity), scanner = AndroidCodeScanner(activity),
 )
 
-/** One permission request at a time, answered to the callback that asked. */
 private class PermissionAsker(private val activity: ComponentActivity, private val permission: String) {
     private var waiting: ((Boolean) -> Unit)? = null
     private val launcher = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> waiting?.invoke(granted); waiting = null }
@@ -120,9 +114,8 @@ private class AndroidSoundFeed(private val activity: ComponentActivity) : SoundF
                 main.post { if (alive()) onFrame(copy, rate) }
             }
         } catch (e: Exception) {
-            // Stopped: nothing to report.
         } finally {
-            try { recorder.stop() } catch (e: Exception) { /* already stopped */ }
+            try { recorder.stop() } catch (e: Exception) {  }
             recorder.release()
         }
     }
@@ -146,7 +139,6 @@ private class AndroidNetworkFeed(context: Context) : NetworkFeed {
     }
 }
 
-/** Google's code scanner: it opens its own screen, needs no camera permission from PokéLife and returns the text. It needs Google Play services. */
 private class AndroidCodeScanner(private val activity: ComponentActivity) : CodeScanner {
     override fun scan(onResult: (String?) -> Unit) {
         try {

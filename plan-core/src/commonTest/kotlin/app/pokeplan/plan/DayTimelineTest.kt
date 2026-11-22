@@ -53,7 +53,7 @@ class DayTimelineTest {
             listOf(
                 t("a", today, LocalTime(9, 0), 60),
                 t("b", today, LocalTime(9, 30), 60),
-                t("c", today, LocalTime(10, 0), 30), // a ends at 10:00, so c takes its lane
+                t("c", today, LocalTime(10, 0), 30),
                 t("d", today, LocalTime(12, 0), 30),
             ),
             today, now,

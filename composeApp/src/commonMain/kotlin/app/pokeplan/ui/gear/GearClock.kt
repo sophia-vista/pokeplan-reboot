@@ -34,7 +34,6 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
 import app.pokeplan.app.gear.changeGear
 
-/** The World clock: the time in the places you chose (the first is home), a time converted between them, and two date sums. The list stays on this phone. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun WorldClockTool(model: AppModel, onUse: () -> Unit) {
@@ -84,7 +83,6 @@ private fun ConvertCard(ids: List<String>, today: LocalDate, onUse: () -> Unit) 
             FieldLabel("Convert a time")
             PixelField(text, { text = it.take(5) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Time at home", placeholder = "21:30")
             if (h != null && h in 0..23 && m in 0..59) {
-                // Today's date, so the answer follows the summer time in force now.
                 val base = LocalDateTime(today.year, today.monthNumber, today.dayOfMonth, h, m)
                 ids.drop(1).forEach { id ->
                     val there = WorldClock.convert(base, from, id)

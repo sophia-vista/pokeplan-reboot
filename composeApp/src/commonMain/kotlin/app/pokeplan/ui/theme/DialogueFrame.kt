@@ -15,36 +15,25 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/** The colours of the game's dialogue-box frame (measured from its menu boxes): a pale hairline, a blue band and a deep line. */
 object DialogueColors {
     val Edge = Color(0xFFA8C0E0)
     val Band = Color(0xFF6080F8)
     val Deep = Color(0xFF4820F8)
-    /** The inner line on the app's light cards. */
     val CardDeep = Color(0xFF3B4FB0)
 }
 
-/** The three colours of a frame: [edge] the hairline, [band] the main band, [deep] the inner line. */
 class FrameTone(val edge: Color, val band: Color, val deep: Color)
 
-/** A frame tone built from one colour: it is the band, its pale tint the hairline, its dark shade the inner line. */
 fun frameToneOf(base: Color) = FrameTone(
     edge = Color(base.red + (1f - base.red) * 0.6f, base.green + (1f - base.green) * 0.6f, base.blue + (1f - base.blue) * 0.6f),
     band = base,
     deep = Color(base.red * 0.55f, base.green * 0.55f, base.blue * 0.55f),
 )
 
-/** The frame colours dialogue boxes below this point wear: the game's blue by default, a module's own colour inside its pages. */
 val LocalFrameTone = androidx.compose.runtime.compositionLocalOf<FrameTone?> { null }
 
-/** How solid the app's cards are: mostly, so the page (the day gradient, or the scene chosen as the background) shows faintly through. */
 const val CARD_OPACITY = 0.8f
 
-/**
- * A rectangle whose corners are stairs of whole art pixels ([px] each), the shape of everything that is drawn pixel by pixel: a card, a
- * picture window, a header bar. [insets] is how far in each row from the corner starts, ending in 0; [roundTop] and [roundBottom]
- * square off a side (a header is round only at the bottom). Used for clipping, backgrounds and borders alike.
- */
 class StairShape(
     private val insets: IntArray, private val px: Dp = 2.dp, private val roundTop: Boolean = true, private val roundBottom: Boolean = true,
 ) : Shape {
@@ -55,19 +44,14 @@ class StairShape(
     }
 }
 
-/** The corner of a dialogue box, for clipping what is drawn inside it (a ripple, a picture): the same stairs as its frame. */
 val DialogueShape: Shape = StairShape(intArrayOf(2, 1, 0))
 
-/** The corner of keys, fields, bars and small cards: one stair. */
 val PixelShape: Shape = StairShape(intArrayOf(1, 0))
 
-/** A round picture drawn in pixels (the disc behind a menu icon): the corners cut in steps. */
 val PixelDisc: Shape = StairShape(intArrayOf(5, 3, 2, 1, 1, 0), px = 3.dp)
 
-/** A rectangle with stair-stepped (rounded) corners: [insets] is how far in each row from the corner starts, ending in 0. */
 internal fun stairRect(p: Float, l: Float, t: Float, r: Float, b: Float, insets: IntArray): Path = stairPath(p, l, t, r, b, insets, insets)
 
-/** [stairRect] with its own steps at the top and at the bottom (a side with all zeros is square). */
 internal fun stairPath(p: Float, l: Float, t: Float, r: Float, b: Float, top: IntArray, bottom: IntArray): Path = Path().apply {
     val n = top.size
     moveTo(l + top[0] * p, t)
@@ -78,11 +62,6 @@ internal fun stairPath(p: Float, l: Float, t: Float, r: Float, b: Float, top: In
     close()
 }
 
-/**
- * Draws the dialogue-box frame over the whole draw area, every part a whole number of [p] pixels: a pale hairline, a blue band
- * ([sideBand] thick at the sides, [topBand] at the top and bottom), a deep line, rounded corners, then the [fill] inside. Each layer
- * is a ring, so a see-through fill shows what is behind the box.
- */
 fun DrawScope.dialogueFrame(p: Float, fill: Color, sideBand: Int, topBand: Int, edge: Color = DialogueColors.Edge, band: Color = DialogueColors.Band, deep: Color = DialogueColors.Deep) {
     val w = size.width
     val h = size.height
@@ -99,24 +78,14 @@ fun DrawScope.dialogueFrame(p: Float, fill: Color, sideBand: Int, topBand: Int, 
     drawPath(fillPath, fill)
 }
 
-/**
- * The card of the app, drawn as a dialogue box: [Pixel.Panel] inside a thin version of the game's frame (2 dp art pixels: a
- * hairline, a band 2 pixels thick at the sides and 1 at the top and bottom, a deep line). It adds no padding: the frame is 8 dp
- * at the sides and 6 dp at the top, and the card's own padding (16 dp) keeps its content clear.
- */
 @androidx.compose.runtime.Composable
 fun Modifier.dialogueBox(fill: Color = Pixel.Panel.copy(alpha = CARD_OPACITY), pixel: Dp = 2.dp, tone: FrameTone? = LocalFrameTone.current): Modifier {
-    // On a light card the game's saturated violet line is too loud, so the app's default version of it is a muted indigo.
     val edge = tone?.edge ?: DialogueColors.Edge
     val band = tone?.band ?: DialogueColors.Band
     val deep = tone?.deep ?: if (Pixel.dark) DialogueColors.Deep else DialogueColors.CardDeep
     return drawBehind { dialogueFrame(pixel.toPx(), fill, sideBand = 2, topBand = 1, edge = edge, band = band, deep = deep) }
 }
 
-/**
- * A disc drawn in whole pixels: one flat span per row of [p] pixels, so its edge is stairs like every other corner in the app and never an
- * anti-aliased curve. The centre and each row snap to the pixel grid, so a ring and its fill line up.
- */
 fun pixelDiscPath(c: Offset, radius: Float, p: Float): Path = Path().apply {
     if (radius <= 0f) return@apply
     val top = kotlin.math.floor((c.y - radius) / p) * p
@@ -132,10 +101,8 @@ fun pixelDiscPath(c: Offset, radius: Float, p: Float): Path = Path().apply {
     }
 }
 
-/** A filled disc in whole pixels (the pixel version of `drawCircle`). */
 fun DrawScope.drawPixelDisc(color: Color, center: Offset, radius: Float, p: Float = 2.dp.toPx()) = drawPath(pixelDiscPath(center, radius, p), color)
 
-/** A ring in whole pixels, [width] thick (the pixel version of `drawCircle` with a stroke). */
 fun DrawScope.drawPixelRing(color: Color, center: Offset, radius: Float, width: Float, p: Float = 2.dp.toPx()) {
     val ring = Path().apply {
         fillType = PathFillType.EvenOdd

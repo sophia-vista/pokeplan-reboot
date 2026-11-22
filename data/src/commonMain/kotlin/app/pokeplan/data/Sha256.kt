@@ -1,6 +1,5 @@
 package app.pokeplan.data
 
-/** SHA-256 in plain Kotlin (the common source set has no hash), used to give an import its identity and checksum. */
 internal object Sha256 {
     private val K = intArrayOf(
         0x428a2f98, 0x71374491, -0x4a3f0431, -0x164a245b, 0x3956c25b, 0x59f111f1, -0x6dc07d5c, -0x54e3a12b,

@@ -54,7 +54,6 @@ class WorldTest {
         assertEquals(dungeon.baseFloorSeconds * 1000L, slow)
         assertTrue(quick < slow)
         assertEquals(dungeon.baseFloorSeconds * 1000L / 4, WorldSim.floorMillis(dungeon, 100_000.0))
-        // Grass, bug and flying lines explore the woods faster.
         assertTrue(WorldSim.power(listOf(roster[0]), dungeon) > roster[0].level.toDouble() - 0.001)
     }
 
@@ -84,7 +83,6 @@ class WorldTest {
         assertEquals(once.data.pokeEarned, stepped.pokeEarned)
         assertEquals(once.data.items, stepped.items)
         assertEquals(once.data.finds.map { it.speciesId }, stepped.finds.map { it.speciesId })
-        // Three days away counts only the cap.
         val away = WorldSim.settle(data, roster, 3L * 24 * 60 * 60 * 1000)
         val capped = WorldSim.settle(data, roster, WorldSim.MAX_AWAY_MILLIS)
         assertEquals(capped.data.xp, away.data.xp)
@@ -132,11 +130,8 @@ class WorldTest {
         val first = WorldSim.settle(start, roster, 7 * per + per / 2)
         val floors = first.events.count { it is WorldEvent.FloorCleared }
         assertEquals(7, floors)
-        // The full count for each member, not a share of it; a Pokémon outside the team gets none.
         assertEquals(mapOf("a" to 7, "b" to 7, "c" to 7), first.memberFloors)
-        // Settling again at once finds no new floor, so nothing is counted twice.
         assertEquals(emptyMap(), WorldSim.settle(first.data, roster, 7 * per + per / 2).memberFloors)
-        // However often it is settled, the floors add up to the same: one settle at 20 floors equals settles in between.
         val once = WorldSim.settle(start, roster, 20 * per).memberFloors.getValue("a")
         var d = start
         var sum = 0
@@ -146,20 +141,16 @@ class WorldTest {
 
     @Test
     fun theBestTeamForADungeonCountsTypesNotJustLevels() {
-        val woods = Dungeons.byId("tiny-woods")!!   // favors Grass, Bug and Flying
+        val woods = Dungeons.byId("tiny-woods")!!
         val pool = listOf(mon("water", 7, 40), mon("fire", 4, 39), mon("grass", 1, 34), mon("bug", 10, 33), mon("flying", 16, 33), mon("rock", 74, 20))
         val best = WorldSim.bestTeam(woods, pool)
-        // 34 x 1.2 = 40.8 and 33 x 1.2 = 39.6 beat a plain level 40 and 39: levels alone would have picked Water and Fire. (Moves, abilities and items add
-        // a little on top, so the order inside the team follows the whole contribution, but the three favoured types are in and Fire is out.)
         assertEquals(pool.sortedByDescending { WorldSim.contribution(it, woods) }.take(4).map { it.id }, best.map { it.id })
         assertTrue(listOf("grass", "bug", "flying").all { id -> id in best.map { it.id } } && "fire" !in best.map { it.id })
         val byLevel = pool.sortedByDescending { it.level }.take(4)
         assertTrue(WorldSim.power(best, woods) > WorldSim.power(byLevel, woods))
-        // The same choice every time, whatever the order given; fewer than four is fine; nothing gives nothing.
         assertEquals(best.map { it.id }, WorldSim.bestTeam(woods, pool.reversed()).map { it.id })
         assertEquals(2, WorldSim.bestTeam(woods, pool.take(2)).size)
         assertEquals(emptyList(), WorldSim.bestTeam(woods, emptyList()))
-        // Another dungeon favors other types, and so another team.
         val other = Dungeons.all.first { it.favored.intersect(woods.favored).isEmpty() }
         assertTrue(WorldSim.bestTeam(other, pool).map { it.id } != best.map { it.id } || other.favored.none { f -> pool.any { f in it.form.types } })
     }
@@ -173,5 +164,4 @@ class WorldTest {
     }
 }
 
-/** Seven different dungeons cleared: every chapter that rank allows. */
 private val CLEARED = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "waterfall-cave", "glacier-palace", "ancient-ruins", "sky-tower").associateWith { 1 }

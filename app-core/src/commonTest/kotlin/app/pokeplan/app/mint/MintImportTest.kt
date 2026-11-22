@@ -20,7 +20,6 @@ import app.pokeplan.app.World
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** A user-assisted statement import (INTEGRATIONS_AND_PRIVACY.md 7.2, 10.2): previewed, idempotent, provenance-keeping, removable on its own, and never a reward. */
 class MintImportTest {
     private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
     private class Spy(val inner: GameStore) : World {
@@ -52,7 +51,6 @@ class MintImportTest {
         assertTrue(saved.all { it.source == TxSource.IMPORTED && it.importBatch == result.batch && it.importLabel == "wallet-nov.csv" && it.fingerprint != null && it.unreviewed })
         assertEquals(-12_000 * 2 + 2_500_000L, MintRules.balance(mint.data, mint.data.accounts.single()).postedMinor)
         assertTrue(spy.events.isEmpty(), "an import is not a reward event")
-        // The same file again adds nothing: everything is recognised, even two identical coffees.
         val again = assertNotNull(mint.previewStatement(csv, account, order = StatementImport.DateOrder.YEAR_FIRST).preview)
         assertEquals(3, again.duplicates); assertEquals(0, again.new)
         assertEquals(0, mint.importStatement(again, again.rows.map { it.line }.toSet(), "wallet-nov.csv").added)

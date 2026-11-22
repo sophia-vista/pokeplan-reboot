@@ -13,18 +13,12 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * One fixed input and the exact JSON the engine must give for it, so a change to the reward rules is always deliberate
- * (the server that once checked the same file on JavaScript is retired).
- * Regenerate after a deliberate rule change: `UPDATE_GOLDEN=1 ./gradlew :pokemon-core:jvmTest --tests "*GoldenVectorTest*"`.
- * New outcomes need a new [RewardRules.VERSION]: regenerating refuses to write them under the version already in the file.
- */
 class GoldenVectorTest {
     private val file = File("src/jvmTest/resources/golden.json")
     private val json = RewardJson.json
 
     private fun build(): JsonObject {
-        val buddy = pokemon(Ids.PIKACHU, level = 40).withHeldItem("lucky-egg").copy(inParty = true) // in Plan's party, where its lead is
+        val buddy = pokemon(Ids.PIKACHU, level = 40).withHeldItem("lucky-egg").copy(inParty = true)
         val state = PlayerState(listOf(buddy), buddy.id, Inventory().add("rare-candy", 12).add("lure-fire", 1), coins = 50, eggMeter = 4, trainerPoints = 100, caught = setOf(25, 4), planLeadId = buddy.id, rolesVersion = 1)
         val stateJson = json.encodeToString(PlayerState.serializer(), state)
         val effort = json.encodeToString(EffortEvent.serializer(), EffortEvent(30, true, Region.KANTO, epochDay = 11, newPokemonId = "new-1", nowMillis = 1_700_000_000_000))

@@ -47,7 +47,6 @@ class DungeonFloorTest {
 
     @Test
     fun findsTrapsAndStairsLieOnOpenFloorAwayFromWidgets() {
-        // A widget row across the bottom of every page and one at the top.
         val soft = { c: Cell -> c.y >= 19 || c.y in 2..4 }
         for (seed in 0L until 40L) {
             val f = floor(seed, soft = soft)
@@ -68,7 +67,6 @@ class DungeonFloorTest {
         assertTrue(way.all(f::isFloor))
         way.zipWithNext().forEach { (p, q) -> assertTrue(kotlin.math.abs(p.x - q.x) <= 1 && kotlin.math.abs(p.y - q.y) <= 1) }
         assertEquals(way.first(), f.turns(way).first()); assertEquals(way.last(), f.turns(way).last())
-        // A wader may end in water; a walker may not.
         val water = (0 until f.rows).flatMap { y -> (0 until f.cols).map { Cell(it, y) } }.firstOrNull { f.map.at(it.x, it.y) == TownCell.WATER }
         if (water != null) assertEquals(null, f.path(a, water, Mover.WALKER))
     }
@@ -83,7 +81,6 @@ class DungeonFloorTest {
             assertTrue(!f.canStand(water, Mover.WALKER) && f.canStand(water, Mover.WADER) && !f.canStand(water, Mover.GHOST))
         }
         for (m in listOf(Mover.WALKER, Mover.WADER, Mover.GHOST)) assertTrue(f.restingCells(m).none { it in f.traps || it == f.stairs })
-        // Nobody rests or sleeps in a wall, a ghost included: it passes through one, and stops on the floor.
         for (m in listOf(Mover.WALKER, Mover.WADER, Mover.GHOST)) assertTrue(f.restingCells(m).none { f.map.at(it.x, it.y) == TownCell.WALL })
     }
 
@@ -92,10 +89,8 @@ class DungeonFloorTest {
         assertEquals(47, Autotile.masks.size)
         assertEquals(0, Autotile.masks.first())
         assertEquals(255, Autotile.masks.last())
-        // A lone square of water in a wall: no neighbour is water.
         val map = TownMap(3, 3, Array(9) { if (it == 4) TownCell.WATER else TownCell.WALL })
         assertEquals(0, Autotile.column(map, 1, 1))
-        // A wall in the middle of walls, the map's edge counting as wall: every neighbour the same.
         val walls = TownMap(3, 3, Array(9) { TownCell.WALL })
         assertEquals(46, Autotile.column(walls, 1, 1))
     }
@@ -107,7 +102,6 @@ class DungeonFloorTest {
             for (m in listOf(Mover.WALKER, Mover.WADER, Mover.GHOST)) {
                 val cells = f.restingCells(m)
                 assertTrue(cells.isNotEmpty(), "somewhere to rest (seed $seed, $m)")
-                // Every one of them has a way to the stairs, and back.
                 for (c in cells.filterIndexed { i, _ -> i % 7 == 0 }) {
                     assertNotNull(f.path(c, f.stairs, m), "a way out of $c (seed $seed, $m)")
                     assertNotNull(f.path(f.stairs, c, m), "a way to $c (seed $seed, $m)")
@@ -124,7 +118,6 @@ class DungeonFloorTest {
         life.sizes["small"] = 23 to 27
         life.sizes["other"] = 23 to 27
         life.sizes["big"] = 80 to 70
-        // Two ordinary Pokémon overlap on the same row within a square or two, but not a row apart; a big one needs about three squares across.
         assertTrue(life.overlap("small", Cell(5, 5), "other", Cell(6, 5)))
         assertTrue(!life.overlap("small", Cell(5, 5), "other", Cell(7, 5)))
         assertTrue(!life.overlap("small", Cell(5, 5), "other", Cell(5, 6)))
@@ -132,7 +125,6 @@ class DungeonFloorTest {
         assertTrue(life.overlap("big", Cell(5, 5), "small", Cell(5, 4)), "a big one hides the one right behind it")
         assertTrue(!life.overlap("big", Cell(5, 5), "small", Cell(5, 7)), "but not the one in front")
         assertTrue(!life.overlap("big", Cell(5, 5), "small", Cell(9, 5)))
-        // Starting squares keep apart, a big one included.
         val random = kotlin.random.Random(3)
         val claimed = LinkedHashMap<String, Cell>()
         val ids = listOf("big") + (1..10).map { "p$it" }
@@ -159,17 +151,14 @@ class DungeonFloorTest {
         if (way.size > 3) {
             val middle = way[way.size / 2]
             val around = f.path(from, to, m, blocked = setOf(middle))
-            // Either a way round, or none (a corridor with someone in it); never through the one standing there.
             assertTrue(around == null || middle !in around, "walked through $middle")
         }
-        // A Gust Trap blows in a straight line until a wall, at most GUST_RANGE squares, and lands where it can rest.
         for ((dx, dy) in listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1, 1 to 1, -1 to -1)) {
             val landing = f.blownTo(from, dx, dy, m)
             val steps = maxOf(kotlin.math.abs(landing.x - from.x), kotlin.math.abs(landing.y - from.y))
             assertTrue(steps <= DungeonFloor.GUST_RANGE)
             assertEquals(from.x + dx * steps, landing.x); assertEquals(from.y + dy * steps, landing.y)
             assertTrue(landing == from || f.canRest(landing, m))
-            // Another Pokémon in the way stops it short; a wall stops it where the floor ends.
             if (steps > 0) assertEquals(from, f.blownTo(from, dx, dy, m, blocked = setOf(Cell(from.x + dx, from.y + dy))))
             if (steps < DungeonFloor.GUST_RANGE && steps > 0) {
                 var c = landing

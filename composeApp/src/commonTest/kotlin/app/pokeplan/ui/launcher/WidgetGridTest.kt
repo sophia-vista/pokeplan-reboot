@@ -222,24 +222,19 @@ class WidgetPagesTest {
         assertEquals(1, left.homeIndex)
         val both = left.addPage(left = false)
         assertEquals(listOf(WidgetPage.PAGE3, WidgetPage.HOME, WidgetPage.TODAY, WidgetPage.PAGE4), both.pageOrder)
-        // The order is saved and read back; the usual order is still saved as a count.
         assertEquals(both.pageOrder, LauncherPrefs.decode(both.encode()).pageOrder)
         assertTrue("pageOrder" in both.encode() && "K pages" !in both.encode())
         assertTrue("K pages" in base.withPages(3).encode() && "pageOrder" !in base.withPages(3).encode())
-        // Any empty page of the user's own can go, not only the last; Home and Today never.
         assertEquals(listOf(WidgetPage.HOME, WidgetPage.TODAY, WidgetPage.PAGE4), both.deletePage(WidgetPage.PAGE3).pageOrder)
         assertEquals(both, both.deletePage(WidgetPage.HOME))
         assertEquals(both, both.deletePage(WidgetPage.TODAY))
         val busy = both.addGridWidget(WidgetPage.PAGE3, WidgetKind.FORECAST)
-        // A page with widgets can go too: they move to the page beside it.
         assertTrue(busy.canDeletePage(WidgetPage.PAGE3))
         val gone = busy.deletePage(WidgetPage.PAGE3)
         assertEquals(listOf(WidgetPage.HOME, WidgetPage.TODAY, WidgetPage.PAGE4), gone.pageOrder)
         assertTrue(gone.gridWidgets.any { it.kind == WidgetKind.FORECAST && it.page == WidgetPage.HOME }, "the widget went to the page after it (the first page has none before)")
-        // Three of the user's own at most; a widget can move to a page left of Home.
         assertEquals(WidgetPage.MAX, both.addPage(left = true).pages)
         assertEquals(WidgetPage.MAX, both.addPage(left = true).addPage(left = false).pages)
-        // An unreadable order is ignored.
         assertEquals(listOf(WidgetPage.HOME, WidgetPage.TODAY), LauncherPrefs.decode("K pageOrder\tHOME,HOME").pageOrder)
         assertEquals(listOf(WidgetPage.HOME, WidgetPage.TODAY), LauncherPrefs.decode("K pageOrder\tPAGE3,HOME").pageOrder)
     }

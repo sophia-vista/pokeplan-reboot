@@ -39,7 +39,6 @@ class GoalTest {
         assertTrue(last.goalCompleted)
         assertEquals(Items.NATURE_MINT, last.bonusItem)
         assertEquals(day + 1, last.goal.completedAtMillis)
-        // reopen and finish again: no second bonus, no second reward
         val reopened = GoalRules.reopenMilestone(last.goal, "m1")
         assertNull(reopened.completedAtMillis)
         val again = GoalRules.completeMilestone(reopened, "m1", day + 2, 0)
@@ -102,7 +101,6 @@ class GoalTest {
         val first = listOf(GoalPartyMember(25, 12), GoalPartyMember(4, 30, shiny = true))
         val finished = GoalRules.completeMilestone(goal(0), "m0", day, 0, first).goal
         assertEquals(first, finished.hallOfFameParty)
-        // Reopening and finishing again with a different party records the later day's party.
         val reopened = GoalRules.reopenMilestone(finished, "m0")
         val second = listOf(GoalPartyMember(1, 5))
         assertEquals(second, GoalRules.completeMilestone(reopened, "m0", 2 * day, 0, second).goal.hallOfFameParty)

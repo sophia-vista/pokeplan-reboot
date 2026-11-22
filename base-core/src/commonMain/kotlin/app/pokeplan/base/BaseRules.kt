@@ -7,16 +7,11 @@ import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
-/** Why a record was not accepted, in words for the screen. */
 sealed interface Check {
     data object Ok : Check
     data class Refused(val reason: String) : Check
 }
 
-/**
- * Repeating dates (BASE.md 4.2 and 4.5): pure, deterministic and free of the clock, so the same chore gives the same occurrences after a restart
- * or a change of time zone. Everything is counted from the first date, never from "today".
- */
 object Schedules {
     private const val MAX_WEEK_SCAN = 7 * 100 + 7
 
@@ -24,7 +19,6 @@ object Schedules {
 
     private fun daysInMonth(year: Int, month: Int): Int = LocalDate(year, month, 1).plus(1, DateTimeUnit.MONTH).minus(1, DateTimeUnit.DAY).dayOfMonth
 
-    /** The date in month number [index] (year * 12 + month - 1) that follows [anchor]'s day of the month, shortened to the month's last day. */
     private fun inMonth(index: Int, anchor: LocalDate): LocalDate {
         val year = index.floorDiv(12)
         val month = index - year * 12 + 1
@@ -37,7 +31,6 @@ object Schedules {
 
     private fun mondayOf(d: LocalDate): LocalDate = d.minus(d.dayOfWeek.isoDayNumber - 1, DateTimeUnit.DAY)
 
-    /** Whether [day] is one of the occurrences of [r] counted from [anchor]. */
     fun occursOn(r: Recurrence, anchor: LocalDate, day: LocalDate): Boolean = when (r.kind) {
         RepeatKind.ONCE -> day == anchor
         RepeatKind.DAILY -> day >= anchor && anchor.daysUntil(day) % maxOf(1, r.every) == 0
@@ -46,7 +39,6 @@ object Schedules {
         RepeatKind.MONTHLY, RepeatKind.YEARLY -> day >= anchor && (monthIndex(day) - monthIndex(anchor)) % monthStep(r) == 0 && day == inMonth(monthIndex(day), anchor)
     }
 
-    /** The latest occurrence on or before [day], or null when [day] is before the first one. */
     fun lastOnOrBefore(r: Recurrence, anchor: LocalDate, day: LocalDate): LocalDate? {
         if (day < anchor) return null
         return when (r.kind) {
@@ -63,7 +55,6 @@ object Schedules {
         }
     }
 
-    /** The earliest occurrence on or after [day], or null when a one-time schedule is already past. */
     fun firstOnOrAfter(r: Recurrence, anchor: LocalDate, day: LocalDate): LocalDate? {
         if (r.kind != RepeatKind.WEEKLY && day <= anchor) return anchor
         return when (r.kind) {
@@ -83,15 +74,12 @@ object Schedules {
         }
     }
 
-    /** The next occurrence strictly after [day]. */
     fun nextAfter(r: Recurrence, anchor: LocalDate, day: LocalDate): LocalDate? = firstOnOrAfter(r, anchor, day.plus(1, DateTimeUnit.DAY))
 }
 
-/** A quantity is kept in thousandths of its unit, so 1.5 kg is 1500 and nothing is ever a floating-point number. */
 object Quantity {
     const val MAX_MILLI = 1_000_000_000L
 
-    /** Reads "12", "1.5" or "0,25" (up to three decimals); null when it is not a quantity. */
     fun parse(text: String): Long? {
         val t = text.trim().replace(',', '.')
         if (t.isEmpty() || t.count { it == '.' } > 1 || !t.all { it.isDigit() || it == '.' } || t == ".") return null
@@ -102,7 +90,6 @@ object Quantity {
         return milli.takeIf { it <= MAX_MILLI }
     }
 
-    /** "12", "1.5", "0.25"; null reads as "Unknown". */
     fun format(milli: Long?): String {
         if (milli == null) return "Unknown"
         val whole = milli / 1000
@@ -119,51 +106,36 @@ data class ScheduleView(val schedule: MaintenanceSchedule, val state: DueState, 
 
 enum class HitKind(val label: String) { CHORE("Chore"), SUPPLY("Supply"), ASSET("Belonging"), MAINTENANCE("Maintenance"), WARRANTY("Warranty"), REFERENCE("Note") }
 
-/** One search result: what kind of record it is, its id, a title and a short second line. It opens the canonical record. */
 data class Hit(val kind: HitKind, val id: String, val title: String, val detail: String = "")
 
-/** One line of the restocking list: a supply that is low, or something the user wrote down by hand. */
 sealed interface RestockLine {
     data class Low(val supply: Supply) : RestockLine
     data class Manual(val entry: RestockEntry, val supply: Supply?) : RestockLine
 }
 
-/** What the overview shows: only what needs attention (BASE.md 3.1), never a count of everything. */
 data class Overview(val chores: List<ChoreView>, val maintenance: List<ScheduleView>, val low: List<Supply>, val warranties: List<Warranty>) {
     val needsAttention: Boolean get() = chores.isNotEmpty() || maintenance.isNotEmpty() || low.isNotEmpty() || warranties.isNotEmpty()
 }
 
-/**
- * HOME's rules, all pure. Principles (BASE.md 1, 4, 5.1): **nothing is judged** (a missed chore is shown, never counted against anyone, and an old
- * backlog is never listed), **unknown is not zero**, **derived facts are not stored** (overdue, low, due soon come from the records and the date),
- * and **only done work can earn** (what pays is decided here and carries no household word).
- */
 object BaseRules {
     const val TITLE_MAX = 80
     const val NOTE_MAX = 2000
     const val TEXT_MAX = 8000
     const val EVERY_MAX = 99
 
-    /** How many stock adjustments the document keeps (BASE.md 4.3: lightweight, bounded). */
     const val ADJUSTMENTS_KEPT = 300
 
-    /** A warranty is "ending soon" this many days before its end date. */
     const val WARRANTY_SOON_DAYS = 30
 
-    /** Maintenance shows as "soon" this many days ahead. */
     const val MAINTENANCE_SOON_DAYS = 14
 
-    /** Chores paid in a day, so splitting one job into many small ones can not farm Habitat Discovery (BASE.md 9.2). *(tune)* */
     const val CHORES_PAID_PER_DAY = 5
 
-    /** Pieces of maintenance paid in a day. *(tune)* */
     const val MAINTENANCE_PAID_PER_DAY = 2
 
     val STARTING_UNITS = listOf("pieces", "packs", "bottles", "boxes", "rolls", "kg", "g", "L", "ml")
 
     val STARTING_AREAS = listOf("Kitchen", "Bathroom", "Bedroom", "Living area", "Balcony", "Storage", "General household")
-
-    // --- what the app accepts ---------------------------------------------------------------------------------------------
 
     fun checkTitle(text: String, what: String): Check = when {
         text.isBlank() -> Check.Refused("Give the $what a name.")
@@ -195,21 +167,14 @@ object BaseRules {
         return Check.Ok
     }
 
-    // --- chores -------------------------------------------------------------------------------------------------------------
-
     private fun entryFor(entries: List<ChoreEntry>, day: LocalDate): ChoreEntry? = entries.lastOrNull { it.dueDay == day }
 
     private fun open(chore: Chore, occurrence: LocalDate, dueDay: LocalDate, entry: ChoreEntry?, today: LocalDate): ChoreView = ChoreView(
         chore, if (dueDay < today) ChoreState.OVERDUE else if (dueDay == today) ChoreState.DUE else ChoreState.UPCOMING, occurrence, dueDay, entry,
     )
 
-    /**
-     * Where [chore] stands on [today]. For a repeating chore only the latest occurrence up to today is considered, so a month away leaves one overdue
-     * chore, not thirty (BASE.md 4.2); one the user did, skipped or put off is read from its entry; an occurrence done early counts too.
-     */
     fun view(data: BaseData, chore: Chore, today: LocalDate): ChoreView = view(chore, data.entries.filter { it.choreId == chore.id }, today)
 
-    /** [view] with the chore's own [entries] already picked out, so a list of chores reads the history once and not once per chore. */
     private fun view(chore: Chore, entries: List<ChoreEntry>, today: LocalDate): ChoreView {
         if (chore.status == RecordStatus.ARCHIVED) return ChoreView(chore, ChoreState.ARCHIVED, null, null, null)
         if (chore.status == RecordStatus.PAUSED) return ChoreView(chore, ChoreState.PAUSED, null, null, null)
@@ -235,13 +200,11 @@ object BaseRules {
         val doneEarly = nextEntry != null && nextEntry.status != EntryStatus.DEFERRED
         if (last != null && lastEntry?.status == EntryStatus.DEFERRED) return open(chore, last, lastEntry.deferTo ?: last, lastEntry, today)
         if (last != null && lastEntry == null && !doneEarly) return open(chore, last, last, null, today)
-        // Nothing is waiting: it was done or skipped for the latest occurrence, or early for the next one, or it has not started.
         val following = if (doneEarly) Schedules.nextAfter(r, anchor, next) ?: next else next
         val settled = if (doneEarly) nextEntry else if (last == today) lastEntry else null
         return if (settled != null) ChoreView(chore, after(settled), settled.dueDay, following, settled) else ChoreView(chore, ChoreState.UPCOMING, following, following, null)
     }
 
-    /** Every chore that is not archived, most pressing first: overdue (oldest first), due today, upcoming by date, whenever, then done and paused. */
     fun views(data: BaseData, today: LocalDate): List<ChoreView> {
         val entries = data.entries.groupBy { it.choreId }
         return data.chores.filter { it.status != RecordStatus.ARCHIVED }.map { view(it, entries[it.id].orEmpty(), today) }
@@ -253,28 +216,19 @@ object BaseRules {
         ChoreState.DONE, ChoreState.SKIPPED -> 4; ChoreState.PAUSED -> 5; ChoreState.ARCHIVED -> 6
     }
 
-    /** Chores that need a look today: overdue or due. */
     fun attention(views: List<ChoreView>): List<ChoreView> = views.filter { it.state == ChoreState.OVERDUE || it.state == ChoreState.DUE }
 
-    /** What was done, skipped or put off, newest first (BASE.md 4.2 History). Chores that were later archived keep their history. */
     fun history(data: BaseData, choreId: String? = null): List<ChoreEntry> =
         data.entries.filter { choreId == null || it.choreId == choreId }.sortedWith(compareByDescending<ChoreEntry> { it.atMillis }.thenByDescending { it.dueDay })
 
-    // --- supplies -----------------------------------------------------------------------------------------------------------
-
-    /** Low when the quantity is known, a threshold is set, and the quantity is at or under it. Unknown is never low; no threshold is never inferred. */
     fun isLow(s: Supply): Boolean = !s.archived && s.quantityMilli != null && s.lowMilli != null && s.quantityMilli <= s.lowMilli
 
-    /** Low supplies the user has not quieted (what the overview shows). */
     fun lowSupplies(data: BaseData, includeQuieted: Boolean = false): List<Supply> =
         data.supplies.filter { isLow(it) && (includeQuieted || !it.lowDismissed) }.sortedBy { it.name.lowercase() }
 
-    /** The restocking list: every low supply, then what was written in by hand (BASE.md 4.3). It is not a purchase, a task or a transaction. */
     fun restockList(data: BaseData): List<RestockLine> =
         lowSupplies(data, includeQuieted = true).map { RestockLine.Low(it) } +
             data.restock.map { e -> RestockLine.Manual(e, e.supplyId?.let { id -> data.supplies.firstOrNull { it.id == id } }) }
-
-    // --- maintenance and warranties ---------------------------------------------------------------------------------------
 
     fun scheduleView(s: MaintenanceSchedule, today: LocalDate): ScheduleView {
         val days = today.daysUntil(s.nextDue)
@@ -288,15 +242,9 @@ object BaseRules {
         return ScheduleView(s, state, days)
     }
 
-    /** Active schedules, most pressing first. */
     fun schedules(data: BaseData, today: LocalDate): List<ScheduleView> =
         data.schedules.filter { it.status != RecordStatus.ARCHIVED }.map { scheduleView(it, today) }.sortedWith(compareBy<ScheduleView> { it.state == DueState.PAUSED }.thenBy { it.schedule.nextDue })
 
-    /**
-     * The schedule after a piece of maintenance was done on [doneDay] (BASE.md 4.5). A one-time schedule is finished (archived). A calendar schedule
-     * moves to its next date after the later of the due date and the day it was done, so a late service never leaves a backlog; one set to count
-     * "after it is done" starts again from that day. Past records are never touched.
-     */
     fun advance(s: MaintenanceSchedule, doneDay: LocalDate): MaintenanceSchedule {
         if (s.recurrence.kind == RepeatKind.ONCE) return s.copy(status = RecordStatus.ARCHIVED)
         val from = maxOf(s.nextDue, doneDay)
@@ -317,11 +265,8 @@ object BaseRules {
         }
     }
 
-    /** Maintenance records, newest first, for one asset or for all. */
     fun maintenanceHistory(data: BaseData, assetId: String? = null): List<MaintenanceRecord> =
         data.maintenance.filter { assetId == null || it.assetId == assetId }.sortedWith(compareByDescending<MaintenanceRecord> { it.day }.thenByDescending { it.atMillis })
-
-    // --- the overview ---------------------------------------------------------------------------------------------------------
 
     fun overview(data: BaseData, today: LocalDate): Overview = Overview(
         chores = attention(views(data, today)),
@@ -330,34 +275,19 @@ object BaseRules {
         warranties = data.warranties.filter { warrantyState(it, today) == WarrantyState.ENDING },
     )
 
-    // --- Habitat Discovery: what may pay (BASE.md section 9) ---------------------------------------------------------------
-
-    /**
-     * Whether a chore done on [day] may be sent to the game: Habitat Discovery is on. The daily share ([CHORES_PAID_PER_DAY]) is counted once, by the game
-     * (`GameStore.BASE_CAPS`, which reads the constant), because the history is trimmed and a deleted chore takes its entries with it.
-     */
     @Suppress("UNUSED_PARAMETER")
     fun chorePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression
 
-    /** Whether a piece of maintenance done on [day] may be sent to the game, on the same terms ([MAINTENANCE_PAID_PER_DAY] is counted by the game). */
     @Suppress("UNUSED_PARAMETER")
     fun maintenancePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression
 
-    /** Chore history kept: entries older than this many days are dropped when one is added (BASE.md 4.2). History shows only the newest 60. */
     const val ENTRY_KEEP_DAYS = 400
 
-    /** [entries] without those done more than [ENTRY_KEEP_DAYS] before [today]. */
     fun trimEntries(entries: List<ChoreEntry>, today: LocalDate): List<ChoreEntry> {
         val cutoff = today.minus(ENTRY_KEEP_DAYS, DateTimeUnit.DAY)
         return if (entries.any { it.day < cutoff }) entries.filter { it.day >= cutoff } else entries
     }
 
-    // --- search ---------------------------------------------------------------------------------------------------------------
-
-    /**
-     * Every record whose words contain [text] (case ignored), by kind then title. Local and offline; each hit names its kind and opens its own record,
-     * so what no list shows is left out: archived chores, supplies and items, finished one-time maintenance, and the warranties of an archived item.
-     */
     fun search(data: BaseData, text: String): List<Hit> {
         val q = text.trim().lowercase()
         if (q.isEmpty()) return emptyList()

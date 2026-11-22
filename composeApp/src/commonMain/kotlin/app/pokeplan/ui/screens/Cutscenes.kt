@@ -64,34 +64,20 @@ import app.pokeplan.ui.world.StoryPlayer
 import app.pokeplan.app.world.worldMoment
 import app.pokeplan.app.world.worldMomentSeen
 
-/** A moment that takes the whole screen for a few seconds, the way the games stop for it: an egg hatching, an evolution. */
 sealed interface Cutscene {
-    /** A new Pokémon arriving. [how] is where it came from, which picks the scene: Plan's egg hatches, Care's friend walks in, Heal's is found on a route, Mint's is catalogued. */
     data class Hatch(val pokemon: OwnedPokemon, val fromTask: Boolean, val how: app.pokeplan.app.Origin.How? = null) : Cutscene
 
-    /**
-     * An evolution. With [option] the evolution is not made yet: it is made when the scene reaches its end, and Stop (as B in the games)
-     * cancels it with nothing used up. Without it the evolution was already made.
-     */
     data class Evolve(val before: OwnedPokemon, val after: OwnedPokemon, val option: app.pokeplan.core.pokemon.EvolutionOption? = null) : Cutscene
 
-    /** A World rank reached or a story chapter opened. */
     data class World(val moment: app.pokeplan.world.WorldMoment) : Cutscene
 }
 
-/** The white of the games' flash, and the gold one a shiny gets instead. */
 private val FlashWhite = Color.White
 private val FlashGold = Color(0xFFFFE27A)
 
-/**
- * Plays [AppModel.cutscene] over the whole app, and starts the arrival of any new Pokémon nobody has seen arrive yet: a focus egg, a
- * Task Egg, or one paid for a task ticked on the widget (an egg hatches), a Care friend, a Field Research find or a Ledger Research
- * entry (each has a scene of its own). Each plays once per run of the app.
- */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CutsceneHost(model: AppModel) {
-    // A Pokémon the World gives (a recruit, the Guardian) did not hatch from an egg, so it gets no hatch scene.
     val waiting = model.data.rewardLog.filter { !it.seen && it.source != GameStore.WORLD_SOURCE }
         .flatMap { it.rewards.filterIsInstance<Reward.Hatched>() }
         .firstOrNull { it.pokemon.id !in model.playedHatches }
@@ -102,9 +88,7 @@ fun CutsceneHost(model: AppModel) {
             model.cutscene = Cutscene.Hatch(waiting.pokemon, waiting.fromTask, model.data.origins[waiting.pokemon.id]?.how)
         }
     }
-    // A new World rank or story chapter: one at a time, once, when nothing else is playing.
     LaunchedEffect(model.data.world, idle) {
-        // Read now, not from the composition: the effect above may just have started a hatch scene, which this one must not replace.
         if (model.cutscene == null) model.store.worldMoment()?.let { m -> model.store.worldMomentSeen(m); model.cutscene = Cutscene.World(m) }
     }
     val scene = model.cutscene ?: return
@@ -112,7 +96,6 @@ fun CutsceneHost(model: AppModel) {
     BackHandler(enabled = true, onBack = close)
     when (scene) {
         is Cutscene.Hatch -> if (acquisitionOf(scene.how) == Acquisition.EGG) {
-            // A visitor's gift: first the visitor leaves the egg on the meadow, then the egg hatches at once (owner, 8 November 2026).
             val visitor = model.data.origins[scene.pokemon.id]?.visitor?.takeIf { scene.how == app.pokeplan.app.Origin.How.BEFRIENDED }
             var left by remember(scene.pokemon.id) { mutableStateOf(visitor == null) }
             if (left) HatchScene(model, scene, close) else VisitorLeavesEggScene(model, visitor!!) { left = true }
@@ -122,7 +105,6 @@ fun CutsceneHost(model: AppModel) {
     }
 }
 
-/** The dark page a scene plays on. Taps anywhere go to [onTap] and never reach the screen underneath. */
 @Composable
 private fun SceneFrame(onTap: () -> Unit, flash: Float, flashColor: Color, content: @Composable ColumnScope.() -> Unit) {
     Box(
@@ -140,7 +122,6 @@ private fun SceneFrame(onTap: () -> Unit, flash: Float, flashColor: Color, conte
     }
 }
 
-/** The line under a scene, read out by screen readers as it changes, with the button that ends or skips it. */
 @Composable
 private fun SceneText(text: String, detail: String?, done: Boolean, skip: () -> Unit, close: () -> Unit, stop: (() -> Unit)? = null) {
     TextBox {
@@ -158,10 +139,6 @@ private fun SceneText(text: String, detail: String?, done: Boolean, skip: () -> 
     }
 }
 
-/**
- * An egg hatching, as in the games (Plan's focus and task eggs and a visitor's gift): "Oh?", the egg rocks three times, harder each time, a flash, and the Pokémon is there
- * and calls out. A shiny flashes gold, twice. Reduce motion goes straight to the Pokémon; a tap skips ahead.
- */
 @Composable
 private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit) {
     val p = scene.pokemon
@@ -169,7 +146,6 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
     var hatched by remember(p.id) { mutableStateOf(false) }
     val tilt = remember(p.id) { Animatable(0f) }
     val flash = remember(p.id) { Animatable(0f) }
-    // Just out of the egg it strikes a pose (its Pose animation, else a hop), then stands.
     var pose by remember(p.id) { mutableStateOf(!still) }
     LaunchedEffect(p.id, hatched) {
         if (hatched) return@LaunchedEffect
@@ -221,7 +197,6 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
                     "mystery-egg",
                     Modifier.align(Alignment.Center).graphicsLayer {
                         rotationZ = tilt.value
-                        // Rocks on its base, not around its middle.
                         transformOrigin = TransformOrigin(0.5f, 0.9f)
                     },
                     size = 144.dp, description = "An egg",
@@ -248,10 +223,6 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
     }
 }
 
-/**
- * The moment before a visitor's egg hatches (owner, 8 November 2026): on Care's meadow the visitor, now a friend, says goodbye, walks off
- * and leaves an egg in the grass; then the hatching scene takes over. Reduce motion shows the egg in the grass at once; a tap skips ahead.
- */
 @Composable
 private fun VisitorLeavesEggScene(model: AppModel, visitor: app.pokeplan.app.VisitorOrigin, next: () -> Unit) {
     val still = model.data.settings.reduceMotion
@@ -292,11 +263,6 @@ private fun VisitorLeavesEggScene(model: AppModel, visitor: app.pokeplan.app.Vis
     }
 }
 
-/**
- * A new Pokémon that did not come from an egg (owner, 8 November 2026), in its module's own scenery: **Care's** friend wanders in over the
- * meadow and settles, **Heal's** is found running along the route, and **Mint's** is catalogued: a Star Piece glints in the cave, then the
- * Pokémon rises from the floor. Reduce motion goes straight to the Pokémon; a tap skips ahead.
- */
 @Composable
 private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisition, close: () -> Unit) {
     val p = scene.pokemon
@@ -347,7 +313,6 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
     val scenery = when (kind) { Acquisition.ARRIVAL -> BuddyScene.CARE; Acquisition.FIELD -> BuddyScene.HEAL; Acquisition.HABITAT -> BuddyScene.BASE; Acquisition.POSTCARD, Acquisition.SAFARI -> BuddyScene.LINK; else -> BuddyScene.MINT }
     SceneFrame({ arrived = true }, flash.value, if (shiny) FlashGold else FlashWhite) {
         SceneStage(scenery, 260.dp) {
-            // The slot the Pokémon stands in; it enters from the left (Care), the right (Heal), the floor (Mint) or from above (Home).
             val t = travel.value
             val enter = when (kind) {
                 Acquisition.ARRIVAL -> Modifier.offset(x = (-(1f - t) * 260).dp)
@@ -392,28 +357,21 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
     }
 }
 
-/**
- * An evolution, as in the games: "What?", the Pokémon turns white and flickers between its old and new shape, faster
- * and faster, then a flash and the new Pokémon calls out. Reduce motion goes straight to the end; a tap skips ahead.
- */
 @Composable
 private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () -> Unit) {
     val before = scene.before
     val after = scene.after
     val still = model.data.settings.reduceMotion
     var done by remember(after) { mutableStateOf(false) }
-    // Stop (B in the games): the Pokémon stays as it is and nothing is used up. Only an evolution not made yet can be stopped.
     var stopped by remember(after) { mutableStateOf(false) }
     var made by remember(after) { mutableStateOf(scene.option == null) }
     var showNew by remember(after) { mutableStateOf(false) }
     val white = remember(after) { Animatable(0f) }
     val flash = remember(after) { Animatable(0f) }
-    // Once evolved it turns around on the spot (its Rotate animation, else a hop), so the new body is seen all round.
     var spin by remember(after) { mutableStateOf(!still) }
     LaunchedEffect(after, done, stopped) {
         if (done || stopped) return@LaunchedEffect
         if (!still) {
-            // The games' evolution music for the glow and the flicker (not the healing jingle).
             model.effect(Sfx.EVOLUTION)
             delay(1_000)
             white.animateTo(1f, tween(600))
@@ -430,7 +388,6 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
     }
     LaunchedEffect(after, done, stopped) {
         if (!done || stopped) return@LaunchedEffect
-        // The evolution is made here, at the end, once: a stopped scene never gets this far.
         if (!made) { scene.option?.let { model.store.evolve(before.id, it) }; made = true }
         showNew = true
         white.snapTo(0f)
@@ -442,7 +399,6 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
             flash.snapTo(1f)
             flash.animateTo(0f, tween(700))
         }
-        // "Congratulations!": the unlock chime (an evolution opens a new Dex entry), once the cry has had its moment.
         delay(1_200)
         model.effect(Sfx.UNLOCK)
     }
@@ -466,7 +422,6 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
                 }
             } else {
                 val shown = if (showNew) after else before
-                // The real sprite, fading to its white shape: the games' evolution glow.
                 Box(Modifier.align(Alignment.Center)) {
                     Sprite(shown.form.id, shown.isShiny, before.nickname, Modifier.alpha(1f - white.value), size = 160.dp)
                     Sprite(shown.form.id, shown.isShiny, before.nickname, Modifier.alpha(white.value), size = 160.dp, silhouette = Color.White)
@@ -481,13 +436,8 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
     }
 }
 
-/**
- * A World moment: a new exploration rank (a gold flash, the rank's badge, what it opens) or a story chapter (the place, the chapter, its
- * title and what it brings). Reduce motion skips the flash and the build-up; a tap skips ahead.
- */
 @Composable
 private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMoment, close: () -> Unit) {
-    // A chapter with an authored episode plays it (portraits, a stage, a dungeon walk); the rest play their title card.
     if (moment == app.pokeplan.world.WorldMoment.Welcome) {
         val intro = app.pokeplan.world.story.StoryCatalog.intro()
         StoryPlayer(model, intro, close, fromStart = intro.key in model.data.world.episodesDone); return
@@ -497,7 +447,6 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
         if (episode != null) { StoryPlayer(model, episode, close, fromStart = episode.key in model.data.world.episodesDone); return }
     }
     if (moment is app.pokeplan.world.WorldMoment.SpecialEpisode) {
-        // An optional episode after a story: played from the archive, resumed where it was left (a finished one starts again).
         val episode = app.pokeplan.world.story.StoryCatalog.episodeFor(moment.layer, moment.chapter)
         if (episode != null) StoryPlayer(model, episode, close, fromStart = episode.key in model.data.world.episodesDone) else LaunchedEffect(moment) { close() }
         return
@@ -523,7 +472,6 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
                     Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         Text("Exploration rank", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
                         Text(rank.label, style = MaterialTheme.typography.displaySmall, color = FlashGold)
-                        // The games' own rank badge, big.
                         ItemIcon(rank.badge, size = Sizes.SpriteL, description = "${rank.label} rank badge")
                     }
                 }

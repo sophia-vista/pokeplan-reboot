@@ -2,7 +2,6 @@ package app.pokeplan.app
 
 import app.pokeplan.heal.HealthKind
 
-/** INTEGRATIONS_AND_PRIVACY.md section 2: every capability is labelled with exactly one of these. */
 enum class IntegrationClass(val label: String) {
     OFFICIAL_API("Official provider API"),
     ANDROID_PLATFORM("Android platform API"),
@@ -10,7 +9,6 @@ enum class IntegrationClass(val label: String) {
     UNSUPPORTED("Unsupported or unverified"),
 }
 
-/** The status values of section 2. A provider is never shown as connected because an SDK is installed or an account exists on the phone. */
 enum class IntegrationStatus(val label: String) {
     NOT_CONFIGURED("Not set up"),
     AVAILABLE("Available"),
@@ -24,10 +22,8 @@ enum class IntegrationStatus(val label: String) {
     REAUTHORIZATION_REQUIRED("Needs signing in again"),
 }
 
-/** Whether the phone can talk to Health Connect at all, found out at run time (never assumed). */
 enum class ProviderAvailability { AVAILABLE, UPDATE_REQUIRED, UNSUPPORTED }
 
-/** One row of a module's Integrations page (section 14): what it does, what class it is, what it reads, and what it cannot do. */
 data class IntegrationInfo(
     val id: String,
     val name: String,
@@ -38,15 +34,8 @@ data class IntegrationInfo(
     val limits: String,
 )
 
-/**
- * The integrations HEAL and MINT offer, and their honest status. Nothing here connects to anything: it describes what exists. The rule behind every line is
- * INTEGRATIONS_AND_PRIVACY.md section 1, item 6 and section 17, item 8: **an integration is not advertised until it has been verified end to end**, so a
- * provider nobody has verified says so, in the status and in the words.
- */
 object Integrations {
-    // --- HEAL -------------------------------------------------------------------------------------------------------------
 
-    /** Health Connect's status from what the phone says now, which kinds the player chose, and which of them Android has granted. */
     fun healthConnectStatus(availability: ProviderAvailability, chosen: Set<HealthKind>, granted: Set<HealthKind>): IntegrationStatus = when {
         availability == ProviderAvailability.UNSUPPORTED -> IntegrationStatus.UNSUPPORTED
         availability == ProviderAvailability.UPDATE_REQUIRED -> IntegrationStatus.TEMPORARILY_UNAVAILABLE
@@ -70,8 +59,6 @@ object Integrations {
             "Huawei's own Health Kit needs a developer registration and Huawei's approval before any app can use it, and the watch's steps, workouts, sleep and weight have not been tested here. A separate app you install yourself may copy Huawei data into Health Connect; Heal does not depend on one and has not checked any.",
         ),
     )
-
-    // --- MINT -------------------------------------------------------------------------------------------------------------
 
     private const val NO_ACCESS = "No verified way to read a personal account. Import a statement file instead."
 

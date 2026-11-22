@@ -42,10 +42,6 @@ import app.pokeplan.ui.screens.PixelDateField
 import app.pokeplan.ui.screens.label
 
 
-/**
- * A day, optional: a few presets counted from [today] (label to days ahead), "No date", and "Pick a date" for a month to tap.
- * [label] names the field.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DayPicker(
@@ -54,7 +50,6 @@ internal fun DayPicker(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         FieldLabel(label)
-        // Presets for the common days; "Pick a date" opens the month for any other (the shared picker, with no limit either way).
         PixelDateField(value, today, ModuleAccent.PLAN.accent, onChange, presets = presets, noneLabel = noneLabel)
     }
 }

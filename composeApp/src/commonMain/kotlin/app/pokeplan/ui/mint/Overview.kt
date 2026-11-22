@@ -30,7 +30,6 @@ import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
-/** The Overview breakdown (MINT.md 3.2A): where net position and available money come from, line by line, and each credit line. Every figure is derived from the records. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun OverviewBreakdownBox(model: AppModel, startCurrency: String, onClose: () -> Unit) {
@@ -74,7 +73,6 @@ internal fun OverviewBreakdownBox(model: AppModel, startCurrency: String, onClos
     }
 }
 
-/** Mint Settings: what the Overview and the Mint widgets count (MINT.md 3.2B). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun OverviewCountsBox(model: AppModel) {

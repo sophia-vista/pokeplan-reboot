@@ -1,9 +1,5 @@
 package app.pokeplan.world
 
-/**
- * The Rescue Team arc (the code is the source of the story): Pokémon Square, the rumour about the team that arrived before the disasters, and the
- * meteor. Its Guardian dungeon is the Sky Tower. Six chapters; each opens with its rank and the number of this layer's dungeons cleared.
- */
 object RescueStory {
     const val GUARDIAN_BONUS = "Sky Guardian: expeditions find 5% more by chance"
     val chapters: List<Chapter> = listOf(
@@ -16,10 +12,6 @@ object RescueStory {
     )
 }
 
-/**
- * The Explorers arc: Treasure Town and the Exploration Guild, a thief of time and the hidden future. Its Guardian dungeon is the Temporal
- * Tower (Primal Dialga). Eight chapters.
- */
 object ExplorersStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "The Beach", "A ring of light drops the team on a beach beside Treasure Town.", "Basic expeditions", ExplorerRank.NORMAL, 0),

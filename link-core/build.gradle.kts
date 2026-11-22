@@ -5,9 +5,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-// The Link module's rules (docs/pokelife MODULES/LINK.md): people, notes, important dates and follow-ups; no contact is ever
-// contacted by it. No UI and no game: it knows nothing about Pokémon, rewards or the other modules. The app meets it through LinkStore
-// (app-core), which pays the Postcard Trail through the minimal LinkEvent only.
 kotlin {
     jvm()
 

@@ -1,36 +1,23 @@
 package app.pokeplan.world
 
-/**
- * What the teams brought back since the player last looked, built from the events of one or more settles (a report, not a record: it is
- * never saved, the shared reward log stays the one record). Rewards are in three kinds so a chance is never read as a promise:
- * **every floor** ([xp], [poke]), **milestones** (a fixed reward for reaching a floor the first time) and **chance finds** ([berries],
- * [treasure], wild Pokémon in [finds]). Berries and Poké are already in the Bag; [finds] are waiting to be recruited.
- */
 data class ReportSummary(
     val floors: Int = 0,
     val byDungeon: Map<String, Int> = emptyMap(),
     val xp: Int = 0,
     val poke: Int = 0,
-    /** Pokémon XP each member of the busiest team earned (every member gets the full amount, WORLD.md 5.2); a team that climbed fewer floors earned less. */
     val memberXp: Int = 0,
     val berries: Int = 0,
-    /** Treasure boxes found, by tier (1 plain, 2 silver, 3 gold). */
     val treasure: Map<Int, Int> = emptyMap(),
     val milestones: List<Pair<String, MilestoneReward>> = emptyList(),
-    /** Wild species found (they wait in Finds). */
     val finds: List<Int> = emptyList(),
     val cleared: List<String> = emptyList(),
     val jobsDone: List<String> = emptyList(),
     val guardianFaced: Boolean = false,
-    /** Floor events opened by a team member, and how many were passed by. */
     val eventsOpened: Int = 0,
     val eventsPassed: Int = 0,
-    /** Floor choices that came up (waiting for an answer or already answered by the default). */
     val choicesOffered: Int = 0,
-    /** Floors the team was too weak for (half the Poké and Exploration XP, nothing else) and the dungeons a team turned back in (WORLD.md 3.6). */
     val setbacks: Int = 0,
     val retreats: List<String> = emptyList(),
-    /** Evolution Trials done, as "name:evolves into". */
     val trialsDone: List<String> = emptyList(),
 ) {
     val isEmpty: Boolean get() = floors == 0 && setbacks == 0 && retreats.isEmpty() && milestones.isEmpty() && finds.isEmpty() && jobsDone.isEmpty() && trialsDone.isEmpty() && !guardianFaced
@@ -45,7 +32,6 @@ data class ReportSummary(
     )
 
     companion object {
-        /** The summary of [report]: the events of every team, with the Exploration XP the settle gave ([xpGained], from the data before and after) and [xpPerFloor] Pokémon XP for each floor a member climbed. */
         fun of(report: WorldReport, xpGained: Int, xpPerFloor: Int = 0): ReportSummary {
             var s = ReportSummary(xp = xpGained, memberXp = (report.memberFloors.values.maxOrNull() ?: 0) * xpPerFloor)
             for (e in report.events) s = when (e) {

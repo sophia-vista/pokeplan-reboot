@@ -21,15 +21,12 @@ import app.pokeplan.core.reward.TrainerRank
 import java.io.File
 import kotlin.random.Random
 
-/** A kind of player: how many tasks and sessions a day, and how hard the tasks are. */
 data class Profile(
     val name: String,
     val activeDayChance: Double,
     val tasksPerDay: IntRange,
-    /** Weights for ranks E, D, C, B, A. */
     val rankWeights: List<Double>,
     val sessionsPerDay: IntRange,
-    /** (minutes, weight) */
     val sessionMinutes: List<Pair<Int, Double>>,
 )
 
@@ -39,7 +36,6 @@ val profiles = listOf(
     Profile("Heavy", 0.95, 6..12, listOf(1.0, 2.0, 3.0, 3.0, 2.0), 2..5, listOf(25 to 30.0, 60 to 40.0, 90 to 30.0)),
 )
 
-/** A walker for the Heal steps section (rules version 25): steps a day on the days they walk, days a week, and how many families of record they read in each day. */
 data class Walker(val name: String, val steps: Int, val daysPerWeek: Double, val readFamilies: Int)
 
 val walkers = listOf(
@@ -48,7 +44,6 @@ val walkers = listOf(
     Walker("Active walker", 11_000, 7.0, 2),
 )
 
-/** Plays [days] days of [w]: one step payment for each 2,000 steps (at most 5 a day) and one import payment per family read (at most 3 a day), through the real reward engine. */
 private fun walk(w: Walker, days: Int, seed: Int): Pair<Int, Int> {
     val rng = Random(seed)
     var state = PlayerState(pokemon = listOf(Hatching.create("w", HatchOption(25, "pikachu"), 0, 0, 25, rng).copy(level = 5)))
@@ -61,14 +56,13 @@ private fun walk(w: Walker, days: Int, seed: Int): Pair<Int, Int> {
     }
     for (day in 1..days) {
         if (rng.nextDouble() >= w.daysPerWeek / 7) continue
-        val steps = (w.steps * (0.7 + rng.nextDouble() * 0.6)).toInt() // a day is 70% to 130% of the usual
+        val steps = (w.steps * (0.7 + rng.nextDouble() * 0.6)).toInt()
         repeat((steps / 2_000).coerceAtMost(5)) { pay(app.pokeplan.core.reward.HealKind.STEPS) }
         repeat(w.readFamilies.coerceAtMost(3)) { pay(app.pokeplan.core.reward.HealKind.IMPORT) }
     }
     return candies to points
 }
 
-/** What it takes to evolve everything in a region once. */
 data class Demand(
     val evolutions: Int,
     val superCandies: Int,
@@ -129,7 +123,6 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
         val unseen = open.associateWith { r ->
             Rarity.entries.flatMap { HatchRules.pool(r, it) }.map { it.speciesId }.toSet().count { it !in owned }
         }
-        // A collector finishes the Plan dex first, then goes where the most is still missing.
         if (unseen.getValue(Region.PLAN) > 0) return Region.PLAN
         val best = open.maxByOrNull { unseen.getValue(it) * 1000 - it.ordinal }!!
         return if (unseen.getValue(best) > 0) best else open[rng.nextInt(open.size)]
@@ -154,7 +147,6 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
         }
     }
 
-    /** Keep the first of each species, transfer duplicates; spend Rare Candies on the buddy. */
     fun housekeeping() {
         var inventory = state.inventory
         var coins = state.coins
@@ -255,7 +247,6 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
         sb.appendLine("|---|---|")
         val planDays = runs.map { (it.planDay ?: (days + 1)).toDouble() }
         row("Day the basic Plan dex is complete (${days + 1} = not within $days)", planDays)
-        // Only the Plan and Care Regions are collected (0.44.0); once the Plan dex is done, eggs come from the Care Region.
         row("Day the basic Care dex is complete (${days + 1} = not within $days)", runs.map { (it.careDay ?: (days + 1)).toDouble() })
         for (d in listOf(30, 60, 90)) {
             row("Rank after $d days", runs.map { it.checkpoints[d]!!.rank.toDouble() })
