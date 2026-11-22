@@ -62,7 +62,6 @@ import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.Money
-import app.pokeplan.mint.SharedRules
 import app.pokeplan.mint.Occurrence
 import app.pokeplan.mint.OccurrenceState
 import app.pokeplan.mint.PlanStatus
@@ -126,7 +125,6 @@ import app.pokeplan.ui.screens.short
 enum class MintSection(val label: String, val icon: String) {
     ACCOUNTS("Accounts", "member-card"), ACTIVITY("Activity", "journal"), BUDGETS("Budgets", "heart-scale"), BILLS("Bills and income", "oaks-letter"),
     REVIEW("Review", "scope-lens"), IMPORT("Import", "town-map"), SETTINGS("Settings", "storage-key"),
-    SHARED("Shared bills", "friend-ball"),
 }
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
@@ -188,7 +186,6 @@ private fun MintPage(model: AppModel, section: MintSection?, openPokemon: (Strin
             MintSection.BILLS -> BillsView(model)
             MintSection.REVIEW -> MintReviewView(model)
             MintSection.IMPORT -> MintImportView(model)
-            MintSection.SHARED -> SharedView(model)
             MintSection.SETTINGS -> MintSettingsView(model)
         }
     }
@@ -203,7 +200,6 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(MintSection.ACTIVITY.name, MintSection.ACTIVITY.icon, "Activity", if (data.transactions.isEmpty()) "add a purchase" else "${data.transactions.size} records", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.BUDGETS.name, MintSection.BUDGETS.icon, "Budgets", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) "optional" else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} active", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.BILLS.name, MintSection.BILLS.icon, "Bills and income", billsDetail(model), tint = ModuleAccent.MINT.accent),
-        MenuEntry(MintSection.SHARED.name, MintSection.SHARED.icon, "Shared bills", if (data.shared.isEmpty()) "who owes whom" else "${SharedRules.balances(data.shared).size} open", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
     ) + listOfNotNull(
         MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },
@@ -805,6 +801,8 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var query by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf<TxType?>(null) }
     var inInstallments by remember { mutableStateOf(startInstallments) }
+    var iou by remember { mutableStateOf(false) }
+    var iouReceived by remember { mutableStateOf(false) }
     val terms = remember { TermsState() }
     var openId by remember { mutableStateOf<String?>(null) }
     val from = open.firstOrNull { it.id == accountId } ?: open.firstOrNull()
@@ -844,13 +842,16 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; model.haptic() }
             return
         }
+        val isIou = type == TxType.INCOME && iou
+        if (isIou && payee.isBlank()) { message = "Say who owes it." to NoticeTone.WARNING; return }
         val out = mint.record(
             type, minor, from!!.id, toAccountId = if (type == TxType.TRANSFER) to?.id else null,
             categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT && splits.isEmpty() },
             payee = payee, note = note, atMillis = at, up = up, splits = splits, feeMinor = feeMinor,
+            status = if (isIou && !iouReceived) TxStatus.PENDING else TxStatus.POSTED, iou = isIou,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
+        else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; iou = false; iouReceived = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
     }
     val otherTypes = quickTypes.filter { it !in mainTypes }
     FormBox {
@@ -863,7 +864,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             FormGroup {
                 PixelChoice(mainTypes, type.takeIf { it in mainTypes }, { it?.label ?: "" }, { t ->
                     if (t != null) {
-                        if (t != type) splitEnabled = false
+                        if (t != type) { splitEnabled = false; iou = false; iouReceived = false }
                         type = t
                         categoryId = null
                     }
@@ -887,11 +888,18 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                 } else if (type == TxType.ADJUSTMENT) {
                     PixelChoice(listOf(true, false), up, { if (it == true) "Balance goes up" else "Balance goes down" }, { if (it != null) up = it }, label = "Change", key = accent)
                 } else {
-                    val kind = if (type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
+                    val kind = if (type == TxType.INCOME && !iou) CategoryKind.INCOME else CategoryKind.EXPENSE
                     val usable = data.categories.filter { it.kind == kind && !it.archived }
                     val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
                     val ordered = (recent + usable).distinct()
-                    val canSplit = !installmentMode && type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE)
+                    if (type == TxType.INCOME) ToggleRow("Someone owes me this (IOU)", iou) {
+                        iou = it; categoryId = null; if (it) splitEnabled = false else iouReceived = false
+                    }
+                    if (iou) {
+                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Who owes it", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+                        ToggleRow("They paid me already", iouReceived) { iouReceived = it }
+                    }
+                    val canSplit = !installmentMode && !iou && type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE)
                     if (canSplit) ToggleRow("Split across categories", splitEnabled) {
                         splitEnabled = it
                         if (it) categoryId = null
@@ -910,7 +918,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                         listOf<TxType?>(null) + otherTypes, type.takeIf { it in otherTypes }, { it?.label ?: "Expense, income or transfer" },
                         { t ->
                             if (t != null) {
-                                if (t != type) splitEnabled = false
+                                if (t != type) { splitEnabled = false; iou = false; iouReceived = false }
                                 type = t
                                 categoryId = null
                             } else if (type in otherTypes) {
@@ -928,7 +936,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                         PixelField(payee, { payee = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                         InstallmentTerms(model, from!!, terms, Money.parse(amount, currency), (payAt ?: model.store.nowMillis).toLocalDateTime(zone).date)
                     } else {
-                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+                        if (!iou) PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                         PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
                     }
                 }
@@ -979,12 +987,12 @@ private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onCli
     val plan = planNames.joinToString(", ").takeIf { it.isNotEmpty() }
     val repayment = t.type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == t.toAccountId }?.type?.liability == true
     val title = t.payee.ifBlank { category ?: (if (t.type == TxType.FEE) t.feeKind?.label else null) ?: (if (repayment) "Repayment" else t.type.label) }
-    val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.feeMinor.takeIf { it > 0 }?.let { "fee " + model.mint.show(it, t.currency) }, t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }, plan?.let { "Plan: $it" }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
+    val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.feeMinor.takeIf { it > 0 }?.let { "fee " + model.mint.show(it, t.currency) }, (if (t.iou && t.status == TxStatus.PENDING) "IOU, still owed" else if (t.iou && t.status == TxStatus.POSTED) "IOU, received" else t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }), plan?.let { "Plan: $it" }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
     MintLine(
         trail = { Text(t.signed() + model.mint.show(t.amountMinor, t.currency), style = MaterialTheme.typography.titleSmall) },
         onClick = onClick, onClickLabel = if (open) "Hide options" else "Show options",
     ) {
-        Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+        Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 3)
     }
 }
@@ -1095,10 +1103,10 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     when (t.status) {
-                        TxStatus.PENDING -> PixelButton("Mark posted", {
+                        TxStatus.PENDING -> PixelButton(if (t.iou) "Mark received" else "Mark posted", {
                             if (mint.setTransactionStatus(t.id, TxStatus.POSTED)) onDone() else refused = "That record can no longer change status."
                         }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
-                        TxStatus.POSTED -> PixelButton("Mark pending", {
+                        TxStatus.POSTED -> PixelButton(if (t.iou) "Mark owed" else "Mark pending", {
                             if (mint.setTransactionStatus(t.id, TxStatus.PENDING)) onDone() else refused = "That record can no longer change status."
                         }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         else -> {}
