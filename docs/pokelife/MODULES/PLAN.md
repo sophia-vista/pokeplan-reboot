@@ -69,7 +69,7 @@ Use a small, stable navigation structure. Avoid a separate destination for every
 Primary destinations (the owner uses only these three, so nothing else is a destination):
 
 1. **Tasks** — one workspace. It opens on **Today**. Four views as pills under the quick add box: **Today**, **Upcoming**, **All** (every open task grouped by list) and **Done** (finished and won't-do tasks, latest first). The lists are managed in **Plan settings** (new list, edit, archive, delete), and the **Filter** under the search box on All and Done narrows to one list (a Checklist or Tracker list then keeps its finished items on view). A task in no list shows under "No list" in All. The quick add field reads "Add a task (date, #list)"; inside a chosen list a new task is filed in it, and on Today it is planned for today.
-2. **Calendar** — the day, week and month views with PLAN events and the read-only device calendars (8); one tap from the page and from the Tasks header.
+2. **Calendar** — the day, week and month views with PLAN events and the read-only device calendars (8); one tap from the page, through the header's Sections key (the Tasks header carries no Calendar key).
 3. **Focus** — start and manage focus sessions, for any open task or none (6).
 
 ### 3.1 Today
@@ -300,7 +300,7 @@ PLAN follows the shared PMD dialogue-box visual system and reusable component ru
 
 ### 10.1 Task and planning surfaces
 
-Task cards prioritize the completion control, title, relevant date/recurrence, then optional list context. Do not display every available field on every card. The check key is first on every row (a finished task's reopens it), the rank as a small tag after the title, the When tab folded to the day and the list with a "Time and repeat" row that unfolds the time, reminders and repeat, a Goal row on the Edit tab (one goal per task, no reward), Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary. Today, Upcoming, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
+Task cards prioritize the completion control, title, relevant date/recurrence, then optional list context. Do not display every available field on every card. The check key is first on every row (a finished task's reopens it), the rank as a small tag after the title, the Schedule tab (Move to, the planned time, the repeat row and reminders, unfolded), a goal on the More tab (one goal per task, no reward), Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary. Today, Upcoming, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
 
 ### 10.2 Focus presentation
 
