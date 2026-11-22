@@ -320,6 +320,10 @@ Consolidate the AUTO/OFF/ON battery saver into Automatic, Balanced and Minimal u
 
 App drawer and navigation must feel immediate; interaction must not exhibit perceptible lag due to ambient animation; memory use must remain bounded during extended sessions; there must be no unnecessary background wake locks or animation while hidden. Establish numeric frame-time, memory and startup budgets through profiling on the supported device baseline rather than assuming emulator performance.
 
+### 12.5 Crash-loop safe mode
+
+Android restarts a crashed launcher at once, so a start-up crash would loop. `CrashGuard` keeps the last ten crash times in its own preferences and treats **a third crash within a minute** as a loop (`CrashLedger.LIMIT` 2, `WINDOW_MILLIS` 60 s). The next start then opens **safe mode** instead of the scene: a plain list of the installed apps, the line "PokéLife stopped three times in a minute, so it started plain. Your apps still open from here.", a **Copy crash log** key and **Try again**, which forgets the recorded crashes so the following start is a normal one. Safe mode opens no save, draws no widgets or roaming, and pays nothing. One crash, or crashes spread further apart, changes nothing. The log holds the time, the app version, the thread name and the exception; it must never carry module content, account names, amounts or any other private text.
+
 ## 13. Accessibility
 
 All functional elements expose meaningful accessible labels, logical traversal order, selected/focused state and supported actions. Pokémon expose species or nickname when navigated; decorative details do not create hundreds of meaningless screen-reader stops.

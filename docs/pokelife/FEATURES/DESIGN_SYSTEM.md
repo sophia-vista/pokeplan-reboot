@@ -365,3 +365,7 @@ Changes to shared tokens, component anatomy, border language, typography, naviga
 ## Testing reference
 
 Shared components and representative screens require semantic Compose tests, approved light/dark golden images, responsive/font-scale coverage and accessibility verification as defined in [`../ARCHITECTURE/TEST_STRATEGY.md`](../ARCHITECTURE/TEST_STRATEGY.md). Golden updates require explicit review.
+
+### 6.12 What's New card
+
+After an update, Home shows one card titled **What's new in `<version>`**: one bullet per line from `WhatsNew`, and a single **Got it** key that marks the version seen (`AppData.lastSeenVersion`, `GameStore.markVersionSeen`). It appears only while the running version has an entry and has not been seen; a version with no entry shows no card. It has no other dismissal and never covers the screen.
