@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.229.0
+
+Huawei Health read: every card's All data, two read modes (HEAL, REP-046, owner feedback 22 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged. No schema change.
+
+- **Two reads in Connections:** **New only** (the default) skips what HEAL already holds and stops lists at the first saved row; **Everything** opens every card and its All data again, reads the longer lists (Exercise 20 scrolls, All data 30, the newest 31 Sleep days) and has a 900-second budget. Both visit the cards in the owner's order: Steps, Exercise records, Heart, Weight, Sleep, Skin temperature, Emotional wellbeing, SpO2, Cycle Calendar.
+- **Every module opens its All data:** Steps, Heart, Weight, Sleep, Skin temperature, Emotional wellbeing (each of its Emotion and Stress pills) and SpO2 open the four-dots menu → All data; Cycle Calendar opens Period records. If an Emotional wellbeing pill cannot be found, the page's own All data still opens.
+- **Menu and page fixes:** the walk now returns to the card page after an All data list before tapping the next pill or menu item (Emotional wellbeing's second pill and Cycle Calendar's Period records were looked for on the history page, so they were never found); each menu is opened once per item, the menu button and its items are looked for in every Huawei Health window, and a web page's menu gets longer to draw. Slow pages now have 14 seconds to show words, and every Huawei Health window is read, not only the active one: Heart and Emotional wellbeing open their page in a window of its own while a FrameLayout is active, which is why the last probe found no words, no menu button and no pills there.
+- **Sleep days one by one:** a new read opens the newest 14 Sleep days, an all read the newest 31; each day's nights and naps keep their real times.
+- **Controls report:** `SpO₂` and `SpO2` are the same card, so a report no longer says the SpO2 card was never seen when Huawei writes the subscript.
+- **Tests:** `HuaweiWalkTest` covers the order, the two modes, the longer budgets and the canonical `SpO₂`/`SpO2` title. Not run on a phone.
+
 ## 0.228.0
 
 MINT: an IOU is income someone owes the player back, and the Shared bills ledger is gone (owner, 22 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged, because an IOU pays nothing.

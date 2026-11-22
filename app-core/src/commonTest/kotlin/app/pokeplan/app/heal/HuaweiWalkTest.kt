@@ -25,8 +25,8 @@ class HuaweiWalkTest {
     private fun page(vararg dates: String) = ScreenCapture(1, "SportHistoryActivity", listOf(n("first_item_title", description = "November 2026, 6.20 km")) + dates.flatMap { item(it) })
 
     @Test fun cardsAreVisitedInPageOrderAndOnlyTheWantedOnes() {
-        assertEquals(listOf("Exercise records", "Heart", "Weight", "Sleep", "Skin temperature", "SpO₂", "Cycle Calendar", "Emotional wellbeing"), HuaweiWalk.CARDS.map { it.title })
-        assertEquals(listOf("Heart", "Weight", "Sleep", "Skin temperature", "SpO₂", "Cycle Calendar", "Emotional wellbeing"), HuaweiWalk.remaining(setOf("Exercise records")).map { it.title })
+        assertEquals(listOf("Exercise records", "Heart", "Weight", "Sleep", "Skin temperature", "Emotional wellbeing", "SpO₂", "Cycle Calendar"), HuaweiWalk.CARDS.map { it.title })
+        assertEquals(listOf("Heart", "Weight", "Sleep", "Skin temperature", "Emotional wellbeing", "SpO₂", "Cycle Calendar"), HuaweiWalk.remaining(setOf("Exercise records")).map { it.title })
         assertEquals(HuaweiWalk.CARDS.size, HuaweiWalk.remaining(emptySet()).size)
         assertTrue(HuaweiWalk.remaining(HuaweiWalk.CARDS.map { it.title }.toSet()).isEmpty(), "every card opened ends the pass")
         assertEquals(HuaweiWalk.LOOK_SCROLLS, HuaweiWalk.cardFor("Cycle Calendar")?.scrolls, "every card is opened, Cycle Calendar too"); assertNull(HuaweiWalk.cardFor("  "))
@@ -50,8 +50,9 @@ class HuaweiWalkTest {
 
     @Test fun theStepsPageOpensItsFourDotsMenuAndAllData() {
         assertTrue(HuaweiWalk.STEPS.allData)
-        assertEquals(listOf("Heart", "Weight", "Sleep", "Skin temperature", "SpO₂", "Cycle Calendar", "Emotional wellbeing"), HuaweiWalk.CARDS.filter { it.allData }.map { it.title }, "Exercise records is a list already")
+        assertEquals(listOf("Heart", "Weight", "Sleep", "Skin temperature", "Emotional wellbeing", "SpO₂"), HuaweiWalk.CARDS.filter { it.allData }.map { it.title }, "Exercise records is a list already; Cycle Calendar has Period records instead")
         assertEquals("SpO₂", HuaweiWalk.cardFor("SpO2")?.title, "either spelling is the wanted SpO₂ card")
+        assertEquals("SpO2", HuaweiWalk.canonical(" SpO₂ "), "the title is compared without the subscript two")
         assertNull(HuaweiWalk.cardFor("Health Clovers")); assertNull(HuaweiWalk.cardFor("Activity rings"))
         assertEquals(listOf("Period records"), HuaweiWalk.cardFor("Cycle Calendar")!!.menuItems, "its menu also has Period records")
         assertTrue(HuaweiWalk.cardFor("Health Clovers") == null && HuaweiWalk.cardFor("Something new")!!.allData, "almost every other card has All data too")
@@ -90,5 +91,27 @@ class HuaweiWalkTest {
         assertFalse(HuaweiWalk.allDataIsKnown(list("11/14"), null, now, utc), "nothing saved yet")
         assertTrue(HuaweiWalk.exerciseIsKnown(page("November 12", "November 10"), known, now, utc))
         assertFalse(HuaweiWalk.exerciseIsKnown(page("November 14"), known, now, utc).also { }, "a newer session than the newest saved one is not known")
+    }
+
+    @Test fun aScanAllReadOpensEveryPageAgainAndReadsTheLongerLists() {
+        val today = LocalDate(2026, 11, 14)
+        val known = HuaweiWalk.Known(today = today, nightDays = setOf(today), newestDay = mapOf(ReadingGroup.SPO2 to today, ReadingGroup.SKIN_TEMPERATURE to today), newestWeightDay = today)
+        fun card(t: String) = HuaweiWalk.cardFor(t)!!
+        // Scan.NEW keeps the shortcuts; Scan.ALL never skips a card and never stops a list at a saved row.
+        assertTrue(HuaweiWalk.skipCard(card("Sleep"), known, HuaweiWalk.Scan.NEW))
+        assertFalse(HuaweiWalk.skipCard(card("Sleep"), known, HuaweiWalk.Scan.ALL))
+        assertFalse(HuaweiWalk.skipCard(card("Weight"), known, HuaweiWalk.Scan.ALL))
+        fun list(vararg dates: String) = ScreenCapture(1, "PrivacyDataModelActivity", listOf(n("privacy_title", "November 2026")) + dates.flatMap { listOf(n("privacy_content_title", "20.0-21.0°C"), n("privacy_time", it)) })
+        val saved = list("11/14", "11/13")
+        assertTrue(HuaweiWalk.stopAllData(saved, card("SpO2"), known, HuaweiWalk.Scan.NEW, now, utc), "a saved row ends a new-only read")
+        assertFalse(HuaweiWalk.stopAllData(saved, card("SpO2"), known, HuaweiWalk.Scan.ALL, now, utc), "everything is read again")
+        assertFalse(HuaweiWalk.stopExercise(page("November 12"), known, HuaweiWalk.Scan.ALL, now, utc), "the whole Exercise list is read")
+        // The all read gives every page more room and the Sleep list a month of days one by one.
+        assertTrue(HuaweiWalk.pageScrolls(card("Exercise records"), HuaweiWalk.Scan.ALL) > HuaweiWalk.pageScrolls(card("Exercise records"), HuaweiWalk.Scan.NEW))
+        assertTrue(HuaweiWalk.pageScrolls(card("Heart"), HuaweiWalk.Scan.ALL) > HuaweiWalk.pageScrolls(card("Heart"), HuaweiWalk.Scan.NEW))
+        assertTrue(HuaweiWalk.allDataBudget(card("Sleep"), HuaweiWalk.Scan.ALL) > HuaweiWalk.allDataBudget(card("Sleep"), HuaweiWalk.Scan.NEW))
+        assertEquals(HuaweiWalk.SLEEP_ENTRIES, HuaweiWalk.entryBudget(card("Sleep"), HuaweiWalk.Scan.NEW))
+        assertEquals(HuaweiWalk.SLEEP_ENTRIES_ALL, HuaweiWalk.entryBudget(card("Sleep"), HuaweiWalk.Scan.ALL))
+        assertEquals(0, HuaweiWalk.entryBudget(card("Heart"), HuaweiWalk.Scan.ALL))
     }
 }

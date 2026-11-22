@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import app.pokeplan.app.heal.HuaweiControls
+import app.pokeplan.app.heal.HuaweiWalk
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.AppVersion
@@ -42,6 +43,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
     var seen by remember { mutableStateOf(reader.seen()) }
     var note by remember { mutableStateOf<String?>(null) }
     var showing by remember { mutableStateOf(startShowing) }
+    var scanAll by remember { mutableStateOf(false) }
     val clipboard = LocalClipboardManager.current
     val heal = model.heal
     val settings = model.healData.settings
@@ -78,17 +80,30 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                     PixelButton("Open App info", { reader.openAppInfo() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 }
                 if (!state.notificationReading) PixelButton("Turn on notification reading", { reader.openNotificationSettings() }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
-                if (state.screenReading || state.canSwitchItself) PixelButton("Read Huawei Health", {
-                    note = null
-                    val before = reader.seen().screens.size
-                    state = state.copy(walking = true)
-                    reader.walk(heal.huaweiKnown()) { problem ->
-                        seen = reader.seen(); state = reader.state()
-                        heal.markHuaweiRead()
-                        val added = (seen.screens.size - before).coerceAtLeast(0)
-                        note = problem ?: if (added == 0) "No new pages" else "$added new ${if (added == 1) "page" else "pages"}" // copy-ok: result
+                if (state.screenReading || state.canSwitchItself) {
+                    // Two reads (owner, 22 November 2026): only what is new, or every page and its All data again.
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        TabButton("New only", !scanAll, { scanAll = false }, Modifier.weight(1f), enabled = !state.walking)
+                        TabButton("Everything", scanAll, { scanAll = true }, Modifier.weight(1f), enabled = !state.walking)
                     }
-                }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = !state.walking, compact = true, loading = state.walking)
+                    PixelButton(if (scanAll) "Read everything" else "Read new", {
+                        note = null
+                        val before = reader.seen().screens.size
+                        val scan = if (scanAll) HuaweiWalk.Scan.ALL else HuaweiWalk.Scan.NEW
+                        state = state.copy(walking = true)
+                        reader.walk(heal.huaweiKnown(), { problem ->
+                            seen = reader.seen(); state = reader.state()
+                            heal.markHuaweiRead()
+                            val added = (seen.screens.size - before).coerceAtLeast(0)
+                            note = problem ?: when {
+                                added == 0 && scan == HuaweiWalk.Scan.ALL -> "Read everything; no new pages" // copy-ok: result
+                                added == 0 -> "No new pages" // copy-ok: result
+                                scan == HuaweiWalk.Scan.ALL -> "Read everything; $added new ${if (added == 1) "page" else "pages"}" // copy-ok: result
+                                else -> "$added new ${if (added == 1) "page" else "pages"}" // copy-ok: result
+                            }
+                        }, scan)
+                    }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = !state.walking, compact = true, loading = state.walking)
+                }
                 if (state.screenReading && !state.walking) PixelButton("Turn off screen reading", { reader.turnOff() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 Text("Off after each read, for banking apps", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
