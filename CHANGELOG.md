@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.225.4
+
+Performance and battery pass (static audit, no device trace; owner, 21 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged.
+
+- **Nothing runs behind a stopped app.** The 2 Hz tick, the power-saver poll, sprite and status animations, the buddy's drift, the egg wobble, Deep Focus's accelerometer, the Gear sensors, the sound meter, the SOS torch, the Huawei poll and World's wait stop while the app is not in front (`rememberInForeground`). A locked screen is no longer a Deep Focus movement.
+- **Start-up:** the database opens off the main thread behind a small loading screen, and the normal start runs `PRAGMA quick_check` (the full check stays for tests and recovery). The daily sealed backup is WorkManager's: a due copy is asked for at every start and the periodic job runs daily (storage and battery not low, two retries).
+- **Heal** rows are decrypted once per read, not twice (`readOrNull`), without letting an exception leave a surrounding transaction.
+- **Widgets and reminders:** widget bitmaps are capped (512 KB each, 16 MB cached) and widgets are refreshed on leaving the app only after a change to the save or to Mint; a fired reminder reuses its plan, unchanged alarms are not set again (lost ones are), and the boot receiver is not exported.
+- **UI and rules:** the Pokédex is a lazy list; sprite sheets and tables decode off the UI thread; the day dither is built once per size; Mint balances are remembered; the journal field no longer recomposes the screen per key; `GameStore.tick` and the streak do less; a bill's occurrences start at an arithmetic index (`BillOccurrencesWindowTest` checks it against the walk from the first date).
+
 ## 0.225.3
 
 Navigation audit (REP-074; the map and the findings are in `docs/pokelife/evidence/NAVIGATION_AUDIT-2026-11-21.md`). Back behaviour, tab places and the Pokégear overlay; no reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged.

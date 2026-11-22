@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import pokeplan.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.decodeToImageBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.min
 
@@ -35,13 +37,23 @@ internal inline fun <T> orNull(block: () -> T): T? = try {
     null
 }
 
+/**
+ * A bundled picture read and decoded off the UI dispatcher. Compose resources are plain files and `decodeToImageBitmap` is
+ * CPU work: doing it in the composition coroutine made a screen with many first-seen sprites (the Pokédex, the PC, the
+ * Town) drop frames while a dozen PNGs were decoded one after another on the main thread.
+ */
+internal suspend fun decodeAsset(path: String): ImageBitmap? = withContext(Dispatchers.Default) {
+    orNull { Res.readBytes(path).decodeToImageBitmap() }
+}
+
+/** The real game icon of a bag item (Rare Candy, a berry, an evolution stone...). Draws nothing if there is no icon for [itemId]. */
 @Composable
 fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, description: String? = itemId) {
     val path = if (itemId.startsWith("pmd2-")) "files/pmditems/$itemId.png" else "files/items/$itemId.png"
     val bitmap by produceState(cache[path], path) {
         value = cache[path]
         if (value == null) {
-            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
+            value = decodeAsset(path)
             cache[path] = value
         }
     }
@@ -56,7 +68,7 @@ fun BadgeImage(badgeId: Int, modifier: Modifier = Modifier, size: Dp = 32.dp, de
     val bitmap by produceState(cache[path], path) {
         value = cache[path]
         if (value == null) {
-            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
+            value = decodeAsset(path)
             cache[path] = value
         }
     }
@@ -76,7 +88,7 @@ fun Glyph(name: String, tint: Color, modifier: Modifier = Modifier, size: Dp = 2
     val bitmap by produceState(cache[path], path) {
         value = cache[path]
         if (value == null) {
-            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
+            value = decodeAsset(path)
             cache[path] = value
         }
     }
@@ -110,7 +122,7 @@ fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier 
     val bitmap by produceState(cache[name], name) {
         value = cache[name]
         if (value == null) {
-            value = orNull { Res.readBytes("files/sprites/$name.png").decodeToImageBitmap() }
+            value = decodeAsset("files/sprites/$name.png")
             cache[name] = value
         }
     }
@@ -130,7 +142,7 @@ fun NpcPortrait(name: String, modifier: Modifier = Modifier, size: Dp = 200.dp) 
     val bitmap by produceState(cache[path], path) {
         value = cache[path]
         if (value == null) {
-            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
+            value = decodeAsset(path)
             cache[path] = value
         }
     }
@@ -145,7 +157,7 @@ fun TypePlate(type: app.pokeplan.core.dex.PokemonType, modifier: Modifier = Modi
     val bitmap by produceState(cache[path], path) {
         value = cache[path]
         if (value == null) {
-            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
+            value = decodeAsset(path)
             cache[path] = value
         }
     }

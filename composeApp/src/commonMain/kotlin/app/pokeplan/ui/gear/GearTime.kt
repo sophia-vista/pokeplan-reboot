@@ -24,6 +24,7 @@ import app.pokeplan.app.ExactInput
 import app.pokeplan.app.GearTimer
 import app.pokeplan.app.gear.GearTimers
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.gear.QUICK_TIMER_MINUTES
 import app.pokeplan.ui.gear.formatStopwatch
 import app.pokeplan.ui.gear.formatTimer
@@ -147,7 +148,8 @@ internal fun StopwatchTool(model: AppModel, onUse: () -> Unit) {
     val watch = model.data.gear.stopwatch
     var now by remember { mutableLongStateOf(store.nowMillis) }
     val clipboard = LocalClipboardManager.current
-    LaunchedEffect(watch.running) { while (watch.running) { now = store.nowMillis; delay(50) }; now = store.nowMillis }
+    val foreground = rememberInForeground()
+    LaunchedEffect(watch.running, foreground) { while (watch.running && foreground) { now = store.nowMillis; delay(50) }; now = store.nowMillis }
     val elapsed = watch.elapsedAt(now)
     val splits = GearTimers.splits(watch.laps)
     TextBox {

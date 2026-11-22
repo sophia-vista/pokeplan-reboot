@@ -671,16 +671,19 @@ private fun JournalView(model: AppModel) {
     val care = model.care
     val data = model.careData
     val prompt = care.prompt()
-    var text by model::journalDraft
-    LaunchedEffect(Unit) { if (model.journalDraft.isEmpty() && data.journalDraft.isNotEmpty()) model.journalDraft = data.journalDraft }
-    LaunchedEffect(model.journalDraft) { kotlinx.coroutines.delay(1_200); care.setJournalDraft(model.journalDraft) }
+    // The field reads a local copy, not the model's state: binding the editor straight to the model made every keystroke
+    // recompose the whole journal (search results included). The model still keeps the draft for another screen, and the
+    // save debounce still runs.
+    var text by remember { mutableStateOf(model.journalDraft.ifEmpty { data.journalDraft }) }
+    LaunchedEffect(Unit) { model.journalDraft = text }
+    LaunchedEffect(text) { kotlinx.coroutines.delay(1_200); care.setJournalDraft(text) }
     var answering by remember { mutableStateOf<String?>(null) }
     var tags by remember { mutableStateOf(emptySet<String>()) }
     var query by remember { mutableStateOf("") }
     var writtenAt by remember { mutableStateOf<Long?>(null) }
     var editingId by remember { mutableStateOf<String?>(null) }
     fun save() {
-        if (care.write(text, answering, tags, writtenAt) != null) { text = ""; answering = null; tags = emptySet(); writtenAt = null }
+        if (care.write(text, answering, tags, writtenAt) != null) { text = ""; model.journalDraft = ""; answering = null; tags = emptySet(); writtenAt = null }
     }
 
     if (prompt != null && answering == null) TextBox {
@@ -701,7 +704,7 @@ private fun JournalView(model: AppModel) {
                 PixelButton("Not this", { answering = null }, color = Pixel.InkSoft, compact = true)
             }
             PixelField(
-                text, { text = it.take(5_000) }, Modifier.fillMaxWidth(), minLines = 4, label = "Entry",
+                text, { text = it.take(5_000); model.journalDraft = text }, Modifier.fillMaxWidth(), minLines = 4, label = "Entry",
                 placeholder = "Write anything",
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             )

@@ -36,7 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -49,6 +49,7 @@ import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.FocusRules
 import app.pokeplan.plan.Phase
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Stage
@@ -155,8 +156,11 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
     var taskId by remember { mutableStateOf(model.focusTaskId) }
     val tasks = store.todayTasks().filter { it.id !in model.data.pending.map { p -> p.original.id } }
 
-    val idle = rememberInfiniteTransition()
-    val tilt by idle.animateFloat(-2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse))
+    // A slow, small wobble so the egg feels alive while you set up (still when Reduce motion is on). The value is read
+    // in graphicsLayer (draw), so the setup screen does not recompose every frame.
+    val tilt = if (model.data.settings.reduceMotion) null else rememberInfiniteTransition().animateFloat(
+        -2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse),
+    )
     Column(
         Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
         verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -164,7 +168,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
     ) {
         top()
         Stage("bw11", 168.dp) {
-            ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center).rotate(if (model.data.settings.reduceMotion) 0f else tilt))
+            ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center).graphicsLayer { rotationZ = tilt?.value ?: 0f })
         }
 
         TextBox {
@@ -258,9 +262,12 @@ fun FocusWatch(model: AppModel) {
         store.focusEvent(FocusEvent.Returned)
     }
 
+    // Deep Focus: moving the phone ends the session. The accelerometer runs only while the app is in front; a locked
+    // screen is not a movement and must not fail the session.
+    val foreground = rememberInForeground()
     if (session.deepFocus && model.motion != null) {
-        DisposableEffect(session.id) {
-            model.motion.start { store.focusEvent(FocusEvent.Moved) }
+        DisposableEffect(session.id, foreground) {
+            if (foreground) model.motion.start { store.focusEvent(FocusEvent.Moved) }
             onDispose { model.motion.stop() }
         }
     }
@@ -276,12 +283,12 @@ private fun RunningView(model: AppModel) {
     val paused = session.phase is Phase.Paused
     val away = session.phase is Phase.Away
 
-    val wobble = rememberInfiniteTransition()
-    val angle by wobble.animateFloat(
+    // Read in graphicsLayer (draw) instead of composition, and leave the transition out entirely while it must not move.
+    val angle = if (model.data.settings.reduceMotion || paused) null else rememberInfiniteTransition().animateFloat(
         initialValue = -5f, targetValue = 5f,
         animationSpec = infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse),
     )
-    Box(Modifier.rotate(if (model.data.settings.reduceMotion || paused) 0f else angle)) { ItemIcon("mystery-egg", size = 200.dp) }
+    Box(Modifier.graphicsLayer { rotationZ = angle?.value ?: 0f }) { ItemIcon("mystery-egg", size = 200.dp) }
 
     SpeakerBox(model, if (away) Emotion.SIGH else if (paused) Emotion.NORMAL else Emotion.DETERMINED) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {

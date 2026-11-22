@@ -198,6 +198,11 @@ fun UpTo(onUp: () -> Unit) {
 fun SectionScaffold(
     title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, color: Color = Pixel.Chrome,
     trailing: (@Composable () -> Unit)? = null,
+    /**
+     * Whether the body is put in one scrolling column. A screen with its own lazy list (the Pokédex) passes false and fills
+     * the height itself; nesting a lazy list in this column would give it infinite height.
+     */
+    scroll: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val slot = rememberUpSlot()
@@ -206,10 +211,11 @@ fun SectionScaffold(
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = back, color = color, trailing = trailing ?: { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
         UpProvider(slot) {
-            Column(
+            if (scroll) Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                 verticalArrangement = Arrangement.spacedBy(Spacing.M),
             ) { content() }
+            else Box(Modifier.weight(1f).fillMaxWidth()) { content() }
         }
     }
 }

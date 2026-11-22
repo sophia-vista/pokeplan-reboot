@@ -14,6 +14,8 @@ import app.pokeplan.data.DataStore
 import app.pokeplan.data.KeystoreOffPhoneKey
 import app.pokeplan.data.LiveDocuments
 import app.pokeplan.data.OffPhoneBackup
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 object OffPhone {
@@ -95,16 +97,19 @@ object OffPhone {
     class Worker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
         override suspend fun doWork(): Result {
             if (!isSetUp(applicationContext)) return Result.success()
-            if (LiveStore.get(applicationContext) == null) return Result.retry()
-            run(applicationContext, force = false)
-            return Result.success()
+            // A folder that is gone or a passphrase that cannot be read will not mend by retrying; the card says so. Only a store that is not open yet is retried.
+            if (LiveStore.get(applicationContext) == null) return if (runAttemptCount >= 2) Result.failure() else Result.retry()
+            return withContext(Dispatchers.IO) {
+                run(applicationContext, force = false)
+                Result.success()
+            }
         }
     }
 
     private const val WORK = "offphone-backup"
 
     fun schedule(context: Context) {
-        val request = PeriodicWorkRequestBuilder<Worker>(1, TimeUnit.DAYS).setConstraints(Constraints.Builder().setRequiresStorageNotLow(true).build()).build()
+        val request = PeriodicWorkRequestBuilder<Worker>(1, TimeUnit.DAYS).setConstraints(Constraints.Builder().setRequiresStorageNotLow(true).setRequiresBatteryNotLow(true).build()).build()
         WorkManager.getInstance(context.applicationContext).enqueueUniquePeriodicWork(WORK, ExistingPeriodicWorkPolicy.KEEP, request)
     }
 }

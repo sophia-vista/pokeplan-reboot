@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import app.pokeplan.ui.rememberInForeground
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -133,9 +134,12 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     var pitch by remember { mutableStateOf<Float?>(null) }
     var bands by remember { mutableStateOf(FloatArray(0)) }
     var problem by remember { mutableStateOf("") }
-    DisposableEffect(feed) {
+    // Stops the microphone when the app is no longer in front, not only when the tool is left.
+    val foreground = rememberInForeground()
+    DisposableEffect(feed, foreground) {
         var smooth: Float? = null
-        val stop = feed.start({ frame, rate ->
+        var stop: (() -> Unit)? = null
+        if (foreground) stop = feed.start({ frame, rate ->
             val level = SoundMath.dbFs(frame)
             smooth = smooth?.let { it + (level - it) * 0.35f } ?: level
             dbFs = smooth
@@ -148,8 +152,8 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
                 (spec.slice(from until minOf(to, spec.size)).maxOrNull() ?: 0.0).toFloat()
             }
         }, { problem = it })
-        if (stop == null) problem = "No microphone was found."
-        onUse()
+        if (stop == null && foreground) problem = "No microphone was found."
+        if (foreground) onUse()
         onDispose { stop?.invoke() }
     }
     if (problem.isNotEmpty()) return Missing(problem)

@@ -48,20 +48,36 @@ internal object Alarms {
         context: Context, prefsName: String, upcoming: List<T>, key: (T) -> String, atMillis: (T) -> Long,
         intent: (key: String, item: T?, flags: Int) -> PendingIntent?,
         legacy: ((code: Int) -> PendingIntent?)? = null,
+        /** Set after a reboot or a clock change: the phone no longer holds the alarms, though their times look unchanged. */
+        force: Boolean = false,
     ) {
         val alarms = context.getSystemService(AlarmManager::class.java) ?: return
         val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
         val wanted = upcoming.take(MAX_ALARMS).associateBy(key)
+        val times = wanted.mapValues { (_, item) -> atMillis(item) }
         val before = prefs.getStringSet(KEYS, emptySet()).orEmpty()
+        val beforeTimes = prefs.getStringSet(TIMES, emptySet()).orEmpty().mapNotNull { entry ->
+            val at = entry.lastIndexOf('@')
+            if (at <= 0) null else entry.substring(0, at) to entry.substring(at + 1).toLongOrNull()
+        }.toMap()
         for (stale in before) if (stale !in wanted) intent(stale, null, PendingIntent.FLAG_NO_CREATE)?.let { alarms.cancel(it); it.cancel() }
         if (legacy != null && prefs.contains(LEGACY_CODES)) {
             prefs.getStringSet(LEGACY_CODES, emptySet()).orEmpty().mapNotNull { it.toIntOrNull() }.forEach { code -> legacy(code)?.let { alarms.cancel(it); it.cancel() } }
         }
-        for ((k, item) in wanted) set(context, alarms, atMillis(item), intent(k, item, PendingIntent.FLAG_UPDATE_CURRENT)!!)
-        prefs.edit().putStringSet(KEYS, wanted.keys.toSet()).remove(LEGACY_CODES).apply()
+        for ((k, item) in wanted) {
+            // Re-arming an alarm at the time it already has is what Doze throttles; only a changed one is set. A lookup with
+            // FLAG_NO_CREATE catches one the system lost (a force-stop, a reboot whose broadcast was missed) and sets it again.
+            val exists = intent(k, item, PendingIntent.FLAG_NO_CREATE) != null
+            if (force || beforeTimes[k] != times[k] || !exists) set(context, alarms, times.getValue(k), intent(k, item, PendingIntent.FLAG_UPDATE_CURRENT)!!)
+        }
+        prefs.edit()
+            .putStringSet(KEYS, wanted.keys.toSet())
+            .putStringSet(TIMES, wanted.map { (k, item) -> "$k@${times.getValue(k)}" }.toSet())
+            .remove(LEGACY_CODES).apply()
     }
 
     private const val KEYS = "keys"
+    private const val TIMES = "times"
     private const val LEGACY_CODES = "codes"
 
     fun canSetExact(context: Context): Boolean =
