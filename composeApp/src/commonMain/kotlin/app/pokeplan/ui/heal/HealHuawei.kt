@@ -35,10 +35,6 @@ import app.pokeplan.ui.screens.PixelTimeField
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 
-/**
- * Heal → Connections → Huawei Health, probe stage (INTEGRATIONS_AND_PRIVACY.md 5.2.2): turn on the two readers in Android's settings, read Huawei Health on a
- * tap, see what was seen, and copy it with every number hidden. Nothing here is saved or paid.
- */
 @Composable
 internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing: Boolean = false) {
     var state by remember { mutableStateOf(reader.state()) }
@@ -95,7 +91,6 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                 if (state.screenReading && !state.walking) PixelButton("Turn off screen reading", { reader.turnOff() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 Text("Off after each read, for banking apps", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
-            // What the pages hold as Heal records, previewed before anything is saved (HEAL.md 10.3); Huawei sessions pay like ones logged by hand.
             val read = remember(seen) { heal.readHuawei(seen) }
             val plan = remember(read, model.healData) { heal.previewImport(read) }
             if (!plan.isEmpty && dismissed != seen.screens.size) ImportPreview(plan,

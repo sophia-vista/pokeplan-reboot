@@ -60,7 +60,6 @@ internal fun PerkBucket.label() = when (this) {
     PerkBucket.COINS -> "Poké"
 }
 
-/** What a bucket does, in one line, so a percentage means something. */
 private fun PerkBucket.effect() = when (this) {
     PerkBucket.EGG_LUCK -> "rarer eggs"
     PerkBucket.CANDY_YIELD -> "more Exp. Candies from tasks"
@@ -86,10 +85,8 @@ private fun PerkSource.Kind.label() = when (this) {
     PerkSource.Kind.GUARDIAN -> "Guardian"
 }
 
-/** "+0.4%" under 10 (early perks are small, and should still read as something), "+12%" above. */
 internal fun pct(v: Double): String = if (v < 10) "+${(v * 10).roundToInt() / 10.0}%".replace(".0%", "%") else "+${v.roundToInt()}%"
 
-/** One bucket's total as a row: its name, a bar out of [cap] and the percent. Both parties' perk cards use it. */
 @Composable
 private fun PerkRow(label: String, value: Double, cap: Double) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -99,11 +96,6 @@ private fun PerkRow(label: String, value: Double, cap: Double) {
     }
 }
 
-/**
- * The party's perks, bucket by bucket: the total that applies now and, opened, where every part of it comes from (the
- * buddy's types and ability, its held item, the rest of the party, and Guardians, which sit outside the cap). Before the
- * rank that opens them it says when they will show; they already count.
- */
 @Composable
 fun PartyPerksCard(model: AppModel) {
     val store = model.store
@@ -136,16 +128,11 @@ fun PartyPerksCard(model: AppModel) {
                         Text("  ${pct(s.percent)} ${s.from} (${s.kind.label()}$whenText)", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     }
                 }
-                // Help: perks are capped per bucket (buddy, held item and party; Guardians on top) and only change what the module pays.
             }
         }
     }
 }
 
-/**
- * Care's party perks, laid out like [PartyPerksCard]: each bucket's total from the lead and the rest of Care's party and,
- * opened, where every part comes from. Like Plan's, they show from the rank that opens party perks.
- */
 @Composable
 fun CarePerksCard(model: AppModel) {
     val player = model.data.player
@@ -182,7 +169,6 @@ fun CarePerksCard(model: AppModel) {
     }
 }
 
-/** Heal's party perks, laid out like [CarePerksCard]. They only change what Field Research pays; nothing in HEAL's records depends on them. */
 @Composable
 fun HealPerksCard(model: AppModel) {
     val player = model.data.player
@@ -205,7 +191,6 @@ fun HealPerksCard(model: AppModel) {
     }
 }
 
-/** Mint's party perks, laid out like [CarePerksCard]. They only change what Ledger Research pays; nothing in MINT's records depends on them. */
 @Composable
 fun MintPerksCard(model: AppModel) {
     val player = model.data.player
@@ -228,7 +213,6 @@ fun MintPerksCard(model: AppModel) {
     }
 }
 
-/** Home's party perks, laid out like [MintPerksCard]. They only change what Habitat Discovery pays; nothing in HOME's records depends on them. */
 @Composable
 fun BasePerksCard(model: AppModel) {
     val player = model.data.player
@@ -251,7 +235,6 @@ fun BasePerksCard(model: AppModel) {
     }
 }
 
-/** Link's party perks, laid out like [LinkPerksCard]. They only change what Postcard Trail pays; nothing in LINK's records depends on them. */
 @Composable
 fun LinkPerksCard(model: AppModel) {
     val player = model.data.player
@@ -274,7 +257,6 @@ fun LinkPerksCard(model: AppModel) {
     }
 }
 
-/** One Pokémon's own perks (what it gives as the buddy, and as an assist) and its held item, with Give and Take. */
 @Composable
 fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
     val store = model.store

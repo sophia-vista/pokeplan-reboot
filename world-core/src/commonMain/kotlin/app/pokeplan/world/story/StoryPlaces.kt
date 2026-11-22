@@ -1,13 +1,6 @@
 package app.pokeplan.world.story
 
-/**
- * The real places of the two Mystery Dungeon games that scenes are set on: a scene's background "map:<name>" is a ground map of Red Rescue Team
- * (`assets/rescue-maps`, the name lower-cased with hyphens) or of Explorers of Sky (`assets/sky-maps`, "sky-<code>" lower-cased), bundled by
- * `composeApp/build.gradle.kts` (`storyRescueMaps`, `storySkyMaps`). "fa-..." is a Rescue Team Friend Area. A place that is a dungeon is
- * drawn with [StoryScene.dungeonId]'s tiles instead.
- */
 internal object StoryPlaces {
-    // Red Rescue Team
     const val SQUARE_TOWN = "map:pokemon-square"
     const val SQUARE_VILLAGE = "map:square"
     const val DOJO = "map:makuhita-dojo"
@@ -35,7 +28,6 @@ internal object StoryPlaces {
     const val HEALING_FOREST = "fa-healing-forest"
     const val OVERGROWN_FOREST = "fa-overgrown-forest"
 
-    // Explorers of Sky (the codes name the ground map: T Treasure Town, G the Guild, V and P scenes, H cliffs, D dungeon backgrounds)
     const val TREASURE_TOWN = "map:sky-t00p02"
     const val TREASURE_TOWN_EAST = "map:sky-t00p03"
     const val GUILD_GATE = "map:sky-g01p01a"

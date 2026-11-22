@@ -12,10 +12,10 @@ class SensorMathTest {
 
     @Test fun headingFromGravityAndTheMagneticField() {
         val flat = floatArrayOf(0f, 0f, 9.8f)
-        near(SensorMath.heading(flat, floatArrayOf(0f, 20f, -40f)), 0f)      // north is straight ahead
-        near(SensorMath.heading(flat, floatArrayOf(-20f, 0f, -40f)), 90f)    // north is to the left: facing east
-        near(SensorMath.heading(flat, floatArrayOf(0f, -20f, -40f)), 180f)   // facing south
-        near(SensorMath.heading(flat, floatArrayOf(20f, 0f, -40f)), 270f)    // facing west
+        near(SensorMath.heading(flat, floatArrayOf(0f, 20f, -40f)), 0f)
+        near(SensorMath.heading(flat, floatArrayOf(-20f, 0f, -40f)), 90f)
+        near(SensorMath.heading(flat, floatArrayOf(0f, -20f, -40f)), 180f)
+        near(SensorMath.heading(flat, floatArrayOf(20f, 0f, -40f)), 270f)
         assertNull(SensorMath.heading(floatArrayOf(0f, 0f, 0f), floatArrayOf(0f, 20f, 0f)), "no gravity")
         assertNull(SensorMath.heading(flat, floatArrayOf(0f, 0f, -40f)), "a field straight down gives no direction")
     }

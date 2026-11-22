@@ -18,10 +18,6 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 
-/**
- * The phone's calendars through Android's calendar provider, where Google Calendar (and any other synced account) keeps
- * its events. Read-only. Must be made in the activity's onCreate, since it registers the permission request.
- */
 class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource {
     private var pending: ((Boolean) -> Unit)? = null
     private val launcher = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -63,7 +59,6 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
     override fun events(calendarIds: Set<Long>, from: LocalDate, to: LocalDate): List<CalendarEvent> {
         if (calendarIds.isEmpty() || !permitted()) return emptyList()
         val zone = TimeZone.currentSystemDefault()
-        // A day either side: all-day events are stored in UTC, so they can sit just outside the local range.
         val begin = from.minus(DatePeriod(days = 1)).atStartOfDayIn(zone).toEpochMilliseconds()
         val end = to.plus(DatePeriod(days = 2)).atStartOfDayIn(zone).toEpochMilliseconds()
         val uri = CalendarContract.Instances.CONTENT_URI.buildUpon().also {
@@ -75,7 +70,6 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
             CalendarContract.Instances.TITLE, CalendarContract.Instances.ALL_DAY, CalendarContract.Instances.CALENDAR_ID,
             CalendarContract.Instances.ACCESS_LEVEL, CalendarContract.Instances.DISPLAY_COLOR,
         )
-        // Both statuses can be null (an event with no attendees), which a plain != would drop.
         val status = CalendarContract.Instances.STATUS
         val mine = CalendarContract.Instances.SELF_ATTENDEE_STATUS
         val selection = "${CalendarContract.Instances.CALENDAR_ID} IN (${calendarIds.joinToString(",")})" +
@@ -86,7 +80,6 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
             activity.contentResolver.query(uri, columns, selection, null, "${CalendarContract.Instances.BEGIN}")?.use { c ->
                 while (c.moveToNext()) {
                     val allDay = c.getInt(4) == 1
-                    // All-day events are midnight to midnight in UTC; timed ones are instants shown in the phone's zone.
                     val eventZone = if (allDay) TimeZone.UTC else zone
                     val start = Instant.fromEpochMilliseconds(c.getLong(1)).toLocalDateTime(eventZone)
                     val finish = Instant.fromEpochMilliseconds(c.getLong(2)).toLocalDateTime(eventZone)

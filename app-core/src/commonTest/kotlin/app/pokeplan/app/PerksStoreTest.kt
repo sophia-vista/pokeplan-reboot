@@ -37,11 +37,9 @@ class PerksStoreTest {
     private val clock = FakeClock(start)
     private val s = GameStore(storage, clock, utc, Random(7)).also {
         it.start("Sophia", 25)
-        // The perks come from Plan's party, so the starter works there (and is no longer the buddy: one place only).
         it.setInParty(it.data.player.buddyId!!, true)
     }
 
-    /** Changes the save behind the store's back, the way a widget would, and picks it up. */
     private fun edit(change: (AppData) -> AppData) {
         storage.save(GameStore.json.encodeToString(AppData.serializer(), change(s.data)))
         s.reload()
@@ -128,12 +126,10 @@ class PerksStoreTest {
 
     @Test
     fun theStreakKeeperPerkForgivesASecondMissedDay() {
-        // Active Monday to Wednesday and Saturday: Thursday and Friday are missed, which needs two free misses.
         val days = listOf(19, 20, 21, 24).map { LocalDate(2026, 10, it) }.toSet()
         clock.millis = LocalDateTime(2026, 10, 24, 12, 0).toInstant(utc).toEpochMilliseconds()
         edit { it.copy(activeDays = days) }
         assertEquals(1, s.streak.current, "one free miss a week: the streak restarts on Saturday")
-        // A strong Streak keeper perk: a Water Tera type, a Regenerator ability and Leftovers on a fond buddy.
         give("leftovers")
         s.holdItem(buddy.id, "leftovers")
         editBuddy { it.withAbility("Regenerator").withTeraType(PokemonType.WATER).copy(level = 50, friendship = 255) }

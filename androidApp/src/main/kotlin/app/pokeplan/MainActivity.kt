@@ -65,10 +65,8 @@ import app.pokeplan.platform.AndroidTorch
 import app.pokeplan.platform.androidGearServices
 
 class MainActivity : ComponentActivity() {
-    /** Fires when the app comes back to the front: a widget may have changed the save meanwhile. */
     private val resumes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
-    /** A widget tap or shortcut while the app is already open (the activity is single-instance). */
     private val launches = MutableSharedFlow<AppLaunch>(extraBufferCapacity = 1)
     private var created = false
 
@@ -86,12 +84,10 @@ class MainActivity : ComponentActivity() {
     private var careWidgetSignature: Int? = null
     private var routineRefresh: Job? = null
 
-    /** One flashlight for the activity: its state is kept true by a callback, and it is turned off when the activity stops. */
     private val torch by lazy { AndroidTorch(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // The red header colour runs under the status bar (light icons) and the white tab bar under the navigation bar (dark icons).
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
@@ -100,19 +96,13 @@ class MainActivity : ComponentActivity() {
         val motion = AccelerometerMotion(this)
         val calendars = AndroidCalendars(this)
         val contacts = AndroidContacts(this)
-        // The field tools' location, microphone, network and scanner (their permission launchers are registered here, before the activity starts).
         val gearServices = androidGearServices(this)
-        // The sensors (the step counter's permission launcher is registered here, before the activity starts).
         val sensors = AndroidSensorFeed(this)
-        // The backup file pickers are registered here too, before the activity starts.
         val backups = AndroidBackups(this)
-        // Mint's optional gate asks the phone's own screen lock; its launcher is registered here too.
         val gate = AndroidDeviceGate(this).also { deviceGate = it }
-        // Heal's Health Connect and Mint's statement file picker: both register their result launchers here, before the activity starts.
         val health = AndroidHealthConnect(this)
         val textFiles = AndroidTextFiles(this)
         val images = AndroidImagePicker(this)
-        // A widget can open the app on a place ("FOCUS" for the Start focus widget).
         val first = launchFrom(intent)
         val place = first.place ?: Place.HOME
         setContent {
@@ -157,15 +147,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The tab bar under the navigation bar is dark in dark mode, so the navigation bar icons turn light. */
     private fun matchSystemBars(dark: Boolean) {
         androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !dark
     }
 
-    /**
-     * Brings the widgets up to date when something they show changes (the buddy, its level, a berry, a session, today's
-     * tasks), a moment after the last change so a burst of saves refreshes them once.
-     */
     private fun keepWidgetsCurrent(data: AppData) {
         keepScreenOn(data.focus != null)
         keepRemindersCurrent(data)
@@ -195,17 +180,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Sets the reminder alarms again when the reminders to come change, a moment after the last change: task reminders,
-     * the halfway and end alerts of a running focus session, the streak reminder and the weekly recap.
-     */
     private fun keepRemindersCurrent(data: AppData) {
         val now = System.currentTimeMillis()
         val zone = TimeZone.currentSystemDefault()
         val upcoming = data.upcomingReminders(now, zone)
         val alerts = AppAlerts.plan(data, now, zone)
         if (upcoming.isNotEmpty() || alerts.sessionId != null || alerts.timer != null || data.activeDays.isNotEmpty()) askForNotifications()
-        // The streak reminder and the recap are shared-scheduler requests now, so what plans them is part of the signature.
         val s = data.settings
         val nudges = listOf(s.streakReminder, s.streakReminderHour, s.weeklyRecap, s.quietHours)
         val signature = listOf(upcoming.map { it.taskId to it.atMillis }, alerts, nudges).hashCode()
@@ -224,7 +204,6 @@ class MainActivity : ComponentActivity() {
     private fun careChanged(data: CareData) {
         careData = data
         keepRoutineRemindersCurrent()
-        // The Care widget shows today's routines, their ticks and the diary card.
         val signature = listOf(data.routines.map { listOf(it.id, it.title, it.icon, it.time, it.days, it.archived, it.completions.maxOrNull()) }, data.diary.maxOfOrNull { it.day }).hashCode()
         if (careWidgetSignature == null) {
             careWidgetSignature = signature
@@ -244,7 +223,6 @@ class MainActivity : ComponentActivity() {
     private var healSignature: Int? = null
     private var healRefresh: Job? = null
 
-    /** Sets Heal's hydration reminders again when the times, the target or the day's total change, a moment after the last change. Nothing else of Heal leaves the module. */
     private fun healChanged(data: HealData) {
         val app = appData ?: return
         val upcoming = HealReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
@@ -264,7 +242,6 @@ class MainActivity : ComponentActivity() {
     private var lastMint: MintData? = null
     private var mintRefresh: Job? = null
 
-    /** Sets Mint's bill reminders again when a bill, a payment or a reminder setting changes, a moment after the last change. Nothing of Mint leaves the module but the reminder's own id and day. */
     private fun mintChanged(data: MintData) {
         // The Mint widgets show balances and bills that are not part of the main signature.
         if (lastMint != null && data !== lastMint) widgetsDirty = true
@@ -286,7 +263,6 @@ class MainActivity : ComponentActivity() {
     private var homeSignature: Int? = null
     private var homeRefresh: Job? = null
 
-    /** Sets Home's reminders again when a chore, a schedule, a supply, a warranty or a reminder setting changes, a moment after the last change. Nothing of Home leaves the module but a reminder's own id, kind and day. */
     private fun homeChanged(data: BaseData) {
         val app = appData ?: return
         val upcoming = BaseReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
@@ -305,11 +281,9 @@ class MainActivity : ComponentActivity() {
     private var linkSignature: Int? = null
     private var linkRefresh: Job? = null
 
-    /** Sets Link's reminders again when a date, a follow-up or a reminder setting changes, a moment after the last change. Nothing of Link leaves the module but a reminder's own id, kind and day. */
     private fun linkChanged(data: LinkData) {
         val app = appData ?: return
         val upcoming = LinkReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
-        // Ask as soon as any reminder is set, not only when one falls in the next few days: a birthday chosen months ahead must still be able to notify.
         if (upcoming.isNotEmpty() || (data.settings.reminders && (data.dates.any { it.remindDays != null } || data.followUps.any { it.remind }))) askForNotifications()
         val signature = upcoming.map { Triple(it.recordId, it.kind, it.atMillis) }.hashCode()
         if (linkSignature == null) { linkSignature = signature; if (upcoming.isEmpty()) return }
@@ -322,7 +296,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** Sets Care's routine reminders again when they change (a routine, a tick, a focus session), a moment after the last change. */
     private fun keepRoutineRemindersCurrent() {
         val app = appData ?: return
         val care = careData ?: return
@@ -338,7 +311,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** Android 13 and later ask before an app may notify: asked once, the first time a reminder is set. */
     private fun askForNotifications() {
         if (Build.VERSION.SDK_INT < 33) return
         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return
@@ -348,19 +320,16 @@ class MainActivity : ComponentActivity() {
         runOnUiThread { requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1) }
     }
 
-    /** The screen stays on while a focus session runs, so the timer stays visible. */
     private fun keepScreenOn(on: Boolean) = runOnUiThread {
         if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     private fun launchFrom(intent: Intent?): AppLaunch {
-        // Text shared to PokéLife from another app's Share sheet lands in the Planner's quick add; nothing is added until the player says so.
         val shared = intent?.takeIf { it.action == Intent.ACTION_SEND && it.type?.startsWith("text/") == true }
             ?.let { it.getStringExtra(Intent.EXTRA_TEXT) ?: it.getStringExtra(Intent.EXTRA_SUBJECT) }?.takeIf { it.isNotBlank() }
         return AppLaunch(
             place = if (shared != null) Place.PLANNER else intent?.getStringExtra(EXTRA_TAB)?.let { name -> Place.entries.firstOrNull { it.name == name } },
             pokemon = intent?.getStringExtra(EXTRA_POKEMON),
-            // A shortcut's extra may arrive as a boolean or as text.
             addTask = intent?.extras?.get(EXTRA_ADD_TASK)?.toString() == "true",
             sharedText = shared,
         )
@@ -374,13 +343,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        app.pokeplan.huawei.AndroidHuaweiReader(this).sync() // rebinds the step-notification listener when granted (REP-055)
-        // The first resume follows onCreate, which has just read the save.
+        app.pokeplan.huawei.AndroidHuaweiReader(this).sync()
         if (created) resumes.tryEmit(Unit)
         created = true
     }
 
-    /** Leaving the app: bring the widgets up to date with what just happened. */
     override fun onStop() {
         torch.release()
         deviceGate?.left()

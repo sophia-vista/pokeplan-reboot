@@ -24,33 +24,17 @@ import app.pokeplan.app.gear.timersDismissFinished
 import app.pokeplan.app.gear.timersTick
 import app.pokeplan.app.world.worldSettle
 
-/**
- * The app's own notifications beyond task reminders: the halfway and end alerts of a focus session, the evening streak
- * reminder and the Sunday recap. When they are due comes from the pure rules in [Nudges]; this sets an alarm for each and
- * [NudgeReceiver] checks the save again when one goes off (the save may have changed since). The app calls [schedule]
- * whenever one of the times changes, and a fired alarm or a reboot calls [rescheduleFromSave].
- *
- * None of these counts as leaving the app: a notification posted by the app never pauses its activity, and none uses a
- * full-screen intent, so a running focus session never sees them as "Left".
- */
 object AppAlerts {
     enum class Kind(val code: Int, val channel: String, val notificationId: Int) {
         HALFWAY(9101, Channels.FOCUS_HALFWAY, 7101),
         END(9102, Channels.FOCUS_END, 7102),
-        /**
-         * The evening streak reminder and the Sunday recap now go through the shared scheduler ([SharedReminders], Plan's adapter), which shows them here.
-         * The four kinds below keep their notification ids and channel; as alarms they are legacy: [schedule] cancels any an older version set, and one that
-         * still fires does nothing.
-         */
         STREAK(9103, Channels.EVENING_NUDGES, 7103),
         RECAP(9104, Channels.EVENING_NUDGES, 7104),
         STREAK_LATER(9105, Channels.EVENING_NUDGES, 7103),
         RECAP_LATER(9106, Channels.EVENING_NUDGES, 7104),
 
-        /** A World job an exploring team finishes: set for the earliest, checked against the settled World when it goes off. */
         JOB(9107, Channels.WORLD_JOBS, 7107),
 
-        /** A Pokégear timer running out: set for the earliest running one, the notification says which have finished. */
         TIMER(9108, Channels.GEAR_TIMERS, 7108),
     }
 
@@ -58,7 +42,6 @@ object AppAlerts {
     const val EXTRA_KIND = "kind"
     const val EXTRA_SESSION = "session"
 
-    /** What the alarms should be: when each one goes off, and the running session they belong to. Equal plans need no new alarms. */
     data class Plan(val halfway: Long?, val end: Long?, val sessionId: String?, val job: Long? = null, val timer: Long? = null)
 
     fun plan(data: AppData, nowMillis: Long, zone: TimeZone): Plan {
@@ -74,7 +57,6 @@ object AppAlerts {
 
     fun schedule(context: Context, plan: Plan) {
         val alarms = context.getSystemService(AlarmManager::class.java) ?: return
-        // A session that ended, failed or was given up takes its halfway notification with it.
         if (plan.sessionId == null) cancel(context, Kind.HALFWAY)
         set(context, alarms, Kind.HALFWAY, plan.halfway, plan.sessionId, exact = true)
         set(context, alarms, Kind.END, plan.end, plan.sessionId, exact = true)
@@ -88,7 +70,6 @@ object AppAlerts {
         schedule(context, plan(store.data, store.nowMillis, TimeZone.currentSystemDefault()))
     }
 
-    /** Sets the alarm for [kind] at [atMillis], or cancels it when that is null (switched off, failed, given up, past). */
     internal fun set(context: Context, alarms: AlarmManager, kind: Kind, atMillis: Long?, sessionId: String?, exact: Boolean) {
         if (atMillis == null) {
             pending(context, kind, null, PendingIntent.FLAG_NO_CREATE)?.let { alarms.cancel(it); it.cancel() }
@@ -137,7 +118,6 @@ object AppAlerts {
     const val ACTION_TIMER_STOP = "app.pokeplan.reminders.TIMER_STOP"
     const val ACTION_TIMER_PLUS = "app.pokeplan.reminders.TIMER_PLUS"
 
-    /** The notification of timers that ran out ([labels]): Stop and +1 min, each a broadcast that only acts on timers still ringing, so a second tap changes nothing. */
     fun showTimers(context: Context, labels: List<String>) {
         channels(context) ?: return
         fun action(code: Int, name: String) = PendingIntent.getBroadcast(context, code, Intent(context, TimerActionReceiver::class.java).setAction(name), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -162,11 +142,9 @@ object AppAlerts {
         context.getSystemService(NotificationManager::class.java)?.cancel(kind.notificationId)
     }
 
-    /** The running session at [nowMillis], with a lapsed grace period or timer applied; null when there is none. */
     fun sessionAt(data: AppData, nowMillis: Long): FocusSession? = data.focus?.tick(nowMillis)
 }
 
-/** An alarm of [AppAlerts] going off. */
 class NudgeReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val kind = intent.getStringExtra(AppAlerts.EXTRA_KIND)?.let { name -> AppAlerts.Kind.entries.firstOrNull { it.name == name } } ?: return
@@ -183,7 +161,6 @@ class NudgeReceiver : BroadcastReceiver() {
         val session = AppAlerts.sessionAt(data, now)
         when (kind) {
             AppAlerts.Kind.HALFWAY -> {
-                // Only for the session it was set for, and only while it is still going: not failed, given up or paused.
                 if (session != null && session.id == sessionId && data.settings.focusHalfway && (session.phase is Phase.Running || session.phase is Phase.Away)) {
                     val minutes = ((session.remainingMillis(now) + 59_999) / 60_000).coerceAtLeast(1)
                     AppAlerts.show(context, kind, "Halfway there", "$minutes min to go. Your Egg is warming up.", Place.FOCUS.name)
@@ -194,16 +171,13 @@ class NudgeReceiver : BroadcastReceiver() {
                     AppAlerts.show(context, kind, "Focus time is up", "Open PokéLife to see your Egg hatch.", Place.FOCUS.name)
                 }
             }
-            // Legacy alarms of an older version: the shared scheduler owns these two now.
             AppAlerts.Kind.STREAK, AppAlerts.Kind.STREAK_LATER, AppAlerts.Kind.RECAP, AppAlerts.Kind.RECAP_LATER -> Unit
             AppAlerts.Kind.TIMER -> {
-                // Mark what ran out and announce every timer that is still ringing (the player may have stopped one in the app already).
                 store.timersTick()
                 val ringing = store.data.gear.timers.filter { it.finished }.map { it.label }
                 if (ringing.isNotEmpty()) AppAlerts.showTimers(context, ringing)
             }
             AppAlerts.Kind.JOB -> {
-                // The alarm is for the moment a team finishes a job: settle World, then announce only jobs that really are done and unclaimed.
                 if (data.settings.worldJobAlerts) {
                     store.worldSettle()
                     val done = store.data.world.missions.filter { it.done }.mapNotNull { app.pokeplan.world.Missions.byId(it.id)?.title }
@@ -218,7 +192,6 @@ class NudgeReceiver : BroadcastReceiver() {
     }
 }
 
-/** A tap on Stop or +1 min in a timer's notification. Each acts only on timers that are still ringing, so a repeated tap does nothing more. */
 class TimerActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext

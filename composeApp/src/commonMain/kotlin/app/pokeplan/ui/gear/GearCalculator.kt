@@ -33,12 +33,6 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
 import app.pokeplan.app.gear.changeGear
 
-/**
- * The Pokégear calculator: one expression with the usual order of operations (`2 + 3 × 4` is 14), brackets, percentages, a scientific panel,
- * a memory slot and an optional history. The expression is a text field, so a number or a whole sum can be pasted, and the keys add to it.
- * The result is shown as you type; an error is shown only after `=` (and says what is wrong). The history is off until the player turns it on
- * and stays on this device. Nothing here pays or records anything else.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
@@ -48,15 +42,12 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
     var answered by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
     var scientific by remember { mutableStateOf(false) }
-    // The last answer `=` gave, for the Ans key.
     var lastAnswer by remember { mutableStateOf<String?>(null) }
     val clipboard = LocalClipboardManager.current
     val live = if (expr.isBlank()) null else CalcEngine.evaluate(expr, gear.calcDegrees)
     val liveValue = (live as? CalcResult.Value)
 
-    /** Typing in the field is not an action that moves the helper (GEAR.md 6); the Del key is. */
     fun edit(text: String) { expr = text.take(200); answered = false; showError = false }
-    // After an answer, a digit or function starts a new sum, while an operator carries on from the answer.
     fun key(token: String, startsNew: Boolean = false) {
         expr = (if (answered && startsNew) "" else expr) + token
         answered = false; showError = false; onUse()

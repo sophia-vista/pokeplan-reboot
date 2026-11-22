@@ -1,21 +1,4 @@
 #!/usr/bin/env python3
-"""Render every effect animation of Pokémon Mystery Dungeon: Explorers of Sky (USA) from the ROM.
-
-The ROM is not in the repo: pass one whose SHA-1 is 5fa96ca8d8dd6405d6cd2bad73ed68bc73a9d152. EFFECT/effect.bin packs the
-game's move, status, trap and cutscene effects as WAN sprites (files 0 to 267; 268 to 291 are screen effects and data, 292
-the shared palette the others borrow rows from). Each animation of each file is rendered as one strip of equal frames, read
-with SkyTemple's file-format library (`pip install ndspy skytemple-files "pillow<11"`).
-
-Writes:
-- rip/sky/effects/fx-FFF-AA.png (file FFF, animation AA) and effects.tsv: frames, frame size, the origin (where the game puts
-  the effect's anchor, usually the Pokémon it plays on) inside a frame, and each frame's duration in the game's 1/60 s ticks;
-- the traps' own effects for the launcher's dungeon floor (LAUNCHER.md 4.5): the game's table (overlay 10,
-  `TRAP_ANIMATION_INFO`, then `EFFECT_ANIMATION_INFO`) says which animation each trap plays; the ones the town uses go to
-  assets/tiles/trap-<name>.png with trap-fx.tsv. Files of the other kind (SkyTemple cannot draw them yet) are left out.
-Nintendo / Chunsoft art: private use only.
-
-Usage: python3 tools/sprites/extract_sky_effects.py ROM.nds
-"""
 import contextlib
 import hashlib
 import io
@@ -34,13 +17,11 @@ ROOT = Path(__file__).resolve().parents[2]
 RIP = ROOT / "rip" / "sky" / "effects"
 TILES = ROOT / "assets" / "tiles"
 
-# The traps of the town (FloorTrap in launcher/DungeonFloor.kt) by their game number; the others have no effect of their own
-# (Warp, Trip, Wonder Tile) or one SkyTemple cannot draw (Slumber's is of the other kind).
 TRAPS = {"spin": 8, "gust": 7, "slow": 10}
-TRAP_ANIMATION_INFO = 0xAFD0   # overlay 10, NA: u16 effect animation id per trap (26)
-EFFECT_ANIMATION_INFO = 0xFAAC  # overlay 10, NA: 28-byte entries (kind, file, ?, animation, sound, ...)
-LONGEST_FRAME = 30              # a frame the game holds for ever (it waits for the next step) is shown half a second
-ANCHOR = (256, 512)             # where SkyTemple's frame coordinates put the effect's anchor (every effect is centred on x 256)
+TRAP_ANIMATION_INFO = 0xAFD0
+EFFECT_ANIMATION_INFO = 0xFAAC
+LONGEST_FRAME = 30
+ANCHOR = (256, 512)
 
 
 def load(pack, i):
@@ -52,7 +33,6 @@ def load(pack, i):
 
 
 def render(w, seq):
-    """One strip of the frames of [seq], the frame size, the origin in a frame and the durations; None if it draws nothing."""
     if any(fr.frmIndex >= len(w.frameData) for fr in seq):
         return None
     box = (10000, 10000, -1, -1)

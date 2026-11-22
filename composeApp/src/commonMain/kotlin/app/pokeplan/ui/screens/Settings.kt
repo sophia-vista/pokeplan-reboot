@@ -62,7 +62,6 @@ import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 
-/** General: what every module shares, with the trainer's name first (Me, Settings, General). */
 @Composable
 internal fun GeneralSettings(model: AppModel) {
     val store = model.store
@@ -74,7 +73,6 @@ internal fun GeneralSettings(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Trainer name", "user")
-            // Saved when the keyboard says Done and when the page is left; no separate key.
             PixelField(
                 name, { name = it.take(24) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
@@ -82,7 +80,6 @@ internal fun GeneralSettings(model: AppModel) {
             )
         }
     }
-    // Settings come in small groups, one card each, so a setting is found by its group rather than by reading a long list.
     SettingsGroup("Sound and touch", "volume-2") {
         VolumeRow("Sound effects", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
         VolumeRow("Pokémon cries", if (settings.criesVolume < 0) settings.effectsVolume else settings.criesVolume) { v -> store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }
@@ -116,10 +113,6 @@ internal fun GeneralSettings(model: AppModel) {
     }
 }
 
-/**
- * Notifications, in one place: what Android allows, the quiet hours every reminder respects, and one switch for each module's reminders (a module keeps
- * its own lead time and hour). Permissions are read again when the player comes back from the phone's settings.
- */
 @Composable
 internal fun NotificationSettings(model: AppModel) {
     val store = model.store
@@ -160,7 +153,6 @@ internal fun NotificationSettings(model: AppModel) {
     }
 }
 
-/** What Android allows, as a label, its state at the end of the line, and a key to the phone's screen for it while it is off. */
 @Composable
 private fun PermissionRow(label: String, allowed: Boolean, action: String, open: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -170,10 +162,6 @@ private fun PermissionRow(label: String, allowed: Boolean, action: String, open:
     }
 }
 
-/**
- * Privacy and access: the phone's screen lock in front of each private module, Mint included (one door for all, here; Mint's own records stay sealed either way).
- * Only where the phone has a lock to ask.
- */
 @Composable
 internal fun PrivacySettings(model: AppModel) {
     val gate = model.gate
@@ -197,7 +185,6 @@ internal fun PrivacySettings(model: AppModel) {
     }
 }
 
-/** Which of the phone's calendars show on Planner → Calendar. Only where the platform can read them (Android). */
 @Composable
 internal fun CalendarsCard(model: AppModel) {
     val source = model.calendars ?: return
@@ -209,7 +196,6 @@ internal fun CalendarsCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Calendars", "calendar")
-            // Help: phone calendars show on Planner, Calendar; they are read-only and never pay.
             val list = calendars
             when {
                 !permitted -> PixelButton("Choose calendars", { source.requestPermission { permitted = it } }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
@@ -224,10 +210,6 @@ internal fun CalendarsCard(model: AppModel) {
     }
 }
 
-/**
- * Backups (Android): the app's own daily ones, a copy saved anywhere as one file, and restoring either. A chosen file is read and checked whole
- * before anything is asked; restoring replaces what is on the phone but keeps it aside, and asks first.
- */
 @Composable
 internal fun BackupsCard(model: AppModel) {
     val backups = model.backups ?: return
@@ -246,7 +228,6 @@ internal fun BackupsCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Complete backup", "download")
             if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
-            // Help: a copy is made every day, sealed to this phone (the last seven days, then one a week for four weeks).
             Text(entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}" } ?: "No backup yet", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Tone, compact = true)
@@ -254,7 +235,6 @@ internal fun BackupsCard(model: AppModel) {
             }
             PixelButton(if (portable) "Not now" else "Export a backup", { portable = !portable; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             if (portable) {
-                // Help: a passphrase seals Mint's and Heal's records in the copy so any phone can open it; it is stored nowhere, and if it is forgotten they cannot be opened.
                 PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase (at least ${backups.minPassphrase} characters)", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
                 PixelField(again, { again = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase again", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     error = if (again.isNotEmpty() && again != pass) "The two do not match." else null)
@@ -296,10 +276,6 @@ internal fun BackupsCard(model: AppModel) {
     }
 }
 
-/**
- * Backup off the phone (REP-034): set up once with a folder and a passphrase, then a copy goes there by itself every day. Needs the passphrase to be typed twice, because
- * a copy that cannot be opened is worse than none. A quiet line says so when the last copy is more than three days old.
- */
 @Composable
 internal fun OffPhoneSection(backups: app.pokeplan.ui.BackupAccess, nowMillis: Long, onNote: (String) -> Unit, onStaged: (app.pokeplan.ui.StagedBackup?, String?) -> Unit, startSetting: Boolean = false) {
     var state by remember { mutableStateOf(backups.offPhone()) }
@@ -315,7 +291,6 @@ internal fun OffPhoneSection(backups: app.pokeplan.ui.BackupAccess, nowMillis: L
     if (current == null || setting) {
         PixelButton(if (setting) "Not now" else "Back up off this phone", { setting = !setting; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         if (setting) {
-            // Help: a copy goes to a folder you choose, such as one a cloud app syncs. Mint and Heal in it are sealed under this passphrase, which opens them on any phone and is kept nowhere else; if it is forgotten they cannot be opened.
             PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase (at least ${backups.minPassphrase} characters)", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
             PixelField(again, { again = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase again", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 error = if (again.isNotEmpty() && again != pass) "The two do not match." else null)
@@ -354,10 +329,6 @@ private fun backupLabel(millis: Long): String {
     return "${t.date} ${t.hour.toString().padStart(2, '0')}:${t.minute.toString().padStart(2, '0')}"
 }
 
-/**
- * Module exports: one readable file per module, from the module's own export (the complete, restorable copy is the backup above). Heal's and Mint's
- * files are plain text once saved, so the player chooses where each goes.
- */
 @Composable
 internal fun ModuleExportsCard(model: AppModel) {
     val files = model.files ?: return
@@ -379,7 +350,6 @@ internal fun ModuleExportsCard(model: AppModel) {
     }
 }
 
-/** Starting over: Care's data alone, or the whole device (every module, every setting, the backups). Each destructive step asks twice. */
 @Composable
 internal fun ResetCard(model: AppModel) {
     val store = model.store
@@ -419,7 +389,6 @@ internal fun ResetCard(model: AppModel) {
     }
 }
 
-/** A labelled volume slider, 0 to 100 in steps of 10. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
@@ -435,7 +404,6 @@ private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
     }
 }
 
-/** The app's version, so a bug report or a friend's install can say exactly which build it is. */
 @Composable
 internal fun AboutCard() {
     TextBox {
@@ -453,7 +421,6 @@ internal fun AboutCard() {
     }
 }
 
-/** One group of settings in its own card, under a small heading. */
 @Composable
 private fun SettingsGroup(title: String, glyph: String? = null, content: @Composable () -> Unit) {
     TextBox {
@@ -467,7 +434,6 @@ private fun SettingsGroup(title: String, glyph: String? = null, content: @Compos
     }
 }
 
-/** A value nudged down and up by [step] ("-5", "+5"), with its label at the start of the row. */
 @Composable
 private fun Stepper(label: String, value: String, step: Int, change: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -480,14 +446,8 @@ private fun Stepper(label: String, value: String, step: Int, change: (Int) -> Un
     }
 }
 
-/** An hour as the settings show it, "07:00". */
 private fun hourText(hour: Int) = "${hour.toString().padStart(2, '0')}:00"
 
-/**
- * Plan's own settings (Plan, More, Settings; PLAN.md section 13): its reminders (task reminders with the quiet hours they respect, repeat until
- * answered, the focus alerts) and which of the phone's calendars appear. The week start is a General setting; the usual focus length and
- * Deep Focus are what the last session was started with.
- */
 @Composable
 internal fun PlanSettings(model: AppModel) {
     val store = model.store
@@ -499,7 +459,6 @@ internal fun PlanSettings(model: AppModel) {
     }
     TextBox { ListsSettings(model) }
     SettingsGroup("Rewards", "zap") {
-        // The focus a new task starts with; each task can change it (More options, or its editor). Exp is the ordinary payout.
         PixelChoice(
             app.pokeplan.core.reward.RewardFocus.entries.toList(), settings.defaultReward, { it?.label ?: "" },
             { r -> if (r != null) store.changeSettings { s -> s.copy(defaultReward = r) } }, label = "New tasks pay most in",
@@ -508,7 +467,6 @@ internal fun PlanSettings(model: AppModel) {
     CalendarsCard(model)
 }
 
-/** World's own settings (Modules, World, Settings). */
 @Composable
 internal fun WorldSettings(model: AppModel) {
     val settings = model.data.settings
@@ -519,7 +477,6 @@ internal fun WorldSettings(model: AppModel) {
     }
 }
 
-/** A card's title with a small Pixelarticons glyph in front of it. */
 @Composable
 private fun GlyphTitle(text: String, glyph: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -528,7 +485,6 @@ private fun GlyphTitle(text: String, glyph: String) {
     }
 }
 
-/** Plan's lists, made and edited here (the Tasks screen only filters by them): a row each, a tap opens its editor. */
 @Composable
 private fun ListsSettings(model: AppModel) {
     var editing by remember { mutableStateOf<String?>(null) }

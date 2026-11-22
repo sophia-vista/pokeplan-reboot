@@ -33,7 +33,6 @@ class InstallmentsTest {
         assertEquals(listOf(0L, 0L, 0L), Installments.generate(100_000, 3, PlanEvery.MONTH, nov10, FeeRule.None).map { it.feeMinor })
         assertEquals(listOf(250L, 250L, 250L), Installments.generate(100_000, 3, PlanEvery.MONTH, nov10, FeeRule.PerInstallment(250)).map { it.feeMinor })
         assertEquals(listOf(34L, 33L, 33L), Installments.generate(100_000, 3, PlanEvery.MONTH, nov10, FeeRule.Total(100)).map { it.feeMinor })
-        // 1.5% a period on what is still unpaid: 100,000 then 66,666 then 33,333 of principal.
         assertEquals(listOf(1_500L, 1_000L, 500L), Installments.generate(100_000, 3, PlanEvery.MONTH, nov10, FeeRule.RatePerPeriod(150)).map { it.feeMinor })
     }
 
@@ -57,10 +56,10 @@ class InstallmentsTest {
             accounts = listOf(acct("bank", AccountType.BANK), acct("wallet", AccountType.EWALLET), acct("later", AccountType.PAY_LATER)),
             transactions = listOf(
                 tx("pay", TxType.INCOME, 100_000, "bank"),
-                tx("buy", TxType.EXPENSE, 30_000, "later"), // on credit: not cash
-                tx("fee", TxType.FEE, 500, "later"), // on credit: not cash
-                tx("repay", TxType.TRANSFER, 10_000, "wallet", "later"), // cash out
-                tx("move", TxType.TRANSFER, 5_000, "bank", "wallet"), // between liquid accounts: neither
+                tx("buy", TxType.EXPENSE, 30_000, "later"),
+                tx("fee", TxType.FEE, 500, "later"),
+                tx("repay", TxType.TRANSFER, 10_000, "wallet", "later"),
+                tx("move", TxType.TRANSFER, 5_000, "bank", "wallet"),
                 tx("coffee", TxType.EXPENSE, 200, "wallet"),
             ),
         )

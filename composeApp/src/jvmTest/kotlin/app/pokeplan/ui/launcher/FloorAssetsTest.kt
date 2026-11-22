@@ -5,7 +5,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** The dungeon floor's pictures (REP-052) are where the code looks for them: every Explorers of Sky atlas has its full autotile set, and the item sheet is in the code's order. */
 class FloorAssetsTest {
     private val tiles = listOf("../assets/tiles", "assets/tiles").map(::File).first { it.isDirectory }
 

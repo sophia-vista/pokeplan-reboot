@@ -10,7 +10,6 @@ import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.TimeZone
 
-/** What a quest asks for. Each is counted from the day the quest was accepted. */
 enum class RequirementKind(val describe: (Int) -> String) {
     FOCUS_SESSIONS({ "Finish $it focus sessions" }),
     DEEP_FOCUS_SESSIONS({ "Finish $it Deep Focus sessions" }),
@@ -27,27 +26,19 @@ data class Requirement(val kind: RequirementKind, val target: Int) {
     val text: String get() = kind.describe(target)
 }
 
-/**
- * A quest for one legendary-class or mythical species. Finishing it gives that Pokémon, as a Guardian candidate.
- * [dexShare] is the share of [dexRegion]'s ordinary species that must already be caught; null means none.
- */
 data class Quest(
     val id: String,
     val speciesId: Int,
     val title: String,
     val story: String,
     val requirements: List<Requirement>,
-    /** Trainer rank index needed to see the quest. */
     val unlockRank: Int,
     val dexRegion: Region? = null,
     val dexShare: Double = 0.0,
-    /** A slow quest: available early, finished over weeks. */
     val longTerm: Boolean = false,
 )
 
-/** Every legendary-class and mythical species has a quest, except the ones World gives (`Legends.coveredSpecies`). See "Legendaries and mythicals" in docs/design.md. Numbers are *(tune)*. */
 object Quests {
-    /** Quests in progress at once, so nobody is buried in them. */
     const val MAX_ACTIVE = 3
 
     private val lakeTrio = mapOf(
@@ -74,7 +65,6 @@ object Quests {
     val all: List<Quest> by lazy {
         val regionOf = mutableMapOf<Int, Region>()
         for (region in Region.entries.filter { it.released }) for (s in Dex.regionDex(region)) if (s.id !in regionOf) regionOf[s.id] = region
-        // The legendaries World gives through its own quests (Kanto, Johto and Hoenn so far) are not Plan's any more; a quest already finished for one of them stays finished and its Pokémon owned.
         Dex.species.filter { it.isSpecial && it.id !in app.pokeplan.world.Legends.coveredSpecies }.map { s ->
             val name = s.name
             lakeTrio[s.identifier]?.copy(speciesId = s.id, dexRegion = Region.PLAN)
@@ -113,7 +103,6 @@ object Quests {
 
     fun forSpecies(speciesId: Int): Quest? = all.firstOrNull { it.speciesId == speciesId }
 
-    /** Why a quest cannot be taken yet, or null if it is available. */
     fun lockedReason(quest: Quest, data: AppData): String? {
         val rank = TrainerRank.rankFor(data.player.trainerPoints)
         if (rank < quest.unlockRank) return "Reach rank ${TrainerRank.names[quest.unlockRank]}"
@@ -126,7 +115,6 @@ object Quests {
         return null
     }
 
-    /** Progress on one requirement, counted from the day [state] was accepted. */
     fun current(req: Requirement, state: QuestState, data: AppData, zone: TimeZone, streak: Int): Int {
         val since = state.acceptedAtMillis
         val sinceDay = since.toLocalDateTime(zone).date
@@ -138,7 +126,6 @@ object Quests {
             RequirementKind.TASKS_DONE_HARD -> data.tasks.count {
                 it.state == TaskState.DONE && it.paid && (it.completedAtMillis ?: 0) >= since && (it.rank == Rank.B || it.rank == Rank.A)
             }
-            // The days a repeating task was finished (and, for a save from the days of targets, the days one was ticked).
             RequirementKind.HABIT_DAYS -> (data.series.flatMap { it.completions } + data.tasks.filter { it.seriesId != null && it.state == TaskState.DONE }.mapNotNull { t -> t.completedAtMillis?.toLocalDateTime(zone)?.date }).toSet().count { it >= sinceDay }
             RequirementKind.MILESTONES_DONE -> data.goals.flatMap { it.milestones }.count { it.rewarded && (it.doneAtMillis ?: 0) >= since }
             RequirementKind.ACTIVE_DAYS -> data.activeDays.count { it >= sinceDay }
@@ -146,7 +133,6 @@ object Quests {
         }
     }
 
-    /** True when every requirement is met. */
     fun isComplete(quest: Quest, state: QuestState, data: AppData, zone: TimeZone, streak: Int): Boolean =
         quest.requirements.all { current(it, state, data, zone, streak) >= it.target }
 }

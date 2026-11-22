@@ -1,11 +1,7 @@
--- Version 5 to 6: the shared Pokémon, Bag and ledger tables become the live authority (REP-014).
--- The collection keeps the order the Pokémon were owned and the origin exactly as the save has it.
 ALTER TABLE owned_pokemon ADD COLUMN position INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE owned_pokemon ADD COLUMN origin_json TEXT;
 UPDATE owned_pokemon SET position = rowid;
 
--- One place per Pokémon replaces the party, buddy and Guardian tables. Rows an older build wrote are carried over by the same priority
--- the app uses (Guardian, buddy, party), so a Pokémon the old tables had in two places keeps the first; the others are dropped from it.
 CREATE TABLE pokemon_place (
     owned_id TEXT NOT NULL PRIMARY KEY REFERENCES owned_pokemon(id) ON DELETE CASCADE,
     kind TEXT NOT NULL CHECK (kind IN ('buddy', 'party', 'guardian')),

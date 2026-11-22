@@ -127,16 +127,10 @@ import app.pokeplan.app.GearRates
 import app.pokeplan.app.GearTimer
 import app.pokeplan.app.Places
 
-/** Pokégear's actions on the shared save: helper Pokémon, recents, favourites, timers and the stopwatch. Split out of [GameStore]. */
-// ----- Pokégear: tools and their helper Pokémon (cosmetic: nothing here pays, records effort or reaches the server) -----
-
-/** The owned Pokémon who can help [tool], the friendliest first (then the higher level, then by id so it is stable). */
 fun GameStore.gearCandidates(tool: GearTool): List<OwnedPokemon> =
     data.player.pokemon.filter { tool.helps(it.speciesId) && Places.movable(data, it.id) }.sortedWith(compareByDescending<OwnedPokemon> { it.friendship }.thenByDescending { it.level }.thenBy { it.id })
 
-/** Who helps [tool] now: the one the player chose (while they still own them), else no one. */
 fun GameStore.gearHelper(tool: GearTool): GearHelper {
-    // Only a helper the player chose counts: picking one from the collection by itself would take it out of the PC (one place only).
     val owned = data.gearHelpers[tool.name]?.let { id -> data.player.pokemon.firstOrNull { it.id == id && tool.helps(it.speciesId) } }
     return when {
         owned != null -> GearHelper.Owned(owned)
@@ -144,27 +138,19 @@ fun GameStore.gearHelper(tool: GearTool): GearHelper {
     }
 }
 
-/**
- * Makes [pokemonId] the helper of [tool]; false if they are not owned, cannot help it or are on an expedition. A Pokémon helps one tool
- * and is in no other place, so it is taken from its party, the buddy, a team or another tool.
- */
 fun GameStore.assignGearHelper(tool: GearTool, pokemonId: String): Boolean {
     val mon = data.player.pokemon.firstOrNull { it.id == pokemonId } ?: return false
     if (!tool.helps(mon.speciesId)) return false
     return moveTo(pokemonId) { d -> d.copy(gearHelpers = d.gearHelpers - tool.name + (tool.name to pokemonId)) }
 }
 
-/** Forgets the chosen helper: it goes back to the PC, and the tool shows its own icon. */
 fun GameStore.clearGearHelper(tool: GearTool) = update { it.copy(gearHelpers = it.gearHelpers - tool.name) }
 
 fun GameStore.setPickerOptions(options: List<String>) = update { it.copy(pickerOptions = options.map { o -> o.trim() }.filter { o -> o.isNotEmpty() }.distinct().take(GameStore.MAX_PICKER_OPTIONS)) }
 
 fun GameStore.saveGearRates(rates: GearRates) = update { it.copy(gearRates = rates) }
 
-/** Changes what the Pokégear tools remember. Device-only; changes nothing else and pays nothing. */
 fun GameStore.changeGear(change: (GearData) -> GearData) = update { it.copy(gear = change(it.gear)) }
-
-// --- Pokégear timers and stopwatch: utilities that pay nothing ---------------------------------
 
 fun GameStore.timerAdd(label: String, durationMs: Long): GearTimer? {
     val id = newId()
@@ -181,7 +167,6 @@ fun GameStore.timerEdit(id: String, label: String, durationMs: Long) = changeGea
 fun GameStore.timerRemove(id: String) = changeGear { GearTimers.remove(it, id) }
 fun GameStore.timersDismissFinished() = changeGear { GearTimers.dismissFinished(it) }
 
-/** Marks the timers that ran out as finished and returns them (the screen and the notification call this; calling it again returns none). */
 fun GameStore.timersTick(): List<GearTimer> {
     val (next, ran) = GearTimers.tick(data.gear, nowMillis)
     if (ran.isNotEmpty()) update { it.copy(gear = next) }
@@ -193,8 +178,6 @@ fun GameStore.stopwatchPause() = changeGear { GearTimers.stopwatchPause(it, nowM
 fun GameStore.stopwatchLap() = changeGear { GearTimers.stopwatchLap(it, nowMillis) }
 fun GameStore.stopwatchReset() = changeGear { GearTimers.stopwatchReset(it) }
 
-/** Notes that [tool] was opened: it goes to the front of the recents (a short list), nothing more. */
 fun GameStore.gearUsed(tool: GearTool) = changeGear { g -> g.copy(recents = (listOf(tool.name) + g.recents.filter { it != tool.name }).take(GearData.MAX_RECENTS)) }
 
-/** Stars or unstars a tool. */
 fun GameStore.gearFavorite(tool: GearTool, on: Boolean) = changeGear { g -> g.copy(favorites = if (on) (g.favorites.filter { it != tool.name } + tool.name) else g.favorites - tool.name) }

@@ -7,12 +7,6 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
-/**
- * The save as one JSON file (the app's private storage on Android, the home folder on desktop). A write goes to a temporary file
- * (synced to disk) and replaces the save in one atomic step, so a reader (a widget) never sees half of it and a crash leaves either
- * the old save or the new one. If the step fails, [save] throws and the save on disk is untouched: it is never written over in place.
- * The save before the last write is kept as `<name>.bak`, which the document falls back on when the file cannot be read.
- */
 class FileStorage(private val file: File) : Storage {
     private val folder: File get() = file.absoluteFile.parentFile
 
@@ -47,7 +41,6 @@ class FileStorage(private val file: File) : Storage {
         }
     }
 
-    /** Moves [from] over [to] in one step; where the file system cannot do that atomically, in the plainest move it has (still never a write in place). */
     private fun replace(from: File, to: File) {
         try {
             Files.move(from.toPath(), to.toPath(), ATOMIC_MOVE, REPLACE_EXISTING)

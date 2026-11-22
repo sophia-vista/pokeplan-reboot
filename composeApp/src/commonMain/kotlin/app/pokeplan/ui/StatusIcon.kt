@@ -20,31 +20,18 @@ import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 
-/**
- * The Mystery Dungeon status icons (assets/status, cut by tools/sprites/cut_status.py), each a strip of 16 px frames:
- * the "!" over a startled Pokémon, the "?" of a curious or confused one, the red X of a hit or a quarrel, the Zz of sleep.
- * [loop] is the frames repeated from the first; [start] is where a looping one begins (the Zz grows before it settles).
- */
 enum class StatusKind(val file: String, val frames: Int, val start: Int = 0, val millis: Long = 110, val cell: Int = 16) {
     ALERT("alert", 9), QUESTION("question", 10), CROSS("cross", 9), SLEEP("sleep", 9, start = 3, millis = 220),
-    /** The yellow flash of a shock, the blue drop of a nervous one and a white sparkle for something nice (24 px, 16 px and 24 px frames). */
     ZAP("zap", 2, millis = 140, cell = 24), SWEAT("sweat", 2, millis = 300), TWINKLE("twinkle", 3, millis = 160, cell = 24),
-    /** The stat icons of the games, for the buddy's type-flavoured reactions: a flame, a shield, a fist, and a block of ice (32 px frames). */
-    /** The skull of poison (16 px frames). */
     SKULL("skull", 8, millis = 140),
     FLAME("flame", 7), SHIELD("shield", 13), FIST("fist", 8, millis = 130), ICE("ice", 6, millis = 160, cell = 32),
 }
 
 private val strips = mutableMapOf<StatusKind, ImageBitmap?>()
 
-/**
- * One status icon at a whole-number [pixel] scale (screen pixels per art pixel), without smoothing. It plays its frames
- * once and holds the last, or with [loop] cycles them; with [animate] off it shows one still frame (Reduce motion).
- */
 @Composable
 fun StatusIcon(kind: StatusKind, pixel: Int, modifier: Modifier = Modifier, loop: Boolean = false, animate: Boolean = true) {
     val strip by produceState(strips[kind], kind) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = strips[kind]
         if (value == null) {
             value = orNull { Res.readBytes("files/status/${kind.file}.png").decodeToImageBitmap() }

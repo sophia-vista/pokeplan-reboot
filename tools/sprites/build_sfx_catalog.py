@@ -1,29 +1,4 @@
 #!/usr/bin/env python3
-"""Map Red Rescue Team sound ids (assets/pmd-sfx/NNN.ogg) to the game events that play them.
-
-The decompilation pret/pmd-red names no sound effect: every call passes a bare number. So the
-mapping is built from where the game actually uses each number:
-
-  move      the per-move table `gUnknown_80BDBC4` in src/effect_data.c (`.soundEffectId`), plus the
-            per-species overrides in `gUnknown_80C183C`; 997 (STOP_SOUND_EFFECT) means silent.
-  menu      `sMenuSoundEffects` in src/music_util.c (MENU_SFX_ACCEPT, BACK, ...).
-  call      every PlaySoundEffect / PlaySound / PlayFanfareSE / PlaySoundWithVolume (and the two
-            dungeon helpers that take an id) with a literal id: the file and enclosing function.
-  effect    the 448 effect animations in `gUnknown_80B9CC4` carry a sound id (`.unk10`, the 600s).
-            Moves (`.unk2`, `.unk4`, `.unk6`), items (`gUnknown_80CE37C`) and traps
-            (`sTrapEffectTable`) point at those animations, so each gets the sounds of its animation.
-  script    the story scripts' FANFARE_PLAY / FANFARE_PLAY2 commands in src/data/ground/*: the
-            script file (map code, e.g. a04p04) and the script array that plays it.
-
-`confidence` is `table` when the game reads the id from a data table that names its event (move,
-menu), and `call-site` when only a function or script name is known: those are leads for a human
-label (the unnamed `sub_80xxxxxx` functions say nothing), not definitions. A sound id with no
-row is one the decompilation never reaches with a literal (it may be played through a computed
-id or from the ROM's own data); it is reported, not guessed.
-
-Usage: python3 -I tools/sprites/build_sfx_catalog.py /path/to/pret/pmd-red
-Writes assets/pmd-sfx/triggers.tsv (id, kind, event, source, confidence) and prints coverage.
-"""
 import collections
 import re
 import sys
@@ -31,7 +6,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SFX = HERE.parents[1] / "assets" / "pmd-sfx"
-STOP = 997  # STOP_SOUND_EFFECT in include/constants/bg_music.h
+STOP = 997
 
 
 def num(s):
@@ -151,7 +126,6 @@ def scripts(root):
 
 
 def manual():
-    """Ids the decompilation picks with a ternary or a small array, read from the code by hand."""
     src = "dungeon_8041AD0.c"
     rows = [(340, "dungeon", "Stairs: the ascending sound", f"{src} PlayStairsSound (IsStairDirectionUp)", "call-site"),
             (341, "dungeon", "Stairs: the descending sound", f"{src} PlayStairsSound", "call-site")]

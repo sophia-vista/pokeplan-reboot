@@ -126,71 +126,44 @@ import app.pokeplan.ui.theme.focusRing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** The battery's charge, 0 to 100, and whether it is charging. */
 data class BatteryStatus(val percent: Int, val charging: Boolean)
 
-/** What the launcher screens ask of the phone; Android fills it from `LauncherApps` and the system settings. */
 interface LauncherHost {
-    /** An app's own icon, drawn off the main thread and cached by the host; null when it has none. */
     suspend fun icon(key: String): ImageBitmap?
     fun open(key: String)
     fun appInfo(key: String)
     fun uninstall(key: String)
-    /** Opens Android's own settings page for choosing the home app. */
     fun openBaseSettings()
-    /** Opens a Pokémon's page in PokéLife. */
     fun openPokemon(id: String)
-    /** The battery now, or null when the phone cannot say. */
     fun battery(): BatteryStatus? = null
-    /** Whether the phone's own power saving is on. */
     fun powerSaving(): Boolean = false
-    /** The forecast for [place]: a recent one kept on the device, else a fresh one from the network; null when there is neither. */
     suspend fun forecast(place: GeoPlace): Forecast? = null
-    /** Places that match [query], for choosing where the forecast is for. */
     suspend fun searchPlaces(query: String): List<GeoPlace> = emptyList()
-    /**
-     * Shows another app's widget, by its Android widget id. On the widget grid [widthDp] and [heightDp] are the room its
-     * cells really give it, and the widget is told exactly that; in a list ([heightDp] 0) it has the width it is given
-     * and a height of its own times 1, 1.5 or 2 for [size] 0, 1 or 2. Only a phone can; elsewhere it shows nothing.
-     */
     @Composable
     fun HostedWidget(id: Int, size: Int, widthDp: Int, heightDp: Int, modifier: Modifier) {}
-    /** Asks the user to choose a widget from the installed apps; [onPicked] gets its id, or is not called if they cancel. */
     fun pickWidget(onPicked: (Int) -> Unit) {}
-    /** Lets go of a widget's id when its slot is removed. */
     fun releaseWidget(id: Int) {}
-    /** The name of a hosted widget, for the Widgets list. */
     fun widgetLabel(id: Int): String? = null
-    /** Whether this device can host other apps' widgets at all (a phone can; the desktop and the web cannot, and show nothing). */
     val hostsWidgets: Boolean get() = false
-    /**
-     * What widget [id] asks of its host, or null when its provider is gone (the app was uninstalled, disabled or is being
-     * updated): the slot then shows a note instead of an empty space and keeps its place until the user removes it.
-     */
     fun widgetSpec(id: Int): HostedWidgetSpec? = null
-    /** Opens PokéLife itself on [place] (Focus from the Focus button, Home from the buddy). */
     fun openApp(place: Place)
-    /** Pulls the notification shade down (the phone's own), where the phone lets a launcher; a gesture's job. */
     fun expandNotifications() {}
 }
 
 private val rowShape = DialogueShape
 
-/** The page position (0 the town, 1 Today and on to [last], and -1 and on to [first] for pages left of Home) for a finger at [x]: past either end it stretches a little and no more, like a rubber band. */
 private fun rubberPage(x: Float, last: Float = 1f, first: Float = 0f): Float = when {
     x < first -> first + (x - first) / (1f - (x - first) * 4f) * 0.5f
     x > last -> last + (x - last) / (1f + (x - last) * 4f) * 0.5f
     else -> x
 }
 
-/** The list's position for a finger at [pulled] (0 open, 1 shut): past the open end it stretches a little and no more, like a rubber band. */
 private fun rubber(pulled: Float): Float = when {
     pulled < 0f -> pulled / (1f - pulled * 4f) * 0.5f
     pulled > 1f -> 1f
     else -> pulled
 }
 
-/** A launcher page over the town: it fades and glides in from the right and glides out the same way, instantly under Reduce motion. */
 @Composable
 private fun LauncherPage(visible: Boolean, calm: Boolean, content: @Composable () -> Unit) {
     AnimatedVisibility(
@@ -202,16 +175,10 @@ private fun LauncherPage(visible: Boolean, calm: Boolean, content: @Composable (
     ) { content() }
 }
 
-/**
- * PokéLife as the phone's home screen: the home page (the buddy, today's tasks, a Focus button, pinned apps) on a Pokémon
- * pixel wallpaper and, one swipe or tap up, every app A to Z over that wallpaper blurred and darkened. It shows and starts
- * what already pays and pays nothing itself.
- */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, phone: LauncherHost, homePresses: Int = 0, active: Boolean = true) {
     val data = model.data
-    // Every opening of an app is counted, for the suggestions; everything else goes straight to the phone.
     val prefsNow by androidx.compose.runtime.rememberUpdatedState(prefs)
     val onPrefsNow by androidx.compose.runtime.rememberUpdatedState(onPrefs)
     val host: LauncherHost = remember(phone) { object : LauncherHost by phone { override fun open(key: String) { onPrefsNow(prefsNow.recordLaunch(key)); phone.open(key) } } }
@@ -220,22 +187,18 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    // Battery saving: read the charge now and then; while it is on the town stands still, nothing blurs, and the clock ticks slowly.
     var charge by remember { mutableStateOf(phone.battery()) }
     var phoneSaving by remember { mutableStateOf(phone.powerSaving()) }
     LaunchedEffect(active) { while (active) { charge = phone.battery(); phoneSaving = phone.powerSaving(); delay(60_000) } }
     val saver = batterySaving(prefs.batterySaver, charge, phoneSaving)
-    // Only the clock ticks here: the launcher shows the time and pays nothing (a task or a focus session is settled by the app, which owns the save), and it stops with the screen.
     LaunchedEffect(saver, active) {
         while (active) {
             model.tickClock()
             delay(if (saver) 10_000 else 1000)
         }
     }
-    // The Guardian that visits the town changes each day (see shownGuardian); read from the clock so it turns over at midnight without the town recomposing every second.
     val rotation by remember(model) { androidx.compose.runtime.derivedStateOf { model.now; TownBehavior.rotation(model.store.today.toEpochDays()) } }
     var listOpen by remember { mutableStateOf(false) }
-    // Three quick taps send every Pokémon to the main screen: each tap within 600 ms of the one before counts, and a third gathers them.
     var gather by remember { androidx.compose.runtime.mutableIntStateOf(0) }
     var taps by remember { androidx.compose.runtime.mutableIntStateOf(0) }
     val tapper = remember { TownTapper() }
@@ -246,11 +209,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var settingsOpen by remember { mutableStateOf(false) }
     var foldersOpen by remember { mutableStateOf(false) }
     var widgetsOpen by remember { mutableStateOf(false) }
-    // Editing the widgets on the screen (hold one): drag, resize, remove; page swipes are off meanwhile.
     var editing by remember { mutableStateOf(false) }
-    // Asks the pages (which live further in) to go to the next one, and round to Home after the last.
     var pageNudge by remember { androidx.compose.runtime.mutableIntStateOf(0) }
-    /** Does what the user set a gesture to do. */
     fun runAction(action: GestureAction) {
         when (action) {
             GestureAction.NONE -> {}
@@ -275,7 +235,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     }
     val todayState = remember { TodayState(model.store.today) }
     val mood = remember { BuddyMood() }
-    // The phone's calendars around the month the calendar widget shows (six weeks, read off the main thread), again after the permission is answered, the chosen calendars change, or every few minutes.
     val source = model.calendars
     val calendarsShown = data.shownCalendars
     LaunchedEffect(todayState.month, calendarsShown, todayState.permissionAnswers, active) {
@@ -290,16 +249,13 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var folderName by remember { mutableStateOf<String?>(null) }
     var forecastOpen by remember { mutableStateOf(false) }
     var placeOpen by remember { mutableStateOf(false) }
-    // The forecast for the chosen place, read from the phone (it keeps a recent one and refreshes it) every half hour while the launcher is in sight.
     var forecast by remember { mutableStateOf<Forecast?>(null) }
     LaunchedEffect(prefs.place, active, saver) {
         val place = prefs.place
         if (place == null) forecast = null else if (active) while (true) { host.forecast(place)?.let { forecast = it }; delay(if (saver) 120 * 60_000L else 30 * 60_000L) }
     }
-    // The app list slides in from the right: 1 is off the screen, 0 is in place. A drag from the edge moves it with the finger; letting go settles it.
     val reveal = remember { androidx.compose.animation.core.Animatable(1f) }
     var settle by remember { mutableStateOf(0) }
-    // How fast the finger was going when it let go (in widths per second, towards the open end negative): the list keeps gliding with it.
     var release by remember { mutableStateOf<Float?>(null) }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     LaunchedEffect(listOpen, settle) {
@@ -308,13 +264,11 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         release = null
         when {
             data.settings.reduceMotion -> reveal.snapTo(to)
-            // A flick keeps its speed and settles on a soft spring (a touch of give at the open end); a tap on a button glides on the house curve.
             velocity != null -> reveal.animateTo(to, androidx.compose.animation.core.spring(dampingRatio = 0.82f, stiffness = 260f), initialVelocity = velocity)
             else -> reveal.animateTo(to, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth))
         }
     }
     var listHidden by remember { mutableStateOf(false) }
-    // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
         if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false; editing = false }
     }
@@ -324,12 +278,10 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
                 val page = remember { androidx.compose.animation.core.Animatable(0f) }
-                // The pages: Home and Today, and on the grid up to three of the user's own, each left of Home or after Today. The position 0 is Home, -1 the page left of it.
                 val order = if (prefs.gridMode) prefs.pageOrder else WidgetPage.entries.take(2)
                 val pageCount = order.size
                 val left = order.indexOf(WidgetPage.HOME)
                 val right = pageCount - 1 - left
-                // What the page position means, read through derived state so the screen is composed again only when one of these changes, not on every frame of a swipe.
                 val atHome by remember { androidx.compose.runtime.derivedStateOf { abs(page.value) < 0.02f } }
                 val current by remember(left) { androidx.compose.runtime.derivedStateOf { (page.value + left + 0.5f).toInt() } }
                 val visibleSides by remember(left, right) { androidx.compose.runtime.derivedStateOf { (-left..right).filter { it != 0 && abs(page.value - it) < 1f } } }
@@ -339,9 +291,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     pages = pageCount, battery = charge,
                     goToPage = { i -> scope.launch { if (data.settings.reduceMotion) page.snapTo((i - left).toFloat()) else page.animateTo((i - left).toFloat(), androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } },
                 )
-                // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
                 val widthPx0 = maxWidth.value * LocalDensity.current.density
-                // Where widgets cover the town, so the Pokémon prefer to walk where they can be seen (on the grid; the old stacked layout has none).
                 val topInset = with(LocalDensity.current) { androidx.compose.foundation.layout.WindowInsets.Companion.safeDrawing.getTop(this).toDp() }
                 val avoidRects = remember(prefs.gridMode, prefs.gridWidgets, order, maxWidth, maxHeight, topInset) { if (!prefs.gridMode) emptyList() else {
                     val inset = Spacing.Page - CELL_GAP
@@ -364,7 +314,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 LaunchedEffect(homePresses) { if (homePresses > 0) page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) }
                 Box(
                     Modifier.fillMaxSize().pointerInput(prefs.gestures, prefs.gatherTap) {
-                        // The widget pages are drawn over the town and swallow touches meant for the Pokémon below, so a tap that lands on one is handed to the town here.
                         val double = prefs.action(GestureTrigger.DOUBLE_TAP)
                         val hold = prefs.action(GestureTrigger.LONG_PRESS)
                         detectTapGestures(onLongPress = if (hold == GestureAction.NONE) null else ({ at ->
@@ -373,7 +322,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                             if (abs(page.value) < 0.02f && !editing && !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) runAction(double)
                         }), onTap = { at -> if (abs(page.value) >= 0.02f || editing || !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) countTap() })
                     }.pointerInput(prefs.gestures, editing) {
-                        // Swipe up opens the app list and swipe down does what it is set to (nothing at first): on the open town, where no widget took the touch, and a good way along.
                         var travelled = 0f
                         val reach = 64.dp.toPx()
                         detectVerticalDragGestures(
@@ -386,7 +334,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                             },
                         ) { _, dy -> travelled += dy }
                     }.pointerInput(prefs.gestures, editing) {
-                        // Two fingers together up or down: watched without taking the touches, so the town and the widgets still get them.
                         val reach = 72.dp.toPx()
                         awaitEachGesture {
                             awaitFirstDown(requireUnconsumed = false, pass = androidx.compose.ui.input.pointer.PointerEventPass.Initial)
@@ -412,7 +359,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         state = androidx.compose.foundation.gestures.rememberDraggableState { dx -> scope.launch { page.snapTo(rubberPage(page.value - dx / widthPx0, right.toFloat(), -left.toFloat())) } },
                         onDragStopped = { velocity ->
                             val perSecond = -velocity / widthPx0
-                            // A flick goes on to the next page in its direction; a slow let-go settles on the nearest.
                             val to = (if (abs(perSecond) > 1.2f) (if (perSecond > 0f) kotlin.math.ceil(page.value) else kotlin.math.floor(page.value)) else page.value.roundToInt().toFloat()).coerceIn(-left.toFloat(), right.toFloat())
                             scope.launch {
                                 if (data.settings.reduceMotion) page.snapTo(to) else page.animateTo(to, androidx.compose.animation.core.spring(dampingRatio = 0.85f, stiffness = 300f), initialVelocity = perSecond)
@@ -423,7 +369,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     Town(
                         model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, activity = prefs.activity, mood = mood, chirps = prefs.chirps && !saver, weather = when (prefs.weather) { Weather.LIVE -> forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR; Weather.GUARDIAN -> guardianWeather(shownGuardian(model.data.player.pokemon, model.data.player.moduleGuardians.values, model.data.player.buddy?.id, rotation)); else -> prefs.weather }, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = atHome, gather = gather, rotation = rotation, layoutRoll = prefs.layoutRollOn(model.store.today.toEpochDays().toLong()),
                         modifier = Modifier.layout { measurable, constraints ->
-                            // As many screens wide as there are pages, placed from the left edge and slid by the page (a required size would be centred instead).
                             val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * pageCount, constraints.maxHeight))
                             layout(constraints.maxWidth, constraints.maxHeight) { placeable.place((-(page.value + left) * constraints.maxWidth).roundToInt(), 0) }
                         },
@@ -435,12 +380,10 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                             else -> null
                         }) else HomePage(env, isDefault)
                     }
-                    // The other pages, each a screen from the one next to it (left of Home or after it), shown while any of it is on screen.
                     for (k in visibleSides) {
                         androidx.compose.runtime.key(k) { Box(Modifier.fillMaxSize().graphicsLayer { translationX = (k - page.value) * widthPx0 }) { if (prefs.gridMode) GridSidePage(env, order[left + k]) else TodayPage(env) } }
                     }
                 }
-                // Which page: two small blocks at the top, the current one lit, shown only while the page is moving (and a moment after).
                 val moving by remember { androidx.compose.runtime.derivedStateOf { page.isRunning || abs(page.value - page.value.roundToInt()) > 0.001f } }
                 var lingering by remember { mutableStateOf(false) }
                 LaunchedEffect(moving) { if (moving) lingering = true else { delay(900); lingering = false } }
@@ -448,15 +391,11 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 if (indicator > 0.01f) Row(Modifier.align(Alignment.TopCenter).safeDrawingPadding().padding(top = Spacing.S).graphicsLayer { alpha = indicator }, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     repeat(pageCount) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if (current == i) 0.9f else 0.3f))) }
                 }
-                // While editing the grid, its bar floats at the foot of the screen over whichever page is showing (nothing moves to make room for it).
                 if (prefs.gridMode && editing && !widgetsOpen) Box(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.BottomCenter) {
                     GridEditBar(env, order[current.coerceIn(0, pageCount - 1)])
                 }
-                // Home is the one screen that must never close: back only steps out of the sheet or the list.
                 BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (abs(page.value) > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
-                // Drag in from the right edge: the app list comes into focus with the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
-                // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
                 var pulled by remember { mutableStateOf(1f) }
                 if (prefs.action(GestureTrigger.EDGE_DRAG) == GestureAction.APPS && !listOpen) Box(
                     Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).draggable(
@@ -468,14 +407,12 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         onDragStarted = { pulled = reveal.value },
                         onDragStopped = { velocity ->
                             val perSecond = velocity / widthPx
-                            // Fast enough opens or shuts it whichever side of the middle it is on; slowly, the nearer end wins.
                             listOpen = if (abs(perSecond) > 1.2f) perSecond < 0f else reveal.value < 0.5f
                             release = perSecond
                             settle++
                         },
                     ),
                 )
-                // Set to do something else, the same edge strip runs that job when the finger has gone a good way in.
                 val edgeJob = prefs.action(GestureTrigger.EDGE_DRAG)
                 if (edgeJob != GestureAction.APPS && edgeJob != GestureAction.NONE && !listOpen) {
                     var travelled by remember { mutableStateOf(0f) }
@@ -488,7 +425,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         ),
                     )
                 }
-                // The list comes in from the right and into focus: a short glide (56 dp, not the whole width) while it fades in and its blur clears, following the finger or the spring.
                 val shown = (1f - reveal.value).coerceIn(0f, 1f)
                 if (reveal.value < 1f) Box(
                     Modifier.fillMaxSize().graphicsLayer { alpha = shown; translationX = (1f - shown) * 56.dp.toPx() }.then(if (shown < 0.97f && !data.settings.reduceMotion && !saver) Modifier.blur(((1f - shown) * 10f).dp) else Modifier),
@@ -496,7 +432,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden, pixel = pixel)
                 }
                 menuMon?.let { mon -> PokemonMenu(mon, mon.id == model.data.player.buddy?.id, pixel, onOpen = { host.openPokemon(mon.id); menuMon = null }, onBuddy = { model.store.setBuddy(mon.id); menuMon = null }, onClose = { menuMon = null }) }
-                // Each page over the town fades and glides in from the right and out the same way (at once under Reduce motion).
                 val calm = data.settings.reduceMotion
                 LauncherPage(settingsOpen, calm) {
                     LauncherSettings(
@@ -519,18 +454,12 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     }
 }
 
-/**
- * PokéLife as the phone's home screen: the widgets placed at the top of the home page over the town (the date and time and
- * the companion to start with), and at the bottom, in reach of a thumb, the widgets placed there (the shortcuts, often used
- * apps, favorites and the folder and app-list buttons to start with). The user chooses and orders them in Launcher settings → Widgets.
- */
 @Composable
 private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
     val data = env.model.data
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (env.editing) EditToolbar(env, Modifier.padding(horizontal = Spacing.Page))
         env.prefs.widgetsIn(WidgetArea.HOME_TOP).forEach { slot -> androidx.compose.runtime.key(slot.kind, slot.arg) { LauncherWidget(slot, env) } }
-        // The bottom widgets sit at the foot of the screen, and scroll when they are more than fit.
         Box(Modifier.weight(1f).fillMaxWidth()) {
             Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 val note = when {
@@ -545,7 +474,6 @@ private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
     }
 }
 
-/** A pinned app on the home page: its logo (or the game item chosen for it) over its name; tap opens it, press and hold manages it. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit, showLabel: Boolean = true) {
@@ -562,23 +490,16 @@ internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixe
     }
 }
 
-/**
- * An app's own icon in a pixel frame: the picture is square (the host gives it without the phone's round or squircle mask),
- * cut to a square with stair-stepped corners and edged by a one-pixel line, like the game's boxes. A quiet square of the same
- * shape stands in while it loads, so scrolling never waits on it.
- */
 @Composable
 internal fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.unit.Dp) {
     val icon by produceState<ImageBitmap?>(null, key) { value = host.icon(key) }
     val shown = icon
-    // The border is the icon's own edge colour, so it melts into the picture and only the pixel corners show. Worked out once per picture (scanning its pixels again on every scroll-in made the list stutter).
     val edge = remember(shown) { shown?.let { edgeColors.getOrPut(key) { edgeColor(it) } } ?: Color.White.copy(alpha = 0.9f) }
     Box(
         Modifier.size(size).drawWithContent {
             val p = 2.dp.toPx()
             val w = this.size.width
             val h = this.size.height
-            // The whole square, stair-stepped corners and all, is filled with the icon's own edge colour and the picture drawn over it, so nothing shows through a rounded or see-through corner and no line is left between the picture and its frame.
             val square = stairRect(p, 0f, 0f, w, h, intArrayOf(1, 0))
             if (shown == null) drawPath(square, Color.White.copy(alpha = 0.2f)) else {
                 drawPath(square, edge)
@@ -590,11 +511,6 @@ internal fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.
     }
 }
 
-/**
- * The colour an icon's edge mostly is: the most common shade among the outermost ring of its pixels (shades within 1/16 of
- * each other count as one, and see-through pixels are ignored), averaged; a quiet grey when too little of the edge is
- * solid (an icon that is a shape on nothing).
- */
 private val edgeColors = HashMap<String, Color>()
 
 internal fun edgeColor(image: ImageBitmap): Color {
@@ -617,11 +533,9 @@ internal fun edgeColor(image: ImageBitmap): Color {
 private sealed interface ListRow {
     data class Header(val letter: Char) : ListRow
     data class Entry(val app: LauncherApp) : ListRow
-    /** A place in PokéLife itself that matches the search (see [LauncherSearch]). */
     data class Destination(val to: LauncherDestination) : ListRow
 }
 
-/** Every app A to Z over the wallpaper, blurred and darkened (the blur shows from Android 12; the dark veil always). */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: LauncherHost, onClose: () -> Unit, onHold: (LauncherApp) -> Unit, onTown: () -> Unit = {}, startHidden: Boolean = false, pixel: Int = 2) {
@@ -630,7 +544,6 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
     var category by remember { mutableStateOf<AppCategory?>(null) }
     var showHidden by remember { mutableStateOf(startHidden) }
     val categories = remember(apps, prefs) { LauncherList.categories(apps, prefs) }
-    // A category that emptied (its last app moved or hidden) falls back to all apps.
     if (category != null && categories.none { it.first == category }) category = null
     val anyHidden = prefs.hidden.any { key -> apps.any { it.key == key } }
     if (showHidden && !anyHidden) showHidden = false
@@ -716,7 +629,6 @@ private fun Chip(label: String, count: String, selected: Boolean, pixel: Int, ic
     }
 }
 
-/** The strip of letters on the right edge: touch or drag along it to jump to a letter. */
 @Composable
 private fun LetterScroller(letters: List<Char>, pixel: Int, modifier: Modifier, onLetter: (Char) -> Unit) {
     if (letters.isEmpty()) return
@@ -738,7 +650,6 @@ private fun LetterScroller(letters: List<Char>, pixel: Int, modifier: Modifier, 
     }
 }
 
-/** The long-press sheet: pin, hide, move to a category, app info, uninstall. */
 @Composable
 internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, onClose: () -> Unit, host: LauncherHost) {
     var moving by remember { mutableStateOf(false) }
@@ -803,7 +714,6 @@ internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (Launcher
     }
 }
 
-/** Long-press the town: pick the scene it is set in, shown as small pictures. */
 @Composable
 internal fun TownPicker(current: String, onPick: (String) -> Unit, onClose: () -> Unit) {
     val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -844,7 +754,6 @@ private fun TownChoices(choices: List<Pair<String, String>>, current: String, on
     }
 }
 
-/** Long-press a Pokémon in the town: its name and level, then what can be done with it, as a dialogue box. */
 @Composable
 internal fun PokemonMenu(mon: OwnedPokemon, isBuddy: Boolean, pixel: Int, onOpen: () -> Unit, onBuddy: () -> Unit, onClose: () -> Unit) {
     val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -861,17 +770,12 @@ internal fun PokemonMenu(mon: OwnedPokemon, isBuddy: Boolean, pixel: Int, onOpen
     }
 }
 
-/**
- * The launcher's settings as a screen of their own over the town (not a pop-up): a header with Back, then the town, the
- * walking, the status box, the edge drag, the sound volume, the hidden apps, the pins and the home-app setting.
- */
 @Composable
 internal fun LauncherSettings(
     model: AppModel, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, hiddenCount: Int, pixel: Int, host: LauncherHost,
     onTown: () -> Unit, onHidden: () -> Unit, onPlace: () -> Unit, onWidgets: () -> Unit, onClose: () -> Unit,
 ) {
     val settings = model.data.settings
-    // A question that is on screen (a list to choose from, or "are you sure"), drawn over the settings; null when there is none.
     var dialog by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
     fun <T> choose(title: String, options: List<ChoiceOption<T>>, current: T, pick: (T) -> Unit) {
         dialog = { PmdChoiceDialog(title, options, current, pixel, onPick = { pick(it); dialog = null }, onClose = { dialog = null }) }
@@ -888,7 +792,6 @@ internal fun LauncherSettings(
                     PmdMenuLine("Launcher settings", pixel, dim = true, icon = "pa-sliders") {}
                 }
             }
-            // The settings come in sections, each under its own heading with a glyph, so one is found by what it is about.
             @Composable
             fun Section(title: String, glyph: String, content: @Composable () -> Unit) {
                 PmdBox(pixel, Modifier.fillMaxWidth()) {
@@ -910,7 +813,6 @@ internal fun LauncherSettings(
                 PmdChoiceLine("Weather", prefs.weather.label, pixel, icon = "pa-cloud") {
                     choose("Weather over the town", Weather.entries.map { ChoiceOption(it, it.label, WEATHER_NOTES[it].orEmpty()) }, prefs.weather) { onPrefs(prefs.copy(weather = it)) }
                 }
-                // A dungeon town is a new floor each day; this lays out another one for today (the day's finds stay the same, LAUNCHER.md 4.5).
                 if (TownScenes.isDungeon(prefs.scene)) PmdMenuLine("New floor layout", pixel, icon = "pa-reload") { model.effect(Sfx.STAIRS_DOWN); onPrefs(prefs.withNewLayout(model.store.today.toEpochDays().toLong())) }
             }
             Section("Home screen", "home") {
@@ -918,7 +820,6 @@ internal fun LauncherSettings(
                 PmdToggleLine("Widget grid (drag, resize)", prefs.gridMode, pixel, icon = "pa-drag-and-drop") { onPrefs(prefs.withGridMode(it)) }
                 PmdToggleLine("Swipe across between pages", prefs.pageSwipe, pixel, icon = "pa-sliders") { onPrefs(prefs.withPageSwipe(it)) }
             }
-            // A gesture and its job, chosen from a list. The edge drag follows the finger and opens the app list; the others run the job the moment they are made.
             Section("Gestures", "hand") {
                 GestureTrigger.entries.forEach { trigger ->
                     PmdChoiceLine(trigger.label, prefs.action(trigger).label, pixel, icon = "pa-pointer") {
@@ -959,31 +860,22 @@ internal fun LauncherSettings(
     }
 }
 
-/** What each weather choice does, for the list it is picked from. */
 private val WEATHER_NOTES = mapOf(
     Weather.LIVE to "Follows the forecast for your weather place.",
     Weather.GUARDIAN to "The weather of today's Guardian; a clear sky if it brings none.",
     Weather.CLEAR to "Always a clear sky.",
 )
 
-/**
- * A volume control in the dialogue style: ten blocks you tap or drag across, 0 to 10 (the font has no % sign, so it says
- * "7 of 10"). [onDone] fires when the finger lets go, so the new level can be heard. Its text and bar start and end where a
- * menu line's text does, and the bar's row is a full [Spacing.Target] tall to hit.
- */
 @Composable
 private fun PmdVolume(
     label: String, icon: String, value: Int, pixel: Int, onChange: (Int) -> Unit, onDone: () -> Unit,
-    /** The lowest level (a volume goes down to 0, a level that has no "off" starts at 1). */
     min: Int = 0,
-    /** What the right of the label says for a level. */
     valueText: (Int) -> String = { "$it of 10" },
 ) {
     val density = LocalDensity.current.density
     val pad = pmdRowPad(pixel, density)
     val level = (value / 10).coerceIn(0, 10)
     var width by remember { mutableStateOf(1f) }
-    // A block at x sets that level; the first block again turns it to 0, so the sound can be switched off.
     fun set(x: Float) {
         val block = (x / width * 10).toInt().coerceIn(0, 9)
         onChange(maxOf(min, if (block == 0 && level == 1) 0 else block + 1) * 10)

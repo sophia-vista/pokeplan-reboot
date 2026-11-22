@@ -2,16 +2,10 @@ package app.pokeplan.mint
 
 import kotlinx.datetime.LocalDate
 
-/** One account in the breakdown: its balance (what is owed for a liability) and whether it counts in the totals. */
 data class BreakdownLine(val accountId: String, val name: String, val group: String, val balanceMinor: Long, val counted: Boolean)
 
-/** A credit line shown for information: its limit, what is owed and what is left (limits are in no total). */
 data class CreditLineInfo(val accountId: String, val name: String, val limitMinor: Long, val owedMinor: Long, val leftMinor: Long)
 
-/**
- * The parts of the Overview figures for one currency (MINT.md 3.2A): every number in it is derived from the records, so net position is exactly assets less liabilities
- * of the counted accounts and available money is exactly liquid less bills and installments due. Nothing here is stored.
- */
 data class OverviewBreakdown(
     val currency: String,
     val assets: List<BreakdownLine>,
@@ -30,7 +24,6 @@ data class OverviewBreakdown(
 
 fun MintRules.breakdown(data: MintData, currency: String, today: LocalDate, withinDays: Int = OverviewCounts.days(data, today)): OverviewBreakdown {
     val rows = balances(data).filter { it.account.status == AccountStatus.ACTIVE && it.account.currency == currency }
-    // A liability shows what the Overview counts of it, so the lines add up to the net position (3.2B).
     fun line(b: AccountBalance) = BreakdownLine(
         b.account.id, b.account.name, b.account.group,
         if (b.account.type.liability) OverviewCounts.liabilityCounted(data, b.account, b.postedMinor, today) else b.postedMinor,

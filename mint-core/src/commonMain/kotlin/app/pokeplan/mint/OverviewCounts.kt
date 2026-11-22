@@ -6,7 +6,6 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.serialization.Serializable
 
-/** How far ahead the Overview, the breakdown and the Mint widgets look for bills and installments that are due (MINT.md 3.2B). */
 @Serializable
 enum class OverviewWindow(val label: String) {
     DAYS_14("Next 14 days"),
@@ -14,7 +13,6 @@ enum class OverviewWindow(val label: String) {
     THIS_MONTH("Rest of this month"),
     NEXT_MONTH("Until end of next month");
 
-    /** Days from [today] to the last day of the window, at least 0. */
     fun days(today: LocalDate): Int {
         val monthsAhead = when (this) {
             DAYS_14 -> return 14
@@ -28,7 +26,6 @@ enum class OverviewWindow(val label: String) {
     }
 }
 
-/** How much of a Pay later account (SPayLater and similar) the Overview's net position holds against the player (MINT.md 3.2B). Cards always count in full. */
 @Serializable
 enum class PayLaterCount(val label: String) {
     WHOLE("Whole balance"),
@@ -36,15 +33,9 @@ enum class PayLaterCount(val label: String) {
     NONE("Not counted");
 }
 
-/** The two choices Mint Settings gives the Overview, applied the same way by the screen, the breakdown and the widgets. */
 object OverviewCounts {
-    /** The days ahead the Overview looks, from the setting. */
     fun days(data: MintData, today: LocalDate): Int = data.settings.overviewWindow.days(today)
 
-    /**
-     * What an account's [owedMinor] counts as in net position: all of it, except for a Pay later account, where the setting can keep only the unpaid
-     * installments due in the window (never more than is owed), or nothing.
-     */
     fun liabilityCounted(data: MintData, account: FinancialAccount, owedMinor: Long, today: LocalDate): Long {
         if (account.type != AccountType.PAY_LATER || owedMinor <= 0L) return owedMinor
         return when (data.settings.overviewPayLater) {
@@ -54,7 +45,6 @@ object OverviewCounts {
         }
     }
 
-    /** The unpaid installments of [account]'s plans that fall due by [today] plus [withinDays] (overdue ones included). */
     fun dueOn(data: MintData, account: FinancialAccount, today: LocalDate, withinDays: Int): Long {
         val until = today.plus(DatePeriod(days = withinDays))
         return Installments.views(data, today).filter { it.plan.accountId == account.id }
@@ -62,13 +52,8 @@ object OverviewCounts {
     }
 }
 
-/** One thing that is due in the window: a bill's next occurrence or a credit account's monthly bill. [amountMinor] is null for a bill whose amount varies. */
 data class DueItem(val name: String, val day: LocalDate, val overdue: Boolean, val amountMinor: Long?, val installment: Boolean)
 
-/**
- * What the Overview and the Mint widgets show (MINT.md 3.2B), derived from the records and the settings, stored nowhere. [dueMinor] and [dueCount] cover
- * everything due in the window; [next] is the soonest few, one line per bill or credit account's monthly bill.
- */
 data class OverviewSummary(
     val currency: String,
     val availableMinor: Long,
@@ -87,7 +72,6 @@ fun OverviewCounts.summary(data: MintData, today: LocalDate, limit: Int = 5): Ov
     val until = today.plus(DatePeriod(days = days))
     val bills = MintRules.upcoming(data, today, days).filter { !it.bill.income && it.bill.currency == currency }.distinctBy { it.bill.id }
         .map { DueItem(it.bill.name, it.payDay, it.state == OccurrenceState.OVERDUE, it.remainingMinor, installment = false) }
-    // One line per credit account's monthly bill (MINT.md 5.6C), not one per purchase: what falls due in the window, overdue months included.
     val plans = data.accounts.filter { Installments.allowedFor(it.type) && it.currency == currency }.flatMap { account ->
         MonthlyBills.open(data, account.id, today).mapNotNull { bill ->
             val inWindow = bill.lines.filter { it.remainingMinor > 0 && it.dueDay <= until }

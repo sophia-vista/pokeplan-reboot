@@ -25,7 +25,6 @@ import kotlin.math.max
 
 private val scenes = BitmapCache(CacheBudget.SCENES)
 
-/** 0 until [ready], then fades to 1 over 150 ms (at once under Reduce motion), so a picture arriving late does not pop in. */
 @Composable
 internal fun rememberFadeIn(ready: Boolean): State<Float> {
     val calm = LocalReduceMotion.current
@@ -36,17 +35,13 @@ internal fun rememberFadeIn(ready: Boolean): State<Float> {
     return fade.asState()
 }
 
-/** True for a background that is a ground map of the Mystery Dungeon games or a Friend Area (pixel art with a grid of its own), not a stock scene. */
 internal fun isGroundMap(name: String): Boolean = app.pokeplan.ui.launcher.FriendAreas.isArea(name) || name.startsWith("map:")
 
-/** The picture of a scene, a ground map or a Friend Area by its name (null while it is read or if it is missing), kept once read. */
 @Composable
 internal fun rememberScene(name: String): ImageBitmap? {
     val image by produceState(scenes[name], name) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = scenes[name]
         if (value == null) {
-            // A Friend Area ("fa-..."), a ground map of the Mystery Dungeon games the story uses ("map:..."), else a stock scene.
             val path = when {
                 app.pokeplan.ui.launcher.FriendAreas.isArea(name) -> app.pokeplan.ui.launcher.FriendAreas.file(name)
                 name.startsWith("map:") -> "files/maps/${name.removePrefix("map:")}.png"
@@ -59,18 +54,12 @@ internal fun rememberScene(name: String): ImageBitmap? {
     return image
 }
 
-/**
- * A real Pokémon scene (assets/scenes, "meadow", "mountain"...) filling the box like a photo: scaled to cover it and
- * anchored at the bottom, where the ground is. With [darkness] it is dimmed with a cool tint. With [crisp] it is scaled by a
- * whole number (the next one up that covers the box) and drawn without smoothing, so its pixels stay square and sharp.
- */
 @Composable
 fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f, crisp: Boolean = false) {
     val image = rememberScene(name)
     val fade by rememberFadeIn(image != null)
     Canvas(modifier) {
         val scene = image ?: return@Canvas drawRect(Color(0xFF8FCB7F))
-        // Cover: the largest scale that leaves no gap, then show the bottom, left-centred part of the picture.
         val cover = max(size.width / scene.width, size.height / scene.height)
         if (crisp) {
             val whole = kotlin.math.ceil(cover).toInt().coerceAtLeast(1)

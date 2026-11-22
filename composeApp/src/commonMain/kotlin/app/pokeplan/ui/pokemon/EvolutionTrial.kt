@@ -26,17 +26,10 @@ import kotlin.math.abs
 import kotlin.time.TimeSource
 import app.pokeplan.ui.screens.long
 
-/** How long the phone must stay upside down, and how fast a spin must be, as in the games (Alcremie: a full turn in under 5 seconds). *(tune)* */
 private const val UPSIDE_DOWN_MILLIS = 1_500L
 private const val SPIN_MILLIS = 5_000L
 private const val FULL_TURN = 2 * PI
 
-/**
- * An evolution done with the phone ([DeviceAction]), shown under its option on the Pokémon's page while it is open: the phone upside down
- * (Malamar), a quick spin (Alcremie) or a walk (Pawmot, Brambleghast, Rabsca). Sensors listen only while this is on screen. Once done, the store
- * keeps it ([app.pokeplan.app.GameStore.deviceTrialDone]) and the option can evolve. A walk keeps counting with the app closed: the phone's
- * step counter runs on, and the next reading adds the steps since the last one.
- */
 @Composable
 internal fun DeviceTrial(model: AppModel, p: OwnedPokemon, option: EvolutionOption, action: DeviceAction) {
     val feed = model.sensors
@@ -54,7 +47,6 @@ internal fun DeviceTrial(model: AppModel, p: OwnedPokemon, option: EvolutionOpti
             var finished = false
             val stop = feed?.gravity { g ->
                 if (finished) return@gravity
-                // Upside down: gravity pulls toward the phone's top edge (y well below zero), whichever way it faces.
                 if (g[1] < -7f) {
                     val mark = since ?: TimeSource.Monotonic.markNow().also { since = it }
                     val held = mark.elapsedNow().inWholeMilliseconds
@@ -75,7 +67,6 @@ internal fun DeviceTrial(model: AppModel, p: OwnedPokemon, option: EvolutionOpti
                 val now = TimeSource.Monotonic.markNow()
                 val dt = last?.let { (now - it).inWholeMilliseconds / 1000.0 } ?: 0.0
                 last = now
-                // The turn around the axis through the screen (the phone held flat), in one direction; a pause or a long spin starts again.
                 if (abs(r[2]) < 1.0f) { turned = 0.0; start = null; progress = 0f; return@rotation }
                 val began = start ?: now.also { start = it }
                 if ((now - began).inWholeMilliseconds > SPIN_MILLIS) { turned = 0.0; start = now }
@@ -90,7 +81,6 @@ internal fun DeviceTrial(model: AppModel, p: OwnedPokemon, option: EvolutionOpti
             var sent = -1L
             progress = (model.data.stepWalks[p.id]?.walked ?: 0).toFloat() / EvolutionTrials.STEPS
             val stop = feed?.steps({ counter ->
-                // A reading a few steps apart is saved, not every step.
                 if (sent < 0 || counter - sent >= 20 || counter < sent) {
                     sent = counter
                     val walked = model.store.stepReading(p.id, option, counter)

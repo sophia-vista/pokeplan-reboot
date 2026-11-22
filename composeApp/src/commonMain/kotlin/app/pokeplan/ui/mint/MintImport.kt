@@ -38,10 +38,6 @@ import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.shortDate
 
-/**
- * Mint → Import (INTEGRATIONS_AND_PRIVACY.md sections 7 and 14, MINT.md section 10): a statement file the player chooses, a preview with the columns they can correct,
- * rows kept or left out, and each import removable on its own. Where no file can be chosen the page shows nothing (Mint hides its entry).
- */
 @Composable
 internal fun MintImportView(model: AppModel) {
     val mint = model.mint
@@ -63,7 +59,6 @@ internal fun MintImportView(model: AppModel) {
         EmptyState("Add an account first", icon = "member-card", action = "Add account" to { model.mintSection = MintSection.ACCOUNTS })
         return
     }
-    // Help: pick the account, then a CSV from your bank or e-wallet app; it is read on this phone, once, and not kept. Mint never asks for a password, PIN or code.
     FormBox {
         FormStack {
             if (accounts.size > 1) PixelDropdown(accounts.map { it.id }, chosen?.id, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) accountId = id }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent, label = "Account")
@@ -119,7 +114,6 @@ internal fun MintImportView(model: AppModel) {
                                 (if (preview.firstDay != null) " ${preview.firstDay} to ${preview.lastDay}." else ""),
                             style = MaterialTheme.typography.bodyLarge,
                         )
-                        // Help: a row that may match one of yours is left out unless you tapped it; Mint never merges or deletes your own records.
                         preview.rows.take(60).forEachIndexed { i, r ->
                             if (i > 0) HorizontalDivider(color = Pixel.Border)
                             val included = r.line in keep
@@ -139,7 +133,6 @@ internal fun MintImportView(model: AppModel) {
                             }
                         }
                         if (preview.rows.size > 60) Text("+${preview.rows.size - 60} more", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        // Help: imported records are marked as imported, start unreviewed and never earn a find; reconciling still uses the records you wrote.
                         FormSave(if (keep.isEmpty()) "Nothing to add" else "Add ${keep.size}", {
                             note = mint.importStatement(preview, keep, fileName.ifBlank { "statement.csv" }).note
                             text = null
@@ -179,7 +172,6 @@ internal fun MintImportView(model: AppModel) {
 
 }
 
-/** One dropdown over the file's columns, then "none". */
 @Composable
 private fun Picker(label: String, header: List<String>, value: Int?, onChange: (Int?) -> Unit) {
     PixelDropdown(

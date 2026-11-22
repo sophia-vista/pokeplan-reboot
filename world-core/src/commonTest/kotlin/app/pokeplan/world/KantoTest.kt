@@ -29,11 +29,9 @@ class KantoTest {
     fun theWildTablesAreKantoSpeciesOnly() {
         kanto.forEach { d ->
             d.wild.forEach { assertTrue(it.speciesId in 1..151, "${d.id} ${it.speciesId}") }
-            // Never a legendary (they are quests), and enough that can hatch for finds.
             d.wild.forEach { assertFalse(Dex.species(it.speciesId).isSpecial, "${d.id} ${it.speciesId}") }
             assertTrue(d.wild.count { HatchRules.rarity(it.speciesId) != null } >= 4, d.id)
         }
-        // A layer's Pokémon do not leak into the home layer.
         val home = (Dungeons.of(WorldLayer.RESCUE) + Dungeons.of(WorldLayer.EXPLORERS)).flatMap { it.wild }.map { it.speciesId }.toSet()
         assertTrue(kanto.flatMap { it.wild }.map { it.speciesId }.toSet().size >= 40)
         assertTrue(home.isNotEmpty())
@@ -44,10 +42,8 @@ class KantoTest {
         assertEquals(1, Story.opened(WorldData(), WorldLayer.KANTO), "open on day one")
         val viridian = WorldData().assign(1, listOf("a"))
         assertNotNull(viridian)
-        // The first two dungeons need no story chapter and no rank.
         listOf("viridian-forest", "mt-moon").forEach { id -> assertNotNull(viridian.start(1, id, 0L), id) }
         assertNull(viridian.start(1, "rock-tunnel", 0L), "Rock Tunnel needs Bronze rank")
-        // Clears of the home layer do not advance Kanto's story, nor the other way round.
         val homeClears = WorldData(xp = 1_000_000, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1))
         assertEquals(1, Story.opened(homeClears, WorldLayer.KANTO))
         val kantoClears = WorldData(xp = 1_000_000, clears = kanto.associate { it.id to 1 })
@@ -61,15 +57,12 @@ class KantoTest {
         assertTrue(Legends.ready(none).isEmpty())
         val birds = none.copy(clears = mapOf("power-plant" to 3, "seafoam-islands" to 2, "mt-ember" to 3))
         assertEquals(setOf("kanto-zapdos", "kanto-moltres"), Legends.ready(birds).map { it.id }.toSet())
-        // Mew and Mewtwo need the Guardian faced; Mewtwo is the first clear, Mew the third.
         val cave = none.copy(clears = mapOf("cerulean-cave" to 3))
         assertTrue(Legends.ready(cave).isEmpty(), "the cave alone is not the Guardian")
         val faced = cave.copy(layersDone = setOf("kanto"))
         assertEquals(setOf("kanto-mewtwo", "kanto-mew"), Legends.ready(faced).map { it.id }.toSet())
         assertEquals(1, Legends.ready(faced.copy(clears = mapOf("cerulean-cave" to 1))).size)
-        // Given once.
         assertTrue(Legends.ready(faced.copy(legends = setOf("kanto-mewtwo", "kanto-mew"))).isEmpty())
-        // Every quest points at a Kanto legendary or mythical, in its own dungeon.
         Legends.of(WorldLayer.KANTO).forEach { q ->
             assertTrue(Dex.species(q.speciesId).isSpecial, q.id)
             assertEquals(WorldLayer.KANTO, Dungeons.byId(q.dungeonId)?.layer, q.id)
@@ -91,12 +84,10 @@ class KantoTest {
     fun facingMewtwoFinishesKantoOnceAndNotTheHomeStory() {
         val d = Dungeons.byId("cerulean-cave")!!
         val mon = Hatching.create("a", HatchOption(25, Dex.defaultForm(25).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = 100)
-        // A full team of level 100: Mewtwo's cave asks for real power (WORLD.md 3.6), and a lone Pokémon would turn back.
         val team = listOf(mon, mon.copy(id = "b"), mon.copy(id = "c"), mon.copy(id = "d"))
         var data = WorldData(xp = 1_000_000, clears = kanto.associate { it.id to 1 }).assign(1, team.map { it.id })!!.start(1, d.id, 0L)!!
         var faced = 0
         var now = 0L
-        // At most 12 hours of away time count at once, so settle in steps until the top floor is reached.
         repeat(8) {
             now += WorldSim.MAX_AWAY_MILLIS
             val report = WorldSim.settle(data, team, now)
@@ -127,11 +118,9 @@ class LockReasonsTest {
         assertEquals(2, fresh.size, fresh.toString())
         assertTrue("Diamond rank" in fresh[0] && "60000" in fresh[0], fresh[0])
         assertTrue("story chapter 5" in fresh[1] && "Platinum rank" in fresh[1] && "8 different Kanto dungeons cleared (you have 0)" in fresh[1], fresh[1])
-        // The Distortion Rift also waits for the story itself.
         val rift = WorldGuide.lockReasons(WorldData(), Dungeons.byId("distortion-rift")!!)
         assertEquals(3, rift.size, rift.toString())
         assertTrue("story of Explorers is complete" in rift[2], rift[2])
-        // Met requirements drop out; an open dungeon has none.
         val partway = WorldData(xp = 60_000, clears = Dungeons.of(WorldLayer.KANTO).take(3).associate { it.id to 1 })
         val left = WorldGuide.lockReasons(partway, cave)
         assertEquals(1, left.size)
@@ -153,11 +142,9 @@ class SpeedExplanationTest {
             assertEquals(90, e.levels)
             assertEquals(e.levels + e.favoredBonus + e.identityBonus, e.power, 1e-9, d.id)
         }
-        // A strong team reaches the floor of a quarter of the base time and is told so.
         val strong = listOf(mon("a", 25, 100), mon("b", 74, 100), mon("c", 10, 100), mon("d", 1, 100))
         val tiny = WorldSim.explainSpeed(Dungeons.byId("tiny-woods")!!, strong, WorldData())
         assertTrue(tiny.atMinimum && tiny.afterPowerMillis == tiny.baseMillis / 4)
-        // Abilities help skills, not floor time: only a skill list, and no change to the time.
         assertTrue(tiny.skillHelp.values.all { it in 1..AbilityPerks.MAX_BONUS })
     }
 }

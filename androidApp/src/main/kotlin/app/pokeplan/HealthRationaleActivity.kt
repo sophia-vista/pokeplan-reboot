@@ -5,10 +5,6 @@ import android.os.Bundle
 import android.widget.ScrollView
 import android.widget.TextView
 
-/**
- * What Health Connect shows when the player asks why Heal wants access (it requires an activity that answers `ACTION_SHOW_PERMISSIONS_RATIONALE`, and on Android 14 the
- * "permission usage" screen). Plain words, no network, nothing collected.
- */
 class HealthRationaleActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -35,7 +35,6 @@ class MovesetTest {
         assertFalse(Moveset.canSet(p, listOf(pick[0], pick[0])), "no repeats")
         assertFalse(Moveset.canSet(p, all.take(5).map { it.identifier }), "no more than four")
         assertFalse(Moveset.canSet(p, listOf("not-a-move")))
-        // A young Pokémon cannot hold what only the machines and tutors teach.
         val machineOnly = Dex.learnset(p.form).machine.mapNotNull { Dex.move(it) }.firstOrNull { m -> Dex.learnset(p.form).levelUp.none { it.first == m.id } && m.id !in Dex.learnset(p.form).egg }
         if (machineOnly != null) {
             assertFalse(Moveset.canSet(mon(25, 5), listOf(machineOnly.identifier)))

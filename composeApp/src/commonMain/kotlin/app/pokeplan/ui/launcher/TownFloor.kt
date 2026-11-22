@@ -51,10 +51,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
-/**
- * Which tileset a dungeon town draws (LAUNCHER.md 4.5): an Explorers of Sky one (`ex-NNN`) has its full autotile set; a named town that
- * is one of those dungeons draws from it too, so its walls and water take any shape; the rest (Red Rescue Team, the autumn forest) keep the 3 x 3 block.
- */
 internal object TownTiles {
     private val explorersOf = mapOf(
         "lush-prairie" to "ex-090", "apple-woods" to "ex-005", "dusk-forest" to "ex-033", "deep-dusk-forest" to "ex-035", "drenched-bluff" to "ex-002",
@@ -63,31 +59,22 @@ internal object TownTiles {
         "amp-plains" to "ex-014",
     )
 
-    /** The atlas the town's floor is drawn from. */
     fun source(scene: String): String = explorersOf[scene] ?: scene
 
-    /** Whether that atlas has a full autotile set (`ex-NNN-auto.png`). */
     fun organic(scene: String): Boolean = source(scene).startsWith("ex-")
 
-    /** The day's floor of [scene]: the same all day, another after New layout ([roll]). */
     fun seed(scene: String, epochDay: Long, roll: Int): Long = scene.hashCode().toLong() * 1_000_003L + epochDay * 7_919L + roll
 }
 
-/** The order of `assets/tiles/floor-items.png` (`FLOOR_ITEMS` in tools/tiles/extract_sky_floor.py): the column of each item's floor picture. */
 internal val FLOOR_ITEM_COLUMNS = listOf(
     "berry-spicy", "berry-sour", "berry-sweet", "berry-dry", "berry-bitter", "hp-up", "protein", "iron", "calcium", "zinc", "carbos", TownFinds.POKE,
 )
 
-/** How [mon] gets about the floor ([Mover]): a Ghost type through walls, a Water or Flying type over water, the rest on foot. */
 internal fun moverOf(mon: OwnedPokemon): Mover = Mover(
     water = PokemonType.WATER in mon.form.types || PokemonType.FLYING in mon.form.types,
     walls = PokemonType.GHOST in mon.form.types,
 )
 
-/**
- * Where the squares of a [floor] are on the town: [tilePx] screen pixels a square, [screenPx] a page, [heightPx] tall. A Pokémon's spot is
- * the town's fraction (x in pages, y down the whole height) of its feet, a little below the middle of its square.
- */
 internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val screenPx: Float, val heightPx: Float) {
     fun spotOf(c: Cell): Offset = Offset((c.x + 0.5f) * tilePx / screenPx, (c.y + FEET) * tilePx / heightPx)
 
@@ -96,10 +83,6 @@ internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val scr
         (spot.y * heightPx / tilePx - FEET + 0.5f).toInt().coerceIn(0, floor.rows - 1),
     )
 
-    /**
-     * A square [mover] can stop on and walk away from, at random from [random], on page [page] if it has one, and not [crowded] (a square where
-     * it would overlap another Pokémon) if there is room for that. [roomsOnly]: in a room and not a corridor (for one that stays put and must not block the way).
-     */
     fun restingCell(random: Random, mover: Mover, page: Int? = null, crowded: (Cell) -> Boolean = { false }, roomsOnly: Boolean = false): Cell {
         val all = floor.restingCells(mover).let { cells -> if (roomsOnly) cells.filter { floor.roomOf(it) != null }.ifEmpty { cells } else cells }
         val on = (if (page == null) all else all.filter { it.x * tilePx / screenPx >= page && it.x * tilePx / screenPx < page + 1 }).ifEmpty { all }
@@ -107,10 +90,6 @@ internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val scr
         return (spaced.ifEmpty { on }.ifEmpty { listOf(floor.stairs) }).random(random)
     }
 
-    /**
-     * The square nearest [wanted] that [mover] can stop on and nobody stands on ([taken]), searching outwards: first one that is not [crowded]
-     * (so two Pokémon never stand overlapping), then, if the floor is that full, any free one.
-     */
     fun nearestResting(wanted: Cell, mover: Mover, taken: Set<Cell>, crowded: (Cell) -> Boolean = { false }): Cell? {
         fun search(blocked: (Cell) -> Boolean): Cell? {
             for (r in 0..12) {
@@ -123,12 +102,10 @@ internal class FloorGeometry(val floor: DungeonFloor, val tilePx: Float, val scr
     }
 
     companion object {
-        /** The feet stand this far down a square (0 its top, 1 its bottom). */
         const val FEET = 0.75f
 
         fun of(floor: DungeonFloor, pixel: Int, screenPx: Float, heightPx: Float) = FloorGeometry(floor, (TILE * pixel).toFloat(), screenPx, heightPx)
 
-        /** The floor's size in squares for a town of [screens] pages of [screenPx] by [heightPx] at [pixel]. */
         fun size(screenPx: Float, heightPx: Float, pixel: Int): Pair<Int, Int> {
             val tile = (TILE * pixel).toFloat()
             return ceil(screenPx / tile).toInt().coerceAtLeast(6) to ceil(heightPx / tile).toInt().coerceAtLeast(8)
@@ -144,7 +121,6 @@ internal fun floorImage(name: String): ImageBitmap? {
     val image by produceState(floorImages[name], name) {
         value = floorImages[name]
         if (value == null) {
-            // Decoded off the main thread, so coming back to the home screen does not wait on it.
             value = orNull { Res.readBytes("files/tiles/$name.png").let { bytes -> withContext(Dispatchers.Default) { bytes.decodeToImageBitmap() } } }
             floorImages[name] = value
         }
@@ -152,22 +128,14 @@ internal fun floorImage(name: String): ImageBitmap? {
     return image
 }
 
-/**
- * The dungeon floor drawn from the game's tiles: the ground (with its alternates), and the walls and water from the full autotile set
- * ([Autotile], one of the game's three variants a square) or, without one, the 3 x 3 block with its inner corners. One layer for the whole
- * town, worked out once per floor and size, so a walking sprite never draws every tile again.
- */
 @Composable
 internal fun FloorBackdrop(scene: String, floor: DungeonFloor, pixel: Int, weather: Weather, modifier: Modifier = Modifier) {
     val name = TownTiles.source(scene)
     val atlas = floorImage(name)
     val auto = if (floor.organic) floorImage("$name-auto") else null
-    // The weather's colours, worked out off the main thread by [gradedFor] (once per tileset and weather).
     val shown by produceState(atlas, atlas, weather) { value = atlas?.let { gradedFor(name, it, weather) } }
     val shownAuto by produceState(auto, auto, weather) { value = auto?.let { gradedFor("$name-auto", it, weather) } }
     val fade by rememberFadeIn(atlas != null)
-    // Which tile each square draws, worked out once per floor (not on every draw), and the drawing kept in a layer of its own whose alpha is
-    // the fade-in: a recomposition (the clock's seconds) or a walking sprite never draws the tiles again.
     val tiles = remember(floor) {
         val seed = floor.stairs.hashCode()
         val map = floor.map
@@ -211,14 +179,8 @@ internal fun FloorBackdrop(scene: String, floor: DungeonFloor, pixel: Int, weath
     Box(modifier.then(draw))
 }
 
-/** A find just picked up: it rises and fades with its name. */
 internal class Pickup(val cell: Cell, val column: Int, val label: String)
 
-/**
- * What lies on the floor, over the tiles and under the Pokémon: the stairs, the traps found today (and the Wonder Tile, always shown) and
- * the day's [finds] (null for one already collected), with what was just picked up rising from its square. A screen reader gets each
- * find on Home as a button.
- */
 @Composable
 internal fun FloorThings(
     geo: FloorGeometry, pixel: Int, revealed: Set<Cell>, finds: List<TownFinds.Find?>, onScreen: (Cell) -> Boolean, onCollect: (Int) -> Unit,
@@ -269,7 +231,6 @@ internal fun FloorThings(
     }
 }
 
-/** The finds picked up a moment ago, still rising from the floor. */
 internal class FloorPickups {
     internal val list = mutableStateListOf<Pickup>()
 
@@ -278,11 +239,6 @@ internal class FloorPickups {
     }
 }
 
-/**
- * The effects the game plays when a trap springs (`TRAP_ANIMATION_INFO` in the ROM; `assets/tiles/trap-fx.tsv`, cut by
- * tools/sprites/extract_sky_effects.py): a strip of [width] x [height] frames, the anchor (the Pokémon's feet) at [originX], [originY]
- * in a frame, and how many of the game's 1/60 s ticks each frame lasts. Warp, Trip and the Wonder Tile have none of their own in the game.
- */
 internal enum class TrapFx(val file: String, val width: Int, val height: Int, val originX: Int, val originY: Int, val ticks: List<Int>) {
     SPIN("trap-spin", 16, 16, 8, 12, listOf(1, 1, 3, 3, 3, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1)),
     GUST("trap-gust", 56, 80, 28, 74, listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)),
@@ -299,7 +255,6 @@ internal enum class TrapFx(val file: String, val width: Int, val height: Int, va
     }
 }
 
-/** One play of [fx] with its anchor at [feet] (town pixels), at the town's [pixel] size; [onDone] when the last frame has shown. */
 @Composable
 internal fun TrapEffect(fx: TrapFx, feet: () -> Offset, pixel: Int, onDone: () -> Unit) {
     val strip = floorImage(fx.file)
@@ -319,11 +274,6 @@ internal fun TrapEffect(fx: TrapFx, feet: () -> Offset, pixel: Int, onDone: () -
     }
 }
 
-/**
- * What a trap leaves a Pokémon with for a while, as in the games (owner, 14 November 2026): [CONFUSED] (the Spin Trap: it stumbles about, a
- * question mark over its head) and [POISONED] (the Poison Trap: it drags along at [pace], a skull over its head). It wears off by itself after
- * [seconds], with a twinkle, and costs nothing: it is for show.
- */
 internal enum class Condition(val icon: StatusKind, val seconds: Int, val pace: Float) {
     CONFUSED(StatusKind.QUESTION, 25, 1f), POISONED(StatusKind.SKULL, 30, 0.7f),
 }

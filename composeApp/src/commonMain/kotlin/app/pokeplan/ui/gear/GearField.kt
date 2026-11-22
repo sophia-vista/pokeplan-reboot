@@ -58,7 +58,6 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.app.gear.changeGear
 
 
-/** Waypoints: mark where the phone is (one reading, asked for when you press the button; nothing is tracked) and see how far and which way each saved place is. */
 @Composable
 internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.location
@@ -121,7 +120,6 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** The Sound meter: a level with its quietest, average and loudest, the pitch it hears and a spectrum, only while the tool is open. */
 @Composable
 internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.sound
@@ -146,11 +144,9 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
             smooth = smooth?.let { it + (level - it) * 0.35f } ?: level
             dbFs = smooth
             val s = smooth!!
-            // Kept below full scale, so changing the offset moves the quietest, average and loudest with the reading.
             if (s > -119f) { low = low?.let { minOf(it, s) } ?: s; high = high?.let { maxOf(it, s) } ?: s; sum += s; count++ }
             val spec = SoundMath.spectrum(frame, 1024)
             pitch = SoundMath.dominantHz(spec, rate)
-            // Twenty-four bands, each a block of bins, on a gentle curve so the low pitches are not squashed.
             bands = FloatArray(24) { b ->
                 val from = (spec.size * (b / 24f) * (b / 24f)).toInt(); val to = maxOf(from + 1, (spec.size * ((b + 1) / 24f) * ((b + 1) / 24f)).toInt())
                 (spec.slice(from until minOf(to, spec.size)).maxOrNull() ?: 0.0).toFloat()
@@ -186,7 +182,6 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** QR codes: make one from text (drawn here, nothing sent anywhere) or scan one with the camera. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun QrTool(model: AppModel, onUse: () -> Unit) {
@@ -233,7 +228,6 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** The Network check: how the phone is connected now and, when asked, how quickly the internet answers. */
 @Composable
 internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.network

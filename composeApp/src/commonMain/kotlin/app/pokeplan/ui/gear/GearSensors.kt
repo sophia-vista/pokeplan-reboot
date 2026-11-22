@@ -37,7 +37,6 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
 import app.pokeplan.app.gear.changeGear
 
-/** What a sensor tool says when this phone cannot do it: never a made-up reading. */
 @Composable
 internal fun Missing(why: String) {
     TextBox { Text(why, style = MaterialTheme.typography.titleSmall) }
@@ -45,7 +44,6 @@ internal fun Missing(why: String) {
 
 private fun needs(model: AppModel, vararg caps: Capability): Capability? = caps.firstOrNull { !model.capabilities.status(it).available }
 
-/** The Compass: a dial turning with the phone, the heading in degrees and its name. It listens only while this tool is open. */
 @Composable
 internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.sensors
@@ -70,7 +68,6 @@ internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
                 val r = size.minDimension / 2 - 8f
                 val c = Offset(size.width / 2, size.height / 2)
                 drawPixelRing(Pixel.Border, c, r, 6f)
-                // The dial turns the other way from the heading, so north stays where it really is.
                 val turn = -(h ?: 0f)
                 for (i in 0 until 16) {
                     val a = turn + i * 22.5f
@@ -87,7 +84,6 @@ internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** The Level: how far from flat the phone is, in degrees on both axes, and a bubble. */
 @Composable
 internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.sensors
@@ -113,7 +109,6 @@ internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
                 val c = Offset(size.width / 2, size.height / 2)
                 drawPixelRing(if (level) Pixel.Green else Pixel.Border, c, r, 8f)
                 drawLine(Pixel.Border, Offset(c.x - r, c.y), Offset(c.x + r, c.y), 2f); drawLine(Pixel.Border, Offset(c.x, c.y - r), Offset(c.x, c.y + r), 2f)
-                // The bubble drifts to the high side, about 4 px per degree, kept inside the ring.
                 t?.let {
                     val dx = (it.roll * -6f).coerceIn(-r * 0.8f, r * 0.8f); val dy = (it.pitch * 6f).coerceIn(-r * 0.8f, r * 0.8f)
                     drawPixelDisc(if (level) Pixel.Green else Pixel.Blue, c + Offset(dx, dy), 18f)
@@ -129,7 +124,6 @@ internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** The Barometer: the air pressure and a rough height from it, against a sea-level pressure you can set. */
 @Composable
 internal fun BarometerTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.sensors
@@ -162,7 +156,6 @@ internal fun BarometerTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** Device check: what this phone can do for Gear, from what it really reports, and what each needs. Nothing starts or is asked for here. */
 @Composable
 internal fun DeviceTool(model: AppModel) {
     TextBox {

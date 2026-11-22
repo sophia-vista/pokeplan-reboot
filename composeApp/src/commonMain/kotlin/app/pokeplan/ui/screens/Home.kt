@@ -88,11 +88,6 @@ import app.pokeplan.ui.care.MoodKeys
 import app.pokeplan.ui.plan.taskMeta
 import app.pokeplan.ui.pokemon.label
 
-/**
- * Home is the world at a glance (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): the trainer, every region with its lead and its one most
- * useful next step, then the day's streak, mini-quests and what happened lately. It is not Plan's dashboard: the planner,
- * focus and each lead's scene stay inside their region. Nothing here punishes a quiet day.
- */
 @Composable
 fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) -> Unit) {
     val store = model.store
@@ -120,7 +115,6 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             WhatsNewCard(model)
             RankUpCard(model)
             WelcomeBackCard(model)
-            // The global buddy lives here: Home is the one place that shows it (Plan and the other modules show their own party).
             HomeBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
             RewardBox(model)
             QuickLogCard(model, go)
@@ -136,11 +130,6 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
     }
 }
 
-/**
- * One region on Home: its lead idling in a window onto the region's scene ([RegionLook]), its name, how today stands there,
- * and below a line its one most useful next step ([step]). The region's colour runs down the card's edge. The top of the
- * card opens the region.
- */
 @Composable
 private fun RegionCard(
     name: String, icon: String, look: RegionLook, darkness: Float, lead: OwnedPokemon?, status: String?,
@@ -172,10 +161,8 @@ private fun RegionCard(
     }
 }
 
-/** A next step: what it is in words, and the one button that does it. */
 @Composable
 private fun StepRow(text: String, action: String?, color: Color = Pixel.Green, lead: @Composable () -> Unit = {}, onClick: () -> Unit = {}) {
-    // At large text sizes the words and the button do not fit side by side: the button goes under the words and nothing is cut off.
     if (LocalDensity.current.fontScale > 1.3f) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -195,12 +182,10 @@ private fun StepRow(text: String, action: String?, color: Color = Pixel.Green, l
 
 private fun leadLine(p: OwnedPokemon) = "${p.nickname}, Lv. ${p.level}"
 
-/** Plan: its buddy, today's tasks, and the next one with Done (the picked one first), or the running focus session. */
 @Composable
 private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
     val store = model.store
     val data = model.data
-    // Plan's own lead (the first of its party), never the global buddy: the buddy lives on Home's stage above.
     val lead = data.player.planLead
     val open = store.openTodayTasks()
     val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.firstOrNull()
@@ -220,10 +205,9 @@ private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
     }
 }
 
-/** Care: its lead (or the Plan buddy helping until it has one), today's routines, and the next one with Done. */
 @Composable
 private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
-    model.careData // redraw when Care changes
+    model.careData
     val care = model.care
     val player = model.data.player
     val lead = player.careLead
@@ -245,18 +229,13 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
     }
 }
 
-/** How many days ahead "bills due soon" looks, and how many "dates this week" counts. */
 private const val SOON_DAYS = 3
 private const val LINK_DATES_DAYS = 7
 
-/**
- * The few things done many times a day, one tap each, so a drink or a mood does not take four taps through Modules: a task, a
- * glass of water, how today is, and an expense. A module that is switched off or locked has no key here. Nothing shows a figure.
- */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
-    model.careData; model.healData // the mood and the water redraw their own keys
+    model.careData; model.healData
     val locked = model.data.settings.lockedModules
     val mood = if (model.data.settings.careModule && Module.CARE.name !in locked) model.care.diaryToday()?.mood else -1
     TextBox {
@@ -273,22 +252,15 @@ private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
     }
 }
 
-/**
- * What else is waiting today, from the modules that have nothing of their own on Home (design review, 11 November 2026): a line only for
- * what is due, in the module's own colour, with the one key that goes there. Words are counts, never a bill, a chore or a person's name,
- * so nothing private shows on the first screen; a module behind the screen lock (or Mint with its lock on) shows nothing at all. When
- * nothing is waiting the card is not there.
- */
 @Composable
 private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
-    model.mintData; model.baseData; model.linkData; model.healData // redraw when any of them changes
+    model.mintData; model.baseData; model.linkData; model.healData
     val today = model.store.today
     val locked = model.data.settings.lockedModules
     fun count(n: Int, one: String, many: String) = if (n == 1) "1 $one" else "$n $many"
     val rows = buildList<@Composable () -> Unit> {
         if (!model.mintData.settings.gate) {
             val due = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, 0).count { !it.bill.income && (it.state == app.pokeplan.mint.OccurrenceState.DUE || it.state == app.pokeplan.mint.OccurrenceState.OVERDUE) }
-            // Counts only, never a bill's name or amount: Home is on show to whoever holds the phone.
             val soon = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, SOON_DAYS).count { !it.bill.income && it.state == app.pokeplan.mint.OccurrenceState.UPCOMING }
             if (due > 0) add { TodayRow(Module.MINT, "${count(due, "bill", "bills")} to settle") { go(Place.MINT) } }
             else if (soon > 0) add { TodayRow(Module.MINT, "${count(soon, "bill", "bills")} due in $SOON_DAYS days") { go(Place.MINT) } }
@@ -318,7 +290,6 @@ private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
     }
 }
 
-/** One line of "Also today": the module's icon and name as a small tag, what is waiting, and the whole row opens the module. */
 @Composable
 private fun TodayRow(module: Module, text: String, onOpen: () -> Unit) {
     Row(
@@ -331,7 +302,6 @@ private fun TodayRow(module: Module, text: String, onOpen: () -> Unit) {
     }
 }
 
-/** World: the team out exploring (or the first one picked), how many are out, and the one next step. */
 @Composable
 private fun WorldRegionCard(model: AppModel, go: (Place) -> Unit) {
     val data = model.data
@@ -350,13 +320,8 @@ private fun WorldRegionCard(model: AppModel, go: (Place) -> Unit) {
     }
 }
 
-/** How many things Recently lists; the rest stay in the log. */
 private const val RECENT_SHOWN = 4
 
-/**
- * What happened lately in any region, newest first: hatches with their sprite (a tap opens the Pokémon), other rewards with
- * their item. Rewards not looked at yet are in [RewardBox] above, so only seen ones are here.
- */
 @Composable
 private fun RecentCard(model: AppModel, go: (Place) -> Unit) {
     val store = model.store
@@ -389,10 +354,6 @@ private fun daysAgo(today: LocalDate, day: LocalDate): String = when (val n = da
     else -> "$n days ago"
 }
 
-/**
- * The global buddy in a scene of its own type, on Home: pet it, give it a berry, and it celebrates a finished task or a
- * hatch with its cry, its portrait and a hop. Nothing before the first buddy.
- */
 @Composable
 fun HomeBuddyStage(model: AppModel, onOpen: () -> Unit) {
     val store = model.store
@@ -410,7 +371,6 @@ fun HomeBuddyStage(model: AppModel, onOpen: () -> Unit) {
     )
 }
 
-/** The one recommended task (on Plan's page), with its actions. Completing is its own button; the rest of the card is just information. */
 @Composable
 internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onChoose: (() -> Unit)?, picked: Boolean = false, day: kotlinx.datetime.LocalDate? = null) {
     TextBox {
@@ -432,7 +392,6 @@ internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onCh
     }
 }
 
-/** A task's title with its difficulty letter as a small tag after it. */
 @Composable
 internal fun TaskTitleLine(task: Task, style: androidx.compose.ui.text.TextStyle) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -441,7 +400,6 @@ internal fun TaskTitleLine(task: Task, style: androidx.compose.ui.text.TextStyle
     }
 }
 
-/** A task as one compact row: a Done key first, then the title with its difficulty tag and details. */
 @Composable
 fun TaskRow(task: Task, onDone: () -> Unit) {
     ListRow(lead = { PixelIconButton("check", "Done", onDone, Pixel.Green) }) {
@@ -451,19 +409,16 @@ fun TaskRow(task: Task, onDone: () -> Unit) {
     }
 }
 
-/** Progress to the next trainer rank, as an EXP bar like the games'. */
 @Composable
 private fun RankProgress(points: Int) {
     val rank = TrainerRank.rankFor(points)
     val low = TrainerRank.thresholds[rank]
     val high = TrainerRank.thresholds.getOrNull(rank + 1)
     val next = TrainerRank.pointsToNext(points)
-    // The figure is for screen readers only; the bar speaks for itself.
     val label = if (next == null) "Top rank" else "$next points to ${TrainerRank.names[rank + 1]}"
     ExpBar(if (high == null) 1f else (points - low).toFloat() / (high - low), label, tag = "", color = Pixel.Yellow)
 }
 
-/** A rest day pauses the streak without using the week's free miss; a day that already counted needs none. */
 @Composable
 private fun RestDayRow(model: AppModel) {
     val store = model.store
@@ -480,12 +435,9 @@ private fun RestDayRow(model: AppModel) {
     }
 }
 
-/** Three small actions a day, each a berry (honour system). "Open the task you've been avoiding" starts 5 minutes on it. */
 @Composable
 private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
     val store = model.store
-    // Read the save through Compose state: the store itself is not observable, so without this the card never redraws
-    // after Done and the button looks dead.
     model.data
     val quests = store.miniQuests()
     TextBox {
@@ -520,10 +472,9 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
     }
 }
 
-/** After a week or more away: a gift and a fresh start, never a scolding. */
 @Composable
 private fun WelcomeBackCard(model: AppModel) {
-    model.data // observe the save (see MiniQuestsCard)
+    model.data
     if (!model.store.welcomeBackDue()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -534,7 +485,6 @@ private fun WelcomeBackCard(model: AppModel) {
     }
 }
 
-/** After a rank up: the new rank and what it opened, once. Nothing when there is nothing new. */
 @Composable
 private fun RankUpCard(model: AppModel) {
     val opened = model.store.newlyOpened()
@@ -550,7 +500,6 @@ private fun RankUpCard(model: AppModel) {
     }
 }
 
-/** After an update: what is new in this version, once. Nothing when there is no entry or it has been seen. */
 @Composable
 private fun WhatsNewCard(model: AppModel) {
     val version = AppVersion.NAME

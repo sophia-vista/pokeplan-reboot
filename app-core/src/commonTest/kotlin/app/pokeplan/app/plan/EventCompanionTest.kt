@@ -26,7 +26,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** A PLAN event's companion gains exp when an occurrence ends (PLAN.md 8.2, docs/economy.md "Event with a companion ends"). */
 class EventCompanionTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
@@ -38,7 +37,6 @@ class EventCompanionTest {
 
     private fun started(): Pair<GameStore, FakeClock> {
         val clock = FakeClock(start)
-        // The starter is only the global buddy; Plan's party starts with whoever is put in it, so one Pokémon joins it as the lead.
         return GameStore(MemoryStorage(), clock, utc, Random(7)).also {
             it.start("Sophia", 25)
             val first = it.grantPokemon(133, "Quest: Eevee")
@@ -57,9 +55,9 @@ class EventCompanionTest {
         val (s, clock) = started()
         val e = s.addEvent("Gym", s.today, at(10), 60)
         s.setEventCompanion(e.id, lead(s).id)
-        clock.advanceMinutes(90); s.tick() // 10:30: still on
+        clock.advanceMinutes(90); s.tick()
         assertEquals(0, exp(s))
-        clock.advanceMinutes(40); s.tick() // 11:10: over
+        clock.advanceMinutes(40); s.tick()
         assertEquals(2 * CandyRules.XP_PER_CANDY, exp(s), "an hour is two candies' worth")
         clock.advanceMinutes(60); s.tick()
         assertEquals(1, expCount(s), "never twice")
@@ -116,7 +114,6 @@ class EventCompanionTest {
     @Test
     fun aQuarterHourIsTheShortestEventAndPaysOneCandy() {
         val (s, clock) = started()
-        // The calendar snaps every timed event to at least 15 minutes, so that is the least one can be (EventCompanions.MIN_MINUTES).
         val e = s.addEvent("Call", s.today, at(10), 10)
         assertEquals(15, s.data.events.single().minutes)
         s.setEventCompanion(e.id, lead(s).id)
@@ -132,9 +129,9 @@ class EventCompanionTest {
         clock.advanceMinutes(120); s.tick()
         assertEquals(1, expCount(s), "today's")
         s.deleteOccurrence(PlanEvent.occurrenceId(e.id, s.today.plus(DatePeriod(days = 1))))
-        clock.advanceMinutes(24 * 60); s.tick() // tomorrow's was skipped
+        clock.advanceMinutes(24 * 60); s.tick()
         assertEquals(1, expCount(s))
-        clock.advanceMinutes(24 * 60); s.tick() // the day after
+        clock.advanceMinutes(24 * 60); s.tick()
         assertEquals(2, expCount(s))
     }
 
@@ -142,7 +139,7 @@ class EventCompanionTest {
     fun theDailyCapStopsAtSixCandiesOfExpAcrossEvents() {
         val (s, clock) = started()
         listOf(10, 13, 16).forEach { h -> s.setEventCompanion(s.addEvent("Long $h", s.today, at(h), 180).id, lead(s).id) }
-        clock.advanceMinutes(12 * 60); s.tick() // 21:00: three three-hour events, 4 candies each before the cap
+        clock.advanceMinutes(12 * 60); s.tick()
         assertEquals(EventCap, exp(s))
     }
 
@@ -163,9 +160,8 @@ class EventCompanionTest {
         val (s, clock) = started()
         val e = s.addEvent("Long", s.today, at(10), 180, repeat = EventRepeat.DAILY)
         s.setEventCompanion(e.id, lead(s).id)
-        clock.advanceMinutes(5 * 60); s.tick() // 14:00: today's three hours are over
+        clock.advanceMinutes(5 * 60); s.tick()
         assertEquals(4 * CandyRules.XP_PER_CANDY, exp(s))
-        // Moving the series a day back and a day forward reopens dates, but an edit restarts the companion's time: nothing more is paid.
         s.updateEvent(e.id, day = s.today.plus(DatePeriod(days = -1)))
         s.tick()
         s.updateEvent(e.id, day = s.today)
@@ -179,7 +175,7 @@ class EventCompanionTest {
         val (s, clock) = started()
         val e = s.addEvent("Later", s.today.plus(DatePeriod(days = 1)), at(10), 60)
         s.setEventCompanion(e.id, lead(s).id)
-        s.moveEvent(e.id, s.today, at(7)) // 07:00 to 08:00 today, an hour ago (the clock is 09:00)
+        s.moveEvent(e.id, s.today, at(7))
         clock.advanceMinutes(30); s.tick()
         assertEquals(0, expCount(s))
     }
@@ -216,7 +212,6 @@ class EventCompanionTest {
     }
 
     private companion object {
-        /** Six candies' worth, the daily cap. */
         val EventCap = 6 * CandyRules.XP_PER_CANDY
     }
 }

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The buddy's idle animation in the Buddy widget: a flipper that shows one frame after another by itself. -->
 <ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/sprite_flipper"
     android:layout_width="match_parent"

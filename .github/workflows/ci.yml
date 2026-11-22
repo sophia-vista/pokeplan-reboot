@@ -1,17 +1,9 @@
 name: CI
 
-# Pull requests only: a merge to main was already tested on its PR, and the Latest APK workflow still builds main. Actions
-# minutes are limited on this private repository, so main is not tested a second time, a PR that changes only text is not
-# tested at all, and every job below is one the PR needs (each job also costs at least a minute to start).
-# Owner's rule (6 November 2026): spend as few Actions minutes as possible. A PR runs these checks only when it carries the
-# `ci` label (or the `android` or `apk` label), or when someone starts the workflow by hand; `./gradlew jvmTest
-# compileKotlinWasmJs` run locally is the normal gate.
 on:
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
-    # Docs, notes and the old app do not change what these checks look at. VERSION and CHANGELOG changes still run them when
-    # they arrive with code; a PR that changes only .md files has nothing to test.
     paths-ignore:
       - "docs/**"
       - "**.md"
@@ -19,11 +11,9 @@ on:
       - ".idea/**"
       - "legacy-android/**"
 
-# The job only reads the repository and uploads an artifact: no write scope on the token.
 permissions:
   contents: read
 
-# A new push to a PR cancels the run still going for the push before it.
 concurrency:
   group: ci-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -31,14 +21,11 @@ concurrency:
 jobs:
   test:
     name: Tests and builds
-    # A skipped job costs no minutes.
     if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci') || contains(github.event.pull_request.labels.*.name, 'android') || contains(github.event.pull_request.labels.*.name, 'apk') }}
     runs-on: ubuntu-latest
-    # A run that hangs must not eat the month's minutes: the whole job normally takes about ten.
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      # The cheap checks come first, so a PR that breaks one stops before the ten minute Gradle build.
       - name: VERSION is MAJOR.MINOR.PATCH
         run: grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION
       - uses: actions/setup-python@v5
@@ -54,16 +41,10 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
         env:
-          # The same cache key as the Latest APK workflow, so a PR starts from what the last merge to main downloaded and compiled
-          # instead of from nothing (a PR can read main's caches but not write them).
           GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: pokeplan
           GRADLE_BUILD_ACTION_CACHE_KEY_JOB: gradle
       - name: Unit tests (JVM) and the web build
         run: ./gradlew jvmTest compileKotlinWasmJs :composeApp:compileKotlinJvm -Pscreenshots --no-daemon
-      # Compiling the Android app costs about as much as packaging it (most of it is compiling the shared modules a second time), so
-      # it is done only when the PR can break it: it touches the Android app, an Android source set or the Gradle setup, or has the
-      # "android" or "apk" label. Changes to shared code are already compiled for the JVM and the web above; every merge to main is
-      # built and published as a release, which would show anything else.
       - name: Does this PR touch the Android app?
         id: android
         run: |
@@ -73,7 +54,6 @@ jobs:
           else
             echo "needed=false" >> "$GITHUB_OUTPUT"
           fi
-      # The Android tests (REP-033) run on the JVM with Robolectric: the reminders, the receivers, the widgets' save, the sealing, LiveStore recovery.
       - name: Android app compiles and its tests pass
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'apk') && (steps.android.outputs.needed == 'true' || contains(github.event.pull_request.labels.*.name, 'android')) }}
         run: |
@@ -87,7 +67,6 @@ jobs:
       - name: Keep the APK
         if: ${{ contains(github.event.pull_request.labels.*.name, 'apk') }}
         uses: actions/upload-artifact@v4
-        # A convenience, not a check: a full artifact storage quota must not fail the PR or skip the checks below.
         continue-on-error: true
         with:
           name: pokeplan-debug-apk

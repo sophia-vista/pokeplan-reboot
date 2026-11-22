@@ -7,38 +7,19 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
-/**
- * LINK's records in their own tables from the start (schema version 10, REP-014; docs/pokelife `MODULES/LINK.md` and
- * `ARCHITECTURE/DATA_AND_MIGRATIONS.md` section 7.4). LINK, like HEAL, never had a document row: the app reads and writes it as one JSON document,
- * `LinkData`, so the rules stay pure and tested, and this class is what stands under it, as [HealTables] stands under Heal's. Its rows are not sealed (only Heal and Mint rows, and their backups, are).
- *
- * **One table family per kind of record** (`link_person`, `link_note`, `link_date`, `link_followup`, plus `link_state` for the settings), so a kind can be read ([readKind]), exported or
- * erased ([erase]) on its own; erasing LINK ([clear]) touches nothing outside the `link_*` tables: not the Pokémon, the Bag, the ledger, Plan, Care or Heal.
- *
- * It works on the JSON, not on `LinkData`, so `:data` stays independent of the module and a field it has never heard of (a newer build's) lands in
- * `link_state`, or stays inside its record's `json`, instead of being dropped. A write only touches the rows that changed, in one transaction.
- */
 class LinkTables(private val store: DataStore) {
     private val q get() = store.db.dataQueries
     private val rows = RecordRows(store)
 
-    /** Whether LINK lives here (set once by [activate]); before that a `link` row of `live_document`, if any, is all there is. */
     fun isActive(): Boolean = q.meta(META_LINK_TABLES).executeAsOneOrNull() == ACTIVE
 
-    /** The LINK document as it was last written, or null when nothing has been written yet. */
     fun read(): String? = store.transaction { assemble()?.let { JSON.encodeToString(JsonElement.serializer(), it) } }
 
-    /** Saves [document] (the whole LINK document as JSON): the rows that differ are changed, the rest are left alone. */
     fun write(document: String) {
         val parsed = parse(document)
         store.transaction { replaceRows(parsed) }
     }
 
-    /**
-     * Starts LINK in the tables: [document] (null on a fresh install, the usual case) is split into rows, every row is read back and the assembled
-     * document is compared with the one given; the marker is set only when they are equal, all in one transaction, so a difference leaves the
-     * database exactly as it was. Returns whether it imported a document; already active does nothing.
-     */
     fun activate(document: String?, nowMillis: Long): Boolean {
         if (isActive()) return false
         val parsed = document?.let(::parse)
@@ -54,27 +35,22 @@ class LinkTables(private val store: DataStore) {
         return parsed != null
     }
 
-    /** One kind of record ([LinkTables.KINDS] names them) as a JSON array, for export; empty when there is none. */
     fun readKind(field: String): String {
         val slice = SLICES.firstOrNull { it.field == field } ?: error("unknown kind of LINK record: $field")
         return store.transaction { JSON.encodeToString(JsonElement.serializer(), JsonArray(rows.records(slice.table).map { JSON.parseToJsonElement(it.json) })) }
     }
 
-    /** Erases one kind of record (every row of its table family) and nothing else, in one transaction. */
     fun erase(field: String) {
         val slice = SLICES.firstOrNull { it.field == field } ?: error("unknown kind of LINK record: $field")
         store.transaction { store.driver.execute(null, "DELETE FROM ${slice.table}", 0) }
     }
 
-    /** Erases every LINK record and setting (the whole LINK save), in one transaction. Nothing outside the `link_*` tables is touched. */
     fun clear() {
         store.transaction {
             for (slice in SLICES) store.driver.execute(null, "DELETE FROM ${slice.table}", 0)
             store.driver.execute(null, "DELETE FROM link_state", 0)
         }
     }
-
-    // --- taking a document apart and putting it back --------------------------------------------------------------------
 
     private fun replaceRows(document: JsonObject) {
         for (slice in SLICES) rows.diffRecords(slice.table, rowsOf(slice, document[slice.field] as? JsonArray))
@@ -119,12 +95,10 @@ class LinkTables(private val store: DataStore) {
             Slice("followUps", "link_followup", "due"),
         )
 
-        /** The document fields that are a kind of private record, each with its own table family. */
         val KINDS: List<String> = SLICES.map { it.field }
 
         private fun parse(text: String): JsonObject = JSON.parseToJsonElement(text) as? JsonObject ?: error("the Link document is not a JSON object")
 
-        /** The document with what a read back cannot tell apart left out: an empty list of records is not stored (nothing to put in a table). */
         private fun canonical(document: JsonObject): JsonObject =
             JsonObject(document.filterNot { (key, value) -> SLICES.any { it.field == key } && (value as? JsonArray)?.isEmpty() == true })
     }

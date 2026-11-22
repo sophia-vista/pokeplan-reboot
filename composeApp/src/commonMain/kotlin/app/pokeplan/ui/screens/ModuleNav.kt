@@ -45,22 +45,8 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.world.WorldSection
 
-/*
- * Moving around inside the Modules tab (docs/pokelife/FEATURES/DESIGN_SYSTEM.md 6.7, REP-067):
- *  - a module's page is its daily view, right under a one-row header (Back, the title, a small "Sections" key);
- *  - the "Sections" key opens a sheet of compact rows, one per section;
- *  - the bottom Modules tab switches module (tapping it again returns to the list), so the page carries no module switcher;
- *  - the Modules tab carries a "Jump to" field that opens any section by its fixed name.
- * Nothing here reads a figure, a name or a private word: the search only knows the fixed names of the sections.
- */
-
-/** Whether Focus exists on this platform (false on desktop and the web), for screens that are not handed it. `ModulesScreen` provides it. */
 val LocalFocusTab = staticCompositionLocalOf { true }
 
-/**
- * The small key at the end of a module header's one row: **Sections** opens [sections] as rows in a sheet titled [title]. [onSection]
- * is given the key of the tapped row. Quiet on purpose (the page under the header is the point); a screen reader hears "Sections".
- */
 @Composable
 fun SectionsKey(title: String, sections: List<MenuEntry>, onSection: (String) -> Unit) {
     var show by remember { mutableStateOf(false) }
@@ -70,10 +56,6 @@ fun SectionsKey(title: String, sections: List<MenuEntry>, onSection: (String) ->
     }
 }
 
-/**
- * A sheet that rises from the bottom over the page: one dialogue box with a title, [content] and a Close key. A tap outside it, or
- * the system back gesture, closes it.
- */
 @Composable
 fun NavSheet(title: String, onClose: () -> Unit, content: @Composable () -> Unit) {
     Dialog(onClose, DialogProperties(usePlatformDefaultWidth = false)) {
@@ -81,12 +63,10 @@ fun NavSheet(title: String, onClose: () -> Unit, content: @Composable () -> Unit
             Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClose),
             contentAlignment = Alignment.BottomCenter,
         ) {
-            // An opaque page colour under the box: the dialogue box alone lets the page behind show through the rows.
             Box(Modifier.widthIn(max = 640.dp).padding(Spacing.L).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}) {
                 Box(Modifier.background(Pixel.Paper, DialogueShape)) {
                     TextBox {
                         Column(Modifier.heightIn(max = 560.dp), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            // Title and rows scroll; the Close key stays in view under them.
                             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                                 PixelTitle(title)
                                 content()
@@ -100,10 +80,8 @@ fun NavSheet(title: String, onClose: () -> Unit, content: @Composable () -> Unit
     }
 }
 
-/** One place the search can open: [title] in [area], with the row's [icon]. */
 internal class JumpTarget(val title: String, val area: String, val icon: String, val go: () -> Unit)
 
-/** Every module, every section of every module and Gear, by their fixed names. Care only while it is on; Focus and Import only where they exist. */
 internal fun jumpTargets(model: AppModel, focus: Boolean): List<JumpTarget> = buildList {
     val careOn = model.data.settings.careModule
     add(JumpTarget("Gear", "Tools", "explorer-kit") { model.gearOpen = true })
@@ -124,7 +102,6 @@ internal fun jumpTargets(model: AppModel, focus: Boolean): List<JumpTarget> = bu
     WorldSection.entries.forEach { s -> add(JumpTarget(s.label, "World", s.icon) { model.open(Place.WORLD, focus); model.worldSection = s }) }
 }
 
-/** The places that match [query] (a part of a section's or a module's name), the ones that start with it first. */
 internal fun jumpMatches(targets: List<JumpTarget>, query: String, limit: Int = 8): List<JumpTarget> {
     val q = query.trim().lowercase()
     if (q.isEmpty()) return emptyList()
@@ -133,10 +110,6 @@ internal fun jumpMatches(targets: List<JumpTarget>, query: String, limit: Int = 
         .take(limit)
 }
 
-/**
- * "Jump to": a field that opens any module or section by name, for when the way is known and the taps are not wanted. [onDone] runs
- * after a row is chosen.
- */
 @Composable
 fun JumpSearch(model: AppModel, onDone: () -> Unit = {}) {
     val focus = LocalFocusTab.current

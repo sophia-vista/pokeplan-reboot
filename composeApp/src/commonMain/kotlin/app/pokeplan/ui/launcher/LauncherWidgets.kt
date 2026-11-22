@@ -49,46 +49,33 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
-/** What every widget needs from the launcher: the model, the apps, the prefs, the phone, the forecast and what to do on a tap. */
-/** How many grid cells wide and tall the widget being drawn is (the stacked layout is 4 wide and as tall as it needs): widgets with a short form use it to pick one. */
 internal class Cells(val w: Int, val h: Int) { val narrow get() = w < WidgetGrid.COLUMNS }
 internal val LocalCells = androidx.compose.runtime.staticCompositionLocalOf { Cells(WidgetGrid.COLUMNS, 99) }
 
 internal class WidgetEnv(
     val model: AppModel, val apps: List<LauncherApp>, val prefs: LauncherPrefs, val host: LauncherHost, val forecast: Forecast?, val pixel: Int,
     val today: TodayState, val mood: BuddyMood, val saver: Boolean, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onGear: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
-    /** How many pages the launcher has, and a way to show one of them (by its place in the row). */
     val pages: Int = 2, val goToPage: (Int) -> Unit = {},
-    /** The battery, read by the launcher once a minute while it is in sight. */
     val battery: BatteryStatus? = null,
 )
 
-/** The month and day the calendar and agenda widgets share, so choosing a day in one shows its agenda in the other. */
 internal class TodayState(today: LocalDate) {
     var month by mutableStateOf(LocalDate(today.year, today.month, 1))
     var day by mutableStateOf(today)
-    /** The phone's calendar events (Google Calendar's among them) around the month shown, read by the launcher; empty until read or without permission. */
     var device by mutableStateOf<List<CalendarEvent>>(emptyList())
-    /** Bumped when the calendar permission is answered, so the events are read again. */
     var permissionAnswers by mutableIntStateOf(0)
 }
 
-/**
- * One widget: a dialogue box with what its [WidgetSlot.kind] shows. Hold any quiet part of it to edit the widgets on the
- * screen; while editing, each has a bar to drag it by (past an end, it goes to the other part of the page), a size and Remove.
- */
 @Composable
 internal fun LauncherWidget(slot: WidgetSlot, env: WidgetEnv) {
     var height by remember { mutableStateOf(0) }
     var drag by remember { mutableStateOf(0f) }
     Column(
-        // Widgets keep the page margin, except the buddy's portraits, which sit flush against the sides of the screen.
         Modifier.fillMaxWidth().padding(horizontal = if (slot.kind == WidgetKind.BUDDY) 0.dp else Spacing.Page).onSizeChanged { height = it.height }.graphicsLayer { translationY = drag; shadowElevation = 0f }
             .then(if (env.editing) Modifier.border(2.dp, Color.White.copy(alpha = 0.55f)) else Modifier.pointerInput(Unit) { detectTapGestures(onLongPress = { env.onEdit() }) }),
     ) {
         if (env.editing) EditBar(slot, env, onDrag = { dy ->
             drag += dy
-            // Past half its own height the widget swaps with its neighbour; the bar then carries on from where it was.
             val step = height.coerceAtLeast(1)
             while (drag > step / 2f) { env.onPrefs(env.prefs.moveWidget(slot, 1)); drag -= step }
             while (drag < -step / 2f) { env.onPrefs(env.prefs.moveWidget(slot, -1)); drag += step }
@@ -102,7 +89,6 @@ private fun EditBar(slot: WidgetSlot, env: WidgetEnv, onDrag: (Float) -> Unit, o
     val pixel = env.pixel
     val density = LocalDensity.current.density
     Row(Modifier.fillMaxWidth().height(Spacing.Target).background(Color.White.copy(alpha = 0.16f)), verticalAlignment = Alignment.CenterVertically) {
-        // The handle: hold and drag up or down.
         Box(
             Modifier.weight(1f).height(Spacing.Target).pointerInput(slot.kind, slot.arg) {
                 detectVerticalDragGestures(onDragEnd = onDragEnd, onDragCancel = onDragEnd) { change, dy -> change.consume(); onDrag(dy) }
@@ -123,7 +109,6 @@ private fun EditBar(slot: WidgetSlot, env: WidgetEnv, onDrag: (Float) -> Unit, o
     }
 }
 
-/** The bar at the top of a page being edited: add a widget, or finish. */
 @Composable
 internal fun EditToolbar(env: WidgetEnv, modifier: Modifier = Modifier) {
     PmdBox(env.pixel, modifier.fillMaxWidth()) {
@@ -155,7 +140,6 @@ internal fun WidgetBody(slot: WidgetSlot, env: WidgetEnv) {
         WidgetKind.ANDROID -> slot.arg.toIntOrNull()?.let { id ->
             if (env.host.hostsWidgets && env.host.widgetSpec(id) == null) UnavailableWidget(env.pixel)
             else if (LocalGridFill.current) {
-                // On the grid the provider gets exactly the cells' room, with no frame of ours around it, and is told that size.
                 androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
                     env.host.HostedWidget(id, slot.size.ordinal, maxWidth.value.toInt(), maxHeight.value.toInt(), Modifier.fillMaxSize())
                 }
@@ -164,7 +148,6 @@ internal fun WidgetBody(slot: WidgetSlot, env: WidgetEnv) {
     }
 }
 
-/** Where another app's widget stood when its app is gone: it keeps its cells, so nothing moves, until the user removes it (hold, then the X). */
 @Composable
 private fun UnavailableWidget(pixel: Int) {
     PmdBox(pixel, Modifier.fillMaxWidth()) { PmdText("Widget unavailable", pixel, Modifier.padding(horizontal = Spacing.S), alpha = 0.8f) }
@@ -176,7 +159,6 @@ private fun ClockWidget(env: WidgetEnv) {
     val gap = Modifier.padding(horizontal = pmdRowPad(env.pixel, density))
     val battery = env.battery
     PmdBox(env.pixel, Modifier.fillMaxWidth()) {
-        // The seconds tick in the model, so reading it keeps the minute right; without seconds only a new minute draws this again.
         val seconds = env.prefs.showSeconds && !env.saver
         val stamp by remember(seconds) { androidx.compose.runtime.derivedStateOf { if (seconds) env.model.now else env.model.now / 60_000L } }
         stamp
@@ -184,10 +166,8 @@ private fun ClockWidget(env: WidgetEnv) {
         val cells = LocalCells.current
         val time = formatTime(now.hour, now.minute, if (env.prefs.showSeconds && !env.saver) now.second else null, env.model.data.settings.clock12Hour)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            // Narrower than the screen the date gives way to the time, and the battery to a wider place.
             PmdText(if (cells.w >= 3) "${formatDate(now.date, env.model.data.settings.dateStyle)}   $time" else time, env.pixel, gap)
             Box(Modifier.weight(1f))
-            // A battery filled to its charge (empty, one, two or three bars), with a bolt beside it while charging; low and not charging, it turns red.
             if (cells.w >= 4) battery?.let {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     if (it.charging) app.pokeplan.ui.Glyph("zap", Color.White.copy(alpha = 0.75f), size = 16.dp, description = "Charging")
@@ -200,7 +180,6 @@ private fun ClockWidget(env: WidgetEnv) {
     }
 }
 
-/** The battery glyph for a charge of [percent]: empty at 10 or below, then one, two or three bars (Pixelarticons' battery levels). */
 internal fun batteryGlyph(percent: Int): String = when {
     percent <= 10 -> "battery"
     percent <= 40 -> "battery-low"
@@ -231,7 +210,6 @@ private fun NavWidget(env: WidgetEnv) {
     val data = env.model.data
     if (!data.onboarded) return
     val running = data.focus != null
-    // Half the screen or less, or a short box, shows the pictures alone: the names would be cut off.
     val cells = LocalCells.current
     val labels = cells.w >= 4 && cells.h >= 3
     PmdBox(env.pixel, Modifier.fillMaxWidth()) {
@@ -250,28 +228,23 @@ private fun OftenWidget(env: WidgetEnv, size: WidgetSize) {
     AppsWidget("Often used", suggested, env, size, hint = "", icons = env.prefs.icons, onTitle = null)
 }
 
-/** A titled box of apps, four to a row: Favorites, Often used or a folder. Tap an app to open it, press and hold for its sheet; a folder's title opens the folder. */
 @Composable
 private fun AppsWidget(title: String, apps: List<LauncherApp>, env: WidgetEnv, size: WidgetSize, hint: String, icons: Map<String, String>, onTitle: (() -> Unit)?) {
     val density = LocalDensity.current.density
     val pad = pmdRowPad(env.pixel, density)
     PmdBox(env.pixel, Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth()) {
-            // Favorites has no label (what it is is plain); a folder and Often used carry a small one, and a folder's opens the folder.
             if (title.isNotEmpty()) {
                 val titleModifier = Modifier.fillMaxWidth().let { if (onTitle != null) it.clickable(role = Role.Button, onClickLabel = "Open the $title folder") { onTitle() } else it }
                 Box(titleModifier.padding(horizontal = pad, vertical = Spacing.S), contentAlignment = Alignment.CenterStart) { PmdText(title, env.pixel, alpha = 0.7f) }
             }
             if (apps.isEmpty()) PmdText(hint, env.pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
             else Column(Modifier.fillMaxWidth()) {
-                // Small shows one row of apps, medium two, large all of them (and the rest, on a smaller size, are counted).
-                // Half the screen holds two to a row, and a box too short for a name shows the pictures alone.
                 val cells = LocalCells.current
                 val perRow = if (cells.narrow) 2 else 4
                 val labels = cells.h >= 3
                 val rows = apps.chunked(perRow)
                 val asked = when (size) { WidgetSize.SMALL -> 1; WidgetSize.MEDIUM -> 2; WidgetSize.LARGE -> rows.size }
-                // On the grid only as many rows as the box is tall enough for (a row of apps is 80 dp with names, 56 without).
                 val fit = ((cells.h * WidgetGrid.ROW_DP - 22) / if (labels) 80 else 56).coerceAtLeast(1)
                 val shown = minOf(asked, fit)
                 rows.take(shown).forEach { row ->
@@ -292,7 +265,6 @@ private fun ActionsWidget(env: WidgetEnv) {
     PmdBox(env.pixel, Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth()) {
             if (LocalCells.current.narrow) {
-                // Half the screen: one button to a line, the names whole.
                 PmdMenuLine(folders, env.pixel, Modifier.fillMaxWidth(), center = true, icon = "pa-info-box", onClick = env.onFolders)
                 PmdMenuLine("All apps", env.pixel, Modifier.fillMaxWidth(), center = true, icon = "pa-layout", onClick = env.onAllApps)
                 PmdMenuLine("Widgets", env.pixel, Modifier.fillMaxWidth(), center = true, icon = "pa-grid-2x2-2", onClick = env.onWidgets)
@@ -354,12 +326,8 @@ private fun CalendarWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) 
             Row(Modifier.fillMaxWidth().padding(top = Spacing.S)) {
                 weekDays(!env.model.data.settings.weekStartsOnMonday).forEach { Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { PmdText(dayName(it).take(2), pixel, alpha = 0.7f) } }
             }
-            // Weeks start on Sunday or Monday as chosen; the first row is padded with the end of the month before.
             val lead = weekDays(!env.model.data.settings.weekStartsOnMonday).indexOf(state.month.dayOfWeek)
             val days = (0 until 42).map { state.month.plus(DatePeriod(days = it - lead)) }
-            // The rows are as tall as the box leaves room for (a box holds [WidgetGrid.ROW_DP] per cell; the header, the rule and the weekday
-            // names take about 104 dp): at most Target, at least 24 dp. When even the smallest rows do not all fit, only the weeks around the
-            // chosen day (or the month's first week when another month is showing) are shown, so nothing is cut off at any size.
             val all = days.chunked(7).filter { w -> w.any { it.month == state.month.month } }
             val room = (LocalCells.current.h * WidgetGrid.ROW_DP - 104).coerceAtLeast(24)
             val fit = maxOf(1, room / 24)
@@ -398,7 +366,6 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
     val pad = pmdRowPad(pixel, density)
     val day = state.day
     val open = model.data.tasks.filter { it.state == TaskState.OPEN }
-    // The app's own events and the phone's calendars (Google Calendar's among them), all-day ones first and then by the hour; then the open tasks of the day.
     fun eventsOn(d: LocalDate): List<AgendaLine> = (model.data.events.flatMap { it.occurrences(d, d) }.map { e -> AgendaLine(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.model.data.settings.clock12Hour), e.title, if (e.allDay) -1 else e.start.hour * 60 + e.start.minute) } +
         state.device.filter { it.isOn(d) }.map { e ->
             val from = e.span(d)?.first
@@ -407,28 +374,23 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
     fun tasksOn(d: LocalDate) = if (d == today) model.store.todayTasks().filter { it.state == TaskState.OPEN } else open.filter { it.planned == d || it.due?.date == d }
     val lines = eventsOn(day)
     val tasks = tasksOn(day)
-    // Small lists three lines, medium six, large eight; on the grid, no more whole rows than its cells hold under the frame and the heading, so none is cut in half.
     val cells = LocalCells.current
     val unit = pixel / density
     val fits = if (!LocalGridFill.current) Int.MAX_VALUE
         else ((cells.h * WidgetGrid.ROW_DP - 12 * unit - (PmdFont.LINE * unit + 2 * Spacing.M.value + unit)) / Spacing.Target.value).toInt().coerceAtLeast(1)
     val source = model.calendars
-    // The line that asks for Google Calendar takes a row of its own at the bottom.
     val asks = source != null && (!source.permitted() || model.data.shownCalendars.isEmpty())
     val room = (minOf(fits, when (size) { WidgetSize.SMALL -> 3; WidgetSize.MEDIUM -> 6; WidgetSize.LARGE -> 8 }) - if (asks) 1 else 0).coerceAtLeast(1)
-    // When not everything fits, the last row says how many more there are.
     val total = lines.size + tasks.size
     val listed = if (total > room) (room - 1).coerceAtLeast(1) else room
     val shownEvents = lines.take(listed)
     val shownTasks = tasks.take((listed - shownEvents.size).coerceAtLeast(0))
     val more = total - shownEvents.size - shownTasks.size
-    // A light day leaves room: the next day with anything on it (within a week) fills it, under its own heading, so the box is not mostly empty.
     val spare = room - shownEvents.size - shownTasks.size - (if (lines.isEmpty() && tasks.isEmpty()) 1 else 0) - 1
     val ahead = if (spare <= 0 || more > 0) null else (1..7).asSequence().map { day.plus(DatePeriod(days = it)) }
         .map { d -> Triple(d, eventsOn(d), tasksOn(d)) }.firstOrNull { (_, e, t) -> e.isNotEmpty() || t.isNotEmpty() }
     val aheadEvents = ahead?.second?.take(spare).orEmpty()
     val aheadTasks = ahead?.third?.take(spare - aheadEvents.size).orEmpty()
-    // The time column is as wide as the widest time shown, not a share of the row, so a short title is not pushed to the middle.
     val font by produceState(PmdFont.cachedOrNull()) { value = PmdFont.load() }
     val timeWidth = font?.let { f -> ((shownEvents + aheadEvents).maxOfOrNull { f.width(f.clean(it.time)) } ?: 0) * pixel / density }?.dp
     fun label(d: LocalDate) = when (d) { today -> "Today"; today.plus(DatePeriod(days = 1)) -> "Tomorrow"; else -> "${dayName(d.dayOfWeek)} ${d.day} ${monthName(d.month)}" }
@@ -441,7 +403,6 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
         }
     }
 
-    // Completing a task here finishes it and pays it, like the Plan tab; the box is the whole row.
     @Composable
     fun TaskRow(t: app.pokeplan.plan.Task, alpha: Float) {
         Row(
@@ -454,7 +415,6 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
         }
     }
 
-    // A list reads from the top: on the grid it starts under the frame, not in the middle of its cells.
     PmdBox(pixel, Modifier.fillMaxWidth(), alignTop = true) {
         Column(Modifier.fillMaxWidth()) {
             PmdText(label(day), pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M))
@@ -468,16 +428,13 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
                 aheadEvents.forEach { EventRow(it, 0.7f) }
                 aheadTasks.forEach { TaskRow(it, 0.7f) }
             }
-            // Google Calendar, like the app: needs the calendar permission, and the calendars chosen in PokéLife's settings.
             if (source != null && !source.permitted()) PmdMenuLine("Show Google Calendar", pixel, dim = true) { source.requestPermission { state.permissionAnswers++ } }
             else if (source != null && model.data.shownCalendars.isEmpty()) PmdMenuLine("Choose calendars in PokéLife: Me, Settings", pixel, dim = true) { env.host.openApp(app.pokeplan.ui.Place.ME) }
         }
     }
 }
 
-/** One event line of the agenda: its time ("All day" or the hour), its title, and where it sorts (all-day first). */
 private class AgendaLine(val time: String, val title: String, val sort: Int)
 
-/** The days of the week in the order a calendar row shows them. */
 internal fun weekDays(sundayFirst: Boolean): List<DayOfWeek> =
     if (sundayFirst) listOf(DayOfWeek.SUNDAY) + DayOfWeek.entries.filter { it != DayOfWeek.SUNDAY } else DayOfWeek.entries

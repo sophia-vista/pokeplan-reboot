@@ -18,10 +18,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * Automatic backup off the phone on Android (REP-034): the folder and the sealed passphrase kept on the phone, and a copy of a real [LiveStore] with Mint and Heal in
- * it sealed under the passphrase. The folder is a plain directory here; the Storage Access Framework one ([SafBackupFolder]) is not run on a device yet.
- */
 @RunWith(RobolectricTestRunner::class)
 class OffPhoneTest : AndroidTestBase() {
     private val phrase = "correct horse battery"
@@ -77,7 +73,7 @@ class OffPhoneTest : AndroidTestBase() {
         val game = widgetStore(context)
         game.addTask("x")
         assertTrue(OffPhone.configure(context, tree, phrase))
-        val note = OffPhone.run(context, force = true) // no permission was ever granted to this folder in the test
+        val note = OffPhone.run(context, force = true)
         assertTrue("not available" in note, note)
         assertTrue("not available" in OffPhone.status(context)!!.problem.orEmpty())
         assertEquals(null, OffPhone.status(context)!!.lastMillis)

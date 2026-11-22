@@ -44,17 +44,11 @@ import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
-/** The accounts of one heading, in list order. [name] is "" for the accounts with no group (shown as "Other"). */
 private class AccountGroup(val name: String, val rows: List<AccountBalance>)
 
-/** Active accounts under their group, groups in order of first appearance; archived and closed ones stay after them as before. */
 private fun groupsOf(active: List<AccountBalance>): List<AccountGroup> =
     active.groupBy { it.account.group.trim() }.map { (g, rows) -> AccountGroup(g, rows) }
 
-/**
- * The Accounts list (MINT.md 4.3, 4.3B): grouped under headings with a subtotal when any account has a group, and an Arrange mode that moves
- * a whole group, or an account inside its group, one step at a time.
- */
 @Composable
 internal fun AccountList(model: AppModel, open: String?, startArranging: Boolean = false, setOpen: (String?) -> Unit) {
     val mint = model.mint
@@ -104,7 +98,6 @@ internal fun AccountList(model: AppModel, open: String?, startArranging: Boolean
 @Composable
 private fun GroupHeading(model: AppModel, g: AccountGroup, arranging: Boolean, canUp: Boolean, canDown: Boolean, up: () -> Unit, down: () -> Unit) {
     val mint = model.mint
-    // Per currency: assets minus liabilities of the active accounts that count towards the total.
     val sums = linkedMapOf<String, Long>()
     g.rows.filter { !it.account.hideFromTotal }.forEach { b ->
         sums[b.account.currency] = (sums[b.account.currency] ?: 0L) + if (b.account.type.liability) -b.postedMinor else b.postedMinor
@@ -114,7 +107,6 @@ private fun GroupHeading(model: AppModel, g: AccountGroup, arranging: Boolean, c
         Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).padding(top = Spacing.S),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
     ) {
-        // The name and the subtotal share a line when they fit; a long name takes the line and the subtotal drops under it, still at the right.
         FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.Center, itemVerticalAlignment = Alignment.CenterVertically) {
             FieldLabel(g.name.ifBlank { "Other" })
             if (subtotal.isNotEmpty()) Text(subtotal, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall, textAlign = androidx.compose.ui.text.style.TextAlign.End)
@@ -157,7 +149,6 @@ private fun AccountRow(
     if (open == a.id && !arranging) AccountOptions(model, a) { setOpen(null) }
 }
 
-/** The "Open app" section of the Edit form: the app that Open starts, picked by name from the apps installed on this phone. */
 @Composable
 internal fun AppPick(launcher: AppLauncher, selected: String, onPick: (String) -> Unit) {
     var choosing by remember { mutableStateOf(false) }
@@ -175,7 +166,6 @@ internal fun AppPick(launcher: AppLauncher, selected: String, onPick: (String) -
     }
 }
 
-/** A box with a search field and the installed apps by name; a tap picks one, "None" clears. */
 @Composable
 internal fun AppChooser(launcher: AppLauncher, onClose: () -> Unit, onPick: (String) -> Unit) {
     var query by remember { mutableStateOf("") }

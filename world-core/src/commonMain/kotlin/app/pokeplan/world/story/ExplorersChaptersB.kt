@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Explorers of Time, Darkness & Sky, chapters 5 to 8: the hidden future, the Hidden Land, the dark future and Temporal Tower, the morning after. */
 internal object ExplorersChaptersB {
     private val buddy = buddyCharacter()
     private val grovyle = npc("grovyle", "Grovyle", 253)
@@ -64,7 +63,6 @@ internal object ExplorersChaptersB {
     ))
 
     private fun c6() = StoryEpisode(WorldLayer.EXPLORERS, 6, "The World's Edge", listOf(
-        // The script names a "hidden-land" dungeon that the game does not have; the cliffs and the dark sea are the mountain scene.
         dungeon("explorers-6-hidden-land", "The Hidden Land", "hidden-land", listOf(buddy, grovyle, celebi)) {
             enter(BUDDY, 3.0f, 3.0f)
             enter("grovyle", 4.8f, 3.2f)

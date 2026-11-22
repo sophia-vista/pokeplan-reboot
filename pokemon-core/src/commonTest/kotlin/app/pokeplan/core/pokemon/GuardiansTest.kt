@@ -36,7 +36,7 @@ class GuardiansTest {
 
     @Test
     fun otherGuardiansFollowTheirTypesWithASecondTypeGivingHalf() {
-        val hoOh = Guardians.signature(guardian("ho-oh")) // Fire / Flying
+        val hoOh = Guardians.signature(guardian("ho-oh"))
         assertEquals(Guardians.SIGNATURE_PERCENT, hoOh.getValue(PerkBucket.STREAK_KEEPER), 1e-9)
         assertEquals(Guardians.SIGNATURE_PERCENT * Guardians.SECOND_TYPE_SHARE, hoOh.getValue(PerkBucket.EGG_LUCK), 1e-9)
     }
@@ -83,14 +83,12 @@ class GuardiansTest {
 
     @Test
     fun aModulesGuardianAddsItsTypePerkInThatModuleOnly() {
-        val lugia = guardian("lugia")                              // Psychic / Flying
+        val lugia = guardian("lugia")
         val lead = pokemon(Ids.PIKACHU, level = 50, friendship = 200)
         val without = CarePerks.total(lead, listOf(lead))
         val with = CarePerks.total(lead, listOf(lead), lugia)
-        // Care's buckets: Psychic and Flying both feed Visitor luck; the second type gives half.
         val added = Guardians.SIGNATURE_PERCENT + Guardians.SIGNATURE_PERCENT * Guardians.SECOND_TYPE_SHARE
         assertEquals((without[CareBucket.VISITOR_LUCK] ?: 0.0) + added.coerceAtMost(Guardians.BUCKET_CAP), with.getValue(CareBucket.VISITOR_LUCK), 1e-9)
-        // The same Guardian given to Heal changes Heal's buckets by Heal's mapping, not Care's.
         assertTrue(HealPerks.total(lead, listOf(lead), lugia) != HealPerks.total(lead, listOf(lead)) || HealPerks.bucket(PokemonType.PSYCHIC) == null && HealPerks.bucket(PokemonType.FLYING) != null)
     }
 

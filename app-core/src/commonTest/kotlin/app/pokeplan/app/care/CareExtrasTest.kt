@@ -25,7 +25,6 @@ import app.pokeplan.app.GameStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** Reunions, Care Play and the traits an egg takes from a visitor (docs/pokelife MODULES/CARE.md sections 4 and 6). */
 class CareExtrasTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
@@ -57,15 +56,12 @@ class CareExtrasTest {
         error("the visitor did not become a friend")
     }
 
-    // --- egg inheritance ---------------------------------------------------------------------------------------------
-
     @Test
     fun aVisitorsTemperamentIsStableAndWhatAnEggTakesIsLightAndRepeatable() {
         val id = "v123-9-0"
         assertEquals(VisitorInheritance.natureOf(id), VisitorInheritance.natureOf(id))
         assertEquals(VisitorInheritance.plan(id, "egg1"), VisitorInheritance.plan(id, "egg1"), "the same egg, the same gift")
         assertEquals(VisitorInheritance.Plan(null, null, null), VisitorInheritance.plan("", "egg1"), "a friend of an old save passes nothing on")
-        // Over many eggs it is probabilistic and light: neither never nor always.
         val plans = (1..400).map { VisitorInheritance.plan(id, "egg$it") }
         val natures = plans.count { it.nature != null }
         assertTrue(natures in 100..240, "about ${VisitorInheritance.NATURE_PERCENT}% take the nature: $natures of 400")
@@ -98,11 +94,8 @@ class CareExtrasTest {
         assertEquals(result.visitor.id, record.visitorId)
         assertTrue(record.note.isNotBlank())
         assertEquals(VisitorInheritance.plan(result.visitor.id, hatched.id).labels().takeIf { !result.joined } ?: emptyList(), record.inherited)
-        // The friend is remembered for a reunion.
         assertEquals(listOf(result.visitor.id), s.care.data.friends.map { it.visitorId })
     }
-
-    // --- reunions ----------------------------------------------------------------------------------------------------
 
     @Test
     fun aReunionComesBackToSayHelloTakesNoMeadowPlaceAndPaysNothing() {
@@ -120,13 +113,11 @@ class CareExtrasTest {
         assertEquals(result.visitor.id, back.friend.visitorId)
         assertTrue(s.care.meadow().none { it.speciesId == result.visitor.speciesId }, "a reunion is not a regular visitor")
         assertTrue(s.care.visitors().size <= app.pokeplan.care.Visitors.MAX_VISITORS + app.pokeplan.care.Visitors.MAX_QUEUE)
-        // It waits, however long, and greeting it says something about the first visit.
         s.clock.advanceDays(10)
         assertEquals(back, s.care.reunion())
         val line = assertNotNull(s.care.greetReunion())
         assertTrue(line.contains("remember", ignoreCase = true))
         assertNull(s.care.data.reunion)
-        // Nothing was paid by it: no egg, no Pokémon (beyond what the reunions' days of arrivals never give), no coins.
         assertEquals(pokemonBefore, s.game.data.player.pokemon.size)
         assertEquals(coinsBefore, s.game.data.player.coins)
         assertEquals(inventoryBefore, s.game.data.player.inventory)
@@ -145,14 +136,11 @@ class CareExtrasTest {
         assertTrue((0..200).all { Reunions.roll(it, day, friends, null, seen) == null }, "a friend that just came is not back at once")
     }
 
-    // --- Care Play ---------------------------------------------------------------------------------------------------
-
     @Test
     fun everyPokemonLikesTwoWaysAndTheyAreDifferentAndStable() {
         val (p, s) = CarePlay.preferences("abc")
         assertNotEquals(p, s)
         assertEquals(p to s, CarePlay.preferences("abc"))
-        // Not shared by all of a species: different Pokémon differ.
         assertTrue((1..50).map { CarePlay.preferences("id$it").first }.toSet().size > 1)
         val primaryActivity = PlayActivity.entries.first { it.action == p }
         assertEquals(PlayReaction.DELIGHTED, CarePlay.reaction("abc", primaryActivity))
@@ -173,15 +161,12 @@ class CareExtrasTest {
         assertTrue(s.game.data.player.buddy!!.friendship > friendshipBefore, "the Pokémon played with takes the friendship")
         assertEquals(setOf(primary), s.care.discoveredLikes(id))
         assertEquals(eggMeterBefore, s.game.careEggMeter(), "but fills no point of Care's Egg meter (rules version 29)")
-        // Repeating is free and unlimited, and pays nothing more.
         val coins = s.game.data.player.coins
         repeat(20) { assertNull(s.care.playWith(id, favourite).second) }
         assertEquals(coins, s.game.data.player.coins)
-        // A kind it only pleasantly enjoys discovers nothing.
         val plain = PlayActivity.entries.first { it.action != primary && it.action != secondary }
         assertEquals(PlayReaction.PLEASED, s.care.playWith(id, plain).first)
         assertFalse(plain.action in s.care.discoveredLikes(id))
-        // The next day it pays again; ignoring a Pokémon costs nothing (no state changes without play).
         s.clock.advanceDays(1)
         assertNotNull(s.care.playWith(id, favourite).second)
         assertEquals(0, RewardEngine.CARE_EGG_POINTS.getValue(app.pokeplan.core.reward.CareKind.PLAY))
@@ -194,7 +179,6 @@ class CareExtrasTest {
         val a = s.care.suggestion(id)
         assertEquals(a, s.care.suggestion(id))
         assertTrue(s.care.surprise(id) in PlayActivity.entries)
-        // Once its likes are known the suggestion moves on to what has not been tried.
         val (primary, _) = CarePlay.preferences(id)
         s.care.playWith(id, PlayActivity.entries.first { it.action == primary })
         assertNotEquals(primary, s.care.suggestion(id).action.takeIf { it == primary })

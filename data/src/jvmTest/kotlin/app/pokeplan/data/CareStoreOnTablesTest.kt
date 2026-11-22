@@ -15,7 +15,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/** The real Care rules (CareStore) running on Care's tables through the live documents, as the Android app runs them. */
 class CareStoreOnTablesTest {
     private class TablesStorage(private val live: LiveDocuments) : Storage {
         override fun load(): String? = live.read("care")
@@ -24,7 +23,7 @@ class CareStoreOnTablesTest {
     }
 
     private fun fixture(name: String) = javaClass.getResource("/fixtures/0.123.0/$name")!!.readText()
-    private val start = 1_793_000_000_000L // 2026-10-26
+    private val start = 1_793_000_000_000L
 
     private fun careOn(store: DataStore, clock: Clock, game: GameStore) = CareStore(TablesStorage(store.live), clock, game, TimeZone.UTC, rng = Random(3))
 
@@ -62,7 +61,6 @@ class CareStoreOnTablesTest {
         val again = JvmDatabase.open(f.path)
         assertTrue(again.integrityIssues().isEmpty())
         assertEquals(before, careOn(again, clock, game).data, "everything Care kept is back, field for field")
-        // Private records are rows of their own: erasing the journal does not touch the diary or the routines.
         again.driver.execute(null, "DELETE FROM care_journal_entry", 0)
         val after = careOn(again, clock, game).data
         assertTrue(after.journal.isEmpty() && after.diary.size == 1 && after.routines.size == 1)

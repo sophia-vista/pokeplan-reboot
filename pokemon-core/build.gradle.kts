@@ -23,7 +23,6 @@ kotlin {
     }
 }
 
-// Writes docs/region-candidates.md, the table used to curate a module region.
 tasks.register<JavaExec>("curationReport") {
     group = "tools"
     val main = kotlin.targets.getByName("jvm").compilations.getByName("main")
@@ -33,8 +32,6 @@ tasks.register<JavaExec>("curationReport") {
     args(rootProject.file("docs/region-candidates.md").absolutePath)
 }
 
-// The Dex tables are JSON resources (src/commonMain/resources/dex, written by tools/species/generate.py). The JVM and Android read them as resources; the
-// browser cannot read a resource file at once, so for the web build the same files are turned into Kotlin strings at build time (nothing of it is committed).
 val dexWebDir = layout.buildDirectory.dir("generated/dexWeb")
 val generateDexWebSources = tasks.register("generateDexWebSources") {
     val source = layout.projectDirectory.dir("src/commonMain/resources/dex")
@@ -67,5 +64,4 @@ val generateDexWebSources = tasks.register("generateDexWebSources") {
 }
 kotlin.sourceSets.named("wasmJsMain") { kotlin.srcDir(dexWebDir) }
 tasks.configureEach { if (name.contains("WasmJs", ignoreCase = true)) dependsOn(generateDexWebSources) }
-// The web build has the tables built into its code; the files themselves would only be a second copy in the page.
 tasks.matching { it.name == "wasmJsProcessResources" }.configureEach { (this as org.gradle.language.jvm.tasks.ProcessResources).exclude("dex/**") }

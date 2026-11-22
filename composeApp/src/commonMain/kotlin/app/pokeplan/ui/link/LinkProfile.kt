@@ -57,11 +57,6 @@ import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 
-/**
- * A person's slambook page (docs/pokelife `MODULES/LINK.md` 2.6): About (socials, likes, dislikes, slambook answers), Mind (the personality labels the
- * user notes) and Stars (birth details, the Western chart, the Chinese zodiac, the Four Pillars, Kua and Life Path). Everything is typed in by the
- * user or worked out on the phone from a birth date they gave; a reading is explained when tapped and never scored, stored or sent anywhere.
- */
 private val tint: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.LINK.accent
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
@@ -81,7 +76,6 @@ internal fun PersonProfileTab(model: AppModel, p: Person, firstTab: Int = 0, sta
     }
 }
 
-/** One reading: a title and a quiet line, and a tap opens what it means. */
 @Composable
 private fun Reading(title: String, detail: String, meaning: String) {
     var open by remember(title, detail) { mutableStateOf(false) }
@@ -90,8 +84,6 @@ private fun Reading(title: String, detail: String, meaning: String) {
 }
 
 private fun save(model: AppModel, p: Person, profile: Profile): Boolean = model.link.updateProfile(p.id, profile).record != null
-
-// ----- About ------------------------------------------------------------------------------------------------------------------
 
 @Composable
 private fun AboutView(model: AppModel, p: Person, startEditing: Boolean = false) {
@@ -154,8 +146,6 @@ private fun AboutForm(model: AppModel, p: Person, onDone: () -> Unit) {
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
-
-// ----- Mind -------------------------------------------------------------------------------------------------------------------
 
 @Composable
 private fun MindView(model: AppModel, p: Person, startEditing: Boolean = false) {
@@ -227,8 +217,6 @@ private fun MindForm(model: AppModel, p: Person, onDone: () -> Unit) {
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
-
-// ----- Stars ------------------------------------------------------------------------------------------------------------------
 
 private val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
@@ -374,7 +362,6 @@ private fun BirthForm(model: AppModel, p: Person, m0: Int?, d0: Int?, y0: Int?, 
 
 private const val OTHER = "Other place"
 
-/** One line under a person's contact details: sign, animal and type, only from what is known. Empty when nothing is. */
 internal fun profileSummary(model: AppModel, p: Person): String {
     val ins = Insights.of(model.linkData, p)
     val sun = ins.western?.of(Body.SUN)?.sign ?: ins.sunByDate

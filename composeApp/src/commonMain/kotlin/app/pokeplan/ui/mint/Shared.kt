@@ -38,7 +38,6 @@ import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
-/** Bills split with other people (MINT.md 5.8A): who owes whom, a new entry, and the history. Display only: no account, transaction or reward. */
 @Composable
 internal fun SharedView(model: AppModel) {
     val mint = model.mint

@@ -16,7 +16,6 @@ class MissionsTest {
         Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
 
     private val roster = listOf(mon("a", 25, 30), mon("b", 74, 30), mon("c", 10, 30), mon("d", 1, 30))
-    /** Chapter 2 open: Bronze rank and one clear. */
     private val open = WorldData(xp = 400, clears = mapOf("tiny-woods" to 1))
 
     @Test
@@ -118,8 +117,6 @@ class EscortDefeatTest {
         assertTrue(WorldSim.settle(strong, roster, day * 2).data.missions.single().done, "four level 40 Pokémon have 160")
     }
 
-    // ----- The three kinds of WORLD.md 2.4: investigation, challenge, story -----
-
     @Test
     fun aChallengeCountsOnlyForASmallTeam() {
         val duo = open.acceptMission("challenge-woods-duo")!!.copy(teams = listOf(WorldTeam(1, listOf("a", "b"), Expedition("tiny-woods", 0, 0))))
@@ -137,7 +134,6 @@ class EscortDefeatTest {
         val ahead = WorldData(xp = 400, clears = mapOf("tiny-woods" to 1))
         assertTrue(Story.opened(ahead, WorldLayer.RESCUE) < m.count, "the test needs chapter ${m.count} closed")
         assertTrue(m.id in Missions.available(ahead).map { it.id })
-        // With the chapter open there is nothing left to ask.
         val rich = ahead.copy(xp = 100_000, clears = Dungeons.all.associate { it.id to 3 })
         if (Story.opened(rich, WorldLayer.RESCUE) >= m.count) {
             assertTrue(m.id !in Missions.available(rich).map { it.id })

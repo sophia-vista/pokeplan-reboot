@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The home screen's window before its first frame: dark, so starting or returning to it never flashes white. -->
     <style name="Theme.PokeLife.Launcher" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:colorBackground">@android:color/black</item>

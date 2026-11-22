@@ -133,18 +133,11 @@ import app.pokeplan.app.world.worldSettle
 import app.pokeplan.app.world.worldTrain
 import app.pokeplan.app.world.worldUpgrade
 
-/** What a focus session turned out to be. */
 sealed interface FocusResult {
     data class Hatched(val rewards: List<Reward>) : FocusResult
     data class Failed(val reason: FailReason) : FocusResult
 }
 
-/**
- * The app's rules engine for one device: holds the saved [data], applies every action to it with the real game rules
- * and saves after each change. No UI code in here, so it is tested on the JVM.
- *
- * Rewards are granted locally; there is no server (retired in 0.130.0).
- */
 class GameStore(
     storage: Storage,
     private val clock: Clock,
@@ -155,34 +148,22 @@ class GameStore(
 
     val data: AppData get() = document.value
 
-    /** Calls [listener] after every change. Returns a function that stops listening. */
     fun observe(listener: (AppData) -> Unit): () -> Unit = document.observe(listener)
 
-    /** Picks up a change another process made to the save (an Android widget); see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
-    /** Picks up what another store in this process (a widget, a notification) wrote; cheap when nothing was. */
     fun sync() = document.sync()
 
-    /** One change at a time: [SavedDocument.update] holds the document's lock from reading `before` to the save, so two threads never start from the same one. */
     internal fun update(change: (AppData) -> AppData) = document.update { before ->
         var after = renameBaseLock(foldPoke(before, change(before)))
-        // A shiny stays in the Shiny Dex, and a form in the form dex, even if the Pokémon is transferred later.
         val shinyNow = after.player.pokemon.filter { it.isShiny }.map { it.speciesId }.toSet()
         if (!after.shinySpecies.containsAll(shinyNow)) after = after.copy(shinySpecies = after.shinySpecies + shinyNow)
         FormDex.record(after)
     }
 
-    /** A screen lock saved under the module's old name ("HOME", before the 13 November 2026 rename to Base) is kept under "BASE". */
     private fun renameBaseLock(d: AppData): AppData =
         if ("HOME" !in d.settings.lockedModules) d else d.copy(settings = d.settings.copy(lockedModules = d.settings.lockedModules - "HOME" + "BASE"))
 
-    /**
-     * One Poké balance (`PlayerState.coins`), written by the ledger (the live save turns a change of it into a ledger event, REP-014).
-     * World's rules hold no balance: what they earn arrives as `WorldData.pokeEarned`, which is added to the coins here and cleared in the
-     * same update, and the rules that spend are given the balance and charged by the store (`worldUpgrade`, `worldBuy`, `worldTrain`).
-     * [worldPay] reads `pokeEarned` itself, in the same update, for the reward log and the ledger note.
-     */
     private fun foldPoke(before: AppData, after: AppData): AppData {
         val migrated = if (before.pokeMigration == null || after.pokeMigration == null) migratePoke(after) else after
         val earned = migrated.world.pokeEarned
@@ -190,11 +171,6 @@ class GameStore(
         return migrated.copy(player = migrated.player.copy(coins = migrated.player.coins + earned), world = migrated.world.copy(pokeEarned = 0))
     }
 
-    /**
-     * Habits of an older save become recurring tasks with a frequency target (PLAN.md sections 5 and 11.2): same id, creation day,
-     * completion days and payment day, so nothing paid is paid again and a goal that links one still does. The habit list is kept aside in
-     * `legacyHabits`, and the merge pays nothing. Idempotent: once the list is empty it does nothing.
-     */
     private fun mergeHabits(d: AppData): AppData {
         if (d.habits.isEmpty()) return d
         val known = d.series.map { it.template.id }.toSet()
@@ -202,11 +178,6 @@ class GameStore(
         return d.copy(series = d.series + merged, habits = emptyList(), legacyHabits = d.legacyHabits + d.habits, habitsMergedAtMillis = d.habitsMergedAtMillis ?: nowMillis)
     }
 
-    /**
-     * Frequency targets were scrapped (owner, 20 November 2026): each saved target becomes an ordinary recurring task with the nearest calendar rule
-     * ([TargetConversion]), keeping its id, title, rank and completion days (so a goal that links it, and the days a quest counts, stay). It pays
-     * nothing by itself being converted. Idempotent: a series has a target or a rule, never both, so once none has a target it does nothing.
-     */
     private fun convertTargets(d: AppData): AppData {
         if (d.series.none { it.target != null }) return d
         return d.copy(series = d.series.map { s ->
@@ -215,9 +186,7 @@ class GameStore(
         })
     }
 
-    /** The one-time merge of Plan's coins and World's Poké, 1:1, recording both sources. Does nothing once it has run. */
     private fun migratePoke(d: AppData): AppData {
-        // The World balance of a save is read once (`legacyPoke`), then it is 0 and not written.
         if (d.pokeMigration != null) return if (d.world.legacyPoke == 0) d else d.copy(world = d.world.copy(legacyPoke = 0))
         val total = d.player.coins + d.world.legacyPoke
         return d.copy(
@@ -226,63 +195,40 @@ class GameStore(
         )
     }
 
-    /** Everything PokéPlan keeps on this device, as readable JSON,. */
     fun exportJson(): String {
         val pretty = Json(json) { prettyPrint = true }
-        // The player's own data, so the Picker's list is in it; the calendars shown and the public rate cache are not.
         val full = json.encodeToJsonElement(AppData.serializer(), data.copy(shownCalendars = emptySet(), gearRates = null)) as JsonObject
         return pretty.encodeToString(JsonObject.serializer(), JsonObject(full.filterKeys { it !in EXPORT_LEFT_OUT }))
     }
 
-    /** Erases this device's save: back to the welcome screen. */
     fun eraseDevice() = update { AppData() }
 
-    /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
-    // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
     private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(Places::guardiansToModules).let(::mergeHabits).let(::convertTargets).let(::startDecorations)
 
-    /** The three starter decorations (BASE.md 9.5.4), once per save: a new save, and a save from before the room. */
     private fun startDecorations(d: AppData): AppData =
         if (d.decorationStarters) d else d.copy(decorationStarters = true, decorations = d.decorations + Decorations.STARTERS.filter { it !in d.decorations })
 
-    /**
-     * Saves from before the Pokémon roles were split (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) used the buddy as
-     * Plan's lead. The buddy stays the global buddy and also becomes the lead of Plan's party if it is in it, so nothing
-     * changes for the player; from then on the two are chosen separately. Care's lead already was a party lead.
-     */
     private fun migrateRoles(p: app.pokeplan.core.reward.PlayerState): app.pokeplan.core.reward.PlayerState {
         if (p.rolesVersion >= ROLES_VERSION) return p
         val lead = p.buddyId?.takeIf { id -> p.party.any { it.id == id } }
         return p.copy(planLeadId = p.planLeadId ?: lead, rolesVersion = ROLES_VERSION)
     }
 
-    /** Shows or hides calendar events from this phone's calendars on the day timeline. */
     fun setShownCalendars(ids: Set<Long>) = update { it.copy(shownCalendars = ids) }
-
-    // --- time and ids -------------------------------------------------------------------------------------------------
 
     val nowMillis: Long get() = clock.nowMillis()
     val now: LocalDateTime get() = nowMillis.toLocalDateTime(zone)
     val today: LocalDate get() = now.date
     private val epochDay: Long get() = today.toEpochDays()
 
-    /** The first millisecond of today in the player's time zone. */
     val startOfTodayMillis: Long get() = LocalDateTime(today, kotlinx.datetime.LocalTime(0, 0)).toEpochMillis(zone)
 
-    /** The local day [millis] falls on (a finished task's day in the Done list). */
     fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
 
-    /** The player's offset from UTC now, in milliseconds (what turns a UTC day into the player's own). */
     val utcOffsetMillis: Long get() = zone.offsetAt(kotlin.time.Instant.fromEpochMilliseconds(nowMillis)).totalSeconds * 1000L
 
     internal fun newId(): String = newId(nowMillis, rng)
 
-    // --- module tutorials ---------------------------------------------------------------------------------------------
-
-    /**
-     * Whether the tutorial [id] is still on offer: not done, and the player has not done the real thing (a finished focus session for
-     * Plan's). Care's tutorial also stays off for a player with calm breaks; [careBreaks] is how many Care has recorded (Care keeps its own save).
-     */
     fun tutorialOffered(id: String, careBreaks: Int = 0, healActivities: Int = 0, mintRecords: Int = 0, homeRecords: Int = 0, linkRecords: Int = 0): Boolean = data.onboarded && id !in data.tutorials && when (id) {
         Tutorials.PLAN_FOCUS -> data.focusHistory.none { it.completed }
         Tutorials.CARE_BREATH -> careBreaks == 0
@@ -293,11 +239,6 @@ class GameStore(
         else -> false
     }
 
-    /**
-     * Finishes the tutorial [id]: one egg of its module's method hatches into that module's party (Plan: a focus egg from the open region;
-     * Care: a Care Egg), once per save. It is no focus session or calm break, so it leaves no history, streak, cap, meter or friendship. Returns
-     * the rewards, or null when it is unknown, already done or not started yet.
-     */
     fun completeTutorial(id: String): List<Reward>? {
         if (!data.onboarded || id in data.tutorials) return null
         val (region, party, how) = when (id) {
@@ -314,18 +255,10 @@ class GameStore(
         return outcome.rewards
     }
 
-    /**
-     * A module's first Pokémon comes with its first real record (owner, 13 November 2026): once [records] (what the module holds: finished tasks,
-     * routines and calm breaks, activities, accounts and money records, chores and supplies, people and follow-ups) is above zero, the module's
-     * first egg ([completeTutorial]) hatches, once per save. Returns the rewards, or null when there is nothing to give.
-     */
     fun firstRecordEgg(id: String, records: Int): List<Reward>? = if (records > 0) completeTutorial(id) else null
 
-    // --- onboarding ---------------------------------------------------------------------------------------------------
-
-    /** Starts as a guest: creates the trainer, the starter (which becomes the buddy, and is in no party: one place only) and a first task that pays at once. */
     fun start(trainerName: String, starterSpeciesId: Int) {
-        if (data.onboarded) return // a second tap on the last onboarding line: the game has started, once
+        if (data.onboarded) return
         val option = HatchOption(starterSpeciesId, Dex.defaultForm(starterSpeciesId).identifier)
         val starter = Hatching.create(newId(), option, 0, nowMillis, 25, rng).copy(isShiny = false, inParty = false)
         val first = Task(
@@ -344,19 +277,12 @@ class GameStore(
 
     fun changeSettings(change: (Settings) -> Settings) = update { it.copy(settings = change(it.settings).clamped()) }
 
-    // --- rewards ------------------------------------------------------------------------------------------------------
-
-    /** Logs [rewards]; a Pokémon among them is recorded as having come from [origin] (a Task Egg when not given). */
     private fun log(source: String, rewards: List<Reward>, d: AppData, seen: Boolean = false, origin: Origin? = null): AppData {
         val joined = rewards.filterIsInstance<Reward.Hatched>()
             .associate { it.pokemon.id to (origin ?: Origin(Origin.How.TASK_EGG, d.settings.region.open)) }
         return d.copy(rewardLog = (d.rewardLog + RewardEntry(nowMillis, source, rewards, seen)).takeLast(LOG_SIZE), origins = d.origins + joined)
     }
 
-    /**
-     * Notes what a module reward added to the Poké balance and the Bag, under the event's own id, so the database ledger can record the real event
-     * (DATA_AND_MIGRATIONS.md section 7.3.0). [before] and [after] are the player's state around the change; a reward that added nothing leaves no note.
-     */
     internal fun noted(before: AppData, after: AppData, id: String, module: String, ref: String, kind: String, at: Long, extraPoke: Int = 0): AppData {
         val poke = (after.player.coins - before.player.coins + extraPoke).toLong()
         val items = (before.player.inventory.counts.keys + after.player.inventory.counts.keys)
@@ -379,41 +305,27 @@ class GameStore(
         return noted(d, log(source, outcome.rewards, d.copy(player = outcome.state, activeDays = d.activeDays + streakDay, counters = counters)), eventId, "PLAN", ref, "task", nowMillis)
     }
 
-    /** The Pokémon Care's screens show: Care's lead, or the Plan buddy until Care has one (it takes Care's friendship then). */
     val careBuddy: OwnedPokemon? get() = data.player.careLead
 
-    /** The day work counts for in streaks: it rolls over at 4am, so a late night still counts for the day before. */
     val streakDay: LocalDate get() = Streaks.streakDay(now)
 
-    /**
-     * Pays a Care moment into the shared world, at most [CARE_DAILY_CAP] of each kind a day whatever the Care module asks
-     * (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md: each module's share is capped). Returns null when nothing was paid (not started, or capped).
-     * The log says only "Care" and the kind, never what the routine was.
-     */
     override fun care(event: CareEvent): List<Reward>? {
         if (!data.onboarded) return null
         val tally = Counters.care(event.kind)
         val paidToday = tally.get(data.counters, today)
         if (paidToday >= CARE_DAILY_CAP.getValue(event.kind)) return null
         val outcome = RewardEngine.care(data.player, event, rng)
-        // Care's Egg meter: a full one hatches a Care Egg on top of the moment's own rewards.
         val meter = careEggMeter() + RewardEngine.CARE_EGG_POINTS.getValue(event.kind)
         val egg = if (meter >= RewardEngine.CARE_EGG_METER_SIZE) RewardEngine.careEgg(outcome.state, newId(), nowMillis, rng) else null
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.CARE_EGG_METER to meter % RewardEngine.CARE_EGG_METER_SIZE)
-            // CareEvent has no id of its own: the kind, the day and the count paid that day name it, and the same count never repeats (the tally above is what caps it).
             val kind = event.kind.name.lowercase()
             noted(d, log(CARE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters), origin = Origin(Origin.How.CARE_EGG, Region.CARE)), "care:$kind:${today.toEpochDays()}:${paidToday + 1}", "CARE", "$kind:${today.toEpochDays()}", kind, event.nowMillis)
         }
         return rewards
     }
 
-    /**
-     * Pays a HEAL moment into the shared world (Field Research, HEAL.md section 12): once per event id whatever HEAL does with its records, at
-     * most [HEAL_DAILY_CAP] of each kind a day, and a full Field Research meter finds a Field Egg on top. The log says only "Heal" and the kind
-     * of moment. Nothing the event could tell about the person's body or health exists to be read here.
-     */
     override fun heal(event: HealEvent): List<Reward>? {
         if (!data.onboarded || event.id in data.healPaid) return null
         val tally = Counters.heal(event.kind)
@@ -430,11 +342,6 @@ class GameStore(
         return rewards
     }
 
-    /**
-     * Pays a MINT moment into the shared world (Ledger Research, MINT.md section 16): once per event id whatever MINT does with its records, at most
-     * [MINT_CAPS] of each kind in its period (a day for a reconciled account, a week for a review), and a full Ledger Research meter finds a Ledger Egg
-     * on top. The log says only "Mint" and the kind of moment. Nothing about money, an account or a provider exists in the event to be read here.
-     */
     override fun mint(event: MintEvent): List<Reward>? {
         if (!data.onboarded || event.id in data.mintPaid) return null
         val tally = Counters.mint(event.kind)
@@ -445,7 +352,6 @@ class GameStore(
         val meter = mintEggMeter() + RewardEngine.MINT_EGG_POINTS.getValue(event.kind)
         val egg = if (meter >= RewardEngine.MINT_EGG_METER_SIZE) RewardEngine.mintEgg(outcome.state, newId(), nowMillis, rng) else null
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
-        // A rare moment (a reconciled account, a review) also opens an outbreak: a pick of Pokémon to catch directly (POKEMON_ECOSYSTEM.md 10.0).
         val outbreak = RewardEngine.mintOutbreak((egg ?: outcome).state, event, newId(), rng)
         update { d ->
             val counters = tally.set(d.counters, period, paidInPeriod + 1) + (Counters.MINT_EGG_METER to meter % RewardEngine.MINT_EGG_METER_SIZE)
@@ -455,10 +361,6 @@ class GameStore(
         return rewards
     }
 
-    /**
-     * Catches [speciesId] from the pending outbreak [outbreakId] directly, into Mint's party (else the PC), with the outbreak's shiny rolls. The outbreak is used up
-     * either way. Returns the reward, or null when the outbreak or the species is not there.
-     */
     fun claimOutbreak(outbreakId: String, speciesId: Int): List<Reward>? {
         val outbreak = data.outbreaks.firstOrNull { it.id == outbreakId } ?: return null
         val outcome = RewardEngine.claimMintOutbreak(data.player, outbreak, speciesId, newId(), nowMillis, rng) ?: return null
@@ -468,11 +370,6 @@ class GameStore(
         return outcome.rewards
     }
 
-    /**
-     * Pays a HOME moment into the shared world (Habitat Discovery, BASE.md section 9): once per event id whatever HOME does with its records (so an undo
-     * and a second completion of the same chore pay once), at most [BASE_CAPS] of each kind a day, and a full Habitat Discovery meter finds a Habitat
-     * Egg on top. The log says only "Home" and the kind of moment. Nothing about a chore, an area, a supply or an asset exists in the event to be read here.
-     */
     override fun base(event: BaseEvent): List<Reward>? {
         if (!data.onboarded || event.id in data.basePaid) return null
         val tally = Counters.base(event.kind)
@@ -481,7 +378,6 @@ class GameStore(
         val outcome = RewardEngine.base(data.player, event, rng)
         val meter = homeEggMeter() + RewardEngine.HOME_EGG_POINTS.getValue(event.kind)
         val egg = if (meter >= RewardEngine.HOME_EGG_METER_SIZE) RewardEngine.homeEgg(outcome.state, newId(), nowMillis, rng) else null
-        // The Decoration meter (BASE.md 9.5.4): the same payment adds points, and a full meter finds one decoration the player does not own yet.
         val step = Decorations.advance(decorationMeter(), if (event.kind == BaseKind.CHORE) Decorations.CHORE_POINTS else Decorations.MAINTENANCE_POINTS, Decorations.missing(data.decorations).isEmpty())
         val decoration = if (step.found) Decorations.pick(data.decorations, event.id) else null
         val rewards = outcome.rewards + egg?.rewards.orEmpty() + listOfNotNull(decoration?.let { Reward.Decoration(it.id) })
@@ -492,13 +388,7 @@ class GameStore(
         return rewards
     }
 
-    /**
-     * Pays a LINK moment into the shared world (Postcard Trail, LINK.md section 9): once per event id whatever LINK does with its records (so a reopen and
-     * a second completion of the same follow-up pay once), at most [LINK_CAPS] of each kind a day, and a full track finds a Postcard Egg on top. The log
-     * says only "Link" and the kind of moment. Nothing about a person, a note, a date or a follow-up exists in the event to be read here.
-     */
     override fun link(event: LinkEvent): List<Reward>? {
-        // A follow-up converted into a PLAN task is PLAN's: it pays by Plan's rules, once, and LINK never pays for the same follow-up (LINK.md 2.4).
         if (!data.onboarded || event.id in data.linkPaid || linkedTask(LinkKind.LINK_FOLLOW_UP, event.ref) != null) return null
         val tally = Counters.link(event.kind)
         val paidToday = tally.get(data.counters, today)
@@ -514,11 +404,6 @@ class GameStore(
         return rewards
     }
 
-    /**
-     * A visit to a person's Friend Safari (LINK.md 9.5): one catch from that Safari's pool, once per person a day and at most [SAFARI_PER_DAY] in all (so a pile
-     * of made-up contacts buys nothing). Entry costs nothing. It pays nothing but the Pokémon (and the usual new-species candies); the log says only "Friend
-     * Safari". The event holds an opaque seed and the capped people count: nothing about the person.
-     */
     override fun safari(event: SafariEvent): List<Reward>? {
         if (!data.onboarded || event.id in data.linkPaid) return null
         val caughtToday = Counters.SAFARI.get(data.counters, today)
@@ -533,10 +418,8 @@ class GameStore(
 
     override fun safariDay(eventId: String): SafariDay = SafariDay(eventId in data.linkPaid, (SAFARI_PER_DAY - Counters.SAFARI.get(data.counters, today)).coerceAtLeast(0))
 
-    /** Points towards the next Postcard Egg, out of [RewardEngine.LINK_EGG_METER_SIZE]. */
     fun linkEggMeter(): Int = data.counters[Counters.LINK_EGG_METER] ?: 0
 
-    /** Makes [id], who must be in Link's party, its lead: the Pokémon that takes Postcard Trail's friendship and gives its perks. */
     fun setLinkLead(id: String): Boolean {
         val p = pokemon(id)
         if (!p.inParty || p.partyId != PartyIds.LINK) return false
@@ -546,23 +429,16 @@ class GameStore(
 
     override fun ownedDecorations(): Set<String> = data.decorations.toSet()
 
-    /**
-     * Adds [id] to the decorations the player owns (a gift or a purchase: the Department Store and Mom's gifts, BASE.md 9.5.4); false when it is not in the
-     * catalogue or already owned (one of each). It costs and pays nothing here.
-     */
     fun grantDecoration(id: String): Boolean {
         if (Decorations.get(id) == null || id in data.decorations) return false
         update { d -> d.copy(decorations = d.decorations + id) }
         return true
     }
 
-    /** Points towards the next Secret Base decoration, out of [Decorations.METER_SIZE]. */
     fun decorationMeter(): Int = data.counters[Counters.HOME_DECOR_METER] ?: 0
 
-    /** Points towards the next Habitat Egg, out of [RewardEngine.HOME_EGG_METER_SIZE]. */
     fun homeEggMeter(): Int = data.counters[Counters.HOME_EGG_METER] ?: 0
 
-    /** Makes [id], who must be in Home's party, its lead: the Pokémon that takes Habitat Discovery's friendship and gives its perks. */
     fun setBaseLead(id: String): Boolean {
         val p = pokemon(id)
         if (!p.inParty || p.partyId != PartyIds.BASE) return false
@@ -570,10 +446,8 @@ class GameStore(
         return true
     }
 
-    /** Points towards the next Ledger Egg, out of [RewardEngine.MINT_EGG_METER_SIZE]. */
     fun mintEggMeter(): Int = data.counters[Counters.MINT_EGG_METER] ?: 0
 
-    /** Makes [id], who must be in Mint's party, its lead: the Pokémon that takes Ledger Research's friendship and gives its perks. */
     fun setMintLead(id: String): Boolean {
         val p = pokemon(id)
         if (!p.inParty || p.partyId != PartyIds.MINT) return false
@@ -581,10 +455,8 @@ class GameStore(
         return true
     }
 
-    /** Points towards the next Field Egg, out of [RewardEngine.HEAL_EGG_METER_SIZE]. */
     fun healEggMeter(): Int = data.counters[Counters.HEAL_EGG_METER] ?: 0
 
-    /** Makes [id], who must be in Heal's party, its lead: the Pokémon that takes Field Research's friendship and gives its perks. */
     fun setHealLead(id: String): Boolean {
         val p = pokemon(id)
         if (!p.inParty || p.partyId != PartyIds.HEAL) return false
@@ -592,13 +464,8 @@ class GameStore(
         return true
     }
 
-    /** Points towards the next Care Egg, out of [RewardEngine.CARE_EGG_METER_SIZE]. */
     fun careEggMeter(): Int = data.counters[Counters.CARE_EGG_METER] ?: 0
 
-    /**
-     * The Poké Mart ([Shop]): buys [count] of [itemId] at its Mart price. Returns how many were bought (fewer when the Poké or the Bag's room
-     * runs out, 0 for none or for an item the Mart does not sell).
-     */
     fun martBuy(itemId: String, count: Int): Int {
         val each = Shop.price(itemId) ?: return 0
         val limit = if (Items.category(itemId) == ItemCategory.CANDY) Inventory.MAX_CANDIES else Inventory.MAX_STACK
@@ -617,7 +484,6 @@ class GameStore(
         return n
     }
 
-    /** Buys [count] Exp. Candies at the Poké Mart ([martBuy]). */
     fun buyRareCandies(count: Int): Int = martBuy(Items.RARE_CANDY, count)
 
     override fun visitorLuck(): Double =
@@ -632,9 +498,6 @@ class GameStore(
         return true
     }
 
-    /**
-     * Makes a friend of a Care visitor, up to [BEFRIEND_DAILY_CAP] a day: the egg's dice come from the device. Returns null when nothing was paid.
-     */
     override fun befriend(event: BefriendEvent): List<Reward>? {
         if (!data.onboarded) return null
         val made = Counters.BEFRIEND.get(data.counters, today)
@@ -648,7 +511,6 @@ class GameStore(
         return outcome.rewards
     }
 
-    /** The origin note of what a visitor left: the visitor, the day and the traits an egg took from it (none when the visitor itself joined). */
     private fun visitorOrigin(event: BefriendEvent, rewards: List<Reward>): VisitorOrigin? {
         if (event.visitorId.isEmpty()) return null
         val hatched = rewards.filterIsInstance<Reward.Hatched>().firstOrNull()?.pokemon
@@ -663,9 +525,6 @@ class GameStore(
         return VisitorOrigin(event.speciesId, event.visitorId, today.toEpochDays(), traits, note)
     }
 
-    // --- tasks --------------------------------------------------------------------------------------------------------
-
-    /** Adds a task. Everything but the title is optional. */
     fun addTask(
         title: String,
         rank: Rank = Rank.C,
@@ -674,11 +533,8 @@ class GameStore(
         estimateMinutes: Int? = null,
         notes: String = "",
         listId: String? = null,
-        /** The time of day to do it, only meaningful with a [planned] day (quick add: "tomorrow 5pm"). */
         plannedTime: kotlinx.datetime.LocalTime? = null,
-        /** Marks it for "This evening" whatever the time (quick add: "tonight"). */
         evening: Boolean = false,
-        /** What it pays most of; null takes the Settings default. */
         reward: RewardFocus? = null,
     ): Task {
         val task = Task(
@@ -693,10 +549,6 @@ class GameStore(
 
     fun updateTask(task: Task) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == task.id) task else it }) }
 
-    /**
-     * A copy of the task as a new open one: same words, list, difficulty, days, estimate, reminders and steps (unticked and unpaid), but no series, link,
-     * focus time or completion. Pays nothing; the copy earns its reward on its own, once. Null for a task that is gone or is owned by another module.
-     */
     fun duplicateTask(id: String): Task? {
         val src = data.tasks.firstOrNull { it.id == id && it.state != TaskState.DELETED && it.link == null } ?: return null
         val copy = src.copy(
@@ -708,21 +560,12 @@ class GameStore(
         return copy
     }
 
-    // --- links to other modules (PRODUCT_BIBLE.md section 4) -------------------------------------------------------------------
-
     private val linkOwners = mutableMapOf<LinkKind, LinkOwner>()
 
-    /** Registers the module that owns the completion of the tasks linked to its records (the app does this once for Home). */
     fun registerLinkOwner(owner: LinkOwner) { linkOwners[owner.kind] = owner; syncLinks() }
 
-    /** The live task linked to [kind]'s record [ref] (never a deleted one), if any: a record has at most one. */
     fun linkedTask(kind: LinkKind, ref: String): Task? = data.tasks.firstOrNull { it.link?.kind == kind && it.link?.ref == ref && it.state != TaskState.DELETED }
 
-    /**
-     * Makes the responsibility of a HOME chore visible in PLAN, by the user's choice (BASE.md 2.1). The task is a projection: its words and day come from the
-     * chore, completing it completes the chore in HOME (which pays once) and PLAN pays nothing. One task per chore: asking again gives the same task. Null when
-     * the chore is gone or has nothing waiting.
-     */
     fun linkChore(choreId: String): Task? {
         linkedTask(LinkKind.HOME_CHORE, choreId)?.let { return it }
         val owner = linkOwners[LinkKind.HOME_CHORE] ?: return null
@@ -736,11 +579,6 @@ class GameStore(
         return task
     }
 
-    /**
-     * The user converts a LINK follow-up into a PLAN task (LINK.md 2.4). From now on PLAN owns the task, its schedule, its completion and its reward, by PLAN's own
-     * rules and paid once; the link only lets LINK show this task's status ([linkedTask]) and keeps LINK from paying for the same follow-up. Converting the same
-     * follow-up again returns the same task, so it can never exist twice.
-     */
     override fun followUpTask(followUpId: String): FollowUpTask? =
         linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { FollowUpTask(it.id, it.state == TaskState.DONE, it.completedAtMillis) }
 
@@ -758,21 +596,12 @@ class GameStore(
         return task
     }
 
-    /**
-     * Ends a link by the user's choice. A HOME projection is removed (it can be restored like any deleted task; the chore is untouched, BASE.md 2.1). A converted
-     * follow-up stays a normal PLAN task, now without the reference (what it paid stays paid, so it never pays twice).
-     */
     fun unlinkTask(taskId: String) {
         val task = data.tasks.firstOrNull { it.id == taskId && it.link != null } ?: return
         if (task.ownedElsewhere) deleteTask(taskId)
         else update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(link = null) else it }) }
     }
 
-    /**
-     * Brings every task linked to a record another module owns in line with that record: words, day and state follow the owner, and nothing is paid or
-     * recorded here. A repeating chore's task moves on to the next occurrence; a chore that is gone takes its projection with it (restorable, never the chore's data).
-     * Call it when the owner's data changes and when the app opens; it writes nothing when nothing differs.
-     */
     fun syncLinks() {
         val now = nowMillis
         val changed = data.tasks.map { t ->
@@ -792,18 +621,10 @@ class GameStore(
         if (changed != data.tasks) update { d -> d.copy(tasks = changed) }
     }
 
-    // --- lists --------------------------------------------------------------------------------------------------------
-
-    /** The lists shown in the menu: not archived, in the order they were made. */
     val activeLists: List<TaskList> get() = data.lists.filter { !it.archived }
 
-    /** The list named [name] (any case), for "#Groceries" in quick-add; null if there is none. */
     fun listNamed(name: String): TaskList? = activeLists.firstOrNull { it.name.equals(name.trim(), ignoreCase = true) }
 
-    /**
-     * Makes a list. A blank name is not a list. [startFrom] is the id of a checklist whose saved template fills the new one with the same
-     * items, unticked (PLAN.md 3.5A); the new list is then a Checklist whatever [kind] says.
-     */
     fun addList(
         name: String, color: Long = TaskList.COLORS.first(), icon: String = TaskList.ICONS.first(),
         kind: ListKind = ListKind.TASKS, startFrom: String? = null,
@@ -819,16 +640,11 @@ class GameStore(
         return list
     }
 
-    /** Saves a checklist's current items (open or done, in the order they were made) as its template; none clears it. */
     fun saveTemplate(listId: String) = update { d ->
         val items = d.tasks.filter { it.listId == listId && it.state != TaskState.DELETED }.sortedBy { it.createdAtMillis }.map { it.title }.take(MAX_TEMPLATE_ITEMS)
         d.copy(lists = d.lists.map { if (it.id == listId) it.copy(template = items) else it })
     }
 
-    /**
-     * Resets the checklists whose boundary has passed: the finished items of a Checklist reopen (no penalty, no streak loss; a task already
-     * paid never pays again) and the day is kept so it happens once. Call when the app opens and when the date changes.
-     */
     private fun resetChecklists() {
         val weekStart = data.settings.weekStart
         val due = data.lists.filter { l ->
@@ -836,7 +652,6 @@ class GameStore(
             l.kind == ListKind.CHECKLIST && when (l.reset) {
                 ChecklistReset.NEVER -> false
                 ChecklistReset.DAILY -> last < today
-                // A week boundary: the first day of the week at or after the last reset.
                 ChecklistReset.WEEKLY -> last < today && (0..6).any { back -> today.minus(DatePeriod(days = back)).let { it > last && it.dayOfWeek == weekStart } }
             }
         }.map { it.id }.toSet()
@@ -849,30 +664,24 @@ class GameStore(
         }
     }
 
-    /** Renames, recolours, re-icons, or archives a list. */
     fun updateList(list: TaskList) = update { d ->
         d.copy(lists = d.lists.map { if (it.id == list.id) list.copy(name = list.name.trim().take(TaskList.MAX_NAME).ifEmpty { it.name }) else it })
     }
 
-    /** Deletes a list; its tasks go back to the Inbox, nothing is lost. */
     fun deleteList(id: String) = update { d ->
         d.copy(lists = d.lists.filter { it.id != id }, tasks = d.tasks.map { if (it.listId == id) it.copy(listId = null) else it })
     }
 
-    /** Puts back a list [list] deleted and the tasks that were in it ([taskIds]), for the undo bar. */
     fun restoreList(list: TaskList, taskIds: Set<String>) = update { d ->
         d.copy(lists = if (d.lists.any { it.id == list.id }) d.lists else d.lists + list, tasks = d.tasks.map { if (it.id in taskIds) it.copy(listId = list.id) else it })
     }
 
-    /** Puts back the calendar as it was before an event was deleted, for the undo bar. */
     fun restoreEvents(events: List<PlanEvent>) = update { it.copy(events = events) }
 
-    /** Files a task in a list, or back in the Inbox with null. */
     fun moveToList(taskId: String, listId: String?) = update { d ->
         d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(listId = listId?.takeIf { id -> d.lists.any { l -> l.id == id } }) else it })
     }
 
-    /** Plans a task at [time] (null clears it). A task without a day gets its deadline's day, or today. */
     fun setPlannedTime(taskId: String, time: LocalTime?) = update { d ->
         d.copy(tasks = d.tasks.map { t ->
             if (t.id != taskId) t
@@ -881,47 +690,35 @@ class GameStore(
         })
     }
 
-    /** Plans a task on [day] at [time], as the day timeline does when a task is put on an hour. */
     fun scheduleTask(taskId: String, day: LocalDate, time: LocalTime) = update { d ->
         d.copy(tasks = d.tasks.map { if (it.id == taskId && it.isOpen) it.copy(planned = day, plannedTime = time) else it })
     }
 
-    /** Sets how long an open task is expected to take, as resizing its block on the timeline does (null clears it). */
     fun setEstimate(taskId: String, minutes: Int?) = update { d ->
         d.copy(tasks = d.tasks.map { if (it.id == taskId && it.isOpen) it.copy(estimateMinutes = minutes?.takeIf { m -> m > 0 }) else it })
     }
 
-    // --- own calendar events (the rules are in [PlanCalendar]) ---------------------------------------------------------
-
-    /** Puts an event on PokéPlan's own calendar, repeating when [repeat] is set. It never pays. */
     fun addEvent(
         title: String, day: LocalDate, start: LocalTime, minutes: Int = PlanEvent.DEFAULT_MINUTES, color: Long? = null,
         repeat: EventRepeat? = null,
     ): PlanEvent = PlanCalendar.timed(newId(), title, day, start, minutes, color, repeat).also { e -> update { it.copy(events = it.events + e) } }
 
-    /** Puts an all-day event on PokéPlan's own calendar, from [first] through [last] ("Home" for a weekend, "WFH" for a day). */
     fun addAllDayEvent(title: String, first: LocalDate, last: LocalDate = first, color: Long? = null, repeat: EventRepeat? = null): PlanEvent =
         PlanCalendar.allDay(newId(), title, first, last, color, repeat).also { e -> update { it.copy(events = it.events + e) } }
 
-    /** See [PlanCalendar.update]. Returns the id the same occurrence has afterwards. */
     fun updateEvent(
         id: String, title: String? = null, day: LocalDate? = null, start: LocalTime? = null, minutes: Int? = null,
         lastDay: LocalDate? = null, color: Long? = null, allDay: Boolean? = null,
     ): String = editEvents { PlanCalendar.update(it, id, title, day, start, minutes, lastDay, color, allDay) }
 
-    /** See [PlanCalendar.move]. Returns the id of the moved event. */
     fun moveEvent(id: String, day: LocalDate, start: LocalTime): String = editEvents { PlanCalendar.move(it, id, day, start, ::newId) }
 
-    /** Deletes an event; for an occurrence of a repeating event, every one of them. */
     fun deleteEvent(id: String) = update { d -> d.copy(events = PlanCalendar.delete(d.events, id)) }
 
-    /** Deletes just this occurrence of a repeating event (any other event is deleted). */
     fun deleteOccurrence(id: String) = update { d -> d.copy(events = PlanCalendar.deleteOccurrence(d.events, id)) }
 
-    /** See [PlanCalendar.repeat]. Returns the id the event shown as [id] has afterwards. */
     fun repeatEvent(id: String, repeat: EventRepeat?): String = editEvents { PlanCalendar.repeat(it, id, repeat, ::newId) }
 
-    /** Sets the last day a repeating event can happen on (null: it never ends). */
     fun endEventOn(id: String, until: LocalDate?) = update { d -> d.copy(events = PlanCalendar.endOn(d.events, id, until)) }
 
     private fun editEvents(edit: (List<PlanEvent>) -> PlanCalendar.Edit): String {
@@ -931,10 +728,6 @@ class GameStore(
         return result.shownId
     }
 
-    /**
-     * An edit that changes when a companion's event happens (its day, time, length or repeat) starts the companion's time again, so
-     * moving an event into time that has already passed never pays for it (PLAN.md 8.2). An occurrence still running pays normally.
-     */
     private fun restartCompanions(before: List<PlanEvent>, after: List<PlanEvent>): List<PlanEvent> {
         val was = before.associateBy { it.id }
         return after.map { e ->
@@ -944,11 +737,9 @@ class GameStore(
         }
     }
 
-    /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
     fun setReminders(taskId: String, reminders: List<ReminderOffset>) =
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(reminders = reminders.distinct().take(Reminders.MAX_PER_TASK)) else it }) }
 
-    /** Every reminder still to come, earliest first; none when reminders are switched off. */
     fun upcomingReminders(): List<DueReminder> = data.upcomingReminders(nowMillis, zone)
 
     fun deleteTask(id: String) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.delete(it, nowMillis) else it }) }
@@ -958,14 +749,12 @@ class GameStore(
     fun wontDo(id: String) {
         val task = data.tasks.firstOrNull { it.id == id } ?: return
         val link = task.link?.takeIf { task.ownedElsewhere }
-        // For a linked chore, "won't do" is the owner's skip; syncLinks then shows it.
         if (link != null) { if (task.isOpen) linkOwners[link.kind]?.skip(link); return }
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.wontDo(it, nowMillis) else it }) }
     }
 
     fun reopen(id: String) {
         val task = data.tasks.firstOrNull { it.id == id } ?: return
-        // A task whose record another module owns is reopened by taking back the owner's completion; syncLinks then shows it open again.
         val link = task.link?.takeIf { task.ownedElsewhere }
         if (link != null) {
             if (task.state == TaskState.DONE || task.state == TaskState.WONT_DO) linkOwners[link.kind]?.undo(link)
@@ -974,12 +763,6 @@ class GameStore(
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.reopen(it) else it }) }
     }
 
-    /**
-     * Ticks a task off. The reward is held for the undo window; call [tick] (the UI does, every second) to settle it.
-     *
-     * A task linked to a record another module owns (a HOME chore) is not completed by PLAN: the owner does its own completion, once, and pays its own
-     * reward; this task then only shows it done and pays nothing (`PRODUCT_BIBLE.md` section 4). If the owner is not available or refuses, nothing is recorded.
-     */
     fun completeTask(id: String): PendingCompletion {
         val task = data.tasks.first { it.id == id }
         val link = task.link?.takeIf { task.ownedElsewhere }
@@ -995,14 +778,12 @@ class GameStore(
         if (!task.isOpen) return nothing
         val owner = linkOwners[link.kind] ?: return nothing
         if (!owner.complete(link)) return nothing
-        // The owner's own save may already have shown the task done through [syncLinks]; the task is read again either way.
         val done = (data.tasks.firstOrNull { it.id == task.id } ?: task).copy(state = TaskState.DONE, completedAtMillis = nowMillis)
         val pending = PendingCompletion(task, done, false, task.rank.tier, false, false, nowMillis + TaskRules.UNDO_WINDOW_MILLIS)
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == task.id) done else it }, pending = d.pending + pending) }
         return pending
     }
 
-    /** Takes back a completion still inside its undo window. */
     fun undoCompletion(taskId: String): Boolean {
         val p = data.pending.firstOrNull { it.original.id == taskId } ?: return false
         if (nowMillis >= p.finalAtMillis) return false
@@ -1011,7 +792,6 @@ class GameStore(
         return true
     }
 
-    /** Ticks a subtask; the first few that are old enough pay one Rare Candy each. */
     fun completeSubtask(taskId: String, subtaskId: String): Boolean {
         val task = data.tasks.first { it.id == taskId }
         val (updated, pays) = TaskRules.completeSubtask(task, subtaskId, nowMillis)
@@ -1027,7 +807,6 @@ class GameStore(
         return pays
     }
 
-    /** Adds a step to a task, up to [MAX_SUBTASKS]. A blank title is not a step. */
     fun addSubtask(taskId: String, title: String) {
         val clean = title.trim().ifEmpty { return }
         update { d ->
@@ -1037,25 +816,20 @@ class GameStore(
         }
     }
 
-    /** Renames a step. A blank title changes nothing. */
     fun renameSubtask(taskId: String, subtaskId: String, title: String) {
         val clean = title.trim().ifEmpty { return }
         update { d -> d.copy(tasks = d.tasks.map { t -> if (t.id == taskId) t.copy(subtasks = t.subtasks.map { if (it.id == subtaskId) it.copy(title = clean) else it }) else t }) }
     }
 
-    /** Takes a step off a task. A step that already paid keeps its reward (nothing is taken back). */
     fun removeSubtask(taskId: String, subtaskId: String) =
         update { d -> d.copy(tasks = d.tasks.map { t -> if (t.id == taskId) t.copy(subtasks = t.subtasks.filterNot { it.id == subtaskId }) else t }) }
 
-    /** Unticks a step. It stays marked as paid, so ticking it again pays nothing more. */
     fun reopenSubtask(taskId: String, subtaskId: String) =
         update { d -> d.copy(tasks = d.tasks.map { t -> if (t.id == taskId) t.copy(subtasks = t.subtasks.map { if (it.id == subtaskId) it.copy(done = false) else it }) else t }) }
 
-    /** Puts a task's steps back as they were (for an undo). */
     fun restoreSubtasks(taskId: String, subtasks: List<Subtask>) =
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(subtasks = subtasks) else it }) }
 
-    /** A repeating task. Its next instances are created straight away and topped up by [refresh]. */
     fun addRecurring(template: Task, recurrence: Recurrence) {
         val seriesId = newId()
         val series = TaskSeries(template.copy(id = seriesId, seriesId = seriesId, createdAtMillis = nowMillis), recurrence)
@@ -1063,18 +837,11 @@ class GameStore(
         refresh()
     }
 
-    /** The series [task] belongs to (an instance of it, or the plain task it was made from), or null if it does not repeat. */
     fun seriesOf(task: Task): TaskSeries? =
         data.series.firstOrNull { it.template.seriesId == task.seriesId && task.seriesId != null || it.firstTaskId == task.id }
 
-    /**
-     * Makes an open task repeat on [repeat], starting from its planned day (today when it has none). The task itself stays
-     * the one of its own day (it pays as a one-off task, with the minimum age); the next ones are created ahead. On a task
-     * that already repeats, this changes how: the later instances you have not touched are made again on the new schedule.
-     */
     fun makeRepeating(taskId: String, repeat: Repeat): Boolean {
         val task = data.tasks.firstOrNull { it.id == taskId && it.isOpen } ?: return false
-        // A linked task is one record's projection, not a task of its own to repeat (the chore's own schedule repeats it).
         if (task.link != null) return false
         val existing = seriesOf(task)
         if (existing != null) {
@@ -1092,7 +859,6 @@ class GameStore(
                 id = seriesId, seriesId = seriesId, planned = null, createdAtMillis = nowMillis, paid = false, focusedMinutes = 0,
                 subtasks = task.subtasks.map { it.copy(done = false, paid = false) },
             )
-            // Its own day is skipped: the task itself is that day's.
             val recurrence = Recurrence(repeat, start, skipped = setOf(start))
             update { d ->
                 d.copy(
@@ -1105,20 +871,15 @@ class GameStore(
         return true
     }
 
-    /** Stops a task repeating. The task itself stays; instances you have not touched and that are still ahead are removed. */
     fun stopRepeating(taskId: String) {
         val task = data.tasks.firstOrNull { it.id == taskId } ?: return
         val id = seriesOf(task)?.template?.seriesId ?: return
         update { d -> d.copy(series = d.series.filterNot { it.template.seriesId == id }, tasks = d.tasks.filterNot { untouchedLaterInstance(it, id) }) }
     }
 
-    /** An instance of series [seriesId] after today that is still open and has had nothing done to it. */
     private fun untouchedLaterInstance(t: Task, seriesId: String): Boolean =
         t.seriesId == seriesId && t.isOpen && (t.planned ?: today) > today && t.focusedMinutes == 0 && t.subtasks.none { it.done }
 
-    // --- the clock ----------------------------------------------------------------------------------------------------
-
-    /** Settles finished undo windows and the focus timer, and creates upcoming recurring tasks. Cheap to call often. */
     fun tick() {
         sync()
         // Most ticks have nothing to settle; checking the small lists first avoids building date/occurrence lists 2x a second.
@@ -1127,11 +888,6 @@ class GameStore(
         tickFocus()
     }
 
-    /**
-     * Pays the companions of PLAN events whose occurrences have ended (PLAN.md 8.2): exp for the companion, once per occurrence, and maybe an item.
-     * Every owed occurrence is marked paid whatever came of it, so one whose companion left the party, could not take exp or hit the daily cap
-     * is not owed later. Oldest first, so the day's cap counts in the order things happened.
-     */
     private fun settleEvents() {
         val due = EventCompanions.due(data.events, now) { it.toEpochMillis(zone) }
         if (due.isEmpty()) return
@@ -1141,7 +897,6 @@ class GameStore(
                 next = next.copy(events = next.events.map { e -> if (e.id == x.eventId) e.copy(paid = e.paid + x.date) else e })
                 val pokemon = next.player.pokemon.firstOrNull { it.id == x.companionId }
                 if (pokemon == null || !pokemon.inParty || pokemon.partyId != PartyIds.PLAN || !pokemon.canFeed) continue
-                // The cap counts on the day it is paid (the streak day), so one period is ever live and moving an event never resets it.
                 val used = Counters.EVENT_CANDIES.get(next.counters, streakDay)
                 val candies = minOf(x.candies, EventCompanions.DAILY_CAP - used)
                 if (candies <= 0) continue
@@ -1167,11 +922,6 @@ class GameStore(
         }
     }
 
-    /**
-     * Names the Pokémon [pokemonId] as the companion of event [id] (an occurrence names its series), or with null takes the companion away. Only a
-     * Pokémon of the PLAN party can be one, and naming the one it already has changes nothing. An occurrence pays only if it ends after the moment the
-     * companion was named, so naming one for an event in the past pays nothing.
-     */
     fun setEventCompanion(id: String, pokemonId: String?) = update { d ->
         val series = PlanEvent.seriesOf(id)
         val valid = pokemonId == null || d.player.pokemon.any { it.id == pokemonId && it.inParty && it.partyId == PartyIds.PLAN }
@@ -1184,7 +934,6 @@ class GameStore(
         })
     }
 
-    /** Creates recurring instances for the next days. Call when the app opens and when the date changes. */
     fun refresh() {
         val created = data.series.flatMap { s -> s.recurrence?.let { RecurringTasks.instancesToCreate(s.template, it, data.tasks, today, nowMillis) }.orEmpty() }
         if (created.isNotEmpty()) update { it.copy(tasks = it.tasks + created) }
@@ -1206,12 +955,7 @@ class GameStore(
         }
     }
 
-    // --- frequency targets (recurring tasks that repeat N times in a period; there is no Habit record any more) ------------
-
-    /** Puts the recurring tasks and targets back as they were (for an undo). */
     fun restoreSeries(series: List<TaskSeries>) = update { it.copy(series = series) }
-
-    // --- goals --------------------------------------------------------------------------------------------------------
 
     fun addGoal(title: String, targetDate: LocalDate? = null): Goal {
         val goal = Goal(newId(), title.trim(), targetDate, createdAtMillis = nowMillis)
@@ -1219,18 +963,12 @@ class GameStore(
         return goal
     }
 
-    /** Changes a goal's words and target date (null: no date to aim for). A blank title keeps the old one. Milestones and progress are untouched. */
     fun editGoal(goalId: String, title: String, targetDate: LocalDate?) {
         update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(title = title.trim().ifEmpty { g.title }, targetDate = targetDate) else g }) }
     }
 
-    /** The goal task [taskId] is linked to, if any: a task counts toward at most one goal. */
     fun goalOf(taskId: String): Goal? = data.goals.firstOrNull { taskId in it.linkedTaskIds }
 
-    /**
-     * Links task [taskId] to goal [goalId], taking it from any other goal first; null unlinks it. A link pays nothing: it only
-     * counts the task toward a goal without milestones ([GoalRules.progress]), and finishing a goal stays the player's choice.
-     */
     fun linkTaskToGoal(taskId: String, goalId: String?) {
         if (data.tasks.none { it.id == taskId }) return
         update { d ->
@@ -1241,36 +979,29 @@ class GameStore(
         }
     }
 
-    /** Removes a goal and its milestones. Candies already paid stay paid; the tasks linked to it stay as tasks. */
     fun deleteGoal(goalId: String) {
         update { d -> d.copy(goals = d.goals.filterNot { it.id == goalId }) }
     }
 
-    /** Renames a milestone (a blank name is ignored). Whether it is done, and whether it paid, do not change. */
     fun renameMilestone(goalId: String, milestoneId: String, title: String) {
         val clean = title.trim().ifEmpty { return }
         update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(milestones = g.milestones.map { m -> if (m.id == milestoneId) m.copy(title = clean) else m }) else g }) }
     }
 
-    /** Removes a milestone. A paid one stays paid (the candy is not taken back); the goal's progress is worked out again from what is left. */
     fun deleteMilestone(goalId: String, milestoneId: String) {
         update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(milestones = g.milestones.filterNot { it.id == milestoneId }) else g }) }
     }
 
-    /** Adds a milestone to a goal. A blank title is not a milestone. */
     fun addMilestone(goalId: String, title: String) {
         val clean = title.trim().ifEmpty { return }
         update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) GoalRules.addMilestone(g, Milestone(newId(), clean, nowMillis)) else g }) }
     }
 
-    /** Unticks a milestone. It stays marked as paid, so ticking it again pays nothing more. */
     fun reopenMilestone(goalId: String, milestoneId: String) =
         update { d -> d.copy(goals = d.goals.map { if (it.id == goalId) GoalRules.reopenMilestone(it, milestoneId) else it }) }
 
-    /** Puts the goals back as they were (for an undo). */
     fun restoreGoals(goals: List<Goal>) = update { it.copy(goals = goals) }
 
-    /** Ticks a milestone. It pays a Super Candy if it is old enough (and fewer than 3 paid today); finishing the goal gives a bonus item. */
     fun completeMilestone(goalId: String, milestoneId: String): MilestoneResult {
         val goal = data.goals.first { it.id == goalId }
         val paidToday = Counters.MILESTONES.get(data.counters, today)
@@ -1299,17 +1030,9 @@ class GameStore(
         return result
     }
 
-    // --- the week and rest days ---------------------------------------------------------------------------------------
-
     val weekStart: LocalDate
         get() = Streaks.weekStartOf(today, firstDayOfWeek)
 
-    // --- nudges: Pick for me, mini-quests, welcome back ---------------------------------------------------------------
-
-    /**
-     * "Pick for me": chooses one of today's open tasks at random (another one than the current pick when there is a choice)
-     * and remembers it, so finishing it pays [RewardEngine.PICKED_BONUS] on its candies. Returns null when nothing is open.
-     */
     fun pickForMe(): Task? {
         val open = openTodayTasks()
         val pick = PickForMe.choose(open.filter { it.id != data.pickedTaskId }.ifEmpty { open }, rng)?.task ?: return null
@@ -1317,12 +1040,10 @@ class GameStore(
         return pick
     }
 
-    /** Today's three mini-quests (the same for everyone on a date, until rerolled). The day turns over at 4am, like streaks. */
     fun miniQuests(): List<MiniQuest> = MiniQuests.forDay(streakDay, rerolled = Counters.MINI_QUEST_REROLL.isSet(data.counters, streakDay))
 
     fun miniQuestDone(id: String): Boolean = Counters.MINI_QUEST.isSet(data.counters, streakDay, id)
 
-    /** One reroll a day, before any of the day's quests is done. */
     fun canRerollMiniQuests(): Boolean = !Counters.MINI_QUEST_REROLL.isSet(data.counters, streakDay) && miniQuests().none { miniQuestDone(it.id) }
 
     fun rerollMiniQuests() {
@@ -1330,11 +1051,6 @@ class GameStore(
         update { d -> d.copy(counters = Counters.MINI_QUEST_REROLL.set(d.counters, streakDay, 1)) }
     }
 
-    /**
-     * Ticks off one of today's mini-quests (honour system): a berry and [MiniQuests.RARE_CANDIES] Rare Candies, and
-     * [MiniQuests.ALL_THREE_BONUS_BERRIES] more berries and [MiniQuests.ALL_THREE_BONUS_CANDIES] more candies for the third. No streak and no active day: they are small kindnesses, not work. Returns false if it is not today's or done.
-     * The reward is logged as seen: the quest's own card shows it, so the reward box at the top of the page does not repeat it.
-     */
     fun completeMiniQuest(id: String): Boolean {
         val quests = miniQuests()
         if (quests.none { it.id == id } || miniQuestDone(id)) return false
@@ -1354,24 +1070,20 @@ class GameStore(
         return true
     }
 
-    /** What today's mini-quests have paid so far, oldest first: the card shows it beside the quests. */
     fun miniQuestRewards(): List<Reward> {
         val since = LocalDateTime(streakDay, kotlinx.datetime.LocalTime(Streaks.ROLLOVER_HOUR, 0)).toEpochMillis(zone)
         return data.rewardLog.filter { it.source == MINI_QUEST_SOURCE && it.atMillis >= since }.flatMap { it.rewards }
     }
 
-    /** The oldest open task: what "open the task you've been avoiding" starts 5 minutes of focus on. */
     fun oldestOpenTask(): Task? = data.tasks.filter { it.isOpen && it.seriesId == null }.minByOrNull { it.createdAtMillis }
 
     private val lastActive: LocalDate? get() = data.activeDays.maxOrNull()
 
-    /** True after [Streaks.WELCOME_BACK_DAYS] or more days away, until the gift is taken (once per absence). */
     fun welcomeBackDue(): Boolean {
         val last = lastActive ?: return false
         return Streaks.welcomeBack(last, streakDay) && !Counters.WELCOME.isSet(data.counters, last)
     }
 
-    /** Takes the welcome-back gift: [WELCOME_BACK_RARE_CANDIES] Rare Candies and [WELCOME_BACK_BERRIES] berries, no scolding. */
     fun claimWelcomeBack(): List<Reward> {
         val last = lastActive?.takeIf { welcomeBackDue() } ?: return emptyList()
         val berry = Items.randomBerry(rng)
@@ -1388,7 +1100,6 @@ class GameStore(
         return rewards
     }
 
-    /** Marks or unmarks a rest day; a rest day does not break the streak. Returns false if too many rest days are set. */
     fun toggleRestDay(date: LocalDate): Boolean {
         val days = data.restDays
         if (date in days) {
@@ -1400,17 +1111,12 @@ class GameStore(
         return true
     }
 
-    // --- quests -------------------------------------------------------------------------------------------------------
-
-    /** Quests accepted and not yet claimed. */
     val activeQuests: List<Quest>
         get() = data.quests.filterValues { it.completedAtMillis == null }.keys.mapNotNull(Quests::get)
 
-    /** Quests that are unlocked and not taken yet. */
     val availableQuests: List<Quest>
         get() = Quests.all.filter { it.id !in data.quests && Quests.lockedReason(it, data) == null }
 
-    /** Progress on each of a quest's requirements: (requirement, current count). */
     fun questProgress(quest: Quest): List<Pair<Requirement, Int>> {
         val state = data.quests[quest.id] ?: return quest.requirements.map { it to 0 }
         return quest.requirements.map { it to Quests.current(it, state, data, zone, streak.current) }
@@ -1421,7 +1127,6 @@ class GameStore(
         return state.completedAtMillis == null && Quests.isComplete(quest, state, data, zone, streak.current)
     }
 
-    /** Takes a quest on. Returns false if it is locked, already taken, or [Quests.MAX_ACTIVE] are in progress. */
     fun acceptQuest(id: String): Boolean {
         val quest = Quests.get(id) ?: return false
         if (id in data.quests || Quests.lockedReason(quest, data) != null || activeQuests.size >= Quests.MAX_ACTIVE) return false
@@ -1429,7 +1134,6 @@ class GameStore(
         return true
     }
 
-    /** Claims the reward of a finished quest: the Pokémon joins the collection. Returns it, or null if the quest is not finished. */
     fun claimQuest(id: String): OwnedPokemon? {
         val quest = Quests.get(id) ?: return null
         if (!questReady(quest)) return null
@@ -1438,13 +1142,9 @@ class GameStore(
         return reward
     }
 
-    // --- growth -------------------------------------------------------------------------------------------------------
-
-    /** What the last [days] days went into, by category. */
     fun wheel(days: Int = 7): Insights.Wheel =
         Insights.balanceWheel(data.tasks, data.focusHistory, today.minus(DatePeriod(days = days - 1)), today, zone)
 
-    /** Focus minutes and finished tasks for each of the last [weeks] weeks, oldest first. */
     fun trend(weeks: Int = 6): List<Insights.WeekPoint> = Insights.weeklyTrend(
         data.tasks, data.focusHistory, weeks, today, zone, firstDayOfWeek,
     )
@@ -1465,17 +1165,11 @@ class GameStore(
 
     val firstDayOfWeek: DayOfWeek get() = data.settings.weekStart
 
-    /** See [AppData.perks]. */
     val perks: PerkBonuses get() = data.perks
 
-    /** Where [perks] come from, part by part, for the perks panel. */
     val perkSources: List<PerkSource> get() = data.player.let { Perks.sources(it.planLead, it.party, listOfNotNull(it.guardianOf(PartyIds.PLAN))) }
 
-    // --- focus --------------------------------------------------------------------------------------------------------
-
-    /** Starts a strict focus session. */
     fun startFocus(minutes: Int, deepFocus: Boolean, taskId: String? = null, lure: PokemonType? = null): FocusSession {
-        // A second tap on Start before the screen has changed: the session that is running is the answer, not a crash.
         data.focus?.let { return it }
         val session = FocusRules.start(
             id = newId(), durationMinutes = minutes, nowMillis = nowMillis, deepFocus = deepFocus, region = data.settings.region.open,
@@ -1487,7 +1181,6 @@ class GameStore(
 
     private fun emergencyPausesToday(): Int = if (data.emergencyPausesDay == today) data.emergencyPausesUsed else 0
 
-    /** Passes something that happened (the app was left, a call, a pause) to the running session. */
     fun focusEvent(event: FocusEvent): FocusResult? {
         val session = data.focus ?: return null
         val next = session.apply(event, nowMillis)
@@ -1510,7 +1203,6 @@ class GameStore(
             is Phase.Completed -> {
                 val minutes = (session.durationMillis / 60_000L).toInt()
                 val event: EffortEvent = session.toEffortEvent(newId(), nowMillis, epochDay).let { it.copy(region = it.region.open) }
-                // The perks that count are the ones of Plan's lead when the session started.
                 val player = data.player
                 val outcome = RewardEngine.effort(player.atStartOf(session), event, rng)
                 update { d ->
@@ -1537,11 +1229,6 @@ class GameStore(
         }
     }
 
-    /**
-     * Magic Guard: once a week, a failed session of at least [Egg.MIN_MINUTES] focused minutes still hatches its egg, as a
-     * session of the minutes focused (never a Deep Focus one). The session still counts as failed in the history and for
-     * the streak. Returns null when the buddy at the start had no Magic Guard, this week's is used, or too little was done.
-     */
     private fun magicGuard(session: FocusSession, reason: FailReason, minutes: Int): FocusResult? {
         val player = data.player.atStartOf(session)
         if (minutes < Egg.MIN_MINUTES || Counters.MAGIC_GUARD.isSet(data.counters, weekStart)) return null
@@ -1559,7 +1246,6 @@ class GameStore(
         return FocusResult.Hatched(outcome.rewards)
     }
 
-    /** The perks that count for a session are the ones of Plan's lead when it started, if that Pokémon is still in Plan's party. */
     private fun app.pokeplan.core.reward.PlayerState.atStartOf(session: FocusSession) =
         if (session.leadIdAtStart != null && party.any { it.id == session.leadIdAtStart }) copy(planLeadId = session.leadIdAtStart) else this
 
@@ -1567,27 +1253,19 @@ class GameStore(
 
     fun dismissFocusEnd() = update { it.copy(lastFocusEnd = null) }
 
-    // --- Pokémon ------------------------------------------------------------------------------------------------------
-
     private fun pokemon(id: String): OwnedPokemon = data.player.pokemon.first { it.id == id }
 
     private fun replace(p: OwnedPokemon) =
         update { d -> d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == p.id) p else it })) }
 
-    /** Where [id] is now: the buddy, a party, a Guardian slot, a World team, a Pokégear helper or the PC (one place only, [Places]). */
     fun placeOf(id: String): Place = Places.of(data, id)
 
-    /** Takes [id] out of the place it is in and runs [then] on the result, in one save; false when it is on an expedition under way. */
     internal fun moveTo(id: String, then: (AppData) -> AppData): Boolean {
         if (!Places.movable(data, id)) return false
         update { d -> then(Places.vacate(d, id)).let { r -> r.copy(player = Places.leads(r.player)) } }
         return true
     }
 
-    /**
-     * Makes a Pokémon the buddy. Guardian species (legendaries and mythicals) cannot be buddies. A Pokémon in a party, on a team or helping a tool
-     * is taken from there (one place only) and the previous buddy goes to the PC. Returns false if refused.
-     */
     fun setBuddy(id: String): Boolean {
         if (Guardians.canBe(pokemon(id))) return false
         return moveTo(id) { d -> d.copy(player = d.player.copy(buddyId = id)) }
@@ -1595,11 +1273,6 @@ class GameStore(
 
     fun rename(id: String, nickname: String) = replace(pokemon(id).withNickname(nickname))
 
-    /**
-     * Puts a Pokémon in or out of a module's party (up to six, in one party only: joining takes it from the buddy, a team, a helper job, a Guardian
-     * slot or another party; a legendary or mythical is a normal Pokémon here). Returns false if the party is full or it is on an expedition under way, or if it would leave
-     * Plan's party empty by going out (use a place to move it instead). A lead that leaves passes the lead on to the party's first member.
-     */
     fun setInParty(id: String, inParty: Boolean, partyId: String = PartyIds.PLAN): Boolean {
         val p = pokemon(id)
         val staying = inParty && p.inParty && p.partyId == partyId
@@ -1610,18 +1283,12 @@ class GameStore(
         return moveTo(id) { d -> d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == id) it.copy(inParty = true, partyId = partyId) else it })) }
     }
 
-    /**
-     * Sends [id] to the PC from whatever place it is in (a party, a Guardian slot, a World team, a Pokégear helper). Refused for the buddy (choosing
-     * another buddy moves this one; the app always keeps a face), for Plan's last party member (as [setInParty]), on an expedition under way, and
-     * when it is already in the PC.
-     */
     fun sendToPc(id: String): Boolean = when (val place = Places.of(data, id)) {
         Place.Pc, Place.Buddy -> false
         is Place.Party -> setInParty(id, false)
         else -> moveTo(id) { it }
     }
 
-    /** Makes [id], who must be in Plan's party, its lead: the Pokémon that takes Plan's friendship and gives its perks. */
     fun setPlanLead(id: String): Boolean {
         val p = pokemon(id)
         if (!p.inParty || p.partyId != PartyIds.PLAN) return false
@@ -1629,7 +1296,6 @@ class GameStore(
         return true
     }
 
-    /** Makes [id], who must be in Care's party, its lead: the Pokémon that takes Care's friendship and gives its perks. */
     fun setCareLead(id: String): Boolean {
         val p = pokemon(id)
         if (!p.inParty || p.partyId != PartyIds.CARE) return false
@@ -1637,40 +1303,25 @@ class GameStore(
         return true
     }
 
-    // --- Guardians ----------------------------------------------------------------------------------------------------
 
-
-    /** Owned legendaries and mythicals, slotted or not. */
     val guardianCandidates: List<OwnedPokemon> get() = data.player.pokemon.filter(Guardians::canBe)
 
-    /** [module]'s Guardian, if it has one. */
     fun guardianOf(module: String): OwnedPokemon? = data.player.guardianOf(module)
 
-    /**
-     * Makes [id] the Guardian of [module] (a party id: `PartyIds.PLAN`, `CARE`, ...), in place of whoever was. One slot per module, no rank to wait for. Returns false if it is
-     * not a Guardian species, [module] has no Guardian slot, or it is on an expedition under way. Slotting takes it from its old place (a party, a World team, a helper job or
-     * another module's slot); the old Guardian of [module] goes to the PC.
-     */
     fun slotGuardian(id: String, module: String): Boolean {
         val p = pokemon(id)
         if (!Guardians.canBe(p) || module !in Guardians.MODULES) return false
         return moveTo(id) { d -> d.copy(player = d.player.copy(moduleGuardians = d.player.moduleGuardians - module + (module to id))) }
     }
 
-    /** Empties [module]'s Guardian slot: the Pokémon goes to the PC. */
     fun unslotGuardian(module: String) = update { d -> d.copy(player = d.player.copy(moduleGuardians = d.player.moduleGuardians - module)) }
 
-    /** Gives the player a Pokémon outright (a quest reward). It goes to the Guardian collection if it is a legendary or mythical. */
     fun grantPokemon(speciesId: Int, source: String, how: Origin.How = Origin.How.QUEST, form: String? = null): OwnedPokemon {
         var granted: OwnedPokemon? = null
         update { d -> grantIn(d, speciesId, source, how, form).also { granted = it.second }.first }
         return granted!!
     }
 
-    /**
-     * [grantPokemon] as a step of a larger [update], so a "grant once" flag and the Pokémon are one write: the widget and the app can both reach
-     * a grant, and whichever second finds the flag set grants nothing (WorldActions' Guardian and legends).
-     */
     internal fun grantIn(d: AppData, speciesId: Int, source: String, how: Origin.How = Origin.How.QUEST, form: String? = null): Pair<AppData, OwnedPokemon> {
         val option = HatchOption(speciesId, form ?: Dex.defaultForm(speciesId).identifier)
         val p = Hatching.create(newId(), option, OwnedPokemon.PARTY_SIZE, nowMillis, 60, rng).copy(inParty = false)
@@ -1679,7 +1330,6 @@ class GameStore(
         return after to p
     }
 
-    /** Feeds up to [count] Rare Candies. Returns how many were used. */
     fun feedRareCandy(id: String, count: Int = 1): Int {
         var p = pokemon(id)
         val partnerLevel = data.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level } ?: p.level
@@ -1702,16 +1352,11 @@ class GameStore(
         return EvolutionRules.options(p, ctx)
     }
 
-    /** Records a phone action done for [option]'s evolution of Pokémon [id] (upside down, a spin, a finished walk); it can then evolve. */
     fun deviceTrialDone(id: String, option: EvolutionOption) {
         if (app.pokeplan.core.pokemon.EvolutionTrials.device(option.evolution) == null) return
         update { d -> d.copy(completedTrials = d.completedTrials + app.pokeplan.core.pokemon.EvolutionTrials.doneKey(option.evolution, id)) }
     }
 
-    /**
-     * A step-counter reading for Pokémon [id]'s walk: starts the walk at the first reading, adds the steps after it, and once
-     * [app.pokeplan.core.pokemon.EvolutionTrials.STEPS] are walked records the trial and ends the walk. Returns the steps walked.
-     */
     fun stepReading(id: String, option: EvolutionOption, counter: Long): Int {
         val walk = data.stepWalks[id]?.reading(counter) ?: StepWalk(counter)
         val key = app.pokeplan.core.pokemon.EvolutionTrials.doneKey(option.evolution, id)
@@ -1723,7 +1368,6 @@ class GameStore(
         return walk.walked
     }
 
-    /** Evolves into one of [evolutionOptions]; uses up what it needs. */
     fun evolve(id: String, option: EvolutionOption) {
         val result = EvolutionRules.evolve(pokemon(id), option)
         update { d ->
@@ -1738,27 +1382,18 @@ class GameStore(
 
     fun transferBlock(id: String): TransferBlock? =
         pokemon(id).let { p ->
-            // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
             Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id || id == data.player.mintLead?.id || id == data.player.baseLead?.id || id == data.player.linkLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
-    /**
-     * Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). The Guardians screen also opens as soon as the player owns one
-     * Guardian (a legendary or mythical, from the World opening or a quest) whatever the rank, so it is never in a place the player cannot see: the Pokémon
-     * lists it there (its slot still waits for the rank) and the PC does not hide it somewhere unreachable.
-     */
     fun sees(feature: Feature): Boolean =
         TrainerRank.isVisible(feature, data.player.trainerPoints) || (feature == Feature.GUARDIANS && guardianCandidates.isNotEmpty())
 
-    /** Features opened by ranks the player reached but has not seen the "Rank up" card for, oldest first. */
     fun newlyOpened(): List<Feature> = ((data.seenRank + 1)..data.player.rank).flatMap { Feature.at(it) }
 
     fun markRankSeen() = update { it.copy(seenRank = maxOf(it.seenRank, it.player.rank)) }
 
-    /** Remembers that the player has seen what is new in [version]. */
     fun markVersionSeen(version: String) = update { it.copy(lastSeenVersion = version) }
 
-    /** Marks species as seen in the Pokédex (a friend's buddy, a quest's Pokémon). Saves nothing when none are new. */
     fun markSeen(speciesIds: Collection<Int>) {
         if (data.seenSpecies.containsAll(speciesIds)) return
         update { it.copy(seenSpecies = it.seenSpecies + speciesIds) }
@@ -1766,16 +1401,11 @@ class GameStore(
 
     fun isFavorite(id: String): Boolean = id in data.favorites
 
-    /** What the teams brought back since the player last dismissed the report (kept in memory only: the reward log is the record), or null when nothing came. */
     internal var worldSummary: ReportSummary? = null
-
-    /** Stars or unstars a Pokémon; a starred one cannot be transferred. */
 
     fun toggleFavorite(id: String) = update { d -> d.copy(favorites = if (id in d.favorites) d.favorites - id else d.favorites + id) }
 
-    /** Sends a duplicate away for Rare Candies and coins. Returns false if it may not be transferred (or is starred). */
     fun transfer(id: String): Boolean {
-        // A Pokémon out on an expedition cannot leave (Places.movable); any other place it holds (a World team, a Guardian slot, a Gear helper) is given up with it.
         if (transferBlock(id) != null || id in data.favorites || !Places.movable(data, id)) return false
         val p = pokemon(id)
         val quote = Transfer.quote(p)
@@ -1790,20 +1420,10 @@ class GameStore(
         return true
     }
 
-    /** Tasks finished since the day began. */
     fun doneToday(): Int = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= startOfTodayMillis }
 
-    /**
-     * The meaningful thing that happened in the last few minutes (an egg hatched, a task or session paid out), or null.
-     * The buddy only speaks and celebrates for these; the rest of the time it just idles.
-     */
     fun buddyEvent(care: Boolean = false): BuddyEventNow? = eventWhere { !care || it.startsWith(CARE_LOG_PREFIX) }
 
-    /**
-     * The moment a module's lead celebrates on that module's page: only what that module paid. [prefix] is the module's log prefix
-     * ([HEAL_LOG_PREFIX], [MINT_LOG_PREFIX], [BASE_LOG_PREFIX], [CARE_LOG_PREFIX]); null is Plan, whose rewards carry no prefix (a finished
-     * task, a hatched egg), so nothing another module, World or a mini-quest paid counts.
-     */
     fun moduleEvent(prefix: String?): BuddyEventNow? = eventWhere { source ->
         if (prefix != null) source.startsWith(prefix)
         else MODULE_LOG_PREFIXES.none { source.startsWith(it) } && source != WORLD_SOURCE && source != MINI_QUEST_SOURCE
@@ -1812,7 +1432,6 @@ class GameStore(
     private fun eventWhere(counts: (String) -> Boolean): BuddyEventNow? {
         val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS && counts(it.source) }
         val latest = recent.lastOrNull() ?: return null
-        // A Pokémon the World gives is not an egg hatching, so it is not a hatch moment.
         val hatches = recent.filter { it.source != WORLD_SOURCE }.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>() }
         val event = when {
             hatches.any { it.pokemon.isShiny } -> BuddyEvent.SHINY
@@ -1822,20 +1441,14 @@ class GameStore(
         return BuddyEventNow(event, latest.atMillis)
     }
 
-    /** Progress of [p] towards its next level, 0 to 1: the Rare Candies fed so far out of the ones this level needs. */
     fun levelProgress(p: OwnedPokemon): Float {
         if (!p.canFeed) return 1f
         val partner = data.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level } ?: p.level
         return ((p.candyProgress + p.xp.toFloat() / CandyRules.XP_PER_CANDY) / CandyRules.candiesNeeded(p.level, partner)).coerceIn(0f, 1f)
     }
 
-    /**
-     * Pets the buddy, or [pokemonId] (Care's lead on Care's screens): friendship from [FriendshipRules.Source.PET], up to [PET_DAILY_CAP] a day *(tune)*, shared by all.
-     * Returns the friendship gained, 0 when nothing changed (no buddy, or today's petting is used up; nothing is saved then).
-     */
     fun pet(pokemonId: String? = null): Int {
         val buddy = (if (pokemonId == null) data.player.buddy else data.player.pokemon.firstOrNull { it.id == pokemonId }) ?: return 0
-        // Petting is the "Pet your buddy" mini-quest, so it ticks itself, even once today's petting friendship is used up.
         completeMiniQuest(MiniQuests.PET_QUEST)
         val gainedToday = Counters.PET.get(data.counters, today)
         if (gainedToday >= PET_DAILY_CAP || buddy.friendship >= FriendshipRules.MAX) return 0
@@ -1848,10 +1461,6 @@ class GameStore(
         return gained
     }
 
-    /**
-     * Gives [pokemonId] an item from the bag to hold. Whatever it held before goes back to the bag. Returns false if the bag
-     * has none, the item cannot be held, or the Pokémon is a Guardian (they are at full power and hold nothing).
-     */
     fun holdItem(pokemonId: String, itemId: String): Boolean {
         val p = pokemon(pokemonId)
         if (!data.player.inventory.has(itemId) || !Items.holdable(itemId) || Guardians.canBe(p) || p.heldItem == itemId) return false
@@ -1863,11 +1472,6 @@ class GameStore(
         return true
     }
 
-    /**
-     * Chooses [pokemonId]'s moves by identifier (one to four it may be given, see [Moveset.canSet]); an empty list goes back to its natural moves.
-     * Returns false when the choice is not allowed. Free: moves cost nothing and can be changed any time (POKEMON_ECOSYSTEM.md 8.3). The World teams are settled first,
-     * so the floors already climbed count with the moves they were climbed with.
-     */
     fun setMoves(pokemonId: String, identifiers: List<String>): Boolean {
         val p = data.player.pokemon.firstOrNull { it.id == pokemonId } ?: return false
         if (!Moveset.canSet(p, identifiers)) return false
@@ -1876,7 +1480,6 @@ class GameStore(
         return true
     }
 
-    /** Puts [pokemonId]'s held item back in the bag. */
     fun takeItem(pokemonId: String) {
         val p = pokemon(pokemonId)
         val item = p.heldItem ?: return
@@ -1887,10 +1490,8 @@ class GameStore(
         }
     }
 
-    /** Whether [itemId] would do anything if used on [p] now (an Ability Capsule on a Pokémon with one ability does not). */
     fun canUse(itemId: String, p: OwnedPokemon): Boolean = ItemEffects.canUse(itemId, p)
 
-    /** Uses a bag item on a Pokémon (see [ItemUse]). Returns false if the bag has none, or it would do nothing. */
     fun useItem(use: ItemUse, pokemonId: String): Boolean {
         if (!data.player.inventory.has(use.itemId)) return false
         val changed = data.player.pokemon.firstOrNull { it.id == pokemonId }?.let { ItemEffects.apply(it, use) } ?: return false
@@ -1902,16 +1503,13 @@ class GameStore(
         return true
     }
 
-    /** Uses an item that needs no choice: a vitamin, a berry, the Ability Capsule or Patch, a Tera Shard. */
     fun useItem(itemId: String, pokemonId: String): Boolean = useItem(ItemUse.Plain(itemId), pokemonId)
 
-    /** Today's finds on the launcher town's floor ([TownFinds]), in order; a collected one is null. */
     fun townFinds(): List<TownFinds.Find?> {
         val taken = Counters.TOWN_FINDS.get(data.counters, today)
         return TownFinds.forDay(epochDay).mapIndexed { i, f -> f.takeIf { taken and (1 shl i) == 0 } }
     }
 
-    /** Picks up today's find number [index] from the town's floor: into the Bag (over the limit, Poké), or its Poké. Null if it is gone. */
     fun collectTownFind(index: Int): Reward? {
         val find = townFinds().getOrNull(index) ?: return null
         val reward = if (find.isPoke) Reward.Poke(find.amount) else Reward.ItemDrop(find.itemId, find.amount)
@@ -1927,132 +1525,94 @@ class GameStore(
         return reward
     }
 
-    /** Puts items in the bag (gifts, quest rewards, the shop). Anything over the bag limit turns into coins. */
     fun grant(itemId: String, amount: Int) = update { d ->
         val (bag, overflow) = d.player.inventory.addCapped(itemId, amount)
         d.copy(player = d.player.copy(inventory = bag, coins = d.player.coins + overflow))
     }
 
-    // --- views --------------------------------------------------------------------------------------------------------
-
     fun todayTasks(): List<Task> = TaskViews.today(data.tasks.filter { it.state != TaskState.DELETED }, now)
 
-    /** Today's open tasks, less the ones just ticked off and waiting out their undo: the list Home, Plan and the widget show. */
     fun openTodayTasks(): List<Task> {
         val pending = data.pending.map { it.original.id }.toSet()
         return todayTasks().filter { it.id !in pending }
     }
 
-    /** The berry the buddy is fed from the bag (the first by name), wherever it is fed; null with none. */
     fun buddyBerry(): String? = berries().keys.minOrNull()
 
     companion object {
-        /** The version of the Pokémon-roles layout that [migrateRoles] brings a save to. */
         const val ROLES_VERSION = 1
 
-        /** The most items a checklist template keeps. */
         const val MAX_TEMPLATE_ITEMS = 60
 
-        /** The reward-log source of what World gives (a recruit, the Guardian): not an egg, so no hatch scene or hatch reaction. */
         const val WORLD_SOURCE = "World"
         const val MEW_GIFT = "gift-mew"
 
         const val MAX_PICKER_OPTIONS = 30
 
-        /** The welcome-back gift after a week or more away. *(tune)* */
         const val WELCOME_BACK_RARE_CANDIES = 5
         const val WELCOME_BACK_BERRIES = 2
 
         const val MAX_SUBTASKS = 5
 
-        /** How long a reward counts as "just happened" for the buddy. */
         const val EVENT_MILLIS = 5 * 60_000L
 
-        /** Friendship a day that petting can give. */
         const val PET_DAILY_CAP = 10
 
-        /** The reward log's name for a mini-quest's rewards. */
         const val MINI_QUEST_SOURCE = "Mini-quest"
 
         const val LOG_SIZE = 50
 
-        /** Friends Care can make a day, one per visitor in the meadow (`Visitors.MAX_VISITORS`). *(tune)* */
         const val BEFRIEND_DAILY_CAP = 4
 
-        /** The most of each Care kind the world pays a day *(tune)*, a backstop to the same limits in CareRules. */
         val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.SKILL to 3, CareKind.WEEKLY_RHYTHM to 1, CareKind.PLAY to 6)
-        /** Every Care entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val CARE_LOG_PREFIX = "Care: "
 
-        /** The reward-log source of a befriended Care visitor, whose gift really is an egg (MODULES/CARE.md section 6). */
         const val CARE_FRIEND_SOURCE = CARE_LOG_PREFIX + "made a friend"
 
-        /** The most of each HEAL kind the world pays a day *(tune)*, a backstop to the same limits in `HealRules`. */
         val HEAL_DAILY_CAP: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to HealRules.ACTIVITIES_PAID_PER_DAY, HealKind.PARTICIPATION to HealRules.PARTICIPATION_PAID_PER_DAY, HealKind.STEPS to HealRules.STEPS_PAID_PER_DAY, HealKind.IMPORT to HealRules.IMPORTS_PAID_PER_DAY)
 
-        /** Every HEAL entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val HEAL_LOG_PREFIX = "Heal: "
         private val MODULE_LOG_PREFIXES by lazy { listOf(CARE_LOG_PREFIX, HEAL_LOG_PREFIX, MINT_LOG_PREFIX, BASE_LOG_PREFIX, OLD_BASE_LOG_PREFIX, LINK_LOG_PREFIX) }
         private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research", HealKind.STEPS to "Field Research: steps", HealKind.IMPORT to "Field Research: records read").mapValues { HEAL_LOG_PREFIX + it.value }
 
-        /** The most of each MINT kind the world pays in its period *(tune)*, a backstop to the same limits in `MintRules`: reconciled accounts a day, reviews a week. */
         val MINT_CAPS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to app.pokeplan.mint.MintRules.RECONCILES_PAID_PER_DAY, MintKind.REVIEW to app.pokeplan.mint.MintRules.REVIEWS_PAID_PER_WEEK, MintKind.LOGGED to app.pokeplan.mint.MintRules.RECORDS_PAID_PER_DAY)
 
-        /** Every MINT entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val MINT_LOG_PREFIX = "Mint: "
         private val MINT_SOURCES = mapOf(MintKind.RECONCILED to "Ledger Research", MintKind.REVIEW to "Ledger Research", MintKind.LOGGED to "Ledger Research: records").mapValues { MINT_LOG_PREFIX + it.value }
 
-        /** The most of each HOME kind the world pays in a day *(tune)*, a backstop to the same limits in `BaseRules`. */
         val BASE_CAPS: Map<BaseKind, Int> = mapOf(BaseKind.CHORE to app.pokeplan.base.BaseRules.CHORES_PAID_PER_DAY, BaseKind.MAINTENANCE to app.pokeplan.base.BaseRules.MAINTENANCE_PAID_PER_DAY)
 
-        /** Every BASE entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val BASE_LOG_PREFIX = "Base: "
 
-        /** What BASE entries started with before the module was renamed from Home (0.174.0); still read, never written. */
         const val OLD_BASE_LOG_PREFIX = "Home: "
         private val BASE_SOURCES = mapOf(BaseKind.CHORE to "Habitat Discovery", BaseKind.MAINTENANCE to "Habitat Discovery").mapValues { BASE_LOG_PREFIX + it.value }
 
-        /** The most of each LINK kind the world pays in a day *(tune)*, a backstop to the same limit in `LinkRules`. */
         val LINK_CAPS: Map<LinkMoment, Int> = mapOf(LinkMoment.FOLLOW_UP to app.pokeplan.link.LinkRules.FOLLOW_UPS_PAID_PER_DAY)
 
-        /** Every LINK entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val LINK_LOG_PREFIX = "Link: "
 
-        /** The most Friend Safari catches in a day across every Safari, one per person at most. *(tune)* */
         const val SAFARI_PER_DAY = 5
         const val SAFARI_SOURCE = LINK_LOG_PREFIX + "Friend Safari"
         private val LINK_SOURCES = mapOf(LinkMoment.FOLLOW_UP to "Postcard Trail").mapValues { LINK_LOG_PREFIX + it.value }
 
-        /** How many paid LINK event ids the save remembers. */
         const val LINK_PAID_KEPT = 1000
 
-        /** How many paid HOME event ids the save remembers. */
         const val HOME_PAID_KEPT = 1000
 
-        /** How many [LedgerNote]s the save keeps; the database settles each as it is written, so only the newest few are ever still waiting. */
         const val LEDGER_NOTES_KEPT = 50
 
-        /** How many paid MINT event ids the save remembers. */
         const val MINT_PAID_KEPT = 1000
 
-        /** How many paid HEAL event ids the save remembers. */
         const val HEAL_PAID_KEPT = 1000
 
         private val CARE_SOURCES = mapOf(
             CareKind.ROUTINE to "a routine", CareKind.CALM_BREAK to "a calm break", CareKind.WEEKLY_RHYTHM to "kept a rhythm", CareKind.SKILL to "a skill practised", CareKind.PLAY to "time together",
         ).mapValues { CARE_LOG_PREFIX + it.value }
 
-        /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted (see [cloudPart] and [adoptCloud]). */
         internal val DEVICE_ONLY = setOf("shownCalendars", "pickerOptions", "gearRates", "gear")
 
-        /** What the "Export my data" file leaves out: the same as [DEVICE_ONLY] except the Picker's list and what the Pokégear tools remember, which are the player's own data. */
         private val EXPORT_LEFT_OUT = DEVICE_ONLY - setOf("pickerOptions", "gear")
 
-        /**
-         * [text], a save, as the app would hold it after loading it (every rule that tidies a save applied) and serialised again, or an
-         * exception when it cannot be read. The live database uses it on a save it did not get from the app's own writes: the one it moves
-         * into the shared tables and a restored backup.
-         */
         fun normalizeDocument(text: String, nowMillis: Long): String {
             val storage = MemoryStorage(text)
             val store = GameStore(storage, { nowMillis })
@@ -2060,10 +1620,8 @@ class GameStore(
             return json.encodeToString(AppData.serializer(), store.data)
         }
 
-        // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; classDiscriminator = "kind" }
 
-        /** Every starter Pokémon of the main games, by generation, plus the two partner Pokémon of Let's Go. */
         val starterGroups: List<Pair<String, List<Int>>> = listOf(
             "Kanto" to listOf(1, 4, 7), "Johto" to listOf(152, 155, 158), "Hoenn" to listOf(252, 255, 258),
             "Sinnoh" to listOf(387, 390, 393), "Unova" to listOf(495, 498, 501), "Kalos" to listOf(650, 653, 656),
@@ -2075,7 +1633,6 @@ class GameStore(
     }
 }
 
-/** Who helps a Pokégear tool: an owned Pokémon the player chose, or no one. */
 sealed interface GearHelper {
     data class Owned(val pokemon: OwnedPokemon) : GearHelper
     data object None : GearHelper

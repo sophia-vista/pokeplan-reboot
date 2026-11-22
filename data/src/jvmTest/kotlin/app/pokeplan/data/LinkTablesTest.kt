@@ -13,7 +13,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** LINK's records in their own tables from the start (REP-014): round trip, only changed rows written, one kind erased alone, backup and activation. */
 class LinkTablesTest {
     private fun obj(text: String) = Json.parseToJsonElement(text) as JsonObject
     private fun live(): DataStore = JvmDatabase.open().also { it.live.activate(null, null, 1); it.live.moveLinkToTables(2) }
@@ -33,7 +32,6 @@ class LinkTablesTest {
 
     private fun writes(s: DataStore) = count(s, "write_log")
 
-    /** A realistic LINK document: every kind of record once, the settings, and a field a newer build might add. */
     private val doc = """{
         "people":[{"id":"p1","name":"Zorblax Quux","preferred":"Zo","phone":"+63 917 000 1234","email":"zorblax@example.com","organization":"Quuxville","category":"Friend","tags":["zorblax-tag"],"favorite":true,"createdMillis":10,"updatedMillis":10}],
         "notes":[{"id":"n1","personId":"p1","text":"Zorblax-note-77","atMillis":20}],
@@ -51,14 +49,14 @@ class LinkTablesTest {
         assertTrue(s.linkTables.isActive())
         assertNull(s.live.read("link"))
         assertFalse("link" in s.live.names())
-        s.live.moveLinkToTables(9) // runs on every start
+        s.live.moveLinkToTables(9)
         assertEquals("5", s.db.dataQueries.meta(LinkTables.META_LINK_TABLES_AT).executeAsOne(), "the first activation time is kept")
     }
 
     @Test
     fun aDocumentRestoredBeforeActivationIsImportedReadBackEqualAndKeptAside() {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
-        s.live.write("link", doc, 2) // not in tables yet: a plain row
+        s.live.write("link", doc, 2)
         s.live.moveLinkToTables(3)
         assertEquals(obj(doc), obj(s.live.read("link")!!))
         assertEquals(doc, s.live.read("aside:link:tables:3"))
@@ -98,14 +96,14 @@ class LinkTablesTest {
         val s = live()
         s.live.write("link", doc, 3)
         countWrites(s)
-        s.live.write("link", doc, 4) // nothing changed
+        s.live.write("link", doc, 4)
         assertEquals(0L, writes(s))
         val more = obj(doc).toMutableMap()
         more["notes"] = JsonArray((more.getValue("notes") as JsonArray) + obj("""{"id":"n2","personId":"p1","text":"more","atMillis":21}"""))
-        s.live.write("link", Json.encodeToString(JsonObject.serializer(), JsonObject(more)), 5) // one new row in one table
+        s.live.write("link", Json.encodeToString(JsonObject.serializer(), JsonObject(more)), 5)
         assertEquals(1L, writes(s))
         more["settings"] = obj("""{"postcardTrail":false,"tutorialSeen":true,"categories":["Neighbour"]}""")
-        s.live.write("link", Json.encodeToString(JsonObject.serializer(), JsonObject(more)), 6) // the settings row
+        s.live.write("link", Json.encodeToString(JsonObject.serializer(), JsonObject(more)), 6)
         assertEquals(2L, writes(s), "only the settings row was replaced")
     }
 
@@ -152,10 +150,8 @@ class LinkTablesTest {
         val snap = s.live.snapshot()
         assertTrue("link" in snap && snap.getValue("link").contains("Zorblax Quux"))
         assertTrue("link" in s.live.names())
-        // A backup made before LINK existed holds no link document: restoring it must not wipe the records.
         s.live.replaceAll(mapOf("save" to snap.getValue("save")), 9)
         assertEquals(1, count(s, "link_person"))
-        // A backup with a link document brings it back, and the replaced one is kept aside.
         val changed = obj(doc).toMutableMap().also { it["notes"] = JsonArray(emptyList()) }
         s.live.write("link", Json.encodeToString(JsonObject.serializer(), JsonObject(changed)), 10)
         assertEquals(0, count(s, "link_note"))

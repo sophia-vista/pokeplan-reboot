@@ -27,7 +27,6 @@ class BackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker
             withContext(Dispatchers.IO) { backups.takeIfDue(store.live, System.currentTimeMillis()) }
             Result.success()
         } catch (e: Exception) {
-            // No document text in the log (privacy): only what failed.
             Log.w("BackupWorker", "backup failed: ${e.javaClass.simpleName}")
             transientFailure()
         }
@@ -40,7 +39,6 @@ class BackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker
         private const val NAME = "daily-backup"
         private const val NOW = "daily-backup-now"
 
-        /** Makes sure the daily job is queued (a second call changes nothing). */
         fun schedule(context: Context) {
             val request = PeriodicWorkRequestBuilder<BackupWorker>(1, TimeUnit.DAYS)
                 .setConstraints(Constraints.Builder().setRequiresStorageNotLow(true).setRequiresBatteryNotLow(true).build())

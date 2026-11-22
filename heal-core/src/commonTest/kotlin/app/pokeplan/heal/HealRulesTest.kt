@@ -9,7 +9,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class HealRulesTest {
-    private val day = LocalDate(2026, 11, 7) // a Saturday
+    private val day = LocalDate(2026, 11, 7)
     private val now = 1_000_000_000_000L
     private fun activity(minutes: Int = 30, end: Long = now, source: SourceKind = SourceKind.MANUAL, d: LocalDate = day, id: String = "a$minutes$end") =
         ActivityRecord(id, ActivityType.WALK, end - minutes * 60_000L, minutes, d, source = source)

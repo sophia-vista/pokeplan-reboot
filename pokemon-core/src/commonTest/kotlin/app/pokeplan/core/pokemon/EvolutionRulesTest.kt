@@ -148,12 +148,10 @@ class EvolutionRulesTest {
         val knows = pokemon(439, level = 30).withMoves(listOf("mimic"))
         assertFalse(EvolutionRules.options(pokemon(439, level = 30).withMoves(listOf("confusion")), ctx(12, candy)).first { it.target.identifier == "mr-mime" }.available)
         assertTrue(EvolutionRules.options(knows, ctx(12, candy)).first { it.target.identifier == "mr-mime" }.available)
-        // Tyrogue: Attack above Defense gives Hitmonlee, below it Hitmonchan.
         val strong = pokemon(236, level = 20, nature = Nature.LONELY)
         val byStats = EvolutionRules.options(strong, ctx(12, candy))
         assertTrue(byStats.first { it.target.speciesId == 106 }.available)
         assertFalse(byStats.first { it.target.speciesId == 107 }.available)
-        // Toxel: the nature picks Amped or Low Key.
         val amped = EvolutionRules.options(pokemon(848, level = 30, nature = Nature.ADAMANT), ctx(12, candy))
         assertTrue(amped.first { it.target.identifier == "toxtricity-amped" }.available)
         assertFalse(amped.first { it.target.identifier == "toxtricity-low-key" }.available)

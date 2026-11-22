@@ -8,7 +8,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class HatchRulesTest {
-    /** Regions with a species list (a module region not curated yet has none). */
     private val curated = Region.entries.filter { Dex.regionDex(it).isNotEmpty() }
 
     private fun rarityOf(name: String) = HatchRules.rarity(Dex.species.first { it.name == name }.id)
@@ -31,7 +30,6 @@ class HatchRulesTest {
 
     @Test
     fun rarityFollowsTheLineNotTheStage() {
-        // Every member of a line shares the line's rarity.
         for (s in Dex.species.filter { it.evolvesFrom != null && !it.isSpecial }) {
             assertEquals(HatchRules.rarity(Dex.lineRoot(s.id)), HatchRules.rarity(s.id), s.name)
         }
@@ -94,7 +92,6 @@ class HatchRulesTest {
         val plan = Dex.regionDex(Region.PLAN)
         assertTrue(plan.size >= 30)
         assertEquals(plan.size, plan.map { it.id }.toSet().size, "no duplicates")
-        // Every rarity tier must still have something to hatch once legendary-class species are removed.
         for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.PLAN, r).isNotEmpty(), "Plan has nothing at $r")
     }
 
@@ -109,7 +106,6 @@ class HatchRulesTest {
     fun moduleRegionsCoverTheWholeDexAndEndWithTheirPatrons() {
         val modules = Region.entries.filter { it.isModule }
         assertEquals(6, modules.size, "Plan, Care, Heal, Mint, Home and Link")
-        // Every species is in exactly one module region (the "no duplicates" half is moduleRegionsNeverShareASpecies).
         assertEquals(Dex.species.size, modules.sumOf { Dex.regionDex(it).size }, "every species belongs to a module region")
         val patrons = mapOf(
             Region.PLAN to listOf("Uxie", "Mesprit", "Azelf"), Region.CARE to listOf("Cresselia", "Shaymin"),
@@ -120,7 +116,6 @@ class HatchRulesTest {
             val dex = Dex.regionDex(region)
             assertTrue(dex.size in 150..200, "${region.label} has ${dex.size}")
             assertEquals(patrons.getValue(region), dex.takeLast(patrons.getValue(region).size).map { it.name }, "${region.label} ends with its patrons")
-            // The quest and milestone species (legendary, mythical, ultra beast, paradox) come after every species that hatches.
             val firstSpecial = dex.indexOfFirst { it.isSpecial }
             assertTrue(dex.drop(firstSpecial).all { it.isSpecial }, "${region.label} puts its quest species last")
             for (r in Rarity.entries) assertTrue(HatchRules.pool(region, r).isNotEmpty(), "${region.label} has nothing at $r")
@@ -157,7 +152,6 @@ class HatchRulesTest {
     }
 }
 
-/** Test-only view of a region's egg entry points. */
 internal object HatchRulesAccess {
     fun entryIds(region: Region): Set<Int> =
         Rarity.entries.flatMap { HatchRules.pool(region, it) }.map { it.speciesId }.toSet()

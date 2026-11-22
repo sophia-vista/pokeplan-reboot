@@ -2,11 +2,6 @@ package app.pokeplan.world
 
 import app.pokeplan.core.dex.PokemonType
 
-/**
- * A legendary quest of a layer (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, "World regions"): clear [dungeonId] [clears] times (and, for the end of the story,
- * once its layer's Guardian has been faced) and [speciesId] joins the collection, as a Guardian of that layer. Not eggs and not finds:
- * the Pokémon is given once. [type] is the type whose explorers it makes faster in the layer's dungeons that favour it, if any.
- */
 data class LegendQuest(
     val id: String,
     val speciesId: Int,
@@ -16,14 +11,11 @@ data class LegendQuest(
     val clears: Int,
     val afterGuardian: Boolean,
     val blurb: String,
-    /** The types whose dungeons of the layer (those that favour one) its Pokémon makes [Legends.FASTER_PERCENT] faster, if any. */
     val types: Set<PokemonType> = emptySet(),
-    /** More chance of a find on a floor of the layer, in permille, and of a treasure box, in percent. */
     val findPermille: Int = 0,
     val treasurePercent: Int = 0,
 )
 
-/** What a legendary of a layer gives, in words, from the same numbers the simulation uses: where it applies and how much. */
 fun LegendQuest.bonusText(): String {
     val parts = buildList {
         if (types.isNotEmpty()) add("${types.joinToString(" and ") { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }}-favouring dungeons climb ${Legends.FASTER_PERCENT}% faster")
@@ -34,7 +26,6 @@ fun LegendQuest.bonusText(): String {
 }
 
 object Legends {
-    /** How much faster a floor is in a dungeon of the layer that favours a given legendary's type: percent, for each one. *(tune)* */
     const val FASTER_PERCENT = 10
 
     val all: List<LegendQuest> = listOf(
@@ -51,7 +42,6 @@ object Legends {
         LegendQuest("sinnoh-palkia", 484, "Palkia", WorldLayer.SINNOH, "spear-pillar", 3, false, "Space folds around the Spear Pillar. Clear it three times.", setOf(PokemonType.WATER)),
         LegendQuest("sinnoh-giratina", 487, "Giratina", WorldLayer.SINNOH, "distortion-world", 1, true, "Sinnoh's Guardian waits in the Distortion World.", setOf(PokemonType.GHOST), treasurePercent = 3),
         LegendQuest("hoenn-rayquaza", 384, "Rayquaza", WorldLayer.HOENN, "sky-pillar", 1, true, "Hoenn's Guardian waits at the top of the Sky Pillar.", setOf(PokemonType.FLYING, PokemonType.DRAGON), findPermille = 5),
-        // The later regions (14 November 2026): two box legendaries cleared three times, and the Guardian.
         LegendQuest("unova-reshiram", 643, "Reshiram", WorldLayer.UNOVA, "dragonspiral-tower", 3, false, "The tower's top burns white. Clear the Dragonspiral Tower three times.", setOf(PokemonType.FIRE)),
         LegendQuest("unova-zekrom", 644, "Zekrom", WorldLayer.UNOVA, "n-castle", 3, false, "A storm gathers in N's Castle. Clear it three times.", setOf(PokemonType.ELECTRIC)),
         LegendQuest("unova-kyurem", 646, "Kyurem", WorldLayer.UNOVA, "giant-chasm", 1, true, "Unova's Guardian waits in the Giant Chasm.", setOf(PokemonType.ICE), treasurePercent = 3),
@@ -70,19 +60,16 @@ object Legends {
         LegendQuest("hisui-arceus", 493, "Arceus", WorldLayer.HISUI, "temple-of-sinnoh", 1, true, "Hisui's Guardian, the Original One, waits in the Temple of Sinnoh.", setOf(PokemonType.NORMAL), treasurePercent = 3),
     )
 
-    /** The species World gives through its own quests: Plan has no quest for them (a decision of 1 November 2026: Plan keeps the rest until a region or module gives them). */
     val coveredSpecies: Set<Int> by lazy { all.map { it.speciesId }.toSet() }
 
     fun of(layer: WorldLayer): List<LegendQuest> = all.filter { it.layer == layer }
 
     fun byId(id: String): LegendQuest? = all.firstOrNull { it.id == id }
 
-    /** How much of [quest] is done: clears of its dungeon, up to what it needs. */
     fun progress(data: WorldData, quest: LegendQuest): Int = minOf(data.clears[quest.dungeonId] ?: 0, quest.clears)
 
     fun isMet(data: WorldData, quest: LegendQuest): Boolean =
         progress(data, quest) >= quest.clears && (!quest.afterGuardian || data.layerDone(quest.layer))
 
-    /** The quests whose conditions are met and whose Pokémon has not been given yet. */
     fun ready(data: WorldData): List<LegendQuest> = all.filter { it.id !in data.legends && isMet(data, it) }
 }

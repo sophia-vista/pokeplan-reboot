@@ -40,12 +40,6 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.label
 import app.pokeplan.app.gear.changeGear
 
-/**
- * The flashlight: the phone's torch where there is one (its state is the hardware's, so another app switching it shows here), and a screen light
- * for every device, with colours (white, warm, red for the night, amber) and a brightness the screen is dimmed to in the app. An SOS signal exists
- * only on request, with a warning, only on the torch, never with Reduce motion on, never faster than one change in 250 ms and for at most five
- * minutes. Leaving the tool turns the torch off.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {

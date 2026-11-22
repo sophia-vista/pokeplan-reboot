@@ -25,16 +25,10 @@ import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
-/** One question and its answer. */
 internal data class HelpItem(val question: String, val answer: String)
 
-/** A group of questions under one heading. */
 internal data class HelpTopic(val title: String, val items: List<HelpItem>)
 
-/**
- * The help text, written from docs/design.md in plain words. Numbers that are still being tuned are left out, so the text
- * does not go stale when a reward changes.
- */
 internal val helpTopics = listOf(
     HelpTopic(
         "The basics",

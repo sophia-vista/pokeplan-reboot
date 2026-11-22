@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Kalos, "The Beauty and the Weapon": Fenn the Fennekin guides the buddy; Team Flare is Houndour and Houndoom; Xerneas, Yveltal and Zygarde are the legends of life, death and order. */
 internal object KalosChapters {
     private val buddy = buddyCharacter()
     private val fenn = npc("fenn", "Fenn", 653)

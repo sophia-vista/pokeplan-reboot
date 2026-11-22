@@ -10,7 +10,6 @@ import kotlinx.serialization.serializer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** Everything the app saves must survive a trip through JSON unchanged. */
 class SerializationTest {
     private val json = Json { encodeDefaults = true }
 

@@ -59,10 +59,8 @@ import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.FormBox
 import app.pokeplan.ui.screens.FormStack
 
-/** The colour names, for screen readers, in the order of [TaskList.COLORS]. */
 private val listColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Purple", "Pink", "Slate")
 
-/** The menu's Lists: one row per list with its icon and count, "New list", and the archived ones folded away. */
 @Composable
 internal fun ListsSection(model: AppModel, tasks: List<Task>, onMade: ((String) -> Unit)? = null, open: (String) -> Unit) {
     val store = model.store
@@ -109,11 +107,6 @@ internal fun ListRows(lists: List<TaskList>, tasks: List<Task>, selected: String
     }
 }
 
-/**
- * Makes a list ([list] null) or edits one: its name, one of eight colours, and a real item icon; an existing list can also
- * be archived (hidden from the menu, tasks kept) or deleted (its tasks go back to no list). [done] gets the list's id,
- * or null when it was deleted or nothing was made.
- */
 @Composable
 internal fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit) {
     val store = model.store
@@ -122,7 +115,6 @@ internal fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Uni
     var icon by remember { mutableStateOf(list?.icon ?: TaskList.ICONS.first()) }
     var kind by remember { mutableStateOf(list?.kind ?: ListKind.TASKS) }
     var reset by remember { mutableStateOf(list?.reset ?: ChecklistReset.NEVER) }
-    // A new checklist can start from the saved items of another (PLAN.md 3.5A).
     var startFrom by remember { mutableStateOf<String?>(null) }
     val templates = model.data.lists.filter { it.template.isNotEmpty() && it.id != list?.id }
     FormBox {

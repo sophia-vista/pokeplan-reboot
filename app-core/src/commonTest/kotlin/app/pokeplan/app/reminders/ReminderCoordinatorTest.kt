@@ -38,7 +38,6 @@ class ReminderCoordinatorTest {
 
     @Test
     fun aReminderDueWhileThePhoneWasOffIsOwedOnceAndOnlyWhileWanted() {
-        // Planned at 9:00; the phone was off from before 10:00 until 12:00.
         val missed = coordinator.missed(at(9), at(12), utc, quiet, null, emptySet())
         assertEquals(listOf("w"), missed.map { it.sourceRef })
         assertEquals(mon.toString(), missed.single().occurrence, "the one for today, not tomorrow's")

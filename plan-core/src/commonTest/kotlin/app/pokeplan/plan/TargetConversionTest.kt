@@ -5,7 +5,6 @@ import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** The scrapped frequency targets become calendar rules (owner, 20 November 2026; PLAN.md section 5). */
 class TargetConversionTest {
     private val start = LocalDate(2026, 11, 12)
 

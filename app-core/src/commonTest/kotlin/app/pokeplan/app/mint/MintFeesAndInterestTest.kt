@@ -19,7 +19,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Transfer fees (MINT.md 5.5) and the interest a deposit account earns (MINT.md 4.3E). */
 class MintFeesAndInterestTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
@@ -67,7 +66,6 @@ class MintFeesAndInterestTest {
     @Test
     fun aDailySavingsScheduleMakesOnePendingEstimateAfterDaysAwayAndTaxIsWithheld() {
         val (m, clock) = store()
-        // 3.65% a year is 0.01% a day: 1,000,000 minor earns 100 a day gross; 20% withheld leaves 80.
         val acct = assertNotNull(m.addAccount("Maya Savings", AccountType.DIGITAL_BANK, "PHP", 1_000_000, earnRateBasisPoints = 365, earnSchedule = EarnSchedule.DAILY, earnTaxBasisPoints = 2_000).record)
         assertEquals(0, m.accrueInterest(), "nothing is estimated for the day it was switched on")
         clock.advanceDays(3)
@@ -87,9 +85,9 @@ class MintFeesAndInterestTest {
     fun aSkippedEstimateIsNotMadeAgainAndAMonthlyScheduleWaitsForTheMonthToEnd() {
         val (m, clock) = store()
         assertNotNull(m.addAccount("GoTyme", AccountType.DIGITAL_BANK, "PHP", 1_000_000, earnRateBasisPoints = 365, earnSchedule = EarnSchedule.MONTHLY, earnAutoPost = true).record)
-        clock.advanceDays(10) // 17 Nov: November has not ended
+        clock.advanceDays(10)
         assertEquals(0, m.accrueInterest())
-        clock.advanceDays(14) // 1 Dec: November (from the 7th) is complete
+        clock.advanceDays(14)
         assertEquals(1, m.accrueInterest())
         val made = m.data.transactions.single { it.interestThrough != null }
         assertEquals(TxStatus.POSTED, made.status, "post without review")

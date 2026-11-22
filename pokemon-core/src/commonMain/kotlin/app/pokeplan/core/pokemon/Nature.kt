@@ -2,22 +2,16 @@ package app.pokeplan.core.pokemon
 
 import kotlin.random.Random
 
-/** How a Pokémon likes to bond; set by its nature. See "Bond styles" in docs/design.md. */
 enum class BondStyle {
-    /** Focus sessions and calm breaks with it as buddy give double friendship. */
     PRESENCE,
 
-    /** Petting and Care routines give double friendship. */
     COMFORT,
 
-    /** Berries give double friendship. */
     GIFTS,
 
-    /** No favourite: +50% from every source. */
     BALANCED,
 }
 
-/** The 25 natures. A non-neutral nature raises one stat 10% and lowers another 10% (never HP). */
 enum class Nature(val raised: Stat?, val lowered: Stat?) {
     HARDY(null, null),
     LONELY(Stat.ATTACK, Stat.DEFENSE),
@@ -49,14 +43,12 @@ enum class Nature(val raised: Stat?, val lowered: Stat?) {
 
     val isNeutral: Boolean get() = raised == null
 
-    /** Percent multiplier for [stat]: 110, 90 or 100. */
     fun percent(stat: Stat): Int = when (stat) {
         raised -> 110
         lowered -> 90
         else -> 100
     }
 
-    /** Attack and Speed natures like company, Defense and Sp. Def like comfort, Sp. Atk likes gifts. *(tune)* */
     val bondStyle: BondStyle
         get() = when (raised) {
             Stat.ATTACK, Stat.SPEED -> BondStyle.PRESENCE

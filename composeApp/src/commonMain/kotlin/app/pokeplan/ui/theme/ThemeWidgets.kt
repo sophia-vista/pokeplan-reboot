@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.Rank
 import app.pokeplan.ui.ItemIcon
 
-/** What a difficulty rank means, in words. Harder tasks earn more; rank is how hard it feels, not how urgent it is. */
 val Rank.title: String
     get() = when (this) {
         Rank.E -> "Tiny"
@@ -59,10 +58,8 @@ val Rank.title: String
         Rank.A -> "Very hard"
     }
 
-/** "C, Medium": spoken by screen readers and shown where there is room. */
 val Rank.spoken: String get() = "difficulty $letter, $title"
 
-/** The colour of a difficulty rank, from quiet grey for the easiest to red for the hardest. */
 fun rankColor(rank: Rank): Color = when (rank) {
     Rank.E -> Pixel.InkSoft
     Rank.D -> Pixel.Green
@@ -71,10 +68,6 @@ fun rankColor(rank: Rank): Color = when (rank) {
     Rank.A -> Pixel.Danger
 }
 
-/**
- * A rounded pixel square with the rank letter. The meaning is in the accessible description and, in pickers, in the label under it;
- * colour is never the only signal. A clickable badge has a 48 dp touch target.
- */
 @Composable
 fun RankBadge(rank: Rank, modifier: Modifier = Modifier, selected: Boolean = true, onClick: (() -> Unit)? = null) {
     val badge = Modifier
@@ -88,7 +81,6 @@ fun RankBadge(rank: Rank, modifier: Modifier = Modifier, selected: Boolean = tru
         contentAlignment = Alignment.Center,
     ) {
         Box(badge, contentAlignment = Alignment.Center) {
-            // The letter sits in a fixed-size square, so it keeps its size when the system text size grows.
             val density = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density, 1f)) {
                 Text(rank.letter.toString(), style = MaterialTheme.typography.labelLarge, color = if (selected) Color.White else Pixel.InkSoft)
@@ -97,10 +89,6 @@ fun RankBadge(rank: Rank, modifier: Modifier = Modifier, selected: Boolean = tru
     }
 }
 
-/**
- * The bar across the top of a screen: slim Pokémon red with the page title in the pixel font, an item icon that says where
- * you are, a line of context, and optional content at the right and underneath.
- */
 @Composable
 fun ScreenHeader(
     title: String,
@@ -108,9 +96,7 @@ fun ScreenHeader(
     subtitle: String? = null,
     icon: String? = null,
     footer: (@Composable () -> Unit)? = null,
-    /** Shows Back at the start of the bar, where every phone app puts it; it takes the icon's place. */
     onBack: (() -> Unit)? = null,
-    /** The bar's colour: the app's neutral [Pixel.Chrome], or a module's own ([ModuleAccent.header]) on that module's pages. */
     color: Color = Pixel.Chrome,
     trailing: @Composable () -> Unit = {},
 ) {
@@ -135,10 +121,6 @@ fun ScreenHeader(
     }
 }
 
-/**
- * Back: a pixel chevron and the label in the dialogue font, on one centre line. (It used to be the text "‹ Back", whose arrow the
- * dialogue font lacks, so the whole label fell back to another font and sat off the centre of its key.)
- */
 @Composable
 fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
     PixelKey(onBack, modifier, key = Pixel.InkSoft, compact = true, horizontal = Spacing.S) { look ->
@@ -149,10 +131,8 @@ fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-/** The colour of the header on the page now shown, which the bottom tab bar takes on (`App` provides it; headers write it). */
 val LocalChromeColor = androidx.compose.runtime.staticCompositionLocalOf<androidx.compose.runtime.MutableState<Color>?> { null }
 
-/** A section title ("Today"): semibold, with space above it. */
 @Composable
 fun SectionLabel(text: String, modifier: Modifier = Modifier, icon: String? = null) {
     Row(modifier.padding(top = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -161,13 +141,8 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier, icon: String? = nu
     }
 }
 
-/** How serious a [Notice] is: Info for what is going on, Warning for what needs a look, Danger only where data could be lost. */
 enum class NoticeTone { INFO, WARNING, DANGER }
 
-/**
- * One calm sentence about the state of something (offline, a save to choose, a sign-in that did not work): a tinted card with
- * a coloured edge, announced politely by screen readers. Say what happened and what to do; never blame the user.
- */
 @Composable
 fun Notice(text: String, modifier: Modifier = Modifier, tone: NoticeTone = NoticeTone.INFO) {
     val color = when (tone) { NoticeTone.INFO -> Pixel.Blue; NoticeTone.WARNING -> Pixel.Warning; NoticeTone.DANGER -> Pixel.Danger }
@@ -177,7 +152,6 @@ fun Notice(text: String, modifier: Modifier = Modifier, tone: NoticeTone = Notic
     ) { Text(text, style = MaterialTheme.typography.bodyLarge) }
 }
 
-/** A white capsule holding an icon and a number. */
 @Composable
 fun StatChip(text: String, icon: @Composable () -> Unit, modifier: Modifier = Modifier) {
     Row(
@@ -191,33 +165,22 @@ fun StatChip(text: String, icon: @Composable () -> Unit, modifier: Modifier = Mo
     }
 }
 
-/**
- * A tap with no ripple, for a Pokémon or a tile whose answer is plain to see (a page opens, a cry plays): a ripple there
- * reads as a grey box stuck on the sprite.
- */
 fun Modifier.quietClickable(enabled: Boolean = true, onClickLabel: String? = null, onClick: () -> Unit): Modifier =
     clickable(interactionSource = null, indication = null, enabled = enabled, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
 
-/**
- * A visible keyboard focus ring (2 dp, [color]) around [shape] while the control after it in the chain has focus. Put it
- * just before the `clickable`, `selectable` or `toggleable`; touch users never see it.
- */
 @Composable
 fun Modifier.focusRing(shape: Shape, color: Color = Pixel.Blue, forced: Boolean = false): Modifier {
     var focused by remember { mutableStateOf(false) }
     return this.onFocusChanged { focused = it.isFocused }.then(if (focused || forced) Modifier.border(2.dp, color, shape) else Modifier)
 }
 
-/** A card row for a list item: [lead] at the left, [content] in the middle, [trail] at the right. */
 @Composable
 fun ListRow(
     modifier: Modifier = Modifier,
     lead: @Composable () -> Unit = {},
     trail: @Composable () -> Unit = {},
     onClick: (() -> Unit)? = null,
-    /** What tapping the row does, for screen readers ("Show options"). */
     onClickLabel: String? = null,
-    /** False for no ripple highlight when tapped (party rows: the page opening is answer enough). */
     highlight: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -230,7 +193,6 @@ fun ListRow(
             .fillMaxWidth()
             .dialogueBox()
             .clip(shape)
-            // A pointer over a tappable row tints it faintly (desktop and web); touch has the ripple or the press scale.
             .let { if (hovering && onClick != null) it.background(Pixel.Blue.copy(alpha = 0.06f)) else it }
             .let {
                 when {
@@ -250,10 +212,6 @@ fun ListRow(
     }
 }
 
-/**
- * A setting that is on or off: the label, a line of detail, and a switch, the control every phone uses for this. The whole
- * row is the touch target, not just the switch.
- */
 @Composable
 fun ToggleRow(label: String, on: Boolean, modifier: Modifier = Modifier, detail: String? = null, onChange: (Boolean) -> Unit) {
     Row(
@@ -270,15 +228,10 @@ fun ToggleRow(label: String, on: Boolean, modifier: Modifier = Modifier, detail:
             Text(label, style = MaterialTheme.typography.bodyLarge)
             if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium)
         }
-        // The row handles the tap and speaks the state, so the switch itself is only a picture of it.
         PixelToggle(on)
     }
 }
 
-/**
- * One choice out of a few, as a full-width row with a radio dot: the dot is filled and the border darker on the chosen
- * one, so the choice does not rest on colour, and choices never look like action buttons.
- */
 @Composable
 fun ChoiceRow(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, lead: @Composable () -> Unit = {}, content: @Composable () -> Unit) {
     val shape = DialogueShape
@@ -302,17 +255,11 @@ fun ChoiceRow(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modif
     }
 }
 
-/** The small name over a group of controls inside a card ("Move to", "Remind me"), so each group reads as one chunk. */
 @Composable
 fun FieldLabel(text: String, modifier: Modifier = Modifier) {
-    // One label voice for every field (the same as PixelField's own): small and soft, not bold.
     Text(text, modifier, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
-/**
- * A folded section: a title row with a chevron (and an optional [summary] while folded) that opens [content] below it. Folded by default,
- * so a screen shows its facts first and the detail on a tap. The whole row is the target and stays [Spacing.Target] tall.
- */
 @Composable
 fun Accordion(title: String, modifier: Modifier = Modifier, summary: String? = null, startOpen: Boolean = false, content: @Composable () -> Unit) {
     var open by remember { mutableStateOf(startOpen) }

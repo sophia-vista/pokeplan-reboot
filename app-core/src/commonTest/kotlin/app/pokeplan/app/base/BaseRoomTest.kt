@@ -20,7 +20,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** The Secret Base room (BASE.md 9.5): the Decoration meter filled by Habitat Discovery's payments, the starters, and placing. */
 class BaseRoomTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
@@ -105,7 +104,7 @@ class BaseRoomTest {
     @Test
     fun theDailyCapBoundsTheMeterAndTurningDiscoveryOffStopsIt() {
         val s = setup()
-        repeat(7) { s.doChore("chore $it") } // only 5 chores are paid a day
+        repeat(7) { s.doChore("chore $it") }
         assertEquals(1, s.game.data.decorations.size - Decorations.STARTERS.size)
         assertEquals(0, s.game.decorationMeter())
         val t = setup()

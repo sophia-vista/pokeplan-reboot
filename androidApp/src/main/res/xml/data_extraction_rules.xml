@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 12 and later. Nothing of the app goes to the system's cloud backup or to another phone by itself: PokéLife is local-only, and
-     Heal's and Mint's rows are sealed with a key that never leaves this phone, so a copy made by the system could not be opened anywhere
-     else. The app's own backups (Settings, Backups) are the way to move a save. -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="root" /><exclude domain="file" /><exclude domain="database" /><exclude domain="sharedpref" /><exclude domain="external" />

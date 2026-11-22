@@ -27,8 +27,6 @@ class NotebookTest {
             assertTrue(m.kind == MissionKind.INVESTIGATION || m.floor in 1..d.floors, "${m.id} floor within ${d.name}")
             assertTrue(m.needs >= d.needs, "${m.id} rank is not below the dungeon's")
         }
-        // A fresh save has the board shut. With everything cleared and a high rank the regional jobs are open; with a high rank alone, the ones
-        // whose dungeon needs a later chapter are not.
         val kantoJob = Missions.byId("kanto-road-18")!!
         val ranked = WorldData(xp = 10_000_000)
         assertEquals(false, Missions.dungeonOpen(ranked, kantoJob), "Victory Road needs the story to get that far")

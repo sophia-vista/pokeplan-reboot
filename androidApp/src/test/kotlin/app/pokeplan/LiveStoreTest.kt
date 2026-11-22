@@ -18,16 +18,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.assertFalse
 
-/**
- * [LiveStore] on Android's own SQLite (REP-033): the cutover from the files on the five 0.123.0 fixtures, a process death in the middle of use, a corrupt
- * database (moved aside whole, the newest backup put back), a database from a newer build (left alone), and the sealing of Heal, Mint and the backups
- * with the Keystore, failing closed without it.
- */
 @RunWith(RobolectricTestRunner::class)
 class LiveStoreTest : AndroidTestBase() {
     private val clock = Clock { System.currentTimeMillis() }
 
-    /** The fields a load stamps with the clock (when the old coins were merged into Poké, when habits became repeating tasks), set aside so two loads compare. */
     private fun app.pokeplan.app.AppData.timeless() = copy(
         pokeMigration = pokeMigration?.copy(migratedAtMillis = 0),
         habitsMergedAtMillis = habitsMergedAtMillis?.let { 0 },
@@ -56,7 +50,6 @@ class LiveStoreTest : AndroidTestBase() {
             val expected = GameStore(MemoryStorage(text), clock).data.timeless()
             assertEquals(expected, widgetStore(context).data.timeless(), "$name read from the database")
             assertEquals(CareStore(MemoryStorage(fixture("care-week.json")), clock, GameStore(MemoryStorage(text), clock)).data, careStore(context).data, "care-week.json with $name")
-            // And again after the process ends: the database is the save.
             processDeath()
             File(files, "save.json").writeText("{}")
             assertEquals(expected, widgetStore(context).data.timeless(), "$name after a process death")
@@ -80,7 +73,6 @@ class LiveStoreTest : AndroidTestBase() {
         assertEquals("Kept by the backup", restored?.title)
     }
 
-    /** The state REP-026 c is about: the database was live, the old files are left from the cutover, the database is then damaged, and no backup exists. */
     private fun damagedWithNoBackupAndOldFiles(): String {
         widgetStore(context).addTask("Done since the cutover")
         processDeath()
@@ -97,11 +89,11 @@ class LiveStoreTest : AndroidTestBase() {
         val old = damagedWithNoBackupAndOldFiles()
         assertTrue(LiveStore.recoveryPending(context), "the player is asked")
         assertNull(LiveStore.get(context), "nothing opens while the question is open")
-        assertFailsWith<IllegalStateException> { saveStorage(context).load() } // widgets and receivers wait
+        assertFailsWith<IllegalStateException> { saveStorage(context).load() }
         assertEquals(old, File(files, "save.json").readText(), "the old file is untouched")
         val db = context.getDatabasePath(AndroidDatabase.FILE_NAME)
         assertEquals(1, db.parentFile!!.listFiles()!!.count { it.name.startsWith(AndroidDatabase.FILE_NAME + ".corrupt-") }, "the damaged file is kept aside")
-        processDeath() // the question survives a restart
+        processDeath()
         assertTrue(LiveStore.recoveryPending(context))
     }
 
@@ -167,7 +159,6 @@ class LiveStoreTest : AndroidTestBase() {
         val bytes = databaseBytes()
         assertFalse("Zebracrossingnote" in bytes, "a Heal note never reaches the disk in clear")
         assertFalse("Quokkabank" in bytes, "a Mint account name never reaches the disk in clear")
-        // And with the key both open again after the restart.
         val game2 = widgetStore(context)
         assertEquals("Zebracrossingnote", healStore(context, game2).data.activities.single().note)
         assertEquals("Quokkabank", mintStore(context, game2).data.accounts.single().name)

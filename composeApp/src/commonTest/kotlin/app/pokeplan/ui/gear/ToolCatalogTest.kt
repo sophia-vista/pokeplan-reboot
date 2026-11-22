@@ -32,7 +32,6 @@ class ToolCatalogTest {
         assertEquals(ToolCatalog.all.map { it.tool }, none, "the catalogue's own order")
         val ranked = ToolCatalog.search("", favorites = listOf("COIN"), recents = listOf("TIMER", "UNITS")).map { it.tool }
         assertEquals(listOf(GearTool.COIN, GearTool.TIMER, GearTool.UNITS), ranked.take(3))
-        // And they win a tie in a search without beating a better match.
         val random = ToolCatalog.search("random", favorites = listOf("COIN")).map { it.tool }
         assertEquals(GearTool.COIN, random.first())
         assertEquals(GearTool.UNITS, ToolCatalog.search("lbs", favorites = listOf("COIN")).first().tool)

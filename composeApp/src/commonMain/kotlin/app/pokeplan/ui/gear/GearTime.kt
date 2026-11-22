@@ -55,18 +55,11 @@ import app.pokeplan.app.gear.timerStart
 import app.pokeplan.app.gear.timersDismissFinished
 import app.pokeplan.app.gear.timersTick
 
-/**
- * The Pokégear timers: several at once, each named, started from a quick duration or your own. They keep running when the app is closed (the
- * end time is saved and the Android app sets an alarm and a notification with Stop and +1 min), and a ringing one waits for you here too.
- * A timer opened from Focus is Plan's, not one of these; these pay nothing.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
     val store = model.store
     var now by remember { mutableLongStateOf(store.nowMillis) }
-    // The clock face follows the clock twice a second while the tool is open; a timer that ran out is marked finished once.
-    // Only while the app is in sight: a stopped Activity keeps its composition, and the timers' alarms ring on their own.
     val foreground = app.pokeplan.ui.rememberInForeground()
     LaunchedEffect(foreground) { while (foreground) { now = store.nowMillis; store.timersTick(); delay(500) } }
     val timers = model.data.gear.timers
@@ -122,7 +115,6 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** A length typed as hours, minutes and seconds (`90`, `1h30`, `1:30:00`, `45s`); a bare number is minutes. */
 @Composable
 internal fun TimerLength(seconds: Long?, onChange: (Long?) -> Unit) {
     TypedValueField(
@@ -139,7 +131,6 @@ internal fun formatHms(totalSeconds: Long): String {
     return if (h > 0) "$h:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}" else "$m:${s.toString().padStart(2, '0')}"
 }
 
-/** Renames a timer and sets its length; saving puts it back to ready. */
 @Composable
 private fun TimerEditor(t: GearTimer, onSave: (String, Long) -> Unit) {
     var name by remember(t.id) { mutableStateOf(t.label) }
@@ -151,7 +142,6 @@ private fun TimerEditor(t: GearTimer, onSave: (String, Long) -> Unit) {
     }
 }
 
-/** The Pokégear stopwatch: start and pause, laps with each lap's own time, the fastest and slowest marked and the average, and a copy of the table. */
 @Composable
 internal fun StopwatchTool(model: AppModel, onUse: () -> Unit) {
     val store = model.store

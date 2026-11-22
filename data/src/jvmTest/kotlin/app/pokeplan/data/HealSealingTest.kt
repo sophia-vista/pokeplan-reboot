@@ -22,10 +22,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * Heal's rows and backups sealed with a key of the phone (owner decision 6, 8 November 2026; 0.154.0): the one-time move of an install that has its records in
- * clear, the same sealing from the start, a key that is missing or another phone's, and the daily and portable backups. Synthetic data only.
- */
 class HealSealingTest {
     private val start = 1_793_000_000_000L
     private val clock = object : Clock { override fun nowMillis() = start }
@@ -42,7 +38,6 @@ class HealSealingTest {
     private fun game() = GameStore(MemoryStorage(), clock, TimeZone.UTC, Random(7)).also { it.start("Sophia", 25) }
     private fun healOn(s: DataStore, g: GameStore) = HealStore(Tables(s.live), clock, g, TimeZone.UTC, rng = Random(3))
 
-    /** A phone whose Heal has been in clear (an install older than 0.154.0) with some records. */
     private fun clearPhone(file: String? = null): Pair<DataStore, GameStore> {
         val s = if (file == null) JvmDatabase.open() else JvmDatabase.open(file)
         s.live.activate(null, null, 1); s.live.moveHealToTables(2)
@@ -84,7 +79,6 @@ class HealSealingTest {
         for (secret in listOf("8321", "97.0", "SPO2", "STRESS", "steps|")) assertFalse(texts.any { secret in it }, "a row still shows $secret")
         val back = healOn(s, g).data
         assertEquals(8321, back.steps.single().steps); assertEquals(2, back.vitals.size)
-        // Reading the same again adds no row, and erasing steps leaves the readings.
         heal.importFromProvider(app.pokeplan.heal.ProviderRead(listOf(app.pokeplan.heal.Imported.Steps("huawei-screen", "com.huawei.health", "steps:2026-11-14", 8321, now - 500)), 0, now))
         assertEquals(1, count(s, "SELECT count(*) FROM heal_steps"))
         s.healTables.erase("steps")
@@ -114,12 +108,11 @@ class HealSealingTest {
         assertFalse(s.healTables.seal(11), "it seals once")
         assertEquals("10", s.db.dataQueries.meta(HealTables.META_HEAL_SEALED_AT).executeAsOne())
 
-        // And it keeps working sealed: new rows are sealed too, and only a changed row is rewritten.
         val heal = healOn(s, g)
         heal.logDrink(250, "coffee-secret")
         assertTrue(everyStoredText(s).all { RowCipher.isSealed(it) })
         assertEquals(2, healOn(s, g).data.hydration.size)
-        s.healTables.scrub() // best effort; the data stays
+        s.healTables.scrub()
         assertEquals(2, healOn(s, g).data.hydration.size)
         assertTrue(s.integrityIssues().isEmpty())
     }
@@ -127,7 +120,7 @@ class HealSealingTest {
     @Test
     fun theKeptAsideCopiesOfAMigrationAreSealedWithTheRows() {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
-        s.live.write("heal", """{"activities":[{"id":"a1","type":"WALK","startMillis":5,"minutes":30,"day":"2026-11-07","note":"aside-secret"}]}""", 2) // a restore before activation
+        s.live.write("heal", """{"activities":[{"id":"a1","type":"WALK","startMillis":5,"minutes":30,"day":"2026-11-07","note":"aside-secret"}]}""", 2)
         s.live.moveHealToTables(3)
         assertTrue("aside-secret" in s.live.read("aside:heal:tables:3")!!)
         s.healCipher = key(1)
@@ -151,14 +144,14 @@ class HealSealingTest {
     fun aSealedHealWithNoKeyReadsAsLockedAndWritesNothing() {
         val (s, g) = clearPhone()
         s.healCipher = key(1); s.healTables.seal(10)
-        s.healCipher = null // a run on which the Keystore gave no key
+        s.healCipher = null
         assertTrue(s.healTables.locked())
         assertNull(s.live.read("heal"))
         assertFailsWith<HealLockedException> { s.healTables.write("""{"activities":[]}""") }
         assertFailsWith<HealLockedException> { s.live.keepAside("heal", "{}", 5) }
         assertFalse("heal" in s.live.names())
         assertTrue(s.live.snapshot().none { it.key == "heal" })
-        s.healCipher = key(1) // the key is back: nothing was lost
+        s.healCipher = key(1)
         assertFalse(s.healTables.locked())
         assertEquals(1, healOn(s, g).data.activities.size)
     }
@@ -168,11 +161,11 @@ class HealSealingTest {
         val (s, _) = clearPhone()
         s.healCipher = key(1); s.healTables.seal(10)
         val before = everyStoredText(s).toSet()
-        s.healCipher = key(2) // another phone's key opens none of it
+        s.healCipher = key(2)
         assertTrue(s.healTables.locked())
         assertNull(s.live.read("heal"), "Heal reads as empty, never as garbage")
         val g = game()
-        healOn(s, g).logDrink(100) // the first write sets the sealed rows aside, still sealed, then starts empty
+        healOn(s, g).logDrink(100)
         val asides = s.live.names().filter { it.startsWith("aside:heal:locked:") }
         assertEquals(1, asides.size)
         val kept = s.live.read(asides.single())!!
@@ -287,7 +280,6 @@ class HealSealingTest {
         val left = b.list()
         assertEquals(listOf(9_000L), left.map { it.millis }, "the clear copies are gone and one sealed copy is made")
         assertTrue(RowCipher.isSealed(File(dir, "9000/heal.json").readText()))
-        // Restoring that copy brings Heal back.
         healOn(s, g).logDrink(100)
         assertTrue(b.restore(s.live, 9_000, 9_500))
         assertEquals(0, healOn(s, g).data.hydration.size - 1)
@@ -301,7 +293,6 @@ class HealSealingTest {
         healOn(s, g).logActivity(ActivityType.WALK, 20, note = "first-secret")
         assertTrue(everyStoredText(s).all { RowCipher.isSealed(it) && "first-secret" !in it })
         assertEquals("first-secret", healOn(s, g).data.activities.single().note)
-        // Export of one kind and erasing it still work through the key.
         assertTrue("first-secret" in s.healTables.readKind("activities"))
         s.healTables.erase("activities")
         assertEquals(0, healOn(s, g).data.activities.size)

@@ -52,22 +52,16 @@ import app.pokeplan.app.world.worldRecruit
 import app.pokeplan.app.world.worldSettle
 import app.pokeplan.app.world.worldStart
 
-/**
- * Draws screens offscreen and writes PNGs to composeApp/build/screenshots, so they can be looked at without a device.
- * The assertion only checks that something was drawn.
- */
 @OptIn(ExperimentalComposeUiApi::class)
 class ScreenshotTest {
     private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, height: Int = 1080, width: Int = 540, density: Float = 1.5f, minBytes: Int = 5_000, interact: (ImageComposeScene) -> Unit = {}, content: @Composable () -> Unit) {
         val scene = ImageComposeScene(width = width, height = height, density = Density(density, fontScale)) { content() }
         var nanos = 0L
-        // Sprites load asynchronously, so draw a few frames with a short wait between them.
         repeat(frames) {
             scene.render(nanos)
             nanos += 50_000_000
             Thread.sleep(20)
         }
-        // A tap on the finished screen (pixels), then a few more frames, to show the state it leads to.
         interact(scene)
         repeat(10) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(20) }
         val bytes = scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes
@@ -85,18 +79,15 @@ class ScreenshotTest {
         override fun nowMillis() = millis
     }
 
-    // The opening story ("A New Explorer") covers Home until it is done, so a screenshot of a real screen marks it done first.
     private fun started(): GameStore = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25); it.worldEpisodeDone(app.pokeplan.world.WorldMoments.INTRO_KEY) }
 
     @Test
     fun story() {
         val model = AppModel(started())
         val episode = app.pokeplan.world.story.StoryCatalog.all().first()
-        // Each scene alone, a few seconds in: its portraits, its stage and its dungeon walk.
         episode.scenes.forEach { scene ->
             render("story-${scene.id}", frames = 90) { PixelTheme { app.pokeplan.ui.world.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
         }
-        // A cinematic (a legendary's appearance) and a choice.
         listOf("kanto-5-cave", "kanto-4-camp", "intro-mew-1", "intro-mew-3", "intro-mew-5", "rescue-1-square", "rescue-4-absol", "explorers-1-guild", "explorers-6-hidden-land", "explorers-post-106-arrival").forEach { id ->
             val scene = app.pokeplan.world.story.StoryCatalog.scene(id)!!
             render("story-$id", frames = 120) { PixelTheme { app.pokeplan.ui.world.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
@@ -110,7 +101,6 @@ class ScreenshotTest {
         store.assignGearHelper(app.pokeplan.core.pokemon.GearTool.CALCULATOR, helper.id)
         store.setPickerOptions(listOf("Pizza", "Sushi", "Tacos"))
         store.saveGearRates(app.pokeplan.app.GearRates("2026-10-30", mapOf("USD" to 1.0, "EUR" to 0.86, "JPY" to 152.3, "PHP" to 58.1, "GBP" to 0.75)))
-        // Something kept in each tool so its screen shows more than the empty state.
         store.gearFavorite(app.pokeplan.core.pokemon.GearTool.CALCULATOR, true)
         store.gearUsed(app.pokeplan.core.pokemon.GearTool.UNITS)
         store.changeGear { it.copy(calcHistoryOn = true, calcHistory = listOf("2 + 3 × 4 = 14", "200 + 10% = 220"), pickerWeights = mapOf("Sushi" to 3), pickerHistoryOn = true, pickerHistory = listOf("Tacos"), diceHistoryOn = true, diceHistory = listOf("2d6+3: 4 + 5 + 3 = 12"), unitFavorites = listOf("length:mi>km")) }
@@ -121,14 +111,12 @@ class ScreenshotTest {
         render("gear-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.gear.GearScreen(model) {} } } }
         app.pokeplan.core.pokemon.GearTool.entries.forEach { tool ->
             render("gear-${tool.name.lowercase()}", height = 1700) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.gear.GearScreen(model, start = tool) {} } } }
-            // The same at 130% text: nothing may be clipped or pushed out of its box.
             render("gear-xl-${tool.name.lowercase()}", height = 1700, fontScale = 1.3f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.gear.GearScreen(model, start = tool) {} } } }
         }
     }
 
     private fun millisNow(plus: Long) { clock.millis += plus }
 
-    /** Every reaction the buddy can show, and the new faces, in both palettes (a form with a derived shiny beside its regular one). */
     @Test
     fun reactionsAndFaces() {
         for (dark in listOf(false, true)) {
@@ -141,7 +129,6 @@ class ScreenshotTest {
                         Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.S)) {
                             Emotion.entries.forEach { Portrait(1, false, it.name, emotion = it, size = 56.dp, framed = false) }
                         }
-                        // 58 (Growlithe) has no SpriteCollab shiny: the second one is derived from its still sprites.
                         Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.S)) {
                             listOf(false, true).forEach { shiny -> AnimatedSprite(58, shiny, "growlithe", size = 96.dp); Portrait(58, shiny, "growlithe", size = 96.dp) }
                             listOf(SpriteAction.IDLE_SIDE, SpriteAction.IDLE_UP, SpriteAction.POSE).forEach { AnimatedSprite(25, false, "pikachu", size = 96.dp, action = it) }
@@ -175,7 +162,6 @@ class ScreenshotTest {
         }
     }
 
-    /** A dungeon town graded by each weather's colour ramp, with the weather's own layer over it (WeatherLayer, WeatherGrade). */
     @Test
     fun weatherTown() {
         val weathers = listOf(
@@ -192,7 +178,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The open task card is a sheet of three tabs (When, Steps, Edit), in both palettes; a finished one has Reopen and Delete. */
     @Test
     fun taskCardSheet() {
         val store = started()
@@ -222,7 +207,6 @@ class ScreenshotTest {
         }
     }
 
-    /** Plan's dates: a weekly repeat every 2 weeks on chosen days, a typed reminder, and a moved day's "This one only" note. */
     @Test
     fun taskRepeatAndReminders() {
         val store = started()
@@ -246,7 +230,6 @@ class ScreenshotTest {
         }
     }
 
-    /** REP-057: Outstanding (three lists, the longest name, a long title) and empty, and the editor with Monthly chosen. */
     @Test
     fun rewardFocusAndEventCompanion() {
         val store = started()
@@ -310,7 +293,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The exact-entry fields (typed date, time, length, moment), in both palettes. */
     @Test
     fun exactFields() {
         val store = started()
@@ -333,7 +315,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The Kanto layer's whole dungeon list, tall: each card's title, types and tiles must belong to the same dungeon. */
     @Test
     fun worldMapKantoList() {
         val store = started()
@@ -358,7 +339,6 @@ class ScreenshotTest {
             model.worldSection = section
             render("world-${section.name.lowercase()}") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
         }
-        // The Kanto layer of the map: its own picture, story and legendary quests.
         model.worldSection = app.pokeplan.ui.world.WorldSection.MAP
         model.worldLayer = app.pokeplan.world.WorldLayer.KANTO
         render("world-map-kanto") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
@@ -370,14 +350,12 @@ class ScreenshotTest {
         model.worldLayer = app.pokeplan.world.WorldLayer.SINNOH
         render("world-map-sinnoh") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
         model.worldLayer = app.pokeplan.world.WorldLayer.RESCUE
-        // The same screens with the system text at 130%: nothing may be clipped or pushed out of its box.
         app.pokeplan.ui.world.WorldSection.entries.forEach { section ->
             model.worldSection = section
             render("world-xl-${section.name.lowercase()}", fontScale = 1.3f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
         }
     }
 
-    /** WORLD team editor (REP-054): a recommendation with reasons, a search, and the poor-match mark, with the longest dungeon name, both palettes. */
     @Test
     fun worldTeamAdvice() {
         val store = started()
@@ -393,7 +371,6 @@ class ScreenshotTest {
             render("world-team-advice-$tag", height = 2200, frames = 8) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(12.dp)) { app.pokeplan.ui.world.TeamEditor(model, team, dungeon, listOf(dungeon), initialAdvice = true) {} } } } }
             render("world-team-search-$tag", height = 1800, frames = 8) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(12.dp)) { app.pokeplan.ui.world.TeamEditor(model, team, dungeon, listOf(dungeon), initialSearch = "a") {} } } } }
         }
-        // A saved team that is a poor match for the chosen dungeon carries the mark beside its name.
         val poor = ids.filter { id -> store.data.player.pokemon.first { it.id == id }.let { app.pokeplan.world.TeamAdvice.matching(dungeon, it).isEmpty() } }.take(2)
         store.worldAssign(1, poor)
         model.worldSection = app.pokeplan.ui.world.WorldSection.TEAMS
@@ -402,7 +379,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The Town's shop pages with their keepers (the café, Kecleon, the Swap Shop), and the Records page's adventure log. */
     @Test
     fun worldShops() {
         val model = AppModel(started())
@@ -414,7 +390,6 @@ class ScreenshotTest {
         app.pokeplan.ui.world.townPageToOpen = null
     }
 
-    /** The mission board once it is open: a held job, a finished one, the available jobs with where and how often, and the ones that cannot be taken, with why. */
     @Test
     fun worldMissionBoard() {
         val base = started()
@@ -431,7 +406,6 @@ class ScreenshotTest {
         }
     }
 
-    /** A rescue notice on the job board: the lost Pokémon's face beside the game's call for help, in both palettes. */
     @Test
     fun worldRescueNotice() {
         val jobs = app.pokeplan.world.Missions.all.filter { it.rescued != null }.take(3)
@@ -448,7 +422,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The recruiting scene: the question, then the welcome. */
     @Test
     fun worldRecruit() {
         val store = started()
@@ -468,7 +441,6 @@ class ScreenshotTest {
         render("home") { App(storage, focusTab = true) }
     }
 
-    /** A task just ticked off: the undo bar floats above the tabs, where the thumb is. */
     @Test
     fun homeUndo() {
         val store = started()
@@ -504,7 +476,6 @@ class ScreenshotTest {
         clock.millis += 11_000
         store.tick()
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
-        // Stop early: a reaction lasts about two seconds of animation time, so it is on screen at frame 30.
         render("home-buddy-event", frames = 30) { App(storage, focusTab = true, start = Place.HOME) }
     }
 
@@ -528,12 +499,6 @@ class ScreenshotTest {
         }
     }
 
-    /**
-     * REP-053 (docs/pokelife/FEATURES/POKEMON_PLACES_IDEAS.md section 7): the scale test for the modules' places. One
-     * Hoenn Secret Base room (the Tree layout: floor and walls from the pokeemerald tileset), six Secret Base decorations and six
-     * SpriteCollab Pokémon standing in it, shown in a dialogue box at a phone's 1080 px width, at 2x to 5x, flush with the frame (8 dp at the sides, 6 dp above and below, so no gap), in both palettes
-     * (`secretbase-2x-light.png` and so on). A test render, not a shipped screen.
-     */
     @Test
     fun secretBaseRoom() {
         val room = HoennRoom.room(
@@ -547,12 +512,12 @@ class ScreenshotTest {
                 HoennRoom.Placed("tropical_plant", 36, 112),
             ),
             listOf(
-                HoennRoom.Mon(25, 52, 86),    // Pikachu
-                HoennRoom.Mon(133, 92, 80),   // Eevee
-                HoennRoom.Mon(255, 128, 88),  // Torchic
-                HoennRoom.Mon(197, 62, 118),  // Umbreon
-                HoennRoom.Mon(448, 112, 118), // Lucario
-                HoennRoom.Mon(258, 88, 104),  // Mudkip, on the mat
+                HoennRoom.Mon(25, 52, 86),
+                HoennRoom.Mon(133, 92, 80),
+                HoennRoom.Mon(255, 128, 88),
+                HoennRoom.Mon(197, 62, 118),
+                HoennRoom.Mon(448, 112, 118),
+                HoennRoom.Mon(258, 88, 104),
             ),
         ).toComposeImageBitmap()
         listOf(2, 3, 4, 5).forEach { scale ->
@@ -621,7 +586,6 @@ class ScreenshotTest {
         render("planner-done") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.DONE; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
         }
-        // A repeating task shows "repeats weekly"; All tasks lists the open ones with the search and filter chips above.
         store.makeRepeating(store.data.tasks.first { it.title == "Pay the rent" }.id, app.pokeplan.plan.Repeat.Weekly())
         render("planner-all", height = 1700) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.tasksView = app.pokeplan.ui.plan.TasksView.ALL; app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.TASKS, {}, {}, {}) } }
@@ -693,7 +657,6 @@ class ScreenshotTest {
         }
     }
 
-    /** A day with timed tasks, one beside a calendar event, an untimed one, an inbox one and an all-day event. */
     private fun plannerDayModel(): AppModel {
         val store = started()
         val report = store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 90)
@@ -705,7 +668,6 @@ class ScreenshotTest {
         store.addTask("Reply to mail", Rank.E, planned = store.today)
         store.addTask("Buy a birthday card", Rank.E)
         store.addEvent("Piano lesson", store.today, kotlinx.datetime.LocalTime(16, 0), 45)
-        // Two calendar events from the phone (one beside the report) and an all-day one.
         store.setShownCalendars(setOf(1L))
         val day = store.today
         fun at(h: Int, m: Int) = kotlinx.datetime.LocalDateTime(day, kotlinx.datetime.LocalTime(h, m))
@@ -765,7 +727,6 @@ class ScreenshotTest {
     @Test
     fun collectionParty() = collection("collection-party", 0)
 
-    /** Both regions' parties on one page: Plan's, then Care's with its lead first. */
     @Test
     fun collectionPartyRegions() = collection("collection-party-regions", 0, hatched = 6) { store ->
         store.changeSettings { it.copy(careModule = true) }
@@ -817,13 +778,11 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last().copy(isShiny = true), fromTask = true)
     }
 
-    /** Each module's own way of a new Pokémon arriving (owner, 8 November 2026): a friend walks over Care's meadow, one is found on Heal's route, one is catalogued in Mint's cave. */
     @Test
     fun arrivalCare() = cutscene("arrival-care", frames = 60, still = true) {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.CARE_EGG)
     }
 
-    /** A visitor's egg (owner, 8 November 2026): first the visitor leaves it in the meadow, then it hatches at once. [still] shows the end of the first part. */
     private fun visitorEgg(name: String, still: Boolean, frames: Int) {
         val base = storeWithTeam(hatched = 1)
         val gift = base.data.player.pokemon.last()
@@ -864,7 +823,6 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
     }
 
-    /** The reported bug: a sprite that stays on screen while its Pokémon evolves (the buddy on Home) went blank, because it kept the old form's sheet. */
     @Test
     fun aSpriteStaysAfterItsPokemonEvolvesInPlace() {
         var form by androidx.compose.runtime.mutableIntStateOf(4)
@@ -883,7 +841,6 @@ class ScreenshotTest {
         assertTrue(before > 800 && after > 800, "the sprite is drawn before ($before) and after ($after) the form changes")
     }
 
-    /** The wrong-picture bug (a map card with another dungeon's tiles): an image composable whose key changes in place must draw what a fresh one draws. */
     @Test
     fun aTileBoxChangedInPlaceDrawsWhatAFreshOneDraws() {
         fun frames(content: @Composable () -> Unit, change: (() -> Unit)?): ByteArray {
@@ -903,14 +860,12 @@ class ScreenshotTest {
         assertTrue(changed.contentEquals(fresh), "a card whose dungeon changed is drawn in the new dungeon's tiles, not the old one's")
     }
 
-    /** The animated evolution, run to its end: the evolved Pokémon must be on the stage (owner: "after evolution, sprite disappears"). */
     @Test
     fun evolutionAnimatedEnds() = cutscene("evolution-end", frames = 360, still = false) {
         val before = it.grantPokemon(4, "test")
         app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
     }
 
-    /** Whole app places at the system's largest text (130%): looked at for clipped or overlapping text. */
     @Test
     fun largeTextPlaces() {
         listOf("home" to Place.HOME, "plan" to Place.PLAN, "planner" to Place.PLANNER, "focus" to Place.FOCUS, "care" to Place.CARE, "pokemon" to Place.COLLECTION, "me" to Place.ME, "world" to Place.WORLD).forEach { (name, place) ->
@@ -924,7 +879,6 @@ class ScreenshotTest {
         }
     }
 
-    /** A brand-new player with nothing yet: every landing page must say what it is and what to do first. */
     @Test
     fun emptyStates() {
         listOf("home" to Place.HOME, "planner" to Place.PLANNER, "focus" to Place.FOCUS, "care" to Place.CARE, "pokemon" to Place.COLLECTION, "world" to Place.WORLD, "me" to Place.ME).forEach { (name, place) ->
@@ -941,13 +895,11 @@ class ScreenshotTest {
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
         store.addTask("Reply to mail", Rank.E, planned = store.today)
         store.changeSettings { it.copy(theme = app.pokeplan.app.ThemeMode.DARK) }
-        // Unseen hatches would play their scene over the screen.
         store.markRewardsSeen()
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         render(name) { App(storage, focusTab = true, start = place) }
     }
 
-    /** The shared date picker open on a day in the past, and the peso sign and the zero with its bar (design review, 11 November 2026). */
     @Test
     fun datePickerAndNumbers() {
         val today = kotlinx.datetime.LocalDate(2026, 11, 11)
@@ -966,7 +918,6 @@ class ScreenshotTest {
         }
     }
 
-    /** Home with something waiting in Mint, Home, Link and Heal, and a module page with the compact lead (design review batch 2). */
     @Test
     fun homeAlsoToday() {
         val store = storeWithTeam()
@@ -1016,7 +967,6 @@ class ScreenshotTest {
     @Test
     fun darkPlan() = dark("dark-plan", Place.PLAN)
 
-    /** Every module's page opens on its lead in its own scene , light and dark. */
     @Test
     fun moduleLeadStages() {
         val store = storeWithTeam(hatched = 7)
@@ -1036,7 +986,6 @@ class ScreenshotTest {
         model.module = null
     }
 
-    /** The module pages in both palettes side by side by name, so each accent can be checked on the light and the dark panel. */
     @Test
     fun moduleAccentsBothPalettes() {
         val store = storeWithTeam()
@@ -1062,14 +1011,12 @@ class ScreenshotTest {
     @Test
     fun collectionPc() = collection("collection-pc", 1, hatched = 14)
 
-    /** "Show all Pokémon": the buddy and the party join the PC's, each tile naming its place. */
     @Test
     fun collectionPcEveryone() = collection("collection-pc-everyone", 1, hatched = 8, height = 1400, everyone = true)
 
     @Test
     fun collectionPcEveryoneDark() = collection("collection-pc-everyone-dark", 1, hatched = 8, height = 1400, everyone = true, dark = true)
 
-    /** More than one box of Pokémon: names under the sprites and the Previous / Next bar. */
     @Test
     fun collectionPcBoxes() = collection("collection-pc-boxes", 1, hatched = 40)
 
@@ -1078,7 +1025,6 @@ class ScreenshotTest {
         s.markSeen(app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.PLAN).take(2).map { it.id })
     }
 
-    /** The Pokédex as an index: number, sprite, name and a quiet line per row, with the search box. */
     @Test
     fun collectionDexIndex() = collection("collection-dex-index", 2, hatched = 3) { s ->
         s.markSeen(app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.PLAN).take(2).map { it.id })
@@ -1096,7 +1042,6 @@ class ScreenshotTest {
     @Test
     fun pokemonDetail() = collection("pokemon-detail", 0, open = true)
 
-    /** The whole detail page at a rank that shows stats, the IV judge and held items, at [fontScale]. */
     private fun pokemonDetailFull(name: String, fontScale: Float, height: Int) {
         val base = storeWithTeam()
         val text = GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(player = base.data.player.copy(trainerPoints = 700)))
@@ -1121,7 +1066,6 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.MeScreen(model, section)
     }
 
-    /** The Modules tab with [module] open on [plan] (null for the menus). */
     private fun modules(name: String, module: app.pokeplan.ui.screens.Module?, plan: app.pokeplan.ui.screens.PlanSection? = null) =
         meStore(name, prepare = { it.module = module; it.planSection = plan }) { model -> app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
 
@@ -1151,7 +1095,6 @@ class ScreenshotTest {
     @Test
     fun planMenu() = modules("plan", app.pokeplan.ui.screens.Module.PLAN)
 
-    /** The Sections sheet of a module (Heal here): rows in one dialogue box, over the module's page. */
     @Test
     fun sectionsSheet() = meStore("sections-sheet", prepare = { it.module = app.pokeplan.ui.screens.Module.HEAL }) { model ->
         app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
@@ -1159,13 +1102,11 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.NavSheet("Heal", {}) { app.pokeplan.ui.screens.MenuRows(rows) {} }
     }
 
-    /** The Modules switcher with a "Jump to" search for the sheet's fixed names, on the Modules tab itself. */
     @Test
     fun modulesJump() = meStore("modules-jump", prepare = { it.module = null }) { model ->
         app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
     }
 
-    /** Plan's whole page, for comparing with Care's: the buddy's scene, the party with its perks, today and the sections. */
     @Test
     fun planMenuFull() = meStore("plan-full", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3200) { model ->
         app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
@@ -1177,7 +1118,6 @@ class ScreenshotTest {
     @Test
     fun planGoals() = modules("plan-goals", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.GOALS)
 
-    /** The goal badge case (a long goal with part of its badges earned, more than eight) and the Hall of Fame (a finished goal with its party), in both palettes. */
     @Test
     fun planGoalsBadges() = listOf(false, true).forEach { dark ->
         val store = storeWithTeam()
@@ -1194,7 +1134,6 @@ class ScreenshotTest {
         }
     }
 
-    /** Settings → About's credit list (Credits.kt), the longest line of it, in both palettes. */
     @Test
     fun aboutCredits() = listOf(false, true).forEach { dark ->
         render("about-credits-${if (dark) "dark" else "light"}", height = 1800) {
@@ -1205,7 +1144,6 @@ class ScreenshotTest {
     @Test
     fun meHome() = me("me-home", -1)
 
-    /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for Today). */
     private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, journalDraft: String = "", interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
@@ -1227,7 +1165,6 @@ class ScreenshotTest {
         render(name, fontScale = fontScale, height = height, interact = interact) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
-    /** The Heal module with a little logged (an activity, drinks, a night, a weight and a goal), Field Research on, open on [section] (null for its menu). */
     private fun heal(name: String, section: app.pokeplan.ui.heal.HealSection?, height: Int = 1500, healParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false) {
         val store = storeWithTeam()
         store.markRewardsSeen()
@@ -1281,14 +1218,12 @@ class ScreenshotTest {
     @Test
     fun healActivity() = heal("heal-activity", app.pokeplan.ui.heal.HealSection.ACTIVITY, height = 2000)
 
-    /** Every Heal section at the system's text at 130%: nothing clipped or pushed out of its box. */
     @Test
     fun largeTextHeal() {
         heal("heal-xl-menu", null, height = 4200, healParty = 3, fontScale = 1.3f)
         app.pokeplan.ui.heal.HealSection.entries.forEach { heal("heal-xl-${it.name.lowercase()}", it, height = 2400, fontScale = 1.3f) }
     }
 
-    /** The Mint module with a little recorded (two accounts, a card, spending, a budget, a bill and a reconciliation), open on [section] (null for its menu). Synthetic amounts only. */
     private fun mint(name: String, section: app.pokeplan.ui.mint.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false, settings: ((AppModel) -> Unit)? = null, gate: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
@@ -1314,7 +1249,6 @@ class ScreenshotTest {
         settings?.invoke(model)
         model.module = app.pokeplan.ui.screens.Module.MINT
         model.mintSection = section
-        // The lock is a title and two keys: little to draw.
         render(name, fontScale = fontScale, height = height, minBytes = if (gate && section == null) 3_000 else 5_000, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
@@ -1323,7 +1257,6 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.HABITAT_EGG)
     }
 
-    /** The Home module with a little recorded (chores, supplies, an appliance with a warranty and a service, a note), open on [section] (null for its menu). Synthetic text only. */
     private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, width: Int = 540) {
         val store = storeWithTeam()
         store.markRewardsSeen()
@@ -1349,10 +1282,6 @@ class ScreenshotTest {
         render(name, fontScale = fontScale, height = height, width = width) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
-    /**
-     * Base's Secret Base room (BASE.md 9.5) on a 360 dp phone (1080 px wide, 5x) or a 320 dp one ([narrow], 4x): the six Pokémon of its party, [look] picked by its
-     * lead's type, and some decorations placed. With [arrange] the dots and the box show, with [held] selected.
-     */
     private fun baseRoom(name: String, dark: Boolean = false, arrange: Boolean = false, held: String? = null, narrow: Boolean = false, furnished: Boolean = true, party: Int = 6) {
         val store = storeWithTeam(hatched = 7)
         store.markRewardsSeen()
@@ -1395,7 +1324,6 @@ class ScreenshotTest {
         baseRoom("home-room-empty", furnished = false, party = 0)
     }
 
-    /** One room of each look (tree and shrub, then the four caves), empty with three Pokémon, three to a picture. */
     @Test
     fun baseRoomLooks() {
         val store = storeWithTeam(hatched = 7)
@@ -1413,7 +1341,6 @@ class ScreenshotTest {
         }
     }
 
-    /** BASE Areas box (rename and delete keys on each row), narrowest layout, longest name, in both palettes; [open] a row for rename, [ask] its delete confirm. */
     private fun baseAreas(name: String, open: Boolean, ask: Boolean) = listOf(false, true).forEach { dark ->
         val model = AppModel(started())
         val long = model.base.addArea("W".repeat(app.pokeplan.base.BaseRules.TITLE_MAX))!!
@@ -1432,7 +1359,6 @@ class ScreenshotTest {
     @Test
     fun baseAreasDelete() = baseAreas("base-areas-delete", open = true, ask = true)
 
-    /** The empty add boxes with their example chips, on a 320 dp phone, in both palettes. */
     @Test
     fun baseExampleChips() = listOf(false, true).forEach { dark ->
         val d = if (dark) "dark" else "light"
@@ -1449,7 +1375,6 @@ class ScreenshotTest {
     @Test
     fun baseMenuDark() = household("home-menu-dark", null, height = 2600, homeParty = 3, dark = true)
 
-    /** Every Home section at the system's text at 130%: nothing clipped or pushed out of its box. */
     @Test
     fun largeTextHousehold() {
         app.pokeplan.ui.base.BaseSection.entries.filter { it != app.pokeplan.ui.base.BaseSection.ROOM }.forEach { household("home-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
@@ -1460,7 +1385,6 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.POSTCARD_EGG)
     }
 
-    /** The Link module with a little recorded (two people, a note, two dates, follow-ups), open on [section] (null for its menu). Synthetic text only. */
     private fun link(name: String, section: app.pokeplan.ui.link.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, prepare: (AppModel) -> Unit = {}, interact: (androidx.compose.ui.ImageComposeScene) -> Unit = {}, contacts: ContactSource? = null) {
         val store = storeWithTeam()
         store.markRewardsSeen()
@@ -1485,7 +1409,6 @@ class ScreenshotTest {
         render(name, fontScale = fontScale, height = height, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
-    /** A person's slambook page (About, Mind, Stars and their forms) with synthetic details, light and dark; the Stars page with a time and place so the rising sign and houses show. */
     @Test
     fun linkProfile() {
         fun model(): Pair<AppModel, app.pokeplan.link.Person> {
@@ -1518,7 +1441,6 @@ class ScreenshotTest {
         }
     }
 
-    /** One person's own screen inside People (light and dark; the longest name and organization, and the Notes and Follow-ups tabs). */
     @Test
     fun linkPersonScreen() {
         fun open(tab: Int): (AppModel) -> Unit = { m ->
@@ -1536,7 +1458,6 @@ class ScreenshotTest {
         link("link-person-followups", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(3))
     }
 
-    /** The picture chooser for a person: the Pokémon the player has caught, and a search (light and dark). */
     @Test
     fun linkPersonPicture() {
         for (dark in listOf(false, true)) {
@@ -1557,7 +1478,6 @@ class ScreenshotTest {
     @Test
     fun linkMenuDark() = link("link-menu-dark", null, height = 2600, linkParty = 3, dark = true)
 
-    /** Link's reminders switched on: the Settings card, and a date and an open follow-up with their own reminder choice (light and dark). */
     @Test
     fun linkReminders() {
         val on: (AppModel) -> Unit = { m ->
@@ -1569,7 +1489,6 @@ class ScreenshotTest {
         link("link-settings-reminders-dark", app.pokeplan.ui.link.LinkSection.SETTINGS, height = 2600, dark = true, prepare = on)
     }
 
-    /** Link's contact import with a fake address book: asking first, then the pick list (new, already here, maybe, the longest name), light and dark, and the Dates form with its reminder keys. */
     @Test
     fun linkContactImport() {
         fun fake(allowed: Boolean) = object : ContactSource {
@@ -1596,7 +1515,6 @@ class ScreenshotTest {
                 }
             }
         }
-        // Picked rows (a "maybe" with its Same as keys), the reminder keys, then the result line: taps on the rows, the key and Import.
         val source = fake(true)
         for ((tag, scale) in listOf("picked" to 1f, "picked-xl" to 1.3f)) {
             val model = AppModel(storeWithTeam(), contacts = source)
@@ -1608,8 +1526,8 @@ class ScreenshotTest {
                     scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(x, y))
                     scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(x, y))
                 }
-                tap(135f, 231f) // Pick 3 new
-                tap(300f, 805f) // the maybe row: its Same as keys open
+                tap(135f, 231f)
+                tap(300f, 805f)
             }) {
                 PixelTheme(dark = false) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.ContactImportView(model, source) {} } } } }
             }
@@ -1621,7 +1539,6 @@ class ScreenshotTest {
         })
     }
 
-    /** Every Link section at the system's text at 130%: nothing clipped or pushed out of its box. */
     @Test
     fun largeTextLink() {
         app.pokeplan.ui.link.LinkSection.entries.forEach { link("link-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
@@ -1645,7 +1562,6 @@ class ScreenshotTest {
         mint("mint-accounts", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2200)
     }
 
-    /** The first account: "Where is this money?", the name example and the card-style picker, in both palettes and at 130% text (REP-056). */
     @Test
     fun mintFirstAccount() {
         mint("mint-first-account", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2200, empty = true)
@@ -1653,7 +1569,6 @@ class ScreenshotTest {
         mint("mint-first-account-xl", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 2800, empty = true, fontScale = 1.3f)
     }
 
-    /** The optional access gate (locked card) and Mint's settings with bill reminders on and the gate offered. */
     @Test
     fun mintImportAndHealConnections() {
         mint("mint-import", app.pokeplan.ui.mint.MintSection.IMPORT, height = 3000)
@@ -1661,7 +1576,6 @@ class ScreenshotTest {
         heal("heal-connections", app.pokeplan.ui.heal.HealSection.CONNECTIONS, height = 2200)
     }
 
-    /** Heal's Huawei Health probe: both readers off, then on with pages and a step notification seen and shown (INTEGRATIONS_AND_PRIVACY.md 5.2.2). */
     @Test
     fun healHuaweiProbe() {
         class Fake(val on: Boolean, val seen: app.pokeplan.app.heal.HuaweiSeen) : HuaweiReader {
@@ -1702,14 +1616,12 @@ class ScreenshotTest {
         mint("mint-bills-reminders", app.pokeplan.ui.mint.MintSection.BILLS, height = 2600, settings = { it.mint.setBillReminders(true) })
     }
 
-    /** A paid bill leaves the list to settle and waits under "Settled lately", where it can be settled again (REP-025). */
     @Test
     fun mintBillsSettled() = mint("mint-bills-settled", app.pokeplan.ui.mint.MintSection.BILLS, height = 2200, settings = { m ->
         val bill = m.mint.data.bills.first { it.name == "Internet" }
         m.mint.settle(bill.id, bill.firstDue, app.pokeplan.mint.SettleStatus.PAID, 149_900)
     })
 
-    /** An account with a receive-money QR open in its options (a synthetic 1x1 PNG stands in for a real code), and a recurring income bill. */
     @Test
     fun mintReceiveQrAndIncomeBill() {
         val png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg=="
@@ -1728,7 +1640,6 @@ class ScreenshotTest {
         })
     }
 
-    /** Account actions at the longest state: ~360 dp wide (540 px at 1.5) and font scale 1.3, no label clipped. */
     @Test
     fun mintAccountActionsNarrowLargeFont() {
         val model = AppModel(storeWithTeam())
@@ -1738,7 +1649,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The card colour picker with Custom open and a long (fully typed) hex, both palettes. */
     @Test
     fun mintCardColorPicker() {
         for (dark in listOf(false, true)) render("mint-card-colour-picker${if (dark) "-dark" else ""}", height = 700, minBytes = 3_000) {
@@ -1746,7 +1656,6 @@ class ScreenshotTest {
         }
     }
 
-    /** Grouped accounts with subtotals, Arrange mode, the Edit form with Hide from total and an app, and Open GCash in the options. */
     @Test
     fun mintAccountGroupsArrangeAndApp() {
         val launcher = object : app.pokeplan.ui.AppLauncher {
@@ -1791,7 +1700,6 @@ class ScreenshotTest {
         }
     }
 
-    /** A pay later account: credit line, plans, the new purchase form with a preview, and one plan with every installment state. */
     @Test
     fun mintPayLaterPlans() {
         for (dark in listOf(false, true)) {
@@ -1802,18 +1710,14 @@ class ScreenshotTest {
             fun ahead(days: Int) = kotlinx.datetime.LocalDate.fromEpochDays(today.toEpochDays() + days)
             val wallet = m.addAccount("GCash", app.pokeplan.mint.AccountType.EWALLET, "PHP", 500_000).record!!
             val later = m.addAccount("SPayLater", app.pokeplan.mint.AccountType.PAY_LATER, "PHP", 0, limitMinor = 3_000_000, statementDay = 20, dueDay = 5).record!!
-            // A finished plan.
             val old = m.addPlanPurchase(later.id, "Old phone", 40_000, null, 2, app.pokeplan.mint.PlanEvery.MONTH, ago(120), day = ago(150)).record!!
             m.payPlan(old.id, 40_000, wallet.id, ago(100))
-            // This month's purchase with interest, the first installment paid early.
             val phones = m.addPlanPurchase(later.id, "Headphones", 120_000, null, 3, app.pokeplan.mint.PlanEvery.MONTH, ahead(20), app.pokeplan.mint.FeeRule.RatePerPeriod(200), app.pokeplan.mint.FeeKind.INTEREST).record!!
             m.payPlan(phones.id, 20_000, wallet.id)
-            // One plan in every state: paid, partly paid, overdue, upcoming, cancelled.
             val laptop = m.addPlanPurchase(later.id, "Laptop sleeve and mouse", 100_000, null, 5, app.pokeplan.mint.PlanEvery.MONTH, ago(65), day = ago(100)).record!!
             m.payPlan(laptop.id, 30_000, wallet.id, ago(60))
             m.refundPlan(laptop.id, 20_000)
             m.addLateFee(laptop.id, 3, 5_000)
-            // A second purchase in the same month as the headphones: one monthly bill of two purchases.
             m.addPlanPurchase(later.id, "Phone case", 45_000, null, 3, app.pokeplan.mint.PlanEvery.MONTH, ahead(20))
             val suffix = if (dark) "-dark" else ""
             render("mint-paylater-bill$suffix", height = 1300, minBytes = 3_000) {
@@ -1838,7 +1742,6 @@ class ScreenshotTest {
         }
     }
 
-    /** Installments already owed: the "Already owed" mode with three months, a fee, and the options hint when an account has no plans. */
     @Test
     fun mintExistingInstallments() {
         for (dark in listOf(false, true)) {
@@ -1856,7 +1759,6 @@ class ScreenshotTest {
         }
     }
 
-    /** Twice-a-month estimated income on working days: the Bills list with its paydays, the add form with both toggles, and the Paydays and holidays box. */
     @Test
     fun mintPaydays() {
         for (dark in listOf(false, true)) {
@@ -1877,14 +1779,12 @@ class ScreenshotTest {
         }
     }
 
-    /** BNPL entry points: the Activity form with installments and "Pay for", the Bills installments box, and the Overview with its breakdown. */
     @Test
     fun mintInstallmentEntryPoints() {
         fun ago(today: kotlinx.datetime.LocalDate, d: Int) = kotlinx.datetime.LocalDate.fromEpochDays(today.toEpochDays() - d)
         fun ahead(today: kotlinx.datetime.LocalDate, d: Int) = kotlinx.datetime.LocalDate.fromEpochDays(today.toEpochDays() + d)
         for (dark in listOf(false, true)) {
             val suffix = if (dark) "-dark" else ""
-            // Activity: a pay later account first, the installments switch on.
             val a = AppModel(storeWithTeam())
             a.mint.addAccount("SPayLater", app.pokeplan.mint.AccountType.PAY_LATER, "PHP", 0, limitMinor = 3_000_000)
             a.mint.addAccount("GCash", app.pokeplan.mint.AccountType.EWALLET, "PHP", 500_000)
@@ -1892,7 +1792,6 @@ class ScreenshotTest {
             render("mint-activity-installments$suffix", height = 3100, minBytes = 3_000) {
                 PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.mint.ActivityView(a, startInstallments = true, startAmount = "12345.67", startPayee = "Standing fan") } } }
             }
-            // The rest share one set of accounts and plans.
             val m = AppModel(storeWithTeam())
             val today = m.store.today
             val wallet = m.mint.addAccount("GCash", app.pokeplan.mint.AccountType.EWALLET, "PHP", 500_000, group = "Daily").record!!
@@ -1921,7 +1820,6 @@ class ScreenshotTest {
         mint("mint-account-types-large", app.pokeplan.ui.mint.MintSection.ACCOUNTS, height = 1900, fontScale = 1.3f, empty = true)
     }
 
-    /** The receive-money QR full screen: a real QR from the Gear encoder, scaled by an integer, on white with Close and Share. */
     @Test
     fun mintQrFullScreen() {
         val qr = app.pokeplan.ui.gear.QrCode.encode("https://example.com/pay/daily-account-4821")!!
@@ -1938,7 +1836,6 @@ class ScreenshotTest {
             installPixels(java.nio.ByteBuffer.allocate(px.size * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).also { b -> px.forEach { b.putInt(it) } }.array())
         }.let { org.jetbrains.skia.Image.makeFromBitmap(it) }
         val square = skia.toComposeImageBitmap()
-        // Fixture only: a tall wallet-style screenshot (1:2.2), a blue card holding the real QR on white.
         val w = 540; val h = 1188
         val surface = org.jetbrains.skia.Surface.makeRasterN32Premul(w, h)
         surface.canvas.apply {
@@ -1969,7 +1866,6 @@ class ScreenshotTest {
         }
     }
 
-    /** An expedition box at several points of its scroll: a bay's rim must close at the bottom and the frame corner stays whole (owner: "this L seems to be missing something"). */
     @Test
     fun tileBoxCorners() {
         listOf(2, 120, 260, 420, 560, 700).forEach { frames ->
@@ -1981,7 +1877,6 @@ class ScreenshotTest {
         }
     }
 
-    /** An account being edited: every detail, the currency fixed once it has records. */
     @Test
     fun mintAccountEdit() {
         val store = storeWithTeam()
@@ -1994,14 +1889,12 @@ class ScreenshotTest {
         }
     }
 
-    /** Every Mint section at the system's text at 130%: nothing clipped or pushed out of its box. */
     @Test
     fun largeTextMint() {
         mint("mint-xl-menu", null, height = 4200, mintParty = 3, fontScale = 1.3f)
         app.pokeplan.ui.mint.MintSection.entries.forEach { mint("mint-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
     }
 
-    /** Home as the world overview: each region with its lead and next step, the streak, and what happened recently. */
     @Test
     fun homeRegions() {
         val store = storeWithTeam()
@@ -2017,7 +1910,6 @@ class ScreenshotTest {
         render("home-regions", height = 1700) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.HomeScreen(model) {} } } }
     }
 
-    /** The routine editor, at the system's largest text: nothing clipped. */
     @Test
     fun careRoutineEditor() {
         val model = AppModel(storeWithTeam())
@@ -2025,7 +1917,6 @@ class ScreenshotTest {
         render("care-routine-edit-xl", fontScale = 1.3f, height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.care.RoutineOptions(model, model.careData.routines.single { it.id == r.id }, startEditing = true) {} } } } }
     }
 
-    /** Every Plan section, every Care section and the Pokémon tab at the system's text at 130%: nothing clipped or pushed out of its box. */
     @Test
     fun largeTextModules() {
         app.pokeplan.ui.screens.PlanSection.entries.filter { it != app.pokeplan.ui.screens.PlanSection.FOCUS }.forEach { sec ->
@@ -2038,7 +1929,6 @@ class ScreenshotTest {
         collection("collection-xl-menu", -1, fontScale = 1.3f)
     }
 
-    /** Every control in every state, light and dark and at 130% text: the design system on one page (docs/pokelife/FEATURES/DESIGN_SYSTEM.md section 5.6). */
     @Test
     fun componentGallery() {
         for ((suffix, dark, scale) in listOf(Triple("", false, 1f), Triple("-dark", true, 1f), Triple("-xl", false, 1.3f))) {
@@ -2091,7 +1981,6 @@ class ScreenshotTest {
         }
     }
 
-    /** Every landing page on a brand-new save (the starter and nothing else): the first-use and empty states. */
     @Test
     fun firstUse() {
         fun page(name: String, prepare: (AppModel) -> Unit = {}, content: @Composable (AppModel) -> Unit) {
@@ -2119,11 +2008,9 @@ class ScreenshotTest {
     @Test
     fun careToday() = care("care", null)
 
-    /** Dream with three in Care's party: the scene, Spend time, the dreamers and the party on one page. */
     @Test
     fun careDreamFull() = care("care-full", app.pokeplan.ui.care.CareSection.DREAM, height = 3600, careParty = 3)
 
-    /** Dream with a visit on: the dreamer up close, its bid, and the kinds of care left. */
     @Test
     fun careVisit() = care("care-visit", app.pokeplan.ui.care.CareSection.DREAM, height = 3800, careParty = 3, visiting = true)
 
@@ -2133,14 +2020,12 @@ class ScreenshotTest {
     @Test
     fun careCalm() = care("care-calm", app.pokeplan.ui.care.CareSection.CALM)
 
-    /** A skill opened as the guided walk-through (a tap on "Wise mind" in Calm's library). */
     @Test
     fun careSkillGuide() = care("care-skill-guide", app.pokeplan.ui.care.CareSection.CALM, interact = { scene ->
         scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(200f, 945f))
         scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(200f, 945f))
     })
 
-    /** Reflect opens on the diary card, or on the journal when a half-written entry waits. */
     @Test
     fun careDiary() = care("care-diary", app.pokeplan.ui.care.CareSection.REFLECT)
 
@@ -2174,7 +2059,6 @@ class ScreenshotTest {
     @Test
     fun meHelp() = me("me-help", 1)
 
-    /** A module's Guardian slot under its party, with the six-module switcher above it (the owner's phone showed the old tabs cut to "Pl..." and "Ca..."). */
     @Test
     fun collectionGuardians() = collection("collection-guardians", 0, hatched = 6) { store ->
         val ids = listOf("uxie", "mew", "celebi").map { name -> store.grantPokemon(app.pokeplan.core.dex.Dex.species.first { it.identifier == name }.id, "Quest").id }
@@ -2230,7 +2114,6 @@ class ScreenshotTest {
     fun launcherSettingsAndEmoji() {
         val model = AppModel(started())
         render("launcher-settings") { PixelTheme { app.pokeplan.ui.launcher.LauncherSettings(model, app.pokeplan.ui.launcher.LauncherPrefs(), {}, false, 2, 2, fakeHost, {}, {}, {}, {}, {}) } }
-        // On a dungeon town the Town section offers another floor for today (LAUNCHER.md 4.5).
         render("launcher-settings-floor") { PixelTheme { app.pokeplan.ui.launcher.LauncherSettings(model, app.pokeplan.ui.launcher.LauncherPrefs(scene = "crystal-cave"), {}, false, 2, 2, fakeHost, {}, {}, {}, {}, {}) } }
         render("launcher-emoji", height = 700) {
             PixelTheme {
@@ -2254,7 +2137,6 @@ class ScreenshotTest {
         render("launcher-home") { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, phone = fakeHost) }
     }
 
-    /** The launcher's town at 8:39 pm over a dungeon's tiles: the night tint must reach the right edge (the owner's phone showed a lighter strip there). */
     @Test
     fun launcherNight() {
         val store = started()
@@ -2267,7 +2149,6 @@ class ScreenshotTest {
         render("launcher-night", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, phone = fakeHost) }
     }
 
-    /** The town as a dungeon floor (LAUNCHER.md 4.5): rooms and corridors from Explorers of Sky's full autotile set, and a Red Rescue Team floor with only the 3 x 3 block. */
     @Test
     fun launcherFloor() {
         val store = started()
@@ -2279,7 +2160,6 @@ class ScreenshotTest {
         render("launcher-floor-rescue", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.copy(scene = "rr-14"), {}, isDefault = true, phone = fakeHost) }
     }
 
-    /** The launcher's home page on the widget grid (the preview), beside the stacked one: the same widgets, in cells. */
     @Test
     fun launcherGrid() {
         val store = started()
@@ -2290,7 +2170,6 @@ class ScreenshotTest {
         render("launcher-grid", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.withGridMode(true), {}, isDefault = true, phone = fakeHost) }
     }
 
-    /** Editing the widget grid: the frames, handles and X on each widget, and a real drag that moves one. */
     @Test
     fun launcherGridEdit() {
         val store = started()
@@ -2310,7 +2189,6 @@ class ScreenshotTest {
         frames()
         File("build/screenshots/launcher-grid-edit.png").apply { parentFile.mkdirs() }.writeBytes(scene.render(2_000_000_000L).encodeToData(EncodedImageFormat.PNG)!!.bytes)
         val before = prefs.gridWidgets.first { it.kind == app.pokeplan.ui.launcher.WidgetKind.NAV }
-        // Drag the shortcuts widget two rows down and one column right.
         val rowPx = app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * 1.5f
         val from = androidx.compose.ui.geometry.Offset(150f, 420f)
         scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, from)
@@ -2325,7 +2203,6 @@ class ScreenshotTest {
         File("build/screenshots/launcher-grid-dropped.png").writeBytes(scene.render(4_000_000_000L).encodeToData(EncodedImageFormat.PNG)!!.bytes)
         val moved = prefs.gridWidgets.first { it.kind == app.pokeplan.ui.launcher.WidgetKind.NAV }
         kotlin.test.assertEquals(before.row + 2, moved.row, "the drag moved the shortcuts two rows down")
-        // Pull its corner square one row down: the widget is one row taller (its kind allows 4).
         val corner = androidx.compose.ui.geometry.Offset(474f, 24f + (moved.bottom * rowPx) - 42f)
         scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, corner)
         frames(2)
@@ -2340,7 +2217,6 @@ class ScreenshotTest {
         scene.close()
     }
 
-    /** Every widget kind at its smallest and at half width, on the grid: what clips and what fits. */
     @Test
     fun launcherGridSizes() {
         val store = started()
@@ -2362,7 +2238,6 @@ class ScreenshotTest {
         }
     }
 
-    /** Every widget kind at each size its limits allow (2x2, 4x2, 2x3, 4x3, 4x4 ...), one image per size, to look for clipped or off-centre text. */
     @Test
     fun launcherGridSizeMatrix() {
         val store = started()
@@ -2387,7 +2262,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The agenda on a light day: the list starts at the top, and the next day with anything on it fills the room left. */
     @Test
     fun launcherAgendaLightDay() {
         val store = started()
@@ -2401,7 +2275,6 @@ class ScreenshotTest {
         render("launcher-agenda-light-day", frames = 8, height = ((app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * 8 + 16) * 1.5f).toInt(), minBytes = 500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
     }
 
-    /** Holding a dragged widget at the right side of the screen hops it to the next page (and the page goes there). */
     @Test
     fun launcherGridHop() {
         val store = started()
@@ -2427,7 +2300,6 @@ class ScreenshotTest {
         val from = androidx.compose.ui.geometry.Offset(150f, 24f + nav.row * app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * 1.5f + 60f)
         scene.sendPointerEvent(ptr.Press, from); frames(2)
         scene.sendPointerEvent(ptr.Move, from + androidx.compose.ui.geometry.Offset(150f, 0f)); frames(2)
-        // Into the right-hand edge zone, then hold (the hop waits half a second).
         scene.sendPointerEvent(ptr.Move, androidx.compose.ui.geometry.Offset(525f, from.y)); frames(2)
         for (i in 0 until 12) { scene.sendPointerEvent(ptr.Move, androidx.compose.ui.geometry.Offset(526f - i % 2, from.y)); frames(1, 100) }
         scene.close()
@@ -2435,13 +2307,11 @@ class ScreenshotTest {
         kotlin.test.assertEquals(1, wentTo, "and the launcher went to that page")
     }
 
-    /** The floating edit bar of the widget grid, with every button showing, at normal and large text. */
     @Test
     fun launcherGridEditBar() {
         val store = started()
         val model = AppModel(store)
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().withPages(3)
-        // On Home the bar offers a page at the left or the right end; on an empty page of the user's own it offers to remove it.
         for ((name, scale, shown) in listOf(Triple("launcher-edit-bar", 1f, app.pokeplan.ui.launcher.WidgetPage.PAGE3), Triple("launcher-edit-bar-xl", 1.3f, app.pokeplan.ui.launcher.WidgetPage.PAGE3), Triple("launcher-edit-bar-home", 1f, app.pokeplan.ui.launcher.WidgetPage.HOME), Triple("launcher-edit-bar-home-xl", 1.3f, app.pokeplan.ui.launcher.WidgetPage.HOME))) {
             val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, true, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, pages = 3)
             render(name, height = 900, fontScale = scale) {
@@ -2478,7 +2348,6 @@ class ScreenshotTest {
                 app.pokeplan.ui.launcher.LauncherScreen(AppModel(sky), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().copy(weather = weather), {}, isDefault = true, phone = fakeHost)
             }
         }
-        // A phone's size and density (2.625), where a box's width is not a multiple of the pixel scale.
         val phone = started().also { st -> listOf(1, 4, 25, 133, 150).forEach { st.grantPokemon(it, "test") } }
         render("launcher-phone", width = 923, height = 1990, density = 2.625f) {
             app.pokeplan.ui.launcher.LauncherScreen(AppModel(phone), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages"), {}, isDefault = true, phone = fakeHost)
@@ -2515,7 +2384,6 @@ class ScreenshotTest {
         render("app-town-background") { App(storage, focusTab = true) }
     }
 
-    /** Tablet and desktop widths: the page stays a phone-width column, and from 840 dp the tabs move to a rail. */
     @Test
     fun wideWindows() {
         val store = started()
@@ -2524,13 +2392,9 @@ class ScreenshotTest {
         render("wide-home-expanded", width = 1280, height = 800, density = 1f) { App(storage, focusTab = true) }
     }
 
-    // ---- The 0.198.0/0.199.0 follow-up: one screenshot per new state, both palettes (CLAUDE.md design rules). ----
-
-    /** Care's Routines with one routine skipped for the day (Today tab). */
     @Test
     fun careRoutinesSkipped() = listOf(false, true).forEach { dark -> care("care-routines-skipped-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.ROUTINES, height = 1500, dark = dark, skipOne = true) }
 
-    /** Care's Routines on the Yesterday tab (a tap on the tab). */
     @Test
     fun careRoutinesYesterday() = listOf(false, true).forEach { dark ->
         care("care-routines-yesterday-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.ROUTINES, height = 1000, dark = dark, skipOne = true, interact = { scene ->
@@ -2539,7 +2403,6 @@ class ScreenshotTest {
         })
     }
 
-    /** A bill opened (a tap on its row): "Paid, record it" and the rest of its keys, in both palettes. */
     @Test
     fun mintBillOpened() = listOf(false, true).forEach { dark ->
         mint("mint-bill-open-${if (dark) "dark" else "light"}", app.pokeplan.ui.mint.MintSection.BILLS, height = 1400, dark = dark, interact = { scene ->
@@ -2548,7 +2411,6 @@ class ScreenshotTest {
         })
     }
 
-    /** The two ways a hold-to-confirm key shows: the filling key, and the Reduce motion one before and after its first tap. */
     @Test
     fun holdToConfirmKeys() = listOf(false, true).forEach { dark ->
         render("hold-key-${if (dark) "dark" else "light"}", height = 700, minBytes = 1_000, interact = { scene -> scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(270f, 200f)); scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(270f, 200f)) }) {
@@ -2561,7 +2423,6 @@ class ScreenshotTest {
         }
     }
 
-    /** A task's Edit tab, which ends with Won't do, Duplicate and Delete in one row. */
     @Test
     fun planTaskEditTab() = listOf(false, true).forEach { dark ->
         val store = started()
@@ -2584,7 +2445,6 @@ class ScreenshotTest {
         override fun applyChosen(passphrase: String?, onDone: (String) -> Unit) {}
     }
 
-    /** Backup off the phone: not set up, the setup form, a healthy copy, an old copy, and a folder that is gone. */
     @Test
     fun offPhoneBackupCard() = listOf(false, true).forEach { dark ->
         val now = clock.nowMillis()
@@ -2604,7 +2464,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The choice after a damaged database with no backup. */
     @Test
     fun recoveryChoiceScreen() = listOf(false, true).forEach { dark ->
         render("recovery-choice-${if (dark) "dark" else "light"}", height = 1000) {
@@ -2612,7 +2471,6 @@ class ScreenshotTest {
         }
     }
 
-    /** The accordion that folds a module page's party perks: folded, and open (both palettes). */
     @Test
     fun accordion() = listOf(false, true).forEach { dark ->
         render("accordion-${if (dark) "dark" else "light"}", height = 400) {
@@ -2624,7 +2482,6 @@ class ScreenshotTest {
             } }
         }
     }
-    /** Shared bills with balances (the longest name and amount on the row) and a history, both palettes. */
     @Test
     fun mintSharedBills() {
         mint("mint-shared", app.pokeplan.ui.mint.MintSection.SHARED, height = 1700, settings = { m ->
@@ -2634,7 +2491,6 @@ class ScreenshotTest {
         })
     }
 
-    /** Notifications with both permissions blocked, and Privacy and access with a phone lock, both palettes, at 360 dp and large text. */
     @Test
     fun settingsBlockedAndLocks() {
         val phone = object : app.pokeplan.ui.PhoneState {

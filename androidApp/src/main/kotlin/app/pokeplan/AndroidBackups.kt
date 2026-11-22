@@ -14,13 +14,6 @@ import app.pokeplan.ui.BackupEntry
 import app.pokeplan.ui.OffPhoneState
 import app.pokeplan.ui.StagedBackup
 
-/**
- * Backups for the player (REP-008, DATA_AND_MIGRATIONS.md section 10): the app's daily copies, a copy saved anywhere as one file through the
- * phone's file picker, and restoring either. Created in `onCreate`, before the activity starts, because the pickers are registered here.
- *
- * A chosen file is read whole and checked ([BackupBundle.stage]) before the player is asked anything, then swapped in by one transaction that
- * keeps the documents it replaces ([app.pokeplan.data.LiveDocuments.replaceAll]); nothing is changed by a file that fails a check.
- */
 class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
     private val tag = "AndroidBackups"
     private var pendingText: String? = null
@@ -47,7 +40,6 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
         stage(text, done)
     }
 
-    /** Checks [text] whole; a file that passes is held for [applyChosen]. */
     private fun stage(text: String, done: (StagedBackup?, String?) -> Unit) {
         when (val result = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)) {
             is BackupBundle.Staged.Ready -> { staged = result; done(StagedBackup(result.createdAtMillis, result.documents.keys.sorted(), result.needsPassphrase), null) }
@@ -55,7 +47,6 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
         }
     }
 
-    // The folder for the copies off the phone (REP-034): picked once, kept by Android until the player stops.
     private var passphraseForFolder: String? = null
     private var onFolder: ((String) -> Unit)? = null
 
@@ -68,7 +59,6 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
         }.onFailure { done("That folder cannot be kept for later. Choose another one."); return@registerForActivityResult }
         val previous = OffPhone.treeOf(activity)
         Thread {
-            // Stretching the passphrase twice takes a moment on a phone: off the main thread.
             val note = if (!OffPhone.configure(activity, uri, pass)) "This phone could not keep the passphrase safely, so the copies were not set up." else OffPhone.run(activity, force = true)
             if (previous != null && previous != uri) runCatching { activity.contentResolver.releasePersistableUriPermission(previous, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION) }
             activity.runOnUiThread { done(note) }
@@ -131,7 +121,6 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
         val s = store ?: return onDone("The data could not be opened.")
         val keys = listOfNotNull(s.mintCipher?.let { LiveDocuments.MINT to it }, s.healCipher?.let { LiveDocuments.HEAL to it }).toMap()
         val sealer = Pbkdf2Sealer()
-        // Stretching a passphrase takes a moment on a phone, so it is done off the main thread; the picker opens when it is ready.
         Thread {
             val note = runCatching {
                 val docs = (if (millis != null) backups?.documentsOf(millis) else s.live.snapshot()) ?: return@runCatching "That backup is gone." to null
@@ -167,7 +156,6 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
         }.start()
     }
 
-    /** A restore that could not bring everything back says which modules still hold what they held before, so nobody takes a mixed save for a whole one. */
     private fun restoredNote(left: List<String>): String {
         val names = left.map { if (it == LiveDocuments.SAVE) "Plan and Pokémon" else it.replaceFirstChar(Char::uppercase) }
         return "Restored. What was here is kept aside." + if (names.isEmpty()) "" else " Not in this backup, so left as ${if (names.size == 1) "it was" else "they were"}: ${names.joinToString(", ")}."

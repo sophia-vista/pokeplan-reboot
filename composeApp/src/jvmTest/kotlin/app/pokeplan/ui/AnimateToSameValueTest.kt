@@ -8,11 +8,6 @@ import kotlinx.coroutines.withContext
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-/**
- * Why the launcher's Pokémon went tile by tile (0.221.0): the walk set the ghost fade with `fade.animateTo(1f, tween(160))` before every step, and an
- * animation to the value an Animatable already has still waits out its whole time. The walk now sets the fade beside the step and only when it changes
- * (`Town.kt`, `roamFloor`); this keeps the fact on record.
- */
 class AnimateToSameValueTest {
     private class Clock : MonotonicFrameClock {
         var nanos = 0L
