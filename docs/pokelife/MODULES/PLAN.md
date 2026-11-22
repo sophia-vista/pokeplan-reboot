@@ -252,6 +252,8 @@ Shared reminder behavior is specified exclusively in `../ARCHITECTURE/INTEGRATIO
 
 ## 8. Calendar integration
 
+A week starts on **Monday** by default. Settings → General has a "Week starts on Monday" switch; turning it off starts weeks on Sunday, and the Calendar's month grid and the launcher widget's week row follow it (`AppData.Preferences.weekStart`).
+
 ### 8.1 External calendars
 
 "Import" means choosing **which device calendars appear** in PLAN's Calendar; nothing is copied into PLAN, no task or PLAN event is made from an external event, and nothing is written back. PLAN tasks, PLAN events and external events each have their own look and label (not colour alone).
