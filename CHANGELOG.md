@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.231.0
+
+Every species and every regional form obtainable (REP-044 first slice): the Mothim evolution fix, regional forms from wild Finds, Galar's three birds and Mega Stones. No reward-rule change: World payments are outside the reward engine (docs/economy.md says so), no reward-engine outcome changed, `RewardRules.VERSION` stays and no golden vector was regenerated. No schema change.
+
+- **All 1,025 species and 57 regional forms now have a route.** Module eggs and evolution cover every default form, WORLD wild Finds in a region's layer give the 57 regional forms, and quests and WORLD legends give the 125 legendary, mythical, Ultra Beast and Paradox species.
+- **Mothim can be reached.** In `EvolutionRules.applicable`, a Pokémon in its species' default form now keeps the generic (`requiredForm == null`) evolutions beside its own form rows, so Burmy's Wormadam cloak rows no longer hide the Mothim branch (#414).
+- **A wild Find keeps its home region's form.** `RegionalForms` maps a regional form to its layer (Alolan to Alola, Galarian to Galar, Hisuian to Hisui, Paldean to Paldea, White-Striped Basculin to Hisui); the Find carries the form (`Find.formIdentifier`, `WorldEvent.Found.formIdentifier`) and recruiting it grants that form. The wild tables gained 15 species, so every regional form now has a home-layer encounter: Alola (Raticate, Sandshrew, Vulpix, Grimer), Galar (Meowth, Ponyta, Slowpoke, Farfetch'd, Corsola, Zigzagoon, Darumaka, Stunfisk), Hisui (Voltorb, Zorua) and Paldea (Tauros, its three breeds); every one is in that game region's dex.
+- **Nine blocked final evolutions open up:** Obstagoon, Perrserker, Cursola, Sirfetch'd, Runerigus, Basculegion, Sneasler, Overqwil and Clodsire now have their regional pre-evolution; Mothim is the tenth.
+- **Galar's three birds are legend quests.** Clearing Slumbering Weald, Dusty Bowl and Galar Mine No. 2 three times each grants Galarian Articuno, Zapdos and Moltres, with no Guardian gate; `LegendQuest.form` stores the granted form and `worldLegends` avoids a duplicate of the same species and form.
+- **Mega Stones have sources.** All 99 Mega forms' stones are sold on the Kecleon Shop's own always-sold Mega Stones shelf for 2,000 Poké each (ten to a page in Town; the daily five shelf never carries them), and can drop when a silver (3%) or gold (10%) treasure box is opened, only a stone not owned yet. The form dex counts the Mega form while its Pokémon holds the stone, so every Mega form can now be shown and collected.
+- **Tests:** `EvolutionRulesTest.burmyKeepsBothTheWormadamCloaksAndTheMothimBranch`, the new `world-core` `ReachabilityTest` (all non-special species, all regional forms, White-Striped Basculin, the ten formerly missing species and the wild-form mapping), `KecleonShopTest.everyMegaStoneIsAlwaysSoldOnItsOwnShelf` and `WorldStoreTest`'s Galar birds, regional find recruitment and gold-box Mega Stone tests. `jvmTest` (except composeApp, which needs libGL) and `compileKotlinWasmJs` pass.
+
 ## 0.230.0
 
 - **The app updates itself (REP-075).** Me → Settings → About has an Updates box: opening Me checks the rolling "latest"

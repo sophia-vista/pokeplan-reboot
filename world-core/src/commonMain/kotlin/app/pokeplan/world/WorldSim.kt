@@ -9,7 +9,7 @@ import kotlin.random.Random
 
 sealed interface WorldEvent {
     data class FloorCleared(val dungeonId: String, val floor: Int) : WorldEvent
-    data class Found(val speciesId: Int, val dungeonId: String, val floor: Int) : WorldEvent
+    data class Found(val speciesId: Int, val dungeonId: String, val floor: Int, val formIdentifier: String? = null) : WorldEvent
     data class Item(val itemId: String, val count: Int) : WorldEvent
     data class Poke(val amount: Int) : WorldEvent
     data class Treasure(val tier: Int) : WorldEvent
@@ -176,7 +176,7 @@ object WorldSim {
         var kind = JournalLine.KIND_NOTE
         var place = ""
         val text = when (event) {
-            is WorldEvent.Found -> { kind = JournalLine.KIND_FIND; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title met a ${Dex.species(event.speciesId).name} on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name}." }
+            is WorldEvent.Found -> { kind = JournalLine.KIND_FIND; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title met a ${RegionalForms.displayName(event.speciesId, event.formIdentifier)} on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name}." }
             is WorldEvent.Milestone -> { kind = JournalLine.KIND_MILESTONE; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title reached floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and was rewarded." }
             is WorldEvent.Cleared -> { kind = JournalLine.KIND_CLEAR; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title cleared ${Dungeons.byId(event.dungeonId)?.name}." }
             is WorldEvent.FloorEvent -> { if (event.userName == null) return null; kind = JournalLine.KIND_EVENT; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "${event.kind.title}: ${event.userName} ${event.kind.opened} on floor ${event.floor} of $place (${event.gave})." }
@@ -252,8 +252,9 @@ object WorldSim {
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
         if (!partial) findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + (if (modifier == DungeonModifier.CURIOUS) DungeonModifiers.FIND_PERMILLE else 0) + d.legendFindPermille(dungeon))?.let { species ->
-            events += WorldEvent.Found(species, dungeon.id, floor)
-            d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
+            val form = RegionalForms.formFor(species, dungeon.layer, random)
+            events += WorldEvent.Found(species, dungeon.id, floor, form)
+            d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at, form), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }
         d = Choices.expire(d, at)
         if (!partial) Choices.kindAt(teamId, trip, floor, index)?.let { ck ->

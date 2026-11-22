@@ -34,7 +34,7 @@ object PaldeaDungeons {
         DungeonDef(
             "asado-desert", "Asado Desert", WorldRegion.GREENLANDS, floors = 14, favored = setOf(PokemonType.GROUND, PokemonType.ROCK, PokemonType.FIRE),
             baseFloorSeconds = 7200, needs = ExplorerRank.GOLD, layer = P, chapter = 3,
-            wild = listOf(WildEntry(551, 4), WildEntry(843, 4), WildEntry(331, 4), WildEntry(449, 3), WildEntry(328, 3), WildEntry(335, 2), WildEntry(336, 2), WildEntry(324, 2, fromFloor = 5), WildEntry(322, 3), WildEntry(951, 2, fromFloor = 3), WildEntry(552, 2, fromFloor = 7), WildEntry(749, 2), WildEntry(450, 1, fromFloor = 10), WildEntry(330, 1, fromFloor = 12)),
+            wild = listOf(WildEntry(551, 4), WildEntry(843, 4), WildEntry(331, 4), WildEntry(449, 3), WildEntry(328, 3), WildEntry(335, 2), WildEntry(336, 2), WildEntry(324, 2, fromFloor = 5), WildEntry(322, 3), WildEntry(951, 2, fromFloor = 3), WildEntry(552, 2, fromFloor = 7), WildEntry(749, 2), WildEntry(450, 1, fromFloor = 10), WildEntry(330, 1, fromFloor = 12), WildEntry(128, 2, fromFloor = 4)),
             milestones = mapOf(7 to MilestoneReward(Items.GIMMIGHOUL_COIN, 60), 14 to MilestoneReward(Items.RARE_CANDY, 4, poke = 900)),
         ),
         DungeonDef(

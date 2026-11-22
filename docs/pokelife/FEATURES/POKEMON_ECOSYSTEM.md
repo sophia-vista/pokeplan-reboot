@@ -118,6 +118,8 @@ Regional forms, gender differences, cosmetic forms, battle forms, and special fo
 
 A regional Pokédex can list a form independently where canon supports it, but the global collection must not duplicate the underlying owned instance. Form discovery and shiny state are tracked on the owned instance and indexed in the Pokédex.
 
+A regional form is persistent owned identity, and it has an acquisition route: a wild Find in the region's layer is that region's form, and recruiting it grants the form (section 9.4); the Galarian birds are legend quests of Galar (section 10.1). Every regional form has a route, and none is left unobtainable.
+
 ### 3.4 Catalog coverage and fallbacks
 
 The target catalog covers official Pokémon species and relevant official forms. Asset availability does not define species availability. Missing sprites or portraits must use the shared asset fallback policy in `FEATURES/ASSETS_AND_AUDIO.md`; they must never create substitute species identities or block acquisition.
@@ -341,6 +343,8 @@ CARE private journal, Diary Card, mood, urges, therapy/skills responses and othe
 
 WORLD uses Exploration Finds, deterministic floor encounters, authored story recruitment and guardian/boss outcomes (section 14). A Find is a discovery record, not yet an owned Pokémon; recruitment explicitly converts it into one canonical owned instance. Seen/discovered state can precede owned state. A Find or recruit action cannot silently replace a party member or change the global buddy.
 
+A Find keeps the form of the region it was found in: a wild find in Alola carries the Alolan form (Raticate, Rattata, Sandshrew, Vulpix, Grimer), one in Galar the Galarian form (Meowth, Ponyta, Slowpoke, Farfetch'd, Corsola, Zigzagoon, Darumaka, Stunfisk), one in Hisui the Hisuian form (Voltorb, Zorua, and White-Striped Basculin) and one in Paldea the Paldean form (Tauros, all three breeds). The Find's form is stored with it (`Find.formIdentifier`) and recruiting it grants that form; every wild species in a layer is in that region's dex and takes its own regional form where its species has one.
+
 ### 9.5 Other module acquisition families
 
 The acquisition identity of each module is in the matrix of section 10.1; each module specification defines its own exact eligibility, pacing, caps and presentation. The shared system owns the Egg/recruitment record, reward settlement, canonical ownership, dex update and anti-duplication guarantees.
@@ -366,6 +370,8 @@ The acquisition identity of each module is in the matrix of section 10.1; each m
 | LINK | Postcard Trail; Friend Safari (LINK.md 9.5) | Approved egg/discovery/reward event | Distinct follow-up completions; no contact identifiers or message content |
 | GEAR | None | No Pokémon, egg, XP, currency or item rewards | Helper Pokémon are visual-only; Ranger-style capture minigame is entertainment only |
 | WORLD | Exploration Finds, encounters, expeditions, story/Guardian recruitment | Find record and/or canonical owned instance | WORLD owns adventure progress and Exploration Rank |
+
+The WORLD row's rarer identities: **regional forms arrive as Finds of their home layer** (an Alolan form is found in Alola, a Galarian form in Galar, a Hisuian form in Hisui, a Paldean form in Paldea; recruiting the Find grants the form); **the three Galarian birds are Galar legend quests** (Galarian Articuno, Zapdos and Moltres, three clears each, no Guardian gate); and **Mega Stones are items**, always sold at the Kecleon Shop on their own shelf and sometimes found in silver and gold treasure boxes. Legendaries and mythicals never appear as ordinary floor Finds; quests and Guardians give them.
 
 ### 10.2 Module-specific acquisition rules
 
@@ -692,10 +698,10 @@ Every item definition must declare at least one valid acquisition source before 
 
 | Source | Examples | Rules |
 |---|---|---|
-| Expedition loot | Dungeon floor finds, treasure boxes, hidden rooms, environmental nodes | WORLD-owned event; deterministic reward tables with disclosed chance-based entries; no expiry |
+| Expedition loot | Dungeon floor finds, treasure boxes (items, rarely a Mega Stone), hidden rooms, environmental nodes | WORLD-owned event; deterministic reward tables with disclosed chance-based entries; no expiry |
 | Mission/request rewards | Guild requests, rescue missions, regional milestones | Fixed or clearly described reward; replay cannot duplicate a claim |
 | Boss/Guardian rewards | Guardian investigations, raid-like encounters, Rogue Mega challenges | Encounter settlement is idempotent; rare rewards remain obtainable through repeatable or permanent paths |
-| Shops and facilities | General store, specialty shop, evolution/item exchange, training facility | Purchases spend shared Poké atomically; prices and stock rules are explicit; no paid currency |
+| Shops and facilities | General store, specialty shop (every evolution stone and Mega Stone), evolution/item exchange, training facility | Purchases spend shared Poké atomically; prices and stock rules are explicit; no paid currency |
 | Crafting/refinement | Apricorns to Balls, berries to meals/remedies, shards/materials to approved items/TMs | Recipe catalog, ingredient costs and output are deterministic; no recipe can consume held equipment |
 | Foraging and gathering | Berries, Apricorns, shards, fossils, materials, treasure | WORLD gathering/expedition systems; controlled output; no ability-based infinite farming |
 | Research and discovery | Pokédex milestones, field research, fossils, form discoveries | Shared research service issues reward events; no sensitive real-life data as eligibility or quantity input |
@@ -715,6 +721,7 @@ Every item definition must declare at least one valid acquisition source before 
 | Poké Balls | Shops, Apricorn crafting, missions, regional research | Stored as recruitment supplies; ball identity retained as provenance; no paid capture chance |
 | Berries and cooking ingredients | Berry Garden, foraging, expeditions, jobs, story rewards | Oran, Sitrus, Pecha, Cheri, Chesto, Rawst, Aspear, Leppa, Lum and other canonical varieties |
 | Shards, Plates and form-change items | Regional dungeons, legendary investigations, research, boss rewards, crafting | Species/form compatibility and canonical rules enforced |
+| Mega Stones | Kecleon Shop's always-sold Mega Stones shelf; silver and gold treasure boxes | One stone per Mega form (Primal Kyogre/Groudon are the Blue and Red Orb); the Pokémon whose Mega form it shows holds it and the form dex counts that form; a treasure box picks only a stone the player does not own yet |
 | Fossils and restoration materials | Fossil nodes, excavation missions, regional research | Restore at a WORLD facility; recruitment is a normal shared acquisition event |
 | Treasure and sellable collectibles | Expeditions, contests, jobs, exploration finds | Selling is optional and ledgered; do not create parallel currency |
 | Gimmick equipment | Campaign milestones, regional research, permanent challenge rewards, facilities | Unlocks access to a system; does not grant unlimited stacked power |
@@ -723,7 +730,7 @@ Every item definition must declare at least one valid acquisition source before 
 
 - Shops are WORLD facilities backed by shared Bag and Poké repositories.
 - Purchase is a single transaction: validate price/stock/capacity, debit Poké, grant item, append ledger entries; rollback all if any step fails.
-- No expiring offers, countdowns or login-timed deals. The Kecleon Shop has a fixed stock that is always sold (every evolution stone, the Link Cord, the Everstone, Gimmighoul Coins) and a daily shelf of five more items chosen for the player's local day; nothing is sold only on the shelf and every catalogue item comes round (`KecleonShop`, docs/economy.md).
+- No expiring offers, countdowns or login-timed deals. The Kecleon Shop has a fixed stock that is always sold (every evolution stone, every Mega Stone, the Link Cord, the Everstone, Gimmighoul Coins) and a daily shelf of five more items chosen for the player's local day; nothing is sold only on the shelf and every catalogue item comes round (`KecleonShop`, docs/economy.md). The Mega Stones are their own always-sold shelf, paged ten at a time, at 2,000 Poké each *(tune)*: the daily five never carries them, because the whole catalogue would take months to cycle. A silver or gold treasure box can also hold one (3% and 10%; only a stone the player does not own yet).
 - Two shops: the **Poké Mart**, the general store, its own section of the Pokémon tab (not in the Bag, not in World), selling Exp. Candy, Super Candy and berries; and the **Kecleon Shop**, the specialty shop in WORLD's Town, which sells no candy. Anything that grows one Pokémon (candies, stones, vitamins, mints, caps, held items) is priced generously, since a player keeps many Pokémon; permanent upgrades (WORLD's facilities, the Dojo) keep their prices (`Shop`, `KecleonShop`, docs/economy.md).
 - Essential evolution and progression materials must have a reliable path. Chance drops may supplement but cannot be the only route for an essential requirement.
 - Selling items is optional and never required to recover from ordinary play. Held items may be sold only after explicit confirmation and must be unequipped first; default UI should favor storage/equipment rather than liquidation.

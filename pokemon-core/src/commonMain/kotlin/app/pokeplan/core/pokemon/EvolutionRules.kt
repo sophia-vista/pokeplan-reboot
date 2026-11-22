@@ -36,7 +36,11 @@ object EvolutionRules {
 
     fun applicable(p: OwnedPokemon): List<Evolution> {
         val all = Dex.evolutionsFrom(p.speciesId)
-        val exact = all.filter { it.requiredForm == p.formIdentifier }
+        // The default form keeps every generic row beside its own form-specific rows: Wormadam's
+        // cloak rows must not shadow Burmy's generic branch (Mothim).
+        val default = Dex.defaultForm(p.speciesId).identifier
+        val exact = if (p.formIdentifier == default) all.filter { it.requiredForm == null || it.requiredForm == default }
+        else all.filter { it.requiredForm == p.formIdentifier }
         return exact.ifEmpty { all.filter { it.requiredForm == null } }
     }
 

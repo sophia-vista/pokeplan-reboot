@@ -172,12 +172,12 @@ private fun GameStore.worldGuardian() {
 
 private fun GameStore.worldLegends() {
     for (quest in app.pokeplan.world.Legends.ready(data.world)) {
-        val own = app.pokeplan.core.dex.Dex.defaultForm(quest.speciesId).identifier
+        val form = quest.form ?: app.pokeplan.core.dex.Dex.defaultForm(quest.speciesId).identifier
         update { d ->
             if (quest.id in d.world.legends) d
             else {
                 val marked = d.copy(world = d.world.copy(legends = d.world.legends + quest.id))
-                if (marked.player.pokemon.none { it.speciesId == quest.speciesId && it.form.identifier == own }) grantIn(marked, quest.speciesId, GameStore.WORLD_SOURCE).first else marked
+                if (marked.player.pokemon.none { it.speciesId == quest.speciesId && it.form.identifier == form }) grantIn(marked, quest.speciesId, GameStore.WORLD_SOURCE, form = form).first else marked
             }
         }
     }
@@ -309,8 +309,8 @@ fun GameStore.worldRecruit(index: Int): OwnedPokemon? {
     val find = data.world.finds.getOrNull(index) ?: return null
     var mon: OwnedPokemon? = null
     update { d ->
-        if (d.world.finds.getOrNull(index)?.speciesId != find.speciesId) d
-        else grantIn(d.copy(world = d.world.withoutFind(index)), find.speciesId, GameStore.WORLD_SOURCE, Origin.How.WORLD).also { mon = it.second }.first
+        if (d.world.finds.getOrNull(index) != find) d
+        else grantIn(d.copy(world = d.world.withoutFind(index)), find.speciesId, GameStore.WORLD_SOURCE, Origin.How.WORLD, form = find.formIdentifier).also { mon = it.second }.first
     }
     return mon
 }
@@ -398,6 +398,10 @@ fun GameStore.worldOpenTreasure(tier: Int): Map<String, Int> {
     fun add(id: String, n: Int) { found[id] = (found[id] ?: 0) + n }
     repeat(1 + tier) { add(Items.berry(listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)), 1) }
     if (tier >= 2 && random.nextInt(100) < (if (tier >= 3) 35 else 15)) add(Items.RARE_CANDY, 1)
+    if (tier >= 2 && random.nextInt(100) < (if (tier >= 3) 10 else 3)) {
+        val missing = Items.megaStones.filter { (data.player.inventory[it]) == 0 }
+        add((missing.ifEmpty { Items.megaStones }).random(random), 1)
+    }
     worldPay("World: treasure", "world:treasure:$tier:$nowMillis", "treasure:$tier", "treasure") { d ->
         d.copy(world = d.world.copy(
             treasure = d.world.treasure + (tier to d.world.treasure.getValue(tier) - 1),

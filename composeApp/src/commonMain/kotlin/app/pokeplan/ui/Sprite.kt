@@ -49,6 +49,14 @@ internal suspend fun decodeAsset(path: String): ImageBitmap? = withContext(Dispa
 /** The real game icon of a bag item (Rare Candy, a berry, an evolution stone...). Draws nothing if there is no icon for [itemId]. */
 @Composable
 fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, description: String? = itemId) {
+    // A Mega Stone has no item icon in the sprite set: it shows the Mega form it unlocks.
+    if (itemId.startsWith("mega-stone-")) {
+        val form = app.pokeplan.core.pokemon.Items.megaStoneForm(itemId)
+        if (form != null) {
+            Sprite(form.id, false, description ?: app.pokeplan.core.pokemon.Items.name(itemId), modifier, size)
+            return
+        }
+    }
     val path = if (itemId.startsWith("pmd2-")) "files/pmditems/$itemId.png" else "files/items/$itemId.png"
     val bitmap = rememberCachedImage(cache, path) { decodeAsset(path) }
     Box(modifier.size(size)) {

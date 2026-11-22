@@ -92,6 +92,18 @@ class EvolutionRulesTest {
     }
 
     @Test
+    fun burmyKeepsBothTheWormadamCloaksAndTheMothimBranch() {
+        val male = EvolutionRules.options(pokemon(412, level = 20, gender = Gender.MALE), ctx(12, candy))
+        val mothim = male.filter { it.target.speciesId == 414 }
+        assertEquals(1, mothim.size, "male Burmy has a Mothim option: ${male.map { it.target.identifier }}")
+        assertTrue(mothim.single().available, mothim.single().missing.toString())
+        assertTrue(male.filter { it.target.speciesId == 413 }.all { !it.available }, "Wormadam is female")
+        val female = EvolutionRules.options(pokemon(412, level = 20, gender = Gender.FEMALE), ctx(12, candy))
+        assertTrue(female.filter { it.target.speciesId == 413 }.all { it.available }, "female Burmy gets the cloaks")
+        assertTrue(female.none { it.target.speciesId == 414 && it.available }, "Mothim is male")
+    }
+
+    @Test
     fun wurmpleBranchIsFixedByPersonality() {
         val low = EvolutionRules.options(pokemon(Ids.WURMPLE, level = 7, personality = 10), ctx(12, candy)).single()
         val high = EvolutionRules.options(pokemon(Ids.WURMPLE, level = 7, personality = 60), ctx(12, candy)).single()

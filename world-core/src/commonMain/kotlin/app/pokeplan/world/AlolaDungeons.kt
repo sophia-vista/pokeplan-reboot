@@ -10,7 +10,7 @@ object AlolaDungeons {
         DungeonDef(
             "verdant-cavern", "Verdant Cavern", WorldRegion.UNDERGROUND, floors = 5, favored = setOf(PokemonType.NORMAL, PokemonType.GROUND, PokemonType.POISON),
             baseFloorSeconds = 1800, needs = ExplorerRank.NORMAL, layer = A, chapter = 1,
-            wild = listOf(WildEntry(734, 5), WildEntry(19, 4), WildEntry(41, 4), WildEntry(52, 3), WildEntry(50, 3, fromFloor = 2), WildEntry(731, 2, fromFloor = 2), WildEntry(10, 2, fromFloor = 3), WildEntry(735, 1, fromFloor = 4)),
+            wild = listOf(WildEntry(734, 5), WildEntry(19, 4), WildEntry(41, 4), WildEntry(52, 3), WildEntry(50, 3, fromFloor = 2), WildEntry(731, 2, fromFloor = 2), WildEntry(10, 2, fromFloor = 3), WildEntry(735, 1, fromFloor = 4), WildEntry(20, 2, fromFloor = 3), WildEntry(88, 2, fromFloor = 4)),
             milestones = mapOf(3 to MilestoneReward(Items.berry("sweet"), 2), 5 to MilestoneReward(Items.RARE_CANDY, 1, poke = 100)),
         ),
         DungeonDef(
@@ -40,7 +40,7 @@ object AlolaDungeons {
         DungeonDef(
             "mount-lanakila", "Mount Lanakila", WorldRegion.FROZEN, floors = 16, favored = setOf(PokemonType.ICE, PokemonType.ROCK, PokemonType.FIGHTING),
             baseFloorSeconds = 9000, needs = ExplorerRank.GOLD, layer = A, chapter = 4,
-            wild = listOf(WildEntry(361, 4), WildEntry(582, 3), WildEntry(215, 3), WildEntry(739, 3), WildEntry(225, 2), WildEntry(359, 2, fromFloor = 5), WildEntry(583, 2, fromFloor = 6), WildEntry(740, 2, fromFloor = 8), WildEntry(362, 2, fromFloor = 9), WildEntry(461, 2, fromFloor = 10), WildEntry(478, 1, fromFloor = 12)),
+            wild = listOf(WildEntry(361, 4), WildEntry(582, 3), WildEntry(215, 3), WildEntry(739, 3), WildEntry(225, 2), WildEntry(359, 2, fromFloor = 5), WildEntry(583, 2, fromFloor = 6), WildEntry(740, 2, fromFloor = 8), WildEntry(362, 2, fromFloor = 9), WildEntry(461, 2, fromFloor = 10), WildEntry(478, 1, fromFloor = 12), WildEntry(27, 2, fromFloor = 5), WildEntry(37, 2, fromFloor = 5)),
             milestones = mapOf(8 to MilestoneReward(Items.berry("dry"), 4), 16 to MilestoneReward(Items.RARE_CANDY, 5, poke = 1_400)),
         ),
         DungeonDef(
