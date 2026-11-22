@@ -302,12 +302,29 @@ class HuaweiScreenService : AccessibilityService() {
             if (isHealthPage(detail)) { note("${wanted.title}: tap opened nothing"); return null }
         }
         // Read every Huawei Health window, not only the active one: a web page or a sheet may draw in a window of its own.
-        val shown = captureAll()
+        var shown = captureAll()
         // Still no words: the page may be a window of its own (a dialog or sheet) or a web page that is still drawing.
-        if (shown == null || shown.nodes.none { it.text.isNotBlank() || it.description.isNotBlank() }) note("${wanted.title}: no words yet${structureSummary()}${windowSummary()}")
+        if (shown == null || shown.nodes.none { it.text.isNotBlank() || it.description.isNotBlank() }) {
+            note("${wanted.title}: no words yet${structureSummary()}${windowSummary()}")
+            // Some cards open a blank preview first (Heart and Emotional wellbeing in the 22 November 2026 probe): close it and tap the card once more.
+            performGlobalAction(GLOBAL_ACTION_BACK)
+            delay(BACK_WAIT_MS)
+            val again = refind() ?: huaweiRoot()?.let { r -> if (isHealthPage(r)) findCard(r, wanted) else null }
+            if (again != null) {
+                // A real touch on the card's title, not an accessibility click on the card: the Heart and Emotional wellbeing cards opened a blank window for the click (probe 13).
+                if (touch(again) || tap(again)) {
+                    delay(PAGE_WAIT_MS)
+                    detail = awaitDetail() ?: detail
+                    shown = captureAll()
+                    note("${wanted.title}: retried, ${if (shown?.nodes?.any { it.text.isNotBlank() || it.description.isNotBlank() } == true) "the page shows words" else "still no words"}")
+                } else note("${wanted.title}: retried, the touch and click were refused")
+            } else note("${wanted.title}: retried, the card was not found")
+        }
         note("${wanted.title}: opened ${page.ifBlank { "a page" }} (${shown?.nodes?.size ?: 0} elements)")
         val exercise = HuaweiWalk.canonical(wanted.title) == HuaweiWalk.canonical("Exercise records")
-        scrollThrough(HuaweiWalk.pageScrolls(wanted, scan)) {
+        // Emotional wellbeing's pills sit just below its chart: read them before scrolling, or the page scroll moves them away.
+        val pillsFirst = wanted.pills.isNotEmpty()
+        if (!pillsFirst) scrollThrough(HuaweiWalk.pageScrolls(wanted, scan)) {
             exercise && HuaweiWalk.stopExercise(it, known, scan, System.currentTimeMillis(), TimeZone.currentSystemDefault())
         }
         // A page with Day / Week / Month / Year tabs (the Sleep page): also capture its Week view, which is a tab of the same page, so Back below still leaves it.
@@ -319,6 +336,7 @@ class HuaweiScreenService : AccessibilityService() {
         // Each pill is its own tab with its own All data: open it, read it and come back to the card page before the next one.
         var pillsOpened = 0
         for (pill in wanted.pills) if (openPill(wanted, pill)) pillsOpened++
+        if (pillsFirst) scrollThrough(HuaweiWalk.pageScrolls(wanted, scan))
         // Other menu items (Cycle Calendar's Period records) before the page's own All data; each comes back to the card page.
         for (item in wanted.menuItems) openMenuItem(wanted, item)
         // The page's own All data last. A page whose pills opened gave each pill its own All data; if no pill was found, still open the page's.
@@ -377,7 +395,20 @@ class HuaweiScreenService : AccessibilityService() {
     /** Taps the pill, captures what it shows and its own All data, then comes back to the card page so the next pill can be tapped; true when it opened. */
     private suspend fun openPill(wanted: HuaweiWalk.Card, words: List<String>): Boolean {
         val name = words.first()
-        val pill = pillNode(words) ?: run { note("${wanted.title}: pill $name not found${windowSummary()}"); return false }
+        val pill = pillNode(words)
+        if (pill == null) {
+            // The Emotional wellbeing page can be out of reach of accessibility (probe 13); its two pills sit side by side at about two thirds of the screen.
+            if (HuaweiWalk.canonical(wanted.title) == HuaweiWalk.canonical("Emotional wellbeing") && tapAtFraction(if (words.any { it.startsWith("Emotion", true) }) 0.29f else 0.73f, 0.66f)) {
+                delay(PAGE_WAIT_MS)
+                val shown = captureAll()
+                note("${wanted.title}: pill $name tapped by position (${shown?.nodes?.size ?: 0} elements)")
+                if (wanted.allData) openAllData(wanted)
+                backToCardPage()
+                return true
+            }
+            note("${wanted.title}: pill $name not found${windowSummary()}")
+            return false
+        }
         if (!tap(pill)) { note("${wanted.title}: pill $name tap refused"); return false }
         delay(PAGE_WAIT_MS)
         val shown = captureAll()
@@ -439,14 +470,36 @@ class HuaweiScreenService : AccessibilityService() {
 
     /** Waits for [label] in the menu that has just been opened; a web page's menu draws a moment later. */
     private suspend fun awaitMenuItem(label: String): AccessibilityNodeInfo? {
-        var item = menuItem(label)
+        var item = menuItem(label) ?: periodItem(label)
         repeat(MENU_TRIES) {
             if (item != null) return item
             delay(DETAIL_POLL_MS)
-            item = menuItem(label)
+            item = menuItem(label) ?: periodItem(label)
             captureAll()
         }
         return item
+    }
+
+    /** A menu item about periods whose wording is not exactly [label] ("Period record", "Period history"), by its text or description. Only a pop-up's own item (the page's "Period started" text is not one). */
+    private fun periodItem(label: String): AccessibilityNodeInfo? {
+        if (!label.contains("period", ignoreCase = true)) return null
+        return huaweiRoots().firstNotNullOfOrNull { r ->
+            visible(r).firstOrNull { n ->
+                (n.id() == "list_popup_window_item_text" || n.id() == "list_popup_window_item") &&
+                    listOf(n.text, n.contentDescription).any { it?.toString()?.contains("period", ignoreCase = true) == true }
+            }
+        }
+    }
+
+    /** A real long press at the middle of [node], for a web page whose menu button ignores a tap; false when it cannot be sent. */
+    private fun longPress(node: AccessibilityNodeInfo): Boolean {
+        val r = Rect()
+        node.getBoundsInScreen(r)
+        if (r.width() <= 0 || r.height() <= 0) return false
+        if (serviceInfo?.capabilities?.and(android.accessibilityservice.AccessibilityServiceInfo.CAPABILITY_CAN_PERFORM_GESTURES) == 0) return false
+        val path = Path().apply { moveTo(r.exactCenterX(), r.exactCenterY()) }
+        val gesture = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0, LONG_PRESS_MS)).build()
+        return runCatching { dispatchGesture(gesture, null, null) }.getOrDefault(false)
     }
 
     /**
@@ -455,30 +508,43 @@ class HuaweiScreenService : AccessibilityService() {
      * toolbar is retried with a real touch.
      */
     private suspend fun openAllData(wanted: HuaweiWalk.Card, label: String = HuaweiWalk.ALL_DATA) {
-        // A web page (Weight, Cycle Calendar) draws its toolbar late: look for the button for a few seconds rather than once.
-        val button = findMenuButton()
-        if (button == null) { note("${wanted.title}: no menu button found${windowSummary()}"); return }
         val windowsBefore = windows.size
-        if (!tap(button)) { note("${wanted.title}: menu tap refused"); return }
-        delay(MENU_WAIT_MS)
-        captureAll() // the open menu, so its items show in the sample
-        var item = awaitMenuItem(label)
-        if (item == null) {
-            // A web page may take a touch where an accessibility click did nothing; its menu then draws slowly, so look for it for a few seconds.
-            val touched = touch(button)
-            if (touched) {
-                note("${wanted.title}: menu touched")
+        val button = findMenuButton()
+        var item: AccessibilityNodeInfo? = null
+        if (button == null) {
+            note("${wanted.title}: no menu button found${windowSummary()}")
+            // Heart and Emotional wellbeing draw their page out of reach of accessibility (probe 13): its toolbar is still at the top right, and the menu it opens is native and readable.
+            if (topRightMenuTap()) {
+                note("${wanted.title}: menu tapped at the top right")
+                item = awaitMenuItem(label)
+            }
+        } else {
+            if (!tap(button)) { note("${wanted.title}: menu tap refused"); return }
+            delay(MENU_WAIT_MS)
+            captureAll() // the open menu, so its items show in the sample
+            item = awaitMenuItem(label)
+            if (item == null) {
+                // A web page may take a touch where an accessibility click did nothing; its menu then draws slowly, so look for it for a few seconds.
+                val touched = touch(button)
+                if (touched) {
+                    note("${wanted.title}: menu touched")
+                    item = awaitMenuItem(label)
+                }
+            }
+            if (item == null && longPress(button)) {
+                // Cycle Calendar's web toolbar did not open its menu with a click or a tap in the 22 November 2026 probe: try a long press once.
+                note("${wanted.title}: menu long-pressed")
+                item = awaitMenuItem(label)
+            }
+            if (item == null && topRightMenuTap()) {
+                note("${wanted.title}: menu tapped at the top right")
                 item = awaitMenuItem(label)
             }
         }
         val choice = item
         if (choice == null) {
-            // Close a menu that opened (a second tap on the four-dots button, then Back for a pop-up window), so the next pill or menu item starts from the card page.
-            if (windows.size > windowsBefore) {
-                tap(button)
-                delay(MENU_WAIT_MS)
-                if (windows.size > windowsBefore) { performGlobalAction(GLOBAL_ACTION_BACK); delay(BACK_WAIT_MS) }
-            }
+            // Close a menu that opened (Back for a pop-up window), so the next pill or menu item starts from the card page.
+            if (windows.size > windowsBefore) { performGlobalAction(GLOBAL_ACTION_BACK); delay(BACK_WAIT_MS) }
             note("${wanted.title}: '$label' is not in the menu${windowSummary()}")
             return
         }
@@ -502,6 +568,31 @@ class HuaweiScreenService : AccessibilityService() {
         scrollThrough(HuaweiWalk.allDataBudget(wanted, scan)) {
             HuaweiWalk.stopAllData(it, wanted, known, scan, System.currentTimeMillis(), TimeZone.currentSystemDefault())
         }
+    }
+
+    /** A real tap at the top-right four-dots button, for a page whose toolbar accessibility cannot see (Heart and Emotional wellbeing in probe 13). */
+    private fun topRightMenuTap(): Boolean {
+        val dm = resources.displayMetrics
+        val density = dm.density.takeIf { it > 0f } ?: 1f
+        return tapAt(dm.widthPixels - (26 * density).toInt(), statusBarHeightPx() + (52 * density).toInt())
+    }
+
+    /** A real tap at a fraction of the screen, for a page whose controls accessibility cannot see. */
+    private fun tapAtFraction(x: Float, y: Float): Boolean {
+        val dm = resources.displayMetrics
+        return tapAt((dm.widthPixels * x).toInt(), (dm.heightPixels * y).toInt())
+    }
+
+    private fun tapAt(x: Int, y: Int): Boolean {
+        if (x <= 0 || y <= 0) return false
+        val path = Path().apply { moveTo(x.toFloat(), y.toFloat()) }
+        val gesture = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0, TOUCH_MS)).build()
+        return runCatching { dispatchGesture(gesture, null, null) }.getOrDefault(false)
+    }
+
+    private fun statusBarHeightPx(): Int {
+        val id = resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (id > 0) resources.getDimensionPixelSize(id) else (24 * resources.displayMetrics.density).toInt()
     }
 
     /** Opens an item of the card page's four-dots menu ("Period records"), captures it and comes back to the card page. */
@@ -651,6 +742,7 @@ class HuaweiScreenService : AccessibilityService() {
         const val DETAIL_WORDS = 4
         const val MENU_TRIES = 12
         const val TOUCH_MS = 60L
+        const val LONG_PRESS_MS = 800L
         const val TIMEOUT_MS = 420_000L
         const val TIMEOUT_ALL_MS = 900_000L
         const val MAX_TRIES = 4
