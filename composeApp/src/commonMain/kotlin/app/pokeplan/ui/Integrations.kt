@@ -57,7 +57,11 @@ interface HuaweiReader {
 
     fun clear()
 
-    fun walk(done: (String?) -> Unit)
+    /**
+     * Opens Huawei Health, walks it (INTEGRATIONS_AND_PRIVACY.md 5.2.2, rule 3) and comes back; screen reading is turned on first when [HuaweiReaderState.canSwitchItself]
+     * and is off again afterwards. [known] is what HEAL already holds, so a read skips what has nothing new. [done] gets null, or what stopped it in words, on the main thread.
+     */
+    fun walk(known: app.pokeplan.app.heal.HuaweiWalk.Known, done: (String?) -> Unit)
 
     fun turnOff()
 

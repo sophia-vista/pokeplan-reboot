@@ -149,6 +149,17 @@ enum class VitalType(val label: String, val unit: String) {
     SKIN_TEMPERATURE("Skin temperature", "°C"),
     STRESS("Huawei stress", ""),
     SLEEP_SCORE("Huawei sleep score", ""),
+
+    // From Huawei Health's All data pages (history, one row per day; 21 November 2026): the page gives a range or a length, so each end is its own reading.
+    SPO2_LOW("Blood oxygen, lowest", "%"),
+    SPO2_HIGH("Blood oxygen, highest", "%"),
+    SKIN_TEMPERATURE_LOW("Skin temperature, lowest", "°C"),
+    SKIN_TEMPERATURE_HIGH("Skin temperature, highest", "°C"),
+    SLEEP_LENGTH("Sleep length", "min"),
+
+    // Heart rate is kept as a range per day (owner, 21 November 2026), not as one entry per reading. [HEART_RATE] stays for what was saved before and for other providers.
+    HEART_RATE_LOW("Heart rate, lowest", "bpm"),
+    HEART_RATE_HIGH("Heart rate, highest", "bpm"),
 }
 
 @Serializable
