@@ -1146,16 +1146,15 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                             if (parsed.sumOf { it.second!! } != minor) { refused = "Split amounts must add up to the transaction."; return@FormSave }
                             parsed.map { (part, amount) -> TransactionSplit(part.categoryId, amount!!) }
                         } else emptyList()
-                        val saved = mint.updateTransaction(t.copy(
-                            amountMinor = minor, feeMinor = feeMinor, payee = payee, note = note, atMillis = at, accountId = accountId,
-                            categoryId = categoryId.takeIf { splits.isEmpty() }, splits = splits,
-                        ))
                         val share = if (t.type == TxType.EXPENSE && iouOn) Money.parse(iouAmount, t.currency) else 0L
-                        if (saved.record == null) refused = saved.refused
-                        else if (share == null) refused = "Check their share."
+                        if (share == null) refused = "Check their share."
                         else {
-                            refused = if (t.type == TxType.EXPENSE) mint.setIou(t.id, share, iouFor) else null
-                            if (refused == null) { editing = false; onDone() }
+                            // The amount and the IOU are checked and saved together, so a refusal leaves the record as it was.
+                            val saved = mint.updateTransaction(t.copy(
+                                amountMinor = minor, feeMinor = feeMinor, payee = payee, note = note, atMillis = at, accountId = accountId,
+                                categoryId = categoryId.takeIf { splits.isEmpty() }, splits = splits, iouMinor = share, iouFor = iouFor,
+                            ))
+                            if (saved.record == null) refused = saved.refused else { editing = false; onDone() }
                         }
                     }
                 }, ModuleAccent.MINT.accent)

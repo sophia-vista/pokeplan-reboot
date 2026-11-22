@@ -292,7 +292,7 @@ class MintStore(
             } == true)
             return Logged(null, "Repayments to this account must be allocated to its unpaid installment plans.")
         val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor,
-            iouMinor = iouMinor, iouFor = if (iouMinor > 0) iouFor.trim().split(' ', '\n', '\t').filter { it.isNotEmpty() }.joinToString(" ").take(MintRules.NAME_MAX) else "")
+            iouMinor = iouMinor, iouFor = if (iouMinor > 0) cleanName(iouFor) else "")
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }
         return Logged(tx, rewards = payForLog(tx))
@@ -301,12 +301,24 @@ class MintStore(
     /** Changes what was written down. The account's currency can not change under a record; a source of [TxSource.ADJUSTMENT] stays an adjustment. */
     fun updateTransaction(t: Transaction): Logged<Transaction> {
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
-        val next = t.copy(
+        val shaped = t.copy(
             planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, planAllocations = old.planAllocations,
             creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis, repaymentOf = old.repaymentOf,
             importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint,
             day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
+            iouFor = if (t.iouMinor > 0) cleanName(t.iouFor) else "",
         )
+        // A repayment is the player's own money coming back: it keeps no IOU of its own, stays in the expense's currency, and never exceeds what is still owed.
+        val parent = old.repaymentOf?.let { id -> data.transactions.firstOrNull { it.id == id } ?: return Logged(null, "The expense this repays is gone.") }
+        val next = if (parent == null) shaped else shaped.copy(iouMinor = 0, iouFor = "")
+        if (parent != null) {
+            val room = MintRules.iouOwed(data, parent) + if (old.status == TxStatus.VOIDED) 0 else old.amountMinor
+            if (next.amountMinor > room) return Logged(null, "Only " + Money.format(room, parent.currency) + " of that IOU is still owed.")
+            if (data.accounts.firstOrNull { it.id == next.accountId }?.currency != parent.currency) return Logged(null, "Put the repayment in an account in ${parent.currency}.")
+        }
+        // An IOU changed together with the amount is checked together, in this one save; it cannot go under what was already paid back, and clearing it takes its repayments.
+        val paid = if (old.repaymentOf == null) data.transactions.filter { it.repaymentOf == old.id && it.status != TxStatus.VOIDED }.sumOf { it.amountMinor } else 0L
+        if (next.iouMinor != 0L && next.iouMinor < paid) return Logged(null, "More than that has already been paid back, so the IOU cannot go lower; clear it instead.")
         // A record an installment plan counts on keeps its type, amount and accounts; the plan is what changes (MINT.md 5.6A).
         if ((old.planId != null || old.planAllocations.isNotEmpty()) && (next.type != old.type || next.amountMinor != old.amountMinor || next.accountId != old.accountId || next.toAccountId != old.toAccountId))
             return Logged(null, "This record belongs to an installment plan. Change the plan instead.")
@@ -316,7 +328,7 @@ class MintStore(
         (MintRules.checkTransaction(open, next) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { d ->
             d.copy(
-                transactions = d.transactions.map { if (it.id == t.id) next else it },
+                transactions = d.transactions.map { if (it.id == t.id) next else it }.filterNot { next.iouMinor == 0L && old.repaymentOf == null && it.repaymentOf == t.id },
                 plans = d.plans.map { plan ->
                     if (plan.purchaseTxId == t.id && next.payee.isNotBlank()) plan.copy(name = next.payee.trim().take(MintRules.NAME_MAX)) else plan
                 },
@@ -557,6 +569,8 @@ class MintStore(
     private fun cleanDays(frequency: Frequency, days: List<Int>): List<Int> =
         if (frequency != Frequency.SEMI_MONTHLY) emptyList() else days.filter { it in 1..31 }.distinct().sorted().take(4).let { if (it == listOf(15, 30)) emptyList() else it }
 
+    private fun cleanName(raw: String): String = raw.trim().split(' ', '\n', '\t').filter { it.isNotEmpty() }.joinToString(" ").take(MintRules.NAME_MAX)
+
     // --- IOUs (MINT.md 5.8A): part of one expense someone owes back, and the records that repay it -------------------------------
 
     /**
@@ -566,7 +580,7 @@ class MintStore(
      */
     fun setIou(txId: String, amountMinor: Long, person: String): String? {
         val old = data.transactions.firstOrNull { it.id == txId } ?: return "That record is gone."
-        val name = person.trim().split(' ', '\n', '\t').filter { it.isNotEmpty() }.joinToString(" ").take(MintRules.NAME_MAX)
+        val name = cleanName(person)
         val next = old.copy(iouMinor = amountMinor, iouFor = if (amountMinor > 0) name else "")
         (MintRules.checkTransaction(data, next) as? Check.Refused)?.let { return it.reason }
         val paid = data.transactions.filter { it.repaymentOf == txId }.sumOf { it.amountMinor }

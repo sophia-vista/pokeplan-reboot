@@ -146,4 +146,46 @@ class MintIouTest {
         assertEquals(75_000, MintRules.iouOwed(m.data, m.data.transactions.first { it.id == dinner.id }), "a voided repayment no longer settles the IOU")
         assertNotEquals(0, MintRules.openIous(m.data, "PHP").size)
     }
+
+    @Test
+    fun anEditChangesTheAmountAndTheIouTogetherAndARefusalLeavesTheRecordAsItWas() {
+        val m = mint()
+        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
+        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day, iouMinor = 75_000, iouFor = "Alex").record)
+
+        // Lowering the expense below the old IOU is fine when the IOU comes down with it.
+        assertNotNull(m.updateTransaction(dinner.copy(amountMinor = 60_000, iouMinor = 40_000)).record)
+        assertEquals(60_000L to 40_000L, m.data.transactions.single().let { it.amountMinor to it.iouMinor })
+
+        // Part of it paid back: the IOU cannot go under that, and nothing else in the edit is saved either.
+        assertNotNull(m.recordRepayment(dinner.id, 30_000, wallet, day).record)
+        val before = m.data
+        val refused = m.updateTransaction(m.data.transactions.first { it.id == dinner.id }.copy(payee = "Lunch", iouMinor = 20_000))
+        assertNull(refused.record)
+        assertNotNull(refused.refused)
+        assertEquals(before, m.data, "a refused edit changes nothing")
+
+        // An IOU cannot be put on a record split across categories, and the refusal changes nothing.
+        val split = m.data.transactions.first { it.id == dinner.id }
+        assertNull(m.updateTransaction(split.copy(splits = listOf(app.pokeplan.mint.TransactionSplit(null, 30_000), app.pokeplan.mint.TransactionSplit(null, 30_000)))).record)
+        assertEquals(before, m.data)
+
+        // Clearing the IOU in an edit takes its repayments too.
+        assertNotNull(m.updateTransaction(split.copy(iouMinor = 0, iouFor = "")).record)
+        assertEquals(1, m.data.transactions.size)
+    }
+
+    @Test
+    fun aRepaymentCannotBeEditedPastWhatIsOwedOrIntoAnotherCurrency() {
+        val m = mint()
+        val wallet = assertNotNull(m.addAccount("Wallet", AccountType.CASH, "PHP", 500_000).record).id
+        val usd = assertNotNull(m.addAccount("Dollars", AccountType.CASH, "USD", 10_000).record).id
+        val dinner = assertNotNull(m.record(TxType.EXPENSE, 100_000, wallet, payee = "Dinner", atMillis = day, iouMinor = 75_000, iouFor = "Alex").record)
+        val back = assertNotNull(m.recordRepayment(dinner.id, 50_000, wallet, day).record)
+
+        assertNull(m.updateTransaction(back.copy(amountMinor = 80_000)).record, "more than the IOU")
+        assertNull(m.updateTransaction(back.copy(accountId = usd)).record, "another currency")
+        assertNotNull(m.updateTransaction(back.copy(amountMinor = 75_000)).record, "up to what is owed is fine")
+        assertEquals(0, MintRules.iouOwed(m.data, m.data.transactions.first { it.id == dinner.id }))
+    }
 }
