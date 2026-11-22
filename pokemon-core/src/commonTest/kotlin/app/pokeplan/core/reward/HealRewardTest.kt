@@ -75,11 +75,10 @@ class HealRewardTest {
         assertTrue(out.rewards.first() is Reward.Hatched)
     }
 
-    /** The reported bug: with no lead ever chosen, the first member is the lead, and a new Pokémon used to take over. A newcomer leads only an empty party. */
     @Test
     fun aNewPokemonNeverTakesTheLeadOfAPartyThatHasOne() {
         val first = pokemon(Ids.PIKACHU).copy(inParty = true, partyId = PartyIds.HEAL)
-        val implicit = PlayerState(pokemon = listOf(first)) // healLeadId was never set: the first member leads implicitly
+        val implicit = PlayerState(pokemon = listOf(first))
         assertEquals(first.id, implicit.healLead?.id)
         val egg = RewardEngine.healEgg(implicit, "egg1", 1_000L, Random(2)).state
         assertEquals(2, egg.partyOf(PartyIds.HEAL).size)

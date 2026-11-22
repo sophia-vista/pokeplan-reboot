@@ -65,7 +65,6 @@ import app.pokeplan.ui.screens.dayNames
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 
-/** A month as the calendar shows it: whole weeks from the one holding the 1st to the one holding the last day. */
 internal class MonthGrid(val first: LocalDate, val days: List<LocalDate>) {
     val weeks: List<List<LocalDate>> get() = days.chunked(7)
     val label: String get() = "${fullMonthNames[first.monthNumber - 1]} ${first.year}"
@@ -75,7 +74,6 @@ private val fullMonthNames = listOf(
     "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December",
 )
 
-/** The month [offset] months from [today]'s, its weeks starting on Monday or Sunday. */
 internal fun monthGrid(today: LocalDate, offset: Int, mondayFirst: Boolean): MonthGrid {
     val shifted = LocalDate(today.year, today.monthNumber, 1).plus(DatePeriod(months = offset))
     val first = LocalDate(shifted.year, shifted.monthNumber, 1)
@@ -86,7 +84,6 @@ internal fun monthGrid(today: LocalDate, offset: Int, mondayFirst: Boolean): Mon
     return MonthGrid(first, (0 until weeks * 7).map { start.plus(DatePeriod(days = it)) })
 }
 
-/** One thing in a month cell: an event (all-day ones become bars across their days) or a task on its day. */
 private class MonthItem(val id: String, val title: String, val color: Color, val event: CalendarEvent? = null)
 
 internal val MonthBarHeight = 15.dp
@@ -96,13 +93,6 @@ private const val MIN_LANES = 2
 internal val MonthTextStyle: TextStyle
     @Composable get() = MaterialTheme.typography.bodyMedium.copy(fontSize = 10.sp, lineHeight = 15.sp, fontWeight = FontWeight.Medium)
 
-/**
- * The month, after TickTick, Google Calendar and the phone's own calendar: a grid of weeks where an all-day event over
- * several days is one solid bar across them (Home, Condo), one-day all-day events are short bars (RTO, WFH), and timed
- * events and tasks sit on their day as tinted labels, at most four to a day with "+n" for the rest. Tapping a day shows
- * its agenda under the grid, with Open day for the next two weeks; PokéPlan's own events can be tapped to edit them, and
- * New event makes an all-day one on the chosen day.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun MonthView(
@@ -118,7 +108,6 @@ internal fun MonthView(
     val pickedEvent = model.data.events.flatMap { it.occurrences(month.days.first(), month.days.last()) }.firstOrNull { it.id == picked }
     val open = tasks.filter { it.isOpen && (it.planned ?: it.due?.date) != null }
 
-    // All-day events first (the longest keep the top lanes), then timed events by start, then tasks.
     val spans = events.filter { it.allDay }.map { DaySpan(MonthItem(it.id, it.title, eventColor(it), it), it.start.date, it.lastDay) } +
         events.filter { !it.allDay }.sortedBy { it.start }.map { DaySpan(MonthItem(it.id, it.title, eventColor(it), it), it.start.date, it.start.date) } +
         open.map { t -> (t.planned ?: t.due!!.date).let { d -> DaySpan(MonthItem(t.id, t.title, taskColor(t)), d, d) } }
@@ -156,7 +145,6 @@ internal fun MonthView(
     }
 }
 
-/** One week of the month: its day numbers, then its bars and labels in lanes, "+n" under a day with more. */
 @Composable
 private fun MonthWeek(
     week: List<LocalDate>, monthNumber: Int, today: LocalDate, chosen: LocalDate, bars: List<SpanLayout.Bar<MonthItem>>,
@@ -164,7 +152,6 @@ private fun MonthWeek(
 ) {
     val hidden = week.indices.map { i -> bars.count { it.lane >= MAX_LANES && i in it.from..it.to } }
     val lanes = minOf(MAX_LANES, (bars.maxOfOrNull { it.lane } ?: -1) + 1)
-    // Every week keeps room for two lanes, so the grid reads as a calendar even where a week is empty.
     val room = maxOf(lanes, MIN_LANES)
     val more = hidden.any { it > 0 }
     val lane = MonthBarHeight + BarGap
@@ -194,7 +181,6 @@ private fun MonthWeek(
         }
         BoxWithConstraints(Modifier.fillMaxWidth().height(lane * room + if (more) MonthBarHeight else 0.dp)) {
             val column = maxWidth / 7
-            // Taps on a day's empty space choose the day; the bars sit above.
             Row(Modifier.matchParentSize()) {
                 week.forEach { d -> Box(Modifier.weight(1f).fillMaxHeight().clickable(role = Role.Button, onClickLabel = "Show ${d.short()}") { choose(d) }) }
             }
@@ -205,7 +191,6 @@ private fun MonthWeek(
                 else MonthLabel(b.item, place, pick)
             }
             hidden.forEachIndexed { i, n ->
-                // The rest of the day's things: a "+n" that opens the day (its agenda lists all of them).
                 if (n > 0) Text(
                     "+$n", Modifier.offset(x = column * i, y = lane * lanes).width(column).height(MonthBarHeight)
                         .clickable(role = Role.Button, onClickLabel = "Show ${week[i].short()}") { choose(week[i]) }
@@ -217,7 +202,6 @@ private fun MonthWeek(
     }
 }
 
-/** A timed event or a task in a month cell: its title on a soft tint of its colour. */
 @Composable
 private fun MonthLabel(item: MonthItem, modifier: Modifier, pick: (String) -> Unit) {
     val shape = PixelShape
@@ -231,7 +215,6 @@ private fun MonthLabel(item: MonthItem, modifier: Modifier, pick: (String) -> Un
     )
 }
 
-/** The chosen day under the grid: its all-day events, its timed events by start, its tasks, and Open day. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DayAgenda(

@@ -24,7 +24,7 @@ Counts, sources and licences are owned by `docs/assets.md` and the `.tsv` manife
 | Path | Contents | Primary use |
 |---|---|---|
 | `assets/pmd/` (with `sleep/`, `hop/`, `eat/`, `walk-down/`, `walk-side/`, `walk-up/` and the other action sets) | PMD SpriteCollab sprites with nine TSV metadata tables | Preferred Pokémon sprites and animations; launcher and world roaming (side-left is mirrored from right where required) |
-| `assets/pmd/portraits/` | Portrait strips, six expressions per available form | Dialogue, character and party portraits |
+| `assets/pmd/portraits/` | Portrait strips, fourteen expressions per available form (a 40 px face in a 560 px strip) | Dialogue, character and party portraits |
 | `assets/cries/` | Pokémon cries (OGG), keyed by National Dex species ID | Cries |
 | `assets/sfx/` | UI, launcher and game effects (OGG) plus source note | Feedback sounds |
 | `assets/sprites/` | Mainline front and shiny stills plus manifest | Fallback still sprites |
@@ -45,7 +45,7 @@ The operational inventory is the asset manifest and validation report produced f
 ### 2.1 Known coverage limitations
 
 - Species coverage and form coverage differ by asset family. The main PMD idle set has less coverage than some action sets and portrait strips.
-- Portrait strips currently expose Normal, Happy, Joyous, Inspired, Determined and Surprised. Dedicated Sad, Angry, Worried and Teary expressions are not present.
+- Portrait strips expose fourteen expressions: Normal, Happy, Joyous, Inspired, Determined, Surprised, Sad, Angry, Worried, Teary-Eyed, Pain, Sigh, Dizzy and Stunned (`Emotion` in `Portrait.kt`). Per-form coverage varies: not every form draws all fourteen.
 - Eat animation is much less complete than idle, sleep, hop and directional walking.
 - Cry files are currently species-keyed in `CryPlayer`; do not imply form-specific cries where none are indexed.
 - Mainline animated sprite sheets cover only generations 1–5.
@@ -392,7 +392,7 @@ Open work, in order. Each step's exit condition is the matching items of section
 **P1 — coverage and runtime quality**
 
 1. A species/form coverage report for idle, sleep, hop, eat, shiny and fallback stills (`tools/sprites/pmd_audit.py` reports portraits only).
-2. A centralized expression fallback table and story portrait QA (the `Emotion` enum is mapped from `Expression` in `StoryPlayer.kt`; no fallback table).
+2. A centralized expression fallback table and story portrait QA (the `Emotion` enum is mapped from `Expression` in `StoryPlayer.kt`, and `Emotion.stand` is the fallback table that picks a face when a form lacks one).
 3. A music channel, audio focus, ducking, lifecycle release and a loudness audit. Built: separate effects and cries volumes, `SoundPool` and `MediaPlayer` playback with a cap on simultaneous cries.
 4. Cache and package-size optimization; contact sheets and audio audition reports.
 5. A shared registry for WORLD and the launcher. Both already use `AnimatedSprite` and its animation table; the registry itself is the missing part.

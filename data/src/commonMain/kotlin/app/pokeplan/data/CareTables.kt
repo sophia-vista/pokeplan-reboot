@@ -8,39 +8,19 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
-/**
- * CARE's records in their own tables (schema version 4, REP-014; docs/pokelife `MODULES/CARE.md` section 9 and
- * `ARCHITECTURE/DATA_AND_MIGRATIONS.md` section 7.4). The app still reads and writes Care as one JSON document, `CareData`, so the
- * rules stay pure and tested; this class is what stands under that document. [write] takes the document apart into rows and [read]
- * puts it back together, so the tables are the only authority and nothing is saved twice.
- *
- * It works on the JSON, not on `CareData`, so `:data` stays independent of the module and a field it has never heard of (an
- * older or a newer build's) lands in `care_state`, or stays inside its record's `json`, instead of being dropped.
- *
- * A write only touches the rows that changed: a journal entry added is one insert, a routine ticked is one row in
- * `care_routine_completion`. Everything is one transaction, so a failure leaves the tables exactly as they were.
- */
 class CareTables(private val store: DataStore) {
     private val q get() = store.db.dataQueries
     private val rows = RecordRows(store)
 
-    /** Whether Care's records live here (set once by [activate]); before that the Care document is a row of `live_document`. */
     fun isActive(): Boolean = q.meta(META_CARE_TABLES).executeAsOneOrNull() == ACTIVE
 
-    /** The Care document as it was last written, or null when nothing has been written yet. */
     fun read(): String? = store.transaction { assemble()?.let { JSON.encodeToString(JsonElement.serializer(), it) } }
 
-    /** Saves [document] (the whole Care document as JSON): the rows that differ are changed, the rest are left alone. */
     fun write(document: String) {
         val parsed = parse(document)
         store.transaction { replaceRows(parsed) }
     }
 
-    /**
-     * Moves Care into the tables: [document] (null on a fresh install) is split into rows, every row is read back, and the
-     * assembled document is compared with the one given; the marker is set only when they are equal, all in one transaction, so a
-     * difference leaves the database exactly as it was. Returns whether it moved anything; already active does nothing.
-     */
     fun activate(document: String?, nowMillis: Long): Boolean {
         if (isActive()) return false
         val parsed = document?.let(::parse)
@@ -56,15 +36,12 @@ class CareTables(private val store: DataStore) {
         return parsed != null
     }
 
-    /** Erases every Care record (the whole Care save), in one transaction. */
     fun clear() {
         store.transaction {
             for (slice in SLICES) store.driver.execute(null, "DELETE FROM ${slice.table}", 0)
             store.driver.execute(null, "DELETE FROM care_state", 0)
         }
     }
-
-    // --- taking a document apart and putting it back --------------------------------------------------------------------
 
     private fun replaceRows(document: JsonObject) {
         for (slice in SLICES) {
@@ -152,11 +129,6 @@ class CareTables(private val store: DataStore) {
 
         private fun parse(text: String): JsonObject = JSON.parseToJsonElement(text) as? JsonObject ?: error("the Care document is not a JSON object")
 
-        /**
-         * The document with what a read back cannot tell apart left out: an empty list of records is not stored (nothing to put
-         * in a table), and a routine that had never been done has an empty `completions` array or none; each comes back as
-         * the same thing either way. The days of a routine are a set, so their order does not matter.
-         */
         private fun canonical(document: JsonObject): JsonObject {
             val kept = document.filterNot { (key, value) -> SLICES.any { it.field == key } && (value as? JsonArray)?.isEmpty() == true }
             val routines = kept["routines"] as? JsonArray ?: return JsonObject(kept)

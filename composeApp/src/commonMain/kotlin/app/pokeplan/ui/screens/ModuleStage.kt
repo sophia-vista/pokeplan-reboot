@@ -7,13 +7,6 @@ import app.pokeplan.app.BuddyEventNow
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AppModel
 
-/**
- * A module's lead in the module's own scene, at the top of its page, the same window as Care's meadow: the lead idles, a tap pets it
- * (friendship, with the day's cap shared by all), its level and progress sit small in the corner, and it celebrates what its module
- * paid ([event]; null for none). Nothing shows until the module has a lead, so a new player sees what to do first; the party panel
- * below says how to get one. The global buddy never appears here (it lives on Home), and there is no berry button: feeding belongs to
- * the buddy and Care's meadow.
- */
 @Composable
 internal fun ModuleLeadStage(model: AppModel, module: Module, lead: OwnedPokemon?, event: BuddyEventNow?, resting: Boolean = false, openPokemon: (String) -> Unit) {
     val pokemon = lead ?: return

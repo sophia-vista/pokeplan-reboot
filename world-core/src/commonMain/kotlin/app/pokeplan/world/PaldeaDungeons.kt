@@ -3,12 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Paldea layer (docs/pokelife/MODULES/WORLD.md section 14, "Paldea"), from Pokémon Scarlet and Violet. Their wild tables are the
- * Paldea regional dex, by each place's habitat in the games; legendaries and paradox Pokémon are never found (they are quests, [Legends]).
- * Treasure in Paldea is Gimmighoul Coins: some milestones pay them. Floors, floor times, milestones and the rank gates are starting values
- * *(tune)*. [DungeonDef.chapter] is a chapter of [PaldeaStory].
- */
 object PaldeaDungeons {
     private val P = WorldLayer.PALDEA
 
@@ -70,10 +64,6 @@ object PaldeaDungeons {
     )
 }
 
-/**
- * Paldea's story, "The Treasure of Area Zero" (docs/regional-storylines.md): the Great Crater, the paradox Pokémon and the ancient or future
- * partner at its bottom. A chapter opens by rank and by how many different Paldea dungeons have been cleared, and is never lost.
- */
 object PaldeaStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "Mesagoza", "A new student leaves the academy to find a treasure of their own. The thickets and caves around Mesagoza are only the start.", "Tagtree Thicket and Alfornada Cavern", ExplorerRank.NORMAL, 0),
@@ -83,7 +73,6 @@ object PaldeaStory {
         Chapter(5, "Area Zero", "At the bottom of the Great Crater, the lab and its machine wait for someone to finish what was started.", "Zero Lab, Area Zero and Terapagos", ExplorerRank.PLATINUM, 7),
     )
 
-    /** The Guardian: Terapagos, in Area Zero. */
     const val GUARDIAN = "Terapagos"
     const val GUARDIAN_BONUS = "Terastal Treasure: Paldea expeditions find treasure a little more often"
 }

@@ -5,15 +5,9 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import app.pokeplan.app.heal.HuaweiHealth
 import app.pokeplan.app.heal.NotificationCapture
-/**
- * Reads Huawei Health's own notification, for its step count (INTEGRATIONS_AND_PRIVACY.md 5.2.2). Android cannot narrow a notification listener to one app,
- * so every notification from any other package is dropped here on arrival, before a single field is read. Nothing is logged; what is kept stays in memory.
- */
 class HuaweiNotificationService : NotificationListenerService() {
     override fun onListenerConnected() {
         runCatching { activeNotifications }.getOrNull()?.forEach { take(it) }
-        // Steps only count up through the day, so the latest notification is all the app needs: let go now and stay out of the resident list (REP-055).
-        // The app asks Android to bind again when it comes to the front (HuaweiComponents.rebind).
         runCatching { requestUnbind() }
     }
 

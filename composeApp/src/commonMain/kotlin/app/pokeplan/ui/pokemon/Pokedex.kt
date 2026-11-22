@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -74,7 +76,6 @@ import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 
-/** The National Dex split by generation, with the national numbers each generation covers. */
 private val generations = listOf(
     "Gen 1" to 1..151, "Gen 2" to 152..251, "Gen 3" to 252..386, "Gen 4" to 387..493, "Gen 5" to 494..649,
     "Gen 6" to 650..721, "Gen 7" to 722..809, "Gen 8" to 810..905, "Gen 9" to 906..1025,
@@ -82,9 +83,7 @@ private val generations = listOf(
 
 internal enum class DexFilter(val label: String) { ALL("All"), CAUGHT("Caught"), MISSING("Not caught") }
 
-/** Which list the Pokédex shows, kept by the Pokémon tab so opening an entry and coming back leaves it as it was. */
 internal data class DexView(val region: Region = Region.PLAN, val national: Boolean = false, val generation: Int = 0, val filter: DexFilter = DexFilter.ALL, val search: String = "") {
-    /** (number shown, species): own order from 1 for a region, the National Dex number for the National tab. */
     fun rows(): List<Pair<Int, SpeciesInfo>> =
         if (national) Dex.species.filter { it.id in generations[generation].second }.map { it.id to it }
         else Dex.regionDex(region).mapIndexed { i, s -> (i + 1) to s }
@@ -92,113 +91,117 @@ internal data class DexView(val region: Region = Region.PLAN, val national: Bool
     val title: String get() = if (national) "National Dex, ${generations[generation].first}" else region.label
 }
 
-/** "#001", the games' three digits (four past 999). */
 private fun dexNumber(n: Int) = "#" + n.toString().padStart(3, '0')
 
-/**
- * The Pokédex. A region's list is numbered from 1 in its own order (the Plan Region starts at 1 too); the National Dex tab
- * uses the real National Dex numbers, a generation at a time. Tapping a species found so far opens its entry.
- */
 @Composable
 internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Unit, open: (Int) -> Unit) {
     val player = model.data.player
     val regions = TrainerRank.unlockedRegions(player.trainerPoints)
     val rows = remember(view.region, view.national, view.generation) { view.rows() }
-    val states = rows.associate { (_, s) -> s.id to DexState.of(model.data, s.id) }
+    // The state of every species, built from the player's lists once: DexState.of scans the owned Pokémon, so asking it per
+    // row on every keystroke was O(rows x owned).
+    val states = remember(rows, player.pokemon, player.caught, model.data.seenSpecies) {
+        rows.associate { (_, s) -> s.id to DexState.of(model.data, s.id) }
+    }
     val caught = states.values.count { it.caught }
-
-    // The National Dex is the null entry; a region is itself.
-    PixelDropdown(
-        listOf<Region?>(null) + regions, if (view.national) null else view.region,
-        { it?.label ?: "National" },
-        { r -> change(if (r == null) view.copy(national = true) else view.copy(national = false, region = r)) },
-        Modifier.fillMaxWidth(),
-    )
-    if (view.national) PixelDropdown(
-        generations.indices.toList(), view.generation,
-        { i -> if (i == null) "" else generations[i].first },
-        { i -> if (i != null) change(view.copy(generation = i)) },
-        Modifier.fillMaxWidth(),
-    )
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            Text("${view.title}: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)
-            PixelBar(caught.toFloat() / rows.size.coerceAtLeast(1), color = if (caught == rows.size) Pixel.Warning else Pixel.Red)
-        }
-    }
-    PixelField(
-        view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
-        label = "Search by name or number",
-    )
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-        DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }
-    }
     val text = view.search.trim().lowercase().removePrefix("#")
-    val shown = rows.filter { (number, s) ->
-        val state = states.getValue(s.id)
-        val byFilter = when (view.filter) {
-            DexFilter.ALL -> true
-            DexFilter.CAUGHT -> state.caught
-            DexFilter.MISSING -> !state.caught
+    val shown = remember(rows, states, text, view.filter) {
+        rows.filter { (number, s) ->
+            val state = states.getValue(s.id)
+            val byFilter = when (view.filter) {
+                DexFilter.ALL -> true
+                DexFilter.CAUGHT -> state.caught
+                DexFilter.MISSING -> !state.caught
+            }
+            // A species not found yet matches by number only: its name would give it away.
+            byFilter && (text.isEmpty() || dexNumber(number).removePrefix("#").contains(text) || (state != DexState.UNKNOWN && s.name.lowercase().contains(text)))
         }
-        // A species not found yet matches by number only: its name would give it away.
-        byFilter && (text.isEmpty() || dexNumber(number).removePrefix("#").contains(text) || (state != DexState.UNKNOWN && s.name.lowercase().contains(text)))
     }
-    if (shown.isEmpty()) {
-        when {
-            text.isNotEmpty() -> EmptyState("Nothing matches", action = "Clear the search" to { change(view.copy(search = "")) })
-            view.filter == DexFilter.CAUGHT -> EmptyState("None caught here yet", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
-            else -> EmptyState("All caught!", action = "Show them all" to { change(view.copy(filter = DexFilter.entries.first())) })
+    Column(Modifier.fillMaxSize()) {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.L),
+            verticalArrangement = Arrangement.spacedBy(Spacing.M),
+        ) {
+            // The National Dex is the null entry; a region is itself.
+            PixelDropdown(
+                listOf<Region?>(null) + regions, if (view.national) null else view.region,
+                { it?.label ?: "National" },
+                { r -> change(if (r == null) view.copy(national = true) else view.copy(national = false, region = r)) },
+                Modifier.fillMaxWidth(),
+            )
+            if (view.national) PixelDropdown(
+                generations.indices.toList(), view.generation,
+                { i -> if (i == null) "" else generations[i].first },
+                { i -> if (i != null) change(view.copy(generation = i)) },
+                Modifier.fillMaxWidth(),
+            )
+            TextBox {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Text("${view.title}: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)
+                    PixelBar(caught.toFloat() / rows.size.coerceAtLeast(1), color = if (caught == rows.size) Pixel.Warning else Pixel.Red)
+                }
+            }
+            PixelField(
+                view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
+                label = "Search by name or number",
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }
+            }
         }
-    } else {
-        // An index, not a wall of cards: number, sprite, name and one quiet line per row, with a hairline between rows.
-        val shape = PixelShape
-        Column(Modifier.fillMaxWidth().clip(shape).background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape)) {
-            shown.forEachIndexed { i, (number, s) ->
-                val state = states.getValue(s.id)
-                // A seen species is named; one not found yet stays a mystery, so its name would give it away.
-                val name = if (state == DexState.UNKNOWN) "???" else s.name
-                val isShiny = s.id in model.data.shinySpecies
-                if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border))
-                Row(
-                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp)
-                        .quietClickable(enabled = state != DexState.UNKNOWN, onClickLabel = "Open entry") { open(s.id) }
-                        .semantics(mergeDescendants = true) {
-                            contentDescription = "Number $number, ${if (state == DexState.UNKNOWN) "Unknown" else s.name}, ${state.label}" + if (isShiny) ", shiny found" else ""
+        if (shown.isEmpty()) {
+            when {
+                text.isNotEmpty() -> EmptyState("Nothing matches", action = "Clear the search" to { change(view.copy(search = "")) })
+                view.filter == DexFilter.CAUGHT -> EmptyState("None caught here yet", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+                else -> EmptyState("All caught!", action = "Show them all" to { change(view.copy(filter = DexFilter.entries.first())) })
+            }
+        } else {
+            // An index, not a wall of cards: number, sprite, name and one quiet line per row, with a hairline between rows.
+            // A lazy list: only the rows on screen are composed and only their sprites are read.
+            val shape = PixelShape
+            LazyColumn(
+                Modifier.weight(1f).fillMaxWidth().padding(horizontal = Spacing.Page).clip(shape)
+                    .background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape),
+            ) {
+                itemsIndexed(shown, key = { _, (_, s) -> s.id }) { i, (number, s) ->
+                    val state = states.getValue(s.id)
+                    // A seen species is named; one not found yet stays a mystery, so its name would give it away.
+                    val name = if (state == DexState.UNKNOWN) "???" else s.name
+                    val isShiny = s.id in model.data.shinySpecies
+                    if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border))
+                    Row(
+                        Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp)
+                            .quietClickable(enabled = state != DexState.UNKNOWN, onClickLabel = "Open entry") { open(s.id) }
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = "Number $number, ${if (state == DexState.UNKNOWN) "Unknown" else s.name}, ${state.label}" + if (isShiny) ", shiny found" else ""
+                            }
+                            .padding(horizontal = Spacing.S, vertical = Spacing.XS),
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
+                    ) {
+                        Text(dexNumber(number), Modifier.width(52.dp), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                        // Species not caught yet show as a grey shape: the real sprite, tinted.
+                        Sprite(Dex.defaultForm(s.id).id, false, "", size = Spacing.Target, silhouette = if (state.caught) null else Pixel.Shade)
+                        Column(Modifier.weight(1f)) {
+                            Text(name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (state == DexState.UNKNOWN) Pixel.InkSoft else Pixel.Ink)
+                            // Words, not just the sprite's colour, tell the states apart.
+                            Text(if (state == DexState.UNKNOWN) "Not found yet" else state.label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
                         }
-                        .padding(horizontal = Spacing.S, vertical = Spacing.XS),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
-                ) {
-                    Text(dexNumber(number), Modifier.width(52.dp), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-                    // Species not caught yet show as a grey shape: the real sprite, tinted.
-                    Sprite(Dex.defaultForm(s.id).id, false, "", size = Spacing.Target, silhouette = if (state.caught) null else Pixel.Shade)
-                    Column(Modifier.weight(1f)) {
-                        Text(name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (state == DexState.UNKNOWN) Pixel.InkSoft else Pixel.Ink)
-                        // Words, not just the sprite's colour, tell the states apart.
-                        Text(if (state == DexState.UNKNOWN) "Not found yet" else state.label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
+                        if (isShiny) Glyph("star", Pixel.Warning, size = 18.dp, description = "Shiny")
+                        if (state == DexState.OWNED) ItemIcon("poke-ball", size = 20.dp, description = null)
                     }
-                    if (isShiny) Glyph("star", Pixel.Warning, size = 18.dp, description = "Shiny")
-                    if (state == DexState.OWNED) ItemIcon("poke-ball", size = 20.dp, description = null)
                 }
             }
         }
     }
 }
 
-/** "0.7 m" from decimetres, "6.9 kg" from hectograms: the games keep both in tenths. */
 private fun tenths(value: Int, unit: String) = "${value / 10}.${value % 10} $unit"
 
-/**
- * One species' Pokédex page: its category, size and entry, types, abilities, base stats and evolution line, with Previous
- * and Next through the list it was opened from (skipping species not found yet). Seen species show only their shape.
- */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>, id: Int, open: (Int) -> Unit, back: () -> Unit) {
     BackHandler(enabled = true, onBack = back)
     val s = Dex.species(id)
-    // The form shown in the scene (one the player has had, picked under Forms) and whether forms show as shinies; the
-    // shiny switch stays on through Next, the picked form does not.
     var picked by remember(id) { mutableStateOf<Int?>(null) }
     var shinyView by remember { mutableStateOf(false) }
     val form = picked?.let { p -> Dex.formsOf(id).firstOrNull { it.id == p } } ?: Dex.defaultForm(id)
@@ -215,8 +218,6 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // A caught species stands in a scene for its type (the buddy's scenes on Home); a seen one keeps the plain wallpaper,
-            // so the scene does not give its type away.
             if (state.caught) SceneStage(BuddyScene.of(form.types), 232.dp) {
                 AnimatedSprite(
                     form.id, shiny, form.name,
@@ -242,11 +243,6 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
     }
 }
 
-/**
- * Every form of a species, as the form dex: the ones the player has had in colour, the rest as black shapes. Regular and
- * Shiny switch the whole row; tapping a form the player has had shows it in the scene above. Forms that cannot be had
- * in PokéPlan yet (Gigantamax and other special forms) are shown faded and are not counted.
- */
 @Composable
 private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boolean, setShiny: (Boolean) -> Unit, pick: (Int) -> Unit) {
     val forms = Dex.formsOf(speciesId)
@@ -277,7 +273,6 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
                             },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        // A form not had yet is its real sprite in black: the shape only.
                         Sprite(f.id, shiny && found, name, size = 64.dp, silhouette = if (found) null else Color.Black)
                         Text(
                             name, Modifier.padding(horizontal = Spacing.XS),
@@ -287,12 +282,10 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
                     }
                 }
             }
-            // Help: faded forms (Gigantamax and other special forms) can't be found yet and don't count.
         }
     }
 }
 
-/** What a caught species' entry tells: the games' Pokédex page plus its base stats and how its line evolves. */
 @Composable
 private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (Int) -> Unit) {
     val id = s.id
@@ -329,7 +322,6 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
             line.forEach { e ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     LineMember(model, e.from, current = e.from == id, open)
-                    // How it evolves sits on the arrow between the two, like a label on a signpost.
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("▸", style = MaterialTheme.typography.titleMedium, color = Pixel.InkSoft)
                         Text(EvolutionRules.howTo(e), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, textAlign = TextAlign.Center)
@@ -340,7 +332,6 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
         }
     }
     val credit by produceState<String?>(null, form.id) {
-        // The SpriteCollab licence (CC BY-NC 4.0) asks for credit to the artists of the sprite and the portrait.
         val sprite = spriteCredit(form.id)
         val portrait = portraitCredit(form.id)
         value = when {
@@ -351,7 +342,6 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
     credit?.let { CreditLine(it) }
 }
 
-/** A species in an evolution line: its sprite and name, a grey shape and ??? until found, tap to open its entry. */
 @Composable
 private fun LineMember(model: AppModel, speciesId: Int, current: Boolean, open: (Int) -> Unit) {
     val state = DexState.of(model.data, speciesId)
@@ -368,7 +358,6 @@ private fun LineMember(model: AppModel, speciesId: Int, current: Boolean, open: 
     }
 }
 
-/** The credit SpriteCollab's licence asks for: small and faint, there to be found rather than read on every visit. */
 @Composable
 private fun CreditLine(credit: String) {
     Text(
@@ -377,5 +366,3 @@ private fun CreditLine(credit: String) {
         color = Pixel.InkSoft, textAlign = TextAlign.Center,
     )
 }
-
-// ----- Guardians -----------------------------------------------------------------------------------------------------

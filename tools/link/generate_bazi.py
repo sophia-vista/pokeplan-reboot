@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-"""Writes link-core's BaZiTables.kt: the twelve "jie" solar-term instants of each year 1901..2099 (Beijing time, minutes since 1900-01-01 00:00)
-and the Chinese New Year date of each year. Source: the lunar_python package (pip install lunar_python); run with  python3 -I tools/link/generate_bazi.py.
-The Kotlin code (BaZi.kt) does the pillar arithmetic; this only supplies the astronomical tables that cannot be computed cheaply and exactly."""
 from datetime import datetime
 from pathlib import Path
 from lunar_python import Lunar, Solar
 
 FIRST, LAST = 1901, 2099
-# The twelve jie in calendar order within a Gregorian year; each names both spellings the library uses.
 JIE = [("小寒", "XIAO_HAN"), ("立春", "LI_CHUN"), ("惊蛰", "JING_ZHE"), ("清明", "清明"), ("立夏", "立夏"), ("芒种", "芒种"),
        ("小暑", "小暑"), ("立秋", "立秋"), ("白露", "白露"), ("寒露", "寒露"), ("立冬", "立冬"), ("大雪", "DA_XUE")]
 EPOCH = datetime(1900, 1, 1)
@@ -17,8 +13,8 @@ def minutes(s):
 
 jie_rows, new_years = [], []
 for y in range(FIRST, LAST + 1):
-    table = []  # (name, Solar); names repeat from one lunar year's table to the next, so keep a list, not a dict
-    for ref in (y - 1, y, y + 1):  # the Gregorian year spans two lunar years' tables
+    table = []
+    for ref in (y - 1, y, y + 1):
         table += list(Solar.fromYmd(ref, 6, 1).getLunar().getJieQiTable().items())
     row = []
     for names in JIE:

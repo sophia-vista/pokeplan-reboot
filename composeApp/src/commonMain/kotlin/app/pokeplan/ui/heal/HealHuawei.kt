@@ -19,6 +19,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import app.pokeplan.app.heal.HuaweiControls
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.HuaweiReader
 import app.pokeplan.ui.Report
@@ -35,10 +36,6 @@ import app.pokeplan.ui.screens.PixelTimeField
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 
-/**
- * Heal → Connections → Huawei Health, probe stage (INTEGRATIONS_AND_PRIVACY.md 5.2.2): turn on the two readers in Android's settings, read Huawei Health on a
- * tap, see what was seen, and copy it with every number hidden. Nothing here is saved or paid.
- */
 @Composable
 internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing: Boolean = false) {
     var state by remember { mutableStateOf(reader.state()) }
@@ -50,7 +47,11 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
     val settings = model.healData.settings
     var dismissed by remember { mutableStateOf(0) } // the number of pages seen when the player said Not now
     // Rechecked every second while the page is open: both readers are switched in Android's settings, and pages arrive while Huawei Health is in front.
-    LaunchedEffect(reader) { while (true) { state = reader.state(); seen = reader.seen(); delay(if (state.walking) 1_000 else 3_000) } }
+    val foreground = rememberInForeground()
+    LaunchedEffect(reader, foreground) {
+        if (!foreground) return@LaunchedEffect
+        while (true) { state = reader.state(); seen = reader.seen(); delay(if (state.walking) 1_000 else 3_000) }
+    }
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {

@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-/** The generator is checked with an independent decoder (ZXing): every code it draws must read back as the text it was made from. */
 class QrCodeTest {
     private fun decode(q: QrCode): String {
         val scale = 4; val border = 4

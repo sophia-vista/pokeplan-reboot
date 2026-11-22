@@ -7,7 +7,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** The Secret Base room (BASE.md 9.5): catalogue, grid, looks, the meter and the placing rules. */
 class RoomTest {
     private fun done(r: Room.Result) = assertIs<Room.Result.Done>(r).placed
 
@@ -15,7 +14,7 @@ class RoomTest {
     fun theCatalogueIsTheFortyTwoSpritesWithUniqueIds() {
         assertEquals(42, Decorations.ALL.size)
         assertEquals(42, Decorations.ALL.map { it.id }.toSet().size)
-        assertEquals(7, Decorations.ALL.count { it.flat }) // the mats
+        assertEquals(7, Decorations.ALL.count { it.flat })
         assertTrue(Decorations.STARTERS.all { Decorations.get(it) != null })
         assertEquals(listOf(DecorationKind.DOLL, DecorationKind.MAT, DecorationKind.PLANT), Decorations.STARTERS.map { Decorations.get(it)!!.kind })
     }
@@ -57,7 +56,6 @@ class RoomTest {
         val a = assertNotNull(Decorations.pick(owned, "home:chore:c1:2026-11-15"))
         assertTrue(a.id !in owned)
         assertEquals(a, Decorations.pick(owned, "home:chore:c1:2026-11-15"))
-        // Draining the catalogue one pick at a time never repeats and ends with null.
         var have = emptyList<String>()
         repeat(42) { n -> have = have + assertNotNull(Decorations.pick(have, "event-$n")).id }
         assertEquals(42, have.toSet().size)
@@ -91,10 +89,10 @@ class RoomTest {
         val kept = Room.tidy(
             owned,
             listOf(
-                Placement("snorlax_doll", 4, 4), Placement("snorlax_doll", 5, 4), // twice
-                Placement("thunder_mat", 4, 4), // the cell is taken
-                Placement("big_plant", 0, 0), // a wall
-                Placement("tire", 3, 3), // not owned
+                Placement("snorlax_doll", 4, 4), Placement("snorlax_doll", 5, 4),
+                Placement("thunder_mat", 4, 4),
+                Placement("big_plant", 0, 0),
+                Placement("tire", 3, 3),
             ),
         )
         assertEquals(listOf(Placement("snorlax_doll", 4, 4)), kept)
@@ -108,12 +106,10 @@ class RoomTest {
         assertEquals(6, none.toSet().size)
         assertTrue(none.all { RoomGrid.contains(it.x, it.y) })
         assertEquals(none, Room.standingCells(emptyList(), 6), "the same each time")
-        // A standing decoration on a cell keeps a Pokémon off it; a mat does not.
         val doll = Placement("snorlax_doll", none[0].x, none[0].y)
         assertTrue(Room.standingCells(listOf(doll), 6).none { it.x == doll.x && it.y == doll.y })
         val mat = Placement("thunder_mat", none[0].x, none[0].y)
         assertEquals(none, Room.standingCells(listOf(mat), 6))
-        // A party bigger than the free floor takes what there is.
         assertEquals(44, Room.standingCells(emptyList(), 60).size)
     }
 }

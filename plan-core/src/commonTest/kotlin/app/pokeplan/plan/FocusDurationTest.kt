@@ -35,7 +35,6 @@ class FocusDurationTest {
 
     @Test
     fun leftoverSecondsRoundTheEggBandUp() {
-        // 19:30 earns an egg for 20 minutes.
         assertEquals(Egg.rates(20, false), Egg.rates(FocusDuration(0, 19, 30).eggMinutes, false))
         assertEquals(RarityRates(60, 30, 9, 1), Egg.rates(FocusDuration(0, 5, 0).eggMinutes, false))
     }

@@ -16,20 +16,11 @@ import app.pokeplan.app.reminders.ReminderModule
 import app.pokeplan.app.reminders.ReminderPolicy
 import app.pokeplan.app.reminders.ReminderRequest
 
-/** A routine's gentle reminder: the routine, the day it is for, and when it goes off. */
 data class RoutineReminder(val routineId: String, val title: String, val day: LocalDate, val atMillis: Long)
 
-/**
- * Care's routine reminders (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): one at each routine's own time, on the days it is meant for, while
- * it is not done yet that day. Gentle: no repeats, no streak talk, nothing when Care or its reminders are off. The user chose
- * the time, so rest days (Plan's) do not move it. Delivery follows the shared [ReminderPolicy]: the global quiet hours
- * (INTEGRATIONS_AND_PRIVACY.md, section 9.4; no module may bypass them) and a focus session, which holds it until its end.
- */
 object CareReminders {
-    /** How far ahead alarms are set; the app sets them again on every change and each fired reminder. */
     const val DAYS_AHEAD = 2
 
-    /** The reminders still to come after [nowMillis], earliest first. */
     fun upcoming(care: CareData, app: AppData, nowMillis: Long, zone: TimeZone): List<RoutineReminder> {
         if (!app.settings.careModule || !care.settings.reminders) return emptyList()
         val session = app.focus?.takeIf { !it.isFinished }
@@ -47,7 +38,6 @@ object CareReminders {
         return RoutineReminder(r.id, r.title, day, ReminderPolicy.deliverAt(request, quiet, zone, focus))
     }
 
-    /** Whether the reminder for [routineId] on [day] should still show: Care and reminders on, the routine due and not done. */
     fun stillWanted(care: CareData, app: AppData, routineId: String, day: LocalDate): Boolean {
         if (!app.settings.careModule || !care.settings.reminders) return false
         val r = care.routines.firstOrNull { it.id == routineId } ?: return false

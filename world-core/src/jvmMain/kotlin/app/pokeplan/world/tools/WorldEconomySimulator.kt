@@ -28,12 +28,10 @@ private const val DAY = 24 * HOUR
 private fun mon(id: String, species: Int, level: Int): OwnedPokemon =
     Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
 
-/** A team of [size] Pokémon, all at [level] (species 25 is Electric, so it favors Thunderwave Cave; the rest of the pool is neutral). */
 private fun team(size: Int, level: Int, prefix: String = "t") = List(size) { mon("$prefix$it", if (it % 2 == 0) 25 else 74, level) }
 
 private data class Totals(var floors: Int = 0, var setbacks: Int = 0, var retreats: Int = 0, var xp: Int = 0, var poke: Int = 0, var berries: Int = 0, var treasure: Int = 0, var finds: Int = 0, var candies: Int = 0)
 
-/** Hourly yield of one team in one dungeon, measured over 24 h of staying (no cap hit because each settle is one hour). */
 private fun hourly(dungeonId: String, size: Int, level: Int): Pair<Double, Totals> {
     val roster = team(size, level)
     var data = WorldData().copy(xp = 1_000_000, clears = Dungeons.all.associate { it.id to 1 }, guardianDone = true).assign(1, roster.map { it.id })!!.start(1, dungeonId, 0L)!!
@@ -41,7 +39,6 @@ private fun hourly(dungeonId: String, size: Int, level: Int): Pair<Double, Total
     for (h in 1..24 * 7) {
         val r = WorldSim.settle(data, roster, h * HOUR)
         data = r.data
-        // A team that turned back is home (WORLD.md 3.6): the player sends it again, here at the next hour.
         if (data.team(1)?.expedition == null) data = data.start(1, dungeonId, h * HOUR) ?: data
         r.events.forEach { e ->
             when (e) {
@@ -61,7 +58,6 @@ private fun hourly(dungeonId: String, size: Int, level: Int): Pair<Double, Total
     return 168.0 to t
 }
 
-/** A player who opens the app [opens] times a day, keeps one team of [size] at [level] out in the best dungeon the rank allows. */
 private fun career(opens: Int, size: Int, level: Int, days: Int): List<String> {
     val roster = team(size, level)
     var data = WorldData().assign(1, roster.map { it.id })!!
@@ -93,10 +89,8 @@ private fun career(opens: Int, size: Int, level: Int, days: Int): List<String> {
 }
 
 
-/** What a simulated player did over a long stretch, for the report. */
 private class Journey(val label: String) {
     val milestoneDays = linkedMapOf<String, Int>()
-    /** The Poké balance of the player: the rules hold none, so the simulation keeps it (earned is banked after every call that can earn). */
     var balance = 0
     var spentFacilities = 0
     var spentShop = 0
@@ -116,11 +110,6 @@ private class Journey(val label: String) {
     fun mark(key: String, day: Int) { milestoneDays.putIfAbsent(key, day) }
 }
 
-/**
- * A player who opens the app [opens] times a day and keeps one team of [size] at [level] (a second team is not played). They take
- * the jobs that fit the dungeon they are in, claim jobs and research, build the Camp and Lab (the lower level first), brew at the Café
- * when they have three berries, and spend the rest of their Poké on shop Rare Candies. Deliver jobs and the Dojo are not played.
- */
 private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean, dojo: Boolean = false): Journey {
     val roster = team(size, level)
     val j = Journey("${opens}/day, $size × Lv $level${if (cafe) ", Café" else ""}${if (dojo) ", Dojo" else ""}")
@@ -129,19 +118,15 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
     fun bank() { j.balance += data.pokeEarned; data = data.copy(pokeEarned = 0) }
     var now = 0L
     var current: String? = null
-    // The deepest dungeon the player can start and the team would not turn back in (a player reads the team page's explanation, WORLD.md 3.6; the roster's levels stay fixed here, which is
-    // the pessimistic case, since the real members gain a level's worth of experience from the floors).
     fun bestDungeon(): String? = Dungeons.home.reversed().firstOrNull { (data.recall(1) ?: data).start(1, it.id, now) != null && Outcomes.retreatsAt(WorldSim.power(roster, it), it) == null }?.id
     repeat(days) { d ->
         repeat(opens) {
             now += gap
             data = WorldSim.settle(data, roster, now).data; bank()
-            // Claim what is done, take the jobs that fit.
             for (m in data.missions.filter { it.done }) {
                 val def = Missions.byId(m.id) ?: continue
                 val give = def.give
                 if (give != null) {
-                    // A Deliver job hands over berries from the Bag; the Swap Shop turns three of another flavour into the one it needs.
                     if ((data.items[give] ?: 0) < def.giveCount) {
                         val other = SwapShop.flavors.map { Items.berry(it) }.filter { it != give }.firstOrNull { (data.items[it] ?: 0) >= SwapShop.GIVE }
                         if (other != null) {
@@ -160,29 +145,24 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
             data.researchReady().forEach { r -> data.claimResearch(r.species)?.let { data = it; bank() } }
             fun startable(id: String?) = id == null || (data.recall(1) ?: data).start(1, id, now) != null
             Missions.available(data).filter { m ->
-                // Only the jobs this team can do: an Escort needs enough Pokémon and a Defeat enough power, and a job that cannot be done would sit in one of the three slots for ever.
                 val dungeon = m.dungeonId?.let { Dungeons.byId(it) }
                 startable(m.dungeonId) && (dungeon == null || m.floor <= 0 || Outcomes.of(WorldSim.power(roster, dungeon), dungeon, m.floor) == Outcomes.Outcome.CLEARED) && m.kind != MissionKind.INVESTIGATION && m.kind != MissionKind.CHALLENGE && m.kind != MissionKind.STORY && (m.kind != MissionKind.ESCORT || roster.size >= m.count) && (m.kind != MissionKind.DEFEAT || (dungeon != null && WorldSim.power(roster, dungeon) >= m.count))
             }.forEach { m -> data.acceptMission(m.id)?.let { data = it } }
-            // Spend: facilities (lower level first), then shop candies.
             while (true) {
                 val f = Facility.entries.sortedBy { data.facilityLevel(it) }.firstOrNull { data.facilityLevel(it) < Facility.MAX_LEVEL && j.balance >= it.cost(data.facilityLevel(it)) } ?: break
                 val cost = f.cost(data.facilityLevel(f))
                 data = data.upgrade(f, j.balance)!!; j.balance -= cost; j.spentFacilities += cost
             }
             val facilitiesDone = Facility.entries.all { data.facilityLevel(it) >= Facility.MAX_LEVEL }
-            // The Dojo, when played, trains the lowest skill until all are at the top; then the shop.
             while (dojo && facilitiesDone && j.balance >= Dojo.COST) {
                 val skill = WorldSkill.entries.minByOrNull { data.skillLevel(it) }!!
                 data = data.train(skill, j.balance) ?: break; j.balance -= Dojo.COST; j.dojoSessions++; j.spentDojo += Dojo.COST
             }
-            // Then Exp. Candies at the Poké Mart (the Kecleon Shop sells no candy since 0.187.0).
             if (facilitiesDone) { val each = app.pokeplan.core.pokemon.Shop.COINS_PER_RARE_CANDY; val n = j.balance / each; j.spentShop += n * each; j.balance -= n * each; j.candiesBought += n }
             if (cafe) {
                 val berryId = data.items.keys.firstOrNull { it.startsWith("berry-") && (data.items[it] ?: 0) >= Cafe.BERRIES }
                 if (berryId != null && data.brewUntil <= now) { data = (data.brew(now) ?: data).copy(items = data.items + (berryId to data.items.getValue(berryId) - Cafe.BERRIES)); j.brews++ }
             }
-            // A job that is not finished sends the team to its dungeon first; otherwise the best open dungeon.
             val errand = data.missions.firstOrNull { !it.done }?.let { Missions.byId(it.id)?.dungeonId }
             val best = if (errand != null && startable(errand)) errand else bestDungeon()
             if (best != null && (best != current || data.team(1)?.expedition == null)) {

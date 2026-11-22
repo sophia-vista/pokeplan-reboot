@@ -82,7 +82,7 @@ Product-wide invariants:
 - Held items are persistent, reusable, non-consumable equipment and never lifetime single-use: equipping or triggering an effect never consumes, charges, breaks or removes the item; encounter-scoped trigger limits reset for later eligible encounters. Runtime effect state is separate from inventory. Consumables such as evolution stones and vitamins use explicit atomic consumption rules.
 - Every obtainable item has a documented acquisition source and enters the shared Bag through the shared reward/inventory ledger; no module mutates inventory directly.
 - Source modules own eligibility for their activity; the shared Pokémon/economy service owns idempotent reward settlement and canonical reward creation.
-- WORLD owns Exploration Rank and ordinary Exploration XP events. Life-module activities do not advance expedition floors or Exploration Rank.
+- WORLD is the eligible source of ordinary Exploration XP events; the shared progression service owns Exploration Rank and ordinary Exploration XP (WORLD.md 14.3). Life-module activities do not advance expedition floors or Exploration Rank.
 - Pokémon progression and acquisition should be generous and permanent. No breeding, required trading, paid Pokémon, seasonal exclusives, or punitive attendance loops.
 - The initial World buddy can be selected from all official starters, including regional starter variants. Any owned Pokémon can later become the buddy without resetting story progress.
 

@@ -32,11 +32,6 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 import kotlin.math.roundToInt
 
-/** White letters turned black and their black shadow white, for dialogue-font text on a light surface. */
-/**
- * Paints only the letters of the font (its white pixels) in [color] and drops the black shadow, so the text is one thin colour
- * instead of letters merged with their shadow (which made it look bold).
- */
 private fun lettersOnly(color: Color) = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
     0f, 0f, 0f, 0f, color.red * 255f,
     0f, 0f, 0f, 0f, color.green * 255f,
@@ -51,14 +46,9 @@ private val INVERT = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
     0f, 0f, 0f, 1f, 0f,
 )))
 
-/** The pixel scale (screen pixels per art pixel) of dialogue-font text in the app: a whole number, about 1.75 dp, or 1.25 dp when [small] (tab labels). */
 @Composable
 fun appPixel(small: Boolean = false): Int = (LocalDensity.current.density * (if (small) 1.25f else 1.75f)).roundToInt().coerceAtLeast(1)
 
-/**
- * A title or label in the dialogue font where the font can draw it exactly, and in the app's pixel font where it cannot (another
- * alphabet, a mark it lacks). Dark text on a light page, white on the dark theme. [large] is one step bigger, for screen titles.
- */
 @Composable
 fun PixelTitle(text: String, modifier: Modifier = Modifier, large: Boolean = false, onLight: Boolean = !Pixel.dark, alpha: Float = 1f, small: Boolean = false, tint: Color? = null) {
     val font by produceState<PmdFont?>(null) { value = PmdFont.load() }
@@ -67,16 +57,9 @@ fun PixelTitle(text: String, modifier: Modifier = Modifier, large: Boolean = fal
     else Text(text, modifier, style = if (large) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium, color = tint ?: if (onLight) Pixel.Ink else Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
 }
 
-/** One glyph of the dialogue font: its box in the sheet and how far its top is below the baseline (negative: above). */
 class PmdGlyph(val x: Int, val y: Int, val w: Int, val h: Int, val dy: Int)
 
-/**
- * The Pokémon dialogue bitmap font (assets/fonts/pmd-dialogue.png, measured into pmd-dialogue.tsv by tools/fonts/cut_pmd_font.py):
- * white letters with a black shadow, drawn at a whole-number scale without smoothing. It has the Latin letters, digits and a
- * few marks; text with anything else is drawn in the app's own font instead.
- */
 class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
-    /** The glyph's character for [c]: itself, an accent-less look-alike, a stand-in for a mark the font lacks, or `?`; null to leave it out. */
     private fun resolve(c: Char): Char? {
         val n = normalize(c)
         if (n == ' ' || n in glyphs) return n
@@ -88,16 +71,12 @@ class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
         return '?'
     }
 
-    /** Whether every character of [text] has a glyph of its own (so the app can use this font for it and fall back to another when not). */
     fun exact(text: String): Boolean = text.all { it == ' ' || resolve(it) == it.let { c -> normalize(c) } }
 
-    /** [text] as the characters this font draws. */
     fun clean(text: String): String = buildString { text.forEach { c -> resolve(c)?.let { append(it) } } }
 
-    /** The width of [clean] text in pixels of the art. */
     fun width(clean: String) = clean.sumOf { if (it == ' ') SPACE else glyphs.getValue(it).w }
 
-    /** [clean] cut with "..." so it is at most [limit] art pixels wide. */
     fun fit(clean: String, limit: Int): String {
         if (width(clean) <= limit) return clean
         val dots = width("...")
@@ -108,15 +87,12 @@ class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
 
     companion object {
         const val SPACE = 4
-        /** The height of a line in pixels of the art: the capitals and their shadow, so a line of text is centred by its letters; descenders hang below it. */
         const val LINE = 10
-        /** The baseline's distance from the top of a line: one more than the capitals are tall, so the letters (measured on a screenshot) sit on the centre line of their key rather than a pixel above it. */
         const val BASELINE = 10
         private const val ACCENTED = "àáâãäåçèéêëìíîïñòóôõöøùúûüýÿ"
         private const val PLAIN = "aaaaaaceeeeiiiinoooooouuuuyy"
         private var cached: PmdFont? = null
 
-        /** The font if it has been read already (so a first frame need not wait), else null. */
         fun cachedOrNull(): PmdFont? = cached
 
         fun normalize(c: Char): Char = when (c) { '\'' -> '\u2019'; '"' -> '\u201d'; else -> c }
@@ -132,7 +108,6 @@ class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
     }
 }
 
-/** A stretch of text: either characters the dialogue font draws, or a run of emoji (which it cannot, and the system's emoji font draws). */
 internal class TextRun(val text: String, val emoji: Boolean)
 
 private fun codePointAt(text: String, i: Int): Int {
@@ -144,10 +119,8 @@ private fun isEmojiCodePoint(cp: Int): Boolean =
     cp in 0x1F000..0x1FAFF || cp in 0x2600..0x27BF || cp in 0x2B00..0x2BFF || cp in 0x2300..0x23FF || cp in 0x2190..0x21FF ||
         cp == 0x00A9 || cp == 0x00AE || cp == 0x203C || cp == 0x2049 || cp == 0x2122 || cp == 0x2139 || cp in 0x24C2..0x24C2 || cp in 0x25A0..0x25FF || cp in 0x2934..0x2935 || cp == 0x3030 || cp == 0x303D || cp == 0x3297 || cp == 0x3299
 
-/** Joiners and modifiers that belong to the emoji before them: the variation selector, the zero width joiner, the keycap and the skin tones. */
 private fun isEmojiTail(cp: Int): Boolean = cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D || cp == 0x20E3 || cp in 0x1F3FB..0x1F3FF || cp in 0xE0020..0xE007F
 
-/** [text] cut into runs of ordinary text and runs of emoji (a family or a flag is one run). */
 internal fun splitEmoji(text: String): List<TextRun> {
     val runs = mutableListOf<TextRun>()
     val current = StringBuilder()
@@ -157,7 +130,6 @@ internal fun splitEmoji(text: String): List<TextRun> {
         val cp = codePointAt(text, i)
         val width = if (cp > 0xFFFF) 2 else 1
         val emoji = isEmojiCodePoint(cp) || (inEmoji && isEmojiTail(cp) || (inEmoji && cp == 0x200D))
-        // A joiner continues the emoji and also lets the next character join it.
         if (emoji != inEmoji && current.isNotEmpty()) { runs += TextRun(current.toString(), inEmoji); current.clear() }
         inEmoji = emoji
         current.append(text, i, i + width)
@@ -167,14 +139,8 @@ internal fun splitEmoji(text: String): List<TextRun> {
     return runs
 }
 
-/** Whether [text] has any emoji in it. */
 internal fun hasEmoji(text: String): Boolean = splitEmoji(text).any { it.emoji }
 
-/**
- * [text] in the dialogue font at [pixel] screen pixels per art pixel (white; [alpha] softens it), on one line, cut with "..." if it
- * does not fit. Marks the font lacks become look-alikes or `?`; emoji are the one exception: they are drawn by the system's emoji
- * font at the height of the letters, beside the bitmap text, so a task or event called "🏠 Home" shows its house.
- */
 @Composable
 fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Float = 1f, onLight: Boolean = false, tint: Color? = null) {
     val font by produceState<PmdFont?>(null) { value = PmdFont.load() }
@@ -187,7 +153,6 @@ fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Floa
             PmdRun(f, shown, pixel, density, alpha, onLight, tint, Modifier.semantics { contentDescription = text })
             return@BoxWithConstraints
         }
-        // With emoji: each run in turn, an emoji as wide as a line is tall; the last piece of text is cut to what room is left.
         val emojiWidth = PmdFont.LINE + 2
         var left = limit
         Row(Modifier.semantics { contentDescription = text }, verticalAlignment = Alignment.CenterVertically) {
@@ -209,7 +174,6 @@ fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Floa
     }
 }
 
-/** Already-cleaned [shown] drawn glyph by glyph. */
 @Composable
 private fun PmdRun(f: PmdFont, shown: String, pixel: Int, density: Float, alpha: Float, onLight: Boolean, tint: Color?, modifier: Modifier) {
     Canvas(modifier.size((f.width(shown) * pixel / density).dp, (PmdFont.LINE * pixel / density).dp)) {
@@ -228,11 +192,6 @@ private fun PmdRun(f: PmdFont, shown: String, pixel: Int, density: Float, alpha:
 }
 
 
-/**
- * A button or tab label in the dialogue font (or the pixel font where it cannot draw the text), in [color]: light letters for a
- * light colour (white, or the ink of the dark theme) and dark letters for a dark one, so it reads on either theme. With [tinted]
- * the letters are exactly [color] (a button's key colour on its white face) instead of white or ink.
- */
 @Composable
 fun PixelLabel(text: String, color: Color, modifier: Modifier = Modifier, small: Boolean = false, tinted: Boolean = false) {
     PixelTitle(text, modifier, onLight = color.luminance() < 0.5f, alpha = if (!tinted && (color == Pixel.InkSoft || color == Pixel.Gray)) 0.65f else 1f, small = small, tint = if (tinted) color else null)

@@ -1,24 +1,4 @@
 #!/usr/bin/env python3
-"""Fetch and render the Pokémon Mystery Dungeon: Red Rescue Team ground maps.
-
-pret/pmd-red commits the game's map data (`data/map_bg/*.bpl|bpc|bma|bpa`, extracted
-from the ROM by the decompilation) and the table that names each map's files
-(`src/map_files_table.c`). Both are reachable through raw.githubusercontent.com, so no
-ROM is needed here. Every entry of the table is decoded to one PNG: the Friend Areas
-(the 57 places of the Friend Area map), the towns, the guild and the other ground maps.
-
-Output (`assets/rescue-maps/`):
-  <MAP_FILE_ID>.png     the map with its first palette frame and first tile-animation frame
-  maps.tsv              id, bpl, bpc, bma, width, height, layers, palette cycles, bpa slots
-  sources.tsv           each downloaded file, its URL and sha256 (the receipt)
-
-Format reference: pret/pmd-red `src/ground_bg.c` and `src/map_files_table.c`. This is an
-independent decoder; it does not rip from a ROM. Pokémon Mystery Dungeon art belongs to
-Nintendo / Chunsoft / The Pokémon Company: private use only (docs/assets.md).
-
-Needs Pillow. Usage:  python3 -I tools/sprites/fetch_rescue_maps.py [--only FRIEND_AREA]
-Downloads are cached in tools/sprites/cache-rescue-maps (git-ignored).
-"""
 import argparse
 import hashlib
 import re
@@ -30,7 +10,7 @@ from pathlib import Path
 
 from PIL import Image
 
-REV = "013475aa04f5be3191e5527c186d9bfceae7cae0"  # pret/pmd-red, pinned
+REV = "013475aa04f5be3191e5527c186d9bfceae7cae0"
 RAW = f"https://raw.githubusercontent.com/pret/pmd-red/{REV}/"
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parents[1] / "assets" / "rescue-maps"
@@ -51,7 +31,6 @@ def nibbles(raw):
 
 
 def parse_table(text):
-    """Every `[MAP_FILE_ID_X] = { .bplFileName ... }` entry: id -> (bpl, bpc, bma, [bpa])."""
     entries = {}
     pattern = re.compile(
         r"\[MAP_FILE_ID_(\w+)\]\s*=\s*\{\s*\.bplFileName\s*=\s*(\"\w+\"|NULL),\s*"
@@ -65,8 +44,6 @@ def parse_table(text):
 
 
 def palettes(bpl):
-    """BPL: u16 banks, u16 animated; per bank 15 colours (RGBA bytes) after colour 0; then
-    cycle specs (ticks, frames) per bank and the frames. Returns (banks, {bank: (ticks, frames)})."""
     count, animated = struct.unpack_from("<2H", bpl)
 
     def colours(offset):
@@ -89,7 +66,6 @@ def palettes(bpl):
 
 
 def chunk_rows(bma, pos, wc, hc):
-    """One BMA tile-layer: run-length rows of 12-bit chunk ids, each row XORed with the row above."""
     rows, previous = [], [0] * ((wc + 1) // 2 * 2)
     for _ in range(hc):
         row = []
@@ -114,7 +90,6 @@ def chunk_rows(bma, pos, wc, hc):
 
 
 def render(bpl, bpc, bma, bpas):
-    """Palette-index tile image composed from the BMA layers; returns (image, layer count)."""
     cw, ch, ntiles, *rest = struct.unpack_from("<8H", bpc)
     slots, nchunks = rest[:4], rest[4]
     static = [bytes(64)] + [nibbles(bpc[16 + i * 32:48 + i * 32]) for i in range(ntiles - 1)]
@@ -127,10 +102,9 @@ def render(bpl, bpc, bma, bpas):
     pos, layers = 12, []
     for _ in range(nl):
         layers.append(chunk_rows(bma, pos, wc, hc))
-        # advance past the layer: chunk_rows does not return pos, so re-walk it
         pos = skip_layer(bma, pos, wc, hc)
     tiles = list(static)
-    for i, n in enumerate(slots):  # animated tile slots follow the static tiles; draw frame 0
+    for i, n in enumerate(slots):
         if not n:
             continue
         raw = bpas[i] if i < len(bpas) else None
@@ -142,7 +116,7 @@ def render(bpl, bpc, bma, bpas):
             tiles += [bytes(64)] * n
     image = Image.new("P", (wt * 8, ht * 8))
     layered = len(layers) > 1
-    for rows in reversed(layers):  # layer 0 is on top
+    for rows in reversed(layers):
         for cy, row in enumerate(rows):
             for cx, chunk in enumerate(row):
                 for t, entry in enumerate(chunks[chunk] if chunk < len(chunks) else ()):
@@ -212,7 +186,7 @@ def main():
                 bpas.append(raw)
             banks, cycles = palettes(files["bpl"])
             for bank, (_ticks, frames) in cycles.items():
-                banks[bank] = frames[0]  # the game loads frame 0 first
+                banks[bank] = frames[0]
             indices, nl = render(files["bpl"], files["bpc"], files["bma"], bpas)
             to_rgba(indices, banks).save(OUT / f"{ident}.png", optimize=True)
             rows.append((ident, bpl_n, bpc_n, bma_n, indices.size[0], indices.size[1], nl, len(cycles),

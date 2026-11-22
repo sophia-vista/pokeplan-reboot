@@ -3,11 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Unova layer (docs/pokelife/MODULES/WORLD.md section 14, "Unova"), from Pokémon Black, White, Black 2 and White 2. Their wild
- * tables are the Unova regional dex, by each place's habitat in the games; legendaries are never found (they are quests, [Legends]). Floors, floor
- * times, milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter of [UnovaStory].
- */
 object UnovaDungeons {
     private val U = WorldLayer.UNOVA
 
@@ -69,10 +64,6 @@ object UnovaDungeons {
     )
 }
 
-/**
- * Unova's story, "Truth and Ideals": Team Plasma frees Pokémon in the name of liberty, and the two dragons of the legend, Reshiram and Zekrom,
- * wait for a trainer. A chapter opens by rank and by how many different Unova dungeons have been cleared, and is never lost.
- */
 object UnovaStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "Nuvema Town", "A new explorer sets out from Nuvema Town. Pinwheel Forest and Wellspring Cave are lively, but a crowd keeps talking about freeing Pokémon.", "Pinwheel Forest and Wellspring Cave", ExplorerRank.NORMAL, 0),
@@ -82,7 +73,6 @@ object UnovaStory {
         Chapter(5, "The Giant Chasm", "In N's Castle the dark dragon answers, and past the castle a frozen chasm holds the dragon that was left behind.", "N's Castle, Giant Chasm, Zekrom and Kyurem", ExplorerRank.PLATINUM, 7),
     )
 
-    /** The Guardian: Kyurem, in the Giant Chasm. */
     const val GUARDIAN = "Kyurem"
     const val GUARDIAN_BONUS = "Boundary Frost: Unova expeditions find treasure a little more often"
 }

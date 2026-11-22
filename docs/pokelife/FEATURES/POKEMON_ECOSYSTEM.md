@@ -320,7 +320,7 @@ Hatching creates one owned Pokémon atomically and updates the relevant Pokédex
 - User can view egg origin and any already-disclosed information.
 - Outcome resolution must be deterministic for a committed egg, including offline use and restore.
 - No network/server-issued ticket is required for ordinary local hatching.
-- **Shiny odds** are fixed at 1 in 128 per egg, with a small bonus for longer focus sessions (`Rules.BASE_ODDS`). There is no Shiny Charm, no step-based eggs and no Oval Charm. A granted legendary gets one ordinary shiny roll when created and is never rerolled; legendaries are not tradable.
+- **Shiny odds** are fixed at 1 in 128 per egg, with a small bonus for longer focus sessions (`Rules.BASE_ODDS`). Two held charms add to the party bonuses: the Oval Charm (`oval-charm`, the Egg luck bucket) and the Shiny Charm (`shiny-charm`, the Shiny hunter bucket; sold at the Kecleon Shop for 1,500 Poké). There is no step-based egg. A granted legendary gets one ordinary shiny roll when created and is never rerolled; legendaries are not tradable.
 - Preserve the existing PLAN immediate-hatch behavior unless PLAN's approved spec explicitly changes it; do not introduce artificial incubation friction there.
 - CARE visitor eggs persist in the shared Egg collection and are hatched under user control.
 - Other module eggs follow their own approved progression/hatch rules while using the same shared lifecycle.
@@ -363,7 +363,7 @@ The acquisition identity of each module is in the matrix of section 10.1; each m
 | HEAL | Field Research | Approved egg/discovery/reward event | Participation only; no body/medical outcomes or biometric inputs |
 | MINT | Ledger Research | Approved egg/discovery/reward event | Abstract admin activity only; no amounts, balances, merchant or account data |
 | BASE | Habitat Discovery | Approved egg/discovery/reward event | Qualifying upkeep only; no household contents/notes/property identifiers |
-| LINK | Postcard Trail | Approved egg/discovery/reward event | Distinct follow-up completions; no contact identifiers or message content |
+| LINK | Postcard Trail; Friend Safari (LINK.md 9.5) | Approved egg/discovery/reward event | Distinct follow-up completions; no contact identifiers or message content |
 | GEAR | None | No Pokémon, egg, XP, currency or item rewards | Helper Pokémon are visual-only; Ranger-style capture minigame is entertainment only |
 | WORLD | Exploration Finds, encounters, expeditions, story/Guardian recruitment | Find record and/or canonical owned instance | WORLD owns adventure progress and Exploration Rank |
 

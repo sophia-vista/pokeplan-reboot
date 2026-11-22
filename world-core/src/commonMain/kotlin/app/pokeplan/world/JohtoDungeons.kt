@@ -3,12 +3,6 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/**
- * The nine dungeons of the Johto layer (docs/pokelife/MODULES/WORLD.md section 14, "Johto"), from Pokémon Gold, Silver, Crystal, HeartGold and SoulSilver. Their
- * wild tables are Johto's own species (the Johto dex, 152 to 251, with the Kanto species that live there), by each place's habitat in
- * the games; legendaries are never found (they are quests, [Legends]; the three beasts and Celebi are side legendaries of the modules).
- * Floors, floor times, milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter of [JohtoStory].
- */
 object JohtoDungeons {
     private val J = WorldLayer.JOHTO
 
@@ -70,10 +64,6 @@ object JohtoDungeons {
     )
 }
 
-/**
- * Johto's story, "The Sacred Balance" (docs/regional-storylines.md): the burned tower, the legendary beasts, the sky and the sea. A
- * chapter opens by rank and by how many different Johto dungeons have been cleared, and is never lost.
- */
 object JohtoStory {
     val chapters: List<Chapter> = listOf(
         Chapter(1, "New Bark Town", "A new explorer sets out from New Bark Town. The old stories of Johto say the sky and the sea are in balance.", "Sprout Tower and Ilex Forest", ExplorerRank.NORMAL, 0),
@@ -83,7 +73,6 @@ object JohtoStory {
         Chapter(5, "The Rainbow Wings", "At the top of the Tin Tower, the guardian of the sky waits for one who can restore the harmony of the sky and the sea.", "Tin Tower and Ho-Oh", ExplorerRank.PLATINUM, 8),
     )
 
-    /** The Guardian: Ho-Oh, at the top of the Tin Tower. */
     const val GUARDIAN = "Ho-Oh"
     const val GUARDIAN_BONUS = "Sacred Fire: Johto expeditions find more treasure and Pokémon"
 }

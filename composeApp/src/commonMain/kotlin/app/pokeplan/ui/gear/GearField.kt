@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import app.pokeplan.ui.rememberInForeground
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,7 +58,6 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.app.gear.changeGear
 
 
-/** Waypoints: mark where the phone is (one reading, asked for when you press the button; nothing is tracked) and see how far and which way each saved place is. */
 @Composable
 internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.location
@@ -120,7 +120,6 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** The Sound meter: a level with its quietest, average and loudest, the pitch it hears and a spectrum, only while the tool is open. */
 @Composable
 internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.sound
@@ -135,25 +134,26 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     var pitch by remember { mutableStateOf<Float?>(null) }
     var bands by remember { mutableStateOf(FloatArray(0)) }
     var problem by remember { mutableStateOf("") }
-    DisposableEffect(feed) {
+    // Stops the microphone when the app is no longer in front, not only when the tool is left.
+    val foreground = rememberInForeground()
+    DisposableEffect(feed, foreground) {
         var smooth: Float? = null
-        val stop = feed.start({ frame, rate ->
+        var stop: (() -> Unit)? = null
+        if (foreground) stop = feed.start({ frame, rate ->
             val level = SoundMath.dbFs(frame)
             smooth = smooth?.let { it + (level - it) * 0.35f } ?: level
             dbFs = smooth
             val s = smooth!!
-            // Kept below full scale, so changing the offset moves the quietest, average and loudest with the reading.
             if (s > -119f) { low = low?.let { minOf(it, s) } ?: s; high = high?.let { maxOf(it, s) } ?: s; sum += s; count++ }
             val spec = SoundMath.spectrum(frame, 1024)
             pitch = SoundMath.dominantHz(spec, rate)
-            // Twenty-four bands, each a block of bins, on a gentle curve so the low pitches are not squashed.
             bands = FloatArray(24) { b ->
                 val from = (spec.size * (b / 24f) * (b / 24f)).toInt(); val to = maxOf(from + 1, (spec.size * ((b + 1) / 24f) * ((b + 1) / 24f)).toInt())
                 (spec.slice(from until minOf(to, spec.size)).maxOrNull() ?: 0.0).toFloat()
             }
         }, { problem = it })
-        if (stop == null) problem = "No microphone was found."
-        onUse()
+        if (stop == null && foreground) problem = "No microphone was found."
+        if (foreground) onUse()
         onDispose { stop?.invoke() }
     }
     if (problem.isNotEmpty()) return Missing(problem)
@@ -182,7 +182,6 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** QR codes: make one from text (drawn here, nothing sent anywhere) or scan one with the camera. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun QrTool(model: AppModel, onUse: () -> Unit) {
@@ -229,7 +228,6 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** The Network check: how the phone is connected now and, when asked, how quickly the internet answers. */
 @Composable
 internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.network

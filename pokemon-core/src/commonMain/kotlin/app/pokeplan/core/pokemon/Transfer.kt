@@ -11,14 +11,11 @@ enum class TransferBlock(val reason: String) {
 
 data class TransferQuote(val rareCandies: Int, val coins: Int, val returnedItem: String?, val warnings: List<String>)
 
-/** Duplicates become Rare Candies and coins. See "Duplicates → candy" in docs/design.md. */
 object Transfer {
-    /** Starting yields by rarity. *(tune)* */
     val candiesByRarity: Map<Rarity, Int> = mapOf(
         Rarity.COMMON to 8, Rarity.UNCOMMON to 12, Rarity.RARE to 22, Rarity.SUPER_RARE to 60,
     )
 
-    /** Coins are twice the candy yield; a fifth of the candies already fed come back. *(tune)* */
     private const val COIN_FACTOR = 2
     private const val REFUND_DIVISOR = 5
 

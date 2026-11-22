@@ -7,19 +7,12 @@ import kotlinx.datetime.minus
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** Why a record was not accepted, in words for the screen. */
 sealed interface Check {
     data object Ok : Check
     data class Refused(val reason: String) : Check
 }
 
-/**
- * HEAL's rules, all pure. Three principles run through them (HEAL.md sections 2.2, 6, 9, 12): **missing is not zero** (a day with nothing
- * logged has no total, not a total of 0), **nothing is judged** (no score, no good or bad, no target the app sets for you) and
- * **only participation can ever earn** (what pays is decided here and carries no measurement).
- */
 object HealRules {
-    // --- what the app accepts --------------------------------------------------------------------------------------------
 
     const val ACTIVITY_MIN_MINUTES = 1
     const val ACTIVITY_MAX_MINUTES = 24 * 60
@@ -53,13 +46,10 @@ object HealRules {
         else -> Check.Ok
     }
 
-    /** A day's step count is never above this; anything larger is not a step count. */
     const val STEPS_MAX = 200_000
 
-    /** Steps: at least one (a page that shows 0 may just not have synced: missing is not zero) and at most [STEPS_MAX]. */
     fun checkSteps(steps: Int): Check = if (steps in 1..STEPS_MAX) Check.Ok else Check.Refused("That is not a step count.")
 
-    /** The range a reading of [type] must be in to be one at all (never a judgement: a low or a high reading in range is kept like any other). Skin temperature is in °C. */
     fun vitalRange(type: VitalType): ClosedFloatingPointRange<Double> = when (type) {
         VitalType.HEART_RATE, VitalType.HEART_RATE_LOW, VitalType.HEART_RATE_HIGH -> 25.0..250.0
         VitalType.RESTING_HEART_RATE -> 25.0..150.0
@@ -73,67 +63,40 @@ object HealRules {
     fun checkVital(type: VitalType, value: Double): Check =
         if (value.isFinite() && value in vitalRange(type)) Check.Ok else Check.Refused("That does not look like a ${type.label.lowercase()} reading.")
 
-    // --- Field Research: what may pay (HEAL.md section 12) -------------------------------------------------------------------
-
-    /** A session under this long is logged but does not count for Field Research, so a few seconds of walking is not farmed. *(tune)* */
     const val RESEARCH_MIN_MINUTES = 10
 
-    /** Sessions Field Research pays for in a day; the rest are still logged. *(tune)* */
     const val ACTIVITIES_PAID_PER_DAY = 3
 
-    /** Hydration pays at most once a day (section 12.2: bounded, never every entry). *(tune)* */
     const val PARTICIPATION_PAID_PER_DAY = 1
 
-    /** A session pays only while it is fresh: it ended no more than this long ago (so backfilling history never pays, section 10.3). *(tune)* */
     const val FRESH_MILLIS = 12 * 60 * 60 * 1000L
 
-    /**
-     * How far back a session read from Huawei Health may have ended and still pay: reads are nightly to weekly (owner, 14 November 2026), so a week and a day,
-     * against [FRESH_MILLIS] for one logged by hand. The daily share still counts on the session's own day. *(tune)*
-     */
     const val IMPORT_FRESH_MILLIS = 8 * 24 * 60 * 60 * 1000L
 
     fun freshFor(activity: ActivityRecord): Long = if (activity.source == SourceKind.IMPORTED) IMPORT_FRESH_MILLIS else FRESH_MILLIS
 
-    /** The clock of a phone can be a little ahead of what the user typed; a session ending this far in the future is still today's. */
     const val FUTURE_SLACK_MILLIS = 5 * 60 * 1000L
 
-    /** Whether a just-logged session may be paid: it is long enough, it ended recently and not in the future, and the day's share is not used. */
     fun activityPays(activity: ActivityRecord, nowMillis: Long, paidToday: Int): Boolean =
         paysLikeManual(activity) && activity.minutes >= RESEARCH_MIN_MINUTES &&
             activity.endMillis <= nowMillis + FUTURE_SLACK_MILLIS && activity.endMillis >= nowMillis - freshFor(activity) &&
             paidToday < ACTIVITIES_PAID_PER_DAY
 
-    /**
-     * Manual sessions, and sessions read from a provider in [HealImport.PAYING_PROVIDERS] (Huawei Health's pages, owner 14 November 2026) that are not flagged as
-     * a possible repeat of one already here: a session logged by hand and also read from Huawei pays once, by hand.
-     */
     fun paysLikeManual(activity: ActivityRecord): Boolean = activity.source == SourceKind.MANUAL ||
         (activity.source == SourceKind.IMPORTED && activity.provenance?.let { it.provider in HealImport.PAYING_PROVIDERS && it.possibleDuplicateOf == null } == true)
 
-    /** Whether a just-logged drink may be paid: it is now (not backfilled), and none was paid today. Only for a player who has opted in; the caller checks. */
     fun participationPays(entry: HydrationEntry, nowMillis: Long, paidToday: Int): Boolean =
         entry.source == SourceKind.MANUAL && entry.atMillis <= nowMillis + FUTURE_SLACK_MILLIS &&
             entry.atMillis >= nowMillis - FRESH_MILLIS && paidToday < PARTICIPATION_PAID_PER_DAY
 
-    // --- Field Research: steps and imports (owner, 14 November 2026) ---------------------------------------------------------
-
-    /** Steps pay per amount: one payment for each full [STEPS_PER_REWARD] steps of today. *(tune: set with `simulateEconomy`)* */
     const val STEPS_PER_REWARD = 2_000
 
-    /** Step payments in a day: [STEPS_PAID_PER_DAY] x [STEPS_PER_REWARD] steps (10,000), the rest are still kept. *(tune)* */
     const val STEPS_PAID_PER_DAY = 5
 
-    /** How many amounts of [STEPS_PER_REWARD] a day's [steps] has reached, at most [STEPS_PAID_PER_DAY]. */
     fun stepPayments(steps: Int): Int = (steps / STEPS_PER_REWARD).coerceIn(0, STEPS_PAID_PER_DAY)
 
-    /** Reading records in pays once a day for each family of record that brought something new, at most this many a day. *(tune)* */
     const val IMPORTS_PAID_PER_DAY = 3
 
-    /**
-     * Whether a new imported record counts towards an import payment: steps pay by the amount instead, a workout from a provider that pays its sessions already paid
-     * for itself, and a record must be recent (no backfilled history).
-     */
     fun importCounts(family: HealKindOf, provider: String, atMillis: Long, nowMillis: Long): Boolean =
         family != HealKindOf.STEPS && !(family == HealKindOf.ACTIVITY && provider in HealImport.PAYING_PROVIDERS) &&
             atMillis <= nowMillis + FUTURE_SLACK_MILLIS && atMillis >= nowMillis - IMPORT_FRESH_MILLIS
@@ -141,43 +104,33 @@ object HealRules {
     fun stepMark(day: LocalDate, n: Int) = "steps|$day|$n"
     fun importMark(day: LocalDate, family: HealKindOf) = "import|$day|${family.name}"
 
-    /** [marks] without the ones older than [HealSettings.MARK_DAYS] days before [today]. */
     fun pruneMarks(marks: Set<String>, today: LocalDate): Set<String> {
         val oldest = today.toEpochDays() - HealSettings.MARK_DAYS
         return marks.filterTo(HashSet()) { m -> m.split('|').getOrNull(1)?.let { runCatching { LocalDate.parse(it).toEpochDays() }.getOrNull() }?.let { it >= oldest } ?: false }
     }
 
-    /** The largest step amount of [day] already paid, from the record and the marks (0 when none). */
     fun stepsPaidOn(data: HealData, day: LocalDate): Int =
         maxOf(data.steps.filter { it.day == day }.maxOfOrNull { it.paidBuckets } ?: 0, data.settings.paidMarks.maxOfOrNull { m -> m.split('|').let { if (it[0] == "steps" && it.getOrNull(1) == day.toString()) it.getOrNull(2)?.toIntOrNull() ?: 0 else 0 } } ?: 0)
 
     fun activitiesPaidOn(data: HealData, day: LocalDate): Int = data.activities.count { it.day == day && it.paid }
     fun participationPaidOn(data: HealData, day: LocalDate): Int = data.hydration.count { it.day == day && it.paid }
 
-    // --- reading the records (a total only where something was recorded) ---------------------------------------------------
-
-    /** Active minutes on [day], or null when no activity was logged that day. */
     fun activeMinutes(data: HealData, day: LocalDate): Int? =
         data.activities.filter { it.day == day }.takeIf { it.isNotEmpty() }?.sumOf { it.minutes }
 
-    /** Active minutes in the week starting [weekStart], or null when none was logged in it. */
     fun weekActiveMinutes(data: HealData, weekStart: LocalDate): Int? =
         data.activities.filter { it.day in weekDays(weekStart) }.takeIf { it.isNotEmpty() }?.sumOf { it.minutes }
 
     fun weekActiveDays(data: HealData, weekStart: LocalDate): Int =
         data.activities.filter { it.day in weekDays(weekStart) }.map { it.day }.toSet().size
 
-    /** Millilitres logged on [day], or null when no drink was logged that day (not 0). */
     fun hydrationOn(data: HealData, day: LocalDate): Int? =
         data.hydration.filter { it.day == day }.takeIf { it.isNotEmpty() }?.sumOf { it.ml }
 
-    /** Steps on [day] (the largest count read), or null when none was read that day (not 0). */
     fun stepsOn(data: HealData, day: LocalDate): Int? = data.steps.filter { it.day == day }.maxOfOrNull { it.steps }
 
-    /** The newest reading of [type], or null. */
     fun latestVital(data: HealData, type: VitalType): VitalReading? = data.vitals.filter { it.type == type }.maxByOrNull { it.atMillis }
 
-    /** The most recent finished sleep, or null: an unfinished night is never shown as a total (section 2.2). */
     fun latestSleep(data: HealData): SleepRecord? = data.sleep.maxByOrNull { it.endMillis }
 
     fun latestMeasurement(data: HealData, type: MeasureType): Measurement? =
@@ -190,17 +143,10 @@ object HealRules {
 
     private fun weekDays(start: LocalDate): ClosedRange<LocalDate> = start..LocalDate.fromEpochDays(start.toEpochDays() + 6)
 
-    // --- goals (section 9) --------------------------------------------------------------------------------------------------
-
-    /**
-     * Progress towards a goal. [done] is null when nothing was recorded in the period, which a screen shows as "nothing logged yet", never as 0 of
-     * the target. Reaching the target can be shown as met; falling short is never shown as failed: it is simply "so far".
-     */
     data class Progress(val done: Int?, val target: Int, val met: Boolean) {
         val fraction: Float get() = if (done == null || target <= 0) 0f else (done.toFloat() / target).coerceIn(0f, 1f)
     }
 
-    /** Whether [target] can be a goal of [kind]: above zero, and a week has seven days. */
     fun goalTargetOk(kind: GoalKind, target: Int): Boolean = target in 1..(if (kind == GoalKind.WEEKLY_ACTIVE_DAYS) 7 else 100_000)
 
     fun progress(goal: HealGoal, data: HealData, today: LocalDate, first: DayOfWeek = DayOfWeek.MONDAY): Progress {
@@ -212,15 +158,8 @@ object HealRules {
         return Progress(done, goal.target, done != null && done >= goal.target)
     }
 
-    // --- trends in words (section 2.3: no causation, no verdict) -----------------------------------------------------------
-
-    /** Observations needed before a measurement shows a trend at all (section 7: only when enough comparable observations exist). */
     const val TREND_MIN_OBSERVATIONS = 3
 
-    /**
-     * One neutral sentence about a measurement over time, or null when there are too few comparable (same type and unit) observations. It states the
-     * count and the change between the first and the latest, with no direction word that judges ("improved", "worse").
-     */
     fun trendText(data: HealData, type: MeasureType, unit: String): String? {
         val series = data.measurements.filter { it.type == type && it.unit == unit }.sortedBy { it.atMillis }
         if (series.size < TREND_MIN_OBSERVATIONS) return null
@@ -231,11 +170,9 @@ object HealRules {
 
     fun format(value: Double): String = if (value == value.roundToInt().toDouble()) value.roundToInt().toString() else ((value * 10).roundToInt() / 10.0).toString()
 
-    /** "1 h 05 min" or "45 min". */
     fun duration(minutes: Int): String = if (minutes >= 60) "${minutes / 60} h ${(minutes % 60).toString().padStart(2, '0')} min" else "$minutes min"
 }
 
-/** Unit conversion kept with its meaning (HEAL.md section 11.1): a stored value keeps the unit it was entered in; this only shows it in another. */
 object HealUnits {
     private const val LB_PER_KG = 2.2046226218
     private const val CM_PER_IN = 2.54
@@ -249,7 +186,6 @@ object HealUnits {
         else -> null
     }
 
-    /** The value of [m] in [unit] when it can be converted, else as entered. */
     fun show(m: Measurement, unit: String): String {
         val converted = convert(m.value, m.unit, unit)
         return if (converted == null) "${HealRules.format(m.value)} ${m.unit}".trim() else "${HealRules.format(converted)} $unit".trim()

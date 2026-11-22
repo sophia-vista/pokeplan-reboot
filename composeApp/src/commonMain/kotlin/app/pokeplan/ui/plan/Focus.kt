@@ -36,7 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -49,6 +49,7 @@ import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.FocusRules
 import app.pokeplan.plan.Phase
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Stage
@@ -66,7 +67,6 @@ import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 
-/** [openPokemon] shows a Pokémon on the Pokémon tab: the one that just hatched. */
 @Composable
 fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack: (() -> Unit)? = null) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.PLAN) { FocusBody(model, openPokemon, onBack) }
 
@@ -87,16 +87,13 @@ private fun FocusBody(model: AppModel, openPokemon: ((String) -> Unit)?, onBack:
     }
 }
 
-/** How the last session ended: the rewards, then a way back in after a cold egg, or a way to meet the one that hatched. */
 @Composable
 private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
     val end = model.data.lastFocusEnd
-    // The session's own sound when it ends: the success jingle (the egg's when it hatched), or the soft error.
     LaunchedEffect(end) { if (end != null) model.effect(if (!end.completed) Sfx.ERROR else if (model.data.rewardLog.lastOrNull()?.rewards?.any { it is Reward.Hatched } == true) Sfx.EGG_GET else Sfx.FOCUS_END) }
     if (end != null && !end.completed) FailedBox(model, end.failReason)
     if (end != null) SessionSummary(model, end)
     if (end != null && end.completed) {
-        // The hatch is the peak of the loop, so its end leads straight to the new Pokémon rather than to a bare OK.
         val hatched = model.data.rewardLog.asReversed().firstNotNullOfOrNull { e -> e.rewards.filterIsInstance<Reward.Hatched>().lastOrNull() }?.pokemon
         val owned = hatched?.takeIf { h -> model.data.player.pokemon.any { it.id == h.id } }
         val line = if (end.guarded) "The session ended early, but Magic Guard kept your egg safe, and it hatched! (Once a week.)" else "Your egg hatched! Have a look at your Pokémon." // copy-ok: result
@@ -112,7 +109,6 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
     }
 }
 
-/** What the session came to (PLAN.md 6.1): the minutes focused of the minutes planned, the task it was for, and Deep Focus. Written even when it was cut short. */
 @Composable
 private fun SessionSummary(model: AppModel, end: app.pokeplan.app.FocusEnd) {
     if (end.plannedMinutes <= 0) return
@@ -128,7 +124,6 @@ private fun SessionSummary(model: AppModel, end: app.pokeplan.app.FocusEnd) {
 
 @Composable
 private fun FailedBox(model: AppModel, reason: FailReason?) {
-    // The buddy's face is a mild one: dizzy when the phone was moved, a sigh otherwise, never a sad or a crying one.
     SpeakerBox(model, if (reason == FailReason.MOVED_PHONE) Emotion.DIZZY else Emotion.SIGH) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(FocusRules.FAILED_MESSAGE, style = MaterialTheme.typography.titleMedium)
@@ -152,10 +147,6 @@ private fun FailedBox(model: AppModel, reason: FailReason?) {
     }
 }
 
-/**
- * Choosing a session. The settings scroll; Start stays pinned at the bottom, big and near the thumb, so it never has to be
- * looked for below the fold.
- */
 @Composable
 private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) {
     val store = model.store
@@ -165,9 +156,11 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
     var taskId by remember { mutableStateOf(model.focusTaskId) }
     val tasks = store.todayTasks().filter { it.id !in model.data.pending.map { p -> p.original.id } }
 
-    // A slow, small wobble so the egg feels alive while you set up (still when Reduce motion is on).
-    val idle = rememberInfiniteTransition()
-    val tilt by idle.animateFloat(-2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse))
+    // A slow, small wobble so the egg feels alive while you set up (still when Reduce motion is on). The value is read
+    // in graphicsLayer (draw), so the setup screen does not recompose every frame.
+    val tilt = if (model.data.settings.reduceMotion) null else rememberInfiniteTransition().animateFloat(
+        -2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse),
+    )
     Column(
         Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
         verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -175,7 +168,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
     ) {
         top()
         Stage("bw11", 168.dp) {
-            ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center).rotate(if (model.data.settings.reduceMotion) 0f else tilt))
+            ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center).graphicsLayer { rotationZ = tilt?.value ?: 0f })
         }
 
         TextBox {
@@ -191,10 +184,8 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
             }
         }
 
-        // Help: Deep Focus gives better eggs, and moving the phone ends the session.
         TextBox { ToggleRow("Deep Focus", deep) { deep = it } }
 
-        // Today's tasks first; "Another task" searches every open task (a session can be for any of them).
         val everyOpen = planTasks(model).filter { it.isOpen }
         if (everyOpen.isNotEmpty()) {
             var searching by remember { mutableStateOf(false) }
@@ -216,7 +207,6 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
             }
         }
 
-        // The last few sessions, so what was focused on is not lost (PLAN.md 6.4).
         val recent = model.data.focusHistory.takeLast(5).asReversed()
         if (recent.isNotEmpty()) TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -232,20 +222,16 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
             }
         }
 
-        // Help: the egg hatches when the timer reaches zero; leaving PokéLife for more than FocusRules.GRACE_MILLIS makes it go cold; a call pauses the timer;
-        // FocusRules.EMERGENCY_PAUSES_PER_DAY pauses of up to FocusRules.EMERGENCY_PAUSE_MILLIS a day, paused time doesn't count; Give up stops at any time.
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelButton("Start $minutes min", {
             model.effect(Sfx.FOCUS_START)
-            // The length and Deep Focus chosen here become the usual ones for next time.
             if (settings.defaultFocusMinutes != minutes || settings.deepFocus != deep) store.changeSettings { it.copy(defaultFocusMinutes = minutes, deepFocus = deep) }
             store.startFocus(minutes, deep, taskId); store.dismissFocusEnd()
         }, Modifier.fillMaxWidth(), ModuleAccent.PLAN.accent)
     }
 }
 
-/** One of the tasks the session can be for: a radio row, so a choice never looks like an action button. */
 @Composable
 private fun TaskChoice(title: String, rank: app.pokeplan.plan.Rank?, selected: Boolean, onClick: () -> Unit) {
     ChoiceRow(selected, onClick, lead = { if (rank != null) RankBadge(rank) }) {
@@ -253,16 +239,10 @@ private fun TaskChoice(title: String, rank: app.pokeplan.plan.Rank?, selected: B
     }
 }
 
-/**
- * Watches a running session wherever the player is in the app, not only on the Focus tab: leaving the app, a call, a
- * locked screen and, for Deep Focus, the phone moving.
- */
 @Composable
 fun FocusWatch(model: AppModel) {
     val store = model.store
     val session = model.data.focus ?: return
-    // Leaving the app starts the 10 second grace period; coming back stops it. A call pauses the clock instead, and a
-    // locked screen is not leaving (the stop is checked too, since the screen can report off only after the pause).
     val phone = model.phone
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
         store.focusEvent(
@@ -282,10 +262,12 @@ fun FocusWatch(model: AppModel) {
         store.focusEvent(FocusEvent.Returned)
     }
 
-    // Deep Focus: moving the phone ends the session.
+    // Deep Focus: moving the phone ends the session. The accelerometer runs only while the app is in front; a locked
+    // screen is not a movement and must not fail the session.
+    val foreground = rememberInForeground()
     if (session.deepFocus && model.motion != null) {
-        DisposableEffect(session.id) {
-            model.motion.start { store.focusEvent(FocusEvent.Moved) }
+        DisposableEffect(session.id, foreground) {
+            if (foreground) model.motion.start { store.focusEvent(FocusEvent.Moved) }
             onDispose { model.motion.stop() }
         }
     }
@@ -301,14 +283,13 @@ private fun RunningView(model: AppModel) {
     val paused = session.phase is Phase.Paused
     val away = session.phase is Phase.Away
 
-    val wobble = rememberInfiniteTransition()
-    val angle by wobble.animateFloat(
+    // Read in graphicsLayer (draw) instead of composition, and leave the transition out entirely while it must not move.
+    val angle = if (model.data.settings.reduceMotion || paused) null else rememberInfiniteTransition().animateFloat(
         initialValue = -5f, targetValue = 5f,
         animationSpec = infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse),
     )
-    Box(Modifier.rotate(if (model.data.settings.reduceMotion || paused) 0f else angle)) { ItemIcon("mystery-egg", size = 200.dp) }
+    Box(Modifier.graphicsLayer { rotationZ = angle?.value ?: 0f }) { ItemIcon("mystery-egg", size = 200.dp) }
 
-    // The buddy keeps you company beside the clock: set on it while you work, with a sigh when you leave (a form without that face shows a near one).
     SpeakerBox(model, if (away) Emotion.SIGH else if (paused) Emotion.NORMAL else Emotion.DETERMINED) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             Text(
@@ -335,7 +316,6 @@ private fun RunningView(model: AppModel) {
         } else {
             PixelButton("Pause", { store.focusEvent(FocusEvent.EmergencyPauseStarted) }, Modifier.weight(1f).semantics { contentDescription = "Pause, $pausesLeft left today" }, Pixel.Tone, enabled = pausesLeft > 0 && !paused)
         }
-        // Giving up is the way out, not the thing to do, so it stays the quiet button; a first tap asks, a second within four seconds gives up.
         var sure by remember { mutableStateOf(false) }
         LaunchedEffect(sure) { if (sure) { kotlinx.coroutines.delay(4_000); sure = false } }
         PixelButton(if (sure) "Really give up?" else "Give up", { if (sure) store.focusEvent(FocusEvent.GaveUp) else sure = true }, Modifier.weight(1f), if (sure) Pixel.Danger else Pixel.InkSoft)

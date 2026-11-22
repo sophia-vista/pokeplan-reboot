@@ -21,9 +21,11 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +50,7 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Tab
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
@@ -78,27 +81,42 @@ private enum class Section(val title: String, val icon: String) {
     MART("Poké Mart", "amulet-coin"), QUESTS("Quests", "oaks-letter"),
 }
 
-/** What the Pokémon tab shows: its menu, a section, a Pokédex entry or one Pokémon; each one opened goes a level deeper. */
 private data class CollectionPage(val section: Section?, val dexEntry: Int?, val pokemon: String?) {
     val depth get() = listOfNotNull(section, dexEntry, pokemon).size
 }
 
 @Composable
-fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null, startParty: Boolean = false, startPcEveryone: Boolean = false) {
-    var section by remember { mutableStateOf(if (startParty) Section.PARTY else Section.entries.getOrNull(startSection)) }
-    var selected by remember { mutableStateOf(startOpen) }
-    // Kept here, not in the PC section, so opening a Pokémon and coming back leaves the sort and filters as they were.
+fun CollectionScreen(
+    model: AppModel, startSection: Int = -1, startOpen: String? = null, startParty: Boolean = false, startPcEveryone: Boolean = false,
+    /** Where Back goes after a Pokémon opened from another tab (Home's buddy chip, a module): back there. */
+    onReturnToTab: (Tab) -> Unit = {},
+    /** Counts second taps on the Pokémon tab; a new count returns the tab to its menu. */
+    resetSignal: Int = 0,
+) {
+    // Saved, so a section, an open Pokémon or a Pokédex entry is still there after a tab switch (or the app being put away).
+    var section by rememberSaveable { mutableStateOf(if (startParty) Section.PARTY else Section.entries.getOrNull(startSection)) }
+    var selected by rememberSaveable { mutableStateOf(startOpen) }
     var pcView by remember { mutableStateOf(PcView(everyone = startPcEveryone)) }
     var dexView by remember { mutableStateOf(DexView()) }
-    var dexEntry by remember { mutableStateOf<Int?>(null) }
+    var dexEntry by rememberSaveable { mutableStateOf<Int?>(null) }
+    // A jump from outside (Home's buddy chip, a widget, the Party shortcut) wins over the place the tab was left in. It is read
+    // here rather than passed in once, so it also works while the tab is already open; the jump is used once.
+    LaunchedEffect(model.openPokemonId) { model.openPokemonId?.let { selected = it; model.openPokemonId = null } }
+    LaunchedEffect(model.openParty) { if (model.openParty) { section = Section.PARTY; model.openParty = false } }
+    // A second tap on the Pokémon tab returns to its menu (the shell counts the taps so a restored place is not reset).
+    var handledReset by rememberSaveable { mutableStateOf(resetSignal) }
+    LaunchedEffect(resetSignal) { if (resetSignal != handledReset) { handledReset = resetSignal; section = null; selected = null; dexEntry = null } }
     val player = model.data.player
     val store = model.store
 
-    // Deeper pages (a section, a Pokédex entry, a Pokémon) slide in and back out; one entry to the next crossfades.
     ScreenSwitch(CollectionPage(section, dexEntry, selected), depth = { it.depth }) { page ->
         val open = page.pokemon?.let { id -> player.pokemon.firstOrNull { it.id == id } }
         if (open != null) {
-            PokemonDetail(model, open) { selected = null }
+            PokemonDetail(model, open) {
+                selected = null
+                // A Pokémon opened from another tab goes back there, not to the Pokémon menu.
+                model.pokemonReturnTab?.let { tab -> model.pokemonReturnTab = null; onReturnToTab(tab) }
+            }
             return@ScreenSwitch
         }
 
@@ -128,25 +146,20 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
             return@ScreenSwitch
         }
 
-        SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon) {
+        SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon, scroll = current != Section.DEX) {
             when (current) {
                 Section.PARTY -> {
-                    // One region's party at a time behind tabs (a page of every module's party was a very long scroll), as the games' party screen:
-                    // its six places in two rows, a tap opens the Pokémon, and the perks fold away until asked for.
                     val regions = listOfNotNull(Region.PLAN, Region.CARE.takeIf { model.data.settings.careModule }, Region.HEAL, Region.MINT, Region.BASE, Region.LINK)
                     var shown by remember { mutableStateOf(Region.PLAN) }
                     val current = shown.takeIf { it in regions } ?: Region.PLAN
                     val at = regions.indexOf(current)
                     PartySwitcher(model, regions, current, { r -> partyOf(player, r) }, { r -> leadOf(player, r) }, ::accentOf) { shown = it }
-                    // A swipe along the party goes to the next module's, as the arrows do.
                     Column(Modifier.fillMaxWidth().swipeBetween(current, { shown = regions[(at - 1 + regions.size) % regions.size] }, { shown = regions[(at + 1) % regions.size] }), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PartyGroup(model, current, partyOf(player, current), leadOf(player, current)?.id, "Lead", { PerksOf(model, current) }) { selected = it }
                         GuardianSlot(model, current, accentOf(current))
                     }
                 }
                 Section.PC -> {
-                    // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games. It shows the
-                    // Pokémon resting in the PC; "Show all Pokémon" adds the buddy, the parties, the Guardians, the World teams and the helpers.
                     val places = remember(model.data) { PcPlace.all(store.data) }
                     val placeOf = { id: String -> places[id] ?: PcPlace.PC }
                     val inBox = player.pokemon.count { placeOf(it.id) == PcPlace.PC }
@@ -195,7 +208,6 @@ private fun PerksOf(model: AppModel, region: Region) = when (region) {
     Region.CARE -> CarePerksCard(model); Region.HEAL -> HealPerksCard(model); Region.MINT -> MintPerksCard(model); Region.BASE -> BasePerksCard(model); Region.LINK -> LinkPerksCard(model); else -> PartyPerksCard(model)
 }
 
-/** One region's party: its six places (a tap opens one), and its perks behind one button. */
 @Composable
 private fun PartyGroup(
     model: AppModel, region: Region, party: List<OwnedPokemon>, leadId: String?, leadLabel: String,
@@ -211,10 +223,8 @@ private fun PartyGroup(
     if (showPerks) perks()
 }
 
-/** Search, sort and filters for the PC boxes. A type plate is dimmed until chosen; choosing it again clears it. */
 @Composable
 private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, total: Int) {
-    // Any new search, sort or filter starts again from the first box.
     val change = { v: PcView -> onChange(v.copy(box = 0)) }
     Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelField(
@@ -223,7 +233,6 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
         )
         ToggleRow("Show all Pokémon", view.everyone) { change(view.copy(everyone = it, where = null)) }
         var open by remember { mutableStateOf(false) }
-        // Quiet: the boxes are the page, the controls only help find one.
         PixelButton(if (open) "Hide sort and filters" else "Sort and filters", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         if (open) {
             PixelDropdown(PcSort.entries, view.sort, { it?.label ?: "" }, { s -> if (s != null) change(view.copy(sort = s)) }, Modifier.fillMaxWidth(), label = "Sort by")
@@ -253,7 +262,6 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
     }
 }
 
-/** Previous and Next between the PC's boxes, with "Box 2 of 5" between them. */
 @Composable
 private fun PcBoxBar(at: Int, boxes: Int, go: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -263,10 +271,6 @@ private fun PcBoxBar(at: Int, boxes: Int, go: (Int) -> Unit) {
     }
 }
 
-/**
- * A Pokémon in a box: its sprite, its name and one quiet line (level, with Shiny and Starred in words for screen readers). When the PC
- * shows every Pokémon, [where] names a place other than the PC on a line of its own ([tall] keeps every tile the same height).
- */
 @Composable
 private fun PcTile(p: OwnedPokemon, favorite: Boolean, where: String?, tall: Boolean, onClick: () -> Unit) {
     Column(
@@ -289,9 +293,6 @@ private fun PcTile(p: OwnedPokemon, favorite: Boolean, where: String?, tall: Boo
     }
 }
 
-// ----- Pokédex -------------------------------------------------------------------------------------------------------
-
 internal val statNames = listOf("HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed")
 
-/** In the PC: in no other place (not the buddy, a party, a Guardian slot, a World team or a Pokégear helper). A legendary or mythical Pokémon is a normal Pokémon here. */
 private fun inPc(store: app.pokeplan.app.GameStore, p: OwnedPokemon) = app.pokeplan.app.Places.of(store.data, p.id) == app.pokeplan.app.Place.Pc

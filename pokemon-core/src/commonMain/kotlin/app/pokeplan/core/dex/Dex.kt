@@ -1,6 +1,5 @@
 package app.pokeplan.core.dex
 
-/** The National Dex: every species through Gen 9, their forms, evolutions and the regional dex lists. */
 object Dex {
     val species: List<SpeciesInfo> by lazy { DexParser.species() }
     val forms: List<FormInfo> by lazy { DexParser.forms() }
@@ -14,16 +13,13 @@ object Dex {
 
     private val entries: Map<Int, String> by lazy { DexParser.entries() }
 
-    /** The Pokédex text for [speciesId] (the most recent game's English entry). */
     fun entry(speciesId: Int): String = entries.getValue(speciesId)
 
     private val regionData: Map<String, List<Int>> by lazy { DexParser.regions() }
 
-    /** Species of [region] in dex order (empty for a module region not curated yet). For a module region the position is its own number. */
     fun regionDex(region: Region): List<SpeciesInfo> =
         regionData[region.name].orEmpty().map { speciesById.getValue(it) }
 
-    /** Species that have a Hisuian form in the Hisui dex (used to pick the Hisuian variant in Sinnoh). */
     internal val hisuiSpecies: Set<Int> by lazy { regionData.getValue("HISUI").toSet() }
 
     val moves: List<MoveInfo> by lazy { DexParser.moves() }
@@ -33,13 +29,8 @@ object Dex {
 
     fun move(id: Int): MoveInfo? = movesById[id]
 
-    /** A move by its identifier, such as `"flamethrower"` or `"will-o-wisp"`. */
     fun move(identifier: String): MoveInfo? = movesByIdentifier[identifier]
 
-    /**
-     * What [form] learns. A Mega or Gigantamax form uses its species' default form (the data holds only the old games'
-     * rows for them), as does a form with no moves of its own; a form with none anywhere has [Learnset.EMPTY].
-     */
     fun learnset(form: FormInfo): Learnset {
         val own = if (form.kind == FormKind.MEGA || form.kind == FormKind.GMAX) null else learnsets[form.id]
         return own ?: learnsets[defaultForm(form.speciesId).id] ?: Learnset.EMPTY
@@ -47,7 +38,6 @@ object Dex {
 
     fun learnset(speciesId: Int): Learnset = learnset(defaultForm(speciesId))
 
-    /** Moves of [type], strongest first. */
     fun movesOfType(type: PokemonType): List<MoveInfo> = moves.filter { it.type == type }.sortedByDescending { it.power ?: 0 }
 
     fun species(id: Int): SpeciesInfo = speciesById.getValue(id)
@@ -64,22 +54,16 @@ object Dex {
 
     fun evolutionsInto(speciesId: Int): List<Evolution> = evolutionsIntoId[speciesId].orEmpty()
 
-    /** The first species of the evolution line [speciesId] belongs to. */
     fun lineRoot(speciesId: Int): Int {
         var current = species(speciesId)
         while (true) current = current.evolvesFrom?.let { species(it) } ?: return current.id
     }
 
-    /**
-     * Every evolution in [speciesId]'s line, from its first stage down, one per pair of species (rows that differ only by
-     * form, like Pikachu into Raichu and Alolan Raichu, count once).
-     */
     fun lineEvolutions(speciesId: Int): List<Evolution> {
         val out = mutableListOf<Evolution>()
         val queue = ArrayDeque(listOf(lineRoot(speciesId)))
         while (queue.isNotEmpty()) {
             val from = queue.removeFirst()
-            // A row for the default forms wins over a regional form's own row.
             evolutionsFrom(from).sortedBy { it.requiredForm != null || it.evolvedForm != null }.distinctBy { it.to }.sortedBy { it.to }.forEach { e ->
                 if (out.none { it.to == e.to }) {
                     out += e
@@ -94,10 +78,8 @@ object Dex {
         species.groupBy { lineRoot(it.id) }.mapValues { (_, members) -> members.maxOf { defaultForm(it.id).stats.total } }
     }
 
-    /** The strongest base stat total (default forms) in the species' whole evolution line. */
     fun lineStrength(speciesId: Int): Int = lineStrengthByRoot.getValue(lineRoot(speciesId))
 
-    /** The region a regional form belongs to (Hisuian forms belong to Sinnoh), or null for other forms. */
     fun regionOfForm(form: FormInfo): Region? = when {
         form.kind != FormKind.REGIONAL -> null
         form.identifier.endsWith("-alola") -> Region.ALOLA
@@ -107,9 +89,7 @@ object Dex {
         else -> null
     }
 
-    /** Legendary-class species that appear in [region]: the targets of its legendary quests. */
     fun legendaryQuestSpecies(region: Region): List<SpeciesInfo> = regionDex(region).filter { it.isLegendaryClass }
 
-    /** Mythical species: milestone rewards, not tied to a region. */
     val mythicals: List<SpeciesInfo> by lazy { species.filter { it.isMythical } }
 }

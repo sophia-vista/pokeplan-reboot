@@ -30,7 +30,6 @@ private val sheets = BitmapCache(CacheBudget.SMALL)
 @Composable
 private fun weatherSheet(name: String): ImageBitmap? {
     val sheet by produceState(sheets[name], name) {
-        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = sheets[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/weather/$name.png").decodeToImageBitmap() }
@@ -40,12 +39,6 @@ private fun weatherSheet(name: String): ImageBitmap? {
     return sheet
 }
 
-/**
- * Weather over the town, drawn from the real Mystery Dungeon effects (assets/weather, cut by tools/sprites/cut_weather.py)
- * at the town's whole-number [pixel] scale, without smoothing: rain streaks and splashes, snow and blizzard tiles, scrolling
- * sand and the shadows of drifting clouds. It never takes a touch. With [calm] (Reduce motion, or the launcher out of
- * sight) it shows one still frame.
- */
 @Composable
 internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: Boolean, modifier: Modifier = Modifier) {
     if (weather == Weather.CLEAR) return
@@ -61,12 +54,9 @@ internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: 
     Canvas(modifier) {
         val t = if (calm) 0L else now
         when (weather) {
-            // The rain sheet is the dungeon's rain effect; its timing is not in the files read so far (see the evidence file), so it keeps the pace it had.
             Weather.RAIN -> rain?.let { tile(it, pixel, 240, 160, (t / 70 % 61).toInt(), 5) }
-            // Snow and blizzard are tile animations of 16 frames (W03P01 and W03P03), opaque where there is a flake: no tint, no overlay.
             Weather.SNOW -> snow?.let { tile(it, pixel, if (dungeon) 32 else 64, 32, GbaWeather.frame(t, GbaWeather.SNOW_TICKS), 4) }
             Weather.BLIZZARD -> blizzard?.let { tile(it, pixel, 32, 32, GbaWeather.frame(t, GbaWeather.BLIZZARD_TICKS), 4) }
-            // The sand textures are blended in at a quarter, like the game's other texture layers, and slide right at the speeds of the two layers that do (kinds 15 and 14).
             Weather.SANDSTORM -> {
                 val tick = GbaWeather.ticks(t)
                 sand1?.let { scrolling(it, pixel, GbaWeather.fastTextureShift(tick), 0, GbaWeather.TEXTURE_ALPHA) }
@@ -78,7 +68,6 @@ internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: 
     }
 }
 
-/** Frame [index] of a [cols]-wide sheet of [w] x [h] frames, repeated to cover the canvas. */
 private fun DrawScope.tile(image: ImageBitmap, pixel: Int, w: Int, h: Int, index: Int, cols: Int) {
     val src = IntOffset(index % cols * w, index / cols * h)
     val tw = w * pixel
@@ -88,10 +77,6 @@ private fun DrawScope.tile(image: ImageBitmap, pixel: Int, w: Int, h: Int, index
     }
 }
 
-/**
- * A texture moved by [dx] and [dy] game pixels (wrapping, as the game's layers do) and repeated to cover the canvas, blended in at [alpha]. The shift is a whole number
- * of game pixels, so the texture always sits on the same pixel grid as the town.
- */
 private fun DrawScope.scrolling(image: ImageBitmap, pixel: Int, dx: Int, dy: Int, alpha: Float) {
     val tw = image.width * pixel
     val th = image.height * pixel
@@ -102,5 +87,4 @@ private fun DrawScope.scrolling(image: ImageBitmap, pixel: Int, dx: Int, dy: Int
     }
 }
 
-/** [value] wrapped into 0 until [size], also for a negative value. */
 private fun wrap(value: Int, size: Int): Int = ((value % size) + size) % size

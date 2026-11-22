@@ -30,13 +30,11 @@ class GearTimersTest {
         assertTrue(g.timers.single().paused && !g.timers.single().running)
         g = GearTimers.start(g, "a", t0 + 100_000)
         assertEquals(t0 + 220_000, g.timers.single().endsAt)
-        // Starting a running timer again changes nothing (a doubled tap).
         assertEquals(g, GearTimers.start(g, "a", t0 + 150_000))
         val (done, ran) = GearTimers.tick(g, t0 + 220_000)
         assertEquals(listOf("a"), ran.map { it.id })
         assertTrue(done.timers.single().finished && !done.timers.single().running)
         assertEquals(0, done.timers.single().leftAt(t0 + 999_999))
-        // Ticking again finds nothing new: a timer is announced once.
         assertTrue(GearTimers.tick(done, t0 + 300_000).second.isEmpty())
     }
 
@@ -49,10 +47,8 @@ class GearTimersTest {
         assertNull(GearTimers.add(g, "more", "", 60_000), "at most ${GearTimers.MAX_TIMERS}")
         assertEquals("Timer", g.timers.first().label, "a blank label gets a name")
         assertEquals(24, GearTimers.add(GearData(), "x", "x".repeat(60), 60_000)!!.timers.single().label.length)
-        // Unknown ids change nothing.
         assertEquals(g, GearTimers.start(g, "nope", t0))
         assertEquals(g, GearTimers.remove(g, "nope"))
-        // Pausing an idle timer does nothing; a clock set back cannot give a negative time left.
         assertEquals(g, GearTimers.pause(g, "t0", t0))
         val running = GearTimers.start(gearWith(GearTimer("r", "R", 60_000)), "r", t0)
         assertEquals(60_000, running.timers.single().leftAt(t0), "just started: the whole time")
@@ -67,12 +63,10 @@ class GearTimersTest {
         val paused = GearTimers.pause(g, "a", t0 + 20_000)
         assertEquals(100_000, GearTimers.addTime(paused, "a", 60_000, t0 + 30_000).timers.single().pausedLeftMs)
         assertEquals(120_000, GearTimers.addTime(gearWith(GearTimer("i", "I", 60_000)), "i", 60_000, t0).timers.single().durationMs, "idle: longer")
-        // A ringing (finished) timer given a minute runs for a minute from now, and a second tap on it only adds to the running one.
         val ringing = GearTimers.tick(g, t0 + 60_000).first
         val again = GearTimers.addTime(ringing, "a", 60_000, t0 + 61_000)
         assertFalse(again.timers.single().finished)
         assertEquals(t0 + 121_000, again.timers.single().endsAt)
-        // Dismissing is idempotent and leaves running timers alone.
         val mixed = GearData(timers = listOf(GearTimer("f", "F", 1000, finished = true), GearTimer("r", "R", 1000, endsAt = t0 + 5000)))
         val dismissed = GearTimers.dismissFinished(mixed)
         assertTrue(dismissed.timers.none { it.finished } && dismissed.timers.last().running)
@@ -104,7 +98,6 @@ class GearTimersTest {
         assertEquals(g, GearTimers.stopwatchLap(g, t0 + 50_000), "no laps while stopped")
         g = GearTimers.stopwatchStart(g, t0 + 100_000)
         assertEquals(45_000, g.stopwatch.elapsedAt(t0 + 105_000))
-        // A clock set back never shows less than what was gathered.
         assertEquals(40_000, g.stopwatch.elapsedAt(t0 + 50_000))
         g = GearTimers.stopwatchReset(g)
         assertEquals(GearStopwatch(), g.stopwatch)
@@ -120,11 +113,9 @@ class GearTimersTest {
         assertTrue(store.data.gear.timers.single().running)
         assertTrue(store.timersTick().isEmpty())
         store.stopwatchStart(); store.stopwatchLap(); store.stopwatchPause()
-        // Nothing a utility does pays or records anything else.
         assertEquals(points, store.data.player.trainerPoints)
         assertEquals(bag, store.data.player.inventory.counts.values.sum())
         assertTrue(store.data.rewardLog.isEmpty())
-        // They are in the save and survive a reload.
         val saved = (store.data.gear)
         assertEquals(saved, GameStore.json.decodeFromString(AppData.serializer(), GameStore.json.encodeToString(AppData.serializer(), store.data)).gear)
     }

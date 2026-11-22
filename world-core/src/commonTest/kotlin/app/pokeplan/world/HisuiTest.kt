@@ -18,7 +18,6 @@ class HisuiTest {
         assertEquals(9, layer.size)
         assertEquals("temple-of-sinnoh", layer.single { it.guardian }.id)
         assertEquals("temple-of-sinnoh", layer.last().id)
-        // Hisui has no Region of its own in the code: its species live in the Sinnoh dex or another regional dex, so test against the union of them.
         val dex = Region.entries.flatMap { Dex.regionDex(it) }.map { it.id }.toSet()
         layer.forEach { d ->
             assertEquals(d.wild.size, d.wild.map { it.speciesId }.toSet().size, "${d.id} lists a species twice")

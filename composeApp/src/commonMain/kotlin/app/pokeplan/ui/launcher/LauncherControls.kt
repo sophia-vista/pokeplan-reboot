@@ -37,13 +37,8 @@ import app.pokeplan.ui.theme.PmdText
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
 
-/** One choice in a [PmdChoiceDialog]: what it is called, and, when the name alone does not say it, what it does. */
 internal data class ChoiceOption<T>(val value: T, val label: String, val note: String = "")
 
-/**
- * A setting that is on or off, as a line of a dialogue menu: its name, and a switch at the right that shows the state (green and to the right when on).
- * The whole line is one touch target; a screen reader hears it as a switch with its state.
- */
 @Composable
 internal fun PmdToggleLine(text: String, on: Boolean, pixel: Int, icon: String? = null, onChange: (Boolean) -> Unit) {
     val density = LocalDensity.current.density
@@ -64,7 +59,6 @@ internal fun PmdToggleLine(text: String, on: Boolean, pixel: Int, icon: String? 
     }
 }
 
-/** A setting with a few named values, as a line of a dialogue menu: its name, the value it has now at the right, and a mark that it opens a list. */
 @Composable
 internal fun PmdChoiceLine(text: String, value: String, pixel: Int, icon: String? = null, onClick: () -> Unit) {
     val density = LocalDensity.current.density
@@ -86,7 +80,6 @@ internal fun PmdChoiceLine(text: String, value: String, pixel: Int, icon: String
     }
 }
 
-/** The dim sheet behind a dialogue box that asks something: a tap outside it closes it. */
 @Composable
 private fun PmdModal(pixel: Int, onClose: () -> Unit, content: @Composable () -> Unit) {
     val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -97,10 +90,6 @@ private fun PmdModal(pixel: Int, onClose: () -> Unit, content: @Composable () ->
     }
 }
 
-/**
- * A list to choose from instead of a button that cycles: the question as the heading, every [options] under it (the one in use marked with a cursor and a tick,
- * each with its note under the name when it has one), and Cancel. Choosing closes it.
- */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun <T> PmdChoiceDialog(title: String, options: List<ChoiceOption<T>>, current: T, pixel: Int, onPick: (T) -> Unit, onClose: () -> Unit) {
@@ -120,7 +109,6 @@ internal fun <T> PmdChoiceDialog(title: String, options: List<ChoiceOption<T>>, 
     }
 }
 
-/** A question that must be answered before something that is hard to take back: what will happen as the heading, the action named for what it does, and Cancel. */
 @Composable
 internal fun PmdConfirmDialog(title: String, note: String, confirm: String, pixel: Int, onConfirm: () -> Unit, onClose: () -> Unit) {
     val density = LocalDensity.current.density

@@ -1,12 +1,4 @@
 #!/bin/bash
-# Parallel sessions: lists the work other sessions have pushed and not merged yet, so "continue with the next chunk" never
-# picks a chunk somebody else already has. Runs at session start (its output goes into the session) and by hand.
-#
-#   .claude/hooks/in-flight.sh            list branches with unmerged work (last 3 days; IN_FLIGHT_DAYS=14 for more), newest first
-#   .claude/hooks/in-flight.sh link       the same, only those that mention "link" in a branch name, commit subject or path
-#
-# A branch is "in flight" when it has commits that origin/main does not. The first commit a session pushes is its claim
-# ("claim: <backlog id> <topic>", see claim.sh), so the list reads as who is doing what. Needs only git, no GitHub access.
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 git fetch -q --prune origin 2>/dev/null || { echo "in-flight: could not reach origin, so this list may be out of date." >&2; }
@@ -25,7 +17,6 @@ while read -r ref; do
   [ "$ts" -ge "$SINCE" ] || continue
   ahead=$(git rev-list --count "origin/main..$ref")
   [ "$ahead" -gt 0 ] || continue
-  # Only what the branch itself added (its merges of main do not count as work).
   [ "$(git log --no-merges -1 --format=%s "$ref" | cut -c1-8)" = "release:" ] && continue
   subjects=$(git log --no-merges --reverse --format=%s "origin/main..$ref")
   [ -n "$subjects" ] || continue

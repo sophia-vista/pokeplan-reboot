@@ -13,7 +13,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/** The save file and the document on it: replaced whole, never written in place, and never lost to one bad write or a damaged file. */
 class SavedDocumentTest {
     @Serializable
     data class Doc(val n: Int = 0)
@@ -77,7 +76,6 @@ class SavedDocumentTest {
         val file = File(dir, "save.json")
         val storage = FileStorage(file)
         storage.save("{\"n\":1}")
-        // A folder where the temporary file goes makes the write fail: the live save must stay as it was.
         File(dir, "save.json.tmp").mkdir()
         assertFailsWith<java.io.IOException> { storage.save("{\"n\":2}") }
         assertEquals("{\"n\":1}", file.readText())

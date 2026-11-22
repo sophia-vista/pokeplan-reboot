@@ -2,15 +2,9 @@ package app.pokeplan.data
 
 import app.cash.sqldelight.db.QueryResult
 
-/**
- * The row-level work the module tables share (CARE's `care_*`, PLAN's `plan_*`): a record table has `key`, `position`, `day` and
- * the record as JSON in `json`; a state table has `key` and `json`. Writing is a diff against what is stored, so a save touches only
- * the rows that changed. Always called inside one of the store's transactions.
- */
 internal class RecordRows(private val store: DataStore) {
     class Row(val key: String, val position: Int, val day: String?, val json: String)
 
-    /** What seals and opens a stored text (Mint's rows); null for the tables that keep their records in clear. [open] throws [MintLockedException] for a text it cannot open. */
     class Codec(val seal: (String) -> String, val open: (String) -> String)
 
     fun records(table: String, codec: Codec? = null): List<Row> {
@@ -30,7 +24,6 @@ internal class RecordRows(private val store: DataStore) {
         for (row in wanted) {
             val old = have[row.key]
             if (old != null && old.position == row.position && old.day == (if (codec == null) row.day else null) && old.json == row.json) continue
-            // A sealed row keeps no date beside it: the day is inside the sealed record, so the table shows neither an amount, a name nor a date.
             val stored = codec?.seal?.invoke(row.json) ?: row.json
             store.driver.execute(null, "INSERT OR REPLACE INTO $table(key, position, day, json) VALUES (?, ?, ?, ?)", 4) {
                 bindString(0, row.key); bindLong(1, row.position.toLong()); bindString(2, if (codec == null) row.day else null); bindString(3, stored)

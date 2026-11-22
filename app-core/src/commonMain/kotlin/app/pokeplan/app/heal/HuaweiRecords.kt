@@ -14,18 +14,6 @@ import kotlinx.datetime.atStartOfDayIn
 import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.plan.toLocalDateTime
 
-/**
- * Turns captures of Huawei Health's own pages into HEAL records (INTEGRATIONS_AND_PRIVACY.md 5.2.2), from the layout of the owner's capture of 14 November
- * 2026 (Huawei Health in English):
- * - **Exercise records** (`SportHistoryActivity`): each session's type, date, start time, duration (`h:mm:ss`) and distance in km. The year comes from the
- *   month headers ("November 2026, …", or the sticky "SEPTEMBER 2026"); without one, the latest such date not in the future.
- * - **Weight** (a web page): "Thu, July 3 at 07:12", then the value and `kg` or `lb`, then "Body fat 21.4%". The year is the latest one whose date falls on
- *   that weekday and is not in the future.
- * - **Sleep** (`KnitSleepDetailActivity`): only the date and the night's length are on the page, so a night is made only for **today**, ending at the Health
- *   page's get-up time; any other day has no times and is left out.
- * Every record carries the provider [HuaweiHealth.PROVIDER] and an id made from its own time, so reading the same page again adds nothing twice.
- * Anything that cannot be read whole is left out, never guessed.
- */
 object HuaweiRecords {
     const val APP = HuaweiHealth.PACKAGE
 
@@ -54,14 +42,8 @@ object HuaweiRecords {
         return out.values.toList() + stepRecords + vitals(seen, today, zone)
     }
 
-    // --- steps and vitals (0.186.0) -----------------------------------------------------------------------------------------------
-
     private fun dayOf(millis: Long, zone: TimeZone) = millis.toLocalDateTime(zone).date
 
-    /**
-     * A day's steps from the Health page's summary and from the step notification, each at the time it was captured. One record per day: the largest count seen
-     * wins (a day's steps only grow) and its capture time is kept. A notification only says "N steps" and the Health page "N steps" for the same day.
-     */
     private fun steps(seen: HuaweiSeen, zone: TimeZone): List<Imported> {
         val found = seen.screens.mapNotNull { s -> HuaweiHome.read(s).steps?.takeIf { it > 0 }?.let { it to s.atMillis } } + seen.notifications.mapNotNull { n -> n.steps?.takeIf { it > 0 }?.let { it to n.atMillis } }
         return found.groupBy { dayOf(it.second, zone) }.map { (day, list) ->
@@ -70,11 +52,6 @@ object HuaweiRecords {
         }
     }
 
-    /**
-     * The readings the Health page shows (each card of the 14 November capture) and the sleep score on the Sleep page. The Health page has no time for a reading, so it is
-     * stamped with the capture and its day: a day keeps one resting heart rate, SpO2, skin temperature, stress and sleep score (a later read of the same day that shows
-     * another value updates it), and one heart rate per value (a re-read of the same bpm adds nothing). The Sleep page's score belongs to the night it shows, not today.
-     */
     private fun vitals(seen: HuaweiSeen, today: LocalDate, zone: TimeZone): List<Imported> {
         val out = LinkedHashMap<String, Imported.Vital>()
         fun put(type: VitalType, value: Double, day: LocalDate, at: Long, key: String) {
@@ -94,7 +71,6 @@ object HuaweiRecords {
             h.stress?.let { put(VitalType.STRESS, it.toDouble(), day, s.atMillis, "stress:$day") }
             h.sleepScore?.let { put(VitalType.SLEEP_SCORE, it.toDouble(), day, s.atMillis, "sleepscore:$day") }
             if (s.title.startsWith("KnitSleepDetail")) sleepScore(s, today, zone)?.let { (night, score) ->
-                // Stamped with the capture, or noon of that morning if the capture is later: it lands on the night's own day.
                 put(VitalType.SLEEP_SCORE, score.toDouble(), night, minOf(s.atMillis, millis(night, LocalTime(12, 0), zone)), "sleepscore:$night")
             }
         }
@@ -106,7 +82,6 @@ object HuaweiRecords {
         return out.values.toList()
     }
 
-    /** The night a Sleep page shows (its date, "Today" or "Sat, Nov 14") and the score it gives, "## points"; null when either is missing. */
     private fun sleepScore(s: ScreenCapture, today: LocalDate, zone: TimeZone): Pair<LocalDate, Int>? {
         val dateText = s.nodes.firstOrNull { id(it) == "fitness_detail_time_date_tv" }?.text?.trim() ?: return null
         val on = if (dateText.equals("Today", ignoreCase = true)) today else sleepDate.matchEntire(dateText)?.let { m ->
@@ -220,7 +195,6 @@ object HuaweiRecords {
     private fun month(word: String) = months[word.lowercase()]
     private val weekdays = DayOfWeek.entries.associateBy { it.name.lowercase().take(3) }
 
-    /** "4:12 PM", "16:12" → the time of day, or null. */
     private fun timeOf(s: String): LocalTime? {
         val m = Regex("""^(\d{1,2}):(\d{2})\s*(AM|PM)?$""", RegexOption.IGNORE_CASE).matchEntire(s.trim()) ?: return null
         var h = m.groupValues[1].toInt(); val min = m.groupValues[2].toInt()
@@ -228,15 +202,12 @@ object HuaweiRecords {
         return if (h in 0..23 && min in 0..59) LocalTime(h, min) else null
     }
 
-    /** The latest year (this one or up to six before) in which [month] [day] is a real date, not after [today], and on [weekday] when given. */
     private fun latestYear(month: Month, day: Int, today: LocalDate, weekday: DayOfWeek? = null): LocalDate? =
         (today.year downTo today.year - 6).firstNotNullOfOrNull { y ->
             runCatching { LocalDate(y, month, day) }.getOrNull()?.takeIf { it <= today && (weekday == null || it.dayOfWeek == weekday) }
         }
 
     private fun millis(date: LocalDate, time: LocalTime, zone: TimeZone) = LocalDateTime(date, time).toEpochMillis(zone)
-
-    // --- exercise records -------------------------------------------------------------------------------------------------------
 
     private fun id(n: ScreenNode) = n.viewId.substringAfter(":id/")
     private val header = Regex("""^([A-Za-z]+) (\d{4})\b""")
@@ -257,7 +228,6 @@ object HuaweiRecords {
     }
 
     private fun exercises(s: ScreenCapture, today: LocalDate, zone: TimeZone): List<Imported> {
-        // The sticky header (listed last) names the month of the sessions shown above the first group header.
         var year: Int? = s.nodes.lastOrNull { id(it) == "htv_sport_history_cut_time" }?.let { header.find(it.text)?.groupValues?.get(2)?.toIntOrNull() }
         val out = ArrayList<Imported>()
         var type = ""; var date = ""; var time = ""; var km: Double? = null; var unit = ""
@@ -299,8 +269,6 @@ object HuaweiRecords {
         return Imported.Exercise(HuaweiHealth.PROVIDER, APP, "exercise:$start", activityType(type), start, start + seconds * 1000L, km?.let { (it * 1000).toInt() })
     }
 
-    // --- weight ------------------------------------------------------------------------------------------------------------------
-
     private val weightDate = Regex("""^([A-Za-z]{3}), ([A-Za-z]+) (\d{1,2})(?:, (\d{4}))? at (\d{1,2}:\d{2}(?:\s*[AP]M)?)$""", RegexOption.IGNORE_CASE)
     private val bodyFat = Regex("""^Body fat (\d{1,2}(?:\.\d)?)%$""", RegexOption.IGNORE_CASE)
 
@@ -314,7 +282,6 @@ object HuaweiRecords {
             ?: latestYear(month, day, today, weekdays[m.groupValues[1].lowercase()]) ?: return emptyList()
         val at = millis(on, timeOf(m.groupValues[5]) ?: return emptyList(), zone)
         val out = ArrayList<Imported>()
-        // The value and its unit come right after the date (two elements); body fat follows within a few.
         val value = s.nodes.getOrNull(i + 1)?.text?.trim()?.toDoubleOrNull()
         val unit = s.nodes.getOrNull(i + 2)?.text?.trim()
         if (value != null && (unit == "kg" || unit == "lb")) out += Imported.Body(HuaweiHealth.PROVIDER, APP, "weight:$at", MeasureType.WEIGHT, value, unit, at)
@@ -323,8 +290,6 @@ object HuaweiRecords {
         }
         return out
     }
-
-    // --- sleep -------------------------------------------------------------------------------------------------------------------
 
     private val sleepDate = Regex("""^([A-Za-z]{3}), ([A-Za-z]+) (\d{1,2})$""")
     private val hoursMinutes = Regex("""^(?:(\d{1,2})\s*h)?\s*(?:(\d{1,2})\s*min)?$""")

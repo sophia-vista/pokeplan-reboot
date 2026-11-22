@@ -5,14 +5,8 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.round
 
-/** A currency the converter knows by name: its ISO [code], [name] and other things people call it (`rmb`, `yuan`, `peso`). */
 class CurrencyInfo(val code: String, val name: String, val aliases: List<String> = emptyList(), val minorUnits: Int = 2)
 
-/**
- * The currencies of the rates service (the European Central Bank's set), by name, so the converter is searched by "yen" or "rmb" and not only by
- * code, and each is shown with the right number of decimals (yen, won and kroner of Iceland have none). Names are bundled, so searching needs no
- * network.
- */
 object Currencies {
     val all: List<CurrencyInfo> = listOf(
         CurrencyInfo("USD", "US dollar", listOf("dollar", "dollars", "buck")), CurrencyInfo("EUR", "Euro", listOf("euros")), CurrencyInfo("JPY", "Japanese yen", listOf("yen"), 0),
@@ -30,10 +24,8 @@ object Currencies {
 
     fun info(code: String): CurrencyInfo? = byCode[code]
 
-    /** "PHP, Philippine peso"; a code the list does not know (the service added one) is just the code. */
     fun label(code: String): String = byCode[code]?.let { "$code, ${it.name}" } ?: code
 
-    /** The currencies matching [query] by code, name or alias (one wrong letter in a longer word is forgiven), in the order of [among] when given, best first. */
     fun search(query: String, among: Collection<String>? = null): List<CurrencyInfo> {
         val q = query.trim().lowercase()
         val pool = (among ?: all.map { it.code }).mapNotNull { code -> byCode[code] ?: CurrencyInfo(code, code) }
@@ -64,7 +56,6 @@ object Currencies {
         return edits + (a.length - i) + (b.length - j) <= 1
     }
 
-    /** [amount] of [code] as money: rounded to the currency's minor units (none for yen) and grouped by thousands, with the code after it. */
     fun format(amount: Double, code: String): String {
         val places = byCode[code]?.minorUnits ?: 2
         val scale = 10.0.pow(places)
@@ -75,7 +66,6 @@ object Currencies {
         return (if (amount < 0 && rounded != 0.0) "-" else "") + grouped + fraction + " " + code
     }
 
-    /** [amount] of [code] as plain digits for an editable field: rounded to the currency's minor units, no grouping, no code, no trailing zeros ("1234.5", "1000"). */
     fun plain(amount: Double, code: String): String {
         val places = byCode[code]?.minorUnits ?: 2
         val scale = 10.0.pow(places)
@@ -85,16 +75,8 @@ object Currencies {
         return (if (amount < 0 && rounded != 0.0) "-" else "") + whole + (if (fraction.isEmpty()) "" else ".$fraction")
     }
 
-    /**
-     * The currencies on the converter's rows, in order: the home currency first, then the board, each once, only those that have a rate.
-     */
     fun rows(home: String, board: List<String>, known: Collection<String>): List<String> = (listOf(home) + board).distinct().filter { it in known }
 
-    /**
-     * How many units of [to] one unit of [from] buys. A rate the player entered by hand wins when one of the two is the [home] currency and the
-     * other has a manual rate (the manual rate is units of that currency per one of home); otherwise the reference rates through the dollar. Null when
-     * a currency is unknown or the rate is not a positive finite number.
-     */
     fun rate(from: String, to: String, rates: GearRates?, home: String, manual: Map<String, Double>): Double? {
         if (from == to) return 1.0
         manual[to]?.takeIf { from == home && it.isFinite() && it > 0 }?.let { return it }
@@ -106,15 +88,9 @@ object Currencies {
     }
 }
 
-/** What a purchase abroad really costs at home: the reference estimate, the rate the player was offered, the fees, and the difference, each apart. */
 data class TravelCost(val reference: Double, val atQuotedRate: Double, val fees: Double, val total: Double, val extra: Double, val extraPercent: Double)
 
 object Travel {
-    /**
-     * A price of [foreign] units abroad, [referenceRate] being foreign units per one home unit (the reference rate) and [quotedRate] the one the
-     * player was offered (same unit; null to use the reference). The home cost at the quoted rate gets [feePercent] on top and then [feeFixed] (in
-     * home currency). The reference is only an estimate: banks, cards and changers each have their own rate, which only the player knows.
-     */
     fun estimate(foreign: Double, referenceRate: Double, quotedRate: Double?, feePercent: Double, feeFixed: Double): TravelCost? {
         if (!foreign.isFinite() || foreign < 0 || !referenceRate.isFinite() || referenceRate <= 0) return null
         val quoted = quotedRate ?: referenceRate

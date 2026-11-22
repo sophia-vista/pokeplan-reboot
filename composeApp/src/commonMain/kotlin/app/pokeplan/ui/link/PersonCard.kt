@@ -40,10 +40,6 @@ import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
-/**
- * A person's profile card (LINK.md 2.6): the Pokémon the user chose as their picture in a round pixel frame, their whole name (it wraps, never clipped), what
- * they are called, and small tags for their relationship word, pinned and the Me card. Tapping the picture opens [PersonPicture]. Cosmetic and private.
- */
 private val tint: Color @Composable get() = ModuleAccent.LINK.accent
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -67,7 +63,6 @@ internal fun PersonCard(p: Person, onPicture: () -> Unit) {
     }
 }
 
-/** A small tag: a word in a tinted pixel plate. */
 @Composable
 private fun Tag(text: String) {
     Text(
@@ -76,9 +71,6 @@ private fun Tag(text: String) {
     )
 }
 
-/**
- * The picture of Pokémon [species] in the app's ordinary portrait frame (0 for none: a Friend Ball in the same plain frame). [onClick] makes it a button.
- */
 @Composable
 internal fun Avatar(species: Int, size: Dp, description: String, onClick: (() -> Unit)? = null) {
     val click = if (onClick != null) Modifier.clickable(role = Role.Button, onClickLabel = description, onClick = onClick) else Modifier
@@ -86,12 +78,8 @@ internal fun Avatar(species: Int, size: Dp, description: String, onClick: (() ->
     else Box(Modifier.size(size).then(click).border(2.dp, Pixel.Outline), contentAlignment = Alignment.Center) { ItemIcon("friend-ball", size = size / 2, description = null) }
 }
 
-/** The most Pokémon the picker shows at once; a search narrows them. */
 private const val PICK_PAGE = 60
 
-/**
- * The picture chooser: the Pokémon the player has caught first, or a search of every species by name. Choosing one sets it and goes back; "No picture" clears it.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PersonPicture(model: AppModel, p: Person, onDone: () -> Unit) {
@@ -117,15 +105,11 @@ internal fun PersonPicture(model: AppModel, p: Person, onDone: () -> Unit) {
     }
 }
 
-/**
- * A person's Friend Safari (LINK.md 9.5): the Pokémon their opaque key decides, and a free visit once a day that catches one of them. It pays only the
- * Pokémon, never touches a record, and says nothing about the person. A caught species shows in full, one not caught yet as a Pokéball.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun SafariPanel(model: AppModel, p: Person) {
     val link = model.link
-    model.linkData // the save changes, so the visit state is read again
+    model.linkData
     val pool = link.safariPool(p.id)
     if (pool.isEmpty()) return
     val day = link.safariToday(p.id)

@@ -12,11 +12,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import app.pokeplan.ui.gear.SensorFeed
 
-/**
- * The motion and pressure sensors for the Pokégear's Compass, Level and Barometer, and the gyroscope and step counter for the evolutions done with
- * the phone, read through `SensorManager`. A listener is registered only when a screen asks (at the normal UI rate) and the returned function
- * unregisters it, so nothing listens while no tool is open. Create it in `onCreate`: it registers the activity permission's launcher.
- */
 class AndroidSensorFeed(private val activity: ComponentActivity) : SensorFeed {
     private val manager = activity.applicationContext.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
     private var waiting: ((Boolean) -> Unit)? = null
@@ -66,7 +61,6 @@ class AndroidSensorFeed(private val activity: ComponentActivity) : SensorFeed {
         var stop: (() -> Unit)? = null
         var cancelled = false
         fun start() { if (!cancelled) stop = listen(listOf(counter)) { e -> onReading(e.values[0].toLong()) } }
-        // Android 10 and later ask for the physical activity permission before the step counter reports.
         val needed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         if (!needed || activity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) start()
         else {

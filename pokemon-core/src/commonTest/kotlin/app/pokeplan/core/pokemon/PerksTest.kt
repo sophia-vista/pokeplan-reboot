@@ -43,7 +43,7 @@ class PerksTest {
 
     @Test
     fun natureNudgesThePowerStat() {
-        val boosted = Perks.typePerks(strong(Ids.PIKACHU, nature = Nature.MODEST)).getValue(PerkBucket.SHINY_HUNTER) // Electric uses Sp. Def
+        val boosted = Perks.typePerks(strong(Ids.PIKACHU, nature = Nature.MODEST)).getValue(PerkBucket.SHINY_HUNTER)
         val neutral = Perks.typePerks(strong(Ids.PIKACHU, nature = Nature.HARDY)).getValue(PerkBucket.SHINY_HUNTER)
         val lowered = Perks.typePerks(strong(Ids.PIKACHU, nature = Nature.GENTLE)).getValue(PerkBucket.SHINY_HUNTER)
         assertTrue(lowered > neutral, "Gentle raises Sp. Def")
@@ -54,7 +54,7 @@ class PerksTest {
 
     @Test
     fun theSecondTypeGivesHalf() {
-        val perks = Perks.typePerks(strong(Ids.GARCHOMP)) // Dragon / Ground
+        val perks = Perks.typePerks(strong(Ids.GARCHOMP))
         assertTrue(perks.getValue(PerkBucket.CANDY_YIELD) > 0 && perks.getValue(PerkBucket.SUPER_CANDY_CHANCE) > 0)
         val sameBucket = Perks.typePerks(strong(Ids.PIKACHU).withTeraType(null))
         assertEquals(1, sameBucket.size)

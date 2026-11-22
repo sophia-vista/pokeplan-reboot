@@ -4,7 +4,6 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** The trap effects in the code ([TrapFx]) are the ones tools/sprites/extract_sky_effects.py cut, frame for frame. */
 class TrapFxAssetsTest {
     private val tiles = listOf("../assets/tiles", "assets/tiles").map(::File).first { it.isDirectory }
 

@@ -9,7 +9,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-/** REP-055: the listener is rebound only while notification access is granted; the components themselves are never disabled. */
 @RunWith(RobolectricTestRunner::class)
 class HuaweiComponentsTest {
     private val context: Context = ApplicationProvider.getApplicationContext()

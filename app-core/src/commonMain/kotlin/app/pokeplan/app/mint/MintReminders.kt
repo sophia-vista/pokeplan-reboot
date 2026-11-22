@@ -23,18 +23,9 @@ import app.pokeplan.app.reminders.ReminderPolicy
 import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.app.reminders.ReminderSourceAdapter
 
-/** A bill reminder: the bill, the due day it is for, and when it goes off. */
 data class BillReminder(val billId: String, val dueDay: LocalDate, val atMillis: Long)
 
-/**
- * MINT's bill reminders (MINT.md section 12): **off until the user turns them on**, one per bill occurrence at the time the user chose (some days before the due
- * day, or on it), never repeated, and never a daily nag for an overdue bill. A bill can switch itself off, and a bill that is paid, skipped, paused or deleted stops
- * asking. Delivery follows the shared [ReminderPolicy] (the global quiet hours and a focus session). The request holds only the bill's own opaque id and the due day:
- * the words are resolved when it fires, and are the same for everyone unless the user allowed the bill's name, so a lock screen shows no amount, balance or merchant.
- * A reminder opens Mint; it never marks anything paid.
- */
 object MintReminders {
-    /** The reminders still to come after [nowMillis], earliest first, for the days the scheduler plans over. */
     fun upcoming(mint: MintData, app: AppData, nowMillis: Long, zone: TimeZone): List<BillReminder> {
         val settings = mint.settings
         if (!settings.billReminders) return emptyList()
@@ -42,9 +33,7 @@ object MintReminders {
         val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
         val today = nowMillis.toLocalDateTime(zone).date
         val lead = settings.billReminderDays.coerceIn(0, MintStore.MAX_REMIND_DAYS)
-        // A due day this far ahead can have its reminder inside the days the scheduler looks at.
         val to = today.plus(lead + DAYS_AHEAD, DateTimeUnit.DAY)
-        // One reminder per credit account's monthly bill (MINT.md 5.6C), not one per purchase: the lines of a bill share its due day.
         val installments = mint.accounts.filter { Installments.allowedFor(it.type) }.flatMap { account ->
             MonthlyBills.open(mint, account.id, today).filter { it.dueDay >= today && it.dueDay <= to }.map { bill ->
                 val day = bill.dueDay.minus(lead, DateTimeUnit.DAY)
@@ -64,10 +53,8 @@ object MintReminders {
         }).filter { it.atMillis > nowMillis }.sortedBy { it.atMillis }
     }
 
-    /** The reminder reference of one monthly bill of a credit account (an opaque id, never a name or an amount). */
     fun billRef(accountId: String, month: BillMonth): String = "credit:$accountId:${month.year}-${month.month}"
 
-    /** The account and month of a reference made by [billRef], or null for a bill's id. */
     fun parseBillRef(ref: String): Pair<String, BillMonth>? {
         if (!ref.startsWith("credit:")) return null
         val rest = ref.removePrefix("credit:")
@@ -77,10 +64,8 @@ object MintReminders {
         return if (y != null && m != null && m in 1..12) rest.substring(0, at) to BillMonth(y, m) else null
     }
 
-    /** Whether the reminder for [billId]'s occurrence due on [due] should still show: reminders are on, the bill is active and asks, and the occurrence is not settled. */
     fun stillWanted(mint: MintData, billId: String, due: LocalDate, today: LocalDate): Boolean {
         if (!mint.settings.billReminders) return false
-        // A reminder made for one installment before bills were monthly is replaced by its bill's reminder.
         if (billId.startsWith("plan:")) return false
         parseBillRef(billId)?.let { (accountId, month) ->
             val bill = MonthlyBills.open(mint, accountId, today).firstOrNull { it.month == month } ?: return false
@@ -91,23 +76,17 @@ object MintReminders {
         return o.state != OccurrenceState.PAID && o.state != OccurrenceState.SKIPPED
     }
 
-    /** What a notification says: the same words for every bill, or the bill's own name when the user allowed it. Never an amount. */
     fun text(mint: MintData, billId: String): NudgeText {
         val name = (parseBillRef(billId)?.let { (accountId, _) -> mint.accounts.firstOrNull { it.id == accountId }?.name } ?: mint.bills.firstOrNull { it.id == billId }?.name)
             ?.takeIf { mint.settings.billReminderNames && it.isNotBlank() }
         return NudgeText(if (name != null) "$name is coming up" else "A bill is coming up", "")
     }
 
-    /** The lock-screen text, which is the same for everyone whatever the user allowed. */
     const val PUBLIC_TEXT = "A bill is coming up"
     const val KIND = "bill"
     const val DAYS_AHEAD = 2
 }
 
-/**
- * MINT's side of the shared reminders: the bill prompt. It offers "Tomorrow" and a dismiss, never "paid": a reminder is not a payment, and marking an occurrence
- * paid is the user's own act in Mint (MINT.md section 12). The bill is checked against Mint's records before it is shown or acted on.
- */
 class MintReminderAdapter(
     private val mint: () -> MintData,
     private val app: () -> AppData,
@@ -124,6 +103,5 @@ class MintReminderAdapter(
 
     override fun present(request: ReminderRequest): NudgeText? = if (isStillWanted(request)) MintReminders.text(mint(), request.sourceRef) else null
 
-    /** Only a snooze is offered and the router handles it without touching a record; "paid" is not an action of this source. */
     override fun execute(request: ReminderRequest, action: String): Boolean = false
 }

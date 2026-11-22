@@ -15,7 +15,6 @@ import app.pokeplan.app.heal.HuaweiSeen
 import app.pokeplan.ui.HuaweiReader
 import app.pokeplan.ui.HuaweiReaderState
 
-/** The Android side of HEAL's Huawei Health probe: the two services' state, read fresh on every call, and Android's settings pages to turn them on. */
 class AndroidHuaweiReader(private val activity: ComponentActivity) : HuaweiReader {
     override fun state() = HuaweiReaderState(
         installed = activity.packageManager.getLaunchIntentForPackage(HuaweiHealth.PACKAGE) != null,
@@ -25,10 +24,8 @@ class AndroidHuaweiReader(private val activity: ComponentActivity) : HuaweiReade
         canSwitchItself = canSwitch(),
     )
 
-    /** Whether the player granted WRITE_SECURE_SETTINGS over adb, so screen reading can be turned on for one read without opening Android's settings. */
     private fun canSwitch() = activity.checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
 
-    /** Adds the screen reader to Android's enabled accessibility services, as the Accessibility settings switch does; false when Android refuses. */
     private fun switchOn(): Boolean = runCatching {
         val me = ComponentName(activity, HuaweiScreenService::class.java).flattenToString()
         val cr = activity.contentResolver
@@ -67,7 +64,6 @@ class AndroidHuaweiReader(private val activity: ComponentActivity) : HuaweiReade
 
     override fun openNotificationSettings() { open(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
 
-    /** Call when the app comes to the front: asks Android to bind the step-notification listener again when access is granted. */
     fun sync() { HuaweiComponents.rebind(activity) }
 
     override fun openAppInfo() = open(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${activity.packageName}")))

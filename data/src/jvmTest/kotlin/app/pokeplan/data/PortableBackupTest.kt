@@ -18,9 +18,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** The passphrase-sealed backup of Mint (MINT.md section 22): a backup file that opens on any phone given the passphrase, and only then. Synthetic data only. */
 class PortableBackupTest {
-    // A cheap count keeps the test fast; the real one is Pbkdf2Sealer.ITERATIONS and is stored in each text.
     private val sealer = Pbkdf2Sealer(iterations = 1_000)
     private val phrase = "correct horse battery"
     private fun key(seed: Int) = AesGcmCipher(SecretKeySpec(ByteArray(32) { (it * 7 + seed).toByte() }, "AES"))
@@ -76,7 +74,6 @@ class PortableBackupTest {
         assertTrue(PassphraseSealer.isSealed(portable.getValue("mint")))
         val file = BackupBundle.encode(portable, DataStore.SCHEMA_VERSION, 9)
         for (secret in listOf("Savings", "Wallet", "100000")) assertFalse(secret in file, "the file holds $secret in clear")
-        // "PHP" is checked with its JSON quotes: three letters can turn up by chance in any base64 text, quotes cannot.
         for (secret in listOf("Savings", "Wallet", "100000", "\"PHP\"")) assertFalse(secret in portable.getValue("mint"), "Mint's part holds $secret in clear")
 
         val ready = assertIs<BackupBundle.Staged.Ready>(BackupBundle.stage(file, DataStore.SCHEMA_VERSION))
@@ -84,7 +81,6 @@ class PortableBackupTest {
         assertNull(BackupBundle.unlock(ready, null, sealer), "no passphrase, nothing opens")
         assertNull(BackupBundle.unlock(ready, "not the passphrase", sealer))
 
-        // A phone with a different Keystore key: the device-sealed form would be locked there; the portable one opens.
         val other = phone(2)
         val docs = assertNotNull(BackupBundle.unlock(ready, phrase, sealer))
         other.live.replaceAll(docs, 11)

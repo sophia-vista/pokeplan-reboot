@@ -18,7 +18,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** A rare Mint moment opens an outbreak: a pick of three Pokémon, caught directly with extra shiny rolls (POKEMON_ECOSYSTEM.md 10.0). */
 class MintOutbreakTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis

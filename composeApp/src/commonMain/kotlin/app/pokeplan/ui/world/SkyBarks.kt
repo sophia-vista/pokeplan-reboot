@@ -1,10 +1,5 @@
 package app.pokeplan.ui.world
 
-/**
- * What a Pokémon says when it is happy to be with you, as the Explorers of Sky text has it (`rip/sky/text/strings.tsv`: "Pokemon HEALTHY
- * Dialogue" and "Pokemon LEVEL_UP Dialogue", the lines that name no move, item or player; line breaks removed). A Pokémon always says
- * the same line ([pick]), so a species sounds like itself. Nintendo / Chunsoft text; private use only.
- */
 internal object SkyBarks {
     fun healthy(speciesId: Int): String = pick(HEALTHY, speciesId)
     fun levelUp(speciesId: Int): String = pick(LEVEL_UP, speciesId)

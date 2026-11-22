@@ -374,7 +374,7 @@ Explicitly ineligible:
 - Initial balancing target: three distinct eligible follow-up completions per encounter opportunity, subject to shared economy simulation and cross-module reward calibration.
 - Encounter rarity and reward generosity are balanced centrally; LINK must not hard-code an independent rarity economy.
 - Progress is persistent, non-expiring and never decays.
-- No daily quota, streak, penalty, loss for inactivity, timed event or limited-time species.
+- No daily quota on progress, collection or attendance, no streak, penalty, loss for inactivity, timed event or limited-time species. The only caps are anti-farming ones on payments: at most 3 paid follow-ups a day and at most 5 Safari catches a day in total (9.5; `economy.md`).
 - Duplicate species remain valid individual collection entries under shared duplicate rules.
 
 ### 9.4 Ethical boundary
@@ -430,7 +430,7 @@ Existing code is evidence, not authority. LINK reuses the shared module shell, l
 
 ## 12. Remaining work
 
-Not built: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), a link from BASE to a contact, upcoming dates on the launcher, widgets, sealing Link's rows, a passphrase-sealed backup, and the open question of "keep in touch" (D8). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
+Not built: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), a link from BASE to a contact, upcoming dates on the launcher, widgets, sealing Link's rows (a passphrase-sealed backup already ships and carries Link in clear), and the open question of "keep in touch" (D8). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
 
 ---
 
@@ -464,7 +464,7 @@ Not built: a chooser for fields that changed on re-import (today only empty fiel
 - Only distinct eligible follow-up completions contribute.
 - Contact creation, imports, notes, dates and passive interaction never contribute.
 - Reopening, editing, migration, duplicate imports or PLAN linkage cannot double-pay.
-- No streak loss, decay, expiring reward, daily quota or relationship score exists.
+- No streak loss, decay, expiring reward, relationship score or quota on progress exists; the anti-farming caps on payments in 9.5 are the only limits.
 - Recruitment uses the shared collection and reward ledger.
 
 ### Accessibility and presentation

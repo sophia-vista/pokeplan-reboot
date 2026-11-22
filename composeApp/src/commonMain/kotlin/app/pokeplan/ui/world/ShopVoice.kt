@@ -15,11 +15,6 @@ import app.pokeplan.ui.Portrait
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.screens.short
 
-/**
- * Lines the Town's shopkeepers say, as the Explorers of Sky text has them (`rip/sky/text/strings.tsv`: "Kecleon Market Strings", "Spinda's
- * Juice Bar Strings", "Recycle Shop Strings"; the game's line breaks and ♪ kept as words, its tags removed). Only the shop's own words
- * change where the app's shop differs from the game's (the Swap Shop is the Recycle Shop's counter). Nintendo / Chunsoft text; private use only.
- */
 internal object ShopLines {
     const val KECLEON_WELCOME = "Welcome to the Kecleon Shop! ♪"
     const val KECLEON_BOUGHT = "Thank you! All yours! ♪"
@@ -35,7 +30,6 @@ internal object ShopLines {
     const val SWAP_DONE = "Thanks for swapping! Come back anytime!"
     const val SWAP_SHORT = "You don't have enough items to trade for this!" // copy-ok: game
 
-    /** The game's short description of the items the shelf sells that the game has too (the four vitamins), else null. */
     fun itemText(name: String): String? = when (name) {
         "Protein" -> "A drink that permanently raises the Pokémon's Attack. It also slightly fills the Pokémon's Belly." // copy-ok: game
         "Calcium" -> "A drink that permanently raises the Pokémon's Special Attack. It also slightly fills the Pokémon's Belly." // copy-ok: game
@@ -45,7 +39,6 @@ internal object ShopLines {
     }
 }
 
-/** A shopkeeper's face beside what they say: [speciesId]'s Mystery Dungeon portrait for [emotion], the keeper's [name] over their [line]. */
 @Composable
 internal fun ShopVoice(speciesId: Int, name: String, line: String, emotion: Emotion = Emotion.NORMAL) {
     TextBox {

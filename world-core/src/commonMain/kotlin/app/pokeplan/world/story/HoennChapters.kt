@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Hoenn, "The Primal Awakening": Cloud the Swablu guides the buddy; Team Magma (Numel, Camerupt) and Team Aqua (Carvanha, Sharpedo); the three ancient Pokémon. */
 internal object HoennChapters {
     private val buddy = buddyCharacter()
     private val cloud = npc("cloud", "Cloud", 333)

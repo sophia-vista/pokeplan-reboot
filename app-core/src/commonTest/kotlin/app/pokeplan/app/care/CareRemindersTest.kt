@@ -35,7 +35,6 @@ class CareRemindersTest {
     fun eachTimedRoutineRemindsAtItsTimeOnItsDays() {
         val care = CareData(routines = listOf(water, stretch, walk, anyTime))
         val r = CareReminders.upcoming(care, app, now, utc)
-        // Today's 8:00 has passed; a routine with no time never reminds; the walk is Tuesdays only.
         assertEquals(listOf("w" to monday, "s" to monday.plusDays(1), "w" to monday.plusDays(1), "k" to monday.plusDays(1), "s" to monday.plusDays(2), "w" to monday.plusDays(2)),
             r.map { it.routineId to it.day })
         assertEquals(at(monday, 10), r.first().atMillis)
@@ -48,7 +47,6 @@ class CareRemindersTest {
         val r = CareReminders.upcoming(care, app, now, utc)
         assertEquals(listOf(monday.plusDays(1)), r.map { it.day }.distinct().take(1), "today (a Monday) is no longer one of its days")
         assertEquals(at(monday.plusDays(1), 11, 30), r.first().atMillis, "and it goes off at the new time")
-        // A reminder already set for the old plan is dropped when it fires.
         assertFalse(CareReminders.stillWanted(care, app, "w", monday))
         assertTrue(CareReminders.stillWanted(care, app, "w", monday.plusDays(1)))
     }

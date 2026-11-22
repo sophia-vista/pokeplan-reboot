@@ -1,6 +1,5 @@
 package app.pokeplan.ui
 
-/** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
         "0.53.0" to listOf(

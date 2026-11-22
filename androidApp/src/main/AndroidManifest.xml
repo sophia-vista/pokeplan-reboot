@@ -1,33 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The field tools use these when they are there; the app does not need them. -->
     <uses-feature android:name="android.hardware.location" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Heal's Huawei Health reader: only if the player grants it over adb (pm grant), screen reading is switched on for one read and off after (INTEGRATIONS_AND_PRIVACY.md 5.2.2). -->
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" xmlns:tools="http://schemas.android.com/tools" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- The step counter, for the evolutions done by walking (Pawmo, Bramblin, Rellor); asked for only when one is started. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- Hand a wake-up alarm to the phone's clock app. -->
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <queries><intent><action android:name="android.intent.action.SET_ALARM" /></intent></queries>
     <uses-permission android:name="android.permission.READ_CALENDAR" />
-    <!-- LINK's optional contact import reads names, phones, emails, organizations and birthdays, only when the person asks. -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- The launcher's Uninstall action (Android 9 and later ask for it). -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
-    <!-- The launcher's "Pull down notifications" gesture. -->
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
-    <!-- The launcher lists every app. Until PokéLife is the home app, Android 11 and later show a launcher only the apps it can "see". -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-    <!-- Heal's Health Connect import: read only, one permission per record type the player chooses, asked only when they choose it. No write, background or history access. -->
     <uses-permission android:name="android.permission.health.READ_EXERCISE" />
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
@@ -40,7 +31,6 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
     </queries>
-    <!-- Task reminders on time: allowed outright from Android 13; on 12 the user can grant it in system settings. -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
     <application
@@ -60,7 +50,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Share a link or some text to PokéLife from any app: it opens the Planner's quick add with the text typed in. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -68,7 +57,6 @@
             </intent-filter>
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
-        <!-- The opt-in home screen: nothing changes until the user picks PokéLife as the home app in Android's settings. -->
         <activity
             android:name=".launcher.LauncherActivity"
             android:exported="true"
@@ -84,7 +72,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <!-- Health Connect asks why Heal wants access (required for the permission screen to appear). -->
         <activity android:name=".HealthRationaleActivity" android:exported="true">
             <intent-filter>
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
@@ -113,7 +100,7 @@
         <receiver android:name=".reminders.NudgeReceiver" android:exported="false" />
         <receiver android:name=".reminders.TimerActionReceiver" android:exported="false" />
         <receiver android:name=".reminders.RoutineReminderReceiver" android:exported="false" />
-        <receiver android:name=".reminders.ReminderBootReceiver" android:exported="true">
+        <receiver android:name=".reminders.ReminderBootReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
@@ -150,14 +137,12 @@
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_mint_due" />
         </receiver>
-        <!-- Quick Settings tiles: they only open the app on one screen. -->
         <service android:name=".AddTaskTile" android:exported="true" android:label="Add task" android:icon="@drawable/ic_tile_check" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
         </service>
         <service android:name=".FocusTile" android:exported="true" android:label="Focus" android:icon="@drawable/ic_tile_timer" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
         </service>
-        <!-- Heal's Huawei Health probe (INTEGRATIONS_AND_PRIVACY.md 5.2.2): off until turned on in Android's settings; Huawei Health only. -->
         <service android:name=".huawei.HuaweiScreenService" android:exported="true" android:label="@string/huawei_reader_label" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter><action android:name="android.accessibilityservice.AccessibilityService" /></intent-filter>
             <meta-data android:name="android.accessibilityservice" android:resource="@xml/huawei_reader" />

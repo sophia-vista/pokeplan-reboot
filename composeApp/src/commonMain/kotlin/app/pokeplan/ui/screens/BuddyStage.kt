@@ -74,30 +74,19 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.Spacing
 import kotlinx.coroutines.delay
 
-/**
- * The buddy in its place: a real scene for its type (dimmed at night), the Pokémon itself as the one thing that moves,
- * and nothing else loud. Its own idle animation plays (a gentle bob for species without one), and its SpriteCollab Sleep
- * animation while a focus session runs ([resting]); level and progress sit small in a corner; there is no speech bubble.
- * A real event ([event], once) shows the buddy's portrait with a happy face in the corner and a hop; a pet answers with
- * a hop and one status icon, a berry with its Eat animation and one icon. Forms without those animations hop in code instead.
- * [guests] (Care's visitors) stand a little behind it on either side, each with its own idle; tapping one is a pat.
- */
 @Composable
 fun BuddyStage(
     buddy: OwnedPokemon, scene: String, darkness: Float, progress: Float, event: BuddyEventNow?,
     calm: Boolean, resting: Boolean, berry: String?,
     onPet: (avoid: ReactionIcon?) -> ReactionIcon, onFeed: (avoid: ReactionIcon?) -> ReactionIcon, onOpen: () -> Unit, onHaptic: () -> Unit,
-    /** A real event is being celebrated: the buddy calls out. */
     onEvent: () -> Unit,
     celebrated: Long, onCelebrated: (Long) -> Unit,
     guests: List<StageGuest> = emptyList(),
     modifier: Modifier = Modifier,
-    /** A strip for a module page, where the work comes first: a short window (112 dp) and a smaller sprite. */
     compact: Boolean = false,
 ) {
     val stageHeight = if (compact) 112.dp else 248.dp
     val spriteSize = if (compact) 72.dp else 144.dp
-    // How far the sprite's feet stand above the window's bottom edge; the strip is short, so it stands lower to leave room for a hop.
     val feet = if (compact) 24.dp else 34.dp
     var taps by remember { mutableIntStateOf(0) }
     var reaction by remember { mutableStateOf<ReactionIcon?>(null) }
@@ -105,12 +94,9 @@ fun BuddyStage(
     var reactionId by remember { mutableIntStateOf(0) }
     val hop = remember { Animatable(0f) }
     var lastReaction by remember { mutableStateOf<ReactionIcon?>(null) }
-    // The one-off animation the reaction plays (a hop, a bite); sleeping through a focus session there is none.
     var action by remember { mutableStateOf(SpriteAction.IDLE) }
-    // The face a real event shows in the corner, while its reaction lasts.
     var face by remember { mutableStateOf<Emotion?>(null) }
 
-    // Every reaction is one icon above the buddy for a moment (an event shows its portrait beside it), with a hop or a bite.
     fun react(icon: ReactionIcon, move: SpriteAction = SpriteAction.HOP, emotion: Emotion? = null, long: Boolean = false) {
         lastReaction = icon
         reaction = icon
@@ -121,7 +107,6 @@ fun BuddyStage(
     }
     LaunchedEffect(reactionId) {
         if (reactionId == 0) return@LaunchedEffect
-        // The code hop stands in only for forms without their own animation for the move.
         if (!calm && !resting && !hasAction(buddy.form.id, buddy.isShiny, action)) {
             hop.animateTo(-16f, tween(110))
             hop.animateTo(0f, tween(150))
@@ -130,13 +115,11 @@ fun BuddyStage(
         reaction = null
         face = null
     }
-    // Waking when a focus session ends: it stretches awake (its Wake animation, else a hop) instead of cutting from asleep to standing.
     var wasResting by remember { mutableStateOf(resting) }
     LaunchedEffect(resting) {
         if (wasResting && !resting && !calm) { action = SpriteAction.WAKE; reactionId++ }
         wasResting = resting
     }
-    // A real event: the buddy's happy face, once per event (not again each time Home is opened).
     LaunchedEffect(event?.atMillis) {
         if (event == null || event.atMillis <= celebrated) return@LaunchedEffect
         onCelebrated(event.atMillis)
@@ -144,15 +127,15 @@ fun BuddyStage(
         react(event.event.icon, emotion = event.event.emotion(), long = event.event == BuddyEvent.SHINY)
     }
 
-    // Species without an animation drift up and down very slowly so the scene is never frozen.
-    val drift by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(2_600, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse))
-    val bob = if (calm || resting) 0f else -3f * drift
+    // Species without an animation drift up and down very slowly so the scene is never frozen. The value is read in the
+    // offset lambda below (layout), not in composition: otherwise the whole stage would recompose every frame.
+    val drift = if (calm || resting) null else rememberInfiniteTransition().animateFloat(
+        0f, 1f, infiniteRepeatable(tween(2_600, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse),
+    )
 
     val shape = PixelShape
-    // Tall enough for a whole hop: its frames hold the jump and draw at the idle scale, about 200 dp high at the peak.
     Box(modifier.fillMaxWidth().height(stageHeight).clip(shape).border(Sizes.Hairline, Pixel.Border, shape)) {
         SceneImage(scene, Modifier.matchParentSize(), darkness)
-        // A small shadow made of a few flat rows, so it matches the pixels of the sprite.
         Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = feet + 6.dp).size(Sizes.SpriteM, 12.dp)) {
             val rows = floatArrayOf(0.55f, 0.85f, 1f, 0.85f, 0.55f)
             val rowHeight = size.height / rows.size
@@ -160,14 +143,16 @@ fun BuddyStage(
                 drawRect(Pixel.Scrim.copy(alpha = 0.25f), Offset((size.width - size.width * share) / 2, i * rowHeight), Size(size.width * share, rowHeight))
             }
         }
-        // Visitors stand behind the buddy, one on each side, above the corner panels so neither covers the other.
         guests.take(2).forEachIndexed { i, guest ->
             StageGuestSprite(guest, calm, Modifier.align(Alignment.BottomCenter).padding(bottom = if (compact) feet else 60.dp).offset(x = if (i == 0) (-108).dp else 108.dp))
         }
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}",
             Modifier.align(Alignment.BottomCenter).padding(bottom = feet)
-                .offset { IntOffset(0, (hop.value + bob).dp.roundToPx()) }
+                .offset {
+                    val bob = if (calm || resting) 0f else -3f * (drift?.value ?: 0f)
+                    IntOffset(0, (hop.value + bob).dp.roundToPx())
+                }
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Pet ${buddy.nickname}", role = Role.Button) {
                     onHaptic()
                     react(onPet(lastReaction))
@@ -176,16 +161,12 @@ fun BuddyStage(
             action = if (resting) SpriteAction.SLEEP else action, actionKey = reactionId, onActionDone = { action = SpriteAction.IDLE },
         )
 
-        // The Zz while it sleeps through a focus session.
         if (resting) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = feet + spriteSize * 0.72f).offset(x = 40.dp), loop = true, animate = !calm)
         if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = feet).size(spriteSize))
 
-        // Level and progress: small, in the corner, readable on any scene. Its corners are the stage's minus the inset, so
-        // the two curves stay concentric.
         Column(
             Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(PixelShape).background(Pixel.Scrim.copy(alpha = 0.33f))
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Open ${buddy.nickname}", role = Role.Button, onClick = onOpen)
-                // Small to look at, but a full touch target to hit.
                 .defaultMinSize(minHeight = 40.dp)
                 .padding(horizontal = Spacing.M, vertical = 7.dp)
                 .semantics(mergeDescendants = true) { contentDescription = "${buddy.nickname}, level ${buddy.level}, ${(progress * 100).toInt()} percent to the next level" },
@@ -199,7 +180,6 @@ fun BuddyStage(
         AnimatedVisibility(reaction != null && face == null, Modifier.align(Alignment.Center).padding(bottom = if (compact) 64.dp else 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
             reaction?.let { ReactionMark(it, Modifier.semantics { contentDescription = "reaction" }, size = 40.dp, animate = !calm) }
         }
-        // A real event shows the buddy's own face in the corner, as the Mystery Dungeon games do beside a line of text.
         AnimatedVisibility(face != null, Modifier.align(Alignment.TopStart).padding(Spacing.S), enter = fadeIn() + scaleIn(initialScale = 0.7f), exit = fadeOut()) {
             Box {
                 Portrait(buddy.form.id, buddy.isShiny, "${buddy.nickname} is delighted", emotion = face ?: Emotion.HAPPY, size = 64.dp)
@@ -218,21 +198,15 @@ fun BuddyStage(
     }
 }
 
-/** The face an event shows: glad for a task, overjoyed for a hatch, awed by a shiny. */
 private fun BuddyEvent.emotion() = when (this) {
     BuddyEvent.DONE -> Emotion.HAPPY
     BuddyEvent.HATCHED -> Emotion.JOYOUS
     BuddyEvent.SHINY -> Emotion.INSPIRED
 }
 
-/**
- * A few small four-point glints that flash around a shiny buddy, one at a time and never all together, like the shine in the
- * games. UI chrome drawn in code (no sprite art): each star is a little pointed shape that grows, then fades.
- */
 @Composable
 private fun ShinyGlints(modifier: Modifier = Modifier) {
     val loop by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(7_200, easing = androidx.compose.animation.core.LinearEasing)))
-    // Where each glint sits (share of the sprite's box) and when in the loop it flashes.
     val glints = remember { listOf(Triple(0.22f, 0.30f, 0.00f), Triple(0.78f, 0.22f, 0.27f), Triple(0.68f, 0.62f, 0.52f), Triple(0.30f, 0.70f, 0.77f)) }
     Canvas(modifier) {
         glints.forEach { (x, y, start) ->
@@ -250,7 +224,6 @@ private fun ShinyGlints(modifier: Modifier = Modifier) {
                     close()
                 }
                 val r = size.minDimension * 0.11f * (0.4f + power)
-                // A gold halo under a pale core, so the glint shows on light scenes too.
                 drawPath(star(r * 1.3f), Color(0xFFFFB300).copy(alpha = power.coerceIn(0f, 1f) * 0.85f))
                 drawPath(star(r), Color(0xFFFFFBE0).copy(alpha = power.coerceIn(0f, 1f)))
             }

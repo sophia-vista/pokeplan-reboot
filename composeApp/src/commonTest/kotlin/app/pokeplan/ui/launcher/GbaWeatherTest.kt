@@ -4,11 +4,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** The numbers the town draws its weather by come from Red Rescue Team's own code and files (docs/pokelife/FEATURES/LAUNCHER.md section 4.4). */
 class GbaWeatherTest {
     @Test
     fun snowAndBlizzardFramesLastAsLongAsTheGamesDurationsSay() {
-        // The tile animation files say 4 (snow) and 1 (blizzard); the game moves on once the count has gone below 1, so a frame lasts one tick more.
         assertEquals(5, GbaWeather.SNOW_TICKS)
         assertEquals(2, GbaWeather.BLIZZARD_TICKS)
         val snowFrameMillis = GbaWeather.SNOW_TICKS * GbaWeather.TICK_MILLIS
@@ -17,7 +15,6 @@ class GbaWeatherTest {
         assertEquals(0, GbaWeather.frame(80, GbaWeather.SNOW_TICKS))
         assertEquals(1, GbaWeather.frame(85, GbaWeather.SNOW_TICKS))
         assertEquals(1, GbaWeather.frame(34, GbaWeather.BLIZZARD_TICKS))
-        // Sixteen frames, then round again.
         assertEquals(0, GbaWeather.frame((16 * GbaWeather.SNOW_TICKS * GbaWeather.TICK_MILLIS).toLong() + 1, GbaWeather.SNOW_TICKS))
     }
 

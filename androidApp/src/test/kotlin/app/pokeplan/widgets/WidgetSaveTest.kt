@@ -17,15 +17,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/**
- * The widgets share the app's one save (REP-033): a tick on the Today widget is the app's own completion, an app store that had not seen it does not write
- * over it, and a focus session survives a process death with its alarms set again from the save.
- */
 @RunWith(RobolectricTestRunner::class)
 class WidgetSaveTest : AndroidTestBase() {
     private val alarmManager get() = context.getSystemService(AlarmManager::class.java)
 
-    /** A tap on [taskId]'s tick in the Today widget (the action reads only the task id, not which widget it came from). */
     private fun tickOnTheWidget(taskId: String) = runBlocking {
         CompleteTaskAction().onAction(context, object : GlanceId {}, actionParametersOf(ActionParameters.Key<String>("taskId") to taskId))
     }
@@ -35,7 +30,6 @@ class WidgetSaveTest : AndroidTestBase() {
         val first = app.addTask("Ticked on the widget")
         tickOnTheWidget(first.id)
 
-        // The app had not reloaded yet; its next change must not put the task back as open.
         val second = app.addTask("Added in the app afterwards")
         app.reload()
         assertEquals(TaskState.DONE, app.data.tasks.single { it.id == first.id }.state)
@@ -54,7 +48,6 @@ class WidgetSaveTest : AndroidTestBase() {
         assertTrue(end in focusEndAlarms(), "the end alarm is set: ${focusEndAlarms()}")
 
         processDeath()
-        // The process died and took nothing with it but memory; the alarms are cleared too, as an update or a force stop does.
         shadowOf(alarmManager).scheduledAlarms.toList().forEach { a -> a.operation?.let { alarmManager.cancel(it) } }
         val back = assertNotNull(widgetStore(context).data.focus, "the session is still running after the process died")
         assertEquals(session.id, back.id)

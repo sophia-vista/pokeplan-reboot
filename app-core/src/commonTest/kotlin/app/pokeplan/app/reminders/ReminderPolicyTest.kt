@@ -46,8 +46,8 @@ class ReminderPolicyTest {
     fun planDropsDuplicatesPastAndBeyondHorizonAndKeepsTheLatestEdit() {
         val now = at(mon, 9)
         val first = req(at(mon, 11))
-        val edited = req(at(mon, 12))                       // same id, edited time replaces the old request
-        val other = req(at(mon, 10), "b", ReminderModule.CARE) // another module at the same moment stays separate
+        val edited = req(at(mon, 12))
+        val other = req(at(mon, 10), "b", ReminderModule.CARE)
         val past = req(at(mon, 8), "c")
         val far = req(at(mon.plusDays(5), 12), "d")
         val plan = ReminderPolicy.plan(listOf(first, edited, other, past, far), now, quiet, utc, null, horizonMillis = at(mon.plusDays(2), 0))

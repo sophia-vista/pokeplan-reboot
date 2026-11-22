@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/** Logging a purchase, a payment or a transfer pays one flat reward that never depends on the amount (MINT.md 16.2). */
 class MintLoggingRewardTest {
     private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
 

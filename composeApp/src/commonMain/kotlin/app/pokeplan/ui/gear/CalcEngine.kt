@@ -16,22 +16,11 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
 
-/** The answer to an expression: a number and how to show it, or why it cannot be computed (in words for the player). */
 sealed interface CalcResult {
     data class Value(val value: Double, val text: String) : CalcResult
     data class Error(val message: String) : CalcResult
 }
 
-/**
- * The Pokégear calculator's maths: one expression in, one answer out, with the usual rules. Operators `+ - × ÷ (* and / too) ^`, brackets,
- * a unary minus, `%`, `!`, the functions `sin cos tan asin acos atan ln log sqrt abs exp`, the constants `pi` (or π) and `e`, and numbers like
- * `1.5`, `1,5` and `2e3`. `2 + 3 × 4` is 14. A percent after a number alone is a hundredth (`50%` is 0.5); after `+` or `-` it is that share
- * of what came before (`200 + 10%` is 220), as on a shop's calculator.
- *
- * Numbers are `Double`; the answer is shown rounded to 12 significant digits (so `0.1 + 0.2` shows 0.3), which is the precision policy: nothing
- * here claims more. Errors say what is wrong (a divide by zero, a result outside the domain such as `sqrt(-1)`, a number too large, an expression
- * that does not read) and never produce NaN or Infinity as an answer.
- */
 object CalcEngine {
     fun evaluate(expression: String, degrees: Boolean = true): CalcResult {
         val text = expression.trim().replace('−', '-').replace('–', '-')
@@ -49,21 +38,17 @@ object CalcEngine {
 
     private const val MAX = 1e300
 
-    /** [value] with at most 12 significant digits, no trailing zeros, in plain digits for ordinary sizes and `1.5e-8` style for tiny or huge ones. */
     fun format(value: Double, group: Boolean = false): String = formatSignificant(value, 12, group)
 
-    /** [value] with at most [digits] significant digits (1 to 12), written as [format] does. */
     fun formatSignificant(value: Double, digits: Int, group: Boolean = false): String {
         val d = digits.coerceIn(1, 12)
         if (value == 0.0) return "0"
         val negative = value < 0
         val x = abs(value)
         var exponent = floor(log10(x)).toInt()
-        // [d] digits of mantissa as an integer: x ~ mantissa * 10^(exponent - (d - 1)).
         val top = 10.0.pow(d).toLong()
         var mantissa = round(x / 10.0.pow(exponent - (d - 1))).toLong()
         if (mantissa >= top) { mantissa /= 10; exponent += 1 }
-        // log10 can round up just below a power of ten (999.9999999999999 gives 3): the mantissa is then a digit short, so take it again one exponent lower.
         if (mantissa < top / 10) {
             exponent -= 1
             mantissa = round(x / 10.0.pow(exponent - (d - 1))).toLong()
@@ -79,7 +64,6 @@ object CalcEngine {
     }
 
     private fun plain(digits: String, exponent: Int, group: Boolean): String {
-        // The digits d1 d2 d3... stand for d1.d2d3 x 10^exponent.
         val whole: String
         val fraction: String
         if (exponent >= 0) {
@@ -110,7 +94,6 @@ object CalcEngine {
         private fun peek(): Char? { skip(); return s.getOrNull(i) }
         private fun eat(c: Char): Boolean { if (peek() == c) { i++; return true }; return false }
 
-        /** Sum and difference. The flag says the last term was a bare percentage (so `+ 10%` means a share of what came before). */
         private fun expression(): Pair<Double, Boolean> {
             var (left, _) = term()
             while (true) {
@@ -135,7 +118,6 @@ object CalcEngine {
                     left = if (op == '/' || op == '÷') { if (right == 0.0) throw CalcException("Cannot divide by zero."); left / right } else left * right
                     percent = false
                 } else if (op != null && (op == '(' || op == 'π' || op.isLetter() && op != 'x')) {
-                    // 2(3) and 2pi: a number straight before a bracket, name or function is a product.
                     val (right, _) = unary()
                     left *= right
                     percent = false
@@ -210,7 +192,6 @@ object CalcEngine {
         private fun number(): Double {
             val start = i
             while (i < s.length && (s[i].isDigit() || s[i] == '.' || s[i] == ',')) i++
-            // An exponent like 2e3 (only when digits follow, so "2e" stays a product of 2 and e).
             if (i < s.length && (s[i] == 'e' || s[i] == 'E')) {
                 var j = i + 1
                 if (j < s.length && (s[j] == '+' || s[j] == '-')) j++
@@ -241,7 +222,6 @@ object CalcEngine {
             "exp" -> exp(x)
             else -> throw CalcException("\"$name\" is not something I know.")
         }.let { r ->
-            // sin(180°) is 1.2e-16 in floating point: show it as the zero it is.
             if (abs(r) < 1e-14 && name in setOf("sin", "cos", "tan")) 0.0 else r
         }
     }

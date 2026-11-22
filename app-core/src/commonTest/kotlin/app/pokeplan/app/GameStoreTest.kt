@@ -197,7 +197,6 @@ class GameStoreTest {
         val series = reopened.data.series.single()
         assertEquals("h1", series.template.id, "the id is kept, so the goal that links it still does")
         assertEquals(setOf("h1"), reopened.data.goals.single().linkedHabitIds)
-        // Targets are scrapped: "3 a week" is now a weekly rule on three days, and no series has a target any more.
         assertNull(series.target)
         assertEquals(app.pokeplan.plan.Repeat.Weekly(1, setOf(kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.DayOfWeek.WEDNESDAY, kotlinx.datetime.DayOfWeek.FRIDAY)), series.recurrence!!.repeat)
         assertEquals(habit.createdOn, series.recurrence!!.start)
@@ -206,7 +205,6 @@ class GameStoreTest {
         assertTrue(reopened.data.habits.isEmpty()); assertNotNull(reopened.data.habitsMergedAtMillis)
         assertEquals(coins, reopened.data.player.coins, "the conversion pays nothing")
         assertEquals(old.rewardLog, reopened.data.rewardLog)
-        // Loading again changes nothing (idempotent).
         val again = GameStore(storage, FakeClock(start), utc, Random(7))
         assertEquals(1, again.data.series.size)
         assertEquals(series.recurrence, again.data.series.single().recurrence)
@@ -293,14 +291,12 @@ class GameStoreTest {
         assertEquals(listOf(second), s.data.player.partyOf(PartyIds.CARE).map { it.id })
         assertEquals(listOf(first, third), s.data.player.party.map { it.id })
         assertEquals(Place.Party(PartyIds.CARE), s.placeOf(second))
-        // Moving back takes it out of Care's party; the buddy joining Care stops being the buddy (one place only).
         assertTrue(s.setInParty(second, true, PartyIds.PLAN))
         assertTrue(s.data.player.partyOf(PartyIds.CARE).isEmpty())
         assertTrue(s.setInParty(buddy, true, PartyIds.CARE))
         assertNull(s.data.player.buddyId)
         assertEquals(buddy, s.data.player.careLead?.id)
         assertEquals(TransferBlock.BUDDY.takeIf { false }, null)
-        // A Care member that is not the lead transfers, and the lead passes on when it leaves.
         assertTrue(s.setInParty(third, true, PartyIds.CARE))
         assertNull(s.transferBlock(third))
         assertTrue(s.setCareLead(third))
@@ -338,7 +334,6 @@ class GameStoreTest {
         val (s, _) = started()
         val task = s.addTask("Water plants", Rank.E)
         assertTrue(s.makeRepeating(task.id, Repeat.Daily()))
-        // It had no day, so it is now planned for today; the repeat starts after it, with no second task on the same day.
         val own = s.data.tasks.first { it.id == task.id }
         assertEquals(s.today, own.planned)
         assertNull(own.seriesId)
@@ -466,14 +461,12 @@ class GameStoreTest {
         assertEquals("Learn the guitar", s.data.goals.single().title, "a blank title changes nothing")
         s.renameMilestone(goal.id, first.id, "G chord")
         assertEquals("G chord", s.data.goals.single().milestones.first().title)
-        // A paid milestone that is unticked and ticked again pays nothing more.
         clock.advance(25 * 3_600_000L)
         assertTrue(s.completeMilestone(goal.id, first.id).pays)
         s.reopenMilestone(goal.id, first.id)
         assertFalse(s.data.goals.single().milestones.first().isDone)
         assertFalse(s.completeMilestone(goal.id, first.id).pays)
         assertEquals(1, s.data.player.inventory[Items.SUPER_CANDY])
-        // Removing and undoing.
         val before = s.data.goals
         s.deleteMilestone(goal.id, first.id)
         assertEquals(1, s.data.goals.single().milestones.size)
@@ -514,7 +507,6 @@ class GameStoreTest {
     }
 
     private fun GameStore.withPoints(points: Int): GameStore {
-        // Rank is decided by trainer points; the test store is loaded from a save that already has them.
         val text = GameStore.json.encodeToString(AppData.serializer(), data.copy(player = data.player.copy(trainerPoints = points)))
         return GameStore(MemoryStorage(text), Clock { nowMillis }, kotlinx.datetime.TimeZone.UTC, Random(8))
     }
@@ -543,11 +535,9 @@ class GameStoreTest {
         assertTrue(s.slotGuardian(mew.id, PartyIds.CARE), "no rank to wait for")
         assertEquals(mew.id, s.guardianOf(PartyIds.CARE)?.id)
         assertEquals(app.pokeplan.app.Place.Guardian(PartyIds.CARE), app.pokeplan.app.Places.of(s.data, mew.id))
-        // One place only: moving it to another module empties the first slot.
         assertTrue(s.slotGuardian(mew.id, PartyIds.HEAL))
         assertEquals(null, s.guardianOf(PartyIds.CARE))
         assertEquals(mew.id, s.guardianOf(PartyIds.HEAL)?.id)
-        // A second Guardian can hold another module, and replacing one sends the old one to the PC.
         assertTrue(s.slotGuardian(uxie.id, PartyIds.PLAN))
         assertTrue(s.slotGuardian(uxie.id, PartyIds.HEAL))
         assertEquals(uxie.id, s.guardianOf(PartyIds.HEAL)?.id)
@@ -609,7 +599,7 @@ class GameStoreTest {
     @Test
     fun aQuestIsAcceptedProgressesAndPaysItsGuardianWhenClaimed() {
         val (s0, clock) = started()
-        val s = s0.withPoints(TrainerRank.thresholds[4]) // rank 4
+        val s = s0.withPoints(TrainerRank.thresholds[4])
         val azelf = app.pokeplan.app.quest.Quests.get("azelf")!!
         assertTrue(s.availableQuests.any { it.id == "azelf" })
         assertTrue(s.acceptQuest("azelf"))
@@ -618,7 +608,6 @@ class GameStoreTest {
         assertFalse(s.questReady(azelf))
         assertEquals(null, s.claimQuest("azelf"))
 
-        // Finish what it asks: 10 Deep Focus sessions, 10 hard tasks, and a 7 day streak.
         repeat(10) {
             s.startFocus(25, deepFocus = true)
             clock.advance(25 * 60_000L + 1)
@@ -657,18 +646,15 @@ class GameStoreTest {
 
     @Test
     fun a_change_never_writes_an_older_copy_over_another_stores_change() {
-        // The app and a notification each open their own store on the same document of the same process.
         val storage = MemoryStorage(shareKey = "a_change_never_writes_an_older_copy")
         val clock = FakeClock(start)
         val app = GameStore(storage, clock, utc, Random(7)).also { it.start("Sophia", 25) }
         val notification = GameStore(storage, clock, utc, Random(8))
         val task = notification.addTask("Call the bank")
         assertTrue(app.data.tasks.none { it.id == task.id }, "the open app has not looked yet")
-        // The app's next change starts from the saved document, not from its older copy.
         app.addTask("Water the plants")
         assertTrue(app.data.tasks.any { it.id == task.id })
         assertTrue(GameStore(storage, clock, utc, Random(9)).data.tasks.any { it.id == task.id }, "and the save still has it")
-        // Without a change of its own, the tick picks it up and tells the screen once.
         val second = notification.addTask("Post the letter")
         var told = 0
         app.observe { told++ }
@@ -686,7 +672,6 @@ class GameStoreTest {
         val app = GameStore(storage, clock, utc, Random(7)).also { it.start("Sophia", 25) }
         storage.full = true
         val kept = app.addTask("Only in memory")
-        // A widget opens its own store while nothing can be saved: it starts from what the app holds, not from the older save.
         val widget = GameStore(storage, clock, utc, Random(8))
         assertTrue(widget.data.tasks.any { it.id == kept.id })
         storage.full = false
@@ -884,7 +869,6 @@ class GameStoreTest {
         assertEquals(listOf(d(0), d(7), d(14)), s.data.events.single().startDates(d(0), d(20)))
         assertEquals(listOf(s.data.events.single()), GameStore(storage, clock, utc).data.events, "saved with the rest")
 
-        // Nudging one changes them all; moving one moves just that one.
         assertEquals(second, s.updateEvent(second, start = kotlinx.datetime.LocalTime(18, 30), minutes = 90))
         assertEquals(kotlinx.datetime.LocalTime(18, 30), s.data.events.single().start)
         val moved = s.moveEvent(second, d(8), kotlinx.datetime.LocalTime(7, 0))
@@ -894,7 +878,6 @@ class GameStoreTest {
         assertEquals(Triple(d(8), kotlinx.datetime.LocalTime(7, 0), 90), Triple(single.day, single.start, single.minutes))
         assertNull(single.repeat)
 
-        // Moving the series' day moves every one, and the skipped day with it.
         val third = app.pokeplan.plan.PlanEvent.occurrenceId(gym.id, d(14))
         assertEquals(app.pokeplan.plan.PlanEvent.occurrenceId(gym.id, d(15)), s.updateEvent(third, day = d(15)))
         assertEquals(listOf(d(1), d(15)), s.data.events.first { it.id == gym.id }.startDates(d(0), d(20)))
@@ -921,11 +904,9 @@ class GameStoreTest {
 
         s.endEventOn(split, d(33))
         assertEquals(listOf(d(5), d(12), d(19), d(33)), s.data.events.flatMap { it.startDates(d(0), d(60)) }.sorted())
-        // Once, from the last one: it stays as a one-off and nothing comes after it.
         val once = s.repeatEvent(app.pokeplan.plan.PlanEvent.occurrenceId(app.pokeplan.plan.PlanEvent.seriesOf(split), d(33)), null)
         assertNull(s.data.events.first { it.id == once }.repeat)
         assertEquals(listOf(d(5), d(12), d(19), d(33)), s.data.events.flatMap { it.startDates(d(0), d(60)) }.sorted())
-        // Once on the first one of a series turns it back into a single event with its plain id.
         assertEquals(home.id, s.repeatEvent(first, null))
         assertEquals(listOf(d(5)), s.data.events.first { it.id == home.id }.startDates(d(0), d(60)))
     }
@@ -1035,7 +1016,6 @@ class GameStoreTest {
         assertTrue(s.transfer(extra.id))
         assertEquals(DexState.CAUGHT, DexState.of(s.data, 16))
         assertTrue(DexState.CAUGHT.caught && !DexState.SEEN.caught)
-        // Seen once is seen for good, and marking it again saves nothing new.
         val before = s.data
         s.markSeen(listOf(150))
         assertTrue(before === s.data)
@@ -1060,12 +1040,9 @@ class GameStoreTest {
         assertFalse("shownCalendars" in s.exportJson(), "calendar ids differ per phone, so the export leaves them out")
     }
 
-    // --- Pokémon roles (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) ---------------------------------------------
-
     @Test
     fun aSaveFromBeforeTheRolesWereSplitMakesTheOldBuddyPlansLeadOnce() {
         val (s, _) = started()
-        // The old shape: the starter was the buddy and in Plan's party, with no lead chosen.
         val old = s.data.copy(
             player = s.data.player.copy(planLeadId = null, rolesVersion = 0, pokemon = s.data.player.pokemon.map { it.copy(inParty = true) }),
             placesVersion = 0,
@@ -1075,7 +1052,6 @@ class GameStoreTest {
         val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
         val player = reopened.data.player
         assertEquals(GameStore.ROLES_VERSION, player.rolesVersion)
-        // ...and then the one-place rule: the starter stays the buddy, and Plan's party, which it led, is empty.
         assertEquals(Place.Buddy, reopened.placeOf(starter))
         assertEquals(starter, player.buddyId)
         assertTrue(player.party.isEmpty())
@@ -1090,7 +1066,6 @@ class GameStoreTest {
         val hatched = s.data.player.pokemon.last().id
         assertEquals(hatched, s.data.player.planLead?.id)
         assertEquals(starter, s.data.player.buddyId, "choosing Plan's lead leaves the global buddy alone")
-        // One place only: making the lead the buddy takes it out of Plan's party, and the old buddy goes to the PC.
         assertTrue(s.setBuddy(hatched))
         assertEquals(hatched, s.data.player.buddyId)
         assertNull(s.data.player.planLead)
@@ -1105,7 +1080,6 @@ class GameStoreTest {
         val (a, clockA) = started()
         val (b, clockB) = started()
         hatchOne(a, clockA); hatchOne(b, clockB)
-        // Only the buddy differs: a Pokémon from the PC becomes the buddy (the starter goes to the PC); Plan's lead is untouched.
         val other = b.grantPokemon(1, "test", Origin.How.QUEST)
         assertTrue(b.setBuddy(other.id))
         assertEquals(a.data.player.planLead?.id, b.data.player.planLead?.id)
@@ -1136,14 +1110,12 @@ class GameStoreTest {
         assertTrue(s.setCareLead(other))
     }
 
-    // --- One currency: Poké (docs/pokelife POKEMON_ECOSYSTEM.md, section 11.2) ------------------------------------------
-
     @Test
     fun anOldSaveMergesCoinsAndWorldPokeOneToOneOnceAndKeepsBothSources() {
         val (s, _) = started()
         val old = s.data.copy(
             player = s.data.player.copy(coins = 120),
-            world = s.data.world.copy(legacyPoke = 35), // an old save stored World's balance as "poke"
+            world = s.data.world.copy(legacyPoke = 35),
             pokeMigration = null,
         )
         val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
@@ -1156,7 +1128,6 @@ class GameStoreTest {
         assertEquals(120, audit.legacyCoins)
         assertEquals(35, audit.legacyWorldPoke)
         assertEquals(app.pokeplan.core.reward.RewardRules.VERSION, audit.rulesVersion)
-        // Opening the merged save again adds nothing.
         val again = GameStore(storage, FakeClock(start), utc, Random(7))
         assertEquals(155, again.data.player.coins)
         assertEquals(audit, again.data.pokeMigration)
@@ -1168,7 +1139,6 @@ class GameStoreTest {
         val (s, _) = store(storage)
         s.start("Sophia", 25)
         val base = s.data.player.coins
-        // Plan earned 5,000 (written as a widget would leave it, then picked up).
         storage.save(GameStore.json.encodeToString(AppData.serializer(), s.data.copy(player = s.data.player.copy(coins = base + 5_000))))
         s.reload()
         assertEquals(base + 5_000, s.data.player.coins)

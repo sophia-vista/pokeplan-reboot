@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""Inspects the weather sheets PokéLife draws (assets/weather) and the owner's rips they were cut from (assets/weather/source): sizes,
-frame grids, and for every frame its bounding box, opaque pixel count, distinct colours and whether it repeats another frame.
-
-Usage: python3 -I tools/weather/inspect_sheets.py [out dir]   (with an out dir, every frame is also written there as a PNG)
-Prints a markdown table; the cut grids are those of tools/sprites/cut_weather.py. Needs Pillow.
-"""
 import os
 import sys
 
@@ -12,7 +6,6 @@ from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 DIR = os.path.join(ROOT, 'assets/weather')
-# name -> (frame width, frame height, columns, rows, frames used)
 SHEETS = {
     'rain': (240, 160, 5, 13, 61),
     'snow': (64, 32, 4, 4, 16),

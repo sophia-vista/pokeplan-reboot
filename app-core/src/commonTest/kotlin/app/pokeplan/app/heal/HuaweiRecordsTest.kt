@@ -23,11 +23,10 @@ import app.pokeplan.app.World
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** Huawei Health's own pages as HEAL records (INTEGRATIONS_AND_PRIVACY.md 5.2.2), from the layout of the owner's capture of 14 November 2026 (values made up). */
 class HuaweiRecordsTest {
     private val utc = TimeZone.UTC
     private fun at(y: Int, mo: Int, d: Int, h: Int, mi: Int) = LocalDateTime(y, mo, d, h, mi).toInstant(utc).toEpochMilliseconds()
-    private val now = at(2026, 11, 14, 21, 0) // a Saturday
+    private val now = at(2026, 11, 14, 21, 0)
     private fun n(id: String, text: String = "", description: String = "") = ScreenNode(text, description, if (id.isEmpty()) "" else "com.huawei.health:id/$id")
     private fun item(type: String, date: String, time: String, km: String, unit: String, duration: String) = listOf(
         n("hw_show_health_running_history_child_item_chief_sport_type_text", type), n("hw_show_health_running_history_child_item_date", date),
@@ -68,7 +67,7 @@ class HuaweiRecordsTest {
 
     @Test fun theWeightPageGivesWeightAndBodyFatAtTheirOwnTime() {
         val records = HuaweiRecords.read(HuaweiSeen(listOf(weightPage)), now, utc).filterIsInstance<Imported.Body>()
-        val time = at(2026, 7, 3, 7, 12) // 3 July 2026 is a Friday, so "Thu, July 3" is 2025
+        val time = at(2026, 7, 3, 7, 12)
         assertEquals(listOf(MeasureType.WEIGHT to 54.8, MeasureType.BODY_FAT to 28.4), records.map { it.type to it.value })
         assertTrue(records.all { it.atMillis == at(2025, 7, 3, 7, 12) }, "the weekday picks the year: ${records.map { it.atMillis }} vs $time")
         assertEquals(listOf("kg", "%"), records.map { it.unit })
@@ -88,8 +87,6 @@ class HuaweiRecordsTest {
         assertEquals(ids.distinct(), ids)
         assertEquals(ids, HuaweiRecords.read(seen, now + 60_000, utc).map { it.id })
     }
-
-    // --- paying like manual -------------------------------------------------------------------------------------------------
 
     private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
     private class Spy(val inner: GameStore) : World {
@@ -129,15 +126,12 @@ class HuaweiRecordsTest {
         val (heal, spy) = store()
         heal.importFromProvider(ProviderRead(listOf(session("hc", 1, provider = HealImport.PROVIDER_HEALTH_CONNECT)), 0, now))
         assertTrue(spy.events.all { it.kind == app.pokeplan.core.reward.HealKind.IMPORT }, "the session itself pays nothing; only the read does (rules version 25)")
-        // A walk logged by hand now, then the same walk read from Huawei: flagged as a possible repeat, so it is not paid a second time.
         heal.logActivity(ActivityType.WALK, 30)
         val paidByHand = spy.events.size
         heal.importFromProvider(ProviderRead(listOf(Imported.Exercise(HuaweiHealth.PROVIDER, HuaweiHealth.PACKAGE, "dup", ActivityType.WALK, now - 30 * 60_000L, now)), 0, now))
         assertEquals(paidByHand, spy.events.size)
         assertTrue(heal.data.activities.single { it.provenance?.externalId == "dup" }.let { !it.paid && it.provenance!!.possibleDuplicateOf != null })
     }
-
-    // --- the reading reminder -----------------------------------------------------------------------------------------------
 
     @Test fun theReminderComesNightlyOrWeeklyFromTheLastRead() {
         val (heal, _) = store()

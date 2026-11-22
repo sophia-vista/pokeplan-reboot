@@ -1,9 +1,5 @@
 package app.pokeplan.link
 
-/**
- * Plain-language readings for the Western chart (LINK.md 2.6). Written for fun and for talking points, in the traditional spirit of each sign; none of it is
- * advice, a prediction or a verdict on anyone, and the app says so wherever it shows them. They are fixed text, so nothing here reads or stores a person.
- */
 object LoreWestern {
     const val DISCLAIMER = "For fun and conversation, not advice or a verdict on anyone."
 
@@ -35,7 +31,6 @@ object LoreWestern {
         else -> "Mutable signs adapt and finish things."
     }
 
-    /** What each point of the chart stands for. */
     fun body(b: Body): String = when (b) {
         Body.SUN -> "The Sun is the core self: who you are when you are being yourself."
         Body.MOON -> "The Moon is the inner world: moods, needs, and what feels like home."

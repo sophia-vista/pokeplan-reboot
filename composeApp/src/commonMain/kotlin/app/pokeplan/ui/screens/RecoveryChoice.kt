@@ -24,11 +24,6 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-/**
- * The first screen after the phone's database was found damaged with no backup to put back (REP-026 c). It shows before any store opens. The old
- * save files are only as new as the cutover to the database, so using them silently would undo everything since: the player chooses.
- * The damaged file is kept aside whichever is chosen, and the old files are never deleted by this screen.
- */
 @Composable
 fun RecoveryChoice(olderFromMillis: Long?, onOlder: () -> Unit, onFresh: () -> Unit, darkTheme: Boolean = isSystemInDarkTheme()) {
     PixelTheme(darkTheme) {

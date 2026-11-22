@@ -30,12 +30,12 @@ class ContactImportTest {
             Person("2", "Ben", sourceId = "key-ben"),
         ))
         val plan = ContactImport.plan(data, listOf(
-            card("key-ben", "Benjamin"),                                  // imported before, by source id
-            card("key-x", "Someone", phones = listOf("0000000", "(+63) 917-123-4567")), // second phone matches Ana
-            card("key-y", "ana cruz"),                                    // same name
+            card("key-ben", "Benjamin"),
+            card("key-x", "Someone", phones = listOf("0000000", "(+63) 917-123-4567")),
+            card("key-y", "ana cruz"),
             card("key-z", "Zed"),
             card("key-q", "  "),
-            card("key-z", "Zed"),                                         // offered twice: one row
+            card("key-z", "Zed"),
         ))
         assertEquals(listOf(ImportKind.KNOWN, ImportKind.MAYBE, ImportKind.MAYBE, ImportKind.NEW), plan.rows.map { it.kind })
         assertEquals(listOf("2"), plan.rows[0].matches.map { it.id })

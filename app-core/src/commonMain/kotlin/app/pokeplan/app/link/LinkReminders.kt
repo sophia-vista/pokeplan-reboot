@@ -20,7 +20,6 @@ import app.pokeplan.app.reminders.ReminderPolicy
 import app.pokeplan.app.reminders.ReminderRequest
 import app.pokeplan.app.reminders.ReminderSourceAdapter
 
-/** The two things Link may remind about (LINK.md 5). The names are stable: they are part of a reminder's id. */
 enum class LinkReminderKind(val key: String) {
     DATE("date"),
     FOLLOW_UP("followup"),
@@ -31,24 +30,12 @@ enum class LinkReminderKind(val key: String) {
     }
 }
 
-/** A Link reminder: the record, what kind, the occurrence it is for (the day it is observed or due), and when it goes off. */
 data class LinkReminder(val kind: LinkReminderKind, val recordId: String, val occurrence: String, val atMillis: Long)
 
-/**
- * LINK's reminders (LINK.md section 5), through the shared scheduler. **All off until the user asks for one**: turning Link's switch on, or choosing a reminder on a date (which turns the switch on), and then for each
- * important date (the day of, or 1, 3 or 7 days before) and each follow-up (on its day), so a contact list never turns into a stream of notices. Each asks once
- * and never repeats; a date that has passed, a follow-up that is overdue, done, cancelled, edited so the day moved, or deleted asks nothing more, and no backlog
- * is rebuilt. A follow-up handed to Plan is no longer Link's to remind about (Plan is its source). Delivery follows the shared [ReminderPolicy] (the global quiet
- * hours and a focus session); delivering, snoozing and dismissing never change a record and never pay or cost anything.
- *
- * The request holds only an opaque record id, the kind and the occurrence's day. The lock screen always says the same generic words; the date's or follow-up's
- * own words show after unlocking only if the user allowed it, and never a person's name, a note or a date's type beyond its title.
- */
 object LinkReminders {
     const val DAYS_AHEAD = 4
     const val GENERIC = "You have an upcoming reminder"
 
-    /** The reminders still to come after [nowMillis], earliest first, within the days the scheduler plans over. */
     fun upcoming(link: LinkData, app: AppData, nowMillis: Long, zone: TimeZone): List<LinkReminder> {
         val settings = link.settings
         if (!settings.reminders) return emptyList()
@@ -79,10 +66,6 @@ object LinkReminders {
     private fun wantsFollowUp(remind: Boolean, status: FollowUpStatus, converted: Boolean, due: LocalDate, today: LocalDate) =
         remind && status == FollowUpStatus.OPEN && !converted && due >= today
 
-    /**
-     * Whether the reminder of [kind] for [recordId] and [occurrence] should still show: Link's reminders are on, the record exists, still asks, and is still
-     * waiting for that very occurrence (the date has not passed or moved, the follow-up is open, not handed to Plan, and its day is the same).
-     */
     fun stillWanted(link: LinkData, kind: LinkReminderKind, recordId: String, occurrence: String, today: LocalDate): Boolean {
         if (!link.settings.reminders) return false
         return when (kind) {
@@ -91,7 +74,6 @@ object LinkReminders {
         }
     }
 
-    /** What a notification says: the same generic words for every record, or the record's own title when the user allowed it. Never a person, a note or a number. */
     fun text(link: LinkData, kind: LinkReminderKind, recordId: String): NudgeText {
         val named = if (!link.settings.reminderNames) null else when (kind) {
             LinkReminderKind.DATE -> link.dates.firstOrNull { it.id == recordId }?.takeIf { it.title.isNotBlank() }?.let { d -> d.remindDays?.let { "${d.title}, ${LinkRules.inDays(it)}" } ?: d.title }
@@ -103,11 +85,6 @@ object LinkReminders {
     private const val DAY_MILLIS = 86_400_000L
 }
 
-/**
- * LINK's side of the shared reminders. Every request is checked against Link's records before it is shown or acted on. A follow-up's notification may offer
- * "Done" (the follow-up's own completion, which pays Postcard Trail once exactly as ticking it in Link does); every kind offers "Tomorrow". A reminder never
- * edits a date, a person or a note, and dismissing one never changes anything.
- */
 class LinkReminderAdapter(
     private val link: () -> LinkData,
     private val app: () -> AppData,

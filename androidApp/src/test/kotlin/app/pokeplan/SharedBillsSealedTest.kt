@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
-/** Shared bills (MINT.md 5.8A) ride in Mint's sealed `mint_state`: a name and a note never reach the disk in clear, and come back with the key. */
 @RunWith(RobolectricTestRunner::class)
 class SharedBillsSealedTest : AndroidTestBase() {
     @Test fun aSharedEntryIsSealedOnTheDisk() {

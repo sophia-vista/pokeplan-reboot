@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
 }
 
-// A failing test prints its whole stack trace in the log (the default is one line), so a failure that only happens on the CI runner can be read there.
 subprojects {
     tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
         testLogging {

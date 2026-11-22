@@ -2,24 +2,16 @@ package app.pokeplan.core.pokemon
 
 import kotlin.random.Random
 
-/** Rare Candy levelling. */
 object CandyRules {
     const val MAX_LEVEL = 100
 
-    /**
-     * Rare Candies for one level: [BASE] plus level² / [CURVE], rounded down, the shape of the games' Medium Fast experience
-     * group (each level needs more the higher it is): 2 candies up to level 17, 5 at 30, 10 at 50, 34 at 99. *(tune)*
-     */
     const val BASE = 2
     const val CURVE = 300
 
-    /** Expedition experience points that make one step of candy progress. *(tune)* */
     const val XP_PER_CANDY = 20
 
-    /** Experience points each member of a World team gets for each floor it climbs; not divided among the members (WORLD.md 5.2). *(tune)* */
     const val XP_PER_FLOOR = 1
 
-    /** A Pokémon more than this many levels below your partner levels up on half the candies (rounded up). *(tune)* */
     const val CATCH_UP_GAP = 5
 
     fun candiesNeeded(level: Int, partnerLevel: Int): Int {
@@ -27,12 +19,10 @@ object CandyRules {
         return if (partnerLevel - level > CATCH_UP_GAP) (full + 1) / 2 else full
     }
 
-    /** Rare Candies to go from level [from] to level [to], with or without the catch-up discount. */
     fun candiesBetween(from: Int, to: Int, catchUp: Boolean = false): Int =
         (from until to).sumOf { level -> candiesNeeded(level, if (catchUp) level + CATCH_UP_GAP + 1 else level) }
 }
 
-/** Where friendship comes from, and what it does. Daily caps are applied by the caller. */
 object FriendshipRules {
     const val START = 70
     const val MAX = 255
@@ -46,19 +36,13 @@ object FriendshipRules {
         LEVEL_UP(1),
         CALM_BREAK(1),
         ROUTINE(1),
-        /** A DBT skill practised in Care. */
         SKILL(1),
-        /** An activity logged in Heal (Field Research). */
         ACTIVITY(1),
-        /** A financial review or a reconciled account in Mint (Ledger Research). */
         LEDGER(1),
-        /** A chore or a piece of maintenance done in Home (Habitat Discovery). */
         HABITAT(1),
-        /** A follow-up finished in Link (Postcard Trail). */
         FOLLOW_UP(1),
     }
 
-    /** Friendship gained from [source]: doubled when it matches the bond style, +50% (rounded up) for balanced natures. */
     fun amount(source: Source, style: BondStyle): Int {
         val matches = when (style) {
             BondStyle.COMFORT -> source == Source.PET || source == Source.ROUTINE
@@ -73,19 +57,12 @@ object FriendshipRules {
         }
     }
 
-    /** Perk strength multiplier: 1.0 at no friendship up to 1.2 at the maximum. */
     fun perkMultiplier(friendship: Int): Double = 1.0 + 0.2 * friendship.coerceIn(0, MAX) / MAX
 }
 
-/** Shiny odds. */
 object Shiny {
-    /** 1 in 128 (owner's decision, rules version 13): version 12 tried 1 in 192 when eggs came more often, and went back. */
     const val BASE_ODDS = 128
 
-    /**
-     * Chance that a hatched Pokémon is shiny: 1 in [BASE_ODDS], up to 50% better for a 4 hour session, times any perk bonus.
-     * *(tune)*
-     */
     fun chance(sessionMinutes: Int, perkMultiplier: Double = 1.0): Double =
         (1.0 / BASE_ODDS) * (1.0 + 0.5 * sessionMinutes.coerceIn(0, 240) / 240.0) * perkMultiplier
 

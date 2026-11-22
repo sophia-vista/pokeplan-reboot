@@ -5,7 +5,6 @@ import androidx.compose.ui.window.application
 import app.pokeplan.app.storage.FileStorage
 import java.io.File
 
-/** Writes the data export to the Downloads folder (the home folder if there is none). */
 class DownloadsFileSaver : FileSaver {
     override fun save(name: String, text: String): String = try {
         val home = File(System.getProperty("user.home"))

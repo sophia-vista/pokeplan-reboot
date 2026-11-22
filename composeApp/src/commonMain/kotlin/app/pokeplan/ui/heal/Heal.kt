@@ -99,7 +99,6 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
-/** Heal's screens (docs/pokelife `MODULES/HEAL.md`), the manual slice: activity, hydration, sleep, body measurements and optional goals. */
 enum class HealSection(val label: String, val icon: String) {
     ACTIVITY("Activity", "x-speed"), HYDRATION("Hydration", "fresh-water"), SLEEP("Sleep", "moon-stone"), BODY("Body", "scope-lens"),
     READINGS("Readings", "hp-up"), GOALS("Goals", "star-piece"), CONNECTIONS("Connections", "town-map"), SETTINGS("Settings", "storage-key"),
@@ -111,7 +110,6 @@ private fun shift(t: LocalTime, minutes: Int): LocalTime { val m = ((t.hour * 60
 private fun Long.localTime(): LocalTime = toLocalDateTime(zone).time
 private fun ml(v: Int) = if (v >= 1000) HealRules.format(v / 1000.0) + " L" else "$v ml"
 
-/** The line under Heal's card in Modules: the plain count of what is logged today, or what it is for. Never a score. */
 internal fun healSubtitle(model: AppModel): String {
     val minutes = HealRules.activeMinutes(model.healData, model.store.today)
     return if (minutes == null) "activity, water, sleep" else HealRules.duration(minutes) + " active today"
@@ -172,10 +170,6 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     }
 }
 
-/**
- * What is recorded today (HEAL.md section 2.2): plain numbers where something was logged, a dash where not (never 0), the latest finished night's sleep, and no score
- * and no verdict. Body measurements show only if the player asked for them here.
- */
 @Composable
 private fun TodayCard(model: AppModel) {
     val data = model.healData
@@ -200,7 +194,6 @@ private fun TodayCard(model: AppModel) {
             }
         }
     }
-    // The action items sit below the overview and above the party.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
@@ -212,7 +205,6 @@ private fun TodayCard(model: AppModel) {
     }
 }
 
-/** A label at the left and its value at the right, on one centre line. */
 @Composable
 private fun StatRow(label: String, value: String) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -221,11 +213,9 @@ private fun StatRow(label: String, value: String) {
     }
 }
 
-/** One frame for a history: its rows are divided by a line, not boxed one by one. */
 @Composable
 private fun HistoryBox(content: @Composable () -> Unit) = TextBox { Column { content() } }
 
-/** A row of a [HistoryBox]: [content] at the left, [trail] at the right, tappable when [onClick] is given. */
 @Composable
 private fun HistoryRow(onClick: (() -> Unit)? = null, onClickLabel: String? = null, trail: @Composable () -> Unit = {}, content: @Composable () -> Unit) {
     Row(
@@ -237,15 +227,12 @@ private fun HistoryRow(onClick: (() -> Unit)? = null, onClickLabel: String? = nu
     }
 }
 
-// ----- Activity ---------------------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ActivityView(model: AppModel) {
     val heal = model.heal
     var type by remember { mutableStateOf(ActivityType.WALK) }
     var minutes by remember { mutableStateOf<Int?>(30) }
-    // null: it ended just now (read when Save is pressed).
     var endedAt by remember { mutableStateOf<Long?>(null) }
     var distance by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
@@ -258,7 +245,6 @@ private fun ActivityView(model: AppModel) {
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else { message = null; model.say("Saved."); note = ""; distance = ""; more = false; endedAt = null; model.haptic(); model.effect(Sfx.HEAL) }
     }
-    // Help: Field Research only finds Pokémon from sessions of HealRules.RESEARCH_MIN_MINUTES or more (and only while it is on in Settings).
     FormBox {
         FormStack {
             FormGroup {
@@ -336,8 +322,6 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
     }
 }
 
-// ----- Hydration ----------------------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HydrationView(model: AppModel) {
@@ -346,9 +330,7 @@ private fun HydrationView(model: AppModel) {
     val today = model.store.today
     var custom by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<String?>(null) }
-    // The day being looked at and added to: today, or an earlier one picked (a forgotten glass is still worth a record).
     var day by remember { mutableStateOf(today) }
-    // null: now for today, noon for an earlier day.
     var time by remember { mutableStateOf<LocalTime?>(null) }
     var timing by remember { mutableStateOf(false) }
     fun add(v: Int) {
@@ -415,7 +397,6 @@ private fun HydrationView(model: AppModel) {
     }
 }
 
-/** One drink: its amount and time, with Edit for the amount, the name and the exact moment, and Delete. */
 @Composable
 private fun DrinkRow(model: AppModel, d: HydrationEntry) {
     val heal = model.heal
@@ -445,14 +426,11 @@ private fun DrinkRow(model: AppModel, d: HydrationEntry) {
     }
 }
 
-// ----- Sleep --------------------------------------------------------------------------------------------------------------
-
 @Composable
 private fun SleepView(model: AppModel) {
     val heal = model.heal
     val data = model.healData
     val nowMillis = model.store.nowMillis
-    // Woke at 07:00 today, or yesterday if that is still to come; slept eight hours before it. Both can be typed.
     val usual = remember {
         val now = nowMillis.toLocalDateTime(zone)
         val seven = LocalDateTime(now.date, LocalTime(7, 0)).toInstant(zone).toEpochMilliseconds()
@@ -503,7 +481,6 @@ private fun SleepView(model: AppModel) {
     }
 }
 
-/** One night: its length and times, with Edit for when it began and ended, and Delete. */
 @Composable
 private fun NightRow(model: AppModel, s: SleepRecord) {
     val heal = model.heal
@@ -533,13 +510,10 @@ private fun NightRow(model: AppModel, s: SleepRecord) {
     }
 }
 
-/** How many rows of a history show at first, and how many more each "Show older" adds: every record stays reachable, and a long history is not laid out at once. */
 private const val PAGE = 30
 
 @Composable
 private fun ShowOlder(onClick: () -> Unit) = PixelButton("Show older", onClick, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-
-// ----- Body ---------------------------------------------------------------------------------------------------------------
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -547,7 +521,6 @@ private fun BodyView(model: AppModel) {
     val heal = model.heal
     val data = model.healData
     var type by remember { mutableStateOf(MeasureType.WEIGHT) }
-    // null: measured just now.
     var at by remember { mutableStateOf<Long?>(null) }
     var unit by remember { mutableStateOf(data.settings.weightUnit) }
     var value by remember { mutableStateOf("") }
@@ -656,7 +629,6 @@ private fun ReadingList(model: AppModel, group: ReadingGroup, onBack: () -> Unit
     PixelButton("Back to readings", onBack, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
 }
 
-/** One measurement with Edit for its value, unit and exact moment, and Delete. */
 @Composable
 private fun MeasurementRow(model: AppModel, m: Measurement) {
     val heal = model.heal
@@ -689,9 +661,6 @@ private fun MeasurementRow(model: AppModel, m: Measurement) {
     }
 }
 
-// ----- Goals --------------------------------------------------------------------------------------------------------------
-
-/** The goal kind's name without its unit in brackets: the dialogue font has no brackets, and a label with one falls back to a different, bold font. */
 private val GoalKind.title: String get() = label.substringBefore(" (")
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -744,8 +713,6 @@ private fun GoalsHealView(model: AppModel) {
     }
 }
 
-// ----- Settings: Field Research, reminders, your data -----------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HealSettingsView(model: AppModel) {
@@ -755,9 +722,6 @@ private fun HealSettingsView(model: AppModel) {
     var note by remember { mutableStateOf<String?>(null) }
     var asking by remember { mutableStateOf<HealKinds?>(null) }
     var askingAll by remember { mutableStateOf(false) }
-    // Help: Field Research: a session of HealRules.RESEARCH_MIN_MINUTES or more, just logged, and the day's first drink can find a Field Egg; weight, sleep and other numbers never earn anything.
-    // Help: Heal never sets a water target; reminders are off by default, at most HealSettings.MAX_REMINDERS a day, quiet during quiet hours.
-    // Help: Erasing Heal records never touches Pokémon, Poké, the Bag, Plan or Care.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             ToggleRow("Field Research", settings.fieldResearch) { heal.setFieldResearch(it) }

@@ -13,7 +13,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** PLAN's part of the save in its own tables (REP-014): the save goes in as rows and comes back equal, and a write changes only what changed. */
 class PlanTablesTest {
     private fun fixture(name: String) = javaClass.getResource("/fixtures/0.123.0/$name")!!.readText()
     private fun obj(text: String) = Json.parseToJsonElement(text) as JsonObject
@@ -34,7 +33,6 @@ class PlanTablesTest {
 
     private fun writes(s: DataStore) = count(s, "write_log")
 
-    /** [src] with what a read back cannot tell apart left out: empty PLAN lists, and the order of a day set. */
     private fun same(src: JsonObject, back: JsonObject, label: String) {
         val emptyOk = setOf("tasks", "lists", "events", "series", "goals", "reviews", "focusHistory", "restDays", "activeDays")
         for ((k, v) in src) {
@@ -54,10 +52,8 @@ class PlanTablesTest {
             s.live.movePlanToTables(6)
             assertTrue(s.planTables.isActive())
             same(obj(fixture(name)), obj(s.live.read("save")!!), name)
-            // The whole old row is kept aside, never deleted, and the snapshot still has the save as 'save'.
             assertEquals(fixture(name), s.live.read("aside:save:plan:6"))
             same(obj(fixture(name)), obj(s.live.snapshot().getValue("save")), "$name snapshot")
-            // What is not PLAN's stays in the row, and PLAN's is not in it twice.
             val row = obj(s.driver.executeQuery(null, "SELECT json FROM live_document WHERE name = 'save'", { c -> app.cash.sqldelight.db.QueryResult.Value(if (c.next().value) c.getString(0) else null) }, 0).value!!)
             assertTrue(row.keys.none { it in PlanTables.PLAN_FIELDS }, "$name: the row holds only the rest")
             assertTrue("player" in row)
@@ -85,7 +81,7 @@ class PlanTablesTest {
             "focusHistory":[{"startedAtMillis":10,"minutes":25,"completed":true},{"startedAtMillis":20,"minutes":5,"completed":false}],
             "restDays":["2026-11-02","2026-11-01"],"activeDays":["2026-11-03"],"focus":{"startedAtMillis":9},"pickedTaskId":"t1","emergencyPausesUsed":1,
             "someNewPlanLessField":{"x":1}}"""
-        s.live.write("save", doc, 2) // not in tables yet: a plain row
+        s.live.write("save", doc, 2)
         s.live.movePlanToTables(3)
         val back = obj(s.live.read("save")!!)
         same(obj(doc), back, "round trip")
@@ -103,22 +99,18 @@ class PlanTablesTest {
         countWrites(s)
         s.live.write("save", s.live.read("save")!!, 3)
         assertEquals(0, writes(s), "nothing changed, nothing written")
-        // A pure player change (coins) touches no PLAN row.
         s.live.write("save", JsonObject(base + ("player" to obj("""{"coins":9}"""))).toString(), 4)
         assertEquals(0, writes(s))
-        // A task ticked: one row.
         val tasks = base["tasks"] as JsonArray
         val ticked = JsonArray(listOf(tasks[0], JsonObject((tasks[1] as JsonObject) + ("state" to JsonPrimitive("DONE")))))
         s.live.write("save", JsonObject(base + ("tasks" to ticked)).toString(), 5)
         assertEquals(1, writes(s))
-        // A focus session started: one state row. Then a new rest day: one day row.
         s.live.write("save", JsonObject(base + ("tasks" to ticked) + ("focus" to obj("""{"startedAtMillis":5}"""))).toString(), 6)
         assertEquals(2, writes(s))
         s.live.write("save", JsonObject(base + ("tasks" to ticked) + ("focus" to obj("""{"startedAtMillis":5}""")) + ("restDays" to JsonArray(listOf(JsonPrimitive("2026-11-01"), JsonPrimitive("2026-11-02"))))).toString(), 7)
         assertEquals(3, writes(s))
-        // A task deleted: one row.
         s.live.write("save", JsonObject(base + ("tasks" to JsonArray(listOf(ticked[1])))).toString(), 8)
-        assertEquals(3 + 4, writes(s)) // the task row, the one after it (its position moved), and the focus and the day this document no longer has
+        assertEquals(3 + 4, writes(s))
     }
 
     @Test

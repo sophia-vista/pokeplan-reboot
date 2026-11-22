@@ -93,11 +93,6 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
-/**
- * The connection module's screens (docs/pokelife `MODULES/LINK.md`): people with their notes, important dates, follow-ups, and settings. Utility
- * presentation (LINK.md section 10): a few panels, plain rows with a 48 dp target, no box per person. Nothing here judges or counts: no meter, no
- * streak, no "last contacted", no urgency colour; a follow-up that is late is just Due, and no person is ever contacted by the app.
- */
 enum class LinkSection(val label: String, val icon: String) {
     PEOPLE("People", "friend-ball"), DATES("Dates", "timer-ball"), FOLLOW_UPS("Follow-ups", "member-card"), SETTINGS("Settings", "storage-key"),
 }
@@ -113,11 +108,8 @@ private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalizati
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-// ----- Moving between sections ------------------------------------------------------------------------------------------------
-
 private class LinkJump(val section: LinkSection, val id: String? = null, val tab: Int? = null)
 
-/** Where the next section should open (a search hit, an overview line); read once when the section appears. */
 private var pendingLinkJump: LinkJump? = null
 
 private fun go(model: AppModel, section: LinkSection, id: String? = null, tab: Int? = null) {
@@ -130,7 +122,6 @@ private fun go(model: AppModel, section: LinkSection, id: String? = null, tab: I
     model.linkSection = section
 }
 
-/** Opens [id]'s own screen inside People, on [tab] (0 Overview, 1 Profile, 2 Notes, 3 Follow-ups). */
 private fun openPerson(model: AppModel, id: String, tab: Int = 0) {
     model.linkPersonTab = tab
     model.linkPersonId = id
@@ -139,23 +130,19 @@ private fun openPerson(model: AppModel, id: String, tab: Int = 0) {
 
 private fun takeJump(section: LinkSection): LinkJump? = pendingLinkJump?.takeIf { it.section == section }?.also { pendingLinkJump = null }
 
-/** The line under Link's card in Modules: how many follow-ups are due today, or what the module is for. Never a name or a word of a record. */
 internal fun linkSubtitle(model: AppModel): String {
-    model.linkData // the save changes, so the count is read again
+    model.linkData
     val n = model.link.dueNow().size
     return if (n > 0) "$n due" else "people, dates, follow-ups"
 }
 
 @Composable
 internal fun LinkScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
-    // A follow-up PLAN finished is finished here too, without a reward: PLAN paid once (LINK.md 2.4).
     LaunchedEffect(model.data.tasks, model.linkData.followUps) { model.link.syncFromPlan() }
-    // A person has a screen of their own (People is depth 1, a person depth 2); a person who is no longer there is the directory again.
     val personId = model.linkPersonId?.takeIf { id -> model.linkData.people.any { it.id == id } }
     ScreenSwitch(LinkPlace(model.linkSection, personId.takeIf { model.linkSection == LinkSection.PEOPLE }), depth = { if (it.section == null) 0 else if (it.personId == null) 1 else 2 }) { place -> LinkPage(model, place, openPokemon) }
 }
 
-/** Where Link is: the menu (no section), a section, or one person's screen inside People. */
 private data class LinkPlace(val section: LinkSection?, val personId: String? = null)
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -181,8 +168,6 @@ private fun LinkPage(model: AppModel, place: LinkPlace, openPokemon: (String) ->
         }
     }
 }
-
-// ----- Menu -------------------------------------------------------------------------------------------------------------------
 
 @Composable
 private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
@@ -211,16 +196,13 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     }
 }
 
-// ----- Overview ---------------------------------------------------------------------------------------------------------------
-
 private fun dateLine(u: app.pokeplan.link.Upcoming): String {
     val years = u.years?.let { n -> if (u.date.kind == DateKind.BIRTHDAY) "turns $n" else "$n years" }
     return listOfNotNull(u.day.short(), LinkRules.inDays(u.daysAway), years).joinToString(" · ")
 }
 
-/** The PLAN task a follow-up was converted into, if any: from then on PLAN owns it (LINK.md 2.4), so Link shows its status and offers no tick. */
 private fun planTask(model: AppModel, f: FollowUp): app.pokeplan.plan.Task? {
-    model.data // observe the save: the store itself is not Compose state
+    model.data
     return model.store.linkedTask(app.pokeplan.plan.LinkKind.LINK_FOLLOW_UP, f.id)
 }
 
@@ -228,7 +210,6 @@ private fun planWord(t: app.pokeplan.plan.Task): String = when (t.state) { TaskS
 
 private fun dueText(f: FollowUp, today: LocalDate): String? = f.due?.let { if (it < today) "Due since ${it.short()}" else if (it == today) "Due today" else "Due ${it.short()}" }
 
-/** "Done · 3 Nov" or "Cancelled · 3 Nov": the day it was closed, read from the moment it was (a cancelled follow-up has no completion day). */
 private fun closedLine(f: FollowUp, today: LocalDate): String =
     "${if (f.status == FollowUpStatus.COMPLETED) "Done" else "Cancelled"} · ${(f.completedMillis?.let(::dayOf) ?: f.completedDay ?: today).short()}"
 
@@ -237,7 +218,6 @@ private fun followUpLine(data: app.pokeplan.link.LinkData, f: FollowUp, today: L
     return listOfNotNull(who, dueText(f, today)).joinToString(" · ")
 }
 
-/** Only what needs attention (LINK.md 2.4, no pressure): follow-ups that are due and dates coming soon; never a count of everything and never a nudge to contact. */
 @Composable
 private fun LinkOverview(model: AppModel) {
     val data = model.linkData
@@ -269,7 +249,6 @@ private fun LinkOverview(model: AppModel) {
             }
         }
     }
-    // The action items sit below the overview and above the party.
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
@@ -307,8 +286,6 @@ private fun openHit(model: AppModel, kind: HitKind, id: String) {
         HitKind.FOLLOW_UP -> go(model, LinkSection.FOLLOW_UPS, id, if (model.linkData.followUps.firstOrNull { it.id == id }?.status == FollowUpStatus.OPEN) 0 else 1)
     }
 }
-
-// ----- People -----------------------------------------------------------------------------------------------------------------
 
 private const val DIRECTORY_PAGE = 40
 
@@ -350,7 +327,7 @@ private fun PeopleView(model: AppModel) {
             if (data.people.isNotEmpty()) {
             PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search people", singleLine = true)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            val pinnedKey = "\u0001pinned" // a key no category can equal
+            val pinnedKey = "\u0001pinned"
             val filterKeys = listOf<String?>(null) + (if (data.people.any { it.favorite }) listOf(pinnedKey) else emptyList()) +
                 LinkRules.categories(data).filter { c -> data.people.any { it.category.equals(c, ignoreCase = true) } }
             PixelDropdown(
@@ -361,7 +338,6 @@ private fun PeopleView(model: AppModel) {
             PixelButton(if (sort == Sort.NAME) "By name" else "Recent", { sort = if (sort == Sort.NAME) Sort.RECENT else Sort.NAME }, color = Pixel.InkSoft, compact = true)
             }
             if (people.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            // A long directory is shown a page at a time (the screen is one scrolling column, so every row shown is composed).
             val upTo = shown
             people.take(upTo).forEachIndexed { i, p ->
                 if (i > 0) Rule()
@@ -376,7 +352,6 @@ private fun PeopleView(model: AppModel) {
     }
 }
 
-/** One person's own screen: a profile card (their picture, whole name and tags) over a dialogue box of their details; back returns to the directory. */
 @Composable
 private fun PersonScreen(model: AppModel, personId: String) {
     val p = model.linkData.people.firstOrNull { it.id == personId }
@@ -405,7 +380,6 @@ private fun PersonProfile(model: AppModel, p: Person, firstTab: Int, onClose: ()
             PersonForm(model, p, onDone = { editing = false })
             return@Column
         }
-        // Two rows of two, so no label is clipped at a phone's width or a larger system font.
         ModuleTabs(listOf("Overview", "Profile"), if (tab < 2) tab else -1, accent) { tab = it }
         ModuleTabs(listOf("Notes", "Follow-ups"), tab - 2, accent) { tab = it + 2 }
         when (tab) {
@@ -594,8 +568,6 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
     }
 }
 
-// ----- Dates ------------------------------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DatesView(model: AppModel) {
@@ -648,7 +620,6 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
         FormGroup {
             PixelChoice(DateKind.entries.toList(), kind, { it?.label ?: "" }, { k -> if (k != null) { kind = k; if (title.isBlank() || DateKind.entries.any { it.label == title }) title = k.label } }, label = "Kind", key = accent)
             PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
-            // The month is a key, not a number to type; the day and the year (which may be unknown) stay short fields.
             val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelDropdown((1..12).toList(), month.toIntOrNull(), { m -> if (m == null) "" else monthNames[m - 1] }, { m -> if (m != null) month = m.toString() }, Modifier.weight(1.2f), key = accent, label = "Month")
@@ -658,11 +629,9 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
         }
         FormDisclosure("Additional details", more, { more = !more }) {
             FormGroup {
-                // Help: a 29 February is kept on 28 February in years without one.
                 ToggleRow("Every year", annual) { annual = it }
                 PersonPicker(data.people, personId) { personId = it }
                 PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", singleLine = true, keyboardOptions = sentenceKeys)
-                // A reminder is asked for here, in the same step: the first one turns Link's reminders on (LINK.md 5). A new date keeps its choice until it is saved.
                 val saved = if (initial != null) data.dates.firstOrNull { it.id == initial.id }?.remindDays else remind
                 PixelChoice(
                     listOf<Int?>(null) + LinkRules.REMIND_PRESETS, saved, { n -> if (n == null) "No" else remindLabel(n) },
@@ -679,7 +648,6 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
                 if (out.record == null) message = out.refused ?: "That could not be saved."
                 else {
                     message = null; model.haptic()
-                    // Added from a profile, it closes; added from the Dates list, the form clears for the next one.
                     if (initial == null && presetPerson == null) { title = ""; month = ""; day = ""; year = ""; note = ""; personId = null; remind = null } else onDone()
                 }
             }
@@ -692,7 +660,6 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
     }
 }
 
-/** Chooses one person, or none: a field to narrow the list and the first few matches as chips. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PersonPicker(people: List<Person>, selected: String?, onPick: (String?) -> Unit) {
@@ -709,8 +676,6 @@ private fun PersonPicker(people: List<Person>, selected: String?, onPick: (Strin
         }
     }
 }
-
-// ----- Follow-ups -------------------------------------------------------------------------------------------------------------
 
 @Composable
 private fun FollowUpsView(model: AppModel) {
@@ -790,7 +755,6 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         val task = planTask(model, f)
-        // A reminder needs a day, and a follow-up handed to Plan is reminded about by Plan alone.
         if (data.settings.reminders && f.status == FollowUpStatus.OPEN && f.due != null && !f.converted) {
             val now = data.followUps.firstOrNull { it.id == f.id }?.remind == true
             PixelButton(if (now) "Reminder on" else "Remind me on the day", { link.setFollowUpRemind(f.id, !now) }, Modifier.fillMaxWidth(), if (now) accent else Pixel.InkSoft, compact = true)
@@ -803,8 +767,6 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
     }
 }
 
-// ----- Settings ---------------------------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LinkSettingsView(model: AppModel) {
@@ -816,7 +778,6 @@ private fun LinkSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Postcard Trail")
-            // Help: a follow-up you finish counts once; people, notes, dates and edits never do.
             ToggleRow("Find Pokémon from finished follow-ups", data.settings.postcardTrail) { link.setPostcardTrail(it) }
             if (data.settings.postcardTrail) ToggleRow("Friend Safari on each person", data.settings.safari) { link.setSafari(it) }
         }

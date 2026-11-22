@@ -3,7 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** Paldea, "The Treasure of Area Zero": Sprig the Sprigatito guides the buddy; Team Star is Houndour and Houndoom; Koraidon and Terapagos are the legends of the Crater. */
 internal object PaldeaChapters {
     private val buddy = buddyCharacter()
     private val sprig = npc("sprig", "Sprig", 906)

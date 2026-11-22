@@ -27,20 +27,10 @@ import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import kotlinx.coroutines.delay
 
-/** What a [Feedback] says about: something saved, something earned, or something that did not work. */
 enum class FeedbackKind(val shownMillis: Long) { SAVED(2_500L), REWARD(4_000L), ERROR(6_000L) }
 
-/**
- * The one place the app tells the player how something went (saved, earned, did not work), as one line in one bar pinned above the tabs ([FeedbackHost]),
- * the same on every screen. A screen says it once with [AppModel.say] when it happens, or keeps it up while it holds ([Report]); it never draws its own
- * message box. Rich reward moments (an egg hatching, a level up) keep their own scenes; this is for the sentence that goes with an ordinary action.
- */
 data class Feedback(val text: String, val kind: FeedbackKind, val sticky: Boolean, val serial: Long)
 
-/**
- * Says [text] while this is on the screen, for a problem that stays until the player fixes it (a field the app cannot read): the bar shows it as long as the
- * screen holds it and takes it down when the screen clears it or is left. A `null` [text] says nothing.
- */
 @Composable
 fun Report(model: AppModel, text: String?, tone: NoticeTone = NoticeTone.INFO) {
     if (text == null) return
@@ -51,12 +41,9 @@ fun Report(model: AppModel, text: String?, tone: NoticeTone = NoticeTone.INFO) {
     }
 }
 
-/** The bar. At most one line at a time: the newest, and an error is not replaced by a plain "Saved." arriving at the same moment. */
 @Composable
 fun FeedbackHost(model: AppModel, modifier: Modifier = Modifier) {
     val feedback = model.feedback ?: return
-    // A sticky line is taken down by whoever put it up; a timed one takes itself down (the serial says it is still the same one).
-    // A saved line stays up a moment, a reward longer, an error longest.
     if (!feedback.sticky || feedback.kind == FeedbackKind.SAVED) LaunchedEffect(feedback.serial) {
         delay(feedback.kind.shownMillis)
         model.dropFeedback(feedback.serial)

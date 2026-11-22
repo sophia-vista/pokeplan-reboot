@@ -1,19 +1,4 @@
 #!/usr/bin/env python3
-"""Extract the dungeon floor's traps and items of Pokémon Mystery Dungeon: Explorers of Sky (USA) from the ROM.
-
-The ROM is not in the repo: pass one whose SHA-1 is 5fa96ca8d8dd6405d6cd2bad73ed68bc73a9d152 (as for
-tools/tiles/extract_sky_tiles.py). DUNGEON/dungeon.bin holds `traps.trp.img` (the 24 x 24 trap and stairs tiles a
-floor shows) and `items.itm.img` (the 16 x 16 pictures of items lying on a floor, each drawn in the palette that
-BALANCE/item_p.bin gives the item). Read with SkyTemple's file-format library (`pip install ndspy skytemple-files "pillow<11"`).
-
-Writes, for the launcher's dungeon floor (docs/pokelife/FEATURES/LAUNCHER.md, REP-052):
-- assets/tiles/floor-traps.png: every trap tile in the game's order (0 is no trap), 24 x 24 each in one row, colour 0 clear;
-- assets/tiles/floor-items.png and floor-items.tsv: the floor picture of each Bag item that can lie on the town's floor
-  (FLOOR_ITEMS below: our item id and the Explorers of Sky item whose picture and palette it takes), 16 x 16 each in one row.
-Nintendo / Chunsoft art: private use only.
-
-Usage: python3 tools/tiles/extract_sky_floor.py ROM.nds
-"""
 import hashlib
 import sys
 from pathlib import Path
@@ -27,8 +12,6 @@ from skytemple_files.data.item_p.handler import ItemPHandler
 ROM_SHA1 = "5fa96ca8d8dd6405d6cd2bad73ed68bc73a9d152"
 OUT = Path(__file__).resolve().parents[2] / "assets" / "tiles"
 
-# Our Bag item -> the Explorers of Sky item drawn for it. The berries by flavour (Cheri spicy, Sitrus sour, Pecha
-# sweet, Chesto dry, Rawst bitter); the game has one bottle for its vitamins, so all six of ours use it; Poké is Poké.
 FLOOR_ITEMS = [
     ("berry-spicy", "Cheri Berry"), ("berry-sour", "Sitrus Berry"), ("berry-sweet", "Pecha Berry"),
     ("berry-dry", "Chesto Berry"), ("berry-bitter", "Rawst Berry"),
@@ -38,7 +21,6 @@ FLOOR_ITEMS = [
 
 
 def clear(img):
-    """The sprite with colour 0 of its 16-colour palette (the game's see-through colour) made transparent."""
     img = img.convert("P") if img.mode != "P" else img
     rgba = img.convert("RGBA")
     px, src = rgba.load(), img.load()

@@ -25,10 +25,6 @@ import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
-/**
- * The Poké Mart (its own section of the Pokémon tab since 0.187.0; it was a box at the top of the Bag): the everyday shop, where Poké buys candies
- * and berries cheaply ([Shop]). The Kecleon Shop in World's Town is the specialty one.
- */
 @Composable
 internal fun MartView(model: AppModel) {
     val player = model.data.player
@@ -47,7 +43,6 @@ internal fun MartView(model: AppModel) {
         }
 }
 
-/** One thing the Mart sells: its icon, name, how many the Bag holds and the price, then Buy 1, Buy 10 and as many as the Poké allows. */
 @Composable
 private fun MartRow(model: AppModel, id: String, price: Int) {
     val store = model.store
@@ -66,7 +61,6 @@ private fun MartRow(model: AppModel, id: String, price: Int) {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             listOf(1, 10).forEach { n -> PixelButton("Buy $n", { buy(n) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = afford >= n) }
-            // As many as the Poké allows; the same as Buy 1 or Buy 10 when that is all it would buy.
             PixelButton(if (afford > 1) "Buy $afford" else "Buy max", { buy(afford) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = afford > 1 && afford != 10)
         }
     }

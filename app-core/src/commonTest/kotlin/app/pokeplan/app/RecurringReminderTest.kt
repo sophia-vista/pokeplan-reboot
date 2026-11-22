@@ -16,7 +16,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** REP-057: a repeating task's next occurrence carries its reminder, and gets made without the app being opened daily. */
 class RecurringReminderTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis

@@ -1,16 +1,9 @@
 package app.pokeplan.world.story
 
-/** Where someone stands in a scene right now, and how they look. */
 data class Actor(val id: String, val x: Float, val y: Float, val facing: Facing, val expression: Expression, val emote: String? = null)
 
-/** The line being said: who, what and the face. */
 data class Line(val who: String?, val text: String, val expression: Expression)
 
-/**
- * The state of a scene after some of its events: who is on stage, what lies on the floor, the line on screen and the flags set. The
- * runtime that draws it animates the walks and the fades; this state is what each event leaves behind, so skipping to the end is the same
- * as applying every event (spec 7.6: skip reaches a valid final state, nothing is left half done).
- */
 data class SceneState(
     val actors: Map<String, Actor> = emptyMap(),
     val items: Map<String, Pair<Float, Float>> = emptyMap(),
@@ -21,7 +14,6 @@ data class SceneState(
     val finished: Boolean = false,
     val letterbox: Boolean = false,
 ) {
-    /** The state after [event], all at once (a walk ends at the last cell of its path). */
     fun apply(event: SceneEvent): SceneState = when (event) {
         is SceneEvent.Show -> copy(actors = actors + (event.who to Actor(event.who, event.x, event.y, event.facing, event.expression)))
         is SceneEvent.Hide -> copy(actors = actors - event.who, line = line?.takeIf { it.who != event.who })
@@ -54,7 +46,6 @@ data class SceneState(
     companion object {
         fun start(scene: StoryScene, flags: Set<String> = emptySet()) = SceneState(background = scene.background, flags = flags)
 
-        /** The way a step from [from] to [to] faces: sideways when it goes across more than it goes up or down. */
         fun facingOf(from: Pair<Float, Float>, to: Pair<Float, Float>, keep: Facing): Facing {
             val dx = to.first - from.first; val dy = to.second - from.second
             return when {
@@ -64,12 +55,10 @@ data class SceneState(
             }
         }
 
-        /** The state at the end of [scene]: every event applied in order, what a skip lands on. */
         fun finalOf(scene: StoryScene, flags: Set<String> = emptySet()): SceneState = scene.events.fold(start(scene, flags)) { s, e -> s.apply(e) }.copy(line = null, black = false)
     }
 }
 
-/** What is wrong with a scene's script, in words (empty when it is sound): used by the tests and the preview tool so a writer sees mistakes at once. */
 fun StoryScene.problems(): List<String> = buildList {
     val ids = cast.map { it.id }
     if (ids.distinct().size != ids.size) add("$id: a character is listed twice")
@@ -77,7 +66,6 @@ fun StoryScene.problems(): List<String> = buildList {
     if (events.count { it == SceneEvent.End } != 1) add("$id: End must appear once, at the end")
     if (type == SceneType.DUNGEON && dungeonId == null) add("$id: a DUNGEON scene needs a dungeonId")
     val shown = mutableSetOf<String>()
-    // One checker for the top level and for the lines inside a Branch, so a branch is held to the same rules.
     fun check(list: List<SceneEvent>, at: String, inBranch: Boolean) {
         for ((i, e) in list.withIndex()) {
             val where = "$id #$at$i"
@@ -107,7 +95,6 @@ fun StoryScene.problems(): List<String> = buildList {
                 is SceneEvent.Branch -> {
                     if (inBranch) add("$where: a branch inside a branch")
                     if (e.flag.isBlank()) add("$where: a branch with no flag")
-                    // The branch may or may not run, so it must leave who is on stage as it found them.
                     val before = shown.toSet()
                     check(e.events, "$at$i.", true)
                     if (shown != before) { add("$where: a branch changes who is on stage (show and hide inside it must cancel out)"); shown.clear(); shown += before }
@@ -119,7 +106,6 @@ fun StoryScene.problems(): List<String> = buildList {
     }
     check(events, "", false)
     if (type == SceneType.DIALOGUE) {
-        // A dialogue scene draws at most two characters at once; a third would not appear.
         val on = mutableSetOf<String>()
         var most = 0
         fun count(list: List<SceneEvent>) { for (e in list) when (e) { is SceneEvent.Show -> { on += e.who; most = maxOf(most, on.size) }; is SceneEvent.Hide -> on -= e.who; is SceneEvent.Branch -> count(e.events); else -> {} } }

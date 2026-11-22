@@ -14,7 +14,6 @@ import app.pokeplan.app.GameStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** PLAN's and CARE's rewards leave a ledger note under their own event id (DATA_AND_MIGRATIONS.md section 7.3.0, step 2). */
 class PlanCareLedgerNotesTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis

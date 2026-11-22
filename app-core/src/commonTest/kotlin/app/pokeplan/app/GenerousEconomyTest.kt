@@ -17,7 +17,6 @@ import kotlin.test.assertTrue
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
-/** Rules version 12: Care Eggs, Care's candies and the coin shop. */
 class GenerousEconomyTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
@@ -56,7 +55,7 @@ class GenerousEconomyTest {
         clock.millis += 3 * 60 * 60_000L
         s.completeTask(task.id)
         clock.millis += 20_000L
-        s.tick() // past the Undo window: the task pays its coins
+        s.tick()
         val coins = s.data.player.coins
         val before = candies()
         val n = s.buyRareCandies(1_000_000)

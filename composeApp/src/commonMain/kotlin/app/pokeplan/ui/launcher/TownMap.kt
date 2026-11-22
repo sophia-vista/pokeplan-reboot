@@ -9,11 +9,6 @@ const val CORNER_TR = 2
 const val CORNER_BL = 4
 const val CORNER_BR = 8
 
-/**
- * Draws the inner corners [corners] of one wall square at ([x], [y]) so the rim turns the corner instead of stopping short. Each is a rim-thick block (three eighths of the 24 pixel tile) cut from the
- * end of the block's left or right edge tile, leaving out that tile's outermost column (it is ground colour: the edge tile expects ground beside it), and that column is taken from the top or bottom
- * edge tile instead, where the rim of the bay's other side begins. [scale] is the screen pixels per atlas pixel.
- */
 internal fun androidx.compose.ui.graphics.drawscope.DrawScope.drawInnerCorners(image: androidx.compose.ui.graphics.ImageBitmap, corners: Int, x: Int, y: Int, tile: Int, scale: Int) {
     if (corners == 0 || tile != 24) return
     val t = tile
@@ -23,35 +18,17 @@ internal fun androidx.compose.ui.graphics.drawscope.DrawScope.drawInnerCorners(i
         androidx.compose.ui.unit.IntOffset(x + dx * scale, y + dy * scale), androidx.compose.ui.unit.IntSize(w * scale, h * scale),
         filterQuality = androidx.compose.ui.graphics.FilterQuality.None,
     )
-    // Edge tiles: left (column 0, row 1), right (2, 1), top (1, 0), bottom (1, 2). The right edge's rim is x 13 to 22, the left edge's x 1 to 10.
-    // The three pixels of that column nearest the ground are the rim's own outline carried on, so no ground-coloured pixel is left at the turn.
     if (corners and CORNER_TL != 0) { block(1, t, 10, rim, 1, 0); block(1, t, 1, 3, 0, 0); block(t + 23, 3, 1, 6, 0, 3) }
     if (corners and CORNER_TR != 0) { block(2 * t + 13, t, 10, rim, 13, 0); block(2 * t + 22, t, 1, 3, 23, 0); block(t, 3, 1, 6, 23, 3) }
     if (corners and CORNER_BL != 0) { block(1, t + 15, 10, rim, 1, 15); block(1, t + 21, 1, 3, 0, 21); block(t + 23, 2 * t + 15, 1, 6, 0, 15) }
     if (corners and CORNER_BR != 0) { block(2 * t + 13, t + 15, 10, rim, 13, 15); block(2 * t + 22, t + 21, 1, 3, 23, 21); block(t, 2 * t + 15, 1, 6, 23, 15) }
 }
 
-/** What a square of a dungeon town is: open ground, wall (trees, rocks) or water. */
 enum class TownCell { GROUND, WALL, WATER }
 
-/**
- * A town built from a dungeon's tiles: a [cols] by [rows] map of [TownCell]s. A wall or water area is always a plain
- * rectangle at least two squares wide and tall, so its edge tiles come from the 3 x 3 block of the tileset (corners,
- * edges and middle) and need no other rules. Squares beyond the map count as the nearest square inside it, so an area
- * that runs off the screen shows no edge there.
- */
 class TownMap(val cols: Int, val rows: Int, private val cells: Array<TownCell>) {
     fun at(x: Int, y: Int): TownCell = cells[y.coerceIn(0, rows - 1) * cols + x.coerceIn(0, cols - 1)]
 
-    /**
-     * Where the tile of square ([x], [y]) is in the 6 x 4 atlas of tools/tiles/cut_tiles.py: wall block at columns 0 to 2,
-     * water block at 3 to 5 (rows 0 to 2), and on row 3 the ground tile and its two alternates, which a few ground
-     * squares use (chosen from [seed], so a town always looks the same).
-     */
-    /**
-     * The inner corners of a wall square: a bit for each diagonal ([CORNER_TL], [CORNER_TR], [CORNER_BL], [CORNER_BR]) that is open while both squares beside it are wall. The 3 x 3 block has only
-     * outer corners, so where a bay is cut into a wall its rim has a notch there, which [drawInnerCorners] fills from the block's own edge tiles.
-     */
     fun innerCorners(x: Int, y: Int): Int {
         val me = at(x, y)
         if (me != TownCell.WALL) return 0
@@ -79,14 +56,11 @@ class TownMap(val cols: Int, val rows: Int, private val cells: Array<TownCell>) 
     }
 }
 
-/** Lays a dungeon town out: a wall band along the top, a pond and wall clumps below it, and more clumps at the bottom corners. */
 object TownLayout {
-    /** Where the town's Pokémon walk, as fractions of the screen's height: clear of every pond and clump. */
     const val WALK_TOP = 0.20f
     const val WALK_BOTTOM = 0.74f
 
     private class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
-        /** Whether this comes within one square of [o], which a new area must not (a square of ground stays between areas). */
         fun near(o: Rect) = x - 1 < o.x + o.w && o.x - 1 < x + w && y - 1 < o.y + o.h && o.y - 1 < y + h
     }
 
@@ -105,14 +79,11 @@ object TownLayout {
                 if (placed.none { it.near(r) }) return put(r, cell)
             }
         }
-        // The band runs off the screen on three sides, so only its lower edge shows.
         val band = (rows * 0.10f).roundToInt().coerceAtLeast(2)
         put(Rect(-2, -2, cols + 4, band + 2), TownCell.WALL)
-        // Between the band and where the Pokémon walk: one pond and a clump or two.
         val upperEnd = (rows * 0.18f).toInt()
         tryPlace(TownCell.WATER, 3 + random.nextInt(3), 2, 0..cols - 5, band + 1..upperEnd - 2)
         repeat(2) { tryPlace(TownCell.WALL, 2 + random.nextInt(2), 2, -1..cols - 3, band + 1..upperEnd - 2) }
-        // Below the Pokémon, behind the day's text: clumps at the corners, running off the screen.
         val lowerStart = (rows * 0.80f).toInt()
         repeat(3) {
             val w = 2 + random.nextInt(3)
@@ -123,12 +94,6 @@ object TownLayout {
     }
 }
 
-/**
- * A dungeon floor for a walk or a team's strip, from the same atlas as the town: one row of wall along the top, [floorRows] rows of ground to walk on, then wall below with a few bays of ground cut into it. The floor
- * rows are always clear, so nobody walks through a wall; the bays and the ground alternates only break the
- * repetition (no ponds: not every tileset's water is fit to show). The same [seed] (from the dungeon and the floor) always gives the same floor. Nothing is drawn here: the
- * tiles are the game's own, picked by [TownMap.atlas].
- */
 internal object DungeonFloorLayout {
     fun build(cols: Int, rows: Int, seed: Int, floorRows: Int): TownMap {
         val random = Random(seed)
@@ -138,7 +103,6 @@ internal object DungeonFloorLayout {
             cells[x] = TownCell.WALL
             for (y in below until rows) cells[y * cols + x] = TownCell.WALL
         }
-        // Bays: ground cut into the wall below (two to four squares wide, never at the map's edge, a square of wall between them).
         if (below < rows - 1) {
             var x = 2 + random.nextInt(3)
             while (x < cols - 5) {
@@ -151,11 +115,6 @@ internal object DungeonFloorLayout {
     }
 }
 
-/**
- * Whether each ground alternate of an atlas (row 3, columns 1 and 2) is close enough to the plain ground tile to be
- * scattered over a floor: a few tilesets' alternates are a different thing (a pit, a patch of water) and would look
- * like holes. Worked out from the pixels, once per atlas.
- */
 internal fun alternatesFit(image: androidx.compose.ui.graphics.ImageBitmap): BooleanArray {
     val map = image.toPixelMap()
     if (map.height < 96 || map.width < 72) return booleanArrayOf(true, false, false)

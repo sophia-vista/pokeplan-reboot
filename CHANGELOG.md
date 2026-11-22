@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.225.1
+## 0.227.0
 
 Huawei Health read: less scrolling, one pass (HEAL, REP-046, owner feedback 21 November 2026). `RewardRules.VERSION` unchanged. No schema change.
 
@@ -33,6 +33,38 @@ Huawei Health read: less scrolling, one pass (HEAL, REP-046, owner feedback 21 N
 - **Cycle Calendar's Period records (owner, 21 November 2026):** after All data, the walk opens the other item of that menu, Period records, captures it with a scroll or two and comes back (nothing is changed or saved from it). When a menu item is not found the walk log now says how many windows exist, how many are Huawei Health's and their kinds (no text), and the first line of a read says the Android version and whether the service is declared an accessibility tool, to tell a slow page from one Android does not show to this service.
 - **Steps too:** the Steps summary at the top of the Health page is opened first (2 scrolls) so its page is captured; it is not a card, so the walk finds it by its own element. Not parsed yet. Its four-dots menu → **All data** is opened too (menu button found by description, item by text; 4 scrolls), and so is every other card's that has one (owner: almost all do; Exercise records does not), 3 scrolls for Heart, Weight and Sleep and 2 for the rest; the walk log says which step worked. The walk now presses Back only while the Health page is not showing, so extra pages are closed without leaving Huawei Health.
 - **Every card is opened (owner, 21 November 2026):** besides Exercise records, Weight and Sleep (read into records), the walk now opens each other card on the Health page once (Heart, Skin temperature, SpO2, Health Clovers, Activity rings, Emotional wellbeing, Cycle Calendar and any other), one scroll each, to capture its page so it can be parsed next. Nothing is saved or paid from them. A look-only card gets two extra Back presses before the walk gives up, and a read may take up to 240 seconds. Cycle Calendar is private: its page is only held in memory and only leaves the phone if you tap Save, numbers hidden. To confirm on the phone: the time of a read and that Back returns after every card.
+- **Heal's opened-row cache (21 November 2026):** saves no longer open every sealed row (one Keystore call each) to find which changed: the rows as last written are kept in memory, used only while the database provably still matches (same key object, same row count and text length per table), and dropped the moment it does not; erasing, sealing or activating Heal forgets it. Nothing sealed is written differently.
+
+## 0.225.4
+
+Performance and battery pass (static audit, no device trace; owner, 21 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged.
+
+- **Nothing runs behind a stopped app.** The 2 Hz tick, the power-saver poll, sprite and status animations, the buddy's drift, the egg wobble, Deep Focus's accelerometer, the Gear sensors, the sound meter, the SOS torch, the Huawei poll and World's wait stop while the app is not in front (`rememberInForeground`). A locked screen is no longer a Deep Focus movement.
+- **Start-up:** the database opens off the main thread behind a small loading screen, and the normal start runs `PRAGMA quick_check` (the full check stays for tests and recovery). The daily sealed backup is WorkManager's: a due copy is asked for at every start and the periodic job runs daily (storage and battery not low, two retries).
+- **Heal** rows are decrypted once per read, not twice (`readOrNull`), without letting an exception leave a surrounding transaction.
+- **Widgets and reminders:** widget bitmaps are capped (512 KB each, 16 MB cached) and widgets are refreshed on leaving the app only after a change to the save or to Mint; a fired reminder reuses its plan, unchanged alarms are not set again (lost ones are), and the boot receiver is not exported.
+- **UI and rules:** the Pokédex is a lazy list; sprite sheets and tables decode off the UI thread; the day dither is built once per size; Mint balances are remembered; the journal field no longer recomposes the screen per key; `GameStore.tick` and the streak do less; a bill's occurrences start at an arithmetic index (`BillOccurrencesWindowTest` checks it against the walk from the first date).
+
+## 0.225.3
+
+Navigation audit (REP-074; the map and the findings are in `docs/pokelife/evidence/NAVIGATION_AUDIT-2026-11-21.md`). Back behaviour, tab places and the Pokégear overlay; no reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged.
+
+- **Back closes a page before it leaves its section.** `SectionScaffold` now knows the page opened inside it (`UpTo`), so the header's Back key and the system Back gesture do the same thing, one level at a time. World's Town facility and Journal pages use it: their header Back used to leave World while the system Back and the on-page "Back to the …" key only closed the page (`world/World.kt`).
+- **The Pokémon detail's system Back no longer leaves the app.** It drew a Back key but registered no handler (`pokemon/PokemonDetail.kt`).
+- **A jump to a Pokémon works while its tab is open.** The Pokémon tab reads the one-shot jump itself (Home's buddy chip, a widget's Pokémon, the Party shortcut), so it lands when the tab is already showing and wins over a saved place.
+- **The Pokémon and Me tabs keep their place.** A section, an open Pokémon, a Pokédex entry and the Me section are saved with `rememberSaveable`, so another tab, or the app being put away, finds them where they were, as the Modules tab already did for its module.
+- **Care and Plan close their pages first too.** A skill's guide, Care Play and the Pokémon panel in Dream, a calendar draft or event panel and an open task card now register with `UpTo`, so Back closes the page before it leaves the place (Care's and Plan's system Back used to leave the section, and lose a draft).
+- **The intro has a Back.** It goes to the step before (the greeting line by line) and leaves the app only on the very first line, instead of exiting from every step (`screens/Onboarding.kt`).
+- **A second tap on a tab returns it to its first screen.** The Pokémon and Me tabs now do what Modules already did: a tap on the tab you are on goes back to its menu (a restored place is not reset by the restore).
+- **A Pokémon opened from Home or a module goes back there.** Back from that Pokémon returns to the tab it was opened from; a plain visit to the Pokémon tab keeps the usual Back to its own list.
+- **A destination replaces the Pokégear.** A widget, shortcut or notification no longer opens its screen behind the overlay; only Gear opens it (`AppModel.open`).
+- **Mint starts a plain entry from outside.** A kind left by an earlier quick action (a transfer, say) no longer pre-fills the next entry reached from a widget or notification.
+- **Docs:** `DESIGN_SYSTEM.md` 6.7 gained the two rules (a page inside a section is one level up first; every tab keeps its place).
+- **Tests:** `BackChainTest` (a tab switch keeps the Me and Pokémon places; the Town's Back goes to the town, then out of World) and `NavigationTest` (the Pokégear and the Mint kind).
+
+## 0.225.1
+
+
 Docs review and cleanup (owner, 21 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` numbers unchanged.
 
 - **Docs pruned and realigned:** `docs/` lost about 4,500 lines of history, duplicated figures and retired material; names, versions and statuses were checked against the code; HOME reads BASE except in stored names. The Implementation Guide status table is rebuilt for 0.225.0. Specs now say: goals complete when all their milestones are done, Plan has no priority field, Mint's Quick actions are Expense, Income and Transfer, eggs hatch from the Plan Region (no picker).

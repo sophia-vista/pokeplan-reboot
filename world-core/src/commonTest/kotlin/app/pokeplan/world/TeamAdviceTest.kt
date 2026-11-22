@@ -10,12 +10,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** WORLD.md 2.3: a team that suits the dungeon; the expedition formula and bestTeam are untouched. */
 class TeamAdviceTest {
     private fun mon(id: String, species: Int, level: Int): OwnedPokemon =
         Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
 
-    private val woods = Dungeons.byId("tiny-woods")!! // Grass, Bug, Flying
+    private val woods = Dungeons.byId("tiny-woods")!!
     private val pikachu = mon("a", 25, 50)
     private val rattata = mon("b", 19, 40)
     private val caterpie = mon("c", 10, 5)

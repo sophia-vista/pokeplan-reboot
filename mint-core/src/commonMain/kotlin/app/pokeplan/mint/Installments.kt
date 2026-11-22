@@ -6,65 +6,49 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.serialization.Serializable
 
-/** How often installments fall due (MINT.md 5.6A). A monthly day the month lacks falls on its last day. */
 @Serializable
 enum class PlanEvery(val label: String) { WEEK("Every week"), TWO_WEEKS("Every 2 weeks"), MONTH("Every month") }
 
-/** What a `FEE` record is: a plain fee, interest, or a late fee (MINT.md 5.6A). Only a `FEE` record has one. */
 @Serializable
 enum class FeeKind(val label: String) { FEE("Fee"), INTEREST("Interest"), LATE("Late fee") }
 
-/** One scheduled installment: its due day and what it asks (principal and fee). What was paid is derived from the plan's repayments, never stored. */
 @Serializable
 data class Installment(val no: Int, val dueDay: LocalDate, val principalMinor: Long, val feeMinor: Long = 0)
 
-/**
- * A buy-now-pay-later or card installment purchase (MINT.md 5.6A). [purchaseTxId] is the one `EXPENSE` at the full [totalMinor]; the plan holds only the generated
- * [installments]. Repayments, fees, late fees and refunds are ordinary records linked by `Transaction.planId`, so nothing here can drift from the ledger.
- */
 @Serializable
 data class InstallmentPlan(
     val id: String,
     val accountId: String,
     val name: String,
     val currency: String,
-    /** The one `EXPENSE` of the purchase; null for a schedule entered as already owed (MINT.md 5.6A): the purchase happened before tracking and is not spending. */
     val purchaseTxId: String? = null,
     val totalMinor: Long,
     val startDay: LocalDate,
     val every: PlanEvery,
-    /** Whether the installments' fee is called a fee or interest (the late fees are always [FeeKind.LATE]). */
     val feeKind: FeeKind = FeeKind.FEE,
     val installments: List<Installment>,
     val createdMillis: Long = 0,
-    /** The rule used to generate future fees; null for an imported or manually edited schedule. */
     val feeRule: FeeRule? = null,
-    /** Whether this existing schedule was added to the account's opening balance. */
     val openingBalanceIncluded: Boolean = false,
 )
 
-/** How the fee of each installment is worked out when a schedule is generated. */
 @Serializable
 sealed interface FeeRule {
     @Serializable
     data object None : FeeRule
 
-    /** The same fee on every installment. */
     @Serializable
     data class PerInstallment(val minor: Long) : FeeRule
 
-    /** One total spread over the installments, the leftover minor units one each to the first. */
     @Serializable
     data class Total(val minor: Long) : FeeRule
 
-    /** [basisPoints] (1% is 100) of the principal still unpaid before each installment, rounded half up: interest that shrinks as the plan is paid. */
     @Serializable
     data class RatePerPeriod(val basisPoints: Int) : FeeRule
 }
 
 enum class InstallmentState(val label: String) { UPCOMING("Upcoming"), DUE("Due today"), OVERDUE("Overdue"), PARTIAL("Partly paid"), PAID("Paid"), CANCELLED("Cancelled") }
 
-/** One installment as it stands today: what it asks, what has been applied to it, what is left, and its state. */
 data class InstallmentView(
     val no: Int,
     val dueDay: LocalDate,
@@ -73,14 +57,12 @@ data class InstallmentView(
     val lateMinor: Long,
     val paidMinor: Long,
     val state: InstallmentState,
-    /** Whether this installment's fee has been recorded as a `FEE` record (so it is part of the outstanding). */
     val feeRecorded: Boolean,
 ) {
     val dueMinor: Long get() = principalMinor + feeMinor + lateMinor
     val remainingMinor: Long get() = (dueMinor - paidMinor).coerceAtLeast(0)
 }
 
-/** A plan as it stands today (derived from the ledger). [overpaidMinor] is what repayments linked to the plan exceed its total. */
 data class PlanView(val plan: InstallmentPlan, val installments: List<InstallmentView>, val refundedMinor: Long, val overpaidMinor: Long) {
     val remainingMinor: Long get() = installments.sumOf { it.remainingMinor }
     val paidMinor: Long get() = installments.sumOf { it.paidMinor }
@@ -88,7 +70,6 @@ data class PlanView(val plan: InstallmentPlan, val installments: List<Installmen
     val next: InstallmentView? get() = installments.firstOrNull { it.remainingMinor > 0 }
 }
 
-/** What a credit account did over a period (MINT.md 5.6A): kept apart so the limit, the outstanding and the payments are never conflated. */
 data class CreditActivity(
     val purchasesMinor: Long,
     val feesMinor: Long,
@@ -98,7 +79,6 @@ data class CreditActivity(
     val repaymentsMinor: Long,
 )
 
-/** Cash that really moved through the liquid accounts over a period. A repayment to a credit account is [outflowMinor]; a purchase on credit is not cash flow. */
 data class CashFlow(val inflowMinor: Long, val outflowMinor: Long) {
     val netMinor: Long get() = inflowMinor - outflowMinor
 }
@@ -106,24 +86,20 @@ data class CashFlow(val inflowMinor: Long, val outflowMinor: Long) {
 object Installments {
     const val MAX_COUNT = 36
 
-    /** The account types an installment plan may belong to. */
     fun allowedFor(type: AccountType): Boolean = type == AccountType.CREDIT_CARD || type == AccountType.PAY_LATER
 
-    /** [first] plus [index] steps of [every]; a monthly step is counted from the first day, so 31 January, 28 February, 31 March. */
     fun dueOn(first: LocalDate, every: PlanEvery, index: Int): LocalDate = when (every) {
         PlanEvery.WEEK -> first.plus(DatePeriod(days = 7 * index))
         PlanEvery.TWO_WEEKS -> first.plus(DatePeriod(days = 14 * index))
         PlanEvery.MONTH -> first.plus(DatePeriod(months = index))
     }
 
-    /** Splits [total] over [count] parts that add up exactly; the leftover minor units go one each to the first parts. */
     fun split(total: Long, count: Int): List<Long> {
         val base = total / count
         val extra = (total % count).toInt()
         return List(count) { base + if (it < extra) 1 else 0 }
     }
 
-    /** The schedule for a purchase of [totalMinor] in [count] installments (MINT.md 5.6A). Principal adds up to the price exactly. */
     fun generate(totalMinor: Long, count: Int, every: PlanEvery, firstDue: LocalDate, fee: FeeRule): List<Installment> {
         require(count in 1..MAX_COUNT && totalMinor > 0)
         val principal = split(totalMinor, count)
@@ -141,7 +117,6 @@ object Installments {
         return List(count) { Installment(it + 1, dueOn(firstDue, every, it), principal[it], fees[it]) }
     }
 
-    /** Rows for an existing schedule: each a due day, an amount still owed (above zero) and a fee (not negative), in due-day order, 1 to [MAX_COUNT] of them. */
     fun checkExisting(type: AccountType, rows: List<Installment>): Check {
         if (!allowedFor(type)) return Check.Refused("Installments belong to a credit card or a pay later account.")
         if (rows.isEmpty() || rows.size > MAX_COUNT) return Check.Refused("Add 1 to $MAX_COUNT installments.")
@@ -163,18 +138,12 @@ object Installments {
 
     private fun counts(t: Transaction) = t.status == TxStatus.POSTED
 
-    /** Whether the fee of installment [no] has a live `FEE` record (voiding or deleting it lets it be recorded again). */
     fun feeRecorded(data: MintData, plan: InstallmentPlan, no: Int): Boolean =
         data.transactions.any { it.planId == plan.id && it.planNo == no && it.type == TxType.FEE && it.feeKind != FeeKind.LATE && counts(it) }
 
-    /**
-     * The plan as it stands [today], derived from the ledger: refunds cancel the unpaid installments from the last backwards; late fees add to their installment;
-     * repayments (posted transfers linked to the plan) are applied in date order to the earliest installment first, the overflow to the next.
-     */
     fun view(data: MintData, plan: InstallmentPlan, today: LocalDate): PlanView {
         val linked = data.transactions.filter { it.planId == plan.id || it.planAllocations.any { allocation -> allocation.planId == plan.id } }.filter(::counts)
         val refunded = linked.filter { it.type == TxType.REFUND }.sumOf { it.amountMinor }
-        // Refunds take principal off the last installments first.
         var toCancel = refunded
         val principal = plan.installments.map { it.principalMinor }.toMutableList()
         val fee = plan.installments.map { it.feeMinor }.toMutableList()
@@ -186,7 +155,6 @@ object Installments {
             if (principal[i] == 0L) fee[i] = 0
         }
         val late = plan.installments.map { inst -> linked.filter { it.type == TxType.FEE && it.feeKind == FeeKind.LATE && it.planNo == inst.no }.sumOf { it.amountMinor } }
-        // Repayments: money allocated to an installment goes there (up to what it asks); the rest, and a repayment linked to the whole plan, is applied earliest first.
         val specific = mutableMapOf<Int, Long>()
         var pool = 0L
         for (tx in linked.filter { it.type == TxType.TRANSFER && it.toAccountId == plan.accountId }) {
@@ -217,16 +185,11 @@ object Installments {
         return PlanView(plan, views, refunded, pool)
     }
 
-    /** Allocates a repayment installment by installment in due order (the bill, not the purchase, comes first); see [MonthlyBills.allocate]. */
     fun allocatePayment(data: MintData, accountId: String, amountMinor: Long, today: LocalDate, firstBill: BillMonth? = null): List<PlanPaymentAllocation> =
         MonthlyBills.allocate(data, accountId, amountMinor, today, firstBill)
 
     fun views(data: MintData, today: LocalDate): List<PlanView> = data.plans.map { view(data, it, today) }
 
-    /**
-     * What the installments still unpaid and due on or before [today] plus [withinDays] ask in [currency] (overdue ones included), and how many **bills** that is:
-     * the installments of one account due in one month are one bill (MINT.md 5.6C).
-     */
     fun dueWithin(data: MintData, currency: String, today: LocalDate, withinDays: Int): Pair<Long, Int> {
         val until = today.plus(DatePeriod(days = withinDays))
         var sum = 0L
@@ -238,7 +201,6 @@ object Installments {
         return sum to bills.size
     }
 
-    /** What an account's records did in `[from, endExclusive)` (MINT.md 5.6A), posted records only. */
     fun activity(data: MintData, accountId: String, from: LocalDate, endExclusive: LocalDate): CreditActivity {
         val txs = data.transactions.filter { counts(it) && it.day >= from && it.day < endExclusive }
         fun sum(f: (Transaction) -> Boolean) = txs.filter(f).sumOf { it.amountMinor }
@@ -253,7 +215,6 @@ object Installments {
         )
     }
 
-    /** Cash that moved through liquid accounts in `[from, endExclusive)` in [currency] (MINT.md 5.6A). Transfers between two liquid accounts are neither in nor out. */
     fun cashFlow(data: MintData, from: LocalDate, endExclusive: LocalDate, currency: String): CashFlow {
         val liquid = data.accounts.filter { it.type.liquid && it.currency == currency }.map { it.id }.toSet()
         var inflow = 0L

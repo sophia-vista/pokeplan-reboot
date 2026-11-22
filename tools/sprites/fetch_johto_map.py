@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""Builds assets/world/map-johto.png, the Johto map of Pokémon Crystal's Pokégear, from the game's own tiles.
-
-Usage: python3 -I tools/sprites/fetch_johto_map.py   (needs Pillow)
-
-The pret/pokecrystal disassembly (pinned commit below) keeps the town map as 48 tiles (town_map.png, four greys), a 20 x 18 tilemap
-(johto.bin, one byte per tile) and the colours of each tile (town_map_palette_map.asm and pokegear.pal, in the Game Boy Color's
-5-bit RGB). This puts them together as Crystal shows them and crops the map inside its frame (18 x 16 tiles, 144 x 128 pixels).
-Nothing is drawn by hand. Private use only (Nintendo / Game Freak art, as the rest of assets/world); listed in docs/assets.md.
-"""
 import io
 import os
 import re
@@ -17,7 +8,6 @@ from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'assets/world/map-johto.png')
-# Pinned for reproducibility. To update: git ls-remote https://github.com/pret/pokecrystal refs/heads/master
 COMMIT = '3c813b0b4d82b39bf62185aceffb76fd6026c70b'
 BASE = f'https://raw.githubusercontent.com/pret/pokecrystal/{COMMIT}/gfx/pokegear/'
 W, H = 20, 18

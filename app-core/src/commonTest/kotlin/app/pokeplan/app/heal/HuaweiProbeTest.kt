@@ -59,7 +59,6 @@ class HuaweiProbeTest {
 
     private fun n(id: String, text: String = "", description: String = "") = ScreenNode(text, description, "com.huawei.health:id/$id")
 
-    /** The Health page as Huawei Health 14 November 2026 lays it out (owner's capture, values made up). */
     private val healthPage = ScreenCapture(1, "MainActivity", listOf(
         n("action_bar_title", "Health"),
         n("tv_steps", "Sleep"), n("data_layout_step_layout", description = "07:12, Get-up time"), n("stepsText", "07:12"), n("hw_health_steps", "Get-up time"),

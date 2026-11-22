@@ -1,4 +1,3 @@
--- Version 7 to 8: MINT's own record tables (see Data.sq). New in this version: nothing is moved, the tables start empty.
 CREATE TABLE mint_account (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,

@@ -17,12 +17,7 @@ import app.pokeplan.ui.plan.clock
 import app.pokeplan.ui.screens.short
 import kotlinx.datetime.TimeZone
 
-/**
- * How a Plan task reminder looks as a notification. Scheduling, snoozes, repeats and the buttons' routing are in the shared
- * reminder feature ([SharedReminders]); this only builds the notification.
- */
 object TaskReminders {
-    /** True while the task's reminder is still in the notification shade, which is how a repeat knows nobody answered it. */
     fun isShowing(context: Context, taskId: String): Boolean =
         context.getSystemService(NotificationManager::class.java)?.activeNotifications.orEmpty().any { it.id == notificationId(taskId) }
 
@@ -45,7 +40,6 @@ object TaskReminders {
             .setContentIntent(open)
             .setAutoCancel(true)
             .addAction(Notification.Action.Builder(null, "Done", action(ReminderActions.DONE)).build())
-            // Android shows three actions at most; "Tomorrow" is still handled (see ReminderReceiver) for older notifications.
             .addAction(Notification.Action.Builder(null, "10 min", action(ReminderActions.SNOOZE_10)).build())
             .addAction(Notification.Action.Builder(null, "1 hour", action(ReminderActions.SNOOZE_60)).build())
             .build()
@@ -67,12 +61,11 @@ object TaskReminders {
 }
 
 
-/** After a restart, an app update or a clock or time zone change, alarms are set again from the saves. */
 class ReminderBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext
         doAsync {
-            SharedReminders.reschedule(app)
+            SharedReminders.rescheduleAfterReboot(app)
             AppAlerts.rescheduleFromSave(app)
         }
     }

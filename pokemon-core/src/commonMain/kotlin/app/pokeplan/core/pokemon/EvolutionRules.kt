@@ -7,35 +7,23 @@ import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.Gender
 import app.pokeplan.core.dex.TimeOfDay
 
-/** What the player has on hand when evolving. [items] maps item id to count. */
 data class EvolutionContext(
     val hourOfDay: Int,
     val items: Map<String, Int> = emptyMap(),
-    /** Done trials (WORLD jobs and phone actions), as [EvolutionTrials.doneKey]. */
     val completedTrials: Set<String> = emptySet(),
-    /** The other members of the Pokémon's party, for evolutions that look at the party (Mantyke, Pancham). */
     val partyMates: List<OwnedPokemon> = emptyList(),
 )
 
-/** One way a Pokémon could evolve right now. [missing] lists what is still needed; empty means it can evolve. */
 data class EvolutionOption(val evolution: Evolution, val target: FormInfo, val missing: List<String>) {
     val available: Boolean get() = missing.isEmpty()
 }
 
 data class EvolutionResult(val pokemon: OwnedPokemon, val consumed: Map<String, Int>)
 
-/**
- * Evolution in the app: every game trigger maps to something playable (see "Evolution" in docs/design.md).
- * Level evolutions, friendship, gender, time-of-day, random-branch and trial evolutions cost one Super Candy;
- * stone evolutions use the stone; trade evolutions use a Link Cord. A special evolution ([EvolutionKind.TRIAL]) asks what
- * [EvolutionTrials.needs] reads from its game condition: checked on the spot, done with the phone, or an Evolution Trial in WORLD.
- * A Pokémon holding an Everstone does not evolve.
- */
 object EvolutionRules {
     const val SUPER_CANDY = "super-candy"
     const val LINK_CORD = "link-cord"
 
-    /** The level a level-up evolution needs: the species' game level (Charmander at 16), at least 2. */
     fun requiredLevel(e: Evolution): Int? = e.level?.let { maxOf(2, it) }
 
     fun timeOfDay(hour: Int): TimeOfDay = when (hour) {
@@ -44,10 +32,8 @@ object EvolutionRules {
         else -> TimeOfDay.NIGHT
     }
 
-    /** One id per evolution row: two rows between the same species (Mr. Mime and Galarian Mr. Mime) differ in the form they give. */
     fun trialId(e: Evolution): String = "${e.from}-${e.to}-${e.requiredForm ?: "any"}" + (e.evolvedForm?.let { "-$it" } ?: "")
 
-    /** The evolutions that apply to [p]'s form: rows naming its exact form win over generic rows. */
     fun applicable(p: OwnedPokemon): List<Evolution> {
         val all = Dex.evolutionsFrom(p.speciesId)
         val exact = all.filter { it.requiredForm == p.formIdentifier }
@@ -57,7 +43,6 @@ object EvolutionRules {
     private fun targetForm(e: Evolution): FormInfo =
         e.evolvedForm?.let { Dex.form(it) } ?: Dex.defaultForm(e.to)
 
-    /** For random-branch evolutions, the one branch this Pokémon's personality picks. */
     private fun randomBranch(p: OwnedPokemon, rows: List<Evolution>): Evolution? {
         val branches = rows.filter { it.kind == EvolutionKind.RANDOM }.sortedBy { it.to }
         if (branches.isEmpty()) return null
@@ -69,7 +54,6 @@ object EvolutionRules {
         return branches.last()
     }
 
-    /** A Pokémon holding an Everstone never evolves (the games' rule): every option says so and none is available. */
     fun options(p: OwnedPokemon, ctx: EvolutionContext): List<EvolutionOption> {
         val rows = applicable(p)
         val branch = randomBranch(p, rows)
@@ -79,7 +63,6 @@ object EvolutionRules {
         }
     }
 
-    /** What an option lists while its Pokémon holds an Everstone. */
     const val EVERSTONE_HELD = "to let go of its Everstone"
 
     private fun candy(ctx: EvolutionContext, missing: MutableList<String>) {
@@ -153,7 +136,6 @@ object EvolutionRules {
 
     private fun moveName(id: String): String = app.pokeplan.core.dex.Dex.move(id)?.name ?: id.split('-').joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
 
-    /** A trial's needs in a few words, for the Pokédex. */
     private fun trialHowTo(e: Evolution): List<String?> = EvolutionTrials.needs(e).map { n ->
         when (n) {
             is TrialNeed.Move -> "knowing ${moveName(n.move)}"
@@ -171,10 +153,6 @@ object EvolutionRules {
         }
     }
 
-    /**
-     * How an evolution works in the app, in a few words for the Pokédex: "Lv. 16, Super Candy", "Fire Stone",
-     * "Link Cord, holding Metal Coat", "Friendship, Super Candy, at night".
-     */
     fun howTo(e: Evolution): String {
         val level = requiredLevel(e)?.let { "Lv. $it" }
         val time = e.timeOfDay?.let { if (it == TimeOfDay.DAY) "in the day" else "at ${it.name.lowercase()}" }
@@ -192,7 +170,6 @@ object EvolutionRules {
         return parts.filterNotNull().joinToString(", ")
     }
 
-    /** What an evolution of this kind uses up. */
     private fun cost(e: Evolution): Map<String, Int> = when (e.kind) {
         EvolutionKind.STONE -> e.item?.let { mapOf(it to 1) }.orEmpty()
         EvolutionKind.TRADE -> mapOf(LINK_CORD to 1)
@@ -210,7 +187,6 @@ object EvolutionRules {
         check(option.available) { "${p.nickname} still needs ${option.missing.joinToString()}" }
         val e = option.evolution
         var evolved = p.evolvedInto(e.to, option.target.identifier)
-        // The item it held to evolve is used up (a Metal Coat on a trade, an Oval Stone, a Razor Claw, a Sweet).
         if ((e.kind == EvolutionKind.TRADE || e.kind == EvolutionKind.TRIAL) && e.heldItem != null) evolved = evolved.withHeldItem(null)
         return EvolutionResult(evolved, cost(e))
     }

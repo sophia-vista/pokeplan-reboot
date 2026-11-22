@@ -12,7 +12,6 @@ import kotlin.test.assertTrue
 class GeoTest {
     @Test
     fun distancesBearingsAndText() {
-        // Manila to Tokyo is about 3,000 km, to the north-east.
         val d = Geo.distanceMeters(14.5995, 120.9842, 35.6762, 139.6503)
         assertTrue(d in 2_950_000.0..3_100_000.0, "$d")
         val b = Geo.bearingDegrees(14.5995, 120.9842, 35.6762, 139.6503)
@@ -51,7 +50,6 @@ class SoundMathTest {
         assertTrue(abs(a4 - 440f) < 15f, "$a4"); assertEquals("A4", SoundMath.noteName(a4))
         assertEquals("C4", SoundMath.noteName(261.6f)); assertEquals("E2", SoundMath.noteName(82.4f))
         assertNull(SoundMath.dominantHz(SoundMath.spectrum(ShortArray(2048), 1024), rate), "silence has no pitch")
-        // The FFT of an impulse is flat.
         val re = DoubleArray(8).also { it[0] = 1.0 }; val im = DoubleArray(8)
         SoundMath.fft(re, im); assertTrue(re.all { abs(it - 1.0) < 1e-9 })
     }

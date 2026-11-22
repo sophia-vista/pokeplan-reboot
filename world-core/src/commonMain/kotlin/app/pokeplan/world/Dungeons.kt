@@ -3,21 +3,12 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/** The broad kinds of place the world map is made of (docs/pokelife/MODULES/WORLD.md section 14). Only the first few are in the MVP. */
 enum class WorldRegion(val label: String) { GREENLANDS("Greenlands"), MOUNTAINS("Mountains"), UNDERGROUND("Underground"), AQUATIC("Aquatic"), FROZEN("Frozen"), ANCIENT("Ancient"), SKY("Sky"), OTHERWORLDLY("Otherworldly") }
 
-/** A wild Pokémon a dungeon can show on floors [fromFloor] to [toFloor], with a relative [weight]. */
 data class WildEntry(val speciesId: Int, val weight: Int, val fromFloor: Int = 1, val toFloor: Int = Int.MAX_VALUE)
 
-/** A reward a milestone gives (an item id from the shared bag and a count, or Poké). */
 data class MilestoneReward(val itemId: String? = null, val count: Int = 0, val poke: Int = 0)
 
-/**
- * A dungeon: [floors] to climb, the wild Pokémon [wild] that can be found, the [favored] types whose members explore it
- * faster, how long a floor takes a team with no power at all ([baseFloorSeconds]), the rank it needs, and a milestone reward for
- * each floor reached the first time. [canon] is false for a place that is PMD-inspired rather than a canon dungeon, and the
- * species tables here are illustrative until they are checked against a source game (docs/pokelife/MODULES/WORLD.md section 14).
- */
 data class DungeonDef(
     val id: String,
     val name: String,
@@ -29,23 +20,16 @@ data class DungeonDef(
     val wild: List<WildEntry>,
     val milestones: Map<Int, MilestoneReward>,
     val canon: Boolean = true,
-    /** The story chapter that must be open to enter. */
     val chapter: Int = 1,
-    /** The last floor of the Guardian's dungeon: clearing it completes the story once. */
     val guardian: Boolean = false,
-    /** Opens only after the story of its layer is complete (a Distortion Dungeon). */
     val postStory: Boolean = false,
-    /** The layer of the map this dungeon is in; [chapter] and [guardian] are about that layer's story. */
     val layer: WorldLayer = WorldLayer.EXPLORERS,
 )
 
-/** The dungeons of the two Mystery Dungeon arcs: Rescue Team (Tiny Woods, Thunderwave Cave, Mt. Steel, Frosty Forest, Sky Tower) and Explorers (Beach Cave to the Temporal Tower), each its own layer. *(tune)* */
 object Dungeons {
-    /** Every dungeon of every layer, the two Mystery Dungeon arcs first. */
     val all: List<DungeonDef> by lazy { home + KantoDungeons.all + JohtoDungeons.all + HoennDungeons.all + SinnohDungeons.all +
         UnovaDungeons.all + KalosDungeons.all + AlolaDungeons.all + GalarDungeons.all + PaldeaDungeons.all + HisuiDungeons.all }
 
-    /** The dungeons of one layer, in the order the map lists them. */
     fun of(layer: WorldLayer): List<DungeonDef> = all.filter { it.layer == layer }
 
     val home: List<DungeonDef> = listOf(

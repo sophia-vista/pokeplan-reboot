@@ -27,7 +27,6 @@ class RandomizerTest {
         val even = (1..10_000).groupingBy { Randomizer.pick(listOf("a", "b", "c"), emptyMap(), random)!! }.eachCount()
         assertTrue(even.values.all { it in 3_000..3_700 }, "even odds: $even")
         assertTrue((1..500).none { Randomizer.pick(listOf("a", "b", "c"), emptyMap(), random, avoid = "b") == "b" })
-        // A weight is kept between 1 and 10 whatever is saved.
         assertEquals(1, Randomizer.weightOf("a", mapOf("a" to -5))); assertEquals(10, Randomizer.weightOf("a", mapOf("a" to 99))); assertEquals(1, Randomizer.weightOf("a", emptyMap()))
     }
 

@@ -1,20 +1,13 @@
 package app.pokeplan.ui.gear
 
-/**
- * A QR code generator (ISO/IEC 18004), byte mode, versions 1 to 10 and error correction L, M, Q or H, written from the standard so the QR
- * tool needs no library and works on every platform. The result is a square of dark and light modules; the screen draws it with a quiet
- * border. Up to 271 bytes at level L (version 10).
- */
 class QrCode private constructor(val version: Int, val level: Level, val size: Int, private val modules: Array<BooleanArray>, val mask: Int) {
     enum class Level(val formatBits: Int) { L(1), M(0), Q(3), H(2) }
 
-    /** Whether the module at column [x], row [y] is dark; outside the square it is light. */
     fun dark(x: Int, y: Int): Boolean = x in 0 until size && y in 0 until size && modules[y][x]
 
     companion object {
         const val MAX_VERSION = 10
 
-        // Version 1 to 10 (index 0 unused), by level L, M, Q, H.
         private val ECC_PER_BLOCK = arrayOf(
             intArrayOf(-1, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18),
             intArrayOf(-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26),
@@ -40,10 +33,8 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
 
         private fun dataCodewords(ver: Int, level: Level): Int = rawModules(ver) / 8 - ECC_PER_BLOCK[level.ordinal][ver] * BLOCKS[level.ordinal][ver]
 
-        /** How many bytes of text fit at [level] in the biggest version. */
         fun capacity(level: Level): Int = (dataCodewords(MAX_VERSION, level) * 8 - 4 - 16) / 8
 
-        /** The code for [text] (UTF-8) at [level], in the smallest version that holds it; null when it does not fit. */
         fun encode(text: String, level: Level = Level.M): QrCode? {
             val bytes = text.encodeToByteArray()
             for (ver in 1..MAX_VERSION) {
@@ -71,7 +62,6 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
             val grid = Array(size) { BooleanArray(size) }
             val fn = Array(size) { BooleanArray(size) }
             fun setFn(x: Int, y: Int, dark: Boolean) { grid[y][x] = dark; fn[y][x] = true }
-            // Timing patterns, finders and alignment patterns.
             for (i in 0 until size) { setFn(6, i, i % 2 == 0); setFn(i, 6, i % 2 == 0) }
             fun finder(cx: Int, cy: Int) {
                 for (dy in -4..4) for (dx in -4..4) {
@@ -85,7 +75,6 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
                 if ((i == 0 && j == 0) || (i == 0 && j == pos.size - 1) || (i == pos.size - 1 && j == 0)) continue
                 for (dy in -2..2) for (dx in -2..2) setFn(pos[i] + dx, pos[j] + dy, maxOf(kotlin.math.abs(dx), kotlin.math.abs(dy)) != 1)
             }
-            // Reserve the format and version areas (drawn properly once the mask is chosen).
             fun formatBits(mask: Int): Int {
                 val d = (level.formatBits shl 3) or mask
                 var rem = d
@@ -112,7 +101,6 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
                     setFn(a, c, dark); setFn(c, a, dark)
                 }
             }
-            // The data, in the zigzag the standard describes.
             var k = 0
             var right = size - 1
             while (right >= 1) {
@@ -125,7 +113,6 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
                 }
                 right -= 2
             }
-            // The mask with the lowest penalty.
             fun applyMask(mask: Int) {
                 for (y in 0 until size) for (x in 0 until size) {
                     val invert = when (mask) {
@@ -202,7 +189,6 @@ class QrCode private constructor(val version: Int, val level: Level, val size: I
             return out.toByteArray()
         }
 
-        /** A simplified penalty (runs of five or more, 2 x 2 blocks and the balance of dark modules): it only picks among valid masks. */
         private fun penalty(g: Array<BooleanArray>, size: Int): Int {
             var p = 0
             for (y in 0 until size) {

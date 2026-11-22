@@ -40,7 +40,6 @@ class TownBehaviorTest {
         assertTrue(restless.filterIsInstance<Beat.Roam>().size > resting.filterIsInstance<Beat.Roam>().size * 2)
     }
 
-    /** The share of beats spent in a restless spell at a liveliness, over a long run. */
     private fun restlessShare(lively: Float): Float {
         val random = Random(9)
         var restless = false
@@ -55,7 +54,6 @@ class TownBehaviorTest {
         val calm = restlessShare(TownBehavior.liveliness(TownBehavior.ACTIVITY_DEFAULT))
         val restless = restlessShare(TownBehavior.liveliness(10))
         assertTrue(sleepy < 0.22f && calm in 0.25f..0.45f && restless > 0.6f, "$sleepy $calm $restless")
-        // Rests are longer in a sleepy town.
         val r = Random(10)
         val slow = List(2000) { TownBehavior.next(r, false, false, lively = 0f) }.filterIsInstance<Beat.Stand>().map { it.millis }.average()
         val quick = List(2000) { TownBehavior.next(r, false, false, lively = 1f) }.filterIsInstance<Beat.Stand>().map { it.millis }.average()
@@ -81,9 +79,7 @@ class TownBehaviorTest {
             assertTrue(at.y in 0f..1f && at.x in -0.2f..3.2f)
             if (kotlin.math.abs(at.x - anchor.x) > 0.6f) far++
         }
-        // Mostly gentle turns (a ruler-straight walk is 0, a fresh random way each leg about 1.57 on average).
         assertTrue(turns / 3000 < 1.0f, "${turns / 3000}")
-        // Mostly near its corner, now and then off across the town.
         assertTrue(far in 1..900, "$far")
     }
 
@@ -95,7 +91,6 @@ class TownBehaviorTest {
         repeat(50) {
             val way = TownBehavior.path(random, from, to)
             assertEquals(to, way.last())
-            // Never doubles back, and never strays far from the line.
             assertTrue(way.zipWithNext().all { (a, b) -> b.x >= a.x - 1e-4f })
             assertTrue(way.all { kotlin.math.abs(it.y - 0.5f) * TownBehavior.DEPTH < 0.05f })
         }

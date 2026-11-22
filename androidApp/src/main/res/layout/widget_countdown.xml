@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The Focus widget's live countdown: the system ticks it, so it stays right without the widget being updated. -->
 <Chronometer xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/countdown"
     android:layout_width="wrap_content"

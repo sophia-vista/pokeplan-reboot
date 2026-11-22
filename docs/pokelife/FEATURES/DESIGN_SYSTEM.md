@@ -139,7 +139,7 @@ Every tappable key (button, tab, chip, arrow, segment) is one `PixelKey` (`theme
 | Selected | key colour | key colour | white | tabs, chips, segments; announced as `selected`; pressed goes darker |
 | Focused | any of the above | plus a 2 dp blue ring on the touch target (`Modifier.focusRing`, placed before the `clickable`) | | keyboard and D-pad only |
 | Disabled | panel | border | ink-soft at 55% | not tappable |
-| Loading | as disabled | border | three blinking pixels | not tappable; blinks even under Reduce motion |
+| Loading | as disabled | border | three blinking pixels | not tappable; holds three solid pixels under Reduce motion |
 
 Neutral keys (`InkSoft`, `Ink`, `Gray`) look grey with ink letters; a light key colour (yellow) gets darker letters; colour is never the only signal; keys in wrapped rows fill their 48 dp target and buttons are 38 dp (32 compact) inside it. Rows (`ChoiceRow`, `ListRow`), `Notice` and `StatChip` share the key outline. `PixelField` (`theme/Fields.kt`) has the same idea: rest (panel, border), focused (2 dp blue), error (2 dp danger; the error text replaces the helper line and is announced), disabled (shade, letters at 55%), read-only. Use a label when the field is alone on a line and a placeholder beside a button. `ListRow` (when tappable) and `NavButton` also hover (a faint tint) and press (98% scale).
 
@@ -238,6 +238,8 @@ Every form is built from the form kit (`screens/Form.kt`) and follows eight prin
   - **No module switcher on a module page.** The bottom Modules tab already switches module; tapping it again while it is open returns to the list of modules. A switcher key would only repeat it.
   - **The Modules list is compact rows** (icon, title, badge) in the rainbow order, not large square cards, with a **"Jump to"** field above it: a plain search that opens any module or section by its fixed name (it reads no record, name or amount, so it is safe for Heal and Mint).
   - **Gear is not a life module.** It sits as a labelled "Gear" key in the Modules header (and in Jump to), outside the module list.
+  - **A page opened inside a section is one level up before the section is left.** Where a section opens a page of its own (a town's facility, a journal page), the header's Back key and the system Back gesture both close that page and stay in the section; a second Back leaves the section. A Back press never discards a draft or a place by skipping the level it looked like it would close.
+  - **Every tab keeps its place.** Switching tabs keeps the section open in that tab, an open record (a Pokémon, a Pokédex entry) and the scroll position, so coming back finds the tab where it was left. Arriving from a widget, a shortcut or a notification replaces the Pokégear instead of opening behind it; only Gear asks for it.
 
 ### 6.8 Dialogs, sheets and confirmation prompts
 
@@ -363,3 +365,7 @@ Changes to shared tokens, component anatomy, border language, typography, naviga
 ## Testing reference
 
 Shared components and representative screens require semantic Compose tests, approved light/dark golden images, responsive/font-scale coverage and accessibility verification as defined in [`../ARCHITECTURE/TEST_STRATEGY.md`](../ARCHITECTURE/TEST_STRATEGY.md). Golden updates require explicit review.
+
+### 6.12 What's New card
+
+After an update, Home shows one card titled **What's new in `<version>`**: one bullet per line from `WhatsNew`, and a single **Got it** key that marks the version seen (`AppData.lastSeenVersion`, `GameStore.markVersionSeen`). It appears only while the running version has an entry and has not been seen; a version with no entry shows no card. It has no other dismissal and never covers the screen.

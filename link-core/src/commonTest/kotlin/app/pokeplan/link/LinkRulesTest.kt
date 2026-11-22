@@ -17,8 +17,6 @@ class LinkRulesTest {
     private fun date(month: Int, day: Int, year: Int? = null, annual: Boolean = true, kind: DateKind = DateKind.BIRTHDAY, title: String = "Birthday") =
         ImportantDate("d$month-$day", kind, title, month, day, year, annual)
 
-    // --- people ----------------------------------------------------------------------------------------------------------------
-
     @Test
     fun aPersonNeedsOnlyAName() {
         assertEquals(Check.Ok, LinkRules.checkPerson(Person("1", "Ana")))
@@ -66,8 +64,6 @@ class LinkRulesTest {
         assertTrue(LinkRules.possibleDuplicates(data, "Ana Cruz", exceptId = "1").isEmpty(), "the person being edited is not their own duplicate")
         assertTrue(LinkRules.possibleDuplicates(data, "Other", phone = "12345").isEmpty(), "a short number is not a match")
     }
-
-    // --- dates -----------------------------------------------------------------------------------------------------------------
 
     @Test
     fun anAnnualDateWithoutAYearIsValidAndComesEveryYear() {
@@ -131,8 +127,6 @@ class LinkRulesTest {
         assertEquals(listOf("Soon", "Later", "Gone"), LinkRules.allDates(data, today).map { it.first.title })
     }
 
-    // --- follow-ups -------------------------------------------------------------------------------------------------------------
-
     @Test
     fun aFollowUpNeedsOnlyATitle() {
         assertEquals(Check.Ok, LinkRules.checkFollowUp(FollowUp("1", "Call back")))
@@ -166,8 +160,6 @@ class LinkRulesTest {
         assertEquals(listOf("a"), LinkRules.open(data, today, "p1").map { it.id })
     }
 
-    // --- payment -------------------------------------------------------------------------------------------------------------
-
     @Test
     fun aFollowUpPaysOnceAndOnlyWhilePostcardTrailIsOn() {
         val f = FollowUp("1", "a", status = FollowUpStatus.COMPLETED, completedDay = today)
@@ -183,8 +175,6 @@ class LinkRulesTest {
         assertTrue(!LinkRules.pays(LinkData(followUps = paid + next), next, today))
         assertTrue(LinkRules.pays(LinkData(followUps = paid + next), next, LocalDate(2026, 11, 9)), "tomorrow is a new day")
     }
-
-    // --- search ----------------------------------------------------------------------------------------------------------------
 
     @Test
     fun searchFindsPeopleNotesDatesAndFollowUpsAndAnEmptyQueryNothing() {

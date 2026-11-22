@@ -32,7 +32,7 @@ class RecurrenceTest {
         )
         val biweekly = Recurrence(Repeat.Weekly(2, setOf(DayOfWeek.TUESDAY)), d(2026, 10, 20))
         assertEquals(listOf(d(2026, 10, 20), d(2026, 11, 3)), dates(biweekly, d(2026, 10, 20), d(2026, 11, 10)))
-        val noDays = Recurrence(Repeat.Weekly(), d(2026, 10, 22)) // Thursday
+        val noDays = Recurrence(Repeat.Weekly(), d(2026, 10, 22))
         assertEquals(listOf(d(2026, 10, 22), d(2026, 10, 29)), dates(noDays, d(2026, 10, 22), d(2026, 10, 31)))
     }
 
@@ -46,7 +46,6 @@ class RecurrenceTest {
 
     @Test
     fun day31NeverSkipsAMonthWhateverTheStartDay() {
-        // Picked from the editor on the 15th: 31 in every month, clamped to the 30th/28th/29th, never skipped.
         val r = Recurrence(Repeat.Monthly(1, MonthlyRule.DayOfMonth(31)), d(2027, 1, 15))
         assertEquals(listOf(d(2027, 1, 31), d(2027, 2, 28), d(2027, 3, 31), d(2027, 4, 30)), dates(r, d(2027, 1, 1), d(2027, 4, 30)))
         assertEquals(listOf(d(2028, 2, 29)), dates(Recurrence(Repeat.Monthly(1, MonthlyRule.DayOfMonth(30)), d(2028, 1, 31)), d(2028, 2, 1), d(2028, 2, 29)))
@@ -108,7 +107,6 @@ class RecurrenceTest {
         val r = Recurrence(Repeat.Daily(), d(2026, 10, 1))
         val today = d(2026, 10, 19)
         val all = RecurringTasks.instancesToCreate(template, r, emptyList(), today, 5)
-        // Today's instance is put off to a day far outside the horizon: its own date now has no task planned on it.
         val moved = listOf(all.first().copy(planned = d(2026, 12, 1))) + all.drop(1)
         assertEquals(emptyList(), RecurringTasks.instancesToCreate(template, r, moved, today, 5), "no second task with the id plants-2026-10-19")
     }

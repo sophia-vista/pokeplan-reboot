@@ -1,24 +1,4 @@
 #!/usr/bin/env python3
-"""Render the sound of Pokémon Mystery Dungeon: Red Rescue Team (USA) to audio files.
-
-Needs the game ROM, which is NOT in the repo: pass a ROM whose SHA-1 is
-9f4cfc5b5f4859d17169a485462e977c7aac2b89 (the one pret/pmd-red builds against).
-Reads the ROM's m4a ("Sappy") sound data directly: the song table (`gSongTable`, address
-documented in pret/pmd-red `sound/song_table.inc`), each song's tracks and voicegroup, and
-the PCM samples, and renders every song with a small software mixer (numpy). Writes mono
-WAV; `--ogg` converts through ffmpeg.
-
-This is an approximation of the GBA engine, not a bit-exact emulation: ADSR is
-frame-based like the original, but vibrato (MOD/LFO), reverb and pan are ignored, and the
-GBA's square/wave/noise channels are plain synthesis. Listen before trusting a clip.
-
-Usage:
-  python3 -I tools/sprites/extract_rescue_audio.py ROM.gba OUTDIR [--songs 0-940] [--ogg]
-Output: OUTDIR/<index>.wav (the song-table index is the game's sound id), songs.tsv with
-the player (BGM or SE1-SE6), duration and track count, and samples/ with each distinct
-DirectSound sample as a WAV.
-Private use only: Nintendo / Chunsoft / Game Freak audio.
-"""
 import argparse
 import hashlib
 import struct
@@ -30,10 +10,10 @@ from pathlib import Path
 import numpy as np
 
 ROM_SHA1 = "9f4cfc5b5f4859d17169a485462e977c7aac2b89"
-SONG_TABLE = 0x9E866BC  # pret/pmd-red sound/song_table.inc: gSongTable @ 9E866BC
-SONG_COUNT = 941        # 588 real songs + 353 `empty_song` slots in the table
+SONG_TABLE = 0x9E866BC
+SONG_COUNT = 941
 SR = 32000
-FRAME_HZ = 59.7275      # the GBA's vblank rate: envelopes and tempo run on it
+FRAME_HZ = 59.7275
 CLOCK = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
          28, 30, 32, 36, 40, 42, 44, 48, 52, 54, 56, 60, 64, 66, 68, 72, 76, 78, 80, 84, 88, 90, 92, 96]
 
@@ -75,7 +55,6 @@ class Sample:
 
 
 def bdpcm(raw, size):
-    """The engine's 4-bit delta compression: 33-byte blocks, 64 samples each."""
     delta = [0, 1, 4, 9, 16, 25, 36, 49, -64, -49, -36, -25, -16, -9, -4, -1]
     out, i = [], 0
     while len(out) < size and i + 33 <= len(raw):
@@ -103,7 +82,6 @@ class Voice:
 
 
 class Bank:
-    """A voicegroup: 128 voices of 12 bytes."""
     def __init__(self, rom, ptr, samples):
         self.rom, self.o, self.samples, self.cache = rom, rom.off(ptr), samples, {}
 
@@ -113,7 +91,6 @@ class Bank:
         return self.cache[n]
 
     def resolve(self, n, key):
-        """The voice that plays `key` for program n, and the key to play it at."""
         v = self.voice(n)
         if v.type == 0x40:
             sub = Bank(self.rom, v.word, self.samples)
@@ -131,7 +108,6 @@ class Bank:
 
 
 def envelope(v, n_on, n_total, cgb):
-    """Per-sample amplitude: attack/decay/sustain while held (n_on samples), then release."""
     frames_on = int(n_on * FRAME_HZ / SR) + 1
     if cgb:
         att = v.attack & 7
@@ -189,7 +165,6 @@ def tail_samples(v, cgb):
 
 
 def play_sample(s, ratio, n):
-    """n output samples of the sample played at `ratio` of its native rate (looped if flagged)."""
     step = s.rate * ratio / SR
     pos = np.arange(n, dtype=np.float64) * step
     size = len(s.pcm)
@@ -241,8 +216,8 @@ class Track:
         self.stack = []
         self.reps = {}
         self.done = False
-        self.active = []   # [start_sample, remaining_ticks or None, key, vel, vol_at_start, voice, ...]
-        self.notes = []    # finished: dict(start, end, key, vel, voice, bend, tune, keysh)
+        self.active = []
+        self.notes = []
         self.vols = [(0, 100)]
 
 
@@ -289,7 +264,7 @@ def render_song(rom, ptr, samples, max_seconds):
                     tr.done = True
                 elif cmd == 0xB2:
                     target = rom.u32(rom.off(tr.pos))
-                    if target <= tr.pos:  # a loop back: one pass is enough
+                    if target <= tr.pos:
                         tr.done = True
                     else:
                         tr.pos = target
@@ -370,7 +345,7 @@ def render_song(rom, ptr, samples, max_seconds):
                                           voice=tr.voice, bend=tr.bend, bendr=tr.bendr, tune=tr.tune,
                                           keysh=tr.keysh, vol=tr.vol, end=None))
                 else:
-                    tr.pos += 1  # unknown command: skip a byte
+                    tr.pos += 1
         now += SR / (FRAME_HZ * (2 * tempo) / 150.0)
         tick += 1
     end_all = int(now)
@@ -401,7 +376,6 @@ def render_song(rom, ptr, samples, max_seconds):
             sound = wavef * envelope(v, n_on, n_total, cgb) * (n["vel"] / 127.0)
             end = min(len(buf), n["start"] + len(sound))
             buf[n["start"]:end] += sound[:end - n["start"]]
-        # track volume automation (piecewise constant)
         vols = np.empty(len(buf), dtype=np.float32)
         points = tr.vols + [(len(buf), tr.vols[-1][1])]
         for (a, va), (b, _) in zip(points, points[1:]):

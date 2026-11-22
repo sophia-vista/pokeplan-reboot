@@ -21,11 +21,10 @@ class BirthChartTest {
     }
 
     @Test fun theYearTurnsAtLichunOnTheBirthplaceClock() {
-        // Lichun 2000 was 4 Feb 20:40 Beijing time: 1999 (Ji Mao) before, 2000 (Geng Chen) after, whatever the birthplace's offset.
         val d = LocalDate(2000, 2, 4)
         assertEquals("Ji Mao", BaZi.chart(d, 20 * 60 + 39, 480)!!.year.label)
         assertEquals("Geng Chen", BaZi.chart(d, 20 * 60 + 41, 480)!!.year.label)
-        assertEquals("Ji Mao", BaZi.chart(d, 12 * 60 + 39, 0)!!.year.label) // 12:39 in Greenwich is 20:39 in Beijing
+        assertEquals("Ji Mao", BaZi.chart(d, 12 * 60 + 39, 0)!!.year.label)
         assertEquals("Geng Chen", BaZi.chart(d, 12 * 60 + 41, 0)!!.year.label)
     }
 
@@ -60,7 +59,6 @@ class BirthChartTest {
 
     @Test fun theZodiacAnimalTurnsAtChineseNewYear() {
         BirthVectors.lunarYears.forEach { v -> assertEquals(v[3], BaZi.zodiacYear(LocalDate(v[0], v[1], v[2]))!!.lunarYear, "lunar year of ${v.toList()}") }
-        // 2000 was a Dragon year starting 5 Feb 2000; 4 Feb 2000 is still a Rabbit (1999).
         assertEquals("Rabbit", BaZi.zodiacYear(LocalDate(2000, 2, 4))!!.animal)
         assertEquals("Dragon", BaZi.zodiacYear(LocalDate(2000, 2, 5))!!.animal)
         assertEquals("Yang Metal Dragon", BaZi.zodiacYear(LocalDate(2000, 6, 1))!!.pillar.words)
@@ -72,7 +70,6 @@ class BirthChartTest {
             assertEquals(v[4], BaZi.kua(LocalDate(v[0], v[1], v[2]), null, 480, f)!!.number, "kua ${v.toList()}")
         }
         assertEquals(7, BaZi.kua(LocalDate(1984, 6, 1), null, 480, BaZi.KuaFormula.A)!!.number)
-        // Before Lichun a person counts in the year before: 1 Jan 1985 is a 1984 birth.
         assertEquals(7, BaZi.kua(LocalDate(1985, 1, 1), null, 480, BaZi.KuaFormula.A)!!.number)
         val k = BaZi.kua(LocalDate(1984, 6, 1), null, 480, BaZi.KuaFormula.A)!!
         assertEquals(4, k.lucky.size)
@@ -81,16 +78,15 @@ class BirthChartTest {
 
     @Test fun lifePathKeepsTheMasterNumbers() {
         assertEquals(4, BaZi.lifePath(LocalDate(1990, 11, 1)))
-        assertEquals(11, BaZi.lifePath(LocalDate(1978, 11, 11))) // 11 + 11 + 7 = 29, 2 + 9 = 11
-        assertEquals(22, BaZi.lifePath(LocalDate(1989, 2, 11))) // 2 + 11 + 9
-        assertEquals(1, BaZi.lifePath(LocalDate(1981, 8, 1))) // 8 + 1 + 1 = 10
+        assertEquals(11, BaZi.lifePath(LocalDate(1978, 11, 11)))
+        assertEquals(22, BaZi.lifePath(LocalDate(1989, 2, 11)))
+        assertEquals(1, BaZi.lifePath(LocalDate(1981, 8, 1)))
     }
 
     @Test fun planetsAndLuminariesAreWithinAFractionOfADegree() {
         val bodies = listOf(Body.SUN, Body.MOON, Body.MERCURY, Body.VENUS, Body.MARS, Body.JUPITER, Body.SATURN, Body.URANUS, Body.NEPTUNE, Body.PLUTO)
         BirthVectors.sky.forEach { v ->
             val jd = v[0]
-            // Rebuild a calendar day and local clock for the Julian Day (UTC, offset 0) so the public entry point is what is tested.
             val total = ((jd + 0.5) * 1440.0).roundToLong()
             val z = total / 1440
             val minutes = (total % 1440).toInt()
@@ -120,12 +116,10 @@ class BirthChartTest {
         assertNull(c.ascendant)
         assertNull(c.rising)
         assertNull(c.house(Body.SUN))
-        // Over a month the Moon crosses at least one sign line during some day, and the chart says so rather than guessing.
         val crossing = (1..30).count { d -> Sky.chart(LocalDate(2000, 1, d), null, 0, null).maybe.containsKey(Body.MOON) }
         assertTrue(crossing in 1..30)
     }
 
-    // The civil date of a Julian Day Number (Fliegel and Van Flandern), for rebuilding a date in the vectors test.
     private fun civil(jdn: Long): LocalDate {
         var l = jdn + 68569
         val n = 4 * l / 146097

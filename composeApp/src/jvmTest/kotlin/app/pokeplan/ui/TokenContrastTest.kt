@@ -9,7 +9,6 @@ import app.pokeplan.ui.theme.keyLook
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-/** The contrast the design system promises (WCAG AA for text), checked on the tokens themselves in both palettes. */
 class TokenContrastTest {
     private fun ratio(a: Color, b: Color): Float {
         val x = a.luminance(); val y = b.luminance()

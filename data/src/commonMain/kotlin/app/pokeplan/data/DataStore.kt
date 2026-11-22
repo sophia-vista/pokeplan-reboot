@@ -4,17 +4,9 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
 import app.pokeplan.data.db.DataDb
 
-/** The database opened by a newer build than this one: it is left untouched (DATA_AND_MIGRATIONS.md section 11.2). */
 class NewerSchemaException(val found: Long, val supported: Long) :
     IllegalStateException("The database is schema version $found; this build understands up to $supported")
 
-/**
- * The one connection to the PokéLife database and the one place a transaction starts.
- *
- * Opening checks two things the database cannot check for itself: that foreign keys are enforced on this connection
- * (SQLite has them off unless asked, and every ownership rule silently stops working without them), and the schema
- * version (created, migrated step by step, or refused when newer).
- */
 class DataStore private constructor(internal val driver: SqlDriver) {
     internal val db: DataDb = DataDb(driver)
 
@@ -27,29 +19,23 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     val baseTables = BaseTables(this)
     val linkTables = LinkTables(this)
 
-    /**
-     * The key that seals Mint's rows and every copy of Mint that leaves its tables (a snapshot for a backup, a kept-aside document). Set before Mint is used; with
-     * none, Mint's tables refuse to start, so a build that forgets it can never store a financial record in clear.
-     */
     @Volatile var mintCipher: RowCipher? = null
 
-    /**
-     * The key that seals Heal's rows and every copy of Heal that leaves its tables, once [HealTables.seal] has run (0.154.0). Unlike Mint, Heal existed in clear before
-     * it was sealed, so with no key an unsealed Heal keeps working in clear for that run and is sealed at the first start that has the key; a sealed Heal with no key
-     * refuses to read or write (fail closed).
-     */
     @Volatile var healCipher: RowCipher? = null
     val pokemonTables = PokemonTables(this)
     val live = LiveDocuments(this)
     val reminders = ReminderRepository(this)
 
-    /** Runs [body] in one transaction: it commits as a whole, or leaves nothing behind when it throws. */
     fun <T> transaction(body: () -> T): T = db.transactionWithResult { body() }
 
-    /** Anything the integrity checks object to; an empty list means the file and its references are sound. */
-    fun integrityIssues(): List<String> {
+    /**
+     * Anything the integrity checks object to; an empty list means the file and its references are sound.
+     * [full] runs the thorough `integrity_check` (a whole-file scan) for tests and recovery; the app's normal start uses
+     * `quick_check`, which catches the same damage without reading every page twice.
+     */
+    fun integrityIssues(full: Boolean = true): List<String> {
         val problems = mutableListOf<String>()
-        driver.executeQuery(null, "PRAGMA integrity_check", { c ->
+        driver.executeQuery(null, if (full) "PRAGMA integrity_check" else "PRAGMA quick_check", { c ->
             while (c.next().value) c.getString(0)?.takeIf { it != "ok" }?.let { problems += "integrity: $it" }
             QueryResult.Unit
         }, 0)
@@ -63,7 +49,6 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     fun close() = driver.close()
 
     companion object {
-        /** The schema version this build understands (what a backup file may be at most). */
         val SCHEMA_VERSION: Int get() = DataDb.Schema.version.toInt()
 
         fun open(driver: SqlDriver): DataStore {
@@ -87,8 +72,6 @@ class DataStore private constructor(internal val driver: SqlDriver) {
         private fun prepareSchema(driver: SqlDriver) {
             val schema = DataDb.Schema
             val found = pragma(driver, "user_version")
-            // The driver's own transaction, not BEGIN/COMMIT by hand: a file-backed JDBC driver may hand the next
-            // statement a different connection.
             val transacter = DataDb(driver)
             when {
                 found > schema.version -> throw NewerSchemaException(found, schema.version)

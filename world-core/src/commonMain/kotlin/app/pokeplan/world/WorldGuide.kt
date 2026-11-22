@@ -1,24 +1,12 @@
 package app.pokeplan.world
 
-/** What to do next in World, and why. [dungeonId] is the dungeon to go to when the step is to explore one that is open. */
 data class NextStep(val title: String, val reason: String, val dungeonId: String? = null)
 
-/**
- * The World landing's one suggestion (docs/pokelife/MODULES/WORLD.md section 14, "show the next recommended destination and why"): the first open dungeon
- * not yet cleared, else what the nearest closed dungeon is waiting for, else a line about what an all-cleared World still offers.
- * Plain data in, plain words out, so it is tested without a screen.
- */
-/** What the World landing's one big button does. */
 enum class PrimaryKind { REVIEW_FINDS, CLAIM_JOB, EXPLORE, CONTINUE }
 
-/** The one thing worth doing now ([title], why, and the dungeon for [PrimaryKind.EXPLORE]). */
 data class PrimaryAction(val kind: PrimaryKind, val title: String, val reason: String, val dungeonId: String? = null)
 
 object WorldGuide {
-    /**
-     * The landing's primary action, in this order: Pokémon waiting to be recruited, a finished job to claim, a free team to send to the
-     * next dungeon of [layer] (see [nextStep]), else everything is out exploring (go and look). Plain data in, words out.
-     */
     fun primaryAction(data: WorldData, layer: WorldLayer = WorldLayer.RESCUE): PrimaryAction {
         val finds = data.finds.size
         if (finds > 0) return PrimaryAction(PrimaryKind.REVIEW_FINDS, "Recruit ${if (finds == 1) "a new friend" else "$finds new friends"}", "${if (finds == 1) "A Pokémon is" else "$finds Pokémon are"} waiting to join you. They stay in Finds until you decide.")
@@ -31,11 +19,6 @@ object WorldGuide {
         return PrimaryAction(PrimaryKind.CONTINUE, "Your teams are exploring", "Every team is out. Look in on them, or come back later: they keep going while you are away, up to 12 hours.")
     }
 
-    /**
-     * Every requirement of [dungeon] the player has not met yet, each in words with how far along it is (empty when the dungeon is open):
-     * the rank, the story chapter of its layer (its own rank and how many different dungeons of the layer are cleared) and, for a
-     * place after the story, the story itself. All are listed, not only the first.
-     */
     fun lockReasons(data: WorldData, dungeon: DungeonDef): List<String> = buildList {
         if (data.rank < dungeon.needs) add("Needs ${dungeon.needs.label} rank: ${dungeon.needs.points - data.xp} more Exploration XP (you have ${data.xp} of ${dungeon.needs.points}).")
         val layer = dungeon.layer

@@ -6,10 +6,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * The Mystery Dungeon sheet tables and the files agree (the audit of 11 November 2026, kept as a test): every row has its sheet at the size
- * the row says, with the frame times it lists and its shiny when the row says so; every portrait strip holds the faces its row lists.
- */
 class PmdAssetsTest {
     private val pmd = listOf("../assets/pmd", "assets/pmd").map(::File).first { it.isDirectory }
 
@@ -26,7 +22,6 @@ class PmdAssetsTest {
             "" to "pmd", "sleep" to "sleep", "eat" to "eat", "hop" to "hop", "walk-down" to "walk-down", "walk-side" to "walk-side", "walk-up" to "walk-up",
             "idle-side" to "idle-side", "idle-up" to "idle-up", "rotate" to "rotate", "wake" to "wake", "deep-breath" to "deep-breath", "pose" to "pose",
         )
-        // Every action the app can ask for has a table (a missing folder would silently make it a no-op).
         for (a in SpriteAction.entries) a.folder?.let { assertTrue(it in tables.keys, "${a.name} reads $it, which this test does not know") }
         for ((folder, name) in tables) {
             val dir = File(pmd, folder)
@@ -57,7 +52,6 @@ class PmdAssetsTest {
             assertTrue(faces.all { it in known }, "$id lists a face the app does not know: $faces")
             assertEquals(40 * faces.size to 40, size(File(pmd, "portraits/$id.png")), "portrait $id against its faces")
             if (r[2] == "1") {
-                // A shiny strip with its own faces says so in the fifth column.
                 val shinyFaces = r.getOrNull(4)?.takeIf { it.isNotBlank() }?.split(',') ?: faces
                 assertEquals(40 * shinyFaces.size to 40, size(File(pmd, "portraits/$id-shiny.png")), "portrait $id-shiny against its faces")
             }

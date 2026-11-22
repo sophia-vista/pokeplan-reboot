@@ -37,12 +37,6 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 import app.pokeplan.app.gear.changeGear
 
-/**
- * The unit converter: search a unit or a kind of measure by name, symbol or alias (a slip of a letter is forgiven), pick the kind from the chips
- * (all of them wrap, none is hidden by scrolling), type a number or a small sum, swap the two units, see every unit of the kind at once, star a
- * pair, and choose how many decimals to show. A unit that is easy to mistake says so under the result. Nothing is stored but the stars, the last
- * kind and the decimals, on this phone only.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {

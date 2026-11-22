@@ -3,14 +3,6 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/**
- * Rescue Team arc, chapters 1 to 6 (the code is the source of the story): Mew brings the Frontier team into a remembered Pokémon Square.
- *
- * The frame, which every scene keeps: this is an echo of days that really happened. The square's own Rescue Team (a newcomer who cannot
- * remember where it came from, and the partner who found it) is the hero of those days and is never staged; {player} and {buddy} are the
- * "visiting team", a second pair who take the requests nobody else has time for, walk the same roads a little behind, and are there for
- * the private moments. They sleep in the loft over Persian's bank. The post-story episodes (RescuePostStory) follow from this.
- */
 internal object RescueChapters {
     private val buddy = buddyCharacter()
     private val mew = npc("mew", "Mew", 151)

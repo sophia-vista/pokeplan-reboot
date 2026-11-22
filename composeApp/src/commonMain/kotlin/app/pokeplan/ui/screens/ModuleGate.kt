@@ -30,7 +30,6 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.pokemon.label
 
-/** The modules whose records are private and that can ask for the phone's screen lock from Settings (Mint has its own switch, in its settings, and the same door). */
 internal val gateableModules = listOf(Module.CARE, Module.HEAL, Module.BASE, Module.LINK)
 
 private fun locked(model: AppModel, gate: DeviceGate, key: String, now: Long): Boolean {
@@ -39,20 +38,10 @@ private fun locked(model: AppModel, gate: DeviceGate, key: String, now: Long): B
     return unlocked == 0L || (away > unlocked && now - away > DeviceGate.GRACE_MILLIS)
 }
 
-/**
- * The optional screen-lock door in front of a private module (Care's journal, Heal, Home, Link), switched on in Settings → Privacy (`Settings.lockedModules`).
- * Mint's door is the same one, switched on in Mint's own settings (MINT.md section 13.2).
- */
 @Composable
 internal fun ModuleGate(model: AppModel, module: Module, content: @Composable () -> Unit) =
     ScreenLockGate(model, module, module.name in model.data.settings.lockedModules, content)
 
-/**
- * The one screen-lock door every private module uses: with [on] and a screen lock on the phone, the module shows a locked card until the person proves
- * themselves with the phone's own lock (PIN, pattern, password, fingerprint or face, whichever the phone offers), and closes again after the app or the
- * module has been left for longer than [DeviceGate.GRACE_MILLIS]. A door only: nothing is encrypted with it and no password is made, so it can never make
- * a record unreadable. Without a gate or a lock on the phone it shows the module at once.
- */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun ScreenLockGate(model: AppModel, module: Module, on: Boolean, content: @Composable () -> Unit) {
@@ -66,7 +55,6 @@ internal fun ScreenLockGate(model: AppModel, module: Module, on: Boolean, conten
     LaunchedEffect(isLocked) {
         while (!isLocked) {
             val now = model.store.nowMillis
-            // Coming back inside the grace keeps it open. Only while the app is in front: a tick after the app was left must not count as being back, or the door would never close again.
             if (locked(model, gate, key, now)) isLocked = true
             else if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) model.moduleUnlockedAt[key] = now
             kotlinx.coroutines.delay(1_000)
@@ -77,7 +65,6 @@ internal fun ScreenLockGate(model: AppModel, module: Module, on: Boolean, conten
     LaunchedEffect(Unit) { ask() }
     val toModules = { model.module = null }
     BackHandler(enabled = true, onBack = toModules)
-    // The card sits at the top of the page with the gutter and fits its content; a parent that fills the screen must not stretch it.
     Column(Modifier.fillMaxWidth().padding(Spacing.L)) { TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("${module.label} is locked")

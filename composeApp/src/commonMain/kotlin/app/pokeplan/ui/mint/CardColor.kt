@@ -37,7 +37,6 @@ import app.pokeplan.ui.theme.Spacing
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** HSV (hue 0..360, saturation and value 0..1) to 0xRRGGBB. Plain math, no library. */
 internal fun hsvToRgb(h: Float, s: Float, v: Float): Int {
     val hh = ((h % 360f) + 360f) % 360f
     val c = v * s
@@ -51,7 +50,6 @@ internal fun hsvToRgb(h: Float, s: Float, v: Float): Int {
     return (ch(r) shl 16) or (ch(g) shl 8) or ch(b)
 }
 
-/** 0xRRGGBB to (hue 0..360, saturation 0..1, value 0..1). */
 internal fun rgbToHsv(rgb: Int): Triple<Float, Float, Float> {
     val r = (rgb shr 16 and 255) / 255f
     val g = (rgb shr 8 and 255) / 255f
@@ -69,14 +67,9 @@ internal fun rgbToHsv(rgb: Int): Triple<Float, Float, Float> {
 
 internal fun hexOf(rgb: Int): String = "#" + rgb.toString(16).uppercase().padStart(6, '0')
 
-/** The colour an account's card shows: a custom `#RRGGBB` as is, else its style's colour in the current palette. */
 @Composable
 internal fun accountColor(card: String): Color = CardStyle.customRgb(card)?.let { Color(0xFF000000.toInt() or it) } ?: cardColor(CardStyle.of(card))
 
-/**
- * The card colour picker: the six styles as quick swatches in their real colour, plus "Custom", which opens hue, saturation and
- * brightness sliders, a preview and a `#RRGGBB` field. It changes how the account looks and nothing else.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CardColorPicker(selected: String, onPick: (String) -> Unit) {

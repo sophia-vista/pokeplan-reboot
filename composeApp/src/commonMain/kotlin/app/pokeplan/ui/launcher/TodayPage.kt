@@ -16,7 +16,6 @@ import app.pokeplan.ui.theme.Spacing
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Month
 
-/** The launcher's second page: the widgets placed on Today (the calendar and the day's agenda and tasks to start with), scrolling when they are many. */
 @Composable
 internal fun TodayPage(env: WidgetEnv) {
     Box(Modifier.fillMaxSize().background(Pixel.Night.copy(alpha = 0.5f)).safeDrawingPadding()) {

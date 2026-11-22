@@ -7,7 +7,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-/** The one feedback line: the newest wins, an error is not hidden by a plain "Saved.", and a screen takes down only what it put up. */
 class FeedbackTest {
     private val clock = object : Clock { override fun nowMillis() = 1_700_000_000_000L }
     private fun model() = AppModel(GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25) })

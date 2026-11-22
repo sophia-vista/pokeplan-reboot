@@ -1,4 +1,3 @@
--- Version 11 to 12: BASE's Secret Base room (see Data.sq). New in this version: nothing is moved, the table starts empty.
 CREATE TABLE home_room (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,

@@ -2,22 +2,7 @@ package app.pokeplan.mint
 
 import kotlinx.datetime.LocalDate
 
-/**
- * Statement import from a CSV file the player chose (MINT.md sections 10.2 and 5.3; INTEGRATIONS_AND_PRIVACY.md sections 7.2 and 8.2). This is a **user-assisted
- * import**: nothing is connected to a bank or an e-wallet, nothing is fetched, and the file is read once, on the phone. It is all pure:
- *
- * 1. [parse] reads the text (quotes, doubled quotes, line breaks inside a field, comma, semicolon or tab, a byte-order mark) and refuses a file that is too big.
- * 2. [guess] proposes which column is the date, the description and the amount (or a debit and a credit column); the player can change any of them.
- * 3. [preview] turns the rows into proposed transactions for **one account**, each marked [RowState.NEW], [RowState.DUPLICATE] (this exact row was imported
- *    before: nothing to add), [RowState.POSSIBLE] (a record you wrote yourself looks the same: kept apart until you say) or [RowState.PROBLEM] (with the reason).
- * 4. `MintStore.importStatement` saves the rows the player kept, in one write, tagged with an import batch and a fingerprint, so importing the same file again adds
- *    nothing, and the whole batch can be removed on its own without touching a record the player wrote.
- *
- * Money is read exactly (never a floating-point number), a transaction keeps the account's currency (a file is not converted), and an import never pays: only
- * reconciling and the weekly review do (MINT.md section 16).
- */
 object StatementImport {
-    /** The biggest file read, in characters, and the most data rows kept: a bigger one is refused, not cut, so nothing is half-imported. */
     const val MAX_CHARS = 2_000_000
     const val MAX_ROWS = 5_000
 
@@ -26,7 +11,6 @@ object StatementImport {
         data class Refused(val reason: String) : Parsed
     }
 
-    /** Reads [text] as delimited text. Never throws; a file that is not usable comes back as [Parsed.Refused] with the reason in words. */
     fun parse(text: String): Parsed {
         if (text.length > MAX_CHARS) return Parsed.Refused("That file is too big to import (over ${MAX_CHARS / 1_000_000} million characters).")
         val body = text.removePrefix("﻿")
@@ -65,7 +49,6 @@ object StatementImport {
         return Parsed.Table(rows, delimiter)
     }
 
-    /** The delimiter that splits the first lines into the same number of fields most often (outside quotes): comma, semicolon or tab. */
     private fun detectDelimiter(text: String): Char {
         val lines = text.lineSequence().take(8).filter { it.isNotBlank() }.toList()
         fun fields(line: String, d: Char): Int {
@@ -76,15 +59,8 @@ object StatementImport {
         return listOf(',', ';', '\t').maxByOrNull { d -> if (lines.isEmpty()) 0 else lines.map { fields(it, d) }.let { f -> if (f.all { it == f.first() } && f.first() > 1) f.first() * 10 else f.max() } } ?: ','
     }
 
-    // --- columns ----------------------------------------------------------------------------------------------------------
-
-    /**
-     * Which column of the file is which. [amount] is one signed column (a minus is money out, unless [flip]); [debit] and [credit] are the two-column form (a bank
-     * that prints "Withdrawal" and "Deposit"). A column is its index in the row, or null for none.
-     */
     data class Columns(
         val date: Int? = null, val description: Int? = null, val amount: Int? = null, val debit: Int? = null, val credit: Int? = null, val reference: Int? = null,
-        /** The file prints charges as positive amounts (a credit-card statement): a plus is money out. */
         val flip: Boolean = false,
     ) {
         val usable: Boolean get() = date != null && (amount != null || debit != null || credit != null)
@@ -96,7 +72,6 @@ object StatementImport {
 
     private val months = listOf("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
 
-    /** Looks at the header names and proposes the columns. A guess, shown to the player to confirm or change. */
     fun guess(header: List<String>): Columns {
         fun find(vararg words: String, not: List<String> = emptyList()): Int? =
             header.indexOfFirst { h -> val l = h.lowercase(); words.any { it in l } && not.none { it in l } }.takeIf { it >= 0 }
@@ -113,7 +88,6 @@ object StatementImport {
         )
     }
 
-    /** The order the dates in [samples] are written in, or null when the samples do not settle it (every day and month is 12 or less): then the player chooses. */
     fun detectOrder(samples: List<String>): DateOrder? {
         var first = false; var second = false
         for (s in samples) {
@@ -128,7 +102,6 @@ object StatementImport {
         return when { first && !second -> DateOrder.DAY_FIRST; second && !first -> DateOrder.MONTH_FIRST; else -> null }
     }
 
-    /** One date in the file; a time of day after it is ignored, a month may be a name (`05 Nov 2026`, `Nov 5, 2026`). Null when it is not a real date. */
     fun parseDate(text: String, order: DateOrder): LocalDate? {
         val t = text.trim().substringBefore('T').let { if (it.length > 10 && it.contains(' ') && it.first().isDigit() && it.indexOf(' ') in 8..10) it.substringBefore(' ') else it }
         val named = t.split('/', '-', '.', ' ', ',').filter { it.isNotEmpty() }
@@ -156,10 +129,6 @@ object StatementImport {
     private fun date(y: Int, m: Int, d: Int): LocalDate? =
         if (y !in 1990..2100 || m !in 1..12 || d !in 1..31) null else runCatching { LocalDate(y, m, d) }.getOrNull()
 
-    /**
-     * One amount cell as a signed number of minor units: `-1,250.50`, `(1,250.50)`, `PHP 1,250.50`, `₱1,250.50 DR`, `1250.50-`. A trailing or leading minus, brackets or
-     * "DR" mean negative; "CR" means positive. Null when it is empty or not a number. More decimals than the currency has is not rounded: the cell is refused.
-     */
     fun parseSigned(cell: String, currency: String): Long? {
         var s = cell.trim()
         if (s.isEmpty()) return null
@@ -177,21 +146,14 @@ object StatementImport {
         return if (negative) -minor else minor
     }
 
-    // --- the preview ------------------------------------------------------------------------------------------------------
-
     enum class RowState { NEW, DUPLICATE, POSSIBLE, PROBLEM }
 
-    /**
-     * One proposed transaction. [line] is its place in the file (the header is line 1). [signedMinor] is negative for money out. [fingerprint] is what makes a re-import
-     * recognise it: account, day, signed amount, description, the file's own reference and, for identical rows in one file, a count (two coffees on a day are two records).
-     */
     data class Row(
         val line: Int, val state: RowState, val day: LocalDate? = null, val signedMinor: Long = 0, val description: String = "", val reference: String = "",
         val fingerprint: String = "", val problem: String = "",
     ) {
         val type: TxType get() = if (signedMinor < 0) TxType.EXPENSE else TxType.INCOME
         val amountMinor: Long get() = kotlin.math.abs(signedMinor)
-        /** Whether the player starts with this row kept: new rows are, duplicates and look-alikes are not. */
         val keptByDefault: Boolean get() = state == RowState.NEW
     }
 
@@ -204,13 +166,8 @@ object StatementImport {
         val lastDay: LocalDate? get() = rows.mapNotNull { it.day }.maxOrNull()
     }
 
-    /** What a description is compared as: lower case, one space between words. */
     fun normalised(text: String): String = text.lowercase().split(' ', '\t', '\n').filter { it.isNotEmpty() }.joinToString(" ")
 
-    /**
-     * Builds the preview of [table] (header included) for [account] under [columns] and [order]. Nothing is saved. A row is a problem when its date or amount can not be
-     * read, when it is zero, or when it is too large; the rest of the file still previews. [data] is only read, to recognise rows imported before and look-alikes.
-     */
     fun preview(table: List<List<String>>, account: FinancialAccount, columns: Columns, order: DateOrder, data: MintData): Preview {
         val body = table.drop(1)
         val known = data.transactions.mapNotNull { it.fingerprint }.toHashSet()

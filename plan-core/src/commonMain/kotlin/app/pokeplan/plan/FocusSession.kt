@@ -9,13 +9,11 @@ enum class PauseReason { CALL, EMERGENCY }
 
 enum class FailReason { LEFT_APP, MOVED_PHONE, GAVE_UP }
 
-/** What a session is doing right now. */
 @Serializable
 sealed interface Phase {
     @Serializable
     data object Running : Phase
 
-    /** The player left the app; they have [FocusRules.GRACE_MILLIS] from [since] to come back. */
     @Serializable
     data class Away(val since: Long) : Phase
 
@@ -29,41 +27,26 @@ sealed interface Phase {
     data class Failed(val reason: FailReason, val at: Long) : Phase
 }
 
-/** Things that happen to a running session. The platform layer turns app lifecycle, calls and sensors into these. */
 sealed interface FocusEvent {
-    /** Switched to another app or the home screen. */
     data object Left : FocusEvent
 
-    /** Came back to the app. */
     data object Returned : FocusEvent
 
-    /**
-     * The screen was locked: this does not count as leaving. The platform may only learn of it just after it reported
-     * [Left] (the app pauses as the screen goes off), so a lock during the grace period takes the player back to running.
-     */
     data object ScreenLocked : FocusEvent
 
     data object CallStarted : FocusEvent
 
     data object CallEnded : FocusEvent
 
-    /** The player started one of their emergency pauses. */
     data object EmergencyPauseStarted : FocusEvent
 
     data object EmergencyPauseEnded : FocusEvent
 
-    /** The phone moved during a Deep Focus session. */
     data object Moved : FocusEvent
 
     data object GaveUp : FocusEvent
 }
 
-/**
- * A focus session in strict mode. Pure: [apply] takes an event and the current time and returns the next session;
- * [tick] only moves the clock (grace expiring, a long emergency pause ending, the timer finishing).
- * `leadIdAtStart` (Plan's party lead; saved as `buddyIdAtStart` by older builds) and `lure` are locked in when the session starts:
- * perks use that lead at that moment.
- */
 @Serializable
 data class FocusSession(
     val id: String,
@@ -75,14 +58,11 @@ data class FocusSession(
     val taskId: String? = null,
     val lure: PokemonType? = null,
     val phase: Phase = Phase.Running,
-    /** Time spent paused (calls and emergency pauses), which does not count towards the timer. */
     val pausedMillis: Long = 0,
-    /** Emergency pauses already used today, including any in this session. */
     val emergencyPausesUsed: Int = 0,
 ) {
     val isFinished: Boolean get() = phase is Phase.Completed || phase is Phase.Failed
 
-    /** Focused time so far at [now]: elapsed minus pauses. Time away inside the grace period still counts. */
     fun focusedMillis(now: Long): Long {
         val end = when (val p = phase) {
             is Phase.Completed -> p.at
@@ -95,13 +75,11 @@ data class FocusSession(
 
     fun remainingMillis(now: Long): Long = durationMillis - focusedMillis(now)
 
-    /** When the quiet "halfway there" notification fires, for sessions of 15 minutes or more. */
     val halfwayAtMillis: Long? get() = if (durationMillis >= FocusRules.HALFWAY_MIN_MILLIS) startedAtMillis + durationMillis / 2 else null
 
     fun tick(now: Long): FocusSession {
         if (isFinished) return this
         var s = this
-        // An emergency pause that runs past its limit turns into time away.
         (s.phase as? Phase.Paused)?.let { p ->
             if (p.reason == PauseReason.EMERGENCY && now - p.since > FocusRules.EMERGENCY_PAUSE_MILLIS) {
                 val end = p.since + FocusRules.EMERGENCY_PAUSE_MILLIS
@@ -109,7 +87,6 @@ data class FocusSession(
             }
         }
         (s.phase as? Phase.Away)?.let { a ->
-            // Time away inside the grace period counts as focus, so a timer that ran out before the grace did is a finished session, not a failed one.
             val doneAt = s.startedAtMillis + s.pausedMillis + s.durationMillis
             if (now - a.since > FocusRules.GRACE_MILLIS && doneAt > a.since + FocusRules.GRACE_MILLIS) {
                 return s.copy(phase = Phase.Failed(FailReason.LEFT_APP, a.since + FocusRules.GRACE_MILLIS))
@@ -149,13 +126,9 @@ data class FocusSession(
     private fun endPause(s: FocusSession, now: Long, reason: PauseReason): FocusSession {
         val p = s.phase as? Phase.Paused ?: return s
         if (p.reason != reason) return s
-        return s.copy(phase = Phase.Running, pausedMillis = s.pausedMillis + (now - p.since).coerceAtLeast(0)) // a clock set back must not shorten the pauses already counted
+        return s.copy(phase = Phase.Running, pausedMillis = s.pausedMillis + (now - p.since).coerceAtLeast(0))
     }
 
-    /**
-     * The reward event for a completed session. Apply it to a player state whose Plan lead is [leadIdAtStart], so the perks are
-     * the ones locked in at the start.
-     */
     fun toEffortEvent(newPokemonId: String, nowMillis: Long, epochDay: Long): EffortEvent {
         check(phase is Phase.Completed) { "only a completed session earns an egg" }
         return EffortEvent(
@@ -171,7 +144,6 @@ data class FocusSession(
 }
 
 object FocusRules {
-    /** Time to come back after leaving the app. */
     const val GRACE_MILLIS = 10_000L
 
     const val EMERGENCY_PAUSES_PER_DAY = 2
@@ -179,16 +151,12 @@ object FocusRules {
 
     const val HALFWAY_MIN_MILLIS = 15 * 60_000L
 
-    /** After a failure, one tap starts this retry. */
     val RETRY_MINUTES = FocusDuration.MIN_MINUTES
 
-    /** The longest session the focus screen and the settings offer. */
     const val MAX_MINUTES = 180
 
-    /** "Just 5 minutes" and the retry are the shortest session there is. */
     fun justFiveMinutes(): FocusDuration = FocusDuration(0, FocusDuration.MIN_MINUTES, 0)
 
-    /** The no-blame message shown after a failed session. */
     const val FAILED_MESSAGE = "That egg went cold. Try again?"
 
     fun start(

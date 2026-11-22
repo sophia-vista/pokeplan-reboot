@@ -90,10 +90,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** A visitor standing in the buddy's scene: its form, its name, and what a tap does (a pat). */
 class StageGuest(val formId: Int, val name: String, val onTap: () -> Unit)
 
-/** A visitor beside the buddy: its own idle, and a tap answered with a hop and a heart. Still with Reduce motion. */
 @Composable
 internal fun StageGuestSprite(guest: StageGuest, calm: Boolean, modifier: Modifier) {
     var action by remember { mutableStateOf(SpriteAction.IDLE) }
@@ -150,25 +148,14 @@ private fun PetSpot.label() = when (this) {
     PetSpot.CHIN -> "under its chin"
 }
 
-/** Free play: it warms nothing and pays nothing; it is only the visitor's answer. */
 private enum class Play(val label: String) { PAT("Pat"), TREAT("Treat"), TAG("Play tag") }
 
-/** What the player can say for "Kind words": warm and plain, and never about how anyone feels. */
 private val kindWords = listOf("I'm glad you came.", "Take all the time you need.", "You're welcome here.")
 
-/** How long sitting together takes, held. */
 private const val SIT_MILLIS = 1_500
 
-/** Swipes across the meadow that tidy the spot, in widths of the scene. */
 private const val TIDY_WIDTHS = 2.5f
 
-/**
- * A visitor up close in the meadow. During a [visit] each kind of care is done with the visitor itself: a pat lands where
- * you tap it (its head, under its chin, or its back), a treat is dragged to it, sitting together is a press held on it,
- * tidying its spot is a few swipes across the meadow, and kind words are picked from three. A bid is answered by tapping it.
- * With no visit it is free play (a pat, a treat, a game of tag), which warms nothing and pays nothing. Every gesture also
- * has a plain action for screen readers, a treat can be tapped instead of dragged, and Reduce motion keeps the visitor still.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say: (String?) -> Unit, onClose: () -> Unit) {
@@ -194,7 +181,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
     var sceneWidth by remember { mutableIntStateOf(0) }
     var spriteBounds by remember { mutableStateOf(Rect.Zero) }
 
-    // A hop or a bite with its own SpriteCollab animation; a small hop in code for forms without one; nothing with Reduce motion.
     fun move(next: SpriteAction) {
         if (reduce) return
         action = next
@@ -215,7 +201,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         emote = null
     }
 
-    // One kind of care done: the visitor's answer in sound, movement, a face and a line, and the visit's end when it ends.
     fun answer(step: VisitStep?, given: CareAction) {
         doing = null
         if (step == null) return say("Not now.")
@@ -243,7 +228,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         )
     }
 
-    // Leaving whenever you like: what the visit warmed is already kept. A friend is paid now (and tried again if that did not go through).
     fun leave() {
         doing = null
         val result = care.leaveVisit() ?: return say("Not now.")
@@ -253,7 +237,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
     }
     fun act(given: CareAction, spot: PetSpot? = null, berry: String? = null) = answer(care.visitAct(given, spot, berry), given)
 
-    // Free play: a pat, a treat, or bounding over to where the meadow was tapped. Nothing is counted.
     fun played(kind: Play) {
         model.haptic()
         when (kind) {
@@ -265,7 +248,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
     fun answerBid() {
         val step = care.visitNotice() ?: return
         model.haptic()
-        if (step.result != null) return answer(step, CareAction.TIME) // the moment that made it a friend
+        if (step.result != null) return answer(step, CareAction.TIME)
         model.effect(Sfx.JUMP)
         move(SpriteAction.HOP)
         pop(Emote.MUSIC)
@@ -282,7 +265,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
     val treats = doing == CareAction.GIFT || play == Play.TREAT
 
     SceneStage("meadow", 208.dp) {
-        // The meadow itself: swipes tidy the spot, and in tag a tap anywhere calls the visitor over.
         Box(
             Modifier.matchParentSize().onSizeChanged { sceneWidth = it.width }.pointerInput(doing, play) {
                 when {
@@ -303,7 +285,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
                 }
             },
         )
-        // The visitor: what a tap or a press on it means depends on the kind of care chosen.
         Box(
             Modifier.align(Alignment.BottomCenter).padding(bottom = 22.dp)
                 .offset { IntOffset(roam.value.dp.roundToPx(), lift.value.dp.roundToPx()) }
@@ -324,7 +305,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
                                 scope.launch { hold.animateTo(0f, tween(150)) }
                             }
                         })
-                        doing == CareAction.SERVICE || play == Play.TAG -> Unit // the meadow takes these
+                        doing == CareAction.SERVICE || play == Play.TAG -> Unit
                         play == Play.PAT -> detectTapGestures { played(Play.PAT) }
                         bid != null -> detectTapGestures { answerBid() }
                         else -> detectTapGestures {
@@ -355,7 +336,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
             emote != null, Modifier.align(Alignment.TopCenter).padding(top = Spacing.L).offset { IntOffset(roam.value.dp.roundToPx(), 0) },
             enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut(),
         ) { emote?.let { EmoteIcon(it, size = Sizes.Icon) } }
-        // Treats wait in a row along the top: drag one to the visitor, or tap it.
         if (treats) Row(Modifier.align(Alignment.TopStart).padding(Spacing.S).zIndex(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             DraggableTreat("Treat", null, "a little treat", { p -> if (offered(p)) { if (visiting) act(CareAction.GIFT) else played(Play.TREAT) } }) {
                 if (visiting) act(CareAction.GIFT) else played(Play.TREAT)
@@ -364,7 +344,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
                 DraggableTreat("$n", berry, Items.name(berry), { p -> if (offered(p)) act(CareAction.GIFT, berry = berry) }) { act(CareAction.GIFT, berry = berry) }
             }
         }
-        // How warm the visitor is, small in the corner like the buddy's level.
         if (visit != null) Text(
             "${visitor.progress} of ${Visitors.FRIEND_PROGRESS}",
             Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Pixel.Scrim.copy(alpha = 0.33f), PixelShape)
@@ -410,7 +389,6 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
     }
 }
 
-/** What a visit came to: a friend (an egg that hatched, or the visitor itself joining), or a pleasant visit after which it rests. */
 private fun visitEndedLine(name: String, result: app.pokeplan.care.BefriendResult): String {
     val hatched = result.rewards.filterIsInstance<Reward.Hatched>().firstOrNull()?.pokemon
     return when {
@@ -421,7 +399,6 @@ private fun visitEndedLine(name: String, result: app.pokeplan.care.BefriendResul
     }
 }
 
-/** A treat to drag to the visitor: a berry's real icon with how many are left, or a plain "Treat". Tapping offers it too. */
 @Composable
 private fun DraggableTreat(label: String, berry: String?, description: String, onDrop: (Offset) -> Unit, onTap: () -> Unit) {
     var drag by remember { mutableStateOf(Offset.Zero) }

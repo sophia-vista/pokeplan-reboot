@@ -73,13 +73,9 @@ class HuaweiScreenService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null || event.packageName?.toString() != HuaweiHealth.PACKAGE) return
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) event.className?.toString()?.substringAfterLast('.')?.takeIf { it.isNotBlank() }?.let { page = it }
-        // Content changes come in bursts while a page loads or animates: capture once it has been still for a moment. A walk captures on its own steps.
         if (!walking) { main.removeCallbacks(settle); main.postDelayed(settle, SETTLE_MS) }
     }
 
-    // --- reading a page ---------------------------------------------------------------------------------------------------
-
-    /** Huawei Health's window now, or null when another app is in front. */
     private fun huaweiRoot(): AccessibilityNodeInfo? = rootInActiveWindow?.takeIf { it.packageName?.toString() == HuaweiHealth.PACKAGE }
 
     private fun capture(root: AccessibilityNodeInfo? = huaweiRoot()): ScreenCapture? {
@@ -126,7 +122,6 @@ class HuaweiScreenService : AccessibilityService() {
         }
     }
 
-    /** The visible elements of [root], breadth first. */
     private fun visible(root: AccessibilityNodeInfo): Sequence<AccessibilityNodeInfo> = sequence {
         val queue = ArrayDeque(listOf(root))
         var visited = 0
@@ -140,13 +135,11 @@ class HuaweiScreenService : AccessibilityService() {
 
     private fun AccessibilityNodeInfo.id() = viewIdResourceName.orEmpty().substringAfter(":id/")
 
-    /** The biggest visible scrolling element of [root] (the page's own list rather than a carousel), or null. */
     private fun mainScroller(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         val r = Rect()
         return visible(root).filter { it.isScrollable }.maxByOrNull { it.getBoundsInScreen(r); r.width().toLong() * r.height() }
     }
 
-    /** Whether [root] is Huawei Health's Health page (its card list and its Edit button), not a card's own page. */
     private fun isHealthPage(root: AccessibilityNodeInfo) = visible(root).any { it.id() == "id_recyclerview" } && visible(root).any { it.id() == "function_set_items_title" }
 
     /** The visible title element of [wanted] on the Health page, or null. */
@@ -222,8 +215,7 @@ class HuaweiScreenService : AccessibilityService() {
         }.also { job ->
             job.invokeOnCompletion { e ->
                 main.post {
-                    if (e != null) answer("Screen reading was turned off. What was seen is kept.") // copy-ok: result
-                    // Off again at once, however the walk ended: banking apps (GCash, MariBank) refuse to open while a sideloaded accessibility service is on (5.2.2, rule 2).
+                    if (e != null) answer("Screen reading was turned off. What was seen is kept.")
                     if (HuaweiCapture.screen === this) turnOff()
                 }
             }
@@ -491,7 +483,6 @@ class HuaweiScreenService : AccessibilityService() {
         return clickableAncestor(tab)?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
     }
 
-    /** The Health page, waiting through a splash or an ad for a few tries; null when it does not come. */
     private suspend fun awaitHealthPage(): AccessibilityNodeInfo? {
         repeat(MAX_TRIES) {
             huaweiRoot()?.takeIf { isHealthPage(it) }?.let { return it }
@@ -545,7 +536,6 @@ class HuaweiScreenService : AccessibilityService() {
         disableSelf()
     }
 
-    /** Back to PokéLife the way its icon would: its own task comes to the front as it was. */
     private fun comeBack() {
         packageManager.getLaunchIntentForPackage(packageName)?.let { runCatching { startActivity(it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } }
     }

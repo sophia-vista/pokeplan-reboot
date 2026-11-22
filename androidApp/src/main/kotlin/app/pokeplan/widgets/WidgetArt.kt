@@ -15,15 +15,19 @@ import app.pokeplan.ui.emote
 import app.pokeplan.ui.status
 import kotlin.math.roundToInt
 
-/**
- * Bitmaps for the widgets, all made from the app's real assets (sprites, items, box wallpapers). Widgets cannot use the
- * Compose renderer, so the tiling and the rounded corners are done here with a Canvas. Nothing here draws pixel art;
- * the only shape drawn in code is the small shadow under the buddy, which is UI chrome.
- */
 object WidgetArt {
     private val cache = LinkedHashMap<String, Bitmap>()
 
     private const val RESOURCES = "composeResources/pokeplan.composeapp.generated.resources/files"
+
+    /**
+     * A widget is a RemoteViews payload, and its bitmaps travel through Binder: one 420dp x 200dp scene at 3x is ~3 MB and
+     * can make the update fail. A single picture is capped well under the ~1 MB transaction budget, and the cache is capped
+     * by bytes rather than by entry count so a few large scenes cannot keep tens of MB alive in the process.
+     */
+    private const val MAX_BITMAP_BYTES = 512 * 1024
+    private const val MAX_CACHE_BYTES = 16L * 1024 * 1024
+    private var cachedBytes = 0L
 
     private fun asset(context: Context, path: String): Bitmap? = try {
         context.assets.open("$RESOURCES/$path").use { BitmapFactory.decodeStream(it) }
@@ -31,20 +35,29 @@ object WidgetArt {
         null
     }
 
+    @Synchronized
     private fun remember(key: String, make: () -> Bitmap?): Bitmap? {
         cache[key]?.let { return it }
         val bitmap = make() ?: return null
-        // Widget bitmaps are small; keep the few that are asked for again and again.
-        if (cache.size > 24) cache.remove(cache.keys.first())
-        cache[key] = bitmap
-        return bitmap
+        val capped = capped(bitmap)
+        cache[key] = capped
+        cachedBytes += capped.byteCount.toLong()
+        while (cachedBytes > MAX_CACHE_BYTES && cache.size > 1) {
+            val oldest = cache.keys.first()
+            cachedBytes -= (cache.remove(oldest)?.byteCount ?: 0).toLong()
+        }
+        return capped
     }
 
-    /**
-     * A box wallpaper tiled and mirrored (like the app's PixelBackground) to [width] x [height] pixels, with its two
-     * pixel frame trimmed, scaled by a whole number so the pixels stay sharp, and rounded corners. [roundBottom] false
-     * rounds only the top (for a header strip).
-     */
+    /** [bitmap] itself when it is small enough, else a nearest-neighbour smaller copy (the launcher scales it to the widget anyway). */
+    private fun capped(bitmap: Bitmap): Bitmap {
+        if (bitmap.byteCount <= MAX_BITMAP_BYTES) return bitmap
+        val scale = kotlin.math.sqrt(MAX_BITMAP_BYTES.toDouble() / bitmap.byteCount).toFloat()
+        val w = (bitmap.width * scale).toInt().coerceAtLeast(1)
+        val h = (bitmap.height * scale).toInt().coerceAtLeast(1)
+        return Bitmap.createScaledBitmap(bitmap, w, h, false)
+    }
+
     fun wallpaper(context: Context, name: String, width: Int, height: Int, radius: Float, density: Float, roundBottom: Boolean = true): Bitmap? =
         remember("wall:$name:$width:$height:$radius:$roundBottom:$density") {
             val source = asset(context, "backgrounds/$name.png") ?: return@remember null
@@ -81,9 +94,7 @@ object WidgetArt {
         addRoundRect(RectF(0f, 0f, width, height), floatArrayOf(radius, radius, radius, radius, bottom, bottom, bottom, bottom), Path.Direction.CW)
     }
 
-    /** A real scene (assets/scenes) filling [width] x [height] like a photo, bottom-anchored, rounded, dimmed at night. */
     fun scene(context: Context, name: String, darkness: Float, width: Int, height: Int, radius: Float, roundBottom: Boolean = true): Bitmap? {
-        // The tint is quantized so a slowly changing dusk does not build a new picture every minute.
         val tint = (darkness.coerceIn(0f, 1f) * 20).toInt()
         return remember("scene:$name:$tint:$width:$height:$radius:$roundBottom") {
             val source = asset(context, "scenes/$name.png") ?: return@remember null
@@ -104,12 +115,10 @@ object WidgetArt {
 
     private const val CANVAS = 192
 
-    /** One square picture of the buddy standing on a soft shadow, bottom-centred; [sprite] is enlarged by [scale] without smoothing. */
     private fun standing(sprite: Bitmap, scale: Int): Bitmap {
         val scaled = Bitmap.createScaledBitmap(sprite, sprite.width * scale, sprite.height * scale, false)
         val out = Bitmap.createBitmap(CANVAS, CANVAS, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
-        // A small shadow of a few flat rows, so it matches the pixels of the sprite.
         val shadow = Paint().apply { color = Color.argb(70, 0, 0, 0); isAntiAlias = false }
         val rows = floatArrayOf(0.55f, 0.85f, 1f, 0.85f, 0.55f)
         val rowHeight = 4f
@@ -122,7 +131,6 @@ object WidgetArt {
         return out
     }
 
-    /** A still picture of the buddy: the first frame of its Mystery Dungeon style sprite, else its regular sprite. */
     fun still(context: Context, formId: Int, shiny: Boolean): Bitmap? =
         remember("still:$formId:$shiny") {
             pmdFrames(context, formId, shiny)?.first()?.let { return@remember it }
@@ -133,7 +141,6 @@ object WidgetArt {
     private fun pmdFrames(context: Context, formId: Int, shiny: Boolean): List<Bitmap>? =
         animation(context, formId)?.takeIf { it.dir == "pmd" }?.let { idleFrames(context, formId, shiny) }
 
-    /** The regular sprites have empty rows under the feet; without them the buddy stands on its shadow, as the animated frames do. */
     private fun withoutEmptyRowsBelow(sprite: Bitmap): Bitmap {
         val row = IntArray(sprite.width)
         var bottom = sprite.height
@@ -149,7 +156,6 @@ object WidgetArt {
 
     private var animations: Map<Int, Sheet>? = null
 
-    /** A sheet table (`id, frames, width, height, frame times in ms, shiny`) as id to sheet in [dir]. */
     private fun table(context: Context, dir: String, file: String): Map<Int, Sheet> = try {
         context.assets.open("$RESOURCES/$dir/$file").bufferedReader().readLines().filter { it.isNotBlank() }.associate { line ->
             val c = line.split('\t')
@@ -159,24 +165,15 @@ object WidgetArt {
         emptyMap()
     }
 
-    /** The form's animation: the Mystery Dungeon style one (assets/pmd) where there is one, else the Black/White one. */
     private fun animation(context: Context, id: Int): Sheet? {
         if (animations == null) animations = table(context, "animated", "animated.tsv") + table(context, "pmd", "pmd.tsv")
         return animations?.get(id)
     }
 
-    /**
-     * The buddy's real animation as at most [MAX_FRAMES] pictures spread evenly over one loop, each [FLIP_MILLIS] long
-     * when played by the widget's flipper, or null for a form without an animation.
-     */
     fun idleFrames(context: Context, formId: Int, shiny: Boolean): List<Bitmap>? = frames(context, formId, shiny, animation(context, formId))
 
     private var sleeping: Map<Int, Sheet>? = null
 
-    /**
-     * The buddy asleep, as [idleFrames] does it, from its SpriteCollab Sleep animation (assets/pmd/sleep); null for a form
-     * without one, or a shiny without its recolour.
-     */
     fun sleepFrames(context: Context, formId: Int, shiny: Boolean): List<Bitmap>? {
         if (sleeping == null) sleeping = table(context, "pmd/sleep", "sleep.tsv")
         val a = sleeping?.get(formId)?.takeIf { !shiny || it.hasShiny } ?: return null
@@ -189,7 +186,6 @@ object WidgetArt {
         val sheet = asset(context, "${a.dir}/${if (shiny) "$formId-shiny" else "$formId"}.png") ?: asset(context, "${a.dir}/$formId.png") ?: return null
         val total = times.sum()
         val count = minOf(MAX_FRAMES, (total + FLIP_MILLIS - 1) / FLIP_MILLIS).coerceAtLeast(1)
-        // Mystery Dungeon sprites share one pixel size (a 32 pixel frame fills the canvas), as in the app.
         val fit = (CANVAS - 12) / maxOf(w, h)
         val scale = (if (a.dir.startsWith("pmd")) minOf(fit, (CANVAS - 12) / 32) else fit).coerceAtLeast(1)
         return (0 until count).map { j ->
@@ -204,16 +200,11 @@ object WidgetArt {
     const val FLIP_MILLIS = 200
     private const val MAX_FRAMES = 20
 
-    /** An item icon (a berry, the egg) enlarged by a whole number without smoothing. */
     fun item(context: Context, id: String, scale: Int): Bitmap? = remember("item:$id:$scale") {
         val icon = asset(context, "items/$id.png") ?: return@remember null
         Bitmap.createScaledBitmap(icon, icon.width * scale, icon.height * scale, false)
     }
 
-    /**
-     * The picture of a buddy's reaction (a status icon frame, an item icon or a tinted glyph) enlarged by a whole number to about
-     * [targetPx] pixels, without smoothing. The widget shows one still frame: the icon's best one, as a RemoteViews cannot play a strip.
-     */
     fun reaction(context: Context, icon: ReactionIcon, targetPx: Int): Bitmap? = remember("reaction:${icon.key}:$targetPx") {
         val kind = icon.status()
         val (source, tint) = if (kind != null) {
