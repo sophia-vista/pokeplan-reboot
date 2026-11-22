@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.231.2
+
+- **Emotional wellbeing’s All data:** the page’s All data carries the same **Emotion** and **Stress** tabs, so the walk opens it once and reads both tabs there (the emotion days and the stress averages); the card page is scrolled only after the pills. If the tabs are out of reach of accessibility they are tapped by position at the top left, from the owner’s 22 November 2026 screenshots. No reward or schema change.
+
 ## 0.231.1
 
 Huawei Health read: retry a card that opens a blank window, and a second way into Cycle Calendar's menu (HEAL, REP-046, probe 13 of 22 November 2026). No reward or schema change.
