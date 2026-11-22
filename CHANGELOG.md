@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.229.1
+
+Huawei Health read: retry a card that opens a blank window, and a second way into Cycle Calendar's menu (HEAL, REP-046, probe 13 of 22 November 2026). No reward or schema change.
+
+- **Heart and Emotional wellbeing:** probe 13 opened both in two empty `FrameLayout` windows with no text, no four-dots button and no pills, so the walk could not open their All data. The walk now closes that blank page and taps the card once more before giving up, and logs whether the second try shows words or not.
+- **Cycle Calendar:** probe 13 reached the page but its `More options` menu never appeared after a click or a tap. The walk now also tries a long press on that button, and accepts a menu item about periods whose wording is not exactly "Period records" ("Period record", "Period history", …) by its pop-up item text.
+- **Docs:** `INTEGRATIONS_AND_PRIVACY.md` 5.2.2 3c records the probe 13 result, so the code no longer claims the all-window read alone fixed Heart and Emotional wellbeing.
+
 ## 0.229.0
 
 Huawei Health read: every card's All data, two read modes (HEAL, REP-046, owner feedback 22 November 2026). No reward change: `RewardRules.VERSION` and `docs/economy.md` are unchanged. No schema change.

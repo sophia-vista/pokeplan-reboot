@@ -302,9 +302,21 @@ class HuaweiScreenService : AccessibilityService() {
             if (isHealthPage(detail)) { note("${wanted.title}: tap opened nothing"); return null }
         }
         // Read every Huawei Health window, not only the active one: a web page or a sheet may draw in a window of its own.
-        val shown = captureAll()
+        var shown = captureAll()
         // Still no words: the page may be a window of its own (a dialog or sheet) or a web page that is still drawing.
-        if (shown == null || shown.nodes.none { it.text.isNotBlank() || it.description.isNotBlank() }) note("${wanted.title}: no words yet${structureSummary()}${windowSummary()}")
+        if (shown == null || shown.nodes.none { it.text.isNotBlank() || it.description.isNotBlank() }) {
+            note("${wanted.title}: no words yet${structureSummary()}${windowSummary()}")
+            // Some cards open a blank preview first (Heart and Emotional wellbeing in the 22 November 2026 probe): close it and tap the card once more.
+            performGlobalAction(GLOBAL_ACTION_BACK)
+            delay(BACK_WAIT_MS)
+            val again = refind() ?: huaweiRoot()?.let { r -> if (isHealthPage(r)) findCard(r, wanted) else null }
+            if (again != null && tap(again)) {
+                delay(PAGE_WAIT_MS)
+                detail = awaitDetail() ?: detail
+                shown = captureAll()
+                note("${wanted.title}: retried, ${if (shown?.nodes?.any { it.text.isNotBlank() || it.description.isNotBlank() } == true) "the page shows words" else "still no words"}")
+            } else note("${wanted.title}: retried, the card was not found")
+        }
         note("${wanted.title}: opened ${page.ifBlank { "a page" }} (${shown?.nodes?.size ?: 0} elements)")
         val exercise = HuaweiWalk.canonical(wanted.title) == HuaweiWalk.canonical("Exercise records")
         scrollThrough(HuaweiWalk.pageScrolls(wanted, scan)) {
@@ -439,14 +451,36 @@ class HuaweiScreenService : AccessibilityService() {
 
     /** Waits for [label] in the menu that has just been opened; a web page's menu draws a moment later. */
     private suspend fun awaitMenuItem(label: String): AccessibilityNodeInfo? {
-        var item = menuItem(label)
+        var item = menuItem(label) ?: periodItem(label)
         repeat(MENU_TRIES) {
             if (item != null) return item
             delay(DETAIL_POLL_MS)
-            item = menuItem(label)
+            item = menuItem(label) ?: periodItem(label)
             captureAll()
         }
         return item
+    }
+
+    /** A menu item about periods whose wording is not exactly [label] ("Period record", "Period history"), by its text or description. Only a pop-up's own item (the page's "Period started" text is not one). */
+    private fun periodItem(label: String): AccessibilityNodeInfo? {
+        if (!label.contains("period", ignoreCase = true)) return null
+        return huaweiRoots().firstNotNullOfOrNull { r ->
+            visible(r).firstOrNull { n ->
+                (n.id() == "list_popup_window_item_text" || n.id() == "list_popup_window_item") &&
+                    listOf(n.text, n.contentDescription).any { it?.toString()?.contains("period", ignoreCase = true) == true }
+            }
+        }
+    }
+
+    /** A real long press at the middle of [node], for a web page whose menu button ignores a tap; false when it cannot be sent. */
+    private fun longPress(node: AccessibilityNodeInfo): Boolean {
+        val r = Rect()
+        node.getBoundsInScreen(r)
+        if (r.width() <= 0 || r.height() <= 0) return false
+        if (serviceInfo?.capabilities?.and(android.accessibilityservice.AccessibilityServiceInfo.CAPABILITY_CAN_PERFORM_GESTURES) == 0) return false
+        val path = Path().apply { moveTo(r.exactCenterX(), r.exactCenterY()) }
+        val gesture = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0, LONG_PRESS_MS)).build()
+        return runCatching { dispatchGesture(gesture, null, null) }.getOrDefault(false)
     }
 
     /**
@@ -470,6 +504,11 @@ class HuaweiScreenService : AccessibilityService() {
                 note("${wanted.title}: menu touched")
                 item = awaitMenuItem(label)
             }
+        }
+        if (item == null && longPress(button)) {
+            // Cycle Calendar's web toolbar did not open its menu with a click or a tap in the 22 November 2026 probe: try a long press once.
+            note("${wanted.title}: menu long-pressed")
+            item = awaitMenuItem(label)
         }
         val choice = item
         if (choice == null) {
@@ -651,6 +690,7 @@ class HuaweiScreenService : AccessibilityService() {
         const val DETAIL_WORDS = 4
         const val MENU_TRIES = 12
         const val TOUCH_MS = 60L
+        const val LONG_PRESS_MS = 800L
         const val TIMEOUT_MS = 420_000L
         const val TIMEOUT_ALL_MS = 900_000L
         const val MAX_TRIES = 4
