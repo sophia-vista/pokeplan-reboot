@@ -624,11 +624,21 @@ private fun WorldTownView(model: AppModel) {
             Text("Berry swap", style = MaterialTheme.typography.titleSmall)
             FieldLabel("Give")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton("$f x${model.data.player.inventory[Items.berry(f)]}", { swapFrom = f }, color = if (swapFrom == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
+                app.pokeplan.world.SwapShop.flavors.forEach { f ->
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                        ItemIcon(app.pokeplan.world.PmdArt.town(Items.berry(f)), size = Sizes.IconS, description = null)
+                        PixelButton("$f x${model.data.player.inventory[Items.berry(f)]}", { swapFrom = f }, color = if (swapFrom == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
+                    }
+                }
             }
             FieldLabel("Get")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton(f, { swapTo = f }, color = if (swapTo == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
+                app.pokeplan.world.SwapShop.flavors.forEach { f ->
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                        ItemIcon(app.pokeplan.world.PmdArt.town(Items.berry(f)), size = Sizes.IconS, description = null)
+                        PixelButton(f, { swapTo = f }, color = if (swapTo == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
+                    }
+                }
             }
             PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) { model.effect(Sfx.CONFIRM); ShopLines.SWAP_DONE } else ShopLines.SWAP_SHORT }, Module.WORLD.look.accent) // copy-ok: game
         }
@@ -1146,7 +1156,7 @@ private fun ShopShelf(model: AppModel, title: String, offers: List<app.pokeplan.
             Text(title, style = MaterialTheme.typography.titleSmall)
             offers.forEach { o ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    app.pokeplan.ui.ItemIcon(o.itemId, size = app.pokeplan.ui.theme.Sizes.Icon)
+                    app.pokeplan.ui.ItemIcon(app.pokeplan.world.PmdArt.town(o.itemId), size = app.pokeplan.ui.theme.Sizes.Icon, description = Items.name(o.itemId))
                     Column(Modifier.weight(1f)) {
                         Text((if (o.count > 1) "${o.count} " else "") + Items.name(o.itemId), style = MaterialTheme.typography.bodyLarge)
                         Text(ShopLines.itemText(Items.name(o.itemId)) ?: "In the Bag: ${model.data.player.inventory[o.itemId]}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

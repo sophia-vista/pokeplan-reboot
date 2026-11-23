@@ -30,5 +30,16 @@ enum class ExplorerRank(val label: String, val points: Int, val teamSlots: Int) 
 object PmdArt {
     const val POKE_COIN = "pmd2-072"
 
+    /** The Mystery Dungeon picture for an item shown on the Town pages, or the item's own icon where the sheet has no match (owner, 23 November 2026). The five flavour berries follow the floor's own pictures (`floor-items.tsv`). */
+    fun town(itemId: String): String = when (itemId) {
+        "berry-spicy" -> "pmd2-023"
+        "berry-sweet" -> "pmd2-026"
+        "berry-dry" -> "pmd2-024"
+        "berry-bitter" -> "pmd2-027"
+        "berry-sour" -> "pmd2-028"
+        "gimmighoul-coin" -> POKE_COIN
+        else -> itemId
+    }
+
     fun treasureBox(tier: Int): String = when (tier) { 1 -> "pmd2-065"; 2 -> "pmd2-067"; else -> "pmd2-066" }
 }

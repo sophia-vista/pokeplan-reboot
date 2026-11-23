@@ -802,7 +802,6 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
     var filter by remember { mutableStateOf<TxType?>(null) }
     var inInstallments by remember { mutableStateOf(startInstallments) }
     var iou by remember { mutableStateOf(false) }
-    var iouReceived by remember { mutableStateOf(false) }
     val terms = remember { TermsState() }
     var openId by remember { mutableStateOf<String?>(null) }
     val from = open.firstOrNull { it.id == accountId } ?: open.firstOrNull()
@@ -843,15 +842,15 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             return
         }
         val isIou = type == TxType.INCOME && iou
-        if (isIou && payee.isBlank()) { message = "Say who owes it." to NoticeTone.WARNING; return }
+        if (isIou && payee.isBlank()) { message = "Say who paid it back." to NoticeTone.WARNING; return }
         val out = mint.record(
             type, minor, from!!.id, toAccountId = if (type == TxType.TRANSFER) to?.id else null,
             categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT && splits.isEmpty() },
             payee = payee, note = note, atMillis = at, up = up, splits = splits, feeMinor = feeMinor,
-            status = if (isIou && !iouReceived) TxStatus.PENDING else TxStatus.POSTED, iou = isIou,
+            status = TxStatus.POSTED, iou = isIou,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; iou = false; iouReceived = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
+        else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; iou = false; splitParts = listOf(SplitDraft(), SplitDraft()); model.haptic() }
     }
     val otherTypes = quickTypes.filter { it !in mainTypes }
     FormBox {
@@ -864,7 +863,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
             FormGroup {
                 PixelChoice(mainTypes, type.takeIf { it in mainTypes }, { it?.label ?: "" }, { t ->
                     if (t != null) {
-                        if (t != type) { splitEnabled = false; iou = false; iouReceived = false }
+                        if (t != type) { splitEnabled = false; iou = false }
                         type = t
                         categoryId = null
                     }
@@ -892,12 +891,11 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                     val usable = data.categories.filter { it.kind == kind && !it.archived }
                     val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
                     val ordered = (recent + usable).distinct()
-                    if (type == TxType.INCOME) ToggleRow("Someone owes me this (IOU)", iou) {
-                        iou = it; categoryId = null; if (it) splitEnabled = false else iouReceived = false
+                    if (type == TxType.INCOME) ToggleRow("Paid back by someone (IOU)", iou) {
+                        iou = it; categoryId = null; if (it) splitEnabled = false
                     }
                     if (iou) {
-                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Who owes it", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-                        ToggleRow("They paid me already", iouReceived) { iouReceived = it }
+                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Who paid it back", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                     }
                     val canSplit = !installmentMode && !iou && type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE)
                     if (canSplit) ToggleRow("Split across categories", splitEnabled) {
@@ -918,7 +916,7 @@ internal fun ActivityView(model: AppModel, startInstallments: Boolean = false, s
                         listOf<TxType?>(null) + otherTypes, type.takeIf { it in otherTypes }, { it?.label ?: "Expense, income or transfer" },
                         { t ->
                             if (t != null) {
-                                if (t != type) { splitEnabled = false; iou = false; iouReceived = false }
+                                if (t != type) { splitEnabled = false; iou = false }
                                 type = t
                                 categoryId = null
                             } else if (type in otherTypes) {
@@ -987,7 +985,7 @@ private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onCli
     val plan = planNames.joinToString(", ").takeIf { it.isNotEmpty() }
     val repayment = t.type == TxType.TRANSFER && data.accounts.firstOrNull { it.id == t.toAccountId }?.type?.liability == true
     val title = t.payee.ifBlank { category ?: (if (t.type == TxType.FEE) t.feeKind?.label else null) ?: (if (repayment) "Repayment" else t.type.label) }
-    val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.feeMinor.takeIf { it > 0 }?.let { "fee " + model.mint.show(it, t.currency) }, (if (t.iou && t.status == TxStatus.PENDING) "IOU, still owed" else if (t.iou && t.status == TxStatus.POSTED) "IOU, received" else t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }), plan?.let { "Plan: $it" }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
+    val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.feeMinor.takeIf { it > 0 }?.let { "fee " + model.mint.show(it, t.currency) }, (if (t.iou && t.status == TxStatus.PENDING) "IOU, still owed" else if (t.iou && t.status == TxStatus.POSTED) "IOU" else t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }), plan?.let { "Plan: $it" }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
     MintLine(
         trail = { Text(t.signed() + model.mint.show(t.amountMinor, t.currency), style = MaterialTheme.typography.titleSmall) },
         onClick = onClick, onClickLabel = if (open) "Hide options" else "Show options",
@@ -1106,7 +1104,7 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                         TxStatus.PENDING -> PixelButton(if (t.iou) "Mark received" else "Mark posted", {
                             if (mint.setTransactionStatus(t.id, TxStatus.POSTED)) onDone() else refused = "That record can no longer change status."
                         }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
-                        TxStatus.POSTED -> PixelButton(if (t.iou) "Mark owed" else "Mark pending", {
+                        TxStatus.POSTED -> PixelButton("Mark pending", {
                             if (mint.setTransactionStatus(t.id, TxStatus.PENDING)) onDone() else refused = "That record can no longer change status."
                         }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         else -> {}

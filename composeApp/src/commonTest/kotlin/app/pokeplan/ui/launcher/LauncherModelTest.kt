@@ -188,20 +188,21 @@ class LauncherNiagaraTest {
     }
 
     @Test
-    fun foldersKeepOrderRenameAndDelete() {
-        var prefs = LauncherPrefs().addFolder(" Work ").addFolder("work").addFolder("").addFolder("Play")
-        assertEquals(listOf("Work", "Play"), prefs.folders.map { it.name })
-        prefs = prefs.addToFolder("Work", "pkg.a").addToFolder("Work", "pkg.b").addToFolder("Work", "pkg.a")
-        assertEquals(listOf("pkg.a", "pkg.b"), prefs.folders.first().apps)
-        prefs = prefs.removeFromFolder("Work", "pkg.a").renameFolder("Work", "Office").renameFolder("Office", "Play")
-        assertEquals(listOf("Office", "Play"), prefs.folders.map { it.name })
-        assertEquals(listOf("pkg.b"), prefs.folders.first().apps)
-        assertEquals(listOf("Play"), prefs.deleteFolder("Office").folders.map { it.name })
+    fun oldFoldersAreIgnoredWhenLoading() {
+        val old = "P pkg.a\nF Work\tpkg.a\tpkg.b\nK gesture.SWIPE_UP\tFOLDERS\nG HOME_BOTTOM\tFOLDER\tWork\tLARGE\nG HOME_BOTTOM\tNAV\t\tLARGE\nX HOME\tFOLDER\tWork\t0\t0\t4\t2\nH pkg.z\n"
+        val prefs = LauncherPrefs.decode(old)
+        assertEquals(listOf("pkg.a"), prefs.pinned)
+        assertEquals(setOf("pkg.z"), prefs.hidden)
+        assertEquals(listOf(WidgetKind.NAV), prefs.widgets.map { it.kind })
+        assertEquals(null, prefs.grid)
+        assertEquals(GestureAction.APPS, prefs.action(GestureTrigger.SWIPE_UP))
+        assertEquals(false, prefs.encode().contains("FOLDER"))
+        assertEquals(false, prefs.encode().contains("F Work"))
     }
 
     @Test
     fun newChoicesSurviveTheRoundTrip() {
-        val prefs = LauncherPrefs().addFolder("Work").addToFolder("Work", "pkg.a").recordLaunch("pkg.a").withPlace(GeoPlace("Manila, Philippines", 14.6, 121.0)).withFahrenheit(true).copy(weather = Weather.LIVE)
+        val prefs = LauncherPrefs().recordLaunch("pkg.a").withPlace(GeoPlace("Manila, Philippines", 14.6, 121.0)).withFahrenheit(true).copy(weather = Weather.LIVE)
         assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
         assertEquals(LauncherPrefs(), LauncherPrefs.decode("W broken\nW x\t1\nL pkg\tzero\nF \n"))
     }
@@ -231,23 +232,21 @@ class LauncherWidgetsTest {
 
     @Test
     fun addsMovesAndRemovesWidgets() {
-        var prefs = LauncherPrefs().addFolder("Work")
-        val folder = WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.FOLDER, "Work")
-        prefs = prefs.addWidget(folder).addWidget(folder).addWidget(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.FOLDER, "Nope"))
-        assertEquals(WidgetKind.FOLDER, prefs.widgetsIn(WidgetArea.HOME_BOTTOM).last().kind)
-        assertEquals(1, prefs.widgets.count { it.kind == WidgetKind.FOLDER })
-        prefs = prefs.moveWidget(folder, -1)
-        assertEquals(listOf(WidgetKind.NAV, WidgetKind.OFTEN, WidgetKind.PINNED, WidgetKind.FOLDER, WidgetKind.ACTIONS), prefs.widgetsIn(WidgetArea.HOME_BOTTOM).map { it.kind })
+        var prefs = LauncherPrefs()
+        val forecast = WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.FORECAST)
+        prefs = prefs.addWidget(forecast).addWidget(forecast)
+        assertEquals(WidgetKind.FORECAST, prefs.widgetsIn(WidgetArea.HOME_BOTTOM).last().kind)
+        assertEquals(1, prefs.widgets.count { it.kind == WidgetKind.FORECAST })
+        prefs = prefs.moveWidget(forecast, -1)
+        assertEquals(listOf(WidgetKind.NAV, WidgetKind.OFTEN, WidgetKind.PINNED, WidgetKind.FORECAST, WidgetKind.ACTIONS), prefs.widgetsIn(WidgetArea.HOME_BOTTOM).map { it.kind })
         assertEquals(prefs, prefs.moveWidget(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.CLOCK), -1))
-        prefs = prefs.renameFolder("Work", "Office")
-        assertEquals("Office", prefs.widgets.first { it.kind == WidgetKind.FOLDER }.arg)
-        assertEquals(0, prefs.deleteFolder("Office").widgets.count { it.kind == WidgetKind.FOLDER })
+        assertEquals(0, prefs.removeWidget(forecast).widgets.count { it.kind == WidgetKind.FORECAST })
         assertEquals(0, prefs.widgetsIn(WidgetArea.HOME_TOP).size - 2)
     }
 
     @Test
     fun layoutsSurviveTheRoundTripEvenWhenEmpty() {
-        val custom = LauncherPrefs().addFolder("Work").addWidget(WidgetSlot(WidgetArea.TODAY, WidgetKind.FOLDER, "Work")).removeWidget(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.CLOCK))
+        val custom = LauncherPrefs().addWidget(WidgetSlot(WidgetArea.TODAY, WidgetKind.FORECAST)).removeWidget(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.CLOCK))
         assertEquals(custom, LauncherPrefs.decode(custom.encode()))
         val empty = LauncherPrefs().copy(layout = emptyList())
         assertEquals(empty, LauncherPrefs.decode(empty.encode()))

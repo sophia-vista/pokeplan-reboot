@@ -139,4 +139,21 @@ class TownBehaviorTest {
         assertNotEquals(TownBehavior.anchor("a", 2, 0, false), TownBehavior.anchor("b", 2, 0, false))
         assertTrue(TownBehavior.anchor("x", 2, 1, buddy = true).x in 1.3f..1.7f)
     }
+
+    @Test
+    fun settleMovesAStopOffAnotherPokemon() {
+        val there = androidx.compose.ui.geometry.Offset(0.5f, 0.5f)
+        repeat(20) { seed ->
+            val at = TownBehavior.settle(Random(seed), there, listOf(there), 0.1f, 2)
+            assertTrue(!TownBehavior.crowded(at, listOf(there), 0.1f))
+        }
+    }
+
+    @Test
+    fun clearPushesAPathPointOutOfASleeper() {
+        val sleeper = androidx.compose.ui.geometry.Offset(0.5f, 0.5f)
+        val pushed = TownBehavior.clear(androidx.compose.ui.geometry.Offset(0.52f, 0.5f), listOf(sleeper), 0.1f)
+        assertTrue(!TownBehavior.crowded(pushed, listOf(sleeper), 0.099f))
+        assertEquals(androidx.compose.ui.geometry.Offset(0.9f, 0.9f), TownBehavior.clear(androidx.compose.ui.geometry.Offset(0.9f, 0.9f), listOf(sleeper), 0.1f))
+    }
 }

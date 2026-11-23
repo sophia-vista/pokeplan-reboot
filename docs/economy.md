@@ -132,7 +132,7 @@ World: a Paldea floor has Gimmighoul Coins 30% of the time (1 to 8, `WorldSim.CO
 
 ### The town floor's finds (`TownFinds`)
 
-The launcher's dungeon floor (`FEATURES/LAUNCHER.md` 4.5) shows `PER_DAY` (3) finds each day, chosen from the date alone (the same all day, whatever the layout; New floor layout moves them and never adds any). A tap collects one, or a Pokémon walking onto it picks it up, once (`Counters.TOWN_FINDS`, a bit per find): an item goes into the Bag (over the limit, Poké, as everywhere), Poké is added. Weights *(tune)*: each of the 5 berries 4, each of the 6 vitamins 2, Poké 8 (`POKE_MIN` 10 to `POKE_MAX` 30). So a day averages about 1 berry, 0.7 of a vitamin and 13 Poké (about one berry's price at the Poké Mart) for a tap or three on the home screen.
+The launcher's dungeon floor (`FEATURES/LAUNCHER.md` 4.5) has `PER_DAY` (3) places for finds each day and each one holds a find with only `APPEAR_PERCENT` (25) *(tune; owner, 23 November 2026: low chance)*, so a day shows about 0.75 finds and often none, chosen from the date alone (opening the home screen again never rerolls them) (the same all day, whatever the layout; New floor layout moves them and never adds any). A tap collects one, or a Pokémon walking onto it picks it up, once (`Counters.TOWN_FINDS`, a bit per find): an item goes into the Bag (over the limit, Poké, as everywhere), Poké is added. Weights *(tune)*: each of the 5 berries 4, each of the 6 vitamins 2, Poké 8 (`POKE_MIN` 10 to `POKE_MAX` 30). So a day now averages about a quarter of a berry, 0.2 of a vitamin and 3 Poké (it was 1 berry, 0.7 of a vitamin and 13 Poké with every place filled; `RewardRules.VERSION` 34).
 
 ### The Poké Mart (`Shop`, its own section of the Pokémon tab)
 

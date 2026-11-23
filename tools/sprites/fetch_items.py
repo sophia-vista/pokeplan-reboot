@@ -9,6 +9,7 @@ import urllib.request
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 CACHE = os.path.join(ROOT, 'tools/species/cache')
 OUT = os.path.join(ROOT, 'assets/items')
+OUT_ALL = os.path.join(ROOT, 'assets/items-all')
 SPRITES_COMMIT = '7a7d66b1620e646f69afd48dc1273da9033ede9c'
 BASE = f'https://raw.githubusercontent.com/PokeAPI/sprites/{SPRITES_COMMIT}/sprites/items/'
 
@@ -77,6 +78,31 @@ def fetch_extras():
     print(f'{len(rows)} berry and mail icons, {len(badges)} badges')
 
 
+ITEMS_CSV = 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/items.csv'
+
+
+def fetch_all():
+    """Every item PokeAPI/sprites has a picture for (owner, 23 November 2026: the set was too limited)."""
+    with urllib.request.urlopen(ITEMS_CSV, timeout=60) as r:
+        rows = list(csv.DictReader(r.read().decode('utf-8').splitlines()))
+    got, missing, receipt = 0, 0, []
+    for row in rows:
+        name = row['identifier']
+        path = os.path.join(OUT_ALL, name + '.png')
+        try:
+            sha = download(BASE + name + '.png', path)
+        except urllib.error.HTTPError as e:
+            if e.code != 404:
+                raise
+            missing += 1
+            continue
+        got += 1
+        receipt.append(f'{name}\t{sha}')
+    with open(os.path.join(OUT_ALL, 'all-items.tsv'), 'w', encoding='utf-8') as fh:
+        fh.write(f'# PokeAPI/sprites @ {SPRITES_COMMIT}, sprites/items/<identifier>.png for every row of PokeAPI items.csv\nname\tsha256\n' + '\n'.join(receipt) + '\n')
+    print(f'{got} item icons, {missing} items without a picture')
+
+
 def read_csv(name):
     with open(os.path.join(CACHE, name), encoding='utf-8', newline='') as fh:
         return list(csv.DictReader(fh))
@@ -136,7 +162,9 @@ def fetch_types():
 
 
 if __name__ == '__main__':
-    if sys.argv[1:] == ['extras']:
+    if sys.argv[1:] == ['all']:
+        fetch_all()
+    elif sys.argv[1:] == ['extras']:
         fetch_extras()
     else:
         main()

@@ -339,12 +339,10 @@ private fun PeopleView(model: AppModel) {
             }
             if (people.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             val upTo = shown
-            people.take(upTo).forEachIndexed { i, p ->
-                if (i > 0) Rule()
-                RecordRow(
-                    LinkRules.displayName(p), listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · "),
-                    onClick = { openPerson(model, p.id) }, onClickLabel = "Open their screen",
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                people.take(upTo).forEach { p ->
+                    PersonTile(p, listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · ")) { openPerson(model, p.id) }
+                }
             }
             if (people.size > upTo) PixelButton("Show ${minOf(DIRECTORY_PAGE, people.size - upTo)} more of ${people.size - upTo}", { shown = upTo + DIRECTORY_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
