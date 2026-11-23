@@ -570,79 +570,81 @@ Do not start feature expansion while architecture, local data lifecycle, reminde
 
 ## 14. Acceptance criteria
 
+> Boxes checked against the code in 0.236.0 (23 November 2026): a tick means built and found in the code; an unticked box says what is missing.
+
 ### Chores
 
-- [ ] Create a chore with title only.
-- [ ] Assign optional area/category/instructions/duration.
-- [ ] Support one-time and deterministic recurring schedules.
-- [ ] Generate occurrences idempotently across restart and time-zone changes.
-- [ ] Complete, undo, skip and defer an occurrence.
-- [ ] Preserve completed history when recurrence or metadata is edited.
-- [ ] Pause, resume and archive without deleting history.
-- [ ] Avoid unlimited missed-occurrence backlogs and punitive streaks.
-- [ ] A linked PLAN action invokes BASE completion and cannot double-pay.
+- [x] Create a chore with title only.
+- [x] Assign optional area/category/instructions/duration.
+- [x] Support one-time and deterministic recurring schedules.
+- [x] Generate occurrences idempotently across restart and time-zone changes.
+- [x] Complete, undo, skip and defer an occurrence.
+- [x] Preserve completed history when recurrence or metadata is edited.
+- [x] Pause, resume and archive without deleting history.
+- [x] Avoid unlimited missed-occurrence backlogs and punitive streaks.
+- [x] A linked PLAN action invokes BASE completion and cannot double-pay.
 
 ### Inventory
 
-- [ ] Add consumable and durable items.
-- [ ] Support numeric or unknown quantity and configurable units.
-- [ ] Increase, decrease and set quantity directly.
-- [ ] Prevent accidental negative stock.
-- [ ] Configure optional low-stock thresholds.
-- [ ] Unknown quantity is not treated as zero/low stock.
-- [ ] Restocking list supports low-stock-derived and manual entries.
-- [ ] Administrative inventory edits do not generate progression rewards or MINT transactions.
+- [x] Add consumable and durable items.
+- [x] Support numeric or unknown quantity and configurable units.
+- [x] Increase, decrease and set quantity directly.
+- [x] Prevent accidental negative stock.
+- [x] Configure optional low-stock thresholds.
+- [x] Unknown quantity is not treated as zero/low stock.
+- [x] Restocking list supports low-stock-derived and manual entries.
+- [x] Administrative inventory edits do not generate progression rewards or MINT transactions.
 
 ### Assets and maintenance
 
-- [ ] Register and edit assets with optional area, brand/model and serial number.
-- [ ] Associate maintenance records/schedules and warranty records.
-- [ ] Support one-time and recurring maintenance.
-- [ ] Preserve completed maintenance history after schedule edits.
-- [ ] Correctly derive upcoming/overdue state.
-- [ ] Asset may exist without maintenance schedule.
-- [ ] Optional attachments survive backup/restore and are deleted according to explicit policy.
-- [ ] Optional costs remain informational and do not become MINT transactions.
+- [x] Register and edit assets with optional area, brand/model and serial number.
+- [x] Associate maintenance records/schedules and warranty records.
+- [x] Support one-time and recurring maintenance.
+- [x] Preserve completed maintenance history after schedule edits.
+- [x] Correctly derive upcoming/overdue state.
+- [x] Asset may exist without maintenance schedule.
+- [ ] Optional attachments survive backup/restore and are deleted according to explicit policy. — not built: attachments are not built (REP-041)
+- [x] Optional costs remain informational and do not become MINT transactions.
 
 ### Reference and search
 
-- [ ] Create household-specific reference records with title-only quick capture.
-- [ ] Link optional areas/assets and attachments.
-- [ ] Search all BASE record types locally and offline.
-- [ ] Search results identify record type and open canonical record.
-- [ ] BASE remains a household reference tool, not a general wiki.
+- [x] Create household-specific reference records with title-only quick capture.
+- [ ] Link optional areas/assets and attachments. — partial: areas and assets link; attachments are not built (REP-041)
+- [x] Search all BASE record types locally and offline.
+- [x] Search results identify record type and open canonical record.
+- [x] BASE remains a household reference tool, not a general wiki.
 
 ### Reminders and integrations
 
-- [ ] BASE uses only `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture` shared scheduling/delivery.
-- [ ] Chore, maintenance, low-stock and warranty reminders are individually optional.
-- [ ] Source edits/completion/archive/delete reconcile or cancel reminders.
-- [ ] Stale notification actions cannot mutate missing/ineligible records.
-- [ ] Permission denial does not impair BASE; permissions are requested contextually.
-- [ ] No location permission is required.
+- [x] BASE uses only `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture` shared scheduling/delivery.
+- [x] Chore, maintenance, low-stock and warranty reminders are individually optional.
+- [x] Source edits/completion/archive/delete reconcile or cancel reminders.
+- [x] Stale notification actions cannot mutate missing/ineligible records.
+- [x] Permission denial does not impair BASE; permissions are requested contextually.
+- [x] No location permission is required.
 
 ### Pokémon progression and privacy
 
-- [ ] Habitat Discovery is the only BASE acquisition identity.
-- [ ] Eligible chore/maintenance completion events use versioned BASE policy.
-- [ ] Creation, viewing, inventory edits, quantity changes, warranty/reference edits and reminder delivery do not grant rewards.
-- [ ] Repeated toggling, duplicate PLAN projections and migration cannot double-pay.
-- [ ] BASE rewards use shared collection, Bag, currency and reward ledger.
-- [ ] Pokémon acquisition appears in the global collection as an individual owned instance.
-- [ ] Household names, areas, inventory, assets, serial numbers, costs, notes and attachments never enter WORLD/reward payloads.
-- [ ] Rewards can be disabled without disabling BASE.
-- [ ] No missed-day penalty, decay, attendance quota or expiring discovery.
+- [x] Habitat Discovery is the only BASE acquisition identity.
+- [x] Eligible chore/maintenance completion events use versioned BASE policy.
+- [x] Creation, viewing, inventory edits, quantity changes, warranty/reference edits and reminder delivery do not grant rewards.
+- [x] Repeated toggling, duplicate PLAN projections and migration cannot double-pay.
+- [x] BASE rewards use shared collection, Bag, currency and reward ledger.
+- [x] Pokémon acquisition appears in the global collection as an individual owned instance.
+- [x] Household names, areas, inventory, assets, serial numbers, costs, notes and attachments never enter WORLD/reward payloads.
+- [x] Rewards can be disabled without disabling BASE.
+- [x] No missed-day penalty, decay, attendance quota or expiring discovery.
 
 ### General quality
 
-- [ ] Core BASE workflows are fully offline.
-- [ ] Data survives process death, app restart and device reboot.
-- [ ] Backup/restore and schema migration preserve IDs and relationships.
-- [ ] Attachments are safely stored, restored and deleted.
-- [ ] Local search, empty/error states and low-storage failures are handled.
-- [ ] Light/dark themes, enlarged text, TalkBack and reduced motion are usable.
-- [ ] Real-device UI review passes on target Android hardware and smaller supported widths.
-- [ ] No duplicated data ownership, scheduler, currency, Bag, collection or reward ledger.
+- [x] Core BASE workflows are fully offline.
+- [x] Data survives process death, app restart and device reboot.
+- [x] Backup/restore and schema migration preserve IDs and relationships.
+- [ ] Attachments are safely stored, restored and deleted. — not built: attachments are not built (REP-041)
+- [x] Local search, empty/error states and low-storage failures are handled.
+- [ ] Light/dark themes, enlarged text, TalkBack and reduced motion are usable. — partial: themes and reduced motion ship; the Secret Base room cells are not labelled for screen readers and no TalkBack or font-scale pass is recorded (REP-048)
+- [ ] Real-device UI review passes on target Android hardware and smaller supported widths. — not verified: no phone or smaller-width pass is recorded (REP-033)
+- [x] No duplicated data ownership, scheduler, currency, Bag, collection or reward ledger.
 
 ## 15. Cross-reference authority
 
