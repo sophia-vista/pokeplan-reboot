@@ -201,7 +201,16 @@ class AppModel(
 
     var healSection: HealSection? by mutableStateOf(null)
 
+    /** Which half of Heal's Activity place is shown: the exercise and activity log (0) or sleep (1). */
+    var healActivityTab: Int by mutableStateOf(0)
+
+    /** Which half of Heal's Wellness place is shown: hydration (0), body measurements (1) or readings (2). */
+    var healWellnessTab: Int by mutableStateOf(0)
+
     var mintSection: MintSection? by mutableStateOf(null)
+
+    /** Which half of Mint's Plans place is shown: the budgets (0) or the bills and income (1). */
+    var mintPlansTab: Int by mutableStateOf(0)
     var mintStartType: app.pokeplan.mint.TxType? by mutableStateOf(null)
     var mintStartTo: String? by mutableStateOf(null)
 
@@ -265,7 +274,13 @@ class AppModel(
 
     var careSection: CareSection? by mutableStateOf(null)
     var reflectJournal: Boolean by mutableStateOf(false)
+
+    /** Which half of Care's Practice place is shown: the routines (false) or the calm break and its skills (true). */
+    var carePracticeCalm: Boolean by mutableStateOf(false)
     var worldSection: WorldSection? by mutableStateOf(null)
+
+    /** Which half of World's Explore place is shown: the Atlas (false) or the Guild's requests (true). */
+    var worldExploreGuild: Boolean by mutableStateOf(false)
 
     var worldTeamDungeon: String? by mutableStateOf(null)
 

@@ -289,7 +289,7 @@ private fun mintConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
     if (data.settings.gate) return ModuleConcern(Module.MINT, 0, null, "Locked", "Open", ModuleAccent.MINT.accent) { go(Place.MINT) }
     val due = MintRules.upcoming(data, today, 0).count { !it.bill.income && (it.state == OccurrenceState.DUE || it.state == OccurrenceState.OVERDUE) }
     val soon = MintRules.upcoming(data, today, SOON_DAYS).filter { !it.bill.income && it.state == OccurrenceState.UPCOMING }
-    val bills = { go(Place.MINT); model.mintSection = MintSection.BILLS }
+    val bills = { go(Place.MINT); model.mintPlansTab = 1; model.mintSection = MintSection.PLANS }
     val summary = mintSubtitle(model)
     val soonStep = if (soon.size == 1) {
         val days = today.daysUntil(soon.first().payDay)
@@ -344,12 +344,12 @@ private fun careBase(model: AppModel, go: (Place) -> Unit): ModuleConcern {
     val done = today.count { it.doneOn(care.today) }
     val next = today.firstOrNull { !it.doneOn(care.today) }
     val status = if (today.isEmpty()) null else "$done of ${today.size} routines today"
-    val openSection = { section: CareSection -> go(Place.CARE); model.careSection = section }
+    val openPractice = { calm: Boolean -> go(Place.CARE); model.carePracticeCalm = calm; model.careSection = CareSection.PRACTICE }
     return when {
         next != null -> ModuleConcern(Module.CARE, 2, status, next.title, "Done", Pixel.Green) { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(next.id) }
-        today.isNotEmpty() -> ModuleConcern(Module.CARE, 0, status, "Routines done for today", "Calm break", ModuleAccent.CARE.accent) { openSection(CareSection.CALM) }
-        careData.routines.none { !it.archived } -> ModuleConcern(Module.CARE, 0, null, "No routines yet", "Add a routine", ModuleAccent.CARE.accent) { openSection(CareSection.ROUTINES) }
-        else -> ModuleConcern(Module.CARE, 0, null, "No routines today", "Calm break", ModuleAccent.CARE.accent) { openSection(CareSection.CALM) }
+        today.isNotEmpty() -> ModuleConcern(Module.CARE, 0, status, "Routines done for today", "Calm break", ModuleAccent.CARE.accent) { openPractice(true) }
+        careData.routines.none { !it.archived } -> ModuleConcern(Module.CARE, 0, null, "No routines yet", "Add a routine", ModuleAccent.CARE.accent) { openPractice(false) }
+        else -> ModuleConcern(Module.CARE, 0, null, "No routines today", "Calm break", ModuleAccent.CARE.accent) { openPractice(true) }
     }
 }
 
@@ -416,7 +416,7 @@ private fun worldConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
         model.worldSection = section
     }
     return when {
-        jobs > 0 -> ModuleConcern(Module.WORLD, 3, null, "${countOf(jobs, "job", "jobs")} ready to report", "Open", ModuleAccent.WORLD.accent) { openSection(WorldSection.MISSIONS) }
+        jobs > 0 -> ModuleConcern(Module.WORLD, 3, null, "${countOf(jobs, "job", "jobs")} ready to report", "Open", ModuleAccent.WORLD.accent) { model.worldExploreGuild = true; openSection(WorldSection.EXPLORE) }
         finds > 0 -> ModuleConcern(Module.WORLD, 2, null, "${countOf(finds, "Pokémon", "Pokémon")} waiting to meet", "Open", ModuleAccent.WORLD.accent) { openSection(WorldSection.BAG) }
         out > 0 -> {
             val where = world.teams.firstNotNullOfOrNull { team -> team.expedition?.let { Dungeons.byId(it.dungeonId)?.name } }
@@ -463,7 +463,7 @@ private fun HappeningNow(model: AppModel, go: (Place) -> Unit) {
     HomeLiveCard(HomeOpportunities.select(live)) { kind ->
         when (kind) {
             HomeLiveAction.WORLD_REPORT -> go(Place.WORLD)
-            HomeLiveAction.WORLD_BOARD -> { go(Place.WORLD); model.worldSection = WorldSection.MISSIONS }
+            HomeLiveAction.WORLD_BOARD -> { go(Place.WORLD); model.worldExploreGuild = true; model.worldSection = WorldSection.EXPLORE }
             HomeLiveAction.WORLD_FINDS -> { go(Place.WORLD); model.worldSection = WorldSection.BAG }
             HomeLiveAction.MINT_OUTBREAK -> go(Place.MINT)
             HomeLiveAction.CARE_DREAM -> { go(Place.CARE); model.careSection = CareSection.DREAM }
@@ -492,12 +492,12 @@ private fun QuickActionsCard(model: AppModel, go: (Place) -> Unit) {
                     if (Module.CARE.name !in locked) {
                         PixelButton("Routine", {
                             val next = model.care.todayRoutines().firstOrNull { !it.doneOn(model.care.today) }
-                            if (next != null) { model.effect(Sfx.SELECT); model.haptic(); model.care.completeRoutine(next.id) } else { go(Place.CARE); model.careSection = CareSection.ROUTINES }
+                            if (next != null) { model.effect(Sfx.SELECT); model.haptic(); model.care.completeRoutine(next.id) } else { go(Place.CARE); model.carePracticeCalm = false; model.careSection = CareSection.PRACTICE }
                         }, color = ModuleAccent.CARE.accent, compact = true)
                     }
                     if (Module.HEAL.name !in locked) {
                         PixelButton("+250 ml", { model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL) }, color = ModuleAccent.HEAL.accent, compact = true)
-                        PixelButton("Health record", { go(Place.HEAL); model.healSection = HealSection.READINGS }, color = ModuleAccent.HEAL.accent, compact = true)
+                        PixelButton("Health record", { go(Place.HEAL); model.healWellnessTab = 2; model.healSection = HealSection.WELLNESS }, color = ModuleAccent.HEAL.accent, compact = true)
                     }
                     if (Module.BASE.name !in locked) PixelButton("Base chore", { go(Place.BASE); model.baseSection = BaseSection.CHORES }, color = ModuleAccent.BASE.accent, compact = true)
                     if (Module.LINK.name !in locked) PixelButton("Add a person", { go(Place.LINK); model.linkSection = LinkSection.PEOPLE }, color = ModuleAccent.LINK.accent, compact = true)

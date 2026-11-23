@@ -37,7 +37,7 @@ WORLD must be enjoyable as a game without requiring real-life module activity. I
 - Guardian Pokémon ownership or the shared Guardian collection/perk configuration.
 - Real-life tasks, health activity, financial records, household records, relationship records, journals or personal reflections.
 - Android launcher persistence, global notifications, shared reminders or backup/restore infrastructure.
-- A separate travel/journey system for real-life trips. WORLD is distinct from any future Explore/travel feature; no separate Explore module is part of the approved eight-module product.
+- A separate travel/journey system for real-life trips. WORLD is distinct from any future Explore/travel feature; no separate Explore module is part of the approved eight-module product. **Explore** is WORLD's own first destination (2), the Atlas and the Guild under one place, not a module.
 
 ### 1.3 Product rules
 
@@ -51,17 +51,16 @@ WORLD must be enjoyable as a game without requiring real-life module activity. I
 
 ## 2. Primary navigation and information architecture
 
-WORLD has five primary destinations. Secondary functions remain contextual rather than becoming additional top-level destinations.
+WORLD has four primary destinations (owner, 23 November 2026; `../FEATURES/DESIGN_SYSTEM.md` 6.7). Secondary functions remain contextual rather than becoming additional top-level destinations.
 
 | Destination | Purpose | Primary contents |
 |---|---|---|
-| **Town** | Exploration headquarters and community | Rank summary, facilities, active team summary, Finds, Guild attention and story continuation |
-| **Atlas** | Geographic exploration | Regions, maps, settlements, routes, landmarks, dungeons and Guardian locations |
+| **Explore** | Geographic exploration and requests | One place with two views behind a pill: the **Atlas** (regions, maps, settlements, routes, landmarks, dungeons and Guardian locations) and the **Guild** (rescue, retrieval, delivery, escort, investigation, challenge and story requests) |
 | **Expeditions** | Main gameplay loop | Team roster, team presets, dungeon selection, active expeditions, recall and expedition reports |
-| **Guild** | Requests and objectives | Rescue, retrieval, delivery, escort, investigation, challenge and story requests |
+| **Town** | Exploration headquarters and community | Rank summary, facilities, active team summary, Finds, Guild attention and story continuation |
 | **Journal** | Discoveries and history | Research notebook, expedition history, dungeon records, recruitment history, story archive and Guardian records |
 
-Facilities are reached through Town. Research and story history live in Journal. Team setup is available from Expeditions and may be opened contextually from a dungeon. Bag access opens the shared Bag; it is not a WORLD-owned inventory screen.
+Facilities are reached through Town. Research and story history live in Journal. Team setup is available from Expeditions and may be opened contextually from a dungeon. Bag access opens the shared Bag; it is not a WORLD-owned inventory screen. **Skills** and **Finds** stay secondary places in the Sections key (reached from Town as well, so a shortcut can still open them), beside Settings, after the four primary destinations.
 
 ### 2.1 Town — exploration headquarters
 
