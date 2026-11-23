@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.236.0
+
+UI only: search, filters, add forms and rare controls now stay out of sight until asked for (`DESIGN_SYSTEM.md` 12B). No data, rule or storage change; `RewardRules.VERSION` stays.
+
+- **Pull-down search and filters.** A shared helper (`PullReveal.kt`) opens search, filter and sort when you pull down at the top of a list. Used by Modules, Link People, the Base and Link menus, Mint Activity, Tasks (All and Done), the PC, the Pokédex and Gear.
+- **Add keys.** Link People, Care routines and Mint Activity open their add form from one Add key instead of an always-open form.
+- **Closed accordions.** Care diary (Feelings, Urges, Skills used); Heal (export, erase, imported records, Huawei readings and seen pages, today's drinks); Mint settings (overview, days off, categories, export, erase), Mint review statement check and Mint earlier imports; Me notification groups, exports and erase; Plan progress sections; the Pokémon More section (rename, natural moves, star, transfer); the World report (opens itself when recruits wait).
+- **Heal hydration.** An Other amount key.
+
 ## 0.235.0
 
 Owner's list of 23 November 2026, UI and one MINT form rule: no reward rule, schema or save-format change, `RewardRules.VERSION` stays.

@@ -353,12 +353,23 @@ Condensed from the owner's `unslop-ui` reference, for a native app. Slop is an u
 3. **Specific copy, no clichés.** "Send a team into a dungeon", not "Unleash your team's potential". Say what the thing does in the words of the game.
 4. **No emoji as icons or bullets**; item icons and Pixelarticons glyphs only (a buddy's tap emote is the one game-style exception).
 5. **No gradient text, no glow, no animation on every element.** Motion tells state or a real event and respects Reduce motion; the dither background is the only texture.
-6. **No uniform treatment.** Rounded corners everywhere, the same shadow on everything and a box round every row all read as generated. Use the stair corner, one frame per group (section 5.1), and hierarchy (size, weight, spacing) before another border.
+6. **No uniform treatment.** Rounded corners everywhere, the same shadow on everything and a box round every row all read as generated. Use the stair corner, one frame per group (section 5.1), and hierarchy (size, weight, spacing) before another border. What hides until asked for follows 12B.
 7. **Colours come from the tokens.** A new colour is a decision recorded in section 5.1 with its reason, not the next-most-likely hex; module accents follow the rainbow table, red is not chrome.
 8. **Text is centred by its letters, and that is measured, not eyeballed.** The Pokémon DP font sits low in its line box, so `PixelTheme` lifts every text style (`baselineShift`) and the dialogue bitmap font draws one art pixel lower (`PmdFont.BASELINE`); `TextCentreTest` renders keys, fields, badges and each text style and fails if the gap above the letters and below them differ by more than 1 dp. A new font, size or control gets a line in that test. Rank badges are rounded pixel squares (`DialogueShape`), never circles.
 9. **Layout quality is checked by eye on a real screenshot, in both palettes, on every change**: nothing clipped or overflowing, one spacing scale (`Spacing`), every row's contents on one centre line, edges aligned to the page gutter, one thing leading the eye per screen.
 10. **One input per value.** A date is one row of keys (the typed box opens with the calendar); a time or a length is its keys and one typed box. No echo line in another format and no nudge keys; a typed value is rewritten in the app's own spelling when the box loses focus.
 11. **No sentence-length copy in the UI** outside Help, What's New and the story: `CopyBudgetTest` fails on a new one (a field error, a confirmation, an accessibility label and feedback through `say` are not counted).
+
+## 12B. On-demand controls
+
+Owner decision, 23 November 2026: a screen shows its records first, and what is not needed on every visit stays out of sight until asked for (12A rule 6 applies: hierarchy before another box).
+
+1. **Records first.** Whatever is not needed on every visit is hidden until asked for.
+2. **Search, filter and sort sit behind the pull-down at the top of the list** (`PullReveal.kt`: `rememberPullReveal`, `pullReveal`, `PullRevealSlot`; the Modules search is the model). Pull down at the top to open it; a swipe up with nothing typed, the close key or Back puts it away; a query or filter in use keeps it open; a narrowed list always shows a visible "clear" state.
+3. **An add form opens from one "Add X" key** and closes after saving; it opens by itself when the list is empty.
+4. **Secondary information that can grow** (history, stats, a second chart, readings, earlier imports) goes in an `Accordion` (title, and a summary shown while closed). It starts open only when it holds the one thing the person came for or something waiting for a decision.
+5. **Exports, erase and other rare or destructive controls** sit in closed accordions at the bottom of their page.
+6. **Rare actions on a record** (rename, star, transfer) sit in one "More" accordion on its screen, transfer last.
 
 ## 13. Change control
 
