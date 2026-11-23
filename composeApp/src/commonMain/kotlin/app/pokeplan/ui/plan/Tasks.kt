@@ -34,6 +34,8 @@ import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.screens.UpTo
+import app.pokeplan.ui.screens.PullRevealSlot
+import app.pokeplan.ui.screens.PullRevealState
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
@@ -50,17 +52,17 @@ private const val SHOWN = 60
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
+internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?, filter: TaskFilter, onFilter: (TaskFilter) -> Unit, reveal: PullRevealState) {
     val store = model.store
     val live = planTasks(model)
     val host = remember { CardHost() }
     // An open task card closes before the page does.
     host.expanded?.let { UpTo { host.expanded = null } }
     val view = model.tasksView
-    var filter by remember { mutableStateOf(TaskFilter()) }
     val lists = store.activeLists
     val list = filter.listId?.let { id -> lists.firstOrNull { it.id == id } }
-    LaunchedEffect(list, filter.listId) { if (filter.listId != null && filter.listId != TaskFilter.INBOX && list == null) filter = filter.copy(listId = null) }
+    LaunchedEffect(list, filter.listId) { if (filter.listId != null && filter.listId != TaskFilter.INBOX && list == null) onFilter(filter.copy(listId = null)) }
+    val reduce = model.data.settings.reduceMotion
 
     QuickAddBox(model, if (view == TasksView.TODAY) AddTo.TODAY else AddTo.NO_DATE, listId = if (view == TasksView.ALL) list?.id else null)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -71,7 +73,7 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
     when (view) {
         TasksView.TODAY -> TodayList(model, onFocus, listId = null)
         TasksView.ALL -> {
-            TaskFilterBox(model, filter, { filter = it }, withStatus = false)
+            PullRevealSlot(reveal, reduce) { TaskFilterBox(model, filter, onFilter, withStatus = false) }
             val narrowed = filter
             if (list != null && list.kind != ListKind.TASKS) {
                 val items = live.filter { it.listId == list.id && narrowed.copy(status = TaskFilter.Status.ANY).matches(it) }
@@ -83,7 +85,7 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
                 if (groups.isEmpty()) EmptyState(
                     if (filter.isNarrowed || list != null) "Nothing matches" else "No open tasks",
                     icon = "journal",
-                    action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to { model.addTaskRequested = true },
+                    action = if (filter.isNarrowed) "Clear filters" to { onFilter(TaskFilter()) } else "Add a task" to { model.addTaskRequested = true },
                 ) else groups.forEach { g ->
                     val l = g.listId?.let { id -> lists.firstOrNull { it.id == id } }
                     val title = if (l != null) groupTitle(model, l) else if (lists.isEmpty() || list != null) null else "No list"
@@ -97,7 +99,7 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?) {
             if (shown.isEmpty()) EmptyState("Nothing coming up", icon = "timer-ball", action = "Add a task" to { model.addTaskRequested = true })
         }
         TasksView.DONE -> {
-            TaskFilterBox(model, filter, { filter = it }, withStatus = false)
+            PullRevealSlot(reveal, reduce) { TaskFilterBox(model, filter, onFilter, withStatus = false) }
             val found = filter.copy(status = TaskFilter.Status.FINISHED).apply(live)
             if (found.size > SHOWN) Text("Showing the first $SHOWN of ${found.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (found.isEmpty()) EmptyState(if (filter.isNarrowed || list != null) "Nothing matches" else "Nothing finished yet", icon = "scope-lens")

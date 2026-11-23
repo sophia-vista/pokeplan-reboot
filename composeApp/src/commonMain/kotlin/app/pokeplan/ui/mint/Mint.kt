@@ -798,7 +798,7 @@ private fun SplitFields(parts: List<SplitDraft>, currency: String, categories: L
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ActivityView(model: AppModel, find: ActivityFind, reveal: PullRevealState, startInstallments: Boolean = false, startAmount: String = "", startPayee: String = "") {
+internal fun ActivityView(model: AppModel, find: ActivityFind = remember { ActivityFind() }, reveal: PullRevealState = rememberPullReveal(androidx.compose.foundation.rememberScrollState()), startInstallments: Boolean = false, startAmount: String = "", startPayee: String = "") {
     val mint = model.mint
     val data = model.mintData
     val open = data.accounts.filter { it.status == AccountStatus.ACTIVE }
