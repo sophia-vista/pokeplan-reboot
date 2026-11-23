@@ -219,6 +219,7 @@ object MythicalChapters {
             narr("{buddy} looks at you. You are already working out where the first door should go.")
             flash()
             narr("Hoopa joins the team, carrying its chipped ring, and a pebble it did not have this morning.")
+            flag(HOOPA_JOINED)
         },
     ))
 
@@ -312,6 +313,7 @@ object MythicalChapters {
             say("victini", "Then it's decided. I'm coming with you. Someone has to shout the rules.", JOYOUS)
             flash()
             narr("Victini joins the team. It has already announced a rematch for tomorrow morning.")
+            flag(VICTINI_JOINED)
         },
     ))
 
@@ -405,6 +407,7 @@ object MythicalChapters {
             say("celebi", "Then let me come with you. I will not rewind them. I would only like to see them happen.", INSPIRED)
             cry("celebi"); flash()
             narr("Celebi joins the team. Behind it, the little clearing lets the last of the light go, gently.")
+            flag(CELEBI_JOINED)
         },
     ))
 
@@ -502,6 +505,7 @@ object MythicalChapters {
             say("jirachi", "I am awake. I am definitely awake. Which way is the next small hope?", HAPPY)
             flash()
             narr("Jirachi joins the team. It falls asleep twice on the walk home, and insists it did not.")
+            flag(JIRACHI_JOINED)
         },
     ))
 
@@ -598,6 +602,7 @@ object MythicalChapters {
             say("marshadow", "...Perhaps not that hidden.", HAPPY)
             cry("marshadow"); flash()
             narr("Marshadow joins the team. It is standing where it was a moment ago, and also somehow closer.")
+            flag(MARSHADOW_JOINED)
         },
     ))
 
@@ -664,7 +669,7 @@ object MythicalChapters {
             choice(
                 "There is a side path with more seedlings",
                 "Take the side path and gather them" to "mythical-shaymin-gathered",
-                "Stay on the road and keep the family moving" to "mythical-shaymin-stayed",
+                "Keep the family on the road" to "mythical-shaymin-stayed",
             )
             branch("mythical-shaymin-gathered") {
                 narr("The pair walk the side path and come back with their paws full of seedlings. The sun is lower than it was.")
@@ -711,6 +716,7 @@ object MythicalChapters {
             say(BUDDY, "Then walk with us. One patch at a time.", HAPPY)
             cry("shaymin"); flash()
             narr("Shaymin joins the team. It walks at the pace of a flower turning, and somehow the pair do not mind.")
+            flag(SHAYMIN_JOINED)
         },
     ))
 
@@ -751,10 +757,10 @@ object MythicalChapters {
             say(BUDDY, "That's a terrible rule.", WORRIED)
             say("darkrai", "It is a dream's rule. The trick is not to argue with it. The trick is to notice what it keeps showing.", NORMAL)
             narr("They walk. Behind one door: an empty square. Behind another: a meal with nobody at the table.")
-            say("BUDDY", "These aren't monsters. They're being alone. And left. And the lights going out.", SURPRISED)
+            say(BUDDY, "These aren't monsters. They're being alone. And left. And the lights going out.", SURPRISED)
             say("darkrai", "Yes. The teeth are only what a small frightened thing calls the dark.", SAD)
             narr("At the corridor's end there is a small round shape, bouncing, on and on, and not stopping for anything.")
-            say("BUDDY", "That's a Spoink. I know that Spoink. It helps at the market. It never stops bouncing.", SURPRISED)
+            say(BUDDY, "That's a Spoink. I know that Spoink. It helps at the market. It never stops bouncing.", SURPRISED)
             say("darkrai", "That is who is dreaming. And it is trapped in its own fear with the door shut.", WORRIED)
         },
         dungeon("mythical-darkrai-4", "The source", "distortion-rift", listOf(buddy, darkrai, spoink)) {
@@ -763,7 +769,7 @@ object MythicalChapters {
             show("spoink", 8.4f, 3.0f, Facing.LEFT)
             narr("Spoink bounces on the spot. Its eyes are open but not seeing the pair, or the dark, or anything else.")
             say("spoink", "If I stop, everyone will forget me. Spoink stopped once, and everyone walked past.", TEARY)
-            say("BUDDY", "Spoink. It's us. From the square. We brought the wrong change twice last week and you laughed.", NORMAL)
+            say(BUDDY, "Spoink. It's us. From the square. We brought the wrong change twice last week and you laughed.", NORMAL)
             say("spoink", "That's in the day. In the night I stop and I am gone and nobody notices.", WORRIED)
             say("darkrai", "It has been dreaming that alone for eleven nights. I could not go closer without being the thing it feared.", SAD)
             choice(
@@ -802,7 +808,7 @@ object MythicalChapters {
             say("darkrai", "The square will still be afraid of me tomorrow. Fear does not care what it has learned.", SAD)
             say(BUDDY, "Maybe. But we'll know. We can say so.", DETERMINED)
             say("darkrai", "That is a strange thing to offer someone who has only ever been accused.", SURPRISED)
-            say("BUDDY", "It's what we've got. Night after night, if you need it.", HAPPY)
+            say(BUDDY, "It's what we've got. Night after night, if you need it.", HAPPY)
             say("darkrai", "Then I would like to walk with you. Not only in dreams. I am better company awake. Ask anyone who has slept.", NORMAL)
             narr("Somewhere above the dream, dawn is starting. Darkrai is already dissolving at the edges.")
             say("darkrai", "Go home. Let the square wake up lighter. I will be at the gate at noon, if you still mean it.", NORMAL)
@@ -824,6 +830,7 @@ object MythicalChapters {
             narr("Darkrai steps out of the shade and into the noon, and its shadow points the right way, and stays.")
             cry("darkrai"); flash()
             narr("Darkrai joins the team. That night, the square sleeps with somebody walking the edge of its dreams, on purpose.")
+            flag(DARKRAI_JOINED)
         },
     ))
 }

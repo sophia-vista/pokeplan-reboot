@@ -21,7 +21,8 @@ object StoryCatalog {
      */
     fun mythicalEpisodes(): List<StoryEpisode> = episodes.filter { it.layer == null && it.chapter >= MythicalChapters.FIRST_CHAPTER }
 
-    fun mythical(chapter: Int): StoryEpisode? = episodes.firstOrNull { it.layer == null && it.chapter == chapter }
+    fun mythical(chapter: Int): StoryEpisode? =
+        episodes.firstOrNull { it.layer == null && it.chapter == chapter && chapter >= MythicalChapters.FIRST_CHAPTER }
 
     fun episodeFor(layer: WorldLayer, chapter: Int): StoryEpisode? = episodes.firstOrNull { it.layer == layer && it.chapter == chapter }
 
