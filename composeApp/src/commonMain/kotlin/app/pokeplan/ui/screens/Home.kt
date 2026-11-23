@@ -130,7 +130,6 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             RankUpCard(model)
             WelcomeBackCard(model)
             HomeBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
-            HappeningNow(model, go)
             RewardBox(model)
             ModuleCards(model, go)
             QuickActionsCard(model, go)
@@ -168,7 +167,8 @@ private fun RegionCard(
             Text("›", style = MaterialTheme.typography.titleLarge, color = Pixel.InkSoft)
         }
         Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.S).height(1.dp).background(Pixel.Border))
-        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.BoxX, vertical = Spacing.L)) { step() }
+        // A Column, not a Box: a card with a main step and live lines must stack its rows, never draw them on top of each other.
+        Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.BoxX, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) { step() }
     }
 }
 
@@ -203,8 +203,8 @@ private data class ModuleConcern(
     val actionTone: Color = Pixel.Green,
     val rank: Rank? = null,
     val onAction: () -> Unit = {},
-    val meet: String? = null,
-    val onMeet: () -> Unit = {},
+    /** The module's live, time-sensitive lines ([HomeOpportunities]), one row each under the main step. */
+    val live: List<HomeLiveLine> = emptyList(),
 )
 
 private const val SOON_DAYS = 3
@@ -226,6 +226,7 @@ private fun placeOf(module: Module): Place = when (module) {
 private fun ModuleCards(model: AppModel, go: (Place) -> Unit) {
     val darkness = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)
     // Built in the canonical order, then a stable sort puts the modules with something due first.
+    val live = liveLines(model)
     val concerns = listOf(
         planConcern(model, go),
         mintConcern(model, go),
@@ -234,7 +235,10 @@ private fun ModuleCards(model: AppModel, go: (Place) -> Unit) {
         healConcern(model, go),
         linkConcern(model, go),
         worldConcern(model, go),
-    ).sortedByDescending { it.severity }
+    ).map { concern ->
+        val lines = live[concern.module].orEmpty()
+        if (lines.isEmpty()) concern else concern.copy(severity = maxOf(concern.severity, HomeOpportunities.severityOf(lines.first())), live = lines)
+    }.sortedByDescending { it.severity }
     concerns.forEach { concern -> key(concern.module.name) { ModuleCard(model, concern, darkness, go) } }
 }
 
@@ -245,7 +249,7 @@ private fun ModuleCard(model: AppModel, concern: ModuleConcern, darkness: Float,
         concern.status, still = model.data.settings.reduceMotion, onOpen = { go(placeOf(concern.module)) },
     ) {
         StepRow(concern.step, concern.action, concern.actionTone, lead = { concern.rank?.let { RankBadge(it) } }, onClick = concern.onAction)
-        concern.meet?.let { StepRow(it, "Open", ModuleAccent.valueOf(concern.module.name).accent, onClick = concern.onMeet) }
+        concern.live.forEach { line -> key(line.id) { StepRow(line.text, line.action, ModuleAccent.valueOf(concern.module.name).accent, onClick = { openLive(model, go, line.kind) }) } }
     }
 }
 
@@ -330,13 +334,6 @@ private fun baseConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
 }
 
 private fun careConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
-    val dreamers = if (Module.CARE.name in model.data.settings.lockedModules) 0 else Visitors.meadow(model.careData.visitors).count { model.care.canVisit(it) }
-    val base = careBase(model, go)
-    if (dreamers == 0) return base
-    return base.copy(severity = maxOf(base.severity, 1), meet = "Dream World: ${countOf(dreamers, "dreamer", "dreamers")} to visit", onMeet = { go(Place.CARE); model.careSection = CareSection.DREAM })
-}
-
-private fun careBase(model: AppModel, go: (Place) -> Unit): ModuleConcern {
     if (Module.CARE.name in model.data.settings.lockedModules) return ModuleConcern(Module.CARE, 0, null, "Locked", "Open", ModuleAccent.CARE.accent) { go(Place.CARE) }
     val careData = model.careData
     val care = model.care
@@ -372,17 +369,6 @@ private fun healConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
 private fun waterText(ml: Int): String = if (ml >= 1000) HealRules.format(ml / 1000.0) + " L" else "$ml ml"
 
 private fun linkConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
-    val locked = Module.LINK.name in model.data.settings.lockedModules
-    model.linkData
-    val safari = if (locked || !model.link.safariOn) 0 else model.linkData.people.count { p ->
-        model.link.safariPool(p.id).isNotEmpty() && model.link.safariToday(p.id).let { !it.visited && it.left > 0 }
-    }
-    val base = linkBase(model, go)
-    if (safari == 0) return base
-    return base.copy(severity = maxOf(base.severity, 1), meet = "Friend Safari: ${countOf(safari, "visit", "visits")} open", onMeet = { go(Place.LINK); model.linkSection = LinkSection.PEOPLE })
-}
-
-private fun linkBase(model: AppModel, go: (Place) -> Unit): ModuleConcern {
     if (Module.LINK.name in model.data.settings.lockedModules) return ModuleConcern(Module.LINK, 0, null, "Locked", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) }
     model.linkData
     val due = model.link.dueNow()
@@ -409,15 +395,11 @@ private fun linkBase(model: AppModel, go: (Place) -> Unit): ModuleConcern {
 private fun worldConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
     val world = model.data.world
     val out = world.teams.count { it.expedition != null }
-    val finds = world.finds.size
-    val jobs = world.missions.count { it.done }
     val openSection = { section: WorldSection? ->
         go(Place.WORLD)
         model.worldSection = section
     }
     return when {
-        jobs > 0 -> ModuleConcern(Module.WORLD, 3, null, "${countOf(jobs, "job", "jobs")} ready to report", "Open", ModuleAccent.WORLD.accent) { openSection(WorldSection.MISSIONS) }
-        finds > 0 -> ModuleConcern(Module.WORLD, 2, null, "${countOf(finds, "Pokémon", "Pokémon")} waiting to meet", "Open", ModuleAccent.WORLD.accent) { openSection(WorldSection.BAG) }
         out > 0 -> {
             val where = world.teams.firstNotNullOfOrNull { team -> team.expedition?.let { Dungeons.byId(it.dungeonId)?.name } }
             ModuleConcern(
@@ -430,11 +412,12 @@ private fun worldConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
 }
 
 /**
- * The save-derived facts behind Home's "Happening now" strip, gathered once here so the selection in
- * [HomeOpportunities] is pure and testable without a store, a clock or a device.
+ * The save-derived facts behind the module cards' live lines, gathered once here so the selection in
+ * [HomeOpportunities] is pure and testable without a store, a clock or a device. Each module's lines
+ * go on that module's card; there is no separate strip.
  */
 @Composable
-private fun HappeningNow(model: AppModel, go: (Place) -> Unit) {
+private fun liveLines(model: AppModel): Map<Module, List<HomeLiveLine>> {
     val store = model.store
     val data = model.data
     val world = data.world
@@ -460,16 +443,18 @@ private fun HappeningNow(model: AppModel, go: (Place) -> Unit) {
         companionCandies = companion.sumOf { it.candies },
         companionTitle = companion.firstOrNull()?.title ?: "",
     )
-    HomeLiveCard(HomeOpportunities.select(live)) { kind ->
-        when (kind) {
-            HomeLiveAction.WORLD_REPORT -> go(Place.WORLD)
-            HomeLiveAction.WORLD_BOARD -> { go(Place.WORLD); model.worldSection = WorldSection.MISSIONS }
-            HomeLiveAction.WORLD_FINDS -> { go(Place.WORLD); model.worldSection = WorldSection.BAG }
-            HomeLiveAction.MINT_OUTBREAK -> go(Place.MINT)
-            HomeLiveAction.CARE_DREAM -> { go(Place.CARE); model.careSection = CareSection.DREAM }
-            HomeLiveAction.LINK_SAFARI -> { go(Place.LINK); model.linkSection = LinkSection.PEOPLE }
-            HomeLiveAction.PLAN_CALENDAR -> { go(Place.PLAN); model.planSection = PlanSection.CALENDAR }
-        }
+    return HomeOpportunities.byModule(live)
+}
+
+private fun openLive(model: AppModel, go: (Place) -> Unit, kind: HomeLiveAction) {
+    when (kind) {
+        HomeLiveAction.WORLD_REPORT -> go(Place.WORLD)
+        HomeLiveAction.WORLD_BOARD -> { go(Place.WORLD); model.worldSection = WorldSection.MISSIONS }
+        HomeLiveAction.WORLD_FINDS -> { go(Place.WORLD); model.worldSection = WorldSection.BAG }
+        HomeLiveAction.MINT_OUTBREAK -> go(Place.MINT)
+        HomeLiveAction.CARE_DREAM -> { go(Place.CARE); model.careSection = CareSection.DREAM }
+        HomeLiveAction.LINK_SAFARI -> { go(Place.LINK); model.linkSection = LinkSection.PEOPLE }
+        HomeLiveAction.PLAN_CALENDAR -> { go(Place.PLAN); model.planSection = PlanSection.CALENDAR }
     }
 }
 
