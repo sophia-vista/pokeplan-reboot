@@ -226,10 +226,12 @@ private fun PlansPlace(model: AppModel) {
 private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.mintData
     val imports = data.transactions.mapNotNull { it.importBatch }.toSet().size
+    val activeBudgets = data.budgets.count { it.status == PlanStatus.ACTIVE }
+    val plansDetail = if (activeBudgets == 0) billsDetail(model) else "${if (activeBudgets == 1) "1 budget" else "$activeBudgets budgets"}, ${billsDetail(model)}"
     val sections = listOf(
         MenuEntry(MintSection.ACCOUNTS.name, MintSection.ACCOUNTS.icon, "Accounts", if (data.accounts.isEmpty()) "add one" else "${data.accounts.count { it.status == AccountStatus.ACTIVE }} open", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.ACTIVITY.name, MintSection.ACTIVITY.icon, "Activity", if (data.transactions.isEmpty()) "add a purchase" else "${data.transactions.size} records", tint = ModuleAccent.MINT.accent),
-        MenuEntry(MintSection.PLANS.name, MintSection.PLANS.icon, "Plans", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) billsDetail(model) else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} budgets, ${billsDetail(model)}", tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.PLANS.name, MintSection.PLANS.icon, "Plans", plansDetail, tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
     ) + listOfNotNull(
         MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },
