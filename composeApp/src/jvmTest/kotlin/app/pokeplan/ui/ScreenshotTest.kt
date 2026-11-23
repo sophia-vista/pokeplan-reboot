@@ -74,7 +74,7 @@ class ScreenshotTest {
     }
 
     private fun env(model: AppModel, prefs: app.pokeplan.ui.launcher.LauncherPrefs = app.pokeplan.ui.launcher.LauncherPrefs(), editing: Boolean = false) = app.pokeplan.ui.launcher.WidgetEnv(
-        model, fakeApps, prefs, fakeHost, null, 2, app.pokeplan.ui.launcher.TodayState(model.store.today), app.pokeplan.ui.launcher.BuddyMood(), false, editing, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+        model, fakeApps, prefs, fakeHost, null, 2, app.pokeplan.ui.launcher.TodayState(model.store.today), app.pokeplan.ui.launcher.BuddyMood(), false, editing, {}, {}, {}, {}, {}, {}, {}, {},
     )
 
     private val clock = object : Clock {
@@ -1193,6 +1193,9 @@ class ScreenshotTest {
     }
 
     @Test
+    fun linkPeopleSearch() = link("link-people-search", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1300, interact = ::pullToSearch)
+
+    @Test
     fun planMenuFull() = meStore("plan-full", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3200) { model ->
         app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
     }
@@ -1621,7 +1624,11 @@ class ScreenshotTest {
                 PixelTheme(dark = false) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.ContactImportView(model, source) {} } } } }
             }
         }
-        link("link-people-import", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1300, contacts = source)
+        link("link-people-import", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1300, contacts = source, interact = { scene ->
+            // The import key sits in the closed More accordion under the list.
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(90f, 525f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(90f, 525f))
+        })
         for (dark in listOf(false, true)) link("link-dates-remind${if (dark) "-dark" else ""}", app.pokeplan.ui.link.LinkSection.DATES, height = 2100, dark = dark, interact = { scene ->
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(268f, 443f))
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(268f, 443f))
@@ -2319,7 +2326,7 @@ class ScreenshotTest {
         val env = {
             app.pokeplan.ui.launcher.WidgetEnv(
                 model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, true,
-                { prefs = it }, {}, {}, {}, {}, {}, {}, {}, {}, {},
+                { prefs = it }, {}, {}, {}, {}, {}, {}, {},
             )
         }
         val scene = ImageComposeScene(width = 540, height = 1170, density = Density(1.5f, 1f)) {
@@ -2373,7 +2380,7 @@ class ScreenshotTest {
                 listOf(app.pokeplan.ui.launcher.GridWidget(app.pokeplan.ui.launcher.WidgetPage.HOME, k, "", 0, row, w, h)).also { row += h }
             }
             val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera").pin("pkg.Maps").withGridMode(true).withGrid(grid)
-            val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {})
             render("grid-sizes-$name", height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
         }
     }
@@ -2396,7 +2403,7 @@ class ScreenshotTest {
             if (w !in l.minW..l.maxW || h !in l.minH..l.maxH) continue
             val grid = listOf(app.pokeplan.ui.launcher.GridWidget(app.pokeplan.ui.launcher.WidgetPage.HOME, k, "", 0, 0, w, h))
             val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera").pin("pkg.Maps").withGridMode(true).withGrid(grid)
-            val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {})
             val rows = app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * h + 16
             render("gridsize-${k.name.lowercase()}-${w}x$h", frames = 8, height = (rows * 1.5f).toInt(), minBytes = 500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
         }
@@ -2411,7 +2418,7 @@ class ScreenshotTest {
         val model = AppModel(store)
         val grid = listOf(app.pokeplan.ui.launcher.GridWidget(app.pokeplan.ui.launcher.WidgetPage.HOME, app.pokeplan.ui.launcher.WidgetKind.AGENDA, "", 0, 0, 4, 8))
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().withGridMode(true).withGrid(grid)
-        val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+        val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {})
         render("launcher-agenda-light-day", frames = 8, height = ((app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * 8 + 16) * 1.5f).toInt(), minBytes = 500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
     }
 
@@ -2427,7 +2434,7 @@ class ScreenshotTest {
                     app.pokeplan.ui.launcher.GridHomePage(
                         app.pokeplan.ui.launcher.WidgetEnv(
                             model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, true,
-                            { prefs = it }, {}, {}, {}, {}, {}, {}, {}, {}, {}, pages = prefs.pages, goToPage = { wentTo = it },
+                            { prefs = it }, {}, {}, {}, {}, {}, {}, {}, pages = prefs.pages, goToPage = { wentTo = it },
                         ), null,
                     )
                 }
@@ -2453,7 +2460,7 @@ class ScreenshotTest {
         val model = AppModel(store)
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().withPages(3)
         for ((name, scale, shown) in listOf(Triple("launcher-edit-bar", 1f, app.pokeplan.ui.launcher.WidgetPage.PAGE3), Triple("launcher-edit-bar-xl", 1.3f, app.pokeplan.ui.launcher.WidgetPage.PAGE3), Triple("launcher-edit-bar-home", 1f, app.pokeplan.ui.launcher.WidgetPage.HOME), Triple("launcher-edit-bar-home-xl", 1.3f, app.pokeplan.ui.launcher.WidgetPage.HOME))) {
-            val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, true, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, pages = 3)
+            val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, true, {}, {}, {}, {}, {}, {}, {}, {}, pages = 3)
             render(name, height = 900, fontScale = scale) {
                 PixelTheme {
                     Box(Modifier.fillMaxSize().background(Pixel.Night), contentAlignment = androidx.compose.ui.Alignment.BottomCenter) {
@@ -2494,19 +2501,12 @@ class ScreenshotTest {
         }
         val days = listOf("2026-10-31", "2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04").mapIndexed { n, d -> app.pokeplan.ui.launcher.DayForecast(d, listOf(61, 3, 0, 71, 95)[n], 31.0 - n, 25.0) }
         val sample = app.pokeplan.ui.launcher.Forecast("Manila, Philippines", 29.6, 61, days, 0L)
-        val withFolder = app.pokeplan.ui.launcher.LauncherPrefs().addFolder("Work").addToFolder("Work", "pkg.Phone").addToFolder("Work", "pkg.Messages").addFolder("Play")
         render("launcher-forecast") { PixelTheme { app.pokeplan.ui.launcher.ForecastPage(sample, app.pokeplan.ui.launcher.LauncherPrefs(), 2, {}, {}) } }
-        render("launcher-folders") { PixelTheme { app.pokeplan.ui.launcher.FoldersPage(fakeApps, withFolder, {}, fakeHost, null, {}, {}, 2) } }
-        render("launcher-folder") { PixelTheme { app.pokeplan.ui.launcher.FoldersPage(fakeApps, withFolder, {}, fakeHost, "Work", {}, {}, 2) } }
-        val folderWidgets = app.pokeplan.ui.launcher.LauncherPrefs().addFolderWidget("Work").addToFolder("Work", "pkg.Phone").addToFolder("Work", "pkg.Messages").addFolderWidget("Play")
-        render("launcher-widgets") { PixelTheme { app.pokeplan.ui.launcher.WidgetsPage(folderWidgets, {}, fakeHost, 2, {}) } }
-        render("launcher-phone-folders", width = 923, height = 1990, density = 2.625f) {
-            app.pokeplan.ui.launcher.LauncherScreen(AppModel(phone), fakeApps, folderWidgets, {}, isDefault = true, phone = fakeHost)
-        }
+        render("launcher-widgets") { PixelTheme { app.pokeplan.ui.launcher.WidgetsPage(app.pokeplan.ui.launcher.LauncherPrefs(), {}, fakeHost, 2, {}) } }
         render("launcher-editing") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.TodayPage(env(AppModel(planned), app.pokeplan.ui.launcher.LauncherPrefs().resizeWidget(app.pokeplan.ui.launcher.WidgetSlot(app.pokeplan.ui.launcher.WidgetArea.TODAY, app.pokeplan.ui.launcher.WidgetKind.CALENDAR), app.pokeplan.ui.launcher.WidgetSize.SMALL), editing = true)) } } }
         val moody = app.pokeplan.ui.launcher.BuddyMood().also { m -> m.meet(phone.data.player.pokemon.last(), app.pokeplan.ui.Emotion.SURPRISED, app.pokeplan.ui.Emotion.HAPPY) }
         render("launcher-buddy") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { androidx.compose.foundation.layout.Column(Modifier.padding(20.dp)) {
-            app.pokeplan.ui.launcher.LauncherWidget(app.pokeplan.ui.launcher.WidgetSlot(app.pokeplan.ui.launcher.WidgetArea.HOME_TOP, app.pokeplan.ui.launcher.WidgetKind.BUDDY), env(AppModel(phone)).let { e -> app.pokeplan.ui.launcher.WidgetEnv(e.model, e.apps, e.prefs, e.host, null, 2, e.today, moody, false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) })
+            app.pokeplan.ui.launcher.LauncherWidget(app.pokeplan.ui.launcher.WidgetSlot(app.pokeplan.ui.launcher.WidgetArea.HOME_TOP, app.pokeplan.ui.launcher.WidgetKind.BUDDY), env(AppModel(phone)).let { e -> app.pokeplan.ui.launcher.WidgetEnv(e.model, e.apps, e.prefs, e.host, null, 2, e.today, moody, false, false, {}, {}, {}, {}, {}, {}, {}, {}) })
         } } } }
         render("launcher-towns") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TownPicker("meadow", {}, {}) } } }
         render("launcher-pokemon-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.PokemonMenu(started().data.player.buddy!!, false, 2, {}, {}, {}) } } }
@@ -2538,8 +2538,8 @@ class ScreenshotTest {
     @Test
     fun careRoutinesYesterday() = listOf(false, true).forEach { dark ->
         care("care-routines-yesterday-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.ROUTINES, height = 1000, dark = dark, skipOne = true, interact = { scene ->
-            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(374f, 429f))
-            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(374f, 429f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(374f, 285f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(374f, 285f))
         })
     }
 

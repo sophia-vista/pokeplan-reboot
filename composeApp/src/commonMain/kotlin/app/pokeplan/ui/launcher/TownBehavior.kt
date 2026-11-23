@@ -105,6 +105,31 @@ internal object TownBehavior {
 
     fun crowded(at: Offset, others: List<Offset>, room: Float = 0.08f): Boolean = others.any { hypot(it.x - at.x, (it.y - at.y) * DEPTH) < room }
 
+    fun settle(random: Random, at: Offset, others: List<Offset>, room: Float, screens: Int): Offset {
+        if (!crowded(at, others, room)) return at
+        repeat(16) { i ->
+            val r = room * (1f + i / 4f)
+            val a = random.nextFloat() * 2f * PI.toFloat()
+            val t = Offset((at.x + cos(a) * r).coerceIn(-0.2f, screens + 0.2f), (at.y + sin(a) * r / DEPTH).coerceIn(0.02f, 0.98f))
+            if (!crowded(t, others, room)) return t
+        }
+        return at
+    }
+
+    fun clear(at: Offset, still: List<Offset>, room: Float): Offset {
+        var p = at
+        for (s in still) {
+            val dx = p.x - s.x
+            val dy = (p.y - s.y) * DEPTH
+            val d = hypot(dx, dy)
+            if (d >= room) continue
+            val ux = if (d < 0.001f) 0f else dx / d
+            val uy = if (d < 0.001f) 1f else dy / d
+            p = Offset(p.x + ux * (room * 1.05f - d), (p.y + uy * (room * 1.05f - d) / DEPTH).coerceIn(0.02f, 0.98f))
+        }
+        return p
+    }
+
     fun path(random: Random, from: Offset, to: Offset, steps: Int = 8): List<Offset> {
         val mx = to.x - from.x
         val my = (to.y - from.y) * DEPTH

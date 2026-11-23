@@ -332,25 +332,28 @@ private fun Resident(
         life.pets[mon.id] = {
             taps.removeAll { it.elapsedNow() > 2.seconds }
             taps += TimeSource.Monotonic.markNow()
-            if (disguise != null && !unmasked) {
+            if ((asleep || napping) && disguise == null) { /* a sleeping Pokémon stays asleep: only the ripple answers a tap */ }
+            else if (disguise != null && !unmasked) {
                 unmasked = true; model.cry(mon); hopping = true; hopKey++; feel(StatusKind.ALERT, 900, stay = false)
             } else when (TownBehavior.tapReaction(random, taps.size)) {
                 TapReaction.HOP -> { model.cry(mon); hopping = true; hopKey++ }
                 TapReaction.HAPPY -> { model.cry(mon); hopping = true; hopKey++; feel(StatusKind.TWINKLE) }
-                TapReaction.TURN -> { facingLeft = !facingLeft; model.cry(mon); hopping = true; hopKey++ }
+                TapReaction.TURN -> { if (walk == null) facingLeft = !facingLeft; model.cry(mon); hopping = true; hopKey++ }
                 TapReaction.FLUSTERED -> { feel(StatusKind.SWEAT, 1_400); model.effect(Sfx.CONFUSION_STATUS) }
             }
             life.ripple(mon.id)
         }
     }
+    val room = TILE * 3f * pixel / widthPx * 0.6f
+    fun neighbours(): List<Offset> = life.spots.filterKeys { it != mon.id }.values.map { it() } + life.bound.filterKeys { it != mon.id }.values
     fun pickLeg(short: Boolean): TownBehavior.Leg {
-        val others = life.spots.filterKeys { it != mon.id }.values.map { it() }
+        val others = neighbours()
         var leg = TownBehavior.leg(random, spot.value, heading, anchor, screens, guardian, short, livelyNow)
         repeat(10) {
             val t = leg.to
             val fy = groundTop + (groundBottom - groundTop) * t.y
             val up = fy - TILE * 1.5f * pixel / heightPx
-            if (avoidNow.none { r -> t.x in r.left..r.right && (fy in r.top..r.bottom || up in r.top..r.bottom) } && !TownBehavior.crowded(t, others)) return leg
+            if (avoidNow.none { r -> t.x in r.left..r.right && (fy in r.top..r.bottom || up in r.top..r.bottom) } && !TownBehavior.crowded(t, others, room)) return leg
             leg = TownBehavior.leg(random, spot.value, heading, anchor, screens, guardian, short, livelyNow)
         }
         return leg
@@ -386,19 +389,32 @@ private fun Resident(
     LaunchedEffect(hold?.hop) { if (hold != null && hold.hop > 0) { hopping = true; hopKey++ } }
     var wasAsleep by remember(mon.id) { mutableStateOf(asleep) }
     LaunchedEffect(asleep) {
+        if (asleep) { hopping = false; grazing = false; walk = null }
         if (wasAsleep && !asleep && !calm) { hopping = true; hopKey++; delay(1_000); grazing = true; hopKey++ }
         wasAsleep = asleep
     }
-    suspend fun strollTo(to: Offset, speed: Float = pace) {
+    suspend fun strollTo(target: Offset, speed: Float = pace) {
+        val to = TownBehavior.settle(random, target, neighbours(), room, screens)
         val dx = to.x - spot.value.x
         val dy = to.y - spot.value.y
-        facingLeft = dx < 0
-        walk = if (abs(dx) * 2f >= abs(dy)) SpriteAction.WALK_SIDE else if (dy < 0) SpriteAction.WALK_UP else SpriteAction.WALK_DOWN
-        facing = when (walk) { SpriteAction.WALK_SIDE -> SpriteAction.IDLE_SIDE; SpriteAction.WALK_UP -> SpriteAction.IDLE_UP; else -> SpriteAction.IDLE }
         val seconds = (0.9f + abs(dx) * 7f + abs(dy) * 2.4f) / (speed * (0.85f + 0.3f * livelyNow))
         val millis = (seconds * 1000).toInt()
-        val way = TownBehavior.path(random, spot.value, to)
-        spot.animateTo(to, keyframes { durationMillis = millis; way.forEachIndexed { i, p -> p at millis * (i + 1) / way.size using LinearEasing } })
+        val sleepers = life.sleeping.filter { it != mon.id }.mapNotNull { life.spots[it]?.invoke() }
+        val raw = TownBehavior.path(random, spot.value, to)
+        val way = raw.mapIndexed { i, p -> if (i == raw.lastIndex || sleepers.isEmpty()) p else TownBehavior.clear(p, sleepers, room) }
+        life.bound[mon.id] = to
+        try {
+            for (p in way) {
+                val sx = p.x - spot.value.x
+                val sy = p.y - spot.value.y
+                if (abs(sx) > 0.002f) facingLeft = sx < 0
+                walk = if (abs(sx) * 2f >= abs(sy)) SpriteAction.WALK_SIDE else if (sy < 0) SpriteAction.WALK_UP else SpriteAction.WALK_DOWN
+                facing = when (walk) { SpriteAction.WALK_SIDE -> SpriteAction.IDLE_SIDE; SpriteAction.WALK_UP -> SpriteAction.IDLE_UP; else -> SpriteAction.IDLE }
+                spot.animateTo(p, tween((millis / way.size).coerceAtLeast(60), easing = LinearEasing))
+            }
+        } finally {
+            life.bound.remove(mon.id)
+        }
         walk = null
     }
     suspend fun stepTo(g: FloorGeometry, to: Offset, speed: Float = pace) {
@@ -626,7 +642,7 @@ private fun Resident(
         Canvas(Modifier.fillMaxSize()) { drawShadow(frame.first, pixel) }
         AnimatedSprite(
             shown.form.id, shown.isShiny, shown.nickname, Modifier.fillMaxSize(), size = sizeDp, animate = !calm && !(hold != null && walk == null), ground = 0.dp,
-            action = if (hopping) SpriteAction.HOP else if (asleep || napping) SpriteAction.SLEEP else if (grazing) SpriteAction.EAT else spinning ?: walk ?: if (hold != null) SpriteAction.IDLE_SIDE else facing, actionKey = hopKey, onActionDone = { hopping = false; grazing = false },
+            action = if (asleep || napping) SpriteAction.SLEEP else if (hopping) SpriteAction.HOP else if (grazing) SpriteAction.EAT else spinning ?: walk ?: if (hold != null) SpriteAction.IDLE_SIDE else facing, actionKey = hopKey, onActionDone = { hopping = false; grazing = false },
             fixedScale = pixel, mirror = if (hold != null) hold.faceLeft ?: facingLeft else if (spinning != null) facingLeft && spinning == SpriteAction.IDLE_SIDE else facingLeft && (walk == SpriteAction.WALK_SIDE || (walk == null && facing != SpriteAction.IDLE_UP)),
         )
         val icon = if (hold != null) hold.icon else if (asleep || napping) StatusKind.SLEEP else ownIcon ?: ailment?.icon
@@ -681,6 +697,7 @@ internal class TownLife {
     private var claimedFloor: Any? = null
 
     val movers = mutableMapOf<String, Mover>()
+    val bound = mutableMapOf<String, Offset>()
     val sleeping = mutableSetOf<String>()
 
     fun occupantOf(g: FloorGeometry, c: Cell, self: String): String? = spots.entries.firstOrNull { (id, s) -> id != self && g.cellOf(s()) == c }?.key

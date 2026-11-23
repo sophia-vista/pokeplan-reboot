@@ -70,6 +70,10 @@ import app.pokeplan.ui.screens.QuestsView
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PullRevealSlot
+import app.pokeplan.ui.screens.PullRevealState
+import app.pokeplan.ui.screens.pullReveal
+import app.pokeplan.ui.screens.rememberPullReveal
 import app.pokeplan.ui.screens.FormLabel
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
@@ -147,7 +151,12 @@ fun CollectionScreen(
             return@ScreenSwitch
         }
 
-        SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon, scroll = current != Section.DEX) {
+        val pcScroll = rememberScrollState()
+        val pcReveal = rememberPullReveal(pcScroll, keepOpen = { pcView.filtering }, onClose = { pcView = pcView.cleared() })
+        SectionScaffold(
+            current.title, null, onBack = { section = null }, icon = current.icon, scroll = current != Section.DEX,
+            scrollState = pcScroll, bodyModifier = if (current == Section.PC) Modifier.pullReveal(pcReveal) else Modifier,
+        ) {
             when (current) {
                 Section.PARTY -> {
                     val regions = listOf(Region.PLAN, Region.CARE, Region.HEAL, Region.MINT, Region.BASE, Region.LINK)
@@ -170,7 +179,7 @@ fun CollectionScreen(
                         val shown = pcView.apply(player.pokemon, placeOf) { store.isFavorite(it) }
                         val boxes = pcView.boxCount(shown.size)
                         val at = pcView.box.coerceIn(0, boxes - 1)
-                        PcControls(pcView, { pcView = it }, shown.size, total)
+                        PcControls(pcView, { pcView = it }, shown.size, total, pcReveal, model.data.settings.reduceMotion)
                         if (!pcView.everyone && inBox == 0) EmptyState("The PC is empty", icon = "storage-key", action = "Show all Pokémon" to { pcView = pcView.copy(everyone = true, box = 0) })
                         else if (shown.isEmpty()) EmptyState("Nothing matches", action = "Clear filters" to { pcView = pcView.cleared() })
                         else {
@@ -225,9 +234,9 @@ private fun PartyGroup(
 }
 
 @Composable
-private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, total: Int) {
+private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, total: Int, reveal: PullRevealState, reduceMotion: Boolean) {
     val change = { v: PcView -> onChange(v.copy(box = 0)) }
-    Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    PullRevealSlot(reveal, reduceMotion) {
         PixelField(
             view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
             label = "Search by name",
@@ -256,10 +265,10 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
                 }
             }
         }
-        if (view.filtering) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text("$shown of $total", Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-            PixelButton("Clear", { onChange(view.cleared()) }, color = Pixel.InkSoft, compact = true)
-        }
+    }
+    if (view.filtering) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text("$shown of $total", Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+        PixelButton("Clear", { onChange(view.cleared()) }, color = Pixel.InkSoft, compact = true)
     }
 }
 

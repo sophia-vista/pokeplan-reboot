@@ -106,6 +106,8 @@ import app.pokeplan.ui.screens.PlanSection
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.pullReveal
+import app.pokeplan.plan.TaskFilter
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.FormDisclosure
 import app.pokeplan.ui.screens.FormGroup
@@ -138,10 +140,16 @@ internal fun PlanView(model: AppModel, section: PlanSection, onBack: () -> Unit,
 @Composable
 private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Unit, open: (PlanSection) -> Unit, onFocus: ((Task) -> Unit)?, startWeek: Boolean) {
     val pendingIds = model.data.pending.map { it.original.id }.toSet()
-        SectionScaffold(section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header, trailing = null) {
+    val scroll = rememberScrollState()
+    var filter by remember { mutableStateOf(TaskFilter()) }
+    val reveal = app.pokeplan.ui.screens.rememberPullReveal(scroll, keepOpen = { filter.isNarrowed }, onClose = { filter = TaskFilter() })
+    SectionScaffold(
+        section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header, trailing = null,
+        scrollState = scroll, bodyModifier = if (section == PlanSection.TASKS) Modifier.pullReveal(reveal) else Modifier,
+    ) {
         when (section) {
             PlanSection.CALENDAR -> DayView(model, pendingIds, startWeek)
-            PlanSection.TASKS -> TasksWorkspace(model, onFocus)
+            PlanSection.TASKS -> TasksWorkspace(model, onFocus, filter, { filter = it }, reveal)
             PlanSection.SETTINGS -> app.pokeplan.ui.screens.PlanSettings(model)
             else -> {}
         }

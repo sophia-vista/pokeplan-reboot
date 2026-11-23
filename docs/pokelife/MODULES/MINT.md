@@ -402,7 +402,7 @@ Imported records remain identifiable as imported. Reconciliation does not silent
 A lightweight flag on one income transaction, not a ledger, not a screen and not a module. It answers one question: money someone owes the player back, where does it sit?
 
 - **What it is.** A `Transaction` of type `INCOME` with `iou = true`. The person who owes is its `payee`; its category is a *spending* category, the one it takes spending off, like a refund. Only an income can be an IOU, and it cannot be split.
-- **Entering it.** The Income form has the toggle "Someone owes me this (IOU)", "Who owes it" and "They paid me already". The record is `PENDING` while still owed (the balance is unchanged; it shows as expected) and `POSTED` once received ("They paid me already" saves it `POSTED`). The existing Mark posted action reads "Mark received" for an IOU, and "Mark owed" to undo it.
+- **Entering it (revised 23 November 2026).** Entering an income already means the money arrived, so an IOU is always saved `POSTED`: the Income form has the toggle "Paid back by someone (IOU)" and "Who paid it back", and no "they paid me" toggle. The IOU stays a note on the record (the list shows "IOU") so it still takes its amount off its category. An older save may hold a `PENDING` IOU: it keeps its "Mark received" action, and a posted one offers the ordinary "Mark pending".
 - **What it does to the books.** It counts as **no income** (`MintRules.earned` leaves it out). **Spending, budgets, category totals and the review's spending fall by its amount in its category from the moment it is recorded, owed or received** (`countsForSpending`, direction -1 like a `REFUND`); excluded and voided records do not count. The account balance rises only when it is `POSTED`.
 - **Rewards.** None: Ledger Research pays an expense or a transfer, and an IOU is income.
 - **Editing.** An edit keeps `iou` as it was; a plain income cannot be turned into an IOU by editing.
@@ -834,66 +834,68 @@ Provider integrations must not block complete manual finance functionality, and 
 
 ## 19. Acceptance criteria
 
+> Boxes checked against the code in 0.236.0 (23 November 2026): a tick means built and found in the code; an unticked box says what is missing.
+
 ### Accounts and balances
-- [ ] Users can create, edit, group, archive and close supported account types.
-- [ ] Opening balances and timestamped snapshots are preserved.
-- [ ] Assets, liabilities and net position are calculated correctly.
-- [ ] Credit limits are never counted as assets or cash.
-- [ ] Every external balance displays source and freshness.
-- [ ] Failed sync cannot erase or overwrite a valid local snapshot.
+- [x] Users can create, edit, group, archive and close supported account types.
+- [ ] Opening balances and timestamped snapshots are preserved. — partial: opening balances keep their amount and day, but 4.4's BalanceSnapshot (source, batch, observed time) has no type or screen
+- [x] Assets, liabilities and net position are calculated correctly.
+- [x] Credit limits are never counted as assets or cash.
+- [ ] Every external balance displays source and freshness. — not built: no external or provider balance exists to show a source or freshness (REP-039)
+- [ ] Failed sync cannot erase or overwrite a valid local snapshot. — not built: no provider sync exists to fail (REP-039)
 
 ### Transactions
-- [ ] Expense, income, transfer, refund, fee and adjustment are supported.
-- [ ] Ordinary expense capture is fast and does not require optional fields.
-- [ ] Transfers are atomic and excluded from income/expense totals.
-- [ ] Credit-card purchases and settlements are counted correctly.
-- [ ] Split allocations reconcile to the parent amount.
-- [ ] Duplicate imports are detected without silently deleting ambiguous records.
-- [ ] Search, filters, editing, exclusion, voiding and deletion behave consistently.
-- [ ] Monetary calculations use exact arithmetic.
+- [x] Expense, income, transfer, refund, fee and adjustment are supported.
+- [x] Ordinary expense capture is fast and does not require optional fields.
+- [x] Transfers are atomic and excluded from income/expense totals.
+- [x] Credit-card purchases and settlements are counted correctly.
+- [x] Split allocations reconcile to the parent amount.
+- [x] Duplicate imports are detected without silently deleting ambiguous records.
+- [x] Search, filters, editing, exclusion, voiding and deletion behave consistently.
+- [x] Monetary calculations use exact arithmetic.
 
 ### Budgets and bills
-- [ ] Budget actuals derive only from eligible transactions.
-- [ ] Transfers do not inflate spending.
-- [ ] Refund treatment is consistent.
-- [ ] Rollover is explicit and configurable.
-- [ ] Bill recurrence handles month-end and leap-year cases.
-- [ ] Paid status does not fabricate a transaction.
-- [ ] Payment links do not create double-counted expenses.
-- [ ] Bill reminders use the shared feature and never execute payments.
+- [x] Budget actuals derive only from eligible transactions.
+- [x] Transfers do not inflate spending.
+- [x] Refund treatment is consistent.
+- [ ] Rollover is explicit and configurable. — not built: a budget has no rollover choice (7.3, REP-039)
+- [x] Bill recurrence handles month-end and leap-year cases.
+- [x] Paid status does not fabricate a transaction.
+- [x] Payment links do not create double-counted expenses.
+- [x] Bill reminders use the shared feature and never execute payments.
 
 ### Integrations and offline
-- [ ] MINT works fully without a bank connection or internet.
-- [ ] Provider support is claimed only after end-to-end verification.
-- [ ] No password, PIN, CVV or OTP scraping/storage exists.
-- [ ] Imported records retain provenance and timestamps.
-- [ ] Failed integrations preserve local records.
-- [ ] Offline exchange rates are timestamped and never presented as current.
-- [ ] Import/reconciliation can recover after interruption.
+- [x] MINT works fully without a bank connection or internet.
+- [x] Provider support is claimed only after end-to-end verification.
+- [x] No password, PIN, CVV or OTP scraping/storage exists.
+- [x] Imported records retain provenance and timestamps.
+- [ ] Failed integrations preserve local records. — partial: a failed statement import saves nothing and a retry adds nothing, but no provider integration exists (REP-039)
+- [ ] Offline exchange rates are timestamped and never presented as current. — not built: there are no exchange rates or converted balances at all (11, REP-039)
+- [x] Import/reconciliation can recover after interruption.
 
 ### Privacy and security
-- [ ] Hide-values mode covers all MINT surfaces and accessibility output.
-- [ ] Sensitive data is excluded from logs, analytics and game services.
-- [ ] Notifications are generic by default.
-- [ ] Provider disconnection does not delete manual records.
-- [ ] Export, backup, restore and erase pass tests.
-- [ ] Optional access protection follows shared Android security architecture.
+- [ ] Hide-values mode covers all MINT surfaces and accessibility output. — partial: every displayed figure and the widgets show dots, but opening Edit pre-fills the plain amount (Mint.kt:1030)
+- [x] Sensitive data is excluded from logs, analytics and game services.
+- [x] Notifications are generic by default.
+- [ ] Provider disconnection does not delete manual records. — not built: there is no provider connection to disconnect (REP-039)
+- [x] Export, backup, restore and erase pass tests.
+- [x] Optional access protection follows shared Android security architecture.
 
 ### Pokémon progression
-- [ ] Ledger Research is MINT's only acquisition identity.
-- [ ] Only approved administrative activities emit reward events.
-- [ ] Events contain no financial amounts, provider names or private records.
-- [ ] Shared reward ledger and collection remain authoritative.
-- [ ] Retries cannot duplicate rewards.
-- [ ] Disabling progression leaves MINT fully functional.
+- [x] Ledger Research is MINT's only acquisition identity.
+- [x] Only approved administrative activities emit reward events.
+- [x] Events contain no financial amounts, provider names or private records.
+- [x] Shared reward ledger and collection remain authoritative.
+- [x] Retries cannot duplicate rewards.
+- [x] Disabling progression leaves MINT fully functional.
 
 ### Presentation
-- [ ] Shared PMD dialogue-box system is used without a separate MINT design language.
-- [ ] Dense activity records remain readable and easy to scan.
-- [ ] Light/dark themes and larger font scales work.
-- [ ] Privacy mode is consistent.
-- [ ] Empty, loading, offline, stale and error states are clear.
-- [ ] No redundant cards, captions or decorative Pokémon compete with finance tasks.
+- [x] Shared PMD dialogue-box system is used without a separate MINT design language.
+- [x] Dense activity records remain readable and easy to scan.
+- [x] Light/dark themes and larger font scales work.
+- [x] Privacy mode is consistent.
+- [ ] Empty, loading, offline, stale and error states are clear. — partial: empty and refusal states exist; loading, offline, stale and connection states do not (REP-039)
+- [x] No redundant cards, captions or decorative Pokémon compete with finance tasks.
 
 ## 20. Reuse policy
 

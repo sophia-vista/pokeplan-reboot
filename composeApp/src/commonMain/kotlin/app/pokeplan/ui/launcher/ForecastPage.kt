@@ -1,5 +1,13 @@
 package app.pokeplan.ui.launcher
 
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -112,5 +120,16 @@ internal fun PlacePage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, h
             }
             if (prefs.place != null) PmdBox(pixel, Modifier.fillMaxWidth()) { PmdMenuLine("Forget the place", pixel, dim = true) { onPrefs(prefs.withPlace(null)); onClose() } }
         }
+    }
+}
+
+@Composable
+internal fun PmdField(value: String, onChange: (String) -> Unit, hint: String, modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().height(Spacing.Target).background(Color.White.copy(alpha = 0.14f), PixelShape).padding(horizontal = Spacing.L), contentAlignment = Alignment.CenterStart) {
+        if (value.isEmpty()) Text(hint, style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = 0.7f))
+        BasicTextField(
+            value, onChange, singleLine = true, modifier = Modifier.fillMaxWidth().semantics { contentDescription = hint },
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White), cursorBrush = SolidColor(Color.White),
+        )
     }
 }

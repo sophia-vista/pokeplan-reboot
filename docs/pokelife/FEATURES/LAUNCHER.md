@@ -42,7 +42,7 @@ The launcher is not:
 
 ## 3. Existing launcher: what to preserve
 
-Preserve where reliable (refactor rather than discard; record behavior, dependencies and migration needs before removing a component): the four-column grid and multiple home pages, movable and resizable widgets, Android AppWidget hosting, town scenes and weather presentation, the app list, drawer, folders and app pinning, gesture handling and launcher settings, and the battery-saver and animation controls. Their implementation is in `composeApp/.../ui/launcher/` and `androidApp/.../widgets/`; the grid's rules are in `docs/launcher-widget-grid.md`.
+Preserve where reliable (refactor rather than discard; record behavior, dependencies and migration needs before removing a component): the four-column grid and multiple home pages, movable and resizable widgets, Android AppWidget hosting, town scenes and weather presentation, the app list, drawer and app pinning, gesture handling and launcher settings, and the battery-saver and animation controls. Their implementation is in `composeApp/.../ui/launcher/` and `androidApp/.../widgets/`; the grid's rules are in `docs/launcher-widget-grid.md`.
 
 Asset priority: PMD Pokémon PNGs, portrait strips, cries, sound effects and town, guild, map and environment art first; suitable mainline sprites second; Pixelarticons for interface glyphs only. Respect source licensing and redistribution restrictions.
 
@@ -59,14 +59,14 @@ Visual hierarchy:
 1. Environment: terrain, buildings, paths, sky and scenery.
 2. Inhabitants: Pokémon sprites and restrained environmental behavior.
 3. Functional landmarks: contextual shortcuts to modules and shared areas.
-4. Personal surfaces: widgets, folders and shortcuts.
+4. Personal surfaces: widgets and shortcuts.
 5. System controls: status/navigation bars and launcher overlays.
 
 Buildings and scenery should remain visually legible without permanent labels. Labels appear on focus, selection, onboarding or where accessibility requires them. Avoid large dashboard headers, permanent card rows, fixed docks, excessive floating buttons and constant animation.
 
 ### 4.2 Continuous pages and viewport
 
-Multiple home pages form one continuous environment. Horizontal page movement shifts the viewport through a finite scene or connected scene regions. Background layers maintain spatial continuity; Pokémon retain logical world positions; widgets and folders remain anchored to logical positions. A bounded parallax effect is optional and must be disabled by Reduced Motion. Infinite procedural generation is out of scope; a town of a dungeon's tiles is one finite floor laid out each day from the game's own tiles (section 4.5).
+Multiple home pages form one continuous environment. Horizontal page movement shifts the viewport through a finite scene or connected scene regions. Background layers maintain spatial continuity; Pokémon retain logical world positions; widgets remain anchored to logical positions. A bounded parallax effect is optional and must be disabled by Reduced Motion. Infinite procedural generation is out of scope; a town of a dungeon's tiles is one finite floor laid out each day from the game's own tiles (section 4.5).
 
 ### 4.3 Environment presets and atmosphere
 
@@ -94,7 +94,7 @@ A town of a dungeon's tiles is a Mystery Dungeon floor that the app lays out fro
 - **Walking:** a Pokémon walks only on the floor, along a path over its squares. Water types swim and Flying types fly over water; only Ghost types pass through walls, as in the games. Widgets are soft walls: nobody stops, rests or meets under a widget, and a path goes round one when it can; it passes behind only where there is no other way (a widget row as wide as the screen).
 - **Stairs:** each floor has the game's stairs. A Guardian that arrives comes up them; one that leaves goes down them.
 - **Traps (cosmetic only):** a few of the games' gentle traps lie hidden on the floor: Warp, Spin, Slumber, Gust, Slow, Trip and Poison. Any trap a Pokémon steps on springs, every time, as in the games; it is then shown for the day, and the Pokémon step round the traps they know about when there is another way, and never stop on one. On Home each plays the game's sound, and the traps that have an effect of their own in the game play it at the Pokémon's feet (Spin's swirl, Gust's wind, Slow's falling light: `assets/tiles/trap-*.png`, the game's `TRAP_ANIMATION_INFO` table, cut by `tools/sprites/extract_sky_effects.py`; Slumber's is of a kind not yet drawn, so it keeps the sleep icon). What it does is for show: it warps the Pokémon to another room, spins it and leaves it **confused** (about 25 seconds: a question mark over its head, and now and then it stumbles a square to the side and finds its way again), sends it to sleep for a moment, blows it away in a random direction until it meets a wall or another Pokémon (at most ten squares, as the games' blown-away effect does), slows it for 20 seconds, trips it, or **poisons** it (about 30 seconds: a skull over its head, and it walks at 70% pace). A status wears off by itself with a twinkle (`Condition` in `TownFloor.kt`). A Pokémon is only ever warped to, or started on, a square it can walk away from (no lake in the rock, no hollow in a wall), and nobody picks a square where it would overlap another Pokémon (standing there or walking to it), while the floor has room: the room follows each sprite's frame size (about two squares between ordinary Pokémon, three or more for a Wailord or a Moltres, and a big one covers the squares behind it, not those in front: `TownLife.overlap`); what each does next is never scripted: no two Pokémon act out the same moments, and a crowd standing together has one meeting at a time. **Pokémon are walls to each other** (`DungeonFloor.path(blocked)`): a walking Pokémon goes round the others, one square at a time, and only where there is no way round does it swap places with the one in the way (the other walks to the square it left, as the games' team members trade places); a sleeping Pokémon or one stopped for a meeting is never swapped with. A Wonder Tile is always shown and gives a twinkle. No reward, no harm, nothing in Reduce motion. Tiles from `assets/tiles/floor-traps.png` (`tools/tiles/extract_sky_floor.py`).
-- **Finds:** `TownFinds.PER_DAY` (3) things lie on the floor each day: berries, vitamins or a little Poké (`docs/economy.md`, `TownFinds`). They come from the date, not the layout, so a new layout moves them and never makes more. A tap picks one up into the Bag (or adds its Poké), with the game's pick-up sound; so does a Pokémon that walks onto one, as a team picks up items in the games, and now and then one heads for a find it has spotted. Either way it rises from the floor with its name and is gone until tomorrow; the Pokémon only walk while the home screen shows, and the sound plays only on Home. Never under a widget. Pictures from `assets/tiles/floor-items.png`, the game's own floor pictures for those items.
+- **Finds:** `TownFinds.PER_DAY` (3) places each hold a thing with only `APPEAR_PERCENT` (25) chance (owner, 23 November 2026, "low chance"; about 0.75 a day, often none, the same all day): berries, vitamins or a little Poké (`docs/economy.md`, `TownFinds`). They come from the date, not the layout, so a new layout moves them and never makes more. A tap picks one up into the Bag (or adds its Poké), with the game's pick-up sound; so does a Pokémon that walks onto one, as a team picks up items in the games, and now and then one heads for a find it has spotted. Either way it rises from the floor with its name and is gone until tomorrow; the Pokémon only walk while the home screen shows, and the sound plays only on Home. Never under a widget. Pictures from `assets/tiles/floor-items.png`, the game's own floor pictures for those items.
 - **Sky:** none yet. Outdoor tilesets would have a sky strip above the top wall only once a matching Mystery Dungeon sky is found among real assets (REP-052 open item); a sky from another game would not match.
 - **Ghosts and walls:** a Ghost type takes a short cut through walls only rarely (12% of long legs), fades while inside, and never rests or sleeps in a wall; one caught in a wall walks out or is set on the floor. Trap effects are not cancelled by the trap's own status icon.
 
@@ -128,11 +128,11 @@ Provide app drawer, global search, global module navigation, Pokémon collection
 
 ### 5.3 App drawer
 
-Support installed applications, search, alphabetical ordering, optional categories (Games, Messages and calls, Social, Music, video and photos, Productivity, Money, Health and fitness, Shopping, Maps and travel, News, Tools and system, and Other, taken from each app's declared Android category), user-created folders, automatic categorization with manual overrides, hidden applications, pinning and application information/uninstall routes where Android permits. Usage-based suggestions are optional and require explicit opt-in if they depend on Usage Access. External applications remain first-class; PokéLife must not make its own apps artificially privileged.
+Support installed applications, search, alphabetical ordering, optional categories (Games, Messages and calls, Social, Music, video and photos, Productivity, Money, Health and fitness, Shopping, Maps and travel, News, Tools and system, and Other, taken from each app's declared Android category), automatic categorization with manual overrides, hidden applications, pinning and application information/uninstall routes where Android permits. Usage-based suggestions are optional and require explicit opt-in if they depend on Usage Access. External applications remain first-class; PokéLife must not make its own apps artificially privileged.
 
-### 5.4 Folders and shortcuts
+### 5.4 Shortcuts
 
-Folders open in a compact floating panel, support rename/reorder/add/remove and close by outside tap or Back. Preserve existing folder behavior where sound. Support Android app shortcuts when provided. Built-in shortcuts may include Start/Resume Focus, Capture Task, Care Check-in, favorite utility, Pokémon collection and Resume WORLD. Route every action through its owning module service.
+Folders removed (owner, 23 November 2026): the launcher has no folders; old saved folders are ignored. Support Android app shortcuts when provided. Built-in shortcuts may include Start/Resume Focus, Capture Task, Care Check-in, favorite utility, Pokémon collection and Resume WORLD. Route every action through its owning module service.
 
 ## 6. Roaming Pokémon and environmental interactions
 
@@ -175,7 +175,7 @@ The buddy is the user's selected Pokémon from the shared ecosystem. The user is
 
 The buddy may follow a preferred route, rest, interact with nearby Pokémon, approach a landmark or react when tapped. It must not initiate unsolicited dialogue, demand attention or create a separate affection/relationship mechanic. The launcher reads the canonical buddy selection and never creates its own buddy record.
 
-## 8. Widgets, folders and quick actions
+## 8. Widgets and quick actions
 
 ### 8.1 Presentation
 
@@ -224,7 +224,7 @@ Respect Android notification permission and lock-screen privacy. Do not expose d
 Settings are organized by intent and use sensible defaults.
 
 - **Appearance:** environment preset, scenery, day/night, weather, seasonal appearance, ambient effects, Pokémon/buddy visibility, sprite scale where supported, widget and icon appearance.
-- **Layout:** page count/arrangement, grid dimensions, widget placement, viewport behavior, folders and shortcuts.
+- **Layout:** page count/arrangement, grid dimensions, widget placement, viewport behavior and shortcuts.
 - **Pokémon:** visible population ceiling, buddy/party/favorite priority, rotation, per-Pokémon visibility and ambient behavior density.
 - **Gestures:** app drawer, search, global navigation, quick actions, page navigation, widget editing and back behavior.
 - **Sound/touch:** ambient cries, footsteps, environmental and interaction SFX, haptics and independent volume controls.
@@ -233,7 +233,7 @@ Settings are organized by intent and use sensible defaults.
 
 Resetting launcher preferences must never delete apps, owned Pokémon, module records or the PokéLife save. Avoid exposing complex tuning unless it produces a meaningful visible result.
 
-Launcher settings hold choice lists, not cycling lines (town size, weather, temperature, battery saver, every gesture), switches for on/off lines, and no Sound section (global Settings owns sound). Date format and 12-hour clock live in General Settings, "Date and time". "Clear pinned apps and custom icons" and "Reset launcher settings" ask first; reset keeps pins, icons, hidden, moved, folders, launch counts and the weather place.
+Launcher settings hold choice lists, not cycling lines (town size, weather, temperature, battery saver, every gesture), switches for on/off lines, and no Sound section (global Settings owns sound). Date format and 12-hour clock live in General Settings, "Date and time". "Clear pinned apps and custom icons" and "Reset launcher settings" ask first; reset keeps pins, icons, hidden, moved, launch counts and the weather place.
 
 ## 11. Android default-launcher integration
 
@@ -273,7 +273,7 @@ Review `QUERY_ALL_PACKAGES` policy and distribution eligibility before using it.
 
 Resolve gesture conflicts through predictable touch regions and provide visible alternatives for users who cannot or do not wish to use gestures.
 
-Swipe up or down reach is 64 dp. Extra triggers: swipe up or down with two fingers, press and hold empty space. Jobs: Open folders, Open widgets, Edit the home screen, Go to the next page, Pull down notifications (`EXPAND_STATUS_BAR`, used only for this).
+Swipe up or down reach is 64 dp. Extra triggers: swipe up or down with two fingers, press and hold empty space. Jobs: Open widgets, Edit the home screen, Go to the next page, Pull down notifications (`EXPAND_STATUS_BAR`, used only for this).
 
 ### 11.5 Android widget host
 
@@ -328,7 +328,7 @@ Android restarts a crashed launcher at once, so a start-up crash would loop. `Cr
 
 All functional elements expose meaningful accessible labels, logical traversal order, selected/focused state and supported actions. Pokémon expose species or nickname when navigated; decorative details do not create hundreds of meaningless screen-reader stops.
 
-Provide a conventional navigation mode with named destinations, module list, search, app drawer, Pokémon access, widgets, folders and settings without requiring map navigation. Support system font scaling, high contrast, Reduced Motion, reduced transparency/effects, color-independent state, adequate touch targets and readable dialogue panels. Sound never communicates essential information exclusively.
+Provide a conventional navigation mode with named destinations, module list, search, app drawer, Pokémon access, widgets and settings without requiring map navigation. Support system font scaling, high contrast, Reduced Motion, reduced transparency/effects, color-independent state, adequate touch targets and readable dialogue panels. Sound never communicates essential information exclusively.
 
 Reduced Motion disables or simplifies continuous roaming, parallax, ambient particles and decorative transitions. Gesture actions always have an accessible alternative.
 
@@ -385,7 +385,7 @@ If a module is disabled, unavailable or unimplemented, its shortcut behaves cons
 
 Use reusable animation definitions with frame duration, looping/one-shot behavior, direction, interruption and completion semantics. Prefer authentic source frames over artificial stretching/rotation. Asset fallback: PMD sprite/animation; appropriate mainline or supported alternative; static species sprite if no animation exists. Never substitute missing Pokémon artwork with generic Pixelarticons.
 
-The shared Design System owns dialogue-box anatomy, tokens, typography, borders and accessibility. Launcher may adapt shared components for widgets, contextual labels, folders, search/navigation overlays, status panels and confirmations. Maintain consistent padding, contrast, focus and pressed states; avoid nested dialogue boxes and gratuitous portraits. App icons, scenery, sprites and search inputs retain their appropriate visual form.
+The shared Design System owns dialogue-box anatomy, tokens, typography, borders and accessibility. Launcher may adapt shared components for widgets, contextual labels, search/navigation overlays, status panels and confirmations. Maintain consistent padding, contrast, focus and pressed states; avoid nested dialogue boxes and gratuitous portraits. App icons, scenery, sprites and search inputs retain their appropriate visual form.
 
 ## 17. Empty states, onboarding and recovery
 
@@ -428,7 +428,7 @@ Restore last valid configuration; validate scene/widget references; repair missi
 - [ ] External widgets measure against actual allocated dimensions.
 - [ ] No clipping or unexpected empty space.
 - [ ] Widget configuration survives process recreation.
-- [ ] Folders behave reliably and widgets respect privacy settings.
+- [ ] Widgets respect privacy settings.
 
 ### Android integration
 - [ ] User can select PokéLife as default launcher and restore previous launcher.

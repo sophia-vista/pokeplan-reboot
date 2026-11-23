@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.HoldToConfirm
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.PixelSlider
@@ -154,19 +155,29 @@ internal fun NotificationSettings(model: AppModel) {
         )
     }
     SettingsGroup("Reminders", "bell") {
-        ToggleRow("Plan tasks", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
-        ToggleRow("Care routines", model.careData.settings.reminders) { on -> model.care.changeSettings { it.copy(reminders = on) } }
-        ToggleRow("Base chores and upkeep", model.baseData.settings.reminders) { model.base.setReminders(it) }
-        ToggleRow("Link dates and follow-ups", model.linkData.settings.reminders) { model.link.setReminders(it) }
-        ToggleRow("Mint bills", model.mintData.settings.billReminders) { model.mint.setBillReminders(it) }
-        ToggleRow("World job alert", settings.worldJobAlerts) { store.changeSettings { s -> s.copy(worldJobAlerts = it) } }
-        ToggleRow("Streak reminder", settings.streakReminder) { store.changeSettings { s -> s.copy(streakReminder = it) } }
-        if (settings.streakReminder) {
-            Stepper("Streak reminder at", hourText(settings.streakReminderHour), 1) { by ->
-                store.changeSettings { s -> s.copy(streakReminderHour = (s.streakReminderHour + by + 24) % 24) }
+        val planOn = listOf(settings.reminders, settings.worldJobAlerts, settings.streakReminder, settings.weeklyRecap).count { it }
+        Accordion("Plan and World", summary = "$planOn on") {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                ToggleRow("Plan tasks", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
+                ToggleRow("World job alert", settings.worldJobAlerts) { store.changeSettings { s -> s.copy(worldJobAlerts = it) } }
+                ToggleRow("Streak reminder", settings.streakReminder) { store.changeSettings { s -> s.copy(streakReminder = it) } }
+                if (settings.streakReminder) {
+                    Stepper("Streak reminder at", hourText(settings.streakReminderHour), 1) { by ->
+                        store.changeSettings { s -> s.copy(streakReminderHour = (s.streakReminderHour + by + 24) % 24) }
+                    }
+                }
+                ToggleRow("Weekly recap", settings.weeklyRecap) { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
             }
         }
-        ToggleRow("Weekly recap", settings.weeklyRecap) { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
+        val lifeOn = listOf(model.careData.settings.reminders, model.baseData.settings.reminders, model.linkData.settings.reminders, model.mintData.settings.billReminders).count { it }
+        Accordion("Life modules", summary = "$lifeOn on") {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                ToggleRow("Care routines", model.careData.settings.reminders) { on -> model.care.changeSettings { it.copy(reminders = on) } }
+                ToggleRow("Base chores and upkeep", model.baseData.settings.reminders) { model.base.setReminders(it) }
+                ToggleRow("Link dates and follow-ups", model.linkData.settings.reminders) { model.link.setReminders(it) }
+                ToggleRow("Mint bills", model.mintData.settings.billReminders) { model.mint.setBillReminders(it) }
+            }
+        }
     }
 }
 
@@ -382,7 +393,8 @@ internal fun ModuleExportsCard(model: AppModel) {
     val today = model.store.today
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            GlyphTitle("Module exports", "download")
+            Accordion("Export one module", summary = "6") {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelButton("Plan and Pokémon", { note = files.save("pokeplan-export-$today.json", model.store.exportJson()) }, color = Pixel.InkSoft, compact = true)
                 PixelButton("Care", { note = files.save("pokeplan-care-$today.json", model.care.exportJson()) }, color = Pixel.InkSoft, compact = true)
@@ -392,6 +404,8 @@ internal fun ModuleExportsCard(model: AppModel) {
                 PixelButton("Link", { note = files.save("pokelife-link.json", model.link.export()) }, color = Pixel.InkSoft, compact = true)
             }
             note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+            }
+            }
         }
     }
 }
@@ -403,7 +417,8 @@ internal fun ResetCard(model: AppModel) {
     var asking by remember { mutableStateOf<String?>(null) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            GlyphTitle("Reset", "trash")
+            Accordion("Erase data") {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             when (asking) {
                 "care" -> {
                     Text(
@@ -431,6 +446,8 @@ internal fun ResetCard(model: AppModel) {
                 }
             }
             note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+            }
+            }
         }
     }
 }

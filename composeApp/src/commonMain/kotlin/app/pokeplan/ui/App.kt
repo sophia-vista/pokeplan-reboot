@@ -152,6 +152,7 @@ class AppModel(
         updateRelease = release
         updateProblem = if (release == null) access.problem else null
         updateChecked = true
+        updateAvailable?.let { access.notifyAvailable(it) }
         return updateAvailable != null
     }
 
@@ -443,6 +444,8 @@ fun App(
         ThemeMode.DARK -> true
     }
     LaunchedEffect(dark) { onDark?.invoke(dark) }
+    // Once per app start: a newer build raises a notification (once per version) without a visit to Me.
+    LaunchedEffect(model) { if (model.updates != null && !model.updateChecked) model.checkForUpdate() }
     PixelTheme(dark) {
         Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
             val clock = store.now

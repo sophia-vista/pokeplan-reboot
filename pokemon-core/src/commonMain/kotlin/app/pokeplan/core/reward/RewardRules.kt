@@ -1,5 +1,5 @@
 package app.pokeplan.core.reward
 
 object RewardRules {
-    const val VERSION: Int = 33
+    const val VERSION: Int = 34
 }
