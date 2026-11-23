@@ -518,56 +518,58 @@ WORLD work follows the dependency-first roadmap in the Implementation Guide. Do 
 
 ## 12. Acceptance criteria
 
+> Boxes checked against the code in 0.236.0 (23 November 2026): a tick means built and found in the code; an unticked box says what is missing.
+
 ### Gameplay and progression
-- [ ] New save can complete the Mythical-led opening tutorial.
-- [ ] Teams can be created, edited, saved as presets and dispatched.
-- [ ] No Pokémon can be assigned to conflicting active teams.
-- [ ] All regions are accessible from day one at entry-level depth.
-- [ ] Expeditions progress while the app is closed and recover after process death/reboot.
-- [ ] Same seeded expedition produces the same floor outcomes regardless of settlement frequency.
-- [ ] Offline cap is transparent; no earned progress is removed.
-- [ ] Every participating Pokémon receives the full individual XP award per eligible completed floor; award is not divided.
-- [ ] Exploration XP/Rank is awarded once per floor through shared progression.
-- [ ] Finds are permanent until the user recruits them; recruitment creates one shared owned instance.
-- [ ] No egg or hatch scene is used for WORLD recruitment.
-- [ ] Story, mission and Guardian rewards are replay-safe.
+- [x] New save can complete the Mythical-led opening tutorial.
+- [x] Teams can be created, edited, saved as presets and dispatched.
+- [x] No Pokémon can be assigned to conflicting active teams.
+- [x] All regions are accessible from day one at entry-level depth.
+- [x] Expeditions progress while the app is closed and recover after process death/reboot.
+- [x] Same seeded expedition produces the same floor outcomes regardless of settlement frequency.
+- [x] Offline cap is transparent; no earned progress is removed.
+- [x] Every participating Pokémon receives the full individual XP award per eligible completed floor; award is not divided.
+- [ ] Exploration XP/Rank is awarded once per floor through shared progression. — partial: the rank record is shared, but WorldData still keeps its own Exploration xp (14.8)
+- [x] Finds are permanent until the user recruits them; recruitment creates one shared owned instance.
+- [x] No egg or hatch scene is used for WORLD recruitment.
+- [x] Story, mission and Guardian rewards are replay-safe.
 
 ### Shared ownership and economy
-- [ ] One shared Pokémon collection and Pokédex.
-- [ ] One shared Bag and item quantity source.
-- [ ] One shared Poké balance.
-- [ ] One authoritative Exploration XP/Rank record.
-- [ ] Individual Pokémon XP is stored only by shared Pokémon progression.
-- [ ] Reward processing is idempotent across retries, migration and restore.
-- [ ] No pending reward is spendable as a parallel inventory.
-- [ ] Guardian ownership/perks use shared services without duplicate Pokémon.
+- [x] One shared Pokémon collection and Pokédex.
+- [x] One shared Bag and item quantity source.
+- [x] One shared Poké balance.
+- [ ] One authoritative Exploration XP/Rank record. — partial: WorldData still keeps its own Exploration xp beside the shared rank record (14.8)
+- [x] Individual Pokémon XP is stored only by shared Pokémon progression.
+- [x] Reward processing is idempotent across retries, migration and restore.
+- [x] No pending reward is spendable as a parallel inventory.
+- [x] Guardian ownership/perks use shared services without duplicate Pokémon.
 
 ### Story and content
-- [ ] Mew opening is separate from regional campaign progression.
-- [ ] Mythical episodes are optional and self-contained.
-- [ ] Rescue Team and Explorers remain separate.
-- [ ] Campaigns can be played in any order.
-- [ ] Dialogue is authored and character-consistent; no human characters.
-- [ ] Scenes can be skipped, resumed and replayed.
-- [ ] Buddy switching does not reset story or change gameplay advantage.
-- [ ] Replay cannot re-award recruitment, currency, items, XP or mission completion.
+- [x] Mew opening is separate from regional campaign progression.
+- [ ] Mythical episodes are optional and self-contained. — partial: the built arcs' episodes are optional and self-contained; the remaining Mythical episodes are not written (REP-037)
+- [x] Rescue Team and Explorers remain separate.
+- [x] Campaigns can be played in any order.
+- [x] Dialogue is authored and character-consistent; no human characters.
+- [x] Scenes can be skipped, resumed and replayed.
+- [x] Buddy switching does not reset story or change gameplay advantage.
+- [x] Replay cannot re-award recruitment, currency, items, XP or mission completion.
 
 ### Privacy, offline and reliability
-- [ ] WORLD works without account, network, location permission or external service.
-- [ ] No health, finance, CARE, BASE or LINK content enters WORLD records, logs, notifications or reward events.
-- [ ] Save migration and backup/restore preserve WORLD progress and do not replay rewards.
-- [ ] Repeated settlement and interrupted operations are idempotent.
-- [ ] Notifications are optional, rate-limited and use shared delivery/quiet-hours policy.
-- [ ] Widget and launcher surfaces are read-only projections.
+- [x] WORLD works without account, network, location permission or external service.
+- [x] No health, finance, CARE, BASE or LINK content enters WORLD records, logs, notifications or reward events.
+- [x] Save migration and backup/restore preserve WORLD progress and do not replay rewards.
+- [x] Repeated settlement and interrupted operations are idempotent.
+- [ ] Notifications are optional, rate-limited and use shared delivery/quiet-hours policy. — partial: the one job alert is optional and settled once; it runs on AppAlerts, not the shared reminder/quiet-hours scheduler (REP-011 keeps it there by design)
+- [x] Widget and launcher surfaces are read-only projections.
 
 ### Presentation and accessibility
-- [ ] Shared PMD dialogue-box language is consistently applied.
-- [ ] Pixel art remains crisp and correctly scaled.
-- [ ] No unnecessary dashboard clutter, redundant captions or nested containers.
-- [ ] Light/dark themes, enlarged text, TalkBack and reduced motion pass.
-- [ ] Maps have accessible non-map alternatives.
-- [ ] Sound is optional and never carries essential information.
-- [ ] Phone and larger responsive layouts remain usable.
+- [x] Shared PMD dialogue-box language is consistently applied.
+- [x] Pixel art remains crisp and correctly scaled.
+- [ ] No unnecessary dashboard clutter, redundant captions or nested containers. — partial: the 0.236.0 on-demand controls rule applies to the module menus; no design review of the WORLD screens is recorded
+- [ ] Light/dark themes, enlarged text, TalkBack and reduced motion pass. — partial: themes and reduced motion ship; the TalkBack and font-scale pass is not recorded (REP-048)
+- [x] Maps have accessible non-map alternatives.
+- [x] Sound is optional and never carries essential information.
+- [ ] Phone and larger responsive layouts remain usable. — not verified: no phone or larger-screen pass is recorded (REP-033)
 
 ## 13. Source-of-truth relationships
 
