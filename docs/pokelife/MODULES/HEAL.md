@@ -62,7 +62,7 @@ Grouped places, not one per metric (owner, 23 November 2026; `../FEATURES/DESIGN
 1. **Today** — concise daily health summary, recent activity, quick logging and relevant reminders. **Import first:** where the phone has a provider, the first quick action reads it in ("Import from Health Connect"), and logging by hand sits right behind it; a player with no provider sees the manual actions alone, and nothing needs connecting to use HEAL (10).
 2. **Activity** — steps, distance, movement, active time and activity history, with **sleep** as the second view (`Exercise | Sleep`) while workouts and the exercise library are not built yet (4).
 3. **Wellness** — nutrition, hydration, body measurements, selected health metrics and readings, and the period record, as views under one place (`Water | Body | Readings` today; nutrition and period join that row when they are built, 5 and 8).
-4. **Records** — the consolidated, searchable timeline of personal health records: medications, illnesses and the body of history and trends (section 8 and 11). Not built yet, and therefore not listed in the Sections key.
+4. **Records** — the private health history: the medication and supplement log with its optional dose log and refill reminders (8.1, as built in 22C), and the consolidated, searchable timeline of personal health records with symptoms and illnesses (section 8 and 11) as further views when they are built.
 
 Goals, provider connections, import history and settings are secondary destinations in the same Sections key, after the primary ones; do not add a primary destination for every individual metric.
 
@@ -203,7 +203,9 @@ HEAL provides a limited private reference area, not a clinical record system.
 
 Allow user-entered medication name, strength, user-provided instructions, schedule, start/end dates, active/paused/discontinued status and private notes. Do not calculate, recommend, alter or validate doses. Do not infer a medication schedule from a label or external source. Users remain responsible for entering and confirming instructions with their clinician/pharmacist.
 
-Medication adherence logging is optional and private. It must never be a reward-bearing action. A reminder can notify the user of their own entered schedule but must not imply that PokéLife has clinically verified it.
+The schedule is the player's own list of times of day (at most six), run daily between the start and end dates; a record with no times is "as needed" and schedules nothing. A record can also carry an optional count of doses left and the point at which the player wants a refill reminder; logging a taken dose takes one off the count, and a refill sets it to the count the player types. The app never suggests a count, a schedule or a dose.
+
+Medication adherence logging is optional and private: one entry per scheduled time and day, "taken" or "skipped", with its own history and undo. It must never be a reward-bearing action and is not a target, a streak or a score. A reminder can notify the user of their own entered schedule, or when their own count is at or under their own refill point, but must not imply that PokéLife has clinically verified it; notifications name no medication on the lock screen. A paused or stopped record, or one outside its dates, never reminds.
 
 ### 8.2 Symptoms, appointments and notes
 
@@ -367,6 +369,7 @@ Potential HEAL reminder sources:
 | Source | Default | Behavior |
 |---|---|---|
 | Medication schedule | Off until explicitly configured | User-entered schedule reminder; never verifies or changes dosage |
+| Medication refill | Off until explicitly configured | One reminder a day once the player's own count reaches their own refill point; no count or dose is suggested |
 | Appointment | Off until explicitly enabled | Reminder for a user-entered appointment |
 | Hydration | Off | Optional, low-frequency prompt; user-defined target only |
 | Workout commitment | Managed by PLAN when scheduled there | HEAL may link to the PLAN commitment; no duplicate reminder |
@@ -456,6 +459,8 @@ Dependency-first order; do not start a later phase while the preceding foundatio
 - HEAL is useful without a wearable, internet, account or Pokémon reward.
 - Activity, workout, nutrition, hydration, sleep, measurements and health records have clear owners and independent workflows.
 - Quick logging does not require unnecessary fields.
+- A medication record can be created with a name alone, and its times, dates, status, instructions and notes can be edited, paused or stopped without losing its adherence history.
+- One adherence entry per scheduled time and day, taken or skipped, is optional, undoable and never a score.
 - Dashboard metrics are configurable and missing data is not displayed as zero.
 - Goals can be paused; missed days do not cause loss or shame.
 
@@ -465,6 +470,7 @@ Dependency-first order; do not start a later phase while the preceding foundatio
 - Repeated imports do not duplicate records or rewards.
 - Uncertain duplicates are preserved for review.
 - Manual records are not silently overwritten.
+- A medication's adherence history survives a rename, a schedule edit, a pause and a migration; deleting the record deletes its log.
 - Provider permissions can be denied/revoked without disabling manual HEAL use.
 - Huawei/Health Connect capabilities are advertised only after actual device/firmware verification.
 
@@ -505,7 +511,7 @@ Product-wide module map, ownership, privacy and shared Pokémon rules: `../PRODU
 
 *Not run on a device.*
 
-**What exists.** Section 2's Today card and menu; **activity**, **hydration** (with an optional target the player sets), **sleep** (a finished night, never a stage or a score), **body measurements** (kept in the unit entered; kept off Today unless asked; a trend sentence only from three comparable entries, with no word that judges), **optional goals** (weekly active minutes, weekly active days, a daily drink total; "so far", never "failed"), **Connections** (imports, 22A), **Readings** (22B), the optional screen lock (Settings → Privacy and access) and a Settings page (Field Research, hydration target and reminders, weight unit, export and erase by kind). Not built, and not offered: the exercise library, workout sessions and templates (section 4), meals and nutrients (section 5), personal health records (section 8), Today customisation, a consolidated History, and charts.
+**What exists.** Section 2's Today card and menu; **activity**, **hydration** (with an optional target the player sets), **sleep** (a finished night, never a stage or a score), **body measurements** (kept in the unit entered; kept off Today unless asked; a trend sentence only from three comparable entries, with no word that judges), **optional goals** (weekly active minutes, weekly active days, a daily drink total; "so far", never "failed"), **Connections** (imports, 22A), **Readings** (22B), **Medications** (22C), the optional screen lock (Settings → Privacy and access) and a Settings page (Field Research, hydration target and reminders, weight unit, export and erase by kind). Not built, and not offered: the exercise library, workout sessions and templates (section 4), meals and nutrients (section 5), the rest of the personal health records (symptoms, appointments and notes, section 8.2), Today customisation, a consolidated History, and charts.
 
 **Field Research (section 12).** Amounts, caps and meter sizes are *(tune)* values owned by `docs/economy.md` (the "Heal: ..." and "Field Research's Egg meter" rows).
 - **On by default**, and off in Settings at any time. Turning it off keeps every record and loses nothing.
@@ -514,9 +520,9 @@ Product-wide module map, ownership, privacy and shared Pokémon rules: `../PRODU
 - The event the shared world receives is exactly `HealEvent`: a stable `id` (`heal:<kind>:<record id>`), `module` ("heal"), an opaque `ref`, the broad `kind` (`activity_logged`, `participation`, `steps_reached`, `records_imported`) and the time. The game remembers the paid ids (`AppData.healPaid`), so a replay (an edit, a delete, a restore of an older backup, a migration) never pays twice.
 - Heal's party is a place like any other (`../FEATURES/POKEMON_ECOSYSTEM.md` 2.2); its perks change only what Field Research pays, never a record or a total. Heal works fully with an empty party. The first-run walk is `../FEATURES/POKEMON_ECOSYSTEM.md` 10.2.1 (`Tutorials.HEAL_WALK`).
 
-**Data (section 14).** `heal_*` tables: `heal_activity`, `heal_hydration`, `heal_sleep`, `heal_measurement`, `heal_goal`, `heal_steps`, `heal_vital` (one family per kind) and `heal_state` (the settings). `HealTables` can read, export or erase one family alone and `clear` all of HEAL, touching nothing outside `heal_*`. Heal is in the daily backup and the backup bundle. Every row is **sealed** (`../ARCHITECTURE/DATA_AND_MIGRATIONS.md`); a phone without the key opens a sealed Heal as empty and keeps the old rows aside, sealed. **Not done:** per-kind export of a *backup*.
+**Data (section 14).** `heal_*` tables: `heal_activity`, `heal_hydration`, `heal_sleep`, `heal_measurement`, `heal_goal`, `heal_steps`, `heal_vital`, `heal_medication`, `heal_dose` (one family per kind) and `heal_state` (the settings). `HealTables` can read, export or erase one family alone and `clear` all of HEAL, touching nothing outside `heal_*`. Heal is in the daily backup and the backup bundle. Every row is **sealed** (`../ARCHITECTURE/DATA_AND_MIGRATIONS.md`); a phone without the key opens a sealed Heal as empty and keeps the old rows aside, sealed. **Not done:** per-kind export of a *backup*.
 
-**Reminders (section 13).** Hydration only (besides the optional reminder to read Huawei Health, 22A), off until the player adds a time, through the shared scheduler (`HealReminderAdapter`): the request holds only an opaque slot, the words are the same for everyone, the notification is private on the lock screen, the only button is "In 30 min" (a reminder is not a record and pays nothing), and it stays silent once the player's own target for the day is met. Medication, appointment, goal check-in and the other sources of the table in section 13 are not built.
+**Reminders (section 13).** Hydration and medications (besides the optional reminder to read Huawei Health, 22A), all off until the player asks for them, through the shared scheduler (`HealReminderAdapter`): a request holds only an opaque slot, the words are the same for everyone, the notification is private on the lock screen, the only button is "In 30 min" (a reminder is not a record and pays nothing), and it stays silent once the player's own target for the day is met. A medication reminder names nothing and is dropped for a scheduled time the player already logged; the refill nudge is one a day at the last scheduled time while the player's own count is at or under their point. Appointment, goal check-in and the other sources of the table in section 13 are not built.
 
 **Rules in force.** A night whose end is still to come is refused (only a finished night is a record, section 2.2); every history pages with "Show older"; every single delete offers Undo; a paid record is saved in one write; an edit never pays again.
 
@@ -550,11 +556,25 @@ HEAL keeps daily steps, heart rate and resting heart rate, SpO2, skin temperatur
 
 **Records** (`heal_steps` and `heal_vital`; `StepsRecord`, `VitalReading`, `VitalType`). **Steps:** one record per day and provider, the largest count read that day (a smaller later count changes nothing). **Readings:** one per day for each type (heart rate: one per distinct bpm and day); a later read of the same day that shows another value updates it. The Health page gives no time for a reading, so each carries the time PokéLife read it, and the Sleep page's score is stamped on the night it shows. They are never edited (a wrong one is deleted), never called good, bad, high or low, with no target and no trend sentence. Huawei's word beside the stress number is not kept. They are in Heal → **Readings**, in export and in erase, one kind at a time.
 
-**Where they come from.** The Health page's summary and cards (steps, stress, heart rate and `RHR`, skin temperature, SpO₂), the Health insights line "Your Sleep score is ## points", the Sleep page (`scoring_value` and its date) and the step notification. Values outside the bounds in `HealRules.checkSteps` and `checkVital` are rejected, never repaired. A page that shows "--" or 0 steps is missing, not zero.
+**Where they come from.** The Health page's summary and cards (steps, stress, heart rate and `RHR`, skin temperature, SpO₂), the Health insights line "Your Sleep score is ## points", the Sleep page (`scoring_value` and its date), the step notification, and the Sleep All data day pages. **Weight and body fat** also come from the Weight page's **All data** (`HealthDataHistoryActivity`): a day header and, under it, that day's readings with their own time, so each becomes a record with its own date and time instead of only the latest value on the page. Values outside the bounds in `HealRules.checkSteps` and `checkVital` are rejected, never repaired. A page that shows "--" or 0 steps is missing, not zero.
 
-**No duplicate data.** Every record has an id made from its own day (and bpm), so the same page read twice, the page and the notification, or the Sleep page and the insights line, are one record; the preview says how many are new, updated and already here. The reader also taps each opened page's **Week** tab when it has one so the week's page is captured for the next probe; the week view is not parsed yet, and a week range is never taken for a night.
+**No duplicate data.** Every record has an id made from its own day (and bpm), so the same page read twice, the page and the notification, or the Sleep page and the insights line, are one record; the preview says how many are new, updated and already here. The reader also taps the Sleep page's **Week** tab so the week's page is captured for the next probe; it is a total, not one night, so it is never parsed (reported as Not supported), and a week range is never taken for a night.
+
+**What a read can and cannot get (0.237.0; the owner's probe 14, 22 November 2026).** Every page or metric the walk meets has exactly one of four outcomes, and Heal → Connections → Huawei Health lists them per card, each with the records the preview would add: **Read** (the Health page's cards, Steps, Exercise records, Weight, Sleep, Skin temperature, SpO₂), **Can't open** (the Heart and Emotional wellbeing pages: on the owner's phone they open as blank windows with no words and no menu; today's heart rate and stress still come from the Health page cards), **No record model** (a reliable value HEAL keeps no record for: a night's stages, Cycle Calendar's period days, flow and symptoms, Health Clovers, Activity rings) and **Not supported** (the Sleep Week/Month totals and averages, Huawei's Health insights, and any card a Huawei update adds that HEAL does not know). The capability table is `HuaweiSources.SOURCES`; a page that is not Read is opened **once** and reported, never retried, so its menu, pills, All data and top-right taps are not tried for the whole budget. The same report is in the saved probe (the "Visits" section, digits hidden).
 
 **Rewards** (`docs/economy.md`, "Heal: steps" and "Heal: records read in"): steps pay per amount of today's steps; reading a family of records in pays once a day per family, for Health Connect and Huawei alike (not for steps, nor for a workout from Huawei, which pays as a session). Neither adds Egg meter points, trainer points, berries or item drops. **No reading, score or sleep value pays for what it says**; a family pays because it was read in, whatever the numbers were. What was paid is kept as marks in the sealed settings (`HealSettings.paidMarks`), so deleting a record and reading it again pays nothing twice. Field Research off pays nothing and records everything.
+
+## 22C. As built: medications and supplements
+
+*Not run on a device. The records follow section 8.1: the player types everything; the app computes no dose, schedule or advice.*
+
+**Records.** A medication has a name (the only required field), strength, instructions, private notes, a start date and an optional end date, an active / paused / stopped state, up to six times of day, and optionally a count of doses left with the point where the player wants a refill reminder. No times means "as needed": the schedule is empty and nothing reminds. The name, strength, instructions, times, dates, status, supply, refill point and reminder switch can be edited at any time; an edit never touches the dose log.
+
+**Dose log.** For a scheduled time the player marks it "taken" or "skipped" (or leaves it alone); an as-needed record has "Taken now" and "Skip now" at the current minute. One entry per medication, day and time; logging the same one twice is refused, and a delete offers Undo. A "taken" entry takes one off the player's own supply count; undo puts it back. Skipped entries change no count. Adherence is never a score, a target or a reward: no Field Research event, Egg point, candy or ledger entry is made (22, section 12.3).
+
+**Reminders (section 13).** Per medication, "Remind me" is off until the player turns it on and needs at least one time; the reminder repeats for the upcoming days from the entered times and stops for a time already logged, for a paused or stopped record and outside its dates. A refill nudge comes once a day at the last scheduled time while the count is at or under the player's own point. The lock screen says only that a medication is due (or that a refill may be near): no name, strength or instruction leaves the app; no notification action records anything.
+
+**Data.** `heal_medication` and `heal_dose` (schema 13, migration `12.sqm`), sealed with the rest of Heal, in the backup bundle and erase-by-kind as "Medications and doses".
 
 ## Shared Pokémon ecosystem contract
 

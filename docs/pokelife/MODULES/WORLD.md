@@ -545,7 +545,7 @@ WORLD work follows the dependency-first roadmap in the Implementation Guide. Do 
 
 ### Story and content
 - [x] Mew opening is separate from regional campaign progression.
-- [ ] Mythical episodes are optional and self-contained. — partial: the built arcs' episodes are optional and self-contained; the remaining Mythical episodes are not written (REP-037)
+- [x] Mythical episodes are optional and self-contained. — the seven follow-up Mythical episodes are authored (14.6); the rewritten Explorers chapters 5 to 8 and the regional adaptations remain (REP-037)
 - [x] Rescue Team and Explorers remain separate.
 - [x] Campaigns can be played in any order.
 - [x] Dialogue is authored and character-consistent; no human characters.
@@ -564,7 +564,7 @@ WORLD work follows the dependency-first roadmap in the Implementation Guide. Do 
 ### Presentation and accessibility
 - [x] Shared PMD dialogue-box language is consistently applied.
 - [x] Pixel art remains crisp and correctly scaled.
-- [ ] No unnecessary dashboard clutter, redundant captions or nested containers. — partial: the 0.236.0 on-demand controls rule applies to the module menus; no design review of the WORLD screens is recorded
+- [x] No unnecessary dashboard clutter, redundant captions or nested containers. — the menu now states each fact once through `WorldDigest` (14.9); a full TalkBack/font-scale design review of every WORLD screen is still REP-048's to record
 - [ ] Light/dark themes, enlarged text, TalkBack and reduced motion pass. — partial: themes and reduced motion ship; the TalkBack and font-scale pass is not recorded (REP-048)
 - [x] Maps have accessible non-map alternatives.
 - [x] Sound is optional and never carries essential information.
@@ -616,7 +616,7 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 
 ### 14.5 Missions (jobs)
 - The board opens at story chapter 2 of the home layer; three jobs at a time. Kinds: Explore, Find items, Rescue, Deliver, Escort (a team of a size), Defeat (a team power), Investigation, Challenge and Story. A job is one-time, ordinary (back after 14 days, so repeating is no faster than exploring), weekly (7 days) or the daily berry run (1 day, coming back at the player's midnight). The board states why a job is unavailable (rank, already done, days left).
-- **Finished-job alert (Android):** when a team will climb to a job's floor, one alarm is set for the earliest such moment (`WorldSim.jobsDoneAt`, `WorldAlerts.nextJobDone`; Settings, on by default); it settles World and names the finished job or how many are ready. Berry jobs have no forecast. Settling otherwise happens on entry and at the next due floor (`WorldSim.nextFloorAt`), never by polling.
+- **Finished-job alert (Android):** when a team will climb to a job's floor, one alarm is set for the earliest such moment (`WorldSim.jobsDoneAt`, `WorldAlerts.nextJobDone`; Settings, on by default); it settles World and names the finished job or how many are ready. Berry jobs have no forecast. **Settlement moment:** opening WORLD, the app returning to the foreground (`MainActivity.onResume`) and one inexact idle-safe alarm at the next due floor (`WorldSim.nextFloorAt`, `WorldAlerts.nextFloorAt`, `AppAlerts.Kind.EXPEDITION`) are the only moments that settle. The floor alarm is silent (floor payouts are routine; the report waits in World) and reschedules itself from the settled save. There is no poll loop and no timer on the World screen: elapsed time alone decides what a settlement pays, so the three triggers pay exactly the same floors.
 
 ### 14.6 Story, quests and Guardians
 - Each layer has a chapter list (`Story.chaptersOf(layer)`) opened as in 14.1: the Rescue arc six chapters ending at the Sky Tower, the Explorers arc eight with the Temporal Tower as its seventh (Primal Dialga); the mainline layers five (Kanto "The Genetic Crisis", Johto "The Sacred Balance", Hoenn "The Primal Awakening", Sinnoh "The Distortion of Creation"). Primal Dialga, the home Guardian, is its own Dex form and does not stand in for Sinnoh's Dialga. A new rank and each chapter play a short scene once; the story archive replays them (and each legendary quest has its own scene) without re-awarding.
@@ -636,6 +636,7 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 | Sinnoh | Giratina (Guardian) | Distortion World, after its Guardian | 3% more treasure boxes |
 
 - **Galar's three birds** are legend quests of the Galar layer: Galarian Articuno (Slumbering Weald cleared 3 times), Galarian Zapdos (Dusty Bowl 3) and Galarian Moltres (Galar Mine No. 2 3), each with no Guardian gate. The quest grants the Galarian form, not the Kanto one (`LegendQuest.form`), so owning the Kanto bird does not block it. They are quests like any other: legendary and mythical Pokémon never appear as ordinary floor Finds, only as quests, Guardians and story scenes.
+- **Mythical follow-ups (built 0.237.0):** seven short optional episodes belong to no layer, like the opening: Hoopa "The Wrong Door", Victini "The Perfect Run", Celebi "One More Try", Jirachi "A Little Wish", Marshadow "The Unnoticed Path", Shaymin "The Long Way Around" and Darkrai "A Dream with Teeth" (`MythicalChapters`, chapters 2 to 8 of the layerless story, `StoryCatalog.mythicalEpisodes()`). Journal's Story archive lists them under **Mythical invitations**, with watched/unwatched state and a play key; a watched episode can be watched again and grants nothing twice. Finishing one whose episode sets its join flag adds that Mythical as a permanent Find once (`MythicalChapters.recruits`, `worldEpisodeDone`, a `GameStore.MEW_GIFT`-style marker); the Find is recruited through the ordinary path. Story flags never gate a reward or a dungeon.
 
 - **Plan has no quest for a legendary World gives:** Zapdos, Articuno, Moltres, Mewtwo, Mew, Lugia, Ho-Oh, Groudon, Kyogre, Rayquaza and the other World-given ones (`Legends.coveredSpecies`; the list is `Legends.all`). A finished Plan quest stays finished and its Pokémon owned. Every other legendary keeps its Plan quest until a World layer or a module's arc gives it.
 - A region's story follows five parts: Arrival, Investigation, Awakening, Confrontation, Resolution, with the box legendary felt from the start (signs, then mythology, then the encounter). The journey advances only through WORLD's teams: module quests and tasks never feed travel.
@@ -652,6 +653,10 @@ All three are deterministic from their seed (dungeon, team, trip, floor), have t
 - Settlements and routes as map nodes, fog of war, a story track versus an optional exploration track, regional jobs for the mainline layers, postgame per region (deeper floors, modifiers, rematches), fuller story text, the remaining regions and spin-off layers above.
 - More skills (Mining, Archaeology, Survival, Navigation), Friend Area camps, Storage and the Duskull Bank, team roles and equipment.
 - Open: `WorldData` still keeps its own Exploration `xp` and unopened `treasure` counts (the Poké and items already go to the shared services); moving the XP into the shared Exploration Rank record is unfinished. How the boosts of several Guardians in one region combine (owner decision D4: a single cap of the strongest boost; the code still adds them, REP-048); which module features which side legendary and which Guardian helps which module; whether spin-off layers follow the one-layer-each rule (assumed yes); marker positions on the region maps (read by eye, need a device check); a device test of the job alarm.
+
+### 14.9 As built: the World menu and the staged dispatch
+- **One overview, each fact once.** The lead box and rank line are followed by one "what is happening now" block (`WorldDigest`): teams out and the floor each is on, a waiting floor choice, jobs ready to report, Finds waiting, resting teams ready to go and the next place worth exploring. The section keys keep only their own local detail (they never repeat those counts), and the one-shot expedition report card still opens itself when a team has just climbed. No second summary, no duplicated status line.
+- **Dispatch in three steps.** A team's **Send now** opens a staged flow: 1 choose the dungeon (rank and chapter gating, floor count, favoured types), 2 choose or edit the team (suggestion, saved presets, swap, send the strongest), 3 confirm the floor time and the outcome at the team's power, then Start. Back and Next keep the choices, and the team list's quick keys still dispatch in one tap when the team is already known.
 
 ## Shared Pokémon ecosystem contract
 

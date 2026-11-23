@@ -28,6 +28,7 @@ import app.pokeplan.base.BaseData
 import app.pokeplan.link.LinkData
 import app.pokeplan.app.link.LinkReminders
 import app.pokeplan.app.upcomingReminders
+import app.pokeplan.app.world.worldSettle
 import app.pokeplan.care.CareData
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
@@ -345,8 +346,15 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         app.pokeplan.huawei.AndroidHuaweiReader(this).sync()
-        if (created) resumes.tryEmit(Unit)
+        val first = !created
         created = true
+        lifecycleScope.launch {
+            // Expeditions settle from elapsed time. Coming back to the foreground is one of the two moments worth
+            // settling at (the other is the floor alarm), and it replaces the timer the World screen used to run:
+            // read and settle off the main thread, then let the open screen reload the settled save.
+            withContext(Dispatchers.IO) { runCatching { widgetStore(applicationContext).worldSettle() } }
+            if (!first) resumes.tryEmit(Unit)
+        }
     }
 
     override fun onStop() {

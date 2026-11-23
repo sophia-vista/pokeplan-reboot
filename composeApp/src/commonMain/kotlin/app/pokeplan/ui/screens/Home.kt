@@ -54,6 +54,10 @@ import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.FocusRules
 import app.pokeplan.plan.MiniQuest
 import app.pokeplan.plan.Task
+import app.pokeplan.plan.EventCompanions
+import app.pokeplan.world.WorldSim
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
@@ -78,6 +82,8 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.StatChip
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.care.CareSection
+import app.pokeplan.ui.heal.HealSection
+import app.pokeplan.app.world.worldReport
 import app.pokeplan.ui.care.MoodKeys
 import app.pokeplan.ui.plan.taskMeta
 import app.pokeplan.base.BaseRules
@@ -124,9 +130,10 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             RankUpCard(model)
             WelcomeBackCard(model)
             HomeBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
+            HappeningNow(model, go)
             RewardBox(model)
             ModuleCards(model, go)
-            QuickLogCard(model, go)
+            QuickActionsCard(model, go)
 
             if (store.sees(Feature.MINI_QUESTS)) MiniQuestsCard(model, go)
             RecentCard(model, go)
@@ -422,22 +429,82 @@ private fun worldConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
     }
 }
 
+/**
+ * The save-derived facts behind Home's "Happening now" strip, gathered once here so the selection in
+ * [HomeOpportunities] is pure and testable without a store, a clock or a device.
+ */
+@Composable
+private fun HappeningNow(model: AppModel, go: (Place) -> Unit) {
+    val store = model.store
+    val data = model.data
+    val world = data.world
+    val locked = data.settings.lockedModules
+    val now = store.nowMillis
+    val report = store.worldReport()
+    val nextFloor = remember(world, data.player.pokemon, now) { WorldSim.nextFloorAt(world, data.player.pokemon, now) }
+    val safariVisits = if (Module.LINK.name in locked || !model.link.safariOn) 0 else model.linkData.people.count { p ->
+        model.link.safariPool(p.id).isNotEmpty() && model.link.safariToday(p.id).let { !it.visited && it.left > 0 }
+    }
+    val companion = remember(data.events, now) {
+        EventCompanions.due(data.events, store.now) { it.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds() }
+    }
+    val live = HomeLive(
+        reportFloors = report?.floors ?: 0,
+        floorDue = report == null && nextFloor != null && nextFloor <= now,
+        floorDueWhere = world.teams.firstNotNullOfOrNull { team -> team.expedition?.let { Dungeons.byId(it.dungeonId)?.name } } ?: "",
+        jobsReady = world.missions.count { it.done },
+        finds = world.finds.size,
+        outbreaks = if (Module.MINT.name in locked || model.mintData.settings.gate) 0 else data.outbreaks.size,
+        dreamers = if (Module.CARE.name in locked) 0 else Visitors.meadow(model.careData.visitors).count { model.care.canVisit(it) },
+        safariVisits = safariVisits,
+        companionCandies = companion.sumOf { it.candies },
+        companionTitle = companion.firstOrNull()?.title ?: "",
+    )
+    HomeLiveCard(HomeOpportunities.select(live)) { kind ->
+        when (kind) {
+            HomeLiveAction.WORLD_REPORT -> go(Place.WORLD)
+            HomeLiveAction.WORLD_BOARD -> { go(Place.WORLD); model.worldExploreGuild = true; model.worldSection = WorldSection.EXPLORE }
+            HomeLiveAction.WORLD_FINDS -> { go(Place.WORLD); model.worldSection = WorldSection.BAG }
+            HomeLiveAction.MINT_OUTBREAK -> go(Place.MINT)
+            HomeLiveAction.CARE_DREAM -> { go(Place.CARE); model.careSection = CareSection.DREAM }
+            HomeLiveAction.LINK_SAFARI -> { go(Place.LINK); model.linkSection = LinkSection.PEOPLE }
+            HomeLiveAction.PLAN_CALENDAR -> { go(Place.PLAN); model.planSection = PlanSection.CALENDAR }
+        }
+    }
+}
+
+/** The module actions worth one tap from Home. Closed by default (12B): one title opens the compact action row. */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
+private fun QuickActionsCard(model: AppModel, go: (Place) -> Unit) {
     model.careData; model.healData
     val locked = model.data.settings.lockedModules
     val mood = if (Module.CARE.name !in locked) model.care.diaryToday()?.mood else -1
+    val routine = if (Module.CARE.name !in locked) model.care.todayRoutines().firstOrNull { !it.doneOn(model.care.today) } else null
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Quick log")
-            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("Task", { model.addTaskRequested = true; go(Place.PLANNER) }, color = ModuleAccent.PLAN.accent, compact = true)
-                if (Module.HEAL.name !in locked) PixelButton("+250 ml", { model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL) }, color = ModuleAccent.HEAL.accent, compact = true)
-                if (Module.MINT.name !in locked && !model.mintData.settings.gate) PixelButton("Expense", { go(Place.MINT) }, color = ModuleAccent.MINT.accent, compact = true)
+        app.pokeplan.ui.theme.Accordion("Quick actions", summary = "task, expense, routine") {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("Task", { model.addTaskRequested = true; go(Place.PLANNER) }, color = ModuleAccent.PLAN.accent, compact = true)
+                    if (Module.MINT.name !in locked && !model.mintData.settings.gate) {
+                        PixelButton("Expense", { go(Place.MINT); model.mintSection = MintSection.ACTIVITY }, color = ModuleAccent.MINT.accent, compact = true)
+                    }
+                    if (Module.CARE.name !in locked) {
+                        PixelButton("Routine", {
+                            val next = model.care.todayRoutines().firstOrNull { !it.doneOn(model.care.today) }
+                            if (next != null) { model.effect(Sfx.SELECT); model.haptic(); model.care.completeRoutine(next.id) } else { go(Place.CARE); model.carePracticeCalm = false; model.careSection = CareSection.PRACTICE }
+                        }, color = ModuleAccent.CARE.accent, compact = true)
+                    }
+                    if (Module.HEAL.name !in locked) {
+                        PixelButton("+250 ml", { model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL) }, color = ModuleAccent.HEAL.accent, compact = true)
+                        PixelButton("Health record", { go(Place.HEAL); model.healWellnessTab = 2; model.healSection = HealSection.WELLNESS }, color = ModuleAccent.HEAL.accent, compact = true)
+                    }
+                    if (Module.BASE.name !in locked) PixelButton("Base chore", { go(Place.BASE); model.baseSection = BaseSection.CHORES }, color = ModuleAccent.BASE.accent, compact = true)
+                    if (Module.LINK.name !in locked) PixelButton("Add a person", { go(Place.LINK); model.linkSection = LinkSection.PEOPLE }, color = ModuleAccent.LINK.accent, compact = true)
+                }
+                if (mood != -1) MoodKeys(mood) { model.care.setMood(it); model.haptic() }
+                RestDayRow(model)
             }
-            if (mood != -1) MoodKeys(mood) { model.care.setMood(it); model.haptic() }
-            RestDayRow(model)
         }
     }
 }

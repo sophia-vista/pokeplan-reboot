@@ -201,14 +201,24 @@ class BaseStore(
         return Logged(next)
     }
 
-    private fun changeQuantity(id: String, after: Long?, reason: String) = update { d ->
-        val old = d.supplies.firstOrNull { it.id == id } ?: return@update d
+    private fun changeQuantity(id: String, after: Long?, reason: String): StockAdjustment? {
+        val old = data.supplies.firstOrNull { it.id == id } ?: return null
         val adj = StockAdjustment(newId(), id, old.quantityMilli, after, reason.trim().take(BaseRules.TITLE_MAX), nowMillis)
-        d.copy(
-            supplies = d.supplies.map { if (it.id == id) it.copy(quantityMilli = after, lowDismissed = false, updatedMillis = nowMillis) else it },
-            adjustments = (d.adjustments + adj).takeLast(BaseRules.ADJUSTMENTS_KEPT),
-        )
+        update { d ->
+            d.copy(
+                supplies = d.supplies.map { if (it.id == id) it.copy(quantityMilli = after, lowDismissed = false, updatedMillis = nowMillis) else it },
+                adjustments = (d.adjustments + adj).takeLast(BaseRules.ADJUSTMENTS_KEPT),
+            )
+        }
+        return adj
     }
+
+    /** The last few stock changes on one supply, newest first. */
+    fun recentAdjustments(supplyId: String, limit: Int = BaseRules.ADJUSTMENT_HISTORY): List<StockAdjustment> =
+        data.adjustments.filter { it.supplyId == supplyId }.sortedWith(compareByDescending<StockAdjustment> { it.atMillis }).take(limit)
+
+    /** The day a saved timestamp falls on, for showing an adjustment's date. */
+    fun dayOf(atMillis: Long): LocalDate = atMillis.toLocalDateTime(zone).date
 
     fun setQuantity(id: String, milli: Long?, reason: String = ""): String? {
         if (data.supplies.none { it.id == id }) return "That supply is gone."
@@ -243,11 +253,35 @@ class BaseStore(
 
     fun removeRestock(id: String) = update { d -> d.copy(restock = d.restock.filterNot { it.id == id }) }
 
-    fun restocked(supplyId: String, newQuantityMilli: Long?, entryId: String? = null): String? {
-        if (newQuantityMilli == null && entryId == null && data.supplies.any { it.id == supplyId && BaseRules.isLow(it) }) return "Enter how much there is now."
-        val reason = newQuantityMilli?.let { setQuantity(supplyId, it, "Restocked") }
-        if (reason != null) return reason
-        update { d -> d.copy(restock = d.restock.filterNot { it.id == entryId || it.supplyId == supplyId }) }
+    /**
+     * Mark a restocking line bought.
+     *
+     * The stock change goes through the same [changeQuantity] path as any other edit, with the
+     * reason "Bought": a low supply is set to [newQuantityMilli], and a hand-written line linked to
+     * a supply adds [addMilli] to it. Both null only ticks the line off. The line is then removed,
+     * so a double tap cannot count it twice (one adjustment per bought line); undoing it is the
+     * caller's snapshot restore, which brings back both the line and the stock.
+     *
+     * Null says it worked; a message says why it did not.
+     */
+    fun bought(entryId: String? = null, supplyId: String? = null, addMilli: Long? = null, newQuantityMilli: Long? = null): String? {
+        val entry = entryId?.let { id -> data.restock.firstOrNull { it.id == id } }
+        if (entryId != null && entry == null) return "That line is bought already."
+        val sid = supplyId ?: entry?.supplyId
+        if (entryId == null && sid == null) return "That line is gone."
+        val supply = sid?.let { id -> data.supplies.firstOrNull { it.id == id } }
+        if (entryId == null) {
+            if (supply == null || !BaseRules.isLow(supply)) return "That supply is not low."
+            if (newQuantityMilli == null && addMilli == null) return "Enter how much there is now."
+        }
+        if (addMilli != null && newQuantityMilli != null) return "Choose one way to count it."
+        val refusal = when {
+            supply == null || (addMilli == null && newQuantityMilli == null) -> null
+            newQuantityMilli != null -> setQuantity(supply.id, newQuantityMilli, BaseRules.REASON_BOUGHT)
+            else -> adjust(supply.id, addMilli!!, BaseRules.REASON_BOUGHT)
+        }
+        if (refusal != null) return refusal
+        update { d -> d.copy(restock = d.restock.filterNot { it.id == entryId || (sid != null && it.supplyId == sid) }) }
         return null
     }
 
@@ -395,8 +429,6 @@ class BaseStore(
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
 
     fun addUnit(unit: String) = settings { s -> unit.trim().take(16).let { u -> if (u.isEmpty() || s.units.any { it.equals(u, ignoreCase = true) }) s else s.copy(units = s.units + u) } }
-
-    fun setSectionHidden(section: String, hidden: Boolean) = settings { s -> s.copy(hidden = if (hidden) (s.hidden + section).distinct() else s.hidden - section) }
 
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
 

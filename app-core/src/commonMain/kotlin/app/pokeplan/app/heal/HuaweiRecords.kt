@@ -24,9 +24,10 @@ object HuaweiRecords {
             val records = when {
                 s.title.startsWith("SportHistory") -> exercises(s, today, zone)
                 s.title.startsWith("KnitSleepDetail") -> listOfNotNull(sleep(s, today, seen.home.getUpMinute, zone))
-                s.title.startsWith("PrivacyDataModel") && s.nodes.any { id(it) == "action_bar_title" && dayTitle.matches(it.text.trim()) } -> sleepDay(s, nowMillis, zone)
+                isSleepDayPage(s) -> sleepDay(s, nowMillis, zone)
                 s.title.startsWith("PrivacyDataModel") -> allData(s, today, nowMillis, zone)
-                s.nodes.any { it.text == "Weight" } && s.nodes.any { weightDate.matches(it.text) } -> weight(s, today, zone)
+                isWeightHistory(s) -> weightHistory(s, today, zone)
+                isWeightPage(s) -> weight(s, today, zone)
                 else -> emptyList()
             }
             records.forEach { out[it.id] = it }
@@ -39,7 +40,7 @@ object HuaweiRecords {
         // One record per day: a day's steps only grow, so the largest count seen wins (the live count of today, or a history row).
         val stepRecords = (out.values.filterIsInstance<Imported.Steps>() + steps(seen, zone).filterIsInstance<Imported.Steps>()).groupBy { it.id }.values.map { l -> l.maxWith(compareBy({ it.steps }, { it.atMillis })) }
         out.values.removeAll { it is Imported.Steps }
-        return out.values.toList() + stepRecords + vitals(seen, today, zone)
+        return out.values.toList() + stepRecords + homeRecords(seen, today, zone).map { it.second }
     }
 
     private fun dayOf(millis: Long, zone: TimeZone) = millis.toLocalDateTime(zone).date
@@ -52,12 +53,13 @@ object HuaweiRecords {
         }
     }
 
-    private fun vitals(seen: HuaweiSeen, today: LocalDate, zone: TimeZone): List<Imported> {
-        val out = LinkedHashMap<String, Imported.Vital>()
-        fun put(type: VitalType, value: Double, day: LocalDate, at: Long, key: String) {
+    /** The readings the Health page's own cards give, each with the source page it belongs to (the report counts them per card, HEAL.md 22B). */
+    private fun homeRecords(seen: HuaweiSeen, today: LocalDate, zone: TimeZone): List<Pair<String, Imported>> {
+        val out = LinkedHashMap<String, Pair<String, Imported.Vital>>()
+        fun put(source: String, type: VitalType, value: Double, day: LocalDate, at: Long, key: String) {
             val v = Imported.Vital(HuaweiHealth.PROVIDER, APP, key, type, value, at)
-            val old = out[key]
-            if (old == null || at >= old.atMillis) out[key] = v
+            val old = out[key]?.second
+            if (old == null || at >= old.atMillis) out[key] = source to v
         }
         // Heart rate is a range for the day (owner, 21 November 2026): the lowest and the highest bpm seen that day, stamped with the capture that showed each.
         val hr = LinkedHashMap<LocalDate, MutableList<Pair<Int, Long>>>()
@@ -65,21 +67,55 @@ object HuaweiRecords {
             val day = dayOf(s.atMillis, zone)
             val h = HuaweiHome.read(s)
             h.heartRate?.let { hr.getOrPut(day) { ArrayList() } += it to s.atMillis }
-            h.restingHeartRate?.let { put(VitalType.RESTING_HEART_RATE, it.toDouble(), day, s.atMillis, "restingheartrate:$day") }
-            h.spo2?.let { put(VitalType.SPO2, it.toDouble(), day, s.atMillis, "spo2:$day") }
-            h.skinTemperature?.let { put(VitalType.SKIN_TEMPERATURE, it, day, s.atMillis, "skintemperature:$day") }
-            h.stress?.let { put(VitalType.STRESS, it.toDouble(), day, s.atMillis, "stress:$day") }
-            h.sleepScore?.let { put(VitalType.SLEEP_SCORE, it.toDouble(), day, s.atMillis, "sleepscore:$day") }
+            h.restingHeartRate?.let { put("health", VitalType.RESTING_HEART_RATE, it.toDouble(), day, s.atMillis, "restingheartrate:$day") }
+            h.spo2?.let { put("health", VitalType.SPO2, it.toDouble(), day, s.atMillis, "spo2:$day") }
+            h.skinTemperature?.let { put("health", VitalType.SKIN_TEMPERATURE, it, day, s.atMillis, "skintemperature:$day") }
+            h.stress?.let { put("health", VitalType.STRESS, it.toDouble(), day, s.atMillis, "stress:$day") }
+            h.sleepScore?.let { put("sleep", VitalType.SLEEP_SCORE, it.toDouble(), day, s.atMillis, "sleepscore:$day") }
             if (s.title.startsWith("KnitSleepDetail")) sleepScore(s, today, zone)?.let { (night, score) ->
-                put(VitalType.SLEEP_SCORE, score.toDouble(), night, minOf(s.atMillis, millis(night, LocalTime(12, 0), zone)), "sleepscore:$night")
+                put("sleep", VitalType.SLEEP_SCORE, score.toDouble(), night, minOf(s.atMillis, millis(night, LocalTime(12, 0), zone)), "sleepscore:$night")
             }
         }
         for ((day, list) in hr) {
             val low = list.minBy { it.first }; val high = list.maxBy { it.first }
-            put(VitalType.HEART_RATE_LOW, low.first.toDouble(), day, low.second, "heartlow:$day")
-            put(VitalType.HEART_RATE_HIGH, high.first.toDouble(), day, high.second, "hearthigh:$day")
+            put("health", VitalType.HEART_RATE_LOW, low.first.toDouble(), day, low.second, "heartlow:$day")
+            put("health", VitalType.HEART_RATE_HIGH, high.first.toDouble(), day, high.second, "hearthigh:$day")
         }
         return out.values.toList()
+    }
+
+    /**
+     * The records of every page, split by the source page they came from ([HuaweiSources.SOURCES] ids), for the read report
+     * (INTEGRATIONS_AND_PRIVACY.md 5.2.2). The same reading can appear under two sources (today's steps on the Health page and in its All data); [read]
+     * merges them, and the report counts each new record once.
+     */
+    fun sourceRecords(seen: HuaweiSeen, nowMillis: Long, zone: TimeZone): Map<String, List<Imported>> {
+        val today = nowMillis.toLocalDateTime(zone).date
+        val out = LinkedHashMap<String, MutableList<Imported>>()
+        fun add(source: String, records: List<Imported>) { if (records.isNotEmpty()) out.getOrPut(source) { ArrayList() } += records }
+        for (s in seen.screens) when {
+            s.title.startsWith("SportHistory") -> add("exercise", exercises(s, today, zone))
+            s.title.startsWith("KnitSleepDetail") -> add("sleep", listOfNotNull(sleep(s, today, seen.home.getUpMinute, zone)))
+            isSleepDayPage(s) -> add("sleep", sleepDay(s, nowMillis, zone))
+            s.title.startsWith("PrivacyDataModel") -> allData(s, today, nowMillis, zone).forEach { add(sourceOfAllData(it), listOf(it)) }
+            isWeightHistory(s) -> add("weight", weightHistory(s, today, zone))
+            isWeightPage(s) -> add("weight", weight(s, today, zone))
+            else -> {}
+        }
+        add("steps", steps(seen, zone))
+        for ((source, record) in homeRecords(seen, today, zone)) add(source, listOf(record))
+        return out
+    }
+
+    /** Which card an All data row belongs to, from the row's own value: a count is Steps, a range is that reading, a duration is Sleep. */
+    private fun sourceOfAllData(r: Imported): String = when (r) {
+        is Imported.Steps -> "steps"
+        is Imported.Vital -> when (r.type) {
+            VitalType.SKIN_TEMPERATURE_LOW, VitalType.SKIN_TEMPERATURE_HIGH -> "skin"
+            VitalType.SPO2_LOW, VitalType.SPO2_HIGH -> "spo2"
+            else -> "sleep"
+        }
+        else -> "sleep"
     }
 
     private fun sleepScore(s: ScreenCapture, today: LocalDate, zone: TimeZone): Pair<LocalDate, Int>? {
@@ -165,6 +201,13 @@ object HuaweiRecords {
     /** The oldest day an All data capture shows, or null when it shows none: the list is newest first, so a read can stop scrolling once this is old enough. */
     fun oldestAllDataDay(s: ScreenCapture, nowMillis: Long, zone: TimeZone): LocalDate? =
         if (!s.title.startsWith("PrivacyDataModel")) null else allDataRows(s, nowMillis.toLocalDateTime(zone).date).minOfOrNull { it.date }
+
+    private fun isSleepDayPage(s: ScreenCapture) = s.title.startsWith("PrivacyDataModel") && s.nodes.any { id(it) == "action_bar_title" && dayTitle.matches(it.text.trim()) }
+
+    /** The Weight card's All data page (`HealthDataHistoryActivity`, probe 14): its day headers carry weight rows, unlike the other All data pages. */
+    private fun isWeightHistory(s: ScreenCapture) = s.nodes.any { id(it) == "health_data_weight_father_ll" }
+
+    private fun isWeightPage(s: ScreenCapture) = s.nodes.any { it.text == "Weight" } && s.nodes.any { weightDate.matches(it.text) }
 
     /**
      * An All data page as history, one record per row (owner, 21 November 2026, "keep all"): a night's **length** (Sleep), the **range** of skin temperature and of
@@ -267,6 +310,45 @@ object HuaweiRecords {
         if (seconds < 60) return null
         val start = millis(on, at, zone)
         return Imported.Exercise(HuaweiHealth.PROVIDER, APP, "exercise:$start", activityType(type), start, start + seconds * 1000L, km?.let { (it * 1000).toInt() })
+    }
+
+    private val weightDayDate = Regex("""^(\d{1,2})/(\d{1,2})/(\d{4}),\s*average of\b""", RegexOption.IGNORE_CASE)
+    private val weightPercent = Regex("""^(\d{1,2}(?:\.\d)?)%$""")
+
+    /**
+     * The Weight card's All data page (`HealthDataHistoryActivity`): a day header ("MM/DD/YYYY, average of X kg per day"), then under it each reading of that
+     * day, its weight and unit, its body fat percentage when shown, and its time ("7:12 AM"). Each reading becomes a weight record, and its body fat when
+     * shown, at its own date and time (HEAL.md 22B); a reading without a valid unit or time is left out. The header's average is never used.
+     */
+    private fun weightHistory(s: ScreenCapture, today: LocalDate, zone: TimeZone): List<Imported> {
+        val out = ArrayList<Imported>()
+        var day: LocalDate? = null
+        var weight: Double? = null
+        var unit = ""
+        var fat: Double? = null
+        var time: LocalTime? = null
+        fun close() {
+            val on = day; val t = time; val w = weight
+            if (on != null && t != null && w != null && (unit == "kg" || unit == "lb") && on <= today) {
+                val at = millis(on, t, zone)
+                out += Imported.Body(HuaweiHealth.PROVIDER, APP, "weight:$at", MeasureType.WEIGHT, w, unit, at)
+                fat?.let { out += Imported.Body(HuaweiHealth.PROVIDER, APP, "bodyfat:$at", MeasureType.BODY_FAT, it, "%", at) }
+            }
+            weight = null; unit = ""; fat = null; time = null
+        }
+        for (node in s.nodes) when (id(node)) {
+            "health_data_weight_father_ll" -> {
+                close()
+                day = weightDayDate.find(node.text.trim())?.let { m ->
+                    runCatching { LocalDate(m.groupValues[3].toInt(), m.groupValues[1].toInt(), m.groupValues[2].toInt()) }.getOrNull()
+                }
+            }
+            "child_item_weight" -> { if (time != null) close(); weight = node.text.trim().replace(",", "").toDoubleOrNull() }
+            "child_item_weight_unit" -> unit = node.text.trim()
+            "child_item_fat" -> fat = weightPercent.matchEntire(node.text.trim())?.groupValues?.get(1)?.toDoubleOrNull()
+            "child_item_time" -> { time = timeOf(node.text.trim()); close() }
+        }
+        return out
     }
 
     private val weightDate = Regex("""^([A-Za-z]{3}), ([A-Za-z]+) (\d{1,2})(?:, (\d{4}))? at (\d{1,2}:\d{2}(?:\s*[AP]M)?)$""", RegexOption.IGNORE_CASE)

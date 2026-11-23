@@ -55,11 +55,11 @@ data class NotificationCapture(val atMillis: Long, val title: String, val text: 
 }
 
 /** Everything the probe saw since it was last cleared. */
-data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifications: List<NotificationCapture> = emptyList(), val log: List<String> = emptyList()) {
+data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifications: List<NotificationCapture> = emptyList(), val log: List<String> = emptyList(), val visits: List<HuaweiVisit> = emptyList()) {
     val latestSteps: Int? get() = notifications.lastOrNull { it.steps != null }?.steps
 
     val home: HuaweiHome get() = screens.fold(HuaweiHome()) { acc, s -> acc.then(HuaweiHome.read(s)) }
-    val isEmpty: Boolean get() = screens.isEmpty() && notifications.isEmpty() && log.isEmpty()
+    val isEmpty: Boolean get() = screens.isEmpty() && notifications.isEmpty() && log.isEmpty() && visits.isEmpty()
 
     fun sample(version: String = ""): String = buildString {
         fun h(s: String) = HuaweiHealth.hideNumbers(s)
@@ -69,6 +69,20 @@ data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifi
             s.nodes.forEach { append(it.copy(text = h(it.text), description = h(it.description)).line()).append('\n') }
         }
         if (screens.isNotEmpty()) append('\n').append(HuaweiControls.summary(this@HuaweiSeen))
+        if (visits.isNotEmpty()) {
+            append("\n== Visits ==\n")
+            visits.forEach { v ->
+                append(h(v.title)).append(": ")
+                when {
+                    v.skipped -> append("skipped, nothing new")
+                    !v.words -> append("opened nothing readable")
+                    else -> append("opened ").append(h(v.page.ifBlank { "a page" }))
+                }
+                if (v.menu) append(", menu opened")
+                if (v.reason.isNotBlank()) append(", ").append(h(v.reason))
+                append('\n')
+            }
+        }
         if (log.isNotEmpty()) { append("\n== Walk log ==\n"); log.forEach { append(h(it)).append('\n') } }
         notifications.forEachIndexed { i, n ->
             append("\n== Notification ${i + 1}${if (n.customLayout) " (custom layout)" else ""} ==\n")
@@ -80,7 +94,7 @@ data class HuaweiSeen(val screens: List<ScreenCapture> = emptyList(), val notifi
 }
 
 /** Collects captures in memory: the same page twice is kept once, and only the newest [maxScreens] pages and [maxNotifications] notifications stay. */
-class HuaweiProbe(private val maxScreens: Int = 150, private val maxNotifications: Int = 5, private val maxLog: Int = 400) {
+class HuaweiProbe(private val maxScreens: Int = 150, private val maxNotifications: Int = 5, private val maxLog: Int = 400, private val maxVisits: Int = 40) {
     var seen: HuaweiSeen = HuaweiSeen()
         private set
 
@@ -90,6 +104,14 @@ class HuaweiProbe(private val maxScreens: Int = 150, private val maxNotification
         if (seen.screens.any { it.signature == sig }) return false
         seen = seen.copy(screens = (seen.screens + capture).takeLast(maxScreens))
         return true
+    }
+
+    /** Remembers what one card page opened and what could be read there; a later visit of the same card replaces the older one. */
+    fun addVisit(visit: HuaweiVisit) {
+        if (visit.title.isBlank()) return
+        val key = HuaweiWalk.canonical(visit.title)
+        val kept = seen.visits.filterNot { HuaweiWalk.canonical(it.title) == key }
+        seen = seen.copy(visits = (kept + visit).takeLast(maxVisits))
     }
 
     fun addNotification(n: NotificationCapture) {

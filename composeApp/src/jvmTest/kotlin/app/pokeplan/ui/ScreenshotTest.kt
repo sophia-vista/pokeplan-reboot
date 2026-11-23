@@ -69,6 +69,9 @@ class ScreenshotTest {
         repeat(10) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(20) }
         val bytes = scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes
         File("build/screenshots/$name.png").apply { parentFile.mkdirs() }.writeBytes(bytes)
+        // Golden gate: compare with the committed baseline (or write it under UPDATE_SCREENSHOTS=1). See
+        // ScreenshotCompare and section 12 of docs/pokelife/ARCHITECTURE/TEST_STRATEGY.md.
+        ScreenshotCompare.compare(name, bytes)
         assertTrue(bytes.size > minBytes, "$name drew almost nothing")
         scene.close()
     }
@@ -1270,6 +1273,12 @@ class ScreenshotTest {
             heal.logMeasurement(app.pokeplan.heal.MeasureType.WEIGHT, 68.4, "kg")
             heal.addGoal(app.pokeplan.heal.GoalKind.WEEKLY_ACTIVE_MINUTES, 150)
             heal.setHydrationTarget(2000)
+            val med = heal.addMedication(
+                "Metformin", "500 mg", "With breakfast", listOf(kotlinx.datetime.LocalTime(8, 0), kotlinx.datetime.LocalTime(20, 0)),
+                startDay = model.store.today, supplyLeft = 12, refillAt = 4,
+            ).record
+            if (med != null) heal.logDose(med.id, model.store.today, kotlinx.datetime.LocalTime(8, 0), app.pokeplan.heal.DoseStatus.TAKEN)
+            heal.addMedication("Vitamin D", startDay = model.store.today, supplyLeft = 5)
             if (section == app.pokeplan.ui.heal.HealSection.WELLNESS && wellness == 2) {
                 val t = clock.millis
                 val p = "huawei-screen"; val app_ = "com.huawei.health"
@@ -1314,6 +1323,15 @@ class ScreenshotTest {
 
     @Test
     fun healActivity() = heal("heal-activity", app.pokeplan.ui.heal.HealSection.ACTIVITY, height = 2000)
+
+    @Test
+    fun healMedications() = heal("heal-medications", app.pokeplan.ui.heal.HealSection.RECORDS, height = 2400)
+
+    @Test
+    fun healMedicationsDark() = heal("heal-medications-dark", app.pokeplan.ui.heal.HealSection.RECORDS, height = 2400, dark = true)
+
+    @Test
+    fun healMedicationsEmpty() = heal("heal-medications-empty", app.pokeplan.ui.heal.HealSection.RECORDS, height = 1800, empty = true)
 
     @Test
     fun largeTextHeal() {

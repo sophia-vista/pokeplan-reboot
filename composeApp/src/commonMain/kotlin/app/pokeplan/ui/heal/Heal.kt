@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import app.pokeplan.app.Tutorials
 import app.pokeplan.heal.ActivityRecord
 import app.pokeplan.heal.ActivityType
+import app.pokeplan.heal.DoseStatus
 import app.pokeplan.heal.GoalKind
 import app.pokeplan.heal.GoalStatus
 import app.pokeplan.heal.HealKinds
@@ -41,6 +42,8 @@ import app.pokeplan.heal.HealSettings
 import app.pokeplan.heal.HealUnits
 import app.pokeplan.heal.HydrationEntry
 import app.pokeplan.heal.Measurement
+import app.pokeplan.heal.Medication
+import app.pokeplan.heal.MedicationStatus
 import app.pokeplan.heal.SleepRecord
 import app.pokeplan.heal.MeasureType
 import app.pokeplan.heal.ReadingGroup
@@ -89,6 +92,7 @@ import app.pokeplan.ui.screens.MenuGrid
 import app.pokeplan.ui.screens.SectionsKey
 import app.pokeplan.ui.screens.Module
 import app.pokeplan.ui.screens.ModuleLeadStage
+import app.pokeplan.ui.screens.PixelDateField
 import app.pokeplan.ui.screens.PixelDatePicker
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.PixelDurationField
@@ -102,7 +106,7 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
 enum class HealSection(val label: String, val icon: String) {
-    ACTIVITY("Activity", "x-speed"), WELLNESS("Wellness", "hp-up"),
+    ACTIVITY("Activity", "x-speed"), WELLNESS("Wellness", "hp-up"), RECORDS("Records", "potion"),
     GOALS("Goals", "star-piece"), CONNECTIONS("Connections", "town-map"), SETTINGS("Settings", "storage-key"),
 }
 
@@ -135,6 +139,7 @@ private fun HealPage(model: AppModel, section: HealSection?, openPokemon: (Strin
         when (section) {
             HealSection.ACTIVITY -> ActivityPlace(model)
             HealSection.WELLNESS -> WellnessPlace(model)
+            HealSection.RECORDS -> RecordsPlace(model)
             HealSection.GOALS -> GoalsHealView(model)
             HealSection.CONNECTIONS -> HealConnectionsView(model)
             HealSection.SETTINGS -> HealSettingsView(model)
@@ -148,6 +153,7 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val sections = listOf(
         MenuEntry(HealSection.ACTIVITY.name, HealSection.ACTIVITY.icon, "Activity", "steps, exercise, sleep", tint = ModuleAccent.HEAL.accent),
         MenuEntry(HealSection.WELLNESS.name, HealSection.WELLNESS.icon, "Wellness", "water, body, readings", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.RECORDS.name, HealSection.RECORDS.icon, "Records", "medications, doses", tint = ModuleAccent.HEAL.accent),
         MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", tint = ModuleAccent.HEAL.accent),
         MenuEntry(HealSection.CONNECTIONS.name, HealSection.CONNECTIONS.icon, "Connections", "import, Health Connect", tint = ModuleAccent.HEAL.accent),
         MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
@@ -183,6 +189,8 @@ private fun TodayCard(model: AppModel) {
                 val w = HealRules.latestMeasurement(data, MeasureType.WEIGHT)
                 if (w != null) StatRow("Weight", HealUnits.show(w, data.settings.weightUnit))
             }
+            val scheduled = HealRules.medicationScheduledOn(data, today)
+            if (scheduled > 0) StatRow("Medications", "${HealRules.medicationTakenOn(data, today)} of $scheduled taken")
             if (data.settings.fieldResearch) {
                 val size = app.pokeplan.core.reward.RewardEngine.HEAL_EGG_METER_SIZE
                 val points = model.store.healEggMeter()
@@ -254,6 +262,10 @@ private fun WellnessPlace(model: AppModel) {
         else -> HydrationView(model)
     }
 }
+
+/** Records is the private health history (HEAL.md 8): today the medication and dose log, and the timeline, symptoms and illnesses join it as further views when they are built. */
+@Composable
+private fun RecordsPlace(model: AppModel) = MedicationView(model)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -740,6 +752,256 @@ private fun GoalsHealView(model: AppModel) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Cancel", { adding = false; target = "" }, Modifier.weight(1f), Pixel.InkSoft)
                 FormSave("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = ""; adding = false } }, ModuleAccent.HEAL.accent, Modifier.weight(1f), enabled = HealRules.goalTargetOk(kind, target.toIntOrNull() ?: 0))
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun MedicationView(model: AppModel) {
+    val heal = model.heal
+    val data = model.healData
+    val today = model.store.today
+    var adding by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf<String?>(null) }
+    var open by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
+    val medications = data.medications.sortedWith(compareBy({ it.status != MedicationStatus.ACTIVE }, { it.name.lowercase() }))
+    val edited = editing?.let { id -> data.medications.firstOrNull { it.id == id } }
+    if (medications.isEmpty()) {
+        if (!adding) EmptyState("No medications yet", icon = HealSection.RECORDS.icon, action = "Add one" to { adding = true })
+    } else {
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                medications.forEachIndexed { i, m ->
+                    if (i > 0) HorizontalDivider(color = Pixel.Border)
+                    MedicationRow(model, m, today, open == m.id, { open = if (open == m.id) null else m.id }, { editing = m.id }, { message = it })
+                }
+            }
+        }
+        if (!adding && editing == null) PixelButton("Add a medication", { adding = true }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
+        MedicationLog(model)
+    }
+    if (adding) MedicationForm(model, null, { adding = false }, { message = it })
+    if (edited != null) MedicationForm(model, edited, { editing = null }, { message = it })
+    message?.let { (text, tone) -> Report(model, text, tone) }
+}
+
+private fun medicationFigure(m: Medication): String = when {
+    m.status == MedicationStatus.STOPPED -> "Stopped"
+    m.status == MedicationStatus.PAUSED -> "Paused"
+    m.supplyLeft != null -> "${m.supplyLeft} left"
+    else -> ""
+}
+
+@Composable
+private fun MedicationRow(
+    model: AppModel,
+    m: Medication,
+    today: LocalDate,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    onEdit: () -> Unit,
+    onMessage: (Pair<String, NoticeTone>) -> Unit,
+) {
+    val heal = model.heal
+    val data = model.healData
+    val times = HealRules.medicationTimesOn(m, today)
+    Column(
+        Modifier.fillMaxWidth().clickable(onClickLabel = "Show options", onClick = onToggle).padding(vertical = Spacing.S),
+        verticalArrangement = Arrangement.spacedBy(Spacing.S),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                Text(listOf(m.name, m.strength).filter { it.isNotBlank() }.joinToString(" "), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    if (m.times.isEmpty()) "As needed" else m.times.joinToString(", ") { clockText(it) },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            Text(medicationFigure(m), style = MaterialTheme.typography.bodyMedium)
+        }
+        if (times.isNotEmpty()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                times.forEach { time ->
+                    val dose = data.doses.firstOrNull { it.medicationId == m.id && it.day == today && it.time == time }
+                    if (dose != null) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                            Text("${clockText(time)} ${dose.status.label.lowercase()}", style = MaterialTheme.typography.bodyMedium)
+                            PixelButton("Delete", {
+                                val before = model.healData
+                                heal.deleteDose(dose.id)
+                                model.offerUndo("Deleted: dose") { heal.restore(before) }
+                            }, color = Pixel.InkSoft, compact = true)
+                        }
+                    } else {
+                        PixelButton("${clockText(time)} taken", {
+                            val out = heal.logDose(m.id, today, time, DoseStatus.TAKEN)
+                            if (out.record == null) onMessage((out.refused ?: "That could not be saved.") to NoticeTone.WARNING) else model.haptic()
+                        }, color = ModuleAccent.HEAL.accent, compact = true)
+                        PixelButton("${clockText(time)} skip", {
+                            val out = heal.logDose(m.id, today, time, DoseStatus.SKIPPED)
+                            if (out.record == null) onMessage((out.refused ?: "That could not be saved.") to NoticeTone.WARNING)
+                        }, color = Pixel.InkSoft, compact = true)
+                    }
+                }
+            }
+        } else if (m.status == MedicationStatus.ACTIVE) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                val nowTime = model.store.nowMillis.localTime()
+                PixelButton("Taken now", {
+                    val out = heal.logDose(m.id, today, nowTime, DoseStatus.TAKEN)
+                    if (out.record == null) onMessage((out.refused ?: "That could not be saved.") to NoticeTone.WARNING) else model.haptic()
+                }, color = ModuleAccent.HEAL.accent, compact = true)
+                PixelButton("Skip now", {
+                    val out = heal.logDose(m.id, today, nowTime, DoseStatus.SKIPPED)
+                    if (out.record == null) onMessage((out.refused ?: "That could not be saved.") to NoticeTone.WARNING)
+                }, color = Pixel.InkSoft, compact = true)
+            }
+        }
+        if (expanded) MedicationOptions(model, m, onEdit, onMessage)
+    }
+}
+
+@Composable
+private fun MedicationOptions(model: AppModel, m: Medication, onEdit: () -> Unit, onMessage: (Pair<String, NoticeTone>) -> Unit) {
+    val heal = model.heal
+    var refillText by remember(m.id, m.supplyLeft) { mutableStateOf(m.supplyLeft?.toString().orEmpty()) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        if (m.instructions.isNotBlank()) Text(m.instructions, style = MaterialTheme.typography.bodyMedium)
+        if (m.note.isNotBlank()) Text(m.note, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            "Started ${m.startDay}" + (m.endDay?.let { " · ends $it" } ?: "") + (m.refillAt?.let { " · warn at $it left" } ?: ""),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        if (m.times.isNotEmpty()) ToggleRow("Remind me", m.remind) { heal.setMedicationRemind(m.id, it) }
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelField(
+                refillText, { refillText = it.filter(Char::isDigit).take(6) }, Modifier.weight(1f), label = "Doses left", singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+            PixelButton("Save count", {
+                val count = refillText.toIntOrNull()
+                if (count == null) onMessage("Enter a count." to NoticeTone.WARNING) else heal.refillMedication(m.id, count)
+            }, color = Pixel.Tone, compact = true)
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            PixelButton("Edit", onEdit, color = Pixel.Tone, compact = true)
+            when (m.status) {
+                MedicationStatus.ACTIVE -> PixelButton("Pause", { heal.setMedicationStatus(m.id, MedicationStatus.PAUSED) }, color = Pixel.InkSoft, compact = true)
+                MedicationStatus.PAUSED, MedicationStatus.STOPPED -> PixelButton("Resume", { heal.setMedicationStatus(m.id, MedicationStatus.ACTIVE) }, color = Pixel.Tone, compact = true)
+            }
+            if (m.status != MedicationStatus.STOPPED) {
+                PixelButton("Stop", { heal.setMedicationStatus(m.id, MedicationStatus.STOPPED) }, color = Pixel.InkSoft, compact = true)
+            }
+            PixelButton("Delete", {
+                val before = model.healData
+                heal.deleteMedication(m.id)
+                model.offerUndo("Deleted: medication") { heal.restore(before) }
+            }, color = Pixel.Danger, compact = true)
+        }
+    }
+}
+
+@Composable
+private fun MedicationLog(model: AppModel) {
+    val heal = model.heal
+    val data = model.healData
+    val doses = data.doses.sortedByDescending { it.atMillis }.take(15)
+    if (doses.isEmpty()) return
+    Accordion("Dose log") {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            doses.forEachIndexed { i, d ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(vertical = Spacing.XS)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(data.medications.firstOrNull { it.id == d.medicationId }?.name ?: "Removed medication", style = MaterialTheme.typography.bodyMedium)
+                        Text("${d.day} ${clockText(d.time)} · ${d.status.label.lowercase()}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    PixelButton("Delete", {
+                        val before = model.healData
+                        heal.deleteDose(d.id)
+                        model.offerUndo("Deleted: dose") { heal.restore(before) }
+                    }, color = Pixel.InkSoft, compact = true)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MedicationForm(model: AppModel, editing: Medication?, onDone: () -> Unit, onMessage: (Pair<String, NoticeTone>) -> Unit) {
+    val heal = model.heal
+    val today = model.store.today
+    var name by remember(editing?.id) { mutableStateOf(editing?.name.orEmpty()) }
+    var strength by remember(editing?.id) { mutableStateOf(editing?.strength.orEmpty()) }
+    var instructions by remember(editing?.id) { mutableStateOf(editing?.instructions.orEmpty()) }
+    var note by remember(editing?.id) { mutableStateOf(editing?.note.orEmpty()) }
+    var times by remember(editing?.id) { mutableStateOf(editing?.times.orEmpty()) }
+    var startDay by remember(editing?.id) { mutableStateOf(editing?.startDay ?: today) }
+    var endDay by remember(editing?.id) { mutableStateOf(editing?.endDay) }
+    var supply by remember(editing?.id) { mutableStateOf(editing?.supplyLeft?.toString().orEmpty()) }
+    var refillAt by remember(editing?.id) { mutableStateOf(editing?.refillAt?.toString().orEmpty()) }
+    var remind by remember(editing?.id) { mutableStateOf(editing?.remind ?: true) }
+    var more by remember(editing?.id) { mutableStateOf(editing != null) }
+    fun save() {
+        val supplyCount = supply.toIntOrNull()
+        val refillCount = refillAt.toIntOrNull()
+        val out = if (editing == null) {
+            heal.addMedication(name, strength, instructions, times, startDay, endDay, note, remind, supplyCount, refillCount)
+        } else {
+            heal.updateMedication(
+                editing.copy(
+                    name = name, strength = strength, instructions = instructions, note = note, times = times,
+                    startDay = startDay, endDay = endDay, remind = remind, supplyLeft = supplyCount, refillAt = refillCount,
+                ),
+            )
+        }
+        if (out.record == null) onMessage((out.refused ?: "That could not be saved.") to NoticeTone.WARNING)
+        else { model.say("Saved."); onDone() }
+    }
+    FormBox {
+        FormStack {
+            FormGroup {
+                PixelField(name, { name = it.take(HealRules.MEDICATION_NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true)
+                times.forEach { time ->
+                    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PixelTimeField(time, { nt -> nt?.let { times = (times - time + it).distinct().sorted() } }, ModuleAccent.HEAL.accent, Modifier.weight(1f), label = "Time")
+                        PixelButton("Remove", { times = times - time }, color = Pixel.InkSoft, compact = true)
+                    }
+                }
+                if (times.size < HealRules.MEDICATION_TIMES_MAX) {
+                    var next by remember(times) { mutableStateOf(if (times.isEmpty()) LocalTime(9, 0) else shift(times.last(), 120)) }
+                    PixelTimeField(next, { it?.let { t -> next = t } }, ModuleAccent.HEAL.accent, label = "New time")
+                    PixelButton("Add a time at ${clockText(next)}", { times = (times + next).distinct().sorted() }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
+                }
+                if (times.isNotEmpty()) ToggleRow("Remind me", remind) { remind = it }
+            }
+            FormDisclosure("Additional details", more, { more = !more }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelField(strength, { strength = it.take(HealRules.MEDICATION_STRENGTH_MAX) }, Modifier.fillMaxWidth(), label = "Strength", singleLine = true)
+                    PixelField(instructions, { instructions = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Instructions from your clinician")
+                    PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes")
+                    FormLabel("Started")
+                    PixelDateField(startDay, today, ModuleAccent.HEAL.accent, { it?.let { d -> startDay = d } })
+                    FormLabel("Ends")
+                    PixelDateField(endDay, today, ModuleAccent.HEAL.accent, { d -> endDay = d }, noneLabel = "No end date")
+                    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PixelField(
+                            supply, { supply = it.filter(Char::isDigit).take(6) }, Modifier.weight(1f), label = "Doses left", singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        )
+                        PixelField(
+                            refillAt, { refillAt = it.filter(Char::isDigit).take(6) }, Modifier.weight(1f), label = "Warn at", singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        )
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft)
+                FormSave(if (editing == null) "Add" else "Save", { save() }, ModuleAccent.HEAL.accent, Modifier.weight(1f), enabled = name.isNotBlank())
             }
         }
     }

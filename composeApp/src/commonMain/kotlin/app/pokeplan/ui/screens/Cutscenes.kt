@@ -70,6 +70,9 @@ sealed interface Cutscene {
     data class Evolve(val before: OwnedPokemon, val after: OwnedPokemon, val option: app.pokeplan.core.pokemon.EvolutionOption? = null) : Cutscene
 
     data class World(val moment: app.pokeplan.world.WorldMoment) : Cutscene
+
+    /** An optional Mythical follow-up, which belongs to no region: the Story archive plays it from here. */
+    data class Mythical(val chapter: Int) : Cutscene
 }
 
 private val FlashWhite = Color.White
@@ -102,6 +105,11 @@ fun CutsceneHost(model: AppModel) {
         } else ArrivalScene(model, scene, acquisitionOf(scene.how), close)
         is Cutscene.Evolve -> EvolutionScene(model, scene, close)
         is Cutscene.World -> WorldMomentScene(model, scene.moment, close)
+        is Cutscene.Mythical -> {
+            val episode = app.pokeplan.world.story.StoryCatalog.mythical(scene.chapter)
+            if (episode != null) StoryPlayer(model, episode, close, fromStart = episode.key in model.data.world.episodesDone)
+            else LaunchedEffect(scene.chapter) { close() }
+        }
     }
 }
 

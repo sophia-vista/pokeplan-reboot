@@ -54,7 +54,7 @@ class HealSealingTest {
     private fun count(s: DataStore, sql: String): Long =
         s.driver.executeQuery(null, sql, { c -> QueryResult.Value(if (c.next().value) c.getLong(0) else null) }, 0).value ?: 0L
 
-    private val tables = listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital", "heal_state")
+    private val tables = listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital", "heal_medication", "heal_dose", "heal_state")
 
     private fun everyStoredText(s: DataStore): List<String> = tables.flatMap { t ->
         val out = mutableListOf<String>()

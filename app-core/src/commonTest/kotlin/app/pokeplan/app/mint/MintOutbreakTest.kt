@@ -81,7 +81,7 @@ class MintOutbreakTest {
     }
 
     @Test
-    fun eachWeekInARowWithAReviewAddsAShinyRoll() {
+    fun aWeeklyReviewPaysTheSameShinyRollsWhateverTheWeeksBefore() {
         val s = setup()
         s.account()
         val rolls = mutableListOf<Int>()
@@ -92,6 +92,8 @@ class MintOutbreakTest {
             s.game.claimOutbreak(outbreak.id, outbreak.options.first().speciesId)
             s.clock.advanceDays(7)
         }
-        assertEquals(listOf(3, 4, 5), rolls)
+        // No reward reads a streak: a fourth review in a row pays what the first did. Breaking the run loses nothing.
+        val expected = RewardEngine.MINT_OUTBREAK_ROLLS.getValue(app.pokeplan.core.reward.MintKind.REVIEW)
+        assertEquals(List(3) { expected }, rolls)
     }
 }

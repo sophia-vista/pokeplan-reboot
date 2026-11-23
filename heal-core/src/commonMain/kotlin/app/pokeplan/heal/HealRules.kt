@@ -3,6 +3,7 @@ package app.pokeplan.heal
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.minus
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -171,6 +172,50 @@ object HealRules {
     fun format(value: Double): String = if (value == value.roundToInt().toDouble()) value.roundToInt().toString() else ((value * 10).roundToInt() / 10.0).toString()
 
     fun duration(minutes: Int): String = if (minutes >= 60) "${minutes / 60} h ${(minutes % 60).toString().padStart(2, '0')} min" else "$minutes min"
+
+    // --- medications and supplements (section 8.1): user-entered, never calculated, never paid -------------------------
+
+    const val MEDICATION_NAME_MAX = 80
+    const val MEDICATION_STRENGTH_MAX = 40
+    const val MEDICATION_TIMES_MAX = 6
+    const val MEDICATION_SUPPLY_MAX = 100_000
+
+    fun checkMedication(m: Medication): Check = when {
+        m.name.isBlank() -> Check.Refused("Give it a name.")
+        m.name.trim().length > MEDICATION_NAME_MAX -> Check.Refused("Keep the name under $MEDICATION_NAME_MAX letters.")
+        m.strength.length > MEDICATION_STRENGTH_MAX -> Check.Refused("That strength is too long.")
+        m.instructions.length > NOTE_MAX || m.note.length > NOTE_MAX -> Check.Refused("That text is too long.")
+        m.times.size > MEDICATION_TIMES_MAX -> Check.Refused("A day can have at most $MEDICATION_TIMES_MAX times.")
+        m.endDay != null && m.endDay < m.startDay -> Check.Refused("The end date is before the start date.")
+        m.supplyLeft != null && m.supplyLeft !in 0..MEDICATION_SUPPLY_MAX -> Check.Refused("That supply looks wrong.")
+        m.refillAt != null && m.refillAt !in 0..MEDICATION_SUPPLY_MAX -> Check.Refused("That refill point looks wrong.")
+        else -> Check.Ok
+    }
+
+    /** Whether this medication is being taken on [day]: active, started, and not past its end date. */
+    fun medicationRunning(m: Medication, day: LocalDate): Boolean =
+        m.status == MedicationStatus.ACTIVE && day >= m.startDay && (m.endDay == null || day <= m.endDay)
+
+    /** The times it is taken on [day]; none when it is paused, stopped, not started or finished. */
+    fun medicationTimesOn(m: Medication, day: LocalDate): List<LocalTime> =
+        if (!medicationRunning(m, day)) emptyList() else m.times.distinct().sorted()
+
+    fun medicationDosesOn(data: HealData, medicationId: String, day: LocalDate): List<MedicationDose> =
+        data.doses.filter { it.medicationId == medicationId && it.day == day }
+
+    /** The scheduled times on [day] with no adherence entry yet. */
+    fun medicationDueTimes(data: HealData, m: Medication, day: LocalDate): List<LocalTime> {
+        val logged = medicationDosesOn(data, m.id, day).mapTo(HashSet()) { it.time }
+        return medicationTimesOn(m, day).filter { it !in logged }
+    }
+
+    fun medicationScheduledOn(data: HealData, day: LocalDate): Int = data.medications.sumOf { medicationTimesOn(it, day).size }
+
+    fun medicationTakenOn(data: HealData, day: LocalDate): Int = data.doses.count { it.day == day && it.status == DoseStatus.TAKEN }
+
+    /** A count the player set, at or under the point they set: a refill reminder, never advice. */
+    fun medicationLowSupply(m: Medication): Boolean =
+        m.status != MedicationStatus.STOPPED && m.supplyLeft != null && m.refillAt != null && m.supplyLeft <= m.refillAt
 }
 
 object HealUnits {

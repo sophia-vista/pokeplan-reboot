@@ -35,7 +35,7 @@ object HeldItems {
     const val MEGA_STONE_BATTLE_PERCENT = 6
 }
 
-enum class PerkCondition { ALWAYS, FIRST_TASK_BEFORE_9AM, SHORT_SESSION, TOP_RANK_TASK }
+enum class PerkCondition { ALWAYS, SHORT_SESSION, TOP_RANK_TASK }
 
 data class AbilityPerk(
     val bucket: PerkBucket? = null,
@@ -54,7 +54,7 @@ object AbilityPerks {
         "Pure Power" to AbilityPerk(PerkBucket.CANDY_YIELD, 5.0),
         "Hustle" to AbilityPerk(PerkBucket.CANDY_YIELD, 3.0),
         "Guts" to AbilityPerk(PerkBucket.CANDY_YIELD, 8.0, PerkCondition.TOP_RANK_TASK),
-        "Early Bird" to AbilityPerk(PerkBucket.CANDY_YIELD, 10.0, PerkCondition.FIRST_TASK_BEFORE_9AM),
+        "Early Bird" to AbilityPerk(PerkBucket.CANDY_YIELD, 5.0),
         "Technician" to AbilityPerk(PerkBucket.COINS, 10.0, PerkCondition.SHORT_SESSION),
         "Trace" to AbilityPerk(PerkBucket.SUPER_CANDY_CHANCE, 3.0),
         "Inner Focus" to AbilityPerk(PerkBucket.SUPER_CANDY_CHANCE, 3.0),
@@ -99,8 +99,6 @@ object TypePerks {
 data class PerkContext(
     val sessionMinutes: Int? = null,
     val taskRank: Int? = null,
-    val hourOfDay: Int? = null,
-    val firstTaskOfDay: Boolean = false,
     val megaActive: Boolean = false,
 )
 
@@ -159,7 +157,6 @@ object Perks {
 
     private fun applies(condition: PerkCondition, ctx: PerkContext): Boolean = when (condition) {
         PerkCondition.ALWAYS -> true
-        PerkCondition.FIRST_TASK_BEFORE_9AM -> ctx.firstTaskOfDay && (ctx.hourOfDay ?: 12) < 9
         PerkCondition.SHORT_SESSION -> ctx.sessionMinutes != null && ctx.sessionMinutes in 5..20
         PerkCondition.TOP_RANK_TASK -> ctx.taskRank == 5
     }
