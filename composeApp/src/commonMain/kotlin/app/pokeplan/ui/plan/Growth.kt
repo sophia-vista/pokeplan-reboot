@@ -51,6 +51,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelIconButton
@@ -81,25 +82,9 @@ internal fun GrowthView(model: AppModel) {
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         growthRanges.forEach { d -> TabButton("$d days", d == days, { days = d }, Modifier.weight(1f)) }
     }
-    Insights.estimateAccuracy(model.data.tasks)?.let { acc ->
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                PixelTitle("Your estimates")
-                val pct = (acc.averageRatio * 100).roundToInt()
-                Text(
-                    when (acc.bias) {
-                        Insights.Bias.UNDERESTIMATES -> "Tasks take about $pct% of what you guess" // copy-ok: result
-                        Insights.Bias.OVERESTIMATES -> "Tasks take about $pct% of what you guess" // copy-ok: result
-                        Insights.Bias.ABOUT_RIGHT -> "Your guesses are about right ($pct% of the estimate)." // copy-ok: result
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
-        }
-    }
+    Accordion("Where your effort went", startOpen = true) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Where your effort went")
             val lists = model.data.lists
             val busy = wheel.lists.filter { wheel.score(it) > 0 }.sortedByDescending { wheel.score(it) }
             fun nameOf(id: String?) = lists.firstOrNull { it.id == id }?.name ?: "No list"
@@ -122,14 +107,36 @@ internal fun GrowthView(model: AppModel) {
             }
         }
     }
-    WeekBars(
-        "Tasks finished per week",
-        trend, { it.tasksDone }, { it.toString() }, Pixel.Tone,
-    )
-    WeekBars(
-        "Focus per week",
-        trend, { it.focusMinutes }, { if (it >= 60) "${it / 60}h ${it % 60}m" else "${it}m" }, Pixel.Tone,
-    )
+    }
+    Insights.estimateAccuracy(model.data.tasks)?.let { acc ->
+        Accordion("Your estimates") {
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                val pct = (acc.averageRatio * 100).roundToInt()
+                Text(
+                    when (acc.bias) {
+                        Insights.Bias.UNDERESTIMATES -> "Tasks take about $pct% of what you guess" // copy-ok: result
+                        Insights.Bias.OVERESTIMATES -> "Tasks take about $pct% of what you guess" // copy-ok: result
+                        Insights.Bias.ABOUT_RIGHT -> "Your guesses are about right ($pct% of the estimate)." // copy-ok: result
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+        }
+    }
+    }
+    Accordion("Week by week") {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            WeekBars(
+                "Tasks finished per week",
+                trend, { it.tasksDone }, { it.toString() }, Pixel.Tone,
+            )
+            WeekBars(
+                "Focus per week",
+                trend, { it.focusMinutes }, { if (it >= 60) "${it / 60}h ${it % 60}m" else "${it}m" }, Pixel.Tone,
+            )
+        }
+    }
     GoalsSummary(model)
 }
 

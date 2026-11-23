@@ -1193,6 +1193,9 @@ class ScreenshotTest {
     }
 
     @Test
+    fun linkPeopleSearch() = link("link-people-search", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1300, interact = ::pullToSearch)
+
+    @Test
     fun planMenuFull() = meStore("plan-full", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3200) { model ->
         app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
     }
@@ -1621,7 +1624,11 @@ class ScreenshotTest {
                 PixelTheme(dark = false) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.ContactImportView(model, source) {} } } } }
             }
         }
-        link("link-people-import", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1300, contacts = source)
+        link("link-people-import", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1300, contacts = source, interact = { scene ->
+            // The import key sits in the closed More accordion under the list.
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(90f, 525f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(90f, 525f))
+        })
         for (dark in listOf(false, true)) link("link-dates-remind${if (dark) "-dark" else ""}", app.pokeplan.ui.link.LinkSection.DATES, height = 2100, dark = dark, interact = { scene ->
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(268f, 443f))
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(268f, 443f))
@@ -2531,8 +2538,8 @@ class ScreenshotTest {
     @Test
     fun careRoutinesYesterday() = listOf(false, true).forEach { dark ->
         care("care-routines-yesterday-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.ROUTINES, height = 1000, dark = dark, skipOne = true, interact = { scene ->
-            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(374f, 429f))
-            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(374f, 429f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(374f, 285f))
+            scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(374f, 285f))
         })
     }
 

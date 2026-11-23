@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import app.pokeplan.ui.BackHandler
@@ -100,6 +101,7 @@ import app.pokeplan.ui.screens.ModuleLeadStage
 import app.pokeplan.ui.screens.ModuleTabs
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.RecordRow
+import app.pokeplan.ui.screens.pullReveal
 import app.pokeplan.ui.screens.Rule
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
@@ -201,17 +203,22 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(BaseSection.ROOM.name, BaseSection.ROOM.icon, "Room", "${data.room.size} placed", tint = tint),
         MenuEntry(BaseSection.SETTINGS.name, BaseSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
     )
+    val scroll = rememberScrollState()
+    var query by remember { mutableStateOf("") }
+    val reveal = app.pokeplan.ui.screens.rememberPullReveal(scroll, keepOpen = { query.isNotBlank() }, onClose = { query = "" })
+    val hasRecords = data.chores.isNotEmpty() || data.supplies.isNotEmpty() || data.assets.isNotEmpty() || data.references.isNotEmpty() || data.schedules.isNotEmpty()
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.BASE.label, onBack = onBack, color = Module.BASE.look.header, trailing = { SectionsKey(Module.BASE.label, sections) { key -> model.baseSection = BaseSection.valueOf(key) } })
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.M),
+            Modifier.weight(1f).pullReveal(reveal).verticalScroll(scroll).padding(horizontal = Spacing.Page, vertical = Spacing.L),
         ) {
-            ModuleLeadStage(model, Module.BASE, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.BASE_LOG_PREFIX), openPokemon = openPokemon)
-            FirstRecordEgg(model, Tutorials.BASE_TIDY, data.chores.size + data.supplies.size + data.assets.size)
-            BaseOverview(model, overview)
-            BaseSearch(model)
-            BasePartyPanel(model, openPokemon)
+            if (hasRecords) app.pokeplan.ui.screens.PullRevealSlot(reveal, model.data.settings.reduceMotion) { BaseSearch(model, query, { query = it }, reveal::close) }
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                ModuleLeadStage(model, Module.BASE, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.BASE_LOG_PREFIX), openPokemon = openPokemon)
+                FirstRecordEgg(model, Tutorials.BASE_TIDY, data.chores.size + data.supplies.size + data.assets.size)
+                BaseOverview(model, overview)
+                BasePartyPanel(model, openPokemon)
+            }
         }
     }
 }
@@ -289,17 +296,17 @@ private fun BaseOverview(model: AppModel, o: Overview) {
 }
 
 @Composable
-private fun BaseSearch(model: AppModel) {
-    val data = model.baseData
-    if (data.chores.isEmpty() && data.supplies.isEmpty() && data.assets.isEmpty() && data.references.isEmpty() && data.schedules.isEmpty()) return
-    var query by remember { mutableStateOf("") }
+private fun androidx.compose.foundation.layout.ColumnScope.BaseSearch(model: AppModel, query: String, onQuery: (String) -> Unit, onDone: () -> Unit) {
+    val field = remember { androidx.compose.ui.focus.FocusRequester() }
+    androidx.compose.runtime.LaunchedEffect(Unit) { field.requestFocus() }
     val hits = model.base.search(query).take(8)
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search the household", singleLine = true)
-        if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        hits.forEach { h ->
-            RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
-        }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(query, { onQuery(it.take(40)) }, Modifier.weight(1f).focusRequester(field), placeholder = "Search the household", singleLine = true)
+        PixelIconButton("close", "Close search", onDone)
+    }
+    if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    hits.forEach { h ->
+        RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); onDone() }, onClickLabel = "Open")
     }
 }
 

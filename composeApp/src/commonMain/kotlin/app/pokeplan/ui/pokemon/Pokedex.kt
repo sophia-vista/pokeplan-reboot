@@ -73,6 +73,9 @@ import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.plan.EmptyState
 import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.PullRevealSlot
+import app.pokeplan.ui.screens.pullReveal
+import app.pokeplan.ui.screens.rememberPullReveal
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.label
 
@@ -117,7 +120,9 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
             byFilter && (text.isEmpty() || dexNumber(number).removePrefix("#").contains(text) || (state != DexState.UNKNOWN && s.name.lowercase().contains(text)))
         }
     }
-    Column(Modifier.fillMaxSize()) {
+    // The index is a lazy list with no ScrollState: a state that never moves stands in, so the pull opens when the list is at its top.
+    val reveal = rememberPullReveal(rememberScrollState(), keepOpen = { view.search.isNotBlank() || view.filter != DexFilter.ALL }, onClose = { change(view.copy(search = "", filter = DexFilter.ALL)) })
+    Column(Modifier.fillMaxSize().pullReveal(reveal)) {
         Column(
             Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -141,12 +146,14 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
                     PixelBar(caught.toFloat() / rows.size.coerceAtLeast(1), color = if (caught == rows.size) Pixel.Warning else Pixel.Red)
                 }
             }
-            PixelField(
-                view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
-                label = "Search by name or number",
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }
+            PullRevealSlot(reveal, model.data.settings.reduceMotion) {
+                PixelField(
+                    view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
+                    label = "Search by name or number",
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }
+                }
             }
         }
         if (shown.isEmpty()) {

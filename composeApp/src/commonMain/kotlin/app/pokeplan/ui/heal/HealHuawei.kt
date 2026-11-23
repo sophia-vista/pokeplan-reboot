@@ -24,6 +24,7 @@ import app.pokeplan.ui.rememberInForeground
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.HuaweiReader
 import app.pokeplan.ui.Report
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Pixel
@@ -63,17 +64,25 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                 StatusLine("Screen reading", if (state.screenReading) "On" else "Off")
                 StatusLine("Notification reading", if (state.notificationReading) "On" else "Off")
                 val home = remember(seen) { seen.home }
-                (seen.latestSteps ?: home.steps)?.let { StatusLine("Steps", it.toString()) }
-                home.sleepMinutes?.let { StatusLine("Sleep", "${it / 60} h ${it % 60} min") }
-                home.getUpMinute?.let { StatusLine("Got up", "${it / 60}:${(it % 60).toString().padStart(2, '0')}") }
-                home.weight?.let { StatusLine("Weight", "${app.pokeplan.heal.HealRules.format(it)} ${home.weightUnit}") }
-                home.heartRate?.let { StatusLine("Heart rate", "$it bpm") }
-                home.exerciseKm?.let { StatusLine("Exercise", "${app.pokeplan.heal.HealRules.format(it)} km") }
-                home.restingHeartRate?.let { StatusLine("Resting heart rate", "$it bpm") }
-                home.spo2?.let { StatusLine("SpO2", "$it%") }
-                home.skinTemperature?.let { StatusLine("Skin temperature", "${app.pokeplan.heal.HealRules.format(it)} °C") }
-                home.stress?.let { StatusLine("Stress", it.toString()) }
-                home.sleepScore?.let { StatusLine("Sleep score", it.toString()) }
+                val steps = seen.latestSteps ?: home.steps
+                if (steps != null || home.sleepMinutes != null || home.getUpMinute != null || home.weight != null || home.heartRate != null || home.exerciseKm != null ||
+                    home.restingHeartRate != null || home.spo2 != null || home.skinTemperature != null || home.stress != null || home.sleepScore != null) {
+                    Accordion("Latest readings", summary = steps?.let { "$it steps" }) {
+                        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            steps?.let { StatusLine("Steps", it.toString()) }
+                            home.sleepMinutes?.let { StatusLine("Sleep", "${it / 60} h ${it % 60} min") }
+                            home.getUpMinute?.let { StatusLine("Got up", "${it / 60}:${(it % 60).toString().padStart(2, '0')}") }
+                            home.weight?.let { StatusLine("Weight", "${app.pokeplan.heal.HealRules.format(it)} ${home.weightUnit}") }
+                            home.heartRate?.let { StatusLine("Heart rate", "$it bpm") }
+                            home.exerciseKm?.let { StatusLine("Exercise", "${app.pokeplan.heal.HealRules.format(it)} km") }
+                            home.restingHeartRate?.let { StatusLine("Resting heart rate", "$it bpm") }
+                            home.spo2?.let { StatusLine("SpO2", "$it%") }
+                            home.skinTemperature?.let { StatusLine("Skin temperature", "${app.pokeplan.heal.HealRules.format(it)} °C") }
+                            home.stress?.let { StatusLine("Stress", it.toString()) }
+                            home.sleepScore?.let { StatusLine("Sleep score", it.toString()) }
+                        }
+                    }
+                }
                 if (!state.screenReading && !state.canSwitchItself) {
                     PixelButton("Turn on screen reading", { reader.openScreenReadingSettings() }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                     Text("Greyed out? App info → ⋮ → Allow restricted settings", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -124,8 +133,8 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                 }
                 if (every != null) PixelTimeField(settings.huaweiRemindAt, { t -> t?.let { heal.setHuaweiReminder(every, it) } }, ModuleAccent.HEAL.accent, label = "At")
             }
-            if (!seen.isEmpty) {
-                StatusLine("Seen", "${count(seen.screens.size, "page")}, ${count(seen.notifications.size, "notification")}")
+            if (!seen.isEmpty) Accordion("Seen", summary = "${count(seen.screens.size, "page")}, ${count(seen.notifications.size, "notification")}") {
+              Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 if (showing) {
                     ListRow {
                         Text("Controls", style = MaterialTheme.typography.bodyLarge)
@@ -156,6 +165,7 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
                     note = model.files?.save("pokelife-huawei-probe.txt", text) ?: run { clipboard.setText(AnnotatedString(text)); "Copied with every number hidden" } // copy-ok: result
                 }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 PixelButton("Clear", { reader.clear(); seen = reader.seen(); showing = false; note = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
+              }
             }
             note?.let { Report(model, it) }
         }

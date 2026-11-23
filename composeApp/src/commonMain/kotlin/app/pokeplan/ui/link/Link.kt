@@ -24,6 +24,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.focusRequester
+import app.pokeplan.ui.screens.pullReveal
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import app.pokeplan.ui.BackHandler
@@ -47,7 +49,11 @@ import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.ModuleAccent
+import app.pokeplan.ui.screens.PullRevealSlot
+import app.pokeplan.ui.screens.pullReveal
+import app.pokeplan.ui.screens.rememberPullReveal
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
@@ -159,9 +165,13 @@ private fun LinkPage(model: AppModel, place: LinkPlace, openPokemon: (String) ->
         PersonScreen(model, place.personId)
         return
     }
+    if (section == LinkSection.PEOPLE) {
+        PeopleScreen(model)
+        return
+    }
     SectionScaffold(section.label, null, onBack = { model.linkSection = null }, icon = section.icon, color = Module.LINK.look.header) {
         when (section) {
-            LinkSection.PEOPLE -> PeopleView(model)
+            LinkSection.PEOPLE -> Unit
             LinkSection.DATES -> DatesView(model)
             LinkSection.FOLLOW_UPS -> FollowUpsView(model)
             LinkSection.SETTINGS -> LinkSettingsView(model)
@@ -181,17 +191,22 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(LinkSection.FOLLOW_UPS.name, LinkSection.FOLLOW_UPS.icon, "Follow-ups", if (data.followUps.isEmpty()) "add one" else "${open.size} open", tint = tint),
         MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft),
     )
+    val scroll = rememberScrollState()
+    var query by remember { mutableStateOf("") }
+    val reveal = app.pokeplan.ui.screens.rememberPullReveal(scroll, keepOpen = { query.isNotBlank() }, onClose = { query = "" })
+    val hasRecords = data.people.isNotEmpty() || data.dates.isNotEmpty() || data.followUps.isNotEmpty()
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, trailing = { SectionsKey(Module.LINK.label, sections) { key -> model.linkSection = LinkSection.valueOf(key) } })
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.M),
+            Modifier.weight(1f).pullReveal(reveal).verticalScroll(scroll).padding(horizontal = Spacing.Page, vertical = Spacing.L),
         ) {
-            ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
-            FirstRecordEgg(model, Tutorials.LINK_POSTCARD, data.people.size + data.dates.size + data.followUps.size)
-            LinkOverview(model)
-            LinkSearch(model)
-            LinkPartyPanel(model, openPokemon)
+            if (hasRecords) app.pokeplan.ui.screens.PullRevealSlot(reveal, model.data.settings.reduceMotion) { LinkSearch(model, query, { query = it }, reveal::close) }
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
+                FirstRecordEgg(model, Tutorials.LINK_POSTCARD, data.people.size + data.dates.size + data.followUps.size)
+                LinkOverview(model)
+                LinkPartyPanel(model, openPokemon)
+            }
         }
     }
 }
@@ -264,17 +279,17 @@ private fun LinkOverview(model: AppModel) {
 }
 
 @Composable
-private fun LinkSearch(model: AppModel) {
-    val data = model.linkData
-    if (data.people.isEmpty() && data.dates.isEmpty() && data.followUps.isEmpty()) return
-    var query by remember { mutableStateOf("") }
+private fun LinkSearch(model: AppModel, query: String, onQuery: (String) -> Unit, onDone: () -> Unit) {
+    val field = remember { androidx.compose.ui.focus.FocusRequester() }
+    androidx.compose.runtime.LaunchedEffect(Unit) { field.requestFocus() }
     val hits = model.link.search(query).take(8)
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search Link", singleLine = true)
-        if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        hits.forEach { h ->
-            RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
-        }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(query, { onQuery(it.take(40)) }, Modifier.weight(1f).focusRequester(field), placeholder = "Search Link", singleLine = true)
+        PixelIconButton("close", "Close search", onDone)
+    }
+    if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    hits.forEach { h ->
+        RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); onDone() }, onClickLabel = "Open")
     }
 }
 
@@ -291,10 +306,11 @@ private const val DIRECTORY_PAGE = 40
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PeopleView(model: AppModel) {
+private fun PeopleScreen(model: AppModel) {
     val link = model.link
     val data = model.linkData
     var name by remember { mutableStateOf("") }
+    var adding by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<String?>(null) }
     var favorites by remember { mutableStateOf(false) }
@@ -303,48 +319,73 @@ private fun PeopleView(model: AppModel) {
     var shown by remember { mutableStateOf(DIRECTORY_PAGE) }
     var importing by remember { mutableStateOf(false) }
     val contacts = model.contacts
-    if (importing && contacts != null) {
-        TextBox { ContactImportView(model, contacts) { importing = false } }
-        return
-    }
-    val people = link.directory(query, category, null, favorites, sort)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FormGroup {
-                PixelField(name, { name = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Person", placeholder = "Add a person", singleLine = true, keyboardOptions = wordKeys)
-                FormSave("Add", {
-                    val out = link.addPerson(name)
-                    if (out.record == null) message = out.refused else { name = ""; message = null; model.haptic(); openPerson(model, out.record!!.id) }
-                }, accent, enabled = name.isNotBlank())
-            }
-            if (data.people.none { it.isMe }) PixelButton("Set up my profile", {
-                link.createMe(model.data.trainerName).record?.let { me -> model.haptic(); openPerson(model, me.id, 1) }
-            }, Modifier.fillMaxWidth(), accent, compact = true)
-            if (contacts != null) PixelButton("Import contacts", { importing = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            message?.let { Report(model, it, NoticeTone.WARNING) }
-            val similar = if (name.isBlank()) emptyList() else link.possibleDuplicates(name)
-            if (similar.isNotEmpty()) Text("Already in your list: ${similar.joinToString { LinkRules.displayName(it) }}. You can still add another.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
-            if (data.people.isNotEmpty()) {
-            PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search people", singleLine = true)
+    val scroll = rememberScrollState()
+    val reveal = rememberPullReveal(
+        scroll,
+        keepOpen = { query.isNotBlank() || category != null || favorites || sort != Sort.NAME },
+        onClose = { query = ""; category = null; favorites = false; sort = Sort.NAME },
+    )
+    SectionScaffold(
+        LinkSection.PEOPLE.label, null, onBack = { model.linkSection = null }, icon = LinkSection.PEOPLE.icon, color = Module.LINK.look.header,
+        scrollState = scroll, bodyModifier = Modifier.pullReveal(reveal),
+    ) {
+        if (importing && contacts != null) {
+            TextBox { ContactImportView(model, contacts) { importing = false } }
+            return@SectionScaffold
+        }
+        val people = link.directory(query, category, null, favorites, sort)
+        if (data.people.isNotEmpty()) PullRevealSlot(reveal, model.data.settings.reduceMotion) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            val pinnedKey = "\u0001pinned"
-            val filterKeys = listOf<String?>(null) + (if (data.people.any { it.favorite }) listOf(pinnedKey) else emptyList()) +
-                LinkRules.categories(data).filter { c -> data.people.any { it.category.equals(c, ignoreCase = true) } }
-            PixelDropdown(
-                filterKeys, if (favorites) pinnedKey else category, { k -> if (k == null) "All" else if (k == pinnedKey) "Pinned" else k },
-                { k -> if (k == pinnedKey) { favorites = true; category = null } else { category = k; favorites = false } },
-                Modifier.weight(1f), key = accent,
-            )
-            PixelButton(if (sort == Sort.NAME) "By name" else "Recent", { sort = if (sort == Sort.NAME) Sort.RECENT else Sort.NAME }, color = Pixel.InkSoft, compact = true)
+                PixelField(query, { query = it.take(40) }, Modifier.weight(1f), placeholder = "Search people", singleLine = true)
+                PixelIconButton("close", "Close search", reveal::close)
             }
-            if (people.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            val upTo = shown
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                val pinnedKey = "\u0001pinned"
+                val filterKeys = listOf<String?>(null) + (if (data.people.any { it.favorite }) listOf(pinnedKey) else emptyList()) +
+                    LinkRules.categories(data).filter { c -> data.people.any { it.category.equals(c, ignoreCase = true) } }
+                PixelDropdown(
+                    filterKeys, if (favorites) pinnedKey else category, { k -> if (k == null) "All" else if (k == pinnedKey) "Pinned" else k },
+                    { k -> if (k == pinnedKey) { favorites = true; category = null } else { category = k; favorites = false } },
+                    Modifier.weight(1f), key = accent,
+                )
+                PixelButton(if (sort == Sort.NAME) "By name" else "Recent", { sort = if (sort == Sort.NAME) Sort.RECENT else Sort.NAME }, color = Pixel.InkSoft, compact = true)
+            }
+        }
+        TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                people.take(upTo).forEach { p ->
-                    PersonTile(p, listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · ")) { openPerson(model, p.id) }
+                if (!adding) PixelButton("Add person", { adding = true }, Modifier.fillMaxWidth(), accent, compact = true)
+                else {
+                    FormGroup {
+                        PixelField(name, { name = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Person", placeholder = "Add a person", singleLine = true, keyboardOptions = wordKeys)
+                        FormSave("Add", {
+                            val out = link.addPerson(name)
+                            if (out.record == null) message = out.refused else { name = ""; message = null; adding = false; model.haptic(); openPerson(model, out.record!!.id) }
+                        }, accent, enabled = name.isNotBlank())
+                    }
+                    PixelButton("Cancel", { adding = false; name = ""; message = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                    message?.let { Report(model, it, NoticeTone.WARNING) }
+                    val similar = if (name.isBlank()) emptyList() else link.possibleDuplicates(name)
+                    if (similar.isNotEmpty()) Text("Already in your list: ${similar.joinToString { LinkRules.displayName(it) }}. You can still add another.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
                 }
-            }
-            if (people.size > upTo) PixelButton("Show ${minOf(DIRECTORY_PAGE, people.size - upTo)} more of ${people.size - upTo}", { shown = upTo + DIRECTORY_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                if (data.people.isNotEmpty()) {
+                    if (people.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    val upTo = shown
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        people.take(upTo).forEach { p ->
+                            PersonTile(p, listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · ")) { openPerson(model, p.id) }
+                        }
+                    }
+                    if (people.size > upTo) PixelButton("Show ${minOf(DIRECTORY_PAGE, people.size - upTo)} more of ${people.size - upTo}", { shown = upTo + DIRECTORY_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                }
+                val noMe = data.people.none { it.isMe }
+                if (noMe || contacts != null) Accordion("More") {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        if (noMe) PixelButton("Set up my profile", {
+                            link.createMe(model.data.trainerName).record?.let { me -> model.haptic(); openPerson(model, me.id, 1) }
+                        }, Modifier.fillMaxWidth(), accent, compact = true)
+                        if (contacts != null) PixelButton("Import contacts", { importing = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                    }
+                }
             }
         }
     }
