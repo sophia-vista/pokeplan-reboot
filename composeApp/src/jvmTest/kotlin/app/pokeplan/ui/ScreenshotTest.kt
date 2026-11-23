@@ -69,6 +69,9 @@ class ScreenshotTest {
         repeat(10) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(20) }
         val bytes = scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes
         File("build/screenshots/$name.png").apply { parentFile.mkdirs() }.writeBytes(bytes)
+        // Golden gate: compare with the committed baseline (or write it under UPDATE_SCREENSHOTS=1). See
+        // ScreenshotCompare and section 12 of docs/pokelife/ARCHITECTURE/TEST_STRATEGY.md.
+        ScreenshotCompare.compare(name, bytes)
         assertTrue(bytes.size > minBytes, "$name drew almost nothing")
         scene.close()
     }

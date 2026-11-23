@@ -281,10 +281,21 @@ fun GameStore.worldChoose(id: String, option: Int): Boolean {
 fun GameStore.worldSceneDone(id: String) { if (id !in data.world.scenesDone) update { it.copy(world = it.world.copy(scenesDone = it.world.scenesDone + id)) } }
 
 fun GameStore.worldEpisodeDone(key: String, flags: Set<String> = emptySet()) {
-    if (key !in data.world.episodesDone || key in data.world.storyResume || !data.world.storyFlags.containsAll(flags)) update { it.copy(world = it.world.copy(episodesDone = it.world.episodesDone + key, storyResume = it.world.storyResume - key, storyFlags = it.world.storyFlags + flags)) }
+    val before = data.world
+    if (key !in before.episodesDone || key in before.storyResume || !before.storyFlags.containsAll(flags)) update { it.copy(world = it.world.copy(episodesDone = it.world.episodesDone + key, storyResume = it.world.storyResume - key, storyFlags = it.world.storyFlags + flags)) }
     val world = data.world
     if (key == app.pokeplan.world.WorldMoments.INTRO_KEY && app.pokeplan.world.story.IntroMewChapter.MEW_JOINED in world.storyFlags && GameStore.MEW_GIFT !in world.storyFlags) {
         update { it.copy(world = it.world.copy(storyFlags = it.world.storyFlags + GameStore.MEW_GIFT, finds = it.world.finds + app.pokeplan.world.Find(151, "tiny-woods", 1, nowMillis))) }
+    }
+    // The optional Mythical follow-ups: one table in world-core says which finished episode hands over which Pokémon.
+    // The join flag exists only after the first ending that sets it, so watching (or replaying) the episode again
+    // grants nothing; the Find itself is consumed on recruit through the one shared path.
+    val recruit = app.pokeplan.world.story.MythicalChapters.recruitFor(key) ?: return
+    if (recruit.joinFlag !in flags || recruit.joinFlag in before.storyFlags) return
+    val dungeonId = app.pokeplan.world.story.StoryCatalog.mythical(recruit.chapter)?.scenes?.firstNotNullOfOrNull { it.dungeonId } ?: "tiny-woods"
+    update { d ->
+        if (d.world.finds.any { it.speciesId == recruit.speciesId }) d
+        else d.copy(world = d.world.copy(finds = d.world.finds + app.pokeplan.world.Find(recruit.speciesId, dungeonId, 1, nowMillis)))
     }
 }
 

@@ -36,4 +36,26 @@ class ToolCatalogTest {
         assertEquals(GearTool.COIN, random.first())
         assertEquals(GearTool.UNITS, ToolCatalog.search("lbs", favorites = listOf("COIN")).first().tool)
     }
+
+    @Test
+    fun everyToolSitsOnExactlyOneShelf() {
+        val groups = ToolCatalog.groups()
+        assertEquals(ToolCategory.entries.map { it }, groups.map { it.category }, "shelves keep the catalogue's order")
+        val tools = groups.flatMap { it.tools }
+        assertEquals(ToolCatalog.all.size, tools.size, "no tool is on two shelves and none is lost")
+        assertEquals(GearTool.entries.toSet(), tools.map { it.tool }.toSet(), "every tool stays reachable")
+        assertEquals(groups.map { it.category }, groups.flatMap { it.tools }.map { it.category }.distinct(), "each shelf appears once, in catalogue order")
+        val time = ToolCatalog.groups(ToolCategory.TIME)
+        assertEquals(listOf(ToolCategory.TIME), time.map { it.category })
+        assertEquals(setOf(GearTool.TIMER, GearTool.STOPWATCH, GearTool.WORLD_CLOCK), time.single().tools.map { it.tool }.toSet())
+    }
+
+    @Test
+    fun favouritesAndRecentsAreTheirOwnStrips() {
+        assertEquals(listOf(GearTool.COIN, GearTool.TIMER), ToolCatalog.favorites(listOf("COIN", "TIMER", "GONE")).map { it.tool })
+        assertEquals(emptyList<ToolInfo>(), ToolCatalog.favorites(emptyList()))
+        val recents = ToolCatalog.recents(listOf("TIMER", "UNITS", "QR", "COIN", "SOUND"), favorites = listOf("QR"), limit = 3)
+        assertEquals(listOf(GearTool.TIMER, GearTool.UNITS, GearTool.COIN), recents.map { it.tool }, "newest first, favourites left out, at most three")
+        assertEquals(emptyList<ToolInfo>(), ToolCatalog.recents(listOf("GONE")))
+    }
 }

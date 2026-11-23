@@ -3,33 +3,65 @@ package app.pokeplan.ui.gear
 import app.pokeplan.core.pokemon.GearTool
 import kotlin.math.abs
 
-enum class ToolCategory(val label: String) { CALCULATE("Calculate"), CONVERT("Convert"), TIME("Time"), LIGHT("Light"), CHOOSE("Choose"), MEASURE("Measure") }
+/**
+ * The shelf a tool lives on. Grouped rather than flat so the Gear menu reads as a few short names
+ * ("Everyday", "Time", "Sensors") instead of one long list of eighteen tools. Labels stay one word
+ * so they still fit a category key at fontScale 1.3.
+ */
+enum class ToolCategory(val label: String) {
+    EVERYDAY("Everyday"),
+    NUMBERS("Numbers"),
+    CONVERT("Convert"),
+    MONEY("Money"),
+    TIME("Time"),
+    SENSORS("Sensors"),
+    UTILITIES("Utilities"),
+}
 
 class ToolInfo(val tool: GearTool, val category: ToolCategory, val description: String, val keywords: List<String>)
 
+/** One shelf of the catalogue, in catalogue order. */
+data class ToolGroup(val category: ToolCategory, val tools: List<ToolInfo>)
+
 object ToolCatalog {
+    /** How many recent tools the menu shows beside the shelves (favourites have their own strip). */
+    const val RECENTS_SHOWN = 3
+
     val all: List<ToolInfo> = listOf(
-        ToolInfo(GearTool.CALCULATOR, ToolCategory.CALCULATE, "Sums with brackets and percentages, scientific functions, memory", listOf("calc", "math", "maths", "percent", "percentage", "tip", "sum", "add", "plus", "multiply", "sin", "cos", "sqrt", "scientific")),
+        ToolInfo(GearTool.CALCULATOR, ToolCategory.NUMBERS, "Sums with brackets and percentages, scientific functions, memory", listOf("calc", "math", "maths", "percent", "percentage", "tip", "sum", "add", "plus", "multiply", "sin", "cos", "sqrt", "scientific")),
+        ToolInfo(GearTool.EVERYDAY, ToolCategory.EVERYDAY, "Tip and split, percent, sale and tax, a loan, savings, trip cost", listOf("tip", "split", "bill", "restaurant", "discount", "sale", "tax", "vat", "loan", "mortgage", "interest", "savings", "fuel", "gas", "petrol", "trip", "percent")),
+        ToolInfo(GearTool.CURRENCY, ToolCategory.MONEY, "Money at today's rates, offline, with travel costs", listOf("money", "exchange", "convert", "converter", "rate", "rates", "yen", "peso", "dollar", "euro", "usd", "php", "jpy", "forex", "travel", "fx", "cost")),
         ToolInfo(GearTool.UNITS, ToolCategory.CONVERT, "Lengths, weights, cooking, temperature, data and more", listOf("convert", "converter", "lbs", "pounds", "kg", "miles", "km", "feet", "inches", "temperature", "celsius", "fahrenheit", "cup", "oven", "weight", "length", "area", "volume", "speed", "mbps", "bytes")),
-        ToolInfo(GearTool.CURRENCY, ToolCategory.CONVERT, "Money at today's rates, offline, with travel costs", listOf("money", "exchange", "rate", "rates", "yen", "peso", "dollar", "euro", "usd", "php", "jpy", "forex", "travel", "fx", "cost")),
         ToolInfo(GearTool.TIMER, ToolCategory.TIME, "Several timers that ring even when the app is closed", listOf("countdown", "alarm", "cooking", "egg", "tea", "remind", "minutes")),
         ToolInfo(GearTool.STOPWATCH, ToolCategory.TIME, "Time something, with laps", listOf("laps", "lap", "race", "split", "timing", "run")),
-        ToolInfo(GearTool.FLASHLIGHT, ToolCategory.LIGHT, "The phone's torch, a screen light and an SOS signal", listOf("torch", "light", "lamp", "night", "dark", "sos", "red", "screen light")),
-        ToolInfo(GearTool.PICKER, ToolCategory.CHOOSE, "Pick from your list, with weights", listOf("choose", "decide", "random", "list", "dinner", "who", "draw", "shuffle", "lottery", "eat")),
-        ToolInfo(GearTool.EVERYDAY, ToolCategory.CALCULATE, "Tip and split, percent, sale and tax, a loan, savings, trip cost", listOf("tip", "split", "bill", "restaurant", "discount", "sale", "tax", "vat", "loan", "mortgage", "interest", "savings", "fuel", "gas", "petrol", "trip", "percent")),
         ToolInfo(GearTool.WORLD_CLOCK, ToolCategory.TIME, "The time in other places, a time converted, and date sums", listOf("time zone", "timezone", "zone", "tokyo", "london", "new york", "utc", "gmt", "date", "days", "countdown", "difference", "jet lag", "meeting")),
-        ToolInfo(GearTool.COMPASS, ToolCategory.MEASURE, "Which way you are facing, from the magnetic sensor", listOf("direction", "north", "heading", "bearing", "magnetic", "navigate", "sensor")),
-        ToolInfo(GearTool.LEVEL, ToolCategory.MEASURE, "How far from flat the phone lies, in degrees", listOf("flat", "tilt", "spirit level", "bubble", "angle", "incline", "slope", "sensor", "shelf", "picture")),
-        ToolInfo(GearTool.BAROMETER, ToolCategory.MEASURE, "Air pressure and a rough height", listOf("pressure", "weather", "altitude", "height", "hpa", "elevation", "sensor", "storm")),
-        ToolInfo(GearTool.DEVICE, ToolCategory.MEASURE, "What this phone can do for Gear", listOf("sensors", "hardware", "capabilities", "permissions", "check", "support", "gps", "nfc", "camera", "battery")),
-        ToolInfo(GearTool.WAYPOINTS, ToolCategory.MEASURE, "Save where you are and see how far and which way it is", listOf("gps", "location", "place", "park", "car", "parked", "find", "way back", "coordinates", "latitude", "map", "hike", "trail")),
-        ToolInfo(GearTool.SOUND, ToolCategory.MEASURE, "How loud it is around you, and the pitch of a sound", listOf("noise", "decibel", "db", "loud", "microphone", "mic", "pitch", "tuner", "note", "frequency", "hearing")),
-        ToolInfo(GearTool.QR, ToolCategory.MEASURE, "Make a QR code from text, or scan one with the camera", listOf("qr", "barcode", "scan", "scanner", "camera", "wifi", "link", "share", "code")),
-        ToolInfo(GearTool.NETWORK, ToolCategory.MEASURE, "How you are connected and how quickly the internet answers", listOf("wifi", "wi-fi", "internet", "connection", "speed", "ping", "latency", "online", "signal", "mobile data", "network")),
-        ToolInfo(GearTool.COIN, ToolCategory.CHOOSE, "Heads or tails, and dice", listOf("flip", "toss", "heads", "tails", "dice", "die", "roll", "d20", "d6", "random")),
+        ToolInfo(GearTool.FLASHLIGHT, ToolCategory.UTILITIES, "The phone's torch, a screen light and an SOS signal", listOf("torch", "light", "lamp", "night", "dark", "sos", "red", "screen light")),
+        ToolInfo(GearTool.PICKER, ToolCategory.UTILITIES, "Pick from your list, with weights", listOf("choose", "decide", "random", "list", "dinner", "who", "draw", "shuffle", "lottery", "eat")),
+        ToolInfo(GearTool.COIN, ToolCategory.UTILITIES, "Heads or tails, and dice", listOf("flip", "toss", "heads", "tails", "dice", "die", "roll", "d20", "d6", "random")),
+        ToolInfo(GearTool.DEVICE, ToolCategory.UTILITIES, "What this phone can do for Gear", listOf("sensors", "hardware", "capabilities", "permissions", "check", "support", "gps", "nfc", "camera", "battery")),
+        ToolInfo(GearTool.WAYPOINTS, ToolCategory.UTILITIES, "Save where you are and see how far and which way it is", listOf("gps", "location", "place", "park", "car", "parked", "find", "way back", "coordinates", "latitude", "map", "hike", "trail")),
+        ToolInfo(GearTool.QR, ToolCategory.UTILITIES, "Make a QR code from text, or scan one with the camera", listOf("qr", "barcode", "scan", "scanner", "camera", "wifi", "link", "share", "code")),
+        ToolInfo(GearTool.NETWORK, ToolCategory.UTILITIES, "How you are connected and how quickly the internet answers", listOf("wifi", "wi-fi", "internet", "connection", "speed", "ping", "latency", "online", "signal", "mobile data", "network")),
+        ToolInfo(GearTool.COMPASS, ToolCategory.SENSORS, "Which way you are facing, from the magnetic sensor", listOf("direction", "north", "heading", "bearing", "magnetic", "navigate", "sensor")),
+        ToolInfo(GearTool.LEVEL, ToolCategory.SENSORS, "How far from flat the phone lies, in degrees", listOf("flat", "tilt", "spirit level", "bubble", "angle", "incline", "slope", "sensor", "shelf", "picture")),
+        ToolInfo(GearTool.BAROMETER, ToolCategory.SENSORS, "Air pressure and a rough height", listOf("pressure", "weather", "altitude", "height", "hpa", "elevation", "sensor", "storm")),
+        ToolInfo(GearTool.SOUND, ToolCategory.SENSORS, "How loud it is around you, and the pitch of a sound", listOf("noise", "decibel", "db", "loud", "microphone", "mic", "pitch", "tuner", "note", "frequency", "hearing")),
     )
 
     fun info(tool: GearTool): ToolInfo = all.first { it.tool == tool }
+
+    /** The catalogue as shelves, in [ToolCategory] order; [category] narrows it to one shelf. Empty shelves are left out. */
+    fun groups(category: ToolCategory? = null): List<ToolGroup> = ToolCategory.entries.mapNotNull { c ->
+        if (category != null && c != category) return@mapNotNull null
+        all.filter { it.category == c }.takeIf { it.isNotEmpty() }?.let { ToolGroup(c, it) }
+    }
+
+    /** Favourites in the order the person put them in; unknown saved names are skipped. */
+    fun favorites(names: List<String>): List<ToolInfo> = names.mapNotNull { name -> all.firstOrNull { it.tool.name == name } }
+
+    /** Recently used tools newest first, without the favourites (their own strip already shows them). */
+    fun recents(names: List<String>, favorites: List<String> = emptyList(), limit: Int = RECENTS_SHOWN): List<ToolInfo> =
+        names.filter { it !in favorites }.mapNotNull { name -> all.firstOrNull { it.tool.name == name } }.distinctBy { it.tool }.take(limit)
 
     fun search(query: String, favorites: List<String> = emptyList(), recents: List<String> = emptyList()): List<ToolInfo> {
         val q = query.trim().lowercase()

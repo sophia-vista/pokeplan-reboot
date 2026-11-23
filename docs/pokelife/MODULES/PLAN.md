@@ -200,7 +200,7 @@ Requirements:
 
 ### 5.3 Forgiving progress
 
-Streaks stay secondary and are derived from completion history. Missing a day must not produce punitive copy or erase prior progress. Do not show streaks on every card. Do not introduce streak freezes, decay, or expiring opportunities without separate approval. Default cards prioritize action and the current occurrence.
+Streaks stay secondary and are derived from completion history. Missing a day must not produce punitive copy or erase prior progress. A streak is a display only: no reward, rarity, roll or chance may read it, and resetting it takes nothing away (reward contract, `../FEATURES/POKEMON_ECOSYSTEM.md` 10.0 rule 5). Do not show streaks on every card. Do not introduce streak freezes, decay, or expiring opportunities without separate approval. Default cards prioritize action and the current occurrence.
 
 ### 5.4 Completion and rewards
 

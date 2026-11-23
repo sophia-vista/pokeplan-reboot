@@ -39,6 +39,7 @@ import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelIconButton
+import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
@@ -83,7 +84,12 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
                     PixelField(query, { query = it.take(30) }, Modifier.weight(1f), singleLine = true, label = "Search")
                     PixelIconButton("close", "Close search", { reveal.close() }, Pixel.InkSoft)
                 }
-                PixelDropdown(listOf<ToolCategory?>(null) + ToolCategory.entries, category, { it?.label ?: "All" }, { category = it }, Modifier.fillMaxWidth())
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("All", { category = null }, color = if (category == null) Pixel.Tone else Pixel.InkSoft, compact = true)
+                    ToolCategory.entries.forEach { c ->
+                        PixelButton(c.label, { category = c }, color = if (category == c) Pixel.Tone else Pixel.InkSoft, compact = true)
+                    }
+                }
             }
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
             if (query.isNotBlank()) {
@@ -94,12 +100,23 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
                 }
                 found.forEach { t -> PixelButton("${t.tool.label}: ${t.description}", { query = ""; open = t.tool }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true) }
             } else {
-                val starred = gear.favorites.mapNotNull { n -> GearTool.entries.firstOrNull { it.name == n } }
-                if (starred.isNotEmpty()) {
-                    FieldLabel("Favourites")
-                    MenuGrid(starred.map { entry(ToolCatalog.info(it)) }) { key -> open = GearTool.valueOf(key) }
+                if (category == null) {
+                    val starred = ToolCatalog.favorites(gear.favorites)
+                    if (starred.isNotEmpty()) {
+                        SectionLabel("Favourites", icon = "star")
+                        MenuGrid(starred.map { entry(it) }) { key -> open = GearTool.valueOf(key) }
+                    }
+                    val recent = ToolCatalog.recents(gear.recents, gear.favorites)
+                    if (recent.isNotEmpty()) {
+                        SectionLabel("Recent", icon = "clock")
+                        MenuGrid(recent.map { entry(it) }) { key -> open = GearTool.valueOf(key) }
+                    }
                 }
-                MenuGrid(ToolCatalog.all.filter { category == null || it.category == category }.map { entry(it) }) { key -> open = GearTool.valueOf(key) }
+                ToolCatalog.groups(category).forEach { group ->
+                    SectionLabel(group.category.label)
+                    MenuGrid(group.tools.map { entry(it) }) { key -> open = GearTool.valueOf(key) }
+                }
+                if (category != null) PixelButton("Show every tool", { category = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
         }
     } else {

@@ -15,7 +15,7 @@ class RewardJsonTest {
     private val buddy = pokemon(Ids.PIKACHU, level = 40).withHeldItem("lucky-egg")
     private val state = PlayerState(listOf(buddy), buddy.id, Inventory().add("rare-candy", 12).add("lure-fire", 1), coins = 50, eggMeter = 4, trainerPoints = 100, caught = setOf(25, 4))
     private val effort = EffortEvent(30, true, Region.KANTO, newPokemonId = "new-1", nowMillis = 1_700_000_000_000)
-    private val achievement = AchievementEvent(4, Region.JOHTO, hourOfDay = 7, firstOfDay = true, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000)
+    private val achievement = AchievementEvent(4, Region.JOHTO, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000)
 
     @Test
     fun stateAndEventsRoundTrip() {

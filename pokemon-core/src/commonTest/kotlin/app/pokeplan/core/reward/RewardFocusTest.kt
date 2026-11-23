@@ -8,8 +8,8 @@ import kotlin.test.assertTrue
 
 class RewardFocusTest {
     private fun event(tier: Int, focus: RewardFocus? = null) =
-        if (focus == null) AchievementEvent(tier, Region.KANTO, 12, false, false, false, "egg", 2_000L)
-        else AchievementEvent(tier, Region.KANTO, 12, false, false, false, "egg", 2_000L, focus = focus)
+        if (focus == null) AchievementEvent(tier, Region.KANTO, false, false, "egg", 2_000L)
+        else AchievementEvent(tier, Region.KANTO, false, false, "egg", 2_000L, focus = focus)
 
     private fun candies(out: Outcome) = out.rewards.takeWhile { it !is Reward.Coins }.filterIsInstance<Reward.Candies>().map { it.amount }
 

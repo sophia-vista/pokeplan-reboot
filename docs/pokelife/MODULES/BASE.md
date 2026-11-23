@@ -93,7 +93,7 @@ Use a compact navigation structure with five primary destinations, plus a focuse
 5. **Reference** — searchable household notes and practical information.
 6. **Room** — the Secret Base room, a view of Base's party among earned decorations (section 9.5; a menu card, not a tab).
 
-**Shown as:** the app labels Inventory **Supplies** and Reference **Notes**, and durable items are the **Items** tab under Maintenance (the as-built list in 9.7 uses the shipped names).
+**Shown as:** the app labels the Inventory destination **Belongings** (three tabs: **Stock**, **Shopping**, **Items**) and Reference **Notes**, so consumables, the shopping list and durable items are one destination rather than items living under Maintenance (the as-built list in 9.7 uses the shipped names).
 
 Search is available from the BASE shell and covers all BASE-owned record types. Settings remain a secondary destination, not a primary tab.
 
@@ -669,6 +669,11 @@ Sections 3 and 4 are built, with the differences below and the open items under 
 - **Supplies:** quantity is exact (thousandths of a unit, no floating point); a supply on the restocking list because it is low leaves it only with a new quantity; the adjustment history is bounded (`BaseRules.ADJUSTMENTS_KEPT`).
 - **Belongings:** durable things are assets; one identity serves inventory and maintenance.
 - **Maintenance:** a schedule runs on the calendar or counted from when it was done; its start date moves only when its next date or kind of repeat is edited, never on a rename; a cost is plain text, never a transaction; undoing a tick removes the record and returns the schedule to its date (same event id, nothing pays twice).
+
+**Menus, stock and shopping (0.237.0).**
+- **Sections.** Six destinations: **Chores**, **Belongings** (tabs **Stock**, **Shopping**, **Items**), **Maintenance**, **Notes**, **Room** and **Settings**. Belongings is its own destination; durable items are no longer a tab under Maintenance. The three "hide a section" switches are gone (they could only fold away a list that already shows only what needs attention), and every overview row opens the section it describes. The overview's quick actions capture a chore, a supply, a shopping line or a note from one title (`BaseQuickActions`), instead of keys that only re-open the sections.
+- **Stock changes have a screen and a history.** A supply's **Adjust stock** form sets, adds or removes an exact quantity with an optional reason (Counted, Used, Bought, Correction); each change is one `StockAdjustment` and the supply shows the last five, newest first (`BaseStore.recentAdjustments`, `BaseRules.ADJUSTMENT_HISTORY`); negative stock is refused.
+- **Shopping, end to end.** A hand-written restocking line can point at a supply (`BaseStore.addRestock(name, supplyId)`); the list is grouped by household area with "Other" last (`BaseRules.restockGroups`); marking a line **Bought** updates that supply's stock through the same stock adjustment (one adjustment; Undo restores the stock and the line), and a line whose supply has an unknown quantity asks for the quantity bought. One thing to buy is listed once even when a low supply and a linked hand-written line are the same (`BaseRules.restockList`). None of it pays a reward or creates a MINT transaction.
 
 **Habitat Discovery (section 9)** *(amounts, caps, meter sizes and perks are *(tune)* values owned by `docs/economy.md`, the "Base: ..." rows)*:
 - **On by default**, off in Settings without touching a record. Only a chore done and maintenance done pay; everything in 9.2 marked No never pays.

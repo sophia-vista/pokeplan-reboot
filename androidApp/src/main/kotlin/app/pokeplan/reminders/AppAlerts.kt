@@ -32,6 +32,8 @@ object AppAlerts {
         RECAP(9104, Channels.EVENING_NUDGES, 7104),
 
         JOB(9107, Channels.WORLD_JOBS, 7107),
+        /** An expedition floor is due: settle it silently; the report waits in the app and nothing is announced. */
+        EXPEDITION(9109, Channels.WORLD_JOBS, 7109),
 
         TIMER(9108, Channels.GEAR_TIMERS, 7108),
     }
@@ -40,7 +42,12 @@ object AppAlerts {
     const val EXTRA_KIND = "kind"
     const val EXTRA_SESSION = "session"
 
-    data class Plan(val halfway: Long?, val end: Long?, val sessionId: String?, val job: Long? = null, val timer: Long? = null)
+    data class Plan(
+        val halfway: Long?, val end: Long?, val sessionId: String?,
+        val job: Long? = null, val timer: Long? = null,
+        /** The next expedition floor, settled without a notification; null when no team is out. */
+        val expedition: Long? = null,
+    )
 
     fun plan(data: AppData, nowMillis: Long, zone: TimeZone): Plan {
         val alerts = Nudges.focusAlerts(data.focus, data.settings, nowMillis)
@@ -50,6 +57,7 @@ object AppAlerts {
             sessionId = data.focus?.takeIf { !it.isFinished }?.id,
             job = WorldAlerts.nextJobDone(data, nowMillis),
             timer = GearTimers.nextEnd(data, nowMillis),
+            expedition = WorldAlerts.nextFloorAt(data, nowMillis),
         )
     }
 
@@ -60,6 +68,9 @@ object AppAlerts {
         set(context, alarms, Kind.END, plan.end, plan.sessionId, exact = true)
         set(context, alarms, Kind.JOB, plan.job, null, exact = false)
         set(context, alarms, Kind.TIMER, plan.timer, null, exact = true)
+        // A floor can be minutes away, so this one is only ever an inexact idle-safe alarm; it pays the same floors
+        // whenever it lands (settlement is elapsed-time based) and then reschedules itself from the settled save.
+        set(context, alarms, Kind.EXPEDITION, plan.expedition, null, exact = false)
     }
 
     fun rescheduleFromSave(context: Context) {
@@ -183,6 +194,11 @@ class NudgeReceiver : BroadcastReceiver() {
                         AppAlerts.show(context, kind, "A World job is done", text, Place.WORLD.name)
                     }
                 }
+            }
+            AppAlerts.Kind.EXPEDITION -> {
+                // Silent by design: floors are routine and the report is waiting in World. Settling here is the same
+                // work a timer would have done while the app was open, and the reschedule below picks the next floor.
+                store.worldSettle()
             }
         }
         AppAlerts.rescheduleFromSave(context)
