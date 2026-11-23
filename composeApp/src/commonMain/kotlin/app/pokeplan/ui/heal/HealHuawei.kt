@@ -18,6 +18,8 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import app.pokeplan.app.heal.HuaweiControls
+import app.pokeplan.app.heal.HuaweiOutcome
+import app.pokeplan.app.heal.HuaweiSourceReport
 import app.pokeplan.app.heal.HuaweiWalk
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.rememberInForeground
@@ -118,8 +120,11 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
             }
             // What the pages hold as Heal records, previewed before anything is saved (HEAL.md 10.3); Huawei sessions pay like ones logged by hand.
             // Not while a read is running: pages arrive every second then, and parsing every captured page each time froze the screen (21 November 2026).
-            val read = remember(seen, state.walking) { if (state.walking) app.pokeplan.heal.ProviderRead(emptyList(), 0, 0) else heal.readHuawei(seen) }
-            val plan = remember(read, model.healData) { heal.previewImport(read) }
+            val preview = remember(seen, state.walking, model.healData) { if (state.walking) null else heal.previewHuawei(seen) }
+            val read = preview?.read ?: app.pokeplan.heal.ProviderRead(emptyList(), 0, 0)
+            val plan = preview?.plan ?: app.pokeplan.heal.ImportPlan(emptyList(), 0, 0)
+            // Which pages gave records, and which are simply not read (HEAL.md 22B): read-only and memory-only, like everything above.
+            preview?.let { WhatWasRead(it.report, walked = seen.visits.isNotEmpty() || seen.log.isNotEmpty()) }
             if (!plan.isEmpty && dismissed != seen.screens.size) ImportPreview(plan,
                 onAdd = { val p = heal.importFromProvider(read); note = "Added ${count(p.candidates.size, "record")}" }, // copy-ok: result
                 onCancel = { dismissed = seen.screens.size })
@@ -168,6 +173,29 @@ internal fun HuaweiProbeBox(model: AppModel, reader: HuaweiReader, startShowing:
               }
             }
             note?.let { Report(model, it) }
+        }
+    }
+}
+
+/** What each page of the last read gave (HEAL.md 22B): read, with how many records are new, or why it was not read. Never Huawei's own text. */
+@Composable
+private fun WhatWasRead(report: List<HuaweiSourceReport>, walked: Boolean) {
+    if (report.isEmpty()) return
+    val read = report.count { it.outcome == HuaweiOutcome.READ }
+    Accordion("What was read", summary = "$read read, ${report.size - read} not read", startOpen = walked) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            report.forEach { row ->
+                ListRow {
+                    StatusLine(row.name, when {
+                        row.outcome != HuaweiOutcome.READ -> row.outcome.label
+                        walked && row.newRecords > 0 -> "${row.outcome.label} (${row.newRecords} new)"
+                        else -> row.outcome.label
+                    })
+                    if (row.outcome != HuaweiOutcome.READ && row.reason.isNotBlank()) {
+                        Text(row.reason, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
+                }
+            }
         }
     }
 }

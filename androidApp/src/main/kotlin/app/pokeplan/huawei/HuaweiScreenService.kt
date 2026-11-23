@@ -10,7 +10,10 @@ import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import app.pokeplan.app.heal.HuaweiHealth
+import app.pokeplan.app.heal.HuaweiOutcome
 import app.pokeplan.app.heal.HuaweiRecords
+import app.pokeplan.app.heal.HuaweiSources
+import app.pokeplan.app.heal.HuaweiVisit
 import app.pokeplan.app.heal.HuaweiWalk
 import app.pokeplan.app.heal.ScreenCapture
 import app.pokeplan.app.heal.ScreenNode
@@ -249,7 +252,7 @@ class HuaweiScreenService : AccessibilityService() {
         val stepsEl = huaweiRoot()?.let { root -> visible(root).firstOrNull { it.id() == HuaweiWalk.STEPS_ID } }
         if (stepsEl == null) note("Steps: summary not found") else {
             note("Steps: in view")
-            if (HuaweiWalk.skipCard(HuaweiWalk.STEPS, known, scan)) note("Steps: skipped, nothing new")
+            if (HuaweiWalk.skipCard(HuaweiWalk.STEPS, known, scan)) { note("Steps: skipped, nothing new"); addVisit(HuaweiWalk.STEPS.title, skipped = true) }
             else visit(HuaweiWalk.STEPS, stepsEl) { huaweiRoot()?.let { r -> visible(r).firstOrNull { it.id() == HuaweiWalk.STEPS_ID } } }?.let { return it }
         }
         var scrolls = 0
@@ -259,6 +262,7 @@ class HuaweiScreenService : AccessibilityService() {
             if (next != null && HuaweiWalk.skipCard(next.first, known, scan)) {
                 opened += next.first.title
                 note("${next.first.title}: skipped, nothing new")
+                addVisit(next.first.title, skipped = true)
                 continue
             }
             if (next != null) {
@@ -276,7 +280,7 @@ class HuaweiScreenService : AccessibilityService() {
         }
         for (wanted in HuaweiWalk.remaining(opened)) {
             val root = huaweiRoot() ?: return "Huawei Health closed" // copy-ok: result
-            val target = findCard(root, wanted) ?: run { note("${wanted.title}: not found"); null } ?: continue
+            val target = findCard(root, wanted) ?: run { note("${wanted.title}: not found"); addVisit(wanted.title, reason = "Not found on the Health page this read."); null } ?: continue
             visit(wanted, target)?.let { return it }
         }
         return null
@@ -321,6 +325,22 @@ class HuaweiScreenService : AccessibilityService() {
             } else note("${wanted.title}: retried, the card was not found")
         }
         note("${wanted.title}: opened ${page.ifBlank { "a page" }} (${shown?.nodes?.size ?: 0} elements)")
+        val firstPage = shown?.title.orEmpty()
+        val readable = shown?.nodes?.any { it.text.isNotBlank() || it.description.isNotBlank() } == true
+        val source = HuaweiSources.sourceOf(wanted.title)
+        // The capability table decides what happens next: a page whose words cannot be read gets its single retry above and is then reported, never
+        // tried for the rest of the budget (its menu, pills, All data and top-right taps are skipped), and a page HEAL has no parser or model for is
+        // captured once and left the same way (INTEGRATIONS_AND_PRIVACY.md 5.2.2).
+        if (!readable) {
+            addVisit(wanted.title, firstPage, reason = "It opened a blank window: no words the phone can read and no menu.")
+        } else if (source != null && source.support != HuaweiOutcome.READ) {
+            addVisit(wanted.title, firstPage, words = true, reason = source.why)
+        }
+        if (!readable || (source != null && source.support != HuaweiOutcome.READ)) {
+            if (!backToHealth(2)) return "Stopped after ${wanted.title}: Back did not return to the Health page" // copy-ok: result
+            note("${wanted.title}: Back to the Health page")
+            return null
+        }
         val exercise = HuaweiWalk.canonical(wanted.title) == HuaweiWalk.canonical("Exercise records")
         // Emotional wellbeing's pills sit just below its chart: read them before scrolling, or the page scroll moves them away.
         val pillsFirst = wanted.pills.isNotEmpty()
@@ -336,9 +356,10 @@ class HuaweiScreenService : AccessibilityService() {
         // A page with pills (Emotional wellbeing): its All data page has the same Emotion/Stress tabs, so open All data once and read both tabs there.
         var pillsOpened = 0
         var allDataOpened = false
+        var menuFound = false
         if (wanted.pills.isNotEmpty()) {
             if (wanted.allData && openAllData(wanted)) {
-                allDataOpened = true
+                allDataOpened = true; menuFound = true
                 for (pill in wanted.pills) if (openPillOnAllData(wanted, pill)) pillsOpened++
                 backToCardPage()
             } else {
@@ -350,12 +371,13 @@ class HuaweiScreenService : AccessibilityService() {
         for (item in wanted.menuItems) openMenuItem(wanted, item)
         // The page's own All data last. A page whose pills opened gave each pill its own All data; if no pill was found, still open the page's.
         if (wanted.allData && !allDataOpened && (wanted.pills.isEmpty() || pillsOpened == 0)) {
-            openAllData(wanted)
+            if (openAllData(wanted)) { allDataOpened = true; menuFound = true }
             backToCardPage()
         }
         // Back until the Health page shows, never pressing Back on the Health page itself (that would leave Huawei Health). A page whose All data was opened needs more presses (the
         // All data page, then the card page); a look-only card may open a layer of its own (an intro, a pop-up).
         if (!backToHealth(if (wanted.allData) 4 else if (HuaweiWalk.isWanted(wanted)) 2 else 3)) return "Stopped after ${wanted.title}: Back did not return to the Health page" // copy-ok: result
+        addVisit(wanted.title, firstPage, words = true, menu = menuFound)
         note("${wanted.title}: Back to the Health page")
         return null
     }
@@ -751,6 +773,10 @@ class HuaweiScreenService : AccessibilityService() {
 
     /** One line in the walk log (card titles and outcomes only; never Huawei's own text). */
     private fun note(line: String) = HuaweiCapture.log(line)
+
+    /** What one card page gave this read, in memory for the report (INTEGRATIONS_AND_PRIVACY.md 5.2.2); never Huawei's own text. */
+    private fun addVisit(title: String, page: String = "", words: Boolean = false, menu: Boolean = false, skipped: Boolean = false, reason: String = "") =
+        HuaweiCapture.addVisit(HuaweiVisit(title, page, words, menu, skipped, reason))
 
     /** Turns this service off in Android's settings, as the player would; it stays off until turned on again. */
     fun turnOff() {

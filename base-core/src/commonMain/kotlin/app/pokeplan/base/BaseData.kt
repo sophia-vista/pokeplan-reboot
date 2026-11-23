@@ -154,7 +154,6 @@ data class BaseSettings(
     val progression: Boolean = true,
     val tutorialSeen: Boolean = false,
     val units: List<String> = BaseRules.STARTING_UNITS,
-    val hidden: List<String> = emptyList(),
     val areasSeeded: Boolean = false,
     val reminders: Boolean = false,
     val reminderHour: Int = 9,

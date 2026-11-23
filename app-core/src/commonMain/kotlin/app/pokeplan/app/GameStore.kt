@@ -295,10 +295,9 @@ class GameStore(
     fun markRewardsSeen() = update { d -> d.copy(rewardLog = d.rewardLog.map { it.copy(seen = true) }) }
 
     private fun achieve(d: AppData, tier: Int, source: String, eventId: String, ref: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false, focus: RewardFocus = RewardFocus.EXP): AppData {
-        val firstOfDay = streakDay !in d.activeDays
         val warmed = Counters.WARM.get(d.counters, streakDay)
         val event = AchievementEvent(
-            tier = tier, region = d.settings.region.open, hourOfDay = now.hour, firstOfDay = firstOfDay, onTime = onTime,
+            tier = tier, region = d.settings.region.open, onTime = onTime,
             focusedOnIt = focusedOnIt, picked = picked, friendshipTasksToday = warmed, newPokemonId = newId(), nowMillis = nowMillis, focus = focus,
         )
         val outcome = RewardEngine.achievement(d.player, event, rng)
@@ -1120,12 +1119,12 @@ class GameStore(
 
     fun questProgress(quest: Quest): List<Pair<Requirement, Int>> {
         val state = data.quests[quest.id] ?: return quest.requirements.map { it to 0 }
-        return quest.requirements.map { it to Quests.current(it, state, data, zone, streak.current) }
+        return quest.requirements.map { it to Quests.current(it, state, data, zone) }
     }
 
     fun questReady(quest: Quest): Boolean {
         val state = data.quests[quest.id] ?: return false
-        return state.completedAtMillis == null && Quests.isComplete(quest, state, data, zone, streak.current)
+        return state.completedAtMillis == null && Quests.isComplete(quest, state, data, zone)
     }
 
     fun acceptQuest(id: String): Boolean {

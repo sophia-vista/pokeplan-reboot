@@ -417,11 +417,44 @@ class BaseRulesTest {
         )
         val list = BaseRules.restockList(data)
         assertEquals(5, list.size)
-        assertEquals(listOf("rice", "soap"), list.take(2).map { assertIs<RestockLine.Low>(it).supply.id })
-        assertEquals(RestockLine.Manual(data.restock[0], null), list[2])
-        assertEquals(RestockLine.Manual(data.restock[1], bread), list[3])
-        assertEquals(RestockLine.Manual(data.restock[2], null), list[4])
+        assertEquals(listOf("rice", "soap"), list.take(2).map { it.supply?.id })
+        assertEquals(RestockLine(null, data.restock[0]), list[2])
+        assertEquals(RestockLine(bread, data.restock[1]), list[3])
+        assertEquals(RestockLine(null, data.restock[2]), list[4], "an entry pointing at a missing supply stays as a hand-written line")
         assertTrue(BaseRules.restockList(BaseData()).isEmpty())
+    }
+
+    @Test
+    fun aHandWrittenLineOnALowSupplyIsThatSupplysOneLine() {
+        val data = BaseData(
+            supplies = listOf(supply("soap", qty = 0, low = 1000, name = "Soap")),
+            restock = listOf(RestockEntry("r1", "Soap refill", supplyId = "soap")),
+        )
+        val line = BaseRules.restockList(data).single()
+        assertEquals("soap", line.supply?.id)
+        assertEquals("r1", line.entry?.id, "the line carries what was written by hand")
+        assertEquals("Soap", line.name, "the stock item's name is the line")
+        assertTrue(line.low)
+        assertFalse(RestockLine(supply("b", qty = 5000, low = 1000)).low)
+    }
+
+    @Test
+    fun theRestockListIsGroupedByAreaInTheAreasOrderWithOtherLast() {
+        val data = BaseData(
+            areas = listOf(BaseArea("kitchen", "Kitchen"), BaseArea("bath", "Bathroom")),
+            supplies = listOf(
+                supply("soap", qty = 0, low = 1000, name = "Soap").copy(areaId = "bath"),
+                supply("rice", qty = 100, low = 500, name = "Rice").copy(areaId = "kitchen"),
+                supply("salt", qty = 0, low = 500, name = "Salt"),
+            ),
+            restock = listOf(RestockEntry("r1", "Light bulbs"), RestockEntry("r2", "Skip me", supplyId = "nope")),
+        )
+        val groups = BaseRules.restockGroups(data)
+        assertEquals(listOf("Kitchen", "Bathroom", BaseRules.RESTOCK_OTHER), groups.map { it.title })
+        assertEquals(listOf("Rice"), groups[0].lines.map { it.name })
+        assertEquals(listOf("Soap"), groups[1].lines.map { it.name })
+        assertEquals(setOf("Salt", "Light bulbs", "Skip me"), groups[2].lines.map { it.name }.toSet())
+        assertEquals(emptyList(), BaseRules.restockGroups(BaseData()), "an empty list has no headings")
     }
 
     @Test
@@ -738,7 +771,7 @@ class BaseRulesTest {
         maintenance = listOf(MaintenanceRecord("h1", "Defrosted", "a1", "m1", d("2026-07-31"), "ok", "PHP 500", 8, true)),
         warranties = listOf(Warranty("w1", "a1", "CoolCare", "parts", d("2024-03-01"), d("2027-03-01"), "REF-9", "keep receipt", 9)),
         references = listOf(Reference("r1", "Wifi", "password on the router", "tech", "kit", "a1", 11, 12)),
-        settings = BaseSettings(progression = false, tutorialSeen = true, units = listOf("pieces", "jars"), hidden = listOf("supplies")),
+        settings = BaseSettings(progression = false, tutorialSeen = true, units = listOf("pieces", "jars")),
     )
 
     @Test

@@ -51,8 +51,10 @@ class QuestsTest {
         assertEquals("The Being of Knowledge", uxie.title)
         assertTrue(uxie.requirements.any { it.kind == RequirementKind.MILESTONES_DONE })
         assertTrue(Quests.get("mesprit")!!.requirements.any { it.kind == RequirementKind.HABIT_DAYS })
-        assertTrue(Quests.get("azelf")!!.requirements.any { it.kind == RequirementKind.DEEP_FOCUS_SESSIONS })
-        assertEquals(Dex.species.first { it.identifier == "azelf" }.id, Quests.get("azelf")!!.speciesId)
+        val azelf = Quests.get("azelf")!!
+        assertTrue(azelf.requirements.any { it.kind == RequirementKind.DEEP_FOCUS_SESSIONS })
+        assertTrue(azelf.requirements.any { it.kind == RequirementKind.ACTIVE_DAYS }, "no quest may ask for a streak: rewards never depend on attendance")
+        assertEquals(Dex.species.first { it.identifier == "azelf" }.id, azelf.speciesId)
     }
 
     @Test
@@ -83,12 +85,12 @@ class QuestsTest {
                 FocusRecord(since + 7, 25, false, deepFocus = true),
             ),
         )
-        fun count(kind: RequirementKind) = Quests.current(Requirement(kind, 1), state, data, zone, streak = 4)
+        fun count(kind: RequirementKind) = Quests.current(Requirement(kind, 1), state, data, zone)
         assertEquals(2, count(RequirementKind.FOCUS_SESSIONS))
         assertEquals(1, count(RequirementKind.DEEP_FOCUS_SESSIONS))
         assertEquals(55, count(RequirementKind.FOCUS_MINUTES))
         assertEquals(2, count(RequirementKind.TASKS_DONE), "paid tasks since acceptance")
         assertEquals(1, count(RequirementKind.TASKS_DONE_HARD))
-        assertEquals(4, count(RequirementKind.STREAK_DAYS))
+        assertTrue(RequirementKind.entries.none { it.name == "STREAK_DAYS" }, "a streak is never a quest requirement")
     }
 }

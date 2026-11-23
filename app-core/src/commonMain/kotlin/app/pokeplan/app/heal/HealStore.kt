@@ -44,6 +44,9 @@ import app.pokeplan.app.storage.newId
 
 data class Logged<T>(val record: T?, val refused: String? = null, val rewards: List<Reward> = emptyList())
 
+/** One Huawei Health read in memory: the records it gives, what adding them would do, and what each page gave ([HuaweiSourceReport]). */
+data class HuaweiPreview(val read: ProviderRead, val plan: ImportPlan, val report: List<HuaweiSourceReport>)
+
 class HealStore(
     storage: Storage,
     private val clock: Clock,
@@ -321,6 +324,18 @@ class HealStore(
             paidToday++
         }
         return if (marks == data.settings.paidMarks) data else data.copy(settings = data.settings.copy(paidMarks = marks))
+    }
+
+    /**
+     * The preview of a Huawei Health read (HEAL.md 22B): its records, the import preview, and the per-page report of what was read and what is simply
+     * not supported (INTEGRATIONS_AND_PRIVACY.md 5.2.2). The report is the capability table before any walk, and the walk's own outcomes after one.
+     */
+    fun previewHuawei(seen: HuaweiSeen): HuaweiPreview {
+        val read = readHuawei(seen)
+        val plan = previewImport(read)
+        val report = if (seen.visits.isEmpty() && seen.log.isEmpty()) HuaweiSources.capabilities()
+            else HuaweiSources.report(seen, plan.candidates.filter { it.updates == null }.mapTo(HashSet()) { it.record.id }, nowMillis, zone)
+        return HuaweiPreview(read, plan, report)
     }
 
     fun readHuawei(seen: HuaweiSeen): ProviderRead {

@@ -81,6 +81,37 @@ class HuaweiRecordsTest {
         assertTrue(HuaweiRecords.read(HuaweiSeen(listOf(sleepPage("Sat, Nov 14"))), now, utc).isEmpty(), "without the get-up time there is no end")
     }
 
+    /** Probe 14's Weight All data page: a day header with the day's readings under it, each with its own time. */
+    private val weightHistory = ScreenCapture(20, "HealthDataHistoryActivity", listOf(
+        n("action_bar_title", "All data"),
+        n("health_data_weight_father_ll", "11/14/2026, average of 54.8 kg per day"),
+        n("child_item_weight", "54.9"), n("child_item_weight_unit", "kg"), n("child_item_fat", "28.4%"),
+        n("child_item_skeletal_muscle", "21.2"), n("child_item_skeletal_muscle_unit", "kg"), n("child_item_time", "7:12 AM"),
+        n("health_data_weight_father_ll", "11/13/2026, average of 55.0 kg per day"),
+        n("child_item_weight", "55.0"), n("child_item_weight_unit", "kg"), n("child_item_time", "6:50 AM"),
+    ))
+
+    @Test fun theWeightAllDataPageGivesEachReadingItsOwnDateAndTime() {
+        val bodies = HuaweiRecords.read(HuaweiSeen(listOf(weightHistory)), now, utc).filterIsInstance<Imported.Body>()
+        assertEquals(listOf(MeasureType.WEIGHT to 54.9, MeasureType.BODY_FAT to 28.4, MeasureType.WEIGHT to 55.0), bodies.map { it.type to it.value })
+        assertEquals(at(2026, 11, 14, 7, 12), bodies[0].atMillis)
+        assertEquals(at(2026, 11, 13, 6, 50), bodies[2].atMillis, "a day without body fat still gives its weight")
+        assertEquals(listOf("weight:${at(2026, 11, 14, 7, 12)}", "bodyfat:${at(2026, 11, 14, 7, 12)}", "weight:${at(2026, 11, 13, 6, 50)}"), bodies.map { it.id })
+    }
+
+    @Test fun eachPageGivesItsRecordsToItsOwnSource() {
+        val home = ScreenCapture(21, "MainActivity", listOf(n("function_set_items_title", "Heart"), n("function_set_items_data", "Heart rate 72 bpm"), n("time_strength_layout_middle", description = "8,432 steps")))
+        val parts = HuaweiRecords.sourceRecords(HuaweiSeen(listOf(exercise, weightPage, weightHistory, dayPage, allData, home)), now, utc)
+        assertTrue(parts.getValue("exercise").filterIsInstance<Imported.Exercise>().isNotEmpty())
+        assertTrue(parts.getValue("weight").filterIsInstance<Imported.Body>().isNotEmpty())
+        assertTrue(parts.getValue("sleep").filterIsInstance<Imported.Sleep>().isNotEmpty(), "a Sleep day page is Sleep's")
+        assertTrue(parts.getValue("sleep").filterIsInstance<Imported.Vital>().any { it.type == app.pokeplan.heal.VitalType.SLEEP_LENGTH }, "a duration row is Sleep's")
+        assertTrue(parts.getValue("skin").filterIsInstance<Imported.Vital>().any { it.type == app.pokeplan.heal.VitalType.SKIN_TEMPERATURE_LOW })
+        assertTrue(parts.getValue("spo2").filterIsInstance<Imported.Vital>().any { it.type == app.pokeplan.heal.VitalType.SPO2_LOW })
+        assertTrue(parts.getValue("steps").filterIsInstance<Imported.Steps>().isNotEmpty())
+        assertTrue(parts.getValue("health").filterIsInstance<Imported.Vital>().any { it.type == app.pokeplan.heal.VitalType.HEART_RATE_LOW }, "the Health page's cards are the read source")
+    }
+
     @Test fun readingTheSamePagesTwiceGivesTheSameIds() {
         val seen = HuaweiSeen(listOf(exercise, weightPage, exercise.copy(atMillis = 9)))
         val ids = HuaweiRecords.read(seen, now, utc).map { it.id }

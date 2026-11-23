@@ -19,7 +19,6 @@ enum class RequirementKind(val describe: (Int) -> String) {
     HABIT_DAYS({ "Finish your repeating tasks on $it days" }),
     MILESTONES_DONE({ "Reach $it goal milestones" }),
     ACTIVE_DAYS({ "Be active on $it days" }),
-    STREAK_DAYS({ "Reach a streak of $it days" }),
 }
 
 data class Requirement(val kind: RequirementKind, val target: Int) {
@@ -56,8 +55,8 @@ object Quests {
         ),
         "azelf" to Quest(
             "azelf", 0, "The Being of Willpower",
-            "Azelf respects effort that holds: deep, undisturbed focus, the harder tasks you have been putting off, and a streak that keeps going.",
-            listOf(Requirement(RequirementKind.DEEP_FOCUS_SESSIONS, 10), Requirement(RequirementKind.TASKS_DONE_HARD, 10), Requirement(RequirementKind.STREAK_DAYS, 7)),
+            "Azelf respects effort that holds: deep, undisturbed focus, the harder tasks you have been putting off, and days of showing up that add up.",
+            listOf(Requirement(RequirementKind.DEEP_FOCUS_SESSIONS, 10), Requirement(RequirementKind.TASKS_DONE_HARD, 10), Requirement(RequirementKind.ACTIVE_DAYS, 7)),
             unlockRank = 4,
         ),
     )
@@ -115,7 +114,7 @@ object Quests {
         return null
     }
 
-    fun current(req: Requirement, state: QuestState, data: AppData, zone: TimeZone, streak: Int): Int {
+    fun current(req: Requirement, state: QuestState, data: AppData, zone: TimeZone): Int {
         val since = state.acceptedAtMillis
         val sinceDay = since.toLocalDateTime(zone).date
         return when (req.kind) {
@@ -129,10 +128,9 @@ object Quests {
             RequirementKind.HABIT_DAYS -> (data.series.flatMap { it.completions } + data.tasks.filter { it.seriesId != null && it.state == TaskState.DONE }.mapNotNull { t -> t.completedAtMillis?.toLocalDateTime(zone)?.date }).toSet().count { it >= sinceDay }
             RequirementKind.MILESTONES_DONE -> data.goals.flatMap { it.milestones }.count { it.rewarded && (it.doneAtMillis ?: 0) >= since }
             RequirementKind.ACTIVE_DAYS -> data.activeDays.count { it >= sinceDay }
-            RequirementKind.STREAK_DAYS -> streak
         }
     }
 
-    fun isComplete(quest: Quest, state: QuestState, data: AppData, zone: TimeZone, streak: Int): Boolean =
-        quest.requirements.all { current(it, state, data, zone, streak) >= it.target }
+    fun isComplete(quest: Quest, state: QuestState, data: AppData, zone: TimeZone): Boolean =
+        quest.requirements.all { current(it, state, data, zone) >= it.target }
 }

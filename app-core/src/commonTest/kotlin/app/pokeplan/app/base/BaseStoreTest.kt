@@ -16,7 +16,6 @@ import app.pokeplan.base.BaseRules
 import app.pokeplan.base.RecordStatus
 import app.pokeplan.base.Recurrence
 import app.pokeplan.base.RepeatKind
-import app.pokeplan.base.RestockLine
 import app.pokeplan.base.SchedulePolicy
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -310,14 +309,14 @@ class BaseStoreTest {
         s.home.dismissLow(sup.id)
         assertTrue(BaseRules.lowSupplies(s.home.data).isEmpty())
         assertEquals(1, BaseRules.lowSupplies(s.home.data, includeQuieted = true).size)
-        assertTrue(BaseRules.restockList(s.home.data).single() is RestockLine.Low, "still on the restocking list")
+        assertTrue(BaseRules.restockList(s.home.data).single().low, "still on the restocking list")
         s.home.setQuantity(sup.id, 1000)
         assertFalse(s.home.data.supplies.first { it.id == sup.id }.lowDismissed)
         assertEquals(1, BaseRules.lowSupplies(s.home.data).size, "low again after a change")
     }
 
     @Test
-    fun theRestockListIsLowSuppliesPlusManualEntriesAndRestockedClearsTheEntry() {
+    fun theRestockListIsLowSuppliesPlusManualEntriesMergedOneLinePerThingToBuy() {
         val s = setup()
         val soap = assertNotNull(s.home.addSupply("Soap", "bottles", 1000, 2000).record)
         val rice = assertNotNull(s.home.addSupply("Rice", "kg", 5000, 1000).record)
@@ -327,16 +326,76 @@ class BaseStoreTest {
         assertNull(s.home.addRestock("again", rice.id), "one entry per supply")
         val list = BaseRules.restockList(s.home.data)
         assertEquals(3, list.size)
-        assertEquals(soap.id, (list[0] as RestockLine.Low).supply.id)
-        assertEquals(setOf("Batteries", "Rice"), list.drop(1).map { (it as RestockLine.Manual).entry.name }.toSet())
-        assertEquals("Enter how much there is now.", s.home.restocked(soap.id, null), "a low supply leaves the list only with a quantity")
-        assertNull(s.home.restocked(soap.id, 6000))
+        assertEquals(soap.id, list[0].supply?.id)
+        assertEquals(setOf("Batteries", "Rice"), list.drop(1).map { it.name }.toSet())
+        assertEquals("Enter how much there is now.", s.home.bought(supplyId = soap.id), "a low supply leaves the list only with a quantity")
+        assertNull(s.home.bought(supplyId = soap.id, newQuantityMilli = 6000))
         assertEquals(6000L, s.home.data.supplies.first { it.id == soap.id }.quantityMilli)
-        assertNull(s.home.restocked(rice.id, 8000, byHand.id))
+        assertEquals("That supply is not low.", s.home.bought(supplyId = soap.id, newQuantityMilli = 7000), "bought once, not twice")
+        assertEquals(1, s.home.data.adjustments.size)
+        assertNull(s.home.bought(entryId = byHand.id, addMilli = 3000))
+        assertEquals(8000L, s.home.data.supplies.first { it.id == rice.id }.quantityMilli)
         s.home.removeRestock(manual.id)
         assertTrue(BaseRules.restockList(s.home.data).isEmpty())
-        assertTrue(s.home.data.adjustments.all { it.reason == "Restocked" })
+        assertTrue(s.home.data.adjustments.all { it.reason == BaseRules.REASON_BOUGHT })
         assertTrue(s.spy.events.isEmpty(), "supply, quantity and restock edits never send an event")
+    }
+
+    @Test
+    fun buyingARestockingLineChangesStockOnceAndUndoBringsBackTheLine() {
+        val s = setup()
+        val rice = assertNotNull(s.home.addSupply("Rice", "kg", 5000, 1000).record)
+        val line = assertNotNull(s.home.addRestock("", rice.id))
+        val before = s.home.data
+        assertNull(s.home.bought(entryId = line.id, addMilli = 2000))
+        assertEquals(7000L, s.home.data.supplies.single().quantityMilli)
+        assertTrue(s.home.data.restock.isEmpty(), "the line leaves the list")
+        val adj = s.home.data.adjustments.single()
+        assertEquals(5000L, adj.beforeMilli); assertEquals(7000L, adj.afterMilli); assertEquals(BaseRules.REASON_BOUGHT, adj.reason)
+        assertNotNull(s.home.bought(entryId = line.id, addMilli = 2000), "one adjustment per bought line")
+        assertEquals(7000L, s.home.data.supplies.single().quantityMilli)
+        assertEquals(1, s.home.data.adjustments.size)
+        s.home.restore(before)
+        assertEquals(5000L, s.home.data.supplies.single().quantityMilli, "undo brings back the stock")
+        assertEquals(line, s.home.data.restock.single(), "and the line")
+        assertTrue(s.spy.events.isEmpty())
+    }
+
+    @Test
+    fun aHandWrittenRestockLineCanBeLinkedToASupplyAndTickedOffWithoutStock() {
+        val s = setup()
+        val soap = assertNotNull(s.home.addSupply("Soap", "bottles", 6000, 2000).record)
+        val line = assertNotNull(s.home.addRestock("Soap refill", soap.id))
+        val shown = BaseRules.restockList(s.home.data).single()
+        assertEquals("Soap", shown.name, "a linked line is shown as the stock item")
+        assertEquals(line.id, shown.entry?.id)
+        assertNull(s.home.bought(entryId = line.id), "no quantity just ticks the line off")
+        assertEquals(6000L, s.home.data.supplies.single().quantityMilli, "the stock is untouched")
+        assertTrue(s.home.data.adjustments.isEmpty())
+        assertTrue(s.home.data.restock.isEmpty())
+        assertTrue(s.spy.events.isEmpty())
+    }
+
+    @Test
+    fun aStockChangeKeepsItsReasonAndTheSupplyShowsTheLastFew() {
+        val s = setup()
+        val soap = assertNotNull(s.home.addSupply("Soap", "bottles", 3000, 2000).record)
+        assertNull(s.home.setQuantity(soap.id, 4000, BaseRules.REASON_COUNTED))
+        s.clock.advanceDays(1)
+        assertNull(s.home.adjust(soap.id, -1500, BaseRules.REASON_USED))
+        s.clock.advanceDays(1)
+        assertNull(s.home.adjust(soap.id, 2000, BaseRules.REASON_BOUGHT))
+        s.clock.advanceDays(1)
+        assertNull(s.home.adjust(soap.id, 500, BaseRules.REASON_CORRECTION))
+        val recent = s.home.recentAdjustments(soap.id)
+        assertEquals(4, recent.size)
+        assertEquals(listOf(BaseRules.REASON_CORRECTION, BaseRules.REASON_BOUGHT, BaseRules.REASON_USED, BaseRules.REASON_COUNTED), recent.map { it.reason })
+        assertEquals(4500L, recent.first().beforeMilli); assertEquals(5000L, recent.first().afterMilli)
+        assertEquals(recent.take(2), s.home.recentAdjustments(soap.id, limit = 2))
+        assertEquals(today.plus(kotlinx.datetime.DatePeriod(days = 3)), s.home.dayOf(recent.first().atMillis), "newest first, dated")
+        assertEquals(today, s.home.dayOf(recent.last().atMillis))
+        assertEquals(0, s.home.recentAdjustments("nope").size)
+        assertTrue(s.spy.events.isEmpty(), "adjusting stock is administrative and pays nothing")
     }
 
     @Test
@@ -546,7 +605,7 @@ class BaseStoreTest {
     fun aReopenedStoreReadsBackIdenticalData() {
         val s = setup()
         s.fill()
-        s.home.setSectionHidden("supplies", true)
+        s.home.setWarrantyLeadDays(14)
         s.home.markTutorialSeen()
         val before = s.home.data
         assertTrue(before.chores.isNotEmpty() && before.entries.isNotEmpty() && before.maintenance.isNotEmpty())

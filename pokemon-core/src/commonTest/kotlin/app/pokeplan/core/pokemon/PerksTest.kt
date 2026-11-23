@@ -77,12 +77,12 @@ class PerksTest {
 
     @Test
     fun abilityPerksOnlyApplyInTheirContext() {
+        // Early Bird is a flat candy perk: no reward may depend on the hour or on a first task of the day.
         val earlyBird = strong(Ids.PIKACHU).let { it.withAbility("Early Bird") }
-        val morning = Perks.total(earlyBird, ctx = PerkContext(hourOfDay = 7, firstTaskOfDay = true))
-        val afternoon = Perks.total(earlyBird, ctx = PerkContext(hourOfDay = 14, firstTaskOfDay = true))
-        val secondTask = Perks.total(earlyBird, ctx = PerkContext(hourOfDay = 7, firstTaskOfDay = false))
-        assertTrue(morning[PerkBucket.CANDY_YIELD] > afternoon[PerkBucket.CANDY_YIELD])
-        assertEquals(afternoon[PerkBucket.CANDY_YIELD], secondTask[PerkBucket.CANDY_YIELD], 1e-9)
+        val plain = Perks.total(strong(Ids.PIKACHU))
+        val flat = 5.0 * FriendshipRules.perkMultiplier(255)
+        assertEquals(plain[PerkBucket.CANDY_YIELD] + flat, Perks.total(earlyBird)[PerkBucket.CANDY_YIELD], 1e-9)
+        assertEquals(plain[PerkBucket.CANDY_YIELD] + flat, Perks.total(earlyBird, ctx = PerkContext(taskRank = 5, sessionMinutes = 15))[PerkBucket.CANDY_YIELD], 1e-9)
 
         val guts = strong(Ids.PIKACHU).withAbility("Guts")
         assertTrue(Perks.total(guts, ctx = PerkContext(taskRank = 5))[PerkBucket.CANDY_YIELD] > Perks.total(guts, ctx = PerkContext(taskRank = 3))[PerkBucket.CANDY_YIELD])

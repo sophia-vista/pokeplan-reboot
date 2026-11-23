@@ -153,8 +153,6 @@ enum class RewardFocus(val label: String) {
 data class AchievementEvent(
     val tier: Int,
     val region: Region,
-    val hourOfDay: Int = 12,
-    val firstOfDay: Boolean = false,
     val onTime: Boolean = false,
     val focusedOnIt: Boolean = false,
     val newPokemonId: String,
@@ -219,7 +217,6 @@ data class MintEvent(
     val ref: String,
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.ALWAYS)
     val module: String = MODULE,
-    val streak: Int = 0,
 ) {
     companion object { const val MODULE = "mint" }
 }
@@ -492,7 +489,7 @@ object RewardEngine {
     fun achievement(state: PlayerState, e: AchievementEvent, rng: Random): Outcome {
         val tier = e.tier
         val buddy = state.planLead
-        val perks = Perks.total(buddy, state.party, PerkContext(taskRank = tier, hourOfDay = e.hourOfDay, firstTaskOfDay = e.firstOfDay), listOfNotNull(state.guardianOf(PartyIds.PLAN)))
+        val perks = Perks.total(buddy, state.party, PerkContext(taskRank = tier), listOfNotNull(state.guardianOf(PartyIds.PLAN)))
         val rewards = mutableListOf<Reward>()
         var inventory = state.inventory
         var coins = state.coins
@@ -747,7 +744,6 @@ object RewardEngine {
 
     val MINT_OUTBREAK_ROLLS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to 2, MintKind.REVIEW to 3)
 
-    const val MAX_OUTBREAK_ROLLS = 7
     const val OUTBREAK_OPTIONS = 3
     const val MAX_PENDING_OUTBREAKS = 5
 
@@ -770,7 +766,8 @@ object RewardEngine {
             if (option.speciesId !in chosen) chosen[option.speciesId] = OutbreakOption(option.speciesId, option.formIdentifier)
         }
         if (chosen.isEmpty()) return null
-        val rolls = ((MINT_OUTBREAK_ROLLS[e.kind] ?: 1) + (e.streak - 1).coerceAtLeast(0)).coerceAtMost(MAX_OUTBREAK_ROLLS)
+        // Shiny rolls are a fixed property of the rare action: a streak, or how often the player showed up, never changes a reward.
+        val rolls = MINT_OUTBREAK_ROLLS[e.kind] ?: 1
         return Outbreak(id, Region.MINT, chosen.values.toList(), rolls, e.nowMillis)
     }
 

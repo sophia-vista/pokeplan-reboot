@@ -62,6 +62,7 @@ import app.pokeplan.base.Warranty
 import app.pokeplan.base.WarrantyState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
@@ -112,8 +113,8 @@ import app.pokeplan.ui.screens.plural
 import app.pokeplan.ui.screens.short
 
 enum class BaseSection(val label: String, val icon: String) {
-    CHORES("Chores", "cracked-pot"), SUPPLIES("Supplies", "seal-bag"), MAINTENANCE("Maintenance", "iron"), NOTES("Notes", "oaks-letter"),
-    ROOM("Room", "star-piece"), SETTINGS("Settings", "storage-key"),
+    CHORES("Chores", "cracked-pot"), BELONGINGS("Belongings", "seal-bag"), MAINTENANCE("Maintenance", "iron"),
+    NOTES("Notes", "oaks-letter"), ROOM("Room", "star-piece"), SETTINGS("Settings", "storage-key"),
 }
 
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.BASE.accent
@@ -160,7 +161,7 @@ private fun takeJump(section: BaseSection): Jump? = pendingJump?.takeIf { it.sec
 
 internal fun baseSubtitle(model: AppModel): String {
     val n = BaseRules.overview(model.baseData, model.store.today).chores.size
-    return if (n > 0) "$n to do today" else "chores, supplies, upkeep"
+    return if (n > 0) "$n to do today" else "chores, belongings, upkeep"
 }
 
 @Composable
@@ -180,7 +181,7 @@ private fun BasePage(model: AppModel, section: BaseSection?, openPokemon: (Strin
     SectionScaffold(section.label, null, onBack = { model.baseSection = null }, icon = section.icon, color = Module.BASE.look.header) {
         when (section) {
             BaseSection.CHORES -> ChoresView(model)
-            BaseSection.SUPPLIES -> SuppliesView(model)
+            BaseSection.BELONGINGS -> BelongingsView(model)
             BaseSection.MAINTENANCE -> MaintenanceView(model)
             BaseSection.NOTES -> NotesView(model)
             BaseSection.ROOM -> RoomView(model)
@@ -197,8 +198,8 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val overview = BaseRules.overview(data, today)
     val sections = listOf(
         MenuEntry(BaseSection.CHORES.name, BaseSection.CHORES.icon, "Chores", if (data.chores.isEmpty()) "add one" else "${overview.chores.size} to do today", tint = tint),
-        MenuEntry(BaseSection.SUPPLIES.name, BaseSection.SUPPLIES.icon, "Supplies", if (data.supplies.isEmpty()) "add one" else "${overview.low.size} low", tint = tint),
-        MenuEntry(BaseSection.MAINTENANCE.name, BaseSection.MAINTENANCE.icon, "Maintenance", if (data.schedules.isEmpty() && data.assets.isEmpty()) "add one" else "${overview.maintenance.size} due or soon", tint = tint),
+        MenuEntry(BaseSection.BELONGINGS.name, BaseSection.BELONGINGS.icon, "Belongings", belongingsDetail(data, overview), tint = tint),
+        MenuEntry(BaseSection.MAINTENANCE.name, BaseSection.MAINTENANCE.icon, "Maintenance", if (data.schedules.isEmpty()) "add one" else "${overview.maintenance.size} due or soon", tint = tint),
         MenuEntry(BaseSection.NOTES.name, BaseSection.NOTES.icon, "Notes", if (data.references.isEmpty()) "add one" else "${data.references.size} notes", tint = tint),
         MenuEntry(BaseSection.ROOM.name, BaseSection.ROOM.icon, "Room", "${data.room.size} placed", tint = tint),
         MenuEntry(BaseSection.SETTINGS.name, BaseSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
@@ -217,10 +218,20 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                 ModuleLeadStage(model, Module.BASE, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.BASE_LOG_PREFIX), openPokemon = openPokemon)
                 FirstRecordEgg(model, Tutorials.BASE_TIDY, data.chores.size + data.supplies.size + data.assets.size)
                 BaseOverview(model, overview)
+                BaseQuickActions(model)
                 BasePartyPanel(model, openPokemon)
             }
         }
     }
+}
+
+/** What the Belongings card says under its name: the lowest count that matters first. */
+private fun belongingsDetail(data: app.pokeplan.base.BaseData, o: Overview): String = when {
+    data.supplies.isEmpty() && data.assets.isEmpty() -> "add one"
+    o.low.isNotEmpty() -> "${o.low.size} low"
+    data.supplies.isNotEmpty() && data.assets.isNotEmpty() -> "${data.supplies.size} supplies and ${data.assets.size} items"
+    data.supplies.isNotEmpty() -> "${data.supplies.size} supplies"
+    else -> "${data.assets.size} items"
 }
 
 @Composable
@@ -228,29 +239,24 @@ private fun BaseOverview(model: AppModel, o: Overview) {
     val data = model.baseData
     val home = model.base
     val today = model.store.today
-    val hidden = data.settings.hidden
-    val chores = if ("chores" in hidden) emptyList() else o.chores
-    val upkeep = if ("maintenance" in hidden) emptyList() else o.maintenance
-    val warranties = if ("maintenance" in hidden) emptyList() else o.warranties
-    val low = if ("supplies" in hidden) emptyList() else o.low
-    val attention = chores.isNotEmpty() || upkeep.isNotEmpty() || warranties.isNotEmpty() || low.isNotEmpty()
+    val attention = o.chores.isNotEmpty() || o.maintenance.isNotEmpty() || o.warranties.isNotEmpty() || o.low.isNotEmpty()
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle(if (attention) "Needs a look" else if (data.chores.isEmpty() && data.supplies.isEmpty() && data.assets.isEmpty()) "Add your first chore" else "Nothing needs attention")
-            if (chores.isNotEmpty()) {
+            if (o.chores.isNotEmpty()) {
                 SectionLabel("Chores")
-                chores.take(5).forEach { v ->
+                o.chores.take(5).forEach { v ->
                     RecordRow(
                         v.chore.title, choreLine(data, v, today), warn = v.state == ChoreState.OVERDUE,
                         lead = { PixelIconButton("check", "Mark ${v.chore.title} done", { tickChore(model, v) }, accent) },
                         onClick = { go(model, BaseSection.CHORES, v.chore.id, 0) }, onClickLabel = "Open chores",
                     )
                 }
-                if (chores.size > 5) PixelButton("All ${chores.size} chores", { go(model, BaseSection.CHORES, tab = 0) }, color = Pixel.InkSoft, compact = true)
+                if (o.chores.size > 5) PixelButton("All ${o.chores.size} chores", { go(model, BaseSection.CHORES, tab = 0) }, color = Pixel.InkSoft, compact = true)
             }
-            if (upkeep.isNotEmpty()) {
+            if (o.maintenance.isNotEmpty()) {
                 SectionLabel("Maintenance")
-                upkeep.take(5).forEach { v ->
+                o.maintenance.take(5).forEach { v ->
                     RecordRow(
                         v.schedule.title, scheduleLine(data, v), warn = v.state == DueState.OVERDUE,
                         lead = { PixelIconButton("check", "Mark ${v.schedule.title} done", { tickMaintenance(model, v.schedule) }, accent) },
@@ -258,39 +264,69 @@ private fun BaseOverview(model: AppModel, o: Overview) {
                     )
                 }
             }
-            if (low.isNotEmpty()) {
+            if (o.low.isNotEmpty()) {
                 SectionLabel("Running low")
-                low.take(5).forEach { s ->
+                o.low.take(5).forEach { s ->
                     RecordRow(
                         s.name, "Low · ${quantityText(s)}",
                         trail = { PixelButton("Not now", { home.dismissLow(s.id) }, color = Pixel.InkSoft, compact = true) },
-                        onClick = { go(model, BaseSection.SUPPLIES, s.id, 2) }, onClickLabel = "Open the restock list",
+                        onClick = { go(model, BaseSection.BELONGINGS, s.id, 1) }, onClickLabel = "Open the shopping list",
                     )
                 }
             }
-            if (warranties.isNotEmpty()) {
+            if (o.warranties.isNotEmpty()) {
                 SectionLabel("Warranties")
-                warranties.take(3).forEach { w ->
+                o.warranties.take(3).forEach { w ->
                     val asset = data.assets.firstOrNull { it.id == w.assetId }
                     RecordRow(
                         asset?.name ?: "Warranty", listOfNotNull("Ends ${w.expiryDay?.short()}", w.provider.takeIf { it.isNotBlank() }).joinToString(" · "),
-                        onClick = { go(model, BaseSection.MAINTENANCE, w.assetId, 1) }, onClickLabel = "Open belongings",
+                        onClick = { go(model, BaseSection.BELONGINGS, w.assetId, 2) }, onClickLabel = "Open belongings",
                     )
                 }
             }
         }
     }
+}
+
+/** The kinds quick capture can make from the overview. */
+private enum class CaptureKind(val label: String, val placeholder: String) {
+    CHORE("Chore", "Add a chore"), STOCK("Stock", "Add a supply"), SHOPPING("Shopping", "Add to the shopping list"), NOTE("Note", "Add a note"),
+}
+
+/**
+ * Quick actions that really act, not a second way to reach the sections: one title is enough to
+ * make a chore, a supply, a shopping line or a note.
+ */
+@Composable
+private fun BaseQuickActions(model: AppModel) {
+    val home = model.base
+    var kind by remember { mutableStateOf(CaptureKind.CHORE) }
+    var text by remember { mutableStateOf("") }
+    var refused by remember { mutableStateOf<String?>(null) }
+    fun add() {
+        val title = text.trim()
+        if (title.isEmpty()) return
+        val problem = when (kind) {
+            CaptureKind.CHORE -> home.addChore(title).refused
+            CaptureKind.STOCK -> home.addSupply(title).refused
+            CaptureKind.SHOPPING -> if (home.addRestock(title) == null) "That is already on the list." else null
+            CaptureKind.NOTE -> home.addReference(title).refused
+        }
+        if (problem != null) { refused = problem; return }
+        refused = null; text = ""; model.haptic()
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
-            var adding by remember { mutableStateOf(false) }
-            if (!adding) PixelButton("Add", { adding = true }, Modifier.fillMaxWidth(), compact = true)
-            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Chore", { go(model, BaseSection.CHORES) }, Modifier.weight(1f), compact = true)
-                PixelButton("Stock", { go(model, BaseSection.SUPPLIES) }, Modifier.weight(1f), compact = true)
-                PixelButton("Item", { go(model, BaseSection.MAINTENANCE, tab = 1) }, Modifier.weight(1f), compact = true)
-                PixelButton("Note", { go(model, BaseSection.NOTES) }, Modifier.weight(1f), compact = true)
+            PixelChoice(CaptureKind.entries.toList(), kind, { it?.label ?: "" }, { picked -> if (picked != null) { kind = picked; refused = null } }, key = accent)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(
+                    text, { text = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = kind.placeholder, singleLine = true,
+                    keyboardOptions = wordKeys,
+                )
+                PixelIconButton("plus", "Add", ::add, accent, enabled = text.isNotBlank())
             }
+            refused?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
 }
@@ -314,10 +350,10 @@ private fun openHit(model: AppModel, kind: HitKind, id: String) {
     val data = model.baseData
     when (kind) {
         HitKind.CHORE -> go(model, BaseSection.CHORES, id, if (model.base.choreView(id)?.let { inDueTab(it, model.store.today) } == true) 0 else 1)
-        HitKind.SUPPLY -> go(model, BaseSection.SUPPLIES, id, 0)
-        HitKind.ASSET -> go(model, BaseSection.MAINTENANCE, id, 1)
+        HitKind.SUPPLY -> go(model, BaseSection.BELONGINGS, id, 0)
+        HitKind.ASSET -> go(model, BaseSection.BELONGINGS, id, 2)
         HitKind.MAINTENANCE -> go(model, BaseSection.MAINTENANCE, id, 0)
-        HitKind.WARRANTY -> go(model, BaseSection.MAINTENANCE, data.warranties.firstOrNull { it.id == id }?.assetId, 1)
+        HitKind.WARRANTY -> go(model, BaseSection.BELONGINGS, data.warranties.firstOrNull { it.id == id }?.assetId, 2)
         HitKind.REFERENCE -> go(model, BaseSection.NOTES, id)
     }
 }
@@ -573,73 +609,92 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SuppliesView(model: AppModel) {
-    val home = model.base
+private fun BelongingsView(model: AppModel) {
     val data = model.baseData
-    val jump = remember { takeJump(BaseSection.SUPPLIES) }
+    val jump = remember { takeJump(BaseSection.BELONGINGS) }
     var tab by remember { mutableStateOf(jump?.tab ?: 0) }
-    var openId by remember { mutableStateOf(jump?.id.takeIf { jump?.tab != 2 }) }
-    var showArchived by remember { mutableStateOf(false) }
-    val active = data.supplies.filter { !it.archived }.sortedBy { it.name.lowercase() }
-    val low = BaseRules.lowSupplies(data, includeQuieted = true)
-    val archived = data.supplies.filter { it.archived }
-    FormBox { SupplyForm(model, null, onDone = {}) }
+    var openId by remember { mutableStateOf(jump?.id) }
+    if (tab == 0) FormBox { SupplyForm(model, null, onDone = {}) }
+    if (tab == 2) FormBox { AssetForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            ModuleTabs(listOf("All", "Low", "Restock"), tab, accent) { tab = it; openId = null }
+            ModuleTabs(listOf("Stock", "Shopping", "Items"), tab, accent) { tab = it; openId = null }
             when (tab) {
-                0, 1 -> {
-                    val rows = if (tab == 0) active else low
-                    if (rows.isEmpty()) PixelTitle(if (tab == 0) "No supplies yet" else "Nothing is low")
-                    rows.forEachIndexed { i, s ->
-                        if (i > 0) Rule()
-                        RecordRow(
-                            s.name, listOfNotNull("Low".takeIf { BaseRules.isLow(s) }, s.category.takeIf { it.isNotBlank() }, areaName(data, s.areaId)).joinToString(" · "), warn = BaseRules.isLow(s),
-                            trail = { Text(quantityText(s), style = MaterialTheme.typography.titleSmall) },
-                            onClick = { openId = if (openId == s.id) null else s.id }, onClickLabel = if (openId == s.id) "Hide options" else "Show options",
-                        )
-                        if (openId == s.id) SupplyOptions(model, s) { openId = null }
-                    }
-                    if (tab == 0 && archived.isNotEmpty()) {
-                        PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                        if (showArchived) archived.forEach { s ->
-                            RecordRow(s.name, "Archived", trail = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                                    PixelButton("Restore", { home.setSupplyArchived(s.id, false) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${s.name}", { val before = model.baseData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }, Pixel.InkSoft)
-                                }
-                            })
-                        }
-                    }
-                }
-                else -> RestockTab(model, jump?.id)
+                0 -> StockList(model, openId, { openId = it }) { tab = 1; openId = null }
+                1 -> RestockTab(model, jump?.id)
+                else -> ItemsTab(model, openId) { openId = it }
             }
         }
     }
 }
 
+/** Consumables: quantity, the low mark, and a way on to the shopping list. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun androidx.compose.foundation.layout.ColumnScope.StockList(model: AppModel, openId: String?, onOpen: (String?) -> Unit, onLowStock: () -> Unit) {
+    val home = model.base
+    val data = model.baseData
+    var showArchived by remember { mutableStateOf(false) }
+    val active = data.supplies.filter { !it.archived }.sortedBy { it.name.lowercase() }
+    val low = BaseRules.lowSupplies(data, includeQuieted = true)
+    val archived = data.supplies.filter { it.archived }
+    if (low.isNotEmpty()) PixelButton("Running low (${low.size})", onLowStock, Modifier.fillMaxWidth(), accent, compact = true)
+    if (active.isEmpty()) PixelTitle("No supplies yet")
+    active.forEachIndexed { i, s ->
+        if (i > 0) Rule()
+        RecordRow(
+            s.name, listOfNotNull("Low".takeIf { BaseRules.isLow(s) }, s.category.takeIf { it.isNotBlank() }, areaName(data, s.areaId)).joinToString(" · "),
+            warn = BaseRules.isLow(s),
+            trail = { Text(quantityText(s), style = MaterialTheme.typography.titleSmall) },
+            onClick = { onOpen(if (openId == s.id) null else s.id) }, onClickLabel = if (openId == s.id) "Hide options" else "Show options",
+        )
+        if (openId == s.id) SupplyOptions(model, s) { onOpen(null) }
+    }
+    if (archived.isNotEmpty()) {
+        PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        if (showArchived) archived.forEach { s ->
+            RecordRow(s.name, "Archived", trail = {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    PixelButton("Restore", { home.setSupplyArchived(s.id, false) }, color = accent, compact = true)
+                    PixelIconButton("trash", "Delete ${s.name}", { val before = model.baseData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }, Pixel.InkSoft)
+                }
+            })
+        }
+    }
+}
+
+/** Which way an adjust form changes the quantity. */
+private enum class StockChange(val label: String) { SET("Set"), ADD("Add"), REMOVE("Remove") }
+
 @Composable
 private fun SupplyOptions(model: AppModel, s: Supply, onDone: () -> Unit) {
     val home = model.base
+    val data = model.baseData
     var editing by remember(s.id) { mutableStateOf(false) }
     var asking by remember(s.id) { mutableStateOf(false) }
-    var setText by remember(s.id) { mutableStateOf("") }
-    var refused by remember(s.id) { mutableStateOf<String?>(null) }
+    var adjusting by remember(s.id) { mutableStateOf(false) }
     if (editing) { SupplyForm(model, s, onDone = { editing = false; onDone() }, onCancel = { editing = false }); return }
+    if (adjusting) { AdjustStockForm(model, s) { adjusting = false }; return }
+    val history = home.recentAdjustments(s.id)
+    val detail = listOfNotNull(s.category.takeIf { it.isNotBlank() }, areaName(data, s.areaId), s.lowMilli?.let { "Low at ${Quantity.format(it)}" }).joinToString(" · ")
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (asking) {
-            Confirm("Delete this supply and its restocking entries?", "Delete", onConfirm = { home.deleteSupply(s.id); onDone() }, onKeep = { asking = false })
+            Confirm("Delete this supply, its stock history and its restocking entries?", "Delete", onConfirm = { home.deleteSupply(s.id); onDone() }, onKeep = { asking = false })
             return@Column
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
-            PixelIconButton("minus", "One less ${s.name}", { refused = home.adjust(s.id, -1000) })
-            PixelIconButton("plus", "One more ${s.name}", { refused = home.adjust(s.id, 1000) }, accent)
-            PixelField(setText, { setText = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.weight(1f), label = "Quantity, blank for unknown", singleLine = true, keyboardOptions = decimalKeys)
-            PixelButton("Set", {
-                val milli = if (setText.isBlank()) null else Quantity.parse(setText)
-                if (setText.isNotBlank() && milli == null) refused = "Check the quantity."
-                else { refused = home.setQuantity(s.id, milli, "Set by hand"); if (refused == null) setText = "" }
-            }, color = Pixel.InkSoft, compact = true)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(quantityText(s), style = MaterialTheme.typography.titleMedium)
+                if (BaseRules.isLow(s)) Text("Low", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning)
+                else if (detail.isNotBlank()) Text(detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            PixelButton("Adjust stock", { adjusting = true }, color = accent, compact = true)
+        }
+        if (history.isNotEmpty()) Accordion("History", summary = "${history.size} changes") {
+            history.forEachIndexed { i, a ->
+                if (i > 0) Rule()
+                RecordRow(a.reason.ifBlank { "Changed" }, "${Quantity.format(a.beforeMilli)} to ${Quantity.format(a.afterMilli)} · ${home.dayOf(a.atMillis).short()}")
+            }
         }
         if (model.baseData.settings.reminders && s.lowMilli != null) Actions {
             PixelButton(if (s.remind) "Low-stock reminder on" else "Tell me when low", { home.setSupplyRemind(s.id, !s.remind) }, Modifier.weight(1f), if (s.remind) accent else Pixel.InkSoft, compact = true)
@@ -649,63 +704,184 @@ private fun SupplyOptions(model: AppModel, s: Supply, onDone: () -> Unit) {
             PixelButton("Archive", { home.setSupplyArchived(s.id, true); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        refused?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
+/** Set, add or remove stock with an optional reason; the change is one `StockAdjustment`. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RestockTab(model: AppModel, focus: String?) {
+private fun AdjustStockForm(model: AppModel, s: Supply, onDone: () -> Unit) {
+    val home = model.base
+    var change by remember(s.id) { mutableStateOf(StockChange.SET) }
+    var amount by remember(s.id) { mutableStateOf("") }
+    var reason by remember(s.id) { mutableStateOf("") }
+    var message by remember(s.id) { mutableStateOf<String?>(null) }
+    fun save() {
+        if (amount.isBlank()) { message = "Enter a quantity."; return }
+        val milli = Quantity.parse(amount)
+        if (milli == null || milli == 0L) { message = "Check the quantity."; return }
+        val before = model.baseData
+        val refusal = when (change) {
+            StockChange.SET -> home.setQuantity(s.id, milli, reason)
+            StockChange.ADD -> home.adjust(s.id, milli, reason)
+            StockChange.REMOVE -> home.adjust(s.id, -milli, reason)
+        }
+        if (refusal != null) { message = refusal; return }
+        model.haptic()
+        model.offerUndo("Stock: ${s.name}") { home.restore(before) }
+        onDone()
+    }
+    val unit = if (s.unit.isNotEmpty()) " (${s.unit})" else ""
+    FormStack(Modifier.padding(bottom = Spacing.S)) {
+        FormGroup {
+            FormLabel("Now ${quantityText(s)}")
+            PixelChoice(StockChange.entries.toList(), change, { it?.label ?: "" }, { if (it != null) change = it }, key = accent)
+            PixelField(
+                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(),
+                label = when (change) { StockChange.SET -> "New quantity$unit"; StockChange.ADD -> "How much to add$unit"; StockChange.REMOVE -> "How much to remove$unit" },
+                singleLine = true, keyboardOptions = decimalKeys,
+            )
+            FormLabel("Reason, optional")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                BaseRules.ADJUSTMENT_REASONS.forEach { r -> Chip(r, reason == r, onClick = { reason = if (reason == r) "" else r }) }
+            }
+        }
+        Actions {
+            PixelButton(if (change == StockChange.SET) "Set stock" else "Save", ::save, Modifier.weight(1f), accent, compact = true)
+            PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        if (change == StockChange.SET) PixelButton("Count as unknown", {
+            val before = model.baseData
+            if (home.setQuantity(s.id, null, reason) == null) {
+                model.haptic(); model.offerUndo("Stock: ${s.name}") { home.restore(before) }; onDone()
+            }
+        }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        message?.let { Report(model, it, NoticeTone.WARNING) }
+    }
+}
+
+/** The shopping list: low supplies and hand-written lines in one list, under their area. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun androidx.compose.foundation.layout.ColumnScope.RestockTab(model: AppModel, focus: String?) {
     val home = model.base
     val data = model.baseData
-    val lines = BaseRules.restockList(data)
+    val groups = BaseRules.restockGroups(data)
+    val stock = data.supplies.filter { !it.archived }.sortedBy { it.name.lowercase() }
     var name by remember { mutableStateOf("") }
-    var askingKey by remember { mutableStateOf<String?>(focus?.let { "low:$it" }) }
+    var supplyId by remember { mutableStateOf<String?>(null) }
+    val focusKey = focus?.let { id -> groups.flatMap { it.lines }.firstOrNull { it.supply?.id == id }?.let { it.entry?.id ?: "low:${it.supply?.id}" } }
+    var askingKey by remember { mutableStateOf(focusKey) }
     var quantity by remember { mutableStateOf("") }
     var refused by remember { mutableStateOf<String?>(null) }
-    if (lines.isEmpty()) PixelTitle("Nothing to restock")
-    lines.forEachIndexed { i, line ->
-        if (i > 0) Rule()
-        val supply = when (line) { is RestockLine.Low -> line.supply; is RestockLine.Manual -> line.supply }
-        val key = when (line) { is RestockLine.Low -> "low:${line.supply.id}"; is RestockLine.Manual -> "entry:${line.entry.id}" }
-        val title = when (line) { is RestockLine.Low -> line.supply.name; is RestockLine.Manual -> line.entry.name }
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    fun tick(line: RestockLine) {
+        val before = model.baseData
+        val problem = home.bought(entryId = line.entry?.id, supplyId = line.supply?.id)
+        if (problem != null) refused = problem
+        else { model.haptic(); model.offerUndo("Bought: ${line.name}") { home.restore(before) } }
+    }
+    if (groups.isEmpty()) PixelTitle("Nothing to restock")
+    groups.forEach { group ->
+        if (groups.size > 1) SectionLabel(group.title)
+        group.lines.forEachIndexed { i, line ->
+            if (i > 0) Rule()
+            val key = line.entry?.id ?: "low:${line.supply?.id}"
             RecordRow(
-                title, if (line is RestockLine.Low) "Low · ${quantityText(line.supply)}" + if (line.supply.lowDismissed) " · not now" else "" else supply?.let { quantityText(it) }.orEmpty(),
-                warn = line is RestockLine.Low,
+                line.name,
+                listOfNotNull("Low".takeIf { line.low }, line.supply?.let { quantityText(it) }, line.supply?.let { areaName(data, it.areaId) }).joinToString(" · "),
+                warn = line.low,
+                lead = {
+                    PixelIconButton(
+                        "check", "Bought: ${line.name}",
+                        { if (line.supply == null) tick(line) else { askingKey = key; quantity = "" } },
+                        accent,
+                    )
+                },
                 trail = {
-                    if (askingKey != key) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                        when (line) {
-                            is RestockLine.Low -> {
-                                PixelButton("Bought", { askingKey = key; quantity = "" }, color = accent, compact = true)
-                                if (!line.supply.lowDismissed) PixelButton("Not now", { home.dismissLow(line.supply.id) }, color = Pixel.InkSoft, compact = true)
-                            }
-                            is RestockLine.Manual -> {
-                                if (supply != null) PixelButton("Bought", { askingKey = key; quantity = "" }, color = accent, compact = true)
-                                else PixelButton("Done", { home.removeRestock(line.entry.id) }, color = accent, compact = true)
-                                PixelIconButton("close", "Remove $title from the list", { home.removeRestock(line.entry.id) }, Pixel.InkSoft)
-                            }
-                        }
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        val lowSupply = line.supply
+                        val entry = line.entry
+                        if (line.low && lowSupply != null && !lowSupply.lowDismissed) PixelButton("Not now", { home.dismissLow(lowSupply.id) }, color = Pixel.InkSoft, compact = true)
+                        if (entry != null) PixelIconButton("close", "Clear ${line.name} from the list", { home.removeRestock(entry.id) }, Pixel.InkSoft)
                     }
                 },
             )
-            if (askingKey == key && supply != null) {
-                PixelField(quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "New quantity${if (supply.unit.isNotEmpty()) " (${supply.unit})" else ""}${if (line is RestockLine.Manual) ", blank to keep it" else ""}", singleLine = true, keyboardOptions = decimalKeys)
+            if (askingKey == key) {
+                val supply = line.supply
+                val needsNew = supply != null && (line.low || supply.quantityMilli == null)
+                val unit = if (supply != null && supply.unit.isNotEmpty()) " (${supply.unit})" else ""
+                PixelField(
+                    quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(),
+                    label = if (needsNew) "How much is there now$unit" else "How much did you buy$unit, blank to just tick it off",
+                    singleLine = true, keyboardOptions = decimalKeys,
+                )
                 Actions {
-                    PixelButton("Save", {
+                    PixelButton("Bought", {
                         val milli = if (quantity.isBlank()) null else Quantity.parse(quantity)
                         if (quantity.isNotBlank() && milli == null) refused = "Check the quantity."
-                        else { refused = home.restocked(supply.id, milli, (line as? RestockLine.Manual)?.entry?.id); if (refused == null) { askingKey = null; quantity = "" } }
+                        else {
+                            val before = model.baseData
+                            val problem = home.bought(
+                                entryId = line.entry?.id, supplyId = supply?.id,
+                                addMilli = if (needsNew) null else milli, newQuantityMilli = if (needsNew) milli else null,
+                            )
+                            if (problem != null) refused = problem
+                            else { askingKey = null; quantity = ""; model.haptic(); model.offerUndo("Bought: ${line.name}") { home.restore(before) } }
+                        }
                     }, Modifier.weight(1f), accent, compact = true)
-                    PixelButton("Cancel", { askingKey = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Cancel", { askingKey = null; quantity = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
-        PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), label = "Add to the list", singleLine = true, keyboardOptions = wordKeys)
-        PixelButton("Add", { if (home.addRestock(name) != null) name = "" }, color = accent, enabled = name.isNotBlank())
+    FormGroup {
+        PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Add to the shopping list", placeholder = "Add an item", singleLine = true, keyboardOptions = wordKeys)
+        if (stock.isNotEmpty()) PixelDropdown(
+            listOf<String?>(null) + stock.map { it.id }, supplyId, { id -> stock.firstOrNull { it.id == id }?.name ?: "Not stock" }, { supplyId = it },
+            Modifier.fillMaxWidth(), key = accent, label = "Count in stock",
+        )
+        PixelButton("Add", {
+            if (home.addRestock(name, supplyId) == null) refused = "That supply is already on the list."
+            else { name = ""; supplyId = null; refused = null }
+        }, color = accent, enabled = name.isNotBlank() || supplyId != null)
     }
     refused?.let { Report(model, it, NoticeTone.WARNING) }
+}
+
+/** Durable things: the assets, their warranties, maintenance and history. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun androidx.compose.foundation.layout.ColumnScope.ItemsTab(model: AppModel, openId: String?, onOpen: (String?) -> Unit) {
+    val home = model.base
+    val data = model.baseData
+    val today = model.store.today
+    var showArchived by remember { mutableStateOf(false) }
+    val assets = data.assets.filter { !it.archived }
+    val archivedAssets = data.assets.filter { it.archived }
+    if (assets.isEmpty()) PixelTitle("No items yet")
+    assets.forEachIndexed { i, a ->
+        if (i > 0) Rule()
+        val warranties = data.warranties.filter { it.assetId == a.id }
+        val states = warranties.map { BaseRules.warrantyState(it, today) }
+        val word = if (WarrantyState.ENDING in states) "Warranty ends soon" else if (WarrantyState.ACTIVE in states || WarrantyState.UNDATED in states) "Covered" else if (states.isNotEmpty()) "Warranty expired" else null
+        RecordRow(
+            a.name, listOfNotNull(listOf(a.brand, a.model).filter { it.isNotBlank() }.joinToString(" ").takeIf { it.isNotBlank() }, areaName(data, a.areaId), word).joinToString(" · "),
+            warn = WarrantyState.ENDING in states,
+            onClick = { onOpen(if (openId == a.id) null else a.id) }, onClickLabel = if (openId == a.id) "Hide details" else "Show details",
+        )
+        if (openId == a.id) AssetDetail(model, a) { onOpen(null) }
+    }
+    if (archivedAssets.isNotEmpty()) {
+        PixelButton(if (showArchived) "Hide archived" else "Archived (${archivedAssets.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        if (showArchived) archivedAssets.forEach { a ->
+            RecordRow(a.name, "Archived", trail = {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    PixelButton("Restore", { home.setAssetArchived(a.id, false) }, color = accent, compact = true)
+                    PixelIconButton("trash", "Delete ${a.name}", { val before = model.baseData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }, Pixel.InkSoft)
+                }
+            })
+        }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -769,16 +945,12 @@ private fun MaintenanceView(model: AppModel) {
     var tab by remember { mutableStateOf(jump?.tab ?: 0) }
     var openId by remember { mutableStateOf(jump?.id) }
     var logging by remember { mutableStateOf(false) }
-    var showArchived by remember { mutableStateOf(false) }
     val views = BaseRules.schedules(data, today)
     val history = BaseRules.maintenanceHistory(data).take(60)
-    val assets = data.assets.filter { !it.archived }
-    val archivedAssets = data.assets.filter { it.archived }
     if (tab == 0) FormBox { ScheduleForm(model, null, onDone = {}) }
-    if (tab == 1) FormBox { AssetForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            ModuleTabs(listOf("Later", "Items", "History"), tab, accent) { tab = it; openId = null }
+            ModuleTabs(listOf("Later", "History"), tab, accent) { tab = it; openId = null }
             when (tab) {
                 0 -> {
                     if (views.isEmpty()) PixelTitle("No maintenance yet")
@@ -794,32 +966,6 @@ private fun MaintenanceView(model: AppModel) {
                     }
                     PixelButton(if (logging) "Hide the form" else "Log work done", { logging = !logging }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     if (logging) LogWorkForm(model) { logging = false }
-                }
-                1 -> {
-                    if (assets.isEmpty()) PixelTitle("No items yet")
-                    assets.forEachIndexed { i, a ->
-                        if (i > 0) Rule()
-                        val warranties = data.warranties.filter { it.assetId == a.id }
-                        val states = warranties.map { BaseRules.warrantyState(it, today) }
-                        val word = if (WarrantyState.ENDING in states) "Warranty ends soon" else if (WarrantyState.ACTIVE in states || WarrantyState.UNDATED in states) "Covered" else if (states.isNotEmpty()) "Warranty expired" else null
-                        RecordRow(
-                            a.name, listOfNotNull(listOf(a.brand, a.model).filter { it.isNotBlank() }.joinToString(" ").takeIf { it.isNotBlank() }, areaName(data, a.areaId), word).joinToString(" · "),
-                            warn = WarrantyState.ENDING in states,
-                            onClick = { openId = if (openId == a.id) null else a.id }, onClickLabel = if (openId == a.id) "Hide details" else "Show details",
-                        )
-                        if (openId == a.id) AssetDetail(model, a) { openId = null }
-                    }
-                    if (archivedAssets.isNotEmpty()) {
-                        PixelButton(if (showArchived) "Hide archived" else "Archived (${archivedAssets.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                        if (showArchived) archivedAssets.forEach { a ->
-                            RecordRow(a.name, "Archived", trail = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                                    PixelButton("Restore", { home.setAssetArchived(a.id, false) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${a.name}", { val before = model.baseData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }, Pixel.InkSoft)
-                                }
-                            })
-                        }
-                    }
                 }
                 else -> {
                     if (history.isEmpty()) PixelTitle("Nothing here yet")
@@ -1221,14 +1367,6 @@ private fun BaseSettingsView(model: AppModel) {
                 val warrantyLeads = listOf(7 to "A week before", 14 to "2 weeks", 30 to "A month", 60 to "2 months")
                 PixelChoice(warrantyLeads.map { it.first }, settings.warrantyLeadDays, { d -> warrantyLeads.firstOrNull { it.first == d }?.second ?: "" }, { d -> if (d != null) home.setWarrantyLeadDays(d) }, label = "Warranties", key = accent)
                 ToggleRow("Name it", settings.reminderNames) { home.setReminderNames(it) }
-            }
-        }
-    }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Overview")
-            listOf("chores" to "Chores", "supplies" to "Low supplies", "maintenance" to "Maintenance and warranties").forEach { (key, label) ->
-                ToggleRow(label, key !in settings.hidden) { home.setSectionHidden(key, !it) }
             }
         }
     }

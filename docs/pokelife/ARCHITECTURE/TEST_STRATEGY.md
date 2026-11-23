@@ -52,7 +52,8 @@ The repository's tests cover Pokémon progression and ownership, rewards and the
 **Known gaps:**
 
 - `androidApp` has a Robolectric suite (REP-033; `./gradlew :androidApp:testDebugUnitTest`, run by CI's Android step): `LiveStore` on Android's own SQLite stack (the cutover on the five fixtures, process death, a corrupt and a newer-schema database), Heal, Mint and backup sealing with a test Keystore (`FakeAndroidKeyStore`) and failing closed without it, the shared reminder scheduler (alarms, Done and snooze buttons, quiet hours, a reminder missed while the phone was off, the boot, alarm and time-zone receivers), the Today widget's tick against the app's store, and a focus session across a process death. Still untested off a device: Care, Heal, Mint, Base and Link reminder notifications, the Glance widgets' rendering, permissions, the launcher, and anything Robolectric only imitates (real alarm delivery, Doze, the real Keystore). There is no instrumented suite. Legacy example tests do not count as acceptance coverage.
-- `ScreenshotTest` renders screens to PNG and asserts only that the image is larger than a minimum size: a smoke test, not a golden test (section 12). Approved golden images, font-scale and dark-mode comparisons do not exist yet.
+- `ScreenshotTest` renders 151 states to PNG (light and dark, fontScale 1.3, narrow and wide) and now runs a real golden comparison through `ScreenshotCompare` (section 12): committed baselines under `composeApp/src/jvmTest/resources/screenshots/`, a byte-identity short-circuit, a per-channel tolerance of 8/255 and a 0.2% differing-pixel budget, a failure that names the percentage and the first differing box, and `UPDATE_SCREENSHOTS=1` to write reviewed baselines. Renders without a baseline are allowed while the baseline set is being grown and are named in one summary line; once a baseline is committed, a missing one fails unless `SCREENSHOTS_ALLOW_MISSING=1`. Not yet covered: the full 151-image baseline set (a repository-size budget decision; the mechanism accepts it in one update run) and TalkBack traversal on a device (section 13 and `tools/ui-check/device-accessibility.md`).
+- `SemanticsTest` walks the Compose semantics tree of Home, Plan, Care, Heal, Mint, Base, Link, World, Gear, Me and Pokémon at normal and 1.3× text: every interactive node must carry text, a content description or a labelled child, and every icon-only control must be at least 48 dp. `NavigationTest` and `BackChainTest` cover reachability and Back. What still needs a phone: spoken order, focus containment in dialogs, the real system font scale and a real large screen.
 - The real kill during a write and low storage are proven on the JVM only (`DATA_AND_MIGRATIONS.md` section 4.5).
 
 When tests are replaced at a new ownership boundary: map each to the contract it protects, preserve meaningful regressions, update obsolete assumptions only with an explicit specification decision, and do not remove a test merely because it fails during migration (decide whether it exposes a regression or obsolete behavior).
@@ -222,6 +223,10 @@ Golden/screenshot tests must compare rendered output against reviewed reference 
 
 Fix screenshot environment variables such as density, font scale, locale, clock and animation state. Control dynamic content and use stable fixtures. Define a documented image-diff tolerance; investigate every unexpected difference. Golden updates require explicit review and must never be auto-accepted merely to clear CI. A screenshot test that only checks that pixels were drawn is a smoke test, not a golden regression test.
 
+### 12.1 As built (0.237.0)
+
+`ScreenshotCompare` implements the gate: the PNG written to `build/screenshots/<name>.png` by `ScreenshotTest` is compared with `src/jvmTest/resources/screenshots/<name>.png`; `UPDATE_SCREENSHOTS=1` writes/refreshes baselines and is the only way to change them (the PNG diff is reviewed in the commit); a differing baseline fails with the differing percentage, the first differing region's box and the actual/expected/diff PNG paths. A byte-identical PNG short-circuits the decode. A screen joins the golden set one reviewed baseline at a time (`ScreenshotCompare.GOLDEN`): a render with no baseline still runs and writes its PNG, is not compared, and is named in one summary line. No baseline PNGs are committed yet — the initial set is generated with `UPDATE_SCREENSHOTS=1` on a machine whose fonts match the run (the container that built 0.238.0 has no fontconfig, so its PNGs are not portable) and reviewed as images. The set covers representative light/dark and 1.3× screens, not all 151 renders.
+
 ## 13. Theme, responsive layout and accessibility
 
 Test all shared components and representative module screens in light and dark themes, including contrast, disabled/error/focus states, surfaces, overlays and system bars. Test the responsive layouts defined by the design system at minimum supported width, typical phone width, large phone width and larger supported windows. Verify that content is not clipped, controls remain reachable and scrolling works with large text.
@@ -239,6 +244,10 @@ Accessibility automation must verify:
 - Reduced-motion behavior and accessible alternatives to animation.
 
 Automated semantics checks are necessary but not sufficient. Perform manual TalkBack acceptance on the physical target for core workflows and custom controls.
+
+### 13.1 As built (0.237.0)
+
+`SemanticsTest` renders the real app at each main place (Home, Plan, Care, Heal, Mint, Base, Link, World, Gear, Me and Pokémon) through `ImageComposeScene` and walks the Compose semantics tree: every interactive node must have text, a content description or a labelled child, and an icon-only control must be at least the 48 dp target. It runs at fontScale 1.0 and 1.3. `NavigationTest` and `BackChainTest` cover reachability and Back; `TokenContrastTest` covers the palette pairs. The on-device half is `tools/ui-check/device-accessibility.md` and `tools/ui-check/device-accessibility.sh` (`font 1.3`, `talkback on`, `shot <name>`): record Pass/Fail/Not-run per changed screen in the PR or handoff. A device pass has not been recorded yet.
 
 ## 14. Pixel-art rendering, assets and animation
 
@@ -348,7 +357,7 @@ Required checks:
 - Cold/warm startup and core navigation across all eight modules.
 - Shared Pokémon collection, rewards, inventory and evolution.
 - Light/dark theme, font scaling, display scaling and responsive layout.
-- Manual TalkBack traversal of critical workflows.
+- Manual TalkBack traversal of critical workflows (`tools/ui-check/device-accessibility.sh talkback on`, checklist `tools/ui-check/device-accessibility.md`).
 - Notification permission, channels, delivery and actions.
 - Process death, app relaunch, reboot and interruption recovery.
 - Offline workflows and connectivity restoration.
@@ -359,7 +368,7 @@ Required checks:
 - Audio focus/interruption and animation suspension.
 - Battery/performance profiling and thermal behavior where applicable.
 
-Use a device acceptance record with scenario, expected result, actual result, pass/fail/not-run, evidence link, defect reference and reviewer. Emulator success cannot substitute for physical acceptance. If a capability depends on hardware/provider support, record the exact configuration and limitations.
+The UI half of the record has a helper: `tools/ui-check/device-accessibility.sh` sets the system font scale and TalkBack and pulls screenshots, and `tools/ui-check/device-accessibility.md` is its checklist (the JVM gates that run before it are listed there). Use a device acceptance record with scenario, expected result, actual result, pass/fail/not-run, evidence link, defect reference and reviewer. Emulator success cannot substitute for physical acceptance. If a capability depends on hardware/provider support, record the exact configuration and limitations.
 
 ## 21. Release gates and severity
 

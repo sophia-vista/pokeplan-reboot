@@ -108,10 +108,17 @@ enum class HitKind(val label: String) { CHORE("Chore"), SUPPLY("Supply"), ASSET(
 
 data class Hit(val kind: HitKind, val id: String, val title: String, val detail: String = "")
 
-sealed interface RestockLine {
-    data class Low(val supply: Supply) : RestockLine
-    data class Manual(val entry: RestockEntry, val supply: Supply?) : RestockLine
+/**
+ * One line of the restocking list: a low supply, a hand-written entry, or both when the entry
+ * points at a supply that is low (one line for one thing to buy).
+ */
+data class RestockLine(val supply: Supply? = null, val entry: RestockEntry? = null) {
+    val name: String get() = supply?.name ?: entry?.name.orEmpty()
+    val low: Boolean get() = supply?.let { BaseRules.isLow(it) } == true
 }
+
+/** A heading of the restocking list: the line's area, or [BaseRules.RESTOCK_OTHER] when it has none. */
+data class RestockGroup(val title: String, val lines: List<RestockLine>)
 
 data class Overview(val chores: List<ChoreView>, val maintenance: List<ScheduleView>, val low: List<Supply>, val warranties: List<Warranty>) {
     val needsAttention: Boolean get() = chores.isNotEmpty() || maintenance.isNotEmpty() || low.isNotEmpty() || warranties.isNotEmpty()
@@ -124,6 +131,20 @@ object BaseRules {
     const val EVERY_MAX = 99
 
     const val ADJUSTMENTS_KEPT = 300
+
+    /** How many of a supply's stock changes the supply screen shows. */
+    const val ADJUSTMENT_HISTORY = 5
+
+    const val REASON_COUNTED = "Counted"
+    const val REASON_USED = "Used"
+    const val REASON_BOUGHT = "Bought"
+    const val REASON_CORRECTION = "Correction"
+
+    /** The reasons offered on the stock adjustment form; the player may also leave it blank. */
+    val ADJUSTMENT_REASONS = listOf(REASON_COUNTED, REASON_USED, REASON_BOUGHT, REASON_CORRECTION)
+
+    /** The restocking group for lines with no household area. */
+    const val RESTOCK_OTHER = "Other"
 
     const val WARRANTY_SOON_DAYS = 30
 
@@ -226,9 +247,33 @@ object BaseRules {
     fun lowSupplies(data: BaseData, includeQuieted: Boolean = false): List<Supply> =
         data.supplies.filter { isLow(it) && (includeQuieted || !it.lowDismissed) }.sortedBy { it.name.lowercase() }
 
-    fun restockList(data: BaseData): List<RestockLine> =
-        lowSupplies(data, includeQuieted = true).map { RestockLine.Low(it) } +
-            data.restock.map { e -> RestockLine.Manual(e, e.supplyId?.let { id -> data.supplies.firstOrNull { it.id == id } }) }
+    /**
+     * The restocking list: every low supply (including one the player quieted), then what was
+     * written by hand. A hand-written entry linked to a supply that is low is that supply's line,
+     * so the same thing to buy is never listed twice.
+     */
+    fun restockList(data: BaseData): List<RestockLine> {
+        val lows = lowSupplies(data, includeQuieted = true)
+        val linked = data.restock.filter { it.supplyId != null }.associateBy { it.supplyId }
+        val lowIds = lows.map { it.id }.toSet()
+        return lows.map { s -> RestockLine(s, linked[s.id]) } +
+            data.restock.filter { it.supplyId == null || it.supplyId !in lowIds }
+                .map { e -> RestockLine(e.supplyId?.let { id -> data.supplies.firstOrNull { it.id == id } }, e) }
+    }
+
+    /**
+     * [restockList] under one heading per household area, in the player's area order, with
+     * [RESTOCK_OTHER] last. A quieted low supply keeps its area, so it does not merge into Other.
+     */
+    fun restockGroups(data: BaseData): List<RestockGroup> {
+        val lines = restockList(data)
+        val named = data.areas.associate { it.id to it.name }
+        fun title(line: RestockLine): String = line.supply?.areaId?.let { named[it] } ?: RESTOCK_OTHER
+        return (data.areas.map { it.name } + RESTOCK_OTHER).distinct().mapNotNull { name ->
+            val inGroup = lines.filter { title(it) == name }
+            if (inGroup.isEmpty()) null else RestockGroup(name, inGroup)
+        }
+    }
 
     fun scheduleView(s: MaintenanceSchedule, today: LocalDate): ScheduleView {
         val days = today.daysUntil(s.nextDue)

@@ -48,7 +48,11 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.time.TimeSource
 import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.TabButton
@@ -126,44 +130,42 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     if (feed == null) return Missing("No microphone on this device")
     val store = model.store
     val offset = model.data.gear.soundOffsetDb
-    var dbFs by remember { mutableStateOf<Float?>(null) }
-    var low by remember { mutableStateOf<Float?>(null) }
-    var high by remember { mutableStateOf<Float?>(null) }
-    var sum by remember { mutableStateOf(0.0) }
-    var count by remember { mutableStateOf(0) }
-    var pitch by remember { mutableStateOf<Float?>(null) }
-    var bands by remember { mutableStateOf(FloatArray(0)) }
+    var reading by remember { mutableStateOf<SoundReading?>(null) }
     var problem by remember { mutableStateOf("") }
-    // Stops the microphone when the app is no longer in front, not only when the tool is left.
+    val meter = remember { SoundMeter() }
+    val frames = remember(feed) { Channel<SoundFrame>(Channel.CONFLATED) }
+    // The microphone runs only while the meter is on screen and the app is in front; leaving either stops it.
     val foreground = rememberInForeground()
     DisposableEffect(feed, foreground) {
-        var smooth: Float? = null
         var stop: (() -> Unit)? = null
-        if (foreground) stop = feed.start({ frame, rate ->
-            val level = SoundMath.dbFs(frame)
-            smooth = smooth?.let { it + (level - it) * 0.35f } ?: level
-            dbFs = smooth
-            val s = smooth!!
-            if (s > -119f) { low = low?.let { minOf(it, s) } ?: s; high = high?.let { maxOf(it, s) } ?: s; sum += s; count++ }
-            val spec = SoundMath.spectrum(frame, 1024)
-            pitch = SoundMath.dominantHz(spec, rate)
-            bands = FloatArray(24) { b ->
-                val from = (spec.size * (b / 24f) * (b / 24f)).toInt(); val to = maxOf(from + 1, (spec.size * ((b + 1) / 24f) * ((b + 1) / 24f)).toInt())
-                (spec.slice(from until minOf(to, spec.size)).maxOrNull() ?: 0.0).toFloat()
-            }
-        }, { problem = it })
+        meter.reset()
+        if (foreground) stop = feed.start({ frame, rate -> frames.trySend(SoundFrame(frame.copyOf(), rate)) }, { problem = it })
         if (stop == null && foreground) problem = "No microphone was found."
         if (foreground) onUse()
-        onDispose { stop?.invoke() }
+        onDispose { stop?.invoke(); meter.reset() }
+    }
+    LaunchedEffect(feed, foreground) {
+        if (!foreground) return@LaunchedEffect
+        val started = TimeSource.Monotonic.markNow()
+        reading = null
+        while (isActive) {
+            val frame = frames.receive()
+            val now = started.elapsedNow().inWholeMilliseconds
+            // dB, FFT, peaks and bars are computed on a background thread; only the finished reading touches UI state.
+            val next = withContext(Dispatchers.Default) { meter.onFrame(frame.samples, frame.rate, now) } ?: continue
+            reading = next
+        }
     }
     if (problem.isNotEmpty()) return Missing(problem)
-    val est = dbFs?.let { SoundMath.estimate(it, offset) }
+    val r = reading
+    val est = r?.let { SoundMath.estimate(it.dbFs, offset) }
     TextBox {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(est?.let { "${it.toInt()} dB" } ?: "Listening", style = MaterialTheme.typography.displaySmall)
             est?.let { Text(SoundMath.describe(it), style = MaterialTheme.typography.bodyLarge) }
-            if (count > 0) Text("Quietest ${SoundMath.estimate(low!!, offset).toInt()}, average ${SoundMath.estimate((sum / count).toFloat(), offset).toInt()}, loudest ${SoundMath.estimate(high!!, offset).toInt()} dB", style = MaterialTheme.typography.bodyMedium)
+            r?.takeIf { it.samples > 0 }?.let { Text("Quietest ${SoundMath.estimate(it.low, offset).toInt()}, average ${SoundMath.estimate(it.average, offset).toInt()}, loudest ${SoundMath.estimate(it.high, offset).toInt()} dB", style = MaterialTheme.typography.bodyMedium) }
             Canvas(Modifier.fillMaxWidth().height(96.dp)) {
+                val bands = r?.bands.orEmpty()
                 val n = bands.size.coerceAtLeast(1); val w = size.width / n
                 val peak = (bands.maxOrNull() ?: 0f).coerceAtLeast(2f)
                 bands.forEachIndexed { i, v ->
@@ -171,16 +173,19 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
                     drawRect(Pixel.Blue, Offset(i * w + 1f, size.height - h), Size(w - 2f, h))
                 }
             }
-            pitch?.let { Text("Pitch: ${it.toInt()} Hz, about ${SoundMath.noteName(it)}", style = MaterialTheme.typography.bodyLarge) }
+            r?.pitchHz?.takeIf { it > 0f }?.let { Text("Pitch: ${it.toInt()} Hz, about ${SoundMath.noteName(it)}", style = MaterialTheme.typography.bodyLarge) }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelIconButton("minus", "One decibel lower", { store.changeGear { it.copy(soundOffsetDb = (it.soundOffsetDb - 1f).coerceAtLeast(60f)) } })
                 Text("Offset ${offset.toInt()}", style = MaterialTheme.typography.bodyMedium)
                 PixelIconButton("plus", "One decibel higher", { store.changeGear { it.copy(soundOffsetDb = (it.soundOffsetDb + 1f).coerceAtMost(120f)) } })
-                PixelIconButton("reload", "Start the quietest and loudest again", { low = null; high = null; sum = 0.0; count = 0 })
+                PixelIconButton("reload", "Start the quietest and loudest again", { meter.resetExtremes() })
             }
         }
     }
 }
+
+/** One microphone frame handed from the capture thread to the background processing coroutine. */
+private class SoundFrame(val samples: ShortArray, val rate: Int)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

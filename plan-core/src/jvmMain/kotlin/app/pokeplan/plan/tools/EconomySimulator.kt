@@ -198,9 +198,9 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
                     state = out.state; handleRewards(out.rewards)
                 }
                 val tasks = rng.nextInt(profile.tasksPerDay.first, profile.tasksPerDay.last + 1)
-                repeat(tasks) { n ->
+                repeat(tasks) {
                     val tier = weighted(profile.rankWeights) + 1
-                    val out = RewardEngine.achievement(state, AchievementEvent(tier, pickRegion(), hourOfDay = 9 + n, firstOfDay = n == 0, onTime = rng.nextDouble() < 0.3, focusedOnIt = rng.nextDouble() < 0.2, newPokemonId = id(), nowMillis = day * 86_400_000L), rng)
+                    val out = RewardEngine.achievement(state, AchievementEvent(tier, pickRegion(), onTime = rng.nextDouble() < 0.3, focusedOnIt = rng.nextDouble() < 0.2, newPokemonId = id(), nowMillis = day * 86_400_000L), rng)
                     state = out.state; handleRewards(out.rewards)
                 }
             }

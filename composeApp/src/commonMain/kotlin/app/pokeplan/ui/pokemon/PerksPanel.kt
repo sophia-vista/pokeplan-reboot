@@ -72,7 +72,6 @@ private fun PerkBucket.effect() = when (this) {
 
 private fun PerkCondition.label(): String? = when (this) {
     PerkCondition.ALWAYS -> null
-    PerkCondition.FIRST_TASK_BEFORE_9AM -> "first task of the day, before 9am"
     PerkCondition.SHORT_SESSION -> "focus sessions of 5 to 20 minutes"
     PerkCondition.TOP_RANK_TASK -> "A-rank tasks"
 }

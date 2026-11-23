@@ -22,7 +22,7 @@ class GoldenVectorTest {
         val state = PlayerState(listOf(buddy), buddy.id, Inventory().add("rare-candy", 12).add("lure-fire", 1), coins = 50, eggMeter = 4, trainerPoints = 100, caught = setOf(25, 4), planLeadId = buddy.id, rolesVersion = 1)
         val stateJson = json.encodeToString(PlayerState.serializer(), state)
         val effort = json.encodeToString(EffortEvent.serializer(), EffortEvent(30, true, Region.KANTO, epochDay = 11, newPokemonId = "new-1", nowMillis = 1_700_000_000_000))
-        val work = json.encodeToString(AchievementEvent.serializer(), AchievementEvent(4, Region.JOHTO, hourOfDay = 7, firstOfDay = true, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000))
+        val work = json.encodeToString(AchievementEvent.serializer(), AchievementEvent(4, Region.JOHTO, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000))
         val care = json.encodeToString(CareEvent.serializer(), CareEvent(CareKind.CALM_BREAK, nowMillis = 1_700_000_000_000))
         val heal = json.encodeToString(HealEvent.serializer(), HealEvent("heal:activity:k1", HealKind.ACTIVITY, nowMillis = 1_700_000_000_000, ref = "k1"))
         val mint = json.encodeToString(MintEvent.serializer(), MintEvent("mint:reconciled:k1", MintKind.RECONCILED, nowMillis = 1_700_000_000_000, ref = "k1"))

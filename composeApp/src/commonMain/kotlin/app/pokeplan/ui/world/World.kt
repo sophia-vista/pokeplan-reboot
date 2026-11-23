@@ -126,25 +126,26 @@ import app.pokeplan.app.world.worldStart
 import app.pokeplan.app.world.worldSwap
 import app.pokeplan.app.world.worldTrain
 import app.pokeplan.app.world.worldUpgrade
+import app.pokeplan.app.world.WorldDigest
 
 enum class WorldSection(val label: String, val icon: String) {
     MAP("Atlas", "town-map"), MISSIONS("Guild", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), TOWN("Town", "scope-lens"), ARCHIVE("Journal", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
-
-private const val NAP_MILLIS = 30_000L
-private const val MIN_WAIT_MILLIS = 250L
 
 @Composable
 internal fun WorldScreen(model: AppModel, openPokemon: (String) -> Unit = {}) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.WORLD) { WorldBody(model, openPokemon) }
 
 @Composable
 private fun WorldBody(model: AppModel, openPokemon: (String) -> Unit) {
+    // Opening World settles from elapsed time; no poll. While the screen is in front, one timer waits for the next
+    // floor the save predicts (the same instant the AppAlerts floor alarm is set for) and settles once, then re-arms.
     LaunchedEffect(Unit) { model.store.worldSettle(); model.worldNow = model.store.nowMillis }
     val roster = model.data.player.pokemon
     val due = remember(model.data.world, roster) { WorldSim.nextFloorAt(model.data.world, roster, model.store.nowMillis) }
-    LaunchedEffect(due) {
-        if (due == null) return@LaunchedEffect
-        while (model.store.nowMillis < due) delay(minOf(due - model.store.nowMillis, NAP_MILLIS).coerceAtLeast(MIN_WAIT_MILLIS))
+    val foreground = rememberInForeground()
+    LaunchedEffect(due, foreground) {
+        if (due == null || !foreground) return@LaunchedEffect
+        delay((due - model.store.nowMillis).coerceAtLeast(1L))
         model.store.worldSettle()
         model.worldNow = model.store.nowMillis
     }
@@ -177,60 +178,103 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
 @Composable
 private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val world = model.data.world
-    val out = world.teams.count { it.expedition != null }
+    // Each section row carries only its own local detail: the counts that used to repeat here (teams out, finds
+    // waiting, jobs ready) are stated once, in the overview below.
     val sections = listOf(
-        MenuEntry(WorldSection.TOWN.name, WorldSection.TOWN.icon, WorldSection.TOWN.label, if (world.finds.isEmpty()) "Camp level ${world.facilityLevel(Facility.CAMP)}" else "${world.finds.size} to meet", badge = world.researchReady().size + world.finds.size, tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.TOWN.name, WorldSection.TOWN.icon, WorldSection.TOWN.label, "Camp level ${world.facilityLevel(Facility.CAMP)}", tint = ModuleAccent.WORLD.accent),
         MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = ModuleAccent.WORLD.accent),
-        MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = ModuleAccent.WORLD.accent),
-        MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, "${world.presets.size} saved teams", tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", tint = ModuleAccent.WORLD.accent),
         MenuEntry(WorldSection.ARCHIVE.name, WorldSection.ARCHIVE.icon, WorldSection.ARCHIVE.label, "${world.discovered.size} species met", tint = ModuleAccent.WORLD.accent),
         MenuEntry(WorldSection.SETTINGS.name, WorldSection.SETTINGS.icon, WorldSection.SETTINGS.label, tint = Pixel.InkSoft),
     )
+    val digest = remember(model.data.world, model.data.player.pokemon, model.worldLayer) { WorldDigest.of(model.data, model.worldLayer) }
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.WORLD.label, onBack = onBack, color = Module.WORLD.look.header, trailing = { SectionsKey(Module.WORLD.label, sections) { key -> model.worldSection = WorldSection.valueOf(key) } })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             val stageTeam = world.teams.firstOrNull { it.expedition != null && it.members.isNotEmpty() } ?: world.teams.firstOrNull { it.members.isNotEmpty() }
             val stageLead = stageTeam?.members?.firstNotNullOfOrNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
             ModuleLeadStage(model, Module.WORLD, stageLead, null, openPokemon = openPokemon)
-            val firstTime = world.teams.none { it.expedition != null || it.members.isNotEmpty() } && world.clears.isEmpty()
-            RankStrip(model)
+            WorldNowCard(model, digest)
             WorldReportCard(model)
-            ChoicesCard(model)
-            if (firstTime) {
-                TextBox {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Text("Send a team into a dungeon", style = MaterialTheme.typography.titleSmall)
-                        PixelButton("Send my strongest into Tiny Woods", { model.store.worldQuickSend("tiny-woods") }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+        }
+    }
+}
+
+/**
+ * The one overview of the menu: one rank line, then what is happening now, each fact once and where it can be acted on.
+ * The report card below it is a one-shot; the single-section counts live on the section's own screen.
+ */
+@Composable
+private fun WorldNowCard(model: AppModel, digest: WorldDigest) {
+    val world = model.data.world
+    val rank = world.rank
+    val next = rank.next()
+    fun go(section: WorldSection) { model.worldSection = section }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                ItemIcon(rank.badge, size = Sizes.IconL, description = "${rank.label} rank badge")
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Text(if (next != null) "${rank.label} rank, ${world.xp} of ${next.points} to ${next.label}" else "${rank.label} rank, the top", style = MaterialTheme.typography.bodyMedium)
+                    if (next != null) PixelBar(((world.xp - rank.points).toFloat() / (next.points - rank.points)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "${world.xp} of ${next.points} to ${next.label}")
+                }
+                ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = Sizes.IconS, description = null)
+                Text("${model.data.player.coins}", style = MaterialTheme.typography.bodyMedium)
+            }
+            HorizontalDivider(color = Pixel.Border)
+            digest.out.forEach { away ->
+                val place = Dungeons.byId(away.dungeonId)
+                OverviewRow("Team ${away.id}", "${away.title}: ${place?.name ?: away.dungeonId}, floor ${away.floor} of ${away.floors}", "Open the teams") { go(WorldSection.TEAMS) }
+            }
+            if (digest.choices > 0) OverviewRow("A team is waiting", if (digest.choices == 1) "One expedition has found a fork in the floor and needs your choice." else "${digest.choices} expeditions need a choice.", "Choose") { go(WorldSection.TEAMS) } // copy-ok: game
+            if (digest.jobsReady > 0) OverviewRow("Jobs ready", if (digest.jobsReady == 1) "1 job is done and ready to report." else "${digest.jobsReady} jobs are done and ready to report.", "Open the board") { go(WorldSection.MISSIONS) }
+            if (digest.finds > 0) OverviewRow("Finds waiting", if (digest.finds == 1) "1 Pokémon is waiting to meet you." else "${digest.finds} Pokémon are waiting to meet you.", "Open Finds") { go(WorldSection.BAG) }
+            val step = digest.nextStep
+            when {
+                step != null -> {
+                    Text(step.title, style = MaterialTheme.typography.titleSmall)
+                    Text(step.reason, style = MaterialTheme.typography.bodyMedium)
+                    val id = step.dungeonId
+                    if (id != null) {
+                        PixelButton("Send my strongest into ${Dungeons.byId(id)?.name ?: "the next dungeon"}", { if (model.store.worldQuickSend(id)) model.effect(Sfx.STAIRS_DOWN) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                        PixelButton("Choose a team", { go(WorldSection.TEAMS) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     }
                 }
-            } else {
-                RegionCard(model)
-                ExpeditionOverview(model)
+                digest.idle && digest.ready == 0 && digest.out.isEmpty() -> {
+                    Text("No team is ready.", style = MaterialTheme.typography.bodyMedium)
+                    PixelButton("Choose a team", { go(WorldSection.TEAMS) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                }
+                !digest.needsYou && digest.out.isNotEmpty() -> PixelButton("See the teams", { go(WorldSection.TEAMS) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RegionCard(model: AppModel) {
+private fun OverviewRow(title: String, detail: String, actionLabel: String, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = actionLabel, onClick = onClick).semantics(mergeDescendants = true) { contentDescription = "$title, $detail" },
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+        PixelIconButton("arrow-right", actionLabel, onClick, Pixel.InkSoft)
+    }
+}
+
+/** The regional story line that used to sit on the menu; Atlas owns regions and chapters, so it lives here now. */
+@Composable
+private fun StoryProgressCard(model: AppModel) {
     val world = model.data.world
     val layer = model.worldLayer
-    val action = app.pokeplan.world.WorldGuide.primaryAction(world, layer)
     val chapters = Story.chaptersOf(layer)
     val opened = Story.opened(world, layer)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            WorldLayerSwitch(model)
-            Text("Chapter $opened: ${chapters[opened - 1].title}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            Text(action.title, style = MaterialTheme.typography.titleSmall)
-            Text(action.reason, style = MaterialTheme.typography.bodyMedium)
-            when (action.kind) {
-                app.pokeplan.world.PrimaryKind.REVIEW_FINDS -> PixelButton("Open Finds", { model.worldSection = WorldSection.BAG }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
-                app.pokeplan.world.PrimaryKind.CLAIM_JOB -> PixelButton("Open the board", { model.worldSection = WorldSection.MISSIONS }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
-                app.pokeplan.world.PrimaryKind.EXPLORE -> action.dungeonId?.let { id -> PixelButton("Send my strongest", { model.store.worldQuickSend(id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true) }
-                app.pokeplan.world.PrimaryKind.CONTINUE -> PixelButton("See the teams", { model.worldSection = WorldSection.TEAMS }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
-            }
+            Text("Chapter $opened: ${chapters[opened - 1].title}", style = MaterialTheme.typography.titleSmall)
             if (Story.complete(world, layer)) Text("The ${layer.label} story is complete. ${Story.guardianBonus(layer)}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             Story.next(world, layer)?.let {
                 val cleared = Story.dungeonsCleared(world, layer)
@@ -238,22 +282,6 @@ private fun RegionCard(model: AppModel) {
             }
         }
     }
-}
-
-@Composable
-private fun RankStrip(model: AppModel) {
-    val world = model.data.world
-    val rank = world.rank
-    val next = rank.next()
-    TextBox { Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        ItemIcon(rank.badge, size = Sizes.IconL, description = "${rank.label} rank badge")
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            Text(if (next != null) "${rank.label} rank, ${world.xp} of ${next.points} to ${next.label}" else "${rank.label} rank, the top", style = MaterialTheme.typography.bodyMedium)
-            if (next != null) PixelBar(((world.xp - rank.points).toFloat() / (next.points - rank.points)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "${world.xp} of ${next.points} to ${next.label}")
-        }
-        ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = Sizes.IconS, description = null)
-        Text("${model.data.player.coins}", style = MaterialTheme.typography.bodyMedium)
-    } }
 }
 
 @Composable
@@ -265,6 +293,7 @@ private fun WorldMapView(model: AppModel) {
     val dungeons = Dungeons.of(layer)
     val clearedCount = dungeons.count { (world.clears[it.id] ?: 0) > 0 }
     WorldLayerSwitch(model) { selected = null }
+    StoryProgressCard(model)
     val spots = when (layer) { WorldLayer.RESCUE, WorldLayer.EXPLORERS -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots; WorldLayer.SINNOH -> sinnohSpots; else -> emptyMap() }
     if (layer.hasMap) WorldMapPicture(
         stage = 1 + clearedCount * 7 / dungeons.size.coerceAtLeast(1),
@@ -669,73 +698,174 @@ private fun WorldTeamsView(model: AppModel) {
     val world = model.data.world
     val roster = model.data.player.pokemon
     ChoicesCard(model)
-    ExpeditionOverview(model)
-    val enterable = Dungeons.of(model.worldLayer).filter { app.pokeplan.world.WorldGuide.lockReasons(world, it).isEmpty() }
-    val fallback = app.pokeplan.world.WorldGuide.primaryAction(world, model.worldLayer).dungeonId?.let { Dungeons.byId(it) } ?: enterable.firstOrNull() ?: Dungeons.all.first()
-    world.slots().forEach { team ->
-        var editing by remember(team.id) { mutableStateOf(false) }
+
+    // Teams that are out keep their status card: destination, floor, today's modifier, speed and recall.
+    world.slots().filter { it.expedition != null }.forEach { team ->
         val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
-        val outAt = team.expedition?.let { Dungeons.byId(it.dungeonId) }
-        val chosen = outAt ?: model.worldTeamDungeon?.let { Dungeons.byId(it) } ?: fallback
+        val trip = team.expedition ?: return@forEach
+        val dungeon = Dungeons.byId(trip.dungeonId) ?: return@forEach
+        val floor = trip.floorsClimbed % dungeon.floors
+        val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone, world.legendFaster(dungeon))
         val body: @Composable () -> Unit = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Box(Modifier.size(14.dp).background(teamAccent(team.accent)))
-                    Text(team.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
-                    if (app.pokeplan.world.TeamAdvice.isPoorMatch(chosen, members)) {
-                        Box(Modifier.semantics { contentDescription = "Few of this team suit ${chosen.name}" }) { app.pokeplan.ui.StatusIcon(app.pokeplan.ui.StatusKind.ALERT, pixel = 2, animate = false) }
-                    }
+                TeamHeading(team, dungeon, members)
+                Text("Exploring ${dungeon.name}: floor ${floor + 1} of ${dungeon.floors}", style = MaterialTheme.typography.bodyLarge)
+                app.pokeplan.world.DungeonModifiers.at(dungeon.id, model.worldNow.takeIf { it > 0 } ?: store.nowMillis)?.let { m ->
+                    Text("Today here: ${m.title}, ${m.text}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
                 }
-                if (members.isEmpty()) Text("No one yet.", style = MaterialTheme.typography.bodyMedium)
-                else if (team.expedition == null) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    members.forEach { p -> AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Spacing.Target, animate = false) }
-                }
-                val trip = team.expedition
-                if (trip != null) {
-                    val dungeon = Dungeons.byId(trip.dungeonId)
-                    if (dungeon != null) {
-                        val floor = trip.floorsClimbed % dungeon.floors
-                        val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone, world.legendFaster(dungeon))
-                        Text("Exploring ${dungeon.name}: floor ${floor + 1} of ${dungeon.floors}", style = MaterialTheme.typography.bodyLarge)
-                        app.pokeplan.world.DungeonModifiers.at(dungeon.id, model.worldNow.takeIf { it > 0 } ?: store.nowMillis)?.let { m ->
-                            Text("Today here: ${m.title}, ${m.text}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+                PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
+                Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
+                SpeedExplainer(members, dungeon, world)
+                PixelButton("Recall", { store.worldRecall(team.id); model.effect(Sfx.TEAM_RECALLED) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            }
+        }
+        TileBox(dungeon.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body)
+    }
+
+    // Staged dispatch: step 1 the dungeon, step 2 the team, step 3 the confirmation. The choices live here, so Back
+    // between steps keeps the dungeon, the slot and every picked member.
+    val enterable = Dungeons.of(model.worldLayer).filter { app.pokeplan.world.WorldGuide.lockReasons(world, it).isEmpty() }
+    var stage by rememberSaveable { mutableStateOf(1) }
+    var dungeonId by rememberSaveable { mutableStateOf<String?>(null) }
+    var slot by rememberSaveable { mutableStateOf(1) }
+    val readySlots = world.slots().filter { it.expedition == null }
+    val chosen = dungeonId?.let { Dungeons.byId(it) }
+    val team = world.team(slot) ?: WorldTeam(slot)
+    var picked by remember(slot, team.members) { mutableStateOf(team.members) }
+    val fallback = enterable.firstOrNull() ?: Dungeons.all.first()
+    fun reset() { stage = 1; dungeonId = null; model.worldTeamDungeon = null }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Send a team", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+            Text(if (stage == 3) "Step 3 of 3: check and start" else "Step $stage of 3: ${if (stage == 1) "choose the dungeon" else "choose the team"}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            when (stage) {
+                1 -> {
+                    WorldLayerSwitch(model) { dungeonId = null; model.worldTeamDungeon = null }
+                    Dungeons.of(model.worldLayer).forEach { d ->
+                        val reasons = app.pokeplan.world.WorldGuide.lockReasons(world, d)
+                        val open = reasons.isEmpty()
+                        val select = { dungeonId = d.id; model.worldTeamDungeon = d.id }
+                        Row(
+                            Modifier.fillMaxWidth().let { if (open) it.clickable(role = Role.Button, onClickLabel = "Choose ${d.name}", onClick = select) else it }
+                                .semantics(mergeDescendants = true) { contentDescription = listOfNotNull(d.name, "${d.floors} floors", if (open) null else "locked").joinToString(", ") }
+                                .padding(vertical = Spacing.XS),
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
+                        ) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                                Text(d.name, style = MaterialTheme.typography.bodyLarge)
+                                Text("${d.region.label}, ${d.floors} floors, ${d.needs.label} rank", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                                reasons.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Color(0xFFFFB4A8)) }
+                            }
+                            val deepest = world.deepest[d.id] ?: 0
+                            Text(if (d.id == dungeonId) "Chosen" else if (open) "Choose" else "Locked", style = MaterialTheme.typography.bodyMedium, color = if (d.id == dungeonId) Module.WORLD.look.accent else Pixel.InkSoft)
+                            if (deepest > 0 && open) Text("deepest $deepest", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         }
-                        PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
-                        Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
                     }
-                    if (outAt != null) SpeedExplainer(members, outAt, world)
-                    PixelButton("Recall", { store.worldRecall(team.id); model.effect(Sfx.TEAM_RECALLED) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                } else {
-                    PixelButton(if (editing) "Close" else "Choose the team", { editing = !editing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                    if (editing) {
-                        TeamEditor(model, team, chosen, enterable) { editing = false }
+                    if (enterable.isEmpty()) Text("Nothing is open here yet. Clear a chapter or reach the next rank to open a dungeon.", style = MaterialTheme.typography.bodyMedium)
+                }
+                2 -> {
+                    if (readySlots.isEmpty()) {
+                        Text("Every team is out. Recall one above to send another.", style = MaterialTheme.typography.bodyMedium)
+                    } else {
+                        val d = chosen ?: fallback
+                        Text("Sending to ${d.name}, ${d.floors} floors", style = MaterialTheme.typography.bodyLarge)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) { d.favored.forEach { TypePlate(it, width = 56.dp) } }
+                        FieldLabel("Team")
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            readySlots.forEach { t -> PixelButton(t.title, { slot = t.id }, color = if (t.id == slot) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
+                        }
+                        val members = picked.mapNotNull { id -> roster.firstOrNull { it.id == id } }
+                        PixelButton("Send my strongest now", {
+                            if (store.worldQuickSend(d.id)) { model.effect(Sfx.STAIRS_DOWN); reset() } else model.effect(Sfx.CONFIRM)
+                        }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                        if (app.pokeplan.world.TeamAdvice.isPoorMatch(d, members)) Text("Few of this team suit ${d.name}. Recommend team or Replace team below changes the whole team at once.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) // copy-ok: game
+                        TeamEditor(
+                            model, team, d, enterable,
+                            pickedIds = picked, onPickedChange = { picked = it },
+                            showDungeonPicker = false,
+                        ) {}
+                        if (picked.isEmpty()) Text("Pick at least one Pokémon to send.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                    }
+                }
+                else -> {
+                    val d = chosen
+                    if (d == null) Text("Choose a dungeon first.", style = MaterialTheme.typography.bodyMedium)
+                    else {
+                        val members = picked.mapNotNull { id -> roster.firstOrNull { it.id == id } }
+                        Text("${d.name}, ${d.region.label}", style = MaterialTheme.typography.titleSmall)
+                        Text("${d.floors} floors, ${d.needs.label} rank, ${world.deepest[d.id]?.let { "deepest $it" } ?: "not entered yet"}", style = MaterialTheme.typography.bodyMedium)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            members.forEach { AnimatedSprite(it.form.id, it.isShiny, it.nickname, size = Spacing.Target, animate = false) }
+                        }
+                        if (members.isEmpty()) Text("No one is picked yet. Go back and choose the team.", style = MaterialTheme.typography.bodyMedium)
+                        else {
+                            val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d))
+                            val power = WorldSim.power(members, d)
+                            Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyLarge) // copy-ok: game
+                            Text(app.pokeplan.world.Outcomes.explain(power, d), style = MaterialTheme.typography.bodyMedium)
+                            if (app.pokeplan.world.TeamAdvice.isPoorMatch(d, members)) Text("Few of this team suit this place. It can still go; expect it to be slower.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) // copy-ok: game
+                            SpeedExplainer(members, d, world)
+                            PixelButton("Start the expedition", {
+                                val saved = picked.toSet() == team.members.toSet() || store.worldAssign(team.id, picked)
+                                if (saved && store.worldStart(team.id, d.id)) { model.effect(Sfx.STAIRS_DOWN); reset() } else model.effect(Sfx.CONFIRM)
+                            }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                        }
                     }
                 }
             }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Back", { if (stage > 1) stage-- }, Modifier.weight(1f), Pixel.InkSoft, compact = true, enabled = stage > 1)
+                if (stage < 3) PixelButton(if (stage == 1) "Next: the team" else "Next: start", {
+                    if (stage == 1) { if (dungeonId != null) stage = 2 }
+                    else if (picked.isNotEmpty()) stage = 3
+                }, Modifier.weight(1f), Module.WORLD.look.accent, compact = true, enabled = if (stage == 1) dungeonId != null else picked.isNotEmpty())
+            }
         }
-        if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
+    }
+}
+
+@Composable
+private fun TeamHeading(team: WorldTeam, dungeon: app.pokeplan.world.DungeonDef, members: List<app.pokeplan.core.pokemon.OwnedPokemon>) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Box(Modifier.size(14.dp).background(teamAccent(team.accent)))
+        Text(team.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+        if (app.pokeplan.world.TeamAdvice.isPoorMatch(dungeon, members)) {
+            Box(Modifier.semantics { contentDescription = "Few of this team suit ${dungeon.name}" }) { app.pokeplan.ui.StatusIcon(app.pokeplan.ui.StatusKind.ALERT, pixel = 2, animate = false) }
+        }
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, chosen: app.pokeplan.world.DungeonDef, enterable: List<app.pokeplan.world.DungeonDef>, initialAdvice: Boolean = false, initialSearch: String = "", onDone: () -> Unit) {
+internal fun TeamEditor(
+    model: AppModel, team: app.pokeplan.world.WorldTeam, chosen: app.pokeplan.world.DungeonDef,
+    enterable: List<app.pokeplan.world.DungeonDef>, initialAdvice: Boolean = false, initialSearch: String = "",
+    /** Controlled mode: the staged dispatch owns the picks, so Back out of a later step keeps them. */
+    pickedIds: List<String>? = null, onPickedChange: ((List<String>) -> Unit)? = null,
+    /** The staged flow chose the dungeon in its first step; the editor then only picks the team. */
+    showDungeonPicker: Boolean = true,
+    onDone: () -> Unit,
+) {
     val store = model.store
     val world = model.data.world
     val roster = model.data.player.pokemon
     var advice by remember(team.id, team.members) { mutableStateOf<app.pokeplan.world.TeamRecommendation?>(if (initialAdvice) store.worldRecommend(chosen.id, team.id) else null) }
     var search by remember(team.id) { mutableStateOf(initialSearch) }
-    var picked by remember(team.id, team.members) { mutableStateOf(if (initialAdvice) advice?.ids ?: team.members else team.members) }
+    var ownPicked by remember(team.id, team.members) { mutableStateOf(if (initialAdvice) advice?.ids ?: team.members else team.members) }
+    val picked = pickedIds ?: ownPicked
+    fun setPicked(next: List<String>) { if (onPickedChange != null) onPickedChange(next) else ownPicked = next }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        FieldLabel("Suit the team to")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            (enterable + chosen).distinctBy { it.id }.forEach { d ->
-                PixelButton(d.name, { model.worldTeamDungeon = d.id; advice = null }, color = if (d.id == chosen.id) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
+        if (showDungeonPicker) {
+            FieldLabel("Suit the team to")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                (enterable + chosen).distinctBy { it.id }.forEach { d ->
+                    PixelButton(d.name, { model.worldTeamDungeon = d.id; advice = null }, color = if (d.id == chosen.id) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
+                }
             }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) { chosen.favored.forEach { TypePlate(it, width = 56.dp) } }
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) { chosen.favored.forEach { TypePlate(it, width = 56.dp) } }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Recommend team", { advice = store.worldRecommend(chosen.id, team.id)?.also { picked = it.ids } }, Modifier.weight(1f), Module.WORLD.look.accent, compact = true)
+            PixelButton("Recommend team", { advice = store.worldRecommend(chosen.id, team.id)?.also { setPicked(it.ids) } }, Modifier.weight(1f), Module.WORLD.look.accent, compact = true)
             PixelButton("Replace team", { if (store.worldReplaceTeam(team.id, chosen.id)) onDone() }, Modifier.weight(1f), Pixel.InkSoft, enabled = team.expedition == null, compact = true)
         }
         if (advice?.noMatch == true) Text("No one free likes ${chosen.name}: the strongest instead.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
@@ -748,7 +878,7 @@ internal fun TeamEditor(model: AppModel, team: app.pokeplan.world.WorldTeam, cho
         val shown = (slots + pool.sortedByDescending { app.pokeplan.world.TeamAdvice.matching(chosen, it).isNotEmpty() }).distinctBy { it.id }
         shown.forEach { p ->
             val reason = advice?.picks?.firstOrNull { it.pokemon.id == p.id }?.takeIf { p.id in picked }?.reason
-            ChoiceRow(selected = p.id in picked, onClick = { picked = if (p.id in picked) picked - p.id else if (picked.size < WorldTeam.MAX_MEMBERS) picked + p.id else picked }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
+            ChoiceRow(selected = p.id in picked, onClick = { setPicked(if (p.id in picked) picked - p.id else if (picked.size < WorldTeam.MAX_MEMBERS) picked + p.id else picked) }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) { p.form.types.forEach { TypePlate(it, width = 48.dp) } }
@@ -1129,6 +1259,24 @@ private fun WorldArchiveView(model: AppModel) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 FieldLabel("${layer.label}: after the story")
                 specials.forEach { e -> ArchiveRow(e.title, e.summary, app.pokeplan.world.WorldMoment.SpecialEpisode(layer, e.chapter), model, icon = "town-map") }
+            }
+        }
+    }
+    val invitations = app.pokeplan.world.story.StoryCatalog.mythicalEpisodes()
+    if (invitations.isNotEmpty()) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            FieldLabel("Mythical invitations")
+            invitations.forEach { episode ->
+                val recruit = app.pokeplan.world.story.MythicalChapters.recruitFor(episode.key)
+                val watched = episode.key in world.episodesDone
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    if (recruit != null) AnimatedSprite(Dex.defaultForm(recruit.speciesId).id, false, recruit.name, size = Sizes.IconL, animate = false)
+                    Column(Modifier.weight(1f)) {
+                        Text(episode.title, style = MaterialTheme.typography.bodyLarge)
+                        Text(if (watched) "Watched. ${recruit?.name ?: "It"} can be watched again; nothing is granted twice." else "Not watched yet. Optional: ${episode.summary}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: game
+                    }
+                    PixelIconButton(if (watched) "repeat" else "play", if (watched) "Watch ${episode.title} again" else "Watch ${episode.title}", { model.cutscene = Cutscene.Mythical(episode.chapter) })
+                }
             }
         }
     }

@@ -21,8 +21,8 @@ class RewardEngineTest {
     private fun effort(minutes: Int = 25, lure: PokemonType? = null, epochDay: Long = 0, deep: Boolean = false) =
         EffortEvent(minutes, deep, Region.KANTO, lure, epochDay, "new", 1_000L)
 
-    private fun achievement(tier: Int, onTime: Boolean = false, focused: Boolean = false, first: Boolean = false, hour: Int = 12) =
-        AchievementEvent(tier, Region.KANTO, hour, first, onTime, focused, "egg", 2_000L)
+    private fun achievement(tier: Int, onTime: Boolean = false, focused: Boolean = false) =
+        AchievementEvent(tier, Region.KANTO, onTime, focused, "egg", 2_000L)
 
     private fun stateWithBuddy(speciesId: Int = Ids.PIKACHU, level: Int = 100, friendship: Int = 255, nature: Nature = Nature.HARDY): PlayerState {
         val buddy = pokemon(speciesId, level = level, friendship = friendship, nature = nature)
