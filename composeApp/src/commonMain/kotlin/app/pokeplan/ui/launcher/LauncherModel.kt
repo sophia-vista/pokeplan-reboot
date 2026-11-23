@@ -17,11 +17,11 @@ const val LOW_BATTERY = 20
 enum class WidgetArea(val label: String) { HOME_TOP("Top of the home page"), HOME_BOTTOM("Bottom of the home page"), TODAY("Today page") }
 
 enum class WidgetKind(val label: String) {
-    CLOCK("Date and time"), STATUS("Companion"), BUDDY("Buddy"), NAV("Shortcuts"), PINNED("Favorites"), OFTEN("Often used"), FOLDER("Folder"),
+    CLOCK("Date and time"), STATUS("Companion"), BUDDY("Buddy"), NAV("Shortcuts"), PINNED("Favorites"), OFTEN("Often used"),
     ACTIONS("App buttons"), CALENDAR("Calendar"), AGENDA("Agenda and tasks"), FORECAST("Forecast"),
     ANDROID("Android widget");
 
-    val resizable: Boolean get() = this in setOf(PINNED, OFTEN, FOLDER, CALENDAR, AGENDA, FORECAST, ANDROID)
+    val resizable: Boolean get() = this in setOf(PINNED, OFTEN, CALENDAR, AGENDA, FORECAST, ANDROID)
 }
 
 enum class WidgetSize(val label: String) { SMALL("Small"), MEDIUM("Medium"), LARGE("Large");
@@ -30,7 +30,7 @@ enum class WidgetSize(val label: String) { SMALL("Small"), MEDIUM("Medium"), LAR
 
 data class WidgetSlot(val area: WidgetArea, val kind: WidgetKind, val arg: String = "", val size: WidgetSize = WidgetSize.LARGE) {
     fun sameAs(o: WidgetSlot) = area == o.area && kind == o.kind && arg == o.arg
-    val title: String get() = if (kind == WidgetKind.FOLDER) arg else kind.label
+    val title: String get() = kind.label
 }
 
 fun defaultWidgets(clock: Boolean = true, status: Boolean = true): List<WidgetSlot> = buildList {
@@ -42,10 +42,6 @@ fun defaultWidgets(clock: Boolean = true, status: Boolean = true): List<WidgetSl
     add(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.ACTIONS))
     add(WidgetSlot(WidgetArea.TODAY, WidgetKind.CALENDAR))
     add(WidgetSlot(WidgetArea.TODAY, WidgetKind.AGENDA))
-}
-
-data class Folder(val name: String, val apps: List<String> = emptyList()) {
-    companion object { const val MAX_NAME = 24 }
 }
 
 data class GeoPlace(val name: String, val latitude: Double, val longitude: Double)
@@ -129,7 +125,6 @@ data class LauncherPrefs(
     val showClock: Boolean = true,
     val weather: Weather = Weather.LIVE,
     val launches: Map<String, Int> = emptyMap(),
-    val folders: List<Folder> = emptyList(),
     val place: GeoPlace? = null,
     val fahrenheit: Boolean = false,
     val batterySaver: BatterySaver = BatterySaver.AUTO,
@@ -145,7 +140,6 @@ data class LauncherPrefs(
     private fun withWidgets(next: List<WidgetSlot>) = copy(layout = next)
 
     fun addWidget(slot: WidgetSlot, limits: WidgetLimits? = null): LauncherPrefs {
-        if (slot.kind == WidgetKind.FOLDER && folders.none { it.name == slot.arg }) return this
         if (widgets.any { it.sameAs(slot) }) return this
         val onGrid = grid?.let { g ->
             val l = limits ?: slot.kind.limits()
@@ -249,7 +243,6 @@ data class LauncherPrefs(
 
     fun addGridWidget(page: WidgetPage, kind: WidgetKind, arg: String = "", limits: WidgetLimits? = null): LauncherPrefs {
         if (gridWidgets.any { it.kind == kind && it.arg == arg }) return this
-        if (kind == WidgetKind.FOLDER && folders.none { it.name == arg }) return this
         val base = withGrid(gridWidgets)
         if (page == WidgetPage.HOME || page == WidgetPage.TODAY) return base.addWidget(WidgetSlot(areaOf(page), kind, arg), limits)
         val l = limits ?: kind.limits()
@@ -281,31 +274,11 @@ data class LauncherPrefs(
     fun suggested(apps: List<LauncherApp>, limit: Int = 4): List<LauncherApp> =
         apps.filter { it.key !in pinned && it.key !in hidden && (launches[it.key] ?: 0) >= MIN_LAUNCHES }.sortedWith(compareByDescending<LauncherApp> { launches[it.key] ?: 0 }.thenBy { foldedName(it.label) }).take(limit)
 
-    fun addFolder(name: String): LauncherPrefs {
-        val clean = name.trim().take(Folder.MAX_NAME)
-        return if (clean.isEmpty() || folders.any { it.name.equals(clean, ignoreCase = true) }) this else copy(folders = folders + Folder(clean))
-    }
-
-    fun addFolderWidget(name: String): LauncherPrefs {
-        val made = addFolder(name)
-        return if (made == this) this else made.addWidget(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.FOLDER, name.trim().take(Folder.MAX_NAME)))
-    }
-
-    fun renameFolder(old: String, name: String): LauncherPrefs {
-        val clean = name.trim().take(Folder.MAX_NAME)
-        if (clean.isEmpty() || folders.any { it.name.equals(clean, ignoreCase = true) && it.name != old }) return this
-        return copy(folders = folders.map { if (it.name == old) it.copy(name = clean) else it }, layout = layout?.map { if (it.kind == WidgetKind.FOLDER && it.arg == old) it.copy(arg = clean) else it })
-    }
-
-    fun deleteFolder(name: String) = copy(folders = folders.filter { it.name != name }, layout = layout?.filterNot { it.kind == WidgetKind.FOLDER && it.arg == name })
-    fun addToFolder(name: String, key: String) = copy(folders = folders.map { if (it.name == name && key !in it.apps) it.copy(apps = it.apps + key) else it })
-    fun removeFromFolder(name: String, key: String) = copy(folders = folders.map { if (it.name == name) it.copy(apps = it.apps - key) else it })
-
     fun nextWeather() = copy(weather = Weather.entries[(weather.ordinal + 1) % Weather.entries.size])
     fun nextTownSize() = copy(townSize = when (townSize) { 8 -> 16; 16 -> 24; else -> 8 })
     fun withoutPins() = copy(pinned = emptyList(), icons = emptyMap())
 
-    fun reset() = LauncherPrefs(pinned = pinned, hidden = hidden, moved = moved, icons = icons, launches = launches, folders = folders, place = place)
+    fun reset() = LauncherPrefs(pinned = pinned, hidden = hidden, moved = moved, icons = icons, launches = launches, place = place)
 
     fun withIcon(key: String, item: String?) = if (item == null) copy(icons = icons - key) else if (item in LauncherIcons.items) copy(icons = icons + (key to item)) else this
 
@@ -345,7 +318,6 @@ data class LauncherPrefs(
         launches.entries.sortedBy { it.key }.forEach { (key, count) -> append("L ").append(key).append('\t').append(count).append('\n') }
         layout?.let { l -> if (l.isEmpty()) append("G -\n") else l.forEach { append("G ").append(it.area.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\t').append(it.size.name).append('\n') } }
         grid?.let { g -> if (g.isEmpty()) append("X -\n") else g.forEach { append("X ").append(it.page.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\t').append(it.col).append('\t').append(it.row).append('\t').append(it.w).append('\t').append(it.h).append('\n') } }
-        folders.forEach { f -> append("F ").append(f.name.replace('\t', ' ')); f.apps.forEach { append('\t').append(it) }; append('\n') }
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
         moved.entries.sortedBy { it.key }.forEach { (key, category) -> append("M ").append(key).append('\t').append(category.name).append('\n') }
@@ -365,7 +337,6 @@ data class LauncherPrefs(
                     'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "chirps" -> prefs.withChirps(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "gridMode" -> prefs.withGridMode(f[1] != "0"); "pages" -> prefs.withPages(f[1].toIntOrNull() ?: WidgetPage.MIN); "pageOrder" -> f[1].split(',').mapNotNull { n -> WidgetPage.entries.firstOrNull { it.name == n } }.let { o -> if (o.distinct().size == o.size && WidgetPage.HOME in o && WidgetPage.TODAY in o && o.size <= WidgetPage.MAX) prefs.copy(pageOrder = o) else prefs }; "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); "activity" -> prefs.withActivity(f[1].toIntOrNull() ?: TownBehavior.ACTIVITY_DEFAULT); "layout" -> f[1].split(',').let { v -> val d = v.getOrNull(0)?.toLongOrNull(); val r = v.getOrNull(1)?.toIntOrNull(); if (d != null && r != null) prefs.copy(layoutDay = d, layoutRoll = r) else prefs }; else -> if (f[0].startsWith("gesture.")) GestureTrigger.entries.firstOrNull { it.name == f[0].removePrefix("gesture.") }?.let { t -> GestureAction.entries.firstOrNull { it.name == f[1] }?.let { a -> prefs.withGesture(t, a) } } ?: prefs else prefs } }
                     'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
                     'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
-                    'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }
                     'G' -> if (rest == "-") prefs.copy(layout = prefs.layout ?: emptyList()) else rest.split('\t').let { f ->
                         val area = WidgetArea.entries.firstOrNull { it.name == f[0] }
                         val kind = f.getOrNull(1)?.let { n -> WidgetKind.entries.firstOrNull { it.name == n } }
@@ -567,7 +538,7 @@ object LauncherIcons {
 
 enum class GestureAction(val label: String) {
     NONE("Nothing"), APPS("Open the app list"), GATHER("Gather the Pokémon"), POKELIFE("Open PokéLife"), GEAR("Open Gear"), SETTINGS("Launcher settings"),
-    FOLDERS("Open folders"), WIDGETS("Open widgets"), EDIT("Edit the home screen"), PAGE("Go to the next page"), NOTIFICATIONS("Pull down notifications"),
+    WIDGETS("Open widgets"), EDIT("Edit the home screen"), PAGE("Go to the next page"), NOTIFICATIONS("Pull down notifications"),
 }
 
 enum class GestureTrigger(val label: String, val actions: List<GestureAction>) {

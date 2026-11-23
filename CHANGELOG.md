@@ -9,9 +9,12 @@ release always has the newest merge).
 
 Owner's list of 23 November 2026, UI and one MINT form rule: no reward rule, schema or save-format change, `RewardRules.VERSION` stays.
 
+- **Launcher: folders removed.** The Folders page, the folder widget, "Add to folder" in the app sheet and the Open folders gesture are gone (owner, 23 November 2026); old saved folders are ignored.
 - **Launcher Pokémon no longer overlap, moonwalk or move in their sleep.** A stroll now chooses a stop clear of every other Pokémon's position and destination (room from the sprite size), and its path bends around sleeping ones; the facing and walk pose follow each stretch of the curved path instead of the net direction; a tap while walking no longer turns the Pokémon backwards; a sleeping Pokémon ignores taps (only the ripple answers), drops any hop or graze in progress when it falls asleep, and the sleeping pose wins over a hop (`TownBehavior.settle`, `TownBehavior.clear`).
-- **Home: Ready to meet.** A box above the module cards shows when Dream World has dreamers to visit and when Friend Safari has visits open today (Care and Link unlocked, Safari on), each with an Open key to the place (`MINT.md` unchanged; `LINK.md` 9.5).
+- **Home: ready to meet, inside the module cards.** The Care card gains a second row "Dream World: N dreamers to visit" and the Link card "Friend Safari: N visits open" (Care and Link unlocked, Safari on), each with an Open key to that place; a card with one lifts to at least severity 1 in the sort. No separate box.
 - **MINT: the IOU form loses "They paid me already".** An income is money already received, so an IOU income is always saved posted and stays marked "IOU" on the record; the toggle reads "Paid back by someone (IOU)" and the field "Who paid it back". An older pending IOU keeps "Mark received" (`MINT.md` 5.8A).
+- **Launcher floor finds are rare.** Each of the 3 daily places holds a berry, vitamin or Poké with only a 25% chance (`TownFinds.APPEAR_PERCENT`, *tune*), decided by the date so reopening the home screen never rerolls; `RewardRules.VERSION` 34, golden vector regenerated (`docs/economy.md`).
+- **Launcher: Hidden apps no longer sticks.** Opening "Hidden apps" from Settings made the hidden view the app list's starting view every time; it now resets when the list closes.
 - **LINK: people as cards, random picture picker.** Each person is a small card with their Pokémon; the picker opens on a random draw of the whole Dex with Shuffle and "My Pokémon" (`LINK.md`).
 
 ## 0.234.1

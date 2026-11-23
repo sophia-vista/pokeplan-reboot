@@ -125,7 +125,6 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             WelcomeBackCard(model)
             HomeBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
             RewardBox(model)
-            ReadyToMeetCard(model, go)
             ModuleCards(model, go)
             QuickLogCard(model, go)
 
@@ -197,6 +196,8 @@ private data class ModuleConcern(
     val actionTone: Color = Pixel.Green,
     val rank: Rank? = null,
     val onAction: () -> Unit = {},
+    val meet: String? = null,
+    val onMeet: () -> Unit = {},
 )
 
 private const val SOON_DAYS = 3
@@ -237,6 +238,7 @@ private fun ModuleCard(model: AppModel, concern: ModuleConcern, darkness: Float,
         concern.status, still = model.data.settings.reduceMotion, onOpen = { go(placeOf(concern.module)) },
     ) {
         StepRow(concern.step, concern.action, concern.actionTone, lead = { concern.rank?.let { RankBadge(it) } }, onClick = concern.onAction)
+        concern.meet?.let { StepRow(it, "Open", ModuleAccent.valueOf(concern.module.name).accent, onClick = concern.onMeet) }
     }
 }
 
@@ -321,6 +323,13 @@ private fun baseConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
 }
 
 private fun careConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    val dreamers = if (Module.CARE.name in model.data.settings.lockedModules) 0 else Visitors.meadow(model.careData.visitors).count { model.care.canVisit(it) }
+    val base = careBase(model, go)
+    if (dreamers == 0) return base
+    return base.copy(severity = maxOf(base.severity, 1), meet = "Dream World: ${countOf(dreamers, "dreamer", "dreamers")} to visit", onMeet = { go(Place.CARE); model.careSection = CareSection.DREAM })
+}
+
+private fun careBase(model: AppModel, go: (Place) -> Unit): ModuleConcern {
     if (Module.CARE.name in model.data.settings.lockedModules) return ModuleConcern(Module.CARE, 0, null, "Locked", "Open", ModuleAccent.CARE.accent) { go(Place.CARE) }
     val careData = model.careData
     val care = model.care
@@ -356,6 +365,17 @@ private fun healConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
 private fun waterText(ml: Int): String = if (ml >= 1000) HealRules.format(ml / 1000.0) + " L" else "$ml ml"
 
 private fun linkConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
+    val locked = Module.LINK.name in model.data.settings.lockedModules
+    model.linkData
+    val safari = if (locked || !model.link.safariOn) 0 else model.linkData.people.count { p ->
+        model.link.safariPool(p.id).isNotEmpty() && model.link.safariToday(p.id).let { !it.visited && it.left > 0 }
+    }
+    val base = linkBase(model, go)
+    if (safari == 0) return base
+    return base.copy(severity = maxOf(base.severity, 1), meet = "Friend Safari: ${countOf(safari, "visit", "visits")} open", onMeet = { go(Place.LINK); model.linkSection = LinkSection.PEOPLE })
+}
+
+private fun linkBase(model: AppModel, go: (Place) -> Unit): ModuleConcern {
     if (Module.LINK.name in model.data.settings.lockedModules) return ModuleConcern(Module.LINK, 0, null, "Locked", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) }
     model.linkData
     val due = model.link.dueNow()
@@ -403,24 +423,6 @@ private fun worldConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
 }
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
-@Composable
-private fun ReadyToMeetCard(model: AppModel, go: (Place) -> Unit) {
-    val locked = model.data.settings.lockedModules
-    model.careData; model.linkData
-    val dreamers = if (Module.CARE.name in locked) 0 else Visitors.meadow(model.careData.visitors).count { model.care.canVisit(it) }
-    val safari = if (Module.LINK.name in locked || !model.link.safariOn) 0 else model.linkData.people.count { p ->
-        model.link.safariPool(p.id).isNotEmpty() && model.link.safariToday(p.id).let { !it.visited && it.left > 0 }
-    }
-    if (dreamers == 0 && safari == 0) return
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Ready to meet")
-            if (dreamers > 0) StepRow("Dream World: ${countOf(dreamers, "dreamer", "dreamers")} to visit", "Open", ModuleAccent.CARE.accent) { go(Place.CARE); model.careSection = CareSection.DREAM }
-            if (safari > 0) StepRow("Friend Safari: ${countOf(safari, "visit", "visits")} open", "Open", ModuleAccent.LINK.accent) { go(Place.LINK); model.linkSection = LinkSection.PEOPLE }
-        }
-    }
-}
-
 @Composable
 private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
     model.careData; model.healData

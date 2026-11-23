@@ -99,7 +99,7 @@ class WidgetGridTest {
 
     @Test
     fun theGridIsSavedAndReadBack() {
-        val prefs = LauncherPrefs().withGrid(listOf(w(WidgetKind.NAV, 1, 2, 3, 2), GridWidget(WidgetPage.TODAY, WidgetKind.FOLDER, "Games", 0, 0, 4, 2)))
+        val prefs = LauncherPrefs().withGrid(listOf(w(WidgetKind.NAV, 1, 2, 3, 2), GridWidget(WidgetPage.TODAY, WidgetKind.FORECAST, "", 0, 0, 4, 2)))
         val back = LauncherPrefs.decode(prefs.encode())
         assertEquals(prefs.grid, back.grid)
     }

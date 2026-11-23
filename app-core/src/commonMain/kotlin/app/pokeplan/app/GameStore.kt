@@ -1508,7 +1508,7 @@ class GameStore(
 
     fun townFinds(): List<TownFinds.Find?> {
         val taken = Counters.TOWN_FINDS.get(data.counters, today)
-        return TownFinds.forDay(epochDay).mapIndexed { i, f -> f.takeIf { taken and (1 shl i) == 0 } }
+        return TownFinds.forDay(epochDay).mapIndexed { i, f -> f?.takeIf { taken and (1 shl i) == 0 } }
     }
 
     fun collectTownFind(index: Int): Reward? {

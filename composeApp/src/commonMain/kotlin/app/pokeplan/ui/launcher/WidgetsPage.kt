@@ -32,7 +32,6 @@ internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
     val density = LocalDensity.current.density
     val pad = pmdRowPad(pixel, density)
     var adding by remember { mutableStateOf<WidgetArea?>(null) }
-    var name by remember { mutableStateOf("") }
     Box(Modifier.fillMaxSize().background(Pixel.Night).safeDrawingPadding()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.XL, bottom = Spacing.XXL), verticalArrangement = Arrangement.spacedBy(Spacing.XL)) {
             PmdBox(pixel, Modifier.fillMaxWidth()) {
@@ -62,21 +61,10 @@ internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
                         PmdMenuLine(if (adding == area) "Close" else "Add a widget", pixel, center = true) { adding = if (adding == area) null else area }
                         if (adding == area) {
                             val placed = prefs.widgets.map { it.kind to it.arg }.toSet()
-                            WidgetKind.entries.filter { it != WidgetKind.FOLDER && it != WidgetKind.ANDROID && (it to "") !in placed }.forEach { kind ->
+                            WidgetKind.entries.filter { it != WidgetKind.ANDROID && (it to "") !in placed }.forEach { kind ->
                                 PmdMenuLine(kind.label, pixel) { onPrefs(prefs.addWidget(WidgetSlot(area, kind))); adding = null }
                             }
                             PmdMenuLine("Android widget from another app", pixel) { adding = null; host.pickWidget { id -> onPrefs(prefs.addWidget(WidgetSlot(area, WidgetKind.ANDROID, id.toString()), host.startingCells(id))) } }
-                            prefs.folders.filter { (WidgetKind.FOLDER to it.name) !in placed }.forEach { f ->
-                                PmdMenuLine("Folder: ${f.name}", pixel) { onPrefs(prefs.addWidget(WidgetSlot(area, WidgetKind.FOLDER, f.name))); adding = null }
-                            }
-                            Column(Modifier.padding(top = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                                PmdField(name, { name = it.take(Folder.MAX_NAME) }, "New folder name")
-                                PmdMenuLine("Make the folder widget", pixel, dim = name.isBlank()) {
-                                    val made = prefs.addFolder(name)
-                                    onPrefs(made.addWidget(WidgetSlot(area, WidgetKind.FOLDER, name.trim().take(Folder.MAX_NAME))))
-                                    name = ""; adding = null
-                                }
-                            }
                         }
                     }
                 }
@@ -98,7 +86,6 @@ private fun GridSections(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
     val density = LocalDensity.current.density
     val pad = pmdRowPad(pixel, density)
     var adding by remember { mutableStateOf<WidgetPage?>(null) }
-    var name by remember { mutableStateOf("") }
     prefs.pageList.forEach { page ->
         val here = WidgetGrid.onPage(prefs.gridWidgets, page).sortedWith(compareBy({ it.row }, { it.col }))
         PmdBox(pixel, Modifier.fillMaxWidth()) {
@@ -108,7 +95,7 @@ private fun GridSections(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
                 if (here.isEmpty()) PmdText("No widgets here", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
                 here.forEach { w ->
                     Row(Modifier.fillMaxWidth().height(Spacing.Target), verticalAlignment = Alignment.CenterVertically) {
-                        val title = if (w.kind == WidgetKind.ANDROID) w.arg.toIntOrNull()?.let { host.widgetLabel(it) } ?: w.kind.label else if (w.kind == WidgetKind.FOLDER) w.arg else w.kind.label
+                        val title = if (w.kind == WidgetKind.ANDROID) w.arg.toIntOrNull()?.let { host.widgetLabel(it) } ?: w.kind.label else w.kind.label
                         PmdText(title, pixel, Modifier.weight(1f).padding(horizontal = pad))
                         Action("Remove", enabled = true, pixel) { if (w.kind == WidgetKind.ANDROID) w.arg.toIntOrNull()?.let { host.releaseWidget(it) }; onPrefs(prefs.removeGridWidget(w)) }
                     }
@@ -117,21 +104,10 @@ private fun GridSections(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
                 PmdMenuLine(if (adding == page) "Close" else "Add a widget", pixel, center = true) { adding = if (adding == page) null else page }
                 if (adding == page) {
                     val placed = prefs.gridWidgets.map { it.kind to it.arg }.toSet()
-                    WidgetKind.entries.filter { it != WidgetKind.FOLDER && it != WidgetKind.ANDROID && (it to "") !in placed }.forEach { kind ->
+                    WidgetKind.entries.filter { it != WidgetKind.ANDROID && (it to "") !in placed }.forEach { kind ->
                         PmdMenuLine(kind.label, pixel) { onPrefs(prefs.addGridWidget(page, kind)); adding = null }
                     }
                     PmdMenuLine("Android widget from another app", pixel) { adding = null; host.pickWidget { id -> onPrefs(prefs.addGridWidget(page, WidgetKind.ANDROID, id.toString(), host.startingCells(id))) } }
-                    prefs.folders.filter { (WidgetKind.FOLDER to it.name) !in placed }.forEach { f ->
-                        PmdMenuLine("Folder: ${f.name}", pixel) { onPrefs(prefs.addGridWidget(page, WidgetKind.FOLDER, f.name)); adding = null }
-                    }
-                    Column(Modifier.padding(top = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PmdField(name, { name = it.take(Folder.MAX_NAME) }, "New folder name")
-                        PmdMenuLine("Make the folder widget", pixel, dim = name.isBlank()) {
-                            val made = prefs.addFolder(name)
-                            onPrefs(made.addGridWidget(page, WidgetKind.FOLDER, name.trim().take(Folder.MAX_NAME)))
-                            name = ""; adding = null
-                        }
-                    }
                 }
             }
         }
