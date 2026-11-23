@@ -49,6 +49,9 @@ import app.pokeplan.ui.screens.MenuGrid
 import app.pokeplan.ui.screens.SectionScaffold
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.PixelDropdown
+import app.pokeplan.ui.screens.PullRevealSlot
+import app.pokeplan.ui.screens.pullReveal
+import app.pokeplan.ui.screens.rememberPullReveal
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 import app.pokeplan.app.gear.assignGearHelper
@@ -72,8 +75,16 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
     if (tool == null) {
         var query by remember { mutableStateOf("") }
         var category by remember { mutableStateOf<ToolCategory?>(null) }
-        SectionScaffold("Gear", null, onClose, icon = "explorer-kit", color = ModuleAccent.GEAR.header) {
-            PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search")
+        val scroll = androidx.compose.foundation.rememberScrollState()
+        val reveal = rememberPullReveal(scroll, keepOpen = { query.isNotBlank() || category != null }, onClose = { query = ""; category = null })
+        SectionScaffold("Gear", null, onClose, icon = "explorer-kit", color = ModuleAccent.GEAR.header, scrollState = scroll, bodyModifier = Modifier.pullReveal(reveal)) {
+            PullRevealSlot(reveal, model.data.settings.reduceMotion) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelField(query, { query = it.take(30) }, Modifier.weight(1f), singleLine = true, label = "Search")
+                    PixelIconButton("close", "Close search", { reveal.close() }, Pixel.InkSoft)
+                }
+                PixelDropdown(listOf<ToolCategory?>(null) + ToolCategory.entries, category, { it?.label ?: "All" }, { category = it }, Modifier.fillMaxWidth())
+            }
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
             if (query.isNotBlank()) {
                 val found = ToolCatalog.search(query, gear.favorites, gear.recents)
@@ -88,7 +99,6 @@ private fun GearBody(model: AppModel, start: GearTool?, onClose: () -> Unit) {
                     FieldLabel("Favourites")
                     MenuGrid(starred.map { entry(ToolCatalog.info(it)) }) { key -> open = GearTool.valueOf(key) }
                 }
-                PixelDropdown(listOf<ToolCategory?>(null) + ToolCategory.entries, category, { it?.label ?: "All" }, { category = it }, Modifier.fillMaxWidth())
                 MenuGrid(ToolCatalog.all.filter { category == null || it.category == category }.map { entry(it) }) { key -> open = GearTool.valueOf(key) }
             }
         }
