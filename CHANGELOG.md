@@ -14,6 +14,13 @@ HEAL's first personal-health-record slice: a private medication and supplement l
 - **Reminders.** Per medication, off until the player turns it on and needs at least one time: through the shared scheduler (`HealReminderAdapter`) the reminder repeats the entered times for the coming days, drops a time already logged, and stays silent for a paused or stopped record and outside its dates. A refill nudge comes once a day at the last scheduled time while the count is at or under the player's own point. The lock screen says only that a medication is due (or that a refill may be near) — no name, strength or instruction — and no notification action records anything.
 - **Today.** A "x of y taken" line appears only when the day has scheduled doses.
 - **Data.** `heal_medication` and `heal_dose` are sealed with the rest of Heal, in the daily backup and the backup bundle, and erase-by-kind as "Medications and doses".
+## 0.236.2
+
+The loading screen keeps moving while the app opens. UI and startup only: no reward rule, schema or save change.
+
+- **Opening the app.** The save was opened off the UI thread, but building the stores and reading the Dex tables then ran on the UI thread while the first real frame was composed. The last drawn frame stayed up for that whole time — the startup screen, frozen on one pixel — which is what made opening look stuck. Android now builds the model and reads the Dex tables and the dialogue font in `warmStartup()` off the UI thread while the startup screen is still up (`App(asyncModel = true)`), and swaps in the app once it is ready.
+- **Test:** `StartupScreenTest` renders the opening the way the app does it and checks the startup screen turns into the app; `LoadingDotsTest` (0.236.1) keeps the pixels advancing.
+
 ## 0.236.1
 
 The loading pixels move again, and the work under them no longer stops the phone's frame clock. UI only: no reward rule, schema or save change.
