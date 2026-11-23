@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.236.2
+
+The loading screen keeps moving while the app opens. UI and startup only: no reward rule, schema or save change.
+
+- **Opening the app.** The save was opened off the UI thread, but building the stores and reading the Dex tables then ran on the UI thread while the first real frame was composed. The last drawn frame stayed up for that whole time — the startup screen, frozen on one pixel — which is what made opening look stuck. Android now builds the model and reads the Dex tables and the dialogue font in `warmStartup()` off the UI thread while the startup screen is still up (`App(asyncModel = true)`), and swaps in the app once it is ready.
+- **Test:** `StartupScreenTest` renders the opening the way the app does it and checks the startup screen turns into the app; `LoadingDotsTest` (0.236.1) keeps the pixels advancing.
+
 ## 0.236.1
 
 The loading pixels move again, and the work under them no longer stops the phone's frame clock. UI only: no reward rule, schema or save change.
