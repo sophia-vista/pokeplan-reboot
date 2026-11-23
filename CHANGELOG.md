@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.237.0
+
+HEAL's first personal-health-record slice: a private medication and supplement log, an optional dose log, a supply count with a refill reminder and schedule reminders. Nothing here pays: adherence is never a Field Research event, candy or ledger entry, so `RewardRules.VERSION` stays and no golden vector was regenerated. Schema 13 adds `heal_medication` and `heal_dose` (migration `12.sqm`), sealed with the rest of Heal.
+
+- **Medications (HEAL.md 8.1, as built in 22C).** A new HEAL section holds a private reference the player types in themselves: a name (the only required field), strength, instructions, notes, a start and optional end date, an active / paused / stopped state, up to six times of day, and optionally a count of doses left with the point where they want a refill reminder. No times means "as needed" and schedules nothing. Every field can be edited without touching the dose log; nothing is calculated, suggested or validated as a dose.
+- **Dose log.** A scheduled time is marked taken or skipped (one entry per medication, day and time), and an as-needed record gets "Taken now" and "Skip now". A delete offers Undo. A taken dose takes one off the player's own supply count and Undo puts it back; a skipped dose changes no count. Adherence is never a score, a target or a reward.
+- **Reminders.** Per medication, off until the player turns it on and needs at least one time: through the shared scheduler (`HealReminderAdapter`) the reminder repeats the entered times for the coming days, drops a time already logged, and stays silent for a paused or stopped record and outside its dates. A refill nudge comes once a day at the last scheduled time while the count is at or under the player's own point. The lock screen says only that a medication is due (or that a refill may be near) — no name, strength or instruction — and no notification action records anything.
+- **Today.** A "x of y taken" line appears only when the day has scheduled doses.
+- **Data.** `heal_medication` and `heal_dose` are sealed with the rest of Heal, in the daily backup and the backup bundle, and erase-by-kind as "Medications and doses".
+
 ## 0.236.0
 
 UI only: search, filters, add forms and rare controls now stay out of sight until asked for (`DESIGN_SYSTEM.md` 12B). No data, rule or storage change; `RewardRules.VERSION` stays.
