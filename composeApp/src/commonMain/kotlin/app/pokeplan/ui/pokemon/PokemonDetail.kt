@@ -144,36 +144,55 @@ internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             MovesBox(model, p)
             if (!isGuardian && store.sees(Feature.HELD_ITEMS)) PokemonPerksBox(model, p)
             OriginBox(model, p)
-            TransferBox(model, p, back)
+            MoreBox(model, p, back)
         }
     }
 }
 
 @Composable
 private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
+    TextBox {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
+            Portrait(p.form.id, p.isShiny, "${p.nickname}'s portrait", size = Sizes.SpriteM)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("No. ${p.speciesId.toString().padStart(4, '0')}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text("Lv. ${p.level}", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
+}
+
+/** The rare actions in one collapsed place, Transfer last. */
+@Composable
+private fun MoreBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     val store = model.store
     var renaming by remember(p.id) { mutableStateOf(false) }
     var nickname by remember(p.id) { mutableStateOf(p.nickname) }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
-                Portrait(p.form.id, p.isShiny, "${p.nickname}'s portrait", size = Sizes.SpriteM)
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("No. ${p.speciesId.toString().padStart(4, '0')}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    Text("Lv. ${p.level}", style = MaterialTheme.typography.titleMedium)
+    app.pokeplan.ui.theme.Accordion("More") {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            TextBox {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PixelButton(if (renaming) "Cancel" else "Rename", { renaming = !renaming }, color = Pixel.InkSoft, compact = true)
+                        if (p.moves.isNotEmpty()) PixelButton("Natural moves", { store.setMoves(p.id, emptyList()) }, color = Pixel.InkSoft, compact = true)
+                        if (!p.species.isSpecial) {
+                            val starred = store.isFavorite(p.id)
+                            PixelButton(if (starred) "Starred" else "Star", { store.toggleFavorite(p.id) }, color = if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
+                        }
+                    }
+                    if (renaming) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                        val save = { store.rename(p.id, nickname); renaming = false }
+                        PixelField(
+                            nickname, { nickname = it.take(20) }, Modifier.weight(1f), singleLine = true,
+                            label = "Nickname", placeholder = p.species.name,
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                            keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { save() }),
+                        )
+                        PixelIconButton("check", "Save", { save() }, Pixel.Tone)
+                    }
                 }
-                if (!renaming) PixelButton("Rename", { renaming = true }, color = Pixel.InkSoft, compact = true)
             }
-            if (renaming) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
-                val save = { store.rename(p.id, nickname); renaming = false }
-                PixelField(
-                    nickname, { nickname = it.take(20) }, Modifier.weight(1f), singleLine = true,
-                    label = "Nickname", placeholder = p.species.name,
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
-                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { save() }),
-                )
-                PixelIconButton("check", "Save", { save() }, Pixel.Tone)
-            }
+            TransferBox(model, p, back)
         }
     }
 }
@@ -194,7 +213,6 @@ private fun MovesBox(model: AppModel, p: OwnedPokemon) = DetailBox("Moves") {
     }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         PixelButton(if (choosing) "Close" else "Choose", { choosing = !choosing }, Modifier.weight(1f), Pixel.Tone, compact = true)
-        if (p.moves.isNotEmpty()) PixelButton("Natural", { store.setMoves(p.id, emptyList()) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
     }
     if (choosing) {
         Text("Up to ${app.pokeplan.core.pokemon.Moveset.MAX}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -331,10 +349,6 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p) }, color = Pixel.InkSoft, enabled = !isBuddy && !isGuardian && movable, compact = true)
         PixelButton(if (moving) "Close" else "Move to...", { moving = !moving }, color = Pixel.InkSoft, enabled = movable || moving, compact = true)
-        if (!p.species.isSpecial) {
-            val starred = store.isFavorite(p.id)
-            PixelButton(if (starred) "Starred" else "Star", { store.toggleFavorite(p.id) }, color = if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
-        }
     }
     if (moving && movable) PlacePicker(model, p)
 }

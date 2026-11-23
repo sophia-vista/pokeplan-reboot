@@ -70,8 +70,8 @@ internal fun TaskFilterBox(model: AppModel, filter: TaskFilter, onChange: (TaskF
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = Alignment.CenterVertically) {
                     Rank.entries.forEach { r -> RankBadge(r, selected = filter.rank == r, onClick = { onChange(filter.copy(rank = if (filter.rank == r) null else r)) }) }
                 }
-                if (filter.isNarrowed) PixelButton("Clear all", { onChange(TaskFilter()) }, color = Pixel.InkSoft, compact = true)
             }
+            if (filter.isNarrowed) PixelButton("Clear all", { onChange(TaskFilter()) }, color = Pixel.InkSoft, compact = true)
         }
     }
 }

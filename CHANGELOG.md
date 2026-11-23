@@ -5,6 +5,31 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.236.0
+
+UI only: search, filters, add forms and rare controls now stay out of sight until asked for (`DESIGN_SYSTEM.md` 12B). No data, rule or storage change; `RewardRules.VERSION` stays.
+
+- **Pull-down search and filters.** A shared helper (`PullReveal.kt`) opens search, filter and sort when you pull down at the top of a list. Used by Modules, Link People, the Base and Link menus, Mint Activity, Tasks (All and Done), the PC, the Pokédex and Gear.
+- **Add keys.** Link People, Care routines and Mint Activity open their add form from one Add key instead of an always-open form.
+- **Closed accordions.** Care diary (Feelings, Urges, Skills used); Heal (export, erase, imported records, Huawei readings and seen pages, today's drinks); Mint settings (overview, days off, categories, export, erase), Mint review statement check and Mint earlier imports; Me notification groups, exports and erase; Plan progress sections; the Pokémon More section (rename, natural moves, star, transfer); the World report (opens itself when recruits wait).
+- **Heal hydration.** An Other amount key.
+
+## 0.235.0
+
+Owner's list of 23 November 2026, UI and one MINT form rule: no reward rule, schema or save-format change, `RewardRules.VERSION` stays.
+
+- **Launcher: folders removed.** The Folders page, the folder widget, "Add to folder" in the app sheet and the Open folders gesture are gone (owner, 23 November 2026); old saved folders are ignored.
+- **Launcher Pokémon no longer overlap, moonwalk or move in their sleep.** A stroll now chooses a stop clear of every other Pokémon's position and destination (room from the sprite size), and its path bends around sleeping ones; the facing and walk pose follow each stretch of the curved path instead of the net direction; a tap while walking no longer turns the Pokémon backwards; a sleeping Pokémon ignores taps (only the ripple answers), drops any hop or graze in progress when it falls asleep, and the sleeping pose wins over a hop (`TownBehavior.settle`, `TownBehavior.clear`).
+- **Home: ready to meet, inside the module cards.** The Care card gains a second row "Dream World: N dreamers to visit" and the Link card "Friend Safari: N visits open" (Care and Link unlocked, Safari on), each with an Open key to that place; a card with one lifts to at least severity 1 in the sort. No separate box.
+- **MINT: the IOU form loses "They paid me already".** An income is money already received, so an IOU income is always saved posted and stays marked "IOU" on the record; the toggle reads "Paid back by someone (IOU)" and the field "Who paid it back". An older pending IOU keeps "Mark received" (`MINT.md` 5.8A).
+- **Launcher floor finds are rare.** Each of the 3 daily places holds a berry, vitamin or Poké with only a 25% chance (`TownFinds.APPEAR_PERCENT`, *tune*), decided by the date so reopening the home screen never rerolls; `RewardRules.VERSION` 34, golden vector regenerated (`docs/economy.md`).
+- **Launcher: Hidden apps no longer sticks.** Opening "Hidden apps" from Settings made the hidden view the app list's starting view every time; it now resets when the list closes.
+- **More item sprites.** `fetch_items.py all` fetched every PokeAPI/sprites item icon (2,029 more) into `assets/items-all` (not bundled; `docs/assets.md`).
+- **WORLD Town uses Mystery Dungeon item pictures** where the sheet has a match: the five flavour berries (Kecleon shelf, Swap Shop) and the Gimmighoul Coin (`PmdArt.town`); every other item keeps its mainline icon.
+- **Friend Safari asks before it visits.** The Visit key now confirms ("Use one of today's N visits?"), so a stray tap cannot spend a catch; nothing visits on its own.
+- **Update notification.** When PokéLife opens it checks once for a newer build and, if there is one, posts a notification (once per version and build; a tap opens Me, where Settings → About installs it). It needs the notification permission the reminders already ask for; no background polling (`UpdateAccess.notifyAvailable`).
+- **LINK: people as cards, random picture picker.** Each person is a small card with their Pokémon; the picker opens on a random draw of the whole Dex with Shuffle and "My Pokémon" (`LINK.md`).
+
 ## 0.234.1
 
 - **Modules rows are flush.** The module-colour wash now runs edge to edge inside the Modules list box, against the dialogue frame instead of floating in the box's inner margin; the row contents keep their usual inset. A `TextBox` may take its own `contentPadding` for this, and `dialogueFillInsetX`/`dialogueFillInsetY` state where a box's fill starts. Only `MenuList(rowTint = true)` uses it; every other list is unchanged. No reward or schema change.

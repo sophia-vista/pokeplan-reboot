@@ -1,11 +1,20 @@
 package app.pokeplan.platform
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.core.content.FileProvider
+import app.pokeplan.MainActivity
+import app.pokeplan.reminders.Channels
+import app.pokeplan.reminders.notificationIcon
+import app.pokeplan.reminders.notifySafely
 import app.pokeplan.ui.AppVersion
+import app.pokeplan.ui.Place
 import app.pokeplan.ui.updates.MAX_PATCH_BYTES
 import app.pokeplan.ui.updates.UpdateAccess
 import app.pokeplan.ui.updates.UpdateClient
@@ -38,6 +47,8 @@ import java.util.zip.GZIPInputStream
  * "install unknown apps" permission, which is per-source and granted once (the About screen opens that page when it is
  * missing and offers Install again when the player comes back).
  */
+private const val UPDATE_NOTIFICATION_ID = 7_431
+
 class AndroidUpdates(
     private val context: Context,
     private val client: UpdateClient = UpdateClient(),
@@ -267,6 +278,30 @@ class AndroidUpdates(
         val opened = runCatching { context.startActivity(page) }.isSuccess ||
             runCatching { context.startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
         if (!opened) problem = "Settings could not open."
+    }
+
+    override fun notifyAvailable(release: UpdateRelease) {
+        val prefs = context.getSharedPreferences("app_updates", Context.MODE_PRIVATE)
+        val stamp = "${release.version}#${release.build}"
+        if (prefs.getString("notified", null) == stamp) return
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        manager.createNotificationChannel(NotificationChannel(Channels.APP_UPDATES, "App updates", NotificationManager.IMPORTANCE_DEFAULT))
+        val open = PendingIntent.getActivity(
+            context, UPDATE_NOTIFICATION_ID, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.ME.name),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = Notification.Builder(context, Channels.APP_UPDATES)
+            .setSmallIcon(notificationIcon(context, "poke-ball"))
+            .setContentTitle("PokéLife update ready")
+            .setContentText("Version ${release.version} is available. Open Me, Settings, About to install it.")
+            .setCategory(Notification.CATEGORY_RECOMMENDATION)
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .build()
+        if (manager.areNotificationsEnabled()) {
+            notifySafely(context, UPDATE_NOTIFICATION_ID, notification)
+            prefs.edit().putString("notified", stamp).apply()
+        }
     }
 
     override fun openReleasePage(release: UpdateRelease) {

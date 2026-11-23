@@ -24,6 +24,7 @@ import app.pokeplan.heal.ImportPlan
 import app.pokeplan.heal.ProviderRead
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
@@ -121,8 +122,8 @@ internal fun HealConnectionsView(model: AppModel) {
     val sources = heal.importedSources()
     if (sources.isNotEmpty()) {
         TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                PixelTitle("Imported records")
+            Accordion("Imported records", summary = "${sources.size} ${if (sources.size == 1) "app" else "apps"}", startOpen = askingDelete != null) {
+              Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 sources.forEach { s ->
                     val parts = listOf("activities" to s.activities, "nights" to s.sleep, "measurements" to s.measurements, "drinks" to s.hydration).filter { it.second > 0 }.joinToString(", ") { "${it.second} ${it.first}" }
                     ListRow {
@@ -137,6 +138,7 @@ internal fun HealConnectionsView(model: AppModel) {
                         }
                     } else PixelButton("Delete what ${s.app.ifBlank { "this app" }} added", { askingDelete = s.app }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 }
+              }
             }
         }
     }

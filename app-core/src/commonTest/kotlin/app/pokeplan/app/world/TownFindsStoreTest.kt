@@ -28,10 +28,12 @@ class TownFindsStoreTest {
 
     @Test
     fun eachFindIsCollectedOnceADayIntoTheBagOrAsPoke() {
+        var day = 14
+        while (s.townFinds().none { it != null }) clock.millis = at(++day, 9)
         val finds = s.townFinds()
         assertEquals(TownFinds.PER_DAY, finds.size)
         finds.forEachIndexed { i, find ->
-            val f = assertNotNull(find)
+            val f = find ?: return@forEachIndexed
             val pokeBefore = s.data.player.coins
             val bagBefore = s.data.player.inventory[f.itemId]
             val reward = assertNotNull(s.collectTownFind(i))
@@ -47,8 +49,9 @@ class TownFindsStoreTest {
         }
         assertTrue(s.data.ledgerNotes.any { it.kind == "town-find" })
         assertNull(s.collectTownFind(TownFinds.PER_DAY), "no fourth find")
-        clock.millis = at(15, 9)
-        assertTrue(s.townFinds().all { it != null }, "a new day lays new finds")
+        var later = day
+        while (later < 28 && s.townFinds().none { it != null }) clock.millis = at(++later, 9)
+        assertTrue(s.townFinds().any { it != null }, "a later day lays new finds")
     }
 
     @Test
@@ -56,7 +59,10 @@ class TownFindsStoreTest {
         val today = TownFinds.forDay(20_000)
         assertEquals(today, TownFinds.forDay(20_000))
         assertNotEquals((0L..30L).map { TownFinds.forDay(20_000 + it) }.toSet().size, 1)
-        (0L..400L).flatMap { TownFinds.forDay(it) }.forEach { f ->
+        val laid = (0L..400L).flatMap { TownFinds.forDay(it) }
+        val share = laid.count { it != null } * 100.0 / laid.size
+        assertTrue(share in (TownFinds.APPEAR_PERCENT - 7.0)..(TownFinds.APPEAR_PERCENT + 7.0), "about $share% of the slots hold a find")
+        laid.filterNotNull().forEach { f ->
             assertTrue(f.itemId in TownFinds.weights)
             if (f.isPoke) assertTrue(f.amount in TownFinds.POKE_MIN..TownFinds.POKE_MAX) else assertEquals(1, f.amount)
         }

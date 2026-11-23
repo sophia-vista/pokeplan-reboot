@@ -1,6 +1,7 @@
 package app.pokeplan.ui.care
 
 import app.pokeplan.ui.theme.Sizes
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.drawPixelDisc
 import app.pokeplan.ui.theme.drawPixelRing
 
@@ -292,6 +293,7 @@ private fun RoutinesView(model: AppModel) {
     val data = model.careData
     var title by remember { mutableStateOf("") }
     var more by remember { mutableStateOf(false) }
+    var adding by remember { mutableStateOf(data.routines.none { !it.archived }) }
     var time by remember { mutableStateOf<LocalTime?>(null) }
     var days by remember { mutableStateOf(emptySet<DayOfWeek>()) }
     var open by remember { mutableStateOf<String?>(null) }
@@ -300,10 +302,11 @@ private fun RoutinesView(model: AppModel) {
     fun add() {
         if (title.isBlank()) return
         care.addRoutine(title, time, days)
-        title = ""; more = false; time = null; days = emptySet()
+        title = ""; more = false; time = null; days = emptySet(); adding = false
     }
 
-    FormBox {
+    if (!adding) PixelButton("Add routine", { adding = true }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent)
+    else FormBox {
         FormStack {
             PixelField(
                 title, { title = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true, label = "New routine",
@@ -525,18 +528,21 @@ private fun DiaryView(model: AppModel) {
                 FormLabel("Which day?")
                 PixelDateField(cardDay, care.today, ModuleAccent.CARE.accent, { it?.let { d -> cardDay = d; done = false } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = care.today)
             }
-            FormGroup(title = "Feelings") {
-                Emotion.entries.forEach { e ->
-                    Rating(e.label, feelings[e]) { v -> feelings = if (v == null) feelings - e else feelings + (e to v); done = false }
+            Accordion("Feelings", summary = if (feelings.isEmpty()) "None" else "${feelings.size} rated") {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Emotion.entries.forEach { e ->
+                        Rating(e.label, feelings[e]) { v -> feelings = if (v == null) feelings - e else feelings + (e to v); done = false }
+                    }
                 }
             }
-            if (tracked.isNotEmpty()) FormGroup(title = "Urges") {
-                tracked.forEach { u ->
-                    Rating(u, urges[u]) { v -> urges = if (v == null) urges - u else urges + (u to v); done = false }
+            if (tracked.isNotEmpty()) Accordion("Urges", summary = urges.count { it.key in tracked }.let { if (it == 0) "None" else "$it rated" }) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    tracked.forEach { u ->
+                        Rating(u, urges[u]) { v -> urges = if (v == null) urges - u else urges + (u to v); done = false }
+                    }
                 }
             }
-            FormGroup {
-                FormLabel("Skills you used")
+            Accordion("Skills used", summary = if (skills.isEmpty()) "None" else "${skills.size}") {
                 val shown = if (allSkills) Skills.all else Skills.all.filter { it.id in skills || it.id in care.practisedToday() }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     shown.forEach { k -> TabButton(k.name, k.id in skills, { skills = if (k.id in skills) skills - k.id else skills + k.id; done = false }) }

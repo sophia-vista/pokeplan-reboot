@@ -217,6 +217,9 @@ fun SectionScaffold(
      * the height itself; nesting a lazy list in this column would give it infinite height.
      */
     scroll: Boolean = true,
+    /** The scrolling column's state, for a screen that opens a pull-down block (see PullReveal); [bodyModifier] carries its `pullReveal`. */
+    scrollState: androidx.compose.foundation.ScrollState = rememberScrollState(),
+    bodyModifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     val slot = rememberUpSlot()
@@ -226,7 +229,7 @@ fun SectionScaffold(
         ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = back, color = color, trailing = trailing ?: { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
         UpProvider(slot) {
             if (scroll) Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
+                Modifier.weight(1f).then(bodyModifier).verticalScroll(scrollState).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                 verticalArrangement = Arrangement.spacedBy(Spacing.M),
             ) { content() }
             else Box(Modifier.weight(1f).fillMaxWidth()) { content() }

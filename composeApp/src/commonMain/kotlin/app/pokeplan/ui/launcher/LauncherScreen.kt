@@ -207,7 +207,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var pickingTown by remember { mutableStateOf(false) }
     var menuMon by remember { mutableStateOf<OwnedPokemon?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
-    var foldersOpen by remember { mutableStateOf(false) }
     var widgetsOpen by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf(false) }
     var pageNudge by remember { androidx.compose.runtime.mutableIntStateOf(0) }
@@ -219,7 +218,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
             GestureAction.POKELIFE -> host.openApp(Place.HOME)
             GestureAction.GEAR -> host.openApp(Place.GEAR)
             GestureAction.SETTINGS -> settingsOpen = true
-            GestureAction.FOLDERS -> foldersOpen = true
             GestureAction.WIDGETS -> widgetsOpen = true
             GestureAction.EDIT -> editing = true
             GestureAction.PAGE -> pageNudge++
@@ -246,7 +244,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
             delay(5 * 60_000L)
         }
     }
-    var folderName by remember { mutableStateOf<String?>(null) }
     var forecastOpen by remember { mutableStateOf(false) }
     var placeOpen by remember { mutableStateOf(false) }
     var forecast by remember { mutableStateOf<Forecast?>(null) }
@@ -269,8 +266,9 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         }
     }
     var listHidden by remember { mutableStateOf(false) }
+    LaunchedEffect(listOpen) { if (!listOpen) listHidden = false }
     LaunchedEffect(homePresses) {
-        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false; editing = false }
+        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; forecastOpen = false; placeOpen = false; widgetsOpen = false; editing = false }
     }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
@@ -286,8 +284,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 val current by remember(left) { androidx.compose.runtime.derivedStateOf { (page.value + left + 0.5f).toInt() } }
                 val visibleSides by remember(left, right) { androidx.compose.runtime.derivedStateOf { (-left..right).filter { it != 0 && abs(page.value - it) < 1f } } }
                 val env = WidgetEnv(
-                    model, apps, prefs, host, forecast, pixel, todayState, mood, saver, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false }, onGear = { host.openApp(Place.GEAR) },
-                    onOpenFolder = { folderName = it; foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
+                    model, apps, prefs, host, forecast, pixel, todayState, mood, saver, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onWidgets = { widgetsOpen = true; editing = false }, onGear = { host.openApp(Place.GEAR) },
+                    onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
                     pages = pageCount, battery = charge,
                     goToPage = { i -> scope.launch { if (data.settings.reduceMotion) page.snapTo((i - left).toFloat()) else page.animateTo((i - left).toFloat(), androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } },
                 )
@@ -394,7 +392,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 if (prefs.gridMode && editing && !widgetsOpen) Box(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.BottomCenter) {
                     GridEditBar(env, order[current.coerceIn(0, pageCount - 1)])
                 }
-                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (abs(page.value) > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (abs(page.value) > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 var pulled by remember { mutableStateOf(1f) }
                 if (prefs.action(GestureTrigger.EDGE_DRAG) == GestureAction.APPS && !listOpen) Box(
@@ -444,7 +442,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     )
                 }
                 LauncherPage(widgetsOpen, calm) { WidgetsPage(prefs, onPrefs, host, pixel, onClose = { widgetsOpen = false }) }
-                LauncherPage(foldersOpen, calm) { FoldersPage(apps, prefs, onPrefs, host, folderName, { folderName = it }, onClose = { foldersOpen = false; folderName = null }, pixel = pixel) }
                 LauncherPage(forecastOpen, calm) { ForecastPage(forecast, prefs, pixel, onPlace = { placeOpen = true }, onClose = { forecastOpen = false }) }
                 LauncherPage(placeOpen, calm) { PlacePage(prefs, onPrefs, host, pixel, onClose = { placeOpen = false }) }
                 LauncherPage(pickingTown, calm) { TownPicker(prefs.scene, onPick = { onPrefs(prefs.withScene(it)); pickingTown = false }, onClose = { pickingTown = false }) }
@@ -670,7 +667,6 @@ private fun LetterScroller(letters: List<Char>, pixel: Int, modifier: Modifier, 
 @Composable
 internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, onClose: () -> Unit, host: LauncherHost) {
     var moving by remember { mutableStateOf(false) }
-    var foldering by remember { mutableStateOf(false) }
     var choosingIcon by remember { mutableStateOf(false) }
     val pinned = app.key in prefs.pinned
     val hidden = app.key in prefs.hidden
@@ -700,21 +696,9 @@ internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (Launcher
                                 }
                             }
                         }
-                    } else if (foldering) {
-                        Text("Add to folder", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-                        prefs.folders.forEach { f ->
-                            val inIt = app.key in f.apps
-                            PixelButton(if (inIt) "${f.name} (in it: take out)" else f.name, { onPrefs(if (inIt) prefs.removeFromFolder(f.name, app.key) else prefs.addToFolder(f.name, app.key)); onClose() }, Modifier.fillMaxWidth(), if (inIt) Pixel.Blue else Pixel.InkSoft, compact = true)
-                        }
-                        PixelButton("New folder with ${app.label}", {
-                            var n = prefs.folders.size + 1
-                            while (prefs.folders.any { it.name == "Folder $n" }) n++
-                            onPrefs(prefs.addFolderWidget("Folder $n").addToFolder("Folder $n", app.key)); onClose()
-                        }, Modifier.fillMaxWidth(), Pixel.Green, compact = true)
                     } else if (!moving) {
                         if (!hidden) PixelButton(if (pinned) "Unpin from home" else "Pin to home", { onPrefs(if (pinned) prefs.unpin(app.key) else prefs.pin(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.Blue, sound = if (pinned) Sfx.UNPIN else Sfx.PIN)
                         PixelButton(if (hidden) "Show again" else "Hide", { onPrefs(if (hidden) prefs.unhide(app.key) else prefs.hide(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.InkSoft, sound = if (hidden) Sfx.UNPIN else Sfx.HIDE)
-                        PixelButton("Add to folder", { foldering = true }, Modifier.fillMaxWidth(), Pixel.InkSoft)
                         PixelButton("Category: ${prefs.categoryOf(app).label}", { moving = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, sound = Sfx.MOVE_PICKUP)
                         if (pinned) PixelButton("Icon on the home page", { choosingIcon = true }, Modifier.fillMaxWidth(), Pixel.InkSoft)
                         PixelButton("App info", { host.appInfo(app.key); onClose() }, Modifier.fillMaxWidth(), Pixel.InkSoft)
@@ -868,7 +852,7 @@ internal fun LauncherSettings(
             Section("Reset", "reload") {
                 PmdMenuLine("Reset launcher settings", pixel, icon = "pa-trash") {
                     confirm(
-                        "Reset launcher settings?", "The town, widgets, pages, gestures, weather and battery saver go back to how they began. Pinned apps, hidden apps, folders and the weather place are kept.", "Reset",
+                        "Reset launcher settings?", "The town, widgets, pages, gestures, weather and battery saver go back to how they began. Pinned apps, hidden apps and the weather place are kept.", "Reset",
                     ) { onPrefs(prefs.reset()) }
                 }
             }
