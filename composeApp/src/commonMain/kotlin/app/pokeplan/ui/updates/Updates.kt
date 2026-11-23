@@ -279,4 +279,7 @@ interface UpdateAccess {
 
     /** Opens the release's page in a browser. */
     fun openReleasePage(release: UpdateRelease)
+
+    /** Tells the player a newer build is ready, once for each version (a notification on Android; nothing elsewhere). */
+    fun notifyAvailable(release: UpdateRelease) {}
 }

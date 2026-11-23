@@ -26,6 +26,7 @@ internal object Channels {
     const val MINT_BILLS = "mint-bills"
     const val HOME_UPKEEP = "home-upkeep"
     const val LINK_NOTICES = "link-notices"
+    const val APP_UPDATES = "app-updates"
 }
 
 internal fun NotificationChannel.withGameSound(context: Context): NotificationChannel = apply {

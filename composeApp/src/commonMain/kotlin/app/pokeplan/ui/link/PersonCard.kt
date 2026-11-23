@@ -123,6 +123,7 @@ internal fun SafariPanel(model: AppModel, p: Person) {
     if (pool.isEmpty()) return
     val day = link.safariToday(p.id)
     val caught = model.data.player.caught
+    var asking by remember(p.id) { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Friend Safari")
@@ -137,7 +138,14 @@ internal fun SafariPanel(model: AppModel, p: Person) {
             }
             if (day.visited) Text("Come back tomorrow.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             else if (day.left <= 0) Text("Today's Safari visits are used.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else PixelButton("Visit", { link.visitSafari(p.id)?.let { model.haptic() } }, Modifier.fillMaxWidth(), tint, compact = true)
+            else if (!asking) PixelButton("Visit", { asking = true }, Modifier.fillMaxWidth(), tint, compact = true)
+            else {
+                Text("Use one of today's ${day.left} visits? It catches one Pokémon.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("Not now", { asking = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Visit now", { asking = false; link.visitSafari(p.id)?.let { model.haptic() } }, Modifier.weight(1f), tint, compact = true)
+                }
+            }
         }
     }
 }

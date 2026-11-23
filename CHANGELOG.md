@@ -15,6 +15,10 @@ Owner's list of 23 November 2026, UI and one MINT form rule: no reward rule, sch
 - **MINT: the IOU form loses "They paid me already".** An income is money already received, so an IOU income is always saved posted and stays marked "IOU" on the record; the toggle reads "Paid back by someone (IOU)" and the field "Who paid it back". An older pending IOU keeps "Mark received" (`MINT.md` 5.8A).
 - **Launcher floor finds are rare.** Each of the 3 daily places holds a berry, vitamin or Poké with only a 25% chance (`TownFinds.APPEAR_PERCENT`, *tune*), decided by the date so reopening the home screen never rerolls; `RewardRules.VERSION` 34, golden vector regenerated (`docs/economy.md`).
 - **Launcher: Hidden apps no longer sticks.** Opening "Hidden apps" from Settings made the hidden view the app list's starting view every time; it now resets when the list closes.
+- **More item sprites.** `fetch_items.py all` fetched every PokeAPI/sprites item icon (2,029 more) into `assets/items-all` (not bundled; `docs/assets.md`).
+- **WORLD Town uses Mystery Dungeon item pictures** where the sheet has a match: the five flavour berries (Kecleon shelf, Swap Shop) and the Gimmighoul Coin (`PmdArt.town`); every other item keeps its mainline icon.
+- **Friend Safari asks before it visits.** The Visit key now confirms ("Use one of today's N visits?"), so a stray tap cannot spend a catch; nothing visits on its own.
+- **Update notification.** When PokéLife opens it checks once for a newer build and, if there is one, posts a notification (once per version and build; a tap opens Me, where Settings → About installs it). It needs the notification permission the reminders already ask for; no background polling (`UpdateAccess.notifyAvailable`).
 - **LINK: people as cards, random picture picker.** Each person is a small card with their Pokémon; the picker opens on a random draw of the whole Dex with Shuffle and "My Pokémon" (`LINK.md`).
 
 ## 0.234.1
