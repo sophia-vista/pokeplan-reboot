@@ -510,3 +510,5 @@ LINK's acquisition identity is **Postcard Trail**, based on distinct eligible fo
 ## Testing reference
 
 LINK record ownership, follow-up workflows, reminder routing, interruption recovery, duplicate-action prevention and privacy boundaries must be tested under [`../ARCHITECTURE/TEST_STRATEGY.md`](../ARCHITECTURE/TEST_STRATEGY.md).
+
+**People list as cards and a random picture picker (owner, 23 November 2026).** The directory shows each person as a small card of their own (their Pokémon picture, the name, the relationship word and organization, a star when pinned) instead of a plain row; a person with no picture shows the Friend Ball. The picture picker opens on a **random draw of Pokémon from the whole Dex** (36 at a time) with a Shuffle key, and "My Pokémon" switches to the ones the player has caught; searching by name still lists matches. Cosmetic only.

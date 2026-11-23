@@ -6,6 +6,7 @@ import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import app.pokeplan.care.Visitors
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.ui.AnimatedSprite
@@ -124,6 +125,7 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             WelcomeBackCard(model)
             HomeBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
             RewardBox(model)
+            ReadyToMeetCard(model, go)
             ModuleCards(model, go)
             QuickLogCard(model, go)
 
@@ -401,6 +403,24 @@ private fun worldConcern(model: AppModel, go: (Place) -> Unit): ModuleConcern {
 }
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun ReadyToMeetCard(model: AppModel, go: (Place) -> Unit) {
+    val locked = model.data.settings.lockedModules
+    model.careData; model.linkData
+    val dreamers = if (Module.CARE.name in locked) 0 else Visitors.meadow(model.careData.visitors).count { model.care.canVisit(it) }
+    val safari = if (Module.LINK.name in locked || !model.link.safariOn) 0 else model.linkData.people.count { p ->
+        model.link.safariPool(p.id).isNotEmpty() && model.link.safariToday(p.id).let { !it.visited && it.left > 0 }
+    }
+    if (dreamers == 0 && safari == 0) return
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Ready to meet")
+            if (dreamers > 0) StepRow("Dream World: ${countOf(dreamers, "dreamer", "dreamers")} to visit", "Open", ModuleAccent.CARE.accent) { go(Place.CARE); model.careSection = CareSection.DREAM }
+            if (safari > 0) StepRow("Friend Safari: ${countOf(safari, "visit", "visits")} open", "Open", ModuleAccent.LINK.accent) { go(Place.LINK); model.linkSection = LinkSection.PEOPLE }
+        }
+    }
+}
+
 @Composable
 private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
     model.careData; model.healData
