@@ -340,6 +340,20 @@ CREATE TABLE heal_vital (
     json TEXT NOT NULL
 );
 
+CREATE TABLE heal_medication (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE heal_dose (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
 CREATE TABLE mint_account (
     key TEXT NOT NULL PRIMARY KEY,
     position INTEGER NOT NULL,
