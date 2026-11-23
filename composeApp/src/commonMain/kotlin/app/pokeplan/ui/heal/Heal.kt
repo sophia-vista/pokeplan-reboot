@@ -1,5 +1,6 @@
 package app.pokeplan.ui.heal
 
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -329,6 +330,7 @@ private fun HydrationView(model: AppModel) {
     val data = model.healData
     val today = model.store.today
     var custom by remember { mutableStateOf("") }
+    var otherAmount by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var day by remember { mutableStateOf(today) }
     var time by remember { mutableStateOf<LocalTime?>(null) }
@@ -353,8 +355,9 @@ private fun HydrationView(model: AppModel) {
                 FormLabel("Add a drink")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     listOf(150, 250, 330, 500).forEach { v -> PixelButton("+$v ml", { add(v) }, color = Pixel.Tone, compact = true) }
+                    if (!otherAmount) PixelButton("Other amount", { otherAmount = true }, color = Pixel.InkSoft, compact = true)
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                if (otherAmount) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
                     PixelField(
                         custom, { custom = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), singleLine = true, label = "Another amount (ml)",
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -376,10 +379,12 @@ private fun HydrationView(model: AppModel) {
     }
     val drinks = data.hydration.filter { it.day == day }.sortedBy { it.atMillis }
     if (drinks.isEmpty()) EmptyState(if (day == today) "No drinks today" else "No drinks on ${day.short()}", icon = HealSection.HYDRATION.icon)
-    else HistoryBox {
-        drinks.forEachIndexed { i, d ->
-            if (i > 0) HorizontalDivider(color = Pixel.Border)
-            DrinkRow(model, d)
+    else Accordion(if (day == today) "Today's drinks" else "Drinks", summary = "${drinks.size} ${if (drinks.size == 1) "drink" else "drinks"}", startOpen = drinks.size <= 3) {
+        HistoryBox {
+            drinks.forEachIndexed { i, d ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                DrinkRow(model, d)
+            }
         }
     }
     val earlier = (1..7).mapNotNull { back ->
@@ -764,11 +769,15 @@ private fun HealSettingsView(model: AppModel) {
             val files = model.files
             if (files != null) {
                 PixelButton("Export everything", { note = files.save("pokelife-heal.json", heal.export()) }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    HealKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-heal-${k.name.lowercase()}.json", heal.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
+                Accordion("Export") {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        HealKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-heal-${k.name.lowercase()}.json", heal.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
+                    }
                 }
             }
             note?.let { Report(model, it) }
+            Accordion("Erase data", startOpen = asking != null || askingAll) {
+              Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             HealKinds.entries.forEach { k ->
                 if (asking == k) {
                     Text("Erase all ${k.label.lowercase()} records? This cannot be undone.", style = MaterialTheme.typography.bodyLarge)
@@ -785,6 +794,8 @@ private fun HealSettingsView(model: AppModel) {
                     PixelButton("Keep them", { askingAll = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             } else PixelButton("Erase all Heal records", { askingAll = true; asking = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
+              }
+            }
         }
     }
 }

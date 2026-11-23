@@ -19,6 +19,7 @@ import app.pokeplan.mint.StatementImport
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import androidx.compose.material3.HorizontalDivider
+import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
@@ -147,8 +148,8 @@ internal fun MintImportView(model: AppModel) {
     val batches = mint.importBatches()
     if (batches.isNotEmpty()) {
         TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                PixelTitle("Earlier imports")
+            Accordion("Earlier imports", summary = batches.size.toString(), startOpen = asking != null) {
+              Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 batches.forEach { b ->
                     val account = data.accounts.firstOrNull { it.id == b.accountId }?.name.orEmpty()
                     MintLine {
@@ -166,6 +167,7 @@ internal fun MintImportView(model: AppModel) {
                         PixelButton("Delete this import", { asking = b.id }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
+              }
             }
         }
     }
