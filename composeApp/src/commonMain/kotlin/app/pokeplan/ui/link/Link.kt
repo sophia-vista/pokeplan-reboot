@@ -24,6 +24,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.focusRequester
+import app.pokeplan.ui.screens.pullReveal
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import app.pokeplan.ui.BackHandler
@@ -189,17 +191,22 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(LinkSection.FOLLOW_UPS.name, LinkSection.FOLLOW_UPS.icon, "Follow-ups", if (data.followUps.isEmpty()) "add one" else "${open.size} open", tint = tint),
         MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft),
     )
+    val scroll = rememberScrollState()
+    var query by remember { mutableStateOf("") }
+    val reveal = app.pokeplan.ui.screens.rememberPullReveal(scroll, keepOpen = { query.isNotBlank() }, onClose = { query = "" })
+    val hasRecords = data.people.isNotEmpty() || data.dates.isNotEmpty() || data.followUps.isNotEmpty()
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, trailing = { SectionsKey(Module.LINK.label, sections) { key -> model.linkSection = LinkSection.valueOf(key) } })
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.M),
+            Modifier.weight(1f).pullReveal(reveal).verticalScroll(scroll).padding(horizontal = Spacing.Page, vertical = Spacing.L),
         ) {
-            ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
-            FirstRecordEgg(model, Tutorials.LINK_POSTCARD, data.people.size + data.dates.size + data.followUps.size)
-            LinkOverview(model)
-            LinkSearch(model)
-            LinkPartyPanel(model, openPokemon)
+            if (hasRecords) app.pokeplan.ui.screens.PullRevealSlot(reveal, model.data.settings.reduceMotion) { LinkSearch(model, query, { query = it }, reveal::close) }
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
+                FirstRecordEgg(model, Tutorials.LINK_POSTCARD, data.people.size + data.dates.size + data.followUps.size)
+                LinkOverview(model)
+                LinkPartyPanel(model, openPokemon)
+            }
         }
     }
 }
@@ -272,17 +279,17 @@ private fun LinkOverview(model: AppModel) {
 }
 
 @Composable
-private fun LinkSearch(model: AppModel) {
-    val data = model.linkData
-    if (data.people.isEmpty() && data.dates.isEmpty() && data.followUps.isEmpty()) return
-    var query by remember { mutableStateOf("") }
+private fun LinkSearch(model: AppModel, query: String, onQuery: (String) -> Unit, onDone: () -> Unit) {
+    val field = remember { androidx.compose.ui.focus.FocusRequester() }
+    androidx.compose.runtime.LaunchedEffect(Unit) { field.requestFocus() }
     val hits = model.link.search(query).take(8)
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search Link", singleLine = true)
-        if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        hits.forEach { h ->
-            RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
-        }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(query, { onQuery(it.take(40)) }, Modifier.weight(1f).focusRequester(field), placeholder = "Search Link", singleLine = true)
+        PixelIconButton("close", "Close search", onDone)
+    }
+    if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    hits.forEach { h ->
+        RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); onDone() }, onClickLabel = "Open")
     }
 }
 
