@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.236.1
+
+The loading pixels move again, and the work under them no longer stops the phone's frame clock. UI only: no reward rule, schema or save change.
+
+- **The pixels follow the frame clock.** `LoadingDots` used an infinite tween, and a tween is scaled by the phone's animation setting while any work on the UI thread stops frames altogether, so the indicator could sit on its first pixel. It now steps every 300 ms from frame times, and holds three solid pixels under Reduce motion or with the phone's animations turned off.
+- **Back up now and Restore no longer block the UI thread.** Both wrote or swapped the save on the UI thread, which froze the button, the pixels and the blocking overlay for as long as the file work took; they now run on `Dispatchers.Default` and apply their result on the UI thread, like the other copies already did.
+- **Test:** `LoadingDotsTest` renders the composable at known frame times and reads the pixels back: they advance, hold under Reduce motion and hold with the platform motion scale at zero.
+
 ## 0.236.0
 
 UI only: search, filters, add forms and rare controls now stay out of sight until asked for (`DESIGN_SYSTEM.md` 12B). No data, rule or storage change; `RewardRules.VERSION` stays.
