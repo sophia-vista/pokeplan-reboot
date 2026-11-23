@@ -1,10 +1,5 @@
 package app.pokeplan.ui.theme
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -20,9 +15,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -43,24 +45,38 @@ import app.pokeplan.ui.screens.LocalReduceMotion
  * renders before any sprite, save or scene is ready.
  */
 
+/** One step of the three loading pixels. */
+private const val DOT_STEP_MS = 300L
+
 /**
- * Indeterminate progress: three pixels with the current one lit. [LocalReduceMotion] holds all three solid instead
- * (5.6), so nothing loops for a player who asked motion to stop.
+ * Indeterminate progress: three pixels with the current one lit. It steps from the frame clock's own times, not from an
+ * animation tween: a tween's length is scaled by the phone's animation setting (down to nothing when animations are off),
+ * so the phase comes straight from frame time and the pixels always step while frames are produced. [LocalReduceMotion]
+ * and a phone with animations off hold all three solid instead (5.6), so nothing loops for a player who asked motion to
+ * stop.
  */
 @Composable
 fun LoadingDots(modifier: Modifier = Modifier, color: Color = Pixel.InkSoft, dot: Dp = 6.dp, gap: Dp = 4.dp, description: String? = "Working") {
     val calm = LocalReduceMotion.current
-    val phase = if (calm) 3 else {
-        val transition = rememberInfiniteTransition()
-        val tick by transition.animateFloat(0f, 3f, infiniteRepeatable(tween(900, easing = LinearEasing)))
-        tick.toInt()
+    var phase by remember { mutableIntStateOf(0) }
+    var moving by remember { mutableStateOf(true) }
+    if (!calm) LaunchedEffect(Unit) {
+        moving = (coroutineContext[MotionDurationScale.Key]?.scaleFactor ?: 1f) > 0f
+        if (!moving) return@LaunchedEffect
+        var start = 0L
+        while (true) {
+            val now = withFrameNanos { it }
+            if (start == 0L) start = now
+            phase = (((now - start) / 1_000_000L / DOT_STEP_MS) % 3L).toInt()
+        }
     }
+    val shown = if (calm || !moving) 3 else phase
     Row(
         if (description == null) modifier else modifier.semantics { contentDescription = description },
         horizontalArrangement = Arrangement.spacedBy(gap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        repeat(3) { i -> Box(Modifier.size(dot).background(if (phase == 3 || phase == i) color else color.copy(alpha = 0.3f))) }
+        repeat(3) { i -> Box(Modifier.size(dot).background(if (shown == 3 || shown == i) color else color.copy(alpha = 0.3f))) }
     }
 }
 
