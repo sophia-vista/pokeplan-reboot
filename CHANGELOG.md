@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.237.0
+
+Each life module's places are grouped into at most four primary destinations, with related views behind one row of pills. UI and navigation only: no reward rule, schema or save change.
+
+- **CARE.** Today, Practice (the routines and the calm break with its skills under one `Routines | Calm` pill), Reflect and Dream. The Calm quick action and an empty routine list open the matching pill.
+- **MINT.** Accounts, Activity and Plans, which holds budgets and bills and income under one `Budgets | Bills and income` pill; Review, Import and Settings follow as secondary places.
+- **HEAL.** Import first: where the phone has Health Connect or the Huawei reader, the landing's first quick action reads it in. Activity holds exercise and sleep under one pill; Wellness holds water, body and readings under three; Goals, Connections and Settings follow. Records (the timeline, medications and illnesses) is listed only once it is built.
+- **WORLD.** Explore (the Atlas and the Guild under one `Atlas | Guild` pill), Expeditions, Town and Journal; Skills and Finds stay secondary places.
+- **LINK.** People and Dates are the primary places; Moments (a timeline of events with the people in them) is specified and is listed once built; Follow-ups and Settings stay secondary.
+- **PLAN** already had Tasks, Calendar and Focus.
+- Docs: `DESIGN_SYSTEM.md` 6.7 gained the grouping rule; CARE, HEAL, MINT, LINK and WORLD and the Implementation Guide record it.
+
 ## 0.236.2
 
 The loading screen keeps moving while the app opens. UI and startup only: no reward rule, schema or save change.

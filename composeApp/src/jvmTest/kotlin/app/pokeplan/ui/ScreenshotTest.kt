@@ -190,7 +190,9 @@ class ScreenshotTest {
         val finished = store.addTask("Reply to mail", planned = store.today)
         store.completeTask(finished.id)
         val model = AppModel(store)
-        render("task-card-done-light", height = 700, frames = 8) {
+        // A finished task's card is short (title, Reopen, Duplicate, Delete), so its PNG is small even though it drew: the
+        // floor only has to catch a blank frame (it failed at 5000 on main before this pass; the card really is this short).
+        render("task-card-done-light", height = 700, frames = 8, minBytes = 4_000) {
             PixelTheme(false) {
                 Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                     app.pokeplan.ui.plan.TaskCard(model, store.data.tasks.first { it.id == finished.id }, store.today, expanded = true, toggle = {}, onDeleted = {})
@@ -322,7 +324,7 @@ class ScreenshotTest {
     fun worldMapKantoList() {
         val store = started()
         val model = AppModel(store)
-        model.worldSection = app.pokeplan.ui.world.WorldSection.MAP
+        model.worldSection = app.pokeplan.ui.world.WorldSection.EXPLORE
         model.worldLayer = app.pokeplan.world.WorldLayer.KANTO
         render("world-map-kanto-list", height = 9000, frames = 40) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
     }
@@ -342,7 +344,7 @@ class ScreenshotTest {
             model.worldSection = section
             render("world-${section.name.lowercase()}") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
         }
-        model.worldSection = app.pokeplan.ui.world.WorldSection.MAP
+        model.worldSection = app.pokeplan.ui.world.WorldSection.EXPLORE
         model.worldLayer = app.pokeplan.world.WorldLayer.KANTO
         render("world-map-kanto") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
         render("world-xl-map-kanto", fontScale = 1.3f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
@@ -403,7 +405,7 @@ class ScreenshotTest {
         )
         val store = GameStore(MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(world = world))), clock)
         val model = AppModel(store)
-        model.worldSection = app.pokeplan.ui.world.WorldSection.MISSIONS
+        model.worldExploreGuild = true; model.worldSection = app.pokeplan.ui.world.WorldSection.EXPLORE
         for ((name, scale) in listOf("world-board" to 1f, "world-board-xl" to 1.3f)) {
             render(name, height = 1700, fontScale = scale) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.world.WorldScreen(model) } } }
         }
@@ -1232,7 +1234,7 @@ class ScreenshotTest {
     @Test
     fun meHome() = me("me-home", -1)
 
-    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, journalDraft: String = "", interact: (ImageComposeScene) -> Unit = {}) {
+    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, journalDraft: String = "", calm: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
@@ -1248,12 +1250,13 @@ class ScreenshotTest {
         care.write("Tea with a friend after work.", tags = setOf("People"))
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
+        model.carePracticeCalm = calm
         model.journalDraft = journalDraft
         if (visiting) care.visitors().first().let { v -> care.startVisit(v.speciesId); care.visitAct(app.pokeplan.care.CareAction.WORDS) }
         render(name, fontScale = fontScale, height = height, interact = interact) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
-    private fun heal(name: String, section: app.pokeplan.ui.heal.HealSection?, height: Int = 1500, healParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false) {
+    private fun heal(name: String, section: app.pokeplan.ui.heal.HealSection?, height: Int = 1500, healParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, sleep: Boolean = false, wellness: Int = 0) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(healParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.HEAL) }
@@ -1267,7 +1270,7 @@ class ScreenshotTest {
             heal.logMeasurement(app.pokeplan.heal.MeasureType.WEIGHT, 68.4, "kg")
             heal.addGoal(app.pokeplan.heal.GoalKind.WEEKLY_ACTIVE_MINUTES, 150)
             heal.setHydrationTarget(2000)
-            if (section == app.pokeplan.ui.heal.HealSection.READINGS) {
+            if (section == app.pokeplan.ui.heal.HealSection.WELLNESS && wellness == 2) {
                 val t = clock.millis
                 val p = "huawei-screen"; val app_ = "com.huawei.health"
                 heal.importFromProvider(app.pokeplan.heal.ProviderRead(listOf(
@@ -1289,6 +1292,8 @@ class ScreenshotTest {
         }
         model.module = app.pokeplan.ui.screens.Module.HEAL
         model.healSection = section
+        model.healActivityTab = if (sleep) 1 else 0
+        model.healWellnessTab = wellness
         render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
@@ -1302,10 +1307,10 @@ class ScreenshotTest {
     fun healMenuDark() = heal("heal-menu-dark", null, height = 2400, healParty = 3, dark = true)
 
     @Test
-    fun healReadings() = heal("heal-readings", app.pokeplan.ui.heal.HealSection.READINGS, height = 2200)
+    fun healReadings() = heal("heal-readings", app.pokeplan.ui.heal.HealSection.WELLNESS, height = 2200, wellness = 2)
 
     @Test
-    fun healReadingsDark() = heal("heal-readings-dark", app.pokeplan.ui.heal.HealSection.READINGS, height = 2200, dark = true)
+    fun healReadingsDark() = heal("heal-readings-dark", app.pokeplan.ui.heal.HealSection.WELLNESS, height = 2200, dark = true, wellness = 2)
 
     @Test
     fun healActivity() = heal("heal-activity", app.pokeplan.ui.heal.HealSection.ACTIVITY, height = 2000)
@@ -1316,7 +1321,7 @@ class ScreenshotTest {
         app.pokeplan.ui.heal.HealSection.entries.forEach { heal("heal-xl-${it.name.lowercase()}", it, height = 2400, fontScale = 1.3f) }
     }
 
-    private fun mint(name: String, section: app.pokeplan.ui.mint.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false, settings: ((AppModel) -> Unit)? = null, gate: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
+    private fun mint(name: String, section: app.pokeplan.ui.mint.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false, bills: Boolean = false, settings: ((AppModel) -> Unit)? = null, gate: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(mintParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.MINT) }
@@ -1341,6 +1346,7 @@ class ScreenshotTest {
         settings?.invoke(model)
         model.module = app.pokeplan.ui.screens.Module.MINT
         model.mintSection = section
+        if (bills) model.mintPlansTab = 1
         render(name, fontScale = fontScale, height = height, minBytes = if (gate && section == null) 3_000 else 5_000, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
@@ -1709,11 +1715,11 @@ class ScreenshotTest {
     fun mintLockedAndSettings() {
         mint("mint-locked", null, height = 900, gate = true, settings = { it.mint.setGate(true) })
         mint("mint-settings", app.pokeplan.ui.mint.MintSection.SETTINGS, height = 3200, gate = true, settings = { it.mint.setBillReminders(true) })
-        mint("mint-bills-reminders", app.pokeplan.ui.mint.MintSection.BILLS, height = 2600, settings = { it.mint.setBillReminders(true) })
+        mint("mint-bills-reminders", app.pokeplan.ui.mint.MintSection.PLANS, bills = true, height = 2600, settings = { it.mint.setBillReminders(true) })
     }
 
     @Test
-    fun mintBillsSettled() = mint("mint-bills-settled", app.pokeplan.ui.mint.MintSection.BILLS, height = 2200, settings = { m ->
+    fun mintBillsSettled() = mint("mint-bills-settled", app.pokeplan.ui.mint.MintSection.PLANS, bills = true, height = 2200, settings = { m ->
         val bill = m.mint.data.bills.first { it.name == "Internet" }
         m.mint.settle(bill.id, bill.firstDue, app.pokeplan.mint.SettleStatus.PAID, 149_900)
     })
@@ -1731,7 +1737,7 @@ class ScreenshotTest {
                 PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.mint.AccountOptions(model, model.mintData.accounts.first()) {} } }
             }
         }
-        mint("mint-bills-income", app.pokeplan.ui.mint.MintSection.BILLS, height = 2200, settings = { m ->
+        mint("mint-bills-income", app.pokeplan.ui.mint.MintSection.PLANS, bills = true, height = 2200, settings = { m ->
             m.mint.addBill("Salary", "PHP", app.pokeplan.mint.Frequency.MONTHLY, m.store.today, 3_500_000, categoryId = "cat-salary", income = true)
         })
     }
@@ -2155,13 +2161,13 @@ class ScreenshotTest {
     fun careVisit() = care("care-visit", app.pokeplan.ui.care.CareSection.DREAM, height = 3800, careParty = 3, visiting = true)
 
     @Test
-    fun careRoutines() = care("care-routines", app.pokeplan.ui.care.CareSection.ROUTINES)
+    fun careRoutines() = care("care-routines", app.pokeplan.ui.care.CareSection.PRACTICE)
 
     @Test
-    fun careCalm() = care("care-calm", app.pokeplan.ui.care.CareSection.CALM)
+    fun careCalm() = care("care-calm", app.pokeplan.ui.care.CareSection.PRACTICE, calm = true)
 
     @Test
-    fun careSkillGuide() = care("care-skill-guide", app.pokeplan.ui.care.CareSection.CALM, interact = { scene ->
+    fun careSkillGuide() = care("care-skill-guide", app.pokeplan.ui.care.CareSection.PRACTICE, calm = true, interact = { scene ->
         scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(200f, 945f))
         scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(200f, 945f))
     })
@@ -2533,11 +2539,11 @@ class ScreenshotTest {
     }
 
     @Test
-    fun careRoutinesSkipped() = listOf(false, true).forEach { dark -> care("care-routines-skipped-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.ROUTINES, height = 1500, dark = dark, skipOne = true) }
+    fun careRoutinesSkipped() = listOf(false, true).forEach { dark -> care("care-routines-skipped-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.PRACTICE, height = 1500, dark = dark, skipOne = true) }
 
     @Test
     fun careRoutinesYesterday() = listOf(false, true).forEach { dark ->
-        care("care-routines-yesterday-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.ROUTINES, height = 1000, dark = dark, skipOne = true, interact = { scene ->
+        care("care-routines-yesterday-${if (dark) "dark" else "light"}", app.pokeplan.ui.care.CareSection.PRACTICE, height = 1000, dark = dark, skipOne = true, interact = { scene ->
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(374f, 285f))
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(374f, 285f))
         })
@@ -2545,7 +2551,7 @@ class ScreenshotTest {
 
     @Test
     fun mintBillOpened() = listOf(false, true).forEach { dark ->
-        mint("mint-bill-open-${if (dark) "dark" else "light"}", app.pokeplan.ui.mint.MintSection.BILLS, height = 1400, dark = dark, interact = { scene ->
+        mint("mint-bill-open-${if (dark) "dark" else "light"}", app.pokeplan.ui.mint.MintSection.PLANS, bills = true, height = 1400, dark = dark, interact = { scene ->
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(130f, 195f))
             scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(130f, 195f))
         })

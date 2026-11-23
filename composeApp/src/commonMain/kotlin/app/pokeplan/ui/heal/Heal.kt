@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -101,8 +102,8 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
 enum class HealSection(val label: String, val icon: String) {
-    ACTIVITY("Activity", "x-speed"), HYDRATION("Hydration", "fresh-water"), SLEEP("Sleep", "moon-stone"), BODY("Body", "scope-lens"),
-    READINGS("Readings", "hp-up"), GOALS("Goals", "star-piece"), CONNECTIONS("Connections", "town-map"), SETTINGS("Settings", "storage-key"),
+    ACTIVITY("Activity", "x-speed"), WELLNESS("Wellness", "hp-up"),
+    GOALS("Goals", "star-piece"), CONNECTIONS("Connections", "town-map"), SETTINGS("Settings", "storage-key"),
 }
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
@@ -132,11 +133,8 @@ private fun HealPage(model: AppModel, section: HealSection?, openPokemon: (Strin
     }
     SectionScaffold(section.label, null, onBack = { model.healSection = null }, icon = section.icon, color = Module.HEAL.look.header) {
         when (section) {
-            HealSection.ACTIVITY -> ActivityView(model)
-            HealSection.HYDRATION -> HydrationView(model)
-            HealSection.SLEEP -> SleepView(model)
-            HealSection.BODY -> BodyView(model)
-            HealSection.READINGS -> ReadingsView(model)
+            HealSection.ACTIVITY -> ActivityPlace(model)
+            HealSection.WELLNESS -> WellnessPlace(model)
             HealSection.GOALS -> GoalsHealView(model)
             HealSection.CONNECTIONS -> HealConnectionsView(model)
             HealSection.SETTINGS -> HealSettingsView(model)
@@ -148,13 +146,10 @@ private fun HealPage(model: AppModel, section: HealSection?, openPokemon: (Strin
 private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.healData
     val sections = listOf(
-        MenuEntry(HealSection.ACTIVITY.name, HealSection.ACTIVITY.icon, "Activity", tint = ModuleAccent.HEAL.accent),
-        MenuEntry(HealSection.HYDRATION.name, HealSection.HYDRATION.icon, "Hydration", tint = ModuleAccent.HEAL.accent),
-        MenuEntry(HealSection.SLEEP.name, HealSection.SLEEP.icon, "Sleep", tint = ModuleAccent.HEAL.accent),
-        MenuEntry(HealSection.BODY.name, HealSection.BODY.icon, "Body", tint = ModuleAccent.HEAL.accent),
-        MenuEntry(HealSection.READINGS.name, HealSection.READINGS.icon, "Readings", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.ACTIVITY.name, HealSection.ACTIVITY.icon, "Activity", "steps, exercise, sleep", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.WELLNESS.name, HealSection.WELLNESS.icon, "Wellness", "water, body, readings", tint = ModuleAccent.HEAL.accent),
         MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", tint = ModuleAccent.HEAL.accent),
-        MenuEntry(HealSection.CONNECTIONS.name, HealSection.CONNECTIONS.icon, "Connections", tint = ModuleAccent.HEAL.accent),
+        MenuEntry(HealSection.CONNECTIONS.name, HealSection.CONNECTIONS.icon, "Connections", "import, Health Connect", tint = ModuleAccent.HEAL.accent),
         MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
     )
     Column(Modifier.fillMaxSize()) {
@@ -198,9 +193,14 @@ private fun TodayCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
+            // Import first: where the phone has a provider, reading it in is the first action, and logging by hand follows (HEAL.md 10).
+            if (model.health != null || model.huawei != null) {
+                val importLabel = if (model.health != null) "Import from Health Connect" else "Read Huawei Health"
+                PixelButton(importLabel, { model.healSection = HealSection.CONNECTIONS }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Log activity", { model.healSection = HealSection.ACTIVITY }, Modifier.weight(1f), Pixel.Tone, compact = true)
-                PixelButton("Add a drink", { model.healSection = HealSection.HYDRATION }, Modifier.weight(1f), Pixel.Tone, compact = true)
+                PixelButton("Log activity", { model.healActivityTab = 0; model.healSection = HealSection.ACTIVITY }, Modifier.weight(1f), Pixel.Tone, compact = true)
+                PixelButton("Add a drink", { model.healWellnessTab = 0; model.healSection = HealSection.WELLNESS }, Modifier.weight(1f), Pixel.Tone, compact = true)
             }
         }
     }
@@ -225,6 +225,33 @@ private fun HistoryRow(onClick: (() -> Unit)? = null, onClickLabel: String? = nu
     ) {
         Column(Modifier.weight(1f)) { content() }
         trail()
+    }
+}
+
+/** Activity is one place with two halves (HEAL.md 2.1): the exercise and activity log, and sleep. */
+@Composable
+private fun ActivityPlace(model: AppModel) {
+    val sleep = model.healActivityTab == 1
+    Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        TabButton("Exercise", !sleep, { model.healActivityTab = 0 }, Modifier.weight(1f))
+        TabButton("Sleep", sleep, { model.healActivityTab = 1 }, Modifier.weight(1f))
+    }
+    if (sleep) SleepView(model) else ActivityView(model)
+}
+
+/** Wellness is one place with three halves (HEAL.md 2.1): hydration, body measurements and the vitals read from a provider or logged by hand. */
+@Composable
+private fun WellnessPlace(model: AppModel) {
+    val tab = model.healWellnessTab
+    Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        TabButton("Water", tab == 0, { model.healWellnessTab = 0 }, Modifier.weight(1f))
+        TabButton("Body", tab == 1, { model.healWellnessTab = 1 }, Modifier.weight(1f))
+        TabButton("Readings", tab == 2, { model.healWellnessTab = 2 }, Modifier.weight(1f))
+    }
+    when (tab) {
+        1 -> BodyView(model)
+        2 -> ReadingsView(model)
+        else -> HydrationView(model)
     }
 }
 
@@ -378,7 +405,7 @@ private fun HydrationView(model: AppModel) {
         }
     }
     val drinks = data.hydration.filter { it.day == day }.sortedBy { it.atMillis }
-    if (drinks.isEmpty()) EmptyState(if (day == today) "No drinks today" else "No drinks on ${day.short()}", icon = HealSection.HYDRATION.icon)
+    if (drinks.isEmpty()) EmptyState(if (day == today) "No drinks today" else "No drinks on ${day.short()}", icon = HealSection.WELLNESS.icon)
     else Accordion(if (day == today) "Today's drinks" else "Drinks", summary = "${drinks.size} ${if (drinks.size == 1) "drink" else "drinks"}", startOpen = drinks.size <= 3) {
         HistoryBox {
             drinks.forEachIndexed { i, d ->
@@ -473,7 +500,7 @@ private fun SleepView(model: AppModel) {
     }
     val nights = remember(data.sleep) { data.sleep.sortedByDescending { it.endMillis } }
     var shown by remember { mutableStateOf(PAGE) }
-    if (nights.isEmpty()) EmptyState("No nights logged", icon = HealSection.SLEEP.icon)
+    if (nights.isEmpty()) EmptyState("No nights logged", icon = HealSection.ACTIVITY.icon)
     else {
         SectionLabel("History")
         HistoryBox {
@@ -562,7 +589,7 @@ private fun BodyView(model: AppModel) {
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
-    if (data.measurements.isEmpty()) EmptyState("Nothing here", icon = HealSection.BODY.icon)
+    if (data.measurements.isEmpty()) EmptyState("Nothing here", icon = HealSection.WELLNESS.icon)
     else {
         var shown by remember { mutableStateOf(10) }
         MeasureType.entries.forEach { t ->
@@ -595,7 +622,7 @@ private fun ReadingsView(model: AppModel) {
     var open by remember { mutableStateOf<ReadingGroup?>(null) }
     val group = open?.takeIf { it in groups }
     if (group != null) { BackHandler(enabled = true, onBack = { open = null }); ReadingList(model, group, onBack = { open = null }); return }
-    if (groups.isEmpty()) { EmptyState("Nothing here", icon = HealSection.READINGS.icon); return }
+    if (groups.isEmpty()) { EmptyState("Nothing here", icon = HealSection.WELLNESS.icon); return }
     groups.forEach { g ->
         val latest = ReadingGroups.latest(data, g)
         HistoryBox {

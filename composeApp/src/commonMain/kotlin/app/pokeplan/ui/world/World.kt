@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
@@ -128,7 +129,8 @@ import app.pokeplan.app.world.worldTrain
 import app.pokeplan.app.world.worldUpgrade
 
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("Atlas", "town-map"), MISSIONS("Guild", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), TOWN("Town", "scope-lens"), ARCHIVE("Journal", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds", "seal-bag"), SETTINGS("Settings", "storage-key"),
+    EXPLORE("Explore", "town-map"), TEAMS("Expeditions", "exp-share"), TOWN("Town", "scope-lens"), ARCHIVE("Journal", "oaks-letter"),
+    SKILLS("Skills", "ability-capsule"), BAG("Finds", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
 
 private const val NAP_MILLIS = 30_000L
@@ -151,6 +153,17 @@ private fun WorldBody(model: AppModel, openPokemon: (String) -> Unit) {
     ScreenSwitch(model.worldSection, depth = { if (it == null) 0 else 1 }) { section -> WorldPage(model, section, openPokemon) }
 }
 
+/** Explore is one place with two halves (WORLD.md 2): the Atlas of regions and dungeons, and the Guild's requests. */
+@Composable
+private fun ExplorePlace(model: AppModel) {
+    val guild = model.worldExploreGuild
+    Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        TabButton("Atlas", !guild, { model.worldExploreGuild = false }, Modifier.weight(1f))
+        TabButton("Guild", guild, { model.worldExploreGuild = true }, Modifier.weight(1f))
+    }
+    if (guild) WorldMissionsView(model) else WorldMapView(model)
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (String) -> Unit) {
@@ -162,8 +175,7 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
     }
     SectionScaffold(section.label, null, onBack = { model.worldSection = null }, icon = section.icon, color = Module.WORLD.look.header) {
         when (section) {
-            WorldSection.MAP -> WorldMapView(model)
-            WorldSection.MISSIONS -> WorldMissionsView(model)
+            WorldSection.EXPLORE -> ExplorePlace(model)
             WorldSection.SKILLS -> WorldSkillsView(model)
             WorldSection.TOWN -> WorldTownView(model)
             WorldSection.ARCHIVE -> WorldJournalView(model)
@@ -179,10 +191,9 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
     val world = model.data.world
     val out = world.teams.count { it.expedition != null }
     val sections = listOf(
-        MenuEntry(WorldSection.TOWN.name, WorldSection.TOWN.icon, WorldSection.TOWN.label, if (world.finds.isEmpty()) "Camp level ${world.facilityLevel(Facility.CAMP)}" else "${world.finds.size} to meet", badge = world.researchReady().size + world.finds.size, tint = ModuleAccent.WORLD.accent),
-        MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.EXPLORE.name, WorldSection.EXPLORE.icon, "Explore", "${Dungeons.all.size} dungeons", tint = ModuleAccent.WORLD.accent),
         MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = ModuleAccent.WORLD.accent),
-        MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = ModuleAccent.WORLD.accent),
+        MenuEntry(WorldSection.TOWN.name, WorldSection.TOWN.icon, WorldSection.TOWN.label, if (world.finds.isEmpty()) "Camp level ${world.facilityLevel(Facility.CAMP)}" else "${world.finds.size} to meet", badge = world.researchReady().size + world.finds.size, tint = ModuleAccent.WORLD.accent),
         MenuEntry(WorldSection.ARCHIVE.name, WorldSection.ARCHIVE.icon, WorldSection.ARCHIVE.label, "${world.discovered.size} species met", tint = ModuleAccent.WORLD.accent),
         MenuEntry(WorldSection.SETTINGS.name, WorldSection.SETTINGS.icon, WorldSection.SETTINGS.label, tint = Pixel.InkSoft),
     )
@@ -227,7 +238,7 @@ private fun RegionCard(model: AppModel) {
             Text(action.reason, style = MaterialTheme.typography.bodyMedium)
             when (action.kind) {
                 app.pokeplan.world.PrimaryKind.REVIEW_FINDS -> PixelButton("Open Finds", { model.worldSection = WorldSection.BAG }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
-                app.pokeplan.world.PrimaryKind.CLAIM_JOB -> PixelButton("Open the board", { model.worldSection = WorldSection.MISSIONS }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                app.pokeplan.world.PrimaryKind.CLAIM_JOB -> PixelButton("Open the board", { model.worldExploreGuild = true; model.worldSection = WorldSection.EXPLORE }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
                 app.pokeplan.world.PrimaryKind.EXPLORE -> action.dungeonId?.let { id -> PixelButton("Send my strongest", { model.store.worldQuickSend(id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true) }
                 app.pokeplan.world.PrimaryKind.CONTINUE -> PixelButton("See the teams", { model.worldSection = WorldSection.TEAMS }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
             }

@@ -75,7 +75,7 @@ class NavigationTest {
     fun openingAModuleTwiceKeepsItsPlaceAndHomeLeavesTheModulesAlone() {
         val m = model()
         m.open(Place.WORLD, true)
-        m.worldSection = app.pokeplan.ui.world.WorldSection.MAP
+        m.worldSection = app.pokeplan.ui.world.WorldSection.EXPLORE
         m.open(Place.HOME, true)
         assertEquals(Module.WORLD, m.module, "going Home does not close the module that is open")
     }

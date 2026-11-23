@@ -57,15 +57,14 @@ HEAL uses one configurable landing screen and a small set of focused destination
 
 ### 2.1 Primary destinations
 
-1. **Today** — concise daily health summary, recent activity, quick logging and relevant reminders.
-2. **Activity** — steps, distance, movement, active time and activity history.
-3. **Fitness** — workout logging, exercise library, templates, sessions and training history.
-4. **Nutrition** — meals, food entries, nutrients and hydration.
-5. **Sleep** — sleep sessions, stages when available and recovery history.
-6. **Health** — body measurements, selected health metrics and personal health records.
-7. **History** — searchable consolidated timeline and trends.
+Grouped places, not one per metric (owner, 23 November 2026; `../FEATURES/DESIGN_SYSTEM.md` 6.7). Each place may hold two or three views behind one row of pills:
 
-Goals, provider connections, import history and settings are secondary destinations accessible from the relevant section or HEAL settings. Do not add a primary destination for every individual metric.
+1. **Today** — concise daily health summary, recent activity, quick logging and relevant reminders. **Import first:** where the phone has a provider, the first quick action reads it in ("Import from Health Connect"), and logging by hand sits right behind it; a player with no provider sees the manual actions alone, and nothing needs connecting to use HEAL (10).
+2. **Activity** — steps, distance, movement, active time and activity history, with **sleep** as the second view (`Exercise | Sleep`) while workouts and the exercise library are not built yet (4).
+3. **Wellness** — nutrition, hydration, body measurements, selected health metrics and readings, and the period record, as views under one place (`Water | Body | Readings` today; nutrition and period join that row when they are built, 5 and 8).
+4. **Records** — the consolidated, searchable timeline of personal health records: medications, illnesses and the body of history and trends (section 8 and 11). Not built yet, and therefore not listed in the Sections key.
+
+Goals, provider connections, import history and settings are secondary destinations in the same Sections key, after the primary ones; do not add a primary destination for every individual metric.
 
 ### 2.2 Today dashboard
 

@@ -82,11 +82,12 @@ The Overview is the landing screen: a lead box, the overview of the records, the
 | Overview | Financial position, available money, upcoming obligations and recent activity (the landing screen) |
 | Accounts | Banks, e-wallets, cash, cards, assets and liabilities |
 | Activity | Transactions, transfers, search and filters |
-| Budgets | Spending plans, category limits and savings targets |
-| Bills and income | Recurring and one-time obligations and expected income |
+| Plans | One place with two views behind a pill, **Budgets** (spending plans, category limits and savings targets) and **Bills and income** (recurring and one-time obligations and expected income) |
 | Review | Reports (cash flow, spending patterns, historical comparisons) and reconciliation |
 | Import | Statement files (where the platform can open a file) |
 | Settings | Ledger Research, privacy, your data |
+
+The three primary destinations are Accounts, Activity and Plans; Review, Import and Settings follow them in the same Sections key as secondary places (owner, 23 November 2026; `../FEATURES/DESIGN_SYSTEM.md` 6.7).
 
 ### 3.1 Navigation and quick actions
 
