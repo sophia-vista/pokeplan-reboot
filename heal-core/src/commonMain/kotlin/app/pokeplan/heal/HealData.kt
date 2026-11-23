@@ -101,6 +101,49 @@ data class HealGoal(
 )
 
 @Serializable
+enum class MedicationStatus(val label: String) {
+    ACTIVE("Taking it"), PAUSED("Paused"), STOPPED("Stopped"),
+}
+
+/**
+ * A private reference the player typed in themselves: a medication or supplement, its schedule as times of the day
+ * (empty means "when I take one", so no reminder), and optionally how many doses they have left. HEAL never decides,
+ * checks or suggests a dose; adherence logging is optional and never pays.
+ */
+@Serializable
+data class Medication(
+    val id: String,
+    val name: String,
+    val strength: String = "",
+    val instructions: String = "",
+    val times: List<LocalTime> = emptyList(),
+    val startDay: LocalDate,
+    val endDay: LocalDate? = null,
+    val status: MedicationStatus = MedicationStatus.ACTIVE,
+    val note: String = "",
+    val remind: Boolean = false,
+    val supplyLeft: Int? = null,
+    val refillAt: Int? = null,
+    val createdMillis: Long = 0,
+)
+
+@Serializable
+enum class DoseStatus(val label: String) {
+    TAKEN("Taken"), SKIPPED("Skipped"),
+}
+
+/** One adherence entry for one scheduled time of one medication. Optional, private, and never a reward. */
+@Serializable
+data class MedicationDose(
+    val id: String,
+    val medicationId: String,
+    val day: LocalDate,
+    val time: LocalTime,
+    val status: DoseStatus,
+    val atMillis: Long,
+)
+
+@Serializable
 data class HealSettings(
     val fieldResearch: Boolean = true,
     val hydrationTargetMl: Int? = null,
@@ -128,6 +171,8 @@ data class HealData(
     val settings: HealSettings = HealSettings(),
     val steps: List<StepsRecord> = emptyList(),
     val vitals: List<VitalReading> = emptyList(),
+    val medications: List<Medication> = emptyList(),
+    val doses: List<MedicationDose> = emptyList(),
 )
 
 @Serializable
@@ -173,12 +218,13 @@ data class VitalReading(
     val provenance: Provenance? = null,
 )
 
-enum class HealKinds(val field: String, val label: String) {
-    ACTIVITY("activities", "Activity"),
-    HYDRATION("hydration", "Hydration"),
-    SLEEP("sleep", "Sleep"),
-    MEASUREMENTS("measurements", "Body measurements"),
-    GOALS("goals", "Goals"),
-    STEPS("steps", "Steps"),
-    VITALS("vitals", "Heart, oxygen, temperature, stress and sleep score"),
+enum class HealKinds(val fields: List<String>, val label: String) {
+    ACTIVITY(listOf("activities"), "Activity"),
+    HYDRATION(listOf("hydration"), "Hydration"),
+    SLEEP(listOf("sleep"), "Sleep"),
+    MEASUREMENTS(listOf("measurements"), "Body measurements"),
+    GOALS(listOf("goals"), "Goals"),
+    STEPS(listOf("steps"), "Steps"),
+    VITALS(listOf("vitals"), "Heart, oxygen, temperature, stress and sleep score"),
+    MEDICATIONS(listOf("medications", "doses"), "Medications and doses"),
 }
