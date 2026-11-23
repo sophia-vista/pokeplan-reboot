@@ -1,36 +1,15 @@
 package app.pokeplan.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.ImageComposeScene
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Density
 import app.pokeplan.ui.screens.HomeLive
 import app.pokeplan.ui.screens.HomeLiveAction
-import app.pokeplan.ui.screens.HomeLiveCard
 import app.pokeplan.ui.screens.HomeOpportunities
-import app.pokeplan.ui.theme.Pixel
-import app.pokeplan.ui.theme.PixelTheme
-import java.io.File
+import app.pokeplan.ui.screens.Module
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.jetbrains.skia.EncodedImageFormat
 
-/** Home's time-sensitive strip: the selection rules and the rendered states that matter. */
-@OptIn(ExperimentalComposeUiApi::class)
+/** The module cards' live lines: which card carries each, in what order, and nothing when nothing is live. */
 class HomeTest {
-    private fun render(name: String, fontScale: Float, content: @Composable () -> Unit) {
-        val scene = ImageComposeScene(width = 540, height = 620, density = Density(1.5f, fontScale)) { content() }
-        repeat(20) { scene.render(it * 50_000_000L) }
-        val bytes = scene.render(1_000_000_000L).encodeToData(EncodedImageFormat.PNG)!!.bytes
-        File("build/screenshots/$name.png").apply { parentFile.mkdirs() }.writeBytes(bytes)
-        scene.close()
-    }
-
     private val several = HomeLive(
         reportFloors = 3,
         floorDue = true,
@@ -47,14 +26,13 @@ class HomeTest {
     @Test
     fun nothingIsLiveMeansNothingIsShown() {
         assertEquals(emptyList(), HomeOpportunities.select(HomeLive()))
-        render("home-live-empty", 1f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { HomeLiveCard(HomeOpportunities.select(HomeLive())) {} } } }
+        assertEquals(emptyMap(), HomeOpportunities.byModule(HomeLive()))
     }
 
     @Test
     fun liveThingsAreOneLineEachAndTheMostUrgentComeFirst() {
         val lines = HomeOpportunities.select(several)
-        assertEquals(HomeOpportunities.SHOWN, lines.size, "the strip stays a strip")
-        assertEquals(listOf(5, 5, 4, 3), lines.map { it.urgency }, "most urgent first")
+        assertEquals(listOf(5, 5, 4, 3, 3, 2, 2, 1), lines.map { it.urgency }, "most urgent first")
         assertEquals(HomeLiveAction.WORLD_REPORT, lines.first().kind)
         assertTrue(lines.none { it.text.isBlank() || it.action.isBlank() })
         assertTrue(lines.map { it.id }.toSet().size == lines.size, "one line per thing")
@@ -64,11 +42,24 @@ class HomeTest {
     }
 
     @Test
-    fun theStripRendersLiveAtNormalAndLargeText() {
-        val lines = HomeOpportunities.select(several)
-        render("home-live", 1f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { HomeLiveCard(lines) {} } } }
-        render("home-live-xl", 1.3f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { HomeLiveCard(lines) {} } } }
-        assertTrue(File("build/screenshots/home-live.png").length() > 1_000, "the strip drew")
-        assertTrue(File("build/screenshots/home-live-xl.png").length() > 1_000, "the strip drew at fontScale 1.3")
+    fun everyLineSitsOnItsOwnModulesCard() {
+        val byModule = HomeOpportunities.byModule(several)
+        assertEquals(setOf(Module.WORLD, Module.MINT, Module.CARE, Module.LINK, Module.PLAN), byModule.keys)
+        assertEquals(setOf("world-report", "world-jobs", "world-floor", "world-finds"), byModule.getValue(Module.WORLD).map { it.id }.toSet())
+        assertEquals(listOf("mint-outbreak"), byModule.getValue(Module.MINT).map { it.id })
+        assertEquals(listOf("care-dream"), byModule.getValue(Module.CARE).map { it.id })
+        assertEquals(listOf("link-safari"), byModule.getValue(Module.LINK).map { it.id })
+        assertEquals(listOf("plan-candies"), byModule.getValue(Module.PLAN).map { it.id })
+        assertTrue(byModule.values.flatten().all { it.module == it.kind.module })
+    }
+
+    @Test
+    fun aLiveLineFloatsItsCardByUrgency() {
+        val sev = HomeOpportunities.select(several).associate { it.id to HomeOpportunities.severityOf(it) }
+        assertEquals(3, sev.getValue("world-jobs"))
+        assertEquals(3, sev.getValue("mint-outbreak"))
+        assertEquals(2, sev.getValue("world-finds"))
+        assertEquals(1, sev.getValue("care-dream"))
+        assertEquals(1, sev.getValue("plan-candies"))
     }
 }

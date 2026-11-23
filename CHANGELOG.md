@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.239.1
+
+- **HOME: live lines move onto the module cards, and a card's rows no longer overlap.** The separate "Happening now" strip is gone; each live line now sits on the card of the module it belongs to, under that module's main step: WORLD (expedition report, floor due, jobs to report, Finds to meet), MINT (outbreak), CARE (dreamers to visit), LINK (Safari visits) and PLAN (event companion candies). A card with a live line floats above the quiet ones by its urgency. The Care and Link cards' own "Dream World" and "Friend Safari" rows are those same lines now, so nothing is listed twice, and WORLD's step keeps its own state (exploring, or send a team) while jobs and Finds are rows. The card's lower area was a `Box`, so a main step and a second row were drawn on top of each other (the Care card's routine and its dreamer row overprinted); it is a `Column` now. `HomeOpportunities` groups lines by module (`byModule`, `severityOf`); `HomeTest` updated. The Care row only counts dreamers while the world can still pay a friend today (`World.befriendsLeft`, `GameStore.BEFRIEND_DAILY_CAP`), so it no longer offers a visit that cannot end in a friend. No rule, schema or reward change.
+
 ## 0.239.0
 
 Each life module's places are grouped into at most four primary destinations, with related views behind one row of pills. UI and navigation only: no reward rule, schema or save change.

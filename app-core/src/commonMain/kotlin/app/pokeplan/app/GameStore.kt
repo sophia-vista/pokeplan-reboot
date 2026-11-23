@@ -498,6 +498,8 @@ class GameStore(
         return true
     }
 
+    override fun befriendsLeft(): Int = if (!data.onboarded) 0 else (BEFRIEND_DAILY_CAP - Counters.BEFRIEND.get(data.counters, today)).coerceAtLeast(0)
+
     override fun befriend(event: BefriendEvent): List<Reward>? {
         if (!data.onboarded) return null
         val made = Counters.BEFRIEND.get(data.counters, today)
