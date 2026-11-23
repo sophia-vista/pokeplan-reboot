@@ -127,7 +127,7 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
 enum class CareSection(val label: String, val icon: String) {
-    ROUTINES("Routines", "oaks-parcel"), CALM("Calm", "lunar-wing"), REFLECT("Reflect", "journal"), DREAM("Dream", "town-map"),
+    PRACTICE("Practice", "oaks-parcel"), REFLECT("Reflect", "journal"), DREAM("Dream", "town-map"),
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -148,8 +148,7 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
             ) {
                 when (page) {
                     null -> TodayView(model, openPokemon)
-                    CareSection.ROUTINES -> RoutinesView(model)
-                    CareSection.CALM -> CalmView(model)
+                    CareSection.PRACTICE -> PracticeView(model)
                     CareSection.REFLECT -> ReflectView(model)
                     CareSection.DREAM -> DreamView(model, openPokemon)
                 }
@@ -164,8 +163,7 @@ private fun careSections(model: AppModel): List<MenuEntry> {
     val tint = ModuleAccent.CARE.accent
     return listOf(
         MenuEntry("TODAY", "poke-ball", "Today", tint = tint),
-        MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = tint),
-        MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm", "breathe, skills", tint = tint),
+        MenuEntry(CareSection.PRACTICE.name, CareSection.PRACTICE.icon, "Practice", if (today.isEmpty()) "routines and calm" else "$done of ${today.size} today", tint = tint),
         MenuEntry(CareSection.REFLECT.name, CareSection.REFLECT.icon, "Reflect", if (model.care.diaryToday() != null) "saved today" else "diary card, journal", tint = tint),
         MenuEntry(CareSection.DREAM.name, CareSection.DREAM.icon, "Dream", "visitors, play, party", tint = tint),
     )
@@ -181,11 +179,11 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
     if (today.isEmpty()) {
         EmptyState(
             if (care.routines.none { !it.archived }) "No routines yet" else "Nothing planned for today",
-            action = "Add a routine" to { model.careSection = CareSection.ROUTINES }, sleeper = true,
+            action = "Add a routine" to { model.carePracticeCalm = false; model.careSection = CareSection.PRACTICE }, sleeper = true,
         )
     } else TextBox {
         Column {
-            SectionLabel("$done of ${today.size} today", icon = CareSection.ROUTINES.icon)
+            SectionLabel("$done of ${today.size} today", icon = CareSection.PRACTICE.icon)
             today.forEachIndexed { i, r ->
                 if (i > 0) HorizontalDivider(color = Pixel.Border)
                 RoutineLine(model, r)
@@ -197,13 +195,27 @@ private fun TodayView(model: AppModel, openPokemon: (String) -> Unit) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Quick actions")
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("Calm", { model.careSection = CareSection.CALM }, color = ModuleAccent.CARE.accent, compact = true)
+                PixelButton("Calm", { model.carePracticeCalm = true; model.careSection = CareSection.PRACTICE }, color = ModuleAccent.CARE.accent, compact = true)
                 PixelButton("Check in", { model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
                 PixelButton("Write", { model.reflectJournal = true; model.careSection = CareSection.REFLECT }, color = Pixel.InkSoft, compact = true)
             }
         }
     }
     CarePartyPanel(model, openPokemon)
+}
+
+/**
+ * Practice is one place with two halves (CARE.md 3.2): the routines and the calm break with its skills, chosen by a pill.
+ * The calm pill opens from Today's "Calm" quick action and the routine add from an empty state.
+ */
+@Composable
+private fun PracticeView(model: AppModel) {
+    val calm = model.carePracticeCalm
+    Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        TabButton("Routines", !calm, { model.carePracticeCalm = false }, Modifier.weight(1f))
+        TabButton("Calm", calm, { model.carePracticeCalm = true }, Modifier.weight(1f))
+    }
+    if (calm) CalmView(model) else RoutinesView(model)
 }
 
 @Composable
@@ -319,7 +331,7 @@ private fun RoutinesView(model: AppModel) {
     }
 
     val (archived, active) = data.routines.partition { it.archived }
-    if (active.isEmpty()) EmptyState("No routines yet", icon = CareSection.ROUTINES.icon, addAbove = "Add a routine")
+    if (active.isEmpty()) EmptyState("No routines yet", icon = CareSection.PRACTICE.icon, addAbove = "Add a routine")
     val sorted = active.sortedWith(compareBy(nullsLast()) { it.time })
     if (sorted.isNotEmpty()) TextBox {
         Column {

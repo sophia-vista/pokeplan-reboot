@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -128,7 +129,7 @@ import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
 
 enum class MintSection(val label: String, val icon: String) {
-    ACCOUNTS("Accounts", "member-card"), ACTIVITY("Activity", "journal"), BUDGETS("Budgets", "heart-scale"), BILLS("Bills and income", "oaks-letter"),
+    ACCOUNTS("Accounts", "member-card"), ACTIVITY("Activity", "journal"), PLANS("Plans", "heart-scale"),
     REVIEW("Review", "scope-lens"), IMPORT("Import", "town-map"), SETTINGS("Settings", "storage-key"),
 }
 
@@ -202,13 +203,23 @@ private fun MintPage(model: AppModel, section: MintSection?, openPokemon: (Strin
         when (section) {
             MintSection.ACCOUNTS -> AccountsView(model)
             MintSection.ACTIVITY -> ActivityView(model, find, reveal)
-            MintSection.BUDGETS -> BudgetsView(model)
-            MintSection.BILLS -> BillsView(model)
+            MintSection.PLANS -> PlansPlace(model)
             MintSection.REVIEW -> MintReviewView(model)
             MintSection.IMPORT -> MintImportView(model)
             MintSection.SETTINGS -> MintSettingsView(model)
         }
     }
+}
+
+/** Plans is one place with two halves (MINT.md 3): the budgets, and the bills and income. */
+@Composable
+private fun PlansPlace(model: AppModel) {
+    val bills = model.mintPlansTab == 1
+    Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        TabButton("Budgets", !bills, { model.mintPlansTab = 0 }, Modifier.weight(1f))
+        TabButton("Bills and income", bills, { model.mintPlansTab = 1 }, Modifier.weight(1f))
+    }
+    if (bills) BillsView(model) else BudgetsView(model)
 }
 
 @Composable
@@ -218,8 +229,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val sections = listOf(
         MenuEntry(MintSection.ACCOUNTS.name, MintSection.ACCOUNTS.icon, "Accounts", if (data.accounts.isEmpty()) "add one" else "${data.accounts.count { it.status == AccountStatus.ACTIVE }} open", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.ACTIVITY.name, MintSection.ACTIVITY.icon, "Activity", if (data.transactions.isEmpty()) "add a purchase" else "${data.transactions.size} records", tint = ModuleAccent.MINT.accent),
-        MenuEntry(MintSection.BUDGETS.name, MintSection.BUDGETS.icon, "Budgets", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) "optional" else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} active", tint = ModuleAccent.MINT.accent),
-        MenuEntry(MintSection.BILLS.name, MintSection.BILLS.icon, "Bills and income", billsDetail(model), tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.PLANS.name, MintSection.PLANS.icon, "Plans", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) billsDetail(model) else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} budgets, ${billsDetail(model)}", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
     ) + listOfNotNull(
         MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },

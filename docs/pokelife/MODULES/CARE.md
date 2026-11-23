@@ -34,14 +34,13 @@ CARE follows `../FEATURES/DESIGN_SYSTEM.md` and introduces no separate design la
 
 The CARE landing is a calm, action-oriented entry point. It must not compete with the Home dashboard or become a catalogue of every feature.
 
-Primary areas (**owner decision: exactly these five, reached from the Sections key every module has at the end of its header (no row of keys on the page); Care opens on Today, and Back from any other goes to Today**):
-1. **Today** — next useful action, today's routines, concise completion progress, the mood key, a Quick actions box (the commonly done actions: Calm, check in, write a journal entry; adding a routine is set-up and lives in Routines), and Care's party last (also in Dream); the order every module's main screen keeps (`DESIGN_SYSTEM.md` 5.1).
-2. **Routines** — add, edit, skip, archive and restore routines, and tick yesterday (3.1).
-3. **Calm** — the breathing break and the skills library, together: quick grounding, breathing and coping tools.
-4. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
-5. **Dream** — the Pokémon interaction environment (5), where the visitors (6) and Care Play (4) now live too; it is a companion experience, not another task dashboard.
+Primary areas (**owner decision, 23 November 2026: exactly these four, reached from the Sections key every module has at the end of its header (no row of keys on the page); Care opens on Today, and Back from any other goes to Today**):
+1. **Today** — next useful action, today's routines, concise completion progress, the mood key, a Quick actions box (the commonly done actions: Calm, check in, write a journal entry; adding a routine is set-up and lives in Practice), and Care's party last (also in Dream); the order every module's main screen keeps (`DESIGN_SYSTEM.md` 5.1).
+2. **Practice** — one destination with two halves chosen by a pill: **Routines** (add, edit, skip, archive and restore routines, and tick yesterday; 3.1) and **Calm** (the breathing break and the skills library, together: quick grounding, breathing and coping tools; 3.2). The Calm quick action on Today opens the calm half; adding a routine opens the routine half.
+3. **Reflect** — one destination with two distinct modes: Diary Card (structured check-in) and Journal (free-form writing).
+4. **Dream** — the Pokémon interaction environment (5), where the visitors (6) and Care Play (4) now live too; it is a companion experience, not another task dashboard.
 
-The Sections key lists the five places with their state for today. Prior diary cards and the journal archive are secondary destinations inside Reflect. Care trends are in Me, next to Plan progress. Care's reminder switch is in Me → Settings → Notifications, and tracked urges are edited on the Diary card. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
+The Sections key lists the four places with their state for today. Prior diary cards and the journal archive are secondary destinations inside Reflect. Care trends are in Me, next to Plan progress. Care's reminder switch is in Me → Settings → Notifications, and tracked urges are edited on the Diary card. The buddy should be present contextually, not as a large competing dashboard card. Visitor/party management must not crowd the daily-care workflow.
 
 ### 3.1 Today and routines
 
@@ -52,7 +51,7 @@ The Sections key lists the five places with their state for today. Prior diary c
 - Do not use shame copy, broken streaks, missed-day penalties, aggressive reminders or compulsory check-ins.
 - Preserve routine history and allow safe archiving/restoration.
 
-### 3.2 Calm
+### 3.2 Practice: the calm half
 
 Calm is one page: the breathing break first, then the skills library by DBT group. A skill opens as a **guided walk-through**, the way the breathing break is guided: a progress bar and one page at a time, never the whole list of steps at once. Page 0 says what the skill is for ("Begin"), each step has its own page ("Next" and "Back"; no timer, no wrong answer), and the last page closes it: "I practised this" pays as before, and the breathing skill instead leads back to the break, which pays as a calm break. Leaving at any page costs nothing. While a break runs the library is hidden. Provide short, accessible tools that can be entered and exited quickly. Activities should not require a mood disclosure or journal entry. Keep the tool itself distinct from diary tracking and avoid presenting the module as diagnosis or treatment.
 
@@ -299,7 +298,7 @@ Use stable IDs and idempotent reward events. Do not derive rewards from private 
 ## 10. Acceptance criteria
 
 ### CARE utility and privacy
-- CARE landing presents Today, Calm and Reflect clearly, with Dream accessible without displacing core care actions.
+- CARE landing presents Today, Practice (routines and calm) and Reflect clearly, with Dream accessible without displacing core care actions.
 - Diary Card and Journal remain distinct, searchable/editable/exportable records.
 - Routine and diary reminders are optional and non-nagging.
 - Sensitive CARE content never enters shared progression or World.

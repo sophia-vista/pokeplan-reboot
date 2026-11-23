@@ -5,9 +5,21 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.238.1
+## 0.239.1
 
 - **HOME: live lines move onto the module cards, and a card's rows no longer overlap.** The separate "Happening now" strip is gone; each live line now sits on the card of the module it belongs to, under that module's main step: WORLD (expedition report, floor due, jobs to report, Finds to meet), MINT (outbreak), CARE (dreamers to visit), LINK (Safari visits) and PLAN (event companion candies). A card with a live line floats above the quiet ones by its urgency. The Care and Link cards' own "Dream World" and "Friend Safari" rows are those same lines now, so nothing is listed twice, and WORLD's step keeps its own state (exploring, or send a team) while jobs and Finds are rows. The card's lower area was a `Box`, so a main step and a second row were drawn on top of each other (the Care card's routine and its dreamer row overprinted); it is a `Column` now. `HomeOpportunities` groups lines by module (`byModule`, `severityOf`); `HomeTest` updated. The Care row only counts dreamers while the world can still pay a friend today (`World.befriendsLeft`, `GameStore.BEFRIEND_DAILY_CAP`), so it no longer offers a visit that cannot end in a friend. No rule, schema or reward change.
+
+## 0.239.0
+
+Each life module's places are grouped into at most four primary destinations, with related views behind one row of pills. UI and navigation only: no reward rule, schema or save change.
+
+- **CARE.** Today, Practice (the routines and the calm break with its skills under one `Routines | Calm` pill), Reflect and Dream. The Calm quick action and an empty routine list open the matching pill.
+- **MINT.** Accounts, Activity and Plans, which holds budgets and bills and income under one `Budgets | Bills and income` pill; Review, Import and Settings follow as secondary places.
+- **HEAL.** Import first: where the phone has Health Connect or the Huawei reader, the landing's first quick action reads it in (the label names the provider that is there). Activity holds exercise and sleep under one pill; Wellness holds water, body and readings under three; **Records** holds the medication and dose log and gains the timeline and illnesses as further views when they are built; Goals, Connections and Settings follow.
+- **WORLD.** Explore (the Atlas and the Guild under one `Atlas | Guild` pill), Expeditions, Town and Journal; Skills and Finds stay secondary places.
+- **LINK.** People and Dates are the primary places; Moments (a timeline of events with the people in them) is specified and is listed once built; Follow-ups and Settings stay secondary.
+- **PLAN** already had Tasks, Calendar and Focus.
+- Docs: `DESIGN_SYSTEM.md` 6.7 gained the grouping rule; CARE, HEAL, MINT, LINK and WORLD and the Implementation Guide record it.
 
 ## 0.238.0
 
