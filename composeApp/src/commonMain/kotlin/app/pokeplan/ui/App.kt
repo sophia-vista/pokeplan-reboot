@@ -73,6 +73,7 @@ import app.pokeplan.ui.screens.LocalReduceMotion
 import app.pokeplan.ui.screens.ModulesScreen
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.OnboardingScreen
+import app.pokeplan.ui.screens.StartupLoading
 import app.pokeplan.ui.screens.PlanSection
 import app.pokeplan.ui.screens.NavButton
 import app.pokeplan.ui.screens.UndoBar
@@ -84,8 +85,10 @@ import app.pokeplan.ui.theme.PixelTheme
 import app.pokeplan.ui.updates.UpdateAccess
 import app.pokeplan.ui.updates.UpdateRelease
 import app.pokeplan.ui.updates.isNewerRelease
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import kotlin.time.Clock as SystemClock
 
 
@@ -368,8 +371,9 @@ fun App(
     onBaseChanged: ((BaseData) -> Unit)? = null,
     onLinkChanged: ((LinkData) -> Unit)? = null,
     onDark: ((Boolean) -> Unit)? = null,
+    asyncModel: Boolean = false,
 ) {
-    val model = remember {
+    fun buildModel(): AppModel {
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
@@ -377,8 +381,31 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val base = BaseStore(baseStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher, updates).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
+        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher, updates)
     }
+    fun AppModel.startHere() {
+        openPokemonId = startPokemon
+        addTaskRequested = startAddTask
+        sharedText = startSharedText
+        open(start, focusTab)
+    }
+    // Opening the save and building the stores is a decode, a few unseals and the Dex tables: on Android the startup
+    // screen stays up and keeps its pixels moving while `asyncModel` does that off the UI thread, instead of the first
+    // real frame blocking the last drawn one. Every other entry point builds it here, as before.
+    var built by remember { mutableStateOf<AppModel?>(null) }
+    val model = if (asyncModel) {
+        val ready = built
+        if (ready == null) {
+            LaunchedEffect(Unit) {
+                val started = withContext(Dispatchers.Default) { warmStartup(); buildModel() }
+                started.startHere()
+                built = started
+            }
+            StartupLoading()
+            return
+        }
+        ready
+    } else remember { buildModel().also { it.startHere() } }
     val foreground = rememberInForeground()
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model, foreground) {

@@ -1,8 +1,12 @@
 package app.pokeplan.app.heal
 
+import app.pokeplan.heal.DoseStatus
 import app.pokeplan.heal.HealData
 import app.pokeplan.heal.HealSettings
 import app.pokeplan.heal.HydrationEntry
+import app.pokeplan.heal.Medication
+import app.pokeplan.heal.MedicationDose
+import app.pokeplan.heal.MedicationStatus
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -85,5 +89,66 @@ class HealRemindersTest {
         assertEquals(ActionResult.DISMISSED, router.handle(request, ReminderActions.DISMISS))
         assertEquals(now + 30 * 60_000L, ReminderSnooze.untilMillis(ReminderModule.HEAL, ReminderActions.SNOOZE_30, now, utc))
         assertNull(ReminderSnooze.untilMillis(ReminderModule.HEAL, ReminderActions.TOMORROW, now, utc))
+    }
+
+    private fun medication(
+        id: String = "m",
+        times: List<LocalTime> = listOf(LocalTime(8, 0), LocalTime(20, 0)),
+        remind: Boolean = true,
+        status: MedicationStatus = MedicationStatus.ACTIVE,
+        supply: Int? = null,
+        refill: Int? = null,
+        doses: List<MedicationDose> = emptyList(),
+    ) = HealData(
+        medications = listOf(Medication(id, "Metformin", times = times, startDay = LocalDate(2026, 11, 1), status = status, remind = remind, supplyLeft = supply, refillAt = refill)),
+        doses = doses,
+    )
+
+    @Test
+    fun aMedicationOnlyRemindsWhenThePlayerTurnedItOnAndKeepsTheirTimes() {
+        assertTrue(HealReminders.medicationUpcoming(HealData(), app, now, utc).isEmpty())
+        assertTrue(HealReminders.medicationUpcoming(medication(remind = false), app, now, utc).isEmpty())
+        assertTrue(HealReminders.medicationUpcoming(medication(status = MedicationStatus.PAUSED), app, now, utc).isEmpty())
+        val r = HealReminders.medicationUpcoming(medication(), app, now, utc)
+        assertEquals(listOf(at(day, 20), at(day.plusDays(1), 8), at(day.plusDays(1), 20), at(day.plusDays(2), 8), at(day.plusDays(2), 20)), r.map { it.atMillis })
+        assertTrue(r.all { !it.lowSupply })
+        assertEquals("med-m-2000", r.first().ref)
+    }
+
+    @Test
+    fun aLoggedDoseStopsItsOwnReminderAndTheQuietHoursStillApply() {
+        val data = medication(times = listOf(LocalTime(6, 30), LocalTime(20, 0)), doses = listOf(MedicationDose("d", "m", day, LocalTime(20, 0), DoseStatus.TAKEN, now)))
+        val r = HealReminders.medicationUpcoming(data, app, now, utc)
+        assertEquals(listOf(at(day.plusDays(1), 7), at(day.plusDays(1), 20), at(day.plusDays(2), 7), at(day.plusDays(2), 20)), r.map { it.atMillis }, "today's 6:30 is held to 7:00, its 20:00 is logged, tomorrow's stay")
+        val request = HealReminderAdapter({ data }, { app }, { day }).requests(now, utc).first { it.kind == MedicationReminder.KIND_DOSE }
+        assertEquals("med-m-0630", request.sourceRef)
+        assertEquals(NudgeText("A medication is due", ""), HealReminderAdapter({ data }, { app }, { day }).present(request), "the words name nothing")
+    }
+
+    @Test
+    fun aLowSupplyCountRemindsOnceADayUntilItIsRefilled() {
+        val low = medication(times = listOf(LocalTime(8, 0), LocalTime(20, 0)), supply = 2, refill = 3)
+        val r = HealReminders.medicationUpcoming(low, app, now, utc)
+        assertEquals(5, r.count { !it.lowSupply }, "each unlogged scheduled time still reminds")
+        assertEquals(3, r.count { it.lowSupply }, "one refill nudge a day, at the last time of it")
+        assertTrue(r.filter { it.lowSupply }.all { it.time == LocalTime(20, 0) })
+        assertEquals(listOf(at(day, 20), at(day.plusDays(1), 8), at(day.plusDays(1), 20), at(day.plusDays(2), 8), at(day.plusDays(2), 20)), r.filter { !it.lowSupply }.map { it.atMillis })
+        val filled = low.copy(medications = low.medications.map { it.copy(supplyLeft = 30) })
+        assertTrue(HealReminders.medicationUpcoming(filled, app, now, utc).none { it.lowSupply })
+    }
+
+    @Test
+    fun theMedicationRequestIsOpaqueAndHasNoActionThatRecordsAnything() {
+        val data = medication()
+        val adapter = HealReminderAdapter({ data }, { app }, { day })
+        val request = adapter.requests(now, utc).first()
+        assertEquals(ReminderModule.HEAL, request.module)
+        assertTrue(adapter.isStillWanted(request))
+        val logged = data.copy(doses = listOf(MedicationDose("d", "m", request.occurrence.let(LocalDate::parse), LocalTime(20, 0), DoseStatus.TAKEN, now)))
+        assertFalse(HealReminderAdapter({ logged }, { app }, { day }).isStillWanted(request))
+        assertFalse(adapter.isStillWanted(request.copy(sourceRef = "med-m-0000")))
+        val router = ReminderRouter(listOf(adapter))
+        assertEquals(ActionResult.NOT_ALLOWED, router.handle(request, ReminderActions.DONE))
+        assertEquals(ActionResult.SNOOZED, router.handle(request, ReminderActions.SNOOZE_30))
     }
 }

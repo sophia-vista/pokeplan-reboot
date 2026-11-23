@@ -266,6 +266,8 @@ class HealTables(private val store: DataStore) {
             Slice("goals", "heal_goal", "startDay"),
             Slice("steps", "heal_steps", "day"),
             Slice("vitals", "heal_vital", "day"),
+            Slice("medications", "heal_medication", "startDay"),
+            Slice("doses", "heal_dose", "day"),
         )
 
         val KINDS: List<String> = SLICES.map { it.field }

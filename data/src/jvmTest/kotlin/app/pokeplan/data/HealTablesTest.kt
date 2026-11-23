@@ -8,8 +8,11 @@ import app.pokeplan.app.heal.HealStore
 import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.app.storage.Storage
 import app.pokeplan.heal.ActivityType
+import app.pokeplan.heal.DoseStatus
 import app.pokeplan.heal.HealKinds
 import app.pokeplan.heal.MeasureType
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -20,6 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -39,7 +43,7 @@ class HealTablesTest {
 
     private fun countWrites(s: DataStore) {
         s.driver.execute(null, "CREATE TABLE write_log(t TEXT NOT NULL)", 0)
-        for (t in listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital", "heal_state")) {
+        for (t in listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital", "heal_medication", "heal_dose", "heal_state")) {
             s.driver.execute(null, "CREATE TRIGGER log_ins_$t AFTER INSERT ON $t BEGIN INSERT INTO write_log VALUES ('$t'); END", 0)
             s.driver.execute(null, "CREATE TRIGGER log_del_$t AFTER DELETE ON $t BEGIN INSERT INTO write_log VALUES ('$t'); END", 0)
         }
@@ -156,7 +160,7 @@ class HealTablesTest {
         assertNull(s.live.read("heal"))
     }
 
-    private val KINDS = listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital")
+    private val KINDS = listOf("heal_activity", "heal_hydration", "heal_sleep", "heal_measurement", "heal_goal", "heal_steps", "heal_vital", "heal_medication", "heal_dose")
 
     @Test
     fun theBackupSnapshotCarriesHealAndARestoreOfAnOlderBackupLeavesItAlone() {
@@ -182,7 +186,7 @@ class HealTablesTest {
         val text = BackupBundle.encode(docs, DataStore.SCHEMA_VERSION, 7)
         val staged = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && staged.documents.keys == setOf("save", "heal"))
-        assertEquals(12, DataStore.SCHEMA_VERSION)
+        assertEquals(13, DataStore.SCHEMA_VERSION)
         val bad = BackupBundle.encode(mapOf("save" to "{}"), 7, 7).replace("\"save\"", "\"health\"")
         assertTrue(BackupBundle.stage(bad, 7) is BackupBundle.Staged.Refused)
     }
@@ -221,4 +225,26 @@ class HealTablesTest {
         s.live.movePokemonToTables(8)
         assertEquals(1, healOn(s, g).data.activities.size)
     }
+
+    @Test
+    fun medicationsAndTheirDoseLogHaveTheirOwnTablesAndEraseTogether() {
+        val s = live()
+        val g = game()
+        val heal = healOn(s, g)
+        val m = assertNotNull(heal.addMedication("Metformin", times = listOf(LocalTime(8, 0)), startDay = LocalDate(2026, 11, 1), supplyLeft = 4).record)
+        heal.logDose(m.id, LocalDate(2026, 11, 7), LocalTime(8, 0), DoseStatus.TAKEN)
+        assertEquals(1, count(s, "heal_medication"))
+        assertEquals(1, count(s, "heal_dose"))
+        assertTrue(s.healTables.readKind("medications").contains("Metformin"))
+        assertTrue(s.healTables.readKind("doses").contains("TAKEN"))
+        assertEquals(3, healOn(s, g).data.medications.single().supplyLeft, "the dose it counted survived the reopen")
+        val exported = obj(HealExport.json(heal.data, setOf(HealKinds.MEDICATIONS)))
+        assertEquals(setOf("format", "medications", "doses"), exported.keys, "the kind export carries both families")
+        s.healTables.erase("medications")
+        assertEquals(0, count(s, "heal_medication"))
+        assertEquals(1, count(s, "heal_dose"), "erasing one family leaves the other, as every family does")
+        val fresh = HealExport.without(healOn(s, g).data, HealKinds.MEDICATIONS)
+        assertTrue(fresh.medications.isEmpty() && fresh.doses.isEmpty(), "the player-facing kind erase covers both")
+    }
+
 }

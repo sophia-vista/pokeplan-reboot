@@ -20,6 +20,32 @@ The owner's phone-testing batch of 23 November 2026. The reward contract stops r
 - **UI quality gates.** `ScreenshotCompare` turns the 151-state render suite into a real golden gate: committed baselines under `composeApp/src/jvmTest/resources/screenshots/`, byte-identity short-circuit, per-channel tolerance 8/255, 0.2% differing-pixel budget, a failure that names the percentage and first differing box, and `UPDATE_SCREENSHOTS=1` for reviewed refreshes (never auto-accepted). `SemanticsTest` walks the semantics tree of every main screen at normal and 1.3× text and fails on an interactive control with no label, or an icon-only control below the 48 dp target. `tools/ui-check/device-accessibility.md` records the on-device TalkBack/font-scale/large-screen pass, with its script; TEST_STRATEGY.md sections 12, 13 and 20 updated.
 - **Under the hood.** `WorldDigest.kt`, `HuaweiSources.kt`, `WorldAlerts.nextFloorAt`, `HomeOpportunities.kt`, `SoundMeter.kt`, `ScreenshotCompare.kt`, `SemanticsTest.kt`. No schema or save-format change; `BaseSettings.hidden` is gone but old saves still load (unknown keys are ignored). Not run on a phone: every item above is covered by JVM tests only where noted.
 
+## 0.237.0
+
+HEAL's first personal-health-record slice: a private medication and supplement log, an optional dose log, a supply count with a refill reminder and schedule reminders. Nothing here pays: adherence is never a Field Research event, candy or ledger entry, so `RewardRules.VERSION` stays and no golden vector was regenerated. Schema 13 adds `heal_medication` and `heal_dose` (migration `12.sqm`), sealed with the rest of Heal.
+
+- **Medications (HEAL.md 8.1, as built in 22C).** A new HEAL section holds a private reference the player types in themselves: a name (the only required field), strength, instructions, notes, a start and optional end date, an active / paused / stopped state, up to six times of day, and optionally a count of doses left with the point where they want a refill reminder. No times means "as needed" and schedules nothing. Every field can be edited without touching the dose log; nothing is calculated, suggested or validated as a dose.
+- **Dose log.** A scheduled time is marked taken or skipped (one entry per medication, day and time), and an as-needed record gets "Taken now" and "Skip now". A delete offers Undo. A taken dose takes one off the player's own supply count and Undo puts it back; a skipped dose changes no count. Adherence is never a score, a target or a reward.
+- **Reminders.** Per medication, off until the player turns it on and needs at least one time: through the shared scheduler (`HealReminderAdapter`) the reminder repeats the entered times for the coming days, drops a time already logged, and stays silent for a paused or stopped record and outside its dates. A refill nudge comes once a day at the last scheduled time while the count is at or under the player's own point. The lock screen says only that a medication is due (or that a refill may be near) — no name, strength or instruction — and no notification action records anything.
+- **Today.** A "x of y taken" line appears only when the day has scheduled doses.
+- **Data.** `heal_medication` and `heal_dose` are sealed with the rest of Heal, in the daily backup and the backup bundle, and erase-by-kind as "Medications and doses".
+
+## 0.236.2
+
+The loading screen keeps moving while the app opens. UI and startup only: no reward rule, schema or save change.
+
+- **Opening the app.** The save was opened off the UI thread, but building the stores and reading the Dex tables then ran on the UI thread while the first real frame was composed. The last drawn frame stayed up for that whole time — the startup screen, frozen on one pixel — which is what made opening look stuck. Android now builds the model and reads the Dex tables and the dialogue font in `warmStartup()` off the UI thread while the startup screen is still up (`App(asyncModel = true)`), and swaps in the app once it is ready.
+- **Test:** `StartupScreenTest` renders the opening the way the app does it and checks the startup screen turns into the app; `LoadingDotsTest` (0.236.1) keeps the pixels advancing.
+
+## 0.236.1
+
+The loading pixels move again, and the work under them no longer stops the phone's frame clock. UI only: no reward rule, schema or save change.
+
+- **The pixels follow the frame clock.** `LoadingDots` used an infinite tween, and a tween is scaled by the phone's animation setting while any work on the UI thread stops frames altogether, so the indicator could sit on its first pixel. It now steps every 300 ms from frame times, and holds three solid pixels under Reduce motion or with the phone's animations turned off.
+- **Back up now and Restore no longer block the UI thread.** Both wrote or swapped the save on the UI thread, which froze the button, the pixels and the blocking overlay for as long as the file work took; they now run on `Dispatchers.Default` and apply their result on the UI thread, like the other copies already did.
+- **Test:** `LoadingDotsTest` renders the composable at known frame times and reads the pixels back: they advance, hold under Reduce motion and hold with the platform motion scale at zero.
+
+
 ## 0.236.0
 
 UI only: search, filters, add forms and rare controls now stay out of sight until asked for (`DESIGN_SYSTEM.md` 12B). No data, rule or storage change; `RewardRules.VERSION` stays.
