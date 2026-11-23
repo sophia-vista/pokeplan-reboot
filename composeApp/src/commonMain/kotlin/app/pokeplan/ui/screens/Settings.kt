@@ -40,7 +40,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -266,9 +265,13 @@ internal fun BackupsCard(model: AppModel) {
                 Text(entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}" } ?: "No backup yet", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Back up now", {
+                        // Writing the backup reads the save and the files; off this thread, so the pixels keep moving (5.6).
                         backingUp = true
-                        // The backup is written on this thread; wait one frame so the key can show its pixels before it starts (5.6).
-                        scope.launch { withFrameNanos { }; note = backups.backupNow(); entries = backups.automatic(); backingUp = false }
+                        scope.launch {
+                            note = withContext(Dispatchers.Default) { backups.backupNow() }
+                            entries = backups.automatic()
+                            backingUp = false
+                        }
                     }, Modifier.weight(1f), Pixel.Tone, loading = backingUp, compact = true)
                     PixelButton("Save a copy", { copying = true; backups.saveCopy(null) { copying = false; note = it } }, Modifier.weight(1f), Pixel.InkSoft, loading = copying, compact = true)
                 }
@@ -296,9 +299,14 @@ internal fun BackupsCard(model: AppModel) {
                     Text("Put the backup from ${backupLabel(millis)} back? What is on this phone now is kept aside, so this can be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) // copy-ok: warning or legal
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelButton("Restore", {
+                            // Reading the backup and swapping the save is file work; off this thread, then the stores reload.
                             restoring = true
-                            // Putting the save back runs on this thread; wait one frame so the blocking overlay is drawn first.
-                            scope.launch { withFrameNanos { }; restored(backups.restoreAutomatic(millis)); asking = null; restoring = false }
+                            scope.launch {
+                                val text = withContext(Dispatchers.Default) { backups.restoreAutomatic(millis) }
+                                restored(text)
+                                asking = null
+                                restoring = false
+                            }
                         }, Modifier.weight(1f), Pixel.Warning, loading = restoring, compact = true)
                         PixelButton("Keep what I have", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }

@@ -14,6 +14,13 @@ HEAL's first personal-health-record slice: a private medication and supplement l
 - **Reminders.** Per medication, off until the player turns it on and needs at least one time: through the shared scheduler (`HealReminderAdapter`) the reminder repeats the entered times for the coming days, drops a time already logged, and stays silent for a paused or stopped record and outside its dates. A refill nudge comes once a day at the last scheduled time while the count is at or under the player's own point. The lock screen says only that a medication is due (or that a refill may be near) — no name, strength or instruction — and no notification action records anything.
 - **Today.** A "x of y taken" line appears only when the day has scheduled doses.
 - **Data.** `heal_medication` and `heal_dose` are sealed with the rest of Heal, in the daily backup and the backup bundle, and erase-by-kind as "Medications and doses".
+## 0.236.1
+
+The loading pixels move again, and the work under them no longer stops the phone's frame clock. UI only: no reward rule, schema or save change.
+
+- **The pixels follow the frame clock.** `LoadingDots` used an infinite tween, and a tween is scaled by the phone's animation setting while any work on the UI thread stops frames altogether, so the indicator could sit on its first pixel. It now steps every 300 ms from frame times, and holds three solid pixels under Reduce motion or with the phone's animations turned off.
+- **Back up now and Restore no longer block the UI thread.** Both wrote or swapped the save on the UI thread, which froze the button, the pixels and the blocking overlay for as long as the file work took; they now run on `Dispatchers.Default` and apply their result on the UI thread, like the other copies already did.
+- **Test:** `LoadingDotsTest` renders the composable at known frame times and reads the pixels back: they advance, hold under Reduce motion and hold with the platform motion scale at zero.
 
 ## 0.236.0
 
