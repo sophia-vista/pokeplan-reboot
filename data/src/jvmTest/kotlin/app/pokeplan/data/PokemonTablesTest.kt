@@ -282,7 +282,7 @@ class PokemonTablesTest {
                 st.execute("INSERT INTO guardian_slot(slot, owned_id) VALUES (1, 'b')")
             }
             val s = JvmDatabase.open(file.path)
-            assertEquals(12, DataStore.SCHEMA_VERSION)
+            assertEquals(13, DataStore.SCHEMA_VERSION)
             assertEquals(4L, s.pokemon.count())
             assertEquals(listOf("a", "b", "c", "d"), s.pokemon.all().map { it.id }, "the order they were owned")
             assertEquals(PokemonPlace.Buddy, s.pokemon.placeOf("a"))
@@ -485,7 +485,7 @@ class PokemonTablesTest {
     @Test
     fun theTablesAreAtSchemaSixWithOnePlaceTable() {
         val s = JvmDatabase.open()
-        assertEquals(12, DataStore.SCHEMA_VERSION)
+        assertEquals(13, DataStore.SCHEMA_VERSION)
         val tables = mutableSetOf<String>()
         s.driver.executeQuery(null, "SELECT name FROM sqlite_master WHERE type = 'table'", { c ->
             while (c.next().value) tables += c.getString(0)!!

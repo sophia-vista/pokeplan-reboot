@@ -2,6 +2,7 @@ package app.pokeplan.heal
 
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -100,5 +101,55 @@ class HealRulesTest {
         assertEquals(LocalDate(2026, 11, 1), HealRules.weekStartOf(day, DayOfWeek.SUNDAY))
         assertEquals("1 h 05 min", HealRules.duration(65))
         assertEquals("45 min", HealRules.duration(45))
+    }
+
+    private fun medication(
+        id: String = "m",
+        times: List<LocalTime> = listOf(LocalTime(8, 0), LocalTime(20, 0)),
+        status: MedicationStatus = MedicationStatus.ACTIVE,
+        start: LocalDate = LocalDate(2026, 11, 1),
+        end: LocalDate? = null,
+        supply: Int? = null,
+        refill: Int? = null,
+    ) = Medication(id, "Metformin", "500 mg", "with food", times, start, end, status, supplyLeft = supply, refillAt = refill)
+
+    @Test
+    fun aMedicationIsJustWhatThePlayerTypedAndIsCheckedForShapeOnly() {
+        assertTrue(HealRules.checkMedication(medication()) is Check.Ok)
+        assertTrue(HealRules.checkMedication(medication().copy(name = " ")) is Check.Refused)
+        assertTrue(HealRules.checkMedication(medication(times = List(HealRules.MEDICATION_TIMES_MAX + 1) { LocalTime(it % 24, 0) })) is Check.Refused)
+        assertTrue(HealRules.checkMedication(medication().copy(startDay = day, endDay = LocalDate(2026, 11, 6))) is Check.Refused, "an end date before the start")
+        assertTrue(HealRules.checkMedication(medication(supply = -1)) is Check.Refused)
+        assertTrue(HealRules.checkMedication(medication(supply = HealRules.MEDICATION_SUPPLY_MAX + 1)) is Check.Refused)
+        assertTrue(HealRules.checkMedication(medication().copy(instructions = "x".repeat(HealRules.NOTE_MAX + 1))) is Check.Refused)
+    }
+
+    @Test
+    fun theScheduleOnlyRunsInsideTheEnteredWindowAndDropsPausedFinishedOrStoppedOnes() {
+        val m = medication()
+        assertEquals(listOf(LocalTime(8, 0), LocalTime(20, 0)), HealRules.medicationTimesOn(m, day))
+        assertEquals(emptyList(), HealRules.medicationTimesOn(m.copy(status = MedicationStatus.PAUSED), day))
+        assertEquals(emptyList(), HealRules.medicationTimesOn(m.copy(status = MedicationStatus.STOPPED), day))
+        assertEquals(emptyList(), HealRules.medicationTimesOn(m, LocalDate(2026, 10, 31)), "before the start date")
+        assertEquals(emptyList(), HealRules.medicationTimesOn(m.copy(endDay = LocalDate(2026, 11, 6)), day), "after the end date")
+        assertEquals(listOf(LocalTime(8, 0), LocalTime(20, 0)), HealRules.medicationTimesOn(m.copy(times = listOf(LocalTime(20, 0), LocalTime(8, 0), LocalTime(8, 0))), day), "sorted and distinct")
+    }
+
+    @Test
+    fun aLoggedDoseDropsOutOfTheDueTimesAndIsCountedAsTaken() {
+        val m = medication(supply = 3)
+        val data = HealData(medications = listOf(m), doses = listOf(MedicationDose("d", "m", day, LocalTime(8, 0), DoseStatus.TAKEN, now)))
+        assertEquals(listOf(LocalTime(20, 0)), HealRules.medicationDueTimes(data, m, day))
+        assertEquals(1, HealRules.medicationTakenOn(data, day))
+        assertEquals(2, HealRules.medicationScheduledOn(data, day))
+        assertEquals(emptyList(), HealRules.medicationDueTimes(data.copy(doses = data.doses + MedicationDose("d2", "m", day, LocalTime(20, 0), DoseStatus.SKIPPED, now)), m, day))
+    }
+
+    @Test
+    fun lowSupplyOnlyWhenThePlayerSetBothCountsAndItIsStillBeingTaken() {
+        assertFalse(HealRules.medicationLowSupply(medication()), "no count, no alert")
+        assertTrue(HealRules.medicationLowSupply(medication(supply = 2, refill = 3)))
+        assertFalse(HealRules.medicationLowSupply(medication(supply = 4, refill = 3)))
+        assertFalse(HealRules.medicationLowSupply(medication(supply = 1, refill = 3, status = MedicationStatus.STOPPED)))
     }
 }

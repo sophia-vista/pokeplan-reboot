@@ -5,11 +5,15 @@ import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.HealKind
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.heal.ActivityType
+import app.pokeplan.heal.DoseStatus
 import app.pokeplan.heal.GoalKind
 import app.pokeplan.heal.GoalStatus
+import app.pokeplan.heal.HealData
 import app.pokeplan.heal.HealKinds
 import app.pokeplan.heal.HealRules
 import app.pokeplan.heal.MeasureType
+import app.pokeplan.heal.MedicationStatus
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -330,5 +334,80 @@ class HealStoreTest {
         val moved = assertNotNull(s.heal.updateActivity(a.copy(startMillis = at, minutes = 45)).record)
         assertEquals(kotlinx.datetime.LocalDate(2026, 11, 2), moved.day)
         assertEquals(a.paid, moved.paid)
+    }
+
+    @Test
+    fun aMedicationIsKeptAsEnteredAndTakingADoseNeverPays() {
+        val s = setup()
+        val out = s.heal.addMedication(
+            "  Metformin ", " 500 mg ", " with food ", listOf(LocalTime(20, 0), LocalTime(8, 0), LocalTime(8, 0)),
+            startDay = LocalDate(2026, 11, 1), supplyLeft = 10, refillAt = 3,
+        )
+        val m = assertNotNull(out.record)
+        assertEquals("Metformin", m.name)
+        assertEquals("500 mg", m.strength)
+        assertEquals("with food", m.instructions)
+        assertEquals(listOf(LocalTime(8, 0), LocalTime(20, 0)), m.times, "sorted and distinct")
+        assertEquals(10, m.supplyLeft)
+        assertEquals(1, s.heal.data.medications.size)
+        assertTrue(s.spy.events.isEmpty() && s.candies == 0, "a medication record never pays")
+        assertNull(s.heal.addMedication(" ").record)
+        assertNull(s.heal.addMedication("X", times = List(HealRules.MEDICATION_TIMES_MAX + 1) { LocalTime(it, 0) }).record)
+    }
+
+    @Test
+    fun aTakenDoseUsesOneOfTheSupplyItCountedAndUndoPutsItBack() {
+        val s = setup()
+        val m = assertNotNull(s.heal.addMedication("Metformin", times = listOf(LocalTime(8, 0), LocalTime(20, 0)), startDay = LocalDate(2026, 11, 1), supplyLeft = 10).record)
+        val dose = assertNotNull(s.heal.logDose(m.id, LocalDate(2026, 11, 7), LocalTime(8, 0), DoseStatus.TAKEN).record)
+        assertEquals(9, s.heal.data.medications.single().supplyLeft)
+        assertNull(s.heal.logDose(m.id, LocalDate(2026, 11, 7), LocalTime(8, 0), DoseStatus.TAKEN).record, "a scheduled dose is logged once")
+        s.heal.deleteDose(dose.id)
+        assertEquals(10, s.heal.data.medications.single().supplyLeft)
+        assertEquals(0, s.heal.data.doses.size)
+        assertTrue(s.spy.events.isEmpty() && s.candies == 0, "logging a dose never pays")
+    }
+
+    @Test
+    fun aSkippedDoseIsHistoryButChangesNoSupplyAndAnAsNeededDoseCanBeLogged() {
+        val s = setup()
+        val m = assertNotNull(s.heal.addMedication("Vitamin D", startDay = LocalDate(2026, 11, 1), supplyLeft = 5).record)
+        assertTrue(s.heal.data.medications.single().times.isEmpty(), "no times means as needed")
+        val dose = assertNotNull(s.heal.logDose(m.id, LocalDate(2026, 11, 7), LocalTime(13, 5), DoseStatus.SKIPPED).record)
+        assertEquals(5, s.heal.data.medications.single().supplyLeft)
+        assertEquals(DoseStatus.SKIPPED, dose.status)
+        assertNull(s.heal.logDose(m.id, LocalDate(2026, 11, 7), LocalTime(13, 5), DoseStatus.TAKEN).record, "the same entry is not rewritten")
+    }
+
+    @Test
+    fun pausingStopsTheScheduleAndDeletingTakesItsHistory() {
+        val s = setup()
+        val m = assertNotNull(s.heal.addMedication("Metformin", times = listOf(LocalTime(8, 0)), startDay = LocalDate(2026, 11, 1)).record)
+        s.heal.logDose(m.id, LocalDate(2026, 11, 7), LocalTime(8, 0), DoseStatus.TAKEN)
+        s.heal.setMedicationStatus(m.id, MedicationStatus.PAUSED)
+        assertEquals(emptyList(), HealRules.medicationTimesOn(s.heal.data.medications.single(), LocalDate(2026, 11, 7)))
+        s.heal.setMedicationStatus(m.id, MedicationStatus.ACTIVE)
+        assertEquals(listOf(LocalTime(8, 0)), HealRules.medicationTimesOn(s.heal.data.medications.single(), LocalDate(2026, 11, 7)))
+        s.heal.deleteMedication(m.id)
+        assertTrue(s.heal.data.medications.isEmpty() && s.heal.data.doses.isEmpty(), "the dose log goes with its medication")
+    }
+
+    @Test
+    fun aRefillIsOnlyTheCountThePlayerTypesAndTheKindEraseCoversBothFamilies() {
+        val s = setup()
+        val m = assertNotNull(s.heal.addMedication("Metformin", times = listOf(LocalTime(8, 0)), startDay = LocalDate(2026, 11, 1), supplyLeft = 2, refillAt = 3).record)
+        assertTrue(HealRules.medicationLowSupply(s.heal.data.medications.single()))
+        s.heal.refillMedication(m.id, 30)
+        assertEquals(30, s.heal.data.medications.single().supplyLeft)
+        assertFalse(HealRules.medicationLowSupply(s.heal.data.medications.single()))
+        assertNull(s.heal.refillMedication(m.id, -1).record)
+        s.heal.setMedicationRemind(m.id, true)
+        assertTrue(s.heal.data.medications.single().remind)
+        s.heal.logDose(m.id, LocalDate(2026, 11, 7), LocalTime(8, 0), DoseStatus.TAKEN)
+        s.heal.erase(HealKinds.MEDICATIONS)
+        assertTrue(s.heal.data.medications.isEmpty() && s.heal.data.doses.isEmpty())
+        val export = HealExport.json(HealData(medications = listOf(m), doses = listOf()), setOf(HealKinds.MEDICATIONS))
+        assertTrue(export.contains("medications") && export.contains("Metformin") && export.contains("doses"))
+        assertTrue(!export.contains("activities"))
     }
 }

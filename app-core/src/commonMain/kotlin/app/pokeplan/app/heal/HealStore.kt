@@ -6,6 +6,7 @@ import app.pokeplan.core.reward.Reward
 import app.pokeplan.heal.ActivityRecord
 import app.pokeplan.heal.ActivityType
 import app.pokeplan.heal.Check
+import app.pokeplan.heal.DoseStatus
 import app.pokeplan.heal.GoalKind
 import app.pokeplan.heal.GoalStatus
 import app.pokeplan.heal.HealData
@@ -22,6 +23,9 @@ import app.pokeplan.heal.HealSettings
 import app.pokeplan.heal.HydrationEntry
 import app.pokeplan.heal.MeasureType
 import app.pokeplan.heal.Measurement
+import app.pokeplan.heal.Medication
+import app.pokeplan.heal.MedicationDose
+import app.pokeplan.heal.MedicationStatus
 import app.pokeplan.heal.SleepRecord
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DayOfWeek
@@ -173,6 +177,90 @@ class HealStore(
 
     fun deleteGoal(id: String) = update { d -> d.copy(goals = d.goals.filterNot { it.id == id }) }
 
+    // --- medications and supplements (section 8.1): private reference, optional adherence, never a reward ----------------
+
+    fun addMedication(
+        name: String,
+        strength: String = "",
+        instructions: String = "",
+        times: List<LocalTime> = emptyList(),
+        startDay: LocalDate = today,
+        endDay: LocalDate? = null,
+        note: String = "",
+        remind: Boolean = false,
+        supplyLeft: Int? = null,
+        refillAt: Int? = null,
+    ): Logged<Medication> {
+        if (times.distinct().size > HealRules.MEDICATION_TIMES_MAX) return Logged(null, "A day can have at most ${HealRules.MEDICATION_TIMES_MAX} times.")
+        val draft = Medication(
+            newId(), name.trim(), strength.trim().take(HealRules.MEDICATION_STRENGTH_MAX), instructions.trim().take(HealRules.NOTE_MAX),
+            times.distinct().sorted().take(HealRules.MEDICATION_TIMES_MAX), startDay, endDay, MedicationStatus.ACTIVE, note.trim().take(HealRules.NOTE_MAX),
+            remind = remind && times.isNotEmpty(), supplyLeft = supplyLeft, refillAt = refillAt, createdMillis = nowMillis,
+        )
+        (HealRules.checkMedication(draft) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { it.copy(medications = it.medications + draft) }
+        return Logged(draft)
+    }
+
+    fun updateMedication(m: Medication): Logged<Medication> {
+        val old = data.medications.firstOrNull { it.id == m.id } ?: return Logged(null, "That medication is gone.")
+        if (m.times.distinct().size > HealRules.MEDICATION_TIMES_MAX) return Logged(null, "A day can have at most ${HealRules.MEDICATION_TIMES_MAX} times.")
+        val next = m.copy(
+            name = m.name.trim(), strength = m.strength.trim().take(HealRules.MEDICATION_STRENGTH_MAX),
+            instructions = m.instructions.trim().take(HealRules.NOTE_MAX), note = m.note.trim().take(HealRules.NOTE_MAX),
+            times = m.times.distinct().sorted().take(HealRules.MEDICATION_TIMES_MAX), remind = m.remind && m.times.isNotEmpty(),
+            createdMillis = old.createdMillis,
+        )
+        (HealRules.checkMedication(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { d -> d.copy(medications = d.medications.map { if (it.id == next.id) next else it }) }
+        return Logged(next)
+    }
+
+    fun setMedicationStatus(id: String, status: MedicationStatus) =
+        update { d -> d.copy(medications = d.medications.map { if (it.id == id) it.copy(status = status) else it }) }
+
+    fun setMedicationRemind(id: String, on: Boolean) =
+        update { d -> d.copy(medications = d.medications.map { if (it.id == id) it.copy(remind = on && it.times.isNotEmpty()) else it }) }
+
+    fun deleteMedication(id: String) = update { d -> d.copy(medications = d.medications.filterNot { it.id == id }, doses = d.doses.filterNot { it.medicationId == id }) }
+
+    /** Records one adherence entry for a scheduled (or as-needed) dose. Taking one never pays and changes no other record. */
+    fun logDose(medicationId: String, day: LocalDate, time: LocalTime, status: DoseStatus, atMillis: Long = nowMillis): Logged<MedicationDose> {
+        val m = data.medications.firstOrNull { it.id == medicationId } ?: return Logged(null, "That medication is gone.")
+        if (data.doses.any { it.medicationId == medicationId && it.day == day && it.time == time }) return Logged(null, "That dose is already logged.")
+        val dose = MedicationDose(newId(), medicationId, day, time, status, atMillis)
+        val left = m.supplyLeft
+        val supply = if (status == DoseStatus.TAKEN && left != null) maxOf(0, left - 1) else left
+        update { d ->
+            d.copy(
+                doses = d.doses + dose,
+                medications = d.medications.map { if (it.id == medicationId) it.copy(supplyLeft = supply) else it },
+            )
+        }
+        return Logged(dose)
+    }
+
+    /** Removes one adherence entry (Undo): taking its supply back if it had been counted. */
+    fun deleteDose(id: String) {
+        val dose = data.doses.firstOrNull { it.id == id } ?: return
+        update { d ->
+            val medications = if (dose.status == DoseStatus.TAKEN) d.medications.map { m ->
+                val left = m.supplyLeft
+                if (m.id == dose.medicationId && left != null) m.copy(supplyLeft = left + 1) else m
+            } else d.medications
+            d.copy(doses = d.doses.filterNot { it.id == id }, medications = medications)
+        }
+    }
+
+    /** The player typed a new supply count (a refill, or a correction). HEAL never suggests one. */
+    fun refillMedication(id: String, supplyLeft: Int): Logged<Medication> {
+        val m = data.medications.firstOrNull { it.id == id } ?: return Logged(null, "That medication is gone.")
+        if (supplyLeft !in 0..HealRules.MEDICATION_SUPPLY_MAX) return Logged(null, "That supply looks wrong.")
+        val next = m.copy(supplyLeft = supplyLeft)
+        update { d -> d.copy(medications = d.medications.map { if (it.id == id) next else it }) }
+        return Logged(next)
+    }
+
     private fun settings(change: (HealSettings) -> HealSettings) = update { it.copy(settings = change(it.settings)) }
 
     fun setFieldResearch(on: Boolean) = settings { it.copy(fieldResearch = on) }
@@ -307,7 +395,7 @@ object HealExport {
 
     fun json(data: HealData, kinds: Set<HealKinds>): String {
         val all = HealStore.json.encodeToJsonElement(HealData.serializer(), data) as JsonObject
-        val chosen = all.filterKeys { key -> HealKinds.entries.any { it.field == key && it in kinds } }
+        val chosen = all.filterKeys { key -> HealKinds.entries.any { k -> key in k.fields && k in kinds } }
         return pretty.encodeToString(JsonObject.serializer(), JsonObject(mapOf("format" to kotlinx.serialization.json.JsonPrimitive("pokelife-heal-export")) + chosen))
     }
 
@@ -319,6 +407,7 @@ object HealExport {
         HealKinds.GOALS -> d.copy(goals = emptyList())
         HealKinds.STEPS -> d.copy(steps = emptyList())
         HealKinds.VITALS -> d.copy(vitals = emptyList())
+        HealKinds.MEDICATIONS -> d.copy(medications = emptyList(), doses = emptyList())
     }
 
 }
