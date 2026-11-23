@@ -161,6 +161,9 @@ class CareStore(
 
     fun berries(): Map<String, Int> = world.berries()
 
+    /** Friends the world can still pay today; at 0 a ready visitor waits for tomorrow. */
+    fun befriendsLeft(): Int = world.befriendsLeft()
+
     fun resting(visitor: Visitor): Boolean = Visitors.resting(visitor, nowMillis)
 
     fun canVisit(visitor: Visitor): Boolean =

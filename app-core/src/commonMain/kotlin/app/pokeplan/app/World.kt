@@ -34,6 +34,9 @@ interface World {
 
     fun befriend(event: BefriendEvent): List<Reward>? = null
 
+    /** How many more friends the world can pay today; 0 once the daily limit is reached. */
+    fun befriendsLeft(): Int = Int.MAX_VALUE
+
     fun visitorLuck(): Double = 0.0
 
     fun berries(): Map<String, Int> = emptyMap()

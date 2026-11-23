@@ -414,7 +414,9 @@ class CareStoreTest {
         assertEquals(null, s.care.visit, "the visit ended; it is not stuck")
         val ready = s.care.visitors().first { it.speciesId == species }
         assertTrue(ready.progress >= app.pokeplan.care.Visitors.FRIEND_PROGRESS, "the visitor stays, ready")
+        assertEquals(0, s.care.befriendsLeft(), "Home must not offer a visit the world cannot pay")
         s.game.start("Sophia", 25)
+        assertTrue(s.care.befriendsLeft() > 0, "with room to pay, the visit is offered again")
         s.care.startVisit(species)
         val made = assertNotNull(s.care.visitAct(CareAction.entries.first())!!.result)
         assertTrue(made.friend, "the next visit makes it a friend")

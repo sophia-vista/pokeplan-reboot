@@ -202,9 +202,10 @@ private data class ModuleConcern(
     val action: String? = null,
     val actionTone: Color = Pixel.Green,
     val rank: Rank? = null,
-    val onAction: () -> Unit = {},
     /** The module's live, time-sensitive lines ([HomeOpportunities]), one row each under the main step. */
     val live: List<HomeLiveLine> = emptyList(),
+    // Last, so a trailing lambda at a call site is the action.
+    val onAction: () -> Unit = {},
 )
 
 private const val SOON_DAYS = 3
@@ -438,7 +439,7 @@ private fun liveLines(model: AppModel): Map<Module, List<HomeLiveLine>> {
         jobsReady = world.missions.count { it.done },
         finds = world.finds.size,
         outbreaks = if (Module.MINT.name in locked || model.mintData.settings.gate) 0 else data.outbreaks.size,
-        dreamers = if (Module.CARE.name in locked) 0 else Visitors.meadow(model.careData.visitors).count { model.care.canVisit(it) },
+        dreamers = if (Module.CARE.name in locked || model.care.befriendsLeft() <= 0) 0 else Visitors.meadow(model.careData.visitors).count { model.care.canVisit(it) },
         safariVisits = safariVisits,
         companionCandies = companion.sumOf { it.candies },
         companionTitle = companion.firstOrNull()?.title ?: "",
