@@ -28,8 +28,9 @@ class PlanCalendarSyncTest {
         override fun insert(calendarId: Long, event: ProviderEvent): Long? = (next++).also { rows[it] = ProviderRow(it, false, event) }
         override fun update(id: Long, event: ProviderEvent): Boolean { rows[id] = ProviderRow(id, false, event); return true }
         override fun delete(id: Long): Boolean = rows.remove(id) != null
-        val madeThere = mutableMapOf<Long, ProviderRow>()
-        override fun importable(calendarId: Long): List<ProviderRow> = madeThere.values.toList()
+        val madeThere = mutableSetOf<Long>()
+        fun made(id: Long, row: ProviderRow) { rows[id] = row; madeThere += id }
+        override fun importable(calendarId: Long): List<ProviderRow> = madeThere.mapNotNull { rows[it] }
     }
 
     private val provider = Provider()
@@ -112,7 +113,7 @@ class PlanCalendarSyncTest {
 
     @Test
     fun anEventMadeInTheCalendarBecomesAPlanEventAndAnUndoOfOtherChangesKeepsIt() {
-        provider.madeThere[800] = ProviderRow(800, false, CalendarEventMapping.toProvider(app.pokeplan.plan.PlanEvent("g", "Dentist", LocalDate(2026, 11, 30), LocalTime(14, 0), minutes = 30), zone))
+        provider.made(800, ProviderRow(800, false, CalendarEventMapping.toProvider(app.pokeplan.plan.PlanEvent("g", "Dentist", LocalDate(2026, 11, 30), LocalTime(14, 0), minutes = 30), zone)))
         val kept = store.addEvent("Choir", LocalDate(2026, 11, 26), LocalTime(9, 0), 60)
         val r = assertNotNull(sync.enable(calendar))
         assertEquals(1, r.outcome.imported)
@@ -123,7 +124,7 @@ class PlanCalendarSyncTest {
         val dentist = store.data.events.single { it.title == "Dentist" }
         store.deleteEvent(dentist.id)
         assertNotNull(sync.sync())
-        assertTrue(800L !in provider.rows.keys && provider.madeThere.containsKey(800L).not() || true)
+        assertTrue(800L !in provider.rows.keys, "deleted here, so deleted in the calendar")
         assertTrue(kept.id in store.data.events.map { it.id })
     }
 }

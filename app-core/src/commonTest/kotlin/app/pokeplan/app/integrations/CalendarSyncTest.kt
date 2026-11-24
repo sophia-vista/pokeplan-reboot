@@ -79,9 +79,10 @@ class CalendarSyncTest {
         override fun insert(calendarId: Long, event: ProviderEvent): Long? = if (failWrites) null else (next++).also { rows[it] = ProviderRow(it, false, event) }
         override fun update(id: Long, event: ProviderEvent): Boolean { if (failWrites) return false; rows[id] = ProviderRow(id, false, event); return true }
         override fun delete(id: Long): Boolean { if (failWrites) return false; rows.remove(id); deleted += id; return true }
-        /** Rows nobody linked: what the player made in the calendar, filled by a test. */
-        val madeThere = mutableMapOf<Long, ProviderRow>()
-        override fun importable(calendarId: Long): List<ProviderRow> = (rows.filterValues { r -> r.id in madeThere }.values + madeThere.values).distinctBy { it.id }
+        /** Rows the player made in the calendar itself (not by PokéLife): they live in [rows] like any other, and are offered for import. */
+        val madeThere = mutableSetOf<Long>()
+        fun made(id: Long, row: ProviderRow) { rows[id] = row; madeThere += id }
+        override fun importable(calendarId: Long): List<ProviderRow> = madeThere.mapNotNull { rows[it] }
     }
 
     private fun on() = CalendarSyncState(enabled = true, calendarId = 7, calendarName = "PokéLife")
@@ -207,7 +208,7 @@ class CalendarSyncTest {
         assertTrue(w.deleted.isEmpty() && o.changes.isEmpty(), "the other event is not imported or removed")
     }
 
-    private fun theirs(w: FakeWriter, id: Long, e: PlanEvent) { w.madeThere[id] = ProviderRow(id, false, CalendarEventMapping.toProvider(e, zone)) }
+    private fun theirs(w: FakeWriter, id: Long, e: PlanEvent) { w.made(id, ProviderRow(id, false, CalendarEventMapping.toProvider(e, zone))) }
 
     @Test
     fun eventsMadeInTheCalendarComeInAsPlanEventsAndSyncBothWaysFromThen() {
@@ -237,7 +238,7 @@ class CalendarSyncTest {
         val o = run(listOf(mine), on(), w)
         assertEquals(1, o.matched)
         assertEquals(0, o.imported + o.created)
-        assertTrue(o.changes.isEmpty() && w.rows.isEmpty(), "no import and no new row written")
+        assertTrue(o.changes.isEmpty() && w.rows.size == 1, "no import and no second row written")
         assertEquals(listOf(SyncLink("e1", 800, CalendarEventMapping.fingerprint(mine))), o.links)
     }
 
@@ -245,8 +246,8 @@ class CalendarSyncTest {
     fun whatPlanCannotShowOrIsOldOrOffStaysInTheCalendar() {
         val w = FakeWriter()
         theirs(w, 800, timed("old", "Last quarter", LocalDate(2026, 8, 1)))
-        w.madeThere[801] = ProviderRow(801, false, CalendarEventMapping.toProvider(timed(), zone).copy(endMillis = null, duration = "PT1H", rrule = "FREQ=DAILY;COUNT=4"))
-        w.madeThere[802] = ProviderRow(802, true, CalendarEventMapping.toProvider(timed("d", "Deleted one"), zone))
+        w.made(801, ProviderRow(801, false, CalendarEventMapping.toProvider(timed(), zone).copy(endMillis = null, duration = "PT1H", rrule = "FREQ=DAILY;COUNT=4")))
+        w.made(802, ProviderRow(802, true, CalendarEventMapping.toProvider(timed("d", "Deleted one"), zone)))
         theirs(w, 803, timed("ok", "Kept", LocalDate(2026, 11, 29)))
         val o = run(emptyList(), on(), w)
         assertEquals(listOf("Kept"), o.changes.filterIsInstance<LocalChange.Add>().map { it.event.title }, "a finished old one, a COUNT rule and a deleted row are left alone")
