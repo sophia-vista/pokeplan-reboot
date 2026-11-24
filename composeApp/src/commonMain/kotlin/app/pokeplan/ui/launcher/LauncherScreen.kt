@@ -240,7 +240,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         while (true) {
             val first = todayState.month.minus(DatePeriod(days = 7))
             val last = todayState.month.plus(DatePeriod(days = 42))
-            todayState.device = if (source.permitted() && calendarsShown.isNotEmpty()) kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { runCatching { source.events(calendarsShown, first, last) }.getOrDefault(emptyList()) } else emptyList()
+            todayState.device = if (source.permitted() && calendarsShown.isNotEmpty()) kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { runCatching { model.hideSynced(source.events(calendarsShown, first, last)) }.getOrDefault(emptyList()) } else emptyList()
             delay(5 * 60_000L)
         }
     }

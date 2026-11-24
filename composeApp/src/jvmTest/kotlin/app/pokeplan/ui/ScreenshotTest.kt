@@ -2751,4 +2751,41 @@ class ScreenshotTest {
     fun linkPeopleGroupsManager() {
         link("link-people-groups-manager", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1800, interact = { scene -> tapAt(scene, 270f, 525f) })
     }
+
+    private class FakeCalendar : CalendarSource, app.pokeplan.app.integrations.CalendarWriter, CalendarWriteAccess {
+        val rows = mutableMapOf<Long, app.pokeplan.app.integrations.ProviderRow>()
+        override fun permitted() = true
+        override fun requestPermission(done: (Boolean) -> Unit) = done(true)
+        override fun calendars() = emptyList<app.pokeplan.plan.DeviceCalendar>()
+        override fun events(calendarIds: Set<Long>, from: kotlinx.datetime.LocalDate, to: kotlinx.datetime.LocalDate) = emptyList<app.pokeplan.plan.CalendarEvent>()
+        override fun writePermitted() = true
+        override fun requestWritePermission(done: (Boolean) -> Unit) = done(true)
+        override fun writableCalendars() = listOf(
+            app.pokeplan.app.integrations.TargetCalendar(3, "PokéLife", "someone.with.a.long.address@gmail.com"),
+            app.pokeplan.app.integrations.TargetCalendar(4, "Family", "someone.with.a.long.address@gmail.com"),
+        )
+        override fun read(calendarId: Long, ids: Set<Long>): Map<Long, app.pokeplan.app.integrations.ProviderRow>? = rows.filterKeys { it in ids }
+        override fun insert(calendarId: Long, event: app.pokeplan.app.integrations.ProviderEvent): Long? = (50L + rows.size).also { rows[it] = app.pokeplan.app.integrations.ProviderRow(it, false, event) }
+        override fun update(id: Long, event: app.pokeplan.app.integrations.ProviderEvent): Boolean = true
+        override fun delete(id: Long): Boolean = rows.remove(id) != null
+    }
+
+    @Test
+    fun calendarSyncCard() {
+        fun shot(name: String, fontScale: Float, prepare: (AppModel) -> Unit = {}, interact: (ImageComposeScene) -> Unit = {}) {
+            val store = storeWithTeam()
+            val model = AppModel(store, calendars = FakeCalendar())
+            store.addEvent("Choir", store.today.plus(2, DateTimeUnit.DAY), kotlinx.datetime.LocalTime(9, 0))
+            prepare(model)
+            render(name, fontScale = fontScale, height = 700, interact = interact) {
+                PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column(Modifier.padding(20.dp)) { app.pokeplan.ui.integrations.CalendarSyncCard(model) } } }
+            }
+        }
+        shot("calendar-sync-off", 1f)
+        shot("calendar-sync-off-xl", 1.3f)
+        val on = { m: AppModel -> m.planSync!!.enable(app.pokeplan.app.integrations.TargetCalendar(3, "PokéLife", "someone.with.a.long.address@gmail.com")); Unit }
+        shot("calendar-sync-on", 1f, prepare = on)
+        shot("calendar-sync-on-xl", 1.3f, prepare = on)
+        shot("calendar-sync-turning-off", 1f, prepare = on, interact = { scene -> tapAt(scene, 258f, 228f) })
+    }
 }

@@ -85,7 +85,7 @@ The app never mentions ADHD; it just removes friction and shame.
 
 ## Planner (v1)
 
-In scope for v1: tasks with difficulty rank, planned date, due date/time, estimated duration and reminders; **recurring tasks** (daily, weekly, monthly, custom) and **habits**; **goals** with milestones; **subtasks**; an **own calendar** (month, week, day and agenda views) with a **drag-and-drop day / week planner** (time-blocking), which also feeds the agenda widget; **user-created lists** (projects); and **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks).
+In scope for v1: tasks with difficulty rank, planned date, due date/time, estimated duration and reminders; **recurring tasks** (daily, weekly, monthly, custom) and **habits**; **goals** with milestones; **subtasks**; an **own calendar** (month, week, day and agenda views) with a **drag-and-drop day / week planner** (time-blocking), which also feeds the agenda widget; **user-created lists** (projects); **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks), and an **optional two-way sync of PLAN's own events with one phone calendar** (0.241.0, owner 24 November 2026; off until turned on in Me > Settings > Calendar sync; asks `WRITE_CALENDAR` then; only PokéLife's own provider rows are written; the calendar wins a true conflict and PLAN's version is offered back through Undo; runs only with the app in front; pays nothing; PLAN.md 8.1A).
 
 ### Task model, Today and focus link
 

@@ -16,6 +16,13 @@ interface CalendarOverlay {
     fun open(eventId: String)
 }
 
+/** The permission for the calendar sync to write (PLAN 8.1); asked only when the player turns the sync on. */
+interface CalendarWriteAccess {
+    fun writePermitted(): Boolean
+
+    fun requestWritePermission(done: (Boolean) -> Unit)
+}
+
 interface CalendarSource {
     fun permitted(): Boolean
 

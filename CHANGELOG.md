@@ -5,6 +5,18 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.241.0
+
+- **PLAN: two-way calendar sync of its own events (owner decision, 24 November 2026).** PLAN can keep its own events in step with ONE calendar on the phone through Android's Calendar Provider: no Google sign-in, no OAuth, no network code or tokens in the app; the phone's own Google account sync carries the calendar to Google. This reverses "read-only" (PLAN.md 8.1) and "do not implement bidirectional sync in the initial release" (INTEGRATIONS_AND_PRIVACY.md 6.2) for this one feature only; "local-only, no accounts" stands.
+  - **Off until turned on** (Me > Settings > "Calendar sync"). `WRITE_CALENDAR` is asked only then (`READ_CALENDAR` as before). The player picks ONE writable calendar the phone already has (a calendar PokéLife made itself would be local-only and never reach Google, so they pick a Google calendar, ideally one made for it).
+  - **What syncs:** only PLAN's own events: title, day, time, length, the days of an all-day event, one of the six repeats (daily, weekdays, weekly, every 2 weeks, monthly, yearly) with end date and skipped days (RRULE and EXDATE); colour goes out only (the provider may drop it). Companion, people, rewards and tasks never leave PokéLife; LINK dates are not sent.
+  - **Only PokéLife's own rows are touched.** A link per event (PLAN series id to provider event id, plus a fingerprint of what both held when they last agreed) lives in the `integrations` document, so no schema migration. Other events in that calendar stay read-only and are never imported as PLAN events or tasks; an outside event never pays.
+  - **Conflicts:** changed on one side goes to the other; changed on both, the calendar's version wins and PLAN's is offered back through Undo; deleted on one side is deleted on the other (a deletion made by the calendar is offered back through Undo and, restored, is written again); deleted in the calendar but edited here since is kept and written again; a row the calendar holds in a form PLAN cannot show (a COUNT, a weekday set, an odd length) keeps PLAN's version and is written back.
+  - **When it runs:** with the app in front, a few seconds after PLAN's events change, every 5 minutes while open, and on a "Sync now" key; never in the background with the app closed. A change from the calendar goes through the same companion rule as any edit (PLAN.md 8.2) and pays nothing. The phone calendar's copies are hidden in the PLAN calendar and the launcher so each event shows once.
+  - **Turning off** asks "Keep the events there" or "Remove them" (only PokéLife's rows); back on for the same calendar resumes without copying twice; a different calendar starts fresh and leaves the old copies. Events finished more than 30 days ago are not sent on the first run; at most 500 linked events.
+  - Code: app-core `app.pokeplan.app.integrations` (`CalendarEventMapping`, `CalendarSync`, `PlanCalendarSync`, `CalendarWriter`), `GameStore.applyEventChanges`; androidApp `AndroidCalendars` (`CalendarWriter`, `CalendarWriteAccess`); composeApp `ui/integrations/CalendarSyncCard`. Nothing here is a reward input: `RewardRules.VERSION` unchanged.
+  - **Not run on a device:** the Calendar Provider's handling of EXDATE for all-day events, UNTIL forms and Google's sync of the written rows are written from the provider's documentation and tested only against an in-memory fake.
+
 ## 0.240.0
 
 - **LINK: groups and My order, and LINK in the PLAN calendar (owner decisions, 24 November 2026).** Three decisions, one change.
