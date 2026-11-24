@@ -8,7 +8,7 @@ sealed interface Check {
     data class Refused(val reason: String) : Check
 }
 
-enum class Sort { NAME, RECENT }
+enum class Sort { NAME, RECENT, MANUAL }
 
 object LinkRules {
     const val NAME_MAX = 80
@@ -24,6 +24,11 @@ object LinkRules {
     const val DATES_SOON_DAYS = 30
 
     val STARTING_CATEGORIES = listOf("Family", "Friend", "Colleague", "Service provider")
+
+    /** Suggested first groups; none is made until the player taps one. */
+    val STARTING_GROUPS = STARTING_CATEGORIES
+
+    const val GROUPS_MAX = 30
 
     fun checkName(name: String, what: String = "person"): Check = when {
         name.isBlank() -> Check.Refused("Give the $what a name.")
@@ -130,16 +135,84 @@ object LinkRules {
 
     fun directory(
         data: LinkData, query: String = "", category: String? = null, tag: String? = null, favoritesOnly: Boolean = false, sort: Sort = Sort.NAME,
+        group: String? = null,
     ): List<Person> {
         val q = query.trim().lowercase()
         val found = data.people.filter { p ->
-            (category == null || p.category.equals(category, ignoreCase = true)) &&
+            (group == null || group in p.groupIds) &&
+                (category == null || p.category.equals(category, ignoreCase = true)) &&
                 (tag == null || p.tags.any { it.equals(tag, ignoreCase = true) }) &&
                 (!favoritesOnly || p.favorite) &&
                 (q.isEmpty() || matches(p, q))
         }
-        val ordered = if (sort == Sort.RECENT) found.sortedByDescending { it.updatedMillis } else found.sortedBy { displayName(it).lowercase() }
+        val ordered = when (sort) {
+            Sort.RECENT -> found.sortedByDescending { it.updatedMillis }
+            Sort.MANUAL -> manual(data, found)
+            Sort.NAME -> found.sortedBy { displayName(it).lowercase() }
+        }
         return ordered.filter { it.isMe } + ordered.filterNot { it.isMe }
+    }
+
+    /** The player's own order: listed people first in their listed order, the rest by name. Only the player moves anyone. */
+    private fun manual(data: LinkData, people: List<Person>): List<Person> {
+        val rank = data.settings.order.withIndex().associate { it.value to it.index }
+        return people.sortedWith(compareBy<Person> { rank[it.id] ?: Int.MAX_VALUE }.thenBy { displayName(it).lowercase() })
+    }
+
+    /** The full "My order" list: the saved order for people who still exist, then everyone else by name. */
+    fun fullOrder(data: LinkData): List<String> = manual(data, data.people).map { it.id }
+
+    /**
+     * The saved order after moving [id] one place up (`-1`) or down (`+1`) among [visible] (the people the screen
+     * shows, in screen order): it swaps places with its neighbour there and everyone else keeps their place.
+     */
+    fun moved(data: LinkData, visible: List<String>, id: String, step: Int): List<String> {
+        val full = fullOrder(data).toMutableList()
+        val at = visible.indexOf(id)
+        val to = at + step
+        if (at < 0 || to !in visible.indices || step == 0) return full
+        val a = full.indexOf(id)
+        val b = full.indexOf(visible[to])
+        if (a < 0 || b < 0) return full
+        full[a] = visible[to]
+        full[b] = id
+        return full
+    }
+
+    fun checkGroup(data: LinkData, name: String, exceptId: String? = null): Check = when {
+        name.isBlank() -> Check.Refused("Give the group a name.")
+        name.trim().length > TAG_MAX -> Check.Refused("That group name is too long.")
+        data.settings.groups.any { it.id != exceptId && it.name.equals(name.trim(), ignoreCase = true) } -> Check.Refused("There is already a group with that name.")
+        exceptId == null && data.settings.groups.size >= GROUPS_MAX -> Check.Refused("That is plenty of groups.")
+        else -> Check.Ok
+    }
+
+    fun groupNames(data: LinkData, p: Person): List<String> =
+        p.groupIds.mapNotNull { id -> data.settings.groups.firstOrNull { it.id == id }?.name }
+
+    /**
+     * Turns the older single category into groups, once: every distinct category (and each one the player added) becomes a
+     * group, and each person keeps the group of their category. "Me" is not a group. Safe to run again: it changes nothing
+     * when no person has a category left and no category is waiting.
+     */
+    fun withGroupsFromCategories(data: LinkData): LinkData {
+        val wanted = (data.people.filter { !it.isMe }.map { it.category } + data.settings.categories).map { it.trim() }.filter { it.isNotEmpty() }
+        if (wanted.isEmpty() && data.people.none { it.category.isNotBlank() && !it.isMe }) return data
+        val groups = data.settings.groups.toMutableList()
+        fun groupFor(name: String): LinkGroup {
+            groups.firstOrNull { it.name.equals(name, ignoreCase = true) }?.let { return it }
+            val slug = name.lowercase().filter { it.isLetterOrDigit() }.take(20).ifEmpty { "group" }
+            var id = "g-$slug"
+            var n = 2
+            while (groups.any { it.id == id }) { id = "g-$slug-$n"; n++ }
+            return LinkGroup(id, name.take(TAG_MAX)).also { groups += it }
+        }
+        wanted.forEach { groupFor(it) }
+        val people = data.people.map { p ->
+            if (p.isMe || p.category.isBlank()) p
+            else p.copy(groupIds = (p.groupIds + groupFor(p.category.trim()).id).distinct(), category = "")
+        }
+        return data.copy(people = people, settings = data.settings.copy(groups = groups.toList(), categories = emptyList()))
     }
 
     fun categories(data: LinkData): List<String> =

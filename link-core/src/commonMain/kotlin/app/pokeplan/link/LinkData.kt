@@ -22,7 +22,13 @@ data class Person(
     val isMe: Boolean = false,
     val profile: Profile = Profile(),
     val avatar: Int = 0,
+    /** The groups this person belongs to ([LinkSettings.groups] ids); any number, optional. */
+    val groupIds: List<String> = emptyList(),
 )
+
+/** A named group of people the player makes (Family, Climbing club). Never a score or a ranking. */
+@Serializable
+data class LinkGroup(val id: String, val name: String)
 
 @Serializable
 data class PersonNote(val id: String, val personId: String, val text: String, val atMillis: Long = 0)
@@ -73,6 +79,9 @@ data class LinkSettings(
     val safari: Boolean = true,
     val tutorialSeen: Boolean = false,
     val categories: List<String> = emptyList(),
+    val groups: List<LinkGroup> = emptyList(),
+    /** The player's own arrangement of people (ids), used by the "My order" sort; people not listed follow by name. */
+    val order: List<String> = emptyList(),
     val reminders: Boolean = false,
     val reminderHour: Int = 9,
     val reminderNames: Boolean = false,

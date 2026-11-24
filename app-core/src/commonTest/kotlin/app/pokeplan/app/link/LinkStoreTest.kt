@@ -120,7 +120,7 @@ class LinkStoreTest {
         )
         assertEquals(app.pokeplan.link.ImportResult(added = 0, linked = 1, birthdays = 0, skipped = 0), result)
         val p = s.link.data.people.single()
-        assertEquals("Ana", p.name); assertEquals("111", p.phone); assertEquals("Friend", p.category)
+        assertEquals("Ana", p.name); assertEquals("111", p.phone); assertEquals(listOf("Friend"), app.pokeplan.link.LinkRules.groupNames(s.link.data, p), "a category becomes a group")
         assertEquals("ana@x.com", p.email); assertEquals("k1", p.sourceId)
         assertEquals(1, s.link.data.dates.size, "she already had a birthday")
         assertEquals(5, s.link.data.dates.single().month)
@@ -518,5 +518,51 @@ class LinkStoreTest {
         assertTrue("Zorblax-like" in s.link.export(setOf(LinkKinds.PEOPLE)))
         s.link.erase(LinkKinds.PEOPLE)
         assertTrue(s.link.data.people.isEmpty())
+    }
+
+    @Test
+    fun groupsAreMadeRenamedAndDeletedWithoutTouchingPeople() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana").record)
+        val club = assertNotNull(s.link.addGroup("Climbing club").record)
+        assertNull(s.link.addGroup("climbing CLUB").record, "a name already used is refused")
+        assertNotNull(s.link.addGroup("Family").record)
+        s.link.setGroups(ana.id, listOf(club.id, "g-nope", club.id))
+        assertEquals(listOf(club.id), s.link.data.people.single().groupIds, "unknown ids and repeats are dropped")
+        assertEquals(listOf("Ana"), s.link.directory(group = club.id).map { it.name })
+        assertNotNull(s.link.renameGroup(club.id, "Boulder crew").record)
+        s.reopen()
+        assertEquals(listOf("Boulder crew"), app.pokeplan.link.LinkRules.groupNames(s.link.data, s.link.data.people.single()), "groups survive a reopen")
+        s.link.deleteGroup(club.id)
+        assertEquals(listOf("Ana"), s.link.data.people.map { it.name }, "deleting a group deletes nobody")
+        assertTrue(s.link.data.people.single().groupIds.isEmpty())
+    }
+
+    @Test
+    fun myOrderIsTheMovesThePlayerMadeAndNeverPaysAnything() {
+        val s = setup()
+        val ids = listOf("Ana", "Bea", "Cy").map { assertNotNull(s.link.addPerson(it).record).id }
+        val shown = { s.link.directory(sort = app.pokeplan.link.Sort.MANUAL).map { it.name } }
+        assertEquals(listOf("Ana", "Bea", "Cy"), shown(), "before any move it follows the names")
+        s.link.moveInOrder(ids[2], s.link.directory(sort = app.pokeplan.link.Sort.MANUAL).map { it.id }, -1)
+        assertEquals(listOf("Ana", "Cy", "Bea"), shown())
+        s.link.moveInOrder(ids[0], s.link.directory(sort = app.pokeplan.link.Sort.MANUAL).map { it.id }, -1)
+        assertEquals(listOf("Ana", "Cy", "Bea"), shown(), "the first one cannot move up")
+        assertNotNull(s.link.addPerson("Aaron").record)
+        assertEquals(listOf("Ana", "Cy", "Bea", "Aaron"), shown(), "a new person is listed after the arranged ones")
+        s.reopen()
+        assertEquals(listOf("Ana", "Cy", "Bea", "Aaron"), shown(), "the order is saved")
+        assertTrue(s.spy.events.isEmpty() && s.candies == 0, "arranging people is never a reward")
+    }
+
+    @Test
+    fun erasingPeopleAlsoErasesTheGroupNamesAndTheOrder() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana").record)
+        val g = assertNotNull(s.link.addGroup("Support circle").record)
+        s.link.setGroups(ana.id, listOf(g.id))
+        assertTrue("Support circle" in s.link.export(setOf(app.pokeplan.link.LinkKinds.PEOPLE)), "the export carries the group names with the people")
+        s.link.erase(app.pokeplan.link.LinkKinds.PEOPLE)
+        assertTrue(s.link.data.settings.groups.isEmpty() && s.link.data.settings.order.isEmpty())
     }
 }
