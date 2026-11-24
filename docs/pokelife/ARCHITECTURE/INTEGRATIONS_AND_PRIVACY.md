@@ -125,6 +125,7 @@ Never repeatedly prompt after denial. Do not use a permission rationale to press
 | Camera | Camera permission only for an implemented direct-camera workflow | Prefer system camera intents or scanner APIs where practical; request at capture time |
 | Contacts | `READ_CONTACTS` or platform contact picker | Only when user explicitly invokes LINK import; prefer picker-based selection. Built: `READ_CONTACTS`, asked at "Import contacts" after the list of what is read, nothing else |
 | Photos/media | Android Photo Picker | Use selected-item access; no broad media permission for ordinary import |
+| Microsoft OneDrive (Microsoft account) | No Android runtime permission; Microsoft OAuth consent for read-only OneDrive photo scopes (8.2A) | Only when the player connects OneDrive in LINK; optional and revocable; read-only scopes, never a write scope |
 | Documents | Storage Access Framework (SAF) | User selects a file/folder; avoid broad storage access |
 | Bluetooth | Version-appropriate Bluetooth permissions | Only for a verified direct device integration; not needed merely because a watch exists |
 | Sensors | `SensorManager` where applicable | Usually no runtime permission for basic motion/environment sensors; only while relevant GEAR tool is active |
@@ -322,6 +323,17 @@ All imports must validate file size, type, encoding, schema, archive paths, and 
 
 Use Android Sharesheet/intent flows for explicit user-initiated sharing. Do not silently upload or share a file. Remove temporary export files after the documented retention period and ensure they are not exposed through public storage by default.
 
+### 8.2A OneDrive photos (LINK; owner, 25 November 2026)
+
+LINK may read photos from the player's Microsoft OneDrive as one **optional** photo source for memories and eras (LINK.md section 6.2). This is an official provider API capability, not a PokéLife account and not cloud save: no LINK record, note, memory, era, person or setting is ever uploaded, and the app still has no server, no sync and no mandatory account (section 1, rule 1).
+
+- **Read-only, least privilege.** Microsoft Graph through the official SDK, with the narrowest read scopes that can list and read the photos the player picks (`Files.Read` or the selected-file scope, plus `offline_access` for the refresh token). No write scope is requested: LINK never creates, moves, renames, edits or deletes a OneDrive file, and it never writes to the folder.
+- **Player-invoked only.** Sign-in opens only from LINK's own connect action, after a plain explanation of what is read; browsing, thumbnail loading and selection happen only while the player is in the picker. No background scan, no watch, no automatic import, no notification from OneDrive content.
+- **What is stored.** OAuth tokens are sealed with an Android Keystore key (the Heal/Mint sealing pattern) and are never in the LINK export, a backup or a log; disconnecting deletes them. Thumbnails are cached in the app's private storage; a selected original is downloaded only when the player asks for an offline copy. The metadata kept is what the memory needs (name, size, kind, modified time, a photo reference) — not the whole drive listing.
+- **Failure and revocation.** The states of section 2 apply (`reauthorization_required`, `permission_revoked`, `temporarily_unavailable`); offline or revoked, the cached thumbnails, downloaded photos and every LINK record stay readable, and the integration never blocks manual memory entry. Disconnecting keeps the memories and their chosen photos that were already downloaded; anything only referenced stays a broken reference the player can remove.
+- **No media permission.** The app requests no broad storage or media permission for this; OneDrive is a network read of files the player explicitly selects, alongside (not instead of) the Android Photo Picker of 8.2.
+- **Provider review.** Microsoft Graph OneDrive read access needs its own provider due diligence before release (app registration, redirect URI, tenant/consumer support, Microsoft terms, scope review and the app's privacy notice); the capability is not advertised until that review is done.
+
 ### 8.3 Location
 
 Location is foreground and user-initiated only. Prefer approximate location and one-shot/current readings where sufficient. No background tracking, location history, geofencing, location-derived Pokémon encounters, or location-based WORLD rewards in the baseline product.
@@ -353,6 +365,7 @@ Two modules that must stay separate meet in an integration layer that neither de
 - **What never crosses:** nothing is written to the phone's calendar, reminders, the launcher or widgets; nothing pays and nothing is a reward input; no figure, note or private word goes into PLAN's data, and `PlanEvent` and `Person` carry no link. LINK locked hides the entries. Two switches in Me > Settings ("LINK in the calendar": Dates, Follow-ups, on by default).
 - **Calendar sync (24 November 2026, second use of the layer):** PLAN's own events sync two-way with one phone calendar (PLAN.md 8.1A; `CalendarSync`, `PlanCalendarSync`, `CalendarEventMapping`, `CalendarWriter` in `app.pokeplan.app.integrations`; androidApp `AndroidCalendars`). The links (series id to provider event id, fingerprint) live in the same document. Events the player makes in that calendar are brought in as PLAN events (3A, `CalendarWriter.importable`). Companion, people, rewards, tasks and LINK dates never cross.
 - **Storage and backup:** one saved document named `integrations` in the `live_document` table (no schema migration), in the backup bundle's known set and erased by Delete all data. Links to an event or person that no longer exists are dropped when the app opens.
+- **An event and a memory (owner, 25 November 2026; specified for REP-088, not built):** a PLAN event may link to a LINK memory — "Save as Memory" after the event creates the memory with the event's day, title and associated people prefilled, and an existing memory can be attached to an event — by opaque series and memory ids in the same integration document. The memory is independent of the event: deleting or editing the event never deletes or edits the memory, and no calendar row is duplicated. Nothing pays and no note or photo content crosses.
 
 ## 9. Shared reminder and notification architecture
 

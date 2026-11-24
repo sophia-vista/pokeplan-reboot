@@ -38,7 +38,7 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 
 - **Personal use only.** PokéLife is built for the owner's own phone and is never published (no Play Store, no public release). Work that exists only for a public release is dropped: a protected release key (the committed key may stay), store and Play-policy justifications such as `QUERY_ALL_PACKAGES`, store listings. Licence duties still apply (CC BY-NC credits, REP-015), and so does everything that protects the owner's data.
 - **Automated tests over manual checks.** Section 9's "actual-device verification" is met by automated tests that exercise the Android code (Robolectric on the JVM where it can, instrumented tests only where it cannot), real screenshot comparison in both palettes and at large text, and simulated process death, kill and corruption. No session hands the owner a manual checklist; the owner reports defects and possible optimisations as they come up in daily use.
-- **Module priorities.** PLAN, CARE and WORLD are used daily and get depth first. MINT, HEAL, BASE and GEAR are to reach the level of a specialist app in their category. LINK is set up once and then left alone: it should need no regular attention (import, reminders that just work, nothing to tend).
+- **Module priorities.** PLAN, CARE and WORLD are used daily and get depth first. MINT, HEAL, BASE and GEAR are to reach the level of a specialist app in their category. LINK is a private archive the player visits to record and look back on their people, memories and eras; it stays low-pressure and never nags.
 - **BASE is single-user.** No household sharing or shared lists between people.
 - **English only.** No localisation.
 - **A watch is wanted** if one can be supported: a feasibility check first, against the owner's actual watch (the Huawei Watch Fit 4 Pro, which is not Wear OS; `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` section 5.2), with the phone's notification actions on the watch as the baseline.
@@ -54,7 +54,7 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 | HEAL | Activity, workouts, nutrition, hydration, sleep/recovery, measurements, personal health records and imports | HEAL |
 | MINT | Accounts, balance snapshots, transactions, transfers, budgets, savings targets, bills and financial reports | MINT; provider remains authoritative for provider-originated facts |
 | BASE | Chores, household inventory, supplies, assets, maintenance, warranties and household reference | BASE |
-| LINK | Contacts, relationship notes, important dates and unconverted follow-ups | LINK |
+| LINK | Contacts, relationship notes, memories and eras, important dates and reminders | LINK |
 | GEAR | Utility-specific settings and records for calculators, converters, timers, clocks, sensors and device tools | GEAR |
 | WORLD | Expeditions, dungeons, missions, campaigns, story, settlement, Exploration Finds and Exploration Rank events | WORLD |
 
