@@ -7,8 +7,8 @@ import kotlinx.datetime.TimeZone
 
 /** What one sync did, for a short note and an Undo: [before] is PLAN's events as they were. */
 data class SyncReport(val outcome: SyncOutcome, val applied: Int, val before: List<PlanEvent>, val note: String) {
-    /** True when the calendar changed something in PLAN, so an Undo is worth offering. */
-    val changedPlan: Boolean get() = applied > 0
+    /** True when the calendar changed or removed something that was in PLAN, so an Undo is worth offering. Bringing events in is not undone: they are the player's, and the calendar still holds them. */
+    val changedPlan: Boolean get() = outcome.pulled + outcome.removedHere > 0
 }
 
 /**
@@ -34,15 +34,18 @@ class PlanCalendarSync(
     fun enable(calendar: TargetCalendar): SyncReport? {
         // Turned back on for the same calendar, it picks up where it left off (no second copy of anything); a different calendar starts fresh.
         val keep = if (state.calendarId == calendar.id) state.links else emptyList()
-        integrations.setCalendarSync(CalendarSyncState(enabled = true, calendarId = calendar.id, calendarName = calendar.name, links = keep))
+        integrations.setCalendarSync(CalendarSyncState(enabled = true, calendarId = calendar.id, calendarName = calendar.name, links = keep, importNew = state.importNew))
         return sync()
     }
+
+    /** Whether events the player makes in the chosen calendar are brought in as PLAN events. */
+    fun setImport(on: Boolean) = integrations.setCalendarSync(state.copy(importNew = on))
 
     /** Turns it off; [removeFromCalendar] also deletes the events PokéLife put there (and only those). */
     fun disable(removeFromCalendar: Boolean) {
         if (removeFromCalendar) {
             state.links.forEach { writer.delete(it.providerId) }
-            integrations.setCalendarSync(CalendarSyncState(calendarId = state.calendarId, calendarName = state.calendarName))
+            integrations.setCalendarSync(CalendarSyncState(calendarId = state.calendarId, calendarName = state.calendarName, importNew = state.importNew))
         } else integrations.setCalendarSync(state.copy(enabled = false, lastNote = ""))
     }
 
@@ -54,16 +57,20 @@ class PlanCalendarSync(
             val s = state
             if (!s.enabled || s.calendarId == null) return null
             val before = store.data.events
-            val outcome = CalendarSync.run(before, s, writer, zone(), store.today)
+            val outcome = CalendarSync.run(before, s, writer, zone(), store.today, store::newEventId)
             if (outcome == null) {
                 integrations.setCalendarSync(s.copy(lastNote = "The calendar could not be read"))
                 return null
             }
             val replace = outcome.changes.filterIsInstance<LocalChange.Replace>().map { it.old to it.new }
             val remove = outcome.changes.filterIsInstance<LocalChange.Remove>().map { it.old }
-            val applied = store.applyEventChanges(replace, remove)
+            val add = outcome.changes.filterIsInstance<LocalChange.Add>().map { it.event }
+            val applied = store.applyEventChanges(replace, remove, add)
+            // An event that did not land here must not stay linked, or the next pass would read it as deleted here and delete it in the calendar.
+            val landed = store.data.events.map { it.id }.toSet()
+            val links = outcome.links.filter { l -> l.eventId in landed || add.none { it.id == l.eventId } }
             val note = noteOf(outcome)
-            integrations.setCalendarSync(s.copy(links = outcome.links, lastSyncMillis = store.nowMillis, lastNote = note))
+            integrations.setCalendarSync(s.copy(links = links, lastSyncMillis = store.nowMillis, lastNote = note))
             return SyncReport(outcome, applied, before, note)
         } finally {
             lock.withLock { running = false }
@@ -76,6 +83,8 @@ class PlanCalendarSync(
         else -> listOfNotNull(
             "sent ${o.pushed + o.created}".takeIf { o.pushed + o.created > 0 },
             "got ${o.pulled}".takeIf { o.pulled > 0 },
+            "brought in ${o.imported}".takeIf { o.imported > 0 },
+            "linked ${o.matched}".takeIf { o.matched > 0 },
             "removed ${o.removedHere + o.removedInCalendar}".takeIf { o.removedHere + o.removedInCalendar > 0 },
             "${o.unreadable} kept as here".takeIf { o.unreadable > 0 },
         ).joinToString(", ").replaceFirstChar { it.uppercase() }

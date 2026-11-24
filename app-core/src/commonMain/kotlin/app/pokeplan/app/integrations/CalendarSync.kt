@@ -27,6 +27,12 @@ interface CalendarWriter {
     fun update(id: Long, event: ProviderEvent): Boolean
 
     fun delete(id: Long): Boolean
+
+    /**
+     * Events in [calendarId] the player made there (not invites), whole ones (not a single edited occurrence of a series, and not a
+     * series that has edited occurrences), not deleted or cancelled. Empty where the platform cannot say; the sync then imports nothing.
+     */
+    fun importable(calendarId: Long): List<ProviderRow> = emptyList()
 }
 
 /** One PLAN event (by series id) tied to one provider event, and what both held when they last agreed. */
@@ -42,12 +48,17 @@ data class CalendarSyncState(
     val lastSyncMillis: Long = 0,
     /** What the last sync did, in a few words the settings card shows; never an event's title. */
     val lastNote: String = "",
+    /** Bring in events the player makes in the chosen calendar as PLAN events (owner, 24 November 2026). */
+    val importNew: Boolean = true,
 )
 
 /** A change the sync wants in PLAN, applied only if the event is still the one it looked at. */
 sealed interface LocalChange {
     data class Replace(val old: PlanEvent, val new: PlanEvent, val overwroteLocalEdit: Boolean) : LocalChange
     data class Remove(val old: PlanEvent) : LocalChange
+
+    /** An event the player made in the calendar, now a PLAN event (linked, so it syncs both ways from here). */
+    data class Add(val event: PlanEvent) : LocalChange
 }
 
 data class SyncOutcome(
@@ -58,11 +69,14 @@ data class SyncOutcome(
     val created: Int = 0,
     val removedInCalendar: Int = 0,
     val removedHere: Int = 0,
+    val imported: Int = 0,
+    /** Events already on both sides with the same content, linked instead of copied. */
+    val matched: Int = 0,
     /** Linked events the provider holds in a form PLAN cannot show: PLAN's version was kept and written back. */
     val unreadable: Int = 0,
     val failed: Int = 0,
 ) {
-    val quiet: Boolean get() = changes.isEmpty() && pushed + created + removedInCalendar + unreadable + failed == 0
+    val quiet: Boolean get() = changes.isEmpty() && pushed + created + removedInCalendar + unreadable + failed + matched == 0
 }
 
 /**
@@ -81,13 +95,16 @@ object CalendarSync {
     /** How far back an unlinked event is still worth sending: older ones stay in PokéLife only. */
     const val RECENT_DAYS = 30
 
-    fun run(events: List<PlanEvent>, state: CalendarSyncState, writer: CalendarWriter, zone: TimeZone, today: LocalDate): SyncOutcome? {
+    fun run(
+        events: List<PlanEvent>, state: CalendarSyncState, writer: CalendarWriter, zone: TimeZone, today: LocalDate, newId: () -> String = { error("no id source") },
+    ): SyncOutcome? {
         val calendar = state.calendarId ?: return null
         val remote = writer.read(calendar, state.links.map { it.providerId }.toSet()) ?: return null
         val byId = events.associateBy { it.id }
         val links = mutableListOf<SyncLink>()
         val changes = mutableListOf<LocalChange>()
         var pushed = 0; var pulled = 0; var created = 0; var removedInCalendar = 0; var removedHere = 0; var unreadable = 0; var failed = 0
+        var imported = 0; var matched = 0
 
         for (link in state.links) {
             val local = byId[link.eventId]
@@ -130,12 +147,38 @@ object CalendarSync {
         }
 
         val linked = links.map { it.eventId }.toSet() + state.links.map { it.eventId }.toSet()
+        val linkedRows = links.map { it.providerId }.toSet() + state.links.map { it.providerId }.toSet()
+
+        // The player's own events in the calendar that PLAN can show, not yet linked.
+        val offered = if (state.importNew) (writer.importable(calendar).filter { !it.deleted && it.id !in linkedRows }) else emptyList()
+        val readable = offered.mapNotNull { row -> CalendarEventMapping.fromProvider(row.event, zone, "")?.let { row to it } }
+        val taken = mutableSetOf<Long>()
+
+        // The same event already on both sides is linked, never copied: a second copy is what turning the sync off and on, or a
+        // crash between two writes, would otherwise leave behind.
+        val unlinkedHere = events.filter { it.id !in linked && recent(it, today) }
+        val toSend = mutableListOf<PlanEvent>()
+        unlinkedHere.forEach { e ->
+            val print = CalendarEventMapping.fingerprint(e)
+            val twin = readable.firstOrNull { (row, seen) -> row.id !in taken && CalendarEventMapping.fingerprint(seen) == print }
+            if (twin != null) { taken += twin.first.id; links += SyncLink(e.id, twin.first.id, print); matched++ } else toSend += e
+        }
+
         val room = (MAX_LINKS - links.size).coerceAtLeast(0)
-        events.filter { it.id !in linked && recent(it, today) }.take(room).forEach { e ->
+        toSend.take(room).forEach { e ->
             val id = writer.insert(calendar, CalendarEventMapping.toProvider(e, zone))
             if (id != null) { links += SyncLink(e.id, id, CalendarEventMapping.fingerprint(e)); created++ } else failed++
         }
-        return SyncOutcome(changes, links, pushed, pulled, created, removedInCalendar, removedHere, unreadable, failed)
+
+        // What is left in the calendar is new here: bring it in. It pays nothing and has no companion until the player gives it one.
+        val roomForImports = (MAX_LINKS - links.size).coerceAtLeast(0)
+        readable.filter { (row, seen) -> row.id !in taken && recent(seen, today) }.take(roomForImports).forEach { (row, seen) ->
+            val e = seen.copy(id = newId())
+            changes += LocalChange.Add(e)
+            links += SyncLink(e.id, row.id, CalendarEventMapping.fingerprint(e))
+            imported++
+        }
+        return SyncOutcome(changes, links, pushed, pulled, created, removedInCalendar, removedHere, imported, matched, unreadable, failed)
     }
 
     /** Takes the calendar's version of the fields PLAN syncs and keeps everything that is PokéLife's own. */
