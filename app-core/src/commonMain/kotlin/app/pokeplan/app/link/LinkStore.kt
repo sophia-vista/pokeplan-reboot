@@ -351,9 +351,8 @@ class LinkStore(
 
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
 
-    fun addCategory(name: String) = settings { s ->
-        name.trim().take(LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || n.lowercase() in LinkRules.categories(LinkData(settings = s)).map { it.lowercase() }) s else s.copy(categories = s.categories + n) }
-    }
+    /** The older name for [addGroup]: categories are groups now. */
+    fun addCategory(name: String) { addGroup(name) }
 
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
 
