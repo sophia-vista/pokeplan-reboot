@@ -2742,6 +2742,8 @@ class ScreenshotTest {
         link("link-people-order-xl", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 2400, fontScale = 1.3f, prepare = prepare, interact = { scene ->
             pullToSearch(scene)
             repeat(10) { tapClock += 50_000_000; scene.render(tapClock) }
+            tapAt(scene, 85f, 342f)
+            tapAt(scene, 85f, 342f)
         })
     }
 

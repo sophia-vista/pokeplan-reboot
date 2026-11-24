@@ -39,7 +39,7 @@ object LinkInPlan {
             if (f.converted || due < from || due > to) return@forEach
             val state = LinkRules.state(f, today)
             if (state != FollowUpState.UPCOMING && state != FollowUpState.DUE) return@forEach
-            out += allDay("${PREFIX}follow:${f.id}", labelled(data, f.personId, "Follow up: ${f.title}"), due, color)
+            out += allDay("${PREFIX}follow:${f.id}", labelled(data, f.personId, f.title), due, color)
         }
         return out
     }
@@ -69,7 +69,8 @@ object LinkInPlan {
 
     private fun labelled(data: LinkData, personId: String?, title: String): String {
         val person = personId?.let { id -> data.people.firstOrNull { it.id == id } } ?: return title
-        val name = LinkRules.displayName(person)
+        // The first name only: an all-day bar in a narrow week has little room, and the colour already says it is LINK's.
+        val name = LinkRules.displayName(person).trim().substringBefore(' ')
         return if (title.contains(name, ignoreCase = true)) title else "$name: $title"
     }
 

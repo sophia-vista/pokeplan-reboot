@@ -45,7 +45,6 @@ import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.Person
 import app.pokeplan.link.Sort
-import androidx.compose.ui.platform.LocalDensity
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
@@ -375,7 +374,6 @@ private fun PeopleScreen(model: AppModel) {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         val firstMovable = people.indexOfFirst { !it.isMe }
                         val ids = people.map { it.id }
-                        val large = LocalDensity.current.fontScale > 1.15f
                         people.take(upTo).forEachIndexed { i, p ->
                             val sub = listOfNotNull(LinkRules.groupNames(data, p).joinToString(", ").takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · ")
                             val moveKeys: (@Composable () -> Unit)? = if (sort == Sort.MANUAL && !p.isMe) {
@@ -387,10 +385,11 @@ private fun PeopleScreen(model: AppModel) {
                                 }
                             } else null
                             if (moveKeys == null) PersonTile(p, sub) { openPerson(model, p.id) }
-                            else if (large) Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                            // The keys sit under the tile, not beside it: a name keeps its whole row at any text size.
+                            else Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                                 PersonTile(p, sub) { openPerson(model, p.id) }
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { moveKeys() }
-                            } else PersonTile(p, sub, trail = moveKeys) { openPerson(model, p.id) }
+                            }
                         }
                     }
                     if (people.size > upTo) PixelButton("Show ${minOf(DIRECTORY_PAGE, people.size - upTo)} more of ${people.size - upTo}", { shown = upTo + DIRECTORY_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

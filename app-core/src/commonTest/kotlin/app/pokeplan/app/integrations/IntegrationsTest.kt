@@ -88,7 +88,7 @@ class IntegrationsTest {
         val inPlan = FollowUp("f3", "In plan", due = LocalDate(2026, 11, 26), converted = true)
         val noDay = FollowUp("f4", "Someday")
         val shown = LinkInPlan.entries(data(follow = listOf(open, done, inPlan, noDay)), today, LocalDate(2026, 12, 31), today, dates = true, followUps = true)
-        assertEquals(listOf("Ana: Follow up: Call back"), shown.map { it.title })
+        assertEquals(listOf("Ana: Call back"), shown.map { it.title })
     }
 
     @Test
