@@ -222,6 +222,8 @@ class AppModel(
     var baseSection: BaseSection? by mutableStateOf(null)
 
     var linkData: LinkData by mutableStateOf(link.data)
+        private set
+
     var integrationData: app.pokeplan.app.integrations.IntegrationData by mutableStateOf(integrations.data)
 
     /** Outside entries drawn in the PLAN calendar, read-only; PLAN asks them, it does not know what they are. */
@@ -231,7 +233,6 @@ class AppModel(
 
     /** A tap on an overlay's entry: true when one of them took it. */
     fun openCalendarEntry(id: String): Boolean = calendarOverlays.firstOrNull { it.owns(id) }?.also { it.open(id) } != null
-        private set
 
     var linkSection: LinkSection? by mutableStateOf(null)
 
