@@ -56,8 +56,9 @@ object LinkInPlan {
     }
 
     private fun occurrencesOf(d: ImportantDate, from: LocalDate, to: LocalDate): List<LocalDate> {
-        val years = if (d.annual) (from.year..to.year) else listOfNotNull(d.year)
-        return years.map { LinkRules.observed(d.month, d.day, it) }.filter { it in from..to }.filter { day -> d.year == null || !d.annual || day.year >= d.year }
+        val first = d.year
+        val years = if (d.annual) (from.year..to.year) else listOfNotNull(first)
+        return years.map { LinkRules.observed(d.month, d.day, it) }.filter { it in from..to }.filter { day -> first == null || !d.annual || day.year >= first }
     }
 
     private fun dateEntry(data: LinkData, d: ImportantDate, day: LocalDate, color: Long?): CalendarEvent {
