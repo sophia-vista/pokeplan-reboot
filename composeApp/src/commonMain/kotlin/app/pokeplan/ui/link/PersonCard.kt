@@ -57,7 +57,10 @@ internal fun PersonCard(p: Person, groupNames: List<String>, onPicture: () -> Un
                 if (p.preferred.isNotBlank() && !p.preferred.equals(p.name, ignoreCase = true)) Text(p.name, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 val work = listOf(p.role, p.organization).filter { it.isNotBlank() }.joinToString(" · ")
                 if (work.isNotBlank()) Text(work, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                val tags = listOfNotNull("Me".takeIf { p.isMe }, groupNames.joinToString(", ").takeIf { it.isNotBlank() }, "Pinned".takeIf { p.favorite })
+                val tags = listOfNotNull(
+                    "Me".takeIf { p.isMe }, p.category.takeIf { it.isNotBlank() && !it.equals("Me", ignoreCase = true) },
+                    groupNames.joinToString(", ").takeIf { it.isNotBlank() }, "Pinned".takeIf { p.favorite },
+                )
                 if (tags.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) { tags.forEach { Tag(it) } }
             }
         }
