@@ -81,6 +81,7 @@ import app.pokeplan.plan.DayTimeline
 import app.pokeplan.plan.EventRepeat
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.isOwn
+import app.pokeplan.plan.isOpenable
 import app.pokeplan.plan.Task
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
@@ -145,12 +146,15 @@ internal data class Draft(
     val title: String, val day: LocalDate, val start: Int, val minutes: Int,
     val allDay: Boolean = false, val lastDay: LocalDate = day, val color: Long? = null, val repeat: EventRepeat? = null,
     val companion: String? = null,
+    /** LINK people tied to the new event (opaque ids; the integration keeps them, not PLAN). */
+    val people: List<String> = emptyList(),
 ) {
     fun movedTo(first: LocalDate): Draft = copy(day = first, lastDay = first.plus(DatePeriod(days = day.daysUntil(lastDay))))
 
-    fun addTo(store: app.pokeplan.app.GameStore) {
-        if (allDay) store.addAllDayEvent(title, day, lastDay, color, repeat)
+    fun addTo(store: app.pokeplan.app.GameStore, added: (PlanEvent) -> Unit = {}) {
+        val event = if (allDay) store.addAllDayEvent(title, day, lastDay, color, repeat)
         else store.addEvent(title, day, LocalTime(start / 60, start % 60), minutes, color, repeat).also { e -> companion?.let { store.setEventCompanion(e.id, it) } }
+        added(event)
     }
 }
 
@@ -249,7 +253,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     }
     val own = model.data.events
     val ownShown = own.flatMap { it.occurrences(range.first(), range.last()) }
-    val shownEvents = events + ownShown.map { it.toCalendarEvent() }
+    val shownEvents = events + model.overlayEvents(range.first(), range.last()) + ownShown.map { it.toCalendarEvent() }
     val plans: List<DayTimeline.Plan>
     val tray: List<Task>
     val undated: List<Task>
@@ -264,7 +268,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     }
     val chosen = tasks.firstOrNull { it.id == picked && it.isOpen }
     val chosenEvent = ownShown.firstOrNull { it.id == picked }
-    val pick = { id: String -> picked = if (picked == id) null else id; draft = null }
+    val pick = { id: String -> if (!model.openCalendarEntry(id)) { picked = if (picked == id) null else id; draft = null } }
     // A panel opened over the calendar closes before the Calendar section does (a new event's draft is not lost to Back).
     if (draft != null) UpTo { draft = null } else if (chosen != null) UpTo { picked = null } else if (chosenEvent != null) UpTo { picked = null }
 
@@ -323,7 +327,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 DayStrip(store.today, offset, firstDow, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.isOn(day) } }) { offset = it }
             }
 
-            draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store); draft = null }, today = store.today, party = model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN)) { draft = null } }
+            draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store) { e -> if (d.people.isNotEmpty()) model.integrations.setPeople(e.id, d.people) }; draft = null }, today = store.today, party = model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN), model = model) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, { picked = it }) { picked = null }
 
@@ -492,7 +496,7 @@ internal fun AllDayBar(e: CalendarEvent, selected: Boolean, pick: (String) -> Un
             .clip(shape)
             .background(eventColor(e), shape)
             .border(if (selected) 2.dp else 0.dp, if (selected) Pixel.Ink else Color.Transparent, shape)
-            .then(if (e.isOwn) Modifier.clickable(role = Role.Button, onClickLabel = "Edit ${e.title}") { pick(e.id) } else Modifier)
+            .then(if (e.isOpenable) Modifier.clickable(role = Role.Button, onClickLabel = "${if (e.isOwn) "Edit" else "Open"} ${e.title}") { pick(e.id) } else Modifier)
             .semantics { contentDescription = "All day: ${e.title}" }
             .padding(horizontal = if (small) 3.dp else Spacing.XS, vertical = if (small) 0.dp else 2.dp),
         style = if (small) MonthTextStyle else MaterialTheme.typography.bodyMedium,

@@ -30,6 +30,9 @@ fun baseStorage(context: Context): Storage = LiveStore.storage(context, "home", 
 
 fun linkStorage(context: Context): Storage = LiveStore.storage(context, "link", "link.json")
 
+/** The PLAN and LINK integration's own document: people in events and what LINK shows in the calendar. */
+fun integrationsStorage(context: Context): Storage = LiveStore.storage(context, "integrations", "integrations.json")
+
 fun mintStorage(context: Context): Storage {
     val s = LiveStore.get(context)
     return if (s != null && s.mintCipher != null && s.mintTables.isActive()) DatabaseStorage(s.live, "mint") else MemoryStorage()

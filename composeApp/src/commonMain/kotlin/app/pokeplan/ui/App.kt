@@ -126,6 +126,8 @@ class AppModel(
     val imageViewer: ImageViewer? = null,
     val appLauncher: AppLauncher? = null,
     val updates: UpdateAccess? = null,
+    /** What ties PLAN and LINK together (people in events, LINK dates in the calendar); neither module holds it. */
+    val integrations: app.pokeplan.app.integrations.IntegrationStore = app.pokeplan.app.integrations.IntegrationStore(MemoryStorage()),
 ) {
     val moduleUnlockedAt: MutableMap<String, Long> = mutableMapOf()
     val moduleLeftAt: MutableMap<String, Long> = mutableMapOf()
@@ -220,6 +222,15 @@ class AppModel(
     var baseSection: BaseSection? by mutableStateOf(null)
 
     var linkData: LinkData by mutableStateOf(link.data)
+    var integrationData: app.pokeplan.app.integrations.IntegrationData by mutableStateOf(integrations.data)
+
+    /** Outside entries drawn in the PLAN calendar, read-only; PLAN asks them, it does not know what they are. */
+    val calendarOverlays: List<CalendarOverlay> = listOf(app.pokeplan.ui.integrations.LinkCalendarOverlay(this))
+
+    fun overlayEvents(from: kotlinx.datetime.LocalDate, to: kotlinx.datetime.LocalDate): List<app.pokeplan.plan.CalendarEvent> = calendarOverlays.flatMap { it.events(from, to) }
+
+    /** A tap on an overlay's entry: true when one of them took it. */
+    fun openCalendarEntry(id: String): Boolean = calendarOverlays.firstOrNull { it.owns(id) }?.also { it.open(id) } != null
         private set
 
     var linkSection: LinkSection? by mutableStateOf(null)
@@ -339,6 +350,9 @@ class AppModel(
         store.registerLinkOwner(BaseLinkOwner(base))
         base.observe { baseData = it; store.syncLinks() }
         link.observe { linkData = it }
+        integrations.observe { integrationData = it }
+        // Links to an event or a person that is gone are dropped when the app opens, not while an Undo might still bring them back.
+        integrations.prune(store.data.events.map { it.id }.toSet(), link.data.people.map { it.id }.toSet())
     }
 }
 
@@ -352,6 +366,7 @@ fun App(
     mintStorage: Storage? = null,
     baseStorage: Storage? = null,
     linkStorage: Storage? = null,
+    integrationsStorage: Storage? = null,
     focusTab: Boolean = true,
     motion: MotionSource? = null,
     start: Place = Place.HOME,
@@ -396,7 +411,7 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val base = BaseStore(baseStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher, updates)
+        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher, updates, app.pokeplan.app.integrations.IntegrationStore(integrationsStorage ?: MemoryStorage()))
     }
     fun AppModel.startHere() {
         openPokemonId = startPokemon

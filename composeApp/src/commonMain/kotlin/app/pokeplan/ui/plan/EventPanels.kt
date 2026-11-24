@@ -71,9 +71,9 @@ import app.pokeplan.ui.screens.short
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Unit, today: LocalDate = draft.day, party: List<app.pokeplan.core.pokemon.OwnedPokemon> = emptyList(), cancel: () -> Unit) {
+internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Unit, today: LocalDate = draft.day, party: List<app.pokeplan.core.pokemon.OwnedPokemon> = emptyList(), model: AppModel? = null, cancel: () -> Unit) {
     val at = LocalTime(draft.start / 60, draft.start % 60)
-    var more by remember { mutableStateOf(draft.repeat != null || draft.color != null || draft.companion != null) }
+    var more by remember { mutableStateOf(draft.repeat != null || draft.color != null || draft.companion != null || draft.people.isNotEmpty()) }
     FormBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.L)) {
             PixelTitle("New event")
@@ -88,6 +88,7 @@ internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Uni
                         EventColors(draft.color) { change(draft.copy(color = it)) }
                         RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
                         if (!draft.allDay) CompanionPicker(party, draft.companion) { change(draft.copy(companion = it)) }
+                        if (model != null) app.pokeplan.ui.integrations.EventPeoplePicker(model, draft.people) { change(draft.copy(people = it)) }
                     }
                 }
             }
@@ -139,6 +140,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
             RepeatPicker(event.repeat) { store.updateEvent(event.id, title = title); follow(store.repeatEvent(event.id, it)) }
             if (repeats) RepeatEnd(series, event) { store.endEventOn(event.id, it) }
             if (!event.allDay) CompanionPicker(model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN), series.companionId) { store.setEventCompanion(event.id, it) }
+            app.pokeplan.ui.integrations.SavedEventPeople(model, event.id)
             val deletes: @Composable () -> Unit = {
                 if (repeats) {
                     PixelButton("Delete this one", { val before = model.data.events; store.deleteOccurrence(event.id); close(); model.offerUndo("Deleted: ${event.title}") { store.restoreEvents(before) } }, color = Pixel.Red, compact = true)

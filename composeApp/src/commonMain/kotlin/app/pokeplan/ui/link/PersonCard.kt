@@ -45,7 +45,7 @@ private val tint: Color @Composable get() = ModuleAccent.LINK.accent
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun PersonCard(p: Person, onPicture: () -> Unit) {
+internal fun PersonCard(p: Person, groupNames: List<String>, onPicture: () -> Unit) {
     TextBox {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.L)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -57,7 +57,7 @@ internal fun PersonCard(p: Person, onPicture: () -> Unit) {
                 if (p.preferred.isNotBlank() && !p.preferred.equals(p.name, ignoreCase = true)) Text(p.name, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 val work = listOf(p.role, p.organization).filter { it.isNotBlank() }.joinToString(" · ")
                 if (work.isNotBlank()) Text(work, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                val tags = listOfNotNull("Me".takeIf { p.isMe }, p.category.takeIf { it.isNotBlank() }, "Pinned".takeIf { p.favorite })
+                val tags = listOfNotNull("Me".takeIf { p.isMe }, groupNames.joinToString(", ").takeIf { it.isNotBlank() }, "Pinned".takeIf { p.favorite })
                 if (tags.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) { tags.forEach { Tag(it) } }
             }
         }
@@ -151,7 +151,7 @@ internal fun SafariPanel(model: AppModel, p: Person) {
 }
 
 @Composable
-internal fun PersonTile(p: Person, subtitle: String, onClick: () -> Unit) {
+internal fun PersonTile(p: Person, subtitle: String, trail: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().background(tint.copy(alpha = 0.10f), PixelShape).border(2.dp, Pixel.Outline, PixelShape)
             .clickable(role = Role.Button, onClickLabel = "Open their screen", onClick = onClick).padding(Spacing.S),
@@ -162,5 +162,6 @@ internal fun PersonTile(p: Person, subtitle: String, onClick: () -> Unit) {
             Text(LinkRules.displayName(p) + if (p.favorite) " ★" else "", style = MaterialTheme.typography.titleMedium, color = Pixel.Ink, maxLines = 1)
             if (subtitle.isNotBlank()) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
         }
+        trail?.invoke()
     }
 }

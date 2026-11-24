@@ -19,6 +19,6 @@ class DownloadsFileSaver : FileSaver {
 fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "PokéLife") {
         val folder = File(System.getProperty("user.home"), ".pokeplan")
-        App(FileStorage(File(folder, "save.json")), careStorage = FileStorage(File(folder, "care.json")), focusTab = false, files = DownloadsFileSaver())
+        App(FileStorage(File(folder, "save.json")), careStorage = FileStorage(File(folder, "care.json")), integrationsStorage = FileStorage(File(folder, "integrations.json")), focusTab = false, files = DownloadsFileSaver())
     }
 }

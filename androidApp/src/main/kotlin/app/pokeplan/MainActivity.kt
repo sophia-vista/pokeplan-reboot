@@ -140,8 +140,9 @@ class MainActivity : ComponentActivity() {
                     val mint = remember { mintStorage(this@MainActivity) }
                     val base = remember { baseStorage(this@MainActivity) }
                     val link = remember { linkStorage(this@MainActivity) }
+                    val integrations = remember { integrationsStorage(this@MainActivity) }
                     App(
-                        storage, careStorage = care, healStorage = heal, mintStorage = mint, baseStorage = base, linkStorage = link, focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
+                        storage, careStorage = care, healStorage = heal, mintStorage = mint, baseStorage = base, linkStorage = link, integrationsStorage = integrations, focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
                         cries = AndroidCryPlayer(this@MainActivity), haptics = AndroidHaptics(this@MainActivity), files = AndroidFileSaver(this@MainActivity), calendars = calendars, phone = AndroidPhoneState(this@MainActivity), torch = torch, capabilities = AndroidCapabilities(this@MainActivity), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this@MainActivity), appLauncher = app.pokeplan.platform.AndroidAppLauncher(this@MainActivity), updates = updates, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this@MainActivity), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars, asyncModel = true,
                     )
                 }

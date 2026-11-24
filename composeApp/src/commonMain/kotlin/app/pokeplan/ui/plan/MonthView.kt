@@ -48,6 +48,7 @@ import app.pokeplan.plan.DaySpan
 import app.pokeplan.plan.SpanLayout
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.isOwn
+import app.pokeplan.plan.isOpenable
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
@@ -125,7 +126,7 @@ internal fun MonthView(
             Spacer(Modifier.weight(1f))
             PixelButton("New event", { draft = Draft("", chosen, 9 * 60, 60, allDay = true); picked = null }, color = OwnEventColor, compact = true)
         }
-        draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store); draft = null; chosen = d.day }, party = model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN)) { draft = null } }
+        draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store) { e -> if (d.people.isNotEmpty()) model.integrations.setPeople(e.id, d.people) }; draft = null; chosen = d.day }, party = model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN), model = model) { draft = null } }
         if (pickedEvent != null) EventPanel(model, pickedEvent, { picked = it }) { picked = null }
 
         val shape = PixelShape
@@ -139,10 +140,10 @@ internal fun MonthView(
                 }
             }
             month.weeks.forEach { week ->
-                MonthWeek(week, month.first.monthNumber, today, chosen, SpanLayout.lay(spans, week), { chosen = it }) { id -> picked = if (picked == id) null else id; draft = null }
+                MonthWeek(week, month.first.monthNumber, today, chosen, SpanLayout.lay(spans, week), { chosen = it }) { id -> if (!model.openCalendarEntry(id)) { picked = if (picked == id) null else id; draft = null } }
             }
         }
-        DayAgenda(chosen, today, events.filter { it.isOn(chosen) }, open.filter { (it.planned ?: it.due?.date) == chosen }, picked, { id -> picked = id; draft = null }, canOpen(chosen)) { openDay(chosen) }
+        DayAgenda(chosen, today, events.filter { it.isOn(chosen) }, open.filter { (it.planned ?: it.due?.date) == chosen }, picked, { id -> if (!model.openCalendarEntry(id)) { picked = id; draft = null } }, canOpen(chosen)) { openDay(chosen) }
     }
 }
 
@@ -206,11 +207,11 @@ private fun MonthWeek(
 @Composable
 private fun MonthLabel(item: MonthItem, modifier: Modifier, pick: (String) -> Unit) {
     val shape = PixelShape
-    val own = item.event?.isOwn == true
+    val own = item.event?.isOpenable == true
     Text(
         item.title,
         modifier.height(MonthBarHeight).clip(shape).background(item.color.copy(alpha = 0.2f), shape)
-            .then(if (own) Modifier.clickable(role = Role.Button, onClickLabel = "Edit ${item.title}") { pick(item.id) } else Modifier)
+            .then(if (own) Modifier.clickable(role = Role.Button, onClickLabel = "${if (item.event?.isOwn == true) "Edit" else "Open"} ${item.title}") { pick(item.id) } else Modifier)
             .padding(horizontal = 3.dp),
         style = MonthTextStyle, color = Pixel.Ink, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
     )

@@ -434,7 +434,7 @@ internal fun ResetCard(model: AppModel) {
                     Text("Erase this device? Everything here is removed and the app starts over: tasks, Pokémon, every module's records and settings, the launcher's layout, reminders, and the backups on this phone and the off-phone copy setup. A copy you saved as a file is not touched. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         HoldToConfirm("Hold to erase", {
-                            store.eraseDevice(); model.care.erase(); model.heal.resetAll(); model.mint.resetAll(); model.base.resetAll(); model.link.resetAll()
+                            store.eraseDevice(); model.care.erase(); model.heal.resetAll(); model.mint.resetAll(); model.base.resetAll(); model.link.resetAll(); model.integrations.resetAll()
                             note = model.backups?.eraseLeftovers()?.ifBlank { null }; asking = null
                         }, Modifier.weight(1f))
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -629,6 +629,7 @@ internal fun PlanSettings(model: AppModel) {
         )
     }
     CalendarsCard(model)
+    app.pokeplan.ui.integrations.LinkInCalendarCard(model)
 }
 
 @Composable
