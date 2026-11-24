@@ -343,6 +343,13 @@ Request Bluetooth permissions only for an actual, verified direct connection wor
 
 The optional launcher may need to enumerate launchable applications. Prefer package visibility declarations and launcher intent queries. Use `QUERY_ALL_PACKAGES` only if broad enumeration is genuinely necessary and permitted by the intended distribution channel. Installed-app information is used only to render launcher functionality; it is not logged, transmitted, profiled, or used for progression.
 
+### 8.1A In-app integrations (owner, 24 November 2026)
+
+Two modules that must stay separate meet in an integration layer that neither depends on: `app-core` `app.pokeplan.app.integrations` (`IntegrationStore`, `LinkInPlan`) and `composeApp` `ui/integrations`. The first one joins LINK and PLAN.
+- **What crosses:** LINK dates and open follow-ups with a due day (not ones made a PLAN task) show in PLAN's calendar as read-only all-day entries; LINK people can be tied to a PLAN event by opaque person id (at most 12 per event).
+- **What never crosses:** nothing is written to the phone's calendar, reminders, the launcher or widgets; nothing pays and nothing is a reward input; no figure, note or private word goes into PLAN's data, and `PlanEvent` and `Person` carry no link. LINK locked hides the entries. Two switches in Me > Settings ("LINK in the calendar": Dates, Follow-ups, on by default).
+- **Storage and backup:** one saved document named `integrations` in the `live_document` table (no schema migration), in the backup bundle's known set and erased by Delete all data. Links to an event or person that no longer exists are dropped when the app opens.
+
 ## 9. Shared reminder and notification architecture
 
 This section is the sole authority for shared reminder scheduling, policy, delivery, action routing, lifecycle recovery and reminder privacy. Module specifications define only their source records, preferences and action meaning. `DATA_AND_MIGRATIONS.md` owns the physical schema, transactions, backup/restore and migrations.

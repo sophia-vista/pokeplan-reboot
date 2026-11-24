@@ -105,7 +105,7 @@ Present future commitments chronologically with date grouping. Include overdue i
 
 Calendar is a planning surface, not a second task database. Support month/week views and compact agenda. Display PLAN events, PLAN task due dates/scheduled times, read-only external events, and optionally linked CARE routines.
 
-A task is actionable and has completion state; an event represents something happening at a time; an external event is read-only. Do not create a task merely because an external event appears.
+A task is actionable and has completion state; an event represents something happening at a time; an external event is read-only. Do not create a task merely because an external event appears. **Overlays (owner, 24 November 2026):** the calendar also shows read-only all-day entries from in-app overlay sources; LINK's dates and open follow-ups are the first (LINK's accent, calendar id -2; a tap opens the person or LINK's place). PLAN's calendar knows nothing about LINK: it only asks `CalendarOverlay` sources (`CalendarEvent.isOverlay`, `isOpenable`). Overlay entries are never tasks, never pay and never reach reminders, the launcher or widgets.
 
 Tasks, goals and lists carry no category: a list is the one way to group (a Work list, a Home list). The balance wheel and the weekly recap split by list; `#word` in quick add names a list; the calendar and widgets colour a task by its list.
 
@@ -259,6 +259,8 @@ A week starts on **Monday** by default. Settings → General has a "Week starts 
 "Import" means choosing **which device calendars appear** in PLAN's Calendar; nothing is copied into PLAN, no task or PLAN event is made from an external event, and nothing is written back. PLAN tasks, PLAN events and external events each have their own look and label (not colour alone).
 
 Google/device calendar integration is read-only initially. PLAN may request permission, display external events, filter selected calendars, refresh data, and show provider details. It must not edit/delete/create external events, convert them automatically to PLAN tasks, or reward viewing/attending them.
+
+**Overlays are not device calendars (owner, 24 November 2026).** Entries from an in-app overlay (3.4) are not read from the Calendar Provider, are not listed in Settings → Calendars, need no permission and are never written to the phone.
 
 ### 8.2 PLAN events
 

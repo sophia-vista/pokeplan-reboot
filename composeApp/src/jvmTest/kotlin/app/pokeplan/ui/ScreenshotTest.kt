@@ -2683,4 +2683,70 @@ class ScreenshotTest {
             }
         }
     }
+
+    @Test
+    fun linkPeopleGroups() {
+        val prepare = { m: AppModel ->
+            val club = m.link.addGroup("Climbing club").record!!
+            m.linkData.people.filter { !it.isMe }.forEach { p -> m.link.setGroups(p.id, p.groupIds + club.id) }
+        }
+        link("link-people-groups", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = prepare)
+        link("link-people-groups-xl", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 2400, fontScale = 1.3f, prepare = prepare)
+    }
+
+    @Test
+    fun planCalendarShowsLinkAndPeopleInEvents() {
+        val store = storeWithTeam()
+        store.markRewardsSeen()
+        val model = AppModel(store)
+        val today = store.today
+        val ana = model.link.addPerson("Ana Reyes").record!!
+        val soon = today.plus(1, DateTimeUnit.DAY)
+        model.link.addDate(app.pokeplan.link.DateKind.BIRTHDAY, "Birthday", soon.monthNumber, soon.dayOfMonth, 1994, personId = ana.id)
+        model.link.addFollowUp("Send the choir photos", ana.id, today.plus(2, DateTimeUnit.DAY))
+        val event = store.addAllDayEvent("Choir weekend", today.plus(2, DateTimeUnit.DAY))
+        model.integrations.setPeople(event.id, listOf(ana.id))
+        render("plan-link-week", height = 2000) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.PlanView(model, app.pokeplan.ui.screens.PlanSection.CALENDAR, {}, {}, {}, startWeek = true) } }
+        }
+        render("plan-event-people", height = 2200) {
+            PixelTheme {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                    androidx.compose.foundation.layout.Column(Modifier.padding(20.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
+                        app.pokeplan.ui.plan.NewEventPanel(app.pokeplan.ui.plan.Draft("Choir weekend", today, 9 * 60, 60, people = listOf(ana.id)), {}, {}, today = today, model = model) {}
+                        app.pokeplan.ui.plan.EventPanel(model, model.data.events.first { it.id == event.id }, {}) {}
+                    }
+                }
+            }
+        }
+    }
+
+    private var tapClock = 10_000_000_000L
+
+    private fun tapAt(scene: ImageComposeScene, x: Float, y: Float) {
+        val at = androidx.compose.ui.geometry.Offset(x, y)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, at)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, at)
+        repeat(6) { tapClock += 50_000_000; scene.render(tapClock) }
+    }
+
+    @Test
+    fun linkPeopleMyOrder() {
+        val prepare = { m: AppModel -> m.link.addPerson("Cy Dela Cruz", organization = "Gym"); Unit }
+        link("link-people-order", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = prepare, interact = { scene ->
+            pullToSearch(scene)
+            repeat(10) { tapClock += 50_000_000; scene.render(tapClock) }
+            tapAt(scene, 85f, 342f)
+            tapAt(scene, 85f, 342f)
+        })
+        link("link-people-order-xl", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 2400, fontScale = 1.3f, prepare = prepare, interact = { scene ->
+            pullToSearch(scene)
+            repeat(10) { tapClock += 50_000_000; scene.render(tapClock) }
+        })
+    }
+
+    @Test
+    fun linkPeopleGroupsManager() {
+        link("link-people-groups-manager", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1800, interact = { scene -> tapAt(scene, 270f, 525f) })
+    }
 }
