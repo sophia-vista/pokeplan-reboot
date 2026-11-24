@@ -1,0 +1,154 @@
+package app.pokeplan.app.integrations
+
+import app.pokeplan.plan.PlanEvent
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.serialization.Serializable
+
+/** A writable calendar on the phone the player can pick as the target (a Google calendar, for one). */
+data class TargetCalendar(val id: Long, val name: String, val account: String)
+
+/** What the provider holds for one linked event; [deleted] is a row the provider has marked deleted but not yet purged. */
+data class ProviderRow(val id: Long, val deleted: Boolean, val event: ProviderEvent)
+
+/**
+ * The phone's Calendar Provider as the sync needs it: no PLAN knowledge, one chosen calendar, and only the rows PokéLife
+ * made. [read] returns null when it cannot read at all (permission gone), and the sync then does nothing.
+ */
+interface CalendarWriter {
+    fun writableCalendars(): List<TargetCalendar>
+
+    fun read(calendarId: Long, ids: Set<Long>): Map<Long, ProviderRow>?
+
+    fun insert(calendarId: Long, event: ProviderEvent): Long?
+
+    fun update(id: Long, event: ProviderEvent): Boolean
+
+    fun delete(id: Long): Boolean
+}
+
+/** One PLAN event (by series id) tied to one provider event, and what both held when they last agreed. */
+@Serializable
+data class SyncLink(val eventId: String, val providerId: Long, val fingerprint: String)
+
+@Serializable
+data class CalendarSyncState(
+    val enabled: Boolean = false,
+    val calendarId: Long? = null,
+    val calendarName: String = "",
+    val links: List<SyncLink> = emptyList(),
+    val lastSyncMillis: Long = 0,
+    /** What the last sync did, in a few words the settings card shows; never an event's title. */
+    val lastNote: String = "",
+)
+
+/** A change the sync wants in PLAN, applied only if the event is still the one it looked at. */
+sealed interface LocalChange {
+    data class Replace(val old: PlanEvent, val new: PlanEvent, val overwroteLocalEdit: Boolean) : LocalChange
+    data class Remove(val old: PlanEvent) : LocalChange
+}
+
+data class SyncOutcome(
+    val changes: List<LocalChange>,
+    val links: List<SyncLink>,
+    val pushed: Int = 0,
+    val pulled: Int = 0,
+    val created: Int = 0,
+    val removedInCalendar: Int = 0,
+    val removedHere: Int = 0,
+    /** Linked events the provider holds in a form PLAN cannot show: PLAN's version was kept and written back. */
+    val unreadable: Int = 0,
+    val failed: Int = 0,
+) {
+    val quiet: Boolean get() = changes.isEmpty() && pushed + created + removedInCalendar + unreadable + failed == 0
+}
+
+/**
+ * The two-way sync of PLAN's own events with one calendar on the phone. Pure but for the [CalendarWriter]: PLAN's events and the
+ * saved links go in, and the changes for PLAN and the new links come out. Rules (owner, 24 November 2026):
+ *  - Only events PokéLife made are ever written, changed or deleted in the calendar; other events there are read-only as before.
+ *  - An event changed on one side only goes to the other. Changed on both, the calendar's version wins (the provider keeps no
+ *    edit time, and a change here is written at once, so a true tie is the rare case) and the PLAN version is offered back.
+ *  - Deleted on one side, deleted on the other; deleted in the calendar but edited here since, kept here and written again.
+ *  - New events in the calendar are never imported as PLAN events or tasks, and nothing here pays.
+ *  - Colour only goes out (the provider may drop it), and companion, people and rewards never leave PokéLife.
+ */
+object CalendarSync {
+    const val MAX_LINKS = 500
+
+    /** How far back an unlinked event is still worth sending: older ones stay in PokéLife only. */
+    const val RECENT_DAYS = 30
+
+    fun run(events: List<PlanEvent>, state: CalendarSyncState, writer: CalendarWriter, zone: TimeZone, today: LocalDate): SyncOutcome? {
+        val calendar = state.calendarId ?: return null
+        val remote = writer.read(calendar, state.links.map { it.providerId }.toSet()) ?: return null
+        val byId = events.associateBy { it.id }
+        val links = mutableListOf<SyncLink>()
+        val changes = mutableListOf<LocalChange>()
+        var pushed = 0; var pulled = 0; var created = 0; var removedInCalendar = 0; var removedHere = 0; var unreadable = 0; var failed = 0
+
+        for (link in state.links) {
+            val local = byId[link.eventId]
+            val row = remote[link.providerId]?.takeUnless { it.deleted }
+            if (local == null) {
+                if (row != null && !writer.delete(link.providerId)) { links += link; failed++ } else if (row != null) removedInCalendar++
+                continue
+            }
+            val localPrint = CalendarEventMapping.fingerprint(local)
+            val localChanged = localPrint != link.fingerprint
+            if (row == null) {
+                if (localChanged) {
+                    // Gone in the calendar but edited here since: keep it and write it again.
+                    val id = writer.insert(calendar, CalendarEventMapping.toProvider(local, zone))
+                    if (id != null) { links += SyncLink(local.id, id, localPrint); created++ } else { links += link; failed++ }
+                } else { changes += LocalChange.Remove(local); removedHere++ }
+                continue
+            }
+            val seen = CalendarEventMapping.fromProvider(row.event, zone, local.id)
+            if (seen == null) {
+                // Held in a form PLAN cannot show: keep PLAN's version and write it back.
+                unreadable++
+                if (writer.update(link.providerId, CalendarEventMapping.toProvider(local, zone))) { pushed++; links += link.copy(fingerprint = localPrint) } else { failed++; links += link }
+                continue
+            }
+            val seenPrint = CalendarEventMapping.fingerprint(seen)
+            val remoteChanged = seenPrint != link.fingerprint
+            when {
+                localPrint == seenPrint -> links += link.copy(fingerprint = localPrint)
+                remoteChanged -> {
+                    changes += LocalChange.Replace(local, local.withFieldsOf(seen), overwroteLocalEdit = localChanged)
+                    links += link.copy(fingerprint = seenPrint)
+                    pulled++
+                }
+                localChanged -> {
+                    if (writer.update(link.providerId, CalendarEventMapping.toProvider(local, zone))) { pushed++; links += link.copy(fingerprint = localPrint) } else { failed++; links += link }
+                }
+                else -> links += link
+            }
+        }
+
+        val linked = links.map { it.eventId }.toSet() + state.links.map { it.eventId }.toSet()
+        val room = (MAX_LINKS - links.size).coerceAtLeast(0)
+        events.filter { it.id !in linked && recent(it, today) }.take(room).forEach { e ->
+            val id = writer.insert(calendar, CalendarEventMapping.toProvider(e, zone))
+            if (id != null) { links += SyncLink(e.id, id, CalendarEventMapping.fingerprint(e)); created++ } else failed++
+        }
+        return SyncOutcome(changes, links, pushed, pulled, created, removedInCalendar, removedHere, unreadable, failed)
+    }
+
+    /** Takes the calendar's version of the fields PLAN syncs and keeps everything that is PokéLife's own. */
+    private fun PlanEvent.withFieldsOf(seen: PlanEvent): PlanEvent = copy(
+        title = seen.title, day = seen.day, start = seen.start, minutes = seen.minutes, allDay = seen.allDay, lastDay = seen.lastDay,
+        repeat = seen.repeat, until = seen.until, skipped = seen.skipped,
+    )
+
+    private fun recent(e: PlanEvent, today: LocalDate): Boolean {
+        val cutoff = today.minus(DatePeriod(days = RECENT_DAYS))
+        return if (e.repeat != null) (e.until ?: LocalDate(9999, 1, 1)) >= cutoff else e.endDay >= cutoff
+    }
+
+    /** A link to an event that is gone on both sides, or a calendar that was changed, is simply dropped. */
+    fun unlinked(state: CalendarSyncState): CalendarSyncState = state.copy(links = emptyList())
+}

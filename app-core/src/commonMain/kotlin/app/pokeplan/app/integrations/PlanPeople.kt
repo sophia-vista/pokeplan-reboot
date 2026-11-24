@@ -21,6 +21,8 @@ data class IntegrationData(
     val linkDatesInCalendar: Boolean = true,
     /** Open LINK follow-ups with a due day, the same way. */
     val linkFollowUpsInCalendar: Boolean = true,
+    /** The two-way sync of PLAN events with one calendar on the phone (off until the player turns it on). */
+    val calendarSync: CalendarSyncState = CalendarSyncState(),
 )
 
 class IntegrationStore(storage: Storage) {
@@ -54,6 +56,11 @@ class IntegrationStore(storage: Storage) {
     fun setLinkDates(on: Boolean) = document.update { it.copy(linkDatesInCalendar = on) }
 
     fun setLinkFollowUps(on: Boolean) = document.update { it.copy(linkFollowUpsInCalendar = on) }
+
+    fun setCalendarSync(state: CalendarSyncState) = document.update { it.copy(calendarSync = state) }
+
+    /** The provider ids of PLAN events written to the phone's calendar: the PLAN calendar hides these copies so each shows once. */
+    fun syncedProviderIds(): Set<Long> = data.calendarSync.links.map { it.providerId }.toSet()
 
     fun resetAll() = document.update { IntegrationData() }
 
