@@ -103,6 +103,7 @@ class PlanCalendarSyncTest {
         assertEquals(2, provider.rows.size, "kept")
         assertNull(sync.sync(), "off means no pass")
         sync.enable(calendar)
+        assertEquals(2, provider.rows.size, "turned back on, it resumes: no second copy")
         sync.disable(removeFromCalendar = true)
         assertEquals(setOf(900L), provider.rows.keys, "only PokéLife's rows are removed; the other event stays")
     }

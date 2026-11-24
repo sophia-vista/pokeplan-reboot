@@ -32,15 +32,18 @@ class PlanCalendarSync(
 
     /** Turns the sync on for [calendar]; its first run sends the recent events and starts the links. Null when it could not start. */
     fun enable(calendar: TargetCalendar): SyncReport? {
-        if (state.calendarId != calendar.id && state.links.isNotEmpty()) disable(removeFromCalendar = false)
-        integrations.setCalendarSync(CalendarSyncState(enabled = true, calendarId = calendar.id, calendarName = calendar.name))
+        // Turned back on for the same calendar, it picks up where it left off (no second copy of anything); a different calendar starts fresh.
+        val keep = if (state.calendarId == calendar.id) state.links else emptyList()
+        integrations.setCalendarSync(CalendarSyncState(enabled = true, calendarId = calendar.id, calendarName = calendar.name, links = keep))
         return sync()
     }
 
     /** Turns it off; [removeFromCalendar] also deletes the events PokéLife put there (and only those). */
     fun disable(removeFromCalendar: Boolean) {
-        if (removeFromCalendar) state.links.forEach { writer.delete(it.providerId) }
-        integrations.setCalendarSync(CalendarSyncState(calendarId = state.calendarId, calendarName = state.calendarName))
+        if (removeFromCalendar) {
+            state.links.forEach { writer.delete(it.providerId) }
+            integrations.setCalendarSync(CalendarSyncState(calendarId = state.calendarId, calendarName = state.calendarName))
+        } else integrations.setCalendarSync(state.copy(enabled = false, lastNote = ""))
     }
 
     /** One pass. Null when it is off, already running, or the calendar cannot be read. Safe to call from any thread. */
