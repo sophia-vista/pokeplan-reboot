@@ -226,6 +226,18 @@ class AppModel(
 
     var integrationData: app.pokeplan.app.integrations.IntegrationData by mutableStateOf(integrations.data)
 
+    /** The two-way sync of PLAN events with one phone calendar; only where the platform can write to the calendar. */
+    val planSync: app.pokeplan.app.integrations.PlanCalendarSync? =
+        (calendars as? app.pokeplan.app.integrations.CalendarWriter)?.let { app.pokeplan.app.integrations.PlanCalendarSync(store, integrations, it) }
+
+    /** The phone calendar's copies of PLAN's own events are hidden, so each event shows once (the PLAN one is the one you edit). */
+    fun hideSynced(events: List<app.pokeplan.plan.CalendarEvent>): List<app.pokeplan.plan.CalendarEvent> {
+        val sync = integrationData.calendarSync
+        if (!sync.enabled || sync.links.isEmpty()) return events
+        val mine = sync.links.map { it.providerId }.toSet()
+        return events.filterNot { e -> e.calendarId == sync.calendarId && e.id.substringBefore('@').toLongOrNull() in mine }
+    }
+
     /** Outside entries drawn in the PLAN calendar, read-only; PLAN asks them, it does not know what they are. */
     val calendarOverlays: List<CalendarOverlay> = listOf(app.pokeplan.ui.integrations.LinkCalendarOverlay(this))
 
@@ -442,6 +454,19 @@ fun App(
     LaunchedEffect(model, foreground) {
         if (!foreground) return@LaunchedEffect
         while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) }
+    }
+    // The calendar sync (PLAN 8.1): when the app is in front, shortly after PLAN's events change, and every few minutes.
+    val syncOn = model.integrationData.calendarSync.enabled
+    LaunchedEffect(model, foreground, syncOn, model.data.events) {
+        val sync = model.planSync
+        if (!foreground || !syncOn || sync == null) return@LaunchedEffect
+        kotlinx.coroutines.delay(4_000)
+        app.pokeplan.ui.integrations.runCalendarSync(model, sync)
+    }
+    LaunchedEffect(model, foreground, syncOn) {
+        val sync = model.planSync
+        if (!foreground || !syncOn || sync == null) return@LaunchedEffect
+        while (true) { kotlinx.coroutines.delay(5 * 60_000L); app.pokeplan.ui.integrations.runCalendarSync(model, sync) }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {

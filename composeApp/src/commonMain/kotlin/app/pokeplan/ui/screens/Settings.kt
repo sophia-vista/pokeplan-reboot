@@ -629,6 +629,7 @@ internal fun PlanSettings(model: AppModel) {
         )
     }
     CalendarsCard(model)
+    app.pokeplan.ui.integrations.CalendarSyncCard(model)
     app.pokeplan.ui.integrations.LinkInCalendarCard(model)
 }
 

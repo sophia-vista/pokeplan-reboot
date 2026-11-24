@@ -249,7 +249,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     var events by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
     LaunchedEffect(source, shown, range.first(), range.size) {
         events = if (source == null || shown.isEmpty()) emptyList()
-        else withContext(Dispatchers.Default) { source.events(shown, range.first(), range.last()) }
+        else withContext(Dispatchers.Default) { source.events(shown, range.first(), range.last()) }.let { model.hideSynced(it) }
     }
     val own = model.data.events
     val ownShown = own.flatMap { it.occurrences(range.first(), range.last()) }
