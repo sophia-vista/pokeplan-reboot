@@ -14,6 +14,7 @@ import app.pokeplan.link.FollowUpState
 import app.pokeplan.link.FollowUpStatus
 import app.pokeplan.link.ImportantDate
 import app.pokeplan.link.LinkData
+import app.pokeplan.link.LinkGroup
 import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.LinkSettings
@@ -26,6 +27,7 @@ import app.pokeplan.link.Sort
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -48,6 +50,14 @@ class LinkStore(
     private val document = SavedDocument(storage, LinkData.serializer(), json) { LinkData() }
 
     val data: LinkData get() = document.value
+
+    /** The older single category becomes groups, once; nothing to do on a save that has none left. */
+    private fun migrate() {
+        val next = LinkRules.withGroupsFromCategories(document.value)
+        if (next != document.value) document.update { next }
+    }
+
+    init { migrate() }
 
     fun observe(listener: (LinkData) -> Unit): () -> Unit = document.observe(listener)
 
@@ -90,7 +100,8 @@ class LinkStore(
         )
         (LinkRules.checkPerson(p) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(people = it.people + p) }
-        return Logged(p)
+        migrate()
+        return Logged(data.people.firstOrNull { it.id == p.id } ?: p)
     }
 
     fun updatePerson(p: Person): Logged<Person> {
@@ -99,10 +110,12 @@ class LinkStore(
             name = p.name.trim(), preferred = p.preferred.trim(), phone = p.phone.trim(), email = p.email.trim(), organization = p.organization.trim(),
             role = p.role.trim(), address = p.address.trim(), category = p.category.trim(), tags = p.tags.map { it.trim() }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() },
             favorite = p.favorite, updatedMillis = nowMillis,
+            groupIds = p.groupIds.filter { id -> data.settings.groups.any { it.id == id } }.distinct(),
         )
         (LinkRules.checkPerson(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { d -> d.copy(people = d.people.map { if (it.id == p.id) next else it }) }
-        return Logged(next)
+        migrate()
+        return Logged(data.people.firstOrNull { it.id == p.id } ?: next)
     }
 
     fun createMe(name: String): Logged<Person> {
@@ -133,8 +146,43 @@ class LinkStore(
 
     fun possibleDuplicates(name: String, phone: String = "", email: String = "", exceptId: String? = null) = LinkRules.possibleDuplicates(data, name, phone, email, exceptId)
 
-    fun directory(query: String = "", category: String? = null, tag: String? = null, favoritesOnly: Boolean = false, sort: Sort = Sort.NAME) =
-        LinkRules.directory(data, query, category, tag, favoritesOnly, sort)
+    fun directory(query: String = "", category: String? = null, tag: String? = null, favoritesOnly: Boolean = false, sort: Sort = Sort.NAME, group: String? = null) =
+        LinkRules.directory(data, query, category, tag, favoritesOnly, sort, group)
+
+    /** Makes a group (a suggested one or the player's own); a name already used is refused. */
+    fun addGroup(name: String): Logged<LinkGroup> {
+        (LinkRules.checkGroup(data, name) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val group = LinkGroup(newId(), name.trim())
+        settings { it.copy(groups = it.groups + group) }
+        return Logged(group)
+    }
+
+    fun renameGroup(id: String, name: String): Logged<LinkGroup> {
+        val old = data.settings.groups.firstOrNull { it.id == id } ?: return Logged(null, "That group is gone.")
+        (LinkRules.checkGroup(data, name, exceptId = id) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val next = old.copy(name = name.trim())
+        settings { s -> s.copy(groups = s.groups.map { if (it.id == id) next else it }) }
+        return Logged(next)
+    }
+
+    /** Deletes the group only: nobody is deleted, they just stop being in it. */
+    fun deleteGroup(id: String) = update { d ->
+        d.copy(
+            people = d.people.map { p -> if (id in p.groupIds) p.copy(groupIds = p.groupIds - id) else p },
+            settings = d.settings.copy(groups = d.settings.groups.filterNot { it.id == id }),
+        )
+    }
+
+    fun setGroups(personId: String, groupIds: List<String>) = update { d ->
+        val known = d.settings.groups.map { it.id }.toSet()
+        d.copy(people = d.people.map { if (it.id == personId) it.copy(groupIds = groupIds.filter { g -> g in known }.distinct(), updatedMillis = nowMillis) else it })
+    }
+
+    /** "My order": move a person one place up or down among the people the screen shows. Only the player arranges anyone. */
+    fun moveInOrder(personId: String, visible: List<String>, step: Int) {
+        val order = LinkRules.moved(data, visible, personId, step)
+        if (order != data.settings.order) settings { it.copy(order = order) }
+    }
 
     fun deletePerson(id: String, keepDates: Boolean, keepFollowUps: Boolean) = update { d ->
         d.copy(
@@ -303,9 +351,8 @@ class LinkStore(
 
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
 
-    fun addCategory(name: String) = settings { s ->
-        name.trim().take(LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || n.lowercase() in LinkRules.categories(LinkData(settings = s)).map { it.lowercase() }) s else s.copy(categories = s.categories + n) }
-    }
+    /** The older name for [addGroup]: categories are groups now. */
+    fun addCategory(name: String) { addGroup(name) }
 
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
 
@@ -350,12 +397,15 @@ object LinkExport {
     fun json(data: LinkData, kinds: Set<LinkKinds>): String {
         val all = LinkStore.json.encodeToJsonElement(LinkData.serializer(), data) as JsonObject
         val chosen = all.filterKeys { key -> fields.any { (kind, names) -> kind in kinds && key in names } }
-        return pretty.encodeToString(JsonObject.serializer(), JsonObject(mapOf("format" to JsonPrimitive("pokelife-link-export")) + chosen))
+        // The group names go with the people, since each person's groups are ids into this list.
+        val groups = if (LinkKinds.PEOPLE in kinds) mapOf("groups" to LinkStore.json.encodeToJsonElement(ListSerializer(LinkGroup.serializer()), data.settings.groups)) else emptyMap()
+        return pretty.encodeToString(JsonObject.serializer(), JsonObject(mapOf("format" to JsonPrimitive("pokelife-link-export")) + chosen + groups))
     }
 
     fun without(d: LinkData, kind: LinkKinds): LinkData = when (kind) {
         LinkKinds.PEOPLE -> d.copy(
             people = emptyList(), notes = emptyList(), dates = d.dates.map { it.copy(personId = null) }, followUps = d.followUps.map { it.copy(personId = null) },
+            settings = d.settings.copy(groups = emptyList(), order = emptyList(), categories = emptyList()),
         )
         LinkKinds.DATES -> d.copy(dates = emptyList())
         LinkKinds.FOLLOW_UPS -> d.copy(followUps = emptyList())

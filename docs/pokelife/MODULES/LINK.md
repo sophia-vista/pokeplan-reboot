@@ -53,9 +53,8 @@ LINK has three primary destinations (owner, 23 November 2026; `../FEATURES/DESIG
 The main directory of manually created and optionally imported contacts.
 
 - Search by name, alias, organization or user-entered searchable detail.
-- Optional user-defined relationship category, such as family, friend, colleague, service provider or custom.
-- Optional groups/tags for organization. Avoid mandatory categorization.
-- Sort by name or recently updated; do not rank by importance or engagement.
+- Optional **groups** (owner, 24 November 2026): a person can be in any number of groups; the player makes, renames and deletes them, and deleting a group deletes nobody. Groups replace the single relationship category (the old category became a group once; "Me" is not a group). Avoid mandatory categorization.
+- Sort by name, recently updated or **My order** (owner, 24 November 2026): in My order the player moves a person up or down among the people shown (a swap with the neighbour on screen; the Me person stays first). It is only the player's own arrangement, never a score or a ranking, and it never pays. Do not rank by importance or engagement.
 - Favorite/pin is a convenience for directory access, not a relationship score.
 - Support contacts with only a name; phone number, email and other fields are optional.
 - Duplicate detection should suggest possible matches without silently merging records.
@@ -67,7 +66,7 @@ A profile is the central place for one person's LINK-owned information.
 **Overview**
 - Name and optional preferred name.
 - Optional phone, email, organization, role, address and other user-entered fields.
-- Relationship category and tags.
+- Groups and tags (2.1).
 - Important dates and upcoming date reminders.
 - Next open follow-up, if one exists.
 - Source/provenance for imported fields where relevant.
@@ -106,7 +105,7 @@ Each date supports:
 
 A date without a known year remains valid. Leap-day recurrence must have a documented, predictable rule. Deleting a person must not silently delete an independently meaningful date; ask whether to retain or remove linked dates when necessary.
 
-LINK stores date records. Shared reminder scheduling and notification delivery remain owned by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`. LINK does not automatically create Google Calendar or Android Calendar events.
+LINK stores date records. Shared reminder scheduling and notification delivery remain owned by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`. LINK does not automatically create Google Calendar or Android Calendar events. **In-app overlay (owner, 24 November 2026):** this still holds, and the overlay only adds to it: dates and open follow-ups with a due day (not ones made a PLAN task) appear in PLAN's calendar as read-only all-day entries in LINK's accent, through the integration layer (`../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` 8.1A). Nothing is written to the phone, nothing pays, they never reach reminders, the launcher or widgets, and LINK locked hides them. A Me > Settings switch each for Dates and Follow-ups (both on). A person can also be tied to a PLAN event (field "People", at most 12), stored only in the integration document.
 
 ### 2.4 Follow-ups
 
@@ -142,7 +141,7 @@ A follow-up can be converted to a PLAN task through an explicit user action. Con
 ### 2.5 Search and organization
 
 - One search entry point for people, notes, dates and follow-ups.
-- Filters for category, tags and follow-up status.
+- Filters for group, tags and follow-up status.
 - No automatic categorization based on message content or inferred identity.
 - Search indexes remain local and are rebuilt safely after migration.
 
@@ -434,7 +433,7 @@ Existing code is evidence, not authority. LINK reuses the shared module shell, l
 
 ## 12. Remaining work
 
-Not built: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), a link from BASE to a contact, upcoming dates on the launcher, widgets, sealing Link's rows (a passphrase-sealed backup already ships and carries Link in clear), and the open question of "keep in touch" (D8). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
+Not built: a chooser for fields that changed on re-import (today only empty fields are filled and nothing is overwritten), a link from BASE to a contact, upcoming dates on the launcher, widgets, sealing Link's rows (a passphrase-sealed backup already ships and carries Link in clear), and the open question of "keep in touch" (D8), groups import from phone contacts, and linked people shown on the event in the calendar rows (0.240.0). **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
 
 ---
 
@@ -486,7 +485,7 @@ This document is the single detailed requirements source for LINK. Product-wide 
 
 *Compiled for Android; not yet run on a device.*
 
-A page with an overview on top and, behind the header's Sections key, four places (People, Dates, Follow-ups, Settings). **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Profile (2.6), Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form.
+A page with an overview on top and, behind the header's Sections key, four places (People, Dates, Follow-ups, Settings). **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Profile (2.6), Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form. **Groups, My order and the PLAN integration (0.240.0, owner decisions of 24 November 2026; JVM tests only, not run on a device):** a person is in any number of groups (2.1; made, renamed and deleted in People; deleting one deletes nobody), replacing the single category; People has a third sort, My order (move up or down, Me stays first; never a score, never pays); the calendar overlay and event People links are in 2.3 and live in `IntegrationStore` (`app.pokeplan.app.integrations`), not in `Person`. Open: groups import from phone contacts, showing linked people on the event in the calendar rows.
 
 **Postcard Trail (section 9)** *(numbers are *(tune)* starting values; `docs/economy.md`)*:
 - **On by default** (every acquisition method is), off in Settings without touching a record. Only one thing pays: a **follow-up finished** (2 Rare Candies; at most 3 paid a day). Adding or importing people, notes, dates, tags and favourites, editing, rescheduling, cancelling and reopening never pay.

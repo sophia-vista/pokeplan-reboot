@@ -214,4 +214,57 @@ class LinkRulesTest {
         val json = Json { encodeDefaults = true }
         assertEquals(data, json.decodeFromString(LinkData.serializer(), json.encodeToString(LinkData.serializer(), data)))
     }
+
+    private fun groupData() = LinkData(
+        people = listOf(person("1", "Zed"), person("2", "Ana"), person("3", "Mo"), person("4", "Bea")),
+        settings = LinkSettings(groups = listOf(LinkGroup("g-club", "Climbing club"))),
+    ).let { d -> d.copy(people = d.people.map { if (it.id in setOf("1", "3")) it.copy(groupIds = listOf("g-club")) else it }) }
+
+    @Test
+    fun aPersonCanBeInSeveralGroupsAndTheDirectoryFiltersByOne() {
+        val d = groupData()
+        assertEquals(listOf("Mo", "Zed"), LinkRules.directory(d, group = "g-club").map { it.name })
+        val both = d.copy(people = d.people.map { if (it.id == "2") it.copy(groupIds = listOf("g-club", "g-other")) else it })
+        assertEquals(listOf("Ana", "Mo", "Zed"), LinkRules.directory(both, group = "g-club").map { it.name })
+        assertEquals(listOf("Climbing club"), LinkRules.groupNames(d, d.people.first { it.id == "1" }))
+    }
+
+    @Test
+    fun myOrderPutsTheListedPeopleFirstThenTheRestByName() {
+        val d = groupData().let { it.copy(settings = it.settings.copy(order = listOf("3", "1"))) }
+        assertEquals(listOf("Mo", "Zed", "Ana", "Bea"), LinkRules.directory(d, sort = Sort.MANUAL).map { it.name })
+        assertEquals(listOf("Ana", "Bea", "Mo", "Zed"), LinkRules.directory(d).map { it.name }, "name sort is unchanged")
+    }
+
+    @Test
+    fun movingSwapsWithTheNeighbourOnScreenAndNobodyElseMoves() {
+        val d = groupData()
+        // No saved order yet: the full order is by name, Ana Bea Mo Zed.
+        assertEquals(listOf("2", "4", "3", "1"), LinkRules.fullOrder(d))
+        val shown = LinkRules.directory(d, sort = Sort.MANUAL).map { it.id }
+        assertEquals(listOf("4", "2", "3", "1"), LinkRules.moved(d, shown, "4", -1), "Bea up one swaps with Ana")
+        assertEquals(listOf("4", "2", "3", "1"), LinkRules.moved(d, shown, "2", +1), "Ana down one swaps with Bea")
+        assertEquals(LinkRules.fullOrder(d), LinkRules.moved(d, shown, "2", -1), "the first person cannot move up")
+        // Moving inside a group view swaps with the neighbour in that view; people outside it keep their places.
+        val club = LinkRules.directory(d, group = "g-club", sort = Sort.MANUAL).map { it.id }
+        assertEquals(listOf("2", "4", "1", "3"), LinkRules.moved(d, club, "3", +1), "Mo and Zed swap, Ana and Bea stay")
+    }
+
+    @Test
+    fun groupNamesAreCheckedAndCategoriesBecomeGroupsOnce() {
+        val d = groupData()
+        assertIs<Check.Refused>(LinkRules.checkGroup(d, "  "))
+        assertIs<Check.Refused>(LinkRules.checkGroup(d, "climbing CLUB"))
+        assertEquals(Check.Ok, LinkRules.checkGroup(d, "climbing CLUB", exceptId = "g-club"), "renaming to its own name differing in case is fine")
+        val old = LinkData(
+            people = listOf(person("1", "Ana", "category" to "Friend"), person("2", "Ben", "category" to "friend"), person("3", "Me").copy(isMe = true, category = "Me")),
+            settings = LinkSettings(categories = listOf("Neighbours")),
+        )
+        val grouped = LinkRules.withGroupsFromCategories(old)
+        assertEquals(listOf("Friend", "Neighbours"), grouped.settings.groups.map { it.name })
+        assertEquals(listOf("Friend"), LinkRules.groupNames(grouped, grouped.people.first { it.id == "2" }), "case-insensitive: one group")
+        assertTrue(grouped.people.filter { !it.isMe }.all { it.category.isEmpty() })
+        assertEquals("Me", grouped.people.first { it.isMe }.category, "Me is not a group")
+        assertEquals(grouped, LinkRules.withGroupsFromCategories(grouped), "running it again changes nothing")
+    }
 }

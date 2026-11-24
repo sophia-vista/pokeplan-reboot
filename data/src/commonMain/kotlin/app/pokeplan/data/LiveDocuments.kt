@@ -235,6 +235,7 @@ class LiveDocuments(private val store: DataStore) {
         const val MINT = "mint"
         const val BASE = "home"
         const val LINK = "link"
+        const val INTEGRATIONS = "integrations"
         const val META_LIVE = "live_store"
         const val META_LIVE_AT = "live_store_since"
         const val LIVE_DATABASE = "database"

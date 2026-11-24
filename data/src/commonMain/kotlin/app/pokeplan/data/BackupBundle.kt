@@ -13,7 +13,7 @@ object BackupBundle {
     const val FORMAT = "pokelife-backup"
     const val VERSION = 1
 
-    val KNOWN = setOf(LiveDocuments.SAVE, LiveDocuments.CARE, LiveDocuments.HEAL, LiveDocuments.MINT, LiveDocuments.BASE, LiveDocuments.LINK)
+    val KNOWN = setOf(LiveDocuments.SAVE, LiveDocuments.CARE, LiveDocuments.HEAL, LiveDocuments.MINT, LiveDocuments.BASE, LiveDocuments.LINK, LiveDocuments.INTEGRATIONS)
 
     val SEALED = listOf(LiveDocuments.MINT, LiveDocuments.HEAL)
 
