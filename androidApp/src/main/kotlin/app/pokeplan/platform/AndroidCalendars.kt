@@ -173,6 +173,50 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
         return out
     }
 
+    /**
+     * The events the player made in this calendar: they are its organizer (an invite is someone else's), whole (not one edited
+     * occurrence of a series), and not a series that has edited occurrences (PLAN would lose them), not deleted or cancelled.
+     */
+    override fun importable(calendarId: Long): List<ProviderRow> {
+        if (!permitted()) return emptyList()
+        val columns = arrayOf(
+            CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART, CalendarContract.Events.DTEND,
+            CalendarContract.Events.DURATION, CalendarContract.Events.EVENT_TIMEZONE, CalendarContract.Events.ALL_DAY,
+            CalendarContract.Events.RRULE, CalendarContract.Events.EXDATE, CalendarContract.Events.DELETED, CalendarContract.Events.EVENT_COLOR,
+        )
+        val out = mutableListOf<ProviderRow>()
+        val withExceptions = mutableSetOf<Long>()
+        try {
+            activity.contentResolver.query(
+                CalendarContract.Events.CONTENT_URI, arrayOf(CalendarContract.Events.ORIGINAL_ID),
+                "${CalendarContract.Events.CALENDAR_ID} = $calendarId AND ${CalendarContract.Events.ORIGINAL_ID} IS NOT NULL AND ${CalendarContract.Events.DELETED} = 0", null, null,
+            )?.use { c -> while (c.moveToNext()) if (!c.isNull(0)) withExceptions += c.getLong(0) }
+            activity.contentResolver.query(
+                CalendarContract.Events.CONTENT_URI, columns,
+                "${CalendarContract.Events.CALENDAR_ID} = $calendarId AND ${CalendarContract.Events.DELETED} = 0 AND ${CalendarContract.Events.ORIGINAL_ID} IS NULL" +
+                    " AND ${CalendarContract.Events.IS_ORGANIZER} = 1 AND (${CalendarContract.Events.STATUS} IS NULL OR ${CalendarContract.Events.STATUS} != ${CalendarContract.Events.STATUS_CANCELED})",
+                null, "${CalendarContract.Events.DTSTART} DESC",
+            )?.use { c ->
+                while (c.moveToNext() && out.size < IMPORT_SCAN_LIMIT) {
+                    val id = c.getLong(0)
+                    if (id in withExceptions) continue
+                    out += ProviderRow(
+                        id, false,
+                        ProviderEvent(
+                            title = c.getString(1) ?: "", allDay = c.getInt(6) == 1, startMillis = c.getLong(2),
+                            endMillis = if (c.isNull(3)) null else c.getLong(3), duration = c.getString(4)?.ifBlank { null },
+                            timezone = c.getString(5) ?: "UTC", rrule = c.getString(7)?.ifBlank { null }, exdate = c.getString(8)?.ifBlank { null },
+                            color = if (c.isNull(10)) null else c.getInt(10),
+                        ),
+                    )
+                }
+            }
+        } catch (e: SecurityException) {
+            return emptyList()
+        }
+        return out
+    }
+
     override fun insert(calendarId: Long, event: ProviderEvent): Long? {
         if (!writePermitted()) return null
         val values = values(event).apply { put(CalendarContract.Events.CALENDAR_ID, calendarId) }
@@ -216,5 +260,9 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
         if (e.rrule != null) put(CalendarContract.Events.RRULE, e.rrule) else putNull(CalendarContract.Events.RRULE)
         if (e.exdate != null) put(CalendarContract.Events.EXDATE, e.exdate) else putNull(CalendarContract.Events.EXDATE)
         if (e.color != null) put(CalendarContract.Events.EVENT_COLOR, e.color)
+    }
+
+    private companion object {
+        const val IMPORT_SCAN_LIMIT = 1000
     }
 }

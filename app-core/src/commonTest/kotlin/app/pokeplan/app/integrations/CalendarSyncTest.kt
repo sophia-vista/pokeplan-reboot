@@ -79,10 +79,15 @@ class CalendarSyncTest {
         override fun insert(calendarId: Long, event: ProviderEvent): Long? = if (failWrites) null else (next++).also { rows[it] = ProviderRow(it, false, event) }
         override fun update(id: Long, event: ProviderEvent): Boolean { if (failWrites) return false; rows[id] = ProviderRow(id, false, event); return true }
         override fun delete(id: Long): Boolean { if (failWrites) return false; rows.remove(id); deleted += id; return true }
+        /** Rows the player made in the calendar itself (not by PokéLife): they live in [rows] like any other, and are offered for import. */
+        val madeThere = mutableSetOf<Long>()
+        fun made(id: Long, row: ProviderRow) { rows[id] = row; madeThere += id }
+        override fun importable(calendarId: Long): List<ProviderRow> = madeThere.mapNotNull { rows[it] }
     }
 
     private fun on() = CalendarSyncState(enabled = true, calendarId = 7, calendarName = "PokéLife")
-    private fun run(events: List<PlanEvent>, state: CalendarSyncState, w: FakeWriter) = assertNotNull(CalendarSync.run(events, state, w, zone, today))
+    private var ids = 0
+    private fun run(events: List<PlanEvent>, state: CalendarSyncState, w: FakeWriter) = assertNotNull(CalendarSync.run(events, state, w, zone, today) { "new-${ids++}" })
     private fun CalendarSyncState.after(o: SyncOutcome) = copy(links = o.links)
 
     @Test
@@ -201,5 +206,64 @@ class CalendarSyncTest {
         val o = run(listOf(timed()), on(), w)
         assertEquals(2, w.rows.size, "someone else's event stays, and ours was added")
         assertTrue(w.deleted.isEmpty() && o.changes.isEmpty(), "the other event is not imported or removed")
+    }
+
+    private fun theirs(w: FakeWriter, id: Long, e: PlanEvent) { w.made(id, ProviderRow(id, false, CalendarEventMapping.toProvider(e, zone))) }
+
+    @Test
+    fun eventsMadeInTheCalendarComeInAsPlanEventsAndSyncBothWaysFromThen() {
+        val w = FakeWriter()
+        theirs(w, 800, timed("g", "Dentist", LocalDate(2026, 11, 30), LocalTime(14, 0), 45))
+        theirs(w, 801, PlanEvent("g2", "Retreat", LocalDate(2026, 12, 4), LocalTime(0, 0), allDay = true, lastDay = LocalDate(2026, 12, 6)))
+        val o = run(emptyList(), on(), w)
+        val added = o.changes.filterIsInstance<LocalChange.Add>().map { it.event }
+        assertEquals(setOf("Dentist", "Retreat"), added.map { it.title }.toSet())
+        assertEquals(2, o.imported)
+        assertTrue(added.all { it.companionId == null && it.id.startsWith("new-") }, "no companion, so nothing pays")
+        assertEquals(setOf(800L, 801L), o.links.map { it.providerId }.toSet())
+        // next pass with those events here and linked: nothing to do, and no second copy
+        val state = on().after(o)
+        val again = run(added, state, w)
+        assertTrue(again.quiet && again.imported == 0, "linked rows are not imported twice")
+        // and an edit here now goes back to the calendar
+        val moved = added.first { it.title == "Dentist" }.copy(day = LocalDate(2026, 12, 1))
+        assertEquals(1, run(listOf(moved, added.first { it.title == "Retreat" }), state, w).pushed)
+    }
+
+    @Test
+    fun theSameEventOnBothSidesIsLinkedNotCopiedAndNothingIsSentTwice() {
+        val w = FakeWriter()
+        val mine = timed("e1", "Choir", LocalDate(2026, 11, 26), LocalTime(9, 0), 60)
+        theirs(w, 800, mine)
+        val o = run(listOf(mine), on(), w)
+        assertEquals(1, o.matched)
+        assertEquals(0, o.imported + o.created)
+        assertTrue(o.changes.isEmpty() && w.rows.size == 1, "no import and no second row written")
+        assertEquals(listOf(SyncLink("e1", 800, CalendarEventMapping.fingerprint(mine))), o.links)
+    }
+
+    @Test
+    fun whatPlanCannotShowOrIsOldOrOffStaysInTheCalendar() {
+        val w = FakeWriter()
+        theirs(w, 800, timed("old", "Last quarter", LocalDate(2026, 8, 1)))
+        w.made(801, ProviderRow(801, false, CalendarEventMapping.toProvider(timed(), zone).copy(endMillis = null, duration = "PT1H", rrule = "FREQ=DAILY;COUNT=4")))
+        w.made(802, ProviderRow(802, true, CalendarEventMapping.toProvider(timed("d", "Deleted one"), zone)))
+        theirs(w, 803, timed("ok", "Kept", LocalDate(2026, 11, 29)))
+        val o = run(emptyList(), on(), w)
+        assertEquals(listOf("Kept"), o.changes.filterIsInstance<LocalChange.Add>().map { it.event.title }, "a finished old one, a COUNT rule and a deleted row are left alone")
+        val off = run(emptyList(), on().copy(importNew = false), w)
+        assertTrue(off.changes.isEmpty() && off.imported == 0, "the switch turns it off")
+    }
+
+    @Test
+    fun anImportedEventThatDidNotLandIsNeverReadAsDeletedHere() {
+        val w = FakeWriter()
+        theirs(w, 800, timed("g", "Dentist", LocalDate(2026, 11, 30)))
+        val o = run(emptyList(), on(), w)
+        // had the add been lost, the link must not survive: the next pass would delete the calendar's event
+        val orphan = on().after(o)
+        val next = run(emptyList(), orphan, w)
+        assertEquals(1, next.removedInCalendar, "this is what an orphaned link would do")
+        assertTrue(800L in w.deleted)
     }
 }

@@ -44,7 +44,9 @@ private fun announce(model: AppModel, report: SyncReport) {
     if (!report.changedPlan) return
     val removed = report.outcome.removedHere
     val label = if (removed > 0 && report.outcome.pulled == 0) "Removed in the calendar: $removed" else "Calendar changed ${report.applied} of your events"
-    model.offerUndo(label) { model.store.restoreEvents(report.before) }
+    // Undo puts back what the calendar changed or removed, and keeps anything that came in (or was made) since: those are the player's.
+    val beforeIds = report.before.map { it.id }.toSet()
+    model.offerUndo(label) { model.store.restoreEvents(report.before + model.store.data.events.filter { it.id !in beforeIds }) }
 }
 
 /**
@@ -86,6 +88,7 @@ internal fun CalendarSyncCard(model: AppModel) {
                             if (state.lastNote.isNotBlank()) Text(state.lastNote, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         }
                     }
+                    app.pokeplan.ui.theme.ToggleRow("Bring in events I make there", state.importNew) { sync.setImport(it) }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Sync now", {
                             working = true

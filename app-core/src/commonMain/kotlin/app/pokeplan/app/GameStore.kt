@@ -686,16 +686,20 @@ class GameStore(
      * companion rule as any edit (8.2): a new day, time, length or repeat restarts what its companion was there for.
      * Returns how many were applied.
      */
-    fun applyEventChanges(replace: List<Pair<PlanEvent, PlanEvent>>, remove: List<PlanEvent>): Int {
+    fun applyEventChanges(replace: List<Pair<PlanEvent, PlanEvent>>, remove: List<PlanEvent>, add: List<PlanEvent> = emptyList()): Int {
         val current = data.events.associateBy { it.id }
         val replaced = replace.filter { (old, _) -> current[old.id] == old }
         val removed = remove.filter { current[it.id] == it }.map { it.id }.toSet()
-        if (replaced.isEmpty() && removed.isEmpty()) return 0
+        val added = add.filter { it.id !in current }
+        if (replaced.isEmpty() && removed.isEmpty() && added.isEmpty()) return 0
         val next = replaced.associate { (old, new) -> old.id to new }
-        val after = data.events.filterNot { it.id in removed }.map { next[it.id] ?: it }
+        val after = data.events.filterNot { it.id in removed }.map { next[it.id] ?: it } + added
         update { it.copy(events = restartCompanions(data.events, after)) }
-        return replaced.size + removed.size
+        return replaced.size + removed.size + added.size
     }
+
+    /** A fresh id for a PLAN event made outside the store's own add calls (an event brought in from a phone calendar). */
+    fun newEventId(): String = newId()
 
     fun moveToList(taskId: String, listId: String?) = update { d ->
         d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(listId = listId?.takeIf { id -> d.lists.any { l -> l.id == id } }) else it })
