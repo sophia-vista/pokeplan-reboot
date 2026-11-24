@@ -8,7 +8,7 @@ sealed interface Check {
     data class Refused(val reason: String) : Check
 }
 
-enum class Sort { NAME, RECENT, MANUAL }
+enum class Sort { NAME, RECENT, MANUAL, GROUP }
 
 object LinkRules {
     const val NAME_MAX = 80
@@ -23,7 +23,11 @@ object LinkRules {
 
     const val DATES_SOON_DAYS = 30
 
-    val STARTING_CATEGORIES = listOf("Family", "Friend", "Colleague", "Service provider")
+    /** The words the main category offers first; the player can still write their own. */
+    val STARTING_CATEGORIES = listOf("Family", "Friends", "Work", "School", "Services")
+
+    /** The words a category could have held before 0.240.0 turned categories into groups, used once to give it back. */
+    val LEGACY_CATEGORIES = STARTING_CATEGORIES + listOf("Friend", "Colleague", "Service provider")
 
     /** Suggested first groups; none is made until the player taps one. */
     val STARTING_GROUPS = STARTING_CATEGORIES
@@ -149,9 +153,19 @@ object LinkRules {
             Sort.RECENT -> found.sortedByDescending { it.updatedMillis }
             Sort.MANUAL -> manual(data, found)
             Sort.NAME -> found.sortedBy { displayName(it).lowercase() }
+            Sort.GROUP -> found.sortedWith(compareBy<Person> { groupRank(data, it) }.thenBy { displayName(it).lowercase() })
         }
         return ordered.filter { it.isMe } + ordered.filterNot { it.isMe }
     }
+
+    /** The first group the person is in, in the player's group order, or null when they are in none. */
+    fun groupOf(data: LinkData, p: Person): String? = firstGroupIndex(data, p)?.let { data.settings.groups[it].name }
+
+    private fun firstGroupIndex(data: LinkData, p: Person): Int? =
+        p.groupIds.mapNotNull { id -> data.settings.groups.indexOfFirst { it.id == id }.takeIf { it >= 0 } }.minOrNull()
+
+    /** Where the person's first group sits in the player's group order; people in no group come after every group. */
+    private fun groupRank(data: LinkData, p: Person): Int = firstGroupIndex(data, p) ?: Int.MAX_VALUE
 
     /** The player's own order: listed people first in their listed order, the rest by name. Only the player moves anyone. */
     private fun manual(data: LinkData, people: List<Person>): List<Person> {
@@ -191,28 +205,22 @@ object LinkRules {
         p.groupIds.mapNotNull { id -> data.settings.groups.firstOrNull { it.id == id }?.name }
 
     /**
-     * Turns the older single category into groups, once: every distinct category (and each one the player added) becomes a
-     * group, and each person keeps the group of their category. "Me" is not a group. Safe to run again: it changes nothing
-     * when no person has a category left and no category is waiting.
+     * Gives the main category back to people a group replaced it for: 0.240.0 turned the old single category into a group
+     * once and cleared it. On the first run of this version, a person with no category who is in exactly one group named
+     * like a category ("Family", "Friends", "Friend", ...) takes that word as their main category and keeps the group.
+     * A person in two such groups, or in none, is left without one. Runs once (the settings flag records it), so a
+     * category the player later clears stays cleared.
      */
-    fun withGroupsFromCategories(data: LinkData): LinkData {
-        val wanted = (data.people.filter { !it.isMe }.map { it.category } + data.settings.categories).map { it.trim() }.filter { it.isNotEmpty() }
-        if (wanted.isEmpty() && data.people.none { it.category.isNotBlank() && !it.isMe }) return data
-        val groups = data.settings.groups.toMutableList()
-        fun groupFor(name: String): LinkGroup {
-            groups.firstOrNull { it.name.equals(name, ignoreCase = true) }?.let { return it }
-            val slug = name.lowercase().filter { it.isLetterOrDigit() }.take(20).ifEmpty { "group" }
-            var id = "g-$slug"
-            var n = 2
-            while (groups.any { it.id == id }) { id = "g-$slug-$n"; n++ }
-            return LinkGroup(id, name.take(TAG_MAX)).also { groups += it }
-        }
-        wanted.forEach { groupFor(it) }
+    fun withCategoriesBack(data: LinkData): LinkData {
+        if (data.settings.categoriesRestored) return data
         val people = data.people.map { p ->
-            if (p.isMe || p.category.isBlank()) p
-            else p.copy(groupIds = (p.groupIds + groupFor(p.category.trim()).id).distinct(), category = "")
+            if (p.isMe || p.category.isNotBlank()) p
+            else {
+                val names = groupNames(data, p).filter { n -> LEGACY_CATEGORIES.any { it.equals(n, ignoreCase = true) } }.distinctBy { it.lowercase() }
+                if (names.size == 1) p.copy(category = names.single()) else p
+            }
         }
-        return data.copy(people = people, settings = data.settings.copy(groups = groups.toList(), categories = emptyList()))
+        return data.copy(people = people, settings = data.settings.copy(categoriesRestored = true))
     }
 
     fun categories(data: LinkData): List<String> =

@@ -120,7 +120,8 @@ class LinkStoreTest {
         )
         assertEquals(app.pokeplan.link.ImportResult(added = 0, linked = 1, birthdays = 0, skipped = 0), result)
         val p = s.link.data.people.single()
-        assertEquals("Ana", p.name); assertEquals("111", p.phone); assertEquals(listOf("Friend"), app.pokeplan.link.LinkRules.groupNames(s.link.data, p), "a category becomes a group")
+        assertEquals("Ana", p.name); assertEquals("111", p.phone); assertEquals("Friend", p.category, "the main category stays a category, not a group")
+        assertTrue(app.pokeplan.link.LinkRules.groupNames(s.link.data, p).isEmpty(), "adding a category makes no group")
         assertEquals("ana@x.com", p.email); assertEquals("k1", p.sourceId)
         assertEquals(1, s.link.data.dates.size, "she already had a birthday")
         assertEquals(5, s.link.data.dates.single().month)
@@ -564,5 +565,28 @@ class LinkStoreTest {
         assertTrue("Support circle" in s.link.export(setOf(app.pokeplan.link.LinkKinds.PEOPLE)), "the export carries the group names with the people")
         s.link.erase(app.pokeplan.link.LinkKinds.PEOPLE)
         assertTrue(s.link.data.settings.groups.isEmpty() && s.link.data.settings.order.isEmpty())
+    }
+
+    @Test
+    fun anOlderSaveGetsItsMainCategoryBackOnceAndKeepsItsGroups() {
+        val seeded = app.pokeplan.link.LinkData(
+            people = listOf(
+                app.pokeplan.link.Person("p1", "Ana", groupIds = listOf("g-friend")),
+                app.pokeplan.link.Person("p2", "Ben", groupIds = listOf("g-club")),
+            ),
+            settings = app.pokeplan.link.LinkSettings(
+                groups = listOf(app.pokeplan.link.LinkGroup("g-friend", "Friend"), app.pokeplan.link.LinkGroup("g-club", "Climbing club")),
+            ),
+        )
+        val clock = FakeClock(saturday)
+        val game = GameStore(MemoryStorage(), clock, utc, Random(7)).also { it.start("Sophia", 25) }
+        val storage = MemoryStorage(LinkStore.json.encodeToString(app.pokeplan.link.LinkData.serializer(), seeded))
+        val link = LinkStore(storage, clock, Spy(game), utc, rng = Random(3))
+        assertEquals("Friend", link.data.people.first { it.name == "Ana" }.category, "the word one of her groups held comes back as the main category")
+        assertEquals("", link.data.people.first { it.name == "Ben" }.category, "a plain group is not a category")
+        assertEquals(2, link.data.settings.groups.size, "the groups stay, the category does not replace them")
+        assertTrue(link.data.settings.categoriesRestored)
+        val reopened = LinkStore(storage, clock, Spy(game), utc, rng = Random(5))
+        assertEquals(link.data, reopened.data, "the repair is saved, so a reopen changes nothing")
     }
 }

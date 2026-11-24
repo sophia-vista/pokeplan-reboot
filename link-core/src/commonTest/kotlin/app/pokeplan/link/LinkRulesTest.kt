@@ -251,20 +251,50 @@ class LinkRulesTest {
     }
 
     @Test
-    fun groupNamesAreCheckedAndCategoriesBecomeGroupsOnce() {
+    fun theGroupSortListsPeopleInThePlayersGroupOrderAndPeopleWithNoGroupLast() {
+        val data = LinkData(
+            people = listOf(
+                person("1", "Zed").copy(groupIds = listOf("g-b")),
+                person("2", "Ana").copy(groupIds = listOf("g-a")),
+                person("3", "Mo").copy(groupIds = listOf("g-b", "g-a")),
+                person("4", "Bea"),
+                person("5", "Me").copy(isMe = true, groupIds = listOf("g-b")),
+            ),
+            settings = LinkSettings(groups = listOf(LinkGroup("g-a", "Family"), LinkGroup("g-b", "Climbing club"))),
+        )
+        assertEquals(listOf("Me", "Ana", "Mo", "Zed", "Bea"), LinkRules.directory(data, sort = Sort.GROUP).map { it.name }, "Me stays first, then the first group in the player's order, then the second, then nobody's group")
+        assertEquals("Family", LinkRules.groupOf(data, data.people.first { it.id == "2" }), "the first group in the player's order")
+        assertEquals("Family", LinkRules.groupOf(data, data.people.first { it.id == "3" }), "the heading follows the player's group order, not the order the groups were ticked")
+        assertNull(LinkRules.groupOf(data, data.people.first { it.id == "4" }))
+        assertEquals(listOf("Me", "Ana", "Bea", "Mo", "Zed"), LinkRules.directory(data).map { it.name }, "name sort is unchanged apart from Me pinned first")
+    }
+
+    @Test
+    fun groupNamesAreCheckedAndTheMainCategoryComesBackOnceFromOneCategoryGroup() {
         val d = groupData()
         assertIs<Check.Refused>(LinkRules.checkGroup(d, "  "))
         assertIs<Check.Refused>(LinkRules.checkGroup(d, "climbing CLUB"))
         assertEquals(Check.Ok, LinkRules.checkGroup(d, "climbing CLUB", exceptId = "g-club"), "renaming to its own name differing in case is fine")
         val old = LinkData(
-            people = listOf(person("1", "Ana", "category" to "Friend"), person("2", "Ben", "category" to "friend"), person("3", "Me").copy(isMe = true, category = "Me")),
-            settings = LinkSettings(categories = listOf("Neighbours")),
+            people = listOf(
+                person("1", "Ana").copy(groupIds = listOf("g-friend")),
+                person("2", "Ben").copy(groupIds = listOf("g-club")),
+                person("3", "Cy").copy(groupIds = listOf("g-friend", "g-family")),
+                person("4", "Me").copy(isMe = true, category = "Me"),
+            ),
+            settings = LinkSettings(groups = listOf(LinkGroup("g-friend", "Friend"), LinkGroup("g-club", "Climbing club"), LinkGroup("g-family", "Family"))),
         )
-        val grouped = LinkRules.withGroupsFromCategories(old)
-        assertEquals(listOf("Friend", "Neighbours"), grouped.settings.groups.map { it.name })
-        assertEquals(listOf("Friend"), LinkRules.groupNames(grouped, grouped.people.first { it.id == "2" }), "case-insensitive: one group")
-        assertTrue(grouped.people.filter { !it.isMe }.all { it.category.isEmpty() })
-        assertEquals("Me", grouped.people.first { it.isMe }.category, "Me is not a group")
-        assertEquals(grouped, LinkRules.withGroupsFromCategories(grouped), "running it again changes nothing")
+        val back = LinkRules.withCategoriesBack(old)
+        assertEquals("Friend", back.people.first { it.id == "1" }.category, "one old category word gives the main category back")
+        assertEquals("", back.people.first { it.id == "2" }.category, "a group that is not a relationship word is not a category")
+        assertEquals("", back.people.first { it.id == "3" }.category, "two possible words: left without one rather than guessed")
+        assertEquals("Me", back.people.first { it.id == "4" }.category, "Me is not touched")
+        assertEquals(old.settings.groups, back.settings.groups, "the groups stay: a group never replaces the category again")
+        assertEquals(listOf("g-friend"), back.people.first { it.id == "1" }.groupIds)
+        assertTrue(back.settings.categoriesRestored)
+        assertEquals(back, LinkRules.withCategoriesBack(back), "running it again changes nothing")
+        val kept = LinkData(people = listOf(person("1", "Ana", "category" to "Friend")), settings = LinkSettings(categories = listOf("Neighbours")))
+        assertEquals("Friend", LinkRules.withCategoriesBack(kept).people.single().category, "a category that is still there is kept")
+        assertEquals(listOf("Neighbours"), LinkRules.withCategoriesBack(kept).settings.categories)
     }
 }

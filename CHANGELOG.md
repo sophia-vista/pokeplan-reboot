@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.243.0
+
+- **LINK: the main category is restored beside groups, and People gains a By group sort (owner decision, 24 November 2026).** 0.240.0 had replaced the single relationship category with groups; the category is back and a group sits beside it, never in its place.
+  - **Main category and groups.** A person has one optional main category, picked from the standard words (Family, Friends, Work, School, Services) or one the player adds, and is still in any number of groups; groups are made, renamed and deleted in People, and deleting one deletes nobody. The person form has a "Main category" chooser and a "New category" field again, People filters by main category (group chips filter by group), and the cards show the main category.
+  - **By group** is a fourth sort beside By name, Recent and My order, like MINT's account groups (MINT.md 4.3): each person is listed once, under the heading of their first group in the player's group order, people in no group last under "No group"; Me stays first. My order and name are unchanged.
+  - **The one-time repair for saves that 0.240.0 migrated:** a person with no category who is in exactly one group named like an old category word ("Family", "Friends", "Friend", "Colleague", "Service provider", ...) gets that word back as their main category and keeps the group. `LinkSettings.categoriesRestored` records that it has run, so a category cleared later stays cleared.
+  - Code: `Sort.GROUP`, `LinkRules.groupOf` (first group in the player's group order), `LinkRules.withCategoriesBack`, `LinkSettings.categoriesRestored`, `LinkStore.addCategory` (adds to the main category list again, not a group), `LinkRules.STARTING_CATEGORIES` (Family, Friends, Work, School, Services) and `LinkRules.LEGACY_CATEGORIES` (the old words, kept for the repair); `Person.category` in the person's JSON (no schema step), People's main-category filter and group headings, the person form and `PersonCard`. No schema or reward change (`RewardRules.VERSION` unchanged). JVM tests only, not run on a device.
+
 ## 0.242.0
 
 - **PLAN: events the player makes in the synced calendar are brought in as PLAN events (owner decision, 24 November 2026, second that day).** This reverses "events in that calendar are never imported as PLAN events" (PLAN.md 8.1 and 8.1A rule 3, the settings "Calendar:" line, INTEGRATIONS_AND_PRIVACY.md 6.1, 6.2 and 8.1A, design.md); the rules are rewritten first, in PLAN.md 8.1A rule 3A. Every other calendar and every event the player did not make stays read-only; an outside event never pays or becomes a task.

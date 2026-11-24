@@ -50,6 +50,7 @@ import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.theme.Accordion
+import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.screens.PullRevealSlot
 import app.pokeplan.ui.screens.pullReveal
@@ -303,6 +304,7 @@ private fun openHit(model: AppModel, kind: HitKind, id: String) {
 }
 
 private const val DIRECTORY_PAGE = 40
+private const val NO_GROUP = "No group"
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -312,6 +314,7 @@ private fun PeopleScreen(model: AppModel) {
     var name by remember { mutableStateOf("") }
     var adding by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf<String?>(null) }
     var group by remember { mutableStateOf<String?>(null) }
     var favorites by remember { mutableStateOf(false) }
     var sort by remember { mutableStateOf(Sort.NAME) }
@@ -322,8 +325,8 @@ private fun PeopleScreen(model: AppModel) {
     val scroll = rememberScrollState()
     val reveal = rememberPullReveal(
         scroll,
-        keepOpen = { query.isNotBlank() || group != null || favorites || sort != Sort.NAME },
-        onClose = { query = ""; group = null; favorites = false; sort = Sort.NAME },
+        keepOpen = { query.isNotBlank() || category != null || group != null || favorites || sort != Sort.NAME },
+        onClose = { query = ""; category = null; group = null; favorites = false; sort = Sort.NAME },
     )
     SectionScaffold(
         LinkSection.PEOPLE.label, null, onBack = { model.linkSection = null }, icon = LinkSection.PEOPLE.icon, color = Module.LINK.look.header,
@@ -333,23 +336,33 @@ private fun PeopleScreen(model: AppModel) {
             TextBox { ContactImportView(model, contacts) { importing = false } }
             return@SectionScaffold
         }
-        val people = link.directory(query, null, null, favorites, sort, group)
+        val people = link.directory(query, category, null, favorites, sort, group)
         if (data.people.isNotEmpty()) PullRevealSlot(reveal, model.data.settings.reduceMotion) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelField(query, { query = it.take(40) }, Modifier.weight(1f), placeholder = "Search people", singleLine = true)
                 PixelIconButton("close", "Close search", reveal::close)
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("All", !favorites && group == null, { favorites = false; group = null })
-                if (data.people.any { it.favorite }) Chip("Pinned", favorites, { favorites = true; group = null })
-                data.settings.groups.filter { g -> data.people.any { g.id in it.groupIds } }.forEach { g ->
-                    Chip(g.name, !favorites && group == g.id, { group = g.id; favorites = false })
-                }
-                PixelButton(
-                    when (sort) { Sort.NAME -> "By name"; Sort.RECENT -> "Recent"; Sort.MANUAL -> "My order" },
-                    { sort = when (sort) { Sort.NAME -> Sort.RECENT; Sort.RECENT -> Sort.MANUAL; Sort.MANUAL -> Sort.NAME } },
-                    color = Pixel.InkSoft, compact = true,
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                val pinnedKey = "\u0001pinned"
+                val filterKeys = listOf<String?>(null) + (if (data.people.any { it.favorite }) listOf(pinnedKey) else emptyList()) +
+                    LinkRules.categories(data).filter { c -> data.people.any { it.category.equals(c, ignoreCase = true) } }
+                PixelDropdown(
+                    filterKeys, if (favorites) pinnedKey else category, { k -> if (k == null) "All" else if (k == pinnedKey) "Pinned" else k },
+                    { k -> if (k == pinnedKey) { favorites = true; category = null } else { category = k; favorites = false } },
+                    Modifier.weight(1f), key = accent,
                 )
+                PixelDropdown(
+                    Sort.entries.toList(), sort,
+                    { s -> when (s) { Sort.RECENT -> "Recent"; Sort.MANUAL -> "My order"; Sort.GROUP -> "By group"; else -> "By name" } },
+                    { s -> sort = s ?: Sort.NAME }, Modifier.weight(1f), key = accent,
+                )
+            }
+            val groupChips = data.settings.groups.filter { g -> data.people.any { g.id in it.groupIds } }
+            if (groupChips.isNotEmpty()) {
+                FieldLabel("Groups")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    groupChips.forEach { g -> Chip(g.name, group == g.id, { group = if (group == g.id) null else g.id }) }
+                }
             }
         }
         TextBox {
@@ -374,8 +387,16 @@ private fun PeopleScreen(model: AppModel) {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         val firstMovable = people.indexOfFirst { !it.isMe }
                         val ids = people.map { it.id }
+                        var lastHeading: String? = null
                         people.take(upTo).forEachIndexed { i, p ->
-                            val sub = listOfNotNull(LinkRules.groupNames(data, p).joinToString(", ").takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · ")
+                            if (sort == Sort.GROUP) {
+                                val heading = if (p.isMe) null else LinkRules.groupOf(data, p) ?: NO_GROUP
+                                if (heading != null && heading != lastHeading) {
+                                    FieldLabel(heading)
+                                    lastHeading = heading
+                                }
+                            }
+                            val sub = listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · ")
                             val moveKeys: (@Composable () -> Unit)? = if (sort == Sort.MANUAL && !p.isMe) {
                                 {
                                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -627,8 +648,10 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
     var organization by remember(p.id) { mutableStateOf(p.organization) }
     var role by remember(p.id) { mutableStateOf(p.role) }
     var address by remember(p.id) { mutableStateOf(p.address) }
+    var category by remember(p.id) { mutableStateOf(p.category) }
     var groupIds by remember(p.id) { mutableStateOf(p.groupIds) }
     var tags by remember(p.id) { mutableStateOf(p.tags.joinToString(", ")) }
+    var newCategory by remember(p.id) { mutableStateOf("") }
     var newGroup by remember(p.id) { mutableStateOf("") }
     var message by remember(p.id) { mutableStateOf<String?>(null) }
     val similar = link.possibleDuplicates(name, phone, email, exceptId = p.id)
@@ -640,6 +663,11 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
                 PixelField(phone, { phone = it.take(LinkRules.FIELD_MAX) }, Modifier.weight(1f), label = "Phone", singleLine = true, keyboardOptions = phoneKeys)
                 PixelField(email, { email = it.take(LinkRules.FIELD_MAX) }, Modifier.weight(1f), label = "Email", singleLine = true, keyboardOptions = emailKeys)
             }
+            val categoryList = LinkRules.categories(data)
+            PixelDropdown(
+                listOf<String?>(null) + categoryList, if (category.isBlank()) null else (categoryList.firstOrNull { it.equals(category, ignoreCase = true) } ?: category),
+                { it ?: "No category" }, { category = it ?: "" }, Modifier.fillMaxWidth(), key = accent, label = "Main category",
+            )
             val groups = data.settings.groups
             if (groups.isNotEmpty()) {
                 SectionLabel("Groups")
@@ -664,12 +692,16 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
                     PixelField(role, { role = it.take(LinkRules.FIELD_MAX) }, Modifier.weight(1f), label = "Role", singleLine = true, keyboardOptions = wordKeys)
                 }
                 PixelField(address, { address = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Address", singleLine = true, keyboardOptions = wordKeys)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+                    PixelField(newCategory, { newCategory = it.take(LinkRules.TAG_MAX) }, Modifier.weight(1f), label = "New category", singleLine = true, keyboardOptions = wordKeys)
+                    PixelButton("Add", { link.addCategory(newCategory); category = newCategory.trim(); newCategory = "" }, color = accent, enabled = newCategory.isNotBlank())
+                }
                 PixelField(tags, { tags = it.take(120) }, Modifier.fillMaxWidth(), label = "Tags, separated by commas", singleLine = true)
             }
         }
         if (similar.isNotEmpty()) Text("This may be ${similar.joinToString(" or ") { LinkRules.displayName(it) }}, already in your list. Nothing is merged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
         FormSave("Save", {
-            val out = link.updatePerson(p.copy(name = name, preferred = preferred, phone = phone, email = email, organization = organization, role = role, address = address, groupIds = groupIds, tags = LinkRules.tags(tags)))
+            val out = link.updatePerson(p.copy(name = name, preferred = preferred, phone = phone, email = email, organization = organization, role = role, address = address, category = category, groupIds = groupIds, tags = LinkRules.tags(tags)))
             if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
         }, accent, enabled = name.isNotBlank())
         PixelButton("Cancel", onDone, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

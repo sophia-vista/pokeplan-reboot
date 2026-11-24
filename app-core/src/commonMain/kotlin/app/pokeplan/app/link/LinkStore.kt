@@ -51,9 +51,9 @@ class LinkStore(
 
     val data: LinkData get() = document.value
 
-    /** The older single category becomes groups, once; nothing to do on a save that has none left. */
+    /** Gives the main category back to people a group replaced it for, once (0.243.0); nothing to do after that. */
     private fun migrate() {
-        val next = LinkRules.withGroupsFromCategories(document.value)
+        val next = LinkRules.withCategoriesBack(document.value)
         if (next != document.value) document.update { next }
     }
 
@@ -351,8 +351,10 @@ class LinkStore(
 
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
 
-    /** The older name for [addGroup]: categories are groups now. */
-    fun addCategory(name: String) { addGroup(name) }
+    /** Adds a word of the player's own to the main category list, beside the starting ones. */
+    fun addCategory(name: String) = settings { s ->
+        name.trim().take(LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || n.lowercase() in LinkRules.categories(LinkData(settings = s)).map { it.lowercase() }) s else s.copy(categories = s.categories + n) }
+    }
 
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
 

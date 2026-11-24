@@ -79,6 +79,8 @@ data class LinkSettings(
     val safari: Boolean = true,
     val tutorialSeen: Boolean = false,
     val categories: List<String> = emptyList(),
+    /** Set once the one-time repair that gives the main category back to people a group replaced it for has run (0.243.0). */
+    val categoriesRestored: Boolean = false,
     val groups: List<LinkGroup> = emptyList(),
     /** The player's own arrangement of people (ids), used by the "My order" sort; people not listed follow by name. */
     val order: List<String> = emptyList(),
