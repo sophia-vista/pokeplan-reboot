@@ -17,6 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import app.pokeplan.app.integrations.PlanCalendarSync
 import app.pokeplan.app.integrations.SyncReport
 import app.pokeplan.app.integrations.TargetCalendar
@@ -99,11 +100,16 @@ internal fun CalendarSyncCard(model: AppModel) {
                 else -> {
                     Text("Send my events to", style = MaterialTheme.typography.bodyLarge)
                     calendars.orEmpty().forEach { c ->
-                        val label = if (c.account.isBlank() || c.account == c.name) c.name else "${c.name}, ${c.account}"
-                        PixelButton(label, {
-                            working = true
-                            scope.launch { val r = withContext(Dispatchers.Default) { sync.enable(c) }; if (r != null) announce(model, r); working = false }
-                        }, Modifier.fillMaxWidth(), accent, compact = true, enabled = !working)
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            Column(Modifier.weight(1f)) {
+                                Text(c.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                if (c.account.isNotBlank() && c.account != c.name) Text(c.account, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                            PixelButton("Use", {
+                                working = true
+                                scope.launch { val r = withContext(Dispatchers.Default) { sync.enable(c) }; if (r != null) announce(model, r); working = false }
+                            }, color = accent, compact = true, enabled = !working)
+                        }
                     }
                 }
             }

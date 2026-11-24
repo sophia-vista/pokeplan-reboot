@@ -117,7 +117,7 @@ Never repeatedly prompt after denial. Do not use a permission rationale to press
 | Network state | `ACCESS_NETWORK_STATE` | Only if needed to show connectivity/provider state; not for profiling |
 | Notifications | `POST_NOTIFICATIONS` on Android 13+ | First time user enables reminders or a notification-dependent feature |
 | Exact alarms | `SCHEDULE_EXACT_ALARM` / applicable platform mechanism | Only if a genuinely exact reminder capability is justified and Android policy permits it; prefer inexact scheduling otherwise |
-| Calendar | `READ_CALENDAR`; write permission only if a separately approved direct-write workflow requires it | When user connects a calendar; read-only baseline |
+| Calendar | `READ_CALENDAR`; `WRITE_CALENDAR` only for PLAN's opt-in two-way sync of its own events (6.2) | `READ_CALENDAR` when user connects a calendar; `WRITE_CALENDAR` only when the player turns on Calendar sync |
 | Health Connect | Per-record-type Health Connect permissions | When user selects health data categories to import/read/write |
 | Location | `ACCESS_COARSE_LOCATION` / `ACCESS_FINE_LOCATION` | Foreground, only when invoking a location-dependent tool; prefer approximate location |
 | Background location | `ACCESS_BACKGROUND_LOCATION` | Not supported by the baseline product |
@@ -221,7 +221,7 @@ HEAL reads whatever reaches Health Connect and shows the writing app of every im
 
 ## 6. Calendar integration and ownership
 
-### 6.1 Baseline: Android Calendar Provider, read-only
+### 6.1 Baseline: Android Calendar Provider, read-only for others' events
 
 PLAN may read calendars exposed through Android's Calendar Provider after the user explicitly selects calendar access. This can include Google Calendar calendars synchronized to the device and other compatible calendar providers. PokéLife must not assume every Google account calendar is available locally.
 
@@ -232,12 +232,15 @@ PLAN may read calendars exposed through Android's Calendar Provider after the us
 - A linked PLAN task stores an opaque provider/calendar/event reference; it does not create an editable duplicate.
 - Provider event changes/deletions are reflected when the provider query refreshes; stale cached projections are labelled or removed according to the module's display policy.
 - Calendar access denial does not disable PLAN's native calendar.
+- The one exception is PLAN's own events under the opt-in sync in 6.2; everything else stays read-only.
 
 ### 6.2 Writes and synchronization
 
-Do not implement bidirectional synchronization in the initial release. Avoid a second source of truth and conflict-resolution burden.
+**Owner decision of 24 November 2026:** PLAN gets an optional two-way sync of its own events with ONE calendar on the phone, through the Calendar Provider (no Google sign-in, OAuth, network code or tokens; the phone's Google account sync carries it to Google). This reverses "do not implement bidirectional synchronization in the initial release" for this one feature only; "local-only, no accounts" stands. The rules are in `../MODULES/PLAN.md` 8.1A: off until turned on, `WRITE_CALENDAR` asked then, the player picks one writable calendar, only PLAN's own events and only PokéLife's own provider rows are written, changed or deleted (a link per event and a fingerprint in the `integrations` document), the calendar's version wins a true conflict with PLAN's offered back through Undo, it runs only with the app in front, and nothing is a reward input. Other events in that calendar are never imported and never edited.
 
-If event creation is later approved, prefer Android calendar intents that hand the user to the chosen calendar application for confirmation. Direct Calendar Provider writes require a separately reviewed permission, user consent, account/calendar selection, conflict behavior, and tests. Never silently edit or delete external events.
+Anything beyond this (importing events made in Google as PLAN events, syncing tasks, or another module's data) is not approved. Avoid a second source of truth and conflict-resolution burden elsewhere.
+
+For any other event creation, prefer Android calendar intents that hand the user to the chosen calendar application for confirmation. Direct Calendar Provider writes require a separately reviewed permission, user consent, account/calendar selection, conflict behavior, and tests. Never silently edit or delete external events.
 
 Calendar access is an Android platform integration, not a dependency on Google OAuth. A separate Google API integration should be considered only if a concrete feature cannot be met by the platform provider and the required scopes are approved.
 
@@ -348,6 +351,7 @@ The optional launcher may need to enumerate launchable applications. Prefer pack
 Two modules that must stay separate meet in an integration layer that neither depends on: `app-core` `app.pokeplan.app.integrations` (`IntegrationStore`, `LinkInPlan`) and `composeApp` `ui/integrations`. The first one joins LINK and PLAN.
 - **What crosses:** LINK dates and open follow-ups with a due day (not ones made a PLAN task) show in PLAN's calendar as read-only all-day entries; LINK people can be tied to a PLAN event by opaque person id (at most 12 per event).
 - **What never crosses:** nothing is written to the phone's calendar, reminders, the launcher or widgets; nothing pays and nothing is a reward input; no figure, note or private word goes into PLAN's data, and `PlanEvent` and `Person` carry no link. LINK locked hides the entries. Two switches in Me > Settings ("LINK in the calendar": Dates, Follow-ups, on by default).
+- **Calendar sync (24 November 2026, second use of the layer):** PLAN's own events sync two-way with one phone calendar (PLAN.md 8.1A; `CalendarSync`, `PlanCalendarSync`, `CalendarEventMapping`, `CalendarWriter` in `app.pokeplan.app.integrations`; androidApp `AndroidCalendars`). The links (series id to provider event id, fingerprint) live in the same document. Companion, people, rewards, tasks and LINK dates never cross.
 - **Storage and backup:** one saved document named `integrations` in the `live_document` table (no schema migration), in the backup bundle's known set and erased by Delete all data. Links to an event or person that no longer exists are dropped when the app opens.
 
 ## 9. Shared reminder and notification architecture

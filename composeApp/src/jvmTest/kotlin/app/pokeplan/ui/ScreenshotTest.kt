@@ -2786,6 +2786,6 @@ class ScreenshotTest {
         val on = { m: AppModel -> m.planSync!!.enable(app.pokeplan.app.integrations.TargetCalendar(3, "PokéLife", "someone.with.a.long.address@gmail.com")); Unit }
         shot("calendar-sync-on", 1f, prepare = on)
         shot("calendar-sync-on-xl", 1.3f, prepare = on)
-        shot("calendar-sync-turning-off", 1f, prepare = on, interact = { scene -> tapAt(scene, 450f, 260f) })
+        shot("calendar-sync-turning-off", 1f, prepare = on, interact = { scene -> tapAt(scene, 258f, 228f) })
     }
 }

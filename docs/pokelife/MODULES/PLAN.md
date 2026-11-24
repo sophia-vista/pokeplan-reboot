@@ -103,7 +103,7 @@ Present future commitments chronologically with date grouping. Include overdue i
 
 ### 3.4 Calendar
 
-Calendar is a planning surface, not a second task database. Support month/week views and compact agenda. Display PLAN events, PLAN task due dates/scheduled times, read-only external events, and optionally linked CARE routines.
+Calendar is a planning surface, not a second task database. Support month/week views and compact agenda. Display PLAN events (kept in step with one chosen phone calendar when two-way sync is on, 8.1A), PLAN task due dates/scheduled times, read-only external events, and optionally linked CARE routines.
 
 A task is actionable and has completion state; an event represents something happening at a time; an external event is read-only. Do not create a task merely because an external event appears. **Overlays (owner, 24 November 2026):** the calendar also shows read-only all-day entries from in-app overlay sources; LINK's dates and open follow-ups are the first (LINK's accent, calendar id -2; a tap opens the person or LINK's place). PLAN's calendar knows nothing about LINK: it only asks `CalendarOverlay` sources (`CalendarEvent.isOverlay`, `isOpenable`). Overlay entries are never tasks, never pay and never reach reminders, the launcher or widgets.
 
@@ -256,11 +256,27 @@ A week starts on **Monday** by default. Settings → General has a "Week starts 
 
 ### 8.1 External calendars
 
-"Import" means choosing **which device calendars appear** in PLAN's Calendar; nothing is copied into PLAN, no task or PLAN event is made from an external event, and nothing is written back. PLAN tasks, PLAN events and external events each have their own look and label (not colour alone).
+"Import" means choosing **which device calendars appear** in PLAN's Calendar; nothing is copied into PLAN and no task or PLAN event is made from an external event. The only thing ever written to a device calendar is PLAN's own events, and only under the opt-in two-way sync in 8.1A. PLAN tasks, PLAN events and external events each have their own look and label (not colour alone).
 
-Google/device calendar integration is read-only initially. PLAN may request permission, display external events, filter selected calendars, refresh data, and show provider details. It must not edit/delete/create external events, convert them automatically to PLAN tasks, or reward viewing/attending them.
+Device calendar integration is read-only for every event PokéLife did not make. PLAN may request permission, display external events, filter selected calendars, refresh data, and show provider details. It must not edit/delete/create external events, convert them automatically to PLAN tasks, or reward viewing/attending them. **Owner decision of 24 November 2026:** this reverses "read-only" for PLAN's own events only, through 8.1A; every other event stays read-only and is never imported.
 
 **Overlays are not device calendars (owner, 24 November 2026).** Entries from an in-app overlay (3.4) are not read from the Calendar Provider, are not listed in Settings → Calendars, need no permission and are never written to the phone.
+
+### 8.1A Two-way sync of PLAN events (owner, 24 November 2026)
+
+PLAN can keep its own events in step with ONE calendar on the phone through Android's Calendar Provider. No Google sign-in, no OAuth, no network code or tokens in the app; the phone's own Google account sync carries the calendar to Google. "Local-only, no accounts" stands.
+
+1. **Opt-in.** Off until the player turns it on (Me > Settings > "Calendar sync"). `WRITE_CALENDAR` is asked only then (`READ_CALENDAR` as before). The player picks ONE writable calendar the phone already has (a calendar PokéLife could create itself would be local-only and never reach Google, so they pick a Google calendar, ideally one made for it).
+2. **What syncs.** Only PLAN's own events: title, day, time, length, the days of an all-day event, one of the six repeats (daily, weekdays, weekly, every 2 weeks, monthly, yearly) with its end date and skipped days (RRULE and EXDATE). Colour goes out only (the provider may drop it). Companion, people, rewards and tasks never leave PokéLife; LINK dates are not sent.
+3. **Only PokéLife's rows.** PokéLife keeps a link per event (PLAN series id to provider event id, plus a fingerprint of what both held when they last agreed) in the integration document `integrations` (no schema migration), and only linked rows are ever written, changed or deleted. Other events in that calendar stay read-only as in 8.1, are NEVER imported as PLAN events or tasks, and an outside event never pays.
+4. **Conflicts.** Changed on one side only goes to the other. Changed on both, the calendar's version wins (the provider keeps no edit time; a change made here is written within seconds, so a true tie is rare) and the PLAN version is offered back through Undo. Deleted on one side is deleted on the other (a deletion made by the calendar is offered back through Undo and, restored, is written to the calendar again). Deleted in the calendar but edited here since: kept and written again. A row the calendar holds in a form PLAN cannot show (a COUNT, a weekday set, an odd length) keeps PLAN's version and writes it back.
+5. **When it runs.** With the app in front: a few seconds after PLAN's events change, every 5 minutes while the app is open, and on a "Sync now" key. Never in the background with the app closed.
+6. **Companion and rewards.** A change that comes from the calendar goes through the same companion rule as any edit (8.2: a new day, time, length or repeat restarts what the companion was there for) and pays nothing itself. Nothing here is a reward input (`RewardRules.VERSION` unchanged).
+7. **No doubles.** The phone calendar's copies of PokéLife's events are hidden in the PLAN calendar and the launcher so each event shows once.
+8. **Turning off** asks "Keep the events there" or "Remove them" (removes only PokéLife's rows). Turning it back on for the same calendar resumes without copying twice; a different calendar starts fresh and leaves the old copies.
+9. **Limits.** Events older than 30 days and finished are not sent on the first run; at most 500 linked events.
+
+*As built (0.241.0, JVM fake provider only, not run on a device):* app-core `app.pokeplan.app.integrations` (`CalendarEventMapping`, `CalendarSync`, `PlanCalendarSync`, `CalendarWriter`), `GameStore.applyEventChanges`, androidApp `AndroidCalendars` (`CalendarWriter`, `CalendarWriteAccess`), composeApp `ui/integrations/CalendarSyncCard`. *Open:* the Calendar Provider's handling of EXDATE for all-day events, UNTIL forms and Google's sync of the written rows are written from the provider's documentation and untested on a device; importing events made in Google as PLAN events is a non-goal today.
 
 ### 8.2 PLAN events
 
@@ -361,7 +377,7 @@ PLAN has its own short settings page (the Sections key in the header → Setting
 - **Alerts:** repeat until answered and the focus alerts (halfway and end). The task-reminders switch and the quiet hours are in Me, Settings, Notifications, with every module's reminders switch; global quiet hours, notification permissions, delivery and focus deferral are managed by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
 - **Lists:** made, edited, archived and deleted here (the Tasks screen only filters by them).
 - **Rewards:** the reward focus a new task starts with ("New tasks pay most in", 12.1).
-- **Calendar:** which device calendars appear (8.1). Nothing is imported or written back.
+- **Calendar:** which device calendars appear (8.1). Nothing is imported. **Calendar sync** (8.1A): off by default; switch, the one calendar to sync with, "Sync now" and the keep-or-remove choice when turned off. Only PLAN's own events are written.
 - **Focus:** the usual length and Deep Focus are what the last session was started with (6.1); no separate default is asked for.
 - **Week start** is a General setting (shared by every calendar in the app), not a PLAN one.
 - **Appearance:** follow PokéLife global appearance/accessibility; no duplicate PLAN theme controls.
