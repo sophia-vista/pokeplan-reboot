@@ -105,7 +105,7 @@ class CalendarSyncTest {
         state = state.after(run(listOf(e), state, w))
         val id = state.links.single().providerId
         // edited here
-        val moved = e.copy(title = "Choir practice", at = LocalTime(18, 0))
+        val moved = e.copy(title = "Choir practice", start = LocalTime(18, 0))
         val pushed = run(listOf(moved), state, w)
         assertEquals(1, pushed.pushed)
         assertEquals("Choir practice", w.rows.getValue(id).event.title)
