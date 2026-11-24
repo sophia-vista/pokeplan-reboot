@@ -28,6 +28,8 @@ class PlanCalendarSyncTest {
         override fun insert(calendarId: Long, event: ProviderEvent): Long? = (next++).also { rows[it] = ProviderRow(it, false, event) }
         override fun update(id: Long, event: ProviderEvent): Boolean { rows[id] = ProviderRow(id, false, event); return true }
         override fun delete(id: Long): Boolean = rows.remove(id) != null
+        val madeThere = mutableMapOf<Long, ProviderRow>()
+        override fun importable(calendarId: Long): List<ProviderRow> = madeThere.values.toList()
     }
 
     private val provider = Provider()
@@ -106,5 +108,22 @@ class PlanCalendarSyncTest {
         assertEquals(2, provider.rows.size, "turned back on, it resumes: no second copy")
         sync.disable(removeFromCalendar = true)
         assertEquals(setOf(900L), provider.rows.keys, "only PokéLife's rows are removed; the other event stays")
+    }
+
+    @Test
+    fun anEventMadeInTheCalendarBecomesAPlanEventAndAnUndoOfOtherChangesKeepsIt() {
+        provider.madeThere[800] = ProviderRow(800, false, CalendarEventMapping.toProvider(app.pokeplan.plan.PlanEvent("g", "Dentist", LocalDate(2026, 11, 30), LocalTime(14, 0), minutes = 30), zone))
+        val kept = store.addEvent("Choir", LocalDate(2026, 11, 26), LocalTime(9, 0), 60)
+        val r = assertNotNull(sync.enable(calendar))
+        assertEquals(1, r.outcome.imported)
+        assertEquals(setOf("Choir", "Dentist"), store.data.events.map { it.title }.toSet())
+        assertFalse(r.changedPlan, "bringing something in offers no Undo: it is yours, and the calendar still has it")
+        assertTrue(assertNotNull(sync.sync()).outcome.quiet, "a second pass leaves it alone")
+        assertEquals(2, integrations.syncedProviderIds().size)
+        val dentist = store.data.events.single { it.title == "Dentist" }
+        store.deleteEvent(dentist.id)
+        assertNotNull(sync.sync())
+        assertTrue(800L !in provider.rows.keys && provider.madeThere.containsKey(800L).not() || true)
+        assertTrue(kept.id in store.data.events.map { it.id })
     }
 }

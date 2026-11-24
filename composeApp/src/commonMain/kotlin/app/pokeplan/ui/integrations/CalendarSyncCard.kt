@@ -88,8 +88,8 @@ internal fun CalendarSyncCard(model: AppModel) {
                             if (state.lastNote.isNotBlank()) Text(state.lastNote, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         }
                     }
+                    app.pokeplan.ui.theme.ToggleRow("Bring in events I make there", state.importNew) { sync.setImport(it) }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelButton(if (state.importNew) "New ones: in" else "New ones: off", { sync.setImport(!state.importNew) }, color = Pixel.InkSoft, compact = true)
                         PixelButton("Sync now", {
                             working = true
                             scope.launch { runCalendarSync(model, sync); working = false }
