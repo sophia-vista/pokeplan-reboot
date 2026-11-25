@@ -1505,7 +1505,7 @@ class ScreenshotTest {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(linkParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.LINK) }
-        val model = AppModel(store, contacts = contacts)
+        val model = AppModel(store, images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} }, contacts = contacts)
         if (!empty) {
             val link = model.link
             val today = model.store.today
@@ -1523,6 +1523,18 @@ class ScreenshotTest {
         model.module = app.pokeplan.ui.screens.Module.LINK
         model.linkSection = section
         render(name, fontScale = fontScale, height = height, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+    }
+
+    /** A small PNG for the LINK photo screenshots, drawn with Skia and encoded the way the store keeps a picture. */
+    @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
+    private fun photo64(sky: Int, ground: Int, w: Int = 96, h: Int = 72): String {
+        val surface = org.jetbrains.skia.Surface.makeRasterN32Premul(w, h)
+        surface.canvas.apply {
+            clear(sky)
+            drawRect(org.jetbrains.skia.Rect.makeXYWH(0f, h * 0.62f, w.toFloat(), h * 0.38f), org.jetbrains.skia.Paint().apply { color = ground })
+            drawCircle(w * 0.24f, h * 0.3f, h * 0.16f, org.jetbrains.skia.Paint().apply { color = 0xFFFFF3C4.toInt() })
+        }
+        return kotlin.io.encoding.Base64.encode(surface.makeImageSnapshot().encodeToData(org.jetbrains.skia.EncodedImageFormat.PNG)!!.bytes)
     }
 
     @Test
@@ -1565,11 +1577,19 @@ class ScreenshotTest {
             m.link.addFollowUp("Send the choir photos", long.id)
             m.link.setFavorite(long.id, true)
             m.link.setAvatar(long.id, 25)
+            val memory = m.link.addMemory("Lunch by the choir room", app.pokeplan.link.PartialDate(2024, 3, 14), place = "Choir room", personIds = listOf(long.id)).record
+            memory?.let { mem ->
+                m.link.addPhoto(mem.id, photo64(0xFF9BD3F0.toInt(), 0xFF6E8F52.toInt()), caption = "Choir room window")
+                m.link.addPhoto(mem.id, photo64(0xFFF5C58A.toInt(), 0xFF8C5A3C.toInt()))
+            }
             m.linkPersonTab = tab
             m.linkPersonId = long.id
         }
-        link("link-person", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(0))
-        link("link-person-dark", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, dark = true, prepare = open(0))
+        link("link-person", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1900, prepare = open(0))
+        link("link-person-dark", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1900, dark = true, prepare = open(0))
+        link("link-person-photo", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1900, prepare = open(0), interact = { scene ->
+            tapAt(scene, 126f, 1272f)
+        })
         link("link-person-notes", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(2))
         link("link-person-followups", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(3))
     }
@@ -1580,21 +1600,39 @@ class ScreenshotTest {
             val ana = m.linkData.people.firstOrNull()
             val today = m.store.today
             val college = m.link.addEra("College years", start = app.pokeplan.link.PartialDate(2020), end = app.pokeplan.link.PartialDate(2024)).record
-            m.link.addMemory("Lunch by the choir room", app.pokeplan.link.PartialDate(2024, 3, 14), place = "Choir room", personIds = listOfNotNull(ana?.id), eraIds = listOfNotNull(college?.id))
-            m.link.addMemory("Ramen after the recital", app.pokeplan.link.PartialDate(2023), place = "Kichitora", personIds = listOfNotNull(ana?.id), eraIds = listOfNotNull(college?.id))
+            val lunch = m.link.addMemory("Lunch by the choir room", app.pokeplan.link.PartialDate(2024, 3, 14), place = "Choir room", personIds = listOfNotNull(ana?.id), eraIds = listOfNotNull(college?.id)).record
+            val ramen = m.link.addMemory("Ramen after the recital", app.pokeplan.link.PartialDate(2023), place = "Kichitora", personIds = listOfNotNull(ana?.id), eraIds = listOfNotNull(college?.id)).record
             m.link.addMemory("The long bus home", app.pokeplan.link.PartialDate(2022, 6), place = "Rizal", personIds = listOfNotNull(ana?.id))
             m.link.addMemory("Somewhere in the rain", note = "No date, only the rain.", personIds = listOfNotNull(ana?.id))
             m.link.addMemory("Anniversary picnic", app.pokeplan.link.PartialDate(today.year - 1, today.monthNumber, today.dayOfMonth), personIds = listOfNotNull(ana?.id))
+            lunch?.let { mem ->
+                m.link.addPhoto(mem.id, photo64(0xFF9BD3F0.toInt(), 0xFF6E8F52.toInt()), caption = "Choir room window")
+                m.link.addPhoto(mem.id, photo64(0xFFF5C58A.toInt(), 0xFF8C5A3C.toInt()))
+            }
+            ramen?.let { mem -> m.link.addPhoto(mem.id, photo64(0xFF7E6BC4.toInt(), 0xFF3B2E63.toInt()), caption = "Kichitora at night") }
             m.store.markRewardsSeen()
         }
         link("link-memories", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1600, prepare = ::seed)
         link("link-memories-dark", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1600, dark = true, prepare = ::seed)
         link("link-memories-chapters", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1900, prepare = ::seed, interact = { scene ->
-            tapAt(scene, 389f, 374f)
+            tapAt(scene, 270f, 374f)
             tapAt(scene, 270f, 500f)
         })
-        link("link-memories-edit", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 2300, prepare = ::seed, interact = { scene ->
-            tapAt(scene, 270f, 540f)
+        link("link-memories-gallery", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1500, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 434f, 374f)
+        })
+        link("link-memories-gallery-dark", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1500, dark = true, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 434f, 374f)
+        })
+        link("link-memories-gallery-empty", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1200, empty = true, interact = { scene ->
+            tapAt(scene, 434f, 155f)
+        })
+        link("link-memories-photo", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1500, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 434f, 374f)
+            tapAt(scene, 162f, 551f)
+        })
+        link("link-memories-edit", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 2900, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 270f, 700f)
         })
         // The form on one memory, so the date editor and its delete key have a screenshot of their own.
         val store = storeWithTeam()
@@ -1604,6 +1642,19 @@ class ScreenshotTest {
         model.link.addMemory("Lunch by the choir room", app.pokeplan.link.PartialDate(2024, 3, 14), place = "Choir room", time = "12:30", personIds = listOfNotNull(ana?.id), eraIds = listOfNotNull(era?.id))
         render("link-memory-form", height = 1600) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.MemoryForm(model, existing = model.link.memories().first(), onDone = {}) } } } }
+        }
+        // The same form with photos kept under its fields, and the picker's key.
+        val photoStore = storeWithTeam()
+        val photoModel = AppModel(photoStore, images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} })
+        val photoAna = photoModel.link.addPerson("Ana Reyes", organization = "Choir", category = "Friend").record
+        val photoEra = photoModel.link.addEra("College years", app.pokeplan.link.PartialDate(2020), app.pokeplan.link.PartialDate(2024)).record
+        val photoMemory = photoModel.link.addMemory("Lunch by the choir room", app.pokeplan.link.PartialDate(2024, 3, 14), place = "Choir room", time = "12:30", personIds = listOfNotNull(photoAna?.id), eraIds = listOfNotNull(photoEra?.id)).record
+        photoMemory?.let { mem ->
+            photoModel.link.addPhoto(mem.id, photo64(0xFF9BD3F0.toInt(), 0xFF6E8F52.toInt()), caption = "Choir room window")
+            photoModel.link.addPhoto(mem.id, photo64(0xFFF5C58A.toInt(), 0xFF8C5A3C.toInt()))
+        }
+        render("link-memory-photos", height = 2400) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.MemoryForm(photoModel, existing = photoModel.link.memories().first(), onDone = {}) } } } }
         }
     }
 

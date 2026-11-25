@@ -20,6 +20,7 @@ import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.LinkSettings
 import app.pokeplan.link.Memory
+import app.pokeplan.link.MemoryPhoto
 import app.pokeplan.link.PartialDate
 import app.pokeplan.link.Person
 import app.pokeplan.link.Profile
@@ -278,7 +279,33 @@ class LinkStore(
         return Logged(next)
     }
 
-    fun deleteMemory(id: String) = update { d -> d.copy(memories = d.memories.filterNot { it.id == id }) }
+    fun deleteMemory(id: String) = update { d ->
+        d.copy(memories = d.memories.filterNot { it.id == id }, photos = d.photos.filterNot { it.memoryId == id })
+    }
+
+    fun photosOf(memoryId: String): List<MemoryPhoto> = LinkRules.photosOf(data, memoryId)
+
+    fun photosOfPerson(personId: String): List<MemoryPhoto> = LinkRules.photosOfPerson(data, personId)
+
+    /** Adds a picture to a memory; [image] is the base64 the picture picker gave the UI. */
+    fun addPhoto(memoryId: String, image: String, mime: String = "image/png", caption: String = ""): Logged<MemoryPhoto> {
+        if (data.memories.none { it.id == memoryId }) return Logged(null, "That memory is gone.")
+        val p = MemoryPhoto(newId(), memoryId, caption.trim(), mime, image, nowMillis)
+        (LinkRules.checkPhoto(p, LinkRules.photosOf(data, memoryId).size) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { d ->
+            d.copy(photos = d.photos + p, memories = d.memories.map { if (it.id == memoryId) it.copy(updatedMillis = nowMillis) else it })
+        }
+        return Logged(p)
+    }
+
+    fun updatePhotoCaption(id: String, caption: String): Logged<MemoryPhoto> {
+        val old = data.photos.firstOrNull { it.id == id } ?: return Logged(null, "That picture is gone.")
+        val next = old.copy(caption = caption.trim().take(LinkRules.PHOTO_CAPTION_MAX))
+        update { d -> d.copy(photos = d.photos.map { if (it.id == id) next else it }) }
+        return Logged(next)
+    }
+
+    fun deletePhoto(id: String) = update { d -> d.copy(photos = d.photos.filterNot { it.id == id }) }
 
     fun addEra(title: String, start: PartialDate = PartialDate(), end: PartialDate = PartialDate(), note: String = ""): Logged<Era> {
         val e = Era(newId(), title.trim(), note.trim(), start, end, nowMillis, nowMillis)
@@ -463,7 +490,7 @@ object LinkExport {
         LinkKinds.PEOPLE to listOf("people", "notes"),
         LinkKinds.DATES to listOf("dates"),
         LinkKinds.FOLLOW_UPS to listOf("followUps"),
-        LinkKinds.MEMORIES to listOf("memories", "eras"),
+        LinkKinds.MEMORIES to listOf("memories", "eras", "photos"),
     )
 
     fun json(data: LinkData, kinds: Set<LinkKinds>): String {
@@ -482,6 +509,6 @@ object LinkExport {
         )
         LinkKinds.DATES -> d.copy(dates = emptyList())
         LinkKinds.FOLLOW_UPS -> d.copy(followUps = emptyList())
-        LinkKinds.MEMORIES -> d.copy(memories = emptyList(), eras = emptyList())
+        LinkKinds.MEMORIES -> d.copy(memories = emptyList(), eras = emptyList(), photos = emptyList())
     }
 }
