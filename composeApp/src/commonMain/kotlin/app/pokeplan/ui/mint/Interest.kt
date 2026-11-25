@@ -108,7 +108,8 @@ internal fun PendingReview(model: AppModel) {
             }
             if (waiting.size > 1) PixelButton("Confirm all", { mint.confirmAllPending(); model.haptic() }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
             message?.let { Report(model, it, NoticeTone.WARNING) }
-            if (waiting.isNotEmpty()) captureProblem = null else captureProblem?.let { Report(model, it, NoticeTone.WARNING) }
+            // An alert MINT could not place is only said while there is nothing else in the box to show.
+            if (waiting.isEmpty()) captureProblem?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
 }
