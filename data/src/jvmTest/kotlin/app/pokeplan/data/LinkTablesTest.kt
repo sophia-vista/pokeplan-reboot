@@ -1,7 +1,10 @@
 package app.pokeplan.data
 
 import app.cash.sqldelight.db.QueryResult
+import app.pokeplan.link.Era
 import app.pokeplan.link.LinkData
+import app.pokeplan.link.Memory
+import app.pokeplan.link.PartialDate
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -170,5 +173,16 @@ class LinkTablesTest {
         assertEquals(13, DataStore.SCHEMA_VERSION)
         val bad = BackupBundle.encode(mapOf("save" to "{}"), 10, 7).replace("\"save\"", "\"contacts\"")
         assertTrue(BackupBundle.stage(bad, 10) is BackupBundle.Staged.Refused)
+    }
+    @Test
+    fun memoriesAndErasTravelInTheLinkStateRow() {
+        val s = JvmDatabase.open().also { it.live.activate(null, null, 1); it.live.moveLinkToTables(2) }
+        val memories = listOf(Memory("m1", "Lunch", date = PartialDate(2024, 3, 14), personIds = listOf("p1"), eraIds = listOf("e1")))
+        val eras = listOf(Era("e1", "College", start = PartialDate(2020), end = PartialDate(2024)))
+        val json = Json { encodeDefaults = true }
+        s.linkTables.write(json.encodeToString(LinkData.serializer(), LinkData(memories = memories, eras = eras)))
+        val back = Json { ignoreUnknownKeys = true }.decodeFromString(LinkData.serializer(), s.linkTables.read()!!)
+        assertEquals(memories, back.memories)
+        assertEquals(eras, back.eras, "the state row carries the archive records without a table or a migration")
     }
 }

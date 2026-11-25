@@ -297,4 +297,69 @@ class LinkRulesTest {
         assertEquals("Friend", LinkRules.withCategoriesBack(kept).people.single().category, "a category that is still there is kept")
         assertEquals(listOf("Neighbours"), LinkRules.withCategoriesBack(kept).settings.categories)
     }
+
+    @Test
+    fun aPartialDateIsOnlyWhatThePlayerKnows() {
+        assertEquals(null, LinkRules.dateProblem(PartialDate()))
+        assertEquals(null, LinkRules.dateProblem(PartialDate(year = 2024)))
+        assertEquals(null, LinkRules.dateProblem(PartialDate(2024, 3)))
+        assertEquals(null, LinkRules.dateProblem(PartialDate(2024, 3, 14, approximate = true)))
+        assertTrue(LinkRules.dateProblem(PartialDate(month = 3)) != null, "a month needs its year")
+        assertTrue(LinkRules.dateProblem(PartialDate(day = 14)) != null, "a day needs its month")
+        assertTrue(LinkRules.dateProblem(PartialDate(2023, 2, 29)) != null, "not a real day")
+        assertEquals(null, LinkRules.dateProblem(PartialDate(2024, 2, 29)))
+        assertEquals("14 Mar 2024", LinkRules.dateLabel(PartialDate(2024, 3, 14)))
+        assertEquals("Mar 2024", LinkRules.dateLabel(PartialDate(2024, 3)))
+        assertEquals("2024", LinkRules.dateLabel(PartialDate(2024)))
+        assertEquals("Around 2024", LinkRules.dateLabel(PartialDate(2024, approximate = true)))
+        assertEquals("Unknown date", LinkRules.dateLabel(PartialDate()))
+    }
+
+    @Test
+    fun aMemoryNeedsAWordAndItsDateMustBePossible() {
+        assertEquals(Check.Ok, LinkRules.checkMemory(Memory("m", "A meal")))
+        assertEquals(Check.Ok, LinkRules.checkMemory(Memory("m", "", note = "Only a note")))
+        assertIs<Check.Refused>(LinkRules.checkMemory(Memory("m", " ")))
+        assertIs<Check.Refused>(LinkRules.checkMemory(Memory("m", "x".repeat(LinkRules.MEMORY_TITLE_MAX + 1))))
+        assertIs<Check.Refused>(LinkRules.checkMemory(Memory("m", "Trip", date = PartialDate(day = 5))))
+        assertEquals(Check.Ok, LinkRules.checkMemory(Memory("m", "Trip", date = PartialDate(2024, 6))))
+    }
+
+    @Test
+    fun memoriesAreNewestFirstAndTheUndatedOnesComeLast() {
+        fun m(id: String, y: Int?, mo: Int?, d: Int?) = Memory(id, id, date = PartialDate(y, mo, d))
+        val all = listOf(m("old", 2019, null, null), m("none", null, null, null), m("new", 2024, 5, 2), m("mid", 2021, 12, 31))
+        assertEquals(listOf("new", "mid", "old", "none"), LinkRules.memoryOrder(all).map { it.id })
+        assertEquals(listOf(2024, 2021, 2019, null), LinkRules.yearGroups(all).map { it.first })
+    }
+
+    @Test
+    fun aPersonAndAnEraGatherTheirMemoriesAndTheDayIsRemembered() {
+        val data = LinkData(
+            people = listOf(person("1", "Ana")),
+            memories = listOf(
+                Memory("a", "Lunch", date = PartialDate(2026, 11, 8), personIds = listOf("1")),
+                Memory("b", "Concert", date = PartialDate(2025, 11, 8), personIds = listOf("1"), eraIds = listOf("e1")),
+                Memory("c", "Beach", date = PartialDate(2024, 7, 1), personIds = listOf("1")),
+                Memory("d", "Move", date = PartialDate(2025, 5, 1), eraIds = listOf("e1")),
+            ),
+            eras = listOf(Era("e1", "College", start = PartialDate(2023), end = PartialDate(2026))),
+        )
+        assertEquals(listOf("a", "b", "c"), LinkRules.memoriesOf(data, "1").map { it.id })
+        assertEquals(listOf("b", "d"), LinkRules.memoriesInEra(data, "e1").map { it.id })
+        assertEquals(listOf("b"), LinkRules.onThisDay(data, today).map { it.id }, "the same day in an earlier year only")
+        assertEquals(LocalDate(2026, 11, 8), LinkRules.metUpOf(data, "1"))
+        assertNull(LinkRules.metUpOf(data, "missing"))
+    }
+
+    @Test
+    fun anEraNeedsANameAndItsEndsMayBeOpen() {
+        assertEquals(Check.Ok, LinkRules.checkEra(Era("e", "College")))
+        assertEquals(Check.Ok, LinkRules.checkEra(Era("e", "College", start = PartialDate(2020), end = PartialDate(2024))))
+        assertIs<Check.Refused>(LinkRules.checkEra(Era("e", " ")))
+        assertIs<Check.Refused>(LinkRules.checkEra(Era("e", "College", start = PartialDate(2024), end = PartialDate(2020))), "start after end")
+        assertEquals("2020 - 2024", LinkRules.eraRangeLabel(Era("e", "College", start = PartialDate(2020), end = PartialDate(2024))))
+        assertEquals("2020 - now", LinkRules.eraRangeLabel(Era("e", "College", start = PartialDate(2020))))
+        assertEquals("No dates", LinkRules.eraRangeLabel(Era("e", "College")))
+    }
 }

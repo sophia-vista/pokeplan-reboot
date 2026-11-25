@@ -1575,6 +1575,39 @@ class ScreenshotTest {
     }
 
     @Test
+    fun linkMemories() {
+        fun seed(m: AppModel) {
+            val ana = m.linkData.people.firstOrNull()
+            val today = m.store.today
+            val college = m.link.addEra("College years", start = app.pokeplan.link.PartialDate(2020), end = app.pokeplan.link.PartialDate(2024)).record
+            m.link.addMemory("Lunch by the choir room", app.pokeplan.link.PartialDate(2024, 3, 14), place = "Choir room", personIds = listOfNotNull(ana?.id), eraIds = listOfNotNull(college?.id))
+            m.link.addMemory("Ramen after the recital", app.pokeplan.link.PartialDate(2023), place = "Kichitora", personIds = listOfNotNull(ana?.id), eraIds = listOfNotNull(college?.id))
+            m.link.addMemory("The long bus home", app.pokeplan.link.PartialDate(2022, 6), place = "Rizal", personIds = listOfNotNull(ana?.id))
+            m.link.addMemory("Somewhere in the rain", note = "No date, only the rain.", personIds = listOfNotNull(ana?.id))
+            m.link.addMemory("Anniversary picnic", app.pokeplan.link.PartialDate(today.year - 1, today.monthNumber, today.dayOfMonth), personIds = listOfNotNull(ana?.id))
+            m.store.markRewardsSeen()
+        }
+        link("link-memories", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1600, prepare = ::seed)
+        link("link-memories-dark", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1600, dark = true, prepare = ::seed)
+        link("link-memories-chapters", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1900, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 389f, 374f)
+            tapAt(scene, 270f, 500f)
+        })
+        link("link-memories-edit", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 2300, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 270f, 540f)
+        })
+        // The form on one memory, so the date editor and its delete key have a screenshot of their own.
+        val store = storeWithTeam()
+        val model = AppModel(store)
+        val ana = model.link.addPerson("Ana Reyes", organization = "Choir", category = "Friend").record
+        val era = model.link.addEra("College years", app.pokeplan.link.PartialDate(2020), app.pokeplan.link.PartialDate(2024)).record
+        model.link.addMemory("Lunch by the choir room", app.pokeplan.link.PartialDate(2024, 3, 14), place = "Choir room", time = "12:30", personIds = listOfNotNull(ana?.id), eraIds = listOfNotNull(era?.id))
+        render("link-memory-form", height = 1600) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Column(Modifier.padding(20.dp)) { app.pokeplan.ui.theme.TextBox { app.pokeplan.ui.link.MemoryForm(model, existing = model.link.memories().first(), onDone = {}) } } } }
+        }
+    }
+
+    @Test
     fun linkPersonPicture() {
         for (dark in listOf(false, true)) {
             val m = AppModel(storeWithTeam())

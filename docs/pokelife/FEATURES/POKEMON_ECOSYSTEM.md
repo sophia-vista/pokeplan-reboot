@@ -44,12 +44,13 @@ No module may create a local shadow collection, local copy of a Pokémon's progr
 
 ### 2.2 Pokémon roles
 
-An owned Pokémon is in **exactly one place** at any time: the global buddy, one module's party, a module's Guardian slot (one per module: a legendary or mythical is a normal Pokémon that can also be one module's Guardian, its perk applying in that module only), a WORLD expedition team, a GEAR tool as its helper, or the PC. A PLAN event's **companion** (PLAN.md 8.2) is not a place: it is a Pokémon already in the PLAN party that an event names, and naming it moves nothing. Putting a Pokémon in a place takes it out of the place it was in (the PC is the place of every Pokémon that holds no other); nothing is ever copied, and taking a Pokémon from a place never releases or deletes it. A Pokémon on an expedition under way cannot be moved until the expedition ends. The roles themselves stay independent of each other (changing one place never changes another place's other members).
+An owned Pokémon is in **exactly one place** at any time: the global buddy, one module's party, a module's Guardian slot (one per module: a legendary or mythical is a normal Pokémon that can also be one module's Guardian, its perk applying in that module only), a WORLD expedition team, a person's team in LINK (up to six; the Me person's team **is** LINK's own module party, not a second place), a GEAR tool as its helper, or the PC. A PLAN event's **companion** (PLAN.md 8.2) is not a place: it is a Pokémon already in the PLAN party that an event names, and naming it moves nothing. Putting a Pokémon in a place takes it out of the place it was in (the PC is the place of every Pokémon that holds no other); nothing is ever copied, and taking a Pokémon from a place never releases or deletes it. A Pokémon on an expedition under way cannot be moved until the expedition ends. The roles themselves stay independent of each other (changing one place never changes another place's other members).
 
 | Role | Scope | What it does | What it never does |
 |---|---|---|---|
 | **Global buddy** | One for the whole app | The main companion: the face of the launcher, module headers, contextual scenes and WORLD's story | Multiply rewards, add combat stats, or gate a module action (section 2.3) |
 | **Module party** (lead + 5) | One per applicable module (PLAN, CARE, HEAL, MINT, BASE, LINK) | Six slots: the **lead** in slot 1 and five members. The party gives **bonuses to its own module** (section 2.2.1) | Affect another module, WORLD, or any utility |
+| **Person team** (LINK) | One for each LINK person, up to six; the **Me** entry shows LINK's party instead (owner, 25 November 2026; specified, not built) | The Pokémon kept with a person (section 2.2.2A); the Me entry shows LINK's own party as that person's team | Count as a module party, give module bonuses, or give Me a second roster beside LINK's party |
 | **WORLD expedition team** | WORLD only | Goes on expeditions and dungeons under WORLD's own team-size and assignment rules | Count as a module party or share its bonuses |
 | **GEAR helper** | GEAR tools and the Pokégear menu | A visual helper: its sprite is the tool icon and menu decoration | Have any effect: aesthetics only (`MODULES/GEAR.md` section 6) |
 
@@ -73,6 +74,14 @@ Done once, deterministically and without removing any Pokémon, by this priority
 Each applicable module owns an independent party; there is no single global active party. PLAN, CARE, HEAL, MINT, BASE and LINK each keep their own membership and ordering. GEAR has no party, acquisition or progression (helpers are visual-only). WORLD keeps its own expedition teams, which are not a module party. The launcher may prioritize the global buddy; it owns no party.
 
 A party stores an ordered list of canonical `ownedPokemonId` references, never a copied Pokémon. Capacity is **six: one lead (slot 1) and five members**; a party can hold fewer and never auto-fills. Slot validation rejects unknown, released or otherwise ineligible IDs, but removing a Pokémon from a party never releases or deletes it. A change to one party must not mutate another party or WORLD team, except that the Pokémon being moved leaves its old place.
+
+#### 2.2.2A Person teams in LINK (owner, 25 November 2026; specified, not built)
+
+LINK's people can each keep a small team of up to six assigned Pokémon (LINK.md 9.6). It is a place like the others: an assigned Pokémon leaves its old place, is referenced by its canonical owned ID and is never copied, and a person's team is **not** a module party — it gives no module bonuses and affects no rewards on its own.
+
+The **Me** person is not a second roster: because Me also has an entry in People, the team shown on the Me page **is LINK's own module party** (one lead and five). The same six Pokémon are displayed, with no extra placement, no sixth-plus slot for Me and no copy. Assigning the LINK party is assigning Me's team, and the party's existing rules (section 2.2.2) still hold.
+
+The passive EXP and memory/milestone progression for person teams, and their numbers, are not fixed here: they wait for the economy specification (`docs/economy.md`, `RewardRules.VERSION`) and the owner's numbers. Until then only the place, the capacity of six and the Me exception are decided.
 
 ### 2.3 Global buddy
 
