@@ -244,7 +244,7 @@ class LinkStore(
 
     fun memoriesInEra(eraId: String): List<Memory> = LinkRules.memoriesInEra(data, eraId)
 
-    fun eras(): List<Era> = data.eras
+    fun eras(): List<Era> = LinkRules.eraOrder(data.eras)
 
     fun onThisDay(day: LocalDate = today): List<Memory> = LinkRules.onThisDay(data, day)
 

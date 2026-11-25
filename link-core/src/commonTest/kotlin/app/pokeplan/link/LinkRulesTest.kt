@@ -362,4 +362,17 @@ class LinkRulesTest {
         assertEquals("2020 - now", LinkRules.eraRangeLabel(Era("e", "College", start = PartialDate(2020))))
         assertEquals("No dates", LinkRules.eraRangeLabel(Era("e", "College")))
     }
+    @Test
+    fun chaptersAreNewestFirstByTheirLatestDateAndTheUndatedOnesComeLast() {
+        val ours = Era("e1", "This year", start = PartialDate(2026))
+        val college = Era("e2", "College", start = PartialDate(2020), end = PartialDate(2024))
+        val childhood = Era("e3", "Childhood", end = PartialDate(2010))
+        val undated = Era("e4", "The unplaced years")
+        val alsoUndated = Era("e5", "Another unplaced chapter")
+        assertEquals(
+            listOf("e1", "e2", "e3", "e5", "e4"),
+            LinkRules.eraOrder(listOf(college, undated, childhood, ours, alsoUndated)).map { it.id },
+            "newest latest date first; undated chapters last in title order",
+        )
+    }
 }

@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.244.1
+
+LINK: chapters are ordered by date, and the memories keep their date order. UI only: no data, schema or reward change.
+
+- **Chapters newest first.** The Chapters view of Memories lists eras by their latest known date (their end date, or their start when it has no end), newest first, with chapters that have no date last in title order; the era chips in the memory form use the same order. Memories already listed newest first by their own date, with undated ones last, and are unchanged.
+- **Code:** `LinkRules.eraKey`/`eraOrder`, used by `LinkStore.eras()` and the Chapters view; `LINK.md` 2.3 and 15 updated. JVM tests only, not run on a device.
+
 ## 0.244.0
 
 - **LINK: Memories and Eras, the core of the archive (owner direction, 25 November 2026).** The new Memories place keeps a life as it happened and lets the player look back without tending it.
