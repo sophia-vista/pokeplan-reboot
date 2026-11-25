@@ -202,11 +202,13 @@ object MintCapture {
     private val INCOME_WORDS = listOf(
         "credited", "received", "deposit", "deposited", "cash in", "cash-in", "cashin",
         "you received", "added to your", "refund", "refunded", "cashback", "inward",
+        "credit transaction", "money in", "proceeds",
     )
 
     private val EXPENSE_WORDS = listOf(
-        "debited", "paid", "payment", "you paid", "sent", "transfer to", "withdrawn",
+        "debited", "paid", "payment", "you paid", "sent", "transfer to", "withdrawn", "withdrawal",
         "cash out", "cash-out", "cashout", "purchase", "charged", "billed", "outward",
+        "deducted", "deduction", "spent", "debit transaction",
     )
 
     /** INCOME or EXPENSE, or null when the words say both or neither (never a guess). */

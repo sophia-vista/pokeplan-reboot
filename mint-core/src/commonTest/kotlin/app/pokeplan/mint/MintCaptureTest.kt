@@ -206,5 +206,19 @@ class MintCaptureTest {
         )
         assertEquals(11, CaptureSource.entries.size)
     }
+    @Test
+    fun theOtherWaysPhilippineBanksSayItAreReadToo() {
+        val debit = ok(sms(CaptureSource.BPI, "BPI: A debit transaction of PHP 500.00 was made on your account ending 1234."))
+        assertEquals(TxType.EXPENSE, debit.type)
+        assertEquals(50_000L, debit.amountMinor)
+        val deducted = ok(sms(CaptureSource.BDO, "An amount of PHP 1,200.00 was deducted from your account ending 4321 for your bill."))
+        assertEquals(TxType.EXPENSE, deducted.type)
+        val spent = ok(sms(CaptureSource.MAYA, "You spent PHP 89.00 at 7-ELEVEN with your Maya card."))
+        assertEquals(TxType.EXPENSE, spent.type)
+        val credit = ok(sms(CaptureSource.UNIONBANK, "A credit transaction of PHP 4,000.00 was posted to your account ending 8765."))
+        assertEquals(TxType.INCOME, credit.type)
+        assertEquals(400_000L, credit.amountMinor)
+    }
+
     private fun CaptureCandidate.capturedFromLabel(): String = CaptureSource.ofName(source)?.label ?: source
 }
