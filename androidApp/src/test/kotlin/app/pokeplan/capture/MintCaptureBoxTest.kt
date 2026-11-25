@@ -10,9 +10,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import java.io.File
 
 /** MINT's box of alerts the phone read but the player has not looked at yet (MINT.md 10.4, 22I). */
+@RunWith(RobolectricTestRunner::class)
 class MintCaptureBoxTest : AndroidTestBase() {
     private var seq = 0
     private fun alert(ref: String = "a${seq++}", at: Long = System.currentTimeMillis()) = CaptureCandidate(
