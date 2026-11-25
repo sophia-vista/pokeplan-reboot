@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 // The version lives in one file at the repo root (VERSION, "MAJOR.MINOR.PATCH"), and the Android versionCode is made
@@ -76,6 +77,7 @@ android {
 dependencies {
     implementation(project(":composeApp"))
     implementation(project(":data"))
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.glance.appwidget)
     implementation("androidx.work:work-runtime-ktx:2.10.0")
