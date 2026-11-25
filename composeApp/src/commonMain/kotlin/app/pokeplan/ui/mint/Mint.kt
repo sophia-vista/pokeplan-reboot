@@ -1871,7 +1871,8 @@ private fun CaptureSettings(model: AppModel) {
             Text(
                 "An alert from your bank or wallet can become a record here without typing it. Reading happens on this phone only and nothing is uploaded. " +
                     "MINT reads only the banks on its list, and only the amount, the merchant, the account's last digits and the day: the rest of the message is dropped at once and never kept. " +
-                    "What it reads is never posted by itself; it waits in the \"To confirm\" box, where you confirm, adjust or skip it.",
+                    "What it reads is never posted by itself; it waits in the \"To confirm\" box, where you confirm, adjust or skip it. " +
+                    "While one waits, a notification says only that a transaction is waiting: never an amount, a bank or a merchant.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
             ToggleRow("Bank notifications", settings.captureNotifications) { on ->
@@ -1894,6 +1895,12 @@ private fun CaptureSettings(model: AppModel) {
             }
             if (settings.captureMessages && !capture.messagesGranted())
                 Text("Allow reading text messages in Android's settings, then switch this on again.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if ((settings.captureNotifications || settings.captureMessages) && !capture.alertNotificationsAllowed()) {
+                Text("Notifications are off, so MINT cannot tell you when one arrives.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                PixelButton("Allow notifications", {
+                    capture.requestAlertNotifications { granted -> if (!granted) note = "Notifications were not allowed." }
+                }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            }
             val waiting = model.mintData.transactions.count { it.status == TxStatus.PENDING && it.captureRef != null }
             if (erasing) Confirm(
                 "Erase the $waiting alerts still waiting? The rest of MINT is untouched.",

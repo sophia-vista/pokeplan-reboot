@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.248.0
+
+MINT says so when a bank alert it read becomes a transaction waiting for approval: one generic push notification that never carries the alert itself. Follow-up to 0.246.0; no reward rule, schema or save change.
+
+- **The notification (MINT.md 10.4).** `MintAlertNotification` posts one notification on its own "Mint alerts" channel when a new alert waits in the sealed box: "A transaction is waiting" or "N transactions are waiting", the text "Open Mint to confirm or skip it/them", and a tap opens MINT. The lock-screen version says only that one is waiting. It never names the bank, the merchant or the amount. It is updated rather than stacked, `setOnlyAlertOnce` keeps a second alert from buzzing again, and reading or erasing the box cancels it.
+- **Permission.** Turning on Bank notifications or Bank text messages asks for Android's `POST_NOTIFICATIONS` when it is not granted; a denial only means no notification, never that reading stops, and the settings box says so.
+- **Live box.** While the "To confirm" box is open, MINT looks at the phone's sealed box again every five seconds, so an alert that arrives then appears without leaving and reopening MINT.
+- **Tests:** `MintAlertNotificationTest` (Robolectric: one generic notification on its channel, nothing of the alert in the title, text, ticker or lock-screen version, updates instead of stacking, cancelled when the box is read), and `MintCaptureBoxTest` now checks the waiting count `add` returns.
+
 ## 0.247.0
 
 LINK can connect an optional Microsoft OneDrive account on Android and add one of its photos to a memory, read-only; the photo becomes a normal local copy in the archive. Off until the player connects it; no reward, schema or save-format change, and `RewardRules.VERSION` stays.

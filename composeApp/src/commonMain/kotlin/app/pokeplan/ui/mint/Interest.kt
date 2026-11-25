@@ -22,6 +22,7 @@ import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.Money
 import app.pokeplan.mint.Transaction
 import app.pokeplan.mint.TxType
+import kotlinx.coroutines.delay
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.screens.PixelDropdown
@@ -85,11 +86,17 @@ internal fun PendingReview(model: AppModel) {
     LaunchedEffect(capture, model.mintData.settings.captureNotifications, model.mintData.settings.captureMessages) {
         capture?.watch(model.mintData.settings.captureNotifications, model.mintData.settings.captureMessages)
     }
-    // A bank alert the phone read waits in its own sealed box; it becomes a proposal here, where the player is.
-    LaunchedEffect(capture, model.store.today) {
-        if (capture != null) {
-            // One it cannot place (no account matches yet) is said out loud rather than dropped without a word.
-            captureProblem = capture.take().mapNotNull { mint.capture(it).reason?.takeIf { reason -> reason != "Already recorded." } }.firstOrNull()
+    // A bank alert the phone read waits in its own sealed box; it becomes a proposal here, where the player is. While
+    // the box is open it looks again every few seconds, so one that arrives now shows without MINT being left and reopened.
+    LaunchedEffect(capture) {
+        if (capture == null) return@LaunchedEffect
+        while (true) {
+            val found = capture.take()
+            if (found.isNotEmpty()) {
+                // One it cannot place (no account matches yet) is said out loud rather than dropped without a word.
+                captureProblem = found.mapNotNull { mint.capture(it).reason?.takeIf { reason -> reason != "Already recorded." } }.firstOrNull()
+            }
+            delay(5_000)
         }
     }
     val waiting = mint.toReview()

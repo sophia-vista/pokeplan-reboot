@@ -6,9 +6,9 @@ import app.pokeplan.mint.CaptureCandidate
 import app.pokeplan.mint.CaptureChannel
 import app.pokeplan.mint.TxType
 import kotlinx.datetime.LocalDate
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -27,12 +27,12 @@ class MintCaptureBoxTest : AndroidTestBase() {
 
     @Test
     fun theBoxIsSealedOnDiskAndTakesEachAlertOnce() {
-        MintCaptureBox.add(context, listOf(alert("one")))
+        assertEquals(1, MintCaptureBox.add(context, listOf(alert("one"))), "it says one is waiting")
         assertTrue(box().isFile)
         val onDisk = box().readText()
-        assertTrue("the box is sealed with MINT's own key", onDisk.startsWith("m1."))
-        assertFalse("no merchant is ever on disk in the clear", onDisk.contains("SM CITY"))
-        assertFalse("no JSON of the record is ever on disk", onDisk.contains("amountMinor"))
+        assertTrue(onDisk.startsWith("m1."), "the box is sealed with MINT's own key")
+        assertFalse(onDisk.contains("SM CITY"), "no merchant is ever on disk in the clear")
+        assertFalse(onDisk.contains("amountMinor"), "no JSON of the record is ever on disk")
         assertEquals(listOf("one"), MintCaptureBox.take(context).map { it.ref })
         assertTrue(MintCaptureBox.take(context).isEmpty())
         assertFalse(box().exists())
@@ -41,8 +41,8 @@ class MintCaptureBoxTest : AndroidTestBase() {
     @Test
     fun theSameAlertIsHeldOnce() {
         val a = alert("same")
-        MintCaptureBox.add(context, listOf(a))
-        MintCaptureBox.add(context, listOf(a))
+        assertEquals(1, MintCaptureBox.add(context, listOf(a)))
+        assertEquals(1, MintCaptureBox.add(context, listOf(a)), "the same alert does not make a second wait")
         assertEquals(listOf("same"), MintCaptureBox.take(context).map { it.ref })
     }
 
@@ -52,7 +52,7 @@ class MintCaptureBoxTest : AndroidTestBase() {
         val held = MintCaptureBox.take(context)
         assertEquals(40, held.size)
         assertEquals("a44", held.last().ref)
-        assertFalse("the oldest ones go first", held.any { it.ref == "a0" })
+        assertFalse(held.any { it.ref == "a0" }, "the oldest ones go first")
     }
 
     @Test
@@ -65,7 +65,7 @@ class MintCaptureBoxTest : AndroidTestBase() {
     fun withoutTheKeyNothingIsWrittenInTheClear() {
         FakeAndroidKeyStore.available = false
         MintCaptureBox.add(context, listOf(alert("nothing")))
-        assertFalse("with no key the box fails closed", box().exists())
+        assertFalse(box().exists(), "with no key the box fails closed")
         FakeAndroidKeyStore.available = true
     }
 }
