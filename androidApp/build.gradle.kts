@@ -21,6 +21,15 @@ require(versionNumbers[0] in 0..2099 && versionNumbers[1] in 0..999 && versionNu
 }
 val appVersionCode = versionNumbers[0] * 1_000_000 + versionNumbers[1] * 1_000 + versionNumbers[2]
 
+// LINK's optional OneDrive photo source (REP-083) identifies the app to Microsoft with the client id of an app
+// registration. It is not committed here: set the `onedriveClientId` Gradle property or the ONEDRIVE_CLIENT_ID
+// environment variable, and register the redirect URI pokeplan-onedrive://auth for that registration. An empty id keeps
+// the source off: the app says it is not set up and never opens a sign-in page.
+val oneDriveClientId: String = listOfNotNull(
+    findProperty("onedriveClientId") as String?,
+    System.getenv("ONEDRIVE_CLIENT_ID"),
+).map { it.trim() }.firstOrNull { it.isNotEmpty() } ?: ""
+
 android {
     namespace = "app.pokeplan"
     compileSdk = 37
@@ -31,6 +40,11 @@ android {
         targetSdk = 36
         versionCode = appVersionCode
         versionName = appVersion
+        // Read by AndroidOneDrive; an empty value is the deliberate "not set up" build.
+        buildConfigField("String", "ONEDRIVE_CLIENT_ID", "\"${oneDriveClientId.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+    }
+    buildFeatures {
+        buildConfig = true
     }
     // Two keys: the committed debug key (its password is public by design, like every Android debug key) signs local and
     // "Latest build" debug APKs, and a release key kept OUTSIDE the repo signs release builds. The release key comes from CI

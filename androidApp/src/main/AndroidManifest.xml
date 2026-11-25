@@ -59,6 +59,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <!-- The browser comes back here after the Microsoft OneDrive sign-in (REP-083); its redirect URI is
+                 pokeplan-onedrive://auth, and the code is checked against the pending PKCE challenge. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="pokeplan-onedrive" android:host="auth" />
+            </intent-filter>
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
         <activity
