@@ -66,6 +66,9 @@ import app.pokeplan.platform.AndroidTorch
 import app.pokeplan.platform.androidGearServices
 
 class MainActivity : ComponentActivity() {
+
+    /** The optional OneDrive photo source; it holds the pending sign-in until the browser returns. */
+    private val oneDrive by lazy { app.pokeplan.platform.AndroidOneDrive(this) }
     private val resumes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     private val launches = MutableSharedFlow<AppLaunch>(extraBufferCapacity = 1)
@@ -89,6 +92,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // A redirect that arrives after Android killed the process starts the activity here rather than in onNewIntent.
+        if (intent?.data?.scheme == app.pokeplan.ui.OneDrive.REDIRECT_SCHEME) oneDrive.complete(intent?.data)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
@@ -144,7 +149,7 @@ class MainActivity : ComponentActivity() {
                     val integrations = remember { integrationsStorage(this@MainActivity) }
                     App(
                         storage, careStorage = care, healStorage = heal, mintStorage = mint, baseStorage = base, linkStorage = link, integrationsStorage = integrations, focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
-                        cries = AndroidCryPlayer(this@MainActivity), haptics = AndroidHaptics(this@MainActivity), files = AndroidFileSaver(this@MainActivity), calendars = calendars, phone = AndroidPhoneState(this@MainActivity), torch = torch, capabilities = AndroidCapabilities(this@MainActivity), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this@MainActivity), appLauncher = app.pokeplan.platform.AndroidAppLauncher(this@MainActivity), updates = updates, capture = capture, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this@MainActivity), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars, asyncModel = true,
+                        cries = AndroidCryPlayer(this@MainActivity), haptics = AndroidHaptics(this@MainActivity), files = AndroidFileSaver(this@MainActivity), calendars = calendars, phone = AndroidPhoneState(this@MainActivity), torch = torch, capabilities = AndroidCapabilities(this@MainActivity), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this@MainActivity), oneDrive = oneDrive, appLauncher = app.pokeplan.platform.AndroidAppLauncher(this@MainActivity), updates = updates, capture = capture, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this@MainActivity), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars, asyncModel = true,
                     )
                 }
             }
@@ -342,6 +347,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        oneDrive.complete(intent.data)
         launches.tryEmit(launchFrom(intent))
     }
 

@@ -44,6 +44,9 @@ jobs:
           # The "build N" shown in Settings -> About and in the release title. It is a label only: the Android
           # versionCode comes from VERSION, so a run number can never leave a release unable to install (downgrade).
           POKEPLAN_BUILD: ${{ github.run_number }}
+          # The Microsoft Entra app registration's client id (public by design for a PKCE public client).
+          # Empty when the secret is absent, and OneDrive then shows as not set up on this build.
+          ONEDRIVE_CLIENT_ID: ${{ secrets.ONEDRIVE_CLIENT_ID }}
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           ./gradlew :androidApp:assembleDebug --no-daemon

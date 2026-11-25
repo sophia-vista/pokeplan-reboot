@@ -61,6 +61,8 @@ jobs:
           ./gradlew :androidApp:testDebugUnitTest --no-daemon
       - name: Android debug app (label "apk")
         if: ${{ contains(github.event.pull_request.labels.*.name, 'apk') }}
+        env:
+          ONEDRIVE_CLIENT_ID: ${{ secrets.ONEDRIVE_CLIENT_ID }}
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           ./gradlew :androidApp:testDebugUnitTest :androidApp:assembleDebug --no-daemon

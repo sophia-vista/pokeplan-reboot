@@ -1501,11 +1501,11 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.POSTCARD_EGG)
     }
 
-    private fun link(name: String, section: app.pokeplan.ui.link.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, prepare: (AppModel) -> Unit = {}, interact: (androidx.compose.ui.ImageComposeScene) -> Unit = {}, contacts: ContactSource? = null) {
+    private fun link(name: String, section: app.pokeplan.ui.link.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, prepare: (AppModel) -> Unit = {}, interact: (androidx.compose.ui.ImageComposeScene) -> Unit = {}, contacts: ContactSource? = null, oneDrive: OneDriveSource? = FakeOneDrive()) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(linkParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.LINK) }
-        val model = AppModel(store, images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} }, contacts = contacts)
+        val model = AppModel(store, images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} }, contacts = contacts, oneDrive = oneDrive)
         if (!empty) {
             val link = model.link
             val today = model.store.today
@@ -1535,6 +1535,37 @@ class ScreenshotTest {
             drawCircle(w * 0.24f, h * 0.3f, h * 0.16f, org.jetbrains.skia.Paint().apply { color = 0xFFFFF3C4.toInt() })
         }
         return kotlin.io.encoding.Base64.encode(surface.makeImageSnapshot().encodeToData(org.jetbrains.skia.EncodedImageFormat.PNG)!!.bytes)
+    }
+
+    /** A stand-in for the optional OneDrive source: two folders and four photos, all answered on the spot. */
+    private class FakeOneDrive(private var current: OneDriveState = OneDriveState.CONNECTED) : OneDriveSource {
+        private val folders = listOf(
+            OneDriveItem("folder-1", "Camera roll", folder = true, childCount = 120),
+            OneDriveItem("folder-2", "Choir", folder = true, childCount = 8),
+        )
+        private val photos = listOf(
+            OneDriveItem("photo-1", "Choir room window.png", mime = "image/png", sizeBytes = 41_000),
+            OneDriveItem("photo-2", "Ramen after the recital.png", mime = "image/png", sizeBytes = 52_000),
+            OneDriveItem("photo-3", "Sunset over the campus.png", mime = "image/png", sizeBytes = 63_000),
+            OneDriveItem("photo-4", "The long bus home.png", mime = "image/png", sizeBytes = 38_000),
+        )
+        private val colours = mapOf(
+            "photo-1" to (0xFF9BD3F0.toInt() to 0xFF6E8F52.toInt()),
+            "photo-2" to (0xFFF5C58A.toInt() to 0xFF8C5A3C.toInt()),
+            "photo-3" to (0xFF7E6BC4.toInt() to 0xFF3B2E63.toInt()),
+            "photo-4" to (0xFFBFE3B4.toInt() to 0xFF3E5B3A.toInt()),
+        )
+        private fun bytes(itemId: String): ByteArray {
+            val (sky, ground) = colours[itemId] ?: (0xFF9BD3F0.toInt() to 0xFF6E8F52.toInt())
+            return onedrivePhoto(sky, ground)
+        }
+        override fun state() = current
+        override fun connect(done: (OneDriveState, String?) -> Unit) { current = OneDriveState.CONNECTED; done(current, null) }
+        override fun disconnect(done: (OneDriveState, String?) -> Unit) { current = OneDriveState.DISCONNECTED; done(current, null) }
+        override fun children(folderId: String?, done: (List<OneDriveItem>?, String?) -> Unit) =
+            done(if (folderId == null) folders + photos else photos.drop(if (folderId == "folder-2") 2 else 0), null)
+        override fun thumbnail(itemId: String, done: (ByteArray?, String?) -> Unit) = done(bytes(itemId), null)
+        override fun download(itemId: String, done: (ByteArray?, String?) -> Unit) = done(bytes(itemId), null)
     }
 
     @Test
@@ -1677,6 +1708,29 @@ class ScreenshotTest {
 
     @Test
     fun linkMenuDark() = link("link-menu-dark", null, height = 2600, linkParty = 3, dark = true)
+
+    @Test
+    fun linkOneDrive() {
+        fun seed(m: AppModel) {
+            m.link.addMemory("Lunch by the choir room", app.pokeplan.link.PartialDate(2024, 3, 14), place = "Choir room")
+            m.link.addMemory("Ramen after the recital", app.pokeplan.link.PartialDate(2023), place = "Kichitora")
+        }
+        // The connected browser: folder rows, then the photo thumbnails.
+        link("link-onedrive", app.pokeplan.ui.link.LinkSection.ONEDRIVE, height = 1500, prepare = ::seed)
+        link("link-onedrive-dark", app.pokeplan.ui.link.LinkSection.ONEDRIVE, height = 1500, dark = true, prepare = ::seed)
+        // One folder open, so the Up key and the breadcrumb show too.
+        link("link-onedrive-folder", app.pokeplan.ui.link.LinkSection.ONEDRIVE, height = 1500, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 120f, 375f)
+        })
+        // The add-to-memory panel over the browser.
+        link("link-onedrive-photo", app.pokeplan.ui.link.LinkSection.ONEDRIVE, height = 2100, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 152f, 700f)
+        })
+        // A source that needs the player's Microsoft sign-in: just the connect key.
+        link("link-onedrive-disconnected", app.pokeplan.ui.link.LinkSection.ONEDRIVE, height = 1100, oneDrive = FakeOneDrive(OneDriveState.DISCONNECTED))
+        // The Sections sheet of the LINK menu, where the optional place sits between Follow-ups and Settings.
+        link("link-onedrive-menu", null, height = 1400, interact = { scene -> tapAt(scene, 465f, 52f) })
+    }
 
     @Test
     fun linkReminders() {
@@ -2872,4 +2926,15 @@ class ScreenshotTest {
         shot("calendar-sync-on-xl", 1.3f, prepare = on)
         shot("calendar-sync-turning-off", 1f, prepare = on, interact = { scene -> tapAt(scene, 258f, 228f) })
     }
+}
+
+/** A small PNG for the fake OneDrive source, drawn the way [ScreenshotTest.photo64] draws LINK's photos. */
+private fun onedrivePhoto(sky: Int, ground: Int, w: Int = 96, h: Int = 72): ByteArray {
+    val surface = org.jetbrains.skia.Surface.makeRasterN32Premul(w, h)
+    surface.canvas.apply {
+        clear(sky)
+        drawRect(org.jetbrains.skia.Rect.makeXYWH(0f, h * 0.62f, w.toFloat(), h * 0.38f), org.jetbrains.skia.Paint().apply { color = ground })
+        drawCircle(w * 0.24f, h * 0.3f, h * 0.16f, org.jetbrains.skia.Paint().apply { color = 0xFFFFF3C4.toInt() })
+    }
+    return surface.makeImageSnapshot().encodeToData(EncodedImageFormat.PNG)!!.bytes
 }
