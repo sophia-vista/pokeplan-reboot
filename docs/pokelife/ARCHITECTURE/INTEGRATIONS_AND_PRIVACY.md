@@ -321,7 +321,7 @@ LINK is manual-first. For import, prefer Android's contact picker or selected-co
 
 ### 8.2 Files, photos, and sharing
 
-Use Storage Access Framework for documents and Android Photo Picker for images. Do not request broad storage/media access for normal import/export. Use content URIs and temporary URI grants; do not assume a selected URI remains accessible forever unless the permission is persisted where supported.
+Use Storage Access Framework for documents and Android Photo Picker for images. Android's photo picker may take several images at once, and LINK's "From files" uses SAF `OpenMultipleDocuments` to read only the images the player picks from a documents provider (including a cloud app's folder), with no broad permission and no account inside the app. Do not request broad storage/media access for normal import/export. Use content URIs and temporary URI grants; do not assume a selected URI remains accessible forever unless the permission is persisted where supported.
 
 All imports must validate file size, type, encoding, schema, archive paths, and content. Reject path traversal, decompression bombs, malformed archives, and unsupported versions. Preview changes before commit. Treat files from other apps as untrusted.
 

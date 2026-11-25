@@ -42,6 +42,7 @@ import app.pokeplan.link.Memory
 import app.pokeplan.link.MemoryPhoto
 import app.pokeplan.link.PartialDate
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.PhotoBatchChooser
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.screens.Actions
 import app.pokeplan.ui.screens.FormBox
@@ -359,6 +360,27 @@ internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: Stri
             }
         }
     }
+
+    /** Several pictures from the system gallery or the system file picker, straight into this memory. */
+    fun pickPhotos(chooser: PhotoBatchChooser?, max: Int) {
+        if (chooser == null) return
+        chooser.choose(max) { bytes, why ->
+            if (bytes == null) { photoProblem = why; return@choose }
+            val id = madeId
+            if (id == null) {
+                bytes.forEach { pending += photoMime(it) to Base64.encode(it) }
+                photoProblem = null
+            } else {
+                var refusal: String? = null
+                for (b in bytes) {
+                    val out = link.addPhoto(id, Base64.encode(b), photoMime(b))
+                    if (out.record == null) { refusal = out.refused ?: "That picture could not be saved."; break }
+                }
+                photoProblem = refusal
+                if (refusal == null) model.haptic()
+            }
+        }
+    }
     FormStack {
         if (existing == null && madeId == null) PixelTitle("Add a memory")
         FormGroup {
@@ -370,11 +392,16 @@ internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: Stri
                 PixelField(time, { time = it.take(32) }, Modifier.weight(0.7f), label = "Time", singleLine = true)
             }
         }
-        if (photos.isNotEmpty() || pending.isNotEmpty() || model.images != null) {
+        if (photos.isNotEmpty() || pending.isNotEmpty() || model.images != null || model.galleryPhotos != null || model.filePhotos != null) {
             if (photos.isNotEmpty() || pending.isNotEmpty()) FieldLabel("Photos")
             photos.forEach { photo -> PhotoRow(model, photo) }
             pending.forEachIndexed { i, photo -> PendingPhotoRow(photo) { pending.removeAt(i) } }
-            if (model.images != null) PixelButton("Add a photo", { pickPhoto() }, Modifier.fillMaxWidth(), accent, compact = true)
+            val room = (LinkRules.PHOTOS_PER_MEMORY_MAX - photos.size - pending.size).coerceAtLeast(1)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                if (model.images != null) PixelButton("Add a photo", { pickPhoto() }, color = accent, compact = true)
+                if (model.galleryPhotos != null) PixelButton("Add photos", { pickPhotos(model.galleryPhotos, room) }, color = accent, compact = true)
+                if (model.filePhotos != null) PixelButton("From files", { pickPhotos(model.filePhotos, room) }, color = accent, compact = true)
+            }
             photoProblem?.let { Report(model, it, NoticeTone.WARNING) }
         }
         if (data.people.isNotEmpty()) {

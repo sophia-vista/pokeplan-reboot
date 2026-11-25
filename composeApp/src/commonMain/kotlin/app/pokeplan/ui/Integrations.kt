@@ -26,6 +26,11 @@ interface ImageChooser {
     fun choose(done: (png: ByteArray?, problem: String?) -> Unit)
 }
 
+/** Chooses several pictures in one go: the system gallery picker or the system file picker, up to [max]. */
+interface PhotoBatchChooser {
+    fun choose(max: Int, done: (pngs: List<ByteArray>?, problem: String?) -> Unit)
+}
+
 interface ImageViewer {
     fun bright(on: Boolean)
 
