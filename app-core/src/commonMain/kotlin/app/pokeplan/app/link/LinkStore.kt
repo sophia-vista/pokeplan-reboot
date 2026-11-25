@@ -9,6 +9,7 @@ import app.pokeplan.core.reward.OutbreakOption
 import app.pokeplan.app.SafariDay
 import app.pokeplan.link.Check
 import app.pokeplan.link.DateKind
+import app.pokeplan.link.Era
 import app.pokeplan.link.FollowUp
 import app.pokeplan.link.FollowUpState
 import app.pokeplan.link.FollowUpStatus
@@ -18,6 +19,8 @@ import app.pokeplan.link.LinkGroup
 import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.LinkSettings
+import app.pokeplan.link.Memory
+import app.pokeplan.link.PartialDate
 import app.pokeplan.link.Person
 import app.pokeplan.link.Profile
 import app.pokeplan.link.ProfileKit
@@ -190,6 +193,7 @@ class LinkStore(
             notes = d.notes.filterNot { it.personId == id },
             dates = if (keepDates) d.dates.map { if (it.personId == id) it.copy(personId = null) else it } else d.dates.filterNot { it.personId == id },
             followUps = if (keepFollowUps) d.followUps.map { if (it.personId == id) it.copy(personId = null) else it } else d.followUps.filterNot { it.personId == id },
+            memories = d.memories.map { m -> if (id in m.personIds) m.copy(personIds = m.personIds - id) else m },
         )
     }
 
@@ -233,6 +237,71 @@ class LinkStore(
     }
 
     fun deleteDate(id: String) = update { d -> d.copy(dates = d.dates.filterNot { it.id == id }) }
+
+    fun memories(): List<Memory> = LinkRules.memoryOrder(data.memories)
+
+    fun memoriesOf(personId: String): List<Memory> = LinkRules.memoriesOf(data, personId)
+
+    fun memoriesInEra(eraId: String): List<Memory> = LinkRules.memoriesInEra(data, eraId)
+
+    fun eras(): List<Era> = data.eras
+
+    fun onThisDay(day: LocalDate = today): List<Memory> = LinkRules.onThisDay(data, day)
+
+    fun metUp(personId: String): LocalDate? = LinkRules.metUpOf(data, personId)
+
+    fun addMemory(
+        title: String, date: PartialDate = PartialDate(), note: String = "", time: String = "", place: String = "",
+        personIds: List<String> = emptyList(), eraIds: List<String> = emptyList(),
+    ): Logged<Memory> {
+        val m = Memory(
+            newId(), title.trim(), note.trim(), date, time.trim(), place.trim(),
+            personIds.filter { id -> data.people.any { it.id == id } }.distinct(),
+            eraIds.filter { id -> data.eras.any { it.id == id } }.distinct(),
+            nowMillis, nowMillis,
+        )
+        (LinkRules.checkMemory(m) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { it.copy(memories = it.memories + m) }
+        return Logged(m)
+    }
+
+    fun updateMemory(m: Memory): Logged<Memory> {
+        val old = data.memories.firstOrNull { it.id == m.id } ?: return Logged(null, "That memory is gone.")
+        val next = old.copy(
+            title = m.title.trim(), note = m.note.trim(), date = m.date, time = m.time.trim(), place = m.place.trim(),
+            personIds = m.personIds.filter { id -> data.people.any { it.id == id } }.distinct(),
+            eraIds = m.eraIds.filter { id -> data.eras.any { it.id == id } }.distinct(),
+            updatedMillis = nowMillis,
+        )
+        (LinkRules.checkMemory(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { d -> d.copy(memories = d.memories.map { if (it.id == m.id) next else it }) }
+        return Logged(next)
+    }
+
+    fun deleteMemory(id: String) = update { d -> d.copy(memories = d.memories.filterNot { it.id == id }) }
+
+    fun addEra(title: String, start: PartialDate = PartialDate(), end: PartialDate = PartialDate(), note: String = ""): Logged<Era> {
+        val e = Era(newId(), title.trim(), note.trim(), start, end, nowMillis, nowMillis)
+        (LinkRules.checkEra(e) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { it.copy(eras = it.eras + e) }
+        return Logged(e)
+    }
+
+    fun updateEra(e: Era): Logged<Era> {
+        val old = data.eras.firstOrNull { it.id == e.id } ?: return Logged(null, "That era is gone.")
+        val next = old.copy(title = e.title.trim(), note = e.note.trim(), start = e.start, end = e.end, updatedMillis = nowMillis)
+        (LinkRules.checkEra(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { d -> d.copy(eras = d.eras.map { if (it.id == e.id) next else it }) }
+        return Logged(next)
+    }
+
+    /** Deletes the era only: its memories stay, without it. */
+    fun deleteEra(id: String) = update { d ->
+        d.copy(
+            eras = d.eras.filterNot { it.id == id },
+            memories = d.memories.map { m -> if (id in m.eraIds) m.copy(eraIds = m.eraIds - id) else m },
+        )
+    }
 
     fun upcoming(withinDays: Int = LinkRules.DATES_SOON_DAYS) = LinkRules.upcoming(data, today, withinDays)
 
@@ -394,6 +463,7 @@ object LinkExport {
         LinkKinds.PEOPLE to listOf("people", "notes"),
         LinkKinds.DATES to listOf("dates"),
         LinkKinds.FOLLOW_UPS to listOf("followUps"),
+        LinkKinds.MEMORIES to listOf("memories", "eras"),
     )
 
     fun json(data: LinkData, kinds: Set<LinkKinds>): String {
@@ -407,9 +477,11 @@ object LinkExport {
     fun without(d: LinkData, kind: LinkKinds): LinkData = when (kind) {
         LinkKinds.PEOPLE -> d.copy(
             people = emptyList(), notes = emptyList(), dates = d.dates.map { it.copy(personId = null) }, followUps = d.followUps.map { it.copy(personId = null) },
+            memories = d.memories.map { it.copy(personIds = emptyList()) },
             settings = d.settings.copy(groups = emptyList(), order = emptyList(), categories = emptyList()),
         )
         LinkKinds.DATES -> d.copy(dates = emptyList())
         LinkKinds.FOLLOW_UPS -> d.copy(followUps = emptyList())
+        LinkKinds.MEMORIES -> d.copy(memories = emptyList(), eras = emptyList())
     }
 }

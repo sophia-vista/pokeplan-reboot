@@ -62,6 +62,100 @@ object LinkRules {
         return Check.Ok
     }
 
+    const val MEMORY_TITLE_MAX = 120
+
+    /** The problem with a partial date, or null when it is a date the player could know. */
+    fun dateProblem(d: PartialDate): String? {
+        if (d.day != null && d.month == null) return "Choose a month with that day."
+        if (d.month != null && d.year == null) return "Choose a year with that month."
+        if (d.year != null && d.year !in 1000..2200) return "That year does not look right."
+        if (d.month != null && d.month !in 1..12) return "Choose a month."
+        if (d.day != null) {
+            val month = d.month ?: return "Choose a month with that day."
+            val limit = if (month == 2) (if (d.year != null) daysInMonth(d.year, 2) else 29) else daysInMonth(2001, month)
+            if (d.day !in 1..limit) return "That day is not in that month."
+        }
+        return null
+    }
+
+    fun checkMemory(m: Memory): Check {
+        if (m.title.isBlank() && m.note.isBlank()) return Check.Refused("Give the memory a title or a note.")
+        if (m.title.length > MEMORY_TITLE_MAX) return Check.Refused("That title is too long.")
+        if (m.note.length > NOTE_MAX) return Check.Refused("That note is too long.")
+        if (m.place.length > FIELD_MAX || m.time.length > 32) return Check.Refused("One of those lines is too long.")
+        dateProblem(m.date)?.let { return Check.Refused(it) }
+        return Check.Ok
+    }
+
+    fun checkEra(e: Era): Check {
+        (checkName(e.title, "era") as? Check.Refused)?.let { return it }
+        if (e.note.length > NOTE_MAX) return Check.Refused("That note is too long.")
+        dateProblem(e.start)?.let { return Check.Refused(it) }
+        dateProblem(e.end)?.let { return Check.Refused(it) }
+        if (e.start.year != null && e.end.year != null && dateKey(e.start) > dateKey(e.end)) return Check.Refused("The start is after the end.")
+        return Check.Ok
+    }
+
+    /** A number that orders partial dates by what they know; a blank date sorts after every known one. */
+    fun dateKey(d: PartialDate): Int = (d.year ?: 0) * 10_000 + (d.month ?: 0) * 100 + (d.day ?: 0)
+
+    private val MONTHS = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+    /** A partial date as the player knows it ("14 Mar 2024", "Mar 2024", "2024", "Around 2024", "Unknown date"). */
+    fun dateLabel(d: PartialDate): String {
+        val year = d.year ?: return "Unknown date"
+        val body = when {
+            d.month == null -> "$year"
+            d.day == null -> "${MONTHS[d.month - 1]} $year"
+            else -> "${d.day} ${MONTHS[d.month - 1]} $year"
+        }
+        return if (d.approximate) "Around $body" else body
+    }
+
+    fun eraRangeLabel(e: Era): String {
+        val start = e.start.known
+        val end = e.end.known
+        return when {
+            !start && !end -> "No dates"
+            start && !end -> "${dateLabel(e.start)} - now"
+            !start -> "Until ${dateLabel(e.end)}"
+            else -> "${dateLabel(e.start)} - ${dateLabel(e.end)}"
+        }
+    }
+
+    /** Memories newest first by what their date knows; a memory with no known year comes after the dated ones. */
+    fun memoryOrder(memories: List<Memory>): List<Memory> =
+        memories.sortedWith(
+            compareByDescending<Memory> { it.date.year ?: Int.MIN_VALUE }
+                .thenByDescending { it.date.month ?: 0 }
+                .thenByDescending { it.date.day ?: 0 }
+                .thenByDescending { it.createdMillis },
+        )
+
+    /** The timeline's years, newest first, with the memories that know no year last. */
+    fun yearGroups(memories: List<Memory>): List<Pair<Int?, List<Memory>>> {
+        val groups = linkedMapOf<Int?, MutableList<Memory>>()
+        memoryOrder(memories).forEach { groups.getOrPut(it.date.year) { mutableListOf() } += it }
+        return groups.entries.sortedWith(compareBy<Map.Entry<Int?, MutableList<Memory>>> { it.key == null }.thenByDescending { it.key ?: 0 })
+            .map { it.key to it.value.toList() }
+    }
+
+    fun memoriesOf(data: LinkData, personId: String): List<Memory> = memoryOrder(data.memories.filter { personId in it.personIds })
+
+    fun memoriesInEra(data: LinkData, eraId: String): List<Memory> = memoryOrder(data.memories.filter { eraId in it.eraIds })
+
+    /** The memories from this calendar day in an earlier year, newest first. */
+    fun onThisDay(data: LinkData, today: LocalDate): List<Memory> = memoryOrder(
+        data.memories.filter { m ->
+            m.date.year != null && m.date.month == today.monthNumber && m.date.day == today.dayOfMonth && m.date.year < today.year
+        },
+    )
+
+    /** The latest day the player recorded a memory with this person, if any memory knows its full date. */
+    fun metUpOf(data: LinkData, personId: String): LocalDate? = memoryOrder(memoriesOf(data, personId))
+        .firstOrNull { it.date.year != null && it.date.month != null && it.date.day != null }
+        ?.let { LocalDate(it.date.year!!, it.date.month!!, it.date.day!!) }
+
     fun isLeap(year: Int): Boolean = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
 
     fun daysInMonth(year: Int, month: Int): Int = when (month) {

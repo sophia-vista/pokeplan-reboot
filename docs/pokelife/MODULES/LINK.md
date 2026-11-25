@@ -66,7 +66,7 @@ The main directory of manually created and optionally imported contacts, and the
 - Search by name, alias, organization or user-entered searchable detail.
 - **Predefined relationship categories** (owner, 25 November 2026): one optional main category per person, chosen from Family, Friends, Colleagues, Work, School and Services. A category is a relationship word, not a free-form label; words already on old saves (Friend, Colleague, Service provider) keep showing rather than being guessed away, and the 0.243.0 one-time repair that gave the category back from a group stays. The player's own words belong in groups.
 - **Customizable groups** (owner, 24 November 2026; kept by the 25 November 2026 direction): a person can be in any number of groups; the player makes, renames and deletes them, and deleting a group deletes nobody. A group sits beside the main category and never replaces it; "Me" is not a group. Avoid mandatory categorization.
-- Sort by name, recently updated, **My order** or **group** (owner, 24 November 2026): in My order the player moves a person up or down among the people shown (a swap with the neighbour on screen; the Me person stays first), and it is only the player's own arrangement, never a score or a ranking, and it never pays. By group, each person is listed once, under the heading of their first group in the player's group order, people in no group last under "No group", like MINT's account groups (MINT.md 4.3); My order and name are unchanged, and Me stays first in every sort. Do not rank by importance or engagement.
+- Sort by name, recently updated, **My order** or **group** (owner, 24 November 2026), and the directory **starts** sorted by group (owner, 25 November 2026); name, recent and My order remain. In My order the player moves a person up or down among the people shown (a swap with the neighbour on screen; the Me person stays first), and it is only the player's own arrangement, never a score or a ranking, and it never pays. By group, each person is listed once, under the heading of their first group in the player's group order, people in no group last under "No group", like MINT's account groups (MINT.md 4.3); My order and name are unchanged, and Me stays first in every sort. Do not rank by importance or engagement.
 - Favorite/pin is a convenience for directory access, not a relationship score.
 - Support contacts with only a name; phone number, email and other fields are optional.
 - Duplicate detection should suggest possible matches without silently merging records.
@@ -109,32 +109,34 @@ Do not display inferred relationship health, contact frequency, response time, o
 
 ### 2.3 Memories and Eras
 
-**Specified, not built (owner, 25 November 2026).** The archive direction turns the old planned "Moments" timeline into the memory and era record specified here: the events and everyday experiences worth keeping, organised into life chapters and browsed by timeline, photo gallery or chapter.
+**Core built (0.244.0; owner, 25 November 2026); photos are not.** The memory and era records exist: the timeline, the chapters, their partial dates, the associations and On This Day are in the app. The photo gallery is not built yet: it needs the photo store and its records (REP-082), so the browsing modes are Timeline and Chapters today, and the Gallery joins them with photos. The archive direction turns the old planned "Moments" timeline into this record: the events and everyday experiences worth keeping, organised into life chapters and browsed by timeline, photo gallery or chapter.
 
 **Moments (memories).** A memory is one recorded event, gathering, trip, milestone or everyday experience. It carries:
-- A title and a description the player writes.
-- A date as precisely as the player knows it: exact, approximate, month-only, year-only or unknown. A memory with no known date stays undated rather than being guessed.
-- An optional time and place, as typed or chosen.
-- Any number of people, including Me and people with no category.
+- A title and a note the player writes; one of the two is enough, and a memory with neither is refused.
+- A date as precisely as the player knows it: a year, a month, a day, any of them, or none, with an "Around then" mark for a memory the player only remembers approximately. A month needs its year and a day needs its month; the year range (1000 to 2200) and leap days are checked, and a fully blank date is unknown rather than guessed.
+- An optional place and an optional time, as typed.
+- Any number of people, including Me and people with no category; deleting a person takes them out of every memory that names them and never deletes the memory.
 - Any number of eras, which may overlap; a memory may belong to none, one or several.
 - Any number of photos, each with its own caption, and photo-first entries are the normal way to record one (below).
 
 **Eras.** An era is a life chapter the player creates by hand, such as a school period, a place they lived or a relationship chapter. It carries:
-- A name and an optional description.
-- Flexible start and end dates: exact, approximate, month-only, year-only or unknown; either end may be open (an era that is still going), and eras may overlap freely.
+- A title (required) and an optional note.
+- Flexible start and end dates with the same partial-date editor: a year, a month or a day, any of them or none, approximate if the player says so; either end may be open (an era that is still going), and eras may overlap freely. A start after its end is refused.
 - The memories associated with it. Eras are never inferred from dates, locations or the player's records; they are only what the player makes.
 - Deleting an era removes the association and never deletes a memory; deleting a memory never deletes an era.
 
-**Photos.** Memories are photo-first: the player can start from photos and add the words later, or start with words and add photos. A memory has multiple photos, each with a caption; the memory itself has a description. Photos can be associated with a person, a memory and an era, locally or through the optional OneDrive source (6.2), and a photo is stored once, with each place pointing to it rather than holding a duplicate.
+**Photos (specified, not built; REP-082).** Memories are photo-first: the player can start from photos and add the words later, or start with words and add photos. A memory has multiple photos, each with a caption; the memory itself has a description. Photos can be associated with a person, a memory and an era, locally or through the optional OneDrive source (6.2), and a photo is stored once, with each place pointing to it rather than holding a duplicate.
 
-**Browsing modes.** The same records can be browsed three ways:
-- **Chronological timeline:** memories in date order, with undated memories kept apart, and years as the rhythm.
-- **Photo gallery:** the photos across memories, browsed by date, person or era; a photo opens the memory it belongs to.
-- **Life chapters:** the eras, each showing its memories and photos, for looking back at a chapter as a whole.
+**Browsing modes.** The same records can be browsed three ways; Timeline and Chapters are built (0.244.0) and the Gallery comes with photos (REP-082):
+- **Chronological timeline:** memories newest first, a heading for each year and memories with no known year last under "No year"; each row shows its date, place and people, and tapping it edits it in place with Delete and Undo.
+- **Photo gallery (with REP-082):** the photos across memories, browsed by date, person or era; a photo opens the memory it belongs to.
+- **Life chapters:** the eras, each showing its range and memory count and opening to the memories in it, for looking back at a chapter as a whole.
 
-**Person-specific collections.** A person's page gathers their memories, dates, follow-ups, last recorded meetup and photo gallery from the associations already recorded; the collection is filled by association, not by copying records into a second list.
+Dates read as "14 Mar 2024", "Mar 2024", "2024", "Around 2024" or "Unknown date"; an era's range reads "2020 - 2024", "2020 - now", "Until 2024" or "No dates" (a plain hyphen, because the DP font has no en dash).
 
-**On This Day and historical discovery.** On This Day gathers the memories the player recorded on this calendar day in earlier years. Historical discovery is browsing by year, era, person and photo gallery; LINK suggests nothing from outside the player's own records and ranks no memory by engagement. Both work entirely on the phone from local records.
+**Person-specific collections.** A person's page gathers their memories, dates, follow-ups, last recorded meetup and photo gallery from the associations already recorded; the collection is filled by association, not by copying records into a second list. The Overview lists up to four of the person's memories and an "Add a memory" that preselects that person; the last recorded meetup is the latest of those memories that knows a full date (2.4).
+
+**On This Day and historical discovery.** The "On this day" box at the top of Memories is built (0.244.0): it gathers the memories the player recorded on this calendar day in earlier years. Historical discovery is browsing by year, era, person and photo gallery; LINK suggests nothing from outside the player's own records and ranks no memory by engagement. It all works entirely on the phone from local records.
 
 Memories and eras never score, rank or remind on their own. They pay nothing on their own today; the owner direction for extra Pokémon progression through memories and meaningful milestones is a future reward source to be specified in the shared ecosystem and the economy (9.6).
 
@@ -155,7 +157,7 @@ One destination (owner, 25 November 2026) replaces the separate Dates and Follow
 - Overdue items are presented neutrally: no shame language, escalating warnings or negative game consequences.
 - No automatic follow-ups are generated from contact imports, dates, memories, messages, photos or call history; do not nag the player to contact someone or imply a relationship is deteriorating.
 
-**Last recorded meetup.** Each person can carry the day of the last time the player recorded meeting them, taken from a memory that includes them or from a short manual "Met up" entry. It is a fact the player recorded, shown on the person's page and in Reminders; it is not inferred from messages, calls, location or photos, and it is never a target, a streak or an automatic reminder.
+**Last recorded meetup.** A person's last recorded meetup is the latest of their memories that knows its full date (`LinkRules.metUpOf`); there is no separate meetup record and nothing is inferred from messages, calls, location or photos. It is a fact the player recorded and is never a target, a streak or an automatic reminder; the Reminders place shows it when REP-087 is built.
 
 **Consolidated upcoming reminders.** One dashboard lists the next birthdays, anniversaries, personal milestones and follow-ups together, with what and who they are about and the reminder setting; the overview shows only what needs attention rather than a full calendar.
 
@@ -198,19 +200,20 @@ A person's profile is also a **slambook page**: the details the player chooses t
 
 ### 3.1 Add a memory
 
-1. Start from photos, from a title, or from the day it happened.
-2. Choose the date as precisely as the player knows it: exact, approximate, month-only, year-only or unknown.
-3. Add any number of people and any number of eras, or none.
-4. Add photos from the phone or from the optional OneDrive source (3.3), each with a caption if wanted.
-5. Write the description and save; a memory needs only what the player wants to record.
-6. Find it later in the timeline, the photo gallery, the chapters or search.
+1. Choose Add a memory in Memories, or Add a memory on a person's page (which preselects that person).
+2. Write a title or a note; one of the two is enough.
+3. Set the date with the Year, Month and Day fields, leaving unknown parts blank, and turn on "Around then" for a memory the player only remembers approximately. A month needs its year and a day needs its month.
+4. Optionally add the place and the time.
+5. Choose any number of people and chapters with the People and Chapters chips.
+6. Save; find it later in the timeline, the chapters or the person's page.
 
 ### 3.2 Create an era
 
-1. Create an era from Memories, with a name and an optional description.
-2. Give it a start and an end as precisely as the player knows them; either end may be open or unknown.
-3. Associate memories, from the era or from a memory.
-4. Edit or delete the era at any time; deleting it never deletes a memory.
+1. Choose Add an era in the Chapters view of Memories.
+2. Give it a title and an optional note.
+3. Set its start and end with the same Year/Month/Day editor; either end may be open or unknown.
+4. Save, then add memories to it from the memory form's Chapters chips.
+5. Edit or delete the era at any time; deleting it never deletes a memory.
 
 ### 3.3 Find photos (local picker or OneDrive)
 
@@ -295,7 +298,7 @@ LINK owns the following canonical records:
 | Contact source mapping | Import provenance and reconciliation |
 | OneDrive photo reference | A read-only pointer to a file the player picked; Microsoft and the player own the original |
 | PLAN memory link | A reference in the integration document; PLAN owns the event |
-| Person-team assignment | References to shared owned Pokémon; ownership and capacities are to be specified in the ecosystem (9.6) |
+| Person-team assignment | References to shared owned Pokémon; the place and the Me exception are in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A and the passive EXP waits for the economy (9.6) |
 | Postcard Trail and Safari state | LINK's optional acquisition progress and idempotency references |
 
 **Conversion rules (built).** `GameStore.convertFollowUp` makes one PLAN task per follow-up id (`TaskLink(LINK_FOLLOW_UP, id)`); PLAN then owns its completion and pays it once by PLAN's rules, and `GameStore.linkedTask` gives LINK the task and its state to display. `unlinkTask` leaves a normal PLAN task. `FollowUp.converted` is set on handover and never cleared, so unlinking or deleting the task never makes LINK pay; while the task exists LINK refuses to finish or cancel the follow-up, and a task finished in PLAN is mirrored as completed without a reward.
@@ -304,7 +307,7 @@ LINK owns the following canonical records:
 
 **PLAN memory links (owner, 25 November 2026; specified, not built).** A memory may reference a PLAN calendar event by a stable id through the integration layer, the same way the event "People" links work. PLAN owns the event and its edits and deletes; LINK owns the memory. No calendar record is duplicated, and breaking the link is explicit and recoverable: it never deletes the memory or the event silently.
 
-**Person-team assignments (owner direction, 25 November 2026; specified, not built).** A person's Pokémon team references shared owned Pokémon; LINK never keeps a second collection and never pays outside the linked event boundary. The placement rule, the team capacities and the passive EXP are to be specified in `../FEATURES/POKEMON_ECOSYSTEM.md` and the economy before build (9.6).
+**Person-team assignments (owner direction, 25 November 2026; specified, not built).** A person's Pokémon team references shared owned Pokémon; LINK never keeps a second collection and never pays outside the linked event boundary. The placement (a place of its own, with LINK's party serving as the Me entry's team) and the capacity of six are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A; the passive EXP and the memory/milestone progression are to be specified in the economy before build (9.6).
 
 ### 4.1 Cross-module boundaries
 
@@ -516,15 +519,16 @@ A second optional acquisition for the slambook: each person in LINK (the Me card
 
 ### 9.6 Person Pokémon teams (owner direction, 25 November 2026; specified, not built)
 
-The owner wants each person to be able to hold a small Pokémon team of up to six. This subsection records the direction only; nothing here is built, and no rate and no team capacity beyond the owner's up-to-six direction is fixed by this document.
+The owner wants each person to be able to hold a small Pokémon team of up to six, and LINK's own party also to serve as the player's team on the **Me** entry. The placement of the place is settled in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A; nothing here is built, and no rate is fixed by this document.
 
 - **Up to six Pokémon per person.** The player assigns shared owned Pokémon to a person, and that person's page shows them.
+- **Me's team is LINK's party.** Because Me also has an entry in People, the Me page shows LINK's own party (one lead and five) as that person's team: the same six Pokémon, not a second roster and not a second placement.
 - **Passive EXP over time.** An assigned Pokémon gains EXP passively while it stays with the person, without the player having to log anything.
 - **Extra progression through memories and milestones.** Recording memories and reaching meaningful milestones with a person is the extra way the direction wants that person's Pokémon to progress; this is a reward source of its own, not part of Postcard Trail.
 - **Canonical evolution and friendship.** Species evolution, friendship and the other canonical progression rules are adapted for this source, not reinvented.
 - **No pressure.** No decay, no missed-day penalty and no mandatory documentation: a person left unvisited and a memory never recorded take nothing away.
 
-**To be specified before build (owner to confirm the economy numbers; *(tune)* placeholders only).** The person-team placement, the team capacities and the passive-EXP rules are to be specified in `../FEATURES/POKEMON_ECOSYSTEM.md` and the economy (`docs/economy.md`, `RewardRules.VERSION`) before any build. This direction conflicts with the shared rule that a Pokémon is in one place only: the owner direction is for a Pokémon assigned to a person to count as that placement, and the ecosystem specification must state how it coexists with the global buddy, the module parties, the Guardian slot, the WORLD expedition team, the GEAR helper and the PC. Until that specification exists, this document asserts no placement, no rate, no cap and no reward; LINK keeps no second Pokémon collection and the existing one-place rule stands for all shipped behaviour.
+**Still to be specified before build (owner to confirm the economy numbers; *(tune)* placeholders only).** The passive EXP and memory/milestone progression and their numbers are to be specified in the economy (`docs/economy.md`, `RewardRules.VERSION`) and balanced with a simulation before any build. The place itself, the capacity of six and the Me exception are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A; LINK keeps no second Pokémon collection and no shipped behaviour changes until the place is built.
 
 ---
 
@@ -569,13 +573,13 @@ Existing code is evidence, not authority. LINK reuses the shared module shell, l
 
 ## 12. Remaining work
 
-The archive direction (owner, 25 November 2026) is specified here and not built. The order below is the intended build order; every item is **specified, not built** today. Nothing in this document is committed to a version.
+The archive direction (owner, 25 November 2026) is the build order below. The core of item 1 shipped in 0.244.0; everything else is **specified, not built** today. Nothing in this document is committed to a version.
 
-1. **Memories and Eras (specified, not built).** The memory and era records, flexible dates (exact, approximate, month-only, year-only, unknown, open era ends), multiple people and multiple overlapping eras, the chronological timeline and life-chapters browsing, and the person-specific history collection.
+1. **Memories and Eras (core built 0.244.0).** The memory and era records, flexible dates (exact, approximate, month-only, year-only, unknown, open era ends), multiple people and multiple overlapping eras, the chronological timeline and chapters browsing, On This Day and the person-specific history collection are built as the core. The photo gallery is not: it is item 2.
 2. **Local photo galleries (specified, not built).** Photos stored locally by LINK, multiple photos per memory with captions, photo-first entries, the photo-gallery browsing mode, thumbnails and the person gallery.
 3. **OneDrive photo source (specified, not built).** The optional read-only Microsoft account connection, folder and photo browsing, multi-select, cached thumbnails, optional offline downloads, disconnect and revoke, and offline behaviour (6.2).
 4. **Person connections and the profile reorganisation (specified, not built).** Connections between people (family, friends, colleagues, the player's own words), and the grouped, shorter profile UI.
-5. **Per-person Pokémon teams (specified, not built).** Up to six Pokémon per person, passive EXP, and extra progression through memories and milestones; blocked until `../FEATURES/POKEMON_ECOSYSTEM.md` and the economy specify the placement, capacities and numbers (9.6).
+5. **Per-person Pokémon teams (specified, not built).** Up to six Pokémon per person, passive EXP, and extra progression through memories and milestones; the placement and the Me exception are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A, and the build waits on the economy numbers (9.6).
 6. **Reminders consolidation (specified, not built).** One Reminders place replacing the separate Dates and Follow-ups places, the last recorded meetup, the consolidated upcoming dashboard and the birthday/important-date widgets.
 7. **PLAN memory linking (specified, not built).** "Save as Memory" after a scheduled event, attaching an existing memory to a PLAN event, and the independent, recoverable link (6.3).
 
@@ -631,7 +635,7 @@ Also still open from before the archive direction:
 - Postcard Trail and Friend Safari are optional and can be disabled without disabling LINK.
 - Only distinct eligible follow-up completions contribute to Postcard Trail and only a Safari visit pays a Safari catch.
 - Memories, eras, photos and recorded meetups pay nothing until the memory/milestone source is specified in the ecosystem and economy.
-- Person teams are not built until the placement, capacities and passive-EXP numbers are specified; until then the one-place rule stands.
+- Person teams are not built until the passive-EXP and memory/milestone numbers are specified; the placement, the capacity of six and the Me exception are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A.
 - Contact creation, imports, notes, dates, photo browsing and passive interaction never contribute.
 - Reopening, editing, migration, duplicate imports or PLAN linkage cannot double-pay.
 - No streak loss, decay, expiring reward, relationship score or quota on progress exists; the anti-farming caps on payments in 9.5 are the only limits.
@@ -647,13 +651,15 @@ Also still open from before the archive direction:
 
 ## 14. Documentation alignment
 
-This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion and calendar events: `PLAN.md`; PLAN memory links: the in-app integration layer (`app.pokeplan.app.integrations`) and `PLAN.md` 8.1A; BASE may reference a LINK-owned service contact: `BASE.md`; shared reminders and permissions, including the OneDrive account, scopes and token rules: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` (reminder section 9; in-app integrations section 8.1A; OneDrive photos section 8.2A); shared persistence, encryption boundary, export, backup and migration (including photo files): `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy, including the person-team placement and the memory/milestone progression to be specified: `../FEATURES/POKEMON_ECOSYSTEM.md` and `docs/economy.md`.
+This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion and calendar events: `PLAN.md`; PLAN memory links: the in-app integration layer (`app.pokeplan.app.integrations`) and `PLAN.md` 8.1A; BASE may reference a LINK-owned service contact: `BASE.md`; shared reminders and permissions, including the OneDrive account, scopes and token rules: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` (reminder section 9; in-app integrations section 8.1A; OneDrive photos section 8.2A); shared persistence, encryption boundary, export, backup and migration (including photo files): `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy, including the person-team placement (2.2.2A) and the memory/milestone progression to be specified: `../FEATURES/POKEMON_ECOSYSTEM.md` and `docs/economy.md`.
 
 ## 15. As built: the manual slice
 
 *Compiled for Android; not yet run on a device.*
 
-A page with an overview on top and, behind the header's Sections key, four places (People, Dates, Follow-ups, Settings). The archive direction consolidates Dates and Follow-ups into one **Reminders** place (specified, not built, 2.4); today they are still two places. **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name, by what changed last, by My order or by group (never ranked; By group shows a heading per group and "No group" last), filters for Pinned and main category (group chips filter by group), a person needs only a name, a profile with Overview, Profile (2.6), Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.4): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form (the archive direction narrows categories to the predefined set, 2.1). **Main category, groups, My order and the PLAN integration (0.240.0 and 0.243.0, owner decisions of 24 November 2026; JVM tests only, not run on a device):** a person has one optional main category and is in any number of groups (2.1; made, renamed and deleted in People; deleting one deletes nobody); `Person.category` lives in the person's JSON, so there is no schema step, and `LinkRules.STARTING_CATEGORIES` is Family, Friends, Work, School and Services. The 0.240.0 build had turned the category into groups; on first open this version gives the category back once to people a group had replaced it for (`LinkRules.withCategoriesBack`, `LinkSettings.categoriesRestored`: a person with no category who is in exactly one group named like an old category word gets that word back, and every group stays), and People adds By group beside name, recent and My order (move up or down, Me stays first; never a score, never pays): each person once, under their first group's heading in the player's group order, people in no group last under "No group". The calendar overlay and event People links are in 2.4 and live in `IntegrationStore` (`app.pokeplan.app.integrations`), not in `Person`. Open: groups import from phone contacts, showing linked people on the event in the calendar rows.
+A page with an overview on top and, behind the header's Sections key, five places (People, Memories, Dates, Follow-ups, Settings). The archive direction consolidates Dates and Follow-ups into one **Reminders** place (specified, not built, 2.4); today they are still two places. **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory that starts sorted by group (owner, 25 November 2026), with name, recent and My order still available (never ranked; By group shows a heading per group and "No group" last), filters for Pinned and main category (group chips filter by group), a person needs only a name, a profile with Overview, Profile (2.6), Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.4): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form (the archive direction narrows categories to the predefined set, 2.1). **Main category, groups, My order and the PLAN integration (0.240.0 and 0.243.0, owner decisions of 24 November 2026; JVM tests only, not run on a device):** a person has one optional main category and is in any number of groups (2.1; made, renamed and deleted in People; deleting one deletes nobody); `Person.category` lives in the person's JSON, so there is no schema step, and `LinkRules.STARTING_CATEGORIES` is Family, Friends, Work, School and Services. The 0.240.0 build had turned the category into groups; on first open this version gives the category back once to people a group had replaced it for (`LinkRules.withCategoriesBack`, `LinkSettings.categoriesRestored`: a person with no category who is in exactly one group named like an old category word gets that word back, and every group stays), and People adds By group beside name, recent and My order (move up or down, Me stays first; never a score, never pays): each person once, under their first group's heading in the player's group order, people in no group last under "No group". The calendar overlay and event People links are in 2.4 and live in `IntegrationStore` (`app.pokeplan.app.integrations`), not in `Person`. Open: groups import from phone contacts, showing linked people on the event in the calendar rows.
+
+**Memories and Eras (0.244.0, core).** Memories and Chapters are a place of their own in LINK's Sections menu, between People and Dates ("Memories", with a count or "add one"). Behind one row of pills, **Timeline** lists memories newest first with a year heading per group and no known year last under "No year", each row showing the date, place and people; tapping a row edits it in place with Delete and Undo, and "Add a memory" opens the form (title, note, a Year/Month/Day editor with "Around then", place, time, and People/Chapters chips). **Chapters** lists the eras with their range and memory count, opens one to its memories, and adds or edits an era with the same date editor, a Save, and Delete with Undo; deleting an era keeps its memories. An **"On this day"** box appears at the top of Memories when earlier-year memories share today's month and day. A person's Overview lists up to four of their memories and an "Add a memory" that preselects that person. **Split dates:** a `PartialDate` has an optional year, month and day plus an approximate flag; a month needs its year, a day needs its month, the year range and leap days are checked, a blank date is unknown, and the labels are "14 Mar 2024", "Mar 2024", "2024", "Around 2024", "Unknown date", and an era's "2020 - 2024", "2020 - now", "Until 2024" or "No dates". Deleting a person takes them out of the memories that name them and leaves the memory; the last recorded meetup is the latest memory with a full date (`LinkRules.metUpOf`; Reminders shows it when REP-087 is built). **Export and erase:** a new "Memories and eras" kind (`LinkKinds.MEMORIES`) exports and erases the two lists; erasing people removes them from memories, and erasing memories leaves people. **Storage:** the records are JSON fields on `LinkData` and ride in the existing `link_state` row like settings, so there is no new table and no schema step. **Not built in this slice:** photos, the gallery browsing mode, the OneDrive photo source, person connections, PLAN event-memory links, unified search over memories and the Reminders consolidation; none of them pays, and nothing here changes the reward boundary. JVM tests only, not run on a device.
 
 **Postcard Trail (section 9)** *(numbers are *(tune)* starting values; `docs/economy.md`)*:
 - **On by default** (every acquisition method is), off in Settings without touching a record. Only one thing pays: a **follow-up finished** (2 Rare Candies; at most 3 paid a day). Adding or importing people, notes, dates, memories, tags and favourites, editing, rescheduling, cancelling and reopening never pay.
@@ -662,7 +668,7 @@ A page with an overview on top and, behind the header's Sections key, four place
 - A payment is candies, a little friendship for Link's lead, a trainer point and a point on the track; **3 points (three finished follow-ups) find a Postcard Egg** from the **Link Region** (`tools/species/regions/link.txt`) into Link's party. Link's party perks (Candy finder: Normal, Flying, Water, Grass, Bug, Ground; Friendship gain: Fairy, Fighting, Electric, Psychic, Fire, Dragon; capped at +25%) only change what Postcard Trail pays.
 - **First Pokémon** (POKEMON_ECOSYSTEM.md 10.2.1): the first person, date or follow-up gives one Common egg of the Link Region that hatches into Link's party, leading it, once per save. A new Pokémon arrives as "Postcard Trail delivered…" in a scene of its own (the route).
 
-**Data (section 4).** `link_*` tables: `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Base. Memories, eras, photo records and their tables do not exist yet; when they are built they will need their own tables and a numbered migration, and OneDrive references and tokens will follow the shared storage rules (4, 6.2, 7).
+**Data (section 4).** `link_*` tables: `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Base. Memories and eras ride in the `link_state` row as JSON like settings, so this slice adds no table and no migration; their own tables come with the photo work (REP-082), and OneDrive references and tokens will follow the shared storage rules (4, 6.2, 7).
 
 **Contacts import:** Android only (`ContactSource`, null elsewhere so the button is not offered; `AndroidContacts` reads names, phones, emails, companies and birthdays in one query). People → "Import contacts" says what is read, then asks `READ_CONTACTS`; denied, manual use is untouched. A pick list (search, 40 at a time, nothing preselected) marks rows New, Already in Link (same `Person.sourceId`) or Maybe already in Link (name, a phone or an email; starts unselected, and when picked fills only the matched person's empty fields). A reminder is chosen (No, On the day, 1, 3 or a week before; no default), then "Import N" makes one save, one result line and Undo. A birthday becomes a Birthday date unless the person has one; a second import changes nothing; empty phone, email and organization are filled, nothing is overwritten. Contacts with no name are counted and shown. Nothing is paid and nothing reaches `LinkEvent`. **Reminder in one step:** the Add-a-date form has "Remind me" keys, and the first reminder turns Link's reminders on. Known gap: the notification permission is asked only when a reminder is within 4 days.
 
@@ -672,20 +678,19 @@ A page with an overview on top and, behind the header's Sections key, four place
 
 `Person.sourceId` (the contact's lookup key, default empty) lives in the person's JSON, so there is no schema step.
 
-**Specified next, not built (archive direction, owner, 25 November 2026).** No record, store or screen exists yet for any of these, and none is a reward input today:
-- **Memories and Eras:** the memory and era records, flexible dates, multiple people and overlapping eras, timeline and chapter browsing, On This Day, and the person-specific history collection (2.3).
+**Specified next, not built (archive direction, owner, 25 November 2026).** The Memories and Eras core is built (0.244.0); no record, store or screen exists yet for any of the rest, and none is a reward input today:
 - **Local photo galleries:** multiple photos per memory with captions, photo-first entries, the photo-gallery browsing mode and thumbnails (2.3).
 - **OneDrive photo source:** the optional read-only Microsoft connection, browsing, cached thumbnails, offline downloads and disconnect (6.2).
 - **Person connections and the profile reorganisation** (2.2).
-- **Per-person Pokémon teams:** up to six Pokémon, passive EXP and memory/milestone progression; blocked on `../FEATURES/POKEMON_ECOSYSTEM.md` and the economy, with the one-place rule to be reconciled there (9.6).
+- **Per-person Pokémon teams:** up to six Pokémon per person, passive EXP and memory/milestone progression; the placement and the Me exception are in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A, and the build waits on the economy numbers (9.6).
 - **Reminders consolidation:** one Reminders place for dates, follow-ups and the last recorded meetup, the upcoming dashboard and the date widgets (2.4).
 - **PLAN memory linking:** Save as Memory after a scheduled event and attaching an existing memory to an event (6.3).
 
-Nothing above changes Postcard Trail, Friend Safari, the reward-event boundary or the current `link_*` data.
+Nothing above changes Postcard Trail, Friend Safari, the reward-event boundary or the existing `link_*` tables.
 
 ## Shared Pokémon ecosystem contract
 
-LINK's acquisition identity is **Postcard Trail**, based on distinct eligible follow-up completions. LINK owns follow-up eligibility; the shared Pokémon ecosystem owns canonical reward settlement, Egg/owned-Pokémon records, Pokédex and inventory. LINK has an independent party referencing shared owned Pokémon IDs. If a follow-up is converted into a PLAN task, one canonical completion event and one reward owner must be preserved. The owner direction for per-person Pokémon teams, their passive EXP and the extra progression through memories and milestones is specified, not built: the person-team placement, the team capacities, the EXP rules and the economy numbers are to be specified in `../FEATURES/POKEMON_ECOSYSTEM.md` and `docs/economy.md` before build (9.6), and the current one-place-only rule stands until then. Contact identifiers, personal notes, memory text, captions, photos, message content and social activity are excluded from reward events. See `../FEATURES/POKEMON_ECOSYSTEM.md`.
+LINK's acquisition identity is **Postcard Trail**, based on distinct eligible follow-up completions. LINK owns follow-up eligibility; the shared Pokémon ecosystem owns canonical reward settlement, Egg/owned-Pokémon records, Pokédex and inventory. LINK has an independent party referencing shared owned Pokémon IDs. If a follow-up is converted into a PLAN task, one canonical completion event and one reward owner must be preserved. The owner direction for per-person Pokémon teams, their passive EXP and the extra progression through memories and milestones is specified, not built: the place, the capacity of six and the Me exception (LINK's party is the Me entry's team) are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A, the passive EXP and milestone numbers are to be specified in `docs/economy.md` before build (9.6), and no shipped behaviour changes until then. Contact identifiers, personal notes, memory text, captions, photos, message content and social activity are excluded from reward events. See `../FEATURES/POKEMON_ECOSYSTEM.md`.
 
 ---
 

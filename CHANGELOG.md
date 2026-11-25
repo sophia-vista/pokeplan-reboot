@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.244.0
+
+- **LINK: Memories and Eras, the core of the archive (owner direction, 25 November 2026).** The new Memories place keeps a life as it happened and lets the player look back without tending it.
+  - **Memories and chapters.** A memory has a title or a note, an optional place and time, and a date as precise as the player knows it (a year, month or day, any of them or none, with "Around then"), with any number of people and any number of overlapping chapters. An era (a "chapter" on screen) is a named life chapter with flexible, open-ended or overlapping start and end dates; deleting an era keeps its memories, and deleting a person takes them out of the memories that name them.
+  - **Browsing.** Memories is a place between People and Dates, with Timeline and Chapters behind one row of pills: the timeline is newest first with a year heading per group and "No year" last, and a row edits in place with Delete and Undo; Chapters shows each era with its range and memory count, opens to its memories, and adds or edits an era (delete offers Undo). An **"On this day"** box at the top of the place shows earlier-year memories that share today's day and month.
+  - **People and data.** A person's Overview lists up to four memories and an "Add a memory" that preselects that person; the last recorded meetup is the latest memory that knows a full date. Export and erase gain a "Memories and eras" kind (`LinkKinds.MEMORIES`); erasing people removes them from memories and erasing memories leaves people.
+  - **No photos yet.** The photo gallery, photo-first entries, the OneDrive photo source, PLAN event-memory links, person connections, unified search over memories and the Reminders consolidation are not built (REP-082 to REP-089).
+  - **People now starts sorted by group (owner, 25 November 2026):** the directory opens in By group and the pull-down reset returns to it; name, recent and My order stay available.
+  - **Person teams recorded in the specs:** the owner answered on 25 November 2026 that LINK keeps its party and that same party is the **Me** entry's team (no second roster), while other people hold up to six; recorded in LINK.md 9.6, `POKEMON_ECOSYSTEM.md` 2.2.2A and the Product Bible. Still specified, not built.
+  - Code: `Memory`/`Era`/`PartialDate` in link-core (`LinkData.memories`/`.eras`, JSON defaults), `LinkRules.checkMemory`/`checkEra`/`dateProblem`/`dateLabel`/`eraRangeLabel`/`memoryOrder`/`yearGroups`/`onThisDay`/`metUpOf`, `LinkStore` memory and era functions plus `metUp`, `LinkKinds.MEMORIES`, `composeApp/.../ui/link/Memories.kt` (Timeline, Chapters, memory and era forms), the person Overview's memory list and the People default sort. The records ride in the existing `link_state` row as JSON: no schema migration and no new `link_*` table; no reward change (`RewardRules.VERSION` unchanged). JVM tests only, not run on a device.
+
 ## 0.243.0
 
 - **LINK: the main category is restored beside groups, and People gains a By group sort (owner decision, 24 November 2026).** 0.240.0 had replaced the single relationship category with groups; the category is back and a group sits beside it, never in its place.

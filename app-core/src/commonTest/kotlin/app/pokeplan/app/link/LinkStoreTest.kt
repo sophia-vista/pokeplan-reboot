@@ -9,6 +9,7 @@ import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.link.DateKind
 import app.pokeplan.link.FollowUpStatus
+import app.pokeplan.link.PartialDate
 import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
 import kotlinx.datetime.DateTimeUnit
@@ -588,5 +589,57 @@ class LinkStoreTest {
         assertTrue(link.data.settings.categoriesRestored)
         val reopened = LinkStore(storage, clock, Spy(game), utc, rng = Random(5))
         assertEquals(link.data, reopened.data, "the repair is saved, so a reopen changes nothing")
+    }
+    @Test
+    fun memoriesAndErasAreKeptAndTheirAssociationsAreCleaned() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana").record)
+        val college = assertNotNull(s.link.addEra("College", start = PartialDate(2020), end = PartialDate(2024)).record)
+        val m = assertNotNull(s.link.addMemory("Lunch", PartialDate(2024, 3, 14), personIds = listOf(ana.id, "gone"), eraIds = listOf(college.id, "gone")).record)
+        assertEquals(listOf(ana.id), m.personIds, "unknown people are dropped")
+        assertEquals(listOf(college.id), m.eraIds, "unknown eras are dropped")
+        assertNull(s.link.addMemory(" ", PartialDate()).record, "a memory needs a word")
+        assertNotNull(s.link.addMemory("", note = "Only a note", date = PartialDate(2023)).record)
+        val dinner = assertNotNull(s.link.updateMemory(m.copy(title = "Dinner", date = PartialDate(2024, 6), personIds = listOf(ana.id))).record)
+        assertEquals("Dinner", dinner.title)
+        assertEquals(PartialDate(2024, 6), s.link.memories().first { it.id == m.id }.date)
+        s.link.deleteEra(college.id)
+        assertTrue(s.link.eras().isEmpty())
+        assertEquals(2, s.link.memories().size, "deleting an era keeps its memories")
+        assertTrue(s.link.memories().first { it.id == m.id }.eraIds.isEmpty(), "and removes the era from them")
+        s.reopen()
+        assertEquals(2, s.link.memories().size, "memories and eras survive a reopen")
+        s.link.deletePerson(ana.id, keepDates = true, keepFollowUps = true)
+        assertTrue(s.link.memories().first { it.id == m.id }.personIds.isEmpty(), "erasing a person takes them out of memories")
+        s.link.deleteMemory(m.id)
+        assertEquals(1, s.link.memories().size)
+    }
+
+    @Test
+    fun memoriesExportAndEraseAsTheirOwnKind() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana").record)
+        s.link.addEra("College")
+        s.link.addMemory("Lunch", PartialDate(2024), personIds = listOf(ana.id))
+        val exported = s.link.export(setOf(LinkKinds.MEMORIES))
+        assertTrue("Lunch" in exported && "College" in exported, "the memories export carries memories and eras")
+        assertFalse("\"people\"" in exported, "and nothing else")
+        s.link.erase(LinkKinds.MEMORIES)
+        assertTrue(s.link.memories().isEmpty() && s.link.eras().isEmpty())
+        assertEquals(1, s.link.data.people.size, "erasing memories keeps the people")
+        s.link.erase(LinkKinds.PEOPLE)
+        assertEquals(0, s.link.data.people.size)
+    }
+
+    @Test
+    fun thisDayAndTheLastMeetupComeFromTheMemoriesAlreadyRecorded() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana").record)
+        s.link.addMemory("Older lunch", PartialDate(2024, 11, 7), personIds = listOf(ana.id))
+        s.link.addMemory("Dinner", PartialDate(2025, 11, 7), personIds = listOf(ana.id))
+        s.link.addMemory("Year only", PartialDate(2022), personIds = listOf(ana.id))
+        assertEquals(listOf("Dinner", "Older lunch"), s.link.onThisDay(LocalDate(2026, 11, 7)).map { it.title }, "earlier years on this day, newest first")
+        assertEquals(LocalDate(2025, 11, 7), s.link.metUp(ana.id), "only a fully known date counts as a meetup")
+        assertEquals(listOf("Dinner", "Older lunch", "Year only"), s.link.memoriesOf(ana.id).map { it.title })
     }
 }

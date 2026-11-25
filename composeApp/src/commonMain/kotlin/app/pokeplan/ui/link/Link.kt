@@ -101,7 +101,7 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
 enum class LinkSection(val label: String, val icon: String) {
-    PEOPLE("People", "friend-ball"), DATES("Dates", "timer-ball"), FOLLOW_UPS("Follow-ups", "member-card"), SETTINGS("Settings", "storage-key"),
+    PEOPLE("People", "friend-ball"), MEMORIES("Memories", "tropic-mail"), DATES("Dates", "timer-ball"), FOLLOW_UPS("Follow-ups", "member-card"), SETTINGS("Settings", "storage-key"),
 }
 
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.LINK.accent
@@ -173,6 +173,7 @@ private fun LinkPage(model: AppModel, place: LinkPlace, openPokemon: (String) ->
     SectionScaffold(section.label, null, onBack = { model.linkSection = null }, icon = section.icon, color = Module.LINK.look.header) {
         when (section) {
             LinkSection.PEOPLE -> Unit
+            LinkSection.MEMORIES -> MemoriesScreen(model)
             LinkSection.DATES -> DatesView(model)
             LinkSection.FOLLOW_UPS -> FollowUpsView(model)
             LinkSection.SETTINGS -> LinkSettingsView(model)
@@ -188,6 +189,7 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val open = LinkRules.open(data, today)
     val sections = listOf(
         MenuEntry(LinkSection.PEOPLE.name, LinkSection.PEOPLE.icon, "People", if (data.people.isEmpty()) "add one" else "${data.people.size} people", tint = tint),
+        MenuEntry(LinkSection.MEMORIES.name, LinkSection.MEMORIES.icon, "Memories", if (data.memories.isEmpty()) "add one" else "${data.memories.size} memories", tint = tint),
         MenuEntry(LinkSection.DATES.name, LinkSection.DATES.icon, "Dates", if (data.dates.isEmpty()) "add one" else "${LinkRules.upcoming(data, today).size} soon", tint = tint),
         MenuEntry(LinkSection.FOLLOW_UPS.name, LinkSection.FOLLOW_UPS.icon, "Follow-ups", if (data.followUps.isEmpty()) "add one" else "${open.size} open", tint = tint),
         MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft),
@@ -317,7 +319,7 @@ private fun PeopleScreen(model: AppModel) {
     var category by remember { mutableStateOf<String?>(null) }
     var group by remember { mutableStateOf<String?>(null) }
     var favorites by remember { mutableStateOf(false) }
-    var sort by remember { mutableStateOf(Sort.NAME) }
+    var sort by remember { mutableStateOf(Sort.GROUP) }
     var message by remember { mutableStateOf<String?>(null) }
     var shown by remember { mutableStateOf(DIRECTORY_PAGE) }
     var importing by remember { mutableStateOf(false) }
@@ -325,8 +327,8 @@ private fun PeopleScreen(model: AppModel) {
     val scroll = rememberScrollState()
     val reveal = rememberPullReveal(
         scroll,
-        keepOpen = { query.isNotBlank() || category != null || group != null || favorites || sort != Sort.NAME },
-        onClose = { query = ""; category = null; group = null; favorites = false; sort = Sort.NAME },
+        keepOpen = { query.isNotBlank() || category != null || group != null || favorites || sort != Sort.GROUP },
+        onClose = { query = ""; category = null; group = null; favorites = false; sort = Sort.GROUP },
     )
     SectionScaffold(
         LinkSection.PEOPLE.label, null, onBack = { model.linkSection = null }, icon = LinkSection.PEOPLE.icon, color = Module.LINK.look.header,
@@ -522,6 +524,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     val today = model.store.today
     var asking by remember(p.id) { mutableStateOf(false) }
     var addingDate by remember(p.id) { mutableStateOf(false) }
+    var addingMemory by remember(p.id) { mutableStateOf(false) }
     var keepDates by remember(p.id) { mutableStateOf(true) }
     var keepFollowUps by remember(p.id) { mutableStateOf(true) }
     val dates = data.dates.filter { it.personId == p.id }
@@ -530,6 +533,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         val nd = dates.size
         val nf = data.followUps.count { it.personId == p.id }
         Text("Delete ${LinkRules.displayName(p)} and their notes?", style = MaterialTheme.typography.bodyLarge)
+        if (data.memories.any { p.id in it.personIds }) Text("Their memories stay, without them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
         if (nd > 0) ToggleRow(if (nd == 1) "Keep their date" else "Keep their $nd dates", keepDates, detail = "Kept dates stay, with no person on them.") { keepDates = it } // copy-ok: result
         if (nf > 0) ToggleRow(if (nf == 1) "Keep their follow-up" else "Keep their $nf follow-ups", keepFollowUps, detail = "Kept follow-ups stay, with no person on them.") { keepFollowUps = it } // copy-ok: result
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -546,12 +550,19 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         DateForm(model, null, onDone = { addingDate = false }, presetPerson = p.id)
         return
     }
+    if (addingMemory) {
+        FormBox { MemoryForm(model, existing = null, presetPersonId = p.id, onDone = { addingMemory = false }) }
+        return
+    }
     val lines = listOf("Phone" to p.phone, "Email" to p.email, "Address" to p.address).filter { it.second.isNotBlank() }
     lines.forEach { (k, v) -> RecordRow(v, k) }
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     profileSummary(model, p).takeIf { it.isNotEmpty() }?.let { RecordRow(it, "Sign, animal, type") }
     dates.forEach { d -> LinkRules.next(d, today)?.let { u -> RecordRow(d.title, dateLine(u)) } ?: RecordRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
     next?.let { RecordRow(it.title, dueText(it, today) ?: "Next follow-up") }
+    FieldLabel("Memories")
+    link.memoriesOf(p.id).take(4).forEach { m -> RecordRow(m.title, LinkRules.dateLabel(m.date)) }
+    PixelButton("Add a memory", { addingMemory = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     app.pokeplan.ui.integrations.PersonEvents(model, p.id)
     val contact = model.phone?.takeIf { it.canContact }
     if (contact != null && (p.phone.isNotBlank() || p.email.isNotBlank())) Actions {
@@ -945,7 +956,7 @@ private fun LinkSettingsView(model: AppModel) {
             note?.let { Report(model, it) }
             LinkKinds.entries.forEach { k ->
                 if (asking == k) Confirm(
-                    if (k == LinkKinds.PEOPLE) "Erase all people and their notes? Dates and follow-ups stay, with no person on them. This cannot be undone." else "Erase all ${k.label.lowercase()}? This cannot be undone.",
+                    if (k == LinkKinds.PEOPLE) "Erase all people and their notes? Dates, follow-ups and memories stay, with no person on them. This cannot be undone." else "Erase all ${k.label.lowercase()}? This cannot be undone.",
                     "Erase", "Keep them", onConfirm = { link.erase(k); asking = null }, onKeep = { asking = null },
                 ) else PixelButton("Erase ${k.label.lowercase()}", { asking = k; askingAll = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }

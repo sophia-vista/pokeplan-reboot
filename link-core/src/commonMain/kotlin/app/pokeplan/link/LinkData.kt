@@ -30,6 +30,48 @@ data class Person(
 @Serializable
 data class LinkGroup(val id: String, val name: String)
 
+/**
+ * A date as precisely as the player knows it: a full day, a month, a year, or nothing; [approximate] marks a
+ * remembered "around then" without inventing a day. Month without a year and day without a month are not allowed;
+ * everything blank is an unknown date.
+ */
+@Serializable
+data class PartialDate(
+    val year: Int? = null,
+    val month: Int? = null,
+    val day: Int? = null,
+    val approximate: Boolean = false,
+) {
+    val known: Boolean get() = year != null || month != null || day != null
+}
+
+/** One memory in the archive: an event, gathering, trip, milestone or everyday experience worth keeping. */
+@Serializable
+data class Memory(
+    val id: String,
+    val title: String,
+    val note: String = "",
+    val date: PartialDate = PartialDate(),
+    val time: String = "",
+    val place: String = "",
+    val personIds: List<String> = emptyList(),
+    val eraIds: List<String> = emptyList(),
+    val createdMillis: Long = 0,
+    val updatedMillis: Long = 0,
+)
+
+/** A life chapter the player makes by hand; [start] and [end] may each be partial or open. Eras may overlap. */
+@Serializable
+data class Era(
+    val id: String,
+    val title: String,
+    val note: String = "",
+    val start: PartialDate = PartialDate(),
+    val end: PartialDate = PartialDate(),
+    val createdMillis: Long = 0,
+    val updatedMillis: Long = 0,
+)
+
 @Serializable
 data class PersonNote(val id: String, val personId: String, val text: String, val atMillis: Long = 0)
 
@@ -95,6 +137,8 @@ data class LinkData(
     val notes: List<PersonNote> = emptyList(),
     val dates: List<ImportantDate> = emptyList(),
     val followUps: List<FollowUp> = emptyList(),
+    val memories: List<Memory> = emptyList(),
+    val eras: List<Era> = emptyList(),
     val settings: LinkSettings = LinkSettings(),
 )
 
@@ -102,6 +146,7 @@ enum class LinkKinds(val label: String) {
     PEOPLE("People and their notes"),
     DATES("Important dates"),
     FOLLOW_UPS("Follow-ups"),
+    MEMORIES("Memories and eras"),
 }
 
 enum class HitKind(val label: String) { PERSON("Person"), NOTE("Note"), DATE("Date"), FOLLOW_UP("Follow-up") }
