@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.245.0
+
+- **LINK: local photos and the Gallery (REP-082; owner direction, 25 November 2026).** A memory can keep pictures, and the archive gains its third browsing mode.
+  - **Memory photos.** Up to 9 photos per memory, each with a caption of up to 200 characters, added with the platform picture picker (the Android Photo Picker on Android; PNG, JPEG or WebP, downscaled by the picker to fit the budget). The memory form shows 96 dp thumbnails with Caption and Remove (Undo), and a new memory collects the picked photos and attaches them when Save makes it; list rows say "1 photo" or "N photos".
+  - **Gallery.** The Memories pills are Timeline, Chapters and Gallery: a grid of 128 dp tiles, newest added first, each labelled with its memory's title and its caption or date, and tapping one opens the full-size picture with its caption and Close. A person's Overview adds a "Photos" strip of up to 8 thumbnails from their memories, opening the same viewer.
+  - **Storage, export and delete.** A photo is a `MemoryPhoto` in `LinkData.photos` (standard base64 PNG, JPEG or WebP, no `data:` prefix, at most 1,400,000 characters, the same budget as MINT's receive QR), carried in the `link_state` row as JSON: no new table and no schema migration. The "Memories and eras" export/erase kind includes the photos; deleting a memory deletes its photos, erasing memories erases them, and erasing people leaves them.
+  - **Not yet:** the OneDrive photo source (REP-083), sharing and brightness controls, and a dedicated photo store/cache with the archive for large collections.
+  - Code: `MemoryPhoto` and `LinkData.photos` in link-core, `LinkRules.checkPhoto`/`photosOf`/`photosOfPerson`, `LinkStore.addPhoto`/`updatePhotoCaption`/`deletePhoto`/`photosOf`/`photosOfPerson` (and `deleteMemory` now deletes its photos too), `LinkKinds.MEMORIES` export/erase, `composeApp/.../ui/link/Memories.kt` (the Gallery grid and viewer, the photo thumbnails, the memory form's photo rows), the person Overview's photos strip and the existing `AndroidImagePicker` budget. No reward change (`RewardRules.VERSION` unchanged). JVM tests only, not run on a device.
+
 ## 0.244.1
 
 LINK: chapters are ordered by date, and the memories keep their date order. UI only: no data, schema or reward change.

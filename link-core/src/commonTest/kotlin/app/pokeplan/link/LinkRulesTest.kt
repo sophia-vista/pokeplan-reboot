@@ -375,4 +375,31 @@ class LinkRulesTest {
             "newest latest date first; undated chapters last in title order",
         )
     }
+    @Test
+    fun aPhotoMustBeAReadablePictureUnderTheLimitWithAShortCaption() {
+        fun photo(data: String = "AQID", mime: String = "image/png", caption: String = "") = MemoryPhoto("p", "m", caption, mime, data)
+        assertEquals(Check.Ok, LinkRules.checkPhoto(photo(), existing = 0))
+        assertIs<Check.Refused>(LinkRules.checkPhoto(photo(data = "")))
+        assertIs<Check.Refused>(LinkRules.checkPhoto(photo(mime = "image/gif")))
+        assertIs<Check.Refused>(LinkRules.checkPhoto(photo(caption = "x".repeat(LinkRules.PHOTO_CAPTION_MAX + 1))))
+        assertIs<Check.Refused>(LinkRules.checkPhoto(photo(data = "x".repeat(LinkRules.PHOTO_MAX_CHARS + 4))))
+        assertIs<Check.Refused>(LinkRules.checkPhoto(photo(data = "!!!!")))
+        assertIs<Check.Refused>(LinkRules.checkPhoto(photo(), existing = LinkRules.PHOTOS_PER_MEMORY_MAX))
+    }
+
+    @Test
+    fun photosBelongToTheirMemoryAndAPersonsGalleryGathersTheirs() {
+        val data = LinkData(
+            people = listOf(person("1", "Ana")),
+            memories = listOf(Memory("m1", "Lunch", personIds = listOf("1"), date = PartialDate(2024)), Memory("m2", "Walk", personIds = listOf("2"))),
+            photos = listOf(
+                MemoryPhoto("p2", "m1", data = "AQID", addedMillis = 20),
+                MemoryPhoto("p1", "m1", data = "AQID", addedMillis = 10),
+                MemoryPhoto("p3", "m2", data = "AQID", addedMillis = 15),
+            ),
+        )
+        assertEquals(listOf("p1", "p2"), LinkRules.photosOf(data, "m1").map { it.id }, "the order they were added")
+        assertEquals(listOf("p1", "p2"), LinkRules.photosOfPerson(data, "1").map { it.id }, "a person's gallery gathers the photos of their memories")
+        assertTrue(LinkRules.photosOfPerson(data, "missing").isEmpty())
+    }
 }

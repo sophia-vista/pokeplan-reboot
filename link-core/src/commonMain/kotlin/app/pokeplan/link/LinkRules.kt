@@ -2,6 +2,7 @@ package app.pokeplan.link
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
+import kotlin.io.encoding.Base64
 
 sealed interface Check {
     data object Ok : Check
@@ -161,6 +162,35 @@ object LinkRules {
     fun metUpOf(data: LinkData, personId: String): LocalDate? = memoryOrder(memoriesOf(data, personId))
         .firstOrNull { it.date.year != null && it.date.month != null && it.date.day != null }
         ?.let { LocalDate(it.date.year!!, it.date.month!!, it.date.day!!) }
+
+    const val PHOTO_CAPTION_MAX = 200
+    const val PHOTOS_PER_MEMORY_MAX = 9
+
+    /** The picker keeps an image at or under this many base64 characters (the same budget as MINT's receive QR). */
+    const val PHOTO_MAX_CHARS = 1_400_000
+
+    val PHOTO_MIMES = listOf("image/png", "image/jpeg", "image/webp")
+
+    fun photosOf(data: LinkData, memoryId: String): List<MemoryPhoto> =
+        data.photos.filter { it.memoryId == memoryId }.sortedBy { it.addedMillis }
+
+    /** Every photo that belongs to a memory naming this person, in the order it was added. */
+    fun photosOfPerson(data: LinkData, personId: String): List<MemoryPhoto> {
+        val memories = data.memories.filter { personId in it.personIds }.map { it.id }.toSet()
+        return data.photos.filter { it.memoryId in memories }.sortedBy { it.addedMillis }
+    }
+
+    @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
+    fun checkPhoto(p: MemoryPhoto, existing: Int = 0): Check {
+        if (existing >= PHOTOS_PER_MEMORY_MAX) return Check.Refused("A memory keeps up to $PHOTOS_PER_MEMORY_MAX photos.")
+        if (p.caption.length > PHOTO_CAPTION_MAX) return Check.Refused("That caption is too long.")
+        if (p.mime !in PHOTO_MIMES) return Check.Refused("That is not a picture LINK keeps.")
+        if (p.data.isBlank()) return Check.Refused("That picture is empty.")
+        if (p.data.length > PHOTO_MAX_CHARS) return Check.Refused("That picture is too big to keep.")
+        val bytes = runCatching { Base64.decode(p.data) }.getOrNull() ?: return Check.Refused("That picture could not be read.")
+        if (bytes.isEmpty()) return Check.Refused("That picture is empty.")
+        return Check.Ok
+    }
 
     fun isLeap(year: Int): Boolean = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
 
