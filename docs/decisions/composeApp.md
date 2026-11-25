@@ -2280,9 +2280,9 @@ Documented in `docs/pokelife/MODULES/MINT.md 4.3`.
 
 ## `composeApp/src/commonMain/kotlin/app/pokeplan/ui/mint/Interest.kt`
 
-### InterestReview
+### PendingReview
 
-Documented in `docs/pokelife/MODULES/MINT.md 4.3E`.
+Documented in `docs/pokelife/MODULES/MINT.md` 4.3E and 10.4: it is the one "To confirm" box, and it holds an interest estimate and a captured bank alert alike.
 
 ## `composeApp/src/commonMain/kotlin/app/pokeplan/ui/mint/Mint.kt`
 
