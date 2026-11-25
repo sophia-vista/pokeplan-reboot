@@ -1854,9 +1854,10 @@ private fun MintSettingsView(model: AppModel) {
  */
 @Composable
 private fun CaptureSettings(model: AppModel) {
+    // Desktop and web have no bank alert to read: the whole box is Android's.
+    val capture = model.capture ?: return
     val mint = model.mint
     val settings = model.mintData.settings
-    val capture = model.capture
     val scope = rememberCoroutineScope()
     var note by remember { mutableStateOf<String?>(null) }
     var erasing by remember { mutableStateOf(false) }
@@ -1873,7 +1874,6 @@ private fun CaptureSettings(model: AppModel) {
                     "What it reads is never posted by itself; it waits in the \"To confirm\" box, where you confirm, adjust or skip it.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
-            if (capture == null) return@Column
             ToggleRow("Bank notifications", settings.captureNotifications) { on ->
                 mint.setCaptureNotifications(on)
                 if (on && !capture.notificationsGranted()) capture.openNotificationSettings()
