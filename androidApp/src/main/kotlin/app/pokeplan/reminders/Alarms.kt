@@ -24,6 +24,7 @@ internal object Channels {
     const val CARE_ROUTINES = "care-routines-2"
     const val HEAL_HYDRATION = "heal-hydration"
     const val MINT_BILLS = "mint-bills"
+    const val MINT_ALERTS = "mint-alerts"
     const val HOME_UPKEEP = "home-upkeep"
     const val LINK_NOTICES = "link-notices"
     const val APP_UPDATES = "app-updates"

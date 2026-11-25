@@ -19,6 +19,12 @@ interface MessageCapture {
     /** Asks for the text-message permission and reports whether it was granted. */
     fun requestMessages(done: (Boolean) -> Unit)
 
+    /** Whether Android lets PokéLife post the "a transaction is waiting" notification. */
+    fun alertNotificationsAllowed(): Boolean
+
+    /** Asks for the notification permission and reports whether it was granted. */
+    fun requestAlertNotifications(done: (Boolean) -> Unit)
+
     /**
      * Switches the Android parts that read alerts on or off. Off means they are disabled components: Android never
      * binds the listener and never wakes the receiver, so nothing is read at all.

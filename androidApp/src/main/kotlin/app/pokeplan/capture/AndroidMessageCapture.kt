@@ -1,6 +1,7 @@
 package app.pokeplan.capture
 
 import android.Manifest
+import android.os.Build
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,6 +24,21 @@ class AndroidMessageCapture(private val activity: ComponentActivity) : MessageCa
     private val launcher = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         pending?.invoke(granted)
         pending = null
+    }
+
+    private var pendingAlert: ((Boolean) -> Unit)? = null
+    private val alertLauncher = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        pendingAlert?.invoke(granted)
+        pendingAlert = null
+    }
+
+    override fun alertNotificationsAllowed(): Boolean =
+        Build.VERSION.SDK_INT < 33 || activity.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+    override fun requestAlertNotifications(done: (Boolean) -> Unit) {
+        if (alertNotificationsAllowed()) return done(true)
+        pendingAlert = done
+        alertLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
     override fun notificationsGranted(): Boolean =
@@ -49,10 +65,18 @@ class AndroidMessageCapture(private val activity: ComponentActivity) : MessageCa
         }
     }
 
-    override suspend fun take(): List<CaptureCandidate> = withContext(Dispatchers.IO) { MintCaptureBox.take(activity) }
+    override suspend fun take(): List<CaptureCandidate> = withContext(Dispatchers.IO) {
+        val waiting = MintCaptureBox.take(activity)
+        // The player is looking at the box now: the "a transaction is waiting" notification has done its job.
+        if (waiting.isNotEmpty()) MintAlertNotification.cancel(activity)
+        waiting
+    }
 
     override suspend fun erase() {
-        withContext(Dispatchers.IO) { MintCaptureBox.clear(activity) }
+        withContext(Dispatchers.IO) {
+            MintCaptureBox.clear(activity)
+            MintAlertNotification.cancel(activity)
+        }
     }
 
     private fun enable(component: Class<*>, on: Boolean) {

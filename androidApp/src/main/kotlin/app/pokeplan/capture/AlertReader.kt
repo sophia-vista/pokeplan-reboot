@@ -40,7 +40,9 @@ internal object AlertReader {
             if (!wanted) return
             val day = Instant.fromEpochMilliseconds(atMillis).toLocalDateTime(TimeZone.currentSystemDefault()).date
             val candidate = MintCapture.parse(CaptureText(channel, source, atMillis, day, title, text), settings.currency) ?: return
-            MintCaptureBox.add(context, listOf(candidate))
+            // One generic notification tells the player a transaction is waiting; it carries nothing of the alert itself.
+            val waiting = MintCaptureBox.add(context, listOf(candidate))
+            if (waiting > 0) MintAlertNotification.show(context, waiting)
         } catch (e: Exception) {
             // Nothing about the alert is ever logged: at most the failure's kind, which is not its content.
         }

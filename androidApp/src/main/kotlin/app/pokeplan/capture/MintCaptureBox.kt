@@ -22,13 +22,13 @@ internal object MintCaptureBox {
     @Serializable
     private data class Box(val items: List<CaptureCandidate> = emptyList())
 
-    /** Adds what the phone read, dropping an alert it already holds and anything older than a week. */
+    /** Adds what the phone read, dropping an alert it already holds and anything older than a week; how many now wait. */
     @Synchronized
-    fun add(context: Context, found: List<CaptureCandidate>) {
-        if (found.isEmpty()) return
+    fun add(context: Context, found: List<CaptureCandidate>): Int {
+        if (found.isEmpty()) return 0
         val now = System.currentTimeMillis()
         val kept = (read(context) + found).filter { it.atMillis >= now - KEEP_MILLIS }.distinctBy { it.ref }.takeLast(LIMIT)
-        write(context, kept)
+        return if (write(context, kept)) kept.size else 0
     }
 
     /** Takes every waiting alert out of the box, oldest first, and clears it. */
@@ -57,7 +57,7 @@ internal object MintCaptureBox {
         emptyList()
     }
 
-    private fun write(context: Context, items: List<CaptureCandidate>) {
+    private fun write(context: Context, items: List<CaptureCandidate>): Boolean {
         val f = file(context)
         val sealed = try {
             if (items.isEmpty()) null else KeystoreMintKey.cipher().seal(json.encodeToString(Box.serializer(), Box(items)))
@@ -66,17 +66,19 @@ internal object MintCaptureBox {
         }
         if (sealed == null) {
             f.delete() // fail closed: with no key nothing is written in the clear
-            return
+            return false
         }
-        try {
+        return try {
             val temp = File(f.parentFile, "$FILE.tmp")
             temp.writeText(sealed)
             if (!temp.renameTo(f)) {
                 f.delete()
                 temp.renameTo(f)
             }
+            true
         } catch (e: Exception) {
             Log.w(TAG, "the alert box could not be written: ${e.javaClass.simpleName}")
+            false
         }
     }
 }
