@@ -76,7 +76,7 @@ enum class TxType(val label: String) {
 enum class TxStatus { PENDING, POSTED, EXCLUDED, VOIDED }
 
 @Serializable
-enum class TxSource { MANUAL, ADJUSTMENT, IMPORTED }
+enum class TxSource { MANUAL, ADJUSTMENT, IMPORTED, CAPTURED }
 
 @Serializable
 data class Transaction(
@@ -118,6 +118,13 @@ data class Transaction(
      * away from, like a refund. It is [TxStatus.PENDING] while still owed (no balance change) and [TxStatus.POSTED] once received.
      */
     val iou: Boolean = false,
+    /**
+     * A record proposed from a bank or wallet alert (MINT.md 10.4): the [CaptureSource.label] it came from, such as
+     * "GCash". It is [TxStatus.PENDING] while the player has not confirmed it, and null on every record the player wrote.
+     */
+    val capturedFrom: String? = null,
+    /** The parsed alert's fingerprint, so the same alert arriving twice is one proposal; null on other records. */
+    val captureRef: String? = null,
 )
 
 @Serializable
@@ -241,6 +248,10 @@ data class MintSettings(
     val daysOff: List<LocalDate> = emptyList(),
     val overviewWindow: OverviewWindow = OverviewWindow.DAYS_14,
     val overviewPayLater: PayLaterCount = PayLaterCount.WHOLE,
+    /** Reads bank and wallet notifications into MINT's pending review (MINT.md 10.4); off until the player turns it on. */
+    val captureNotifications: Boolean = false,
+    /** Reads bank and wallet text messages into MINT's pending review (MINT.md 10.4, 7.3); off until the player turns it on. */
+    val captureMessages: Boolean = false,
 )
 
 @Serializable

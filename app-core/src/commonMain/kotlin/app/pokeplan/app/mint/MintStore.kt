@@ -9,6 +9,8 @@ import app.pokeplan.mint.BillMonth
 import app.pokeplan.mint.BillPayment
 import app.pokeplan.mint.Budget
 import app.pokeplan.mint.BudgetPeriod
+import app.pokeplan.mint.CaptureCandidate
+import app.pokeplan.mint.CaptureSource
 import app.pokeplan.mint.Category
 import app.pokeplan.mint.CategoryKind
 import app.pokeplan.mint.CardStyle
@@ -246,6 +248,7 @@ class MintStore(
         val next = t.copy(
             planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, planAllocations = old.planAllocations,
             creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis, iou = old.iou,
+            capturedFrom = old.capturedFrom, captureRef = old.captureRef,
             importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint,
             day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
         )
@@ -306,6 +309,85 @@ class MintStore(
         if (data.transactions.none { it.id == id && it.interestThrough != null && it.status == TxStatus.PENDING }) return false
         setStatus(id, TxStatus.VOIDED)
         return true
+    }
+
+    // --- the one review box: interest estimates and alerts the phone read (MINT.md 4.3E, 10.4) ----------------------
+
+    /** What became of one captured alert: the PENDING record it proposed, or the reason it was not kept. */
+    data class CaptureResult(val record: Transaction? = null, val reason: String? = null) {
+        val ok: Boolean get() = record != null
+    }
+
+    /** Every PENDING record waiting for the player, an interest estimate or a captured alert, oldest day first. */
+    fun toReview(): List<Transaction> = data.transactions
+        .filter { it.status == TxStatus.PENDING && (it.interestThrough != null || it.captureRef != null) }
+        .sortedWith(compareBy({ it.day }, { it.createdMillis }))
+
+    /** Posts a waiting record, with the amount the player adjusted it to when one is given. */
+    fun confirmPending(id: String, amountMinor: Long? = null): Logged<Transaction> {
+        val old = toReview().firstOrNull { it.id == id } ?: return Logged(null, "That record is gone.")
+        if (amountMinor != null) (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val next = old.copy(amountMinor = amountMinor ?: old.amountMinor, status = TxStatus.POSTED)
+        update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) next else it }) }
+        return Logged(next)
+    }
+
+    fun confirmAllPending(): Int = toReview().count { confirmPending(it.id).record != null }
+
+    /** Skips a waiting record: kept, voided, so the same days are not estimated again and a captured one is not proposed again. */
+    fun skipPending(id: String): Boolean {
+        if (toReview().none { it.id == id }) return false
+        setStatus(id, TxStatus.VOIDED)
+        return true
+    }
+
+    /** Removes a captured record that is still waiting (MINT.md 10.4: deletion of the derived pending records). */
+    fun deleteCaptured(id: String): Boolean {
+        if (data.transactions.none { it.id == id && it.status == TxStatus.PENDING && it.captureRef != null }) return false
+        deleteTransactionRecord(id)
+        return true
+    }
+
+    /** Removes every captured record still waiting; how many it removed. Confirmed ones are ordinary history and stay. */
+    fun eraseCaptured(): Int {
+        val gone = data.transactions.count { it.status == TxStatus.PENDING && it.captureRef != null }
+        if (gone == 0) return 0
+        update { d -> d.copy(transactions = d.transactions.filterNot { it.status == TxStatus.PENDING && it.captureRef != null }) }
+        return gone
+    }
+
+    /**
+     * Proposes one alert the phone read (MINT.md 10.4) as a PENDING record the player confirms, adjusts or skips. It
+     * never posts by itself and never pays a reward.
+     */
+    fun capture(candidate: CaptureCandidate): CaptureResult {
+        if (candidate.type != TxType.EXPENSE && candidate.type != TxType.INCOME) return CaptureResult(reason = "That alert is not a purchase or income.")
+        if (candidate.amountMinor <= 0) return CaptureResult(reason = "That alert has no amount.")
+        (MintRules.checkAmount(candidate.amountMinor) as? Check.Refused)?.let { return CaptureResult(reason = it.reason) }
+        if (data.transactions.any { it.captureRef != null && it.captureRef == candidate.ref }) return CaptureResult(reason = "Already recorded.")
+        val label = CaptureSource.ofName(candidate.source)?.label ?: candidate.source
+        val account = captureAccount(candidate, label) ?: return CaptureResult(reason = "No account to put an alert from $label in.")
+        if (account.currency != candidate.currency) return CaptureResult(reason = "That alert is in another currency.")
+        val tx = Transaction(
+            newId(), candidate.type, candidate.amountMinor, account.currency, candidate.atMillis, candidate.day, account.id,
+            categoryId = null, payee = candidate.payee.trim().take(MintRules.NAME_MAX * 2),
+            note = candidate.note.trim().take(MintRules.NOTE_MAX), status = TxStatus.PENDING, source = TxSource.CAPTURED,
+            createdMillis = nowMillis, capturedFrom = label, captureRef = candidate.ref,
+        )
+        val open = data.copy(accounts = data.accounts.map { it.copy(status = AccountStatus.ACTIVE) })
+        (MintRules.checkTransaction(open, tx) as? Check.Refused)?.let { return CaptureResult(reason = it.reason) }
+        update { d -> d.copy(transactions = d.transactions + tx) }
+        return CaptureResult(tx)
+    }
+
+    /** Which account an alert belongs to: the card or account it names, then one named after the source, then the only one. */
+    private fun captureAccount(candidate: CaptureCandidate, label: String): FinancialAccount? {
+        val open = data.accounts.filter { it.status == AccountStatus.ACTIVE }
+        candidate.lastDigits?.takeIf { it.isNotBlank() }?.let { digits ->
+            open.firstOrNull { it.suffix.trim().equals(digits.trim(), ignoreCase = true) }?.let { return it }
+        }
+        open.firstOrNull { it.institution.contains(label, ignoreCase = true) || it.name.contains(label, ignoreCase = true) }?.let { return it }
+        return open.singleOrNull()
     }
 
     data class ImportResult(val batch: String?, val added: Int, val skipped: Int, val note: String)
@@ -855,6 +937,10 @@ class MintStore(
     fun setOverviewWindow(window: app.pokeplan.mint.OverviewWindow) = settings { it.copy(overviewWindow = window) }
 
     fun setOverviewPayLater(count: app.pokeplan.mint.PayLaterCount) = settings { it.copy(overviewPayLater = count) }
+
+    fun setCaptureNotifications(on: Boolean) = settings { it.copy(captureNotifications = on) }
+
+    fun setCaptureMessages(on: Boolean) = settings { it.copy(captureMessages = on) }
 
     fun setBillReminders(on: Boolean) = settings { it.copy(billReminders = on) }
 
