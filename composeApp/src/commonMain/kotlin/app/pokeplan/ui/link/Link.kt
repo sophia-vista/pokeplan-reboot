@@ -103,7 +103,9 @@ import app.pokeplan.ui.screens.long
 import app.pokeplan.ui.screens.short
 
 enum class LinkSection(val label: String, val icon: String) {
-    PEOPLE("People", "friend-ball"), MEMORIES("Memories", "tropic-mail"), DATES("Dates", "timer-ball"), FOLLOW_UPS("Follow-ups", "member-card"), SETTINGS("Settings", "storage-key"),
+    PEOPLE("People", "friend-ball"), MEMORIES("Memories", "tropic-mail"), DATES("Dates", "timer-ball"), FOLLOW_UPS("Follow-ups", "member-card"),
+    ONEDRIVE("OneDrive", "oaks-letter"),
+    SETTINGS("Settings", "storage-key"),
 }
 
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.LINK.accent
@@ -178,6 +180,7 @@ private fun LinkPage(model: AppModel, place: LinkPlace, openPokemon: (String) ->
             LinkSection.MEMORIES -> MemoriesScreen(model)
             LinkSection.DATES -> DatesView(model)
             LinkSection.FOLLOW_UPS -> FollowUpsView(model)
+            LinkSection.ONEDRIVE -> OneDriveScreen(model)
             LinkSection.SETTINGS -> LinkSettingsView(model)
         }
     }
@@ -189,13 +192,15 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val today = model.store.today
     val tint = ModuleAccent.LINK.accent
     val open = LinkRules.open(data, today)
-    val sections = listOf(
-        MenuEntry(LinkSection.PEOPLE.name, LinkSection.PEOPLE.icon, "People", if (data.people.isEmpty()) "add one" else "${data.people.size} people", tint = tint),
-        MenuEntry(LinkSection.MEMORIES.name, LinkSection.MEMORIES.icon, "Memories", if (data.memories.isEmpty()) "add one" else "${data.memories.size} memories", tint = tint),
-        MenuEntry(LinkSection.DATES.name, LinkSection.DATES.icon, "Dates", if (data.dates.isEmpty()) "add one" else "${LinkRules.upcoming(data, today).size} soon", tint = tint),
-        MenuEntry(LinkSection.FOLLOW_UPS.name, LinkSection.FOLLOW_UPS.icon, "Follow-ups", if (data.followUps.isEmpty()) "add one" else "${open.size} open", tint = tint),
-        MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft),
-    )
+    val sections = buildList {
+        add(MenuEntry(LinkSection.PEOPLE.name, LinkSection.PEOPLE.icon, "People", if (data.people.isEmpty()) "add one" else "${data.people.size} people", tint = tint))
+        add(MenuEntry(LinkSection.MEMORIES.name, LinkSection.MEMORIES.icon, "Memories", if (data.memories.isEmpty()) "add one" else "${data.memories.size} memories", tint = tint))
+        add(MenuEntry(LinkSection.DATES.name, LinkSection.DATES.icon, "Dates", if (data.dates.isEmpty()) "add one" else "${LinkRules.upcoming(data, today).size} soon", tint = tint))
+        add(MenuEntry(LinkSection.FOLLOW_UPS.name, LinkSection.FOLLOW_UPS.icon, "Follow-ups", if (data.followUps.isEmpty()) "add one" else "${open.size} open", tint = tint))
+        // OneDrive is optional, and only where the platform has a real source (never desktop or web).
+        model.oneDrive?.let { source -> add(MenuEntry(LinkSection.ONEDRIVE.name, LinkSection.ONEDRIVE.icon, "OneDrive", oneDriveDetail(source.state()), tint = tint)) }
+        add(MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft))
+    }
     val scroll = rememberScrollState()
     var query by remember { mutableStateOf("") }
     val reveal = app.pokeplan.ui.screens.rememberPullReveal(scroll, keepOpen = { query.isNotBlank() }, onClose = { query = "" })

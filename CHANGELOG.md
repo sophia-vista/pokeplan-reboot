@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.247.0
+
+LINK can connect an optional Microsoft OneDrive account on Android and add one of its photos to a memory, read-only; the photo becomes a normal local copy in the archive. Off until the player connects it; no reward, schema or save-format change, and `RewardRules.VERSION` stays.
+
+- **Optional and Android only.** A OneDrive place in LINK's Sections menu (between Follow-ups and Settings) exists only where the platform has a source; desktop and web hide it and its Jump-to entry. A build with no app registration says "OneDrive isn't set up on this build." and reads nothing.
+- **Sign-in.** OAuth 2.0 authorization code + PKCE (S256) in the phone's browser, redirect `pokeplan-onedrive://auth`, scope exactly `Files.Read offline_access`: read-only, no client secret and no write scope. The app id comes from the `onedriveClientId` Gradle property or `ONEDRIVE_CLIENT_ID` into `BuildConfig.ONEDRIVE_CLIENT_ID`; the release workflow and the `apk`-labelled CI build pass the repository secret. **Owner action:** register a Microsoft Entra app (public client, personal accounts supported, redirect URI `pokeplan-onedrive://auth`, delegated `Files.Read`) and add `ONEDRIVE_CLIENT_ID` (or pass `-PonedriveClientId=…` when building).
+- **Browse and add.** Folders first then photos by name, with thumbnails (at most 2 MB) fetched once per tile; a full photo is downloaded (at most 20 MB, refused over) only when the player adds it. Single-photo selection for now: tap a photo, choose a memory and Add to this memory; it becomes a normal memory photo (base64 in the Link document), so it is exported, backed up and erased with the rest of LINK, and the OneDrive original is never modified; the copy obeys the same per-memory photo limits (9 photos, 1,400,000 base64 characters, a 200-character caption).
+- **Tokens and states.** Access, refresh and expiry are sealed with an Android Keystore AES-256-GCM key into `filesDir/onedrive-tokens.bin` (temporary write, then rename), never in the save, an export, a backup or a log; disconnect deletes the file; a refresh happens on demand and rotates the token, and a stale sign-in asks to connect again. The place shows Connect / Connect again / Disconnect and the connecting, connected, needs sign-in and unavailable states, with a short Microsoft/Graph message on failure.
+- **Not built.** Multi-select, cache management and clearing, offline copies beyond the added local photos, sharing and brightness controls, the Microsoft provider due diligence and a run on a device. All Graph calls are HTTPS GETs; no background scan and no folder watch. JVM tests only and `:androidApp:compileDebugKotlin`; not run on a device.
+
 ## 0.246.0
 
 MINT can record a transaction from a bank message or notification, on the phone only, and holds it in the same "To confirm" box as an interest estimate until the player approves it. Off until the player turns it on; no reward rule, schema or save-format change, and `RewardRules.VERSION` stays.

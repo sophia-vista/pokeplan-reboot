@@ -103,7 +103,9 @@ internal fun jumpTargets(model: AppModel, focus: Boolean): List<JumpTarget> = bu
         add(JumpTarget(s.label, "Mint", s.icon, ModuleAccent.MINT.accent) { model.open(Place.MINT, focus); model.mintSection = s })
     }
     BaseSection.entries.forEach { s -> add(JumpTarget(s.label, "Base", s.icon, ModuleAccent.BASE.accent) { model.open(Place.BASE, focus); model.baseSection = s }) }
-    LinkSection.entries.forEach { s -> add(JumpTarget(s.label, "Link", s.icon, ModuleAccent.LINK.accent) { model.open(Place.LINK, focus); model.linkPersonId = null; model.linkSection = s }) }
+    LinkSection.entries.filter { it != LinkSection.ONEDRIVE || model.oneDrive != null }.forEach { s ->
+        add(JumpTarget(s.label, "Link", s.icon, ModuleAccent.LINK.accent) { model.open(Place.LINK, focus); model.linkPersonId = null; model.linkSection = s })
+    }
     WorldSection.entries.forEach { s -> add(JumpTarget(s.label, "World", s.icon, ModuleAccent.WORLD.accent) { model.open(Place.WORLD, focus); model.worldSection = s }) }
 }
 

@@ -124,6 +124,8 @@ class AppModel(
     val contacts: ContactSource? = null,
     val images: ImageChooser? = null,
     val imageViewer: ImageViewer? = null,
+    /** The optional read-only Microsoft OneDrive photo source for LINK; null on desktop and web. */
+    val oneDrive: OneDriveSource? = null,
     val appLauncher: AppLauncher? = null,
     val updates: UpdateAccess? = null,
     /** Reads bank alerts on the phone into MINT's pending review (MINT.md 10.4); null on desktop and web. */
@@ -407,6 +409,7 @@ fun App(
     contacts: ContactSource? = null,
     images: ImageChooser? = null,
     imageViewer: ImageViewer? = null,
+    oneDrive: OneDriveSource? = null,
     appLauncher: AppLauncher? = null,
     updates: UpdateAccess? = null,
     capture: app.pokeplan.ui.mint.MessageCapture? = null,
@@ -427,7 +430,7 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val base = BaseStore(baseStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher, updates, capture, app.pokeplan.app.integrations.IntegrationStore(integrationsStorage ?: MemoryStorage()))
+        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, oneDrive, appLauncher, updates, capture, app.pokeplan.app.integrations.IntegrationStore(integrationsStorage ?: MemoryStorage()))
     }
     fun AppModel.startHere() {
         openPokemonId = startPokemon
