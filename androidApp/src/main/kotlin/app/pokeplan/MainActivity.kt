@@ -110,6 +110,8 @@ class MainActivity : ComponentActivity() {
         val health = AndroidHealthConnect(this)
         val textFiles = AndroidTextFiles(this)
         val images = AndroidImagePicker(this)
+        val galleryPhotos = app.pokeplan.platform.AndroidGalleryPhotos(this)
+        val filePhotos = app.pokeplan.platform.AndroidFilePhotos(this)
         val updates = app.pokeplan.platform.AndroidUpdates(this)
         val first = launchFrom(intent)
         val place = first.place ?: Place.HOME

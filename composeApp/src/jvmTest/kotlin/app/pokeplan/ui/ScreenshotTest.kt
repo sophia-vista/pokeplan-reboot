@@ -1505,7 +1505,8 @@ class ScreenshotTest {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(linkParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.LINK) }
-        val model = AppModel(store, images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} }, contacts = contacts, oneDrive = oneDrive)
+        val noBatch = object : app.pokeplan.ui.PhotoBatchChooser { override fun choose(max: Int, done: (List<ByteArray>?, String?) -> Unit) {} }
+        val model = AppModel(store, images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} }, galleryPhotos = noBatch, filePhotos = noBatch, contacts = contacts, oneDrive = oneDrive)
         if (!empty) {
             val link = model.link
             val today = model.store.today

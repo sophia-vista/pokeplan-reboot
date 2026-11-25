@@ -1,5 +1,6 @@
 package app.pokeplan.platform
 
+import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -16,6 +17,44 @@ fun fitSides(w: Int, h: Int, max: Int): Pair<Int, Int> {
     return maxOf(1, Math.round(w * scale).toInt()) to maxOf(1, Math.round(h * scale).toInt())
 }
 
+private const val MAX_INPUT = 20 * 1024 * 1024
+private const val DECODE_SIDE = 3200
+private const val KEEP_BYTES = 1_000_000
+private const val MAX_PNG = 1_000_000
+private val SIDES = intArrayOf(2400, 1800, 1440, 1080, 720)
+private const val NOT_A_PICTURE = "That file is not a picture."
+
+/**
+ * One picture from any picked URI, downscaled to the picker's own budget: the object is read once and re-encoded PNG
+ * only when it is too big or not a PNG/JPEG/WebP. Shared by the one-photo picker and the batch pickers.
+ */
+internal fun readPicture(resolver: ContentResolver, uri: Uri): Pair<ByteArray?, String?> = try {
+    val limit = MAX_INPUT + 1
+    val bytes = resolver.openInputStream(uri)?.use { it.readNBytes(limit) }
+        ?: return null to "That picture could not be opened."
+    if (bytes.size >= limit) return null to "That picture is too big."
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null to NOT_A_PICTURE
+    if (bytes.size <= KEEP_BYTES && isKeepableImage(bytes)) return bytes to null
+    var sample = 1
+    while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= DECODE_SIDE) sample *= 2
+    val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
+        ?: return null to NOT_A_PICTURE
+    var found: ByteArray? = null
+    for (side in SIDES) {
+        val (w, h) = fitSides(decoded.width, decoded.height, side)
+        val scaled = if (w == decoded.width && h == decoded.height) decoded else Bitmap.createScaledBitmap(decoded, w, h, true)
+        val out = ByteArrayOutputStream()
+        scaled.compress(Bitmap.CompressFormat.PNG, 100, out)
+        if (out.size() <= MAX_PNG) { found = out.toByteArray(); break }
+    }
+    if (found != null) found to null
+    else null to "That picture is too big to keep. Take a smaller screenshot or crop it and try again."
+} catch (e: Exception) {
+    null to "That picture could not be read."
+}
+
 class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser {
     private var waiting: ((ByteArray?, String?) -> Unit)? = null
 
@@ -24,7 +63,7 @@ class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser
         if (done == null) return@registerForActivityResult
         if (uri == null) return@registerForActivityResult done(null, null)
         Thread {
-            val result = read(uri)
+            val result = readPicture(activity.contentResolver, uri)
             activity.runOnUiThread { done(result.first, result.second) }
         }.start()
     }
@@ -34,42 +73,6 @@ class AndroidImagePicker(private val activity: ComponentActivity) : ImageChooser
         waiting = done
         runCatching { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
             .onFailure { waiting = null; done(null, "This phone has no picture picker.") }
-    }
-
-    private fun read(uri: Uri): Pair<ByteArray?, String?> = try {
-        val limit = MAX_INPUT + 1
-        val bytes = activity.contentResolver.openInputStream(uri)?.use { it.readNBytes(limit) }
-            ?: return null to "That picture could not be opened."
-        if (bytes.size >= limit) return null to "That picture is too big."
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null to NOT_A_PICTURE
-        if (bytes.size <= KEEP_BYTES && isKeepableImage(bytes)) return bytes to null
-        var sample = 1
-        while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= DECODE_SIDE) sample *= 2
-        val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
-            ?: return null to NOT_A_PICTURE
-        var found: ByteArray? = null
-        for (side in SIDES) {
-            val (w, h) = fitSides(decoded.width, decoded.height, side)
-            val scaled = if (w == decoded.width && h == decoded.height) decoded else Bitmap.createScaledBitmap(decoded, w, h, true)
-            val out = ByteArrayOutputStream()
-            scaled.compress(Bitmap.CompressFormat.PNG, 100, out)
-            if (out.size() <= MAX_PNG) { found = out.toByteArray(); break }
-        }
-        if (found != null) found to null
-        else null to "That picture is too big to keep. Take a smaller screenshot or crop it and try again."
-    } catch (e: Exception) {
-        null to "That picture could not be read."
-    }
-
-    private companion object {
-        const val MAX_INPUT = 20 * 1024 * 1024
-        const val DECODE_SIDE = 3200
-        const val KEEP_BYTES = 1_000_000
-        const val MAX_PNG = 1_000_000
-        val SIDES = intArrayOf(2400, 1800, 1440, 1080, 720)
-        const val NOT_A_PICTURE = "That file is not a picture."
     }
 }
 

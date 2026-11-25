@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.249.0
+
+LINK can take several photos at once: the system gallery picker in multi-select and a "From files" key for any documents provider the phone has, with no account and no new permission. Android only; no reward, schema or save-format change, and `RewardRules.VERSION` stays.
+
+- **Several at once.** The memory form's photo keys are now "Add a photo" (the single system picker), "Add photos" (Android's photo picker with multi-select, no storage permission) and "From files" (the system file picker, `OpenMultipleDocuments`, which lists any documents provider on the phone: a cloud app's folder such as Google Drive, the SD card or a USB stick; the provider's own sign-in happens outside PokéLife and LINK asks for no account).
+- **Same rules.** Each picked picture is read off the UI thread through the shared downscale path (the picker's 20 MB input and 1 MB PNG budget), and a picture that cannot be read does not lose the others. A new memory keeps the batch in the form and attaches it when Save makes it; an existing memory adds the photos straight away. The existing per-memory rules apply: up to 9 photos each, PNG/JPEG/WebP, 1,400,000 base64 characters, 200-character captions, and the same refusal messages.
+- **Android only.** Desktop and web have no batch choosers and keep the single picker when present. No new permission, no account and no network. JVM tests and `:androidApp:compileDebugKotlin`; not run on a device.
+
 ## 0.248.0
 
 MINT says so when a bank alert it read becomes a transaction waiting for approval: one generic push notification that never carries the alert itself. Follow-up to 0.246.0; no reward rule, schema or save change.

@@ -123,6 +123,8 @@ class AppModel(
     val huawei: HuaweiReader? = null,
     val contacts: ContactSource? = null,
     val images: ImageChooser? = null,
+    val galleryPhotos: PhotoBatchChooser? = null,
+    val filePhotos: PhotoBatchChooser? = null,
     val imageViewer: ImageViewer? = null,
     /** The optional read-only Microsoft OneDrive photo source for LINK; null on desktop and web. */
     val oneDrive: OneDriveSource? = null,
@@ -408,6 +410,8 @@ fun App(
     huawei: HuaweiReader? = null,
     contacts: ContactSource? = null,
     images: ImageChooser? = null,
+    galleryPhotos: PhotoBatchChooser? = null,
+    filePhotos: PhotoBatchChooser? = null,
     imageViewer: ImageViewer? = null,
     oneDrive: OneDriveSource? = null,
     appLauncher: AppLauncher? = null,
@@ -430,7 +434,7 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val base = BaseStore(baseStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, oneDrive, appLauncher, updates, capture, app.pokeplan.app.integrations.IntegrationStore(integrationsStorage ?: MemoryStorage()))
+        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, galleryPhotos, filePhotos, imageViewer, oneDrive, appLauncher, updates, capture, app.pokeplan.app.integrations.IntegrationStore(integrationsStorage ?: MemoryStorage()))
     }
     fun AppModel.startHere() {
         openPokemonId = startPokemon
