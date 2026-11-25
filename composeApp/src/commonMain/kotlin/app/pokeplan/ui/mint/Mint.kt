@@ -77,6 +77,8 @@ import app.pokeplan.ui.Report
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.DeviceGate
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import app.pokeplan.ui.theme.Accordion
 import app.pokeplan.ui.theme.FieldLabel
@@ -246,7 +248,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             ModuleLeadStage(model, Module.MINT, model.data.player.mintLead, model.store.moduleEvent(app.pokeplan.app.GameStore.MINT_LOG_PREFIX), openPokemon = openPokemon)
             FirstRecordEgg(model, Tutorials.MINT_TALLY, data.accounts.size + data.transactions.size)
             OverviewCard(model)
-            InterestReview(model)
+            PendingReview(model)
             OutbreakPanel(model)
             MintPartyPanel(model, openPokemon)
         }
@@ -1773,6 +1775,7 @@ private fun ReconcileCard(model: AppModel) {
 private fun MintSettingsView(model: AppModel) {
     val mint = model.mint
     val settings = model.mintData.settings
+    val scope = rememberCoroutineScope()
     var note by remember { mutableStateOf<String?>(null) }
     var asking by remember { mutableStateOf<MintKinds?>(null) }
     var askingAll by remember { mutableStateOf(false) }
@@ -1804,6 +1807,7 @@ private fun MintSettingsView(model: AppModel) {
             PixelDropdown(Money.common, settings.currency, { it ?: "" }, { c -> if (c != null) mint.setCurrency(c) }, Modifier.fillMaxWidth(), key = accent, label = "Currency")
         }
     }
+    CaptureSettings(model)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             val files = model.files
@@ -1823,13 +1827,84 @@ private fun MintSettingsView(model: AppModel) {
                     MintKinds.entries.forEach { k ->
                         if (asking == k) Confirm(
                             if (k == MintKinds.ACCOUNTS) "Erase all accounts and the records that belong to them? This cannot be undone." else "Erase all ${k.label.lowercase()}? This cannot be undone.",
-                            "Erase", "Keep them", onConfirm = { mint.erase(k); asking = null }, onKeep = { asking = null },
+                            "Erase", "Keep them", onConfirm = {
+                                mint.erase(k)
+                                // A waiting bank alert is MINT data too: erasing records must not leave one to come back.
+                                if (k == MintKinds.ACCOUNTS || k == MintKinds.TRANSACTIONS) model.capture?.let { c -> scope.launch { c.erase() } }
+                                asking = null
+                            }, onKeep = { asking = null },
                         ) else PixelButton("Erase ${k.label.lowercase()}", { asking = k; askingAll = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     }
-                    if (askingAll) Confirm("Erase every Mint record? This cannot be undone.", "Erase all", "Keep them", onConfirm = { mint.eraseAll(); askingAll = false }, onKeep = { askingAll = false })
+                    if (askingAll) Confirm("Erase every Mint record? This cannot be undone.", "Erase all", "Keep them", onConfirm = {
+                        mint.eraseAll()
+                        model.capture?.let { c -> scope.launch { c.erase() } }
+                        askingAll = false
+                    }, onKeep = { askingAll = false })
                     else PixelButton("Erase all Mint records", { askingAll = true; asking = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
                 }
             }
+        }
+    }
+}
+
+/**
+ * Turning MINT's reading of bank alerts on and off (MINT.md 10.4, INTEGRATIONS_AND_PRIVACY.md 7.3). Each source is its
+ * own switch, off until the player turns it on, and Android's own permission is asked for first: nothing is read while
+ * it is off, and what is read never leaves the phone.
+ */
+@Composable
+private fun CaptureSettings(model: AppModel) {
+    val mint = model.mint
+    val settings = model.mintData.settings
+    val capture = model.capture
+    val scope = rememberCoroutineScope()
+    var note by remember { mutableStateOf<String?>(null) }
+    var erasing by remember { mutableStateOf(false) }
+    // Android binds a notification listener and wakes a receiver only while their part is switched on.
+    LaunchedEffect(settings.captureNotifications, settings.captureMessages) {
+        capture?.watch(settings.captureNotifications, settings.captureMessages)
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Record from messages")
+            Text(
+                "An alert from your bank or wallet can become a record here without typing it. Reading happens on this phone only and nothing is uploaded. " +
+                    "MINT reads only the banks on its list, and only the amount, the merchant, the account's last digits and the day: the rest of the message is dropped at once and never kept. " +
+                    "What it reads is never posted by itself; it waits in the \"To confirm\" box, where you confirm, adjust or skip it.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+            if (capture == null) return@Column
+            ToggleRow("Bank notifications", settings.captureNotifications) { on ->
+                mint.setCaptureNotifications(on)
+                if (on && !capture.notificationsGranted()) capture.openNotificationSettings()
+            }
+            if (settings.captureNotifications && !capture.notificationsGranted()) {
+                Text(
+                    "Android gives notification access to an app for every app, so PokéLife drops everything that is not from a bank on the list before it reads a field. Allow it in Android's own settings.",
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+                PixelButton("Allow notification access", { capture.openNotificationSettings() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            }
+            ToggleRow("Bank text messages", settings.captureMessages) { on ->
+                when {
+                    !on -> mint.setCaptureMessages(false)
+                    capture.messagesGranted() -> mint.setCaptureMessages(true)
+                    else -> capture.requestMessages { granted -> mint.setCaptureMessages(granted); if (!granted) note = "Text messages were not allowed." }
+                }
+            }
+            if (settings.captureMessages && !capture.messagesGranted())
+                Text("Allow reading text messages in Android's settings, then switch this on again.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            val waiting = model.mintData.transactions.count { it.status == TxStatus.PENDING && it.captureRef != null }
+            if (erasing) Confirm(
+                "Erase the $waiting alerts still waiting? The rest of MINT is untouched.",
+                "Erase", "Keep them",
+                onConfirm = { scope.launch { capture.erase() }; mint.eraseCaptured(); erasing = false; note = null },
+                onKeep = { erasing = false },
+            ) else PixelButton(
+                if (waiting == 0) "Erase captured alerts" else "Erase $waiting captured alerts",
+                { erasing = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true,
+            )
+            note?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
 }
