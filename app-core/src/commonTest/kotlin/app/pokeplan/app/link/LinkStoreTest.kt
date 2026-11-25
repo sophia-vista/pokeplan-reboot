@@ -642,4 +642,20 @@ class LinkStoreTest {
         assertEquals(LocalDate(2025, 11, 7), s.link.metUp(ana.id), "only a fully known date counts as a meetup")
         assertEquals(listOf("Dinner", "Older lunch", "Year only"), s.link.memoriesOf(ana.id).map { it.title })
     }
+    @Test
+    fun photosAreKeptWithTheirMemoryAndErasedWithIt() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana").record)
+        val m = assertNotNull(s.link.addMemory("Lunch", PartialDate(2024), personIds = listOf(ana.id)).record)
+        assertNull(s.link.addPhoto(m.id, image = "").record, "an empty picture is refused")
+        val photo = assertNotNull(s.link.addPhoto(m.id, image = "AQID").record)
+        assertEquals(1, s.link.photosOf(m.id).size)
+        assertEquals(1, s.link.photosOfPerson(ana.id).size)
+        assertNotNull(s.link.updatePhotoCaption(photo.id, "The choir room").record)
+        s.reopen()
+        assertEquals("The choir room", s.link.photosOf(m.id).single().caption, "photos survive a reopen")
+        assertTrue("AQID" in s.link.export(setOf(LinkKinds.MEMORIES)), "the memories export carries the picture")
+        s.link.deleteMemory(m.id)
+        assertTrue(s.link.photosOf(m.id).isEmpty(), "deleting a memory deletes its photos")
+    }
 }

@@ -60,6 +60,18 @@ data class Memory(
     val updatedMillis: Long = 0,
 )
 
+/** One photo in a memory: the image is a base64 string (PNG, JPEG or WebP), stored once and referenced from its memory. */
+@Serializable
+data class MemoryPhoto(
+    val id: String,
+    val memoryId: String,
+    val caption: String = "",
+    val mime: String = "image/png",
+    /** The image bytes as standard base64, with no `data:` prefix. */
+    val data: String,
+    val addedMillis: Long = 0,
+)
+
 /** A life chapter the player makes by hand; [start] and [end] may each be partial or open. Eras may overlap. */
 @Serializable
 data class Era(
@@ -139,6 +151,7 @@ data class LinkData(
     val followUps: List<FollowUp> = emptyList(),
     val memories: List<Memory> = emptyList(),
     val eras: List<Era> = emptyList(),
+    val photos: List<MemoryPhoto> = emptyList(),
     val settings: LinkSettings = LinkSettings(),
 )
 
