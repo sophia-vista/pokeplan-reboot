@@ -21,6 +21,7 @@ import app.pokeplan.mint.AccountType
 import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.Money
 import app.pokeplan.mint.Transaction
+import app.pokeplan.mint.TxType
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.screens.PixelDropdown
@@ -69,38 +70,63 @@ internal fun EarnFields(type: AccountType, draft: EarnDraft) {
     }
 }
 
+/**
+ * The one box that holds every record waiting for the player (MINT.md 4.3E and 10.4): an interest estimate an account
+ * made, or a transaction a bank alert the phone read proposed. Either is confirmed, adjusted to the real amount, or
+ * skipped; nothing in it is in a balance, a budget or a report until it is confirmed.
+ */
 @Composable
-internal fun InterestReview(model: AppModel) {
+internal fun PendingReview(model: AppModel) {
     val mint = model.mint
-    val data = model.mintData
+    val capture = model.capture
+    var captureProblem by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(model.store.today) { mint.accrueInterest() }
-    val waiting = mint.interestToReview()
-    if (waiting.isEmpty()) return
+    // The Android parts that read alerts follow the switches, whichever MINT screen is opened first.
+    LaunchedEffect(capture, model.mintData.settings.captureNotifications, model.mintData.settings.captureMessages) {
+        capture?.watch(model.mintData.settings.captureNotifications, model.mintData.settings.captureMessages)
+    }
+    // A bank alert the phone read waits in its own sealed box; it becomes a proposal here, where the player is.
+    LaunchedEffect(capture, model.store.today) {
+        if (capture != null) {
+            // One it cannot place (no account matches yet) is said out loud rather than dropped without a word.
+            captureProblem = capture.take().mapNotNull { mint.capture(it).reason?.takeIf { reason -> reason != "Already recorded." } }.firstOrNull()
+        }
+    }
+    val waiting = mint.toReview()
+    if (waiting.isEmpty() && captureProblem == null) return
     var adjusting by remember { mutableStateOf<String?>(null) }
     var amount by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<String?>(null) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Interest to confirm")
-            waiting.forEach { t -> InterestRow(model, t, adjusting == t.id, amount, { amount = it }, { adjusting = if (adjusting == t.id) null else t.id; amount = Money.plain(t.amountMinor, t.currency) }, { message = it }) { adjusting = null }
+            PixelTitle("To confirm")
+            waiting.forEach { t ->
+                PendingRow(model, t, adjusting == t.id, amount, { amount = it }, {
+                    adjusting = if (adjusting == t.id) null else t.id
+                    amount = Money.plain(t.amountMinor, t.currency)
+                }, { message = it }) { adjusting = null }
             }
-            if (waiting.size > 1) PixelButton("Confirm all", { mint.confirmAllInterest(); model.haptic() }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+            if (waiting.size > 1) PixelButton("Confirm all", { mint.confirmAllPending(); model.haptic() }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
             message?.let { Report(model, it, NoticeTone.WARNING) }
+            // An alert MINT could not place is only said while there is nothing else in the box to show.
+            if (waiting.isEmpty()) captureProblem?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
 }
 
 @Composable
-private fun InterestRow(model: AppModel, t: Transaction, adjusting: Boolean, amount: String, setAmount: (String) -> Unit, toggle: () -> Unit, problem: (String?) -> Unit, done: () -> Unit) {
+private fun PendingRow(model: AppModel, t: Transaction, adjusting: Boolean, amount: String, setAmount: (String) -> Unit, toggle: () -> Unit, problem: (String?) -> Unit, done: () -> Unit) {
     val mint = model.mint
     val account = model.mintData.accounts.firstOrNull { it.id == t.accountId }?.name.orEmpty()
+    val from = t.capturedFrom
     HorizontalDivider(color = Pixel.Border)
-    MintLine(trail = { Text("+" + mint.show(t.amountMinor, t.currency), style = MaterialTheme.typography.titleSmall) }) {
-        Text(account, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-        Text(t.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
+    MintLine(trail = { Text((if (t.type == TxType.INCOME) "+" else "-") + mint.show(t.amountMinor, t.currency), style = MaterialTheme.typography.titleSmall) }) {
+        Text(if (from != null) "$from \u00b7 $account" else account, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+        Text(if (from != null) t.payee.ifBlank { t.note } else t.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
     }
     if (adjusting) PixelField(
-        amount, { setAmount(it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16)) }, Modifier.fillMaxWidth(), label = "Amount the bank credited", singleLine = true,
+        amount, { setAmount(it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16)) }, Modifier.fillMaxWidth(),
+        label = if (from != null) "Amount the bank moved" else "Amount the bank credited", singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = t.currency,
     )
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -108,11 +134,11 @@ private fun InterestRow(model: AppModel, t: Transaction, adjusting: Boolean, amo
             val minor = if (adjusting) Money.parse(amount, t.currency) else null
             if (adjusting && minor == null) problem("Check the amount.")
             else {
-                val out = mint.confirmInterest(t.id, minor)
+                val out = mint.confirmPending(t.id, minor)
                 if (out.record == null) problem(out.refused) else { problem(null); done(); model.haptic() }
             }
         }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
         PixelButton(if (adjusting) "Cancel" else "Adjust", toggle, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-        if (!adjusting) PixelButton("Skip", { mint.skipInterest(t.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        if (!adjusting) PixelButton("Skip", { mint.skipPending(t.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
     }
 }

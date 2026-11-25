@@ -195,7 +195,7 @@ A bank, e-wallet, digital-bank or other deposit account (not cash, never a liabi
 
 1. **Estimates are made automatically** when Mint opens (`MintStore.accrueInterest`), for complete days only. Each is one `INCOME` record in the **Interest** category, payee "Interest", with `interestThrough` set to the last day it covers. A daily schedule makes one record for all the days since the last one (so a week away is one record, not seven); a monthly one makes one record per calendar month that has ended (the first may be a part month; at most 12 are caught up).
 2. **The figure** is the daily balance times the yearly rate over 365, summed over the days and rounded half up once, less the tax rounded half up. It uses posted records only, so an estimate still waiting never compounds. It is an estimate, not the bank's figure.
-3. **Review.** Unless the account posts without review, the record is **pending**: it is not in the balance and is listed in an **Interest to confirm** box on the Overview with **Confirm**, **Adjust** (type what the bank really credited, then save) and **Skip**, and **Confirm all**. Skip keeps the record as voided, so the same days are not estimated again. A record of any status moves the next estimate on; deleting one makes the days estimable again.
+3. **Review.** Unless the account posts without review, the record is **pending**: it is not in the balance and is listed in the **To confirm** box on the Overview — the same box a captured bank alert waits in (5.8B) — with **Confirm**, **Adjust** (type what the bank really credited, then save) and **Skip**, and **Confirm all**. Skip keeps the record as voided, so the same days are not estimated again. A record of any status moves the next estimate on; deleting one makes the days estimable again.
 4. **Reports.** A posted estimate is income (7.1), because the bank paid it. Nothing here pays a reward (16.2). Not a lender statement; reconcile (5.8) against the real balance as usual.
 
 ### 4.3C Open the wallet's own app
@@ -410,6 +410,14 @@ A lightweight flag on one income transaction, not a ledger, not a screen and not
 - **What it does not do.** No who-owes-whom balance, no settle-up, no splitting one bill by share between several people (REP-073), no interest or due dates.
 - **Private like the rest of Mint:** the flag rides in the transaction's own sealed row, so there is no table, no schema step and no migration, and an older save without it loads unchanged. No `MintEvent` and no figure leaves Mint for an IOU. The earlier Shared bills ledger is removed.
 
+### 5.8B A record from a bank alert
+
+**What it is.** A `Transaction` of `EXPENSE` or `INCOME` proposed from an alert the phone read (10.4), not one the player typed. It is always saved `PENDING`, with `capturedFrom` (the source's label, "GCash") and `captureRef` (the alert's fingerprint), and its `source` is `captured`. It is never posted by itself and never pays a reward. It waits in the same **To confirm** box as an interest estimate (4.3E), where **Confirm** posts it (at the amount typed with **Adjust**), **Skip** voids it, and **Confirm all** posts the whole box. A waiting one can also be deleted outright from MINT → Settings, "Erase captured alerts".
+
+**What it does to the books.** Nothing until it is confirmed: a pending record is not in a balance, a spending total, a budget or a report (5.1: pending is a state, not a type), and it is not an IOU and never lowers spending. Once confirmed it is an ordinary posted record on its account and day.
+
+**Which account.** The alert's last four digits (the account's `suffix`), then an account whose institution or name is the alert's source ("GCash"), then the only open account; with no account to put it in, no proposal is made and the player is told why.
+
 ## 6. Categories and merchants
 
 Categories are MINT-owned and support:
@@ -582,17 +590,23 @@ A `FinancialProviderConnection` stores only what is needed for a supported integ
 
 A connection failure does not disable manual MINT workflows.
 
-### 10.4 Notification parsing
+### 10.4 Notification and message parsing (built, 25 November 2026)
 
-If implemented after feasibility and policy review:
-- Explicit opt-in per provider/source.
-- Narrow allowlist of supported notification formats.
-- Parse locally on device.
-- Show a proposed transaction for user review before posting.
-- Retain only the minimum parsed fields needed after confirmation.
-- Do not persist raw notification text by default.
-- Provide immediate revocation and deletion of derived pending records.
-- Never infer a balance from incomplete notification history.
+**Decision.** Built after the separate privacy and platform review the first draft of this section asked for (`../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` 7.3; owner, 25 November 2026). It is an explicit, opt-in, on-device capability: two switches in MINT → Settings, off until the player turns each on, and Android's own permission is asked for first. With a switch off, the Android component that would read that source is disabled, so Android never binds the listener and never wakes the receiver: nothing is read at all.
+
+**Sources.** A narrow allowlist (`CaptureSource`, `mint-core/MintCapture.kt`): GCash, Maya, MariBank, GoTyme, UnionBank, BDO, BPI, Metrobank, LandBank, CIMB and SeaBank, each with the exact notification package names and SMS sender ids it may come from. Every other notification is dropped on its package name before a field is read, and every other message before its body is touched.
+
+**What is read.** The title and text of a notification, or the body of a message, only while its switch is on. `MintCapture.parse` reduces it to the minimum the record keeps (5.8B): the amount (exact integer money, in MINT's currency), the direction, a short merchant or description, the day, the last four digits the alert names, and the source. It returns nothing rather than guess: a message that is delivering an OTP, PIN or code is refused — while the security wording a real alert carries ("never share your OTP") is not — as are promos, declined, reversed or not-yet-charged reminders, balance-only and points messages, a message with no readable amount, and one whose wording says both money in and money out.
+
+**What is kept, and where.** The raw text is used for the parse and nowhere else: it is never stored, logged, exported, backed up or sent anywhere. A parsed proposal waits in `MintCaptureBox`, a small file sealed with MINT's own key (AES-256-GCM, the same key and fail-closed rule as the rest of MINT), capped at 40 alerts and a week; with no key nothing is written at all. The MINT screen takes them into the sealed save as `PENDING` records (5.8B).
+
+**Review.** Nothing is posted by itself: the same **To confirm** box as an interest estimate (4.3E) lists it with **Confirm**, **Adjust**, **Skip** and **Confirm all**.
+
+**Recognition.** A proposal's fingerprint is the source, direction, amount, day, normalised merchant and last four digits, so the same alert arriving twice, or the same purchase seen as a notification and again as a message, is one proposal.
+
+**Revocation.** Switching a source off disables its component and stops the reading; "Erase captured alerts" deletes every waiting proposal and clears the box. A confirmed record is ordinary history and stays. The lock screen, a notification, a widget at large or a reward surface never shows an alert's content.
+
+**Not done.** Only the eleven sources (an alert from another bank is dropped, not guessed at); a format that changes makes the parse refuse rather than guess; foreign-currency alerts; reading a balance, a history or an account; any inference from incomplete history. It is not a provider connection: no login, scrape, password, PIN, OTP, CVV or code is ever asked for, stored or used.
 
 ## 11. Currency and exchange rates
 
@@ -830,7 +844,7 @@ Define concise empty, loading, stale, offline, import error, connection error, r
 
 Status and the open work list are in `../IMPLEMENTATION_BACKLOG.md`. Order: P0 the foundation, accounts, transactions, budgets and bills; P1 the Overview, reports, financial review, CSV/statement import, reconciliation, complete local export and the Ledger Research event contract; P2 provider integrations, provider by provider.
 
-Provider integrations must not block complete manual finance functionality, and an official API or aggregation adapter comes only after documented access, consent, security and coverage validation; notification parsing only after policy and technical review.
+Provider integrations must not block complete manual finance functionality, and an official API or aggregation adapter comes only after documented access, consent, security and coverage validation; notification parsing only after policy and technical review (made for MINT's opt-in capture on 25 November 2026, 10.4).
 
 
 ## 19. Acceptance criteria
@@ -930,7 +944,7 @@ What the code does today where it adds to the sections above. Not run on a devic
 
 **Plans and entry points.** `Installments.allowedFor` says which accounts hold plans (credit card and pay later). `MintStore` has `addPlanPurchase`, `addExistingPlan` (a plan with `purchaseTxId` null; `Installments.checkExisting` validates its rows), `payPlan`, `billInstallmentFee`, `addLateFee`, `refundPlan`, `updateInstallment`, `deletePlan`, `planView(s)` and `creditActivity`. Beyond the account screen, the Activity add form has a "Pay in installments" toggle on an expense to a credit account and a transfer to a credit account shows "Pay for" chips (No plan and each unpaid plan); transfers into a liability are titled "Repayment". The Bills and income list has a "Credit bills due" box (due within 30 days or overdue; a row opens the month's purchases with Pay). A repayment above the plan balances reduces the account balance by the full transfer, with only the allocated amount applied to schedules; refusals (excluding, voiding, deleting or editing the amount or account of a linked purchase; deleting an account that holds plans) are shown; deleting a plan says its records stay. "Add plan" leads to New purchase or Already owed.
 
-**Not built.** Bulk categorisation; reconciliation sessions with imported statements as the other side (5.8); rollover (7.3); renaming a group (a group is only the account's text label, 4.3); reminders from statement or due days; foreign currency, exchange rates and multi-currency plans; per-installment grace periods and lender early-settlement quotes; custom recurrence, spotting subscriptions, other countries' holiday calendars and a range of amounts for an estimate; additional attachment types and multiple receipts per transaction (13.4); provider connections and notification parsing (10); the `budget_review_completed` and `bill_review_completed` events; charts.
+**Not built.** Bulk categorisation; reconciliation sessions with imported statements as the other side (5.8); rollover (7.3); renaming a group (a group is only the account's text label, 4.3); reminders from statement or due days; foreign currency, exchange rates and multi-currency plans; per-installment grace periods and lender early-settlement quotes; custom recurrence, spotting subscriptions, other countries' holiday calendars and a range of amounts for an estimate; additional attachment types and multiple receipts per transaction (13.4); provider connections (10); the `budget_review_completed` and `bill_review_completed` events; charts.
 
 **Open for the owner** (not changed): Exclude and Void have the same accounting effect (neither counts in a balance, budget or report; 5.4 reads as if an excluded record should still move the balance); Archive and Close have the same effect (4.6 gives closing an effective date, which is not kept).
 
@@ -959,6 +973,10 @@ Section 3.2B in code: mint-core `OverviewCounts.kt` (`OverviewWindow`, `PayLater
 - **Accounts.** `MintStore.arrangeAccounts(orderedIds)` puts the ids back into their existing slots of the accounts list, which is the saved order. `FinancialAccount.appPackage` is chosen from the installed apps (`AppLauncher`, `InstalledApp` in `Integrations.kt`, `AndroidAppLauncher`). `limitMinor`, `statementDay` and `dueDay` are checked by `MintRules.checkLimit` and `checkCardDay`; a short month clamps through `MintRules.nextOnDay`; `MintRules.leftToSpend` feeds the card row and options (`ui/mint/CardDays.kt`).
 - **Recurring income.** `Bill.income` (default false) marks money expected; "Received, record it" goes through `settleAndRecord`.
 
+
+## 22I. Bank alerts as built
+
+Section 10.4 and 5.8B in code (0.246.0). **Rules:** `mint-core/MintCapture.kt` — `CaptureSource` (the allowlist: label, notification `packages`, SMS `senders`; `ofPackage`, `ofSender`, `ofName`), `CaptureChannel`, `CaptureText` (the raw text handed in memory only), `CaptureCandidate` (the minimum a record keeps; `sourceLabel`), and `MintCapture.parse(message, currency)`; `MintCapture.TEXT_MAX` 600 characters. **Model:** `Transaction.capturedFrom`/`captureRef` and `TxSource.CAPTURED` (sealed JSON defaults: no `.sqm`, no released schema change), `MintSettings.captureNotifications`/`captureMessages` (off by default). **Store:** `MintStore.capture(candidate)` (dedupes on `captureRef`, picks the account from the last four digits then the source's label in `institution`/`name` then the only open account, refuses another currency), `toReview`, `confirmPending`, `confirmAllPending`, `skipPending`, `deleteCaptured`, `eraseCaptured`, `setCaptureNotifications`/`setCaptureMessages`; the interest methods (`interestToReview`, `confirmInterest`, `confirmAllInterest`, `skipInterest`) are kept and unchanged. **UI:** `PendingReview` (`ui/mint/Interest.kt`) is the one "To confirm" box and drains the phone's waiting proposals with `MessageCapture.take()`; `CaptureSettings` (`ui/mint/Mint.kt`) is the two switches, Android's permission state, and "Erase captured alerts"; `MessageCapture` (`ui/mint/MessageCapture.kt`, the `capture` parameter of `App()`; null on desktop and web). **Android** (`androidApp/.../capture/`): `MintNotificationService` and `MintSmsReceiver` are declared `android:enabled="false"` and switched by `AndroidMessageCapture.watch` (`setComponentEnabledSetting`, plus `requestRebind` for the listener); `AlertReader` re-checks the setting, parses on a worker and never logs the text; `MintCaptureBox` holds the waiting proposals sealed with `KeystoreMintKey` (`mint-capture.sealed`, at most 40, a week, fail closed). **Never:** a balance, a history, a raw message on disk, a reward (a capture never calls `payForLog`), or a posting without the player's Confirm.
 
 ---
 

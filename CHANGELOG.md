@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.246.0
+
+MINT can record a transaction from a bank message or notification, on the phone only, and holds it in the same "To confirm" box as an interest estimate until the player approves it. Off until the player turns it on; no reward rule, schema or save-format change, and `RewardRules.VERSION` stays.
+
+- **Two switches, off until wanted (MINT.md 10.4, `INTEGRATIONS_AND_PRIVACY.md` 7.3).** MINT → Settings → Record from messages: **Bank notifications** (Android's own notification access) and **Bank text messages** (the runtime `RECEIVE_SMS` permission). While a switch is off its Android component is disabled, so Android never binds the listener and never wakes the receiver: nothing is read at all. The box explains the broad access in plain words before it is granted.
+- **A narrow list, and only the fields a record keeps.** GCash, Maya, MariBank, GoTyme, UnionBank, BDO, BPI, Metrobank, LandBank, CIMB and SeaBank only, by notification package or SMS sender id, checked before a field is read. The parse keeps the amount, direction, a short merchant, the day, the last four digits the alert names and the source; the raw text is never stored, logged or sent anywhere. It refuses rather than guesses: an OTP/PIN/code delivery, a promo, a declined or not-yet-charged reminder, a balance-only message, and an amount or direction it cannot read are all dropped (the "never share your OTP" wording a real alert carries is not).
+- **The same review as an interest estimate (MINT.md 5.8B).** An alert becomes a `PENDING` record, never a posting: it waits in the "To confirm" box (now shared with the interest estimates) with **Confirm**, **Adjust**, **Skip** and **Confirm all**, and is not in a balance, a budget or a report until confirmed. Skip voids it; MINT → Settings → Erase captured alerts deletes every waiting proposal and clears the sealed box the phone held them in. The account is the one the alert's last four digits name, else one named after the source, else the only open account.
+- **Recognition.** The same alert twice, or the same purchase seen as a notification and again as a message, is one proposal (a fingerprint of source, direction, amount, day, merchant and last four digits).
+- **Data.** `Transaction.capturedFrom`/`captureRef` and `TxSource.CAPTURED` are defaults in the sealed JSON rows, and the two switches are `MintSettings` fields, so no schema migration. Proposals wait in a small file sealed with MINT's own key, capped at 40 alerts and a week, never written in the clear.
+- **Tests:** `MintCaptureTest` (mint-core, 24 cases over real alert formats and the refusals), `MintCaptureStoreTest` (app-core: pending does not move a balance, confirm/adjust/skip, one proposal per alert, account choice, erase only waiting ones) and `MintCaptureBoxTest` (Android, the sealed box: fail closed without the key, one copy per alert, the newest forty, a week).
+
 ## 0.245.0
 
 - **LINK: local photos and the Gallery (REP-082; owner direction, 25 November 2026).** A memory can keep pictures, and the archive gains its third browsing mode.

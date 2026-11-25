@@ -126,6 +126,8 @@ class AppModel(
     val imageViewer: ImageViewer? = null,
     val appLauncher: AppLauncher? = null,
     val updates: UpdateAccess? = null,
+    /** Reads bank alerts on the phone into MINT's pending review (MINT.md 10.4); null on desktop and web. */
+    val capture: app.pokeplan.ui.mint.MessageCapture? = null,
     /** What ties PLAN and LINK together (people in events, LINK dates in the calendar); neither module holds it. */
     val integrations: app.pokeplan.app.integrations.IntegrationStore = app.pokeplan.app.integrations.IntegrationStore(MemoryStorage()),
 ) {
@@ -407,6 +409,7 @@ fun App(
     imageViewer: ImageViewer? = null,
     appLauncher: AppLauncher? = null,
     updates: UpdateAccess? = null,
+    capture: app.pokeplan.ui.mint.MessageCapture? = null,
     onDataChanged: ((AppData) -> Unit)? = null,
     onCareChanged: ((CareData) -> Unit)? = null,
     onHealChanged: ((HealData) -> Unit)? = null,
@@ -424,7 +427,7 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val base = BaseStore(baseStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher, updates, app.pokeplan.app.integrations.IntegrationStore(integrationsStorage ?: MemoryStorage()))
+        return AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles, huawei, contacts, images, imageViewer, appLauncher, updates, capture, app.pokeplan.app.integrations.IntegrationStore(integrationsStorage ?: MemoryStorage()))
     }
     fun AppModel.startHere() {
         openPokemonId = startPokemon

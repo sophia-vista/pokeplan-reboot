@@ -16,5 +16,6 @@
     <string name="shortcut_party">Party</string>
     <string name="shortcut_party_long">View your party</string>
     <string name="huawei_reader_label">PokéLife: read Huawei Health</string>
+    <string name="mint_capture_label">PokéLife: bank alerts to MINT</string>
     <string name="huawei_reader_description">Lets Heal open Huawei Health and read its pages when you tap Read Huawei Health. It sees Huawei Health only, never another app, and keeps nothing after the app closes.</string>
 </resources>

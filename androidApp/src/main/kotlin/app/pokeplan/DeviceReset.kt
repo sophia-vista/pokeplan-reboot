@@ -15,7 +15,8 @@ internal object DeviceReset {
         runCatching { SharedReminders.reschedule(app) }.onFailure { Log.w(TAG, "reminders reschedule failed: ${it.javaClass.simpleName}") }
         runCatching { AppAlerts.rescheduleFromSave(app) }.onFailure { Log.w(TAG, "alerts reschedule failed: ${it.javaClass.simpleName}") }
         preferenceNames(app).forEach { name -> app.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().commit() }
-        listOf("save.json", "care.json").forEach { File(app.filesDir, it).delete() }
+        // A bank alert waiting for MINT is MINT data: a reset of the phone's copy leaves none behind.
+        listOf("save.json", "care.json", "mint-capture.sealed").forEach { File(app.filesDir, it).delete() }
     }
 
     fun preferenceNames(context: Context): List<String> =

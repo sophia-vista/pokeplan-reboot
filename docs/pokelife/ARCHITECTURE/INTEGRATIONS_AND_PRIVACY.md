@@ -116,6 +116,8 @@ Never repeatedly prompt after denial. Do not use a permission rationale to press
 | Internet | `INTERNET` manifest permission | Manifest-only; network used only for an invoked optional service or provider operation |
 | Network state | `ACCESS_NETWORK_STATE` | Only if needed to show connectivity/provider state; not for profiling |
 | Notifications | `POST_NOTIFICATIONS` on Android 13+ | First time user enables reminders or a notification-dependent feature |
+| Notification reading | `NotificationListenerService`, granted in Android's own notification-access settings (no runtime permission) | Only when the player turns on MINT → Settings → Record from messages → Bank notifications; the listener component is disabled while the switch is off, so Android never binds it, and every notification outside MINT's bank allowlist is dropped on its package name before a field is read (7.3) |
+| Text messages | `RECEIVE_SMS` (runtime) | Only when the player turns on MINT → Settings → Record from messages → Bank text messages; the receiver component is disabled while the switch is off, the sender is checked before the body, and every sender outside MINT's allowlist is dropped (7.3) |
 | Exact alarms | `SCHEDULE_EXACT_ALARM` / applicable platform mechanism | Only if a genuinely exact reminder capability is justified and Android policy permits it; prefer inexact scheduling otherwise |
 | Calendar | `READ_CALENDAR`; `WRITE_CALENDAR` only for PLAN's opt-in two-way sync of its own events (6.2) | `READ_CALENDAR` when user connects a calendar; `WRITE_CALENDAR` only when the player turns on Calendar sync |
 | Health Connect | Per-record-type Health Connect permissions | When user selects health data categories to import/read/write |
@@ -137,7 +139,7 @@ The matrix is a policy map, not a declaration that every permission should be pr
 
 ### 4.3 Manifest audit
 
-`androidApp/src/main/AndroidManifest.xml` declares: `INTERNET`, `ACCESS_NETWORK_STATE`, coarse and fine location and microphone (the matching hardware features optional), `POST_NOTIFICATIONS`, `READ_CALENDAR`, `READ_CONTACTS` (LINK's import), `ACTIVITY_RECOGNITION` (the step counter, asked only when a walking evolution starts), `SET_ALARM` (hands a wake-up alarm to the clock app), `VIBRATE`, `EXPAND_STATUS_BAR`, `RECEIVE_BOOT_COMPLETED`, `REQUEST_DELETE_PACKAGES`, `QUERY_ALL_PACKAGES` (the launcher), `USE_EXACT_ALARM` (with `SCHEDULE_EXACT_ALARM` up to Android 12L), five `READ_*` health permissions (read only, with the Health Connect package query, a rationale activity and the permission-usage alias), and `WRITE_SECURE_SETTINGS` for the optional one-tap Huawei read (5.2.2; the app cannot grant it, only the player over adb). `allowBackup` is `false` with `data_extraction_rules.xml`, so nothing goes to Android's cloud backup or another phone by itself; the user-controlled design is the app's own backups (10.1). No storage permission (the document picker is used). Exported components are the activities, the widget receivers, `ReminderBootReceiver`, the quick-settings tiles and the Huawei screen service (each of the last three behind the system's bind permission); the reminder receivers and `WidgetRefreshReceiver` are not exported. Every capability must still be checked against the shipped features before release:
+`androidApp/src/main/AndroidManifest.xml` declares: `INTERNET`, `ACCESS_NETWORK_STATE`, coarse and fine location and microphone (the matching hardware features optional), `POST_NOTIFICATIONS`, `READ_CALENDAR`, `READ_CONTACTS` (LINK's import), `ACTIVITY_RECOGNITION` (the step counter, asked only when a walking evolution starts), `SET_ALARM` (hands a wake-up alarm to the clock app), `VIBRATE`, `EXPAND_STATUS_BAR`, `RECEIVE_BOOT_COMPLETED`, `RECEIVE_SMS` (MINT's opt-in capture of bank text messages, 7.3), `REQUEST_DELETE_PACKAGES`, `QUERY_ALL_PACKAGES` (the launcher), `USE_EXACT_ALARM` (with `SCHEDULE_EXACT_ALARM` up to Android 12L), five `READ_*` health permissions (read only, with the Health Connect package query, a rationale activity and the permission-usage alias), and `WRITE_SECURE_SETTINGS` for the optional one-tap Huawei read (5.2.2; the app cannot grant it, only the player over adb). `allowBackup` is `false` with `data_extraction_rules.xml`, so nothing goes to Android's cloud backup or another phone by itself; the user-controlled design is the app's own backups (10.1). No storage permission (the document picker is used). Exported components are the activities, the widget receivers, `ReminderBootReceiver`, the quick-settings tiles and the Huawei screen service (each of the last three behind the system's bind permission); the reminder receivers and `WidgetRefreshReceiver` are not exported, and MINT's SMS receiver is exported behind the system-only `BROADCAST_SMS` permission. MINT's notification listener and message receiver are declared **disabled** and are enabled only while their own switch is on (7.3). Every capability must still be checked against the shipped features before release:
 
 - Remove unused permissions and deprecated or duplicated alarm declarations; reassess exact-alarm eligibility and remove any declaration not justified by an approved use case.
 - Keep `QUERY_ALL_PACKAGES` only if the optional launcher genuinely requires broad app enumeration and distribution policy permits it; otherwise use launcher intent queries.
@@ -272,7 +274,7 @@ Public pages only; nothing tested with a bank account. Every provider is **unsup
 | UnionBank | API developer portal since 2017 (hundreds of APIs: bills payment, transfers, inquiries, a payment gateway), aimed at fintechs and businesses; no source on personal-account transaction history for an individual developer's app, OAuth consent or current terms | **Unverified.** The owner would see whether an individual can register and which APIs return a customer's own transactions with consent |
 | GCash, Maya, GoTyme, MariBank | No public documentation of an API giving a user's own transaction history to a third-party app; a vendor page lists them but describes protocol reverse engineering, which this spec forbids | **Unverified; treat as unsupported** |
 | BSP Open Finance (Circular 1122, 2021) | A framework for permissioned data sharing with authorized third-party providers; no official list of live participants or endpoints, and unclear whether an individual developer's app can qualify | **Watch, do not build.** If real, the route is an official consented API (7.2, item 4) |
-| Notification reading | `NotificationListenerService` | **Not built** (7.3) |
+| Notification reading | `NotificationListenerService` | **Built**, opt-in for MINT's bank alerts (7.3, `MODULES/MINT.md` 10.4); no provider connection |
 
 The statement file (CSV) stays MINT's only integration. Next evidence the owner can supply: whether UnionBank's portal lets an individual register and which APIs return own transactions; which statement formats GCash, Maya, GoTyme and MariBank let the user export, with one sample each (values removed) to test the reader's column guesses; whether the BSP lists any participant an individual can use.
 
@@ -282,7 +284,7 @@ The statement file (CSV) stays MINT's only integration. Next evidence the owner 
 2. CSV and spreadsheet imports with preview and reconciliation.
 3. User-selected statement/document imports for supported formats.
 4. Official provider APIs only after access and production eligibility are verified.
-5. Optional local notification parsing only after a separate privacy/platform review; not part of the initial release.
+5. Optional local notification parsing only after a separate privacy/platform review; not part of the initial release. **Decided 25 November 2026:** built for MINT as an opt-in capture, see 7.3.
 
 Never request/store bank passwords, app PINs, CVVs, OTPs, recovery codes, or session cookies. Never scrape authenticated app screens, use Accessibility Services to extract banking data, bypass app protections, or execute transfers/payments. PokéLife is not a payment initiation application.
 
@@ -290,14 +292,15 @@ Never request/store bank passwords, app PINs, CVVs, OTPs, recovery codes, or ses
 
 Android `NotificationListenerService` can expose notifications across applications after a broad user-granted special access. It is not a narrowly scoped bank permission. It can reveal unrelated private notifications.
 
-Therefore:
+**The separate review this section asked for was made and the capability was approved for MINT (owner, 25 November 2026).** It is built as an explicit opt-in experimental capability (`MODULES/MINT.md` 10.4), and these are the rules it keeps:
 
-- Exclude notification parsing from initial MINT scope.
-- Do not request notification-listener access as part of onboarding or ordinary MINT use.
-- If separately approved later, make it an explicit opt-in experimental capability with a precise explanation of broad access.
-- Process locally; restrict recognized source packages; discard unrelated notification content immediately; do not persist raw notification text.
-- Do not infer transactions from incomplete or ambiguous messages without user review.
-- Never read SMS automatically as a fallback.
+- **Off until the player turns it on, per source.** MINT → Settings → Record from messages has two switches, **Bank notifications** and **Bank text messages**, both off on a new save. Each asks for Android's own access first: notification access through Android's settings page, text messages through the runtime `RECEIVE_SMS` prompt. Turning a switch off disables that Android component, so the system does not bind the listener and does not wake the receiver: nothing is read while it is off.
+- **A narrow allowlist, checked before any content.** Notification packages and SMS sender ids for GCash, Maya, MariBank, GoTyme, UnionBank, BDO, BPI, Metrobank, LandBank, CIMB and SeaBank only (`CaptureSource`). A notification is dropped on its package name before a field is read; a message on its sender before the body is touched. Nothing from another app is read, kept, counted or logged.
+- **Processed locally, and the raw text is never persisted.** The parse runs on the phone; the raw text is used for it and nothing else. What waits for the player is only the minimum parsed fields (amount, direction, merchant, day, last four digits, source), sealed with MINT's own key in a small box, capped at 40 alerts and a week, never written in the clear.
+- **A proposal, never a posting.** An alert becomes a `PENDING` record in the same "To confirm" box as an interest estimate and is posted only when the player confirms it; the player can adjust the amount, skip it, or erase every waiting proposal. Nothing is inferred from an incomplete or ambiguous message: a message whose amount or direction cannot be read is refused rather than guessed, and an OTP, PIN or code delivery is always refused.
+- **No balance is ever inferred, and no SMS fallback:** the two sources are separate switches; text messages are never read because notifications were denied.
+- **Revocation and deletion.** Switching a source off stops it; "Erase captured alerts" deletes every waiting proposal and clears the box. A confirmed record is ordinary MINT history and follows MINT's own delete/erase rules.
+- **What it never does.** It does not log in, scrape, use accessibility, ask for a password, PIN, OTP, CVV or code, or claim a provider connection. It is not a sync and never promises automatic balance updates.
 
 ### 7.4 Financial privacy and progression
 
@@ -796,7 +799,7 @@ Built for HEAL: Health Connect availability and record-type adapter, import prev
 
 ### Phase 4 — Financial import and provider research
 
-Built: MINT CSV import (`MODULES/MINT.md` 22A). Open: provider due diligence beyond desk research (7.1.1) for GCash, Maya, MariBank, GoTyme and UnionBank, building only adapters with verified personal-account access and approved terms. Notification parsing stays out of scope unless a separate decision approves its broad-access and privacy burden. **Exit:** no unverified auto-sync claims; no credential scraping; MINT remains fully offline-capable. Every provider is listed unsupported until then.
+Built: MINT CSV import (`MODULES/MINT.md` 22A). Open: provider due diligence beyond desk research (7.1.1) for GCash, Maya, MariBank, GoTyme and UnionBank, building only adapters with verified personal-account access and approved terms. Notification parsing was approved on 25 November 2026 as MINT's opt-in capture and is built to the rules in 7.3 (broad-access burden accepted, on-device only). **Exit:** no unverified auto-sync claims; no credential scraping; MINT remains fully offline-capable. Every provider is listed unsupported until then.
 
 ### Phase 5 — Contacts and optional platform capabilities
 

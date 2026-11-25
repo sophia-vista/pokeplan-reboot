@@ -97,6 +97,7 @@ class MainActivity : ComponentActivity() {
         val motion = AccelerometerMotion(this)
         val calendars = AndroidCalendars(this)
         val contacts = AndroidContacts(this)
+        val capture = app.pokeplan.capture.AndroidMessageCapture(this)
         val gearServices = androidGearServices(this)
         val sensors = AndroidSensorFeed(this)
         val backups = AndroidBackups(this)
@@ -143,7 +144,7 @@ class MainActivity : ComponentActivity() {
                     val integrations = remember { integrationsStorage(this@MainActivity) }
                     App(
                         storage, careStorage = care, healStorage = heal, mintStorage = mint, baseStorage = base, linkStorage = link, integrationsStorage = integrations, focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
-                        cries = AndroidCryPlayer(this@MainActivity), haptics = AndroidHaptics(this@MainActivity), files = AndroidFileSaver(this@MainActivity), calendars = calendars, phone = AndroidPhoneState(this@MainActivity), torch = torch, capabilities = AndroidCapabilities(this@MainActivity), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this@MainActivity), appLauncher = app.pokeplan.platform.AndroidAppLauncher(this@MainActivity), updates = updates, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this@MainActivity), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars, asyncModel = true,
+                        cries = AndroidCryPlayer(this@MainActivity), haptics = AndroidHaptics(this@MainActivity), files = AndroidFileSaver(this@MainActivity), calendars = calendars, phone = AndroidPhoneState(this@MainActivity), torch = torch, capabilities = AndroidCapabilities(this@MainActivity), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this@MainActivity), appLauncher = app.pokeplan.platform.AndroidAppLauncher(this@MainActivity), updates = updates, capture = capture, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this@MainActivity), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars, asyncModel = true,
                     )
                 }
             }
