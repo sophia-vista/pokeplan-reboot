@@ -16,6 +16,13 @@ MINT can record a transaction from a bank message or notification, on the phone 
 - **Data.** `Transaction.capturedFrom`/`captureRef` and `TxSource.CAPTURED` are defaults in the sealed JSON rows, and the two switches are `MintSettings` fields, so no schema migration. Proposals wait in a small file sealed with MINT's own key, capped at 40 alerts and a week, never written in the clear.
 - **Tests:** `MintCaptureTest` (mint-core, 20 formats and refusals) and `MintCaptureStoreTest` (app-core: pending does not move a balance, confirm/adjust/skip, one proposal per alert, account choice, erase only waiting ones).
 
+## 0.244.1
+
+LINK: chapters are ordered by date, and the memories keep their date order. UI only: no data, schema or reward change.
+
+- **Chapters newest first.** The Chapters view of Memories lists eras by their latest known date (their end date, or their start when it has no end), newest first, with chapters that have no date last in title order; the era chips in the memory form use the same order. Memories already listed newest first by their own date, with undated ones last, and are unchanged.
+- **Code:** `LinkRules.eraKey`/`eraOrder`, used by `LinkStore.eras()` and the Chapters view; `LINK.md` 2.3 and 15 updated. JVM tests only, not run on a device.
+
 ## 0.244.0
 
 - **LINK: Memories and Eras, the core of the archive (owner direction, 25 November 2026).** The new Memories place keeps a life as it happened and lets the player look back without tending it.

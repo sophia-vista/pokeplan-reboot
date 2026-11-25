@@ -213,7 +213,7 @@ internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: Stri
         if (data.eras.isNotEmpty()) {
             FieldLabel("Chapters")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                data.eras.forEach { e -> Chip(e.title, e.id in eraIds, { eraIds = if (e.id in eraIds) eraIds - e.id else eraIds + e.id }) }
+                link.eras().forEach { e -> Chip(e.title, e.id in eraIds, { eraIds = if (e.id in eraIds) eraIds - e.id else eraIds + e.id }) }
             }
         }
         FormSave("Save", {
