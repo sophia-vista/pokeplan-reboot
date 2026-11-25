@@ -27,7 +27,7 @@ class MintCaptureBoxTest : AndroidTestBase() {
 
     @Test
     fun theBoxIsSealedOnDiskAndTakesEachAlertOnce() {
-        assertEquals(1, MintCaptureBox.add(context, listOf(alert("one"))), "it says one is waiting")
+        assertEquals("it says one is waiting", 1, MintCaptureBox.add(context, listOf(alert("one"))))
         assertTrue(box().isFile)
         val onDisk = box().readText()
         assertTrue("the box is sealed with MINT's own key", onDisk.startsWith("m1."))
@@ -42,7 +42,7 @@ class MintCaptureBoxTest : AndroidTestBase() {
     fun theSameAlertIsHeldOnce() {
         val a = alert("same")
         assertEquals(1, MintCaptureBox.add(context, listOf(a)))
-        assertEquals(1, MintCaptureBox.add(context, listOf(a)), "the same alert does not make a second wait")
+        assertEquals("the same alert does not make a second wait", 1, MintCaptureBox.add(context, listOf(a)))
         assertEquals(listOf("same"), MintCaptureBox.take(context).map { it.ref })
     }
 

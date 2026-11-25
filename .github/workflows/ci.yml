@@ -23,7 +23,8 @@ jobs:
     name: Tests and builds
     if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci') || contains(github.event.pull_request.labels.*.name, 'android') || contains(github.event.pull_request.labels.*.name, 'apk') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The JVM step alone has taken 22 to 25 minutes on a slow runner; 30 left no room for the Android step.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: VERSION is MAJOR.MINOR.PATCH
