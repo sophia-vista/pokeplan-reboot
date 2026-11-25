@@ -123,6 +123,12 @@ object LinkRules {
         }
     }
 
+    /** A chapter's latest known date: its end, or its start when it has no end; 0 when it knows neither. */
+    fun eraKey(e: Era): Int = if (e.end.known) dateKey(e.end) else dateKey(e.start)
+
+    /** Chapters newest first by their latest known date; chapters with no date come last, then by title. */
+    fun eraOrder(eras: List<Era>): List<Era> = eras.sortedWith(compareByDescending<Era> { eraKey(it) }.thenBy { it.title.lowercase() })
+
     /** Memories newest first by what their date knows; a memory with no known year comes after the dated ones. */
     fun memoryOrder(memories: List<Memory>): List<Memory> =
         memories.sortedWith(
