@@ -844,7 +844,7 @@ Define concise empty, loading, stale, offline, import error, connection error, r
 
 Status and the open work list are in `../IMPLEMENTATION_BACKLOG.md`. Order: P0 the foundation, accounts, transactions, budgets and bills; P1 the Overview, reports, financial review, CSV/statement import, reconciliation, complete local export and the Ledger Research event contract; P2 provider integrations, provider by provider.
 
-Provider integrations must not block complete manual finance functionality, and an official API or aggregation adapter comes only after documented access, consent, security and coverage validation; notification parsing only after policy and technical review.
+Provider integrations must not block complete manual finance functionality, and an official API or aggregation adapter comes only after documented access, consent, security and coverage validation; notification parsing only after policy and technical review (made for MINT's opt-in capture on 25 November 2026, 10.4).
 
 
 ## 19. Acceptance criteria
