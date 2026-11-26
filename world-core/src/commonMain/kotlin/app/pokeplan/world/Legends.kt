@@ -1,5 +1,7 @@
 package app.pokeplan.world
 
+import app.pokeplan.core.dex.Dex
+import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.PokemonType
 
 data class LegendQuest(
@@ -17,6 +19,12 @@ data class LegendQuest(
     /** The regional form this quest grants, when it is not the species' default form. */
     val form: String? = null,
 )
+
+/** The form this quest grants: the regional form when it has one (Galar's birds), else the species' default. */
+fun LegendQuest.grantedForm(): FormInfo = form?.let { Dex.form(it) } ?: Dex.defaultForm(speciesId)
+
+/** The name shown for the quest's Pokémon: "Galarian Articuno" for a regional form, the plain name otherwise. */
+fun LegendQuest.displayName(): String = if (form != null) grantedForm().name else name
 
 fun LegendQuest.bonusText(): String {
     val parts = buildList {

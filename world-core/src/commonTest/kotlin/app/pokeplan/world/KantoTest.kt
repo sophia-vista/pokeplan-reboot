@@ -81,6 +81,18 @@ class KantoTest {
     }
 
     @Test
+    fun galarsBirdsShowAndGrantTheGalarianForm() {
+        for ((id, form) in mapOf("galar-articuno" to "articuno-galar", "galar-zapdos" to "zapdos-galar", "galar-moltres" to "moltres-galar")) {
+            val q = Legends.byId(id)!!
+            assertEquals(form, q.grantedForm().identifier, id)
+            assertTrue(q.displayName().startsWith("Galarian "), id)
+        }
+        val mewtwo = Legends.byId("kanto-mewtwo")!!
+        assertEquals(Dex.defaultForm(150).identifier, mewtwo.grantedForm().identifier)
+        assertEquals("Mewtwo", mewtwo.displayName())
+    }
+
+    @Test
     fun facingMewtwoFinishesKantoOnceAndNotTheHomeStory() {
         val d = Dungeons.byId("cerulean-cave")!!
         val mon = Hatching.create("a", HatchOption(25, Dex.defaultForm(25).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = 100)
