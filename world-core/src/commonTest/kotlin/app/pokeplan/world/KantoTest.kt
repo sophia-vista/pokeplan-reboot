@@ -97,6 +97,7 @@ class KantoTest {
         val seat = Dungeons.byId("giants-seat")!!
         val mine = Dungeons.byId("galar-mine-2")!!
         val data = WorldData(legends = setOf("galar-zapdos", "galar-articuno", "galar-moltres"))
+        fun mon(id: String, species: Int, level: Int) = Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
         fun bird(id: String, species: Int, form: String, level: Int) = mon(id, species, level).copy(formIdentifier = form)
         val level1 = listOf(bird("z", 145, "zapdos-galar", 1))
         val level100 = listOf(bird("z", 145, "zapdos-galar", 100))

@@ -348,7 +348,7 @@ private fun WorldMapView(model: AppModel) {
                     else -> {
                         ready.forEach { team ->
                             val members = team.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
-                            val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d, roster))
+                            val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d, model.data.player.pokemon))
                             Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
                         }
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
