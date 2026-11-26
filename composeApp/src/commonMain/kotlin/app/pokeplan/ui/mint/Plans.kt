@@ -274,12 +274,14 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
     var editAmount by remember(planId, v.plan.totalMinor) { mutableStateOf(Money.plain(v.plan.totalMinor, cur)) }
     val editTerms = remember(planId, v.plan.totalMinor, v.plan.installments, v.plan.every, v.plan.feeRule) { termsFor(v.plan) }
     var asking by remember(planId) { mutableStateOf(false) }
+    var deleting by remember(planId) { mutableStateOf(false) }
     var refused by remember(planId) { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         when {
             editingPlan -> {
                 PixelField(editAmount, { editAmount = money(it) }, Modifier.fillMaxWidth(), label = "Purchase amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = cur)
                 InstallmentTerms(model, planAccount, editTerms, Money.parse(editAmount, cur), data.transactions.firstOrNull { it.id == v.plan.purchaseTxId }?.day ?: v.plan.startDay)
+                Text("Only the schedule changes: the purchase stays one expense, and nothing already recorded is moved.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 FormSave("Save plan", {
                     val total = Money.parse(editAmount, cur)
                     val count = editTerms.count
@@ -289,7 +291,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
                     else if (fee == null) "Check the fee."
                     else mint.updatePlanTerms(planId, editName, total, count, editTerms.every, editTerms.firstDue(planAccount, data.transactions.firstOrNull { it.id == v.plan.purchaseTxId }?.day ?: v.plan.startDay), fee, editTerms.kind).note()
                     if (refused == null) editingPlan = false
-                }, ModuleAccent.MINT.accent, enabled = editName.isNotBlank())
+                }, ModuleAccent.MINT.accent)
                 PixelButton("Cancel", { editingPlan = false }, Modifier.fillMaxWidth(), Pixel.InkSoft)
             }
             renaming -> {
@@ -305,8 +307,10 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 Text(v.plan.name, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 PixelButton("Rename", { editName = v.plan.name; renaming = true }, color = Pixel.InkSoft, compact = true)
-                if (mint.canEditPlanTerms(planId)) PixelButton("Edit plan", { editingPlan = true }, color = Pixel.InkSoft, compact = true)
+                if (mint.canEditPlanTerms(planId)) PixelButton("Edit schedule", { editingPlan = true }, color = Pixel.InkSoft, compact = true)
             }
+            // A locked schedule says so, instead of an Edit key quietly missing (MINT.md 5.6C).
+            mint.planLockReason(planId)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             }
         }
         v.installments.forEach { i ->
@@ -322,13 +326,14 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     if (i.feeMinor > 0 && !i.feeRecorded) PixelButton("Bill it", { refused = mint.billInstallmentFee(planId, i.no).note(); problem(refused) }, color = Pixel.InkSoft, compact = true)
                     PixelButton("Late fee", { action = if (action == i.no to "late") null else i.no to "late"; late = "" }, color = Pixel.InkSoft, compact = true)
-                    if (i.paidMinor == 0L && !i.feeRecorded && i.lateMinor == 0L) PixelButton("Edit", {
+                    if (mint.installmentLockReason(planId, i.no) == null) PixelButton("Edit", {
                         action = if (action == i.no to "edit") null else i.no to "edit"
                         editDue = i.dueDay
                         editPrincipal = Money.plain(i.principalMinor, cur)
                         editFee = Money.plain(i.feeMinor, cur)
                     }, color = Pixel.InkSoft, compact = true)
                 }
+                mint.installmentLockReason(planId, i.no)?.let { Text("Locked \u00b7 $it", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
                 if (action == i.no to "late") {
                     PixelField(late, { late = money(it) }, Modifier.fillMaxWidth(), label = "Late fee", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     FormSave("Add late fee", {
@@ -348,7 +353,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
                         refused = if (principal == null) "Check the principal."
                         else if (m == null) "Check the fee."
                         else if (mint.updateInstallment(planId, i.no, editDue, principal, m)) null
-                        else "That installment can no longer be changed."
+                        else mint.installmentLockReason(planId, i.no) ?: "The due days must stay in order, and the principal above zero." 
                         if (refused == null) action = null
                     }, ModuleAccent.MINT.accent)
                 }
@@ -370,8 +375,37 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
             }
         }
         HorizontalDivider(color = Pixel.Border)
-        if (asking) Confirm("The purchase and its records stay unlinked. An existing schedule's opening balance stays.", "Delete plan", onConfirm = { mint.deletePlan(planId); asking = false }, onKeep = { asking = false })
-        else {
+        if (deleting) {
+            val preview = mint.planDeletion(planId)
+            if (preview != null) {
+                PixelTitle(if (preview.canDelete) "Delete the purchase and its schedule" else "It cannot be deleted")
+                preview.purchaseId?.let { id ->
+                    data.transactions.firstOrNull { it.id == id }?.let { t ->
+                        MintValueRow("Purchase record", t.payee + " \u00b7 " + mint.show(t.amountMinor, t.currency), soft = true)
+                    }
+                }
+                MintValueRow("Installments", preview.installments.toString(), soft = true)
+                if (preview.payments > 0) MintValueRow("Payments recorded", preview.payments.toString() + " \u00b7 " + mint.show(preview.paidMinor, cur), soft = true)
+                if (preview.fees > 0) MintValueRow("Fees recorded", preview.fees.toString() + " \u00b7 " + mint.show(preview.feeMinor, cur), soft = true)
+                if (preview.refunds > 0) MintValueRow("Refunds recorded", preview.refunds.toString() + " \u00b7 " + mint.show(preview.refundMinor, cur), soft = true)
+                Text(
+                    if (preview.canDelete) "The purchase record and the schedule go together. No other record changes." else preview.blockedReason.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    if (preview.canDelete) PixelButton("Delete both", {
+                        val out = mint.deletePlanPurchase(planId)
+                        refused = if (out.record == true) null else (out.refused ?: "That could not be deleted.")
+                        if (refused == null) { deleting = false; problem(null) }
+                    }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                    PixelButton("Keep them", { deleting = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
+            }
+        } else if (asking) Confirm(
+            if (v.plan.purchaseTxId != null) "Remove the installment schedule? The purchase record stays in Activity as one expense, and anything already recorded on the schedule stays too." else "Remove the installment schedule? The opening balance stays as it is.",
+            "Remove schedule", "Keep it",
+            onConfirm = { mint.deletePlan(planId); asking = false; problem(null) }, onKeep = { asking = false },
+        ) else {
             PixelField(refund, { refund = money(it) }, Modifier.fillMaxWidth(), label = "Refund", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Refund", {
@@ -379,8 +413,9 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
                     refused = if (m == null) "Check the amount." else mint.refundPlan(planId, m).note()
                     if (refused == null) refund = ""
                 }, Modifier.weight(1f), Pixel.InkSoft, compact = true, enabled = refund.isNotBlank())
-                PixelButton("Delete plan", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Remove schedule", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
+            if (v.plan.purchaseTxId != null) PixelButton("Delete purchase and schedule\u2026", { deleting = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
         refused?.let { Report(model, it, NoticeTone.WARNING) }
     }

@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.251.0
+
+MINT's pay-later and installment friction (the owner's P0 list, 26 November 2026) and the transaction form's validation. No reward rule, schema or save-format change; the plan, record and setting fields are sealed-JSON defaults.
+
+- **A purchase can be left unnamed (MINT.md 5.6A).** A pay-later or card purchase (or an existing schedule) saved without a name gets a fixed default — "Installment purchase" / "Existing installments" — instead of a refusal; it can be renamed later and the purchase's payee follows.
+- **A locked schedule says why (5.6A, 5.6C).** Once a payment, a billed fee or a refund is recorded, the plan's Edit key is replaced by the reason in words ("A change to the schedule is blocked: a payment has already been recorded."); each installment says which are still editable and why a locked one is ("A payment is already recorded on it.", "Its fee is already billed.", "A refund has already changed this schedule.").
+- **"Remove schedule", and a deletion with a preview.** The ambiguous "Delete plan" is now **Remove schedule**, with a confirmation that says exactly what stays (the purchase as one expense, payments, fees, refunds, an existing schedule's opening balance). A purchase-linked plan also offers **Delete purchase and schedule**, which previews the purchase record, the installments and any payments, fees and refunds, and only goes ahead while nothing has been recorded on it — otherwise it says what blocks it. The purchase's descriptive fields (name, note, category, receipt) can be edited from Activity; its money stays tied to the plan.
+- **The transaction form explains itself (5.3).** A refused field says so beside it (amount, fee, split part); a disabled Save always carries its reason ("Type an amount to save.", "Choose 1 to 36 installments.", "Say who paid it back."); everything typed survives a failed save. The form follows the entry: a repayment to a card says it is not spending, an expense on a card says it counts once today and raises what is owed, a refund offers **Refund of** (a recent expense, optional) and saves the link, and **Pay in installments** moves into its own **Installment schedule** section with an optional name, the terms and the generated schedule instead of hiding in Additional details.
+- **Tests:** `MintPlansFrictionTest` (app-core, 9: default names, block reasons, installment locks, the deletion preview and its refusal, remove-schedule keeps the purchase, descriptive edits, the blank-name fallback).
+
 ## 0.250.0
 
 Legendary and mythical Pokémon level up, and their bonuses grow with their level. `RewardRules.VERSION` is 36: a Guardian's perk now depends on its level, which changes what a task or egg can pay.

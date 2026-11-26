@@ -245,12 +245,15 @@ class MintStore(
 
     fun updateTransaction(t: Transaction): Logged<Transaction> {
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
+        // A plan's purchase keeps a name even when the player clears the field: the plan is named too (5.6A).
+        val planName = data.plans.firstOrNull { it.purchaseTxId == old.id }?.name
+        val keptPayee = if (t.payee.isBlank()) (planName ?: old.payee) else t.payee
         val next = t.copy(
             planId = old.planId, planNo = old.planNo, feeKind = old.feeKind, planAllocations = old.planAllocations,
             creditStatementId = old.creditStatementId, interestThrough = old.interestThrough, paid = old.paid, source = old.source, createdMillis = old.createdMillis, iou = old.iou,
             capturedFrom = old.capturedFrom, captureRef = old.captureRef,
             importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint,
-            day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
+            day = dayOf(t.atMillis), payee = keptPayee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX),
         )
         // A record an installment plan counts on keeps its type, amount and accounts; the plan is what changes (MINT.md 5.6A).
         if ((old.planId != null || old.planAllocations.isNotEmpty()) && (next.type != old.type || next.amountMinor != old.amountMinor || next.accountId != old.accountId || next.toAccountId != old.toAccountId))
@@ -617,17 +620,19 @@ class MintStore(
         feeKind: FeeKind = FeeKind.FEE, day: LocalDate = today,
     ): Logged<InstallmentPlan> {
         val account = creditAccount(accountId) ?: return Logged(null, "Choose a credit card or pay later account that is open.")
-        if (name.isBlank()) return Logged(null, "Give the purchase a name.")
         if (day > today) return Logged(null, "A purchase cannot be dated in the future.")
         if (feeKind == FeeKind.LATE) return Logged(null, "Choose fee or interest.")
         (Installments.checkRequest(account.type, totalMinor, count, fee) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        // The name is optional: a purchase the player leaves unnamed is still a purchase, and gets the fixed name so its
+        // record and its schedule can be found again (MINT.md 5.6A).
+        val label = name.trim().take(MintRules.NAME_MAX).ifBlank { Installments.DEFAULT_PURCHASE_NAME }
         val txId = newId()
-        val tx = Transaction(txId, TxType.EXPENSE, totalMinor, account.currency, atMillis(day), day, account.id, categoryId = categoryId, payee = name.trim().take(MintRules.NAME_MAX * 2), createdMillis = nowMillis)
+        val tx = Transaction(txId, TxType.EXPENSE, totalMinor, account.currency, atMillis(day), day, account.id, categoryId = categoryId, payee = label.take(MintRules.NAME_MAX * 2), createdMillis = nowMillis)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val planId = newId()
         val first = firstDue ?: MonthlyBills.firstDue(account, day, every)
         val plan = InstallmentPlan(
-            planId, account.id, name.trim().take(MintRules.NAME_MAX), account.currency, txId, totalMinor, day, every, feeKind,
+            planId, account.id, label, account.currency, txId, totalMinor, day, every, feeKind,
             Installments.generate(totalMinor, count, every, first, fee), nowMillis, feeRule = fee,
         )
         update { it.copy(transactions = it.transactions + tx.copy(planId = planId), plans = it.plans + plan) }
@@ -636,15 +641,15 @@ class MintStore(
 
     fun addExistingPlan(accountId: String, name: String, rows: List<app.pokeplan.mint.Installment>, addToStartingBalance: Boolean = true, feeKind: FeeKind = FeeKind.FEE): Logged<InstallmentPlan> {
         val account = creditAccount(accountId) ?: return Logged(null, "Choose a credit card or pay later account that is open.")
-        if (name.isBlank()) return Logged(null, "Give the installments a name.")
         if (feeKind == FeeKind.LATE) return Logged(null, "Choose fee or interest.")
         (Installments.checkExisting(account.type, rows) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val label = name.trim().take(MintRules.NAME_MAX).ifBlank { Installments.DEFAULT_SCHEDULE_NAME }
         val total = rows.sumOf { it.principalMinor }
         val opening = if (addToStartingBalance) account.openingMinor + total else account.openingMinor
         if (opening > app.pokeplan.mint.Money.MAX_MINOR) return Logged(null, "That total looks wrong.")
         val numbered = rows.mapIndexed { i, r -> r.copy(no = i + 1) }
         val plan = InstallmentPlan(
-            newId(), account.id, name.trim().take(MintRules.NAME_MAX), account.currency, null, total, numbered.first().dueDay,
+            newId(), account.id, label, account.currency, null, total, numbered.first().dueDay,
             PlanEvery.MONTH, feeKind, numbered, nowMillis, openingBalanceIncluded = addToStartingBalance,
         )
         update { d -> d.copy(plans = d.plans + plan, accounts = d.accounts.map { if (it.id == account.id) it.copy(openingMinor = opening) else it }) }
@@ -811,6 +816,38 @@ class MintStore(
     fun canEditPlanTerms(planId: String): Boolean {
         val plan = data.plans.firstOrNull { it.id == planId } ?: return false
         return data.transactions.none { it.planId == planId && it.id != plan.purchaseTxId }
+    }
+
+    /** Why a schedule's terms cannot be changed, in words, or null when they can (MINT.md 5.6C). */
+    fun planLockReason(planId: String): String? = data.plans.firstOrNull { it.id == planId }?.let { Installments.scheduleLock(data, it).reason }
+
+    /** Why one installment cannot be edited, in words, or null when it can. */
+    fun installmentLockReason(planId: String, no: Int): String? {
+        val plan = data.plans.firstOrNull { it.id == planId } ?: return "That plan is gone."
+        val view = planView(planId) ?: return "That plan is gone."
+        val installment = view.installments.firstOrNull { it.no == no } ?: return "That installment is gone."
+        return Installments.installmentLock(data, plan, installment)
+    }
+
+    /** What deleting a plan's purchase and schedule would take away and what would stay, or null when it is gone. */
+    fun planDeletion(planId: String): Installments.DeletionPreview? =
+        data.plans.firstOrNull { it.id == planId }?.let { Installments.deletionPreview(data, it, today) }
+
+    /**
+     * Deletes a plan's purchase record and its schedule together, only when nothing has been recorded on it yet (MINT.md
+     * 5.6A): a payment, a fee or a refund is real history and stops it, so the player removes the schedule instead.
+     */
+    fun deletePlanPurchase(planId: String): Logged<Boolean> {
+        val preview = planDeletion(planId) ?: return Logged(null, "That plan is gone.")
+        val purchaseId = preview.purchaseId ?: return Logged(null, "This schedule has no purchase record to delete.")
+        preview.blockedReason?.let { return Logged(null, it) }
+        update { d ->
+            d.copy(
+                plans = d.plans.filterNot { it.id == planId },
+                transactions = d.transactions.filterNot { it.id == purchaseId },
+            )
+        }
+        return Logged(true)
     }
 
     fun updatePlanTerms(
