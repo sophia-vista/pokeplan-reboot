@@ -1763,7 +1763,7 @@ private fun MintReviewView(model: AppModel) {
             }
         }
     }
-    if (data.accounts.any { it.status == AccountStatus.ACTIVE }) FormBox { Accordion("Check against a statement") { ReconcileCard(model) } }
+    if (data.accounts.any { it.status == AccountStatus.ACTIVE }) FormBox { Accordion("Balance check and reconciliation") { ReconcileCard(model) } }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Weekly review")
@@ -1783,37 +1783,80 @@ private fun ReconcileCard(model: AppModel) {
     if (open.isEmpty()) return
     var accountId by remember { mutableStateOf<String?>(null) }
     var statement by remember { mutableStateOf("") }
+    var check by remember { mutableStateOf<app.pokeplan.app.mint.MintStore.BalanceCheck?>(null) }
+    var reason by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
-    var difference by remember { mutableStateOf<Long?>(null) }
     val account = open.firstOrNull { it.id == accountId } ?: open.first()
     val book = MintRules.balance(data, account).postedMinor
-    run {
-        FormStack {
-            PixelDropdown(open.map { it.id }, account.id, { id -> open.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) { accountId = id; difference = null; message = null } }, Modifier.fillMaxWidth(), key = accent, label = "Account")
-            MintValueRow("In Mint", mint.show(book, account.currency))
-            PixelField(
-                statement, { statement = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); difference = null }, Modifier.fillMaxWidth(),
-                label = "Your statement says", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = account.currency, placeholder = "0.00",
-            )
-            val parsed = Money.parse(statement, account.currency)
-            FormSave("Compare", {
-                if (parsed == null) { message = "Check the amount." to NoticeTone.WARNING; return@FormSave }
-                val diff = MintRules.reconcileDifference(parsed, book)
-                if (diff == 0L) { mint.reconcile(account.id, parsed); model.effect(Sfx.ITEM_GET); message = null; model.say("They match. Saved."); statement = ""; difference = null }
-                else { difference = diff; message = null }
-            }, ModuleAccent.MINT.accent, enabled = parsed != null)
-            difference?.let { diff ->
-                Text("The statement is ${mint.show(kotlin.math.abs(diff), account.currency)} ${if (diff > 0) "higher" else "lower"} than Mint.", style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelButton("Accept the difference", {
-                        parsed?.let { mint.reconcile(account.id, it, acceptAdjustment = true); model.effect(Sfx.ITEM_GET) }
-                        message = null; model.say("Adjustment recorded. Saved."); statement = ""; difference = null
-                    }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
-                    PixelButton("Not now", { difference = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+    val parsed = Money.parse(statement, account.currency)
+    val history = mint.reconciliationHistory(account.id).take(4)
+    val cur = account.currency
+    FormStack {
+        PixelDropdown(open.map { it.id }, account.id, { id -> open.firstOrNull { it.id == id }?.name ?: "" }, { id ->
+            if (id != null) { accountId = id; check = null; reason = ""; message = null }
+        }, Modifier.fillMaxWidth(), key = accent, label = "Account")
+        MintValueRow("In Mint", mint.show(book, cur))
+        PixelField(
+            statement, { statement = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); check = null; message = null }, Modifier.fillMaxWidth(),
+            label = "Your statement says", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = cur, placeholder = "0.00",
+        )
+        Text(
+            "A quick check only compares the two and writes nothing. Recording the reconciliation keeps the comparison; when they differ, accepting the difference records one adjustment, and it needs your reason.",
+            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+        )
+        FormSave("Check", {
+            val reported = Money.parse(statement, cur)
+            if (reported == null) { message = "Check the amount." to NoticeTone.WARNING; return@FormSave }
+            check = mint.balanceCheck(account.id, reported)
+            message = null
+        }, ModuleAccent.MINT.accent, enabled = parsed != null)
+        val shown = check?.takeIf { it.account.id == account.id && it.reportedMinor == parsed }
+        if (shown != null) {
+            HorizontalDivider(color = Pixel.Border)
+            if (shown.matches) {
+                Text("They match: Mint has " + mint.show(shown.bookMinor, cur) + ".", style = MaterialTheme.typography.bodyLarge)
+                PixelButton("Record the reconciliation", {
+                    mint.reconcile(account.id, shown.reportedMinor)
+                    model.effect(Sfx.ITEM_GET); model.say("Saved."); check = null; statement = ""; message = null
+                }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+            } else {
+                Text(
+                    "Mint has " + mint.show(shown.bookMinor, cur) + "; the statement says " + mint.show(shown.reportedMinor, cur) + ". The statement is " +
+                        mint.show(kotlin.math.abs(shown.differenceMinor), cur) + " " + (if (shown.differenceMinor > 0) "higher" else "lower") + ".",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                if (shown.causes.isNotEmpty()) {
+                    SectionLabel("What may explain it")
+                    shown.causes.forEach { cause -> Text("\u2022 " + cause, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
                 }
+                PixelField(
+                    reason, { reason = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(),
+                    label = "Why the difference (needed to adjust)", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                )
+                FormSave("Record with the adjustment", {
+                    if (reason.isBlank()) { message = "Say what the difference is for, in a few words." to NoticeTone.WARNING; return@FormSave }
+                    val out = mint.reconcile(account.id, shown.reportedMinor, acceptAdjustment = true, reason = reason)
+                    if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
+                    else { model.effect(Sfx.ITEM_GET); model.say("Adjustment recorded. Saved."); check = null; statement = ""; reason = ""; message = null }
+                }, ModuleAccent.MINT.accent, enabled = reason.isNotBlank())
+                if (reason.isBlank()) Text("Say what the difference is for to record it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                PixelButton("Not now", { check = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
-            message?.let { (text, tone) -> Report(model, text, tone) }
         }
+        if (history.isNotEmpty()) {
+            HorizontalDivider(color = Pixel.Border)
+            SectionLabel("Earlier checks")
+            history.forEach { r ->
+                val adjusted = r.adjustmentTxId != null
+                MintValueRow(
+                    r.day.short() + " \u00b7 " + (if (adjusted) "adjusted" else "matched"),
+                    "statement " + mint.show(r.statementMinor, cur) + " \u00b7 Mint " + mint.show(r.bookMinor, cur),
+                    soft = true,
+                )
+                if (r.reason.isNotBlank()) Text(r.reason, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+        }
+        message?.let { (text, tone) -> Report(model, text, tone) }
     }
 }
 

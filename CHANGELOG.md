@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.252.0
+
+MINT's reconciliation friction (the owner's P0 list, 26 November 2026): a quick balance check is now separate from recording a reconciliation, a difference is explained before an adjustment is offered, and an adjustment must say why. No reward rule, schema or save-format change (`Reconciliation.reason` is a sealed-JSON default).
+
+- **Quick check, then reconciliation (MINT.md 5.8).** The Balance check and reconciliation box compares the statement with Mint and writes nothing; recording keeps the comparison (statement, what Mint held, adjustment and reason), and a match is recorded as a match.
+- **A difference is explained first.** Before any adjustment the screen lists what in Mint may account for it — records still pending, imported records not reviewed, records from the last week a statement may not include — and says plainly when nothing explains it.
+- **An adjustment needs a reason.** A non-zero difference is refused without one; the reason is kept on the reconciliation and as the adjustment record's own note, in the player's words.
+- **An audit trail.** Every check and reconciliation for an account is listed newest first with the day, statement against Mint, matched or adjusted, and the reason; nothing is overwritten and a matching balance adjusts nothing.
+- **Tests:** `MintReconciliationTest` (app-core, 5), and the existing reconciliation test now asserts the reason on the record and the adjustment.
+
 ## 0.251.0
 
 MINT's pay-later and installment friction (the owner's P0 list, 26 November 2026) and the transaction form's validation. No reward rule, schema or save-format change; the plan, record and setting fields are sealed-JSON defaults.
