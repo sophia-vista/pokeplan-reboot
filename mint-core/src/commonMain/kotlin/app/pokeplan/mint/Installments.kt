@@ -190,6 +190,112 @@ object Installments {
 
     fun views(data: MintData, today: LocalDate): List<PlanView> = data.plans.map { view(data, it, today) }
 
+    // --- editing a schedule, and what blocks it (MINT.md 5.6A, 5.6C) ----------------------------------------------
+
+    /** The fixed names a purchase or a schedule gets when the player leaves the name blank. */
+    const val DEFAULT_PURCHASE_NAME = "Installment purchase"
+    const val DEFAULT_SCHEDULE_NAME = "Existing installments"
+
+    /** The records already made against one plan that fix its schedule: payments, fees and refunds. */
+    data class ScheduleLock(val payments: Int, val fees: Int, val refunds: Int) {
+        val blocks: Boolean get() = payments > 0 || fees > 0 || refunds > 0
+
+        /** In words, or null when nothing blocks a change to the schedule. */
+        val reason: String?
+            get() {
+                if (!blocks) return null
+                val parts = buildList {
+                    if (payments > 0) add(if (payments == 1) "a payment" else "$payments payments")
+                    if (fees > 0) add(if (fees == 1) "a fee" else "$fees fees")
+                    if (refunds > 0) add(if (refunds == 1) "a refund" else "$refunds refunds")
+                }
+                val what = when (parts.size) {
+                    1 -> parts[0]
+                    2 -> parts[0] + " and " + parts[1]
+                    else -> parts.dropLast(1).joinToString(", ") + " and " + parts.last()
+                }
+                return "A change to the schedule is blocked: $what " + (if (parts.size == 1) "has" else "have") + " already been recorded."
+            }
+    }
+
+    /** Counts the records that block a change to [plan]'s schedule; its own purchase record does not count. */
+    fun scheduleLock(data: MintData, plan: InstallmentPlan): ScheduleLock {
+        val purchaseId = plan.purchaseTxId
+        val records = data.transactions.filter { t ->
+            (t.planId == plan.id || t.planAllocations.any { it.planId == plan.id } || (purchaseId != null && t.refundOf == purchaseId)) && t.id != purchaseId
+        }
+        return ScheduleLock(
+            payments = records.count { it.type == TxType.TRANSFER },
+            fees = records.count { it.type == TxType.FEE },
+            refunds = records.count { it.type == TxType.REFUND },
+        )
+    }
+
+    /** Why one installment can no longer be changed, or null when it can. */
+    fun installmentLock(data: MintData, plan: InstallmentPlan, view: InstallmentView): String? {
+        if (data.transactions.any { t -> t.type == TxType.REFUND && (t.planId == plan.id || (plan.purchaseTxId != null && t.refundOf == plan.purchaseTxId)) }) {
+            return "A refund has already changed this schedule."
+        }
+        if (view.lateMinor > 0) return "A late fee is recorded on this installment."
+        if (view.feeRecorded) return "Its fee is already billed."
+        if (view.paidMinor > 0) return "A payment is already recorded on it."
+        return null
+    }
+
+    /**
+     * What deleting a purchase and its schedule would take away, and what would stay (MINT.md 5.6A): the purchase and the
+     * schedule go; a payment, a fee or a refund already recorded on it is real history, so it blocks the deletion.
+     */
+    data class DeletionPreview(
+        val purchaseId: String?,
+        val installments: Int,
+        val payments: Int,
+        val paidMinor: Long,
+        val fees: Int,
+        val feeMinor: Long,
+        val refunds: Int,
+        val refundMinor: Long,
+        val remainingMinor: Long,
+    ) {
+        val canDelete: Boolean get() = purchaseId != null && payments == 0 && fees == 0 && refunds == 0
+
+        /** What the records that stay are, or null when nothing would stay. */
+        val blockedReason: String?
+            get() {
+                if (payments == 0 && fees == 0 && refunds == 0) return null
+                val parts = buildList {
+                    if (payments > 0) add(if (payments == 1) "a payment" else "$payments payments")
+                    if (fees > 0) add(if (fees == 1) "a fee" else "$fees fees")
+                    if (refunds > 0) add(if (refunds == 1) "a refund" else "$refunds refunds")
+                }
+                val what = when (parts.size) {
+                    1 -> parts[0]
+                    2 -> parts[0] + " and " + parts[1]
+                    else -> parts.dropLast(1).joinToString(", ") + " and " + parts.last()
+                }
+                return "It cannot be deleted: $what " + (if (parts.size == 1) "has" else "have") + " already been recorded on it and would be left behind."
+            }
+    }
+
+    /** The preview of deleting one plan's purchase and schedule; null when the plan is gone. */
+    fun deletionPreview(data: MintData, plan: InstallmentPlan, today: LocalDate): DeletionPreview {
+        val purchase = plan.purchaseTxId?.let { id -> data.transactions.firstOrNull { it.id == id } }
+        val records = data.transactions.filter { t ->
+            (t.planId == plan.id || t.planAllocations.any { it.planId == plan.id } || (purchase != null && t.refundOf == purchase.id)) && t.id != purchase?.id
+        }
+        return DeletionPreview(
+            purchaseId = purchase?.id,
+            installments = plan.installments.size,
+            payments = records.count { it.type == TxType.TRANSFER },
+            paidMinor = records.filter { it.type == TxType.TRANSFER }.sumOf { it.amountMinor },
+            fees = records.count { it.type == TxType.FEE },
+            feeMinor = records.filter { it.type == TxType.FEE }.sumOf { it.amountMinor },
+            refunds = records.count { it.type == TxType.REFUND },
+            refundMinor = records.filter { it.type == TxType.REFUND }.sumOf { it.amountMinor },
+            remainingMinor = view(data, plan, today).remainingMinor,
+        )
+    }
+
     fun dueWithin(data: MintData, currency: String, today: LocalDate, withinDays: Int): Pair<Long, Int> {
         val until = today.plus(DatePeriod(days = withinDays))
         var sum = 0L

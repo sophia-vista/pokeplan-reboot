@@ -5,6 +5,26 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.252.0
+
+MINT's reconciliation friction (the owner's P0 list, 26 November 2026): a quick balance check is now separate from recording a reconciliation, a difference is explained before an adjustment is offered, and an adjustment must say why. No reward rule, schema or save-format change (`Reconciliation.reason` is a sealed-JSON default).
+
+- **Quick check, then reconciliation (MINT.md 5.8).** The Balance check and reconciliation box compares the statement with Mint and writes nothing; recording keeps the comparison (statement, what Mint held, adjustment and reason), and a match is recorded as a match.
+- **A difference is explained first.** Before any adjustment the screen lists what in Mint may account for it — records still pending, imported records not reviewed, records from the last week a statement may not include — and says plainly when nothing explains it.
+- **An adjustment needs a reason.** A non-zero difference is refused without one; the reason is kept on the reconciliation and as the adjustment record's own note, in the player's words.
+- **An audit trail.** Every check and reconciliation for an account is listed newest first with the day, statement against Mint, matched or adjusted, and the reason; nothing is overwritten and a matching balance adjusts nothing.
+- **Tests:** `MintReconciliationTest` (app-core, 5), and the existing reconciliation test now asserts the reason on the record and the adjustment.
+
+## 0.251.0
+
+MINT's pay-later and installment friction (the owner's P0 list, 26 November 2026) and the transaction form's validation. No reward rule, schema or save-format change; the plan, record and setting fields are sealed-JSON defaults.
+
+- **A purchase can be left unnamed (MINT.md 5.6A).** A pay-later or card purchase (or an existing schedule) saved without a name gets a fixed default — "Installment purchase" / "Existing installments" — instead of a refusal; it can be renamed later and the purchase's payee follows.
+- **A locked schedule says why (5.6A, 5.6C).** Once a payment, a billed fee or a refund is recorded, the plan's Edit key is replaced by the reason in words ("A change to the schedule is blocked: a payment has already been recorded."); each installment says which are still editable and why a locked one is ("A payment is already recorded on it.", "Its fee is already billed.", "A refund has already changed this schedule.").
+- **"Remove schedule", and a deletion with a preview.** The ambiguous "Delete plan" is now **Remove schedule**, with a confirmation that says exactly what stays (the purchase as one expense, payments, fees, refunds, an existing schedule's opening balance). A purchase-linked plan also offers **Delete purchase and schedule**, which previews the purchase record, the installments and any payments, fees and refunds, and only goes ahead while nothing has been recorded on it — otherwise it says what blocks it. The purchase's descriptive fields (name, note, category, receipt) can be edited from Activity; its money stays tied to the plan.
+- **The transaction form explains itself (5.3).** A refused field says so beside it (amount, fee, split part); a disabled Save always carries its reason ("Type an amount to save.", "Choose 1 to 36 installments.", "Say who paid it back."); everything typed survives a failed save. The form follows the entry: a repayment to a card says it is not spending, an expense on a card says it counts once today and raises what is owed, a refund offers **Refund of** (a recent expense, optional) and saves the link, and **Pay in installments** moves into its own **Installment schedule** section with an optional name, the terms and the generated schedule instead of hiding in Additional details.
+- **Tests:** `MintPlansFrictionTest` (app-core, 9: default names, block reasons, installment locks, the deletion preview and its refusal, remove-schedule keeps the purchase, descriptive edits, the blank-name fallback).
+
 ## 0.250.0
 
 Legendary and mythical Pokémon level up, and their bonuses grow with their level. `RewardRules.VERSION` is 36: a Guardian's perk now depends on its level, which changes what a task or egg can pay.

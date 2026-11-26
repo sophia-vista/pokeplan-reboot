@@ -834,6 +834,8 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
     var inInstallments by remember { mutableStateOf(startInstallments) }
     var iou by remember { mutableStateOf(false) }
+    var refundOfId by remember { mutableStateOf<String?>(null) }
+    var amountError by remember { mutableStateOf<String?>(null) }
     val terms = remember { TermsState() }
     var openId by remember { mutableStateOf<String?>(null) }
     val from = open.firstOrNull { it.id == accountId } ?: open.firstOrNull()
@@ -849,7 +851,8 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
     val installmentMode = type == TxType.EXPENSE && inInstallments && from != null && Installments.allowedFor(from.type)
     fun save() {
         val minor = Money.parse(amount, currency)
-        if (minor == null) { message = "Check the amount." to NoticeTone.WARNING; return }
+        if (minor == null || minor <= 0) { amountError = "Type an amount above zero."; message = null; return }
+        amountError = null
         val canSplitType = type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.REFUND, TxType.FEE)
         val splits = if (splitEnabled && !installmentMode && canSplitType) {
             val parsed = splitParts.map { part -> part to Money.parse(part.amount, currency) }
@@ -878,11 +881,20 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
         val out = mint.record(
             type, minor, from!!.id, toAccountId = if (type == TxType.TRANSFER) to?.id else null,
             categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT && splits.isEmpty() },
-            payee = payee, note = note, atMillis = at, up = up, splits = splits, feeMinor = feeMinor,
+            payee = payee, note = note, atMillis = at, up = up, refundOf = refundOfId.takeIf { type == TxType.REFUND && splits.isEmpty() },
+            splits = splits, feeMinor = feeMinor,
             status = TxStatus.POSTED, iou = isIou,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; iou = false; splitParts = listOf(SplitDraft(), SplitDraft()); adding = false; model.haptic() }
+        else { message = null; model.say("Saved."); if (out.rewards.isNotEmpty()) model.effect(Sfx.ITEM_GET); payAt = null; amount = ""; fee = ""; payee = ""; note = ""; more = false; splitEnabled = false; iou = false; refundOfId = null; amountError = null; splitParts = listOf(SplitDraft(), SplitDraft()); adding = false; model.haptic() }
+    }
+    val installmentReady = !installmentMode || (terms.count != null && terms.fee(currency) != null)
+    val canSave = amount.isNotBlank() && installmentReady && !(type == TxType.INCOME && iou && payee.isBlank())
+    val saveHint = when {
+        amount.isBlank() -> "Type an amount to save."
+        !installmentReady -> if (terms.count == null) "Choose 1 to ${Installments.MAX_COUNT} installments." else "Check the fee."
+        type == TxType.INCOME && iou && payee.isBlank() -> "Say who paid it back."
+        else -> null
     }
     val otherTypes = quickTypes.filter { it !in mainTypes }
     PullRevealSlot(reveal, model.data.settings.reduceMotion) {
@@ -900,9 +912,10 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
     else FormBox {
         FormStack {
             PixelField(
-                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
+                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); amountError = null }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = currency, placeholder = "0.00",
             )
+            amountError?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) }
             FormDivider()
             FormGroup {
                 PixelChoice(mainTypes, type.takeIf { it in mainTypes }, { it?.label ?: "" }, { t ->
@@ -931,6 +944,19 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                 } else if (type == TxType.ADJUSTMENT) {
                     PixelChoice(listOf(true, false), up, { if (it == true) "Balance goes up" else "Balance goes down" }, { if (it != null) up = it }, label = "Change", key = accent)
                 } else {
+                    if (type == TxType.EXPENSE && from?.type?.liability == true) {
+                        Text("Spending on this card: it counts once today and raises what is owed.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
+                    if (type == TxType.REFUND) {
+                        val refundable = data.transactions
+                            .filter { it.type == TxType.EXPENSE && it.accountId == from?.id && it.status == TxStatus.POSTED && it.amountMinor > 0 }
+                            .sortedByDescending { it.atMillis }.take(12)
+                        if (refundable.isNotEmpty()) PixelDropdown(
+                            listOf<String?>(null) + refundable.map { it.id }, refundOfId,
+                            { id -> refundable.firstOrNull { it.id == id }?.let { r -> r.day.short() + " \u00b7 " + r.payee.ifBlank { "Expense" } } ?: "No record" },
+                            { refundOfId = it }, Modifier.fillMaxWidth(), key = accent, label = "Refund of (optional)",
+                        )
+                    }
                     val kind = if (type == TxType.INCOME && !iou) CategoryKind.INCOME else CategoryKind.EXPENSE
                     val usable = data.categories.filter { it.kind == kind && !it.archived }
                     val recent = data.transactions.sortedByDescending { it.atMillis }.mapNotNull { t -> usable.firstOrNull { it.id == t.categoryId } }.distinct()
@@ -953,6 +979,19 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                     ) else SplitFields(splitParts, currency, ordered.map { it.id to it.name }) { splitParts = it }
                 }
             }
+            if (type == TxType.EXPENSE && from != null && Installments.allowedFor(from.type)) ToggleRow("Pay in installments", inInstallments) {
+                inInstallments = it
+                if (it) { splitEnabled = false; categoryId = null }
+            }
+            if (installmentMode && from != null) FormGroup(title = "Installment schedule") {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelField(
+                        payee, { payee = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name (optional)", singleLine = true,
+                        placeholder = Installments.DEFAULT_PURCHASE_NAME, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                    )
+                    InstallmentTerms(model, from, terms, Money.parse(amount, currency), (payAt ?: model.store.nowMillis).toLocalDateTime(zone).date)
+                }
+            }
             PixelMomentField(payAt ?: model.store.nowMillis, { payAt = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
             FormDisclosure("Additional details", more || installmentMode, { more = !more }) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -970,20 +1009,12 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                         },
                         Modifier.fillMaxWidth(), key = accent, label = "Other kind of entry",
                     )
-                    if (type == TxType.EXPENSE && from != null && Installments.allowedFor(from.type)) ToggleRow("Pay in installments", inInstallments) {
-                        inInstallments = it
-                        if (it) { more = true; splitEnabled = false }
-                    }
-                    if (installmentMode) {
-                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-                        InstallmentTerms(model, from!!, terms, Money.parse(amount, currency), (payAt ?: model.store.nowMillis).toLocalDateTime(zone).date)
-                    } else {
-                        if (!iou) PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-                        PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
-                    }
+                    if (!installmentMode && !iou) PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+                    PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
                 }
             }
-            FormSave("Save", ::save, ModuleAccent.MINT.accent, enabled = amount.isNotBlank() && (!installmentMode || payee.isNotBlank()))
+            FormSave("Save", ::save, ModuleAccent.MINT.accent, enabled = canSave)
+            if (!canSave) saveHint?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             message?.let { (text, tone) -> Report(model, text, tone) }
             if (data.transactions.isNotEmpty()) PixelButton("Cancel", { adding = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
@@ -1054,21 +1085,29 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
     var accountId by remember(t.id) { mutableStateOf(t.accountId) }
     var fee by remember(t.id) { mutableStateOf(if (t.feeMinor > 0) Money.plain(t.feeMinor, t.currency) else "") }
     var moreTx by remember(t.id) { mutableStateOf(t.payee.isNotEmpty() || t.note.isNotEmpty()) }
+    var amountError by remember(t.id) { mutableStateOf<String?>(null) }
+    var feeError by remember(t.id) { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (editing) {
             val accounts = model.mintData.accounts.filter { (it.status == AccountStatus.ACTIVE && it.currency == t.currency) || it.id == t.accountId }
             FormStack {
                 if (planPurchase) Text("Change the purchase from its plan.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                else PixelField(
-                    amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = t.currency, placeholder = "0.00",
-                )
+                else {
+                    PixelField(
+                        amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); amountError = null }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = t.currency, placeholder = "0.00",
+                    )
+                    amountError?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) }
+                }
                 FormDivider()
                 FormGroup {
-                    if (t.type == TxType.TRANSFER) PixelField(
-                        fee, { fee = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Fee (optional)", singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = t.currency, placeholder = "0.00",
-                    )
+                    if (t.type == TxType.TRANSFER) {
+                        PixelField(
+                            fee, { fee = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); feeError = null }, Modifier.fillMaxWidth(), label = "Fee (optional)", singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = t.currency, placeholder = "0.00",
+                        )
+                        feeError?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) }
+                    }
                     if (!planPurchase && accounts.size > 1 && t.type != TxType.TRANSFER) {
                         PixelDropdown(accounts.map { it.id }, accountId, { id -> accounts.firstOrNull { it.id == id }?.name ?: "" }, { id -> if (id != null) accountId = id }, Modifier.fillMaxWidth(), key = accent, label = "Account")
                     }
@@ -1088,28 +1127,36 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                 PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
                 FormDisclosure("Additional details", moreTx, { moreTx = !moreTx }) {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true)
+                        PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = if (planPurchase) "Purchase name" else "Payee or source", singleLine = true)
                         PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
                     }
                 }
                 FormSave("Save", {
                     val minor = if (planPurchase) t.amountMinor else Money.parse(amount, t.currency)
                     val feeMinor = if (t.type == TxType.TRANSFER && fee.isNotBlank()) Money.parse(fee, t.currency) else 0L
-                    if (minor == null) refused = "Check the amount."
-                    else if (feeMinor == null) refused = "Check the fee."
-                    else {
+                    amountError = if (minor == null) "Type an amount above zero." else null
+                    feeError = if (feeMinor == null) "Check the fee." else null
+                    refused = when {
+                        amountError != null -> amountError
+                        feeError != null -> feeError
+                        else -> null
+                    }
+                    if (amountError == null && feeError == null) {
+                        val checked = minor ?: return@FormSave
+                        val checkedFee = feeMinor ?: return@FormSave
                         val splits = if (splitEnabled) {
                             val parsed = splitParts.map { part -> part to Money.parse(part.amount, t.currency) }
                             if (parsed.any { it.second == null }) { refused = "Check each split amount."; return@FormSave }
-                            if (parsed.sumOf { it.second!! } != minor) { refused = "Split amounts must add up to the transaction."; return@FormSave }
+                            if (parsed.sumOf { it.second!! } != checked) { refused = "Split amounts must add up to the transaction."; return@FormSave }
                             parsed.map { (part, amount) -> TransactionSplit(part.categoryId, amount!!) }
                         } else emptyList()
                         mint.updateTransaction(t.copy(
-                            amountMinor = minor, feeMinor = feeMinor, payee = payee, note = note, atMillis = at, accountId = accountId,
+                            amountMinor = checked, feeMinor = checkedFee, payee = payee, note = note, atMillis = at, accountId = accountId,
                             categoryId = categoryId.takeIf { splits.isEmpty() }, splits = splits,
                         )).let { if (it.record != null) { editing = false; onDone() } else refused = it.refused }
                     }
-                }, ModuleAccent.MINT.accent)
+                }, ModuleAccent.MINT.accent, enabled = planPurchase || amount.isNotBlank())
+                if (!planPurchase && amount.isBlank()) Text("Type an amount to save.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 PixelButton("Cancel", { editing = false }, Modifier.fillMaxWidth(), Pixel.InkSoft)
             }
         } else if (asking) {
