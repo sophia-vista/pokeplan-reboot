@@ -37,6 +37,7 @@ import app.pokeplan.mint.MonthlyBills
 import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.Reconciliation
 import app.pokeplan.mint.ReviewRecord
+import app.pokeplan.mint.ReviewSnooze
 import app.pokeplan.mint.SettleStatus
 import app.pokeplan.mint.SavingsTarget
 import app.pokeplan.mint.StatementImport
@@ -1095,6 +1096,28 @@ class MintStore(
         if (rewards != null) update { d -> d.copy(reconciliations = d.reconciliations.map { if (it.id == record.id) it.copy(paid = true) else it }) }
         return Logged(data.reconciliations.first { it.id == record.id }, rewards = rewards.orEmpty())
     }
+
+    // --- the review, worked through one thing at a time (MINT.md 9.1) ----------------------------------------------
+
+    /** What is worth a look today, in priority order, without what the player put off until a later day. */
+    fun reviewInbox(): List<app.pokeplan.mint.ReviewInbox.Item> {
+        val snoozed = data.reviewSnoozes.filter { it.until > today }.map { it.id }.toSet()
+        return app.pokeplan.mint.ReviewInbox.items(data, today, weekStart()).filterNot { it.id in snoozed }
+    }
+
+    /** The items put off, and until when. */
+    fun reviewSnoozed(): List<ReviewSnooze> = data.reviewSnoozes.filter { it.until > today }.sortedBy { it.until }
+
+    /** Puts one review item off for [days] days; never a requirement to finish the whole inbox (MINT.md 9.1). */
+    fun snoozeReview(id: String, days: Int) {
+        val until = today.plus(DatePeriod(days = days.coerceIn(1, 365)))
+        update { d ->
+            d.copy(reviewSnoozes = d.reviewSnoozes.filterNot { it.id == id } + ReviewSnooze(id, until))
+        }
+    }
+
+    /** Brings one put-off review item back now. */
+    fun unsnoozeReview(id: String) = update { d -> d.copy(reviewSnoozes = d.reviewSnoozes.filterNot { it.id == id }) }
 
     fun finishReview(): Logged<ReviewRecord> {
         val record = ReviewRecord(newId(), today, nowMillis)

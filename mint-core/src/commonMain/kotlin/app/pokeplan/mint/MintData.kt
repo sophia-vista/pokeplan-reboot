@@ -258,6 +258,10 @@ data class MintSettings(
     val captureMessages: Boolean = false,
 )
 
+/** A review item the player put off, and the day it comes back (MINT.md 9.1). */
+@Serializable
+data class ReviewSnooze(val id: String, val until: LocalDate)
+
 /** One thing that happened to a record after it was saved, kept as its short history (MINT.md 5.7, 5.8). */
 @Serializable
 data class RecordChange(
@@ -287,6 +291,9 @@ data class MintData(
 
     /** The short history of edits, status changes, imports and adjustments; bounded by the store (MINT.md 5.7). */
     val recordChanges: List<RecordChange> = emptyList(),
+
+    /** The review items the player put off, with the day each comes back (MINT.md 9.1). */
+    val reviewSnoozes: List<ReviewSnooze> = emptyList(),
 )
 
 enum class MintKinds(val label: String) {
