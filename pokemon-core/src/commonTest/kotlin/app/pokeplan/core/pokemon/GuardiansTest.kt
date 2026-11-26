@@ -66,9 +66,40 @@ class GuardiansTest {
     }
 
     @Test
-    fun guardiansDoNotTakeCandies() {
-        assertFalse(guardian("mew").canFeed)
+    fun legendsTakeCandiesAndLevelUpLikeAnyPokemon() {
+        val mew = guardian("mew")
+        assertTrue(mew.canFeed)
         assertTrue(pokemon(Ids.PIKACHU).canFeed)
+        val fed = generateSequence(mew) { it.feedRareCandy() }.take(40).last()
+        assertTrue(fed.level > mew.level, "candies raise a legend's level")
+        assertTrue(mew.gainXp(CandyRules.XP_PER_CANDY * 40).level > mew.level, "XP does too")
+        assertFalse(mew.copy(level = CandyRules.MAX_LEVEL).canFeed, "level 100 is the end")
+    }
+
+    @Test
+    fun legendPowerIsTheBaseAtLevelOneAndDoubleAtLevelHundred() {
+        assertEquals(1.0, LegendPower.scale(1), 1e-9)
+        assertEquals(2.0, LegendPower.scale(100), 1e-9)
+        assertEquals(10, LegendPower.scaled(10, 1))
+        assertEquals(20, LegendPower.scaled(10, 100))
+        assertEquals(3, LegendPower.scaled(3, 1))
+        assertEquals(6, LegendPower.scaled(3, 100))
+        assertEquals(4, LegendPower.scaled(3, 50), "rounded down")
+        assertEquals(LegendPower.scaled(10, 1), LegendPower.scaled(10, 0), "below 1 counts as 1")
+        assertEquals(LegendPower.scaled(10, 100), LegendPower.scaled(10, 500), "above 100 counts as 100")
+    }
+
+    @Test
+    fun aGuardiansPerkGrowsWithItsLevelUnderTheSameCap() {
+        val one = guardian("uxie")
+        val hundred = one.copy(level = 100)
+        assertEquals(Guardians.SIGNATURE_PERCENT, Guardians.signature(one).getValue(PerkBucket.SUPER_CANDY_CHANCE), 1e-9)
+        assertEquals(Guardians.SIGNATURE_PERCENT * 2, Guardians.signature(hundred).getValue(PerkBucket.SUPER_CANDY_CHANCE), 1e-9)
+        val hoOh = guardian("ho-oh").copy(level = 100)
+        assertEquals(Guardians.SIGNATURE_PERCENT * 2 * Guardians.SECOND_TYPE_SHARE, Guardians.signature(hoOh).getValue(PerkBucket.EGG_LUCK), 1e-9, "the second type scales too")
+        assertEquals(Guardians.BUCKET_CAP, Guardians.perks(listOf(hundred)).getValue(PerkBucket.SUPER_CANDY_CHANCE), 1e-9, "the cap still holds")
+        val capped = Guardians.addTo(emptyMap<PerkBucket, Double>(), hundred) { PerkBucket.SUPER_CANDY_CHANCE }
+        assertEquals(Guardians.BUCKET_CAP, capped.getValue(PerkBucket.SUPER_CANDY_CHANCE), 1e-9)
     }
 
     @Test

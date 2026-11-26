@@ -1,5 +1,7 @@
 package app.pokeplan.world
 
+import app.pokeplan.core.pokemon.LegendPower
+import app.pokeplan.core.pokemon.OwnedPokemon
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -94,11 +96,15 @@ data class WorldData(
 
     private fun given(layer: WorldLayer): List<LegendQuest> = Legends.of(layer).filter { it.id in legends }
 
-    fun legendFaster(dungeon: DungeonDef): Int = given(dungeon.layer).count { q -> q.types.any { it in dungeon.favored } } * Legends.FASTER_PERCENT
+    /** The legends' bonuses grow with the level of the owned Pokémon each quest granted, found in [roster] (level 1 when it is not there). */
+    fun legendFaster(dungeon: DungeonDef, roster: List<OwnedPokemon> = emptyList()): Int =
+        given(dungeon.layer).filter { q -> q.types.any { it in dungeon.favored } }.sumOf { LegendPower.scaled(Legends.FASTER_PERCENT, it.levelIn(roster)) }
 
-    fun legendFindPermille(dungeon: DungeonDef): Int = given(dungeon.layer).sumOf { it.findPermille }
+    fun legendFindPermille(dungeon: DungeonDef, roster: List<OwnedPokemon> = emptyList()): Int =
+        given(dungeon.layer).sumOf { LegendPower.scaled(it.findPermille, it.levelIn(roster)) }
 
-    fun legendTreasurePercent(dungeon: DungeonDef): Int = given(dungeon.layer).sumOf { it.treasurePercent }
+    fun legendTreasurePercent(dungeon: DungeonDef, roster: List<OwnedPokemon> = emptyList()): Int =
+        given(dungeon.layer).sumOf { LegendPower.scaled(it.treasurePercent, it.levelIn(roster)) }
 
     companion object { const val JOURNAL_SIZE = 40; const val MAX_PRESETS = 6 }
 

@@ -79,6 +79,7 @@ import app.pokeplan.world.Story
 import app.pokeplan.world.Legends
 import app.pokeplan.world.bonusText
 import app.pokeplan.world.displayName
+import app.pokeplan.world.levelIn
 import app.pokeplan.world.grantedForm
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.WorldEvent
@@ -347,7 +348,7 @@ private fun WorldMapView(model: AppModel) {
                     else -> {
                         ready.forEach { team ->
                             val members = team.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
-                            val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d))
+                            val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d, roster))
                             Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
                         }
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -423,7 +424,7 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
                             },
                             style = MaterialTheme.typography.bodyMedium,
                         )
-                        if (done) Text("Gives: ${q.bonusText()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+                        if (done) Text("Gives: ${q.bonusText(q.levelIn(model.data.player.pokemon))}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
                     }
                 }
             }
@@ -718,7 +719,7 @@ private fun WorldTeamsView(model: AppModel) {
         val trip = team.expedition ?: return@forEach
         val dungeon = Dungeons.byId(trip.dungeonId) ?: return@forEach
         val floor = trip.floorsClimbed % dungeon.floors
-        val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone, world.legendFaster(dungeon))
+        val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone, world.legendFaster(dungeon, roster))
         val body: @Composable () -> Unit = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 TeamHeading(team, dungeon, members)
@@ -728,7 +729,7 @@ private fun WorldTeamsView(model: AppModel) {
                 }
                 PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
                 Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s", style = MaterialTheme.typography.bodyMedium) // copy-ok: game
-                SpeedExplainer(members, dungeon, world)
+                SpeedExplainer(members, dungeon, world, roster)
                 PixelButton("Recall", { store.worldRecall(team.id); model.effect(Sfx.TEAM_RECALLED) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
         }
@@ -812,12 +813,12 @@ private fun WorldTeamsView(model: AppModel) {
                         }
                         if (members.isEmpty()) Text("No one is picked yet. Go back and choose the team.", style = MaterialTheme.typography.bodyMedium)
                         else {
-                            val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d))
+                            val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d, roster))
                             val power = WorldSim.power(members, d)
                             Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyLarge) // copy-ok: game
                             Text(app.pokeplan.world.Outcomes.explain(power, d), style = MaterialTheme.typography.bodyMedium)
                             if (app.pokeplan.world.TeamAdvice.isPoorMatch(d, members)) Text("Few of this team suit this place. It can still go; expect it to be slower.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) // copy-ok: game
-                            SpeedExplainer(members, d, world)
+                            SpeedExplainer(members, d, world, roster)
                             PixelButton("Start the expedition", {
                                 val saved = picked.toSet() == team.members.toSet() || store.worldAssign(team.id, picked)
                                 if (saved && store.worldStart(team.id, d.id)) { model.effect(Sfx.STAIRS_DOWN); reset() } else model.effect(Sfx.CONFIRM)
@@ -1258,7 +1259,7 @@ private fun WorldArchiveView(model: AppModel) {
                 here.forEach { m ->
                     when (m) {
                         is app.pokeplan.world.WorldMoment.ChapterOpened -> ArchiveRow("Chapter ${m.chapter.number}: ${m.chapter.title}", m.chapter.summary, m, model, icon = "town-map")
-                        is app.pokeplan.world.WorldMoment.LegendJoined -> ArchiveRow(m.quest.displayName(), "Joined as a Guardian: ${m.quest.bonusText()}.", m, model, icon = null, spriteId = m.quest.grantedForm().id)
+                        is app.pokeplan.world.WorldMoment.LegendJoined -> ArchiveRow(m.quest.displayName(), "Joined as a Guardian: ${m.quest.bonusText(m.quest.levelIn(model.data.player.pokemon))}.", m, model, icon = null, spriteId = m.quest.grantedForm().id)
                         else -> {}
                     }
                 }
