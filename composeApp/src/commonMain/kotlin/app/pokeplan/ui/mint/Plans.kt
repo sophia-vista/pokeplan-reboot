@@ -106,6 +106,10 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
     var openBill by remember(a.id) { mutableStateOf<BillMonth?>(null) }
     var allBills by remember(a.id) { mutableStateOf(false) }
     var howItWorks by remember(a.id) { mutableStateOf(false) }
+    var statementPay by remember(a.id) { mutableStateOf<Long?>(null) }
+    var recordingStatement by remember(a.id) { mutableStateOf(false) }
+    var statementMinimum by remember(a.id) { mutableStateOf("") }
+    val statementCycle = mint.currentCardCycle(a.id)
     if (howItWorks) CardFlowInfo { howItWorks = false }
     if (buying) Dialog({ buying = false }, DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize().padding(Spacing.L), contentAlignment = Alignment.Center) {
@@ -130,6 +134,47 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
                 MintValueRow("Last statement", mint.show(st.statementBalanceMinor, a.currency), soft = true)
                 if (st.minimumPaymentMinor > 0) MintValueRow("Minimum due", mint.show(st.minimumPaymentMinor, a.currency), soft = true)
                 Text("Pay by ${st.dueDay.compact()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            statementCycle?.takeIf { it.billedMinor > 0 }?.let { c ->
+                val state = c.state(today)
+                SectionLabel("This statement")
+                MintValueRow("Billed on " + c.statementDay.compact(), mint.show(c.billedMinor, a.currency))
+                if (c.minimumMinor > 0) MintValueRow("Minimum due", mint.show(c.minimumMinor, a.currency), soft = true)
+                if (c.paidMinor > 0) MintValueRow("Paid since", mint.show(c.paidMinor, a.currency), soft = true)
+                MintValueRow("Due " + c.dueDay.compact(), state.label + " \u00b7 " + mint.show(c.remainingMinor, a.currency), soft = state != app.pokeplan.mint.CardCycles.State.OVERDUE)
+                if (state != app.pokeplan.mint.CardCycles.State.PAID) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        if (c.minimumMinor > 0) PixelButton("Pay minimum", { statementPay = c.minimumMinor }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        PixelButton("Pay in full", { statementPay = c.remainingMinor }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                    }
+                    statementPay?.let { amount ->
+                        PayForm(model, "statement-" + a.id, a.currency, amount, amount, "Paying a statement is a transfer to the card, never spending.", problem) { minor, source, day ->
+                            mint.payStatement(a.id, minor, source, day, statementId = c.statementId).note()
+                        }
+                        PixelButton("Not now", { statementPay = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                    }
+                    if (c.statementId == null && !recordingStatement) {
+                        PixelButton("Record the card's statement", { recordingStatement = true; statementMinimum = "" }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                    }
+                    if (recordingStatement) {
+                        Text("The card's own figures: " + mint.show(c.billedMinor, a.currency) + " billed on " + c.statementDay.compact() + ", due " + c.dueDay.compact() + ". The lender's minimum is yours to enter.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        PixelField(
+                            statementMinimum, { statementMinimum = money(it) }, Modifier.fillMaxWidth(), label = "Minimum payment", singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = a.currency,
+                        )
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelButton("Save statement", {
+                                val min = Money.parse(statementMinimum, a.currency)
+                                if (min == null) problem("Check the minimum payment.")
+                                else {
+                                    val out = mint.recordStatementFromCycle(a.id, min)
+                                    if (out.record == null) problem(out.refused) else { problem(null); model.say("Statement saved."); recordingStatement = false; statementMinimum = "" }
+                                }
+                            }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                            PixelButton("Cancel", { recordingStatement = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        }
+                    }
+                }
             }
             dayLine("Statement", a.statementDay, today)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             dayLine("Due", a.dueDay, today)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
@@ -658,6 +703,41 @@ internal fun dueBills(model: AppModel, withinDays: Int): List<DueBill> {
     return model.mintData.accounts.filter { Installments.allowedFor(it.type) }
         .flatMap { account -> model.mint.openBills(account.id).filter { it.dueDay <= limit }.map { DueBill(account, it) } }
         .sortedBy { it.bill.dueDay }
+}
+
+/**
+ * The card statements due soon, as one place to see what a credit line billed and pay it (MINT.md 5.6D). Each payment is
+ * a transfer, never spending, and the cycle is only what Mint derives from the card's configured statement and due days.
+ */
+@Composable
+internal fun CardStatementsDueBox(model: AppModel) {
+    val mint = model.mint
+    val today = model.store.today
+    val due = remember(model.mintData) { mint.cardObligationsWithin(30) }
+    if (due.isEmpty()) return
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Card statements due")
+            due.forEach { (account, cycle) ->
+                val state = cycle.state(today)
+                HorizontalDivider(color = Pixel.Border)
+                MintLine(trail = { Text(mint.show(cycle.remainingMinor, account.currency), style = MaterialTheme.typography.titleSmall) }) {
+                    Text(account.name, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "Billed " + cycle.statementDay.compact() + " \u00b7 due " + cycle.dueDay.compact() + " \u00b7 " + state.label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (state == app.pokeplan.mint.CardCycles.State.OVERDUE) Pixel.Warning else Pixel.InkSoft,
+                    )
+                }
+                PixelButton("Pay statement", {
+                    model.mintStartType = TxType.TRANSFER
+                    model.mintStartTo = account.id
+                    model.mintStartAmount = Money.plain(cycle.remainingMinor, account.currency)
+                    model.mintSection = MintSection.ACTIVITY
+                }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            }
+        }
+    }
 }
 
 @Composable
