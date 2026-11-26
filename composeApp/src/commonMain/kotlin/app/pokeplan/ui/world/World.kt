@@ -78,6 +78,8 @@ import app.pokeplan.world.ExplorerRank
 import app.pokeplan.world.Story
 import app.pokeplan.world.Legends
 import app.pokeplan.world.bonusText
+import app.pokeplan.world.displayName
+import app.pokeplan.world.grantedForm
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.WorldEvent
 import app.pokeplan.world.WorldSim
@@ -410,9 +412,9 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
             quests.forEach { q ->
                 val done = world.hasLegend(q.id)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    AnimatedSprite(Dex.defaultForm(q.speciesId).id, false, q.name, size = Spacing.Target, animate = false)
+                    AnimatedSprite(q.grantedForm().id, false, q.displayName(), size = Spacing.Target, animate = false)
                     Column(Modifier.weight(1f)) {
-                        Text(q.name, style = MaterialTheme.typography.bodyLarge)
+                        Text(q.displayName(), style = MaterialTheme.typography.bodyLarge)
                         Text(
                             when {
                                 done -> "Joined you"
@@ -1256,7 +1258,7 @@ private fun WorldArchiveView(model: AppModel) {
                 here.forEach { m ->
                     when (m) {
                         is app.pokeplan.world.WorldMoment.ChapterOpened -> ArchiveRow("Chapter ${m.chapter.number}: ${m.chapter.title}", m.chapter.summary, m, model, icon = "town-map")
-                        is app.pokeplan.world.WorldMoment.LegendJoined -> ArchiveRow(m.quest.name, "Joined as a Guardian: ${m.quest.bonusText()}.", m, model, icon = null, speciesId = m.quest.speciesId)
+                        is app.pokeplan.world.WorldMoment.LegendJoined -> ArchiveRow(m.quest.displayName(), "Joined as a Guardian: ${m.quest.bonusText()}.", m, model, icon = null, spriteId = m.quest.grantedForm().id)
                         else -> {}
                     }
                 }
@@ -1295,9 +1297,9 @@ private fun WorldArchiveView(model: AppModel) {
 }
 
 @Composable
-private fun ArchiveRow(title: String, detail: String, moment: app.pokeplan.world.WorldMoment, model: AppModel, icon: String?, speciesId: Int? = null) {
+private fun ArchiveRow(title: String, detail: String, moment: app.pokeplan.world.WorldMoment, model: AppModel, icon: String?, spriteId: Int? = null) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        if (speciesId != null) AnimatedSprite(Dex.defaultForm(speciesId).id, false, title, size = Sizes.IconL, animate = false)
+        if (spriteId != null) AnimatedSprite(spriteId, false, title, size = Sizes.IconL, animate = false)
         else if (icon != null) ItemIcon(icon, size = Sizes.IconL, description = null)
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)

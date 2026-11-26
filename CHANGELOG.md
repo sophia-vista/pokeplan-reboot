@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.249.1
+
+WORLD's Galar bird quests now show the Galarian birds. They already granted the Galarian form, but the Legendary quests list, the Story archive row and the join scene drew the Kanto Articuno, Zapdos and Moltres under the plain name. No reward, schema or save-format change, and `RewardRules.VERSION` stays.
+
+- **Fix.** The three screens use the quest's granted form (`LegendQuest.grantedForm()`, `displayName()`): the Galarian sprite and "Galarian Articuno", "Galarian Zapdos", "Galarian Moltres". Kanto's own quests and every other legendary are unchanged. Spec: `docs/pokelife/MODULES/WORLD.md` section 14.6.
+
 ## 0.249.0
 
 LINK can take several photos at once: the system gallery picker in multi-select and a "From files" key for any documents provider the phone has, with no account and no new permission. Android only; no reward, schema or save-format change, and `RewardRules.VERSION` stays.
