@@ -398,6 +398,10 @@ It supports:
 
 Imported records remain identifiable as imported. Reconciliation does not silently replace manual history or erase unmatched transactions.
 
+**A quick check is not a reconciliation (owner's P0 list, 26 November 2026).** The **Balance check and reconciliation** box first offers a **quick check**: it compares what the player's statement (or the bank's own app) says with what Mint holds, shows both figures and the difference, and **writes nothing**. Recording the reconciliation keeps that comparison (`Reconciliation`: day, statement amount, what Mint held, whether an adjustment was made, and why); when the two match it records the match alone. When they differ, the screen **explains the difference before offering an adjustment** — records still pending and so not in the balance, imported records not yet reviewed, records from the last week that a statement may not include — and says plainly when nothing in Mint explains it. A difference is only recorded as **one explicit `ADJUSTMENT`** the player accepts, and **a manual adjustment needs a reason in the player's words** (refused when blank): the reason is kept on the `Reconciliation` (`reason`) and is the adjustment record's own note, so the audit trail reads from the record itself. Every check and reconciliation is kept and listed for the account ("Earlier checks": the day, statement against Mint, matched or adjusted, and the reason) — nothing is overwritten, and a matching balance adjusts nothing.
+
+
+
 ### 5.8A IOUs: income someone owes back
 
 A lightweight flag on one income transaction, not a ledger, not a screen and not a module. It answers one question: money someone owes the player back, where does it sit?
@@ -974,6 +978,7 @@ Section 3.2B in code: mint-core `OverviewCounts.kt` (`OverviewWindow`, `PayLater
 - **Paydays** (8.3B): `Frequency.SEMI_MONTHLY`, `Bill.days`, `Bill.workday`, `Bill.estimate`; `Occurrence.payDay` is the really due day and `dueDay` the scheduled day that keys settlement, and reminders use `payDay`. `PhHolidays` and `Payday` are in mint-core `Payday.kt`; `MintSettings.builtInHolidays`, `holidaysIgnored` and `daysOff` are set by `setBuiltInHolidays`, `setHolidayCounted` and `setDayOff`; the UI is `ui/mint/Paydays.kt`.
 - **Accounts.** `MintStore.arrangeAccounts(orderedIds)` puts the ids back into their existing slots of the accounts list, which is the saved order. `FinancialAccount.appPackage` is chosen from the installed apps (`AppLauncher`, `InstalledApp` in `Integrations.kt`, `AndroidAppLauncher`). `limitMinor`, `statementDay` and `dueDay` are checked by `MintRules.checkLimit` and `checkCardDay`; a short month clamps through `MintRules.nextOnDay`; `MintRules.leftToSpend` feeds the card row and options (`ui/mint/CardDays.kt`).
 - **Recurring income.** `Bill.income` (default false) marks money expected; "Received, record it" goes through `settleAndRecord`.
+- **Balance checks (5.8; 0.252.0).** `Reconciliation.reason` (sealed JSON default) and its comparison fields; `MintStore.BalanceCheck` with `balanceCheck(accountId, reportedMinor)` (nothing written), `reconciliationHistory(accountId?)`, and `reconcile(accountId, statementMinor, acceptAdjustment, reason)` (a non-zero difference is refused without `acceptAdjustment`, and without a reason); the adjustment record's note carries the reason. UI: `ReconcileCard` in `Review`.
 
 
 ## 22I. Bank alerts as built

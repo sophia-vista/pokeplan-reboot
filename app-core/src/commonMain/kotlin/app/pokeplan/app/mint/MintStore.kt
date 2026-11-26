@@ -898,20 +898,60 @@ class MintStore(
 
     fun bookBalance(accountId: String): Long? = data.accounts.firstOrNull { it.id == accountId }?.let { MintRules.balance(data, it).postedMinor }
 
-    fun reconcile(accountId: String, statementMinor: Long, acceptAdjustment: Boolean = false): Logged<Reconciliation> {
+    /**
+     * One balance check before anything is written (MINT.md 5.8): what Mint holds, what the player's statement says, the
+     * difference, and the things in Mint that may explain it. A quick check records nothing; only a reconciliation does.
+     */
+    data class BalanceCheck(
+        val account: FinancialAccount,
+        val bookMinor: Long,
+        val reportedMinor: Long,
+        val differenceMinor: Long,
+        val causes: List<String>,
+    ) {
+        val matches: Boolean get() = differenceMinor == 0L
+    }
+
+    fun balanceCheck(accountId: String, reportedMinor: Long): BalanceCheck? {
+        val account = data.accounts.firstOrNull { it.id == accountId } ?: return null
+        (MintRules.checkAmount(reportedMinor) as? Check.Refused)?.let { return null }
+        val book = MintRules.balance(data, account).postedMinor
+        val diff = MintRules.reconcileDifference(reportedMinor, book)
+        val causes = buildList {
+            val pending = data.transactions.count { it.accountId == account.id && it.status == TxStatus.PENDING }
+            if (pending > 0) add(if (pending == 1) "One record is still pending, so it is not in Mint's balance yet." else "$pending records are still pending, so they are not in Mint's balance yet.")
+            val unreviewed = data.transactions.count { it.accountId == account.id && it.importBatch != null && it.unreviewed }
+            if (unreviewed > 0) add(if (unreviewed == 1) "One imported record has not been reviewed." else "$unreviewed imported records have not been reviewed.")
+            val recent = data.transactions.count { it.accountId == account.id && it.status == TxStatus.POSTED && it.day > today.minus(DatePeriod(days = 7)) }
+            if (recent > 0) add(if (recent == 1) "One record is from the last week and may not be on the statement yet." else "$recent records are from the last week and may not be on the statement yet.")
+            if (isEmpty() && diff != 0L) add("Nothing in Mint explains it: look for a purchase or a fee that was never recorded.")
+        }
+        return BalanceCheck(account, book, reportedMinor, diff, causes)
+    }
+
+    /** Every balance check and reconciliation kept for an account, newest first: the audit trail of what was compared. */
+    fun reconciliationHistory(accountId: String? = null): List<Reconciliation> = data.reconciliations
+        .filter { accountId == null || it.accountId == accountId }
+        .sortedByDescending { it.createdMillis }
+
+    fun reconcile(accountId: String, statementMinor: Long, acceptAdjustment: Boolean = false, reason: String = ""): Logged<Reconciliation> {
         val account = data.accounts.firstOrNull { it.id == accountId } ?: return Logged(null, "That account is gone.")
         if (account.status != AccountStatus.ACTIVE) return Logged(null, "That account is not open.")
         if (statementMinor < 0 || statementMinor > app.pokeplan.mint.Money.MAX_MINOR) return Logged(null, "That amount looks wrong.")
         val book = MintRules.balance(data, account).postedMinor
         val diff = MintRules.reconcileDifference(statementMinor, book)
         if (diff != 0L && !acceptAdjustment) return Logged(null, "The statement and Mint differ. Accept the difference to record it as an adjustment.")
+        val why = reason.trim().take(MintRules.NOTE_MAX)
+        // A manual adjustment must say what it is for, so the audit trail means something later (MINT.md 5.8).
+        if (diff != 0L && why.isBlank()) return Logged(null, "Say what the difference is for, in a few words.")
         var adjustmentId: String? = null
         if (diff != 0L) {
-            val adj = Transaction(newId(), TxType.ADJUSTMENT, kotlin.math.abs(diff), account.currency, nowMillis, today, account.id, source = TxSource.ADJUSTMENT, up = diff > 0, createdMillis = nowMillis)
+            // The reason is the adjustment's own note, so the audit trail is readable from the record itself.
+            val adj = Transaction(newId(), TxType.ADJUSTMENT, kotlin.math.abs(diff), account.currency, nowMillis, today, account.id, note = why, source = TxSource.ADJUSTMENT, up = diff > 0, createdMillis = nowMillis)
             adjustmentId = adj.id
             update { it.copy(transactions = it.transactions + adj) }
         }
-        val record = Reconciliation(newId(), account.id, today, statementMinor, book, adjustmentId, nowMillis)
+        val record = Reconciliation(newId(), account.id, today, statementMinor, book, adjustmentId, why, nowMillis)
         update { it.copy(reconciliations = it.reconciliations + record) }
         val pays = MintRules.reconcilePays(data.copy(reconciliations = data.reconciliations.filterNot { it.id == record.id }), account.id, today)
         val rewards = if (pays) pay(MintKind.RECONCILED, record.id) else null

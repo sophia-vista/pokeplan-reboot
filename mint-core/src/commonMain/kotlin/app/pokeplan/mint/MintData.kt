@@ -222,9 +222,13 @@ data class Reconciliation(
     val id: String,
     val accountId: String,
     val day: LocalDate,
+    /** What the player's statement (or the bank's own app) reported, in the account's currency. */
     val statementMinor: Long,
+    /** What Mint held for the same account at the time of the check. */
     val bookMinor: Long,
     val adjustmentTxId: String? = null,
+    /** Why the player accepted a difference, in their words; blank when the two matched (MINT.md 5.8). */
+    val reason: String = "",
     val createdMillis: Long = 0,
     val paid: Boolean = false,
 )

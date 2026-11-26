@@ -146,10 +146,12 @@ class MintStoreTest {
         val refused = s.mint.reconcile(a, 90_000)
         assertNull(refused.record); assertNotNull(refused.refused)
         assertTrue(s.mint.data.reconciliations.isEmpty() && s.mint.data.transactions.none { it.type == TxType.ADJUSTMENT })
-        val accepted = assertNotNull(s.mint.reconcile(a, 90_000, acceptAdjustment = true).record)
+        val accepted = assertNotNull(s.mint.reconcile(a, 90_000, acceptAdjustment = true, reason = "Bank fee not recorded").record)
         val adj = s.mint.data.transactions.single { it.type == TxType.ADJUSTMENT }
         assertEquals(accepted.adjustmentTxId, adj.id)
         assertEquals(7_500, adj.amountMinor); assertFalse(adj.up)
+        assertEquals("Bank fee not recorded", adj.note, "the adjustment keeps the reason as its audit note")
+        assertEquals("Bank fee not recorded", accepted.reason)
         assertEquals(90_000L, s.mint.bookBalance(a))
     }
 
