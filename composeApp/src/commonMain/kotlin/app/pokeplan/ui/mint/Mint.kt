@@ -204,7 +204,10 @@ private fun MintPage(model: AppModel, section: MintSection?, openPokemon: (Strin
     ) {
         when (section) {
             MintSection.ACCOUNTS -> AccountsView(model)
-            MintSection.ACTIVITY -> ActivityView(model, find, reveal, startAmount = model.mintStartAmount.orEmpty())
+            MintSection.ACTIVITY -> ActivityView(
+                model, find, reveal, startAmount = model.mintStartAmount.orEmpty(), startPayee = model.mintStartPayee.orEmpty(),
+                startAccount = model.mintStartAccount, startCategory = model.mintStartCategory,
+            )
             MintSection.PLANS -> PlansPlace(model)
             MintSection.REVIEW -> MintReviewView(model)
             MintSection.IMPORT -> MintImportView(model)
@@ -234,7 +237,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         MenuEntry(MintSection.ACCOUNTS.name, MintSection.ACCOUNTS.icon, "Accounts", if (data.accounts.isEmpty()) "add one" else "${data.accounts.count { it.status == AccountStatus.ACTIVE }} open", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.ACTIVITY.name, MintSection.ACTIVITY.icon, "Activity", if (data.transactions.isEmpty()) "add a purchase" else "${data.transactions.size} records", tint = ModuleAccent.MINT.accent),
         MenuEntry(MintSection.PLANS.name, MintSection.PLANS.icon, "Plans", plansDetail, tint = ModuleAccent.MINT.accent),
-        MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
+        MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", reviewDetail(model), tint = ModuleAccent.MINT.accent),
     ) + listOfNotNull(
         MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (imports == 0) "statement file" else "$imports imports", tint = ModuleAccent.MINT.accent).takeIf { model.textFiles != null },
         MenuEntry(MintSection.SETTINGS.name, MintSection.SETTINGS.icon, "Settings", "Ledger Research, privacy, your data", tint = Pixel.InkSoft),
@@ -253,6 +256,11 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             MintPartyPanel(model, openPokemon)
         }
     }
+}
+
+private fun reviewDetail(model: AppModel): String {
+    val n = model.mint.reviewInbox().size
+    return if (n == 0) "nothing to look at" else if (n == 1) "1 to look at" else "$n to look at"
 }
 
 private fun billsDetail(model: AppModel): String {
@@ -336,6 +344,17 @@ internal fun OverviewCard(model: AppModel) {
                 PixelButton("Expense", { model.mintStartType = TxType.EXPENSE; model.mintSection = MintSection.ACTIVITY }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
                 PixelButton("Income", { model.mintStartType = TxType.INCOME; model.mintSection = MintSection.ACTIVITY }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Transfer", { model.mintStartType = TxType.TRANSFER; model.mintSection = MintSection.ACTIVITY }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            }
+            val repeatable = remember(data.transactions) { data.transactions.filter { it.status == TxStatus.POSTED && it.type in setOf(TxType.EXPENSE, TxType.INCOME) }.maxByOrNull { it.atMillis } }
+            repeatable?.let { last ->
+                PixelButton("Again: " + last.payee.ifBlank { last.type.label } + " " + mint.show(last.amountMinor, last.currency), {
+                    model.mintStartType = last.type
+                    model.mintStartAmount = Money.plain(last.amountMinor, last.currency)
+                    model.mintStartPayee = last.payee
+                    model.mintStartCategory = last.categoryId
+                    model.mintStartAccount = last.accountId
+                    model.mintSection = MintSection.ACTIVITY
+                }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
         }
     }
@@ -826,16 +845,19 @@ private fun SplitFields(parts: List<SplitDraft>, currency: String, categories: L
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ActivityView(model: AppModel, find: ActivityFind = remember { ActivityFind() }, reveal: PullRevealState = rememberPullReveal(androidx.compose.foundation.rememberScrollState()), startInstallments: Boolean = false, startAmount: String = "", startPayee: String = "") {
+internal fun ActivityView(model: AppModel, find: ActivityFind = remember { ActivityFind() }, reveal: PullRevealState = rememberPullReveal(androidx.compose.foundation.rememberScrollState()), startInstallments: Boolean = false, startAmount: String = "", startPayee: String = "", startAccount: String? = null, startCategory: String? = null) {
     val mint = model.mint
     val data = model.mintData
     val open = data.accounts.filter { it.status == AccountStatus.ACTIVE }
     var type by remember { mutableStateOf(model.mintStartType ?: TxType.EXPENSE) }
     var amount by remember { mutableStateOf(startAmount) }
-    var accountId by remember { mutableStateOf<String?>(null) }
+    // Quick capture: an ordinary expense starts on the account and category last used, not on the first one (5.3).
+    val newest = remember(data) { data.transactions.sortedByDescending { it.atMillis } }
+    val lastExpense = remember(newest) { newest.firstOrNull { it.type == TxType.EXPENSE && it.categoryId != null } }
+    var accountId by remember { mutableStateOf< String? >(startAccount ?: newest.firstOrNull { t -> open.any { it.id == t.accountId } }?.accountId) }
     var toId by remember { mutableStateOf(model.mintStartTo) }
-    LaunchedEffect(Unit) { model.mintStartTo = null; model.mintStartAmount = null }
-    var categoryId by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) { model.mintStartTo = null; model.mintStartAmount = null; model.mintStartAccount = null; model.mintStartPayee = null; model.mintStartCategory = null }
+    var categoryId by remember { mutableStateOf< String? >(startCategory ?: lastExpense?.categoryId) }
     var splitEnabled by remember { mutableStateOf(false) }
     var splitParts by remember { mutableStateOf(listOf(SplitDraft(), SplitDraft())) }
     var up by remember { mutableStateOf(true) }
@@ -1045,6 +1067,15 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                         Modifier.fillMaxWidth(), key = accent, label = "Other kind of entry",
                     )
                     if (!installmentMode && !iou) PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+                    if (!installmentMode && !iou) {
+                        val recentPayees = remember(newest) { newest.mapNotNull { t -> t.payee.takeIf { p -> p.isNotBlank() } }.distinct().take(5) }
+                        if (recentPayees.isNotEmpty()) {
+                            Text("Used before", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                                recentPayees.forEach { p -> Chip(p.take(MintRules.NAME_MAX), payee == p, { payee = p.take(MintRules.NAME_MAX * 2) }) }
+                            }
+                        }
+                    }
                     PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
                 }
             }
@@ -1879,12 +1910,58 @@ private fun MintReviewView(model: AppModel) {
     }
     if (data.accounts.any { it.status == AccountStatus.ACTIVE }) FormBox { Accordion("Balance check and reconciliation") { ReconcileCard(model) } }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Weekly review")
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Review")
+            val items = mint.reviewInbox()
+            if (items.isEmpty()) {
+                Text("Nothing needs you right now.", style = MaterialTheme.typography.bodyLarge)
+            } else {
+                Text(
+                    if (items.size == 1) "One thing to look at. Open it, put it off for a week, or dismiss it for a month." else items.size.toString() + " things to look at. Each one is optional: open it, put it off for a week, or dismiss it for a month.",
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+                items.forEach { item ->
+                    HorizontalDivider(color = Pixel.Border)
+                    MintLine(trail = { PixelButton("Open", { openReviewItem(model, item) }, color = ModuleAccent.MINT.accent, compact = true) }) {
+                        Text(item.title, style = MaterialTheme.typography.bodyLarge)
+                        Text(item.detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        PixelButton("Later", { mint.snoozeReview(item.id, 7) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        PixelButton("Dismiss", { mint.snoozeReview(item.id, 30) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+            }
+            val snoozed = mint.reviewSnoozed()
+            if (snoozed.isNotEmpty()) Accordion("Put off (${snoozed.size})") {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    snoozed.forEach { snooze ->
+                        MintLine(trail = { PixelButton("Bring back", { mint.unsnoozeReview(snooze.id) }, color = Pixel.InkSoft, compact = true) }) {
+                            Text(snooze.id.removePrefix("balance:").replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodyLarge)
+                            Text("Back on " + snooze.until.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        }
+                    }
+                }
+            }
+            HorizontalDivider(color = Pixel.Border)
             val first = model.data.settings.weekStart
             val weekDone = data.reviews.any { MintRules.weekStartOf(it.day, first) == MintRules.weekStartOf(today, first) }
-            PixelButton(if (weekDone) "Reviewed this week" else "Finish this week's review", { mint.finishReview(); model.effect(Sfx.ITEM_GET); model.say("Saved.") }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = !weekDone && data.accounts.isNotEmpty())
+            PixelButton(if (weekDone) "Reviewed this week" else "Mark this week reviewed", { mint.finishReview(); model.effect(Sfx.ITEM_GET); model.say("Saved.") }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true, enabled = !weekDone && data.accounts.isNotEmpty())
+            Text("Optional: the inbox above is the review.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
+    }
+}
+
+/** Opens the place where one review item is dealt with (MINT.md 9.1). */
+private fun openReviewItem(model: AppModel, item: app.pokeplan.mint.ReviewInbox.Item) {
+    when (item.kind) {
+        app.pokeplan.mint.ReviewInbox.Kind.CONFIRM -> model.mintSection = null
+        app.pokeplan.mint.ReviewInbox.Kind.IMPORTED -> model.mintSection = MintSection.IMPORT
+        app.pokeplan.mint.ReviewInbox.Kind.MISSING,
+        app.pokeplan.mint.ReviewInbox.Kind.FEES -> model.mintSection = MintSection.ACTIVITY
+        app.pokeplan.mint.ReviewInbox.Kind.UPCOMING -> model.mintSection = MintSection.PLANS
+        app.pokeplan.mint.ReviewInbox.Kind.BUDGET -> model.mintSection = MintSection.PLANS
+        app.pokeplan.mint.ReviewInbox.Kind.BALANCE -> model.mintSection = MintSection.REVIEW
     }
 }
 

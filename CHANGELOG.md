@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.254.0
+
+MINT's review inbox, statement-import and quick-capture pass (the owner's P2 list, phases 5–7, 27 November 2026). No reward rule, schema or save-format change (`ReviewSnooze` is a sealed-JSON list with a default).
+
+- **The review is an inbox, not a checklist (MINT.md 9.1).** MINT → Review lists what the records say is worth a look: records waiting to be confirmed, imported records not reviewed, payments due within a week (bills, installments, card statements), fees and interest from the last month, budgets at nine tenths of their limit, records with no category, and accounts not checked against a statement for 30 days — in priority order. Each item is optional: **Open** goes where it is dealt with (To confirm, Import, Activity, Plans, the balance check), **Later** puts it off a week, **Dismiss** a month, and **Put off** brings any back. Snoozes are saved and expire on their own. "Mark this week reviewed" stays as an optional record and no longer pretends to be the review.
+- **Quick capture (5.3).** An ordinary expense starts on the account of the last record and the last expense's category; up to five names used before are keys under Payee; the Overview's Quick actions add **Again: <name> <amount>**, which opens a new entry filled from the latest expense or income. Expense stays the first key, and nothing saves without Save.
+- **Imports (22A).** A deleted import batch now offers **Undo**, so a wrong deletion can be taken back; its unreviewed records show as the inbox's Imported item, which opens the Import place.
+- **Tests:** `ReviewInboxTest` (mint-core, 7: each item, the ordering, a quiet day) and `MintReviewStoreTest` (app-core, 3: a snooze hides and returns on its day, bring back at once, the weekly record does not empty the inbox).
+
 ## 0.253.0
 
 MINT's credit-card statement cycle and its transaction workflows (the owner's P1 list, phases 3 and 4, 26 November 2026). No reward rule, schema or save-format change: the card month is derived, and the record history is a sealed-JSON list with a default.

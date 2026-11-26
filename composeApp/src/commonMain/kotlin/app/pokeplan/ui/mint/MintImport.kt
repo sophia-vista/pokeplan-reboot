@@ -159,7 +159,12 @@ internal fun MintImportView(model: AppModel) {
                     if (asking == b.id) {
                         Text("Delete the ${b.count} records of this import? Records you wrote stay. This cannot be undone.", style = MaterialTheme.typography.bodyLarge)
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelButton("Delete them", { mint.removeImportBatch(b.id); asking = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                            PixelButton("Delete them", {
+                                val before = model.mintData
+                                mint.removeImportBatch(b.id)
+                                asking = null
+                                model.offerUndo("Deleted: " + b.count + " imported records") { mint.restore(before) }
+                            }, Modifier.weight(1f), Pixel.Danger, compact = true)
                             PixelButton("Keep them", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
                     } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {

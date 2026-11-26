@@ -223,6 +223,10 @@ class AppModel(
     var mintStartTo: String? by mutableStateOf(null)
     /** An amount to start an Activity entry with, such as a card statement's minimum (MINT.md 5.6D). */
     var mintStartAmount: String? by mutableStateOf(null)
+    /** What an Activity entry starts with when it is opened from a quick action (MINT.md 5.3). */
+    var mintStartAccount: String? by mutableStateOf(null)
+    var mintStartPayee: String? by mutableStateOf(null)
+    var mintStartCategory: String? by mutableStateOf(null)
 
     var baseData: BaseData by mutableStateOf(base.data)
         private set
@@ -353,7 +357,7 @@ class AppModel(
             Place.CARE -> { module = Module.CARE; careSection = null }
             Place.HEAL -> { module = Module.HEAL; healSection = null }
             // The entry's kind is a one-shot from a quick action; arriving from outside Mint starts a plain expense.
-            Place.MINT -> { module = Module.MINT; mintSection = null; mintStartType = null; mintStartTo = null; mintStartAmount = null }
+            Place.MINT -> { module = Module.MINT; mintSection = null; mintStartType = null; mintStartTo = null; mintStartAmount = null; mintStartAccount = null; mintStartPayee = null; mintStartCategory = null }
             Place.BASE -> { module = Module.BASE; baseSection = null }
             Place.LINK -> { module = Module.LINK; linkSection = null; linkPersonId = null }
             Place.PARTY -> openParty = true
