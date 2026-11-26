@@ -216,6 +216,16 @@ data class PerkSource(
     enum class Kind { BUDDY_TYPE, ABILITY, HELD_ITEM, ASSIST, GUARDIAN }
 }
 
+/** How a legend's bonuses grow with its level (owner, 26 November 2026): level 1 is the base number, level 100 doubles it. */
+object LegendPower {
+    private const val SPAN = CandyRules.MAX_LEVEL - 1
+
+    fun scale(level: Int): Double = 1.0 + (level.coerceIn(1, CandyRules.MAX_LEVEL) - 1).toDouble() / SPAN
+
+    /** A whole-number bonus at [level], rounded down: `base` at level 1, `2 * base` at level 100. */
+    fun scaled(base: Int, level: Int): Int = base * (SPAN - 1 + level.coerceIn(1, CandyRules.MAX_LEVEL)) / SPAN
+}
+
 object Guardians {
     const val SIGNATURE_PERCENT = 10.0
 
@@ -236,10 +246,11 @@ object Guardians {
     fun signature(p: OwnedPokemon): Map<PerkBucket, Double> {
         val types = p.form.types
         val primary = lore[p.species.identifier] ?: TypePerks.bucket(types.first())
-        val result = mutableMapOf(primary to SIGNATURE_PERCENT)
+        val power = LegendPower.scale(p.level)
+        val result = mutableMapOf(primary to SIGNATURE_PERCENT * power)
         types.getOrNull(1)?.let { second ->
             val bucket = TypePerks.bucket(second)
-            result[bucket] = (result[bucket] ?: 0.0) + SIGNATURE_PERCENT * SECOND_TYPE_SHARE
+            result[bucket] = (result[bucket] ?: 0.0) + SIGNATURE_PERCENT * power * SECOND_TYPE_SHARE
         }
         return result
     }
@@ -248,9 +259,10 @@ object Guardians {
 
     fun <B> signatureIn(p: OwnedPokemon, bucketOf: (PokemonType) -> B?): Map<B, Double> {
         val result = mutableMapOf<B, Double>()
+        val power = LegendPower.scale(p.level)
         p.form.types.forEachIndexed { i, type ->
             val bucket = bucketOf(type) ?: return@forEachIndexed
-            result[bucket] = (result[bucket] ?: 0.0) + SIGNATURE_PERCENT * if (i == 0) 1.0 else SECOND_TYPE_SHARE
+            result[bucket] = (result[bucket] ?: 0.0) + SIGNATURE_PERCENT * power * if (i == 0) 1.0 else SECOND_TYPE_SHARE
         }
         return result
     }

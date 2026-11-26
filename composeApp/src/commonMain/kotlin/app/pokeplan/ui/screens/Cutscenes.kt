@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.world.bonusText
 import app.pokeplan.world.displayName
+import app.pokeplan.world.levelIn
 import app.pokeplan.world.grantedForm
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.ui.AnimatedSprite
@@ -501,7 +502,7 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
                 }
                 SceneText(
                     text = if (q.afterGuardian) "${q.displayName()} joined you! ${q.layer.label}'s Guardian has answered." else "${q.displayName()} joined you as a Guardian of ${q.layer.label}!",
-                    detail = "It gives: ${q.bonusText()}.", done = done, skip = { done = true }, close = close,
+                    detail = "It gives: ${q.bonusText(q.levelIn(model.data.player.pokemon))}.", done = done, skip = { done = true }, close = close,
                 )
             }
             is app.pokeplan.world.WorldMoment.ChapterOpened -> {

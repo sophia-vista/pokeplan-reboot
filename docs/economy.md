@@ -201,7 +201,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 |---|---|---|
 | Candy stack (Rare, Super) | 9,999; the rest becomes Poké | `Inventory.MAX_CANDIES` |
 | Other item stack | 999; the rest becomes Poké | `Inventory.MAX_STACK` |
-| Level | 100; legendaries and mythicals are not fed | `CandyRules.MAX_LEVEL` |
+| Level | 100; legendaries and mythicals level like any Pokémon (owner, 26 November 2026), from level 1 | `CandyRules.MAX_LEVEL` |
 | Friendship | 255; friendship evolutions at 220 | `FriendshipRules.MAX`, `EVOLVE_AT` |
 | Pet friendship | 10 a day | `PET_DAILY_CAP` |
 | Heal | 3 logged activities, 1 first drink, 5 step amounts and 3 record reads a day, and an activity only within 12 hours of its end (the world checks again: `GameStore.HEAL_DAILY_CAP`; an event id pays once, `AppData.healPaid`), at most 4 trainer points a day (steps and reads add none) | `HealRules`, `HEAL_DAILY_CAP` |

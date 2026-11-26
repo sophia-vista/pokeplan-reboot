@@ -102,7 +102,7 @@ object WorldSim {
             }
             val trip = if (rewound in (stored.settledTo + 1)..now) stored.copy(settledTo = rewound) else stored
             if (trip != stored) out = out.withTeam((out.team(team.id) ?: team).copy(expedition = trip))
-            val per = floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon))
+            val per = floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon, roster))
             val until = min(now, trip.settledTo + MAX_AWAY_MILLIS)
             val floors = ((until - trip.settledTo) / per).toInt()
             if (floors <= 0) continue
@@ -110,7 +110,7 @@ object WorldSim {
             var done = 0
             var retreated = false
             for (n in 0 until floors) {
-                out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members, power(members, dungeon), WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { m -> m.ability }, it) }, events)
+                out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members, power(members, dungeon), WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { m -> m.ability }, it) }, events, roster)
                 if (events.lastOrNull() is WorldEvent.Retreat) { retreated = true; break }
                 done = n + 1
             }
@@ -136,7 +136,7 @@ object WorldSim {
             val dungeon = Dungeons.byId(trip.dungeonId) ?: continue
             val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
             if (members.isEmpty()) continue
-            val at = if (trip.settledTo > now) now else doneAt(data, trip, 1, floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon)))
+            val at = if (trip.settledTo > now) now else doneAt(data, trip, 1, floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon, roster)))
             if (next == null || at < next) next = at
         }
         return next
@@ -158,7 +158,7 @@ object WorldSim {
                 if ((m.kind == MissionKind.ESCORT && members.size < m.count) || (m.kind == MissionKind.DEFEAT && power < m.count) || (m.kind == MissionKind.CHALLENGE && members.size > m.count)) continue
                 val next = trip.floorsClimbed % dungeon.floors
                 val floors = maxOf(0, m.floor - 1 - next) + 1
-                val at = doneAt(data, trip, floors, floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon)))
+                val at = doneAt(data, trip, floors, floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon, roster)))
                 if (out[m.id]?.let { it <= at } != true) out[m.id] = at
             }
         }
@@ -191,12 +191,12 @@ object WorldSim {
         return JournalLine(now, text, kind, place)
     }
 
-    fun explainSpeed(dungeon: DungeonDef, members: List<OwnedPokemon>, data: WorldData): SpeedExplanation {
+    fun explainSpeed(dungeon: DungeonDef, members: List<OwnedPokemon>, data: WorldData, roster: List<OwnedPokemon> = members): SpeedExplanation {
         val power = power(members, dungeon)
         val base = dungeon.baseFloorSeconds * 1000L
         val afterPower = maxOf(base / 4, (base / (1.0 + power / 100.0)).toLong())
         val favored = members.filter { p -> p.form.types.any { it in dungeon.favored } }
-        val legend = data.legendFaster(dungeon).coerceAtMost(50)
+        val legend = data.legendFaster(dungeon, roster).coerceAtMost(50)
         val identity = members.map { BattleIdentity.breakdown(it, dungeon) }
         return SpeedExplanation(
             levels = members.sumOf { it.level }, favoredMembers = favored.size, favoredBonus = favored.sumOf { it.level } * BattleIdentity.FAVORED_TYPE_FACTOR, power = power,
@@ -204,7 +204,7 @@ object WorldSim {
             identityLines = identity.filter { it.parts.isNotEmpty() }.map { b -> "${b.member.nickname}: " + b.parts.joinToString(", ") { "${it.label} +${it.percent}%" } + (if (b.percent < b.parts.sumOf { it.percent }) " (capped at +${BattleIdentity.MAX_PERCENT}%)" else "") },
             baseMillis = base, afterPowerMillis = afterPower, atMinimum = afterPower == base / 4,
             masteryPercent = if (data.guardianDone) 10 else 0, legendPercent = legend,
-            floorMillis = floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon)),
+            floorMillis = floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon, roster)),
             skillHelp = WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { it.ability }, it) }.filterValues { it > 0 },
         )
     }
@@ -212,7 +212,7 @@ object WorldSim {
     fun suitability(dungeon: DungeonDef, members: List<OwnedPokemon>, mastery: Boolean = false, fasterPercent: Int = 0): Suitability =
         Suitability(floorMillis(dungeon, power(members, dungeon), mastery, fasterPercent), members.count { p -> p.form.types.any { it in dungeon.favored } }, members.size)
 
-    private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, members: List<OwnedPokemon>, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>): WorldData {
+    private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, members: List<OwnedPokemon>, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>, roster: List<OwnedPokemon>): WorldData {
         val teamSize = members.size
         val firstEvent = events.size
         val floor = index % dungeon.floors + 1
@@ -246,12 +246,12 @@ object WorldSim {
         val paid = if (partial) poke / 2 else poke
         events += WorldEvent.Poke(paid)
         d = d.copy(pokeEarned = d.pokeEarned + paid)
-        if (!partial && random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (modifier == DungeonModifier.LUCKY) DungeonModifiers.TREASURE_POINTS else 0) + d.legendTreasurePercent(dungeon)) {
+        if (!partial && random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (modifier == DungeonModifier.LUCKY) DungeonModifiers.TREASURE_POINTS else 0) + d.legendTreasurePercent(dungeon, roster)) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
-        if (!partial) findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + (if (modifier == DungeonModifier.CURIOUS) DungeonModifiers.FIND_PERMILLE else 0) + d.legendFindPermille(dungeon))?.let { species ->
+        if (!partial) findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + (if (modifier == DungeonModifier.CURIOUS) DungeonModifiers.FIND_PERMILLE else 0) + d.legendFindPermille(dungeon, roster))?.let { species ->
             val form = RegionalForms.formFor(species, dungeon.layer, random)
             events += WorldEvent.Found(species, dungeon.id, floor, form)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at, form), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)

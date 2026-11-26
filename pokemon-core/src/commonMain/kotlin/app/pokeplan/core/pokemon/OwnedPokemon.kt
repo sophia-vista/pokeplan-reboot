@@ -55,7 +55,7 @@ data class OwnedPokemon(
 
     val bondStyle: BondStyle get() = nature.bondStyle
 
-    val canFeed: Boolean get() = level < CandyRules.MAX_LEVEL && !species.isSpecial
+    val canFeed: Boolean get() = level < CandyRules.MAX_LEVEL
 
     fun feedRareCandy(partnerLevel: Int = level): OwnedPokemon {
         check(canFeed) { "$nickname is already level ${CandyRules.MAX_LEVEL}" }

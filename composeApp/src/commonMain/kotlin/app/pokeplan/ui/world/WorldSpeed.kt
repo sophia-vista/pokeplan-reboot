@@ -54,12 +54,12 @@ internal fun speedLines(e: SpeedExplanation): List<String> = buildList {
 }
 
 @Composable
-internal fun SpeedExplainer(members: List<OwnedPokemon>, dungeon: DungeonDef, world: WorldData) {
+internal fun SpeedExplainer(members: List<OwnedPokemon>, dungeon: DungeonDef, world: WorldData, roster: List<OwnedPokemon> = members) {
     var open by remember(dungeon.id, members.map { it.id }) { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         PixelButton(if (open) "Hide how fast" else "How fast?", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         if (open) {
-            val explained = WorldSim.explainSpeed(dungeon, members, world)
+            val explained = WorldSim.explainSpeed(dungeon, members, world, roster)
             speedLines(explained).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
             Text(Outcomes.explain(explained.power, dungeon), style = MaterialTheme.typography.bodyMedium)
         }

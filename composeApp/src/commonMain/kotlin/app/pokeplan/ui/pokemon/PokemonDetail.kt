@@ -252,7 +252,6 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
     val player = model.data.player
     val soft = MaterialTheme.typography.bodyMedium
     when {
-        isGuardian -> Text("At full power: Guardians never need candies.", style = soft, color = Pixel.InkSoft)
         p.canFeed -> {
             val partner = player.party.maxOfOrNull { it.level } ?: p.level
             val need = CandyRules.candiesNeeded(p.level, partner)

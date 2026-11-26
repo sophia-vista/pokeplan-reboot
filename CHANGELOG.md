@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.250.0
+
+Legendary and mythical Pokémon level up, and their bonuses grow with their level. `RewardRules.VERSION` is 36: a Guardian's perk now depends on its level, which changes what a task or egg can pay.
+
+- **Legends take candies.** Rare Candies, task XP and expedition XP raise a legend's level with the ordinary candy costs, from level 1 (where a legend arrives) to 100. The Growth box on its page shows the Feed keys like any other Pokémon's; the "At full power" line is gone. Legends still cannot be the buddy, be transferred, hold items or evolve.
+- **Bonuses scale.** Every legend bonus is multiplied by `LegendPower.scale(level) = 1 + (level - 1) / 99`: level 1 is today's number and level 100 doubles it, rounded down. In WORLD, a layer's legends make matching dungeons faster by 10% each at level 1 and 20% at level 100, and the finds and treasure shares double the same way (the 50% cap on the speed bonus is unchanged). In a module's Guardian slot the type perk is 10% (second type 5%) at level 1 and 20% (10%) at level 100, under the same +15% cap per Guardian, so a primary perk stops growing at about level 51.
+- **Which Pokémon counts.** The level is that of the owned Pokémon the quest granted (its species and form, the highest if there are several), wherever it stands: a World team, a party or a Guardian slot. The Legendary quests list, the story archive and the join scene show the scaled bonus.
+- **Existing saves.** A legend you already own starts at its current level (1 unless it was levelled by an earlier test build), so nothing changes until you feed it. No schema or save-format change.
+
 ## 0.249.1
 
 WORLD's Galar bird quests now show the Galarian birds. They already granted the Galarian form, but the Legendary quests list, the Story archive row and the join scene drew the Kanto Articuno, Zapdos and Moltres under the plain name. No reward, schema or save-format change, and `RewardRules.VERSION` stays.

@@ -3,6 +3,8 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.PokemonType
+import app.pokeplan.core.pokemon.LegendPower
+import app.pokeplan.core.pokemon.OwnedPokemon
 
 data class LegendQuest(
     val id: String,
@@ -26,11 +28,17 @@ fun LegendQuest.grantedForm(): FormInfo = form?.let { Dex.form(it) } ?: Dex.defa
 /** The name shown for the quest's Pokémon: "Galarian Articuno" for a regional form, the plain name otherwise. */
 fun LegendQuest.displayName(): String = if (form != null) grantedForm().name else name
 
-fun LegendQuest.bonusText(): String {
+/** The level of the owned Pokémon this quest granted (its species and form; the highest if there are several), or 1 when it is not in [roster]. */
+fun LegendQuest.levelIn(roster: List<OwnedPokemon>): Int {
+    val form = grantedForm().identifier
+    return roster.filter { it.speciesId == speciesId && it.formIdentifier == form }.maxOfOrNull { it.level } ?: 1
+}
+
+fun LegendQuest.bonusText(level: Int = 1): String {
     val parts = buildList {
-        if (types.isNotEmpty()) add("${types.joinToString(" and ") { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }}-favouring dungeons climb ${Legends.FASTER_PERCENT}% faster")
-        if (findPermille > 0) add("${findPermille / 10.0}% more chance of a wild Pokémon on a floor")
-        if (treasurePercent > 0) add("${treasurePercent}% more chance of a treasure box")
+        if (types.isNotEmpty()) add("${types.joinToString(" and ") { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }}-favouring dungeons climb ${LegendPower.scaled(Legends.FASTER_PERCENT, level)}% faster")
+        if (findPermille > 0) add("${LegendPower.scaled(findPermille, level) / 10.0}% more chance of a wild Pokémon on a floor")
+        if (treasurePercent > 0) add("${LegendPower.scaled(treasurePercent, level)}% more chance of a treasure box")
     }
     return if (parts.isEmpty()) "No bonus." else parts.joinToString("; ") + " in ${layer.label}."
 }

@@ -93,6 +93,38 @@ class KantoTest {
     }
 
     @Test
+    fun aLegendsBonusesGrowWithTheLevelOfTheOwnedPokemonItGranted() {
+        val seat = Dungeons.byId("giants-seat")!!
+        val mine = Dungeons.byId("galar-mine-2")!!
+        val data = WorldData(legends = setOf("galar-zapdos", "galar-articuno", "galar-moltres"))
+        fun mon(id: String, species: Int, level: Int) = Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
+        fun bird(id: String, species: Int, form: String, level: Int) = mon(id, species, level).copy(formIdentifier = form)
+        val level1 = listOf(bird("z", 145, "zapdos-galar", 1))
+        val level100 = listOf(bird("z", 145, "zapdos-galar", 100))
+        val level50 = listOf(bird("z", 145, "zapdos-galar", 50))
+        assertEquals(Legends.FASTER_PERCENT, data.legendFaster(seat), "no roster: the base number")
+        assertEquals(Legends.FASTER_PERCENT, data.legendFaster(seat, level1))
+        assertEquals(2 * Legends.FASTER_PERCENT, data.legendFaster(seat, level100), "level 100 doubles it")
+        assertEquals(14, data.legendFaster(seat, level50), "10 * 148 / 99, rounded down")
+        assertEquals(Legends.FASTER_PERCENT, data.legendFaster(seat, listOf(mon("k", 145, 100))), "the Kanto Zapdos is not the Galarian quest's Pokémon")
+        assertEquals(2 * Legends.FASTER_PERCENT, data.legendFaster(seat, level1 + level100), "the highest owned counts")
+        val moltres = listOf(bird("m", 146, "moltres-galar", 100))
+        assertEquals(3, data.legendTreasurePercent(mine))
+        assertEquals(6, data.legendTreasurePercent(mine, moltres))
+        val articuno = listOf(bird("a", 144, "articuno-galar", 100))
+        assertEquals(10, data.legendFindPermille(mine), "Zapdos and Articuno give 5 permille each at level 1")
+        assertEquals(20, data.legendFindPermille(mine, articuno + level100), "both find birds at level 100 give 10 permille each")
+    }
+
+    @Test
+    fun theBonusTextShowsTheScaledNumbers() {
+        val q = Legends.byId("galar-zapdos")!!
+        assertTrue(q.bonusText().contains("10% faster"))
+        assertTrue(q.bonusText(100).contains("20% faster"))
+        assertTrue(q.bonusText(100).contains("1.0% more chance of a wild Pokémon"))
+    }
+
+    @Test
     fun facingMewtwoFinishesKantoOnceAndNotTheHomeStory() {
         val d = Dungeons.byId("cerulean-cave")!!
         val mon = Hatching.create("a", HatchOption(25, Dex.defaultForm(25).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = 100)
