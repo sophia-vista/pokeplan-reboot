@@ -24,6 +24,7 @@ import app.pokeplan.mint.InstallmentPlan
 import app.pokeplan.mint.Installments
 import app.pokeplan.mint.PlanEvery
 import app.pokeplan.mint.PlanView
+import app.pokeplan.mint.RecordChange
 import app.pokeplan.mint.FinancialAccount
 import app.pokeplan.mint.Frequency
 import app.pokeplan.mint.MintData
@@ -31,6 +32,7 @@ import app.pokeplan.mint.MintKinds
 import app.pokeplan.mint.MintRules
 import app.pokeplan.mint.MintSettings
 import app.pokeplan.mint.MonthlyBill
+import app.pokeplan.mint.Money
 import app.pokeplan.mint.MonthlyBills
 import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.Reconciliation
@@ -236,6 +238,13 @@ class MintStore(
                 Installments.allowedFor(target.type) && Installments.views(data, today).any { it.plan.accountId == target.id && it.remainingMinor > 0 }
             } == true)
             return Logged(null, "Repayments to this account must be allocated to its unpaid installment plans.")
+        if (type == TxType.REFUND && refundOf != null) {
+            val original = data.transactions.firstOrNull { it.id == refundOf } ?: return Logged(null, "That earlier record is gone.")
+            if (original.type != TxType.EXPENSE) return Logged(null, "Only an expense can be refunded.")
+            if (original.accountId != accountId) return Logged(null, "A refund goes back to the account the expense was on.")
+            val already = data.transactions.filter { it.type == TxType.REFUND && it.refundOf == refundOf }.sumOf { it.amountMinor }
+            if (amountMinor + already > original.amountMinor) return Logged(null, "That is more than the expense is worth.")
+        }
         val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor,
             iou = iou)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -269,6 +278,15 @@ class MintStore(
                 },
             )
         }
+        val detail = buildList {
+            if (old.amountMinor != next.amountMinor) add("amount " + Money.plain(old.amountMinor, old.currency) + " to " + Money.plain(next.amountMinor, next.currency))
+            if (old.payee != next.payee) add("name")
+            if (old.note != next.note) add("note")
+            if (old.categoryId != next.categoryId || old.splits != next.splits) add("category")
+            if (old.accountId != next.accountId) add("account")
+            if (old.day != next.day) add("date")
+        }.joinToString(", ")
+        if (detail.isNotEmpty()) logChange(next.id, "edited", detail)
         return Logged(next)
     }
 
@@ -393,6 +411,85 @@ class MintStore(
         return open.singleOrNull()
     }
 
+    // --- what happened to a record, and what needs a second look (MINT.md 5.7) ---------------------------------------
+
+    /** Keeps a short, bounded history entry for a record; the newest 500 are kept. */
+    private fun logChange(txId: String, kind: String, detail: String) = update { d ->
+        d.copy(recordChanges = (d.recordChanges + RecordChange(newId(), txId, nowMillis, kind, detail.take(120))).takeLast(500))
+    }
+
+    /** The history of one record, newest first: "edited", "status", "imported", "adjusted". */
+    fun historyOf(txId: String): List<RecordChange> = data.recordChanges.filter { it.txId == txId }.sortedByDescending { it.atMillis }
+
+    /** A set of records that look like the same purchase entered twice: same account, day, kind and amount. */
+    data class DuplicateGroup(val accountId: String, val day: LocalDate, val type: TxType, val amountMinor: Long, val currency: String, val ids: List<String>)
+
+    fun duplicates(): List<DuplicateGroup> = data.transactions
+        .filter { it.status == TxStatus.POSTED && it.type in setOf(TxType.EXPENSE, TxType.INCOME, TxType.FEE, TxType.REFUND) }
+        .groupBy { listOf(it.accountId, it.day, it.type, it.amountMinor, it.currency) }
+        .filterValues { it.size > 1 }
+        .values
+        .map { list -> DuplicateGroup(list.first().accountId, list.first().day, list.first().type, list.first().amountMinor, list.first().currency, list.map { it.id }) }
+        .sortedByDescending { it.day }
+
+    /** Sets one category on many records at once, for a batch the player picked; returns how many changed (5.7). */
+    fun categorise(ids: Set<String>, categoryId: String?): Int {
+        if (categoryId != null && data.categories.none { it.id == categoryId }) return 0
+        val eligible = data.transactions.filter { it.id in ids && it.type != TxType.TRANSFER && it.type != TxType.ADJUSTMENT }
+        if (eligible.isEmpty()) return 0
+        update { d ->
+            d.copy(transactions = d.transactions.map { t ->
+                if (t.id in ids && t.type != TxType.TRANSFER && t.type != TxType.ADJUSTMENT) t.copy(categoryId = categoryId, splits = emptyList()) else t
+            })
+        }
+        return eligible.size
+    }
+
+    // --- the card month (MINT.md 5.6B, 5.6D) -------------------------------------------------------------------------
+
+    /** The credit line's cycles, newest first, derived from its statement and due days. */
+    fun cardCycles(accountId: String): List<app.pokeplan.mint.CardCycles.Cycle> =
+        data.accounts.firstOrNull { it.id == accountId }?.let { app.pokeplan.mint.CardCycles.recent(data, it, today) }.orEmpty()
+
+    /** The open cycle of a credit line: what the last close billed and what is still to pay. */
+    fun currentCardCycle(accountId: String): app.pokeplan.mint.CardCycles.Cycle? =
+        data.accounts.firstOrNull { it.id == accountId }?.let { app.pokeplan.mint.CardCycles.current(data, it, today) }
+
+    /** Every card's open cycle due within [days] (or overdue), soonest first, for the Overview and the Bills list. */
+    fun cardObligationsWithin(days: Int): List<Pair<FinancialAccount, app.pokeplan.mint.CardCycles.Cycle>> =
+        app.pokeplan.mint.CardCycles.dueWithin(data, today, days)
+
+    /**
+     * Pays a card's statement: a transfer into the credit line, so what is owed and the paying account fall together
+     * and nothing is spending (MINT.md 5.5, 5.6D). [statementId] links the payment to the recorded statement.
+     */
+    fun payStatement(accountId: String, amountMinor: Long, fromAccountId: String, day: LocalDate = today, feeMinor: Long = 0, statementId: String? = null): Logged<Transaction> {
+        val to = creditAccount(accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
+        val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
+        if (from.type.liability) return Logged(null, "Pay from a bank, wallet or cash account.")
+        if (day > today) return Logged(null, "A payment cannot be dated in the future.")
+        if (from.currency != to.currency) return Logged(null, "Pay from an account in the same currency.")
+        (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        if (amountMinor <= 0) return Logged(null, "Check the amount.")
+        if (amountMinor > MintRules.balance(data, to).postedMinor) return Logged(null, "That is more than is owed on this card.")
+        if (feeMinor < 0) return Logged(null, "Check the fee.")
+        val tx = Transaction(
+            newId(), TxType.TRANSFER, amountMinor, from.currency, atMillis(day), day, from.id, toAccountId = to.id,
+            createdMillis = nowMillis, feeMinor = feeMinor, creditStatementId = statementId,
+        )
+        (checkPlanTransfer(data, tx, to.id) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { it.copy(transactions = it.transactions + tx) }
+        return Logged(tx, rewards = payForLog(tx))
+    }
+
+    /** Records the open cycle's statement from the card's own figures; the minimum is the player's, as the lender's. */
+    fun recordStatementFromCycle(accountId: String, minimumMinor: Long): Logged<CreditStatement> {
+        val cycle = currentCardCycle(accountId) ?: return Logged(null, "This card has no statement day and due day set.")
+        if (cycle.billedMinor <= 0) return Logged(null, "Nothing was billed on the last statement.")
+        if (cycle.statementId != null) return Logged(null, "That statement is already recorded.")
+        return recordCreditStatement(accountId, cycle.statementDay, cycle.billedMinor, minimumMinor, cycle.dueDay)
+    }
+
     data class ImportResult(val batch: String?, val added: Int, val skipped: Int, val note: String)
 
     data class ImportBatchInfo(val id: String, val label: String, val importedMillis: Long, val accountId: String, val count: Int, val unreviewed: Int)
@@ -426,6 +523,7 @@ class MintStore(
         }
         if (added.isEmpty()) return ImportResult(null, 0, preview.rows.size, "Nothing new to add.")
         update { it.copy(transactions = it.transactions + added) }
+        added.forEach { logChange(it.id, "imported", "batch " + batch) }
         return ImportResult(batch, added.size, preview.rows.size - added.size, "Added ${added.size} ${if (added.size == 1) "record" else "records"}.")
     }
 
@@ -455,7 +553,9 @@ class MintStore(
         return true
     }
 
-    private fun setStatus(id: String, status: TxStatus) = update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) it.copy(status = status) else it }) }
+    private fun setStatus(id: String, status: TxStatus) = update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) it.copy(status = status) else it }) }.also {
+        data.transactions.firstOrNull { it.id == id }?.let { tx -> logChange(id, "status", tx.status.name.lowercase() + " to " + status.name.lowercase()) }
+    }
 
     fun planOfPurchase(id: String): InstallmentPlan? = data.plans.firstOrNull { it.purchaseTxId != null && it.purchaseTxId == id }
 

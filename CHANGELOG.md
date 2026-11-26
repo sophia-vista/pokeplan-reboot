@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.253.0
+
+MINT's credit-card statement cycle and its transaction workflows (the owner's P1 list, phases 3 and 4, 26 November 2026). No reward rule, schema or save-format change: the card month is derived, and the record history is a sealed-JSON list with a default.
+
+- **The card month is derived and payable (MINT.md 5.6B, 5.6D).** For a card with a statement day and a due day, the credit line box shows **This statement** — what the last close billed, what was paid since, the lender's minimum if a statement was recorded, and the state (upcoming, due today, overdue, partly paid, paid) — with **Pay minimum** and **Pay in full**. Both are transfers into the card, never spending. **Record the card's statement** takes the cycle's close, billed amount and due day and asks for the minimum, so the recorded statement stays the lender's fact. The same cycles show once in the Bills view under **Card statements due** and on the Overview; a cycle already carried by an open bill on that card is left out, so one payment is never shown twice.
+- **Activity workflows (5.7).** **Categorise many** selects records and sets one category (transfers and adjustments are never categorised). **Possible duplicates** lists records sharing account, day, kind and amount; nothing is deleted automatically. **Refund** acts on an expense (or from the form's Refund of), and the store refuses a refund on another account, linked to something that is not an expense, or over the expense together with earlier refunds. **History** keeps a short trail per record — edited, status, imported, adjusted — in the record's own box. Search also matches the other account and the fee.
+- **Bills.** The upcoming list is already chronological with upcoming/due-today/overdue/partly paid/paid/skipped states and quick Paid/Part/Skip/Undo plus **Record it** with the account; the edit form now says plainly that a change applies from the next occurrence and a settled occurrence keeps what was paid.
+- **Tests:** `CardCyclesTest` (mint-core, 8: the open cycle, payments since the close, the recorded minimum, paid/overdue, a short month, no days, the window order, the bill de-duplication) and `MintStatementsAndHistoryTest` (app-core, 7: statement payment as a transfer, its limits, the cycle becoming a statement, duplicates, bulk categorisation, refund checks, the history).
+
 ## 0.252.0
 
 MINT's reconciliation friction (the owner's P0 list, 26 November 2026): a quick balance check is now separate from recording a reconciliation, a difference is explained before an adjustment is offered, and an adjustment must say why. No reward rule, schema or save-format change (`Reconciliation.reason` is a sealed-JSON default).

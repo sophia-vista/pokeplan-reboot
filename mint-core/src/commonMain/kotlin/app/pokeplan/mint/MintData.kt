@@ -258,6 +258,18 @@ data class MintSettings(
     val captureMessages: Boolean = false,
 )
 
+/** One thing that happened to a record after it was saved, kept as its short history (MINT.md 5.7, 5.8). */
+@Serializable
+data class RecordChange(
+    val id: String,
+    val txId: String,
+    val atMillis: Long,
+    /** "edited", "status", "imported" or "adjusted". */
+    val kind: String,
+    /** What changed, in a few words; never a private word from another module. */
+    val detail: String = "",
+)
+
 @Serializable
 data class MintData(
     val accounts: List<FinancialAccount> = emptyList(),
@@ -272,6 +284,9 @@ data class MintData(
     val plans: List<InstallmentPlan> = emptyList(),
     val creditStatements: List<CreditStatement> = emptyList(),
     val settings: MintSettings = MintSettings(),
+
+    /** The short history of edits, status changes, imports and adjustments; bounded by the store (MINT.md 5.7). */
+    val recordChanges: List<RecordChange> = emptyList(),
 )
 
 enum class MintKinds(val label: String) {

@@ -521,7 +521,9 @@ object MintRules {
             data.categories.firstOrNull { it.id == t.categoryId }?.name?.lowercase()?.contains(q) == true ||
             t.splits.any { split -> data.categories.firstOrNull { it.id == split.categoryId }?.name?.lowercase()?.contains(q) == true } ||
             data.accounts.firstOrNull { it.id == t.accountId }?.name?.lowercase()?.contains(q) == true ||
-            Money.plain(t.amountMinor, t.currency).contains(q.replace(",", ""))
+            data.accounts.firstOrNull { it.id == t.toAccountId }?.name?.lowercase()?.contains(q) == true ||
+            Money.plain(t.amountMinor, t.currency).contains(q.replace(",", "")) ||
+            (t.feeMinor > 0 && Money.plain(t.feeMinor, t.currency).contains(q.replace(",", "")))
 
     fun seedCategories(): List<Category> = listOf(
         "food" to "Groceries", "dining" to "Eating out", "transport" to "Transport", "bills" to "Bills and utilities", "rent" to "Rent and housing",

@@ -204,7 +204,7 @@ private fun MintPage(model: AppModel, section: MintSection?, openPokemon: (Strin
     ) {
         when (section) {
             MintSection.ACCOUNTS -> AccountsView(model)
-            MintSection.ACTIVITY -> ActivityView(model, find, reveal)
+            MintSection.ACTIVITY -> ActivityView(model, find, reveal, startAmount = model.mintStartAmount.orEmpty())
             MintSection.PLANS -> PlansPlace(model)
             MintSection.REVIEW -> MintReviewView(model)
             MintSection.IMPORT -> MintImportView(model)
@@ -300,6 +300,14 @@ internal fun OverviewCard(model: AppModel) {
             } else position.forEach { (cur, minor) -> Text(mint.show(minor, cur), style = MaterialTheme.typography.titleLarge) }
             upcoming.forEach { o ->
                 MintValueRow(o.bill.name, if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(), soft = true)
+            }
+            // A card's own statement cycle is an obligation too, so it shows beside the bills (MINT.md 5.6D).
+            mint.cardObligationsWithin(days).take(3).forEach { (account, cycle) ->
+                MintValueRow(
+                    account.name + " statement",
+                    if (cycle.dueDay == today) "Today" else if (cycle.state(today) == app.pokeplan.mint.CardCycles.State.OVERDUE) "Overdue" else cycle.dueDay.short(),
+                    soft = true,
+                )
             }
             // Accounts and budgets, a few of each; the full lists are in their own sections.
             val accounts = remember(data.accounts, data.transactions) {
@@ -644,6 +652,12 @@ private fun CreditStatements(model: AppModel, account: FinancialAccount) {
             if (account.status == AccountStatus.ACTIVE) {
                 PixelButton(if (adding) "Cancel statement" else "Record statement", { adding = !adding; message = null }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
                 if (adding) FormStack {
+                    val cardCycle = mint.currentCardCycle(account.id)
+                    if (cardCycle != null && cardCycle.billedMinor > 0 && cardCycle.statementId == null) PixelButton("Use the card's cycle", {
+                        statementDay = cardCycle.statementDay
+                        statementBalance = Money.plain(cardCycle.billedMinor, account.currency)
+                        dueDay = cardCycle.dueDay
+                    }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     FieldLabel("Statement date")
                     PixelDateField(statementDay, today, ModuleAccent.MINT.accent, { statementDay = it ?: statementDay }, min = account.openingDay)
                     PixelField(
@@ -820,7 +834,7 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
     var amount by remember { mutableStateOf(startAmount) }
     var accountId by remember { mutableStateOf<String?>(null) }
     var toId by remember { mutableStateOf(model.mintStartTo) }
-    LaunchedEffect(Unit) { model.mintStartTo = null }
+    LaunchedEffect(Unit) { model.mintStartTo = null; model.mintStartAmount = null }
     var categoryId by remember { mutableStateOf<String?>(null) }
     var splitEnabled by remember { mutableStateOf(false) }
     var splitParts by remember { mutableStateOf(listOf(SplitDraft(), SplitDraft())) }
@@ -843,6 +857,9 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
     val targets = open.filter { it.id != from?.id && it.currency == from?.currency }
     val to = targets.firstOrNull { it.id == toId } ?: targets.firstOrNull()
     var limit by remember { mutableStateOf(PAGE) }
+    var selecting by remember { mutableStateOf(false) }
+    var selected by remember { mutableStateOf(setOf<String>()) }
+    var bulkCategory by remember { mutableStateOf<String?>(null) }
     if (open.isEmpty()) {
         EmptyState("Add an account first", icon = "member-card", action = "Add account" to { model.mintSection = MintSection.ACCOUNTS })
         return
@@ -905,6 +922,24 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                     PixelButton(find.filter?.label ?: "Filter", { find.showFilter = !find.showFilter }, color = Pixel.InkSoft, compact = true)
                 }
                 if (find.showFilter) PixelDropdown(listOf<TxType?>(null) + quickTypes, find.filter, { it?.label ?: "All" }, { find.filter = it }, Modifier.fillMaxWidth(), key = accent)
+            }
+        }
+    }
+    val duplicates = remember(data) { mint.duplicates() }
+    if (duplicates.isNotEmpty()) TextBox {
+        Accordion("Possible duplicates (${duplicates.size})") {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text(
+                    "Same account, day, kind and amount. Open one of them to check before deleting anything.",
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+                duplicates.take(6).forEach { g ->
+                    val accountName = data.accounts.firstOrNull { it.id == g.accountId }?.name.orEmpty()
+                    Text(
+                        g.day.short() + " \u00b7 " + accountName + " \u00b7 " + g.type.label + " " + mint.show(g.amountMinor, g.currency) + " \u00b7 " + g.ids.size + " records",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
             }
         }
     }
@@ -1023,12 +1058,40 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
     if (data.transactions.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton(if (selecting) "Done selecting" else "Categorise many", {
+                    selecting = !selecting
+                    selected = emptySet()
+                    bulkCategory = null
+                }, Modifier.weight(1f), if (selecting) ModuleAccent.MINT.accent else Pixel.InkSoft, compact = true)
+            }
+            if (selecting) {
+                val categorisable = data.categories.filter { !it.archived }
+                PixelDropdown(
+                    listOf<String?>(null) + categorisable.map { it.id }, bulkCategory,
+                    { id -> categorisable.firstOrNull { it.id == id }?.name ?: "Choose a category" }, { bulkCategory = it },
+                    Modifier.fillMaxWidth(), key = accent, label = "Category for the selected",
+                )
+                PixelButton("Categorise ${selected.size}", {
+                    val changed = mint.categorise(selected, bulkCategory)
+                    model.say(if (changed == 0) "Nothing to change." else "Categorised $changed records.")
+                    selected = emptySet()
+                }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = selected.isNotEmpty())
+                Text("Transfers and adjustments are never categorised.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
             if (found.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Column {
                 found.take(limit).forEachIndexed { i, t ->
                     if (i > 0) HorizontalDivider(color = Pixel.Border)
-                    TransactionRow(model, t, openId == t.id) { openId = if (openId == t.id) null else t.id }
-                    if (openId == t.id) TransactionOptions(model, t) { openId = null }
+                    if (selecting) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        PixelButton(if (t.id in selected) "Selected" else "Select", {
+                            selected = if (t.id in selected) selected - t.id else selected + t.id
+                        }, color = if (t.id in selected) ModuleAccent.MINT.accent else Pixel.InkSoft, compact = true)
+                        Box(Modifier.weight(1f)) { TransactionRow(model, t, false) {} }
+                    } else {
+                        TransactionRow(model, t, openId == t.id) { openId = if (openId == t.id) null else t.id }
+                        if (openId == t.id) TransactionOptions(model, t) { openId = null }
+                    }
                 }
             }
             if (found.size > limit) PixelButton("Show ${minOf(PAGE, found.size - limit)} more", { limit += PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -1087,6 +1150,9 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
     var moreTx by remember(t.id) { mutableStateOf(t.payee.isNotEmpty() || t.note.isNotEmpty()) }
     var amountError by remember(t.id) { mutableStateOf<String?>(null) }
     var feeError by remember(t.id) { mutableStateOf<String?>(null) }
+    var refunding by remember(t.id) { mutableStateOf(false) }
+    var refundAmount by remember(t.id) { mutableStateOf("") }
+    val history = mint.historyOf(t.id)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (editing) {
             val accounts = model.mintData.accounts.filter { (it.status == AccountStatus.ACTIVE && it.currency == t.currency) || it.id == t.accountId }
@@ -1202,6 +1268,49 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                     else PixelButton("Void", {
                         if (mint.setTransactionStatus(t.id, TxStatus.VOIDED)) onDone() else refused = "That record can no longer change status."
                     }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
+                if (t.type == TxType.EXPENSE && t.status == TxStatus.POSTED) {
+                    if (refunding) {
+                        PixelField(
+                            refundAmount, { refundAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
+                            label = "Refund amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = t.currency,
+                        )
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelButton("Save refund", {
+                                val minor = Money.parse(refundAmount, t.currency)
+                                if (minor == null || minor <= 0) refused = "Check the amount."
+                                else {
+                                    val out = mint.record(
+                                        TxType.REFUND, minor, t.accountId, categoryId = t.categoryId, payee = t.payee,
+                                        refundOf = t.id,
+                                    )
+                                    if (out.record == null) refused = out.refused ?: "That refund could not be saved."
+                                    else { refunding = false; onDone() }
+                                }
+                            }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                            PixelButton("Cancel", { refunding = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        }
+                    } else {
+                        val refunded = model.mintData.transactions.filter { it.type == TxType.REFUND && it.refundOf == t.id }.sumOf { it.amountMinor }
+                        if (refunded < t.amountMinor) PixelButton(
+                            "Refund" + if (refunded > 0) " the rest" else " this",
+                            { refunding = true; refundAmount = Money.plain(t.amountMinor - refunded, t.currency) },
+                            Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true,
+                        )
+                    }
+                }
+            }
+            if (history.isNotEmpty()) {
+                HorizontalDivider(color = Pixel.Border)
+                Accordion("History (${history.size})") {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                        history.take(10).forEach { change ->
+                            Text(
+                                change.kind.replaceFirstChar { it.uppercase() } + " \u00b7 " + change.detail,
+                                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -1585,6 +1694,7 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
             }
         }
     }
+    CardStatementsDueBox(model)
     InstallmentsDueBox(model, openInstallments)
     val settled = MintRules.settled(data, today)
     if (settled.isNotEmpty()) TextBox {
@@ -1699,6 +1809,10 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                                 if (b.income) ToggleRow("Estimated amount", editEstimate, detail = "You enter the real amount when it arrives") { editEstimate = it }
                             }
                         }
+                        Text(
+                            "Changes apply from the next occurrence on. An occurrence already settled keeps what was paid, and its payment record stays.",
+                            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                        )
                         FormSave("Save", { if (mint.updateBill(b.copy(name = editName, expectedMinor = minor, firstDue = editFirst ?: b.firstDue, frequency = editFrequency, days = if (editFrequency == Frequency.SEMI_MONTHLY) listOf(editDay1.toIntOrNull() ?: 15, editDay2.toIntOrNull() ?: 30) else b.days, workday = editWorkday, estimate = editEstimate && b.income)).let { r -> message = r.refused; r.record != null }) editId = null }, ModuleAccent.MINT.accent, enabled = editName.isNotBlank() && (editAmount.isBlank() || minor != null))
                     }
                 }
