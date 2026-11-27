@@ -373,6 +373,8 @@ object MintRules {
         if (!budget.rollover) return 0
         val anchor = periodOf(budget.period, today, weekStart).first.minus(DatePeriod(days = 1))
         val (start, end) = periodOf(budget.period, anchor, weekStart)
+        // A budget made partway through the period before had no full period to carry from.
+        if (budget.createdDay != null && budget.createdDay > start) return 0
         val spent = spent(data, start, end, budget.currency, budget.categoryId).coerceAtLeast(0)
         return budget.plannedMinor - spent
     }

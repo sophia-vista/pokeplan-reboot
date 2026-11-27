@@ -115,7 +115,7 @@ class MintTablesTest {
             s.live.activate(null, null, 1); s.live.moveMintToTables(2)
             val mint = mintOn(s, g)
             val a = mint.fill()
-            mint.reconcile(a, 80_000, acceptAdjustment = true)
+            mint.reconcile(a, 80_000, acceptAdjustment = true, reason = "Cash fee")
             mint.finishReview()
             mint.setHideValues(true)
             before = mint.data
@@ -140,7 +140,8 @@ class MintTablesTest {
         mint.setHideValues(true)
         assertEquals(2L, writes(s))
         mint.updateTransaction(mint.data.transactions.first().copy(note = "x"))
-        assertEquals(3L, writes(s), "only the changed transaction row was replaced")
+        // The transaction row, and the short history entry the edit leaves in the document's own state row.
+        assertEquals(4L, writes(s), "only the changed transaction row and the history were written")
     }
 
     @Test
@@ -174,7 +175,7 @@ class MintTablesTest {
         s.live.normalizer = GameStore::normalizeDocument
         val mint = mintOn(s, g)
         val a = mint.fill()
-        mint.reconcile(a, 80_000, acceptAdjustment = true)
+        mint.reconcile(a, 80_000, acceptAdjustment = true, reason = "Cash fee")
         mint.finishReview()
         s.live.write("save", GameStore.json.encodeToString(AppData.serializer(), g.data), 3)
         val shared = s.live.read("save")!!
