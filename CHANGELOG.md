@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.262.3
+
+- **Startup screen back to the brand and three pixels.** 0.262.1's skeleton of Home is removed: it could not match the real Home (which depends on the save), so it looked wrong and jumped. The palette memory, the night-aware window background and the steady loading pixels from 0.262.1 stay. No reward change, no schema change.
+
 ## 0.262.2
 
 - **LINK memories save safely.** A memory's text and its photo changes (adds, removals, caption edits) are now saved in one all-or-nothing write, and Cancel on the memory form discards staged photos (before, photos were written at once and stayed). A memory may be incomplete: a title, note, date or photo alone is enough (a place or time alone is not), and untitled memories are named from their note, then date, then "Photo memory" or "Untitled memory". The OneDrive add-to-memory panel no longer preselects the newest memory: pick one from the list (6, then Show all). Deleting a person also removes them from the saved order.

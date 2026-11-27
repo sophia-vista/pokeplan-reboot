@@ -2370,8 +2370,6 @@ class ScreenshotTest {
             render("loading$suffix", height = 1200, fontScale = scale) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { LoadingGallery() } } }
         }
         render("loading-screen") { PixelTheme(false) { app.pokeplan.ui.theme.LoadingScreen("PokéLife", status = "Opening your save…") } }
-        render("startup-skeleton") { app.pokeplan.ui.screens.StartupLoading(darkTheme = false) }
-        render("startup-skeleton-dark") { app.pokeplan.ui.screens.StartupLoading(darkTheme = true) }
         render("loading-screen-dark") { PixelTheme(true) { app.pokeplan.ui.theme.LoadingScreen("PokéLife", status = "Opening your save…") } }
     }
 
