@@ -6,9 +6,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.provider.Settings
-import androidx.core.content.FileProvider
 import app.pokeplan.MainActivity
 import app.pokeplan.reminders.Channels
 import app.pokeplan.reminders.notificationIcon
@@ -48,6 +48,7 @@ import java.util.zip.GZIPInputStream
  * missing and offers Install again when the player comes back).
  */
 private const val UPDATE_NOTIFICATION_ID = 7_431
+private const val UPDATE_INSTALL_REQUEST = 7_432
 
 class AndroidUpdates(
     private val context: Context,
@@ -241,7 +242,7 @@ class AndroidUpdates(
         return apk.isFile && (release.sizeBytes <= 0 || apk.length() == release.sizeBytes)
     }
 
-    override fun install(release: UpdateRelease): Boolean {
+    override suspend fun install(release: UpdateRelease): Boolean {
         problem = null
         val apk = apkFile(release)
         if (apk == null || !apk.isFile) {
@@ -253,15 +254,40 @@ class AndroidUpdates(
             openInstallSettings()
             return false
         }
+        // A PackageInstaller session, not an ACTION_VIEW hand-off: the system reports back why an install stopped
+        // (blocked, conflicting signature, cancelled), where the old hand-off showed "Preparing app" and vanished.
+        val installer = context.packageManager.packageInstaller
+        val result = UpdateInstallResult.begin()
+        var sessionId = -1
         return try {
-            val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", apk)
-            val intent = Intent(Intent.ACTION_VIEW)
-                .setDataAndType(uri, "application/vnd.android.package-archive")
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-            true
+            val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+                .apply { setSize(apk.length()) }
+            sessionId = installer.createSession(params)
+            withContext(Dispatchers.IO) {
+                installer.openSession(sessionId).use { session ->
+                    apk.inputStream().use { input ->
+                        session.openWrite("pokeplan.apk", 0, apk.length()).use { out ->
+                            input.copyTo(out)
+                            session.fsync(out)
+                        }
+                    }
+                    val status = PendingIntent.getBroadcast(
+                        context, UPDATE_INSTALL_REQUEST,
+                        Intent(context, UpdateInstallReceiver::class.java).setAction(UpdateInstallReceiver.ACTION),
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE,
+                    )
+                    session.commit(status.intentSender)
+                }
+            }
+            val outcome = result.await()
+            problem = outcome
+            outcome == null
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            runCatching { if (sessionId >= 0) installer.abandonSession(sessionId) }
+            throw e
         } catch (e: Exception) {
-            problem = "The installer could not open."
+            runCatching { if (sessionId >= 0) installer.abandonSession(sessionId) }
+            problem = "The installer could not start: ${e.message ?: e::class.java.simpleName}."
             false
         }
     }

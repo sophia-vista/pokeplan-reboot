@@ -268,8 +268,11 @@ interface UpdateAccess {
     /** True when a checked, complete APK for [release] is already on the phone. */
     fun downloaded(release: UpdateRelease): Boolean
 
-    /** Opens the system installer; false when it could not, with [problem] set. */
-    fun install(release: UpdateRelease): Boolean
+    /**
+     * Hands the APK to the system installer and waits for its answer: false when it could not install or the player
+     * cancelled, with [problem] set to the system's own reason. On success the app is replaced, so it may never return.
+     */
+    suspend fun install(release: UpdateRelease): Boolean
 
     /** Whether this phone already lets PokéLife install an update. */
     fun canInstall(): Boolean

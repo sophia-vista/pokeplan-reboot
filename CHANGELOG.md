@@ -8,6 +8,7 @@ release always has the newest merge).
 ## 0.261.1
 
 - **The app checks for a newer build every time Home opens (27 November 2026).** It used to check once per app start (and again on Me or About only if no check had been made). Now `HomeScreen` asks for the newest published build on each open, so the "Update" cue on Me and the once-per-version notification stay current; Me and About still fill in a first check when none has happened yet.
+- **Installing an update goes through Android's PackageInstaller, and says why when it stops (27 November 2026).** Tapping Install update used to hand the APK to the system with a plain view intent and report success whatever happened, so a phone that blocked or dropped it (Samsung showed "Preparing app" and closed) left no message. The app now opens an install session, shows "Installing…", opens the system's confirm page, and ends with the system's own answer: blocked (Auto Blocker, Play Protect), cancelled, a conflicting signature, no room, or a rejected file.
 
 ## 0.261.0
 
