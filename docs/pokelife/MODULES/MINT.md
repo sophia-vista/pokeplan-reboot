@@ -373,7 +373,7 @@ For a credit card or pay-later account, the player may record the lender's state
 
 ### 5.6D The card month, step by step
 
-The account's Credit line box has a "?" key that opens **How a card works**, and a **Pay card** button (**Pay balance** on a pay-later or other credit account) while something is owed. The steps, each already defined above:
+The account's Credit line box has a "?" key that opens **How a card works**, and while something is owed a **Pay early** action that pays **any amount at any time** — including before a statement closes, when nothing is billed yet (owner's request, 27 November 2026): it opens the same transfer to the card (paying account, amount, day up to today), so owed now and the paying account fall together and nothing is spending, and the box says after it that the card was paid early. It is also the quickest way past a statement: the statement's own **Pay minimum** / **Pay in full** stay for paying exactly what the lender billed. The steps, each already defined above:
 
 1. **Spend:** an Expense on the card. It raises **Owed now** and counts as spending once, on the day (5.6, 5.6A).
 2. **Statement:** the lender's statement is entered under Statements (5.6B). It is a note of what was billed and what is due; it changes no balance and makes no record. The box shows the latest statement's balance, minimum and pay-by day under **Owed now**, so the two are never mistaken for each other.

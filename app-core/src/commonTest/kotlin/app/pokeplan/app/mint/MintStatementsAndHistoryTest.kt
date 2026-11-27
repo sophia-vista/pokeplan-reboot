@@ -74,6 +74,20 @@ class MintStatementsAndHistoryTest {
     }
 
     @Test
+    fun aCardCanBePaidEarlyBeforeAnyStatementCloses() {
+        val (m, _) = store()
+        val c = card(m)
+        val b = bank(m)
+        // The card was added today, after its statement day, so nothing has closed and nothing is billed.
+        assertNull(m.currentCardCycle(c))
+        assertNotNull(m.record(TxType.EXPENSE, 50_000, c, payee = "Laptop").record)
+        val out = assertNotNull(m.payStatement(c, 20_000, b).record, "an early payment needs no statement")
+        assertEquals(TxType.TRANSFER, out.type, "it is still a transfer, never spending")
+        assertEquals(30_000L, MintRules.balance(m.data, m.data.accounts.first { it.id == c }).postedMinor)
+        assertNull(m.currentCardCycle(c), "paying early is not a statement payment")
+    }
+
+    @Test
     fun aStatementPaymentIsATransferThatNeverCountsAsSpending() {
         val (m, clock) = store()
         val c = card(m)
