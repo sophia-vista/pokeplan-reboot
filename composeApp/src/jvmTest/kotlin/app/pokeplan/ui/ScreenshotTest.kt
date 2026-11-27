@@ -1191,7 +1191,7 @@ class ScreenshotTest {
         override suspend fun check(): UpdateRelease? = release
         override suspend fun download(release: UpdateRelease, onProgress: (Int) -> Unit): Boolean = true
         override fun downloaded(release: UpdateRelease): Boolean = downloaded
-        override fun install(release: UpdateRelease): Boolean = true
+        override suspend fun install(release: UpdateRelease): Boolean = true
         override fun canInstall(): Boolean = allowInstall
         override fun openInstallSettings() {}
         override fun openReleasePage(release: UpdateRelease) {}

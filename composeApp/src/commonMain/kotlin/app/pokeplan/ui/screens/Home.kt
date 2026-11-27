@@ -107,6 +107,8 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
     val store = model.store
     val data = model.data
     val points = data.player.trainerPoints
+    // Every time Home opens (owner, 27 November 2026): ask for the newest build, so the "Update" cue on Me and the notification stay current.
+    LaunchedEffect(Unit) { if (model.updates != null) model.checkForUpdate() }
 
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(
