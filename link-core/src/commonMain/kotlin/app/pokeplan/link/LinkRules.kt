@@ -79,13 +79,31 @@ object LinkRules {
         return null
     }
 
-    fun checkMemory(m: Memory): Check {
-        if (m.title.isBlank() && m.note.isBlank()) return Check.Refused("Give the memory a title or a note.")
+    /**
+     * A memory may be incomplete (owner's Sprint 1 list): a title, a note, a date or a photo alone is enough, so a
+     * photo-only or date-only moment can be kept now and finished later. [photoCount] is how many photos the memory
+     * will hold once the save lands. Place and time alone are not enough: they only describe something.
+     */
+    fun checkMemory(m: Memory, photoCount: Int = 0): Check {
+        if (m.title.isBlank() && m.note.isBlank() && !m.date.known && photoCount <= 0) {
+            return Check.Refused("Add a title, a note, a date or a photo.")
+        }
         if (m.title.length > MEMORY_TITLE_MAX) return Check.Refused("That title is too long.")
         if (m.note.length > NOTE_MAX) return Check.Refused("That note is too long.")
         if (m.place.length > FIELD_MAX || m.time.length > 32) return Check.Refused("One of those lines is too long.")
         dateProblem(m.date)?.let { return Check.Refused(it) }
         return Check.Ok
+    }
+
+    /**
+     * What to call a memory in a list or a picker when it may have no title: its title, else the first line of its
+     * note, else its date, else what it holds. Never empty.
+     */
+    fun memoryLabel(m: Memory, photoCount: Int = 0): String {
+        m.title.trim().takeIf { it.isNotEmpty() }?.let { return it }
+        m.note.lineSequence().map { it.trim() }.firstOrNull { it.isNotEmpty() }?.let { return if (it.length > 60) it.take(59).trimEnd() + "…" else it }
+        if (m.date.year != null) return dateLabel(m.date)
+        return if (photoCount > 0) "Photo memory" else "Untitled memory"
     }
 
     fun checkEra(e: Era): Check {

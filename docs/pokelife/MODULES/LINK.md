@@ -201,7 +201,7 @@ A person's profile is also a **slambook page**: the details the player chooses t
 ### 3.1 Add a memory
 
 1. Choose Add a memory in Memories, or Add a memory on a person's page (which preselects that person).
-2. Write a title or a note; one of the two is enough.
+2. Write a title, a note, set a date or add a photo; **any one of the four is enough** (owner's Sprint 1 list, 27 November 2026), so a photo-only or date-only moment can be kept now and finished later. A place or a time alone is not enough. A memory without a title is called by its note's first line, else its date, else "Photo memory" or "Untitled memory" (`LinkRules.memoryLabel`).
 3. Set the date with the Year, Month and Day fields, leaving unknown parts blank, and turn on "Around then" for a memory the player only remembers approximately. A month needs its year and a day needs its month.
 4. Optionally add the place and the time.
 5. Choose any number of people and chapters with the People and Chapters chips.
@@ -219,10 +219,10 @@ A person's profile is also a **slambook page**: the details the player chooses t
 
 1. Open a memory's form (or add a memory).
 2. On Android, choose Add a photo for one picture from the Android Photo Picker, Add photos to take several at once from the system gallery picker, or From files to take several from the system file picker (OpenMultipleDocuments for any documents provider the phone has, including a cloud app's folder; the provider's own sign-in happens outside PokéLife and LINK asks for no account). PNG, JPEG and WebP are accepted, and each picture is downscaled to fit the budget.
-3. The photos appear in the form as 96 dp thumbnails; add or edit their captions (up to 200 characters), or Remove one with Undo.
-4. A new memory keeps the picked photos in the form and attaches them when Save makes it; an existing memory adds them straight away.
+3. The photos appear in the form as 96 dp thumbnails; add or edit their captions (up to 200 characters), or Remove one.
+4. **Photo changes are staged until Save** (owner's Sprint 1 list, 27 November 2026): added photos, removed photos and caption edits wait in the form, and Save applies them with the text in one write (`LinkStore.saveMemory`), all or nothing; Cancel discards every pending change, for a new memory and an existing one alike. A refusal (a picture too big, nothing left in the memory) changes nothing. Adding a photo from OneDrive or from a gallery tile is its own explicit action and writes straight away.
 5. Find the photos in the memory's row ("1 photo" or "N photos"), in the Gallery pill, and on the pages of the people the memory names.
-6. The optional OneDrive path on Android (6.2) is built: connect, browse folders and photos, choose one photo and Add to this memory; it is downloaded and kept as a normal local photo. Multi-select on OneDrive is not built yet.
+6. The optional OneDrive path on Android (6.2) is built: connect, browse folders and photos, choose one photo, **choose the memory yourself** (no memory is preselected; the list shows each memory's name, date and people, and the add key stays off until one is tapped) and Add to this memory; it is downloaded and kept as a normal local photo. Multi-select on OneDrive is not built yet.
 
 ### 3.4 Link a PLAN event to a memory
 

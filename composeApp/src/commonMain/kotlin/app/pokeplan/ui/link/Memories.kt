@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.pokeplan.link.Era
+import app.pokeplan.app.link.LinkStore
 import app.pokeplan.link.LinkData
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.Memory
@@ -161,48 +163,48 @@ private fun PhotoTile(photo: MemoryPhoto, title: String, detail: String, onOpen:
     }
 }
 
-/** One stored photo in the memory form: its picture, its caption (edited in one write), and a remove key with Undo. */
+/**
+ * One stored photo in the memory form. Nothing here writes: a caption edit or a removal is staged in the form
+ * ([onCaption], [onRemove]) and only Save applies it, so Cancel leaves the photo exactly as it was.
+ */
 @Composable
-private fun PhotoRow(model: AppModel, photo: MemoryPhoto) {
-    val link = model.link
+private fun PhotoRow(photo: MemoryPhoto, caption: String, onCaption: (String) -> Unit, onRemove: () -> Unit) {
     var editing by remember(photo.id) { mutableStateOf(false) }
-    var draft by remember(photo.id) { mutableStateOf(photo.caption) }
-    var message by remember(photo.id) { mutableStateOf<String?>(null) }
+    var draft by remember(photo.id) { mutableStateOf(caption) }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Top) {
         PhotoThumb(photo, 96.dp)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             if (editing) {
                 PixelField(draft, { draft = it.take(LinkRules.PHOTO_CAPTION_MAX) }, Modifier.fillMaxWidth(), label = "Caption", singleLine = true, keyboardOptions = sentenceKeys)
                 Actions {
-                    PixelButton("Save", {
-                        val out = link.updatePhotoCaption(photo.id, draft)
-                        if (out.record == null) message = out.refused else { editing = false; message = null }
-                    }, Modifier.weight(1f), accent, compact = true)
-                    PixelButton("Cancel", { editing = false; draft = photo.caption }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Done", { onCaption(draft); editing = false }, Modifier.weight(1f), accent, compact = true)
+                    PixelButton("Cancel", { editing = false; draft = caption }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             } else {
-                if (photo.caption.isNotBlank()) Text(photo.caption, style = MaterialTheme.typography.bodyMedium, color = Pixel.Ink)
+                if (caption.isNotBlank()) Text(caption, style = MaterialTheme.typography.bodyMedium, color = Pixel.Ink)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelButton("Caption", { draft = photo.caption; editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    PixelButton("Remove", {
-                        val before = model.linkData
-                        link.deletePhoto(photo.id)
-                        model.offerUndo("Removed a photo") { link.restore(before) }
-                    }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Caption", { draft = caption; editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Remove", onRemove, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
-            message?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
 }
 
-/** A photo picked for a memory that is not saved yet; it is kept in the form until Save adds it. */
+/** A photo picked in the form and not saved yet; it joins the memory only when Save applies the whole form. */
+private class StagedPhoto(val mime: String, val data: String, caption: String = "") {
+    var caption by mutableStateOf(caption)
+}
+
 @Composable
-private fun PendingPhotoRow(photo: Pair<String, String>, onRemove: () -> Unit) {
-    val bitmap = remember(photo.second) { decodePhoto(photo.second) }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+private fun StagedPhotoRow(photo: StagedPhoto, onRemove: () -> Unit) {
+    val bitmap = remember(photo.data) { decodePhoto(photo.data) }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Top) {
         PhotoImage(bitmap, "Photo to add", Modifier.size(96.dp))
-        PixelButton("Remove", onRemove, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelField(photo.caption, { photo.caption = it.take(LinkRules.PHOTO_CAPTION_MAX) }, Modifier.fillMaxWidth(), label = "Caption", singleLine = true, keyboardOptions = sentenceKeys)
+            PixelButton("Remove", onRemove, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        }
     }
 }
 
@@ -224,7 +226,7 @@ internal fun MemoriesScreen(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("On this day")
             onThisDay.forEach { m ->
-                RecordRow(m.title, listOf(LinkRules.dateLabel(m.date), peopleLine(data, m.personIds)).filter { it.isNotBlank() }.joinToString(" · "))
+                RecordRow(link.memoryLabel(m), listOf(LinkRules.dateLabel(m.date), peopleLine(data, m.personIds)).filter { it.isNotBlank() }.joinToString(" · "))
             }
         }
     }
@@ -237,7 +239,7 @@ internal fun MemoriesScreen(model: AppModel) {
                     FieldLabel(year?.toString() ?: NO_YEAR)
                     group.forEach { m ->
                         RecordRow(
-                            m.title, memoryLine(data, m),
+                            link.memoryLabel(m), memoryLine(data, m),
                             onClick = { openId = if (openId == m.id) null else m.id },
                             onClickLabel = if (openId == m.id) "Close the memory" else "Open the memory",
                         )
@@ -261,7 +263,7 @@ internal fun MemoriesScreen(model: AppModel) {
                         onClickLabel = if (openEraId == era.id) "Close the chapter" else "Open the chapter",
                     )
                     if (openEraId == era.id) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
-                        link.memoriesInEra(era.id).forEach { m -> RecordRow(m.title, LinkRules.dateLabel(m.date)) }
+                        link.memoriesInEra(era.id).forEach { m -> RecordRow(link.memoryLabel(m), LinkRules.dateLabel(m.date)) }
                         EraForm(model, era, onDone = { openEraId = null })
                     }
                 }
@@ -281,7 +283,7 @@ internal fun MemoriesScreen(model: AppModel) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     photos.forEach { p ->
                         val memory = data.memories.firstOrNull { it.id == p.memoryId }
-                        PhotoTile(p, memory?.title ?: "Photo", p.caption.ifBlank { memory?.let { LinkRules.dateLabel(it.date) }.orEmpty() }) { viewing = p }
+                        PhotoTile(p, memory?.let { link.memoryLabel(it) } ?: "Photo", p.caption.ifBlank { memory?.let { LinkRules.dateLabel(it.date) }.orEmpty() }) { viewing = p }
                     }
                 }
             }
@@ -342,47 +344,36 @@ internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: Stri
     var personIds by remember(key) { mutableStateOf(existing?.personIds ?: listOfNotNull(presetPersonId)) }
     var eraIds by remember(key) { mutableStateOf(existing?.eraIds.orEmpty()) }
     var message by remember(key) { mutableStateOf<String?>(null) }
-    /** A memory the first Save made, so photos picked for a new memory have somewhere to go before the form closes. */
-    var madeId by remember(key) { mutableStateOf(existing?.id) }
-    val photos = madeId?.let { link.photosOf(it) }.orEmpty()
-    val pending = remember(key) { mutableStateListOf<Pair<String, String>>() }
+    /**
+     * Everything photo-related is staged here until Save (owner's Sprint 1 list): added pictures, removed stored ones
+     * and edited captions. Save applies them with the text in one write; Cancel simply closes, so nothing is left behind.
+     */
+    val stored = existing?.let { link.photosOf(it.id) }.orEmpty()
+    val staged = remember(key) { mutableStateListOf<StagedPhoto>() }
+    var removed by remember(key) { mutableStateOf(setOf<String>()) }
+    val captions = remember(key) { mutableStateMapOf<String, String>() }
+    val shown = stored.filter { it.id !in removed }
     var photoProblem by remember(key) { mutableStateOf<String?>(null) }
     fun pickPhoto() {
         val images = model.images ?: return
         images.choose { bytes, why ->
             if (bytes == null) { photoProblem = why; return@choose }
-            val encoded = Base64.encode(bytes)
-            if (madeId == null) { pending += photoMime(bytes) to encoded; photoProblem = null }
-            else {
-                val out = link.addPhoto(madeId!!, encoded, photoMime(bytes))
-                photoProblem = if (out.record == null) (out.refused ?: "That picture could not be saved.") else null
-                if (out.record != null) model.haptic()
-            }
+            staged += StagedPhoto(photoMime(bytes), Base64.encode(bytes)); photoProblem = null
         }
     }
 
-    /** Several pictures from the system gallery or the system file picker, straight into this memory. */
+    /** Several pictures from the system gallery or the system file picker, staged in this form. */
     fun pickPhotos(chooser: PhotoBatchChooser?, max: Int) {
         if (chooser == null) return
         chooser.choose(max) { bytes, why ->
             if (bytes == null) { photoProblem = why; return@choose }
-            val id = madeId
-            if (id == null) {
-                bytes.forEach { pending += photoMime(it) to Base64.encode(it) }
-                photoProblem = null
-            } else {
-                var refusal: String? = null
-                for (b in bytes) {
-                    val out = link.addPhoto(id, Base64.encode(b), photoMime(b))
-                    if (out.record == null) { refusal = out.refused ?: "That picture could not be saved."; break }
-                }
-                photoProblem = refusal
-                if (refusal == null) model.haptic()
-            }
+            bytes.forEach { staged += StagedPhoto(photoMime(it), Base64.encode(it)) }
+            photoProblem = null
         }
     }
+    val photoCount = shown.size + staged.size
     FormStack {
-        if (existing == null && madeId == null) PixelTitle("Add a memory")
+        if (existing == null) PixelTitle("Add a memory")
         FormGroup {
             PixelField(title, { title = it.take(LinkRules.MEMORY_TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
             PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", minLines = 2, keyboardOptions = sentenceKeys)
@@ -392,11 +383,13 @@ internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: Stri
                 PixelField(time, { time = it.take(32) }, Modifier.weight(0.7f), label = "Time", singleLine = true)
             }
         }
-        if (photos.isNotEmpty() || pending.isNotEmpty() || model.images != null || model.galleryPhotos != null || model.filePhotos != null) {
-            if (photos.isNotEmpty() || pending.isNotEmpty()) FieldLabel("Photos")
-            photos.forEach { photo -> PhotoRow(model, photo) }
-            pending.forEachIndexed { i, photo -> PendingPhotoRow(photo) { pending.removeAt(i) } }
-            val room = (LinkRules.PHOTOS_PER_MEMORY_MAX - photos.size - pending.size).coerceAtLeast(1)
+        if (photoCount > 0 || model.images != null || model.galleryPhotos != null || model.filePhotos != null) {
+            if (photoCount > 0) FieldLabel("Photos")
+            shown.forEach { photo ->
+                PhotoRow(photo, captions[photo.id] ?: photo.caption, { captions[photo.id] = it }, { removed = removed + photo.id })
+            }
+            staged.toList().forEach { photo -> StagedPhotoRow(photo) { staged.remove(photo) } }
+            val room = (LinkRules.PHOTOS_PER_MEMORY_MAX - photoCount).coerceAtLeast(1)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (model.images != null) PixelButton("Add a photo", { pickPhoto() }, color = accent, compact = true)
                 if (model.galleryPhotos != null) PixelButton("Add photos", { pickPhotos(model.galleryPhotos, room) }, color = accent, compact = true)
@@ -417,36 +410,23 @@ internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: Stri
             }
         }
         FormSave("Save", {
-            val d = date.value()
-            val out = if (madeId == null) link.addMemory(title, d, note, time, place, personIds, eraIds)
-            else link.updateMemory(
-                existing ?: Memory(id = madeId!!, title = title, note = note, date = d, time = time, place = place, personIds = personIds, eraIds = eraIds),
+            val out = link.saveMemory(
+                existing?.id, title, date.value(), note, time, place, personIds, eraIds,
+                addPhotos = staged.map { LinkStore.NewPhoto(it.data, it.mime, it.caption) },
+                removePhotoIds = removed, captions = captions.toMap(),
             )
-            val saved = out.record
-            if (saved == null) { message = out.refused; return@FormSave }
-            madeId = saved.id
-            var refusal: String? = null
-            val left = mutableListOf<Pair<String, String>>()
-            pending.forEach { photo ->
-                if (refusal != null) left += photo
-                else {
-                    val add = link.addPhoto(saved.id, photo.second, photo.first)
-                    if (add.record == null) { refusal = add.refused ?: "That picture could not be saved."; left += photo }
-                }
-            }
-            pending.clear(); pending += left
-            if (refusal != null) { message = refusal; return@FormSave }
+            if (out.record == null) { message = out.refused; return@FormSave }
             message = null; photoProblem = null; model.haptic(); onDone()
-        }, accent, enabled = title.isNotBlank() || note.isNotBlank())
-        val deleteId = existing?.id ?: madeId
-        if (deleteId == null) PixelButton("Cancel", onDone, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        }, accent, enabled = title.isNotBlank() || note.isNotBlank() || date.value().year != null || photoCount > 0)
+        if (existing == null) PixelButton("Cancel", onDone, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         else Actions {
             PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", {
                 val before = model.linkData
-                link.deleteMemory(deleteId)
+                val label = link.memoryLabel(existing)
+                link.deleteMemory(existing.id)
                 onDone()
-                model.offerUndo("Deleted: ${existing?.title ?: title}") { link.restore(before) }
+                model.offerUndo("Deleted: $label") { link.restore(before) }
             }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         message?.let { Report(model, it, NoticeTone.WARNING) }
