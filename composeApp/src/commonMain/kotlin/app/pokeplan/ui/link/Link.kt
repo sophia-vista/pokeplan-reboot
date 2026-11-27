@@ -220,7 +220,7 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, trailing = {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                if (hasRecords) PixelIconButton("search", "Search Link", { reveal.open = true }, Pixel.Ink)
+                if (hasRecords) PixelIconButton("search", "Search Link", { reveal.show() }, Pixel.Ink)
                 SectionsKey(Module.LINK.label, sections) { key -> model.linkSection = LinkSection.valueOf(key) }
             }
         })

@@ -87,7 +87,7 @@ private const val NO_YEAR = "No year"
 private const val NO_MONTH = "Month"
 
 @Composable
-internal fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) =
+private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) =
     TabButton(label, selected, onClick, modifier, key = accent)
 
 /** The display names of the people a memory names, in the order it names them. */
