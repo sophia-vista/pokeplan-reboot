@@ -8,6 +8,14 @@ release always has the newest merge).
 ## 0.261.0
 
 - **The launcher town follows the Mystery Dungeon floor rules more closely (27 November 2026, REP-052).** One Pokémon to a square, as in the games: a Pokémon now holds the square it steps onto from the moment it sets off (and the one it leaves until it arrives), so two can no longer walk into the same square at once, and one that is on its way in or out of a square is waited for instead of swapped with. A step that is called off (a meeting, a startle, a swap) is finished onto the nearest square, so nobody stands between squares. Nobody rests or sleeps in a corridor any more (it blocked the way for everyone else): a Pokémon that falls asleep in a corridor, on the stairs, on a trap or under a widget walks to a room square first. Sight stops at a wall, so Pokémon on either side of a thin wall no longer meet, glance, get startled or flee from each other. Layers are the games' depth sort: Pokémon are ordered by their feet to the pixel (they used to share 24 coarse bands and could swap places in front of each other), a tie is settled the same way every frame, a pick-up's name shows over the Pokémon, and a trap's effect sits on the same pixel as the sprite's feet. Traps never lie at a room's doorway, where a whole corridor would trip over them again and again; hallways are the games' Z shape (straight, one jog, straight) and a leaving Guardian walks to the stairs by its own way instead of through the rock. Tests: `DungeonFloorTest`.
+## 0.259.2
+
+- **Review fixes for Mint and the Tasks quick add (27 November 2026).**
+  - A record's history now says what its status really changed from ("posted to excluded"); it read "excluded to excluded" because the old status was read after the change was applied.
+  - A rollover budget carries nothing from before it existed: turning rollover on for a budget made today no longer adds a whole extra period of allowance. A budget made before the creation day was kept still carries as before.
+  - Editing a refund is checked against the expense the same way adding one is, so its total can no longer pass the expense; paying a card statement from a closed account is refused.
+  - In the Tasks quick add, a Monthly repeat follows the task's date until the day is typed by hand (picking Monthly on the 27th and then the 5th repeated on the 27th).
+  - The Mint table tests (`:data:jvmTest`) were red: one still reconciled without the reason an adjustment now needs, one counted writes without the history entry an edit now leaves. Both are updated, and new tests cover each fix above.
 
 ## 0.259.1
 
