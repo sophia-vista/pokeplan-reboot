@@ -99,6 +99,33 @@ class CardCyclesTest {
     }
 
     @Test
+    fun theNextCloseIsTheUpcomingStatement() {
+        val card = account("card", dueDay = 5).copy(statementDay = 28)
+        assertEquals(LocalDate(2026, 11, 28) to LocalDate(2026, 12, 5), CardCycles.next(card, LocalDate(2026, 11, 27)))
+        assertEquals(LocalDate(2026, 12, 28) to LocalDate(2027, 1, 5), CardCycles.next(card, LocalDate(2026, 11, 29)))
+        assertNull(CardCycles.next(card.copy(statementDay = 0), LocalDate(2026, 11, 27)))
+    }
+
+    @Test
+    fun aCycleBeforeTheAccountWasAddedIsNotAStatement() {
+        // The account was added on 20 November with an opening balance already owed; its statement day is the 28th and
+        // its due day the 5th. Nothing closed in October because the account did not exist then.
+        val card = FinancialAccount("card", "card", AccountType.PAY_LATER, "PHP", 500_000, LocalDate(2026, 11, 20), statementDay = 28, dueDay = 5)
+        val data = MintData(accounts = listOf(card))
+        val today = LocalDate(2026, 11, 27)
+        val cycle = CardCycles.current(data, card, today)
+        assertNull(cycle, "no statement has closed since the account was added")
+        assertTrue(CardCycles.dueWithin(data, today, 30).isEmpty(), "so nothing is shown as overdue")
+        // Once a statement closes on the 28th, the cycle is real: due on the 5th of December.
+        val later = LocalDate(2026, 12, 1)
+        val first = assertNotNull(CardCycles.current(data, card, later))
+        assertEquals(LocalDate(2026, 11, 28), first.statementDay)
+        assertEquals(LocalDate(2026, 12, 5), first.dueDay)
+        assertEquals(CardCycles.State.UPCOMING, first.state(later))
+        assertEquals(500_000L, first.billedMinor)
+    }
+
+    @Test
     fun aCardWithoutBothDaysHasNoCycle() {
         val card = account("card").copy(statementDay = 0)
         assertNull(CardCycles.current(MintData(accounts = listOf(card)), card, LocalDate(2026, 11, 25)))

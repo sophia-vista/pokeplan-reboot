@@ -178,6 +178,10 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
             }
             dayLine("Statement", a.statementDay, today)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             dayLine("Due", a.dueDay, today)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+            // A card added since its last statement day has nothing billed yet: say when the first one closes (5.6B).
+            if (statementCycle == null) app.pokeplan.mint.CardCycles.next(a, today)?.let { (close, due) ->
+                Text("Nothing has closed since this account was added. The next statement closes on " + close.compact() + ", due " + due.compact() + ".", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
             val bills = mint.openBills(a.id)
             if (plans.isNotEmpty() && !model.mintData.settings.billReminders) Text("Bill reminders are off.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (bills.isNotEmpty()) {

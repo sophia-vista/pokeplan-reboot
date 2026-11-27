@@ -551,7 +551,9 @@ class MintStore(
 
     /** Records the open cycle's statement from the card's own figures; the minimum is the player's, as the lender's. */
     fun recordStatementFromCycle(accountId: String, minimumMinor: Long): Logged<CreditStatement> {
-        val cycle = currentCardCycle(accountId) ?: return Logged(null, "This card has no statement day and due day set.")
+        val account = data.accounts.firstOrNull { it.id == accountId } ?: return Logged(null, "That account is gone.")
+        if (!app.pokeplan.mint.CardCycles.applies(account)) return Logged(null, "This card has no statement day and due day set.")
+        val cycle = currentCardCycle(accountId) ?: return Logged(null, "No statement has closed since this account was added.")
         if (cycle.billedMinor <= 0) return Logged(null, "Nothing was billed on the last statement.")
         if (cycle.statementId != null) return Logged(null, "That statement is already recorded.")
         return recordCreditStatement(accountId, cycle.statementDay, cycle.billedMinor, minimumMinor, cycle.dueDay)
