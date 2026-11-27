@@ -115,6 +115,11 @@ class MainActivity : ComponentActivity() {
         val updates = app.pokeplan.platform.AndroidUpdates(this)
         val first = launchFrom(intent)
         val place = first.place ?: Place.HOME
+        // The palette the app closed in (Settings → Look can differ from the phone's), read here so the window and the
+        // startup screens show it from the first frame; until one was ever stored the phone's own setting applies.
+        val startupDark = rememberedDark()
+        val phoneDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        if (startupDark != null) window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(if (startupDark) PAPER_DARK else PAPER_LIGHT))
         setContent {
             var ready by remember { mutableStateOf(false) }
             var recovery by remember { mutableStateOf(false) }
@@ -133,7 +138,7 @@ class MainActivity : ComponentActivity() {
                 if (!pending) runCatching { BackupWorker.runSoon(app) }
             }
             when {
-                !ready -> StartupLoading()
+                !ready -> StartupLoading(darkTheme = startupDark ?: phoneDark)
                 recovery -> RecoveryChoice(
                     olderFromMillis = LiveStore.olderFilesMillis(this@MainActivity),
                     onOlder = { LiveStore.resolveRecovery(this@MainActivity, useOlder = true); recreate() },
@@ -151,14 +156,19 @@ class MainActivity : ComponentActivity() {
                     val integrations = remember { integrationsStorage(this@MainActivity) }
                     App(
                         storage, careStorage = care, healStorage = heal, mintStorage = mint, baseStorage = base, linkStorage = link, integrationsStorage = integrations, focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
-                        cries = AndroidCryPlayer(this@MainActivity), haptics = AndroidHaptics(this@MainActivity), files = AndroidFileSaver(this@MainActivity), calendars = calendars, phone = AndroidPhoneState(this@MainActivity), torch = torch, capabilities = AndroidCapabilities(this@MainActivity), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this@MainActivity), oneDrive = oneDrive, appLauncher = app.pokeplan.platform.AndroidAppLauncher(this@MainActivity), updates = updates, capture = capture, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this@MainActivity), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars, asyncModel = true,
+                        cries = AndroidCryPlayer(this@MainActivity), haptics = AndroidHaptics(this@MainActivity), files = AndroidFileSaver(this@MainActivity), calendars = calendars, phone = AndroidPhoneState(this@MainActivity), torch = torch, capabilities = AndroidCapabilities(this@MainActivity), sensors = sensors, services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, images = images, imageViewer = app.pokeplan.platform.AndroidImageViewer(this@MainActivity), oneDrive = oneDrive, appLauncher = app.pokeplan.platform.AndroidAppLauncher(this@MainActivity), updates = updates, capture = capture, huawei = app.pokeplan.huawei.AndroidHuaweiReader(this@MainActivity), contacts = contacts, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onBaseChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars, asyncModel = true, startupDark = startupDark,
                     )
                 }
             }
         }
     }
 
+    private fun rememberedDark(): Boolean? =
+        runCatching { getSharedPreferences(STARTUP_PREFS, MODE_PRIVATE).takeIf { it.contains(KEY_DARK) }?.getBoolean(KEY_DARK, false) }.getOrNull()
+
     private fun matchSystemBars(dark: Boolean) {
+        runCatching { getSharedPreferences(STARTUP_PREFS, MODE_PRIVATE).edit().putBoolean(KEY_DARK, dark).apply() }
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(if (dark) PAPER_DARK else PAPER_LIGHT))
         androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !dark
     }
 
@@ -382,5 +392,10 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_TAB = "app.pokeplan.TAB"
         const val EXTRA_POKEMON = "app.pokeplan.POKEMON"
         const val EXTRA_ADD_TASK = "app.pokeplan.ADD_TASK"
+        private const val STARTUP_PREFS = "startup"
+        private const val KEY_DARK = "dark"
+        /** `Pixel.Paper` in each palette: the colour the window shows behind the first frame. */
+        private const val PAPER_LIGHT = 0xFFF7F5F0.toInt()
+        private const val PAPER_DARK = 0xFF14151F.toInt()
     }
 }

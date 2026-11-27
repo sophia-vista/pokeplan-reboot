@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.262.1
+
+- **Opening the app no longer flashes.** The Android window and the startup screen now draw in the palette the app closed in (Settings → Look can differ from the phone's; before, a Dark choice on a light phone showed light, then flipped), the window behind the first frame is the page colour in both palettes (it was always white, with no night variant), and the loading pixels keep their step when one startup screen hands over to the next instead of restarting. UI and window colours only: no reward change, no schema change.
+
 ## 0.262.0
 
 - **PLAN P2 (27 November 2026, REP-092).** A **Review** box for leftover tasks (`OutstandingReview`, `GameStore.reviewLeftover`); **task templates** (save from a task's More tab, "From a template" in the quick add; `TaskTemplate`, `AppData.taskTemplates`); a **List** choice in the quick add's More options; optional **Suggest times** in the Calendar tray (`PlanSuggestions`). PLAN.md 3.4A, 3.5B, 3.5C.

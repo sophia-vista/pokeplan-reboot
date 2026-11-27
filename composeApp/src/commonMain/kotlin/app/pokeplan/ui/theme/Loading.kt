@@ -63,11 +63,11 @@ fun LoadingDots(modifier: Modifier = Modifier, color: Color = Pixel.InkSoft, dot
     if (!calm) LaunchedEffect(Unit) {
         moving = (coroutineContext[MotionDurationScale.Key]?.scaleFactor ?: 1f) > 0f
         if (!moving) return@LaunchedEffect
-        var start = 0L
+        // Phase comes from the frame clock itself, not from when this copy appeared, so the pixels keep their step when
+        // one startup screen hands over to the next (each is a fresh composition) instead of restarting on the first dot.
         while (true) {
             val now = withFrameNanos { it }
-            if (start == 0L) start = now
-            phase = (((now - start) / 1_000_000L / DOT_STEP_MS) % 3L).toInt()
+            phase = ((now / 1_000_000L / DOT_STEP_MS) % 3L).toInt()
         }
     }
     val shown = if (calm || !moving) 3 else phase

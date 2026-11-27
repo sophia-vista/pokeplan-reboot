@@ -454,6 +454,7 @@ fun App(
     onLinkChanged: ((LinkData) -> Unit)? = null,
     onDark: ((Boolean) -> Unit)? = null,
     asyncModel: Boolean = false,
+    startupDark: Boolean? = null,
 ) {
     fun buildModel(): AppModel {
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
@@ -483,7 +484,7 @@ fun App(
                 started.startHere()
                 built = started
             }
-            StartupLoading()
+            StartupLoading(darkTheme = startupDark ?: isSystemInDarkTheme())
             return
         }
         ready
