@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.259.1
+
+- **The Review's This month box no longer stacks its labels one letter per line (27 November 2026).** A long value — the cash flow sentence, "In … · Out … · Net …" — took its full width first and left the label a single character wide, so "Cash flow" ran down the left edge and the row became eight lines tall. A label/value row now shares its width between the two, with the value right-aligned, and the cash flow is shown as three rows (**Cash in**, **Cash out**, **Net movement**) instead of one sentence. Every other place that uses the same row gets the same fix (insights, cards, accounts, savings).
+
 ## 0.259.0
 
 - **The Tasks workspace shows its lists and their counts (REP-092).** Under Today / Upcoming Tasks / All / Done sits one key per list with its name and how many tasks are still open; a tap opens that list in All (from Done it stays in Done). A list is one tap away instead of behind the pull-down Filter, which still covers search, status, difficulty and one list. **"Upcoming" is now "Upcoming Tasks"**, because it lists tasks only: events stay in Calendar, the combined task-and-event view (PLAN.md 3, 3.3).

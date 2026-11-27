@@ -45,6 +45,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import app.pokeplan.ui.BackHandler
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -161,9 +162,14 @@ internal fun MintLine(onClick: (() -> Unit)? = null, onClickLabel: String? = nul
 
 @Composable
 internal fun MintValueRow(label: String, value: String, soft: Boolean = false) {
+    // Both sides get a share of the row: an unweighted value used to take its full width first and leave the label a
+    // single character wide, which stacked "Cash flow" one letter per line on a long value (27 November 2026).
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
         Text(label, Modifier.weight(1f).alignByBaseline(), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge, color = if (soft) Pixel.InkSoft else Pixel.Ink)
-        Text(value, Modifier.alignByBaseline(), style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleSmall)
+        Text(
+            value, Modifier.weight(1.2f).alignByBaseline(), textAlign = TextAlign.End,
+            style = if (soft) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleSmall,
+        )
     }
 }
 
@@ -1996,7 +2002,10 @@ private fun MintReviewView(model: AppModel) {
                 MintValueRow("Spent", mint.show(spent.coerceAtLeast(0), currency))
                 MintValueRow("Difference", mint.show(earned - spent, currency))
                 val flow = Installments.cashFlow(data, from, end, currency)
-                MintValueRow("Cash flow", "In ${mint.show(flow.inflowMinor, currency)} · Out ${mint.show(flow.outflowMinor, currency)} · Net ${mint.show(flow.netMinor, currency)}")
+                // Three figures, one row each: a long sentence in the value column read badly on a phone (27 November 2026).
+                MintValueRow("Cash in", mint.show(flow.inflowMinor, currency))
+                MintValueRow("Cash out", mint.show(flow.outflowMinor, currency))
+                MintValueRow("Net movement", mint.show(flow.netMinor, currency))
                 Text("Money that really moved through your wallets and banks; repaying a card or pay later counts as out.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 MintRules.spendingByCategory(data, from, end, currency).take(6).forEach { (id, minor) ->
                     MintValueRow(data.categories.firstOrNull { it.id == id }?.name ?: "No category", mint.show(minor, currency), soft = true)
