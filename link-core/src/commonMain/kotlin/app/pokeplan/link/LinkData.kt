@@ -162,7 +162,14 @@ enum class LinkKinds(val label: String) {
     MEMORIES("Memories and eras"),
 }
 
-enum class HitKind(val label: String) { PERSON("Person"), NOTE("Note"), DATE("Date"), FOLLOW_UP("Follow-up") }
+/**
+ * What a search result is. The order is the order the results are grouped in. [MEMORY], [ERA] and [PHOTO] came with the archive search
+ * (Sprint 2): a [PHOTO] hit is a caption, and its id is the id of the memory the photo belongs to, so it opens that memory.
+ */
+enum class HitKind(val label: String, val plural: String) {
+    PERSON("Person", "People"), NOTE("Note", "Notes"), MEMORY("Memory", "Memories"), ERA("Chapter", "Chapters"),
+    PHOTO("Photo caption", "Photo captions"), DATE("Date", "Dates"), FOLLOW_UP("Follow-up", "Follow-ups"),
+}
 
 data class Hit(val kind: HitKind, val id: String, val title: String, val detail: String = "")
 

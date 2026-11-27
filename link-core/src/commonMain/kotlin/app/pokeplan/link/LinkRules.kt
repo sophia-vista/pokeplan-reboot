@@ -408,6 +408,23 @@ object LinkRules {
         data.notes.filter { has(it.text) }.forEach { n -> hits += Hit(HitKind.NOTE, n.personId, person(n.personId) ?: "Note", n.text.lineSequence().first().take(80)) }
         data.dates.filter { has(it.title, it.note, person(it.personId)) }.forEach { hits += Hit(HitKind.DATE, it.id, it.title, person(it.personId).orEmpty()) }
         data.followUps.filter { has(it.title, it.note, person(it.personId)) }.forEach { hits += Hit(HitKind.FOLLOW_UP, it.id, it.title, person(it.personId).orEmpty()) }
+        data.memories.filter { m -> has(m.title, m.note, m.place, *m.personIds.map(::person).toTypedArray()) }
+            .forEach { m -> hits += Hit(HitKind.MEMORY, m.id, memoryLabel(m, photosOf(data, m.id).size), memoryContext(data, m)) }
+        data.eras.filter { has(it.title, it.note) }.forEach { e -> hits += Hit(HitKind.ERA, e.id, e.title, eraRangeLabel(e)) }
+        data.photos.filter { it.caption.isNotBlank() && has(it.caption) }.forEach { p ->
+            val memory = data.memories.firstOrNull { it.id == p.memoryId } ?: return@forEach
+            hits += Hit(HitKind.PHOTO, memory.id, p.caption.take(80), memoryLabel(memory, photosOf(data, memory.id).size))
+        }
         return hits.sortedWith(compareBy<Hit> { it.kind.ordinal }.thenBy { it.title.lowercase() })
     }
+
+    /** The line that tells two memories apart in a list: its date, its place and who was there. */
+    fun memoryContext(data: LinkData, m: Memory): String {
+        val people = m.personIds.mapNotNull { id -> data.people.firstOrNull { it.id == id }?.let(::displayName) }.joinToString(", ")
+        return listOf(if (m.date.year != null) dateLabel(m.date) else "", m.place, people).filter { it.isNotBlank() }.joinToString(" · ")
+    }
+
+    /** Whether the archive holds anything at all, so LINK shows its search: a memory-only archive counts. */
+    fun hasRecords(data: LinkData): Boolean =
+        data.people.isNotEmpty() || data.dates.isNotEmpty() || data.followUps.isNotEmpty() || data.memories.isNotEmpty() || data.eras.isNotEmpty()
 }

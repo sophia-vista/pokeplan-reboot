@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -174,6 +175,35 @@ class LinkRulesTest {
         val next = FollowUp("n", "y", status = FollowUpStatus.COMPLETED, completedDay = today)
         assertTrue(!LinkRules.pays(LinkData(followUps = paid + next), next, today))
         assertTrue(LinkRules.pays(LinkData(followUps = paid + next), next, LocalDate(2026, 11, 9)), "tomorrow is a new day")
+    }
+
+    @Test
+    fun searchReachesMemoriesChaptersAndPhotoCaptionsGroupedByKindAndOpensTheRightRecord() {
+        val data = LinkData(
+            people = listOf(person("1", "Ana Cruz")),
+            memories = listOf(
+                Memory("m1", "Ramen night", note = "Spicy broth", date = PartialDate(2024, 3, 14), place = "Kichitora", personIds = listOf("1")),
+                Memory("m2", "", note = "Rain on the bus", date = PartialDate(2023)),
+                Memory("m3", "", personIds = listOf("1")),
+            ),
+            eras = listOf(Era("e1", "College years", note = "Ramen runs")),
+            photos = listOf(MemoryPhoto("p1", "m2", caption = "Ramen leftovers", data = "AQID"), MemoryPhoto("p2", "m2", caption = "", data = "AQID")),
+        )
+        val ramen = LinkRules.search(data, "ramen")
+        assertEquals(listOf(HitKind.MEMORY, HitKind.ERA, HitKind.PHOTO), ramen.map { it.kind }, "grouped memory, chapter, photo caption")
+        assertEquals("m1", ramen[0].id)
+        assertEquals("m2", ramen[2].id, "a caption opens the memory it belongs to")
+        assertEquals("Rain on the bus", ramen[2].detail, "the caption's context is its memory's name")
+        assertEquals("14 Mar 2024 · Kichitora · Ana Cruz", ramen[0].detail)
+        assertEquals(listOf("m1", "m3"), LinkRules.search(data, "ana").filter { it.kind == HitKind.MEMORY }.map { it.id }, "a memory is found by who was there")
+        assertEquals(listOf("m2"), LinkRules.search(data, "bus").map { it.id }, "an untitled memory is found by its note")
+    }
+
+    @Test
+    fun aMemoryOnlyArchiveStillHasRecords() {
+        assertFalse(LinkRules.hasRecords(LinkData()))
+        assertTrue(LinkRules.hasRecords(LinkData(memories = listOf(Memory("m", "A day")))))
+        assertTrue(LinkRules.hasRecords(LinkData(eras = listOf(Era("e", "College")))))
     }
 
     @Test

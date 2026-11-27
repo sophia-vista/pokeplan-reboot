@@ -119,11 +119,11 @@ private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalizati
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-private class LinkJump(val section: LinkSection, val id: String? = null, val tab: Int? = null)
+internal class LinkJump(val section: LinkSection, val id: String? = null, val tab: Int? = null)
 
 private var pendingLinkJump: LinkJump? = null
 
-private fun go(model: AppModel, section: LinkSection, id: String? = null, tab: Int? = null) {
+internal fun go(model: AppModel, section: LinkSection, id: String? = null, tab: Int? = null) {
     if (section == LinkSection.PEOPLE) {
         if (id != null) openPerson(model, id, tab ?: 0) else { model.linkPersonId = null; model.linkSection = section }
         return
@@ -133,13 +133,25 @@ private fun go(model: AppModel, section: LinkSection, id: String? = null, tab: I
     model.linkSection = section
 }
 
-private fun openPerson(model: AppModel, id: String, tab: Int = 0) {
+/** Opens a memory's Memory Detail from anywhere in LINK. */
+internal fun openMemory(model: AppModel, id: String) = go(model, LinkSection.MEMORIES, id)
+
+/** Opens the Chapters view of Memories with one chapter open. */
+internal fun openChapter(model: AppModel, eraId: String) = go(model, LinkSection.MEMORIES, eraId, MEMORIES_CHAPTERS)
+
+/** Opens Memories with the add form already open (Home's and LINK's Quick actions). */
+internal fun addMemoryNow(model: AppModel) {
+    model.addMemoryRequested = true
+    go(model, LinkSection.MEMORIES)
+}
+
+internal fun openPerson(model: AppModel, id: String, tab: Int = 0) {
     model.linkPersonTab = tab
     model.linkPersonId = id
     model.linkSection = LinkSection.PEOPLE
 }
 
-private fun takeJump(section: LinkSection): LinkJump? = pendingLinkJump?.takeIf { it.section == section }?.also { pendingLinkJump = null }
+internal fun takeJump(section: LinkSection): LinkJump? = pendingLinkJump?.takeIf { it.section == section }?.also { pendingLinkJump = null }
 
 internal fun linkSubtitle(model: AppModel): String {
     model.linkData
@@ -204,9 +216,14 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val scroll = rememberScrollState()
     var query by remember { mutableStateOf("") }
     val reveal = app.pokeplan.ui.screens.rememberPullReveal(scroll, keepOpen = { query.isNotBlank() }, onClose = { query = "" })
-    val hasRecords = data.people.isNotEmpty() || data.dates.isNotEmpty() || data.followUps.isNotEmpty()
+    val hasRecords = LinkRules.hasRecords(data)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, trailing = { SectionsKey(Module.LINK.label, sections) { key -> model.linkSection = LinkSection.valueOf(key) } })
+        ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, trailing = {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                if (hasRecords) PixelIconButton("search", "Search Link", { reveal.open = true }, Pixel.Ink)
+                SectionsKey(Module.LINK.label, sections) { key -> model.linkSection = LinkSection.valueOf(key) }
+            }
+        })
         Column(
             Modifier.weight(1f).pullReveal(reveal).verticalScroll(scroll).padding(horizontal = Spacing.Page, vertical = Spacing.L),
         ) {
@@ -283,23 +300,31 @@ private fun LinkOverview(model: AppModel) {
                 PixelButton("Person", { go(model, LinkSection.PEOPLE) }, Modifier.weight(1f), compact = true)
                 PixelButton("Date", { go(model, LinkSection.DATES) }, Modifier.weight(1f), compact = true)
                 PixelButton("Follow-up", { go(model, LinkSection.FOLLOW_UPS) }, Modifier.weight(1f), compact = true)
+                PixelButton("Memory", { addMemoryNow(model) }, Modifier.weight(1f), compact = true)
             }
         }
     }
 }
 
+/** Results shown per kind before the search stops listing; the player narrows the words instead of paging. */
+private const val HITS_PER_KIND = 5
+
 @Composable
 private fun LinkSearch(model: AppModel, query: String, onQuery: (String) -> Unit, onDone: () -> Unit) {
     val field = remember { androidx.compose.ui.focus.FocusRequester() }
     androidx.compose.runtime.LaunchedEffect(Unit) { field.requestFocus() }
-    val hits = model.link.search(query).take(8)
+    val hits = model.link.search(query)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelField(query, { onQuery(it.take(40)) }, Modifier.weight(1f).focusRequester(field), placeholder = "Search Link", singleLine = true)
         PixelIconButton("close", "Close search", onDone)
     }
     if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-    hits.forEach { h ->
-        RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); onDone() }, onClickLabel = "Open")
+    // Grouped by what each result is, with the context that tells two of them apart; each opens its exact record.
+    hits.groupBy { it.kind }.forEach { (kind, group) ->
+        SectionLabel(if (group.size > HITS_PER_KIND) "${kind.plural} · ${group.size}" else kind.plural)
+        group.take(HITS_PER_KIND).forEach { h ->
+            RecordRow(h.title, h.detail, onClick = { openHit(model, h.kind, h.id); onDone() }, onClickLabel = "Open")
+        }
     }
 }
 
@@ -307,6 +332,8 @@ private fun openHit(model: AppModel, kind: HitKind, id: String) {
     when (kind) {
         HitKind.PERSON -> go(model, LinkSection.PEOPLE, id)
         HitKind.NOTE -> go(model, LinkSection.PEOPLE, id, 2)
+        HitKind.MEMORY, HitKind.PHOTO -> openMemory(model, id)
+        HitKind.ERA -> openChapter(model, id)
         HitKind.DATE -> go(model, LinkSection.DATES, id)
         HitKind.FOLLOW_UP -> go(model, LinkSection.FOLLOW_UPS, id, if (model.linkData.followUps.firstOrNull { it.id == id }?.status == FollowUpStatus.OPEN) 0 else 1)
     }
@@ -565,7 +592,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     val photo = viewingPhoto
     if (photo != null) {
         UpTo { viewingPhoto = null }
-        PhotoViewer(photo) { viewingPhoto = null }
+        PhotoViewer(photo, onOpenMemory = { viewingPhoto = null; openMemory(model, photo.memoryId) }) { viewingPhoto = null }
         return
     }
     val lines = listOf("Phone" to p.phone, "Email" to p.email, "Address" to p.address).filter { it.second.isNotBlank() }
@@ -575,7 +602,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     dates.forEach { d -> LinkRules.next(d, today)?.let { u -> RecordRow(d.title, dateLine(u)) } ?: RecordRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
     next?.let { RecordRow(it.title, dueText(it, today) ?: "Next follow-up") }
     FieldLabel("Memories")
-    link.memoriesOf(p.id).take(4).forEach { m -> RecordRow(link.memoryLabel(m), LinkRules.dateLabel(m.date)) }
+    link.memoriesOf(p.id).take(4).forEach { m -> RecordRow(link.memoryLabel(m), LinkRules.dateLabel(m.date), onClick = { openMemory(model, m.id) }, onClickLabel = "Open the memory") }
     PixelButton("Add a memory", { addingMemory = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     val photos = link.photosOfPerson(p.id)
     if (photos.isNotEmpty()) {
