@@ -589,6 +589,46 @@ class ScreenshotTest {
         }
     }
 
+    /** The P1 surfaces: the Calendar guide and split tray, the task Schedule tab, and the Focus setup. */
+    @Test
+    fun planExperience() {
+        val store = started()
+        val work = store.addList("Work", app.pokeplan.plan.TaskList.COLORS[0], app.pokeplan.plan.TaskList.ICONS[0])!!
+        val report = store.addTask(
+            "Finish the quarterly report", Rank.B, planned = store.today, listId = work.id,
+            plannedTime = kotlinx.datetime.LocalTime(9, 0), due = kotlinx.datetime.LocalDateTime(store.today, kotlinx.datetime.LocalTime(17, 0)),
+        )
+        store.addTask("Water the plants", Rank.E, planned = store.today)
+        store.addTask("Plan the weekend", Rank.D)
+        store.makeRepeating(report.id, app.pokeplan.plan.Repeat.Weekly(every = 2, days = setOf(kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.DayOfWeek.THURSDAY)))
+        val model = AppModel(store)
+        listOf(false, true).forEach { dark ->
+            render("plan-calendar-guide-${if (dark) "dark" else "light"}") {
+                PixelTheme(dark) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                        model.module = app.pokeplan.ui.screens.Module.PLAN
+                        model.planSection = app.pokeplan.ui.screens.PlanSection.CALENDAR
+                        app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
+                    }
+                }
+            }
+        }
+        render("plan-task-schedule-light", height = 1500) {
+            PixelTheme(false) {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                    app.pokeplan.ui.plan.TaskCard(
+                        model, report, store.today, expanded = true, toggle = {}, onDeleted = {},
+                        startTab = app.pokeplan.ui.plan.CardTab.SCHEDULE, onFocus = {},
+                    )
+                }
+            }
+        }
+        model.focusTaskId = report.id
+        render("plan-focus-setup-light", height = 1400) {
+            PixelTheme(false) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.plan.FocusScreen(model) } }
+        }
+    }
+
     @Test
     fun secretBaseRoom() {
         val room = HoennRoom.room(

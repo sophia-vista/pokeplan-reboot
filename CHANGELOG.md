@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.260.0
+
+- **The task editor's Schedule tab owns the timetable.** The deadline now sits beside the planned day/time and the recurrence instead of under More, the editor shows a quiet **Saved** after it commits, and an open task's More tab has **Focus on this**, which opens the Focus setup with that task chosen (PLAN.md 10.1).
+- **The Calendar explains itself once.** The day/week view opens with a dismissible **Plan by the hour** guide (drag a task onto an hour, drag its edge to resize it, events the same way); the close key is kept in the settings, so the guide stays away. The unscheduled tray now splits **Today, no time** from **No day** with counts and shows an estimate on a chip. Help no longer says PLAN events never reach a phone calendar (PLAN.md 3.4).
+- **Focus setup clears the friction.** Seven length keys (5 to 90 minutes) wrap beside the typed control; the task picker names each task's list and the search can be narrowed to one list; an info key beside Deep Focus states the interruption rules; a session can be started from a task; and a failed session reads as a neutral fact ("Session ended early.") with the time focused, the Just 5 min retry and Magic Guard unchanged (PLAN.md 6.1, 6.3).
+- **Test:** `ScreenshotTest.planExperience` renders the Calendar guide and tray (both palettes), the task Schedule tab and the Focus setup; `FocusSessionTest` pins the new neutral message.
+
 ## 0.259.0
 
 - **The Tasks workspace shows its lists and their counts (REP-092).** Under Today / Upcoming Tasks / All / Done sits one key per list with its name and how many tasks are still open; a tap opens that list in All (from Done it stays in Done). A list is one tap away instead of behind the pull-down Filter, which still covers search, status, difficulty and one list. **"Upcoming" is now "Upcoming Tasks"**, because it lists tasks only: events stay in Calendar, the combined task-and-event view (PLAN.md 3, 3.3).

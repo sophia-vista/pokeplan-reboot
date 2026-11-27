@@ -125,8 +125,11 @@ internal enum class AddTo { TODAY, NO_DATE }
 @androidx.compose.runtime.Stable
 internal class CardHost { var expanded by mutableStateOf<String?>(null) }
 
-internal fun taskCards(model: AppModel, host: CardHost, showList: Boolean = true): @Composable (Task, LocalDate?) -> Unit = { t, day ->
-    TaskCard(model, t, day, host.expanded == t.id, { host.expanded = if (host.expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; host.expanded = null }, showList = showList)
+internal fun taskCards(model: AppModel, host: CardHost, showList: Boolean = true, onFocus: ((Task) -> Unit)? = null): @Composable (Task, LocalDate?) -> Unit = { t, day ->
+    TaskCard(
+        model, t, day, host.expanded == t.id, { host.expanded = if (host.expanded == t.id) null else t.id },
+        onDeleted = { model.deletedTask = t; host.expanded = null }, showList = showList, onFocus = onFocus,
+    )
 }
 
 internal fun planTasks(model: AppModel): List<Task> {
@@ -227,7 +230,7 @@ internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?, listId: Stri
     val host = remember { CardHost() }
     // An open task card closes before the page does.
     host.expanded?.let { UpTo { host.expanded = null } }
-    val card = taskCards(model, host)
+    val card = taskCards(model, host, onFocus = onFocus)
     val tasks = store.openTodayTasks().filter { listId == null || it.listId == listId }
     val done = if (listId == null) store.doneToday()
     else data.tasks.count { it.listId == listId && it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
@@ -465,7 +468,10 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
 }
 
 @Composable
-internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit, showList: Boolean = true, startTab: CardTab = CardTab.SCHEDULE) {
+internal fun TaskCard(
+    model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit,
+    showList: Boolean = true, startTab: CardTab = CardTab.SCHEDULE, onFocus: ((Task) -> Unit)? = null,
+) {
     val store = model.store
     val list = task.listId?.let { id -> model.data.lists.firstOrNull { it.id == id } }
     Column {
@@ -518,8 +524,8 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
                         }
                         when (tab) {
                             CardTab.SCHEDULE -> TaskWhenTab(model, task)
-                            CardTab.DETAILS -> TaskEditTab(model, task, more = false, onDeleted = onDeleted)
-                            CardTab.MORE -> TaskEditTab(model, task, more = true, onDeleted = onDeleted)
+                            CardTab.DETAILS -> TaskEditTab(model, task, more = false, onDeleted = onDeleted, onFocus = onFocus)
+                            CardTab.MORE -> TaskEditTab(model, task, more = true, onDeleted = onDeleted, onFocus = onFocus)
                         }
                     }
                 }
@@ -545,9 +551,21 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
             Text("Moved from ${from.short()}: this one only.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
         PlannedTime(model, task)
+        DeadlineField(model, task)
         RepeatRow(model, task)
         RemindMe(model, task)
     }
+}
+
+@Composable
+private fun DeadlineField(model: AppModel, task: Task) {
+    val store = model.store
+    PixelDateTimeField(
+        task.due?.date, task.due?.time?.takeIf { it != LocalTime(23, 59) }, store.today, Pixel.Tone,
+        { d, t -> store.updateTask(task.copy(due = d?.let { LocalDateTime(it, t ?: LocalTime(23, 59)) })) },
+        label = "Deadline", noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
+        dayPresets = PlanDays.presets(store.today), pickLabel = "Pick a day",
+    )
 }
 
 @Composable
@@ -600,15 +618,14 @@ private fun TaskStepsTab(model: AppModel, task: Task) {
 }
 
 @Composable
-private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: () -> Unit) {
+private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: () -> Unit, onFocus: ((Task) -> Unit)? = null) {
     val store = model.store
     var title by remember(task.id) { mutableStateOf(task.title) }
     var rank by remember(task.id) { mutableStateOf(task.rank) }
     var minutes by remember(task.id) { mutableStateOf(task.estimateMinutes ?: 0) }
     var notes by remember(task.id) { mutableStateOf(task.notes) }
     var reward by remember(task.id) { mutableStateOf(task.reward) }
-    var dueDay by remember(task.id) { mutableStateOf(task.due?.date) }
-    var dueTime by remember(task.id) { mutableStateOf(task.due?.time?.takeIf { it != LocalTime(23, 59) }) }
+    var saved by remember(task.id) { mutableStateOf(false) }
     FormStack {
         if (!more) {
             FormGroup {
@@ -633,11 +650,6 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
                 DifficultyPicker(rank) { rank = it }
                 PixelChoice(app.pokeplan.core.reward.RewardFocus.entries.toList(), reward, { it?.label ?: "" }, { r -> if (r != null) reward = r }, label = "Reward")
                 GoalChoice(model, task)
-                PixelDateTimeField(
-                    dueDay, dueTime, store.today, Pixel.Tone, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
-                    noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
-                    dayPresets = PlanDays.presets(store.today), pickLabel = "Pick a day",
-                )
             }
         }
         val commit by rememberUpdatedState {
@@ -646,17 +658,31 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
                 val next = live.copy(
                     title = title.trim().ifEmpty { live.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
                     notes = notes.trim(), reward = reward,
-                    due = dueDay?.let { LocalDateTime(it, dueTime ?: LocalTime(23, 59)) },
                 )
-                if (next != live) store.updateTask(next)
+                if (next != live) {
+                    store.updateTask(next)
+                    true
+                } else false
+            } else false
+        }
+        LaunchedEffect(title, notes, rank, minutes, reward) {
+            saved = false
+            kotlinx.coroutines.delay(600)
+            if (commit()) {
+                saved = true
+                kotlinx.coroutines.delay(1_500)
+                saved = false
             }
         }
-        LaunchedEffect(title, notes, rank, minutes, dueDay, dueTime, reward) { kotlinx.coroutines.delay(600); commit() }
         DisposableEffect(task.id) { onDispose { commit() } }
-        if (more) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            DuplicateButton(model, task)
-            PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
+        if (saved) Text("Saved", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+        if (more) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            if (onFocus != null) PixelButton("Focus on this", { onFocus(task) }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                DuplicateButton(model, task)
+                PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
+            }
         }
     }
 }

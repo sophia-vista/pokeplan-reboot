@@ -107,6 +107,8 @@ Calendar is a planning surface, not a second task database. Support month/week v
 
 A task is actionable and has completion state; an event represents something happening at a time; an external event is read-only. Do not create a task merely because an external event appears. **Overlays (owner, 24 November 2026):** the calendar also shows read-only all-day entries from in-app overlay sources; LINK's dates and open follow-ups are the first (LINK's accent, calendar id -2; a tap opens the person or LINK's place). PLAN's calendar knows nothing about LINK: it only asks `CalendarOverlay` sources (`CalendarEvent.isOverlay`, `isOpenable`). Overlay entries are never tasks, never pay and never reach reminders, the launcher or widgets.
 
+**Guidance (owner, 27 November 2026).** The day/week Calendar opens with a short, dismissible guide — **Plan by the hour** — saying that a task is dragged onto an hour, that its edge is dragged to change its length, and that events move and resize the same way; the close key stores `Settings.calendarHintDismissed`, so it does not return (Help repeats it in full). The unscheduled tray under it splits **Today, no time** from **No day**, each with its count; a chip shows its estimate when it has one, and tap-then-hour and drag both place it.
+
 Tasks, goals and lists carry no category: a list is the one way to group (a Work list, a Home list). The balance wheel and the weekly recap split by list; `#word` in quick add names a list; the calendar and widgets colour a task by its list.
 
 ### 3.5 Lists and projects
@@ -220,7 +222,7 @@ Focus is a core PLAN capability. Audit and reuse reliable existing timer and lif
 
 ### 6.1 Session model
 
-A session can be for **any open task**, not only Today's: the setup lists today's first, then a search over all open tasks. The last length and Deep Focus used are kept for next time. When a session ends or is cut short, a **summary** shows the time focused (counting only time spent), whether it finished, the task, and what it paid. An interrupted session (left, killed or restarted past the grace in 6.3) is still written to the history as not completed with its elapsed time, so nothing is lost.
+A session can be for **any open task**, not only Today's: the setup lists today's first, then a search over all open tasks; each row names the task's list, and the search can be narrowed to one list. The length row offers 5, 10, 15, 25, 45, 60 and 90 minute keys and a typed length; the last length and Deep Focus used are kept for next time. A session can also be started from an open task (More → **Focus on this**), which opens the setup with that task chosen (owner, 27 November 2026). When a session ends or is cut short, a **summary** shows the time focused (counting only time spent), whether it finished, the task and its list, and what it paid. An interrupted session (left, killed or restarted past the grace in 6.3) is still written to the history as not completed with its elapsed time, so nothing is lost.
 
 Support start, pause, resume, complete, cancel, optional linked task, optional duration, and session history. A session can start without a task.
 
@@ -230,7 +232,7 @@ Remain reliable through app backgrounding, screen lock, incoming calls, process 
 
 ### 6.3 Interruption behavior
 
-**Owner decision: focus is strict.** A focus session must hold: leaving the app for more than ten seconds, or the phone moving in Deep Focus, ends the session as not completed, and nothing is paid. The allowances are the existing ones: two emergency pauses a day of up to three minutes, a pause for a phone call, and Magic Guard. Gentle pause and resume belong to the Care calm break, not to focus. A session can still be ended by the player and the app can be returned to. When a session ends, publish the focus-state change so the shared reminder feature can re-evaluate eligible deferred requests under its policy.
+**Owner decision: focus is strict.** A focus session must hold: leaving the app for more than ten seconds, or the phone moving in Deep Focus, ends the session as not completed, and nothing is paid. The allowances are the existing ones: two emergency pauses a day of up to three minutes, a pause for a phone call, and Magic Guard. Gentle pause and resume belong to the Care calm break, not to focus. A session can still be ended by the player and the app can be returned to. Before starting, the Deep Focus **info key** states those rules once, without a wall of caption text (owner, 27 November 2026). A failed session is reported neutrally — what ended it and the time focused — never with blame; the Just 5 min retry and Magic Guard stay. When a session ends, publish the focus-state change so the shared reminder feature can re-evaluate eligible deferred requests under its policy.
 
 ### 6.4 History and rewards
 
@@ -321,11 +323,11 @@ PLAN follows the shared PMD dialogue-box visual system and reusable component ru
 
 ### 10.1 Task and planning surfaces
 
-Task cards prioritize the completion control, title, relevant date/recurrence, then optional list context. Do not display every available field on every card. The check key is first on every row (a finished task's reopens it), the rank as a small tag after the title, the Schedule tab (Move to, the planned time, the repeat row and reminders, unfolded), a goal on the More tab (one goal per task, no reward), Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary: the **planned** day/time and the **deadline** are said apart when both exist ("planned 9:00, due 17:00"), and a chevron at the row's end shows the card opens (owner, 27 November 2026). Today, Upcoming Tasks, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
+Task cards prioritize the completion control, title, relevant date/recurrence, then optional list context. Do not display every available field on every card. The check key is first on every row (a finished task's reopens it), the rank as a small tag after the title, the Schedule tab (Move to, the planned time, the deadline, the repeat row and reminders, unfolded; a quiet **Saved** confirms the editor's autosave), a goal on the More tab (one goal per task, no reward), Focus on this on the More tab, Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary: the **planned** day/time and the **deadline** are said apart when both exist ("planned 9:00, due 17:00"), and a chevron at the row's end shows the card opens (owner, 27 November 2026). Today, Upcoming Tasks, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
 
 ### 10.2 Focus presentation
 
-Focus is a distinct activity within the shared visual language: a clear timer, one primary action at a time, minimal supporting information, and a restrained session-state indicator. Optional buddy/PMD artwork is appropriate when it adds context. Avoid competing rings, charts, counters, and decoration.
+Focus is a distinct activity within the shared visual language: a clear timer, one primary action at a time, minimal supporting information, and a restrained session-state indicator. Optional buddy/PMD artwork is appropriate when it adds context. Avoid competing rings, charts, counters, and decoration. The Deep Focus rules sit behind one info key beside the toggle, and a failed session is reported as a neutral fact, not a scolding.
 
 ### 10.3 PLAN empty states
 

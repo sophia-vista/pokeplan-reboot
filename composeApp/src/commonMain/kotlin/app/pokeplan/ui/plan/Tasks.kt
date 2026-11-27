@@ -90,8 +90,8 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?, filter:
             }
         }
     }
-    val card = taskCards(model, host)
-    val inList = taskCards(model, host, showList = false)
+    val card = taskCards(model, host, onFocus = onFocus)
+    val inList = taskCards(model, host, showList = false, onFocus = onFocus)
     when (view) {
         TasksView.TODAY -> TodayList(model, onFocus, listId = null)
         TasksView.ALL -> {

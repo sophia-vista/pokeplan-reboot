@@ -225,7 +225,8 @@ data class Settings(
     val streakReminderHour: Int = 20,
     val weeklyRecap: Boolean = true,
     val worldScroll: Boolean = true,
-    val defaultReward: app.pokeplan.core.reward.RewardFocus = app.pokeplan.core.reward.RewardFocus.EXP
+    val defaultReward: app.pokeplan.core.reward.RewardFocus = app.pokeplan.core.reward.RewardFocus.EXP,
+    val calendarHintDismissed: Boolean = false
 ) {
     val effectsLevel: Float get() = if (sound) effectsVolume / 100f else 0f
 

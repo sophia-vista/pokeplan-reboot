@@ -147,7 +147,7 @@ class FocusSessionTest {
     fun theNoBlameRetryIsFiveMinutes() {
         assertEquals(5, FocusRules.RETRY_MINUTES)
         assertEquals(FocusDuration(0, 5, 0), FocusRules.justFiveMinutes())
-        assertEquals("That egg went cold. Try again?", FocusRules.FAILED_MESSAGE)
+        assertEquals("Session ended early.", FocusRules.FAILED_MESSAGE)
         assertFailsWith<IllegalArgumentException> { FocusRules.start("x", 4, 0, false, Region.PLAN, null) }
         assertFalse(FocusRules.justFiveMinutes().eggMinutes < 5)
     }
