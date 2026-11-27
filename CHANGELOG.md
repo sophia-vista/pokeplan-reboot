@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.261.2
+
+- **The installer checks free space first and says how much is needed (27 November 2026).** On a full phone the system installer showed "Preparing app" and closed with no message. Install update now compares the free space with what the install needs (the APK twice over, plus a margin: about 308 MB for today's build) and, when it is short, says "Not enough room to install: about 308 MB must be free and 100 MB is".
+
 ## 0.261.1
 
 - **The app checks for a newer build every time Home opens (27 November 2026).** It used to check once per app start (and again on Me or About only if no check had been made). Now `HomeScreen` asks for the newest published build on each open, so the "Update" cue on Me and the once-per-version notification stay current; Me and About still fill in a first check when none has happened yet.

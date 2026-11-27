@@ -20,6 +20,7 @@ import app.pokeplan.ui.updates.UpdateAccess
 import app.pokeplan.ui.updates.UpdateClient
 import app.pokeplan.ui.updates.UpdatePatch
 import app.pokeplan.ui.updates.UpdateRelease
+import app.pokeplan.ui.updates.installRoomProblem
 import app.pokeplan.ui.updates.parseUpdatePatch
 import app.pokeplan.ui.updates.updateReleasePage
 import kotlinx.coroutines.Dispatchers
@@ -252,6 +253,10 @@ class AndroidUpdates(
         if (!canInstall()) {
             problem = "Allow app installs first."
             openInstallSettings()
+            return false
+        }
+        installRoomProblem(apk.length(), context.filesDir.usableSpace)?.let {
+            problem = it
             return false
         }
         // A PackageInstaller session, not an ACTION_VIEW hand-off: the system reports back why an install stopped
