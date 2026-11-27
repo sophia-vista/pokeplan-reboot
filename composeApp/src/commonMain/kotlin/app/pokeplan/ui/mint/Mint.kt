@@ -1160,6 +1160,10 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
         }
     }
     val found = remember(data, find.query, find.filter) { MintRules.search(data, find.query, find.filter) }
+    // While an entry is being added, the list below is the chosen account's records, so the account the form is on is
+    // the only one that can be found there (MINT.md 5.3). With the form closed every account's records are listed.
+    val addingOn = if (adding) from else null
+    val shown = if (addingOn != null) found.filter { it.accountId == addingOn.id || it.toAccountId == addingOn.id } else found
     if (data.transactions.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -1184,9 +1188,10 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                 }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = selected.isNotEmpty())
                 Text("Transfers and adjustments are never categorised.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
-            if (found.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (addingOn != null && adding) Text("Showing only " + addingOn.name + ".", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (shown.isEmpty()) Text(if (addingOn != null) "Nothing in " + addingOn.name + " yet." else "Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Column {
-                found.take(limit).forEachIndexed { i, t ->
+                shown.take(limit).forEachIndexed { i, t ->
                     if (i > 0) HorizontalDivider(color = Pixel.Border)
                     if (selecting) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         PixelButton(if (t.id in selected) "Selected" else "Select", {
@@ -1199,7 +1204,7 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                     }
                 }
             }
-            if (found.size > limit) PixelButton("Show ${minOf(PAGE, found.size - limit)} more", { limit += PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            if (shown.size > limit) PixelButton("Show ${minOf(PAGE, shown.size - limit)} more", { limit += PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }
 }
