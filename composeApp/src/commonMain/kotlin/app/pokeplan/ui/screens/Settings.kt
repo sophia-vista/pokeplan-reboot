@@ -493,6 +493,7 @@ private sealed interface UpdateUi {
     data class Available(val release: UpdateRelease) : UpdateUi
     data class Downloading(val release: UpdateRelease, val percent: Int) : UpdateUi
     data class Ready(val release: UpdateRelease) : UpdateUi
+    data object Installing : UpdateUi
     data class Problem(val text: String) : UpdateUi
 }
 
@@ -561,14 +562,18 @@ private fun UpdatesCard(model: AppModel) {
                     Text("Downloading ${state.percent}%", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
                     PixelBar(state.percent / 100f, label = "Downloading ${state.percent}%")
                 }
+                UpdateUi.Installing -> Text("Installing…", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 is UpdateUi.Ready -> {
                     Text("PokéLife ${state.release.version} is downloaded.", style = MaterialTheme.typography.bodyLarge)
                     if (allowed) {
                         PixelButton("Install update", {
-                            if (!updates.install(state.release)) {
-                                // The permission can be revoked between screens; then the box shows the settings key instead.
-                                allowed = updates.canInstall()
-                                if (allowed) ui = UpdateUi.Problem(updates.problem ?: "The installer did not open.")
+                            scope.launch {
+                                ui = UpdateUi.Installing
+                                if (!updates.install(state.release)) {
+                                    // The permission can be revoked between screens; then the box shows the settings key instead.
+                                    allowed = updates.canInstall()
+                                    ui = if (allowed) UpdateUi.Problem(updates.problem ?: "The installer did not open.") else UpdateUi.Ready(state.release)
+                                }
                             }
                         }, Modifier.fillMaxWidth(), Pixel.Tone)
                     } else {

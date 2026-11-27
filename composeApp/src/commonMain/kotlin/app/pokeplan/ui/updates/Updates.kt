@@ -204,6 +204,20 @@ fun updateSize(sizeBytes: Long): String = when {
 }
 
 /**
+ * How much free space an install needs on top of the downloaded APK: the installer copies the file into its own session
+ * and then writes the app, so about two more copies, plus a margin for the unpacked parts.
+ */
+fun installRoomNeeded(apkBytes: Long): Long = apkBytes * 2 + 64L * 1024 * 1024
+
+/** Null when [freeBytes] is enough to install an APK of [apkBytes]; otherwise the words for the screen. */
+fun installRoomProblem(apkBytes: Long, freeBytes: Long): String? {
+    val needed = installRoomNeeded(apkBytes)
+    if (freeBytes >= needed) return null
+    val free = updateSize(freeBytes.coerceAtLeast(0)).ifEmpty { "no room" }
+    return "Not enough room to install: about ${updateSize(needed)} must be free and ${if (free == "no room") "none is" else "$free is"}. Free some space, then try again."
+}
+
+/**
  * Reads the newest published build. It tries the small manifest asset first (no API rate limit); the GitHub API is the
  * fallback for a release that predates the manifest. [problem] says what went wrong in words for the screen.
  */
@@ -268,8 +282,11 @@ interface UpdateAccess {
     /** True when a checked, complete APK for [release] is already on the phone. */
     fun downloaded(release: UpdateRelease): Boolean
 
-    /** Opens the system installer; false when it could not, with [problem] set. */
-    fun install(release: UpdateRelease): Boolean
+    /**
+     * Hands the APK to the system installer and waits for its answer: false when it could not install or the player
+     * cancelled, with [problem] set to the system's own reason. On success the app is replaced, so it may never return.
+     */
+    suspend fun install(release: UpdateRelease): Boolean
 
     /** Whether this phone already lets PokéLife install an update. */
     fun canInstall(): Boolean

@@ -133,6 +133,19 @@ class UpdatesTest {
     }
 
     @Test
+    fun aFullPhoneIsToldHowMuchRoomTheInstallNeeds() {
+        val apk = 122L * 1024 * 1024
+        assertEquals(null, installRoomProblem(apk, 400L * 1024 * 1024))
+        assertEquals(null, installRoomProblem(apk, installRoomNeeded(apk)))
+        val short = installRoomProblem(apk, 100L * 1024 * 1024)
+        assertEquals("Not enough room to install: about 308 MB must be free and 100 MB is. Free some space, then try again.", short)
+        assertEquals(
+            "Not enough room to install: about 308 MB must be free and none is. Free some space, then try again.",
+            installRoomProblem(apk, 0),
+        )
+    }
+
+    @Test
     fun tagsAndPagesAreBuiltFromTheVersion() {
         assertEquals("v0.232.0", versionTag("0.232.0"))
         assertEquals("https://github.com/$UPDATE_REPO/releases/tag/v0.232.0", updateReleasePage("v0.232.0"))

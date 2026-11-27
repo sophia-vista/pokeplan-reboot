@@ -221,7 +221,8 @@ internal fun FloorThings(
         key(p) {
             val rise = remember { Animatable(0f) }
             LaunchedEffect(Unit) { rise.animateTo(1f, tween(1_100)); pickups.list.remove(p) }
-            Box(Modifier.offset { IntOffset((p.cell.x * tile).toInt() - tile.toInt(), (p.cell.y * tile - rise.value * tile * 1.2f).toInt()) }.graphicsLayer { alpha = 1f - rise.value * rise.value }) {
+            // above every Pokémon (they sort by depth, 0 to 1), as the games draw a pick-up's name over the monsters
+            Box(Modifier.zIndex(PICKUP_LAYER).offset { IntOffset((p.cell.x * tile).toInt() - tile.toInt(), (p.cell.y * tile - rise.value * tile * 1.2f).toInt()) }.graphicsLayer { alpha = 1f - rise.value * rise.value }) {
                 if (items != null && p.column >= 0) Canvas(Modifier.offset(x = ((tile + (tile - 16 * pixel) / 2) / density).dp).size((16 * pixel / density).dp)) {
                     drawImage(items, IntOffset(p.column * 16, 0), IntSize(16, 16), IntOffset.Zero, IntSize(16 * pixel, 16 * pixel), filterQuality = FilterQuality.None)
                 }
@@ -230,6 +231,10 @@ internal fun FloorThings(
         }
     }
 }
+
+/** Layers above the Pokémon, which sort by depth in 0 to 1: a pick-up's name, then a trap's effect, then the weather (10). */
+internal const val PICKUP_LAYER = 4f
+internal const val TRAP_FX_LAYER = 5f
 
 internal class FloorPickups {
     internal val list = mutableStateListOf<Pickup>()
@@ -268,7 +273,7 @@ internal fun TrapEffect(fx: TrapFx, feet: () -> Offset, pixel: Int, onDone: () -
     val density = LocalDensity.current.density
     Canvas(
         Modifier.offset { feet().let { IntOffset(it.x.toInt() - fx.originX * pixel, it.y.toInt() - fx.originY * pixel) } }
-            .size((fx.width * pixel / density).dp, (fx.height * pixel / density).dp).zIndex(5f),
+            .size((fx.width * pixel / density).dp, (fx.height * pixel / density).dp).zIndex(TRAP_FX_LAYER),
     ) {
         drawImage(image, IntOffset(frame * fx.width, 0), IntSize(fx.width, fx.height), IntOffset.Zero, IntSize(fx.width * pixel, fx.height * pixel), filterQuality = FilterQuality.None)
     }

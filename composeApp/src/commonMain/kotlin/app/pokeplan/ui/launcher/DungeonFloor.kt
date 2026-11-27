@@ -59,7 +59,35 @@ class DungeonFloor(
 
     fun roomOf(c: Cell): Room? = rooms.firstOrNull { c in it }
 
-    fun canRest(c: Cell, mover: Mover): Boolean = canStand(c, mover) && !isSoft(c) && c != stairs && c !in traps && map.at(c.x, c.y) != TownCell.WALL
+    private val roomIndex: BooleanArray by lazy {
+        BooleanArray(cols * rows).also { a -> rooms.forEach { r -> for (y in r.y until r.y + r.h) for (x in r.x until r.x + r.w) if (x in 0 until cols && y in 0 until rows) a[y * cols + x] = true } }
+    }
+
+    /** A square of a room, as against a corridor: the games' monsters wait and sleep in rooms, never in a corridor, where they would block the way. */
+    fun inRoom(c: Cell): Boolean = inside(c) && roomIndex[c.y * cols + c.x]
+
+    /** A corridor square: floor that belongs to no room. */
+    fun isCorridor(c: Cell): Boolean = isFloor(c) && !inRoom(c)
+
+    /** Where a Pokémon may stop, rest or sleep, or be set down: a room square that is no stairs, no trap, no wall and nowhere under a widget. */
+    fun canRest(c: Cell, mover: Mover): Boolean = canStand(c, mover) && inRoom(c) && !isSoft(c) && c != stairs && c !in traps && map.at(c.x, c.y) != TownCell.WALL
+
+    /** Whether two squares see each other: a straight line between them crosses no wall (water and monsters do not block sight, as in the games). */
+    fun sees(a: Cell, b: Cell): Boolean {
+        if (a.x > b.x || (a.x == b.x && a.y > b.y)) return sees(b, a)
+        var x = a.x; var y = a.y
+        val dx = abs(b.x - a.x); val dy = abs(b.y - a.y)
+        val sx = if (a.x < b.x) 1 else -1
+        val sy = if (a.y < b.y) 1 else -1
+        var err = dx - dy
+        while (x != b.x || y != b.y) {
+            val e2 = 2 * err
+            if (e2 > -dy) { err -= dy; x += sx }
+            if (e2 < dx) { err += dx; y += sy }
+            if ((x != b.x || y != b.y) && inside(Cell(x, y)) && map.at(x, y) == TownCell.WALL) return false
+        }
+        return true
+    }
 
     fun restingCells(mover: Mover): List<Cell> {
         val region = region(mover)
@@ -214,9 +242,16 @@ class DungeonFloor(
             if (made.isEmpty()) Room(2, 2, min(6, cols - 4), min(5, rows - 4)).let { r -> made += r; r.cells.forEach { set(it, TownCell.GROUND) } }
 
             fun corridor(a: Cell, b: Cell) {
-                val bend = if (random.nextBoolean()) Cell(b.x, a.y) else Cell(a.x, b.y)
-                for (leg in listOf(a to bend, bend to b)) {
-                    val (p, q) = leg
+                // The games' hallways leave one room, run straight, jog once half way and run straight into the next (a Z, or an S), never a diagonal.
+                val across = abs(b.x - a.x) >= abs(b.y - a.y)
+                val bends = if (across) {
+                    val mid = if (a.x == b.x) a.x else (a.x + b.x) / 2 + random.nextInt(-1, 2).coerceIn(-abs(b.x - a.x) / 4, abs(b.x - a.x) / 4)
+                    listOf(a, Cell(mid, a.y), Cell(mid, b.y), b)
+                } else {
+                    val mid = if (a.y == b.y) a.y else (a.y + b.y) / 2 + random.nextInt(-1, 2).coerceIn(-abs(b.y - a.y) / 4, abs(b.y - a.y) / 4)
+                    listOf(a, Cell(a.x, mid), Cell(b.x, mid), b)
+                }
+                for ((p, q) in bends.zipWithNext()) {
                     var x = p.x; var y = p.y
                     set(Cell(x, y), TownCell.GROUND)
                     while (x != q.x || y != q.y) {
@@ -278,7 +313,11 @@ class DungeonFloor(
             }
 
             val map = TownMap(cols, rows, cells)
-            fun pick(from: List<Cell>, taken: Set<Cell>): Cell? = from.filter { at(it) == TownCell.GROUND && !soft(it) && it !in taken }.randomOrNull(random)
+            fun inRoom(c: Cell) = made.any { c in it }
+            fun pick(from: List<Cell>, taken: Set<Cell>, ok: (Cell) -> Boolean = { true }): Cell? =
+                from.filter { at(it) == TownCell.GROUND && !soft(it) && it !in taken && ok(it) }.randomOrNull(random)
+            // A trap never lies at a room's doorway, where a whole corridor would walk over it again and again: every trap has a room square all round it.
+            fun openRoomSquare(c: Cell) = (-1..1).all { dy -> (-1..1).all { dx -> Cell(c.x + dx, c.y + dy).let { n -> at(n) != TownCell.GROUND || inRoom(n) } } }
             val inRooms = made.flatMap { it.cells }
             val onHome = inRooms.filter { it.x / colsPerScreen == home }
             val taken = HashSet<Cell>()
@@ -289,8 +328,8 @@ class DungeonFloor(
             repeat(finds) { (pick(onHome, taken) ?: pick(inRooms, taken))?.let { spots += it; taken += it } }
             val traps = LinkedHashMap<Cell, FloorTrap>()
             val kinds = FloorTrap.entries.filter { it != FloorTrap.WONDER }
-            repeat(TRAPS) { pick(inRooms, taken)?.let { traps[it] = kinds[random.nextInt(kinds.size)]; taken += it } }
-            if (random.nextBoolean()) pick(inRooms, taken)?.let { traps[it] = FloorTrap.WONDER }
+            repeat(TRAPS) { (pick(inRooms, taken, ::openRoomSquare) ?: pick(inRooms, taken))?.let { traps[it] = kinds[random.nextInt(kinds.size)]; taken += it } }
+            if (random.nextBoolean()) (pick(inRooms, taken, ::openRoomSquare) ?: pick(inRooms, taken))?.let { traps[it] = FloorTrap.WONDER }
             return DungeonFloor(map, made, stairs, traps, spots, organic, soft)
         }
     }

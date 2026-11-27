@@ -12,6 +12,19 @@ release always has the newest merge).
 - **Event enrichment and source tags:** people, related tasks, a checklist, private notes and linked goals kept in the integrations document (no migration); a source event that disappears stays as a "Kept notes" entry and is never deleted. Events show a source tag (PLAN event, Google Calendar, Phone calendar). PLAN.md 8.4, 8.5.
 - No reward change (`RewardRules.VERSION` unchanged); no schema migration. Open: Android Add Task shortcut and Today widget (need a device), enrichment pickers for other modules, Google acceptance of exception rows on a phone. **Tests:** `PlanP2Test`, `PlanP2StoreTest`, `EventEnrichmentTest`, `ProviderEditTest`; `ScreenshotTest.planP2` and `planEventDetails`.
 
+## 0.261.2
+
+- **The installer checks free space first and says how much is needed (27 November 2026).** On a full phone the system installer showed "Preparing app" and closed with no message. Install update now compares the free space with what the install needs (the APK twice over, plus a margin: about 308 MB for today's build) and, when it is short, says "Not enough room to install: about 308 MB must be free and 100 MB is".
+
+## 0.261.1
+
+- **The app checks for a newer build every time Home opens (27 November 2026).** It used to check once per app start (and again on Me or About only if no check had been made). Now `HomeScreen` asks for the newest published build on each open, so the "Update" cue on Me and the once-per-version notification stay current; Me and About still fill in a first check when none has happened yet.
+- **Installing an update goes through Android's PackageInstaller, and says why when it stops (27 November 2026).** Tapping Install update used to hand the APK to the system with a plain view intent and report success whatever happened, so a phone that blocked or dropped it (Samsung showed "Preparing app" and closed) left no message. The app now opens an install session, shows "Installing…", opens the system's confirm page, and ends with the system's own answer: blocked (Auto Blocker, Play Protect), cancelled, a conflicting signature, no room, or a rejected file.
+
+## 0.261.0
+
+- **The launcher town follows the Mystery Dungeon floor rules more closely (27 November 2026, REP-052).** One Pokémon to a square, as in the games: a Pokémon now holds the square it steps onto from the moment it sets off (and the one it leaves until it arrives), so two can no longer walk into the same square at once, and one that is on its way in or out of a square is waited for instead of swapped with. A step that is called off (a meeting, a startle, a swap) is finished onto the nearest square, so nobody stands between squares. Nobody rests or sleeps in a corridor any more (it blocked the way for everyone else): a Pokémon that falls asleep in a corridor, on the stairs, on a trap or under a widget walks to a room square first. Sight stops at a wall, so Pokémon on either side of a thin wall no longer meet, glance, get startled or flee from each other. Layers are the games' depth sort: Pokémon are ordered by their feet to the pixel (they used to share 24 coarse bands and could swap places in front of each other), a tie is settled the same way every frame, a pick-up's name shows over the Pokémon, and a trap's effect sits on the same pixel as the sprite's feet. Traps never lie at a room's doorway, where a whole corridor would trip over them again and again; hallways are the games' Z shape (straight, one jog, straight) and a leaving Guardian walks to the stairs by its own way instead of through the rock. Tests: `DungeonFloorTest`.
+
 ## 0.260.0
 
 - **The task editor's Schedule tab owns the timetable.** The deadline now sits beside the planned day/time and the recurrence instead of under More, the editor shows a quiet **Saved** after it commits, and an open task's More tab has **Focus on this**, which opens the Focus setup with that task chosen (PLAN.md 10.1).
