@@ -195,6 +195,7 @@ class LinkStore(
             dates = if (keepDates) d.dates.map { if (it.personId == id) it.copy(personId = null) else it } else d.dates.filterNot { it.personId == id },
             followUps = if (keepFollowUps) d.followUps.map { if (it.personId == id) it.copy(personId = null) else it } else d.followUps.filterNot { it.personId == id },
             memories = d.memories.map { m -> if (id in m.personIds) m.copy(personIds = m.personIds - id) else m },
+            settings = if (id in d.settings.order) d.settings.copy(order = d.settings.order - id) else d.settings,
         )
     }
 
@@ -274,8 +275,46 @@ class LinkStore(
             eraIds = m.eraIds.filter { id -> data.eras.any { it.id == id } }.distinct(),
             updatedMillis = nowMillis,
         )
-        (LinkRules.checkMemory(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (LinkRules.checkMemory(next, LinkRules.photosOf(data, m.id).size) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { d -> d.copy(memories = d.memories.map { if (it.id == m.id) next else it }) }
+        return Logged(next)
+    }
+
+    /** A picture waiting in a form for Save: [image] is base64, as the picture pickers give it. */
+    data class NewPhoto(val image: String, val mime: String = "image/png", val caption: String = "")
+
+    /**
+     * Saves a memory and every photo change the form staged as ONE write (owner's Sprint 1 list): the text, the added
+     * pictures, the removed pictures and the edited captions all land together or not at all, so a refusal anywhere
+     * (a picture that is too big, a memory with nothing in it) leaves the archive exactly as it was, and Cancel is
+     * simply not calling this. [id] null makes a new memory. Photos of other memories are never touched: a removal
+     * or a caption edit naming a picture that is not this memory's is ignored.
+     */
+    fun saveMemory(
+        id: String?, title: String, date: PartialDate = PartialDate(), note: String = "", time: String = "", place: String = "",
+        personIds: List<String> = emptyList(), eraIds: List<String> = emptyList(),
+        addPhotos: List<NewPhoto> = emptyList(), removePhotoIds: Set<String> = emptySet(), captions: Map<String, String> = emptyMap(),
+    ): Logged<Memory> {
+        val old = id?.let { want -> data.memories.firstOrNull { it.id == want } ?: return Logged(null, "That memory is gone.") }
+        val memoryId = old?.id ?: newId()
+        val kept = data.photos.filter { it.memoryId == memoryId && it.id !in removePhotoIds }
+            .map { p -> captions[p.id]?.let { p.copy(caption = it.trim()) } ?: p }
+        val added = addPhotos.map { MemoryPhoto(newId(), memoryId, it.caption.trim(), it.mime, it.image, nowMillis) }
+        if (kept.size + added.size > LinkRules.PHOTOS_PER_MEMORY_MAX) return Logged(null, "A memory keeps up to ${LinkRules.PHOTOS_PER_MEMORY_MAX} photos.")
+        (kept + added).forEach { p -> (LinkRules.checkPhoto(p, 0) as? Check.Refused)?.let { return Logged(null, it.reason) } }
+        val next = Memory(
+            memoryId, title.trim(), note.trim(), date, time.trim(), place.trim(),
+            personIds.filter { pid -> data.people.any { it.id == pid } }.distinct(),
+            eraIds.filter { eid -> data.eras.any { it.id == eid } }.distinct(),
+            old?.createdMillis ?: nowMillis, nowMillis,
+        )
+        (LinkRules.checkMemory(next, kept.size + added.size) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        update { d ->
+            d.copy(
+                memories = if (old == null) d.memories + next else d.memories.map { if (it.id == memoryId) next else it },
+                photos = d.photos.filterNot { it.memoryId == memoryId } + kept + added,
+            )
+        }
         return Logged(next)
     }
 
@@ -284,6 +323,9 @@ class LinkStore(
     }
 
     fun photosOf(memoryId: String): List<MemoryPhoto> = LinkRules.photosOf(data, memoryId)
+
+    /** A memory's name in a list or picker: its title, else its note, date or what it holds (a memory may have no title). */
+    fun memoryLabel(m: Memory): String = LinkRules.memoryLabel(m, LinkRules.photosOf(data, m.id).size)
 
     fun photosOfPerson(personId: String): List<MemoryPhoto> = LinkRules.photosOfPerson(data, personId)
 

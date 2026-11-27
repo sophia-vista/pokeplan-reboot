@@ -658,4 +658,89 @@ class LinkStoreTest {
         s.link.deleteMemory(m.id)
         assertTrue(s.link.photosOf(m.id).isEmpty(), "deleting a memory deletes its photos")
     }
+
+    private val picture = LinkStore.NewPhoto("AQID", "image/png")
+
+    @Test
+    fun aMemoryMayBeIncompleteAndStillSaves() {
+        val s = setup()
+        val photoOnly = assertNotNull(s.link.saveMemory(null, "", addPhotos = listOf(picture)).record, "a photo alone is a memory")
+        assertEquals(1, s.link.photosOf(photoOnly.id).size)
+        assertEquals("Photo memory", s.link.memoryLabel(photoOnly))
+        val dateOnly = assertNotNull(s.link.saveMemory(null, "", date = PartialDate(2019, 8)).record, "a date alone is a memory")
+        assertEquals("Aug 2019", s.link.memoryLabel(dateOnly))
+        val noteOnly = assertNotNull(s.link.saveMemory(null, "", note = "We got rained on\nand laughed").record)
+        assertEquals("We got rained on", s.link.memoryLabel(noteOnly))
+        assertNotNull(s.link.saveMemory(null, "Just a title").record)
+        assertNull(s.link.saveMemory(null, "", place = "Rizal", time = "evening").record, "a place or a time alone only describes nothing")
+        assertNull(s.link.saveMemory(null, "").record, "an empty form is not a memory")
+        // An incomplete memory can be finished later.
+        val finished = assertNotNull(s.link.saveMemory(photoOnly.id, "Beach day", date = PartialDate(2021, 5, 2)).record)
+        assertEquals(photoOnly.id, finished.id)
+        assertEquals(1, s.link.photosOf(photoOnly.id).size, "finishing it keeps its photo")
+    }
+
+    @Test
+    fun aMemoryAndItsPhotoChangesLandTogetherOrNotAtAll() {
+        val s = setup()
+        val made = assertNotNull(s.link.saveMemory(null, "Trip", addPhotos = listOf(picture.copy(caption = "one"), picture.copy(caption = "two"))).record)
+        val other = assertNotNull(s.link.saveMemory(null, "Other", addPhotos = listOf(picture)).record)
+        val (one, two) = s.link.photosOf(made.id).sortedBy { it.caption }
+        val otherPhoto = s.link.photosOf(other.id).single()
+        val before = s.link.data
+
+        // Refusals change nothing: a bad new picture, too many pictures, nothing left in the memory.
+        assertNull(s.link.saveMemory(made.id, "Renamed", addPhotos = listOf(LinkStore.NewPhoto("", "image/png")), removePhotoIds = setOf(one.id)).record)
+        assertEquals(before, s.link.data, "a refused save leaves the text and the photos as they were")
+        assertNull(s.link.saveMemory(made.id, "Renamed", addPhotos = List(LinkRules.PHOTOS_PER_MEMORY_MAX) { picture }).record)
+        assertEquals(before, s.link.data)
+        assertNull(s.link.saveMemory(made.id, "", removePhotoIds = setOf(one.id, two.id)).record, "removing the last photo of a memory with no words would empty it")
+        assertEquals(before, s.link.data)
+
+        // One good save applies text, a removal, a caption edit and an addition at once; another memory's photo is never touched.
+        val saved = assertNotNull(
+            s.link.saveMemory(
+                made.id, "Trip to Baguio", addPhotos = listOf(picture.copy(caption = "three")),
+                removePhotoIds = setOf(one.id, otherPhoto.id), captions = mapOf(two.id to " second ", otherPhoto.id to "hijack"),
+            ).record,
+        )
+        assertEquals("Trip to Baguio", saved.title)
+        assertEquals(listOf("second", "three"), s.link.photosOf(made.id).map { it.caption }.sorted())
+        assertEquals(otherPhoto, s.link.photosOf(other.id).single(), "a photo of another memory is not removed or recaptioned")
+        assertEquals(two.id, s.link.photosOf(made.id).first { it.caption == "second" }.id, "a kept photo keeps its id")
+    }
+
+    @Test
+    fun deletingAPersonKeepsTheirMemoriesAndPhotosAndTheArchiveSurvivesAReopen() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana").record)
+        val ben = assertNotNull(s.link.addPerson("Ben").record)
+        s.link.moveInOrder(ana.id, listOf(ana.id, ben.id), 1)
+        val chapter = assertNotNull(s.link.addEra("College").record)
+        val made = assertNotNull(
+            s.link.saveMemory(null, "Lunch", PartialDate(2024), personIds = listOf(ana.id, ben.id), eraIds = listOf(chapter.id), addPhotos = listOf(picture)).record,
+        )
+        val photoId = s.link.photosOf(made.id).single().id
+        s.link.deletePerson(ana.id, keepDates = true, keepFollowUps = true)
+        val kept = s.link.memories().single()
+        assertEquals(made.id, kept.id, "the memory stays")
+        assertEquals(listOf(ben.id), kept.personIds, "only the deleted person leaves it")
+        assertEquals(listOf(chapter.id), kept.eraIds)
+        assertEquals(photoId, s.link.photosOf(made.id).single().id, "its photo stays with it")
+        assertFalse(ana.id in s.link.data.settings.order, "My order forgets a deleted person")
+        s.reopen()
+        assertEquals(kept, s.link.memories().single(), "ids and associations survive a reopen")
+        assertEquals(photoId, s.link.photosOf(made.id).single().id)
+        // Undo (a restore of the snapshot) brings the person and the association back.
+        val withAna = s.link.data
+        s.link.deletePerson(ben.id, keepDates = true, keepFollowUps = true)
+        s.link.restore(withAna)
+        assertEquals(withAna, s.link.data)
+        // Deleting a chapter or a memory touches only what it owns.
+        s.link.deleteEra(chapter.id)
+        assertEquals(emptyList(), s.link.memories().single().eraIds)
+        s.link.deleteMemory(made.id)
+        assertTrue(s.link.photosOf(made.id).isEmpty())
+        assertEquals(1, s.link.data.people.size, "deleting a memory leaves people alone")
+    }
 }

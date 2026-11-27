@@ -32,13 +32,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.pokeplan.link.LinkRules
-import app.pokeplan.link.Memory
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.OneDriveItem
 import app.pokeplan.ui.OneDriveSource
 import app.pokeplan.ui.OneDriveState
 import app.pokeplan.ui.Report
-import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.RecordRow
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.NoticeTone
@@ -212,13 +210,23 @@ private fun PhotoTile(
     }
 }
 
-/** A photo chosen from the drive, waiting for the memory it joins: the bigger picture, its name, the picker and one key. */
+/** How many memories the destination list shows before "Show all"; a long archive is not walked in one scroll. */
+private const val DESTINATIONS_SHOWN = 6
+
+/**
+ * A photo chosen from the drive, waiting for the memory it joins. No memory is chosen for the player: the list shows
+ * each one's name, date and people, nothing is selected until one is tapped, and the add key stays off until then
+ * (owner's Sprint 1 list: the newest memory used to be picked silently).
+ */
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
 private fun AddToMemoryPanel(model: AppModel, source: OneDriveSource, item: OneDriveItem, thumbs: MutableMap<String, ImageBitmap>, onClose: () -> Unit) {
-    val memories = model.link.memories()
-    var memoryId by remember(item.id) { mutableStateOf<String?>(memories.firstOrNull()?.id) }
+    val link = model.link
+    val memories = link.memories()
+    var memoryId by remember(item.id) { mutableStateOf<String?>(null) }
+    var showAll by remember(item.id) { mutableStateOf(false) }
     var message by remember(item.id) { mutableStateOf<String?>(null) }
+    var busy by remember(item.id) { mutableStateOf(false) }
     val chosen = memories.firstOrNull { it.id == memoryId }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -229,16 +237,25 @@ private fun AddToMemoryPanel(model: AppModel, source: OneDriveSource, item: OneD
             Text(item.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (memories.isEmpty()) Text("No memories yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             else {
-                PixelDropdown<Memory>(
-                    memories, chosen,
-                    { m -> m?.let { "${it.title} · ${LinkRules.dateLabel(it.date)}" } ?: "" },
-                    { m -> memoryId = m?.id }, Modifier.fillMaxWidth(), key = accent,
-                )
-                PixelButton("Add to this memory", {
+                // A chosen memory stays on the list even past the short cut.
+                val visible = if (showAll) memories else memories.take(DESTINATIONS_SHOWN).let { top -> if (chosen != null && chosen !in top) top + chosen else top }
+                visible.forEach { m ->
+                    val people = m.personIds.mapNotNull { id -> link.data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }
+                    RecordRow(
+                        link.memoryLabel(m), listOf(LinkRules.dateLabel(m.date), people.joinToString(", ")).filter { it.isNotBlank() }.joinToString(" · "),
+                        lead = { Text(if (m.id == memoryId) "●" else "○", color = accent) },
+                        onClick = { memoryId = m.id; message = null },
+                        onClickLabel = if (m.id == memoryId) "Selected" else "Choose this memory",
+                    )
+                }
+                if (!showAll && memories.size > DESTINATIONS_SHOWN) PixelButton("Show all ${memories.size}", { showAll = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                PixelButton(if (chosen == null) "Choose a memory first" else "Add to this memory", {
                     val id = memoryId ?: return@PixelButton
+                    busy = true
                     source.download(item.id) { bytes, why ->
+                        busy = false
                         if (bytes == null) { message = why ?: "That photo could not be read."; return@download }
-                        val out = model.link.addPhoto(id, Base64.encode(bytes), mime = photoMime(bytes), caption = "")
+                        val out = link.addPhoto(id, Base64.encode(bytes), mime = photoMime(bytes), caption = "")
                         if (out.record == null) message = out.refused ?: "That photo could not be saved."
                         else {
                             message = null
@@ -247,7 +264,7 @@ private fun AddToMemoryPanel(model: AppModel, source: OneDriveSource, item: OneD
                             onClose()
                         }
                     }
-                }, Modifier.fillMaxWidth(), accent, enabled = memoryId != null)
+                }, Modifier.fillMaxWidth(), accent, enabled = memoryId != null && !busy)
             }
             message?.let { Report(model, it, NoticeTone.WARNING) }
             PixelButton("Close", onClose, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

@@ -575,7 +575,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     dates.forEach { d -> LinkRules.next(d, today)?.let { u -> RecordRow(d.title, dateLine(u)) } ?: RecordRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
     next?.let { RecordRow(it.title, dueText(it, today) ?: "Next follow-up") }
     FieldLabel("Memories")
-    link.memoriesOf(p.id).take(4).forEach { m -> RecordRow(m.title, LinkRules.dateLabel(m.date)) }
+    link.memoriesOf(p.id).take(4).forEach { m -> RecordRow(link.memoryLabel(m), LinkRules.dateLabel(m.date)) }
     PixelButton("Add a memory", { addingMemory = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     val photos = link.photosOfPerson(p.id)
     if (photos.isNotEmpty()) {
