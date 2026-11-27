@@ -145,6 +145,14 @@ private fun AccountRow(
             "not in total".takeIf { a.hideFromTotal },
         ).joinToString(" · ")
         Text(meta, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        val fresh = mint.accountFreshness(a.id)
+        Text(
+            buildList {
+                fresh?.lastActivity?.let { add("moved " + agoText(it, model.store.today)) }
+                add("checked " + (fresh?.lastChecked?.let { agoText(it, model.store.today) } ?: "never"))
+            }.joinToString(" · "),
+            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+        )
     }
     if (open == a.id && !arranging) AccountOptions(model, a) { setOpen(null) }
 }

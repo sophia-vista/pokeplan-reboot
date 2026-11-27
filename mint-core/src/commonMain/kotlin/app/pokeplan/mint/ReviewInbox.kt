@@ -29,7 +29,7 @@ object ReviewInbox {
     /** One thing to look at. [id] is stable, so putting it off is remembered across saves. */
     data class Item(val id: String, val kind: Kind, val title: String, val detail: String, val priority: Int, val count: Int = 1)
 
-    fun items(data: MintData, today: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): List<Item> {
+    fun items(data: MintData, today: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY, staleDays: Int = data.settings.reviewStaleDays): List<Item> {
         val out = ArrayList<Item>()
         val recentFrom = today.minus(DatePeriod(days = RECENT_DAYS))
 
@@ -90,7 +90,7 @@ object ReviewInbox {
             val hasRecords = data.transactions.any { it.status == TxStatus.POSTED && (it.accountId == account.id || it.toAccountId == account.id) }
             if (!hasRecords) return@forEach
             val last = data.reconciliations.filter { it.accountId == account.id }.maxOfOrNull { it.day }
-            if (last == null || last < today.minus(DatePeriod(days = STALE_DAYS))) {
+            if (last == null || last < today.minus(DatePeriod(days = staleDays.coerceIn(7, 365)))) {
                 out += Item(
                     "balance:" + account.id, Kind.BALANCE,
                     "Check " + account.name + "'s balance",

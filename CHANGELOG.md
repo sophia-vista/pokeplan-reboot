@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.255.0
+
+MINT's last batch from the owner's list (27 November 2026): account management, insights, budgets and personalisation. No reward rule, schema or save-format change — the new fields are sealed-JSON defaults.
+
+- **Accounts (MINT.md 4.4, 4.6, 5.8).** Every account row says when it last moved and when its balance was last checked; the account's own options offer **Update the balance** (what the bank app shows against what Mint holds, the reasons a difference usually has, then the match or the adjustment with its required reason) without leaving the account. Closing now records the day (`FinancialAccount.closedDay`), **Reopen** clears it, **Restore** brings an archived account back, and **Delete** shows the reason it cannot go (records, plans or an active savings target — archive instead).
+- **Insights (9.2).** Review gains a reading of the records: likely subscriptions (a payee about monthly, about the same amount), this month against last month by category, the payees that took the most in three months, a next-30-days forecast (known payments, expected income, usual spending at the last 90 days' pace, "likely left"), and **How available money is worked out** spelled out line by line. A quiet month says to record a few expenses.
+- **Budgets (7.1, 7.3).** A new budget offers a starting amount from own records ("Use ₱X, the usual month"); a budget can **carry what is left into the next period** (the previous period only, so a quiet month does not grow it without bound); each budget shows where the period is heading at its current pace. Savings targets also show how much moved into them in the last 30 days.
+- **Personalisation (3.2, 9.1).** Settings → Overview can switch the card's Accounts, Budgets and Coming-up parts on or off, and set after how many days the review asks to check a balance (`reviewStaleDays`, 7 to 365).
+- **Tests:** `InsightsTest` (mint-core, 6) and `MintInsightsBudgetsTest` (app-core, 7: rollover carry and pace, the suggested amount, closing/reopening with its day, freshness, the deletion reason, the configurable review cadence).
+
 ## 0.254.0
 
 MINT's review inbox, statement-import and quick-capture pass (the owner's P2 list, phases 5–7, 27 November 2026). No reward rule, schema or save-format change (`ReviewSnooze` is a sealed-JSON list with a default).

@@ -190,14 +190,51 @@ class MintStore(
     }
 
     fun setAccountStatus(id: String, status: AccountStatus) =
-        update { d -> d.copy(accounts = d.accounts.map { if (it.id == id) it.copy(status = status) else it }) }
+        update { d -> d.copy(accounts = d.accounts.map { if (it.id == id) it.copy(status = status, closedDay = if (status == AccountStatus.CLOSED) it.closedDay else null) else it }) }
 
-    fun deleteAccount(id: String): String? {
+    /**
+     * Closes an account on [day]: its history stays, a repayment for an existing plan still fits, and no ordinary record
+     * starts on it. Reopening clears the day (MINT.md 4.6).
+     */
+    fun closeAccount(id: String, day: LocalDate = today): String? {
+        val account = data.accounts.firstOrNull { it.id == id } ?: return "That account is gone."
+        if (account.status == AccountStatus.CLOSED) return "This account is already closed."
+        if (day > today) return "A closing date cannot be in the future."
+        update { d -> d.copy(accounts = d.accounts.map { if (it.id == id) it.copy(status = AccountStatus.CLOSED, closedDay = day) else it }) }
+        return null
+    }
+
+    /** Reopens a closed account, keeping everything it held. */
+    fun reopenAccount(id: String): String? {
+        val account = data.accounts.firstOrNull { it.id == id } ?: return "That account is gone."
+        if (account.status != AccountStatus.CLOSED) return "That account is not closed."
+        update { d -> d.copy(accounts = d.accounts.map { if (it.id == id) it.copy(status = AccountStatus.ACTIVE, closedDay = null) else it }) }
+        return null
+    }
+
+    /** When an account last had a record, and when its balance was last compared with a statement (MINT.md 4.4). */
+    data class AccountFreshness(val lastActivity: LocalDate?, val lastChecked: LocalDate?)
+
+    fun accountFreshness(id: String): AccountFreshness? {
+        if (data.accounts.none { it.id == id }) return null
+        val lastActivity = data.transactions.filter { it.accountId == id || it.toAccountId == id }.maxOfOrNull { it.day }
+        val lastChecked = data.reconciliations.filter { it.accountId == id }.maxOfOrNull { it.day }
+        return AccountFreshness(lastActivity, lastChecked)
+    }
+
+    /** Why an account cannot be deleted, or null when it can (MINT.md 4.6). Shown beside the disabled action. */
+    fun accountDeletionReason(id: String): String? {
+        if (data.accounts.none { it.id == id }) return "That account is gone."
         if (data.transactions.any { it.accountId == id || it.toAccountId == id } ||
             data.reconciliations.any { it.accountId == id } ||
             data.plans.any { it.accountId == id } || data.creditStatements.any { it.accountId == id } ||
             data.savingsTargets.any { it.status != PlanStatus.ARCHIVED && id in it.accountIds })
             return "This account has records, installment plans or an active savings target. Remove those links or archive it instead."
+        return null
+    }
+
+    fun deleteAccount(id: String): String? {
+        accountDeletionReason(id)?.let { return it }
         update { d -> d.copy(
             accounts = d.accounts.filterNot { it.id == id },
             bills = d.bills.map { if (it.accountId == id) it.copy(accountId = null) else it },
@@ -205,6 +242,35 @@ class MintStore(
         ) }
         return null
     }
+
+    /** Turns a budget's rollover on or off; the carry is derived from the previous period (MINT.md 7.3). */
+    fun setBudgetRollover(id: String, on: Boolean): Boolean {
+        if (data.budgets.none { it.id == id }) return false
+        update { d -> d.copy(budgets = d.budgets.map { if (it.id == id) it.copy(rollover = on) else it }) }
+        return true
+    }
+
+    /** How much moved into a savings target's accounts in the last [days] days, for its progress (MINT.md 7.4). */
+    fun savingsContributed(targetId: String, days: Int = 30): Long {
+        val target = data.savingsTargets.firstOrNull { it.id == targetId } ?: return 0
+        val from = today.minus(DatePeriod(days = days.coerceIn(1, 365)))
+        return data.transactions.filter {
+            it.status == TxStatus.POSTED && it.type == TxType.TRANSFER && it.toAccountId != null &&
+                it.toAccountId in target.accountIds && it.day >= from
+        }.sumOf { it.amountMinor }
+    }
+
+    /** What a suggested starting amount for a budget would be: the usual monthly spending in its category. */
+    fun suggestedBudget(categoryId: String?, currency: String, months: Int = 3): Long =
+        MintRules.usualMonthlySpending(data, categoryId, currency, today, months)
+
+    fun setReviewStaleDays(days: Int) = settings { it.copy(reviewStaleDays = days.coerceIn(7, 365)) }
+
+    fun setOverviewAccounts(on: Boolean) = settings { it.copy(overviewAccounts = on) }
+
+    fun setOverviewBudgets(on: Boolean) = settings { it.copy(overviewBudgets = on) }
+
+    fun setOverviewUpcoming(on: Boolean) = settings { it.copy(overviewUpcoming = on) }
 
     fun addCategory(name: String, kind: CategoryKind): Category? {
         val n = name.trim().take(MintRules.NAME_MAX)

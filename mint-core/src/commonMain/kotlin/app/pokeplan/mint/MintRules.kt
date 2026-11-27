@@ -15,7 +15,7 @@ sealed interface Check {
 
 data class AccountBalance(val account: FinancialAccount, val postedMinor: Long, val pendingMinor: Long)
 
-data class BudgetProgress(val budget: Budget, val start: LocalDate, val endExclusive: LocalDate, val spentMinor: Long, val remainingMinor: Long, val percent: Int?)
+data class BudgetProgress(val budget: Budget, val start: LocalDate, val endExclusive: LocalDate, val spentMinor: Long, val remainingMinor: Long, val percent: Int?, val carriedMinor: Long = 0)
 data class SavingsProgress(val target: SavingsTarget, val savedMinor: Long, val remainingMinor: Long, val percent: Int)
 
 data class Available(val currency: String, val liquidMinor: Long, val billsMinor: Long, val billsCount: Int, val availableMinor: Long, val installmentsMinor: Long = 0, val installmentsCount: Int = 0)
@@ -358,8 +358,46 @@ object MintRules {
     fun progress(data: MintData, budget: Budget, today: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): BudgetProgress {
         val (start, end) = periodOf(budget.period, today, weekStart)
         val spent = spent(data, start, end, budget.currency, budget.categoryId).coerceAtLeast(0)
-        val percent = if (budget.plannedMinor <= 0) null else (spent * 100 / budget.plannedMinor).coerceAtMost(9_999).toInt()
-        return BudgetProgress(budget, start, end, spent, budget.plannedMinor - spent, percent)
+        val carried = budgetCarry(data, budget, today, weekStart)
+        val planned = budget.plannedMinor + carried
+        val percent = if (planned <= 0) null else (spent * 100 / planned).coerceAtMost(9_999).toInt()
+        return BudgetProgress(budget, start, end, spent, planned - spent, percent, carried)
+    }
+
+    /**
+     * What a rollover budget carries into this period: what the period before planned but did not spend, less what it
+     * overspent. One period only, so a long quiet month does not make a budget grow without bound (MINT.md 7.3).
+     * A budget without rollover carries nothing.
+     */
+    fun budgetCarry(data: MintData, budget: Budget, today: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): Long {
+        if (!budget.rollover) return 0
+        val anchor = periodOf(budget.period, today, weekStart).first.minus(DatePeriod(days = 1))
+        val (start, end) = periodOf(budget.period, anchor, weekStart)
+        val spent = spent(data, start, end, budget.currency, budget.categoryId).coerceAtLeast(0)
+        return budget.plannedMinor - spent
+    }
+
+    /**
+     * Where the period is heading at this pace: the spending so far spread over the whole period. Null on its first day,
+     * when there is no pace yet.
+     */
+    fun pace(progress: BudgetProgress, today: LocalDate): Long? {
+        val elapsed = today.toEpochDays() - progress.start.toEpochDays() + 1
+        val total = progress.endExclusive.toEpochDays() - progress.start.toEpochDays()
+        if (elapsed <= 0 || total <= 0) return null
+        return progress.spentMinor * total / elapsed
+    }
+
+    /** What the player usually spends a month in a category, for a suggested starting budget (MINT.md 7.1, P3 list). */
+    fun usualMonthlySpending(data: MintData, categoryId: String?, currency: String, today: LocalDate, months: Int = 3): Long {
+        var total = 0L
+        var anchor = today
+        repeat(months.coerceIn(1, 12)) {
+            val (start, end) = periodOf(BudgetPeriod.MONTHLY, anchor)
+            total += spent(data, start, end, currency, categoryId).coerceAtLeast(0)
+            anchor = start.minus(DatePeriod(days = 1))
+        }
+        return total / months
     }
 
     fun savingsProgress(data: MintData, target: SavingsTarget): SavingsProgress {
