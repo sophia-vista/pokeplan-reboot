@@ -46,7 +46,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
-enum class TasksView(val label: String) { TODAY("Today"), UPCOMING("Upcoming"), ALL("All"), DONE("Done") }
+enum class TasksView(val label: String) { TODAY("Today"), UPCOMING("Upcoming Tasks"), ALL("All"), DONE("Done") }
 
 private const val SHOWN = 60
 
@@ -66,7 +66,29 @@ internal fun TasksWorkspace(model: AppModel, onFocus: ((Task) -> Unit)?, filter:
 
     QuickAddBox(model, if (view == TasksView.TODAY) AddTo.TODAY else AddTo.NO_DATE, listId = if (view == TasksView.ALL) list?.id else null)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        TasksView.entries.forEach { v -> TabButton(v.label, v == view, { model.tasksView = v }) }
+        TasksView.entries.forEach { v ->
+            TabButton(v.label, v == view, {
+                model.tasksView = v
+                // The list filter is an All/Done filter; leaving those views drops it so no key stays lit wrongly.
+                if ((v == TasksView.TODAY || v == TasksView.UPCOMING) && filter.listId != null) onFilter(filter.copy(listId = null))
+            })
+        }
+    }
+    // Every list with its outstanding count, one tap away (REP-092) instead of behind the pull-down Filter.
+    if (lists.isNotEmpty()) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            TabButton("All lists", filter.listId == null, {
+                onFilter(filter.copy(listId = null))
+                model.tasksView = if (view == TasksView.DONE) TasksView.DONE else TasksView.ALL
+            })
+            lists.forEach { l ->
+                val count = live.count { it.isOpen && it.listId == l.id }
+                TabButton(if (count > 0) "${l.name} $count" else l.name, filter.listId == l.id, {
+                    onFilter(filter.copy(listId = l.id))
+                    model.tasksView = if (view == TasksView.DONE) TasksView.DONE else TasksView.ALL
+                })
+            }
+        }
     }
     val card = taskCards(model, host)
     val inList = taskCards(model, host, showList = false)

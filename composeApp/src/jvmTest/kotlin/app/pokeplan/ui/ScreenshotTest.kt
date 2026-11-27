@@ -545,6 +545,50 @@ class ScreenshotTest {
         renderHome("plan-home-empty-dark", dark = true, empty = true)
     }
 
+    /** The Tasks workspace with the list keys and their counts, then one open card with the shared repeat editor. */
+    @Test
+    fun planTasksLists() {
+        val store = started()
+        val work = store.addList("Work", app.pokeplan.plan.TaskList.COLORS[0], app.pokeplan.plan.TaskList.ICONS[0])!!
+        val personal = store.addList("Personal", app.pokeplan.plan.TaskList.COLORS[1], app.pokeplan.plan.TaskList.ICONS[1])!!
+        store.addList("Resto", app.pokeplan.plan.TaskList.COLORS[2], app.pokeplan.plan.TaskList.ICONS[2])
+        store.addTask(
+            "Finish the quarterly report", Rank.B, planned = store.today, listId = work.id,
+            plannedTime = kotlinx.datetime.LocalTime(9, 0), due = kotlinx.datetime.LocalDateTime(store.today, kotlinx.datetime.LocalTime(17, 0)),
+        )
+        store.addTask("Water the plants", Rank.E, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 1)), listId = personal.id)
+        store.addTask(
+            "Book the dentist", Rank.C, listId = personal.id,
+            due = kotlinx.datetime.LocalDateTime(store.today.plus(kotlinx.datetime.DatePeriod(days = 3)), kotlinx.datetime.LocalTime(10, 0)),
+        )
+        store.addTask("Plan the weekend", Rank.D)
+        val model = AppModel(store)
+        model.tasksView = app.pokeplan.ui.plan.TasksView.ALL
+        listOf(false, true).forEach { dark ->
+            render("plan-tasks-lists-${if (dark) "dark" else "light"}") {
+                PixelTheme(dark) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                        model.module = app.pokeplan.ui.screens.Module.PLAN
+                        model.planSection = app.pokeplan.ui.screens.PlanSection.TASKS
+                        app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
+                    }
+                }
+            }
+        }
+        val weekly = store.data.tasks.first { it.title.startsWith("Finish the quarterly") }
+        store.makeRepeating(weekly.id, app.pokeplan.plan.Repeat.Weekly(every = 2, days = setOf(kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.DayOfWeek.THURSDAY)))
+        val fresh = AppModel(store)
+        render("plan-task-card-light", height = 1500) {
+            PixelTheme(false) {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                    app.pokeplan.ui.plan.TaskCard(
+                        fresh, store.data.tasks.first { it.id == weekly.id }, store.today, expanded = true, toggle = {}, onDeleted = {},
+                    )
+                }
+            }
+        }
+    }
+
     @Test
     fun secretBaseRoom() {
         val room = HoennRoom.room(
