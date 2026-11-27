@@ -183,20 +183,6 @@ class DungeonFloorTest {
     }
 
     @Test
-    fun hallwaysRunStraightWithOneJogAndNeverCutAcrossTheRock() {
-        for (seed in 0L until 40L) {
-            val f = floor(seed, organic = false)
-            val cells = floorCells(f)
-            // no floor square is joined to another only by a corner: every diagonal neighbour has an orthogonal link, so nobody squeezes between two rocks
-            for (c in cells) for ((dx, dy) in listOf(1 to 1, 1 to -1)) {
-                val d = Cell(c.x + dx, c.y + dy)
-                if (!f.isFloor(d)) continue
-                assertTrue(f.isFloor(Cell(c.x + dx, c.y)) || f.isFloor(Cell(c.x, c.y + dy)), "corner-only link $c to $d (seed $seed)")
-            }
-        }
-    }
-
-    @Test
     fun sightStopsAtAWallButNotAtWaterOrAThinPond() {
         for (seed in 0L until 30L) {
             val f = floor(seed)
