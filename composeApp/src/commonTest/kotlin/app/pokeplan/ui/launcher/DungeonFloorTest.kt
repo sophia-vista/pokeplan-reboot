@@ -168,4 +168,89 @@ class DungeonFloorTest {
             }
         }
     }
+
+    @Test
+    fun nobodyRestsInACorridorAndNoTrapLiesAtADoorway() {
+        for (seed in 0L until 60L) {
+            val f = floor(seed)
+            for (m in listOf(Mover.WALKER, Mover.WADER, Mover.GHOST)) assertTrue(f.restingCells(m).all { f.inRoom(it) && !f.isCorridor(it) }, "a corridor square to rest on (seed $seed, $m)")
+            assertTrue(floorCells(f).any { f.isCorridor(it) }, "rooms are joined by corridors (seed $seed)")
+            f.traps.keys.forEach { t ->
+                assertTrue(f.inRoom(t), "trap $t outside a room (seed $seed)")
+                (-1..1).forEach { dy -> (-1..1).forEach { dx -> assertTrue(!f.isCorridor(Cell(t.x + dx, t.y + dy)), "trap $t at a doorway (seed $seed)") } }
+            }
+        }
+    }
+
+    @Test
+    fun hallwaysRunStraightWithOneJogAndNeverCutAcrossTheRock() {
+        for (seed in 0L until 40L) {
+            val f = floor(seed, organic = false)
+            val cells = floorCells(f)
+            // no floor square is joined to another only by a corner: every diagonal neighbour has an orthogonal link, so nobody squeezes between two rocks
+            for (c in cells) for ((dx, dy) in listOf(1 to 1, 1 to -1)) {
+                val d = Cell(c.x + dx, c.y + dy)
+                if (!f.isFloor(d)) continue
+                assertTrue(f.isFloor(Cell(c.x + dx, c.y)) || f.isFloor(Cell(c.x, c.y + dy)), "corner-only link $c to $d (seed $seed)")
+            }
+        }
+    }
+
+    @Test
+    fun sightStopsAtAWallButNotAtWaterOrAThinPond() {
+        for (seed in 0L until 30L) {
+            val f = floor(seed)
+            val room = f.rooms.first()
+            val a = Cell(room.x, room.y)
+            assertTrue(f.sees(a, a), "a square sees itself")
+            assertEquals(f.sees(a, f.stairs), f.sees(f.stairs, a), "sight runs both ways (seed $seed)")
+        }
+        val walled = TownMap(7, 3, Array(21) { i -> if (i % 7 == 3) TownCell.WALL else TownCell.GROUND })
+        val f = DungeonFloor(walled, emptyList(), Cell(0, 1), emptyMap(), emptyList(), true) { false }
+        assertTrue(!f.sees(Cell(1, 1), Cell(5, 1)), "a wall between")
+        assertTrue(f.sees(Cell(0, 1), Cell(2, 1)), "same side")
+        val pond = TownMap(7, 3, Array(21) { i -> if (i % 7 == 3) TownCell.WATER else TownCell.GROUND })
+        assertTrue(DungeonFloor(pond, emptyList(), Cell(0, 1), emptyMap(), emptyList(), true) { false }.sees(Cell(1, 1), Cell(5, 1)), "water does not block sight")
+    }
+
+    @Test
+    fun aSquareIsHeldFromTheMomentAPokemonSetsOffSoNoTwoEverTakeIt() {
+        val f = floor(5)
+        val geo = FloorGeometry.of(f, 1, f.cols * 24f, f.rows * 24f)
+        val life = TownLife()
+        val a = Cell(6, 6); val b = Cell(8, 6); val between = Cell(7, 6)
+        life.spots["a"] = { geo.spotOf(a) }
+        life.spots["b"] = { geo.spotOf(b) }
+        assertEquals(null, life.occupantOf(geo, between, "b"))
+        life.dests["a"] = between
+        assertEquals("a", life.occupantOf(geo, between, "b"), "a is on its way in")
+        assertEquals(null, life.occupantOf(geo, between, "a"), "its own square is not in its way")
+        assertTrue(between in life.standing(geo, "b") && a in life.standing(geo, "b"), "and still holds the square it leaves")
+        assertTrue(between in life.occupiedCells(geo, "b"))
+        assertTrue(life.crowded(geo, "b")(between), "nobody is sent to rest on it")
+        life.dests.remove("a")
+        assertEquals(null, life.occupantOf(geo, between, "b"))
+    }
+
+    @Test
+    fun pokemonOnlyNoticeEachOtherWithNoWallBetween() {
+        for (seed in 0L until 40L) {
+            val f = floor(seed)
+            val geo = FloorGeometry.of(f, 1, f.cols * 24f, f.rows * 24f)
+            val life = TownLife()
+            life.floor = geo
+            val walls = (1 until f.rows - 1).flatMap { y -> (1 until f.cols - 3).map { Cell(it, y) } }
+                .filter { f.isFloor(it) && !f.isFloor(Cell(it.x + 1, it.y)) && f.isFloor(Cell(it.x + 2, it.y)) }
+            val pair = walls.firstOrNull() ?: continue
+            life.spots["l"] = { geo.spotOf(pair) }
+            life.spots["r"] = { geo.spotOf(Cell(pair.x + 2, pair.y)) }
+            assertTrue(!life.near("l", "r", 2, 1f, 1f), "a wall between at seed $seed")
+            life.spots["r"] = { geo.spotOf(pair) }
+            assertTrue(life.near("l", "r", 2, 1f, 1f))
+        }
+        val free = TownLife()
+        free.spots["l"] = { androidx.compose.ui.geometry.Offset(0.1f, 0.5f) }
+        free.spots["r"] = { androidx.compose.ui.geometry.Offset(0.2f, 0.5f) }
+        assertTrue(free.near("l", "r", 2, 0.16f, 0.2f) && !free.near("l", "r", 2, 0.05f, 0.2f), "scenes keep the screen-fraction ranges")
+    }
 }

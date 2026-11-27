@@ -46,8 +46,7 @@ internal fun TownGuardianAwe(life: TownLife, residents: List<OwnedPokemon>, guar
             if (at.x !in (home + 0.05f)..(home + 0.95f)) continue
             val near = residents.filter { other ->
                 if (other.id == guardian.id || other.id in life.holds) return@filter false
-                val p = life.spots[other.id]?.invoke() ?: return@filter false
-                kotlin.math.abs(p.x - at.x) < AWE_RANGE_X && kotlin.math.abs(p.y - at.y) < AWE_RANGE_Y
+                life.near(guardian.id, other.id, AWE_TILES, AWE_RANGE_X, AWE_RANGE_Y)
             }
             if (near.isEmpty()) continue
             val looker = near.firstOrNull { glanced[it.id]?.let { t -> t.elapsedNow() < 90.seconds } != true && random.nextInt(100) < 18 }
@@ -80,6 +79,7 @@ internal fun TownGuardianAwe(life: TownLife, residents: List<OwnedPokemon>, guar
     }
 }
 
+private const val AWE_TILES = 3
 private const val AWE_RANGE_X = 0.14f
 private const val AWE_RANGE_Y = 0.14f
 private const val AWE_COOLDOWN_MIN = 150
