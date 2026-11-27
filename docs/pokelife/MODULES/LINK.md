@@ -308,7 +308,7 @@ LINK owns the following canonical records:
 
 **Memories, eras and photos (owner, 25 November 2026; built 0.244.0-0.245.0).** LINK owns the memory and era records, the captions and the associations, and the local photo files it stores. A photo added from the optional OneDrive source (6.2) is downloaded once and kept as a normal local photo; the original stays in OneDrive and LINK keeps no OneDrive reference record. Deleting an era removes only its associations. Deleting a memory removes its associations and the local copies of photos that only it used (a photo still associated elsewhere stays), and never touches the OneDrive original.
 
-**PLAN memory links (owner, 25 November 2026; specified, not built).** A memory may reference a PLAN calendar event by a stable id through the integration layer, the same way the event "People" links work. PLAN owns the event and its edits and deletes; LINK owns the memory. No calendar record is duplicated, and breaking the link is explicit and recoverable: it never deletes the memory or the event silently.
+**PLAN memory links (owner, 25 November 2026; built 0.263.0).** A memory may reference a PLAN calendar event by a stable id through the integration layer, the same way the event "People" links work. PLAN owns the event and its edits and deletes; LINK owns the memory. No calendar record is duplicated, and breaking the link is explicit and recoverable: it never deletes the memory or the event silently.
 
 **Person-team assignments (owner direction, 25 November 2026; specified, not built).** A person's Pokémon team references shared owned Pokémon; LINK never keeps a second collection and never pays outside the linked event boundary. The placement (a place of its own, with LINK's party serving as the Me entry's team) and the capacity of six are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A; the passive EXP and the memory/milestone progression are to be specified in the economy before build (9.6).
 
@@ -405,7 +405,7 @@ An optional photo source for the archive. The connection and the first photo flo
 
 The existing LINK-PLAN integration stays: dates and open follow-ups appear as read-only all-day entries in PLAN's calendar, and people can be tied to a PLAN event (2.4).
 
-The archive direction adds a memory link (specified, not built, owner, 25 November 2026):
+The archive direction adds a memory link (built 0.263.0, owner, 25 November 2026):
 - After a scheduled PLAN calendar event, **Save as Memory** creates a LINK memory pre-filled from the event's title, day and linked people.
 - An existing memory can be attached to a PLAN event instead; the link is a reference stored in the integration layer (`app.pokeplan.app.integrations`), not a duplicated calendar record.
 - A memory and its PLAN event are independent: editing or deleting the event never edits or deletes the memory, and deleting the memory never deletes the event. Breaking the link is explicit and recoverable.
@@ -583,7 +583,7 @@ The archive direction (owner, 25 November 2026) is the build order below. The co
 4. **Person connections and the profile reorganisation (specified, not built).** Connections between people (family, friends, colleagues, the player's own words), and the grouped, shorter profile UI.
 5. **Per-person Pokémon teams (specified, not built).** Up to six Pokémon per person, passive EXP, and extra progression through memories and milestones; the placement and the Me exception are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A, and the build waits on the economy numbers (9.6).
 6. **Reminders consolidation (specified, not built).** One Reminders place replacing the separate Dates and Follow-ups places, the last recorded meetup, the consolidated upcoming dashboard and the birthday/important-date widgets.
-7. **PLAN memory linking (specified, not built).** "Save as Memory" after a scheduled event, attaching an existing memory to a PLAN event, and the independent, recoverable link (6.3).
+7. **PLAN memory linking (built 0.263.0).** "Save as Memory" after a scheduled event, attaching an existing memory to a PLAN event, and the independent, recoverable link (6.3).
 
 Also still open from before the archive direction:
 
@@ -689,7 +689,7 @@ A page with an overview on top and, behind the header's Sections key, five place
 - **Person connections and the profile reorganisation** (2.2).
 - **Per-person Pokémon teams:** up to six Pokémon per person, passive EXP and memory/milestone progression; the placement and the Me exception are in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A, and the build waits on the economy numbers (9.6).
 - **Reminders consolidation:** one Reminders place for dates, follow-ups and the last recorded meetup, the upcoming dashboard and the date widgets (2.4).
-- **PLAN memory linking:** Save as Memory after a scheduled event and attaching an existing memory to an event (6.3).
+- **PLAN memory linking (built 0.263.0):** Save as Memory after a scheduled event and attaching an existing memory to an event (6.3).
 
 Nothing above changes Postcard Trail, Friend Safari, the reward-event boundary or the existing `link_*` tables.
 

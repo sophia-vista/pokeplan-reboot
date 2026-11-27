@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.263.0
+
+- **LINK memories: detail page, search and event links (LINK Sprint 2).** A memory opens on a read-first Memory Detail page (name, date and time, place, note, photos that open full size, people and chapters that open their records, attached calendar events) with a separate Edit key; timeline rows, a chapter's memories, On this day, a person's Memories, a search result and a photo's new Open memory key all open it. Search now finds memories (title, note, place, people), chapters and photo captions, grouped by kind with headings (5 per kind), with a visible Search key in LINK's header; a memory-only archive now has search too. A memory can be attached to a PLAN or phone-calendar event (REP-088): Save as Memory once the event has started (prefilled from title, day and people), attach an existing memory, or attach an event from the memory's edit form (within 90 days before to 30 after); detach has Undo, deleting either side never touches the other, and the links are hidden while LINK is locked. A Memory key sits in LINK's and Home's Quick actions. No reward change, no schema change.
+
 ## 0.262.3
 
 - **Startup screen back to the brand and three pixels.** 0.262.1's skeleton of Home is removed: it could not match the real Home (which depends on the save), so it looked wrong and jumped. The palette memory, the night-aware window background and the steady loading pixels from 0.262.1 stay. No reward change, no schema change.
