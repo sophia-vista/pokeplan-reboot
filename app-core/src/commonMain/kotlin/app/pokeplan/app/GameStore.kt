@@ -562,6 +562,40 @@ class GameStore(
         return copy
     }
 
+    /** Keeps [taskId] as a template named [name] (the task's title by default); saving a name again updates that template. Null when the task is not one to copy. */
+    fun saveTaskTemplate(taskId: String, name: String? = null): app.pokeplan.plan.TaskTemplate? {
+        val src = data.tasks.firstOrNull { it.id == taskId && it.state != TaskState.DELETED && it.link == null } ?: return null
+        val template = app.pokeplan.plan.TaskTemplates.from(src, newId(), name ?: src.title)
+        val all = app.pokeplan.plan.TaskTemplates.saved(data.taskTemplates, template)
+        if (all == data.taskTemplates) return null
+        update { it.copy(taskTemplates = all) }
+        return all.first { it.name.equals(template.name, ignoreCase = true) }
+    }
+
+    fun deleteTaskTemplate(id: String) = update { d -> d.copy(taskTemplates = d.taskTemplates.filterNot { it.id == id }) }
+
+    /** A fresh task from a template, planned for [planned] (no day when null). The list is dropped if it no longer exists. */
+    fun useTaskTemplate(id: String, planned: LocalDate? = null): Task? {
+        val tpl = data.taskTemplates.firstOrNull { it.id == id } ?: return null
+        val task = addTask(
+            tpl.title, tpl.rank, planned, estimateMinutes = tpl.estimateMinutes, notes = tpl.notes, listId = tpl.listId, reward = tpl.reward,
+        )
+        tpl.steps.take(MAX_SUBTASKS).forEach { addSubtask(task.id, it) }
+        return data.tasks.firstOrNull { it.id == task.id } ?: task
+    }
+
+    /** One answer in the outstanding-task review (PLAN 3.5C): moves the task, or marks it won't do. Pays nothing. */
+    fun reviewLeftover(taskId: String, choice: app.pokeplan.plan.OutstandingReview.Choice) {
+        val task = data.tasks.firstOrNull { it.id == taskId && it.isOpen } ?: return
+        if (choice == app.pokeplan.plan.OutstandingReview.Choice.WONT_DO) { wontDo(taskId); return }
+        app.pokeplan.plan.OutstandingReview.reschedule(task, choice, now, data.settings.weekStart)?.let(::updateTask)
+    }
+
+    /** Puts the accepted suggestions on the calendar (PLAN 3.4A); a task that is no longer open is skipped. */
+    fun acceptSuggestions(suggestions: List<app.pokeplan.plan.Suggestion>) {
+        suggestions.forEach { scheduleTask(it.taskId, it.day, it.start) }
+    }
+
     private val linkOwners = mutableMapOf<LinkKind, LinkOwner>()
 
     fun registerLinkOwner(owner: LinkOwner) { linkOwners[owner.kind] = owner; syncLinks() }

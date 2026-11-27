@@ -38,6 +38,8 @@ data class AppData(
     val settings: Settings = Settings(),
     val tasks: List<Task> = emptyList(),
     val lists: List<TaskList> = emptyList(),
+    /** Tasks the player makes again and again (PLAN 3.5B). No day, deadline or reminder; never paid for. */
+    val taskTemplates: List<app.pokeplan.plan.TaskTemplate> = emptyList(),
     val events: List<PlanEvent> = emptyList(),
     val series: List<TaskSeries> = emptyList(),
     val habits: List<Habit> = emptyList(),
