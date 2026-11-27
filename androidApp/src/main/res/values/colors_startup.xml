@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The page colour (Pixel.Paper) the window shows before the first Compose frame, so opening the app never flashes white. -->
+    <color name="startup_paper">#FFF7F5F0</color>
+</resources>
