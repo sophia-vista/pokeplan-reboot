@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.262.0
+
+- **PLAN P2 (27 November 2026, REP-092).** A **Review** box for leftover tasks (`OutstandingReview`, `GameStore.reviewLeftover`); **task templates** (save from a task's More tab, "From a template" in the quick add; `TaskTemplate`, `AppData.taskTemplates`); a **List** choice in the quick add's More options; optional **Suggest times** in the Calendar tray (`PlanSuggestions`). PLAN.md 3.4A, 3.5B, 3.5C.
+- **Events gain a description, a location and a reminder** (`PlanEvent`, `EventReminders`, reminder kind "event"); description and location sync to the phone calendar. **Any event in the one synced calendar can be edited** from the app, a single occurrence or the whole series (`ProviderEdit`, `CalendarWriter.saveOccurrence`, exception rows), and phone-calendar events open in a panel (`DeviceEventPanel`). Built on the JVM fake provider only, not yet run on a device. PLAN.md 8.1B, 8.2.
+- **Event enrichment and source tags:** people, related tasks, a checklist, private notes and linked goals kept in the integrations document (no migration); a source event that disappears stays as a "Kept notes" entry and is never deleted. Events show a source tag (PLAN event, Google Calendar, Phone calendar). PLAN.md 8.4, 8.5.
+- No reward change (`RewardRules.VERSION` unchanged); no schema migration. Open: Android Add Task shortcut and Today widget (need a device), enrichment pickers for other modules, Google acceptance of exception rows on a phone. **Tests:** `PlanP2Test`, `PlanP2StoreTest`, `EventEnrichmentTest`, `ProviderEditTest`; `ScreenshotTest.planP2` and `planEventDetails`.
+
 ## 0.260.0
 
 - **The task editor's Schedule tab owns the timetable.** The deadline now sits beside the planned day/time and the recurrence instead of under More, the editor shows a quiet **Saved** after it commits, and an open task's More tab has **Focus on this**, which opens the Focus setup with that task chosen (PLAN.md 10.1).
