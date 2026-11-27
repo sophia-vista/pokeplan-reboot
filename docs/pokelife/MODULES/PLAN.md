@@ -64,7 +64,7 @@ PLAN owns only its reminder requests and PLAN-specific preferences (section 7). 
 
 Use a small, stable navigation structure. Avoid a separate destination for every feature.
 
-**Layout:** Modules → Plan opens a page with no on-page menu: the lead (112 dp), the overview (today's open tasks, five at most, each with a check key, and an "All N tasks" button; one title when nothing is planned), the action items (quick add, the task to do next with **Focus** and **Pick for me**), and the party last. Every Plan place (**Tasks**, **Calendar**, **Focus** on the phone, **Goals**, **Settings**) is in the shared Sections key in the header (`SectionsKey`). `PlanSection` is TASKS, CALENDAR, FOCUS, GOALS, SETTINGS.
+**Layout:** Modules → Plan opens a page with no on-page menu: the lead (112 dp), the overview (today's open tasks, three at most, each with a check key, and an "All N tasks" key; one title when nothing is planned), the action items in one **Quick actions** box (the quick add field, then the task to do next with **Focus** and **Pick for me**), and the party last, one short row of slots. The quick add field is the only capture key on the page (REP-065). Every Plan place (**Tasks**, **Calendar**, **Focus** on the phone, **Goals**, **Settings**) is in the shared Sections key in the header (`SectionsKey`), Tasks, Calendar and Focus first. `PlanSection` is TASKS, CALENDAR, FOCUS, GOALS, SETTINGS.
 
 Primary destinations (the owner uses only these three, so nothing else is a destination):
 

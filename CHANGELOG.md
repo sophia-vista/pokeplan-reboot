@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.258.0
+
+- **The PLAN home fits the screen again (REP-065).** The owner's clutter pass on the module page: today's overview lists the next three tasks with one "All N tasks" key instead of five rows, the task to do next now sits inside the **Quick actions** box (add and do-next in one action box, as `PLAN.md` 3 asks), the empty state no longer repeats an Add task key above the quick add field, and the party closes the page as one short row of slots. The lead, the capture field, every task control, Focus, Pick for me and the header Sections key are unchanged; Tasks, Calendar and Focus stay the first three places there.
+- **No tutorial or example content is removed:** the PLAN home carried none (the onboarding and the first task are not UI on this page).
+- **Test:** `ScreenshotTest.planHome` renders the PLAN home in both palettes, populated and empty; the before and after PNGs were reviewed for the PR.
+
 ## 0.257.0
 
 - **Pay a credit card early (MINT.md 5.5, 5.6D).** The credit line box now has **Pay early** whenever something is owed: any amount, any time, including before a statement closes and when nothing is billed yet. It is the same transfer to the card as a statement payment — owed now and the paying account fall together, never spending — and it says so after the payment. **Pay minimum** and **Pay in full** stay for paying exactly what the lender billed.

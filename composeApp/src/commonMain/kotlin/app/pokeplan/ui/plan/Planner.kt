@@ -159,6 +159,9 @@ private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Un
 private fun nextTask(model: AppModel, tasks: List<Task>, late: Set<Task>): Task? =
     tasks.firstOrNull { it.id == model.data.pickedTaskId } ?: tasks.firstOrNull { it !in late && !TaskViews.isEvening(it) } ?: tasks.firstOrNull { it !in late } ?: tasks.firstOrNull()
 
+/** At most this many of today's tasks sit on the module home; the rest are one "All tasks" tap away. */
+private const val HOME_TASK_ROWS = 3
+
 @Composable
 internal fun PlanOverview(model: AppModel) {
     val store = model.store
@@ -169,8 +172,8 @@ internal fun PlanOverview(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             if (tasks.isEmpty()) {
+                // The quick add in Quick actions is the one capture action on this page (REP-065).
                 PixelTitle(if (done > 0) "All clear for today" else "Nothing planned for today")
-                if (done == 0) PixelButton("Add a task", { model.addTaskRequested = true }, Modifier.fillMaxWidth(), compact = true)
             } else {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
                     Box(Modifier.weight(1f)) { PixelTitle("Today") }
@@ -178,15 +181,14 @@ internal fun PlanOverview(model: AppModel) {
                 }
                 val next = nextTask(model, tasks, late)
                 val rest = tasks.filter { it.id != next?.id }
-                if (rest.isEmpty()) app.pokeplan.ui.theme.PixelBar(done.toFloat() / (tasks.size + done), label = "$done of ${tasks.size + done} done")
-                rest.take(5).forEach { t ->
+                rest.take(HOME_TASK_ROWS).forEach { t ->
                     RecordRow(
                         t.title, if (t in late) "From before" else "", warn = t in late,
                         lead = { PixelIconButton("check", "Mark ${t.title} done", { model.completeTask(t.id) }, Pixel.Green) },
                         onClick = openToday, onClickLabel = "Open today's tasks",
                     )
                 }
-                if (rest.size > 5) PixelButton("All ${tasks.size} tasks", openToday, color = Pixel.InkSoft, compact = true)
+                if (rest.size > HOME_TASK_ROWS) PixelButton("All ${tasks.size} tasks", openToday, color = Pixel.InkSoft, compact = true)
             }
         }
     }
@@ -196,18 +198,25 @@ internal fun PlanOverview(model: AppModel) {
 internal fun PlanActionItems(model: AppModel, onFocus: ((Task) -> Unit)?) {
     val store = model.store
     val data = model.data
-    QuickAddBox(model, AddTo.NO_DATE, titled = true)
     val tasks = store.openTodayTasks()
     val late = TaskViews.overdue(tasks, store.now).toSet()
     val next = nextTask(model, tasks, late)
-    if (next != null) NextUp(
-        task = next,
-        onDone = { model.completeTask(next.id) },
-        onFocus = onFocus?.let { f -> { f(next) } },
-        onChoose = if (tasks.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
-        picked = next.id == data.pickedTaskId,
-        day = store.today,
-    )
+    val nextFooter: (@Composable () -> Unit)? = if (next != null) {
+        ({
+            NextUp(
+                task = next,
+                onDone = { model.completeTask(next.id) },
+                onFocus = onFocus?.let { f -> { f(next) } },
+                onChoose = if (tasks.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
+                picked = next.id == data.pickedTaskId,
+                day = store.today,
+                boxed = false,
+            )
+        })
+    } else {
+        null
+    }
+    QuickAddBox(model, AddTo.NO_DATE, titled = true, footer = nextFooter)
 }
 
 @Composable
@@ -356,7 +365,7 @@ private fun DuplicateButton(model: AppModel, task: Task) {
 }
 
 @Composable
-internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, titled: Boolean = false) {
+internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, titled: Boolean = false, footer: (@Composable () -> Unit)? = null) {
     val draftKey = "$addTo:${listId.orEmpty()}"
     var text by remember { mutableStateOf(model.quickAddDrafts[draftKey].orEmpty()) }
     LaunchedEffect(text) { if (text.isEmpty()) model.quickAddDrafts.remove(draftKey) else model.quickAddDrafts[draftKey] = text }
@@ -422,28 +431,33 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
             val parsed = QuickAdd.parse(text, model.store.today)
             val understood = QuickAdd.hints(if (day != null || noDate) parsed.copy(planned = null) else parsed, model.store.today)
             if (understood.isNotEmpty()) Text("Understood: " + understood.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (text.isBlank() && !more) return@Column
-            val today = model.store.today
-            val keyed = PlanDays.presets(today).map { (label, ahead) -> label to today.plus(DatePeriod(days = ahead)) }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                keyed.forEach { (label, d) ->
-                    TabButton(label, day == d, { day = if (day == d) null else d; noDate = false; picking = false })
+            if (text.isNotBlank() || more) {
+                val today = model.store.today
+                val keyed = PlanDays.presets(today).map { (label, ahead) -> label to today.plus(DatePeriod(days = ahead)) }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    keyed.forEach { (label, d) ->
+                        TabButton(label, day == d, { day = if (day == d) null else d; noDate = false; picking = false })
+                    }
+                    val other = day?.takeIf { d -> keyed.none { it.second == d } }
+                    TabButton(other?.short() ?: "Pick a day", other != null || picking, { picking = !picking })
+                    TabButton("No date", noDate, { noDate = !noDate; day = null; picking = false })
                 }
-                val other = day?.takeIf { d -> keyed.none { it.second == d } }
-                TabButton(other?.short() ?: "Pick a day", other != null || picking, { picking = !picking })
-                TabButton("No date", noDate, { noDate = !noDate; day = null; picking = false })
+                if (picking) {
+                    PixelDatePicker(
+                        day ?: today, today, Pixel.Tone, { day = it; noDate = false; picking = false },
+                        presets = emptyList(), max = null, weekStart = model.store.data.settings.weekStart, initiallyOpen = true,
+                    )
+                }
+                PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
+                if (more) {
+                    DifficultyPicker(rank) { rank = it }
+                    PixelChoice(RepeatKind.PICKABLE.toList(), repeat, { it?.label ?: "" }, { k -> if (k != null) repeat = k }, label = "Repeat")
+                    PixelChoice(app.pokeplan.core.reward.RewardFocus.entries.toList(), reward, { it?.label ?: "" }, { r -> if (r != null) reward = r }, label = "Reward")
+                }
             }
-            if (picking) {
-                PixelDatePicker(
-                    day ?: today, today, Pixel.Tone, { day = it; noDate = false; picking = false },
-                    presets = emptyList(), max = null, weekStart = model.store.data.settings.weekStart, initiallyOpen = true,
-                )
-            }
-            PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) {
-                DifficultyPicker(rank) { rank = it }
-                PixelChoice(RepeatKind.PICKABLE.toList(), repeat, { it?.label ?: "" }, { k -> if (k != null) repeat = k }, label = "Repeat")
-                PixelChoice(app.pokeplan.core.reward.RewardFocus.entries.toList(), reward, { it?.label ?: "" }, { r -> if (r != null) reward = r }, label = "Reward")
+            if (footer != null) {
+                HorizontalDivider(Modifier.padding(top = Spacing.S), color = Pixel.Border)
+                footer()
             }
         }
     }

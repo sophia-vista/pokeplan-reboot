@@ -507,6 +507,44 @@ class ScreenshotTest {
         }
     }
 
+    /** The PLAN home screen the owner calls cluttered (REP-065): lead, overview, quick actions, party. */
+    @Test
+    fun planHome() {
+        fun populated(): GameStore {
+            val store = started()
+            val lead = store.grantPokemon(25, "Quest: Pikachu")
+            store.setInParty(lead.id, true)
+            store.setPlanLead(lead.id)
+            store.setInParty(store.grantPokemon(1, "Quest: Bulbasaur").id, true)
+            store.setInParty(store.grantPokemon(4, "Quest: Charmander").id, true)
+            store.addTask("Write the quarterly report for the whole team", Rank.B, planned = store.today, estimateMinutes = 45)
+            store.addTask("Water the plants", Rank.E, planned = store.today, plannedTime = kotlinx.datetime.LocalTime(19, 0))
+            store.addTask("Call the bank about the card", Rank.C, planned = store.today)
+            store.addTask("Buy oat milk on the way home", Rank.D)
+            store.addTask("Draft chapter two of the thesis", Rank.B, planned = store.today, estimateMinutes = 90)
+            store.addTask("Read the chapter for book club", Rank.E, planned = store.today)
+            return store
+        }
+        fun renderHome(name: String, dark: Boolean, empty: Boolean) {
+            val store = populated()
+            if (empty) store.data.tasks.filter { it.deletedAtMillis == null }.forEach { store.deleteTask(it.id) }
+            val model = AppModel(store)
+            render(name, height = 1400) {
+                PixelTheme(dark) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                        model.module = app.pokeplan.ui.screens.Module.PLAN
+                        model.planSection = null
+                        app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
+                    }
+                }
+            }
+        }
+        renderHome("plan-home-light", dark = false, empty = false)
+        renderHome("plan-home-dark", dark = true, empty = false)
+        renderHome("plan-home-empty-light", dark = false, empty = true)
+        renderHome("plan-home-empty-dark", dark = true, empty = true)
+    }
+
     @Test
     fun secretBaseRoom() {
         val room = HoennRoom.room(
