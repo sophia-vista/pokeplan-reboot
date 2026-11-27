@@ -148,7 +148,7 @@ class AppModel(
     var updateProblem: String? by mutableStateOf(null)
         private set
 
-    /** Whether a check has been made in this process, so opening Me or About does not ask GitHub again on every visit. */
+    /** Whether a check has been made in this process; Home checks on every open, while Me and About only fill in a first check that has not happened yet. */
     var updateChecked: Boolean by mutableStateOf(false)
         private set
 
@@ -543,8 +543,7 @@ fun App(
         ThemeMode.DARK -> true
     }
     LaunchedEffect(dark) { onDark?.invoke(dark) }
-    // Once per app start: a newer build raises a notification (once per version) without a visit to Me.
-    LaunchedEffect(model) { if (model.updates != null && !model.updateChecked) model.checkForUpdate() }
+    // Home asks for the newest build each time it opens (HomeScreen), so a newer build raises its notification (once per version) without a visit to Me.
     PixelTheme(dark) {
         Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
             val clock = store.now
