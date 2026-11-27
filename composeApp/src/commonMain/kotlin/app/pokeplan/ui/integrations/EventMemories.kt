@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import app.pokeplan.app.integrations.IntegrationStore
 import app.pokeplan.app.integrations.RecordRef
 import app.pokeplan.app.integrations.SourceSnapshot
+import app.pokeplan.app.integrations.enrichmentOf
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.PartialDate
 import app.pokeplan.plan.PlanEvent
