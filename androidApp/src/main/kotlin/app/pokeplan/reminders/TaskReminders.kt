@@ -46,6 +46,29 @@ object TaskReminders {
         notifySafely(context, id, notification)
     }
 
+    /** A reminder for a PLAN event (PLAN 8.2): its title and when it starts, with Snooze keys; there is nothing to mark done. */
+    fun showEvent(context: Context, request: ReminderRequest, title: String, body: String) {
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        manager.createNotificationChannel(NotificationChannel(Channels.TASK_REMINDERS, "Task reminders", NotificationManager.IMPORTANCE_HIGH).withGameSound(context))
+        val id = (request.sourceRef + "@" + request.occurrence).hashCode()
+        fun action(key: String) = SharedReminders.actionIntent(context, request, key)
+        val open = PendingIntent.getActivity(
+            context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.PLANNER.name),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = Notification.Builder(context, Channels.TASK_REMINDERS)
+            .setSmallIcon(notificationIcon(context, "poke-ball"))
+            .setContentTitle(title)
+            .setContentText(body)
+            .setCategory(Notification.CATEGORY_EVENT)
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .addAction(Notification.Action.Builder(null, "10 min", action(ReminderActions.SNOOZE_10)).build())
+            .addAction(Notification.Action.Builder(null, "1 hour", action(ReminderActions.SNOOZE_60)).build())
+            .build()
+        notifySafely(context, id, notification)
+    }
+
     private fun whenText(task: Task, nowMillis: Long): String {
         val today = nowMillis.toLocalDateTime(TimeZone.currentSystemDefault()).date
         val due = task.due

@@ -768,6 +768,18 @@ class GameStore(
         lastDay: LocalDate? = null, color: Long? = null, allDay: Boolean? = null,
     ): String = editEvents { PlanCalendar.update(it, id, title, day, start, minutes, lastDay, color, allDay) }
 
+    /** The words and the reminder of a PLAN event (the whole series). They are not what a companion was there for, so nothing restarts. */
+    fun setEventDetails(id: String, description: String, location: String, reminderMinutes: Int?) = update { d ->
+        val series = PlanEvent.seriesOf(id)
+        d.copy(events = d.events.map { e ->
+            if (e.id != series) e
+            else e.copy(
+                description = description.trim().take(PlanEvent.MAX_TEXT), location = location.trim().take(PlanEvent.MAX_TEXT),
+                reminderMinutes = reminderMinutes?.takeIf { it in 0..PlanEvent.MAX_REMINDER_MINUTES },
+            )
+        })
+    }
+
     fun moveEvent(id: String, day: LocalDate, start: LocalTime): String = editEvents { PlanCalendar.move(it, id, day, start, ::newId) }
 
     fun deleteEvent(id: String) = update { d -> d.copy(events = PlanCalendar.delete(d.events, id)) }

@@ -2,6 +2,7 @@ package app.pokeplan.app.reminders
 
 import app.pokeplan.care.CareData
 import app.pokeplan.plan.Streaks
+import app.pokeplan.plan.EventReminders
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.plan.toLocalDateTime
@@ -78,7 +79,16 @@ class PlanReminderAdapter(
 
     override fun requests(nowMillis: Long, zone: TimeZone): List<ReminderRequest> =
         app().upcomingReminders(nowMillis, zone).map { ReminderRequest(module, it.taskId, KIND_TASK, it.atMillis, occurrence = it.atMillis.toString()) } +
+            eventRequests(nowMillis, zone) +
             if (clock != null) nudgeRequests(nowMillis, zone) else emptyList()
+
+    /** One reminder per occurrence of a PLAN event that asked for one (PLAN 8.2). */
+    private fun eventRequests(nowMillis: Long, zone: TimeZone): List<ReminderRequest> {
+        val data = app()
+        if (!data.settings.reminders) return emptyList()
+        return EventReminders.upcoming(data.events, nowMillis, zone, data.settings.quietHours, data.restDays)
+            .map { ReminderRequest(module, it.eventId, KIND_EVENT, it.atMillis, occurrence = it.day.toString()) }
+    }
 
     private fun nudgeRequests(nowMillis: Long, zone: TimeZone): List<ReminderRequest> {
         val data = app()
@@ -110,6 +120,10 @@ class PlanReminderAdapter(
                 return now.toLocalDateTime(zone).date.toString() == request.occurrence && Nudges.weeklyRecap(app(), now, zone, quietApplies = false) != null
             }
         }
+        if (request.kind == KIND_EVENT) {
+            val day = runCatching { LocalDate.parse(request.occurrence) }.getOrNull() ?: return false
+            return app().settings.reminders && EventReminders.stillWanted(app().events, request.sourceRef, day)
+        }
         val t = task(request) ?: return false
         return app().settings.reminders && when (request.kind) {
             KIND_REPEAT -> app().settings.repeatReminders
@@ -128,6 +142,7 @@ class PlanReminderAdapter(
 
     companion object {
         const val KIND_TASK = "task"
+        const val KIND_EVENT = "event"
         const val KIND_REPEAT = "task-repeat"
         const val KIND_STREAK = "streak"
         const val KIND_RECAP = "recap"
@@ -138,11 +153,19 @@ class PlanReminderAdapter(
     override fun present(request: ReminderRequest): NudgeText? = when (request.kind) {
         KIND_STREAK -> clock?.invoke()?.let { Nudges.streakText(app(), it, zone) }
         KIND_RECAP -> clock?.invoke()?.let { Nudges.weeklyRecap(app(), it, zone, quietApplies = false) }
+        KIND_EVENT -> eventText(request)
         else -> task(request)?.let { NudgeText(it.title, "") }
     }
 
+    private fun eventText(request: ReminderRequest): NudgeText? {
+        val e = app().events.firstOrNull { it.id == request.sourceRef } ?: return null
+        val day = runCatching { LocalDate.parse(request.occurrence) }.getOrNull() ?: return null
+        val body = if (e.allDay) "All day" else EventReminders.startOf(e, day).time.let { "Starts at ${it.hour}:${it.minute.toString().padStart(2, '0')}" }
+        return NudgeText(e.title, body)
+    }
+
     override fun execute(request: ReminderRequest, action: String): Boolean =
-        action == ReminderActions.DONE && request.kind != KIND_STREAK && request.kind != KIND_RECAP && task(request) != null && complete(request.sourceRef)
+        action == ReminderActions.DONE && request.kind != KIND_EVENT && request.kind != KIND_STREAK && request.kind != KIND_RECAP && task(request) != null && complete(request.sourceRef)
 }
 
 class CareReminderAdapter(

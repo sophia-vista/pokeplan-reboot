@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import app.pokeplan.LiveStore
+import app.pokeplan.app.AppData
 import app.pokeplan.app.reminders.ActionResult
 import app.pokeplan.app.reminders.CareReminderAdapter
 import app.pokeplan.app.heal.HealReminderAdapter
@@ -212,6 +213,7 @@ object SharedReminders {
             ReminderModule.PLAN -> when (request.kind) {
                 PlanReminderAdapter.KIND_STREAK -> AppAlerts.show(context, AppAlerts.Kind.STREAK, title, widgetStore(context).let { Nudges.streakText(it.data, now, TimeZone.currentSystemDefault()).body }, Place.HOME.name)
                 PlanReminderAdapter.KIND_RECAP -> AppAlerts.show(context, AppAlerts.Kind.RECAP, title, Nudges.weeklyRecap(widgetStore(context).data, now, TimeZone.currentSystemDefault(), quietApplies = false)?.body.orEmpty(), Place.ME.name)
+                PlanReminderAdapter.KIND_EVENT -> TaskReminders.showEvent(context, request, title, eventBody(widgetStore(context).data, request))
                 else -> widgetStore(context).data.tasks.firstOrNull { it.id == request.sourceRef }?.let { TaskReminders.show(context, it, now, request) }
             }
             ReminderModule.CARE -> RoutineReminders.show(context, request.sourceRef, title, LocalDate.parse(request.occurrence), request)
@@ -221,6 +223,11 @@ object SharedReminders {
             ReminderModule.LINK -> LinkNotices.show(context, request, title)
             else -> Unit
         }
+    }
+
+    private fun eventBody(data: AppData, request: ReminderRequest): String {
+        val e = data.events.firstOrNull { it.id == request.sourceRef } ?: return ""
+        return if (e.allDay) "All day" else "Starts at ${e.start.hour}:${e.start.minute.toString().padStart(2, '0')}"
     }
 
     /** Plans again after a reboot or a clock/time-zone change: the alarms are gone even if their times did not move. */

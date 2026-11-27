@@ -147,6 +147,7 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
             CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART, CalendarContract.Events.DTEND,
             CalendarContract.Events.DURATION, CalendarContract.Events.EVENT_TIMEZONE, CalendarContract.Events.ALL_DAY,
             CalendarContract.Events.RRULE, CalendarContract.Events.EXDATE, CalendarContract.Events.DELETED, CalendarContract.Events.EVENT_COLOR,
+            CalendarContract.Events.DESCRIPTION, CalendarContract.Events.EVENT_LOCATION,
         )
         val out = mutableMapOf<Long, ProviderRow>()
         try {
@@ -163,6 +164,7 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
                             endMillis = if (c.isNull(3)) null else c.getLong(3), duration = c.getString(4)?.ifBlank { null },
                             timezone = c.getString(5) ?: "UTC", rrule = c.getString(7)?.ifBlank { null }, exdate = c.getString(8)?.ifBlank { null },
                             color = if (c.isNull(10)) null else c.getInt(10),
+                            description = c.getString(11), location = c.getString(12),
                         ),
                     )
                 }
@@ -183,6 +185,7 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
             CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART, CalendarContract.Events.DTEND,
             CalendarContract.Events.DURATION, CalendarContract.Events.EVENT_TIMEZONE, CalendarContract.Events.ALL_DAY,
             CalendarContract.Events.RRULE, CalendarContract.Events.EXDATE, CalendarContract.Events.DELETED, CalendarContract.Events.EVENT_COLOR,
+            CalendarContract.Events.DESCRIPTION, CalendarContract.Events.EVENT_LOCATION,
         )
         val out = mutableListOf<ProviderRow>()
         val withExceptions = mutableSetOf<Long>()
@@ -207,6 +210,7 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
                             endMillis = if (c.isNull(3)) null else c.getLong(3), duration = c.getString(4)?.ifBlank { null },
                             timezone = c.getString(5) ?: "UTC", rrule = c.getString(7)?.ifBlank { null }, exdate = c.getString(8)?.ifBlank { null },
                             color = if (c.isNull(10)) null else c.getInt(10),
+                            description = c.getString(11), location = c.getString(12),
                         ),
                     )
                 }
@@ -249,6 +253,33 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
         }
     }
 
+    override fun saveOccurrence(seriesId: Long, originalStartMillis: Long, event: ProviderEvent): Boolean {
+        if (!writePermitted()) return false
+        val values = values(event).apply { put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, originalStartMillis) }
+        return try {
+            activity.contentResolver.insert(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI, seriesId), values) != null
+        } catch (e: SecurityException) {
+            false
+        } catch (e: IllegalArgumentException) {
+            false
+        }
+    }
+
+    override fun cancelOccurrence(seriesId: Long, originalStartMillis: Long): Boolean {
+        if (!writePermitted()) return false
+        val values = ContentValues().apply {
+            put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, originalStartMillis)
+            put(CalendarContract.Events.STATUS, CalendarContract.Events.STATUS_CANCELED)
+        }
+        return try {
+            activity.contentResolver.insert(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI, seriesId), values) != null
+        } catch (e: SecurityException) {
+            false
+        } catch (e: IllegalArgumentException) {
+            false
+        }
+    }
+
     /** A repeating row carries DURATION and no DTEND, a single one the opposite; the provider rejects a row with both. */
     private fun values(e: ProviderEvent) = ContentValues().apply {
         put(CalendarContract.Events.TITLE, e.title)
@@ -260,6 +291,8 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
         if (e.rrule != null) put(CalendarContract.Events.RRULE, e.rrule) else putNull(CalendarContract.Events.RRULE)
         if (e.exdate != null) put(CalendarContract.Events.EXDATE, e.exdate) else putNull(CalendarContract.Events.EXDATE)
         if (e.color != null) put(CalendarContract.Events.EVENT_COLOR, e.color)
+        if (e.description != null) put(CalendarContract.Events.DESCRIPTION, e.description) else putNull(CalendarContract.Events.DESCRIPTION)
+        if (e.location != null) put(CalendarContract.Events.EVENT_LOCATION, e.location) else putNull(CalendarContract.Events.EVENT_LOCATION)
     }
 
     private companion object {

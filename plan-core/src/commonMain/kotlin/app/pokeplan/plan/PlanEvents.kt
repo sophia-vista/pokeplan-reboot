@@ -25,9 +25,15 @@ data class PlanEvent(
     val companionId: String? = null,
     val companionSince: Long = 0L,
     val paid: Set<LocalDate> = emptySet(),
+    /** Where and what, in the player's words; both sync to the calendar with the event (PLAN 8.2). */
+    val description: String = "",
+    val location: String = "",
+    /** Minutes before the start to remind, or null for no reminder. PLAN's own: it is never written to a phone calendar. */
+    val reminderMinutes: Int? = null,
 ) {
     init {
         require(title.isNotBlank()) { "an event needs a title" }
+        require(reminderMinutes == null || reminderMinutes in 0..MAX_REMINDER_MINUTES) { "a reminder is up to a week ahead" }
         require(minutes > 0) { "an event lasts at least a minute" }
         require(lastDay == null || lastDay >= day) { "an event ends on or after the day it starts" }
     }
@@ -68,6 +74,8 @@ data class PlanEvent(
 
     companion object {
         const val DEFAULT_MINUTES = 60
+        const val MAX_REMINDER_MINUTES = 7 * 24 * 60
+        const val MAX_TEXT = 4_000
 
         const val OWN_CALENDAR = -1L
 

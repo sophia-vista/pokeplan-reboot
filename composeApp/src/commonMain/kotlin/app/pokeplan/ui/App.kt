@@ -377,7 +377,7 @@ class AppModel(
         link.observe { linkData = it }
         integrations.observe { integrationData = it }
         // Links to an event or a person that is gone are dropped when the app opens, not while an Undo might still bring them back.
-        integrations.prune(store.data.events.map { it.id }.toSet(), link.data.people.map { it.id }.toSet())
+        integrations.prune(store.data.events.map { it.id }.toSet(), link.data.people.map { it.id }.toSet(), store.data.tasks.map { it.id }.toSet())
     }
 }
 
