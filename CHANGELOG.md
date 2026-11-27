@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.256.0
+
+Two fixes from testing the phone build (27 November 2026).
+
+- **No statement is missed before the account existed.** A credit card or pay-later account added on, say, the 20th with an opening balance and statement day the 15th was showing a cycle that closed earlier that month, with a due day already past — so BNPL and credit appeared **Overdue** while their real obligation was for next month. Card cycles now count only closes on or after `FinancialAccount.openingDay`, and the credit line box says when the next statement closes and what it will be due instead (`CardCycles.next`). No schema change.
+- **Adding a record shows that account's list.** While an entry is being added, the Activity list below shows only the chosen account's records (either side of a transfer), with a quiet "Showing only <account>." line; closing the form brings every account back. A search or filter still applies on top.
+- **Tests:** `CardCyclesTest` gains the pre-tracking cycle and the next-close case, and `MintStatementsAndHistoryTest` gains the card-added-this-month and next-month-installments shapes.
+
 ## 0.255.0
 
 MINT's last batch from the owner's list (27 November 2026): account management, insights, budgets and personalisation. No reward rule, schema or save-format change — the new fields are sealed-JSON defaults.
