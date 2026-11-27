@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.262.2
+
+- **LINK memories save safely.** A memory's text and its photo changes (adds, removals, caption edits) are now saved in one all-or-nothing write, and Cancel on the memory form discards staged photos (before, photos were written at once and stayed). A memory may be incomplete: a title, note, date or photo alone is enough (a place or time alone is not), and untitled memories are named from their note, then date, then "Photo memory" or "Untitled memory". The OneDrive add-to-memory panel no longer preselects the newest memory: pick one from the list (6, then Show all). Deleting a person also removes them from the saved order.
+
 ## 0.262.1
 
 - **Opening the app no longer flashes.** The Android window and the startup screen now draw in the palette the app closed in (Settings → Look can differ from the phone's; before, a Dark choice on a light phone showed light, then flipped), the window behind the first frame is the page colour in both palettes (it was always white, with no night variant), and the loading pixels keep their step when one startup screen hands over to the next instead of restarting. UI and window colours only: no reward change, no schema change.
