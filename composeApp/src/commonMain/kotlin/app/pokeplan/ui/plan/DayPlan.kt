@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -323,6 +324,8 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 }, color = OwnEventColor, compact = true)
             }
 
+            if (!model.data.settings.calendarHintDismissed) CalendarGuide { store.changeSettings { it.copy(calendarHintDismissed = true) } }
+
             if (!week) {
                 DayStrip(store.today, offset, firstDow, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.isOn(day) } }) { offset = it }
             }
@@ -331,7 +334,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, { picked = it }) { picked = null }
 
-            Tray(tray + undated, picked, pick, grid, ::drop, hint = model.data.tasks.none { it.plannedTime != null })
+            Tray(tray, undated, picked, pick, grid, ::drop, hint = model.data.tasks.none { it.plannedTime != null })
 
             Column(
                 Modifier
@@ -538,28 +541,50 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Tray(tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit, hint: Boolean) {
-    if (tasks.isEmpty()) return
+private fun Tray(today: List<Task>, undated: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit, hint: Boolean) {
+    if (today.isEmpty() && undated.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("To plan", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
             if (hint) Text("Tap one, then an hour (or drag).", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                tasks.forEach { t -> key(t.id) {
-                    val anchor = remember { Anchor() }
-                    TrayChip(
-                        t, picked == t.id, { pick(t.id) },
-                        Modifier
-                            .alpha(if (grid.drag?.item?.id == t.id) 0.4f else 1f)
-                            .dragToPlan(
-                                t, anchor,
-                                onStart = { _, _ -> grid.drag = Drag(t.item(), resize = false, grabMinutes = 0, anchor.root(Offset.Zero)) },
-                                onMove = { grid.drag?.pointer = it },
-                                onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
-                            ),
-                    )
-                } }
+            TrayGroup("Today, no time", today, picked, pick, grid, drop)
+            TrayGroup("No day", undated, picked, pick, grid, drop)
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ColumnScope.TrayGroup(title: String, tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
+    if (tasks.isEmpty()) return
+    Text("$title (${tasks.size})", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        tasks.forEach { t -> key(t.id) {
+            val anchor = remember { Anchor() }
+            TrayChip(
+                t, picked == t.id, { pick(t.id) },
+                Modifier
+                    .alpha(if (grid.drag?.item?.id == t.id) 0.4f else 1f)
+                    .dragToPlan(
+                        t, anchor,
+                        onStart = { _, _ -> grid.drag = Drag(t.item(), resize = false, grabMinutes = 0, anchor.root(Offset.Zero)) },
+                        onMove = { grid.drag?.pointer = it },
+                        onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
+                    ),
+            )
+        } }
+    }
+}
+
+@Composable
+private fun CalendarGuide(onDismiss: () -> Unit) {
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Plan by the hour", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                PixelIconButton("close", "Hide the calendar guide", onDismiss, Pixel.InkSoft)
             }
+            Text("Drag a task onto an hour, or drag its edge to change its length. Events move and resize the same way.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -586,6 +611,7 @@ private fun TrayChip(t: Task, selected: Boolean, onClick: () -> Unit, modifier: 
             t.title, style = MaterialTheme.typography.labelMedium, color = if (selected) Pixel.OnInk else Pixel.Ink,
             maxLines = 1, overflow = TextOverflow.Ellipsis,
         )
+        t.estimateMinutes?.let { Text("${it}m", style = MaterialTheme.typography.labelMedium, color = if (selected) Pixel.OnInk else Pixel.InkSoft) }
     }
 }
 

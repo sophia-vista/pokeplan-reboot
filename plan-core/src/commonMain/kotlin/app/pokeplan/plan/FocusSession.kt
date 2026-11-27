@@ -157,7 +157,7 @@ object FocusRules {
 
     fun justFiveMinutes(): FocusDuration = FocusDuration(0, FocusDuration.MIN_MINUTES, 0)
 
-    const val FAILED_MESSAGE = "That egg went cold. Try again?"
+    const val FAILED_MESSAGE = "Session ended early."
 
     fun start(
         id: String,
