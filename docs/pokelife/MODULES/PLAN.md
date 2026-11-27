@@ -14,7 +14,7 @@ PLAN should not become a generic project-management suite. It owns:
 - Tasks and subtasks.
 - Task lists and projects.
 - Task capture.
-- Today, Upcoming, and planning views.
+- Today, Upcoming Tasks, and planning views.
 - Calendar events created within PLAN.
 - Recurring tasks.
 - Focus sessions and focus history.
@@ -68,7 +68,7 @@ Use a small, stable navigation structure. Avoid a separate destination for every
 
 Primary destinations (the owner uses only these three, so nothing else is a destination):
 
-1. **Tasks** — one workspace. It opens on **Today**. Four views as pills under the quick add box: **Today**, **Upcoming**, **All** (every open task grouped by list) and **Done** (finished and won't-do tasks, latest first). The lists are managed in **Plan settings** (new list, edit, archive, delete), and the **Filter** under the search box on All and Done narrows to one list (a Checklist or Tracker list then keeps its finished items on view). A task in no list shows under "No list" in All. The quick add field reads "Add a task (date, #list)"; inside a chosen list a new task is filed in it, and on Today it is planned for today.
+1. **Tasks** — one workspace. It opens on **Today**. Four views as pills under the quick add box: **Today**, **Upcoming Tasks**, **All** (every open task grouped by list) and **Done** (finished and won't-do tasks, latest first). Under the views, one key per list shows the list's name and its outstanding count; a tap opens that list in **All** (from **Done** it keeps Done), so a list is one tap away instead of behind the Filter (owner, 27 November 2026). The lists themselves are managed in **Plan settings** (new list, edit, archive, delete), and the **Filter** under the search box on All and Done still narrows by search, status, difficulty and one list (a Checklist or Tracker list then keeps its finished items on view). A task in no list shows under "No list" in All. The quick add field reads "Add a task (date, #list)"; inside a chosen list a new task is filed in it, and on Today it is planned for today.
 2. **Calendar** — the day, week and month views with PLAN events and the read-only device calendars (8); one tap from the page, through the header's Sections key (the Tasks header carries no Calendar key).
 3. **Focus** — start and manage focus sessions, for any open task or none (6).
 
@@ -97,9 +97,9 @@ Anything the user does not want to organize immediately is an open task with no 
 
 The user may leave a task unfiled, assign a date/list/project, add recurrence/notes/subtasks, convert it to a PLAN event where appropriate, archive, or delete. Do not force mandatory triage.
 
-### 3.3 Upcoming
+### 3.3 Upcoming Tasks
 
-Present future commitments chronologically with date grouping. Include overdue items, recurring-task occurrences, PLAN-created events, and read-only external calendar events when enabled. Default to a list; calendar grid is a secondary visualization. Keep filters minimal: all, tasks, events, and optionally a selected list.
+Present future tasks chronologically with date grouping, including overdue items and recurring-task occurrences. It is the tasks place: PLAN events and read-only external calendar events stay in **Calendar**, the combined task-and-event view (owner, 27 November 2026). Default to a list; calendar grid is a secondary visualization. Keep filters minimal: all, and optionally a selected list.
 
 ### 3.4 Calendar
 
@@ -182,7 +182,7 @@ Examples:
 
 Calendar recurrence: daily, selected weekdays, weekly on selected days, monthly by date, monthly by weekday position if reliable, and yearly if required by existing use cases. Avoid custom recurrence expressions initially.
 
-The task card's Repeat offers Never, Daily, Weekdays, Weekly, Monthly (on the start's day of the month) and Yearly; Weekly then takes **every 1 to 4 weeks** and the **weekdays** (at least one stays chosen), and the card reads it in words ("repeats every 2 weeks on Mon, Thu"). A repeat made elsewhere that the keys cannot show (every 3 days) is said in words. Moving one day of a repeating task moves that day only, and its When tab says so ("Moved from Tue 17 Nov: this one only.").
+The task card's Repeat offers Never, Daily, Weekdays, Weekly, Monthly (on the start's day of the month) and Yearly. Every kind keeps an **Every** row: the common intervals as keys (the weekdays preset, 1 to 4 weeks, 1, 2, 3 or 6 months, 1 to 3 years) and **Other** for a typed interval (daily 1 to 365, weekly 1 to 52, monthly 1 to 24, yearly 1 to 10). Weekly keeps the **weekday keys** (several days, at least one stays chosen) and the card reads the repeat in words ("repeats every 2 weeks on Mon, Thu"). The same controls sit under the quick add's **More options**, so a repeat is configured before the task is made (owner, 27 November 2026). A repeat the keys cannot show (a monthly weekday position) is said in words. Moving one day of a repeating task moves that day only, and its When tab says so ("Moved from Tue 17 Nov: this one only.").
 
 ### 5.2 Occurrence model
 
@@ -321,7 +321,7 @@ PLAN follows the shared PMD dialogue-box visual system and reusable component ru
 
 ### 10.1 Task and planning surfaces
 
-Task cards prioritize the completion control, title, relevant date/recurrence, then optional list context. Do not display every available field on every card. The check key is first on every row (a finished task's reopens it), the rank as a small tag after the title, the Schedule tab (Move to, the planned time, the repeat row and reminders, unfolded), a goal on the More tab (one goal per task, no reward), Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary. Today, Upcoming, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
+Task cards prioritize the completion control, title, relevant date/recurrence, then optional list context. Do not display every available field on every card. The check key is first on every row (a finished task's reopens it), the rank as a small tag after the title, the Schedule tab (Move to, the planned time, the repeat row and reminders, unfolded), a goal on the More tab (one goal per task, no reward), Reopen and Delete on a finished task. The title remains primary; metadata is concise and secondary: the **planned** day/time and the **deadline** are said apart when both exist ("planned 9:00, due 17:00"), and a chevron at the row's end shows the card opens (owner, 27 November 2026). Today, Upcoming Tasks, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
 
 ### 10.2 Focus presentation
 
@@ -387,7 +387,7 @@ Do not duplicate shared reminder settings or behavior in PLAN.
 
 ## 14. Implementation priorities
 
-The order and status are tracked in `../IMPLEMENTATION_BACKLOG.md`. Priorities: P0 architecture and reliability (ownership boundaries, unified recurring-task domain, shared reminder contract, migration and reward idempotency, task/recurrence/focus recovery tests); P1 core experience (Today, capture, Upcoming, lists, basic projects, calendar agenda, recurring tasks, focus timer and history, reminders, read-only calendar, reward events); P2 depth (goals and milestones, advanced projects, more recurrence editing, richer calendar, linked CARE agenda entries, focus statistics, widgets). Do not delay P1 because P2 is unfinished.
+The order and status are tracked in `../IMPLEMENTATION_BACKLOG.md`. Priorities: P0 architecture and reliability (ownership boundaries, unified recurring-task domain, shared reminder contract, migration and reward idempotency, task/recurrence/focus recovery tests); P1 core experience (Today, capture, Upcoming Tasks, lists, basic projects, calendar agenda, recurring tasks, focus timer and history, reminders, read-only calendar, reward events); P2 depth (goals and milestones, advanced projects, more recurrence editing, richer calendar, linked CARE agenda entries, focus statistics, widgets). Do not delay P1 because P2 is unfinished.
 
 ## 15. Audit and implementation safeguards
 
@@ -400,7 +400,7 @@ Before modifying code, inspect the current branch. Preserve and test: task creat
 - Title-only capture works.
 - Unfiled tasks are not forced into dates or lists.
 - Today does not treat every open task as due today.
-- Upcoming separates overdue/future commitments.
+- Upcoming Tasks separates overdue/future commitments.
 - Tasks support completion, undo, archive, and restore per retention policy.
 - Lists/projects do not duplicate task records.
 

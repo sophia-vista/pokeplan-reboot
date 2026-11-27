@@ -52,6 +52,7 @@ import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Glyph
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.FieldLabel
 import androidx.compose.foundation.text.KeyboardActions
@@ -343,11 +344,11 @@ internal enum class RepeatKind(val label: String) {
 
         fun of(repeat: Repeat?): RepeatKind = when {
             repeat == null -> NEVER
-            repeat is Repeat.Daily && repeat.every == 1 -> DAILY
+            repeat is Repeat.Daily -> DAILY
             repeat is Repeat.Weekly && repeat.every == 1 && repeat.days == WORKDAYS -> WEEKDAYS
             repeat is Repeat.Weekly -> WEEKLY
             repeat is Repeat.Monthly && (repeat.rule is MonthlyRule.DayOfMonth || repeat.rule is MonthlyRule.LastDay) -> MONTHLY
-            repeat is Repeat.Yearly && repeat.every == 1 -> YEARLY
+            repeat is Repeat.Yearly -> YEARLY
             else -> CUSTOM
         }
     }
@@ -375,7 +376,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
     var day by remember { mutableStateOf<LocalDate?>(null) }
     var noDate by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf(false) }
-    var repeat by remember { mutableStateOf(RepeatKind.NEVER) }
+    var repeat by remember { mutableStateOf<Repeat?>(null) }
     val focus = remember { FocusRequester() }
     LaunchedEffect(model.addTaskRequested) {
         if (model.addTaskRequested) {
@@ -405,7 +406,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
                 listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
                 plannedTime = parsed.plannedTime, evening = parsed.evening,
             )
-            repeat.toRepeat(made.planned ?: model.store.today)?.let { model.store.makeRepeating(made.id, it) }
+            repeat?.let { model.store.makeRepeating(made.id, it) }
             val filed = made.listId?.let { id -> model.data.lists.firstOrNull { it.id == id }?.name }
             model.say("Added to " + when {
                 filed != null -> filed
@@ -413,7 +414,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
                 made.planned != null -> made.planned!!.short()
                 else -> "Tasks"
             })
-            text = ""; day = null; noDate = false; picking = false; more = false; repeat = RepeatKind.NEVER; reward = defaultReward
+            text = ""; day = null; noDate = false; picking = false; more = false; repeat = null; reward = defaultReward
         }
     }
     TextBox {
@@ -451,7 +452,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
                 PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
                 if (more) {
                     DifficultyPicker(rank) { rank = it }
-                    PixelChoice(RepeatKind.PICKABLE.toList(), repeat, { it?.label ?: "" }, { k -> if (k != null) repeat = k }, label = "Repeat")
+                    RepeatEditor(repeat, day ?: today, model.store.data.settings.weekStart) { repeat = it }
                     PixelChoice(app.pokeplan.core.reward.RewardFocus.entries.toList(), reward, { it?.label ?: "" }, { r -> if (r != null) reward = r }, label = "Reward")
                 }
             }
@@ -496,6 +497,8 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
                     if (line.isNotEmpty()) Text(if (shownList != null) "· $line" else line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
             }
+            // The card opens on a tap; the chevron is the visible affordance for it.
+            Glyph(if (expanded) "chevron-up" else "chevron-down", Pixel.InkSoft, size = 20.dp)
         }
         if (expanded) {
             var tab by remember(task.id) { mutableStateOf(startTab) }
@@ -671,64 +674,106 @@ private fun GoalChoice(model: AppModel, task: Task) {
     )
 }
 
+private val Repeat.every: Int get() = when (this) {
+    is Repeat.Daily -> every
+    is Repeat.Weekly -> every
+    is Repeat.Monthly -> every
+    is Repeat.Yearly -> every
+}
+
+private fun Repeat.withEvery(n: Int): Repeat = when (this) {
+    is Repeat.Daily -> copy(every = n)
+    is Repeat.Weekly -> copy(every = n)
+    is Repeat.Monthly -> copy(every = n)
+    is Repeat.Yearly -> copy(every = n)
+}
+
+/** Every N units: the common intervals and a typed "Other" (a custom interval; 12A.10 keeps both on one line). */
 @Composable
-internal fun RepeatRow(model: AppModel, task: Task) {
-    val store = model.store
-    val series = store.seriesOf(task)
-    val recurrence = series?.recurrence
-    val kind = RepeatKind.of(recurrence?.repeat)
-    PixelChoice(RepeatKind.PICKABLE.toList(), kind, { it?.label ?: "" }, { k ->
-        if (k != null && k != kind) {
-            if (k == RepeatKind.NEVER) store.stopRepeating(task.id)
-            else k.toRepeat(recurrence?.start ?: task.planned ?: store.today)?.let { store.makeRepeating(task.id, it) }
+private fun IntervalRow(every: Int, presets: List<Int>, unit: String, max: Int, onChange: (Int) -> Unit) {
+    var typing by remember { mutableStateOf(false) }
+    val custom = typing || every !in presets
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        presets.forEach { n ->
+            TabButton(
+                if (n == 1) unit.replaceFirstChar { it.uppercase() } else "$n ${unit}s",
+                every == n && !custom,
+                { typing = false; if (every != n) onChange(n) },
+            )
         }
-    }, label = "Repeat")
-    if (kind == RepeatKind.CUSTOM && recurrence != null) {
-        Text("Repeats ${recurrence.repeat.words(recurrence.start)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        TabButton("Other", custom, { typing = !typing })
     }
-    val monthly = recurrence?.repeat as? Repeat.Monthly
-    if (kind == RepeatKind.MONTHLY && monthly != null) {
-        MonthlyPicker(monthly) { store.makeRepeating(task.id, it) }
+    if (custom) TypedValueField(
+        every, { n -> if (n != null && n in 1..max) onChange(n) },
+        { it.trim().toIntOrNull() }, { it.toString() },
+        placeholder = "Every", takes = "A number from 1 to $max",
+        reject = { if (it !in 1..max) "A number from 1 to $max" else null },
+    )
+}
+
+/**
+ * The recurrence controls shared by the quick add (configured before the task is made) and a task card
+ * (applied at once). It covers daily, weekdays, weekly, monthly and yearly with intervals and several
+ * weekdays; a repeat the keys cannot show is said in words instead.
+ */
+@Composable
+internal fun RepeatEditor(repeat: Repeat?, start: LocalDate, weekStart: DayOfWeek, onChange: (Repeat?) -> Unit) {
+    val kind = RepeatKind.of(repeat)
+    val kinds = if (kind == RepeatKind.CUSTOM) RepeatKind.PICKABLE + RepeatKind.CUSTOM else RepeatKind.PICKABLE
+    PixelChoice(kinds, kind, { it?.label ?: "" }, { k ->
+        if (k != null && k != kind) onChange(if (k == RepeatKind.NEVER) null else k.toRepeat(start))
+    }, label = "Repeat")
+    if (repeat == null) return
+    if (kind == RepeatKind.CUSTOM) {
+        Text("Repeats ${repeat.words(start)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         return
     }
-    val weekly = recurrence?.repeat as? Repeat.Weekly ?: return
-    if (kind != RepeatKind.WEEKLY) return
     FieldLabel("Every")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        (1..4).forEach { n ->
-            TabButton(if (n == 1) "Week" else "$n weeks", weekly.every == n, { if (weekly.every != n) store.makeRepeating(task.id, weekly.copy(every = n)) })
+    when (kind) {
+        RepeatKind.DAILY -> IntervalRow(repeat.every, listOf(1, 2, 3, 7), "day", 365) { onChange((repeat as Repeat.Daily).copy(every = it)) }
+        RepeatKind.WEEKLY, RepeatKind.WEEKDAYS -> {
+            IntervalRow(repeat.every, listOf(1, 2, 3, 4), "week", 52) { onChange(repeat.withEvery(it)) }
+            if (repeat is Repeat.Weekly) WeekdayKeys(repeat, start, weekStart, onChange)
         }
+        RepeatKind.MONTHLY -> {
+            IntervalRow(repeat.every, listOf(1, 2, 3, 6), "month", 24) { onChange(repeat.withEvery(it)) }
+            val monthly = repeat as Repeat.Monthly
+            FieldLabel("On")
+            val day = (monthly.rule as? MonthlyRule.DayOfMonth)?.day
+            TypedValueField(
+                day, { d -> if (d != null) onChange(monthly.copy(rule = MonthlyRule.DayOfMonth(d))) },
+                { it.trim().toIntOrNull() }, { it.toString() },
+                placeholder = "Day of the month", takes = "A day from 1 to 31",
+                reject = { if (it !in 1..31) "A day from 1 to 31" else null },
+            )
+            TabButton("Last day", monthly.rule is MonthlyRule.LastDay, { if (monthly.rule !is MonthlyRule.LastDay) onChange(monthly.copy(rule = MonthlyRule.LastDay)) })
+        }
+        RepeatKind.YEARLY -> IntervalRow(repeat.every, listOf(1, 2, 3), "year", 10) { onChange(repeat.withEvery(it)) }
+        RepeatKind.NEVER -> {}
     }
+}
+
+@Composable
+private fun WeekdayKeys(weekly: Repeat.Weekly, start: LocalDate, weekStart: DayOfWeek, onChange: (Repeat?) -> Unit) {
     FieldLabel("On")
-    val on = weekly.days.ifEmpty { setOf(recurrence.start.dayOfWeek) }
+    val on = weekly.days.ifEmpty { setOf(start.dayOfWeek) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PlanDays.week(store.data.settings.weekStart).forEach { d ->
-            val name = dayNames[d.ordinal]
-            TabButton(name.take(2), d in on, {
+        PlanDays.week(weekStart).forEach { d ->
+            TabButton(dayNames[d.ordinal].take(2), d in on, {
                 val next = if (d in on) on - d else on + d
-                if (next.isNotEmpty()) store.makeRepeating(task.id, weekly.copy(days = next))
+                if (next.isNotEmpty()) onChange(weekly.copy(days = next))
             }, Modifier.semantics { contentDescription = fullDayName(d) })
         }
     }
 }
 
 @Composable
-internal fun MonthlyPicker(monthly: Repeat.Monthly, onChange: (Repeat.Monthly) -> Unit) {
-    FieldLabel("Every")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        listOf(1, 2, 3, 6).forEach { n ->
-            TabButton(if (n == 1) "Month" else "$n months", monthly.every == n, { if (monthly.every != n) onChange(monthly.copy(every = n)) })
-        }
+internal fun RepeatRow(model: AppModel, task: Task) {
+    val store = model.store
+    val recurrence = store.seriesOf(task)?.recurrence
+    RepeatEditor(recurrence?.repeat, recurrence?.start ?: task.planned ?: store.today, store.data.settings.weekStart) { r ->
+        if (r == null) store.stopRepeating(task.id) else store.makeRepeating(task.id, r)
     }
-    FieldLabel("On")
-    val day = (monthly.rule as? MonthlyRule.DayOfMonth)?.day
-    TypedValueField(
-        day, { d -> if (d != null) onChange(monthly.copy(rule = MonthlyRule.DayOfMonth(d))) },
-        { it.trim().toIntOrNull() }, { it.toString() },
-        placeholder = "Day of the month", takes = "A day from 1 to 31",
-        reject = { if (it !in 1..31) "A day from 1 to 31" else null },
-    )
-    TabButton("Last day", monthly.rule is MonthlyRule.LastDay, { if (monthly.rule !is MonthlyRule.LastDay) onChange(monthly.copy(rule = MonthlyRule.LastDay)) })
 }
 
 private fun fullDayName(d: DayOfWeek) = d.name.lowercase().replaceFirstChar { it.uppercase() }
@@ -792,8 +837,16 @@ internal fun RemindMe(model: AppModel, task: Task) {
 }
 
 fun taskMeta(t: Task, day: LocalDate? = null, repeats: String? = null): String = buildList {
-    t.due?.let { add(listOfNotNull("due", it.date.takeIf { d -> d != day }?.short(), clock(it.time)).joinToString(" ")) }
-        ?: t.planned?.let { p -> listOfNotNull(p.takeIf { it != day }?.short(), t.plannedTime?.let(::clock)).joinToString(" ").takeIf { it.isNotEmpty() }?.let(::add) }
+    // The planned day and the deadline are two facts, so they are said apart (REP-092).
+    t.planned?.let { p ->
+        val bits = listOfNotNull(p.takeIf { it != day }?.short(), t.plannedTime?.let(::clock))
+        if (bits.isNotEmpty()) add("planned " + bits.joinToString(" "))
+    }
+    t.due?.let { d ->
+        // The deadline's day is said only when it is not already on screen as the planned day.
+        val dayLabel = d.date.takeIf { it != day && it != t.planned }?.short()
+        add("due " + listOfNotNull(dayLabel, clock(d.time)).joinToString(" "))
+    }
     when {
         t.focusedMinutes > 0 && t.estimateMinutes != null -> add("focused ${t.focusedMinutes} of ${t.estimateMinutes} min")
         t.focusedMinutes > 0 -> add("focused ${t.focusedMinutes} min")

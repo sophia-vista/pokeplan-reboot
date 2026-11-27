@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.259.0
+
+- **The Tasks workspace shows its lists and their counts (REP-092).** Under Today / Upcoming Tasks / All / Done sits one key per list with its name and how many tasks are still open; a tap opens that list in All (from Done it stays in Done). A list is one tap away instead of behind the pull-down Filter, which still covers search, status, difficulty and one list. **"Upcoming" is now "Upcoming Tasks"**, because it lists tasks only: events stay in Calendar, the combined task-and-event view (PLAN.md 3, 3.3).
+- **A repeat is set up before the task is saved, with intervals.** The quick add's **More options** now uses the same recurrence editor as the task card: Daily, Weekdays, Weekly (several weekday keys), Monthly (a day of the month or the last day) and Yearly, each with its usual intervals and **Other** for a typed one (daily up to 365, weekly up to 52, monthly up to 24, yearly up to 10). The card reads the repeat in words; a repeat the keys cannot show is still said in words (PLAN.md 5.1).
+- **The task card says its plan and its deadline apart** ("planned 9:00, due 17:00") and ends with a chevron that shows the row opens (PLAN.md 10.1).
+- **Test:** `ScreenshotTest.planTasksLists` renders the list keys and counts in both palettes, plus an open card with the weekly and interval repeat editor.
+
 ## 0.258.0
 
 - **The PLAN home fits the screen again (REP-065).** The owner's clutter pass on the module page: today's overview lists the next three tasks with one "All N tasks" key instead of five rows, the task to do next now sits inside the **Quick actions** box (add and do-next in one action box, as `PLAN.md` 3 asks), the empty state no longer repeats an Add task key above the quick add field, and the party closes the page as one short row of slots. The lead, the capture field, every task control, Focus, Pick for me and the header Sections key are unchanged; Tasks, Calendar and Focus stay the first three places there.
